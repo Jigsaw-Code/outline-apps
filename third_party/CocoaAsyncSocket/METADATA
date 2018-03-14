@@ -1,0 +1,17 @@
+name: "CocoaAsyncSocket"
+description:
+    "Asynchronous socket library for iOS/macOS"
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://cocoapods.org/pods/CocoaAsyncSocket"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/robbiehanson/CocoaAsyncSocket"
+  }
+  version: "7.6.2"
+  local_modifications: "We use Carthage to manage CocoaAsyncSocket."
+  last_upgrade_date { year: 2018 month: 1 day: 23 }
+}

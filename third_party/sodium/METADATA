@@ -1,0 +1,16 @@
+name: "Sodium"
+description:
+    "A modern and easy-to-use crypto library."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://libsodium.org/"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/jedisct1/libsodium"
+  }
+  version: "1.0.15"
+  last_upgrade_date { year: 2017 month: 12 day: 8 }
+}

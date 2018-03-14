@@ -1,0 +1,105 @@
+// Copyright 2018 The Outline Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import * as url from 'url';
+
+import {OperationTimedOut} from '../model/errors';
+import {EventQueue} from '../model/events';
+import {Server} from '../model/server';
+
+import {App} from './app';
+import {Clipboard} from './clipboard';
+import {EnvironmentVariables, onceEnvVars} from './environment';
+import {OutlineErrorReporter} from './error_reporter';
+import {getLocalizedErrorMessage} from './i18n';
+import {OutlineServer} from './outline_server';
+import {PersistentServer, PersistentServerFactory, PersistentServerRepository} from './persistent_server';
+import {OutlinePlatform} from './platform';
+import {Settings} from './settings';
+import {UrlInterceptor} from './url_interceptor';
+
+// Used to determine whether to use Polymer functionality on app initialization failure.
+let webComponentsAreReady = false;
+document.addEventListener('WebComponentsReady', () => {
+  console.debug('received WebComponentsReady event');
+  webComponentsAreReady = true;
+});
+
+// Used to delay loading the app until (translation) resources have been loaded. This can happen a
+// little later than WebComponentsReady.
+const oncePolymerIsReady = new Promise((resolve) => {
+  document.addEventListener('app-localize-resources-loaded', () => {
+    console.debug('received app-localize-resources-loaded event');
+    resolve();
+  });
+});
+
+// Helpers
+
+// Do not call until WebComponentsReady has fired!
+function getRootEl() {
+  return (document.querySelector('app-root') as {}) as polymer.Base;
+}
+
+function createServerRepo(
+    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean,
+    connectionType: PersistentServerFactory) {
+  const repo = new PersistentServerRepository(connectionType, eventQueue, storage);
+  if (!deviceSupport) {
+    console.debug('Detected development environment, using fake servers.');
+    if (repo.getAll().length === 0) {
+      repo.add({name: 'Fake Working Server', host: '127.0.0.1'});
+      repo.add({name: 'Fake Broken Server', host: '192.0.2.1'});
+    }
+  }
+  return repo;
+}
+
+export function main(platform: OutlinePlatform) {
+  return Promise.all([onceEnvVars, oncePolymerIsReady])
+      .then(
+          ([environmentVars]) => {
+            console.debug('running main() function');
+
+            const queryParams = url.parse(document.URL, true).query;
+            const debugMode = queryParams.debug === 'true';
+
+            const eventQueue = new EventQueue();
+            const serverRepo = createServerRepo(
+                eventQueue, window.localStorage, platform.hasDeviceSupport(),
+                platform.getPersistentServerFactory());
+            const settings = new Settings();
+            const app = new App(
+                eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
+                platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
+                environmentVars, platform.hasSystemVpnSupport(), platform.getUpdater());
+          },
+          (e) => {
+            onUnexpectedError(e);
+            throw e;
+          });
+}
+
+function onUnexpectedError(error: Error) {
+  const rootEl = getRootEl();
+  if (webComponentsAreReady && rootEl && rootEl.localize) {
+    rootEl.showToast(getLocalizedErrorMessage(error, rootEl.localize.bind(rootEl)), 10000);
+  } else {
+    // Something went terribly wrong (i.e. Polymer failed to initialize). Provide some messaging to
+    // the user, even if we are not able to display it in a toast or localize it.
+    // TODO: provide an help email once we have a domain.
+    alert(`An unexpected error occurred.`);
+  }
+  console.error(error);
+}

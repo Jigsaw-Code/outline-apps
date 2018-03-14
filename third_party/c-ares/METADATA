@@ -1,0 +1,16 @@
+name: "c-ares"
+description:
+    "A C library for asynchronous DNS requests (including name resolves)."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://c-ares.haxx.se/"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/c-ares/c-ares"
+  }
+  version: "1.13.0"
+  last_upgrade_date { year: 2017 month: 12 day: 8 }
+}

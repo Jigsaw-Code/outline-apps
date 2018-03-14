@@ -1,0 +1,16 @@
+.idea
+.vscode
+*.DS_Store
+/build
+info.txt
+/node_modules
+/platforms
+/plugins
+/www/bower_components
+/www/babel-polyfill.min.js
+/www/cordova.js
+/www/cordova_main.js
+/third_party/Potatso/Pods
+/Carthage
+xcuserdata/
+dist/

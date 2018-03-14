@@ -1,0 +1,348 @@
+MAINTENANCE README FOR PCRE
+===========================
+
+The files in the "maint" directory of the PCRE source contain data, scripts,
+and programs that are used for the maintenance of PCRE, but which do not form
+part of the PCRE distribution tarballs. This document describes these files and
+also contains some notes for maintainers. Its contents are:
+
+  Files in the maint directory
+  Updating to a new Unicode release
+  Preparing for a PCRE release
+  Making a PCRE release
+  Long-term ideas (wish list)
+
+
+Files in the maint directory
+============================
+
+GenerateUtt.py   A Python script to generate part of the pcre_tables.c file
+                 that contains Unicode script names in a long string with
+                 offsets, which is tedious to maintain by hand.
+
+ManyConfigTests  A shell script that runs "configure, make, test" a number of
+                 times with different configuration settings.
+
+MultiStage2.py   A Python script that generates the file pcre_ucd.c from three
+                 Unicode data tables, which are themselves downloaded from the
+                 Unicode web site. Run this script in the "maint" directory.
+                 The generated file contains the tables for a 2-stage lookup
+                 of Unicode properties.
+
+pcre_chartables.c.non-standard
+                 This is a set of character tables that came from a Windows
+                 system. It has characters greater than 128 that are set as
+                 spaces, amongst other things. I kept it so that it can be
+                 used for testing from time to time.
+
+README           This file.
+
+Unicode.tables   The files in this directory (CaseFolding.txt, 
+                 DerivedGeneralCategory.txt, GraphemeBreakProperty.txt,
+                 Scripts.txt and UnicodeData.txt) were downloaded from the
+                 Unicode web site. They contain information about Unicode
+                 characters and scripts. 
+
+ucptest.c        A short C program for testing the Unicode property macros
+                 that do lookups in the pcre_ucd.c data, mainly useful after
+                 rebuilding the Unicode property table. Compile and run this in
+                 the "maint" directory (see comments at its head).
+
+ucptestdata      A directory containing two files, testinput1 and testoutput1,
+                 to use in conjunction with the ucptest program.
+
+utf8.c           A short, freestanding C program for converting a Unicode code
+                 point into a sequence of bytes in the UTF-8 encoding, and vice
+                 versa. If its argument is a hex number such as 0x1234, it
+                 outputs a list of the equivalent UTF-8 bytes. If its argument
+                 is sequence of concatenated UTF-8 bytes (e.g. e188b4) it
+                 treats them as a UTF-8 character and outputs the equivalent
+                 code point in hex.
+
+
+Updating to a new Unicode release
+=================================
+
+When there is a new release of Unicode, the files in Unicode.tables must be
+refreshed from the web site. If the new version of Unicode adds new character
+scripts, the source file ucp.h and both the MultiStage2.py and the
+GenerateUtt.py scripts must be edited to add the new names. Then MultiStage2.py
+can be run to generate a new version of pcre_ucd.c, and GenerateUtt.py can be
+run to generate the tricky tables for inclusion in pcre_tables.c.
+
+If MultiStage2.py gives the error "ValueError: list.index(x): x not in list",
+the cause is usually a missing (or misspelt) name in the list of scripts. I
+couldn't find a straightforward list of scripts on the Unicode site, but
+there's a useful Wikipedia page that list them, and notes the Unicode version
+in which they were introduced:
+
+http://en.wikipedia.org/wiki/Unicode_scripts#Table_of_Unicode_scripts
+
+The ucptest program can be compiled and used to check that the new tables in
+pcre_ucd.c work properly, using the data files in ucptestdata to check a number
+of test characters. The source file ucptest.c must be updated whenever new
+Unicode script names are added.
+
+Note also that both the pcresyntax.3 and pcrepattern.3 man pages contain lists
+of Unicode script names.
+
+
+Preparing for a PCRE release
+============================
+
+This section contains a checklist of things that I consult before building a
+distribution for a new release.
+
+. Ensure that the version number and version date are correct in configure.ac.
+
+. Update the library version numbers in configure.ac according to the rules 
+  given below.
+
+. If new build options have been added, ensure that they are added to the CMake
+  files as well as to the autoconf files. The relevant files are CMakeLists.txt
+  and config-cmake.h.in. After making a release tarball, test it out with CMake 
+  if there have been changes here.  
+
+. Run ./autogen.sh to ensure everything is up-to-date.
+
+. Compile and test with many different config options, and combinations of
+  options. Also, test with valgrind by running "RunTest valgrind" and
+  "RunGrepTest valgrind" (which takes quite a long time). The script
+  maint/ManyConfigTests now encapsulates this testing. It runs tests with
+  different configurations, and it also runs some of them with valgrind, all of
+  which can take quite some time.
+
+. Run perltest.pl on the test data for tests 1, 4, and 6. The output 
+  should match the PCRE test output, apart from the version identification at
+  the start of each test. The other tests are not Perl-compatible (they use
+  various PCRE-specific features or options).
+
+. It is possible to test with the emulated memmove() function by undefining
+  HAVE_MEMMOVE and HAVE_BCOPY in config.h, though I do not do this often. You
+  may see a number of "pcre_memmove defined but not used" warnings for the
+  modules in which there is no call to memmove(). These can be ignored.
+
+. Documentation: check AUTHORS, ChangeLog (check version and date), LICENCE, 
+  NEWS (check version and date), NON-AUTOTOOLS-BUILD, and README. Many of these
+  won't need changing, but over the long term things do change.
+
+. I used to test new releases myself on a number of different operating
+  systems, using different compilers as well. For example, on Solaris it is
+  helpful to test using Sun's cc compiler as a change from gcc. Adding
+  -xarch=v9 to the cc options does a 64-bit test, but it also needs -S 64 for
+  pcretest to increase the stack size for test 2. Since I retired I can no
+  longer do this, but instead I rely on putting out release candidates for
+  folks on the pcre-dev list to test.
+  
+
+Updating version info for libtool
+=================================
+
+This set of rules for updating library version information came from a web page 
+whose URL I have forgotten. The version information consists of three parts:
+(current, revision, age).
+
+1. Start with version information of 0:0:0 for each libtool library.
+
+2. Update the version information only immediately before a public release of
+   your software. More frequent updates are unnecessary, and only guarantee
+   that the current interface number gets larger faster.
+
+3. If the library source code has changed at all since the last update, then
+   increment revision; c:r:a becomes c:r+1:a.
+
+4. If any interfaces have been added, removed, or changed since the last
+   update, increment current, and set revision to 0.
+
+5. If any interfaces have been added since the last public release, then
+   increment age.
+
+6. If any interfaces have been removed or changed since the last public
+   release, then set age to 0.
+
+The following explanation may help in understanding the above rules a bit
+better. Consider that there are three possible kinds of reaction from users to
+changes in a shared library:
+
+1. Programs using the previous version may use the new version as a drop-in
+   replacement, and programs using the new version can also work with the
+   previous one. In other words, no recompiling nor relinking is needed. In
+   this case, increment revision only, don't touch current or age.
+
+2. Programs using the previous version may use the new version as a drop-in
+   replacement, but programs using the new version may use APIs not present in
+   the previous one. In other words, a program linking against the new version
+   may fail if linked against the old version at run time. In this case, set
+   revision to 0, increment current and age.
+
+3. Programs may need to be changed, recompiled, relinked in order to use the
+   new version. Increment current, set revision and age to 0.
+
+
+Making a PCRE release
+=====================
+
+Run PrepareRelease and commit the files that it changes (by removing trailing
+spaces). The first thing this script does is to run CheckMan on the man pages;
+if it finds any markup errors, it reports them and then aborts.
+
+Once PrepareRelease has run clean, run "make distcheck" to create the tarballs
+and the zipball. Double-check with "svn status", then create an SVN tagged
+copy:
+
+  svn copy svn://vcs.exim.org/pcre/code/trunk \
+           svn://vcs.exim.org/pcre/code/tags/pcre-8.xx
+
+Don't forget to update Freshmeat when the new release is out, and to tell
+webmaster@pcre.org and the mailing list. Also, update the list of version
+numbers in Bugzilla (edit products).
+
+
+Future ideas (wish list)
+========================
+
+This section records a list of ideas so that they do not get forgotten. They
+vary enormously in their usefulness and potential for implementation. Some are
+very sensible; some are rather wacky. Some have been on this list for years;
+others are relatively new.
+
+. Optimization
+
+  There are always ideas for new optimizations so as to speed up pattern
+  matching. Most of them try to save work by recognizing a non-match without
+  having to scan all the possibilities. These are some that I've recorded:
+
+  * /((A{0,5}){0,5}){0,5}(something complex)/ on a non-matching string is very
+    slow, though Perl is fast. Can we speed up somehow? Convert to {0,125}?
+    OTOH, this is pathological - the user could easily fix it.
+
+  * Turn ={4} into ==== ? (for speed). I once did an experiment, and it seems
+    to have little effect, and maybe makes things worse.
+
+  * "Ends with literal string" - note that a single character doesn't gain much
+    over the existing "required byte" (reqbyte) feature that just remembers one
+    data unit.
+
+  * These probably need to go in pcre_study():
+
+    o Remember an initial string rather than just 1 char?
+
+    o A required data unit from alternatives - not just the last unit, but an
+      earlier one if common to all alternatives.
+
+    o Friedl contains other ideas.
+
+  * pcre_study() does not set initial byte flags for Unicode property types
+    such as \p; I don't know how much benefit there would be for, for example,
+    setting the bits for 0-9 and all bytes >= xC0 when a pattern starts with
+    \p{N}.
+
+  * There is scope for more "auto-possessifying" in connection with \p and \P.
+
+. If Perl gets to a consistent state over the settings of capturing sub-
+  patterns inside repeats, see if we can match it. One example of the
+  difference is the matching of /(main(O)?)+/ against mainOmain, where PCRE
+  leaves $2 set. In Perl, it's unset. Changing this in PCRE will be very hard
+  because I think it needs much more state to be remembered.
+
+. Perl 6 will be a revolution. Is it a revolution too far for PCRE?
+
+. Allow errorptr and erroroffset to be NULL. I don't like this idea.
+
+. Line endings:
+
+  * Option to use NUL as a line terminator in subject strings. This could now
+    be done relatively easily since the extension to support LF, CR, and CRLF.
+    If it is done, a suitable option for pcregrep is also required.
+
+. Option to provide the pattern with a length instead of with a NUL terminator.
+  This affects quite a few places in the code and is not trivial.
+
+. Catch SIGSEGV for stack overflows?
+
+. A feature to suspend a match via a callout was once requested.
+
+. Option to convert results into character offsets and character lengths.
+
+. Option for pcregrep to scan only the start of a file. I am not keen - this is
+  the job of "head".
+
+. A (non-Unix) user wanted pcregrep options to (a) list a file name just once,
+  preceded by a blank line, instead of adding it to every matched line, and (b)
+  support --outputfile=name.
+
+. Consider making UTF-8 and UCP the default for PCRE n.0 for some n > 8.
+  (And now presumably UTF-16 and UCP for the 16-bit library, and UTF-32 and UCP
+  for the 32-bit library.)
+
+. Add a user pointer to pcre_malloc/free functions -- some option would be
+  needed to retain backward compatibility.
+
+. Define a union for the results from pcre_fullinfo().
+
+. Provide a "random access to the subject" facility so that the way in which it
+  is stored is independent of PCRE. For efficiency, it probably isn't possible
+  to switch this dynamically. It would have to be specified when PCRE was
+  compiled. PCRE would then call a function every time it wanted a character.
+
+. Wild thought: the ability to compile from PCRE's internal byte code to a real
+  FSM and a very fast (third) matcher to process the result. There would be
+  even more restrictions than for pcre_dfa_exec(), however. This is not easy.
+  This is probably obsolete now that we have the JIT support.
+
+. Should pcretest have some private locale data, to avoid relying on the
+  available locales for the test data, since different OS have different ideas?
+  This won't be as thorough a test, but perhaps that doesn't really matter.
+
+. pcregrep: add -rs for a sorted recurse? Having to store file names and sort
+  them will of course slow it down.
+
+. Someone suggested --disable-callout to save code space when callouts are
+  never wanted. This seems rather marginal.
+
+. Check names that consist entirely of digits: PCRE allows, but do Perl and
+  Python, etc?
+
+. A user suggested a parameter to limit the length of string matched, for
+  example if the parameter is N, the current match should fail if the matched
+  substring exceeds N. This could apply to both match functions. The value
+  could be a new field in the extra block.
+
+. Callouts with arguments: (?Cn:ARG) for instance.
+
+. A user is going to supply a patch to generalize the API for user-specific
+  memory allocation so that it is more flexible in threaded environments. This
+  was promised a long time ago, and never appeared. However, this is a live 
+  issue not only for threaded environments, but for libraries that use PCRE and 
+  want not to be beholden to their caller's memory allocation. 
+
+. Write a wrapper to maintain a structure with specified runtime parameters,
+  such as recurse limit, and pass these to PCRE each time it is called. Also
+  maybe malloc and free. A user sent a prototype. This relates the the previous 
+  item. 
+
+. Write a function that generates random matching strings for a compiled regex.
+
+. Pcregrep: an option to specify the output line separator, either as a string
+  or select from a fixed list. This is not dead easy, because at the moment it
+  outputs whatever is in the input file.
+
+. Improve the code for duplicate checking in pcre_dfa_exec(). An incomplete,
+  non-thread-safe patch showed that this can help performance for patterns
+  where there are many alternatives. However, a simple thread-safe
+  implementation that I tried made things worse in many simple cases, so this
+  is not an obviously good thing.
+
+. PCRE cannot at present distinguish between subpatterns with different names,
+  but the same number (created by the use of ?|). In order to do so, a way of
+  remembering *which* subpattern numbered n matched is needed. Bugzilla #760.
+  Now that (*MARK) has been implemented, it can perhaps be used as a way round
+  this problem.
+
+. Instead of having #ifdef HAVE_CONFIG_H in each module, put #include
+  "something" and the the #ifdef appears only in one place, in "something".
+
+Philip Hazel
+Email local part: ph10
+Email domain: cam.ac.uk
+Last updated: 07 December 2012

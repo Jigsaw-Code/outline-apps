@@ -1,0 +1,17 @@
+name: "PCRE"
+description:
+    "A set of functions that implement regular expression pattern matching "
+    "using the same syntax and semantics as Perl 5."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://www.pcre.org/"
+  }
+  url {
+    type: SVN
+    value: "svn://vcs.exim.org/pcre/code/tags/pcre-8.41"
+  }
+  version: "8.41"
+  last_upgrade_date { year: 2017 month: 12 day: 8 }
+}

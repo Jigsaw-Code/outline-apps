@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-outline" version="1.0.0">
+  <name>Outline Cordova Plugin</name>
+  <description>Native plugin for the Outline app</description>
+  <license>Apache 2.0</license>
+  <engines>
+    <engine name="cordova-android" version=">=4.0.0-dev" />
+  </engines>
+
+  <js-module src="outlinePlugin.js" name="OutlinePlugin">
+    <clobbers target="cordova.plugins.outline" />
+  </js-module>
+
+  <!-- Android -->
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="OutlinePlugin">
+        <param name="android-package" value="org.outline.OutlinePlugin" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.INTERNET" />
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <service
+        android:name="org.outline.vpn.VpnTunnelService"
+        android:exported="false"
+        android:label="@string/app_name"
+        android:permission="android.permission.BIND_VPN_SERVICE" />
+
+      <!-- TODO: enable this component to enable the auto-connect feature -->
+      <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="false">
+          <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+          </intent-filter>
+          <intent-filter>
+            <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+          </intent-filter>
+      </receiver>
+    </config-file>
+
+    <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
+
+    <source-file
+      src="android/java/org/outline/OutlinePlugin.java"
+      target-dir="src/org/outline" />
+    <source-file
+      src="android/java/org/outline/vpn"
+      target-dir="src/org/outline/vpn" />
+    <source-file
+      src="android/java/org/outline/shadowsocks"
+      target-dir="src/org/outline/shadowsocks" />
+    <source-file
+      src="android/java/org/outline/tun2socks"
+      target-dir="src/org/outline/tun2socks" />
+    <source-file
+      src="android/java/org/outline/log"
+      target-dir="src/org/outline/log" />
+    <source-file
+      src="android/libs/armeabi-v7a/libss-local.so"
+      target-dir="libs/armeabi-v7a" />
+    <source-file
+      src="android/libs/armeabi-v7a/libtun2socks.so"
+      target-dir="libs/armeabi-v7a" />
+    <source-file
+      src="android/libs/x86/libss-local.so"
+      target-dir="libs/x86" />
+    <source-file
+      src="android/libs/x86/libtun2socks.so"
+      target-dir="libs/x86" />
+
+    <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
+
+    <framework src="android/java/build-extras.gradle" custom="true"
+      type="gradleReference" />
+  </platform>
+
+  <!-- iOS -->
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+      <feature name="OutlinePlugin">
+        <param name="ios-package" value="OutlinePlugin" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+
+    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_ios.js" />
+
+    <source-file src="apple/src/OutlinePlugin.swift" />
+    <source-file src="apple/src/OutlineConnectivity.swift" />
+    <source-file src="apple/src/OutlineSentryLogger.swift" />
+    <source-file src="apple/src/OutlineConnection.swift" />
+    <source-file src="apple/src/OutlineVpn.swift" />
+    <resource-file src="apple/vpn" />
+
+    <framework src="apple/lib/ios/PacketProcessor_iOS.framework" custom="true" />
+    <framework src="apple/lib/ios/Shadowsocks_iOS.framework" custom="true" />
+    <framework src="apple/lib/ios/CocoaAsyncSocket.framework" custom="true" />
+    <framework src="apple/lib/ios/Sentry.framework" custom="true" />
+    <framework src="apple/lib/ios/CocoaLumberjack.framework" custom="true" />
+    <framework src="apple/lib/ios/CocoaLumberjackSwift.framework" custom="true" />
+  </platform>
+
+   <!-- macOS -->
+  <platform name="osx">
+    <config-file target="config.xml" parent="/*">
+      <feature name="OutlinePlugin">
+        <param name="ios-package" value="OutlinePlugin" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+
+    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_macos.js" />
+
+    <source-file src="apple/src/OutlinePlugin.swift" />
+    <source-file src="apple/src/OutlineConnectivity.swift" />
+    <source-file src="apple/src/OutlineSentryLogger.swift" />
+    <source-file src="apple/src/OutlineConnection.swift" />
+    <source-file src="apple/src/OutlineVpn.swift" />
+    <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
+    <resource-file src="apple/vpn" />
+
+    <framework src="apple/lib/macos/PacketProcessor_macOS.framework" custom="true" />
+    <framework src="apple/lib/macos/Shadowsocks_macOS.framework" custom="true" />
+    <framework src="apple/lib/macos/CocoaAsyncSocket.framework" custom="true" />
+    <framework src="apple/lib/macos/Sentry.framework" custom="true" />
+    <framework src="apple/lib/macos/CocoaLumberjack.framework" custom="true" />
+    <framework src="apple/lib/macos/CocoaLumberjackSwift.framework" custom="true" />
+  </platform>
+</plugin>

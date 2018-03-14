@@ -1,0 +1,25 @@
+framework module Sentry {
+    umbrella header "Sentry.h"
+
+    export *
+    module * { export * }
+
+    explicit module Private {
+        header "SentryDsn.h"
+        header "SentryClient+Internal.h"
+        header "SentryError.h"
+        header "SentryAsynchronousOperation.h"
+        header "SentryRequestOperation.h"
+        header "SentryQueueableRequestManager.h"
+        header "SentryKSCrashInstallation.h"
+        header "SentryKSCrashReportSink.h"
+        header "SentryKSCrashReportConverter.h"
+        header "SentryLog.h"
+        header "SentryBreadcrumbTracker.h"
+        header "SentryCrashExceptionApplication.h"
+
+        header "NSData+Compression.h"
+        header "NSDate+Extras.h"
+        header "NSDictionary+Sanitize.h"
+    }
+}

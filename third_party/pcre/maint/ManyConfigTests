@@ -1,0 +1,323 @@
+#! /bin/sh
+
+# This is a script for the use of PCRE maintainers. It configures and rebuilds
+# PCRE with a variety of configuration options, and in each case runs the tests
+# to ensure that all goes well. Every possible combination would take far too
+# long, so we use a representative sample. This script should be run in the
+# PCRE source directory.
+
+# Some of the tests have to be skipped when PCRE is built with non-Unix newline
+# recognition. I am planning to reduce this as much as possible in due course.
+
+
+# This is in case the caller has set aliases (as I do - PH)
+
+unset cp ls mv rm
+
+# Use -v to make the output more verbose
+
+verbose=0
+if [ "$1" = "-v" ] ; then verbose=1; fi
+
+# This is a temporary directory for testing out-of-line builds
+
+tmp=/tmp/pcretesting
+
+# Don't bother with compiler optimization for most tests; it just slows down
+# compilation a lot (and running the tests themselves is quick). However, a
+# few specific tests turn optimization on, because it can provoke some compiler
+# warnings.
+
+CFLAGS="-g -O0"
+CXXFLAGS="$CFLAGS"
+ISGCC="no"
+
+# If the compiler is gcc, add a lot of warning switches.
+
+cc --version >zzz 2>/dev/null
+if [ $? -eq 0 ] && grep GCC zzz >/dev/null; then
+  ISGCC="yes"
+  CFLAGS="$CFLAGS -Wall"
+  CFLAGS="$CFLAGS -Wno-implicit-fallthrough"
+  CFLAGS="$CFLAGS -Wno-overlength-strings"
+  CFLAGS="$CFLAGS -Wpointer-arith"
+  CFLAGS="$CFLAGS -Wwrite-strings"
+  CFLAGS="$CFLAGS -Wundef -Wshadow"
+  CFLAGS="$CFLAGS -Wextra -Wformat"
+  CFLAGS="$CFLAGS -Wbad-function-cast"
+  CFLAGS="$CFLAGS -Wmissing-declarations"
+  CFLAGS="$CFLAGS -Wnested-externs"
+  CFLAGS="$CFLAGS -pedantic"
+  CFLAGS="$CFLAGS -Wuninitialized"
+  CFLAGS="$CFLAGS -Wmissing-prototypes"
+  CFLAGS="$CFLAGS -Wstrict-prototypes"
+fi
+
+
+# This function runs a single test with the set of configuration options that
+# are in $opts. The source directory must be set in srcdir.
+
+function runtest()
+  {
+  rm -f *_unittest
+  testcount=`expr $testcount + 1`
+
+  if [ "$opts" = "" ] ; then
+    echo "[$testcount/$testtotal] Configuring with: default settings"
+  else
+    echo "[$testcount/$testtotal] Configuring with:"
+    echo "  $opts"
+  fi
+
+  CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" \
+    $srcdir/configure $opts >/dev/null 2>teststderr
+
+  if [ $? -ne 0 ]; then
+    echo " "
+    echo "**** Error while configuring ****"
+    cat teststderr
+    exit 1
+  fi
+
+# There is an infelicity in the Autotools world (as of October 2015) which
+# causes the message
+#
+# ar: `u' modifier ignored since `D' is the default (see `U')
+# 
+# to be output while linking. This triggers an unwanted error report from this
+# script, because it expects no stderr output while making. To get round this
+# we filter the stderr output through sed, removing all occurrences of the
+# above lines. Just for paranoia, check that sed is available before doing
+# this.
+
+  echo "Making"
+  make -j >/dev/null 2>teststderr
+  makeRC=$? 
+  if command -v sed >/dev/null 2>&1 ; then
+    sed "/\`u' modifier ignored since \`D' is the default/ d" \
+      teststderr > teststderrM
+    mv -f teststderrM teststderr   
+  fi
+  if [ $makeRC -ne 0 -o -s teststderr ]; then
+    echo " "
+    echo "**** Errors or warnings while making ****"
+    echo " "
+    cat teststderr
+    exit 1
+  fi
+
+  if [ $verbose -eq 1 ]; then
+    ./pcretest -C
+  fi
+
+  nl=`./pcretest -C newline`
+  ./pcretest -C jit >/dev/null
+  jit=$?
+  ./pcretest -C utf >/dev/null
+  utf=$?
+
+  if [ "$nl" = "LF" -o "$nl" = "ANY" ]; then
+    echo "Running C library tests $withvalgrind"
+    $srcdir/RunTest $valgrind >teststdout
+    if [ $? -ne 0 ]; then
+      echo " "
+      echo "**** Test failed ****"
+      cat teststdout
+      exit 1
+    fi
+  else
+    echo "Skipping C library tests: newline is $nl"
+  fi
+
+  if [ "$nl" = "LF" ]; then
+    echo "Running pcregrep tests $withvalgrind"
+    $srcdir/RunGrepTest $valgrind >teststdout 2>teststderr
+    if [ $? -ne 0 ]; then
+      echo " "
+      echo "**** Test failed ****"
+      cat teststderr
+      cat teststdout
+      exit 1
+    fi
+  else
+    echo "Skipping pcregrep tests: newline is $nl"
+  fi
+
+  if [ "$jit" -gt 0 -a $utf -gt 0 ]; then
+    echo "Running JIT regression tests $withvalgrind"
+    $cvalgrind $srcdir/pcre_jit_test >teststdout 2>teststderr
+    if [ $? -ne 0 ]; then
+      echo " "
+      echo "**** Test failed ****"
+      cat teststderr
+      cat teststdout
+      exit 1
+    fi
+  else
+    echo "Skipping JIT regression tests: JIT or UTF not enabled"
+  fi
+
+  if [ "$nl" = "LF" -o "$nl" = "ANY" ]; then
+    if [ -f pcrecpp_unittest ] ; then
+      for utest in pcrecpp_unittest \
+                   pcre_scanner_unittest \
+                   pcre_stringpiece_unittest
+      do
+        echo "Running $utest $withvalgrind"
+        $cvalgrind $utest >teststdout
+        if [ $? -ne 0 ]; then
+          echo " "
+          echo "**** Test failed ****"
+          cat teststdout
+          exit 1
+        fi
+      done
+    else
+      echo "Skipping C++ tests: pcrecpp_unittest does not exist"
+    fi
+  else
+    echo "Skipping C++ tests: newline is $nl"
+  fi
+  }
+
+
+# Update the total count whenever a new test is added; it is used to show
+# progess as each test is run.
+
+testtotal=43
+testcount=0
+
+# This set of tests builds PCRE and runs the tests with a variety of configure
+# options, in the current (source) directory. The empty configuration builds
+# with all the default settings. As well as testing that these options work, we
+# use --disable-shared or --disable-static after the default test (which builds
+# both) to save a bit of time by building only one version of the library for
+# the subsequent tests.
+
+valgrind=
+cvalgrind=
+withvalgrind=
+srcdir=.
+export srcdir
+
+# If gcc is in use, run a maximally configured test with -O2, because that can
+# throw up warnings that are not detected with -O0.
+
+if [ "$ISGCC" = "yes" ]; then
+  echo "Maximally configured test with -O2"
+  SAVECLFAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -O2"
+  opts="--disable-shared --enable-unicode-properties --enable-jit --enable-pcre16 --enable-pcre32"
+  runtest
+  CFLAGS="$SAVECFLAGS"
+fi
+
+echo "General tests in the current directory"
+for opts in \
+  "" \
+  "--enable-utf8 --disable-static" \
+  "--disable-stack-for-recursion --disable-shared" \
+  "--enable-utf8 --disable-stack-for-recursion --disable-shared" \
+  "--enable-unicode-properties --disable-shared" \
+  "--enable-unicode-properties --disable-stack-for-recursion --disable-shared" \
+  "--enable-unicode-properties --disable-cpp --with-link-size=3 --disable-shared" \
+  "--enable-rebuild-chartables --disable-shared" \
+  "--enable-newline-is-any --disable-shared" \
+  "--enable-newline-is-cr --disable-shared" \
+  "--enable-newline-is-crlf --disable-shared" \
+  "--enable-newline-is-anycrlf --enable-bsr-anycrlf --disable-shared" \
+  "--enable-utf8 --enable-newline-is-any --enable-unicode-properties --disable-stack-for-recursion --disable-static --disable-cpp" \
+  "--enable-jit --disable-shared" \
+  "--enable-jit --enable-unicode-properties --disable-shared" \
+  "--enable-jit --enable-unicode-properties --with-link-size=3 --disable-shared" \
+  "--enable-pcre16" \
+  "--enable-pcre16 --enable-jit --enable-utf --disable-shared" \
+  "--enable-pcre16 --enable-jit --enable-unicode-properties --disable-shared" \
+  "--enable-pcre16 --enable-jit --disable-pcre8 --disable-shared" \
+  "--enable-pcre16 --enable-jit --disable-pcre8 --enable-utf --disable-shared" \
+  "--enable-pcre16 --disable-stack-for-recursion --disable-shared" \
+  "--enable-pcre16 --enable-unicode-properties --disable-stack-for-recursion --disable-shared" \
+  "--enable-pcre16 --enable-jit --enable-unicode-properties --with-link-size=3 --disable-shared" \
+  "--enable-pcre16 --enable-jit --enable-unicode-properties --with-link-size=4 --disable-shared" \
+  "--enable-pcre32" \
+  "--enable-pcre32 --enable-jit --enable-utf --disable-shared" \
+  "--enable-pcre32 --enable-jit --enable-unicode-properties --disable-shared" \
+  "--enable-pcre32 --enable-jit --disable-pcre8 --disable-shared" \
+  "--enable-pcre32 --enable-jit --disable-pcre8 --enable-utf --disable-shared" \
+  "--enable-pcre32 --disable-stack-for-recursion --disable-shared" \
+  "--enable-pcre32 --enable-unicode-properties --disable-stack-for-recursion --disable-shared" \
+  "--enable-pcre32 --enable-jit --enable-unicode-properties --with-link-size=4 --disable-shared" \
+  "--enable-pcre32 --enable-pcre16 --disable-shared" \
+  "--enable-pcre32 --enable-pcre16 --disable-pcre8 --disable-shared" \
+  "--enable-pcre32 --enable-pcre16 --disable-pcre8 --enable-jit --enable-unicode-properties --enable-newline-is-anycrlf --enable-bsr-anycrlf --disable-shared"
+do
+  runtest
+done
+
+# Now re-run some of the tests under valgrind.
+
+echo "Tests in the current directory using valgrind"
+valgrind=valgrind
+cvalgrind="valgrind -q --smc-check=all"
+withvalgrind="with valgrind"
+
+for opts in \
+  "--enable-unicode-properties --disable-stack-for-recursion --disable-shared" \
+  "--enable-unicode-properties --with-link-size=3 --disable-shared" \
+  "--enable-jit --enable-unicode-properties --disable-static" \
+  "--enable-pcre16 --enable-pcre32 --enable-jit --enable-unicode-properties " \
+  "--disable-shared"
+do
+  opts="--enable-valgrind $opts"
+  runtest
+done
+
+valgrind=
+cvalgrind=
+withvalgrind=
+
+# Clean up the distribution and then do at least one build and test in a
+# directory other than the source directory. It doesn't work unless the
+# source directory is cleaned up first.
+
+if [ -f Makefile ]; then
+  echo "Running 'make distclean'"
+  make distclean >/dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "** 'make distclean' failed"
+    exit 1
+  fi
+fi
+
+echo "Tests in the $tmp directory"
+srcdir=`pwd`
+export srcdir
+
+if [ ! -e $tmp ]; then
+  mkdir $tmp
+fi
+
+if [ ! -d $tmp ]; then
+  echo "** Failed to create $tmp or it is not a directory"
+  exit 1
+fi
+
+cd $tmp
+if [ $? -ne 0 ]; then
+  echo "** Failed to cd to $tmp"
+  exit 1
+fi
+
+for opts in \
+  "--enable-unicode-properties --disable-shared"
+do
+  runtest
+done
+
+echo "Removing $tmp"
+
+rm -rf $tmp
+
+echo "All done"
+
+# End
