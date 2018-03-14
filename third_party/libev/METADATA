@@ -1,0 +1,17 @@
+name: "libev"
+description:
+    "A full-featured and high-performance (see benchmark) event loop that is "
+    "loosely modelled after libevent, but without its limitations and bugs."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "http://software.schmorp.de/pkg/libev.html"
+  }
+  url {
+    type: HG
+    value: "cvs.schmorp.de"
+  }
+  version: "4.24"
+  last_upgrade_date { year: 2017 month: 12 day: 8 }
+}

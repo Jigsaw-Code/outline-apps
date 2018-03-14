@@ -1,0 +1,118 @@
+language: c++
+sudo: false
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+        packages:
+            - cmake
+            - gcc-4.8
+            - g++-4.8
+            - lcov
+            - clang-3.7
+            - valgrind
+matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          env: BUILD_TYPE=normal
+        - os: linux
+          compiler: clang
+          env: BUILD_TYPE=normal
+        - os: linux
+          compiler: gcc
+          dist: trusty
+          env: BUILD_TYPE=cmake
+        - os: linux
+          compiler: clang
+          dist: trusty
+          env: BUILD_TYPE=cmake
+        - os: linux
+          compiler: gcc
+          env: BUILD_TYPE=coverage
+        - os: linux
+          compiler: clang
+          env: BUILD_TYPE=ubsan
+        - os: linux
+          compiler: clang
+          env: BUILD_TYPE=asan
+        - os: linux
+          compiler: clang
+          env: BUILD_TYPE=lsan
+        - os: linux
+          compiler: clang
+          env: BUILD_TYPE=analyse
+        - os: linux
+          compiler: gcc
+          env: BUILD_TYPE=valgrind
+        - os: osx
+          compiler: gcc
+          env: BUILD_TYPE=normal
+        - os: osx
+          compiler: clang
+          env: BUILD_TYPE=normal
+        - os: osx
+          compiler: clang
+          env: BUILD_TYPE=cmake
+        - os: osx
+          compiler: clang
+          language: objective-c
+          env: BUILD_TYPE=ios
+install:
+    - pip install --user 'requests[security]<2.9.1'
+    - pip install --user cpp-coveralls
+    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew reinstall libtool > /dev/null; fi
+before_script:
+    - |
+         if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "g++" ]; then
+             export CXX="g++-4.8"
+             export CC="gcc-4.8"
+         fi
+    - |
+        if [ "$BUILD_TYPE" = "coverage" ]; then
+             export CONFIG_OPTS="--enable-debug --disable-shared --enable-code-coverage"
+        fi
+    - |
+         if [ "$BUILD_TYPE" = "asan" ]; then
+             export CONFIG_OPTS=--enable-debug
+             export CFLAGS=-fsanitize=address
+             export CXXFLAGS=-fsanitize=address
+             export LDFLAGS=-fsanitize=address
+         fi
+    - |
+         if [ "$BUILD_TYPE" = "lsan" ]; then
+             export CONFIG_OPTS=--enable-debug
+             export CFLAGS=-fsanitize=leak
+             export CXXFLAGS=-fsanitize=leak
+             export LDFLAGS=-fsanitize=leak
+         fi
+    - |
+         if [ "$BUILD_TYPE" = "ubsan" ]; then
+             export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+             export LDFLAGS="-fsanitize=undefined"
+         fi
+    - |
+         if [ "$BUILD_TYPE" = "analyse" ]; then
+             export SCAN_WRAP="scan-build-3.7 --status-bugs"
+             export CONFIG_OPTS="--enable-debug"
+             export CXX="clang++-3.7"
+             export CC="clang-3.7"
+         fi
+    - |
+         if [ "$BUILD_TYPE" = "valgrind" ]; then
+             export TEST_WRAP='libtool --mode=execute valgrind --leak-check=full'
+             # Skip container tests as valgrind doesn't cope with clone()
+             export TEST_FILTER="--gtest_filter=-*Container*"
+         fi
+    - |
+         if [ "$BUILD_TYPE" = "ios" ]; then
+             export CONFIG_OPTS=--host=arm-apple-darwin10
+             export DEVPATH=`xcode-select -print-path`/Platforms/iPhoneOS.platform/Developer
+             export IOSFLAGS="-isysroot $DEVPATH/SDKs/iPhoneOS.sdk -arch armv7 -miphoneos-version-min=8.0.0"
+             export CFLAGS=$IOSFLAGS
+             export CXXFLAGS=$IOSFLAGS
+             export LDFLAGS=$IOSFLAGS
+         fi
+script:
+    - ./travis/build.sh && ./travis/test.sh && ./travis/distcheck.sh && ./travis/covupload.sh

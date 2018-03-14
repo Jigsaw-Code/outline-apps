@@ -1,0 +1,18 @@
+name: "Potatso"
+description: "Potatso is an iOS client that implements custom proxies.""
+
+third_party {
+  url {
+    type: GIT
+    value: "https://github.com/haxpor/Potatso"
+  }
+  version: "1"
+  last_upgrade_date { year: 2017 month: 11 day: 13 }
+  local_modifications:
+    "Re-purposed the Xcode project to build Outline dependencies, "
+    "shadowsocks-libev and tun2socks, as frameworks for iOS and macOS."
+    "Removed all application logic, UI, tests, and unused dependencies "
+    "(Privoxy, Antinat, libmaxminddb)."
+    "Removed shadowsocks-libev source, dependencies, and build targets. "
+    "Added SOCKS5 UDP support to tun2socks. "
+}

@@ -1,0 +1,16 @@
+*.csproj.user
+*.suo
+*.cache
+Thumbs.db
+*.DS_Store
+
+*.bak
+*.cache
+*.log
+*.swp
+*.user
+
+.gradle
+.idea
+.vscode
+android/obj

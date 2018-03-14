@@ -1,0 +1,23 @@
+{
+  "entrypoint": "cordova_index.html",
+  "shell": "ui_components/app-root.html",
+  "fragments": [
+  ],
+  "sources": [
+    "assets/**/*",
+    "messages/**/*",
+    "ui_components/**/*",
+    "style.css",
+    "bower.json"
+  ],
+  "extraDependencies": [
+    "bower_components/outline-i18n/*.js",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2-hybrid"]
+  },
+  "builds": [{
+    "preset": "es5-bundled"
+  }]
+}

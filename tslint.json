@@ -1,0 +1,47 @@
+// Copied from google.tslint.json, with internal rules removed
+{
+  "rules": {
+    "array-type": [true, "array-simple"],
+    "arrow-return-shorthand": true,
+    "ban-types": [true,
+      ["Object", "Use {} instead."],
+      ["String", "Use 'string' instead."],
+      ["Number", "Use 'number' instead."],
+      ["Boolean", "Use 'boolean' instead."]
+    ],
+    "class-name": true,
+    "forin": true,
+    "interface-name": [true, "never-prefix"],
+    "jsdoc-format": true,
+    "label-position": true,
+    "new-parens": true,
+    "no-angle-bracket-type-assertion": true,
+    "no-any": true,
+    "no-construct": true,
+    "no-debugger": true,
+    "no-default-export": true,
+    "no-inferrable-types": true,
+    "no-namespace": [true, "allow-declarations"],
+    "no-reference": false,
+    "no-require-imports": true,
+    "no-unused-expression": true,
+    "no-use-before-declare": false,
+    "no-var-keyword": true,
+    "object-literal-shorthand": true,
+    "only-arrow-functions": [true, "allow-declarations", "allow-named-functions"],
+    "prefer-const": true,
+    "radix": true,
+    "semicolon": [true, "always", "ignore-bound-class-methods"],
+    "no-string-throw": true,
+    "switch-default": true,
+    "triple-equals": [true, "allow-null-check"],
+    "use-isnan": true,
+    "variable-name": [
+      true,
+      "check-format",
+      "ban-keywords",
+      "allow-leading-underscore",
+      "allow-trailing-underscore"
+    ]
+  }
+}

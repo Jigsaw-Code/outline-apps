@@ -1,0 +1,58 @@
+{
+  "name": "outline-client",
+  "productName": "Outline Beta",
+  "version": "1.0.0",
+  "scripts": {
+    "clean": "rm -rf build www/bower_components www/cordova_main.js node_modules platforms/* plugins/*",
+    "precommit": "tslint -p . --fix; git-clang-format",
+    "postinstall": "bower install || echo no bower needed",
+    "do": "bash ./scripts/do_action.sh"
+  },
+  "__COMMENTS__": [
+    "Do not upgrade to Cordova 7 without fixing the resulting breakages",
+    "Do not upgrade to tsify 3 without making sure the Docker build still works on macOS (case-insensitive filesystem?)"
+  ],
+  "dependencies": {
+    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.6",
+    "babel-polyfill": "^6.26.0",
+    "electron-promise-ipc": "^0.0.4",
+    "electron-updater": "^2.21.0",
+    "http-proxy-to-socks": "^1.0.2",
+    "raven": "^2.2.1",
+    "raven-js": "^3.20.1",
+    "socks": "^1.1.10",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/cordova-plugin-device": "^0.0.3",
+    "@types/jasmine": "^2.8.6",
+    "@types/node": "^8.0.53",
+    "@types/polymer": "^1.1.31",
+    "@types/raven": "^2.1.2",
+    "@types/uuid": "^3.4.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
+    "bower": "^1.8.0",
+    "browserify": "^14.4.0",
+    "clang-format": "^1.0.55",
+    "cordova": "^6.5.0",
+    "cordova-custom-config": "^4.0.2",
+    "electron": "^1.7.11",
+    "electron-builder": "^19.50.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.0",
+    "gulp-if": "^2.0.2",
+    "gulp-util": "^3.0.8",
+    "husky": "^0.14.3",
+    "jasmine": "^3.0.0",
+    "merge-stream": "^1.0.1",
+    "polymer-build": "^2.1.1",
+    "tsify": "^2.0.8",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0",
+    "xml2js": "^0.4.17"
+  }
+}

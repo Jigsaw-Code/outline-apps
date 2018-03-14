@@ -1,0 +1,154 @@
+<!--
+  Copyright 2018 The Outline Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="org.outline.android.client" version="1.0.0" android-versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Outline</name>
+    <description>
+        Internet without borders (powered by Shadowsocks)
+    </description>
+    <content src="cordova_index.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <preference name="android-minSdkVersion" value="21" />
+    <preference name="AndroidLaunchMode" value="singleInstance" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+
+    <!-- Android -->
+    <platform name="android">
+        <preference name="orientation" value="portrait" />
+        <preference name="SplashMaintainAspectRatio" value="true" />
+
+        <icon density="ldpi" src="resources/icons/android/icon_mdpi.png" />
+        <icon density="mdpi" src="resources/icons/android/icon_mdpi.png" />
+        <icon density="hdpi" src="resources/icons/android/icon_hdpi.png" />
+        <icon density="xhdpi" src="resources/icons/android/icon_xhdpi.png" />
+        <icon density="xxhdpi" src="resources/icons/android/icon_xxhdpi.png" />
+        <icon density="xxxhdpi" src="resources/icons/android/icon_xxxhdpi.png" />
+
+        <splash density="ldpi" src="resources/splashscreen/android/splashscreen_mdpi.png" />
+        <splash density="mdpi" src="resources/splashscreen/android/splashscreen_mdpi.png" />
+        <splash density="hdpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
+        <splash density="xhdpi" src="resources/splashscreen/android/splashscreen_xhdpi.png" />
+        <splash density="xxhdpi" src="resources/splashscreen/android/splashscreen_xxhdpi.png" />
+        <splash density="xxxhdpi" src="resources/splashscreen/android/splashscreen_xxxhdpi.png" />
+
+        <config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="ss" />
+            </intent-filter>
+        </config-file>
+    </platform>
+
+    <!-- browser -->
+    <platform name="browser">
+        <preference name="ShowSplashScreen" value="false" />
+    </platform>
+
+    <!-- iOS -->
+    <platform name="ios">
+        <preference name="deployment-target" value="9.0" />
+        <preference name="DisallowOverscroll" value="true" />
+        <preference name="StatusBarOverlaysWebView" value="false" />
+        <preference name="StatusBarBackgroundColor" value="#263238" />
+        <preference name="StatusBarStyle" value="lightcontent" />
+
+        <!-- https://github.com/apache/cordova-plugin-splashscreen#legacy-launch-images -->
+        <!-- portrait -->
+        <splash src="resources/splashscreen/ios/splashscreen@320x480.png" width="320" height="480"/>
+        <splash src="resources/splashscreen/ios/splashscreen@640x960.png" width="640" height="960"/>
+        <splash src="resources/splashscreen/ios/splashscreen@640x1136.png" width="640" height="1136"/>
+        <splash src="resources/splashscreen/ios/splashscreen@750x1334.png" width="750" height="1334"/>
+        <splash src="resources/splashscreen/ios/splashscreen@768x1024.png" width="768" height="1024"/>
+        <splash src="resources/splashscreen/ios/splashscreen@1242x2208.png" width="1242" height="2208"/>
+        <splash src="resources/splashscreen/ios/splashscreen@1536x2048.png" width="1536" height="2048"/>
+        <splash src="resources/splashscreen/ios/splashscreen@2048x2732.png" width="2048" height="2732"/>
+
+        <!-- https://cordova.apache.org/docs/en/6.x/config_ref/images.html#ios -->
+        <!-- iOS 8.0+ -->
+        <!-- iPhone 6 Plus  -->
+        <icon src="resources/icons/ios/icon-60@3x.png" width="180" height="180" />
+        <!-- iOS 7.0+ -->
+        <!-- iPhone / iPod Touch  -->
+        <icon src="resources/icons/ios/icon-60.png" width="60" height="60" />
+        <icon src="resources/icons/ios/icon-60@2x.png" width="120" height="120" />
+        <!-- iPad -->
+        <icon src="resources/icons/ios/icon-76.png" width="76" height="76" />
+        <icon src="resources/icons/ios/icon-76@2x.png" width="152" height="152" />
+        <!-- iOS 5+ -->
+        <icon src="resources/icons/ios/icon-57.png" width="57" height="57" />
+        <icon src="resources/icons/ios/icon-57@2x.png" width="114" height="114" />
+        <icon src="resources/icons/ios/icon-72.png" width="72" height="72" />
+        <icon src="resources/icons/ios/icon-72@2x.png" width="144" height="144" />
+        <!-- Spotlight Icon -->
+        <icon src="resources/icons/ios/icon-40.png" width="40" height="40" />
+        <icon src="resources/icons/ios/icon-40@2x.png" width="80" height="80" />
+        <!-- iPhone Spotlight and Settings Icon -->
+        <icon src="resources/icons/ios/icon-small.png" width="29" height="29" />
+        <icon src="resources/icons/ios/icon-small@2x.png" width="58" height="58" />
+        <icon src="resources/icons/ios/icon-small@3x.png" width="87" height="87" />
+        <!-- iPad Spotlight and Settings Icon -->
+        <icon src="resources/icons/ios/icon-50.png" width="50" height="50" />
+        <icon src="resources/icons/ios/icon-50@2x.png" width="100" height="100" />
+        <!-- iPad Pro -->
+        <icon src="resources/icons/ios/icon-83.5@2x.png" width="167" height="167" />
+        <!-- Notification Icons: no support in cordova-ios, see https://issues.apache.org/jira/browse/CB-12350  -->
+        <!-- <icon src="resources/icons/ios/icon-20.png" width="20" height="20" />
+        <icon src="resources/icons/ios/icon-20@2x.png" width="40" height="40" />
+        <icon src="resources/icons/ios/icon-20@3x.png" width="60" height="60" /> -->
+        <!-- App Store iOS/Watch App icon -->
+        <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
+    </platform>
+
+    <!-- macOS -->
+    <platform name="osx">
+        <preference name="deployment-target" value="10.11" />
+        <preference name="AllowWebViewNavigation" value="false" />
+        <icon src="resources/icons/osx/icon-16.png" width="16" height="16" />
+        <icon src="resources/icons/osx/icon-32.png" width="32" height="32" />
+        <icon src="resources/icons/osx/icon-64.png" width="64" height="64" />
+        <icon src="resources/icons/osx/icon-128.png" width="128" height="128" />
+        <icon src="resources/icons/osx/icon-256.png" width="256" height="256" />
+        <icon src="resources/icons/osx/icon-512.png" width="512" height="512" />
+        <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
+    </platform>
+
+    <plugin name="com.borismus.webintent" spec="https://github.com/cordova-misc/cordova-webintent.git#v1.1.0" />
+    <plugin name="cordova-plugin-whitelist" spec="1" />
+    <plugin name="cordova-plugin-splashscreen" spec="~4.0.1" />
+    <plugin name="cordova-custom-config" spec="~4.0.2" />
+    <plugin name="cordova-plugin-outline" spec="./cordova-plugin-outline" />
+    <plugin name="cordova-plugin-device" spec="~1.1.6" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.2.3" />
+    <plugin name="com.verso.cordova.clipboard" spec="https://github.com/Jigsaw-Code/outline-cordova-plugin-clipboard.git#f83bfc" />
+
+    <!-- Sentry error reporting keys -->
+    <sentry>
+        <dev dsn="https://319145c481df41458bb6e84c1a99c9ff@sentry.io/159503" />
+        <release dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c@sentry.io/159502" />
+        <dev-native dsn="https://319145c481df41458bb6e84c1a99c9ff:73cc3261d25e44ac90221e7d9ad30b24@sentry.io/159503" />
+        <release-native dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c:568f6c78f9f94f91afba4aba05756001@sentry.io/159502" />
+    </sentry>
+
+    <engine name="android" spec="~5.2.2" />
+    <engine name="browser" spec="^4.1.0" />
+    <!-- Depend on these commits until the next release. -->
+    <engine name="ios" spec="https://github.com/apache/cordova-ios#7397337c" />
+    <engine name="osx" spec="https://github.com/apache/cordova-osx#7faf6aaa" />
+</widget>

@@ -1,0 +1,16 @@
+name: "Cygwin"
+description:
+    "A DLL which provides substantial POSIX API functionality."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://cygwin.com/"
+  }
+  url {
+    type: ARCHIVE
+    value: ""
+  }
+  version: "2.9.0"
+  last_upgrade_date { year: 2017 month: 11 day: 9 }
+}

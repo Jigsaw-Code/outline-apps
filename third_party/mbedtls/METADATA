@@ -1,0 +1,14 @@
+name: "mbed TLS"
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://tls.mbed.org/"
+  }
+  url {
+    type: ARCHIVE
+    value: "https://tls.mbed.org/download-archive"
+  }
+  version: "2.6.0 (Apache)"
+  last_upgrade_date { year: 2017 month: 12 day: 8 }
+}

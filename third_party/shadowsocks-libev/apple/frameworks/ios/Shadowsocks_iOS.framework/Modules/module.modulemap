@@ -1,0 +1,6 @@
+framework module Shadowsocks_iOS {
+  umbrella header "Shadowsocks_iOS.h"
+
+  export *
+  module * { export * }
+}

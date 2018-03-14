@@ -1,0 +1,16 @@
+name: "shadowsocks-libev"
+description: "libev port of Shadowsocks."
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://github.com/shadowsocks/shadowsocks-libev"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/shadowsocks/shadowsocks-libev"
+  }
+  version: "3.1.1"
+  local_modifications:
+    "Updated to ee60377, which adds iOS/macOS compatibility to ss-local."
+  last_upgrade_date { year: 2017 month: 12 day: 13 }
+}
