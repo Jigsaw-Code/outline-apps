@@ -72,6 +72,9 @@ jobs:
         - DESC=windows
       sudo: required
       services: docker
+      env:
+        - ELECTRON_CACHE=$HOME/.cache/electron
+        - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
       script:
         - docker pull electronuserland/builder:wine
         - docker run --rm
