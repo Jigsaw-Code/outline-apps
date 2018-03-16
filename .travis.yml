@@ -102,8 +102,8 @@ jobs:
       sudo: required
       services: docker
       script:
-        - openssl aes-256-cbc -K $encrypted_417c04da3130_key -iv $encrypted_417c04da3130_iv -in keystore.p12.enc -out keystore.p12 -d
-        - ./tools/build/build.sh yarn gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$keyalias --STOREPASS=$storepass --KEYPASS=$keypass
+        - openssl aes-256-cbc -K $encrypted_cb15c65d6aeb_key -iv $encrypted_cb15c65d6aeb_iv -in keystore.p12.enc -out keystore.p12 -d
+        - ./tools/build/build.sh yarn gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
 
     - stage: ios
       language: objective-c
@@ -123,3 +123,18 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+
+env:
+  global:
+    # Encrypted key store password. Stored in $KEY_STORE_PASSWORD.
+    - secure: "QW3GNV+VQpMpyroT8neTRbJMRgBYNLu50nNvhywZg4Tm4Mpsbg/q3dqJAk2yyMBLmOYYA7kH0dU4+6hM6rJdKL2wiQhL4RryEJmNZou0hxpUUpd3gctsXyRw+XQ3bWouf7eaBSJh+3nsRxLGhaYfDAfSreuc/gCDrXWDvt3mY2jd4R9nq/cL5YhnJIF3ZpahdaLfPQxBt/XkEbxriYq6OqR/9ckT9ERN8qDnn7FQH/WFO041wBgn6ne4OhSw7n9Q3Ctz/S7YtK4TIw7UHeqyhikiHcDJ1Q+ABALnnVjQFU1XmnYVEE6K/6AJVupM1yNSR6NyvJrAD/ywJTCgr8V3Bm8tmZF7ewo8piylU8c0wKzKyOXSrWvLnnDBxzCs8dKR1MkO3Nat8N+brTS1ja6QDdmwoOwDt5ZLYZC6jSkZ+V9oK+QFCYWLqhEDjEadvIPd/34DSY7ExTSbHnNmu6NF6fzM8x4OlrY5aPfc82N8wuAdvcNePPfWxfpMx/t6c/WBTG/u0cFSMyfXTcRvUi7Vhj/QDXF7MmcPZ5uBkSSDvy60QQitiRDR3BFRSaKBpejSfp/bPKFElG/LRGfvXKac88ajelVtQyAk/59Tnhia4htmPFnRsacLU3ZtBaBgbBkJWEC/5kM/Nw0t3uRYojArhpA+HlYcI4XjxxbJHWmtQ58="
+    # Encrypted key password. Stored in $KEY_PASSWORD.
+    - secure: "O/FAMEwm7V1sIBX61HBlYjhxaeDleH+3W1/4YXG4y8eTNJlObcLjZOvxcPI7332rDnKeAYXHI0sIs9dMX4tFV88kwLTFd7N6rKh0n1W5BUisaGX7QK7A9RpmdMcBAln6Qpz2Um46ZK7s2+IaD1Hiq2YFAWSfXpSQ/K6a5utWNY508xcSJjjCF57Olz2GftAbi47wBjWj8/LjbEofHJ6kZ0S7FFyKSYl18Sf9HKNYm7wTWqTzoF35+DdIAvcmsKW1usWm0hDuExb/422md9lB/Drl90AjEqRPBTG+L7zXVeWa5/PCJShEuvakRjYRrOL4zlEedlX9Rec4IDYeG2ZTK5t7dBk72DW6lw5FMBp61tPu2r6MCRCYT/Tc/7EjQYSInF7o24Ku05Spu/lorvTeuoXOobzToFBapBDFNjo9FklYZJky44yZU6WYI7PK7OGl/o2q1sEcawPIXxxU/MVqdFSuXDRCiF8TannTiFQIqJHRyqJ3edVAVax1psa3eGbXvRQDVk4iB0fbHEtSZxkzqxKKf+qoqRn1zbpmJM/Yrr+c1U80OV5DHmYfa3PfODZElKfJVepAKwxtv52jOsjdGRxQRW0lm0sqz0cikPnNKKbDPRul7KK9IBJMnq1xxNAUS8kZhseotRG3Ew0CsG0RzNogdDYT3yK1WRz3AuAJW0Y="
+    # Encrypted key alias. Stored in $KEY_ALIAS.
+    - secure: "p0W+mLMXZv/BBbOKnaJzbK5bP4GD43+x2NBs1ufBwlSrhjAa9OlnnqsxCBp1t1lGIGoiLLYHevxU+QBHPDxn9hX0nMAkGQGYJOF/znHdYezvCrre3GMpYMTT/nEsUQ6gbr+ebhhR1clZtFin6QeRvKIOZlw4eQUA2Kp0HbLCYWsy2UWlKG7ndthry2TQ7jxt1POzS6ApSPHY1UaQqHjDLKzA2u8/YvJ8I4+ZFwHAe+jzckSRgV4fuy3WfYRAkSdzMZF0CCSLZbdJvryTqsnZ1VS+0w/Ok+exmzaZMU+Im/qfMyu3Ap7v9dU6AbQIXX4NBKr3ZyXwpBLlzuY+JjOmR/qb6bGbcGV/p6jWutHxqZjrFM1tn31OocQI3f6OPajaldmbtHhgF4R/e2BgM/4reZVboy2Fl86cxupNByIGo+4YivrycJBXBlG42wc+l4htBJS18ZcYDYs76qU+AHdIs5l3MUa25+v8mfssLms6ygPG5EGBVaCG9V6vXiAPaWiYh4X11Gy799nFoVw4Zz3lBds/fCsvcN0REJzVtt+uLvk7hAT6LymmpBS2wWq0G0GXDBl3Ys9A69s9jXfGxf/Itb5uaSx4bizbikoY0zO+EiY3C2QsC57fwYEN59GYPrBSLCHAJPOdzDGIqZaTDKzpJAVLUF0tDOUO94hHpWPkles="
+    # Encrypted Apple Developer password for outline-app-manager@google.com. Stored in $FASTLANE_PASSWORD.
+    - secure: "fe9AR+G6oe1A7VsDkkdAhq+eVFEmRe1xj4ZyP6rKdglDzYTQ1NSVWtAJZ+sITqDzfb5o9ALf+gJbEztXdjiTCTjXJcH3+olg6hTdIDGaDZLhrRxRgB6HPOLEIK003wDpEbVb7CuodlE0mEgs2m+zC95BvdJbDwPa5GsZej1CwvtKKR9ojpSfoHpiPzKm4iRknv7KAp4wZ87/C6LnhicbQnDMWtRYWiu13tuu1d2XAaKGRpaX3fkMFPIJ16DtVwZv3eb4dAtvJ5owFQ0EWI2X1J1guwgE65/qsrGxnQFL5ewr0qtQ4OF25biRAtMO3DoMxEg7l1KR5dCAhd/jdISK+WdQw+aHZ6Kft+AHnTRvIyvtuzhXeAyHbmkIm9J4oDN0deZVYBDEQ2WQLaJDGdAhc5YVkQMhU5X5mqrttLTYnrdnePfTHXR112jQBun94kQrih/2xa10nZTSYvXkuwAXYFsUcAAoZ5efF6C2XcpXmbERKUWPjKK4GaqO7oxq0iKDkqKFVa7H8uUOXccEsiEYYgCS59uXg/8QTHJC6oBRk4TyNjqWmQWcqYvNXF+5WbGgO3rP0oJVx5Hc2h9HkMqmc5yIaQtAx03VtqfEswvjcLUgn9PFmpoEMGwJr8CegKEAKPZCL+6KP2HufQj2SzrXCjXI2VXeG0CiplmtCtGYRAY="
+    # Encrypted API user token for JigsawCode/outline-apple-credentials. Stored in $APPLE_CREDENTIALS_CI_USER_TOKEN.
+    - secure: "m1rNqGhYqySeInPM3fAqn7Sbyzoc29VOR0icx+zAsBM3oyHIiJPiE5ITa37X5XjnqlFGikqMXwg6jtnCfbF2z6jv99WwEKcqhTHS/+fkk/G6wmXHYySKa6b2Dj0fj0DQI/1Inw5djv5YyTXs4QQHsWB71VIu2oo0ERFNkwe01mWhURyt8mnMtF/aJaX727Wskh9fE9iSrfdBGSeEwDF6r4jdzu3vJn6JQmy46rSFd5qYWQJtV8S73IMnHTvsj1lublwg/kmRbzXALNTHQhRTa5Y3rT+veJj8MnskijqpnXWHXtkCXdSbA/pgGYozUyNB4860D7cI9+U9YSmkbL2IWl9gkxJFiQd2dYCI844OiQt25SdE+DstrKwdmT4RZt6bcZKXb1i634vI3dSvTdpwKpnAkwwHZWkKmphOe8i9m1Ihhvp8YAPH1s3xWn/m3q76qk2TxhZbpF27ez15VkdSdz06lIgqDpGcI6akKNzn/etV8rVqz9XhXhnJmOmuK+ucXBArs78z+ywGnDtjaK+l790/zEFj7677AxU1Xb1wMUJLUphM+F/y939wN/SPosxyuZEh1DF38FnsFd2i0V1dJPo9n24GVJNHmqzSUH1rWfgPi0PtvJZ7yV46Qp5EapvybA1eYpOxrQL0ro15wnSQvfFqTHb3rshU02s1DASzhDM="
+    # Encrypted fastlane match passphrase for decrypting JigsawCode/outline-apple-credentials. Stored in $MATCH_PASSWORD.
+    - secure: "FRl6J0RLdGOWe4HFWo576XnEU2hWY/UF+3xlNFMr8d58b7YPyZT6pKI9E5n0nT3MrsaiA1L9n+VJ92Fb/Gh7LOYECeGkvxp3NEj3zPNCFRjPkvzc8zDubwK+eimADkDV4d69BcPtY3Zfp80cNgvYc3Nc19ynDbM9BmYc0D70hCSPPjXjWW0EivwttqTng7CIz7pGnl1SqSworrJ/41xe7HJWcoiiEh67NpRMBJWeMqsozYBw1LXHnyxdS6xfoW99I/7Kc/Hw0uByTsK1r8ZHnc9ohQPHI7d7YAvCk5HU4omZLExaGl+EIvBTfMzJeK7wpuiG/AIrJecOYLYZ8q2YP6zjs2mhTLLvopHhINhJV6e2hrLyJqsu+lI8Ct85VfEnMi5skE20OKCEOH7QL9nexsfSja99/IxVHYhGYGJ58VzjRD0KjHfdXneAkBNx8gX0d2WI/dXV4FxSC61tJ/eAbpk0mso+zQkeJkO1HrTD4gLjtunS+2n+VFI54HZWFOaqR73OIcSdxUP8i5MzJiFzDXcd6CBH9FD/r3OFGpsXR+oXvXPBTcnFL5jKQtA5Iu2n/GDdsfUU0SSjB8Xp8ec4MGvz8WYfUBQCdaIu93jeM9lI+n6s4PQ6sJliJjYgkAdi/D9vM0eU3/eV6CD+2SD4sB8S+CMUZm4412ILfA1RN4o="
