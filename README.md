@@ -14,7 +14,7 @@ This command will automatically rebuild after any typescript file in the www dir
 
 Browser platform development will use fake servers to test successful and unsuccessful connections.
 
-UI components are located in www/ui_components.  The app logic is located in www/app.
+UI components are located in [www/ui_components](www/ui_components).  The app logic is located in [www/app](www/app).
 
 # Building the Android app
 
@@ -37,7 +37,7 @@ If this gives you unexpected Cordova errors, run:
 
 Cordova will generate a new Android project in the platforms/android directory.  Install the built apk by  platforms/android/build/outputs/apk/android-armv7-debug.apk
 
-To learn more about developing for Android, see docs/android-development.md
+To learn more about developing for Android, see [docs/android-development](docs/android-development.md).
 
 ## Building for Android with Docker
 
@@ -62,7 +62,7 @@ To build for iOS, run:
 
     yarn run clean && yarn && yarn gulp build --platform=ios
 
-To learn more about developing for Android, see docs/apple-development.md
+To learn more about developing for Android, see [docs/apple-development](docs/apple-development.md)
 
 # Windows
 
