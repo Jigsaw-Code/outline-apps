@@ -44,4 +44,4 @@ require('./electron');
 EOM
 
 # Icons.
-electron-icon-maker --input=www/assets/logo.png --output=build/windows
+electron-icon-maker --input=electron/logo.png --output=build/windows
