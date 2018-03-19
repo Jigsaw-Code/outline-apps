@@ -25,5 +25,5 @@ electron-builder \
   --ia32 \
   --publish=never \
   --win nsis \
-  --config.win.icon=electron/outline.ico \
+  --config.win.icon=icons/win/icon.ico \
   --config.nsis.artifactName='Outline-Client.${ext}'

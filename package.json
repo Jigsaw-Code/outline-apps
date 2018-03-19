@@ -40,6 +40,7 @@
     "cordova-custom-config": "^4.0.2",
     "electron": "^1.7.11",
     "electron-builder": "^19.50.0",
+    "electron-icon-maker": "^0.0.4",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "gulp-if": "^2.0.2",
