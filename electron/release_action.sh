@@ -32,6 +32,6 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
   --win nsis \
-  --config.win.icon=electron/outline.ico \
+  --config.win.icon=icons/win/icon.ico \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.nsis.artifactName='Outline-Client.${ext}'
