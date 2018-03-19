@@ -42,3 +42,6 @@ scripts/environment_json.sh -p windows > $OUTPUT/www/environment.json
 cat << EOM > $OUTPUT/index.js
 require('./electron');
 EOM
+
+# Icons.
+electron-icon-maker --input=electron/logo.png --output=build/windows
