@@ -62,7 +62,7 @@ To build for iOS, run:
 
     yarn run clean && yarn && yarn gulp build --platform=ios
 
-To learn more about developing for Android, see [docs/apple-development](docs/apple-development.md)
+To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
 
 # Windows
 
