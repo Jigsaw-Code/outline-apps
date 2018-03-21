@@ -352,6 +352,7 @@ public class VpnTunnelService extends VpnService {
     }
 
     // Returns whether the underlying networks of NetworkInfo objects are equal.
+    // NetworkInfo.equals performs identity comparison, which is not useful in this context.
     private boolean networkEquals(final NetworkInfo a, final NetworkInfo b) {
       if (a == null || b == null) {
         return false;
