@@ -71,3 +71,7 @@ To build for Windows, run:
     yarn do electron/build
 
 Unlike the Android and Apple clients, the Windows build uses the Electron framework, rather than Cordova.
+
+# Test
+
+Just testing!
