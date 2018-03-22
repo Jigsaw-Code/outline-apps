@@ -65,7 +65,7 @@ export function launchProxy(
         throw errors.ErrorCode.SERVER_UNREACHABLE;
       })
       .then(() => {
-        console.log(`contacted shadowsocks server at ${config.host}:${config.port}`);
+        console.log(`shadowsocks server is reachable`);
         return startLocalShadowsocksProxy(config, onDisconnected).catch((e) => {
           throw errors.ErrorCode.UNEXPECTED;
         });
