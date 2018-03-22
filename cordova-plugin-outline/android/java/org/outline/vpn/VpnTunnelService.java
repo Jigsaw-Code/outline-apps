@@ -328,11 +328,10 @@ public class VpnTunnelService extends VpnService {
     @Override
     public void onAvailable(Network network) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
-      Network activeNetwork = connectivityManager.getActiveNetwork();
       NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
       LOG.fine(String.format(
           "Network available: %s\nActive network: %s", networkInfo, activeNetworkInfo));
-      if (networkInfo == null || !network.equals(activeNetwork)) {
+      if (networkInfo == null || !networkEquals(networkInfo, activeNetworkInfo)) {
         return;
       } else if (activeNetworkInfo != null
           && activeNetworkInfo.getState() != NetworkInfo.State.CONNECTED) {
@@ -350,6 +349,19 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
+    }
+
+    // Returns whether the underlying networks of NetworkInfo objects are equal.
+    // NetworkInfo.equals performs identity comparison, which is not useful in this context.
+    private boolean networkEquals(final NetworkInfo a, final NetworkInfo b) {
+      if (a == null || b == null) {
+        return false;
+      }
+      final String aExtraInfo = a.getExtraInfo();
+      final String bExtraInfo = b.getExtraInfo();
+      boolean extraInfoIsEqual = aExtraInfo == null ? bExtraInfo == null
+                                                    : aExtraInfo.equals(bExtraInfo);
+      return extraInfoIsEqual && a.getType() == b.getType() && a.getState() == b.getState();
     }
   }
 
