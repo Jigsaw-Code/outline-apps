@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/Jigsaw-Code/outline-client.svg?token=HiP4RTme8LSvyrP9kNJq&branch=master)](https://travis-ci.com/Jigsaw-Code/outline-client)
+[![Build Status](https://travis-ci.org/Jigsaw-Code/outline-client.svg?branch=master)](https://travis-ci.org/Jigsaw-Code/outline-client)
 
 # Requirements for all builds
 
