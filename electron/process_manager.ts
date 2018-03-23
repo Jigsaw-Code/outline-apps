@@ -65,27 +65,28 @@ export function launchProxy(
         throw errors.ErrorCode.SERVER_UNREACHABLE;
       })
       .then(() => {
-        console.log(`contacted shadowsocks server at ${config.host}:${config.port}`);
-        return startLocalShadowsocksProxy(config, onDisconnected).catch((e) => {
-          throw errors.ErrorCode.UNEXPECTED;
-        });
+        return startLocalShadowsocksProxy(config, onDisconnected);
+      })
+      .catch((e) => {
+        throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
       })
       .then(() => {
-        console.log(`started local shadowsocks proxy`);
-        return validateServerCredentials().catch((e) => {
-          throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
-        });
+        return validateServerCredentials();
+      })
+      .catch((e) => {
+        throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
       })
       .then(() => {
-        console.log(`validated shadowsocks server credentials`);
-        return startHttpProxy()
-            .then((port) => {
-              console.log(`started HTTP proxy on port ${port}`);
-              configureSystemProxy(port);
-            })
-            .catch((e) => {
-              throw errors.ErrorCode.UNEXPECTED;
-            });
+        return startHttpProxy();
+      })
+      .catch((e) => {
+        throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
+      })
+      .then((port) => {
+        configureSystemProxy(port);
+      })
+      .catch((e) => {
+        throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
       });
 }
 

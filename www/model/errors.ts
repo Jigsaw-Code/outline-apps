@@ -102,6 +102,24 @@ export class IllegalServerConfiguration extends OutlinePluginError {
   }
 }
 
+export class ShadowsocksStartFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
+export class HttpProxyStartFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
+export class ConfigureSystemProxyFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
 // For passing errors between JS and the native plugin components.
 export class OutlineNativeError extends Error {
   constructor(public readonly errorCode: number) {
@@ -109,7 +127,10 @@ export class OutlineNativeError extends Error {
   }
 }
 
-// This must be kept in sync with ERROR_CODE in ../../cordova-plugin-outline/outlinePlugin.js.
+// This must be kept in sync with:
+//  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
+//  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
+//  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
 export enum ErrorCode {
   NO_ERROR = 0,
   UNEXPECTED = 1,
@@ -119,5 +140,7 @@ export enum ErrorCode {
   SERVER_UNREACHABLE = 5,
   VPN_START_FAILURE = 6,
   ILLEGAL_SERVER_CONFIGURATION = 7,
-  SHADOWSOCKS_START_FAILURE = 8
+  SHADOWSOCKS_START_FAILURE = 8,
+  HTTP_PROXY_START_FAILURE = 9,
+  CONFIGURE_SYSTEM_PROXY_FAILURE = 10
 }
