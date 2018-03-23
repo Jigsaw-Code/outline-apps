@@ -39,7 +39,10 @@ function quitApplication() {
 
 var globalId = 100;  // Internal, incremental ID.
 
-// This must be kept in sync with ErrorCode in ../www/model/errors.ts.
+// This must be kept in sync with:
+//  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
+//  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
+//  - www/model/errors.ts
 const ERROR_CODE = {
   NO_ERROR: 0,
   UNEXPECTED: 1,

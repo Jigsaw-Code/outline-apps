@@ -127,7 +127,10 @@ export class OutlineNativeError extends Error {
   }
 }
 
-// This must be kept in sync with ERROR_CODE in ../../cordova-plugin-outline/outlinePlugin.js.
+// This must be kept in sync with:
+//  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
+//  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
+//  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
 export enum ErrorCode {
   NO_ERROR = 0,
   UNEXPECTED = 1,

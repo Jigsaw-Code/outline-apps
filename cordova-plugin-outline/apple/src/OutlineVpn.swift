@@ -47,6 +47,10 @@ class OutlineVpn: NSObject {
     static let port = "port"
   }
 
+  // This must be kept in sync with:
+  //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
+  //  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
+  //  - www/model/errors.ts
   @objc
   public enum ErrorCode: Int {
     case noError = 0
@@ -58,6 +62,8 @@ class OutlineVpn: NSObject {
     case vpnStartFailure = 6
     case illegalServerConfiguration = 7
     case shadowsocksStartFailure = 8
+    case httpProxyStartFailure = 9
+    case configureSystemProxyFailure = 10
   }
 
   override private init() {
