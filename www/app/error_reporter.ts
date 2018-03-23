@@ -51,11 +51,3 @@ export class SentryErrorReporter implements OutlineErrorReporter {
     });
   }
 }
-
-export class FakeErrorReporter implements OutlineErrorReporter {
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    userEmail = userEmail || '(email not given)';
-    console.debug(`Reporting fake feedback: ${userFeedback} by ${userEmail}, ${feedbackCategory}`);
-    return Promise.resolve();
-  }
-}
