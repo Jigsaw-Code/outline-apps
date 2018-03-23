@@ -45,6 +45,13 @@ export function getLocalizedErrorMessage(error: {}, localize: LocalizationFuncti
   } else if (error instanceof errors.ServerAlreadyAdded) {
     // Handle differently due to the use of localization parameters.
     return localize('error-server-already-added', 'serverName', error.server.name);
+  } else if (
+      error instanceof errors.ShadowsocksStartFailure ||
+      error instanceof errors.HttpProxyStartFailure ||
+      error instanceof errors.ConfigureSystemProxyFailure) {
+    // We're still figuring out why Windows users experience these errors.
+    // Until we know what to tell them, just show a generic "something happened" message.
+    messageLocalizationKey = 'outline-plugin-error-generic-start-failure';
   } else {
     messageLocalizationKey = 'error-unexpected';
   }

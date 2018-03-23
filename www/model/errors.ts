@@ -102,6 +102,24 @@ export class IllegalServerConfiguration extends OutlinePluginError {
   }
 }
 
+export class ShadowsocksStartFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
+export class HttpProxyStartFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
+export class ConfigureSystemProxyFailure extends OutlinePluginError {
+  constructor() {
+    super();
+  }
+}
+
 // For passing errors between JS and the native plugin components.
 export class OutlineNativeError extends Error {
   constructor(public readonly errorCode: number) {
@@ -119,5 +137,7 @@ export enum ErrorCode {
   SERVER_UNREACHABLE = 5,
   VPN_START_FAILURE = 6,
   ILLEGAL_SERVER_CONFIGURATION = 7,
-  SHADOWSOCKS_START_FAILURE = 8
+  SHADOWSOCKS_START_FAILURE = 8,
+  HTTP_PROXY_START_FAILURE = 9,
+  CONFIGURE_SYSTEM_PROXY_FAILURE = 10
 }
