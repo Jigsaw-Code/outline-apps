@@ -20,7 +20,7 @@ import {EventQueue} from '../model/events';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {FakeErrorReporter, SentryErrorReporter} from './error_reporter';
+import {SentryErrorReporter} from './error_reporter';
 import {FakeOutlineConnection} from './fake_connection';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
@@ -95,7 +95,7 @@ class CordovaPlatform implements OutlinePlatform {
     return this.hasDeviceSupport() ?
         new CordovaErrorReporter(
             env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN, env.SENTRY_NATIVE_DSN) :
-        new FakeErrorReporter();
+        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN, {});
   }
 
   hasSystemVpnSupport() {
