@@ -13,6 +13,7 @@
     "Do not upgrade to tsify 3 without making sure the Docker build still works on macOS (case-insensitive filesystem?)"
   ],
   "dependencies": {
+    "@sentry/electron": "^0.4.2",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.6",
     "babel-polyfill": "^6.26.0",
     "electron-promise-ipc": "^0.0.4",
