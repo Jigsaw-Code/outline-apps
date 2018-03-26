@@ -188,7 +188,7 @@ public class VpnTunnelService extends VpnService {
     if (connectionId == null) {
       throw new IllegalArgumentException("Must provide a connection ID.");
     } else if (!connectionId.equals(activeConnectionId)) {
-      throw new IllegalStateException(String.format("Connection %s not active."));
+      throw new IllegalStateException(String.format("Connection %s not active.", connectionId));
     }
     broadcastVpnStop();
     tearDownActiveConnection();
