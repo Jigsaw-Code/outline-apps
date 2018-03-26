@@ -58,6 +58,7 @@
 
       .card-content {
         text-align: center;
+        padding: 10% 0;
       }
 
       #serverInfo {
@@ -93,6 +94,7 @@
       .card-actions {
         background-color: var(--paper-grey-50);
         text-align: right;
+        border-radius: 0 0 2px 2px;
       }
 
       #connectButton {
@@ -104,6 +106,12 @@
         color: var(--disabled-text-color);
         background: transparent;
       }
+      @media (min-height: 600px) {
+        .card-content {
+          padding: 20% 0;
+        }
+      }
+      
     </style>
 
     <paper-card>
