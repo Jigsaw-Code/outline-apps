@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {SentryClient} from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';
 
@@ -19,7 +20,7 @@ import {EventQueue} from '../model/events';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {SentryErrorReporter} from './error_reporter';
+import {OutlineErrorReporter} from './error_reporter';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
@@ -54,6 +55,17 @@ class ElectronUpdater extends AbstractUpdater {
   }
 }
 
+class ElectronErrorReporter implements OutlineErrorReporter {
+  constructor(appVersion: string, privateDsn: string) {
+    SentryClient.create({dsn: privateDsn, release: appVersion});
+  }
+
+  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+    return SentryClient.captureEvent(
+        {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+  }
+}
+
 main({
   hasDeviceSupport: () => {
     return isWindows;
@@ -73,12 +85,10 @@ main({
   },
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
-    // TODO: Add info from the main process, like we do for Cordova, once the
-    //       main process actually records some breadcrumbs.
     ipcRenderer.send(
         'environment-info', {'appVersion': env.APP_VERSION, 'sentryDsn': env.SENTRY_NATIVE_DSN});
-    return new SentryErrorReporter(
-        env.APP_VERSION, env.SENTRY_DSN, {'electron.process': 'renderer'});
+
+    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN);
   },
   hasSystemVpnSupport() {
     return false;
