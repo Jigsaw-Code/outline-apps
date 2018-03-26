@@ -71,14 +71,16 @@
 
         <!-- https://github.com/apache/cordova-plugin-splashscreen#legacy-launch-images -->
         <!-- portrait -->
-        <splash src="resources/splashscreen/ios/splashscreen@320x480.png" width="320" height="480"/>
+
+        <splash src="resources/splashscreen/ios/splashscreen@2x~universal~anyany.png" />
+        <!-- <splash src="resources/splashscreen/ios/splashscreen@320x480.png" width="320" height="480"/>
         <splash src="resources/splashscreen/ios/splashscreen@640x960.png" width="640" height="960"/>
         <splash src="resources/splashscreen/ios/splashscreen@640x1136.png" width="640" height="1136"/>
         <splash src="resources/splashscreen/ios/splashscreen@750x1334.png" width="750" height="1334"/>
         <splash src="resources/splashscreen/ios/splashscreen@768x1024.png" width="768" height="1024"/>
         <splash src="resources/splashscreen/ios/splashscreen@1242x2208.png" width="1242" height="2208"/>
         <splash src="resources/splashscreen/ios/splashscreen@1536x2048.png" width="1536" height="2048"/>
-        <splash src="resources/splashscreen/ios/splashscreen@2048x2732.png" width="2048" height="2732"/>
+        <splash src="resources/splashscreen/ios/splashscreen@2048x2732.png" width="2048" height="2732"/> -->
 
         <!-- https://cordova.apache.org/docs/en/6.x/config_ref/images.html#ios -->
         <!-- iOS 8.0+ -->
@@ -131,7 +133,7 @@
 
     <plugin name="com.borismus.webintent" spec="https://github.com/cordova-misc/cordova-webintent.git#v1.1.0" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
-    <plugin name="cordova-plugin-splashscreen" spec="~4.0.1" />
+    <plugin name="cordova-plugin-splashscreen" spec="~5.0.2" />
     <plugin name="cordova-custom-config" spec="~4.0.2" />
     <plugin name="cordova-plugin-outline" spec="./cordova-plugin-outline" />
     <plugin name="cordova-plugin-device" spec="~1.1.6" />
