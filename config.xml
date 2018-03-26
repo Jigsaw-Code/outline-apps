@@ -39,8 +39,8 @@
         <icon density="xxhdpi" src="resources/icons/android/icon_xxhdpi.png" />
         <icon density="xxxhdpi" src="resources/icons/android/icon_xxxhdpi.png" />
 
-        <splash density="ldpi" src="resources/splashscreen/android/splashscreen_mdpi.png" />
-        <splash density="mdpi" src="resources/splashscreen/android/splashscreen_mdpi.png" />
+        <splash density="ldpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
+        <splash density="mdpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
         <splash density="hdpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
         <splash density="xhdpi" src="resources/splashscreen/android/splashscreen_xhdpi.png" />
         <splash density="xxhdpi" src="resources/splashscreen/android/splashscreen_xxhdpi.png" />
@@ -69,18 +69,8 @@
         <preference name="StatusBarBackgroundColor" value="#263238" />
         <preference name="StatusBarStyle" value="lightcontent" />
 
-        <!-- https://github.com/apache/cordova-plugin-splashscreen#legacy-launch-images -->
-        <!-- portrait -->
-
+        <!-- https://github.com/apache/cordova-plugin-splashscreen#launch-storyboard-images -->
         <splash src="resources/splashscreen/ios/splashscreen@2x~universal~anyany.png" />
-        <!-- <splash src="resources/splashscreen/ios/splashscreen@320x480.png" width="320" height="480"/>
-        <splash src="resources/splashscreen/ios/splashscreen@640x960.png" width="640" height="960"/>
-        <splash src="resources/splashscreen/ios/splashscreen@640x1136.png" width="640" height="1136"/>
-        <splash src="resources/splashscreen/ios/splashscreen@750x1334.png" width="750" height="1334"/>
-        <splash src="resources/splashscreen/ios/splashscreen@768x1024.png" width="768" height="1024"/>
-        <splash src="resources/splashscreen/ios/splashscreen@1242x2208.png" width="1242" height="2208"/>
-        <splash src="resources/splashscreen/ios/splashscreen@1536x2048.png" width="1536" height="2048"/>
-        <splash src="resources/splashscreen/ios/splashscreen@2048x2732.png" width="2048" height="2732"/> -->
 
         <!-- https://cordova.apache.org/docs/en/6.x/config_ref/images.html#ios -->
         <!-- iOS 8.0+ -->
