@@ -204,7 +204,16 @@ export class App {
       return;
     }
     // Expect SHADOWSOCKS_URI.parse to throw on invalid access key; propagate any exception.
-    const shadowsocksConfig = SHADOWSOCKS_URI.parse(accessKey);
+    let shadowsocksConfig = null;
+    try {
+      shadowsocksConfig = SHADOWSOCKS_URI.parse(accessKey);
+    } catch (error) {
+      // Remove any access keys from the error message so it is not logged to Sentry.
+      const message = !!error.message ?
+          error.message.replace(/ss:\/\/([A-Za-z0-9=]+)(@[0-9|.]+:[0-9]+)?(\/\?)?(#\w+)?/g, '') :
+          'Failed to parse access key';
+      throw new errors.ServerUrlInvalid(message);
+    }
     if (shadowsocksConfig.host.isIPv6) {
       throw new errors.ServerIncompatible('Only IPv4 addresses are currently supported');
     }
@@ -421,8 +430,7 @@ export class App {
       try {
         this.confirmAddServer(url);
       } catch (err) {
-        this.changeToDefaultPage();
-        this.showLocalizedError(err);
+        this.showLocalizedErrorInDefaultPage(err);
       }
     });
   }
