@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {SentryClient} from '@sentry/electron';
 import {app, BrowserWindow, dialog, ipcMain, Menu, shell} from 'electron';
 import {PromiseIpc} from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
 import * as process from 'process';
-import * as Raven from 'raven';
 import * as url from 'url';
 
 import * as process_manager from './process_manager';
@@ -199,15 +199,7 @@ app.on('browser-window-focus', () => {
 
 // Error reporting.
 ipcMain.on('environment-info', (event: Event, info: {appVersion: string, sentryDsn: string}) => {
-  // Unlike the regular Javascript API, breadcrumbs in Node.js are *not* automatically included:
-  //   https://docs.sentry.io/clients/node/config/
-  Raven
-      .config(info.sentryDsn, {
-        release: info.appVersion,
-        tags: {'electron.process': 'main'},
-        captureUnhandledRejections: true
-      })
-      .install();
+  SentryClient.create({dsn: info.sentryDsn, release: info.appVersion});
 });
 
 // Notify the UI of updates.
