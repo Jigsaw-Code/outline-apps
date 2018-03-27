@@ -25,8 +25,8 @@ cache:
     - $HOME/.cache/electron-builder
 
 before_install:
-  # Cache credentials for the JigsawCode/outline-apple-credentials repo.
-  - echo -e "machine github.com\n  login $APPLE_CREDENTIALS_CI_USER_TOKEN" >> ~/.netrc
+  # Cache OutineBot's credentials.
+  - echo -e "machine github.com\n  login $CI_USER_TOKEN" >> ~/.netrc
   # https://docs.travis-ci.com/user/languages/javascript-with-nodejs#Travis-CI-supports-yarn
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.3.2
   - export PATH="$HOME/.yarn/bin:$PATH"
@@ -118,13 +118,6 @@ jobs:
     - stage: ios
       language: objective-c
       osx_image: xcode9.2
-      env:
-        # Encrypted Apple Developer password for outline-app-manager@google.com. Stored in $FASTLANE_PASSWORD.
-        - secure: "HMZwvxT4MEGN53r6vZQBPf2iOyFGpZyFtADt3vmbbCRl4432zsx2ANh5JZhjFnK7U6CkpfFodVew1tZBqqEdnpLtNUfif1aVzFyVo9RmCUTTpK7eWG7b+q1HCIZDxwhb64y/wGY83+JCdtfhbw4Xk5egek0/Zhl3H6yGcOV4eo+yTjVpNbzYHJY1lmWp9fhp52e+PiMea6FURNI7mUxepc+eRez3/QkN/xAf/RTQ/yvRIjeJEfgSXUEFZo/Z85xa6R1WZpKxzLLSgG60AddZztcxNfVZMYkkM5w18I2OjmfLfQjt4QFrwxevO+ubjEyqybnkI6SUCT/AmfDbfplkpB6tYM/8FW65HeIxsupGttCphRDtdoYk4JMIKjNmdGk6u9wIurkgoQO0wShP9H3KQw6hAOTBMTAJYd9das5A7+1yxkoiR4UvHr29Hi6yehRwo9W9pSCA6v2nNqG0rp9twcZIK1LZe5CC4UdbkEd92APzKaXUgsfvRyuMPK8rL2jFujnt5pPqhmclBVMTwPNWr8K8EbzTaV+4VhYxQswoydMa44qXvzdX02KRUAUB4udNkhWNkIunEg/Kj96e4EwcRzJEXmPvJexqHH0yNyBqwDXmP08Yq12HsQYh1P+2zTywBQ8ygJRWWXSBwoYEROU1TmXE6U9MO3NLb/gdYzw2oOQ="
-        # Encrypted API user token for JigsawCode/outline-apple-credentials. Stored in $APPLE_CREDENTIALS_CI_USER_TOKEN.
-        - secure: "ScpFD1hIpyGoeyARtFdKHDaPJzGcMy9ynEbmBGvj5LdgN7v+tLxilD5/kve4dsMAVPFZEsGSTNIHUmV58tFsGhCnDxwYQ6tyBuINZw7+UZdtcojINu3eyp2Kc4NasBbDBHNZa3/saPc/5432B8y/j/ELJyw+306GssigSF4SK08t/aMoRMK1BtLcBgnPP9x0Y1KDCBpOjOPo5rcy3H+kCu8Tav8Xr0BRCK7mZho5cztEF6PIsVjOlrPwItGgADbaNG1IU701EFnT2ua12hMSMbTn8x4+CSbcNjHNQC3rasYQoI0E+PzapaWWha5K3OjuoUlGJu8mEin6vyL6O9B1Tm5TjX5LAMaZrJSWHog/h5HAFFVV2Sy0qFJj8XT9fuMWR0DmMKT8bHP8dBllyPfPtsTYkAkDEFMfP9m8vMDNNaKUvfWhWrByFNJui+YakfHqKhO1KzMUvNB+XGXy00nlPiZHHS5WWe+kWjDGCxBXDLuG2cIkgOFna7NU6VUXLrAwAzqorKvyt6Cwqlu308+BqjKcXw1f9mKRUhwMqE+EDlRVjmcjc6zaSKGGnjm9xZShd20p0c86uR4+yApta+lZqUYpwNswJYmF9jN9DIaOvJkpq7BQPDjoUcYVvB6s5bx+7sVBtsy/0EYOi3waMZezRLJyDzJgxIxvB4xqqh4SaXM="
-        # Encrypted fastlane match passphrase for decrypting JigsawCode/outline-apple-credentials. Stored in $MATCH_PASSWORD.
-        - secure: "Ay8YFbYmV1/a+8uHBZFEIVrlzglGu3l2RohnjAVyX6T3K99/562VleQRigjlYUbqPGv8RMJX44DlXaGOyvBtPw9br5tDaV2fDqdr5/IUQcdPFY7D6+pI3BX8Rq0r1xIkj+q3ADx1Vy70GJiBvfNYrGdCYNTDlNvbTTKTZJSgP23Q55VjEESd9k+SYyLmM92vY/QbJDWTb0bh1EIj3i/I5cZSFTqXzeNUClHD086bCY8ewVcDO6zJwdp4Wo1PS7oL9dkJO+cvot2qjeuAIqh5LVdznEzpOBZ3hAkb8eCmC+0PPSGaJCC+W5RL5sVMRU4HF/gK/BzainXu7Rc1RiECLbr8Htf3WiULCumlCIWKa4PWyw/qYE1YDmXNirTirwajI0b2nkotTfA9WCtJ72vzLtNs1oSXp1afQBIJCR+KWTgqqVODV4wrSFu4MA2Kv+eJZo4yV86U/K4g5yep+93mSjXAnzRVhLVK/zKtqKpx38nu9AeHuwlJGQf9iMTOER9/wM3/kixhHdwE/NLoP6oswdKdz53lofK5wlUahvMvtHTAALKZuK9HW78IVDElMuH3wElmiywIdKrA3o/+60F8++0FhwehXP71TJ+u4Byg3j1QEeTEz8nZGaWCKqWAc5082fmEAHCb8PCYZ5m88Piid6Tuu9y7yNgZSWFMa5iUXDg="
       script:
         - yarn && yarn do apple/scripts/ios_release_remote
 
@@ -140,3 +133,10 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+
+env:
+  global:
+    # Encrypted Apple Developer password for outline-app-manager@google.com. Stored in $FASTLANE_PASSWORD.
+    - secure: "HMZwvxT4MEGN53r6vZQBPf2iOyFGpZyFtADt3vmbbCRl4432zsx2ANh5JZhjFnK7U6CkpfFodVew1tZBqqEdnpLtNUfif1aVzFyVo9RmCUTTpK7eWG7b+q1HCIZDxwhb64y/wGY83+JCdtfhbw4Xk5egek0/Zhl3H6yGcOV4eo+yTjVpNbzYHJY1lmWp9fhp52e+PiMea6FURNI7mUxepc+eRez3/QkN/xAf/RTQ/yvRIjeJEfgSXUEFZo/Z85xa6R1WZpKxzLLSgG60AddZztcxNfVZMYkkM5w18I2OjmfLfQjt4QFrwxevO+ubjEyqybnkI6SUCT/AmfDbfplkpB6tYM/8FW65HeIxsupGttCphRDtdoYk4JMIKjNmdGk6u9wIurkgoQO0wShP9H3KQw6hAOTBMTAJYd9das5A7+1yxkoiR4UvHr29Hi6yehRwo9W9pSCA6v2nNqG0rp9twcZIK1LZe5CC4UdbkEd92APzKaXUgsfvRyuMPK8rL2jFujnt5pPqhmclBVMTwPNWr8K8EbzTaV+4VhYxQswoydMa44qXvzdX02KRUAUB4udNkhWNkIunEg/Kj96e4EwcRzJEXmPvJexqHH0yNyBqwDXmP08Yq12HsQYh1P+2zTywBQ8ygJRWWXSBwoYEROU1TmXE6U9MO3NLb/gdYzw2oOQ="
+    # Encrypted fastlane match passphrase for decrypting JigsawCode/outline-apple-credentials. Stored in $MATCH_PASSWORD.
+    - secure: "Ay8YFbYmV1/a+8uHBZFEIVrlzglGu3l2RohnjAVyX6T3K99/562VleQRigjlYUbqPGv8RMJX44DlXaGOyvBtPw9br5tDaV2fDqdr5/IUQcdPFY7D6+pI3BX8Rq0r1xIkj+q3ADx1Vy70GJiBvfNYrGdCYNTDlNvbTTKTZJSgP23Q55VjEESd9k+SYyLmM92vY/QbJDWTb0bh1EIj3i/I5cZSFTqXzeNUClHD086bCY8ewVcDO6zJwdp4Wo1PS7oL9dkJO+cvot2qjeuAIqh5LVdznEzpOBZ3hAkb8eCmC+0PPSGaJCC+W5RL5sVMRU4HF/gK/BzainXu7Rc1RiECLbr8Htf3WiULCumlCIWKa4PWyw/qYE1YDmXNirTirwajI0b2nkotTfA9WCtJ72vzLtNs1oSXp1afQBIJCR+KWTgqqVODV4wrSFu4MA2Kv+eJZo4yV86U/K4g5yep+93mSjXAnzRVhLVK/zKtqKpx38nu9AeHuwlJGQf9iMTOER9/wM3/kixhHdwE/NLoP6oswdKdz53lofK5wlUahvMvtHTAALKZuK9HW78IVDElMuH3wElmiywIdKrA3o/+60F8++0FhwehXP71TJ+u4Byg3j1QEeTEz8nZGaWCKqWAc5082fmEAHCb8PCYZ5m88Piid6Tuu9y7yNgZSWFMa5iUXDg="
