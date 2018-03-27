@@ -188,7 +188,7 @@ export class App {
 
   private requestAddServerConfirmation(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
-    console.debug('Got add server confirmation request from UI', accessKey);
+    console.debug('Got add server confirmation request from UI');
     try {
       this.confirmAddServer(accessKey);
     } catch (err) {
@@ -200,7 +200,7 @@ export class App {
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     if (fromClipboard && accessKey in this.ignoredAccessKeys) {
-      console.debug('Ignoring access key', accessKey);
+      console.debug('Ignoring access key');
       return;
     }
     // Expect SHADOWSOCKS_URI.parse to throw on invalid access key; propagate any exception.
@@ -352,7 +352,7 @@ export class App {
 
   private showServerAdded(event: events.ServerAdded) {
     const server = event.server;
-    console.debug('Server added', server);
+    console.debug('Server added');
     this.syncServersToUI();
     this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
@@ -361,7 +361,7 @@ export class App {
 
   private showServerForgotten(event: events.ServerForgotten) {
     const server = event.server;
-    console.debug('Server forgotten', server);
+    console.debug('Server forgotten');
     this.syncServersToUI();
     this.rootEl.showToast(
         this.localize('server-forgotten', 'serverName', server.name), 10000, () => {
@@ -377,7 +377,7 @@ export class App {
 
   private showServerRenamed(event: events.ServerForgotten) {
     const server = event.server;
-    console.debug('Server renamed', server);
+    console.debug('Server renamed');
     this.serverListEl.getServerCard(server.id).serverName = server.name;
     this.rootEl.showToast(this.localize('server-rename-complete'));
   }
@@ -425,7 +425,7 @@ export class App {
       if (!url || url.substring(0, ssProto.length) !== ssProto) {
         // This check is necessary to handle empty and malformed install-referrer URLs in Android.
         // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-shadowsocks url: ${url}`);
+        return console.debug(`Ignoring intercepted non-shadowsocks url`);
       }
       try {
         this.confirmAddServer(url);
