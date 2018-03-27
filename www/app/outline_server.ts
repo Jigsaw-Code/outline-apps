@@ -104,7 +104,7 @@ export class OutlineServer implements PersistentServer {
   private start(): Promise<void> {
     console.log('starting shadowsocks proxy...');
     return this.connection.start().then(() => {
-      console.debug(`connected to shadowsocks server at ${this.config.host}`);
+      console.debug(`connected to shadowsocks server`);
     });
   }
 

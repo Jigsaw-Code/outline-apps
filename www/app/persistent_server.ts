@@ -128,7 +128,6 @@ export class PersistentServerRepository implements ServerRepository {
       console.debug(`no servers found in storage`);
       return;
     }
-    console.debug(`Servers JSON: ${serversJson}`);
     let configById: ConfigById = {};
     try {
       configById = JSON.parse(serversJson);
