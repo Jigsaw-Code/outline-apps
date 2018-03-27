@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <Wininet.h>
 #include <stdio.h>
-#include <windows.h>
+#include <stdlib.h>
+#include <windef.h>
+#include <winbase.h>
+#include <wininet.h>
 
 void usage(const char* path) {
   printf("usage: %s [on <proxy host:port> | off]\n", path);
