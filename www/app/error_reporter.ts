@@ -20,16 +20,7 @@ export interface OutlineErrorReporter {
 
 export class SentryErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, dsn: string, tags: {[id: string]: string;}) {
-    console.debug('Initializing error reporting');
-
-    // Raven stores all console.* logs as breadcrumbs to be sent with error
-    // reports. Since it does not provide an API to control this setting,
-    // save the original console.debug function and override the Raven wrapper
-    // once it gets installed.
-    const originalConsoleDebug = console.debug;
     Raven.config(dsn, {release: appVersion, 'tags': tags}).install();
-    console.debug = originalConsoleDebug;
-
     this.setUpUnhandledRejectionListener();
   }
 
