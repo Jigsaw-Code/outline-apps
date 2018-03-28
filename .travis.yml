@@ -32,8 +32,7 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 stages:
-  - build
-  - test
+  - build and unit test
   - name: tag
     if: type = cron
   - name: package
@@ -48,11 +47,15 @@ stages:
 # doing, we add a descriptive environment variable.
 jobs:
   include:
-    - stage: build
-      script: yarn gulp build --platform=browser
-
-    - stage: test
-      script: yarn do scripts/test
+    # Ideally, we would split this stage in some way, e.g. by component or by
+    # build/test commands, to make it clearer in the Travis UI exactly which
+    # command failed. However, since each stage incurs a significantly start-up
+    # cost, we combine test and build commands for all components into one fast
+    # stage.
+    - stage: build and unit test
+      script:
+        - yarn gulp build --platform=browser
+        - yarn do scripts/test
 
     - stage: tag
       script:
