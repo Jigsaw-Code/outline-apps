@@ -25,10 +25,12 @@ import * as url from 'url';
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
+// The returned path must be kept in sync with:
+//  - the destination path for the binaries in build_action.sh
+//  - the value specified for --config.asarUnpack in package_action.sh
 function pathToEmbeddedExe(basename: string) {
   return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'win32', basename,
-      `${basename}.exe`);
+      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'win32', `${basename}.exe`);
 }
 
 // Three tools are required to launch the proxy on Windows:
