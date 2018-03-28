@@ -19,6 +19,10 @@ yarn do electron/build
 cp package.json build/windows/
 scripts/environment_json.sh -p windows > build/windows/www/environment.json
 
+# --config.asarUnpack must be kept in sync with:
+#  - the destination path for the binaries in build_action.sh
+#  - the value returned by process_manager.ts#pathToEmbeddedExe
+
 electron-builder \
   --projectDir=build/windows \
   --config.asarUnpack=electron/bin \
