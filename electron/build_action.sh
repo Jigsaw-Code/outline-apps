@@ -25,13 +25,16 @@ mkdir -p $OUTPUT
 rsync -ac build/{electron,www} $OUTPUT/
 
 # Copy binaries into the Electron folder.
-# The name of the destination folder must be kept in sync with the value
-# specified for --config.asarUnpack in package_action.sh.
+# The destination folder must be kept in sync with:
+#  - the value specified for --config.asarUnpack in package_action.sh
+#  - the value returned by process_manager.ts#pathToEmbeddedExe
 readonly BIN_DEST=$OUTPUT/electron/bin/win32
 mkdir -p $BIN_DEST
-rsync -ac --include '*.exe' --exclude='*' third_party/shadowsocks-libev/windows/ $BIN_DEST/ss-local
-rsync -ac --include '*.dll' --exclude='*' third_party/cygwin/ $BIN_DEST/ss-local
-rsync -ac --include '*/*.exe'  --exclude='*/*' tools/setsystemproxy $BIN_DEST/
+rsync -ac \
+  --include '*.exe' --include '*.dll' \
+  --exclude='*' \
+  third_party/shadowsocks-libev/windows/ tools/setsystemproxy/ third_party/cygwin/ \
+  $BIN_DEST
 
 # Version info and Sentry config.
 # In Electron, the path is relative to electron_index.html.
