@@ -134,9 +134,12 @@ export class App {
   }
 
   private showServerDisconnected(event: events.ServerDisconnected): void {
-    console.log(`server ${event.server.id} disconnected`);
-    const card = this.serverListEl.getServerCard(event.server.id);
-    card.state = 'DISCONNECTED';
+    console.debug('server disconnected');
+    try {
+      this.serverListEl.getServerCard(event.server.id).state = 'DISCONNECTED';
+    } catch (e) {
+      console.warn('server card not found after disconnection event, assuming forgotten');
+    }
   }
 
   private showServerReconnecting(event: events.ServerDisconnected): void {
