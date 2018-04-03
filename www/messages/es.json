@@ -68,6 +68,8 @@
   "tips": "Consejos",
   "non-system-vpn-warning-title": "Verifica la conexión de tu navegador",
   "non-system-vpn-warning-detail": "La mayoría de los navegadores se conectan automáticamente con Outline, otros no.",
+  "get-help": "Ayuda",
+  "got-it": "Entendido",
   "save": "guardar",
   "cancel": "cancelar",
   "update-downloaded": "Se ha descargado una versión actualizada de Outline. Se instalará cuando reinicie Outline."

@@ -16,7 +16,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="server-list.html">
 <link rel="import" href="server-connection-viz.html">
-<link rel="import" href="non-system-vpn-warning.html">
+<link rel="import" href="user-comms-dialog.html">
 
 <dom-module id="servers-view">
   <template>
@@ -90,7 +90,7 @@
         </div>
         <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'openLine', '<div>', 'closeLine', '</div>', 'outlineLink', '<a href=&quot;https://s3.amazonaws.com/outline-vpn/index.html&quot;>our website</a>')]]"></div>
       </div>
-      <non-system-vpn-warning id="warning" localize="[[localize]]"></non-system-vpn-warning>
+      <user-comms-dialog id="nonSystemVpnWarning" localize="[[localize]]" title-localization-key="non-system-vpn-warning-title" detail-localization-key="non-system-vpn-warning-detail" link-url="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/outlineWindowsProtection" fire-event-on-hide="NonSystemVpnWarningDismissed"></user-comms-dialog>
       <server-list id="serverList" hidden$="[[shouldShowZeroState]]" servers="{{servers}}" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
     </div>
   </template>
