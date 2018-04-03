@@ -128,13 +128,13 @@ export class App {
   }
 
   private showServerConnected(event: events.ServerDisconnected): void {
-    console.log(`server ${event.server.id} connected`);
+    console.debug(`server ${event.server.id} connected`);
     const card = this.serverListEl.getServerCard(event.server.id);
     card.state = 'CONNECTED';
   }
 
   private showServerDisconnected(event: events.ServerDisconnected): void {
-    console.debug('server disconnected');
+    console.debug(`server ${event.server.id} disconnected`);
     try {
       this.serverListEl.getServerCard(event.server.id).state = 'DISCONNECTED';
     } catch (e) {
@@ -143,7 +143,7 @@ export class App {
   }
 
   private showServerReconnecting(event: events.ServerDisconnected): void {
-    console.log(`server ${event.server.id} reconnecting`);
+    console.debug(`server ${event.server.id} reconnecting`);
     const card = this.serverListEl.getServerCard(event.server.id);
     card.state = 'RECONNECTING';
   }
