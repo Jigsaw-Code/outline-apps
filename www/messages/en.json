@@ -16,7 +16,7 @@
   "feedback-thanks": "Thanks for helping us improve! We love hearing from you.",
   "submit": "Submit",
   "submitting": "Submitting...",
-  "about-outline": "Outline is an open source project created by <a href={jigsawUrl}>Jigsaw</a> to provide a safer way for news organizations and journalists to access the internet.<br/><br/> Outline is still an early stage product. You can contribute to the code on <a href={gitHubUrl}>GitHub</a>, and follow us on <a href={redditUrl}>Reddit</a> and <a href={mediumUrl}>Medium</a> to hear when we expand to more platforms and add new features.",
+  "about-outline": "Outline is an open source project created by <a href={jigsawUrl}>Jigsaw</a> to provide a safer way for news organizations and journalists to access the internet.<br/><br/> Outline is powered by <a href={shadowsocksUrl}>Shadowsocks</a> and is still an early stage product. You can contribute to the code on <a href={gitHubUrl}>GitHub</a>, and follow us on <a href={redditUrl}>Reddit</a> and <a href={mediumUrl}>Medium</a> to hear when we expand to more platforms and add new features.",
   "learn-more": "Learn More",
   "privacy": "Privacy",
   "terms": "Terms",
