@@ -88,6 +88,7 @@ jobs:
             /bin/bash -c "apt update && apt install -y rsync && yarn do electron/package" || travis_terminate $?
 
     - stage: package
+      os: osx
       language: objective-c
       osx_image: xcode9.2
       env:
@@ -97,6 +98,7 @@ jobs:
         - yarn && yarn gulp build --platform=osx
 
     - stage: package
+      os: osx
       language: objective-c
       osx_image: xcode9.2
       env:
@@ -119,6 +121,7 @@ jobs:
         - ./tools/build/build.sh yarn gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
 
     - stage: ios
+      os: osx
       language: objective-c
       osx_image: xcode9.2
       script:
