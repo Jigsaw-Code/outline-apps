@@ -68,6 +68,8 @@
   "tips": "Tips",
   "non-system-vpn-warning-title": "Verify your browser connection",
   "non-system-vpn-warning-detail": "Most browsers connect automatically with Outline, some do not.",
+  "get-help": "Get help",
+  "got-it": "Got it",
   "save": "save",
   "cancel": "cancel",
   "update-downloaded": "An updated version of Outline has been downloaded. It will be installed when you restart Outline."

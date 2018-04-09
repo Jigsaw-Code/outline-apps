@@ -297,7 +297,7 @@ export class App {
       console.error(`could not read full-system VPN warning status, assuming not dismissed`);
     }
     if (!dismissed) {
-      this.rootEl.$.serversView.$.warning.show();
+      this.rootEl.$.serversView.$.nonSystemVpnWarning.show();
     }
   }
 
@@ -322,7 +322,7 @@ export class App {
           this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
           // The user may not have dismissed the warning before disconnecting.
           // If so, hide the warning for now - it'll appear next time.
-          this.rootEl.$.serversView.$.warning.hide();
+          this.rootEl.$.serversView.$.nonSystemVpnWarning.hide();
         },
         (err: errors.OutlinePluginError) => {
           card.state = 'CONNECTED';
