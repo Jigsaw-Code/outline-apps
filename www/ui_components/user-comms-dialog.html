@@ -17,7 +17,7 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<dom-module id="non-system-vpn-warning">
+<dom-module id="user-comms-dialog">
   <template>
     <style>
       #wrapper {
@@ -87,15 +87,15 @@
     <div id="wrapper">
       <div id="content">
         <div id="tips">
-          <iron-icon icon="icons:lightbulb-outline"></iron-icon>[[localize('tips')]]
+          <iron-icon icon="icons:lightbulb-outline"></iron-icon>[[localize(iconTextLocalizationKey)]]
         </div>
-        <div id="title" class="highlight">[[localize('non-system-vpn-warning-title')]]</div>
-        <div id="detail">[[localize('non-system-vpn-warning-detail')]]</div>
+        <div id="title" class="highlight">[[localize(titleLocalizationKey)]]</div>
+        <div id="detail">[[localize(detailLocalizationKey)]]</div>
         <div id="buttons">
-          <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/outlineWindowsProtection">
-            <paper-button>Get help</paper-button>
+          <a hidden$="[[_shouldHideLink()]]" href$=[[linkUrl]]>
+            <paper-button>[[localize(linkTextLocalizationKey)]]</paper-button>
           </a>
-          <paper-button class="highlight" on-tap="_dismiss">Got it</paper-button>
+          <paper-button class="highlight" on-tap="_dismiss">[[localize(dismissButtonTextLocalizationKey)]]</paper-button>
         </div>
       </div>
     </div>
@@ -104,11 +104,34 @@
   <script>
     'use strict';
     Polymer({
-      is: 'non-system-vpn-warning',
+      is: 'user-comms-dialog',
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
-        localize: Function
+        localize: Function,
+        // Localization key for the dialog title. Required.
+        titleLocalizationKey: String,
+        // Localization key for the text detail. Required.
+        detailLocalizationKey: String,
+        // Optional localization key for the text displayed next to the icon.
+        iconTextLocalizationKey: {
+          type: String,
+          value: 'tips'
+        },
+        // Optional URL for the left side link button. If empty, the link will not be displayed.
+        linkUrl: String,
+        // Optional text localization key for the left side button.
+        linkTextLocalizationKey: {
+          type: String,
+          value: "get-help"
+        },
+        // Optional text localization key for the right side dismiss button.
+        dismissButtonTextLocalizationKey: {
+          type: String,
+          value: "got-it"
+        },
+        // Optional event to fire when the dialog is dismissed.
+        fireEventOnHide: String,
       },
       show: function () {
         this.$.wrapper.classList.add('active');
@@ -118,7 +141,12 @@
       },
       _dismiss: function () {
         this.hide();
-        this.fire('NonSystemVpnWarningDismissed');
+        if (!!this.fireEventOnHide) {
+          this.fire(this.fireEventOnHide);
+        }
+      },
+      _shouldHideLink: function() {
+        return !this.linkUrl;
       }
     });
   </script>
