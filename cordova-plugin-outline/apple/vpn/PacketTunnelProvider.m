@@ -74,6 +74,18 @@ NSString *const kMessageKeyPort = @"port";
 - (void)startTunnelWithOptions:(NSDictionary *)options
              completionHandler:(void (^)(NSError *))completionHandler {
   DDLogInfo(@"Starting tunnel");
+  if (options == nil) {
+    DDLogWarn(@"Received a connect request from preferences");
+    // TODO(alalama): l10n
+    [self displayMessage:@"Please use the Outline app to connect."
+        completionHandler:^(BOOL success) {
+          completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                code:NEVPNErrorConfigurationDisabled
+                                            userInfo:nil]);
+          exit(0);
+        }];
+    return;
+  }
   OutlineConnection *connection = [self retrieveConnection:options];
   if (connection == nil) {
     DDLogError(@"Failed to retrieve the connection.");
@@ -211,11 +223,11 @@ NSString *const kMessageKeyPort = @"port";
 
 // Creates a OutlineConnection from options supplied in |config|, or retrieves the last working
 // connection from disk. Normally the app provides a connection configuration. However, when the VPN
-// is started from settings, the system launches this process without supplying a configuration, so
-// it is necessary to retrieve a previously persisted connection from disk.
+// is started from settings or on demand, the system launches this process without supplying a
+// configuration, so it is necessary to retrieve a previously persisted connection from disk.
 - (OutlineConnection *)retrieveConnection:(NSDictionary *)config {
   OutlineConnection *connection;
-  if (config != nil) {
+  if (config != nil && !config[@"is-on-demand"]) {
     connection = [[OutlineConnection alloc] initWithId:config[kMessageKeyConnectionId] config:config];
   } else if (self.connectionStore != nil) {
     DDLogInfo(@"Retrieving connection from store.");
@@ -273,7 +285,8 @@ NSString *const kMessageKeyPort = @"port";
   if (!self.isTunnelConnected) {
     return;  // Don't react to network changes unless the tunnel is connected.
   }
-  if (newDefaultPath.status == NWPathStatusSatisfied) {
+  if (newDefaultPath.status == NWPathStatusSatisfied ||
+      newDefaultPath.status == NWPathStatusSatisfiable) {
     DDLogInfo(@"Reconnecting tunnel.");
     NSError *error = [TunnelInterface onNetworkConnectivityChange];
     if (error != nil) {
