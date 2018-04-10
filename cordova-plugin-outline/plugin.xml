@@ -32,7 +32,11 @@
         android:name="org.outline.vpn.VpnTunnelService"
         android:exported="false"
         android:label="@string/app_name"
-        android:permission="android.permission.BIND_VPN_SERVICE" />
+        android:permission="android.permission.BIND_VPN_SERVICE">
+        <intent-filter>
+          <action android:name="android.net.VpnService" />
+        </intent-filter>
+      </service>
 
       <!-- TODO: enable this component to enable the auto-connect feature -->
       <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="false">

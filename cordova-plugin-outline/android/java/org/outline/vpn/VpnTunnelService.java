@@ -87,11 +87,18 @@ public class VpnTunnelService extends VpnService {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    LOG.info("Starting VPN service.");
+    LOG.info(String.format("Starting VPN service: %s", intent));
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
-    if (intent != null && intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false)) {
-      // VpnServiceStarter includes this extra in the intent if automatic start has occurred.
-      startLastSuccessfulConnectionOrExit();
+    if (intent != null) {
+      boolean wasConectedAtShutdown =
+          OutlinePlugin.ConnectionStatus.CONNECTED.equals(connectionStore.getConnectionStatus());
+      // VpnServiceStarter includes AUTOSTART_EXTRA in the intent if automatic start has occurred.
+      boolean startedByVpnStarter =
+          intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
+      boolean startedByAlwaysOn = VpnService.SERVICE_INTERFACE.equals(intent.getAction());
+      if ((wasConectedAtShutdown && startedByVpnStarter) || startedByAlwaysOn) {
+        startLastSuccessfulConnectionOrExit();
+      }
     }
     return superOnStartReturnValue;
   }
@@ -220,7 +227,7 @@ public class VpnTunnelService extends VpnService {
     removePersistentNotification();
     activeConnectionId = null;
     stopNetworkConnectivityMonitor();
-    connectionStore.clear();  // Clearing the connection prevents auto-connect on startup.
+    connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
   }
 
   /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
@@ -450,6 +457,7 @@ public class VpnTunnelService extends VpnService {
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON connection data", e);
     }
+    connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.CONNECTED);
   }
 
   // Notifications

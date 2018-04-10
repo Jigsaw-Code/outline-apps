@@ -24,6 +24,8 @@
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <preference name="android-minSdkVersion" value="21" />
+    <!-- TODO: uncomment the next line to enable Always On VPN -->
+    <!-- <preference name="android-targetSdkVersion" value="24" /> -->
     <preference name="AndroidLaunchMode" value="singleInstance" />
     <preference name="ShowSplashScreenSpinner" value="false" />
 
