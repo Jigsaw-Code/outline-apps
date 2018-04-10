@@ -38,10 +38,10 @@ public class Shadowsocks {
   }
 
   // Launches ss-local as a separate process with the provided configuration.
-  public boolean start(JSONObject serverConfig) throws JSONException {
+  public synchronized boolean start(JSONObject serverConfig) throws JSONException {
     LOG.info("starting ss-local");
     try {
-      this.stop();  // Try to stop in case there is a previous instance running.
+      this.stopShadowsocksProcess(); // Try to stop in case there is a previous instance running.
       this.ssProcess = new ProcessBuilder(
         this.ssPath,
         "-s", serverConfig.getString("host"),
@@ -61,7 +61,11 @@ public class Shadowsocks {
     return false;
   }
 
-  public void stop() {
+  public synchronized void stop() {
+    stopShadowsocksProcess();
+  }
+
+  private void stopShadowsocksProcess() {
     if (this.ssProcess != null) {
       LOG.info("stopping ss-local");
       this.ssProcess.destroy();
@@ -71,7 +75,7 @@ public class Shadowsocks {
 
   // Returns the IP address and port on which ss-local is listening. Throws an exception if ss-local
   // has not been started.
-  public String getLocalServerAddress() throws IllegalStateException {
+  public synchronized String getLocalServerAddress() throws IllegalStateException {
     if (this.ssProcess == null) {
       throw new IllegalStateException("ss-local has not been started");
     }
