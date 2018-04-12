@@ -209,9 +209,9 @@ JSONStream@^1.0.3:
     jsonparse "^1.2.0"
     through ">=2.2.7 <3"
 
-ShadowsocksConfig@Jigsaw-Code/outline-shadowsocksconfig#^v0.0.6:
-  version "0.0.6"
-  resolved "https://codeload.github.com/Jigsaw-Code/outline-shadowsocksconfig/tar.gz/8e1a019e706dc52bf7717a4f2965247f1c9a40fa"
+ShadowsocksConfig@Jigsaw-Code/outline-shadowsocksconfig#^v0.0.8:
+  version "0.0.8"
+  resolved "https://codeload.github.com/Jigsaw-Code/outline-shadowsocksconfig/tar.gz/57845b8295f1b8ba117d1d69efb7643ebe08dd15"
   dependencies:
     base-64 "^0.1.0"
     punycode "^1.4.1"
