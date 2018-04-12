@@ -30,11 +30,13 @@ public class Shadowsocks {
 
   private final String ssPath;
   private Process ssProcess;
+  private ShadowsocksAcl ssAcl;
 
   public Shadowsocks(final Context context) {
     final String nativeLibraryDir =
         context.getApplicationContext().getApplicationInfo().nativeLibraryDir;
     this.ssPath = String.format("%s/%s", nativeLibraryDir, LIB_SS_LOCAL_NAME);
+    this.ssAcl = new ShadowsocksAcl(context);
   }
 
   // Launches ss-local as a separate process with the provided configuration.
@@ -42,16 +44,11 @@ public class Shadowsocks {
     LOG.info("starting ss-local");
     try {
       this.stopShadowsocksProcess(); // Try to stop in case there is a previous instance running.
-      this.ssProcess = new ProcessBuilder(
-        this.ssPath,
-        "-s", serverConfig.getString("host"),
-        "-p", serverConfig.getString("port"),
-        "-k", serverConfig.getString("password"),
-        "-b", LOCAL_SERVER_ADDRESS,
-        "-l", LOCAL_SERVER_PORT,
-        "-m", serverConfig.getString("method"),
-        "-u"
-        ).start();
+      this.ssProcess = new ProcessBuilder(this.ssPath, "-s", serverConfig.getString("host"), "-p",
+          serverConfig.getString("port"), "-k", serverConfig.getString("password"), "-b",
+          LOCAL_SERVER_ADDRESS, "-l", LOCAL_SERVER_PORT, "-m", serverConfig.getString("method"),
+          "-u", "--acl", ssAcl.getAclPath())
+                           .start();
       // Wait for the process to start and report whether it is running.
       Thread.sleep(PROCESS_START_WAIT_MS);
       return isRunning(ssProcess);

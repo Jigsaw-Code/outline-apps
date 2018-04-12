@@ -1,0 +1,4 @@
+[proxy_all]
+
+[bypass_list]
+(^|\.)httpbin\.org$

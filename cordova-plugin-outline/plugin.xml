@@ -76,6 +76,7 @@
       target-dir="libs/x86" />
 
     <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
+    <resource-file src="android/resources/bypass.acl" target="assets/bypass/bypass.acl" />
 
     <framework src="android/java/build-extras.gradle" custom="true"
       type="gradleReference" />
