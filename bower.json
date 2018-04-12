@@ -8,7 +8,7 @@
     "tests"
   ],
   "dependencies": {
-    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.6",
+    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.8",
     "app-layout": "PolymerElements/app-layout#^2.0.2",
     "app-localize-behavior": "PolymerElements/app-localize-behavior#^2.0.1",
     "app-route": "PolymerElements/app-route#^2.0.0",
