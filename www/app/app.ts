@@ -211,10 +211,7 @@ export class App {
     try {
       shadowsocksConfig = SHADOWSOCKS_URI.parse(accessKey);
     } catch (error) {
-      // Remove any access keys from the error message so it is not logged to Sentry.
-      const message = !!error.message ?
-          error.message.replace(/ss:\/\/([A-Za-z0-9=]+)(@[0-9|.]+:[0-9]+)?(\/\?)?(#\w+)?/g, '') :
-          'Failed to parse access key';
+      const message = !!error.message ? error.message : 'Failed to parse access key';
       throw new errors.ServerUrlInvalid(message);
     }
     if (shadowsocksConfig.host.isIPv6) {
