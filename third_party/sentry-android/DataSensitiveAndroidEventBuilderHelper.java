@@ -3,13 +3,15 @@ package org.outline.log;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import com.getsentry.raven.android.Util;
-import com.getsentry.raven.environment.RavenEnvironment;
-import com.getsentry.raven.event.EventBuilder;
-import com.getsentry.raven.event.helper.EventBuilderHelper;
+import io.sentry.event.EventBuilder;
+import io.sentry.event.helper.EventBuilderHelper;
+import io.sentry.event.interfaces.UserInterface;
+import io.sentry.util.Util;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +19,7 @@ import java.util.Map;
  * EventBuilderHelper that makes use of Android Context to populate some Event fields.
  *
  * This class replicates verbatim a subset of the functionality of AndroidEventBuilderHelper
- * https://github.com/getsentry/raven-java/blob/master/raven-android/src/main/java/com/getsentry/raven/android/event/helper/AndroidEventBuilderHelper.java
+ * https://github.com/getsentry/sentry-java/blob/master/sentry-android/src/main/java/io/sentry/android/event/helper/AndroidEventBuilderHelper.java
  *
  * The main difference lies in its treatment of the Android UUID, which is considered PII
  * by Outline, and therefore not desirable to be transmitted. We have also limited some data
@@ -40,10 +42,11 @@ public class DataSensitiveAndroidEventBuilderHelper implements EventBuilderHelpe
 
   @Override
   public void helpBuildingEvent(EventBuilder eventBuilder) {
-    eventBuilder.withSdkName(RavenEnvironment.SDK_NAME + ":android");
+    eventBuilder.withSdkIntegration("android");
     PackageInfo packageInfo = getPackageInfo(ctx);
     if (packageInfo != null) {
         eventBuilder.withRelease(packageInfo.versionName);
+        eventBuilder.withDist(Integer.toString(packageInfo.versionCode));
     }
     /**
      * TODO(alalama): generate a random ID for the user, store locally, and
@@ -63,7 +66,7 @@ public class DataSensitiveAndroidEventBuilderHelper implements EventBuilderHelpe
 
     // Device
     deviceMap.put("arch", Build.CPU_ABI);
-    deviceMap.put("online", Util.isConnected(ctx));
+    deviceMap.put("online", isConnected(ctx));
     deviceMap.put("locale", getDeviceLocale());
     deviceMap.put("country", getNetworkCountry());
 
@@ -111,5 +114,18 @@ public class DataSensitiveAndroidEventBuilderHelper implements EventBuilderHelpe
   private String getNetworkCountry() {
     TelephonyManager tm = (TelephonyManager)this.ctx.getSystemService(Context.TELEPHONY_SERVICE);
     return tm.getNetworkCountryIso();
+  }
+
+  /**
+   * Check whether the application has internet access at a point in time.
+   *
+   * @param ctx Android application context
+   * @return true if the application has internet access
+   */
+  private static boolean isConnected(Context ctx) {
+    ConnectivityManager connectivityManager =
+        (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
   }
 }

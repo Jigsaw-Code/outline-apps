@@ -16,18 +16,18 @@ package org.outline.log;
 
 import android.content.Context;
 import android.util.Log;
-import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumb;
-import com.getsentry.raven.event.Breadcrumbs;
-import com.getsentry.raven.event.EventBuilder;
+import io.sentry.event.Breadcrumb;
+import io.sentry.event.BreadcrumbBuilder;
+import io.sentry.event.Event;
+import io.sentry.event.EventBuilder;
+import io.sentry.Sentry;
 import java.lang.IllegalStateException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
 
 /**
- * Wrapper class for Sentry (Raven) error reporting framework.
+ * Wrapper class for the Sentry error reporting framework.
  */
 class SentryErrorReporter {
   /**
@@ -68,12 +68,12 @@ class SentryErrorReporter {
     if (isInitialized) {
       throw new IllegalStateException("Error reporting framework already initiated");
     }
-    Raven.init(context, dsn, new DataSensitiveRavenFactory(context));
+    Sentry.init(dsn, new DataSensitiveAndroidSentryClientFactory(context));
     isInitialized = true;
 
     // Record all queued breadcrumbs.
     while (breadcrumbsQueue.size() > 0) {
-      Breadcrumbs.record(breadcrumbsQueue.remove().toBreadcrumb());
+      Sentry.getContext().recordBreadcrumb(breadcrumbsQueue.remove().toBreadcrumb());
     }
   }
 
@@ -94,9 +94,9 @@ class SentryErrorReporter {
     // clustered with other reports. Clustering retains the report data on the server side, whereas
     // inactivity results in its deletion after 90 days.
     // Don't build the event so the event builder runs and adds platform data.
-    Raven.capture(new EventBuilder()
-                      .withMessage(String.format("Android report (%s)", uuid))
-                      .withTag("user_event_id", uuid));
+    Sentry.capture(new EventBuilder()
+                       .withMessage(String.format("Android report (%s)", uuid))
+                       .withTag("user_event_id", uuid));
   }
 
   /**
@@ -141,10 +141,7 @@ class SentryErrorReporter {
       breadcrumbsQueue.add(new SentryMessage(msg, level));
       return;
     }
-    Breadcrumbs.record(
-      new BreadcrumbBuilder()
-          .setMessage(msg)
-          .setLevel(level)
-          .build());
+    Sentry.getContext().recordBreadcrumb(
+        new BreadcrumbBuilder().setMessage(msg).setLevel(level).build());
   }
 }
