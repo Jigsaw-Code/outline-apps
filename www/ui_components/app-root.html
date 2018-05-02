@@ -80,14 +80,12 @@
       }
 
       app-toolbar [main-title] {
-        display: inline-block;
-        line-height: var(--app-toolbar-height);
-        vertical-align: top;
         flex: 2 1 100%;
       }
 
-      app-toolbar > .servers {
-        font-family: 'Google Sans', 'Roboto', sans-serif;
+      app-toolbar img {
+        height: 19px;
+        margin-top: 2px;
       }
 
       app-toolbar paper-icon-button {
@@ -222,7 +220,10 @@
             <paper-icon-button id="menuBtn" hidden$="[[shouldShowBackButton]]" icon="menu" on-tap="openDrawer"></paper-icon-button>
             <paper-icon-button id="backBtn" hidden$="[[!shouldShowBackButton]]" icon="arrow-back" on-tap="_goBack"></paper-icon-button>
           </div>
-          <div main-title class$="[[page]]">[[localize(pageTitleKey)]]</div>
+          <div main-title class$="[[page]]">
+            <img src$="[[rootPath]]assets/outline-client-logo.svg" hidden$="[[!shouldShowAppLogo]]">
+            <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
+          </div>
           <div id="app-toolbar-right">
             <paper-icon-button id="addBtn" icon="add" on-tap="promptAddServer" hidden$="[[!shouldShowAddButton]]"></paper-icon-button>
           </div>
@@ -455,6 +456,10 @@
           type: Boolean,
           computed: '_computeShouldShowQuitButton(platform)',
           value: false
+        },
+        shouldShowAppLogo: {
+          type: Boolean,
+          computed: '_computeShouldShowAppLogo(page)'
         }
       },
       openDrawer: function () {
@@ -577,7 +582,10 @@
       },
       showServerRename: function(event) {
         this.$.serverRenameDialog.open(event.detail.serverName, event.detail.serverId);
-      }
+      },
+      _computeShouldShowAppLogo: function(page) {
+        return page === 'servers';
+      },
     });
   </script>
 </dom-module>
