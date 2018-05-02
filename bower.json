@@ -12,6 +12,7 @@
     "app-layout": "PolymerElements/app-layout#^2.0.2",
     "app-localize-behavior": "PolymerElements/app-localize-behavior#^2.0.1",
     "app-route": "PolymerElements/app-route#^2.0.0",
+    "font-roboto": "PolymerElements/font-roboto-local#^1.1.0",
     "iron-icons": "PolymerElements/iron-icons#^2.0.1",
     "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^2.1.0",
     "iron-pages": "PolymerElements/iron-pages#^2.0.0",
