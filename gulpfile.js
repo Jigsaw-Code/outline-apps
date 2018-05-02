@@ -25,6 +25,10 @@ const gulpif = require('gulp-if');
 const gutil = require('gulp-util');
 const merge_stream = require('merge-stream');
 const polymer_build = require('polymer-build');
+const posthtml = require('gulp-posthtml');
+const posthtmlcss = require('posthtml-postcss');
+const rtl = require('postcss-rtl');
+const replace = require('gulp-replace');
 const source = require('vinyl-source-stream');
 const tsify = require('tsify');
 const watchify = require('watchify');
@@ -83,6 +87,21 @@ function transpileBowerComponents(config){
 function transpileUiComponents(config) {
   gutil.log('Transpiling UI components');
   return transpile(['www/ui_components/*.html'], `${config.targetDir}/ui_components`);
+}
+
+// Generates inline CSS RTL mirroring rules for Polymer components.
+function generateRtlCss(config) {
+  gutil.log('Generating RTL CSS');
+  const plugins = [rtl()];
+  const options = {from: undefined};
+  const filterType = /\/css$/;
+  return gulp.src(['www/ui_components/*.html'])
+      .pipe(posthtml([posthtmlcss(plugins, options, filterType)]))
+      // Replace the generated selectors with Shadow DOM selectors.
+      .pipe(replace('[dir=rtl]', ':host(:dir(rtl))'))
+      .pipe(replace('[dir=ltr]', ':host(:dir(ltr))'))
+      .pipe(replace('[dir]', ''))
+      .pipe(gulp.dest(`${config.targetDir}/ui_components`));
 }
 
 // See https://www.typescriptlang.org/docs/handbook/gulp.html
@@ -224,25 +243,28 @@ function build(platform, config) {
         writeEnvJson(platform, config, envVars.RELEASE);
         transpileBowerComponents(config).on('finish', function() {
           transpileUiComponents(config).on('finish', function() {
-            const compileArgs = config.compileArgs || '';
-            const releaseArgs = envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
-            const platformArgs = config.platformArgs || '';
-            // Do this now, otherwise "cordova compile" fails.
-            // TODO: use some gulp plugin
-            // -c means "use file's checksum, not last modified time"
-            const syncXcode = platform === 'ios' || platform === 'osx'
-                ? `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` : ':';
-            runCommand(syncXcode, {}, () => {
-              runCommand(
-                  `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`,
-                  {}, function() {
-                    if (shouldWatch) {
-                      gutil.log('Running...');
-                      runCommand(`cordova run ${platform} --noprepare --nobuild`);
-                    } else {
-                      gutil.log('Done');
-                    }
-                  });
+            generateRtlCss(config).on('finish', function() {
+              const compileArgs = config.compileArgs || '';
+              const releaseArgs = envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
+              const platformArgs = config.platformArgs || '';
+              // Do this now, otherwise "cordova compile" fails.
+              // TODO: use some gulp plugin
+              // -c means "use file's checksum, not last modified time"
+              const syncXcode = platform === 'ios' || platform === 'osx' ?
+                  `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
+                  ':';
+              runCommand(syncXcode, {}, () => {
+                runCommand(
+                    `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`,
+                    {}, function() {
+                      if (shouldWatch) {
+                        gutil.log('Running...');
+                        runCommand(`cordova run ${platform} --noprepare --nobuild`);
+                      } else {
+                        gutil.log('Done');
+                      }
+                    });
+              });
             });
           });
         });
