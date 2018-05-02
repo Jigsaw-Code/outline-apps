@@ -20,15 +20,12 @@ const babelify = require('babelify');
 const babel_preset_env = require('babel-preset-env');
 const child_process = require('child_process');
 const fs = require('fs');
+const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
 const gutil = require('gulp-util');
 const merge_stream = require('merge-stream');
 const polymer_build = require('polymer-build');
-const posthtml = require('gulp-posthtml');
-const posthtmlcss = require('posthtml-postcss');
-const rtl = require('postcss-rtl');
-const replace = require('gulp-replace');
 const source = require('vinyl-source-stream');
 const tsify = require('tsify');
 const watchify = require('watchify');
@@ -87,21 +84,6 @@ function transpileBowerComponents(config){
 function transpileUiComponents(config) {
   gutil.log('Transpiling UI components');
   return transpile(['www/ui_components/*.html'], `${config.targetDir}/ui_components`);
-}
-
-// Generates inline CSS RTL mirroring rules for Polymer components.
-function generateRtlCss(config) {
-  gutil.log('Generating RTL CSS');
-  const plugins = [rtl()];
-  const options = {from: undefined};
-  const filterType = /\/css$/;
-  return gulp.src(['www/ui_components/*.html'])
-      .pipe(posthtml([posthtmlcss(plugins, options, filterType)]))
-      // Replace the generated selectors with Shadow DOM selectors.
-      .pipe(replace('[dir=rtl]', ':host(:dir(rtl))'))
-      .pipe(replace('[dir=ltr]', ':host(:dir(ltr))'))
-      .pipe(replace('[dir]', ''))
-      .pipe(gulp.dest(`${config.targetDir}/ui_components`));
 }
 
 // See https://www.typescriptlang.org/docs/handbook/gulp.html
@@ -243,7 +225,7 @@ function build(platform, config) {
         writeEnvJson(platform, config, envVars.RELEASE);
         transpileBowerComponents(config).on('finish', function() {
           transpileUiComponents(config).on('finish', function() {
-            generateRtlCss(config).on('finish', function() {
+            generateRtlCss('www/ui_components/*.html', `${config.targetDir}/ui_components`).on('finish', function() {
               const compileArgs = config.compileArgs || '';
               const releaseArgs = envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
               const platformArgs = config.platformArgs || '';
