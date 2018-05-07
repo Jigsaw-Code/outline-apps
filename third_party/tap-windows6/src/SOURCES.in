@@ -1,0 +1,60 @@
+# Build TAP-Windows NDIS 6.0 driver.
+# Build Command: build -cef
+
+MAJORCOMP=ntos
+MINORCOMP=ndis
+
+TARGETNAME=@PRODUCT_TAP_WIN_COMPONENT_ID@
+TARGETTYPE=DRIVER
+TARGETPATH=.
+
+TARGETLIBS=\
+    $(DDK_LIB_PATH)\ndis.lib \
+    $(DDK_LIB_PATH)\ntstrsafe.lib \
+    $(DDK_LIB_PATH)\wdmsec.lib
+
+INCLUDES=$(DDK_INCLUDE_PATH) ..
+
+# System and NDIS wrapper definitions.
+C_DEFINES=$(C_DEFINES) -DNDIS_MINIPORT_DRIVER=1
+C_DEFINES=$(C_DEFINES) -DNDIS61_MINIPORT=1
+
+# The TAP version numbers here must be >=
+# PRODUCT_TAP_WIN32_MIN_x values defined in version.m4
+C_DEFINES=$(C_DEFINES) -DTAP_DRIVER_MAJOR_VERSION=@PRODUCT_TAP_WIN_MAJOR@
+C_DEFINES=$(C_DEFINES) -DTAP_DRIVER_MINOR_VERSION=@PRODUCT_TAP_WIN_MINOR@
+
+# Produce the same symbolic information for both free & checked builds.
+# This will allow us to perform full source-level debugging on both
+# builds without affecting the free build's performance.
+!IF "$(DDKBUILDENV)" != "chk"
+NTDEBUGTYPE=both
+USE_PDB=1
+!ELSE
+NTDEBUGTYPE=both
+USE_PDB=1
+!ENDIF
+
+# Generate a linker map file just in case we need one for debugging
+LINKER_FLAGS=$(LINKER_FLAGS) /INCREMENTAL:NO /MAP /MAPINFO:EXPORTS
+
+
+# MSC_WARNING_LEVEL=/W4 /WX
+
+# disabled warning 4201 -- nonstandard extension used : nameless struct/union
+# disabled warning 4214 -- nonstandard extension used : bit field types other than int
+# disabled warning 4127 -- conditional expression is constant
+MSC_WARNING_LEVEL=$(MSC_WARNING_LEVEL) /wd4201 /wd4214 /wd4127
+
+SOURCES=\
+        tapdrvr.c \
+        adapter.c \
+        device.c \
+        rxpath.c \
+        txpath.c \
+        oidrequest.c \
+        mem.c \
+        macinfo.c \
+        error.c \
+        dhcp.c \
+        resource.rc
