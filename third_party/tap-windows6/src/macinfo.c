@@ -22,72 +22,58 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 #include "tap.h"
 
-int
-HexStringToDecimalInt (const int p_Character)
-{
-    int l_Value = 0;
+int HexStringToDecimalInt(const int p_Character) {
+  int l_Value = 0;
 
-    if (p_Character >= 'A' && p_Character <= 'F')
-        l_Value = (p_Character - 'A') + 10;
-    else if (p_Character >= 'a' && p_Character <= 'f')
-        l_Value = (p_Character - 'a') + 10;
-    else if (p_Character >= '0' && p_Character <= '9')
-        l_Value = p_Character - '0';
+  if (p_Character >= 'A' && p_Character <= 'F')
+    l_Value = (p_Character - 'A') + 10;
+  else if (p_Character >= 'a' && p_Character <= 'f')
+    l_Value = (p_Character - 'a') + 10;
+  else if (p_Character >= '0' && p_Character <= '9')
+    l_Value = p_Character - '0';
 
-    return l_Value;
+  return l_Value;
 }
 
 BOOLEAN
-ParseMAC (MACADDR dest, const char *src)
-{
-    int c;
-    int mac_index = 0;
-    BOOLEAN high_digit = FALSE;
-    int delim_action = 1;
+ParseMAC(MACADDR dest, const char *src) {
+  int c;
+  int mac_index = 0;
+  BOOLEAN high_digit = FALSE;
+  int delim_action = 1;
 
-    ASSERT (src);
-    ASSERT (dest);
+  ASSERT(src);
+  ASSERT(dest);
 
-    CLEAR_MAC (dest);
+  CLEAR_MAC(dest);
 
-    while (c = *src++)
-    {
-        if (IsMacDelimiter (c))
-        {
-            mac_index += delim_action;
-            high_digit = FALSE;
-            delim_action = 1;
+  while (c = *src++) {
+    if (IsMacDelimiter(c)) {
+      mac_index += delim_action;
+      high_digit = FALSE;
+      delim_action = 1;
+    } else if (IsHexDigit(c)) {
+      const int digit = HexStringToDecimalInt(c);
+      if (mac_index < sizeof(MACADDR)) {
+        if (!high_digit) {
+          dest[mac_index] = (char)(digit);
+          high_digit = TRUE;
+          delim_action = 1;
+        } else {
+          dest[mac_index] = (char)(dest[mac_index] * 16 + digit);
+          ++mac_index;
+          high_digit = FALSE;
+          delim_action = 0;
         }
-        else if (IsHexDigit (c))
-        {
-            const int digit = HexStringToDecimalInt (c);
-            if (mac_index < sizeof (MACADDR))
-            {
-                if (!high_digit)
-                {
-                    dest[mac_index] = (char)(digit);
-                    high_digit = TRUE;
-                    delim_action = 1;
-                }
-                else
-                {
-                    dest[mac_index] = (char)(dest[mac_index] * 16 + digit);
-                    ++mac_index;
-                    high_digit = FALSE;
-                    delim_action = 0;
-                }
-            }
-            else
-                return FALSE;
-        }
-        else
-            return FALSE;
-    }
+      } else
+        return FALSE;
+    } else
+      return FALSE;
+  }
 
-    return (mac_index + delim_action) >= sizeof (MACADDR);
+  return (mac_index + delim_action) >= sizeof(MACADDR);
 }
 
 /*
@@ -109,56 +95,38 @@ ParseMAC (MACADDR dest, const char *src)
  * of collision would be 0.01157288998621678766.
  */
 
-VOID
-GenerateRandomMac(
-    __in MACADDR mac,
-    __in const unsigned char *adapter_name
-    )
-{
-    unsigned const char *cp = adapter_name;
-    unsigned char c;
-    unsigned int i = 2;
-    unsigned int byte = 0;
-    int brace = 0;
-    int state = 0;
+VOID GenerateRandomMac(__in MACADDR mac, __in const unsigned char *adapter_name) {
+  unsigned const char *cp = adapter_name;
+  unsigned char c;
+  unsigned int i = 2;
+  unsigned int byte = 0;
+  int brace = 0;
+  int state = 0;
 
-    CLEAR_MAC (mac);
+  CLEAR_MAC(mac);
 
-    mac[0] = 0x00;
-    mac[1] = 0xFF;
+  mac[0] = 0x00;
+  mac[1] = 0xFF;
 
-    while (c = *cp++)
-    {
-        if (i >= sizeof (MACADDR))
-            break;
-        if (c == '{')
-            brace = 1;
-        if (IsHexDigit (c) && brace)
-        {
-            const unsigned int digit = HexStringToDecimalInt (c);
-            if (state)
-            {
-                byte <<= 4;
-                byte |= digit;
-                mac[i++] = (unsigned char) byte;
-                state = 0;
-            }
-            else
-            {
-                byte = digit;
-                state = 1;
-            }
-        }
+  while (c = *cp++) {
+    if (i >= sizeof(MACADDR)) break;
+    if (c == '{') brace = 1;
+    if (IsHexDigit(c) && brace) {
+      const unsigned int digit = HexStringToDecimalInt(c);
+      if (state) {
+        byte <<= 4;
+        byte |= digit;
+        mac[i++] = (unsigned char)byte;
+        state = 0;
+      } else {
+        byte = digit;
+        state = 1;
+      }
     }
+  }
 }
 
-VOID
-GenerateRelatedMAC(
-    __in MACADDR dest,
-    __in const MACADDR src,
-    __in const int delta
-    )
-{
-    ETH_COPY_NETWORK_ADDRESS (dest, src);
-    dest[2] += (UCHAR) delta;
+VOID GenerateRelatedMAC(__in MACADDR dest, __in const MACADDR src, __in const int delta) {
+  ETH_COPY_NETWORK_ADDRESS(dest, src);
+  dest[2] += (UCHAR)delta;
 }

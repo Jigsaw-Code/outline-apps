@@ -31,23 +31,14 @@
 #define IsMacDelimiter(a) (a == ':' || a == '-' || a == '.')
 #define IsHexDigit(c) ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))
 
-#define CLEAR_MAC(dest)     NdisZeroMemory ((dest), sizeof (MACADDR))
-#define MAC_EQUAL(a,b)      (memcmp ((a), (b), sizeof (MACADDR)) == 0)
+#define CLEAR_MAC(dest) NdisZeroMemory((dest), sizeof(MACADDR))
+#define MAC_EQUAL(a, b) (memcmp((a), (b), sizeof(MACADDR)) == 0)
 
 BOOLEAN
-ParseMAC (MACADDR dest, const char *src);
+ParseMAC(MACADDR dest, const char *src);
 
-VOID
-GenerateRandomMac(
-    __in MACADDR mac,
-    __in const unsigned char *adapter_name
-    );
+VOID GenerateRandomMac(__in MACADDR mac, __in const unsigned char *adapter_name);
 
-VOID
-GenerateRelatedMAC(
-    __in MACADDR dest,
-    __in const MACADDR src,
-    __in const int delta
-    );
+VOID GenerateRelatedMAC(__in MACADDR dest, __in const MACADDR src, __in const int delta);
 
 #endif

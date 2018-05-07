@@ -40,7 +40,7 @@
 //==============================================
 
 #define DHCP_USER_SUPPLIED_OPTIONS_BUFFER_SIZE 256
-#define DHCP_OPTIONS_BUFFER_SIZE               256
+#define DHCP_OPTIONS_BUFFER_SIZE 256
 
 //===================================
 // UDP port numbers of DHCP messages.
@@ -54,24 +54,24 @@
 //===========================
 
 typedef struct {
-# define BOOTREQUEST 1
-# define BOOTREPLY   2
-  UCHAR op;          /* message op */
+#define BOOTREQUEST 1
+#define BOOTREPLY 2
+  UCHAR op; /* message op */
 
-  UCHAR  htype;      /* hardware address type (e.g. '1' = 10Mb Ethernet) */
-  UCHAR  hlen;       /* hardware address length (e.g. '6' for 10Mb Ethernet) */
-  UCHAR  hops;       /* client sets to 0, may be used by relay agents */
-  ULONG  xid;        /* transaction ID, chosen by client */
-  USHORT secs;       /* seconds since request process began, set by client */
+  UCHAR htype; /* hardware address type (e.g. '1' = 10Mb Ethernet) */
+  UCHAR hlen;  /* hardware address length (e.g. '6' for 10Mb Ethernet) */
+  UCHAR hops;  /* client sets to 0, may be used by relay agents */
+  ULONG xid;   /* transaction ID, chosen by client */
+  USHORT secs; /* seconds since request process began, set by client */
   USHORT flags;
-  ULONG  ciaddr;     /* client IP address, client sets if known */
-  ULONG  yiaddr;     /* 'your' IP address -- server's response to client */
-  ULONG  siaddr;     /* server IP address */
-  ULONG  giaddr;     /* relay agent IP address */
-  UCHAR  chaddr[16]; /* client hardware address */
-  UCHAR  sname[64];  /* optional server host name */
-  UCHAR  file[128];  /* boot file name */
-  ULONG  magic;      /* must be 0x63825363 (network order) */
+  ULONG ciaddr;     /* client IP address, client sets if known */
+  ULONG yiaddr;     /* 'your' IP address -- server's response to client */
+  ULONG siaddr;     /* server IP address */
+  ULONG giaddr;     /* relay agent IP address */
+  UCHAR chaddr[16]; /* client hardware address */
+  UCHAR sname[64];  /* optional server host name */
+  UCHAR file[128];  /* boot file name */
+  ULONG magic;      /* must be 0x63825363 (network order) */
 } DHCP;
 
 typedef struct {
@@ -96,10 +96,10 @@ typedef struct {
 // Macros for DHCPMSG
 //===================
 
-#define DHCPMSG_LEN_BASE(p) (sizeof (DHCPPre))
-#define DHCPMSG_LEN_OPT(p)  ((p)->optlen)
+#define DHCPMSG_LEN_BASE(p) (sizeof(DHCPPre))
+#define DHCPMSG_LEN_OPT(p) ((p)->optlen)
 #define DHCPMSG_LEN_FULL(p) (DHCPMSG_LEN_BASE(p) + DHCPMSG_LEN_OPT(p))
-#define DHCPMSG_BUF(p)      ((UCHAR*) &(p)->msg)
+#define DHCPMSG_BUF(p) ((UCHAR *)&(p)->msg)
 #define DHCPMSG_OVERFLOW(p) ((p)->overflow)
 
 //========================================
@@ -128,38 +128,34 @@ typedef struct {
 // DHCP Option types
 //==================
 
-#define DHCP_MSG_TYPE    53  /* message type (u8) */
-#define DHCP_PARM_REQ    55  /* parameter request list: c1 (u8), ... */
-#define DHCP_CLIENT_ID   61  /* client ID: type (u8), i1 (u8), ... */
-#define DHCP_IP          50  /* requested IP addr (u32) */
-#define DHCP_NETMASK      1  /* subnet mask (u32) */
-#define DHCP_LEASE_TIME  51  /* lease time sec (u32) */
-#define DHCP_RENEW_TIME  58  /* renewal time sec (u32) */
-#define DHCP_REBIND_TIME 59  /* rebind time sec (u32) */
-#define DHCP_SERVER_ID   54  /* server ID: IP addr (u32) */
-#define DHCP_PAD          0
-#define DHCP_END        255
+#define DHCP_MSG_TYPE 53    /* message type (u8) */
+#define DHCP_PARM_REQ 55    /* parameter request list: c1 (u8), ... */
+#define DHCP_CLIENT_ID 61   /* client ID: type (u8), i1 (u8), ... */
+#define DHCP_IP 50          /* requested IP addr (u32) */
+#define DHCP_NETMASK 1      /* subnet mask (u32) */
+#define DHCP_LEASE_TIME 51  /* lease time sec (u32) */
+#define DHCP_RENEW_TIME 58  /* renewal time sec (u32) */
+#define DHCP_REBIND_TIME 59 /* rebind time sec (u32) */
+#define DHCP_SERVER_ID 54   /* server ID: IP addr (u32) */
+#define DHCP_PAD 0
+#define DHCP_END 255
 
 //====================
 // DHCP Messages types
 //====================
 
 #define DHCPDISCOVER 1
-#define DHCPOFFER    2
-#define DHCPREQUEST  3
-#define DHCPDECLINE  4
-#define DHCPACK      5
-#define DHCPNAK      6
-#define DHCPRELEASE  7
-#define DHCPINFORM   8
+#define DHCPOFFER 2
+#define DHCPREQUEST 3
+#define DHCPDECLINE 4
+#define DHCPACK 5
+#define DHCPNAK 6
+#define DHCPRELEASE 7
+#define DHCPINFORM 8
 
 #if DBG
 
-VOID
-DumpDHCP (const ETH_HEADER *eth,
-	  const IPHDR *ip,
-	  const UDPHDR *udp,
-	  const DHCP *dhcp,
-	  const int optlen);
+VOID DumpDHCP(const ETH_HEADER *eth, const IPHDR *ip, const UDPHDR *udp, const DHCP *dhcp,
+              const int optlen);
 
 #endif

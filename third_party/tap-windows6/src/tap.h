@@ -24,26 +24,25 @@
 #ifndef __TAP_H
 #define __TAP_H
 
-#include <ntifs.h>
 #include <ndis.h>
-#include <ntstrsafe.h>
 #include <netioapi.h>
+#include <ntifs.h>
+#include <ntstrsafe.h>
 
-#include "config.h"
-#include "lock.h"
-#include "constants.h"
-#include "proto.h"
-#include "mem.h"
-#include "macinfo.h"
-#include "dhcp.h"
-#include "error.h"
-#include "endian.h"
-#include "dhcp.h"
-#include "types.h"
 #include "adapter.h"
+#include "config.h"
+#include "constants.h"
 #include "device.h"
+#include "dhcp.h"
+#include "endian.h"
+#include "error.h"
+#include "lock.h"
+#include "macinfo.h"
+#include "mem.h"
+#include "proto.h"
 #include "prototypes.h"
 #include "tap-windows.h"
+#include "types.h"
 
 //========================================================
 // Check for truncated IPv4 packets, log errors if found.
@@ -66,18 +65,16 @@
 // data), and it passes the handle back to the miniport in MiniportSetOptions
 // and MiniportInitializeEx.
 //
-typedef struct _TAP_GLOBAL
-{
-    LIST_ENTRY          AdapterList;
+typedef struct _TAP_GLOBAL {
+  LIST_ENTRY AdapterList;
 
-    NDIS_RW_LOCK        Lock;
+  NDIS_RW_LOCK Lock;
 
-    NDIS_HANDLE         NdisDriverHandle;   // From NdisMRegisterMiniportDriver
+  NDIS_HANDLE NdisDriverHandle;  // From NdisMRegisterMiniportDriver
 
 } TAP_GLOBAL, *PTAP_GLOBAL;
 
-
 // Global data
-extern TAP_GLOBAL      GlobalData;
+extern TAP_GLOBAL GlobalData;
 
-#endif // __TAP_H
+#endif  // __TAP_H

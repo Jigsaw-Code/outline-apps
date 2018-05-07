@@ -34,19 +34,20 @@ extern "C" {
 //=====================================================================================
 
 #ifndef NDIS_MINIPORT_DRIVER
-#   include <stdio.h>
-#   include <ctype.h>
-#   include <windows.h>
-#   include <winnt.h>
-#   include <memory.h>
+#include <ctype.h>
+#include <memory.h>
+#include <stdio.h>
+#include <windows.h>
+#include <winnt.h>
 
-#   ifndef DEBUGP
-#      define DEBUGP(fmt) { DbgMessage fmt; }
-#   endif
+#ifndef DEBUGP
+#define DEBUGP(fmt) \
+  { DbgMessage fmt; }
+#endif
 
-    extern VOID (*DbgMessage)(char *p_Format, ...);
+extern VOID (*DbgMessage)(char *p_Format, ...);
 
-    VOID DisplayDebugString (char *p_Format, ...);
+VOID DisplayDebugString(char *p_Format, ...);
 #endif
 
 //===================================================================================
@@ -54,7 +55,7 @@ extern "C" {
 //===================================================================================
 #define IfPrint(c) (c >= 32 && c < 127 ? c : '.')
 
-VOID HexDump (unsigned char *p_Buffer, unsigned long p_Size);
+VOID HexDump(unsigned char *p_Buffer, unsigned long p_Size);
 
 #ifdef __cplusplus
 }
