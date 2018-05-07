@@ -83,7 +83,7 @@
 
         <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" onkeydown="this.invalid = false;"></paper-input>
 
-        <p id="feedbackPrivacy" class="info"></p>
+        <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"></p>
       </div>
       <div class="card-actions">
         <paper-button id="submitButton" disabled$="[[submitting]]">[[submitButtonLabel]]</paper-button>
@@ -122,11 +122,6 @@
             this.$.categoryList.selected = tmp;
           }
         }.bind(this));
-        Polymer.RenderStatus.beforeNextRender(this, function() {
-          this.$.feedbackPrivacy.innerHTML = this.localize('feedback-privacy', 'privacyPolicyLinkOpen',
-              '<a href=&quot;https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection&quot;>',
-              'privacyPolicyLinkClose', '</a>');
-        });
       },
       _computeSubmitButtonLabel: function (submitting, localize) {
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this

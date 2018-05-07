@@ -94,7 +94,6 @@
       #server-config {
         padding: 24px;
       }
-      /* rtl:begin:ignore */
       #serverDetectedSheet paper-input {
         /* For some strange reason, Apple increases the brightness of the input. Reduce it, baring
          * in mind the trade-off with respect to Android, which displays the text appropriately.
@@ -110,10 +109,9 @@
           opacity: 1.0;
           filter: brightness(0.8);
           /* Do not flip the access key. */
-          direction: ltr;
+          direction: ltr /* rtl:ignore */;
         };
       }
-      /* rtl:end:ignore */
       paper-button {
         margin: 0;
         font-weight: 500;

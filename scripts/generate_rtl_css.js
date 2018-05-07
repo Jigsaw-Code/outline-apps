@@ -27,9 +27,10 @@ module.exports = function(src, dest) {
   const filterType = /\/css$/;
   return gulp.src([src])
       .pipe(posthtml([posthtmlcss(plugins, options, filterType)]))
-      // Replace the generated selectors with Shadow DOM selectors.
+      // Replace the generated selectors with Shadow DOM selectors for Polymer compatibility.
       .pipe(replace('[dir=rtl]', ':host(:dir(rtl))'))
       .pipe(replace('[dir=ltr]', ':host(:dir(ltr))'))
+      // rtlcss generates [dir] selectors for rules unaffected by directionality; ignore them.
       .pipe(replace('[dir]', ''))
       .pipe(gulp.dest(dest));
 }
