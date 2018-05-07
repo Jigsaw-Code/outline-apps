@@ -111,6 +111,7 @@
         padding: 0;
       }
 
+      /* rtl:begin:ignore */
       #drawer-nav paper-icon-item {
         cursor: pointer;
         font-size: 16px;
@@ -125,6 +126,12 @@
       #drawer-nav paper-icon-item:focus::after {
         color: var(--medium-green);
         background-color: var(--light-gray);
+      }
+      /* rtl:end:ignore */
+
+      /* Manually reverse icons that require mirroring in RTL languages. */
+      :host(:dir(rtl)) #feedback-icon, :host(:dir(rtl)) #backBtn {
+        transform: scaleX(-1);
       }
 
       #logo-nav {
@@ -234,7 +241,8 @@
         <servers-view name="servers" id="serversView" servers="{{servers}}" root-path="[[rootPath]]" localize="[[localize]]"></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
         <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]"></about-view>
-        <licenses-view name="licenses" id="licensesView" localize="[[localize]]" root-path="[[rootPath]]"></licenses-view>
+        <!-- Do not mirror licenses text, as it is not localized. -->
+        <licenses-view name="licenses" id="licensesView" dir="ltr" localize="[[localize]]" root-path="[[rootPath]]"></licenses-view>
       </iron-pages>
 
     </app-header-layout>
@@ -285,7 +293,7 @@
           <span class="item-label">[[localize('servers-menu-item')]]</span>
         </paper-icon-item>
         <paper-icon-item name="feedback">
-          <iron-icon icon="feedback" slot="item-icon"></iron-icon>
+          <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
           [[localize('feedback-page-title')]]
         </paper-icon-item>
         <paper-icon-item name="about">
@@ -342,6 +350,11 @@
       ready: function () {
         var url = this.rootPath + 'messages/' + this.language + '.json';
         this.loadResources(url, this.language);
+        const languageProperties = this.LANGUAGES_AVAILABLE[this.language];
+        if (!!languageProperties && languageProperties.dir === 'rtl') {
+          document.documentElement.setAttribute('dir', 'rtl');
+          this.$.drawer.align = 'right';
+        }
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
         // https://github.com/PolymerElements/paper-behaviors/issues/80

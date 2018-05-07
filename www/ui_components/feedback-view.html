@@ -46,6 +46,7 @@
         max-width: 550px;
       }
       paper-input, paper-textarea, paper-dropdown-menu {
+        text-align: left;
         --paper-input-container-focus-color: #009688;
       }
       paper-dropdown-menu {
@@ -82,8 +83,7 @@
 
         <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" onkeydown="this.invalid = false;"></paper-input>
 
-        <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=&quot;https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection&quot;>', 'privacyPolicyLinkClose', '</a>')]]"></p>
-
+        <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"></p>
       </div>
       <div class="card-actions">
         <paper-button id="submitButton" disabled$="[[submitting]]">[[submitButtonLabel]]</paper-button>
