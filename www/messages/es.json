@@ -66,8 +66,6 @@
   "outline-plugin-error-generic-start-failure": "Algo sucedió y no fue posible conectar al servidor, inténtalo de nuevo. Si el problema persiste, envía comentarios.",
   "outline-plugin-error-networking-error": "Ocurrió un error en la red, inténtalo de nuevo. Si el problema persiste, envía comentarios.",
   "tips": "Consejos",
-  "non-system-vpn-warning-title": "Verifica la conexión de tu navegador",
-  "non-system-vpn-warning-detail": "La mayoría de los navegadores se conectan automáticamente con Outline, otros no.",
   "get-help": "Ayuda",
   "got-it": "Entendido",
   "save": "guardar",
