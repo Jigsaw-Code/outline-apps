@@ -19,6 +19,8 @@
 <dom-module id="server-connection-viz">
   <template>
     <style>
+      /* Do not mirror animation for RTL languages */
+      /* rtl:begin:ignore */
       @keyframes rotate-with-pause {
         0% {
           transform: rotate(0deg);
@@ -145,7 +147,7 @@
         pointer-events: none;
         z-index: 400;
       }
-      
+
       @media(min-height: 600px) {
         #sm, #sm-grey {
           top:  72px;
@@ -168,6 +170,7 @@
           width:  192px;
         }
       }
+      /* rtl:end:ignore */
 
     </style>
     <div id="container">
