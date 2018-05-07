@@ -25,8 +25,8 @@
 #ifndef TAP_TYPES_DEFINED
 #define TAP_TYPES_DEFINED
 
-//typedef
-//struct _Queue
+// typedef
+// struct _Queue
 //{
 //    ULONG base;
 //    ULONG size;
@@ -35,9 +35,9 @@
 //    PVOID data[];
 //} Queue;
 
-//typedef struct _TAP_PACKET;
+// typedef struct _TAP_PACKET;
 
-//typedef struct _TapExtension
+// typedef struct _TapExtension
 //{
 //  // TAP device object and packet queues
 //  Queue *m_PacketQueue, *m_IrpQueue;
@@ -76,15 +76,13 @@
 //  NDIS_SPIN_LOCK m_InjectLock;
 //  Queue *m_InjectQueue;
 //}
-//TapExtension, *TapExtensionPointer;
+// TapExtension, *TapExtensionPointer;
 
-typedef struct _InjectPacket
-   {
-#   define INJECT_PACKET_SIZE(data_size) (sizeof (InjectPacket) + (data_size))
-#   define INJECT_PACKET_FREE(ib)  NdisFreeMemory ((ib), INJECT_PACKET_SIZE ((ib)->m_Size), 0)
-    ULONG m_Size;
-    UCHAR m_Data []; // m_Data must be the last struct member
-   }
-InjectPacket, *InjectPacketPointer;
+typedef struct _InjectPacket {
+#define INJECT_PACKET_SIZE(data_size) (sizeof(InjectPacket) + (data_size))
+#define INJECT_PACKET_FREE(ib) NdisFreeMemory((ib), INJECT_PACKET_SIZE((ib)->m_Size), 0)
+  ULONG m_Size;
+  UCHAR m_Data[];  // m_Data must be the last struct member
+} InjectPacket, *InjectPacketPointer;
 
 #endif

@@ -25,16 +25,16 @@
 #ifndef TAP_PROTOTYPES_DEFINED
 #define TAP_PROTOTYPES_DEFINED
 
-DRIVER_INITIALIZE   DriverEntry;
+DRIVER_INITIALIZE DriverEntry;
 
-//VOID AdapterFreeResources
+// VOID AdapterFreeResources
 //   (
 //    TapAdapterPointer p_Adapter
 //   );
 //
 
 //
-//NTSTATUS TapDeviceHook
+// NTSTATUS TapDeviceHook
 //   (
 //    IN PDEVICE_OBJECT p_DeviceObject,
 //    IN PIRP p_IRP
@@ -42,46 +42,23 @@ DRIVER_INITIALIZE   DriverEntry;
 //
 
 NDIS_STATUS
-CreateTapDevice(
-    __in PTAP_ADAPTER_CONTEXT   Adapter
-   );
+CreateTapDevice(__in PTAP_ADAPTER_CONTEXT Adapter);
 
-VOID
-DestroyTapDevice(
-    __in PTAP_ADAPTER_CONTEXT   Adapter
-   );
+VOID DestroyTapDevice(__in PTAP_ADAPTER_CONTEXT Adapter);
 
 // Flush the pending send TAP packet queue.
-VOID
-tapFlushSendPacketQueue(
-    __in PTAP_ADAPTER_CONTEXT   Adapter
-    );
+VOID tapFlushSendPacketQueue(__in PTAP_ADAPTER_CONTEXT Adapter);
 
-VOID
-IndicateReceivePacket(
-    __in PTAP_ADAPTER_CONTEXT  Adapter,
-    __in PUCHAR packetData,
-    __in const unsigned int packetLength
-    );
+VOID IndicateReceivePacket(__in PTAP_ADAPTER_CONTEXT Adapter, __in PUCHAR packetData,
+                           __in const unsigned int packetLength);
 
 BOOLEAN
-ProcessDHCP(
-    __in PTAP_ADAPTER_CONTEXT   Adapter,
-    __in const ETH_HEADER *eth,
-    __in const IPHDR *ip,
-    __in const UDPHDR *udp,
-    __in const DHCP *dhcp,
-    __in int optlen
-    );
+ProcessDHCP(__in PTAP_ADAPTER_CONTEXT Adapter, __in const ETH_HEADER *eth, __in const IPHDR *ip,
+            __in const UDPHDR *udp, __in const DHCP *dhcp, __in int optlen);
 
 BOOLEAN
-ProcessARP(
-    __in PTAP_ADAPTER_CONTEXT   Adapter,
-    __in const PARP_PACKET src,
-    __in const IPADDR adapter_ip,
-    __in const IPADDR ip_network,
-    __in const IPADDR ip_netmask,
-    __in const MACADDR mac
-   );
+ProcessARP(__in PTAP_ADAPTER_CONTEXT Adapter, __in const PARP_PACKET src,
+           __in const IPADDR adapter_ip, __in const IPADDR ip_network, __in const IPADDR ip_netmask,
+           __in const MACADDR mac);
 
 #endif

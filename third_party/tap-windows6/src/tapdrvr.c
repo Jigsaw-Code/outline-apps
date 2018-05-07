@@ -43,21 +43,16 @@
 
 #include "tap.h"
 
-
 // Global data
-TAP_GLOBAL      GlobalData;
-
+TAP_GLOBAL GlobalData;
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text( INIT, DriverEntry )
-#pragma alloc_text( PAGE, TapDriverUnload)
-#endif // ALLOC_PRAGMA
+#pragma alloc_text(INIT, DriverEntry)
+#pragma alloc_text(PAGE, TapDriverUnload)
+#endif  // ALLOC_PRAGMA
 
 NTSTATUS
-DriverEntry(
-    __in PDRIVER_OBJECT   DriverObject,
-    __in PUNICODE_STRING  RegistryPath
-    )
+DriverEntry(__in PDRIVER_OBJECT DriverObject, __in PUNICODE_STRING RegistryPath)
 /*++
 Routine Description:
 
@@ -76,111 +71,99 @@ Arguments:
 
 --*/
 {
-    NTSTATUS                                status;
+  NTSTATUS status;
 
-    UNREFERENCED_PARAMETER(RegistryPath);
+  UNREFERENCED_PARAMETER(RegistryPath);
 
-    DEBUGP (("[TAP] --> DriverEntry; version [%d.%d] %s %s\n",
-        TAP_DRIVER_MAJOR_VERSION,
-        TAP_DRIVER_MINOR_VERSION,
-        __DATE__,
-        __TIME__));
+  DEBUGP(("[TAP] --> DriverEntry; version [%d.%d] %s %s\n", TAP_DRIVER_MAJOR_VERSION,
+          TAP_DRIVER_MINOR_VERSION, __DATE__, __TIME__));
 
-    DEBUGP (("[TAP] Registry Path: '%wZ'\n", RegistryPath));
+  DEBUGP(("[TAP] Registry Path: '%wZ'\n", RegistryPath));
 
-    //
-    // Initialize any driver-global variables here.
-    //
-    NdisZeroMemory(&GlobalData, sizeof(GlobalData));
+  //
+  // Initialize any driver-global variables here.
+  //
+  NdisZeroMemory(&GlobalData, sizeof(GlobalData));
 
-    //
-    // The ApaterList in the GlobalData structure is used to track multiple
-    // adapters controlled by this miniport.
-    //
-    NdisInitializeListHead(&GlobalData.AdapterList);
+  //
+  // The ApaterList in the GlobalData structure is used to track multiple
+  // adapters controlled by this miniport.
+  //
+  NdisInitializeListHead(&GlobalData.AdapterList);
 
-    //
-    // This lock protects the AdapterList.
-    //
-    NdisInitializeReadWriteLock(&GlobalData.Lock);
+  //
+  // This lock protects the AdapterList.
+  //
+  NdisInitializeReadWriteLock(&GlobalData.Lock);
 
-    do
+  do {
+    NDIS_MINIPORT_DRIVER_CHARACTERISTICS miniportCharacteristics;
+
+    NdisZeroMemory(&miniportCharacteristics, sizeof(miniportCharacteristics));
+
     {
-        NDIS_MINIPORT_DRIVER_CHARACTERISTICS    miniportCharacteristics;
+      C_ASSERT(sizeof(miniportCharacteristics) >=
+               NDIS_SIZEOF_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2);
+    }
+    miniportCharacteristics.Header.Type = NDIS_OBJECT_TYPE_MINIPORT_DRIVER_CHARACTERISTICS;
+    miniportCharacteristics.Header.Size = NDIS_SIZEOF_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2;
+    miniportCharacteristics.Header.Revision = NDIS_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2;
 
-        NdisZeroMemory(&miniportCharacteristics, sizeof(miniportCharacteristics));
+    miniportCharacteristics.MajorNdisVersion = TAP_NDIS_MAJOR_VERSION;
+    miniportCharacteristics.MinorNdisVersion = TAP_NDIS_MINOR_VERSION;
 
-        {C_ASSERT(sizeof(miniportCharacteristics) >= NDIS_SIZEOF_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2);}
-        miniportCharacteristics.Header.Type = NDIS_OBJECT_TYPE_MINIPORT_DRIVER_CHARACTERISTICS;
-        miniportCharacteristics.Header.Size = NDIS_SIZEOF_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2;
-        miniportCharacteristics.Header.Revision = NDIS_MINIPORT_DRIVER_CHARACTERISTICS_REVISION_2;
+    miniportCharacteristics.MajorDriverVersion = TAP_DRIVER_MAJOR_VERSION;
+    miniportCharacteristics.MinorDriverVersion = TAP_DRIVER_MINOR_VERSION;
 
-        miniportCharacteristics.MajorNdisVersion = TAP_NDIS_MAJOR_VERSION;
-        miniportCharacteristics.MinorNdisVersion = TAP_NDIS_MINOR_VERSION;
+    miniportCharacteristics.Flags = 0;
 
-        miniportCharacteristics.MajorDriverVersion = TAP_DRIVER_MAJOR_VERSION;
-        miniportCharacteristics.MinorDriverVersion = TAP_DRIVER_MINOR_VERSION;
+    // miniportCharacteristics.SetOptionsHandler = MPSetOptions; // Optional
+    miniportCharacteristics.InitializeHandlerEx = AdapterCreate;
+    miniportCharacteristics.HaltHandlerEx = AdapterHalt;
+    miniportCharacteristics.UnloadHandler = TapDriverUnload;
+    miniportCharacteristics.PauseHandler = AdapterPause;
+    miniportCharacteristics.RestartHandler = AdapterRestart;
+    miniportCharacteristics.OidRequestHandler = AdapterOidRequest;
+    miniportCharacteristics.SendNetBufferListsHandler = AdapterSendNetBufferLists;
+    miniportCharacteristics.ReturnNetBufferListsHandler = AdapterReturnNetBufferLists;
+    miniportCharacteristics.CancelSendHandler = AdapterCancelSend;
+    miniportCharacteristics.CheckForHangHandlerEx = AdapterCheckForHangEx;
+    miniportCharacteristics.ResetHandlerEx = AdapterReset;
+    miniportCharacteristics.DevicePnPEventNotifyHandler = AdapterDevicePnpEventNotify;
+    miniportCharacteristics.ShutdownHandlerEx = AdapterShutdownEx;
+    miniportCharacteristics.CancelOidRequestHandler = AdapterCancelOidRequest;
 
-        miniportCharacteristics.Flags = 0;
+    //
+    // Associate the miniport driver with NDIS by calling the
+    // NdisMRegisterMiniportDriver. This function returns an NdisDriverHandle.
+    // The miniport driver must retain this handle but it should never attempt
+    // to access or interpret this handle.
+    //
+    // By calling NdisMRegisterMiniportDriver, the driver indicates that it
+    // is ready for NDIS to call the driver's MiniportSetOptions and
+    // MiniportInitializeEx handlers.
+    //
+    DEBUGP(("[TAP] Calling NdisMRegisterMiniportDriver...\n"));
+    // NDIS_DECLARE_MINIPORT_DRIVER_CONTEXT(TAP_GLOBAL);
+    status = NdisMRegisterMiniportDriver(DriverObject, RegistryPath, &GlobalData,
+                                         &miniportCharacteristics, &GlobalData.NdisDriverHandle);
 
-        //miniportCharacteristics.SetOptionsHandler = MPSetOptions; // Optional
-        miniportCharacteristics.InitializeHandlerEx = AdapterCreate;
-        miniportCharacteristics.HaltHandlerEx = AdapterHalt;
-        miniportCharacteristics.UnloadHandler = TapDriverUnload;
-        miniportCharacteristics.PauseHandler = AdapterPause;
-        miniportCharacteristics.RestartHandler = AdapterRestart;
-        miniportCharacteristics.OidRequestHandler = AdapterOidRequest;
-        miniportCharacteristics.SendNetBufferListsHandler = AdapterSendNetBufferLists;
-        miniportCharacteristics.ReturnNetBufferListsHandler = AdapterReturnNetBufferLists;
-        miniportCharacteristics.CancelSendHandler = AdapterCancelSend;
-        miniportCharacteristics.CheckForHangHandlerEx = AdapterCheckForHangEx;
-        miniportCharacteristics.ResetHandlerEx = AdapterReset;
-        miniportCharacteristics.DevicePnPEventNotifyHandler = AdapterDevicePnpEventNotify;
-        miniportCharacteristics.ShutdownHandlerEx = AdapterShutdownEx;
-        miniportCharacteristics.CancelOidRequestHandler = AdapterCancelOidRequest;
+    if (NDIS_STATUS_SUCCESS == status) {
+      DEBUGP(("[TAP] Registered miniport successfully\n"));
+    } else {
+      DEBUGP(("[TAP] NdisMRegisterMiniportDriver failed: %8.8X\n", status));
+      TapDriverUnload(DriverObject);
+      status = NDIS_STATUS_FAILURE;
+      break;
+    }
+  } while (FALSE);
 
-        //
-        // Associate the miniport driver with NDIS by calling the
-        // NdisMRegisterMiniportDriver. This function returns an NdisDriverHandle.
-        // The miniport driver must retain this handle but it should never attempt
-        // to access or interpret this handle.
-        //
-        // By calling NdisMRegisterMiniportDriver, the driver indicates that it
-        // is ready for NDIS to call the driver's MiniportSetOptions and
-        // MiniportInitializeEx handlers.
-        //
-        DEBUGP (("[TAP] Calling NdisMRegisterMiniportDriver...\n"));
-        //NDIS_DECLARE_MINIPORT_DRIVER_CONTEXT(TAP_GLOBAL);
-        status = NdisMRegisterMiniportDriver(
-                    DriverObject,
-                    RegistryPath,
-                    &GlobalData,
-                    &miniportCharacteristics,
-                    &GlobalData.NdisDriverHandle
-                    );
+  DEBUGP(("[TAP] <-- DriverEntry; status = %8.8X\n", status));
 
-        if (NDIS_STATUS_SUCCESS == status)
-        {
-            DEBUGP (("[TAP] Registered miniport successfully\n"));
-        }
-        else
-        {
-            DEBUGP(("[TAP] NdisMRegisterMiniportDriver failed: %8.8X\n", status));
-            TapDriverUnload(DriverObject);
-            status = NDIS_STATUS_FAILURE;
-            break;
-        }
-    } while(FALSE);
-
-    DEBUGP (("[TAP] <-- DriverEntry; status = %8.8X\n",status));
-
-    return status;
+  return status;
 }
 
-VOID
-TapDriverUnload(
-    __in PDRIVER_OBJECT DriverObject
-    )
+VOID TapDriverUnload(__in PDRIVER_OBJECT DriverObject)
 /*++
 
 Routine Description:
@@ -204,29 +187,23 @@ Return Value:
 
 --*/
 {
-    PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;
-    UNICODE_STRING uniWin32NameString;
+  PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;
+  UNICODE_STRING uniWin32NameString;
 
-    DEBUGP (("[TAP] --> TapDriverUnload; version [%d.%d] %s %s unloaded\n",
-        TAP_DRIVER_MAJOR_VERSION,
-        TAP_DRIVER_MINOR_VERSION,
-        __DATE__,
-        __TIME__
-        ));
+  DEBUGP(("[TAP] --> TapDriverUnload; version [%d.%d] %s %s unloaded\n", TAP_DRIVER_MAJOR_VERSION,
+          TAP_DRIVER_MINOR_VERSION, __DATE__, __TIME__));
 
-    PAGED_CODE();
+  PAGED_CODE();
 
-    //
-    // Clean up all globals that were allocated in DriverEntry
-    //
+  //
+  // Clean up all globals that were allocated in DriverEntry
+  //
 
-    ASSERT(IsListEmpty(&GlobalData.AdapterList));
+  ASSERT(IsListEmpty(&GlobalData.AdapterList));
 
-    if(GlobalData.NdisDriverHandle != NULL )
-    {
-        NdisMDeregisterMiniportDriver(GlobalData.NdisDriverHandle);
-    }
+  if (GlobalData.NdisDriverHandle != NULL) {
+    NdisMDeregisterMiniportDriver(GlobalData.NdisDriverHandle);
+  }
 
-    DEBUGP (("[TAP] <-- TapDriverUnload\n"));
+  DEBUGP(("[TAP] <-- TapDriverUnload\n"));
 }
-

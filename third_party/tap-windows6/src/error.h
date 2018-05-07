@@ -30,82 +30,72 @@ extern const char *g_LastErrorFilename;
 extern int g_LastErrorLineNumber;
 
 // Debug info output
-#define ALSO_DBGPRINT           1
-#define DEBUGP_AT_DISPATCH      1
+#define ALSO_DBGPRINT 1
+#define DEBUGP_AT_DISPATCH 1
 
 // Uncomment line below to allow packet dumps
 //#define ALLOW_PACKET_DUMP       1
 
-#define NOTE_ERROR() \
-{ \
-  g_LastErrorFilename = __FILE__; \
-  g_LastErrorLineNumber = __LINE__; \
-}
+#define NOTE_ERROR()                  \
+  {                                   \
+    g_LastErrorFilename = __FILE__;   \
+    g_LastErrorLineNumber = __LINE__; \
+  }
 
 #if DBG
 
-typedef struct
-{
-    unsigned int in;
-    unsigned int out;
-    unsigned int capacity;
-    char *text;
-    BOOLEAN error;
-    MUTEX lock;
+typedef struct {
+  unsigned int in;
+  unsigned int out;
+  unsigned int capacity;
+  char *text;
+  BOOLEAN error;
+  MUTEX lock;
 } DebugOutput;
 
-VOID MyDebugPrint (const unsigned char* format, ...);
+VOID MyDebugPrint(const unsigned char *format, ...);
 
-VOID PrMac (const MACADDR mac);
+VOID PrMac(const MACADDR mac);
 
-VOID PrIP (IPADDR ip_addr);
+VOID PrIP(IPADDR ip_addr);
 
 #ifdef ALLOW_PACKET_DUMP
 
-VOID
-DumpPacket(
-    __in const char *prefix,
-    __in const unsigned char *data,
-    __in unsigned int len
-    );
+VOID DumpPacket(__in const char *prefix, __in const unsigned char *data, __in unsigned int len);
 
-DumpPacket2(
-    __in const char *prefix,
-    __in const ETH_HEADER *eth,
-    __in const unsigned char *data,
-    __in unsigned int len
-    );
+DumpPacket2(__in const char *prefix, __in const ETH_HEADER *eth, __in const unsigned char *data,
+            __in unsigned int len);
 
 #else
 #define DUMP_PACKET(prefix, data, len)
 #define DUMP_PACKET2(prefix, eth, data, len)
 #endif
 
-#define CAN_WE_PRINT (DEBUGP_AT_DISPATCH || KeGetCurrentIrql () < DISPATCH_LEVEL)
+#define CAN_WE_PRINT (DEBUGP_AT_DISPATCH || KeGetCurrentIrql() < DISPATCH_LEVEL)
 
 #if ALSO_DBGPRINT
-#define DEBUGP(fmt) { MyDebugPrint fmt; if (CAN_WE_PRINT) DbgPrint fmt; }
+#define DEBUGP(fmt)                 \
+  {                                 \
+    MyDebugPrint fmt;               \
+    if (CAN_WE_PRINT) DbgPrint fmt; \
+  }
 #else
-#define DEBUGP(fmt) { MyDebugPrint fmt; }
+#define DEBUGP(fmt) \
+  { MyDebugPrint fmt; }
 #endif
 
 #ifdef ALLOW_PACKET_DUMP
 
-#define DUMP_PACKET(prefix, data, len) \
-  DumpPacket (prefix, data, len)
+#define DUMP_PACKET(prefix, data, len) DumpPacket(prefix, data, len)
 
-#define DUMP_PACKET2(prefix, eth, data, len) \
-  DumpPacket2 (prefix, eth, data, len)
+#define DUMP_PACKET2(prefix, eth, data, len) DumpPacket2(prefix, eth, data, len)
 
 #endif
 
 BOOLEAN
-GetDebugLine (
-    __in char *buf,
-    __in const int len
-    );
+GetDebugLine(__in char *buf, __in const int len);
 
-#else 
+#else
 
 #define DEBUGP(fmt)
 #define DUMP_PACKET(prefix, data, len)

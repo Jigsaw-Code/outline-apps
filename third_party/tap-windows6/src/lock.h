@@ -22,54 +22,46 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-typedef struct
-{
+typedef struct {
   volatile long count;
 } MUTEX;
 
-#define MUTEX_SLEEP_TIME  10000 // microseconds
+#define MUTEX_SLEEP_TIME 10000  // microseconds
 
-#define INIT_MUTEX(m) { (m)->count = 0; }
+#define INIT_MUTEX(m) \
+  { (m)->count = 0; }
 
-#define ACQUIRE_MUTEX_BLOCKING(m)                         \
-{                                                         \
-    while (NdisInterlockedIncrement (&((m)->count)) != 1) \
-    {                                                     \
-        NdisInterlockedDecrement(&((m)->count));          \
-        NdisMSleep(MUTEX_SLEEP_TIME);                     \
-    }                                                     \
-}
+#define ACQUIRE_MUTEX_BLOCKING(m)                          \
+  {                                                        \
+    while (NdisInterlockedIncrement(&((m)->count)) != 1) { \
+      NdisInterlockedDecrement(&((m)->count));             \
+      NdisMSleep(MUTEX_SLEEP_TIME);                        \
+    }                                                      \
+  }
 
-#define RELEASE_MUTEX(m)                                  \
-{                                                         \
-        NdisInterlockedDecrement(&((m)->count));          \
-}
+#define RELEASE_MUTEX(m) \
+  { NdisInterlockedDecrement(&((m)->count)); }
 
-#define ACQUIRE_MUTEX_NONBLOCKING(m, result)              \
-{                                                         \
-    if (NdisInterlockedIncrement (&((m)->count)) != 1)    \
-    {                                                     \
-        NdisInterlockedDecrement(&((m)->count));          \
-        result = FALSE;                                   \
-    }                                                     \
-    else                                                  \
-    {                                                     \
-	result = TRUE;                                    \
-    }                                                     \
-}
+#define ACQUIRE_MUTEX_NONBLOCKING(m, result)            \
+  {                                                     \
+    if (NdisInterlockedIncrement(&((m)->count)) != 1) { \
+      NdisInterlockedDecrement(&((m)->count));          \
+      result = FALSE;                                   \
+    } else {                                            \
+      result = TRUE;                                    \
+    }                                                   \
+  }
 
-#define ACQUIRE_MUTEX_ADAPTIVE(m, result)                 \
-{                                                         \
-    result = TRUE;                                        \
-    while (NdisInterlockedIncrement (&((m)->count)) != 1) \
-    {                                                     \
-        NdisInterlockedDecrement(&((m)->count));          \
-        if (KeGetCurrentIrql () < DISPATCH_LEVEL)         \
-            NdisMSleep(MUTEX_SLEEP_TIME);                 \
-        else                                              \
-        {                                                 \
-	    result = FALSE;                               \
-	    break;                                        \
-        }                                                 \
-    }                                                     \
-}
+#define ACQUIRE_MUTEX_ADAPTIVE(m, result)                  \
+  {                                                        \
+    result = TRUE;                                         \
+    while (NdisInterlockedIncrement(&((m)->count)) != 1) { \
+      NdisInterlockedDecrement(&((m)->count));             \
+      if (KeGetCurrentIrql() < DISPATCH_LEVEL)             \
+        NdisMSleep(MUTEX_SLEEP_TIME);                      \
+      else {                                               \
+        result = FALSE;                                    \
+        break;                                             \
+      }                                                    \
+    }                                                      \
+  }
