@@ -90,9 +90,6 @@ main({
 
     return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN);
   },
-  hasSystemVpnSupport() {
-    return false;
-  },
   getUpdater: () => {
     return new ElectronUpdater();
   }
