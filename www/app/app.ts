@@ -39,15 +39,10 @@ export class App {
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
-      private environmentVars: EnvironmentVariables, private hasSystemVpnSupport: boolean,
-      private updater: Updater, document = window.document) {
+      private environmentVars: EnvironmentVariables, private updater: Updater,
+      document = window.document) {
     this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
-
-    if (debugMode) {
-      console.log(`running in debug mode - resetting non-system VPN warning`);
-      this.setNonSystemVpnWarningDismissed(false);
-    }
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
@@ -75,8 +70,6 @@ export class App {
     this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
     this.rootEl.addEventListener('RenameRequested', this.renameServer.bind(this));
     this.rootEl.addEventListener('QuitPressed', this.quitApplication.bind(this));
-    this.rootEl.addEventListener(
-        'NonSystemVpnWarningDismissed', this.nonSystemVpnWarningDismissed.bind(this));
     this.rootEl.addEventListener(
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
@@ -273,41 +266,12 @@ export class App {
         () => {
           card.state = 'CONNECTED';
           this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
-          this.maybeShowNonSystemWarning();
         },
         (err: errors.OutlinePluginError) => {
           console.error(`Failed to connect to server with plugin error: ${err.name}`);
           card.state = 'DISCONNECTED';
           this.showLocalizedError(err);
         });
-  }
-
-  private maybeShowNonSystemWarning() {
-    if (this.hasSystemVpnSupport) {
-      return;
-    }
-
-    let dismissed = false;
-    try {
-      dismissed = this.getNonSystemVpnWarningDismissed();
-    } catch (e) {
-      console.error(`could not read full-system VPN warning status, assuming not dismissed`);
-    }
-    if (!dismissed) {
-      this.rootEl.$.serversView.$.nonSystemVpnWarning.show();
-    }
-  }
-
-  private getNonSystemVpnWarningDismissed() {
-    return this.settings.get(SettingsKey.VPN_WARNING_DISMISSED) === 'true';
-  }
-
-  private setNonSystemVpnWarningDismissed(dismissed: boolean) {
-    this.settings.set(SettingsKey.VPN_WARNING_DISMISSED, dismissed ? 'true' : 'false');
-  }
-
-  private nonSystemVpnWarningDismissed(event: CustomEvent) {
-    this.setNonSystemVpnWarningDismissed(true);
   }
 
   private disconnectServer(event: CustomEvent) {
@@ -317,9 +281,6 @@ export class App {
         () => {
           card.state = 'DISCONNECTED';
           this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
-          // The user may not have dismissed the warning before disconnecting.
-          // If so, hide the warning for now - it'll appear next time.
-          this.rootEl.$.serversView.$.nonSystemVpnWarning.hide();
         },
         (err: errors.OutlinePluginError) => {
           card.state = 'CONNECTED';
