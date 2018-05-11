@@ -38,8 +38,7 @@
         </intent-filter>
       </service>
 
-      <!-- TODO: enable this component to enable the auto-connect feature -->
-      <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="false">
+      <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="true">
           <intent-filter>
             <action android:name="android.intent.action.BOOT_COMPLETED" />
           </intent-filter>
