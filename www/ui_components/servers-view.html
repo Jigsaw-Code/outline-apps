@@ -87,7 +87,8 @@
           <div class="header">[[localize('server-add')]]</div>
           <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
         </div>
-        <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'openLine', '<div>', 'closeLine', '</div>', 'outlineLink', '<a href=&quot;https://s3.amazonaws.com/outline-vpn/index.html&quot;>our website</a>')]]"></div>
+        <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]">
+        </div>
       </div>
       <server-list id="serverList" hidden$="[[shouldShowZeroState]]" servers="{{servers}}" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
     </div>
