@@ -64,6 +64,7 @@
         border-top-color: rgba(0,0,0,0.08);
         border-top-style: solid;
       }
+      /* rtl:ignore */
       paper-input {
         margin: 24px;
         --paper-input-container-underline: {
@@ -107,6 +108,8 @@
           text-overflow: ellipsis;
           opacity: 1.0;
           filter: brightness(0.8);
+          /* Do not flip the access key. */
+          direction: ltr /* rtl:ignore */;
         };
       }
       paper-button {
@@ -143,6 +146,10 @@
         opacity: 1.0;
         --iron-icon-fill-color: var(--success-color);
       }
+      /* Reverse key icon */
+      :host(:dir(rtl)) iron-icon {
+        transform: scaleX(-1);
+      }
     </style>
 
     <paper-dialog id="addServerSheet" with-backdrop>
@@ -154,8 +161,8 @@
         <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
       </paper-input>
       <div class="footer center top-divider">
-        <div id="addServerFooter" inner-h-t-m-l="[[localize('server-create-your-own', 'openLine', '<div>', 'closeLine', '</div>', 'outlineLink', '<a href=&quot;https://s3.amazonaws.com/outline-vpn/index.html&quot;>our website</a>')]]"></div>
-        <div id="invalidAccessKeyFooter" hidden inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<div class=&quot;input-invalid&quot;>', 'closeLine', '</div>')]]"></div>
+        <div id="addServerFooter" inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"></div>
+        <div id="invalidAccessKeyFooter" hidden inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<span class=input-invalid>', 'closeLine', '</span><br/>')]]"></div>
       </div>
     </paper-dialog>
 
