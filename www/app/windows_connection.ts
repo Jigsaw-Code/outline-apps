@@ -26,6 +26,8 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
 
   constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {
     const serverName = this.config.name || this.config.host || '';
+    // This event is received when the proxy connects. It is mainly used for signaling the UI that
+    // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
       this.handleStatusChange(ConnectionStatus.CONNECTED);
     });
