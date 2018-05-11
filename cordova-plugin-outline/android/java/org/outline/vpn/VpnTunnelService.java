@@ -137,6 +137,11 @@ public class VpnTunnelService extends VpnService {
    * @throws IllegalArgumentException if |connectionId| or |config| are missing.
    */
   public void startConnection(final String connectionId, final JSONObject config) {
+    startConnection(connectionId, config, true);
+  }
+
+  private void startConnection(
+      final String connectionId, final JSONObject config, boolean performConnectivityChecks) {
     LOG.info(String.format("Starting connection %s.", connectionId));
     boolean isRestart = false;
     if (connectionId == null || config == null) {
@@ -152,7 +157,7 @@ public class VpnTunnelService extends VpnService {
     }
     activeConnectionId = connectionId;
     try {
-      OutlinePlugin.ErrorCode errorCode = startShadowsocks(config).get();
+      OutlinePlugin.ErrorCode errorCode = startShadowsocks(config, performConnectivityChecks).get();
       if (errorCode != OutlinePlugin.ErrorCode.NO_ERROR) {
         onVpnStartFailure(errorCode);
         return;
@@ -239,9 +244,11 @@ public class VpnTunnelService extends VpnService {
 
   // Shadowsocks
 
-  /* Starts a local Shadowsocks server and performs connectivity tests to ensure compatibility.
-   * Returns a Future encapsulating an error code, as defined in OutlinePlugin.ErrorCode. */
-  private Future<OutlinePlugin.ErrorCode> startShadowsocks(final JSONObject config) {
+  /* Starts a local Shadowsocks server and performs connectivity tests if
+   * |performConnectivityChecks| is true, to ensure compatibility. Returns a Future encapsulating an
+   * error code, as defined in OutlinePlugin.ErrorCode. */
+  private Future<OutlinePlugin.ErrorCode> startShadowsocks(
+      final JSONObject config, final boolean performConnectivityChecks) {
     return executorService.submit(
         new Callable<OutlinePlugin.ErrorCode>() {
           public OutlinePlugin.ErrorCode call() {
@@ -251,11 +258,12 @@ public class VpnTunnelService extends VpnService {
                 LOG.severe("Failed to start Shadowsocks.");
                 return OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE;
               }
-              return checkServerConnectivity(
-                  Shadowsocks.LOCAL_SERVER_ADDRESS,
-                  Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT),
-                  config.getString("host"),
-                  config.getInt("port"));
+              if (performConnectivityChecks) {
+                return checkServerConnectivity(Shadowsocks.LOCAL_SERVER_ADDRESS,
+                    Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT), config.getString("host"),
+                    config.getInt("port"));
+              }
+              return OutlinePlugin.ErrorCode.NO_ERROR;
             } catch (JSONException e) {
               LOG.log(Level.SEVERE, "Failed to parse the Shadowsocks config", e);
             }
@@ -440,8 +448,10 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
+      // Do not perform connectivity checks when connecting on startup. We should avoid failing the
+      // connection due to a network error, as network may not be ready.
       startConnection(connection.getString(CONNECTION_ID_KEY),
-                      connection.getJSONObject(CONNECTION_CONFIG_KEY));
+          connection.getJSONObject(CONNECTION_CONFIG_KEY), false);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON connection data", e);
       stopSelf();
