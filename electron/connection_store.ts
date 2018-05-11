@@ -21,7 +21,6 @@ export interface SerializableConnection {
   config: cordova.plugins.outline.ServerConfig;
 }
 
-
 // Persistence layer for a single SerializableConnection.
 export class ConnectionStore {
   private storagePath: string;
@@ -34,12 +33,16 @@ export class ConnectionStore {
     this.storagePath = path.join(storagePath, 'connection_store');
   }
 
-  // Persists the connection to the store.
-  save(connection: SerializableConnection) {
-    fs.writeFile(this.storagePath, JSON.stringify(connection), 'utf8', (error) => {
-      if (error) {
-        console.error('Failed to store connection.');
-      }
+  // Persists the connection to the store. Rejects the promise on failure.
+  save(connection: SerializableConnection): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(this.storagePath, JSON.stringify(connection), 'utf8', (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
@@ -48,7 +51,6 @@ export class ConnectionStore {
     return new Promise((resolve, reject) => {
       fs.readFile(this.storagePath, 'utf8', (error, data) => {
         if (!data) {
-          console.warn('No connection in store.');
           reject(error);
           return;
         }
@@ -57,15 +59,19 @@ export class ConnectionStore {
     });
   }
 
-  // Deletes the stored connection.
-  clear() {
-    if (!this.hasConnection()) {
-      return;
-    }
-    fs.unlink(this.storagePath, (error) => {
-      if (!!error) {
-        console.error('Failed to clear connection store.');
+  // Deletes the stored connection. Rejects the promise on failure.
+  clear(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.hasConnection()) {
+        resolve();
       }
+      fs.unlink(this.storagePath, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
     });
   }
 

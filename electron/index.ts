@@ -202,10 +202,14 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
                   } else {
                     console.error(`received proxy-disconnected event but no mainWindow to notify`);
                   }
-                  connectionStore.clear();
+                  connectionStore.clear().catch((err) => {
+                    console.error('Failed to clear connection store.');
+                  });
                 })
             .then(() => {
-              connectionStore.save({config, id});
+              connectionStore.save({config, id}).catch((err) => {
+                console.error('Failed to store connection.');
+              });
               if (mainWindow) {
                 mainWindow.webContents.send(`proxy-connected-${id}`);
               }
