@@ -65,8 +65,19 @@ if %errorlevel% neq 0 (
 :: TODO: Actually search the system for an unused subnet or make the subnet
 ::       configurable in the Outline client.
 netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0 >nul
-
 if %errorlevel% neq 0 (
   echo Could not set TAP device subnet.
+  exit /b 1
+)
+
+:: Windows has no system-wide DNS server; each network device can have its
+:: "own" set of DNS servers. Windows seems to use the DNS server(s) of the
+:: network device associated with the default gateway. This is good for us
+:: as it means we do not have to modify the DNS settings of any other network
+:: device in the system.
+:: TODO: Choose a random (public) DNS server.
+netsh interface ip set dnsservers %DEVICE_NAME% static address=8.8.8.8 >nul
+if %errorlevel% neq 0 (
+  echo Could not configure TAP device DNS.
   exit /b 1
 )
