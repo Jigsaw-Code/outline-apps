@@ -1,12 +1,10 @@
-# `setsystemproxy`
+# `setsystemroute`
 
 ## Introduction
 
-`setsystemproxy` configures the system to use a HTTP proxy.
+`setsystemroute` configures a Windows system with a new default gateway, via which all network traffic *except for one destination IP* will be routed.
 
-It's similar to, and borrows from, components in other VPNs such as Lantern and Shadowsocks:
-* https://github.com/getlantern/sysproxy-cmd
-* https://github.com/shadowsocks/sysproxy
+If the excluded IP is a proxy server, this may be used in conjunction with several other tools to produce a kind of "full system" VPN.
 
 ## HOWTO Build
 

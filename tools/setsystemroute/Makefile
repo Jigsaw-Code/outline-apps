@@ -2,7 +2,7 @@ CC=gcc
 
 CCFLAGS = -Wall
 
-LDFLAGS += -lwininet
+LDFLAGS += -lwininet -liphlpapi -lws2_32
 
 all: setsystemproxy.exe
 setsystemproxy.exe:
