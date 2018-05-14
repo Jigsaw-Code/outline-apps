@@ -26,7 +26,7 @@ if %errorlevel% equ 0 (
 )
 
 :: Add the device.
-tap-windows6\amd64\tapinstall install tap-windows6\%1\OemVista.inf tap0901 >nul
+tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901 >nul
 if %errorlevel% neq 0 (
   echo Could not create TAP device.
   exit /b 1
