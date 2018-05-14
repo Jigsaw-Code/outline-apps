@@ -18,7 +18,6 @@
     "babel-polyfill": "^6.26.0",
     "electron-promise-ipc": "^0.0.4",
     "electron-updater": "^2.21.0",
-    "http-proxy-to-socks": "^1.0.2",
     "raven": "^2.2.1",
     "raven-js": "^3.20.1",
     "socks": "^1.1.10",
