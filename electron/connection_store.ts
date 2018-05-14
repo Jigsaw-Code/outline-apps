@@ -35,6 +35,9 @@ export class ConnectionStore {
 
   // Persists the connection to the store. Rejects the promise on failure.
   save(connection: SerializableConnection): Promise<void> {
+    if (!this.isConnectionValid(connection)) {
+      return Promise.reject(new Error('Cannot save invalid connection'));
+    }
     return new Promise((resolve, reject) => {
       fs.writeFile(this.storagePath, JSON.stringify(connection), 'utf8', (error) => {
         if (error) {
@@ -54,7 +57,12 @@ export class ConnectionStore {
           reject(error);
           return;
         }
-        resolve(JSON.parse(data));
+        const connection = JSON.parse(data);
+        if (this.isConnectionValid(connection)) {
+          resolve(connection);
+        } else {
+          reject(new Error('Cannot load invalid connection'));
+        }
       });
     });
   }
@@ -62,7 +70,7 @@ export class ConnectionStore {
   // Deletes the stored connection. Rejects the promise on failure.
   clear(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.hasConnection()) {
+      if (!fs.existsSync(this.storagePath)) {
         resolve();
       }
       fs.unlink(this.storagePath, (error) => {
@@ -75,8 +83,12 @@ export class ConnectionStore {
     });
   }
 
-  // Returns whether there is a connection in store.
-  hasConnection() {
-    return fs.existsSync(this.storagePath);
+  // Returns whether `connection` and its configuration contain all the required fields.
+  private isConnectionValid(connection: SerializableConnection) {
+    const config = connection.config;
+    if (!config || !connection.id) {
+      return false;
+    }
+    return config.method && config.password && config.host && config.port && config.name;
   }
 }

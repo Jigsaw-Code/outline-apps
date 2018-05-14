@@ -42,7 +42,7 @@ const enum Options {
   AUTOSTART = '--autostart'
 }
 
-function createWindow() {
+function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false, icon: iconPath});
 
@@ -72,12 +72,10 @@ function createWindow() {
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
-    connectionStore.load().then((connection) => {
-      console.log(`Automatically starting connection ${connection.id}`);
-      startProxying(connection.config, connection.id);
-    }).catch((error) => {
-      // User not connected at shutdown. Ignore.
-    });
+    if (connectionAtShutdown) {
+      console.log(`Automatically starting connection ${connectionAtShutdown.id}`);
+      startProxying(connectionAtShutdown.config, connectionAtShutdown.id);
+    }
   });
 
   // The client is a single page app - loading any other page means the
@@ -138,15 +136,15 @@ app.on('ready', () => {
   app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
 
   if (process.argv.includes(Options.AUTOSTART)) {
-    if (connectionStore.hasConnection()) {
+    connectionStore.load().then((connection) => {
       // The user was connected at shutdown. Create the main window and wait for the UI ready event
       // to start the proxy.
-      createWindow();
-    } else {
+      createWindow(connection);
+    }).catch((err) => {
       // The user was not connected at shutdown.
       // Quitting the app will reset the system proxy configuration before exiting.
       app.quit();
-    }
+    });
   } else {
     createWindow();
   }
