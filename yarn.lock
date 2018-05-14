@@ -3899,14 +3899,6 @@ http-errors@~1.6.1:
     setprototypeof "1.0.3"
     statuses ">= 1.3.1 < 2"
 
-http-proxy-to-socks@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/http-proxy-to-socks/-/http-proxy-to-socks-1.0.2.tgz#9c0e27963d0cc04227ab73ad4cbc826d12b14a2e"
-  dependencies:
-    commander "^2.9.0"
-    socks "^1.1.10"
-    winston "^2.3.1"
-
 http-signature@~0.10.0:
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-0.10.1.tgz#4fbdac132559aa8323121e540779c0a012b27e66"
@@ -7921,7 +7913,7 @@ window-size@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.2.0.tgz#b4315bb4214a3d7058ebeee892e13fa24d98b075"
 
-winston@^2.2.0, winston@^2.3.1:
+winston@^2.2.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/winston/-/winston-2.4.0.tgz#808050b93d52661ed9fb6c26b3f0c826708b0aee"
   dependencies:
