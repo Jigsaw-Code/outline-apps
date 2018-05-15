@@ -94,14 +94,14 @@ class OutlineVpn: NSObject {
     } else if isVpnConnected() {
       return restartVpn(connectionId, config: connection.config, completion: completion)
     }
-    self.startVpn(connection, completion)
+    self.startVpn(connection, isAutoConnect: false, completion)
   }
 
   // Starts the last successful VPN connection.
   func startLastSuccessfulConnection(_ completion: @escaping (Callback)) {
     // Explicitly pass an empty connection's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
-    self.startVpn(OutlineConnection(), completion)
+    self.startVpn(OutlineConnection(), isAutoConnect: true, completion)
   }
 
   // Tears down the VPN if the connection with id |connectionId| is active.
@@ -153,7 +153,8 @@ class OutlineVpn: NSObject {
 
   // MARK: Helpers
 
-  private func startVpn(_ connection: OutlineConnection, _ completion: @escaping(Callback)) {
+  private func startVpn(
+      _ connection: OutlineConnection, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
     let connectionId = connection.id
     setupVpn() { error in
       if error != nil {
@@ -165,9 +166,12 @@ class OutlineVpn: NSObject {
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
       var config: [String: String]? = nil
-      if connectionId != nil {
+      if !isAutoConnect {
         config = connection.config
         config?[MessageKey.connectionId] = connectionId
+      } else {
+        // macOS app was started by launcher.
+        config = ["is-on-demand": "true"];
       }
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
