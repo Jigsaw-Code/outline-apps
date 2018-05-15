@@ -291,7 +291,7 @@ export class App {
     try {
       vpnWarningDismissed = this.getNonSystemVpnWarningDismissed();
     } catch (e) {
-      console.error(`could not read full-system VPN warning status, assuming not dismissed`);
+      console.error(`Could not read full-system VPN warning status, assuming not dismissed: ${e}`);
     }
     if (!this.hasSystemVpnSupport && !vpnWarningDismissed) {
       // Only show the dialog on Windows if the non-VPN warning has been dismissed.
@@ -301,7 +301,7 @@ export class App {
     try {
       dismissed = this.settings.get(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED) === 'true';
     } catch (e) {
-      console.error('Failed to read auto-connect dialog status, assuming not dismissed');
+      console.error(`Failed to read auto-connect dialog status, assuming not dismissed: ${e}`);
     }
     if (!dismissed) {
       this.rootEl.$.serversView.$.autoConnectDialog.show();
