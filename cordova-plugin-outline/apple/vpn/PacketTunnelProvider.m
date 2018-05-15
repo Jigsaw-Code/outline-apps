@@ -104,8 +104,15 @@ NSString *const kMessageKeyPort = @"port";
                                                  code:NEVPNErrorConfigurationReadWriteFailed
                                              userInfo:nil]);
   }
+  bool isOnDemand = options[@"is-on-demand"] != nil;
   self.shadowsocks = [[Shadowsocks alloc] init:[self getShadowsocksNetworkConfig]];
-  [self.shadowsocks start:^(ErrorCode errorCode) {
+  // Bypass connectivity checks for auto-connect. If the connection configuration is no longer
+  // valid, the connectivity checks will fail. The system will keep calling this method due to
+  // on demand being enabled (the VPN process does not have permission to change it), rendering the
+  // network unusable with no indication to the user. By bypassing the checks, the network would
+  // still be unusable, but at least the user will have a visual indication that Outline is the
+  // culprit and can explicitly disconnect.
+  [self.shadowsocks startWithConnectivityChecks:!isOnDemand completion:^(ErrorCode errorCode) {
     if (errorCode == noError) {
       [self connectTunnel:[self getTunnelNetworkSettings] completion:^(NSError *error) {
         if (!error) {
@@ -381,7 +388,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
       DDLogInfo(@"Shadowsocks stopped.");
       self.shadowsocks.config = [self getShadowsocksNetworkConfig];
       __weak PacketTunnelProvider *weakSelf = self;
-      [self.shadowsocks start:^(ErrorCode errorCode) {
+      [self.shadowsocks startWithConnectivityChecks:true completion:^(ErrorCode errorCode) {
         [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
         if (errorCode != noError) {
           DDLogWarn(@"Tearing down VPN");
