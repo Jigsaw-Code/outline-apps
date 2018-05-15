@@ -112,29 +112,33 @@ NSString *const kMessageKeyPort = @"port";
   // network unusable with no indication to the user. By bypassing the checks, the network would
   // still be unusable, but at least the user will have a visual indication that Outline is the
   // culprit and can explicitly disconnect.
-  [self.shadowsocks startWithConnectivityChecks:!isOnDemand completion:^(ErrorCode errorCode) {
-    if (errorCode == noError) {
-      [self connectTunnel:[self getTunnelNetworkSettings] completion:^(NSError *error) {
-        if (!error) {
-          [self setupPacketTunnelFlow];
-          [self startTun2SocksWithPort:kShadowsocksLocalPort];
-          [self execAppCallbackForAction:kActionStart errorCode:noError];
+  [self.shadowsocks
+      startWithConnectivityChecks:!isOnDemand
+                       completion:^(ErrorCode errorCode) {
+                         if (errorCode == noError) {
+                           [self connectTunnel:[self getTunnelNetworkSettings]
+                                    completion:^(NSError *error) {
+                                      if (!error) {
+                                        [self setupPacketTunnelFlow];
+                                        [self startTun2SocksWithPort:kShadowsocksLocalPort];
+                                        [self execAppCallbackForAction:kActionStart
+                                                             errorCode:noError];
 
-          [self.connectionStore save:connection];
-          self.connectionStore.status = ConnectionStatusConnected;
-        } else {
-          [self execAppCallbackForAction:kActionStart
-                               errorCode:vpnPermissionNotGranted];
-        }
-        completionHandler(error);
-      }];
-    } else {
-      [self execAppCallbackForAction:kActionStart errorCode:errorCode];
-      completionHandler([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConnectionFailed
-                                        userInfo:nil]);
-    }
-  }];
+                                        [self.connectionStore save:connection];
+                                        self.connectionStore.status = ConnectionStatusConnected;
+                                      } else {
+                                        [self execAppCallbackForAction:kActionStart
+                                                             errorCode:vpnPermissionNotGranted];
+                                      }
+                                      completionHandler(error);
+                                    }];
+                         } else {
+                           [self execAppCallbackForAction:kActionStart errorCode:errorCode];
+                           completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                                 code:NEVPNErrorConnectionFailed
+                                                             userInfo:nil]);
+                         }
+                       }];
 }
 
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
@@ -388,17 +392,20 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
       DDLogInfo(@"Shadowsocks stopped.");
       self.shadowsocks.config = [self getShadowsocksNetworkConfig];
       __weak PacketTunnelProvider *weakSelf = self;
-      [self.shadowsocks startWithConnectivityChecks:true completion:^(ErrorCode errorCode) {
-        [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
-        if (errorCode != noError) {
-          DDLogWarn(@"Tearing down VPN");
-          [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
-                                                          code:NEVPNErrorConnectionFailed
-                                                      userInfo:nil]];
-          return;
-        }
-        [weakSelf.connectionStore save:self.connection];
-      }];
+      [self.shadowsocks
+          startWithConnectivityChecks:true
+                           completion:^(ErrorCode errorCode) {
+                             [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
+                             if (errorCode != noError) {
+                               DDLogWarn(@"Tearing down VPN");
+                               [self cancelTunnelWithError:
+                                         [NSError errorWithDomain:NEVPNErrorDomain
+                                                             code:NEVPNErrorConnectionFailed
+                                                         userInfo:nil]];
+                               return;
+                             }
+                             [weakSelf.connectionStore save:self.connection];
+                           }];
     }];
   }
 }

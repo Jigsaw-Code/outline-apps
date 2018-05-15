@@ -61,7 +61,7 @@ const uint16_t kHttpPort = 80;
 @property (nonatomic) bool serverCredentialsAreValid;
 @property (nonatomic) bool isServerReachable;
 @property (nonatomic) int udpForwardingNumChecks;
-@property (nonatomic) bool performConnectivityChecks;
+@property(nonatomic) bool performConnectivityChecks;
 @end
 
 @implementation Shadowsocks
@@ -77,7 +77,8 @@ const uint16_t kHttpPort = 80;
   return self;
 }
 
-- (void)startWithConnectivityChecks:(bool)performConnectivityChecks completion:(void (^)(ErrorCode))completion {
+- (void)startWithConnectivityChecks:(bool)performConnectivityChecks
+                         completion:(void (^)(ErrorCode))completion {
   self.performConnectivityChecks = performConnectivityChecks;
   dispatch_async(dispatch_get_main_queue(), ^{
     // Start ss-local from the main application thread.
