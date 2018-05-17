@@ -21,9 +21,14 @@ import * as process from 'process';
 import * as url from 'url';
 
 import * as process_manager from './process_manager';
+import {ConnectionStore, SerializableConnection} from './connection_store';
 
 // TODO: Figure out the TypeScript magic to use the default, export-ed instance.
 const myPromiseIpc = new PromiseIpc();
+
+// Used for the auto-connect feature. There will be a connection in store
+// if the user was connected at shutdown.
+const connectionStore = new ConnectionStore(app.getPath('userData'));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -37,7 +42,7 @@ const enum Options {
   AUTOSTART = '--autostart'
 }
 
-function createWindow() {
+function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false, icon: iconPath});
 
@@ -67,6 +72,10 @@ function createWindow() {
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
+    if (connectionAtShutdown) {
+      console.log(`Automatically starting connection ${connectionAtShutdown.id}`);
+      startProxying(connectionAtShutdown.config, connectionAtShutdown.id);
+    }
   });
 
   // The client is a single page app - loading any other page means the
@@ -113,22 +122,29 @@ function interceptShadowsocksLink(argv: string[]) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  // TODO: Run this periodically, e.g. every 4-6 hours.
-  autoUpdater.checkForUpdates();
-
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',
       submenu: [{role: 'reload'}, {role: 'forcereload'}, {role: 'toggledevtools'}]
     }]));
+  } else {
+    // TODO: Run this periodically, e.g. every 4-6 hours.
+    autoUpdater.checkForUpdates();
   }
 
-  // Set the app to launch at startup to reset the system proxy configuration
-  // in case of a showdown while proxying.
+  // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
   app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
 
   if (process.argv.includes(Options.AUTOSTART)) {
-    app.quit();  // Quitting the app will reset the system proxy configuration before exiting.
+    connectionStore.load().then((connection) => {
+      // The user was connected at shutdown. Create the main window and wait for the UI ready event
+      // to start the proxy.
+      createWindow(connection);
+    }).catch((err) => {
+      // The user was not connected at shutdown.
+      // Quitting the app will reset the system proxy configuration before exiting.
+      app.quit();
+    });
   } else {
     createWindow();
   }
@@ -169,21 +185,39 @@ myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) =
       });
 });
 
-myPromiseIpc.on(
-    'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return process_manager.teardownProxy()
-          .catch((e) => {
-            console.error('error tearing down current proxy', e);
-          })
-          .then(() => {
-            return process_manager.launchProxy(args.config, () => {
+function startProxying(config: cordova.plugins.outline.ServerConfig, id: string) {
+  return process_manager.teardownProxy()
+      .catch((e) => {
+        console.error('error tearing down current proxy', e);
+      })
+      .then(() => {
+        return process_manager
+            .launchProxy(
+                config,
+                () => {
+                  if (mainWindow) {
+                    mainWindow.webContents.send(`proxy-disconnected-${id}`);
+                  } else {
+                    console.error(`received proxy-disconnected event but no mainWindow to notify`);
+                  }
+                  connectionStore.clear().catch((err) => {
+                    console.error('Failed to clear connection store.');
+                  });
+                })
+            .then(() => {
+              connectionStore.save({config, id}).catch((err) => {
+                console.error('Failed to store connection.');
+              });
               if (mainWindow) {
-                mainWindow.webContents.send(`proxy-disconnected-${args.id}`);
-              } else {
-                console.error(`received proxy-disconnected event but no mainWindow to notify`);
+                mainWindow.webContents.send(`proxy-connected-${id}`);
               }
             });
-          });
+      });
+}
+
+myPromiseIpc.on(
+    'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
+      return startProxying(args.config, args.id);
     });
 
 myPromiseIpc.on('stop-proxying', () => {

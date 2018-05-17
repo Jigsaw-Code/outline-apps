@@ -16,4 +16,5 @@
 
 yarn do electron/build
 
+export OUTLINE_DEBUG=true
 electron build/windows
