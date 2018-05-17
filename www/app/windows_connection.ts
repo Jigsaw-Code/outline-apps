@@ -26,6 +26,11 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
 
   constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {
     const serverName = this.config.name || this.config.host || '';
+    // This event is received when the proxy connects. It is mainly used for signaling the UI that
+    // the proxy has been automatically connected at startup (if the user was connected at shutdown)
+    ipcRenderer.once(`proxy-connected-${this.id}`, (e: Event) => {
+      this.handleStatusChange(ConnectionStatus.CONNECTED);
+    });
   }
 
   start(): Promise<void> {
@@ -34,12 +39,7 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
     }
 
     ipcRenderer.once(`proxy-disconnected-${this.id}`, (e: Event) => {
-      if (this.statusChangeListener) {
-        this.running = false;
-        this.statusChangeListener(ConnectionStatus.DISCONNECTED);
-      } else {
-        console.error(`${this.id} status changed but no listener set`);
-      }
+      this.handleStatusChange(ConnectionStatus.DISCONNECTED);
     });
 
     return myPromiseIpc.send('start-proxying', {config: this.config, id: this.id})
@@ -71,5 +71,14 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
 
   onStatusChange(listener: (status: ConnectionStatus) => void): void {
     this.statusChangeListener = listener;
+  }
+
+  private handleStatusChange(status: ConnectionStatus) {
+    this.running = status === ConnectionStatus.CONNECTED;
+    if (this.statusChangeListener) {
+      this.statusChangeListener(status);
+    } else {
+      console.error(`${this.id} status changed to ${status} but no listener set`);
+    }
   }
 }
