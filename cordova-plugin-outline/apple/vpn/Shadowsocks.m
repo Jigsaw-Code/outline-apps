@@ -61,7 +61,7 @@ const uint16_t kHttpPort = 80;
 @property (nonatomic) bool serverCredentialsAreValid;
 @property (nonatomic) bool isServerReachable;
 @property (nonatomic) int udpForwardingNumChecks;
-@property(nonatomic) bool performConnectivityChecks;
+@property(nonatomic) bool checkConnectivity;
 @end
 
 @implementation Shadowsocks
@@ -77,8 +77,9 @@ const uint16_t kHttpPort = 80;
   return self;
 }
 
-- (void)start:(bool)performConnectivityChecks completion:(void (^)(ErrorCode))completion {
-  self.performConnectivityChecks = performConnectivityChecks;
+- (void)startWithConnectivityChecks:(bool)checkConnectivity
+                         completion:(void (^)(ErrorCode))completion {
+  self.checkConnectivity = checkConnectivity;
   dispatch_async(dispatch_get_main_queue(), ^{
     // Start ss-local from the main application thread.
     self.udpForwardingNumChecks = 0;
@@ -192,11 +193,11 @@ void *startShadowsocks(void *udata) {
  * Checks that the remote server is reachable, allows UDP forwarding, and the credentials are valid.
  * Synchronizes and parallelizes the execution of the connectivity checks and calls
  * |startCompletion| with the combined outcome.
- * Only performs the tests if |performConnectivityChecks| is true; otherwise calls |startCompletion|
+ * Only performs the tests if |checkConnectivity| is true; otherwise calls |startCompletion|
  * with success.
  */
 - (void) checkServerConnectivity {
-  if (!self.performConnectivityChecks) {
+  if (!self.checkConnectivity) {
     self.startCompletion(noError);
     return;
   }

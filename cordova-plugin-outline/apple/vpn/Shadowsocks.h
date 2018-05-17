@@ -34,10 +34,11 @@ extern const int kShadowsocksLocalPort;
 
 /**
  * Starts ss-local on a separate thread with the configuration supplied in the constructor.
- * If |performConnectivityChecks| is true, verifies that the server credentials are valid and that
+ * If |checkConnectivity| is true, verifies that the server credentials are valid and that
  * the remote supports UDP forwarding, calling |completion| with the result.
  */
-- (void)start:(bool)performConnectivityChecks completion:(void (^)(ErrorCode))completion;
+- (void)startWithConnectivityChecks:(bool)checkConnectivity
+                         completion:(void (^)(ErrorCode))completion;
 
 /**
  * Stops the thread running ss-local. Calls |completion| with the success of the operation.

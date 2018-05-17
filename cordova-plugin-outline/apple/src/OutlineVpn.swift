@@ -45,6 +45,7 @@ class OutlineVpn: NSObject {
     static let errorCode = "errorCode"
     static let host = "host"
     static let port = "port"
+    static let isOnDemand = "is-on-demand"
   }
 
   // This must be kept in sync with:
@@ -171,7 +172,7 @@ class OutlineVpn: NSObject {
         config?[MessageKey.connectionId] = connectionId
       } else {
         // macOS app was started by launcher.
-        config = ["is-on-demand": "true"];
+        config = [MessageKey.isOnDemand: "true"];
       }
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
