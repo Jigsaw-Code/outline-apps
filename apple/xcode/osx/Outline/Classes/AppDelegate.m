@@ -21,7 +21,7 @@
 @property (strong, nonatomic) NSStatusItem *statusItem;
 @property (strong, nonatomic) NSPopover *popover;
 @property (strong, nonatomic) EventMonitor *eventMonitor;
-@property bool isShuttingDown;
+@property bool isSystemShuttingDown;
 @end
 
 @implementation AppDelegate
@@ -47,12 +47,13 @@
   // Don't ever show the default Cordova window, as we will display its content view in a popover.
   [self.window close];
 
-  [NSWorkspace.sharedWorkspace.notificationCenter addObserverForName:NSWorkspaceWillPowerOffNotification
-                                                              object:nil
-                                                               queue:nil
-                                                          usingBlock:^(NSNotification * _Nonnull n) {
-                                                            self.isShuttingDown = YES;
-                                                          }];
+  [NSWorkspace.sharedWorkspace.notificationCenter
+      addObserverForName:NSWorkspaceWillPowerOffNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification *_Nonnull n) {
+                self.isSystemShuttingDown = YES;
+              }];
   [NSNotificationCenter.defaultCenter addObserverForName:OutlinePlugin.kVpnConnectedNotification
                                                   object:nil
                                                    queue:nil
@@ -102,13 +103,11 @@
   } else {
     [self showPopover];
   }
-
-  // TODO: uncomment to enable auto-connect feature.
-  // [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
+  [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-  if (!self.isShuttingDown) {
+  if (!self.isSystemShuttingDown) {
     // Don't post a quit notification if the system is shutting down so the VPN is not stopped
     // and it auto-connects on startup.
     [[NSNotificationCenter defaultCenter] postNotificationName:OutlinePlugin.kAppQuitNotification
