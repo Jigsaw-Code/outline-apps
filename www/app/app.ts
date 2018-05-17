@@ -78,6 +78,8 @@ export class App {
     this.rootEl.addEventListener(
         'NonSystemVpnWarningDismissed', this.nonSystemVpnWarningDismissed.bind(this));
     this.rootEl.addEventListener(
+        'AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
+    this.rootEl.addEventListener(
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
 
@@ -274,12 +276,40 @@ export class App {
           card.state = 'CONNECTED';
           this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
           this.maybeShowNonSystemWarning();
+          this.maybeShowAutoConnectDialog();
         },
         (err: errors.OutlinePluginError) => {
           console.error(`Failed to connect to server with plugin error: ${err.name}`);
           card.state = 'DISCONNECTED';
           this.showLocalizedError(err);
         });
+  }
+
+  private maybeShowAutoConnectDialog() {
+    // TODO: remove this check when Windows full system VPN is released.
+    let vpnWarningDismissed = false;
+    try {
+      vpnWarningDismissed = this.getNonSystemVpnWarningDismissed();
+    } catch (e) {
+      console.error(`Could not read full-system VPN warning status, assuming not dismissed: ${e}`);
+    }
+    if (!this.hasSystemVpnSupport && !vpnWarningDismissed) {
+      // Only show the dialog on Windows if the non-VPN warning has been dismissed.
+      return;
+    }
+    let dismissed = false;
+    try {
+      dismissed = this.settings.get(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED) === 'true';
+    } catch (e) {
+      console.error(`Failed to read auto-connect dialog status, assuming not dismissed: ${e}`);
+    }
+    if (!dismissed) {
+      this.rootEl.$.serversView.$.autoConnectDialog.show();
+    }
+  }
+
+  private autoConnectDialogDismissed() {
+    this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
   private maybeShowNonSystemWarning() {

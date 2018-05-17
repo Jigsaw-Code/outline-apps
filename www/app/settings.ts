@@ -18,7 +18,8 @@ interface StorageSettings {
 
 // Setting keys supported by the `Settings` class.
 export enum SettingsKey {
-  VPN_WARNING_DISMISSED = 'vpn-warning-dismissed'
+  VPN_WARNING_DISMISSED = 'vpn-warning-dismissed',
+  AUTO_CONNECT_DIALOG_DISMISSED = 'auto-connect-dialog-dismissed'
 }
 
 // Persistent storage for user settings that supports a limited set of keys.
