@@ -77,8 +77,7 @@ const uint16_t kHttpPort = 80;
   return self;
 }
 
-- (void)startWithConnectivityChecks:(bool)performConnectivityChecks
-                         completion:(void (^)(ErrorCode))completion {
+- (void)start:(bool)performConnectivityChecks completion:(void (^)(ErrorCode))completion {
   self.performConnectivityChecks = performConnectivityChecks;
   dispatch_async(dispatch_get_main_queue(), ^{
     // Start ss-local from the main application thread.
