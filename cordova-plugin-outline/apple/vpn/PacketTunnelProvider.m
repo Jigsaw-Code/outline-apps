@@ -36,6 +36,7 @@ NSString *const kMessageKeyConfig = @"config";
 NSString *const kMessageKeyErrorCode = @"errorCode";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
+NSString *const kMessageKeyOnDemand = @"is-on-demand";
 
 @interface PacketTunnelProvider()
 @property (nonatomic) Shadowsocks *shadowsocks;
@@ -74,6 +75,18 @@ NSString *const kMessageKeyPort = @"port";
 - (void)startTunnelWithOptions:(NSDictionary *)options
              completionHandler:(void (^)(NSError *))completionHandler {
   DDLogInfo(@"Starting tunnel");
+  if (options == nil) {
+    DDLogWarn(@"Received a connect request from preferences");
+    // TODO(alalama): l10n
+    [self displayMessage:@"Please use the Outline app to connect."
+        completionHandler:^(BOOL success) {
+          completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                code:NEVPNErrorConfigurationDisabled
+                                            userInfo:nil]);
+          exit(0);
+        }];
+    return;
+  }
   OutlineConnection *connection = [self retrieveConnection:options];
   if (connection == nil) {
     DDLogError(@"Failed to retrieve the connection.");
@@ -92,30 +105,41 @@ NSString *const kMessageKeyPort = @"port";
                                                  code:NEVPNErrorConfigurationReadWriteFailed
                                              userInfo:nil]);
   }
+  bool isOnDemand = options[kMessageKeyOnDemand] != nil;
   self.shadowsocks = [[Shadowsocks alloc] init:[self getShadowsocksNetworkConfig]];
-  [self.shadowsocks start:^(ErrorCode errorCode) {
-    if (errorCode == noError) {
-      [self connectTunnel:[self getTunnelNetworkSettings] completion:^(NSError *error) {
-        if (!error) {
-          [self setupPacketTunnelFlow];
-          [self startTun2SocksWithPort:kShadowsocksLocalPort];
-          [self execAppCallbackForAction:kActionStart errorCode:noError];
+  // Bypass connectivity checks for auto-connect. If the connection configuration is no longer
+  // valid, the connectivity checks will fail. The system will keep calling this method due to
+  // On Demand being enabled (the VPN process does not have permission to change it), rendering the
+  // network unusable with no indication to the user. By bypassing the checks, the network would
+  // still be unusable, but at least the user will have a visual indication that Outline is the
+  // culprit and can explicitly disconnect.
+  [self.shadowsocks
+      startWithConnectivityChecks:!isOnDemand
+                       completion:^(ErrorCode errorCode) {
+                         if (errorCode == noError) {
+                           [self connectTunnel:[self getTunnelNetworkSettings]
+                                    completion:^(NSError *error) {
+                                      if (!error) {
+                                        [self setupPacketTunnelFlow];
+                                        [self startTun2SocksWithPort:kShadowsocksLocalPort];
+                                        [self execAppCallbackForAction:kActionStart
+                                                             errorCode:noError];
 
-          [self.connectionStore save:connection];
-          self.connectionStore.status = ConnectionStatusConnected;
-        } else {
-          [self execAppCallbackForAction:kActionStart
-                               errorCode:vpnPermissionNotGranted];
-        }
-        completionHandler(error);
-      }];
-    } else {
-      [self execAppCallbackForAction:kActionStart errorCode:errorCode];
-      completionHandler([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConnectionFailed
-                                        userInfo:nil]);
-    }
-  }];
+                                        [self.connectionStore save:connection];
+                                        self.connectionStore.status = ConnectionStatusConnected;
+                                      } else {
+                                        [self execAppCallbackForAction:kActionStart
+                                                             errorCode:vpnPermissionNotGranted];
+                                      }
+                                      completionHandler(error);
+                                    }];
+                         } else {
+                           [self execAppCallbackForAction:kActionStart errorCode:errorCode];
+                           completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                                 code:NEVPNErrorConnectionFailed
+                                                             userInfo:nil]);
+                         }
+                       }];
 }
 
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
@@ -211,11 +235,12 @@ NSString *const kMessageKeyPort = @"port";
 
 // Creates a OutlineConnection from options supplied in |config|, or retrieves the last working
 // connection from disk. Normally the app provides a connection configuration. However, when the VPN
-// is started from settings, the system launches this process without supplying a configuration, so
-// it is necessary to retrieve a previously persisted connection from disk.
+// is started from settings or On Demand, the system launches this process without supplying a
+// configuration, so it is necessary to retrieve a previously persisted connection from disk.
+// To learn more about On Demand see: https://help.apple.com/deployment/ios/#/iord4804b742.
 - (OutlineConnection *)retrieveConnection:(NSDictionary *)config {
   OutlineConnection *connection;
-  if (config != nil) {
+  if (config != nil && !config[kMessageKeyOnDemand]) {
     connection = [[OutlineConnection alloc] initWithId:config[kMessageKeyConnectionId] config:config];
   } else if (self.connectionStore != nil) {
     DDLogInfo(@"Retrieving connection from store.");
@@ -273,7 +298,8 @@ NSString *const kMessageKeyPort = @"port";
   if (!self.isTunnelConnected) {
     return;  // Don't react to network changes unless the tunnel is connected.
   }
-  if (newDefaultPath.status == NWPathStatusSatisfied) {
+  if (newDefaultPath.status == NWPathStatusSatisfied ||
+      newDefaultPath.status == NWPathStatusSatisfiable) {
     DDLogInfo(@"Reconnecting tunnel.");
     NSError *error = [TunnelInterface onNetworkConnectivityChange];
     if (error != nil) {
@@ -368,17 +394,20 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
       DDLogInfo(@"Shadowsocks stopped.");
       self.shadowsocks.config = [self getShadowsocksNetworkConfig];
       __weak PacketTunnelProvider *weakSelf = self;
-      [self.shadowsocks start:^(ErrorCode errorCode) {
-        [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
-        if (errorCode != noError) {
-          DDLogWarn(@"Tearing down VPN");
-          [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
-                                                          code:NEVPNErrorConnectionFailed
-                                                      userInfo:nil]];
-          return;
-        }
-        [weakSelf.connectionStore save:self.connection];
-      }];
+      [self.shadowsocks
+          startWithConnectivityChecks:true
+                           completion:^(ErrorCode errorCode) {
+                             [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
+                             if (errorCode != noError) {
+                               DDLogWarn(@"Tearing down VPN");
+                               [self cancelTunnelWithError:
+                                         [NSError errorWithDomain:NEVPNErrorDomain
+                                                             code:NEVPNErrorConnectionFailed
+                                                         userInfo:nil]];
+                               return;
+                             }
+                             [weakSelf.connectionStore save:self.connection];
+                           }];
     }];
   }
 }
