@@ -25,6 +25,8 @@ import * as url from 'url';
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
+import {SentryLogger} from './sentry_logger';
+
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
 //  - the value specified for --config.asarUnpack in package_action.sh
@@ -67,28 +69,29 @@ export function launchProxy(
         throw errors.ErrorCode.SERVER_UNREACHABLE;
       })
       .then(() => {
-        return startLocalShadowsocksProxy(config, onDisconnected);
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
-      })
-      .then(() => {
-        return validateServerCredentials();
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
-      })
-      .then(() => {
-        return startHttpProxy();
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
-      })
-      .then((port) => {
-        configureSystemProxy(port);
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+        return startLocalShadowsocksProxy(config, onDisconnected)
+            .catch((e) => {
+              throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
+            })
+            .then(() => {
+              return validateServerCredentials()
+                  .catch((e) => {
+                    throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
+                  })
+                  .then(() => {
+                    return startHttpProxy()
+                        .catch((e) => {
+                          throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
+                        })
+                        .then((port) => {
+                          try {
+                            configureSystemProxy(port);
+                          } catch (e) {
+                            throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+                          }
+                        });
+                  });
+            });
       });
 }
 
@@ -129,12 +132,12 @@ function startLocalShadowsocksProxy(
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
         if (signal) {
-          console.log(`ss-local exited with signal ${signal}`);
+          SentryLogger.info(`ss-local exited with signal ${signal}`);
           onDisconnected();
           return;
         }
 
-        console.log(`ss-local exited with code ${code}`);
+        SentryLogger.info(`ss-local exited with code ${code}`);
         onDisconnected();
       });
 
@@ -222,10 +225,10 @@ function stopHttpProxy() {
       // and log when it finally happens.
       httpProxy.close((e: Error) => {
         if (e) {
-          console.error('could not stop HTTP proxy', e);
+          SentryLogger.error(`could not stop HTTP proxy: ${e}`);
           return;
         }
-        console.log('HTTP proxy stopped');
+        SentryLogger.info('HTTP proxy stopped');
       });
     }
     resolve();
@@ -246,7 +249,7 @@ function configureSystemProxy(httpProxyPort: number) {
 
 // Configures the system to no longer use our proxy.
 function resetSystemProxy() {
-  console.log(`resetting system proxy`);
+  SentryLogger.info(`resetting system proxy`);
   try {
     execFileSync(pathToEmbeddedExe('setsystemproxy'), ['off']);
   } catch (e) {

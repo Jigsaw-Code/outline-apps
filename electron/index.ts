@@ -20,8 +20,9 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
-import * as process_manager from './process_manager';
 import {ConnectionStore, SerializableConnection} from './connection_store';
+import * as process_manager from './process_manager';
+import {SentryLogger} from './sentry_logger';
 
 // TODO: Figure out the TypeScript magic to use the default, export-ed instance.
 const myPromiseIpc = new PromiseIpc();
@@ -73,7 +74,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
     if (connectionAtShutdown) {
-      console.log(`Automatically starting connection ${connectionAtShutdown.id}`);
+      SentryLogger.info(`Automatically starting connection ${connectionAtShutdown.id}`);
       startProxying(connectionAtShutdown.config, connectionAtShutdown.id);
     }
   });
@@ -112,7 +113,7 @@ function interceptShadowsocksLink(argv: string[]) {
       if (mainWindow) {
         mainWindow.webContents.send('add-server', url);
       } else {
-        console.error('called with URL but mainWindow not open');
+        SentryLogger.error('called with URL but mainWindow not open');
       }
     }
   }
@@ -171,7 +172,7 @@ app.on('quit', () => {
   try {
     process_manager.teardownProxy();
   } catch (e) {
-    console.error('could not tear down proxy on exit', e);
+    SentryLogger.error(`could not tear down proxy on exit: ${e}`);
   }
 });
 
@@ -188,7 +189,7 @@ myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) =
 function startProxying(config: cordova.plugins.outline.ServerConfig, id: string) {
   return process_manager.teardownProxy()
       .catch((e) => {
-        console.error('error tearing down current proxy', e);
+        SentryLogger.error(`error tearing down current proxy: ${e}`);
       })
       .then(() => {
         return process_manager
@@ -198,15 +199,16 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
                   if (mainWindow) {
                     mainWindow.webContents.send(`proxy-disconnected-${id}`);
                   } else {
-                    console.error(`received proxy-disconnected event but no mainWindow to notify`);
+                    SentryLogger.error(
+                        `received proxy-disconnected event but no mainWindow to notify`);
                   }
                   connectionStore.clear().catch((err) => {
-                    console.error('Failed to clear connection store.');
+                    SentryLogger.error('Failed to clear connection store.');
                   });
                 })
             .then(() => {
               connectionStore.save({config, id}).catch((err) => {
-                console.error('Failed to store connection.');
+                SentryLogger.error('Failed to store connection.');
               });
               if (mainWindow) {
                 mainWindow.webContents.send(`proxy-connected-${id}`);
@@ -233,7 +235,7 @@ app.on('browser-window-focus', () => {
 
 // Error reporting.
 ipcMain.on('environment-info', (event: Event, info: {appVersion: string, sentryDsn: string}) => {
-  SentryClient.create({dsn: info.sentryDsn, release: info.appVersion});
+  SentryClient.create({dsn: info.sentryDsn, release: info.appVersion, maxBreadcrumbs: 100});
 });
 
 // Notify the UI of updates.
