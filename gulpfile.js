@@ -225,29 +225,31 @@ function build(platform, config) {
         writeEnvJson(platform, config, envVars.RELEASE);
         transpileBowerComponents(config).on('finish', function() {
           transpileUiComponents(config).on('finish', function() {
-            generateRtlCss('www/ui_components/*.html', `${config.targetDir}/ui_components`).on('finish', function() {
-              const compileArgs = config.compileArgs || '';
-              const releaseArgs = envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
-              const platformArgs = config.platformArgs || '';
-              // Do this now, otherwise "cordova compile" fails.
-              // TODO: use some gulp plugin
-              // -c means "use file's checksum, not last modified time"
-              const syncXcode = platform === 'ios' || platform === 'osx' ?
-                  `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
-                  ':';
-              runCommand(syncXcode, {}, () => {
-                runCommand(
-                    `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`,
-                    {}, function() {
-                      if (shouldWatch) {
-                        gutil.log('Running...');
-                        runCommand(`cordova run ${platform} --noprepare --nobuild`);
-                      } else {
-                        gutil.log('Done');
-                      }
-                    });
-              });
-            });
+            generateRtlCss(
+                `${config.targetDir}/ui_components/*.html`, `${config.targetDir}/ui_components`)
+                .on('finish', function() {
+                  const compileArgs = config.compileArgs || '';
+                  const releaseArgs = envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
+                  const platformArgs = config.platformArgs || '';
+                  // Do this now, otherwise "cordova compile" fails.
+                  // TODO: use some gulp plugin
+                  // -c means "use file's checksum, not last modified time"
+                  const syncXcode = platform === 'ios' || platform === 'osx' ?
+                      `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
+                      ':';
+                  runCommand(syncXcode, {}, () => {
+                    runCommand(
+                        `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`,
+                        {}, function() {
+                          if (shouldWatch) {
+                            gutil.log('Running...');
+                            runCommand(`cordova run ${platform} --noprepare --nobuild`);
+                          } else {
+                            gutil.log('Done');
+                          }
+                        });
+                  });
+                });
           });
         });
       });
