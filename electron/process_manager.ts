@@ -27,6 +27,8 @@ import * as errors from '../www/model/errors';
 
 import {SentryLogger} from './sentry_logger';
 
+const sentryLogger = new SentryLogger();
+
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
 //  - the value specified for --config.asarUnpack in package_action.sh
@@ -132,12 +134,12 @@ function startLocalShadowsocksProxy(
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
         if (signal) {
-          SentryLogger.info(`ss-local exited with signal ${signal}`);
+          sentryLogger.info(`ss-local exited with signal ${signal}`);
           onDisconnected();
           return;
         }
 
-        SentryLogger.info(`ss-local exited with code ${code}`);
+        sentryLogger.info(`ss-local exited with code ${code}`);
         onDisconnected();
       });
 
@@ -225,10 +227,10 @@ function stopHttpProxy() {
       // and log when it finally happens.
       httpProxy.close((e: Error) => {
         if (e) {
-          SentryLogger.error(`could not stop HTTP proxy: ${e}`);
+          sentryLogger.error(`could not stop HTTP proxy: ${e}`);
           return;
         }
-        SentryLogger.info('HTTP proxy stopped');
+        sentryLogger.info('HTTP proxy stopped');
       });
     }
     resolve();
@@ -249,7 +251,7 @@ function configureSystemProxy(httpProxyPort: number) {
 
 // Configures the system to no longer use our proxy.
 function resetSystemProxy() {
-  SentryLogger.info(`resetting system proxy`);
+  sentryLogger.info(`resetting system proxy`);
   try {
     execFileSync(pathToEmbeddedExe('setsystemproxy'), ['off']);
   } catch (e) {

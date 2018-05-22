@@ -39,6 +39,8 @@ const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const iconPath = path.join(__dirname, 'outline.ico');
 
+const sentryLogger = new SentryLogger();
+
 const enum Options {
   AUTOSTART = '--autostart'
 }
@@ -74,7 +76,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
     if (connectionAtShutdown) {
-      SentryLogger.info(`Automatically starting connection ${connectionAtShutdown.id}`);
+      sentryLogger.info(`Automatically starting connection ${connectionAtShutdown.id}`);
       startProxying(connectionAtShutdown.config, connectionAtShutdown.id);
     }
   });
@@ -113,7 +115,7 @@ function interceptShadowsocksLink(argv: string[]) {
       if (mainWindow) {
         mainWindow.webContents.send('add-server', url);
       } else {
-        SentryLogger.error('called with URL but mainWindow not open');
+        sentryLogger.error('called with URL but mainWindow not open');
       }
     }
   }
@@ -172,7 +174,7 @@ app.on('quit', () => {
   try {
     process_manager.teardownProxy();
   } catch (e) {
-    SentryLogger.error(`could not tear down proxy on exit: ${e}`);
+    sentryLogger.error(`could not tear down proxy on exit: ${e}`);
   }
 });
 
@@ -189,7 +191,7 @@ myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) =
 function startProxying(config: cordova.plugins.outline.ServerConfig, id: string) {
   return process_manager.teardownProxy()
       .catch((e) => {
-        SentryLogger.error(`error tearing down current proxy: ${e}`);
+        sentryLogger.error(`error tearing down current proxy: ${e}`);
       })
       .then(() => {
         return process_manager
@@ -199,16 +201,16 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
                   if (mainWindow) {
                     mainWindow.webContents.send(`proxy-disconnected-${id}`);
                   } else {
-                    SentryLogger.error(
+                    sentryLogger.error(
                         `received proxy-disconnected event but no mainWindow to notify`);
                   }
                   connectionStore.clear().catch((err) => {
-                    SentryLogger.error('Failed to clear connection store.');
+                    sentryLogger.error('Failed to clear connection store.');
                   });
                 })
             .then(() => {
               connectionStore.save({config, id}).catch((err) => {
-                SentryLogger.error('Failed to store connection.');
+                sentryLogger.error('Failed to store connection.');
               });
               if (mainWindow) {
                 mainWindow.webContents.send(`proxy-connected-${id}`);

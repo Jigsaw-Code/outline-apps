@@ -20,13 +20,13 @@ import {SentryClient} from '@sentry/electron';
 // Note that error reporting is handled by the Sentry browser SDK.
 export class SentryLogger {
   // Logs an info message to console and stores a breadcrumb.
-  static info(message: string) {
+  info(message: string) {
     console.info(message);
     SentryClient.addBreadcrumb({message, level: Severity.Info});
   }
 
   // Logs an error message to console and stores a breadcrumb.
-  static error(message: string) {
+  error(message: string) {
     console.error(message);
     SentryClient.addBreadcrumb({message, level: Severity.Error});
   }
