@@ -1,1 +1,1 @@
-*.bat text eol=crlf
+*[.bat|.ts|.c|.md|Makefile] text eol=crlf

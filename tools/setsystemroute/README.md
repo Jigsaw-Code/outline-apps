@@ -18,5 +18,5 @@ If the excluded IP is a proxy server, this may be used in conjunction with sever
 ### Steps
 
 * Open a Cywin terminal.
-* `cd` to `tools/setsystemproxy`, inside your clone of this repo.
+* `cd` to `tools/setsystemroute`, inside your clone of this repo.
 * `make`
