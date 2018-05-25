@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, exec, execFile, execFileSync} from 'child_process';
+import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
 import * as net from 'net';
 import * as path from 'path';
 import * as process from 'process';
@@ -148,7 +148,7 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-u');
 
     try {
-      ssLocal = execFile(pathToEmbeddedExe('ss-local'), ssLocalArgs);
+      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs);
 
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
@@ -233,13 +233,23 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
     args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
 
     try {
-      tun2socks = execFile(pathToEmbeddedExe('badvpn-tun2socks'), args);
+      tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
 
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
+          // tun2socks exits with SIGTERM when we stop it.
           console.log(`tun2socks exited with signal ${signal}`);
         } else {
           console.log(`tun2socks exited with code ${code}`);
+          if (code === 1) {
+            // tun2socks exits with code 1 upon failure. This happens when the device sleeps.
+            // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
+            console.log('Restarting tun2socks...');
+            setTimeout(() => {
+              startTun2socks(onDisconnected);
+            }, 3000);
+            return;
+          }
         }
         onDisconnected();
       });
