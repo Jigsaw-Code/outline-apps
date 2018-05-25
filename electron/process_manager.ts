@@ -43,6 +43,7 @@ const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = 'outline-tap0';
+const TUN2SOCKS_PROCESS_WAIT_TIME_MS = 5000;
 
 // TODO: read these from the network device!
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
@@ -87,7 +88,7 @@ export function launchProxy(
         throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
       })
       .then(() => {
-        return startTun2socks(onDisconnected);
+        return startTun2socks(config.host || '', onDisconnected);
       })
       .catch((e) => {
         throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
@@ -97,17 +98,8 @@ export function launchProxy(
         // correctly configures the virtual router. before then,
         // configuring the route table will not work as expected.
         // TODO: hack tun2socks to write something to stdout when it's ready
-        return new Promise((F, R) => {
-          console.log('waiting 5s for tun2socks to come up...');
-          setTimeout(() => {
-            try {
-              configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '');
-              F();
-            } catch (e) {
-              R(e);
-            }
-          }, 5000);
-        });
+        console.log('waiting 5s for tun2socks to come up...');
+        return configureRoutingWithDelay(config.host || '',  TUN2SOCKS_PROCESS_WAIT_TIME_MS);
       })
       .catch((e) => {
         throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
@@ -148,7 +140,7 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-u');
 
     try {
-      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs);
+      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs, {stdio: 'ignore'});
 
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
@@ -214,7 +206,7 @@ function validateServerCredentials() {
   });
 }
 
-function startTun2socks(onDisconnected: () => void): Promise<void> {
+function startTun2socks(host: string, onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
@@ -231,6 +223,7 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--socks5-udp');
     args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    args.push('--loglevel', 'error');
 
     try {
       tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
@@ -242,16 +235,32 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
         } else {
           console.log(`tun2socks exited with code ${code}`);
           if (code === 1) {
-            // tun2socks exits with code 1 upon failure. This happens when the device sleeps.
+            // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
+            // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
             console.log('Restarting tun2socks...');
             setTimeout(() => {
-              startTun2socks(onDisconnected);
+              startTun2socks(host, onDisconnected).then(() => {
+                console.log('Re-configuring routing, waiting 5s for tun2socks to come up...');
+                configureRoutingWithDelay(host, TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
+                  console.error('Failed to re-configure routing');
+                  teardownProxy();
+                  onDisconnected();
+                  return;
+                });
+              });
             }, 3000);
             return;
           }
         }
         onDisconnected();
+      });
+
+      // Ignore stdio if not consuming the process output (pass  {stdio: 'igonore'} to spawn);
+      // otherwise the process execution is suspended when the unconsumed streams exceed the system
+      // limit (~200KB). See https://github.com/nodejs/node/issues/4236
+      tun2socks.stdout.on('data', (data) => {
+        console.error(data);
       });
 
       resolve();
@@ -275,6 +284,19 @@ function stopTun2socks() {
   }
   tun2socks.kill();
   return Promise.resolve();
+}
+
+function configureRoutingWithDelay(host: string, delayMs: number) {
+  return new Promise((F, R) => {
+    setTimeout(() => {
+        try {
+          configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, host);
+          F();
+        } catch (e) {
+          R(e);
+        }
+      }, delayMs);
+  });
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string) {
