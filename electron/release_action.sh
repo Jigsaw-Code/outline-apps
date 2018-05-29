@@ -24,6 +24,9 @@ yarn do electron/build
 cp package.json build/windows/
 scripts/environment_json.sh -p windows -r > build/windows/www/environment.json
 
+# Copy tap-windows6.
+cp -R third_party/tap-windows6/bin build/windows/tap-windows6
+
 electron-builder \
   --projectDir=build/windows \
   --config.asarUnpack=electron/bin \
@@ -32,6 +35,9 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
   --win nsis \
+  --config.nsis.perMachine=true \
+  --config.nsis.include=electron/custom_install_steps.nsh \
+  --config.win.requestedExecutionLevel=requireAdministrator \
   --config.win.icon=icons/win/icon.ico \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.nsis.artifactName='Outline-Client.${ext}'
