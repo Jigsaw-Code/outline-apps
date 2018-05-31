@@ -19,10 +19,15 @@
 #include <iphlpapi.h>
 #include <netioapi.h>
 #include <stdio.h>
+#include <windows.h>
 // clang-format on
 
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
+
+// Constants
+#define NUM_IPV6_ROUTES 3
+const static char* IPV6_ROUTES[] = {"fc00::/7", "2000::/4", "3000::/4"};
 
 void usage(const char* path) {
   printf("usage: on <tun2socks> <proxy>|off <tun2socks> <proxy> <previous gateway>\n");
@@ -94,6 +99,66 @@ void deleteRoute(PMIB_IPFORWARDROW route) {
     printf("could not delete route: %lu\n", status);
     exit(1);
   }
+}
+
+// Spawns a process and runs `cmd` syncrhonously. Exits if the process cannot be created.
+DWORD runCommand(char* cmd) {
+  STARTUPINFO startupInfo;
+  PROCESS_INFORMATION processInfo;
+  ZeroMemory(&startupInfo, sizeof(startupInfo));
+  ZeroMemory(&processInfo, sizeof(processInfo));
+
+  if (!CreateProcess(NULL,  // Use command line
+        cmd,
+        NULL, // Process handle not inheritable
+        NULL, // Thread handle not inheritable
+        FALSE, // Handle inheritance
+        0, // Creation flags
+        NULL, // Use parent's environment block
+        NULL, // Use parent's starting directory
+        &startupInfo,
+        &processInfo)) {
+    printf("failed to create process\n");
+    exit(1);
+  }
+  WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+  DWORD exitCode;
+  GetExitCodeProcess(processInfo.hProcess, &exitCode);
+
+  CloseHandle(processInfo.hProcess);
+  CloseHandle(processInfo.hThread);
+
+  return exitCode;
+}
+
+// Helper method to enable/disable IPv6 routing based on the `enable` argument.
+// Outline does not currently support IPv6, so we resort to disabling it while the VPN is active to
+// prevent leakage. Removing the deafault IPv6 gateway is not enough since it gets re-created
+// through router advertisements and DHCP (disabling these or IPv6 routing altogether requires a
+// system reboot). Thus, we resort to creating three IPv6 routes (see IPV6_ROUTES) to the loopback
+// interface that are more specific than the default route, causing IPv6 traffic to get dropped.
+// This 'hack' was inspired by OpenVPN; see https://github.com/OpenVPN/openvpn3/commit/d08cc059e7132a3d3aee3dcd946fce4c35b1ced3#diff-1d76f0fd7ec04c6d1398288214a879c5R358.
+void routeIpv6(BOOL enable) {
+  const char* action = enable ? "delete" : "add";
+  char cmd[128];
+  for (int i = 0; i < NUM_IPV6_ROUTES; ++i) {
+    ZeroMemory(&cmd, sizeof(cmd));
+    sprintf(cmd, "netsh interface ipv6 %s route %s interface=1 store=active",
+            action, IPV6_ROUTES[i]);
+    DWORD exitCode = runCommand(cmd);
+    printf("%s -> %lu\n", cmd, exitCode);
+  }
+}
+
+void disableIpv6Routing() {
+  printf("disabling IPv6 routing\n");
+  routeIpv6(FALSE);
+}
+
+void enableIpv6Routing() {
+  printf("enabling IPv6 routing\n");
+  routeIpv6(TRUE);
 }
 
 // TODO: handle host names
@@ -270,6 +335,8 @@ int main(int argc, char* argv[]) {
     proxyServerRoute->dwForwardIfIndex = systemGatewayInterfaceIndex;
     createRoute(proxyServerRoute);
     printf("added route to proxy server\n");
+
+    disableIpv6Routing(); // Disable IPv6 routing to prevent leakage.
   } else {
     // Disconnect from Shadowsocks:
     //  - delete the routes to the proxy server and tun2socks virtual router, if found
@@ -299,6 +366,8 @@ int main(int argc, char* argv[]) {
       deleteRoute(proxyServerRoute);
       printf("removed route to proxy server\n");
     }
+
+    enableIpv6Routing(); // Restore the default IPv6 gateway.
   }
 
   exit(0);
