@@ -99,7 +99,7 @@ export function startVpn(
                           // correctly configures the virtual router. before then,
                           // configuring the route table will not work as expected.
                           // TODO: hack tun2socks to write something to stdout when it's ready
-                          console.log('waiting 5s for tun2socks to come up...');
+                          sentryLogger.info('waiting 5s for tun2socks to come up...');
                           return configureRoutingWithDelay(
                               config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
                                 throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
@@ -235,19 +235,19 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
-          console.log(`tun2socks exited with signal ${signal}`);
+          sentryLogger.info(`tun2socks exited with signal ${signal}`);
         } else {
-          console.log(`tun2socks exited with code ${code}`);
+          sentryLogger.info(`tun2socks exited with code ${code}`);
           if (code === 1) {
             // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
             // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            console.log('Restarting tun2socks...');
+            sentryLogger.info('Restarting tun2socks...');
             setTimeout(() => {
               startTun2socks(host, onDisconnected).then(() => {
-                console.log('Re-configuring routing, waiting 5s for tun2socks to come up...');
+                sentryLogger.info('Re-configuring routing, waiting 5s for tun2socks to come up...');
                 configureRoutingWithDelay(host, TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
-                  console.error('Failed to re-configure routing');
+                  sentryLogger.error('Failed to re-configure routing');
                   teardownVpn();
                   onDisconnected();
                   return;
@@ -264,7 +264,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       // otherwise the process execution is suspended when the unconsumed streams exceed the system
       // limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {
-        console.error(data);
+        sentryLogger.error(`${data}`);
       });
 
       resolve();
@@ -304,10 +304,11 @@ function configureRoutingWithDelay(host: string, delayMs: number) {
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string) {
+  // TODO: disable logging to Sentry in this method (logs will contain IPs) after Trusted Tester release.
   try {
     const out = execFileSync(
         pathToEmbeddedExe('setsystemroute'), ['on', TUN2SOCKS_VIRTUAL_ROUTER_IP, proxyServer]);
-    console.log(`setsystemroute:\n===\n${out}===`);
+    sentryLogger.info(`setsystemroute:\n===\n${out}===`);
 
     // Store the current proxy server and gateway, for when we disconnect.
     currentProxyServer = proxyServer;
@@ -323,13 +324,14 @@ function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string)
     console.log(`previous gateway: ${p}`);
     previousGateway = p;
   } catch (e) {
-    console.log(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
+    sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
     console.log(e);
     throw new Error(`could not configure routing`);
   }
 }
 
 function resetRouting() {
+  // TODO: disable logging to Sentry in this method (logs will contain IPs) after Trusted Tester release.
   if (!previousGateway) {
     throw new Error('i do not know the previous gateway');
   }
@@ -340,9 +342,9 @@ function resetRouting() {
     const out = execFileSync(
         pathToEmbeddedExe('setsystemroute'),
         ['off', TUN2SOCKS_VIRTUAL_ROUTER_IP, currentProxyServer, previousGateway]);
-    console.log(`setsystemroute:\n===\n${out}===`);
+    sentryLogger.info(`setsystemroute:\n===\n${out}===`);
   } catch (e) {
-    console.log(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
+    sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
     throw new Error(`could not reset routing`);
   }
 }
@@ -351,7 +353,7 @@ export function teardownVpn() {
   try {
     resetRouting();
   } catch (e) {
-    console.log(`failed to reset routing: ${e.message}`);
+    sentryLogger.error(`failed to reset routing: ${e.message}`);
   }
   return Promise.all([stopSsLocal(), stopTun2socks()]);
 }
