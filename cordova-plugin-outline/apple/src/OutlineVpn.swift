@@ -45,6 +45,7 @@ class OutlineVpn: NSObject {
     static let errorCode = "errorCode"
     static let host = "host"
     static let port = "port"
+    static let isOnDemand = "is-on-demand"
   }
 
   // This must be kept in sync with:
@@ -94,14 +95,14 @@ class OutlineVpn: NSObject {
     } else if isVpnConnected() {
       return restartVpn(connectionId, config: connection.config, completion: completion)
     }
-    self.startVpn(connection, completion)
+    self.startVpn(connection, isAutoConnect: false, completion)
   }
 
   // Starts the last successful VPN connection.
   func startLastSuccessfulConnection(_ completion: @escaping (Callback)) {
     // Explicitly pass an empty connection's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
-    self.startVpn(OutlineConnection(), completion)
+    self.startVpn(OutlineConnection(), isAutoConnect: true, completion)
   }
 
   // Tears down the VPN if the connection with id |connectionId| is active.
@@ -153,7 +154,8 @@ class OutlineVpn: NSObject {
 
   // MARK: Helpers
 
-  private func startVpn(_ connection: OutlineConnection, _ completion: @escaping(Callback)) {
+  private func startVpn(
+      _ connection: OutlineConnection, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
     let connectionId = connection.id
     setupVpn() { error in
       if error != nil {
@@ -165,9 +167,12 @@ class OutlineVpn: NSObject {
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
       var config: [String: String]? = nil
-      if connectionId != nil {
+      if !isAutoConnect {
         config = connection.config
         config?[MessageKey.connectionId] = connectionId
+      } else {
+        // macOS app was started by launcher.
+        config = [MessageKey.isOnDemand: "true"];
       }
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
@@ -182,6 +187,7 @@ class OutlineVpn: NSObject {
   private func stopVpn() {
     let session: NETunnelProviderSession = tunnelManager?.connection as! NETunnelProviderSession
     session.stopTunnel()
+    setConnectVpnOnDemand(false) // Disable on demand so the VPN does not connect automatically.
     self.activeConnectionId = nil
   }
 
@@ -209,7 +215,8 @@ class OutlineVpn: NSObject {
       var manager: NETunnelProviderManager!
       if let managers = managers, managers.count > 0 {
         manager = managers.first
-        if manager.isEnabled {
+        let hasOnDemandRules = !(manager.onDemandRules?.isEmpty ?? true)
+        if manager.isEnabled && hasOnDemandRules {
           self.tunnelManager = manager
           return completion(nil)
         }
@@ -221,6 +228,10 @@ class OutlineVpn: NSObject {
         manager = NETunnelProviderManager()
         manager.protocolConfiguration = config
       }
+      // Set an on-demand rule to connect to any available network to implement auto-connect on boot
+      let connectRule = NEOnDemandRuleConnect()
+      connectRule.interfaceTypeMatch = .any
+      manager.onDemandRules = [connectRule]
       manager.isEnabled = true
       manager.saveToPreferences() { error in
         if let error = error {
@@ -234,6 +245,15 @@ class OutlineVpn: NSObject {
         self.tunnelManager?.loadFromPreferences() { error in
           completion(error)
         }
+      }
+    }
+  }
+
+  private func setConnectVpnOnDemand(_ enabled: Bool) {
+    self.tunnelManager?.isOnDemandEnabled = enabled
+    self.tunnelManager?.saveToPreferences { error  in
+      if let error = error {
+        return DDLogError("Failed to set VPN on demand to \(enabled): \(error)")
       }
     }
   }
@@ -352,8 +372,10 @@ class OutlineVpn: NSObject {
     }
     let rawErrorCode = response[MessageKey.errorCode] as? Int ?? ErrorCode.undefined.rawValue
     if rawErrorCode == ErrorCode.noError.rawValue,
-        let connectionId = response[MessageKey.connectionId] as? String {
+       let connectionId = response[MessageKey.connectionId] as? String {
       self.activeConnectionId = connectionId
+      // Enable on demand to connect automatically on boot if the VPN was connected on shutdown
+      self.setConnectVpnOnDemand(true)
     }
     completion(ErrorCode(rawValue: rawErrorCode) ?? ErrorCode.noError)
   }
