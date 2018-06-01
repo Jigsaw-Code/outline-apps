@@ -61,19 +61,19 @@ let currentProxyServer: string;
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 
-// Fulfills with true iff both proxy binaries were started, the system configured to use the HTTP
-// proxy, and we can both connect to the Shadowsocks server port *and* connect to a semi-random test
-// site through the Shadowsocks proxy.
+// Fulfills with true iff shadowsocks and tun2socks binaries were started, the system configured to
+// route all traffic through the proxy, and we can both connect to the Shadowsocks server port *and*
+// connect to a semi-random test site through the Shadowsocks proxy.
 //
 // Rejects with an ErrorCode number if for any reason the proxy cannot be started, or a connection
 // cannot be made to the server (it does *not* reject with an Error, just an integer, owing to how
 // electron-promise-ipc propagates errors).
 //
 // The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
-// Electron counterpart to VpnTunnelService.startShadowsocks. The biggest difference is that we do
-// not test the Shadowsocks server's support for UDP because on Windows the Shadowsocks proxy is
-// fronted by a HTTP proxy, which does not support UDP.
-export function launchProxy(
+// Electron counterpart to VpnTunnelService.startShadowsocks.
+//
+// TODO: implement UDP forwarding check.
+export function startVpn(
     config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
       .catch((e) => {
@@ -100,9 +100,8 @@ export function launchProxy(
                           // configuring the route table will not work as expected.
                           // TODO: hack tun2socks to write something to stdout when it's ready
                           console.log('waiting 5s for tun2socks to come up...');
-                          return configureRoutingWithDelay(config.host || '',
-                                                           TUN2SOCKS_PROCESS_WAIT_TIME_MS)
-                              .catch((e) => {
+                          return configureRoutingWithDelay(
+                              config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
                                 throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
                               });
                         });
@@ -249,7 +248,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
                 console.log('Re-configuring routing, waiting 5s for tun2socks to come up...');
                 configureRoutingWithDelay(host, TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
                   console.error('Failed to re-configure routing');
-                  teardownProxy();
+                  teardownVpn();
                   onDisconnected();
                   return;
                 });
@@ -348,7 +347,7 @@ function resetRouting() {
   }
 }
 
-export function teardownProxy() {
+export function teardownVpn() {
   try {
     resetRouting();
   } catch (e) {
