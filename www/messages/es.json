@@ -66,6 +66,8 @@
   "outline-plugin-error-generic-start-failure": "Algo sucedió y no fue posible conectar al servidor, inténtalo de nuevo. Si el problema persiste, envía comentarios.",
   "outline-plugin-error-networking-error": "Ocurrió un error en la red, inténtalo de nuevo. Si el problema persiste, envía comentarios.",
   "tips": "Consejos",
+  "auto-connect-dialog-title": "Permanece protegido, siempre",
+  "auto-connect-dialog-detail": "A menos que desconectes el servidor, Outline lo conectará automáticamente la siguiente vez que reinicies tu dispositivo.",
   "get-help": "Ayuda",
   "got-it": "Entendido",
   "save": "guardar",

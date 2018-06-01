@@ -23,6 +23,10 @@ import * as url from 'url';
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
+import {SentryLogger} from './sentry_logger';
+
+const sentryLogger = new SentryLogger();
+
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
 //  - the value specified for --config.asarUnpack in package_action.sh
@@ -76,33 +80,34 @@ export function launchProxy(
         throw errors.ErrorCode.SERVER_UNREACHABLE;
       })
       .then(() => {
-        return startLocalShadowsocksProxy(config, onDisconnected);
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
-      })
-      .then(() => {
-        return validateServerCredentials();
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
-      })
-      .then(() => {
-        return startTun2socks(config.host || '', onDisconnected);
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
-      })
-      .then((port) => {
-        // there is a slight delay before tun2socks
-        // correctly configures the virtual router. before then,
-        // configuring the route table will not work as expected.
-        // TODO: hack tun2socks to write something to stdout when it's ready
-        console.log('waiting 5s for tun2socks to come up...');
-        return configureRoutingWithDelay(config.host || '',  TUN2SOCKS_PROCESS_WAIT_TIME_MS);
-      })
-      .catch((e) => {
-        throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+        return startLocalShadowsocksProxy(config, onDisconnected)
+            .catch((e) => {
+              throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
+            })
+            .then(() => {
+              return validateServerCredentials()
+                  .catch((e) => {
+                    throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
+                  })
+                  .then(() => {
+                    return startTun2socks(config.host || '', onDisconnected)
+                        .catch((e) => {
+                          throw errors.ErrorCode.VPN_START_FAILURE;
+                        })
+                        .then((port) => {
+                          // there is a slight delay before tun2socks
+                          // correctly configures the virtual router. before then,
+                          // configuring the route table will not work as expected.
+                          // TODO: hack tun2socks to write something to stdout when it's ready
+                          console.log('waiting 5s for tun2socks to come up...');
+                          return configureRoutingWithDelay(config.host || '',
+                                                           TUN2SOCKS_PROCESS_WAIT_TIME_MS)
+                              .catch((e) => {
+                                throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+                              });
+                        });
+                  });
+            });
       });
 }
 
@@ -145,12 +150,12 @@ function startLocalShadowsocksProxy(
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
         if (signal) {
-          console.log(`ss-local exited with signal ${signal}`);
+          sentryLogger.info(`ss-local exited with signal ${signal}`);
           onDisconnected();
           return;
         }
 
-        console.log(`ss-local exited with code ${code}`);
+        sentryLogger.info(`ss-local exited with code ${code}`);
         onDisconnected();
       });
 
@@ -332,7 +337,6 @@ function resetRouting() {
   if (!currentProxyServer) {
     throw new Error('i do not know the current proxy server');
   }
-
   try {
     const out = execFileSync(
         pathToEmbeddedExe('setsystemroute'),

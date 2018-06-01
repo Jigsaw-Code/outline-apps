@@ -24,8 +24,7 @@ class OutlineConnectionStore: NSObject {
 
   private let defaults: UserDefaults?
 
-  // Constructs the store by creating a directory at |storeDirectoryUrl| if it does not exist.
-  // The caller is responsible for ensuring the path is writable.
+  // Constructs the store with UserDefaults as the storage.
   required init(appGroup: String) {
     defaults = UserDefaults(suiteName: appGroup)
     super.init()
