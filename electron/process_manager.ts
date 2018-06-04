@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
+import * as dgram from 'dgram';
 import * as net from 'net';
 import * as path from 'path';
 import * as process from 'process';
@@ -60,10 +61,13 @@ let currentProxyServer: string;
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
+const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
+const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
 // Fulfills with true iff shadowsocks and tun2socks binaries were started, the system configured to
-// route all traffic through the proxy, and we can both connect to the Shadowsocks server port *and*
-// connect to a semi-random test site through the Shadowsocks proxy.
+// route all traffic through the proxy, the remote server has enabled UDP forwarding, and we can
+// both connect to the Shadowsocks server port *and* connect to a semi-random test site through the
+// Shadowsocks proxy.
 //
 // Rejects with an ErrorCode number if for any reason the proxy cannot be started, or a connection
 // cannot be made to the server (it does *not* reject with an Error, just an integer, owing to how
@@ -71,8 +75,6 @@ const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 //
 // The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
 // Electron counterpart to VpnTunnelService.startShadowsocks.
-//
-// TODO: implement UDP forwarding check.
 export function startVpn(
     config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
@@ -90,19 +92,25 @@ export function startVpn(
                     throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
                   })
                   .then(() => {
-                    return startTun2socks(config.host || '', onDisconnected)
+                    return checkUdpForwardingEnabled()
                         .catch((e) => {
-                          throw errors.ErrorCode.VPN_START_FAILURE;
+                          throw errors.ErrorCode.UDP_RELAY_NOT_ENABLED;
                         })
-                        .then((port) => {
-                          // there is a slight delay before tun2socks
-                          // correctly configures the virtual router. before then,
-                          // configuring the route table will not work as expected.
-                          // TODO: hack tun2socks to write something to stdout when it's ready
-                          sentryLogger.info('waiting 5s for tun2socks to come up...');
-                          return configureRoutingWithDelay(
-                              config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
-                                throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+                        .then(() => {
+                          return startTun2socks(config.host || '', onDisconnected)
+                              .catch((e) => {
+                                throw errors.ErrorCode.VPN_START_FAILURE;
+                              })
+                              .then((port) => {
+                                // there is a slight delay before tun2socks
+                                // correctly configures the virtual router. before then,
+                                // configuring the route table will not work as expected.
+                                // TODO: hack tun2socks to write something to stdout when it's ready
+                                sentryLogger.info('waiting 5s for tun2socks to come up...');
+                                return configureRoutingWithDelay(
+                                    config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
+                                      throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+                                    });
                               });
                         });
                   });
@@ -208,6 +216,84 @@ function validateServerCredentials() {
           socket.resume();
         });
   });
+}
+
+// Verifies that the remote server has enabled UDP forwarding by sending a DNS request through it.
+function checkUdpForwardingEnabled() {
+  return new Promise((resolve, reject) => {
+    socks.createConnection(
+      {
+        proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate'},
+        target: {host: "0.0.0.0", port: 0},  // Specify the actual target once we get a response.
+      },
+      (err, socket, info) => {
+        if (err) {
+          sentryLogger.error(`Failed to create UDP connection to local proxy: ${err.message}`);
+          reject(new Error());
+          return;
+        }
+        const dnsRequest = getDnsRequest();
+        const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
+        const udpSocket = dgram.createSocket('udp4');
+
+        udpSocket.on('error', (err) => {
+          const msg = `UDP socket failure: ${err}`;
+          sentryLogger.error(msg);
+          reject(new Error(msg));
+        });
+
+        udpSocket.on('message', (msg, info) => {
+          sentryLogger.info('UDP forwarding enabled');
+          stopUdp();
+          resolve();
+        });
+
+        // Retry sending the query every second.
+        const intervalId = setInterval(() => {
+          try {
+            udpSocket.send(packet, info.port, info.host, (err) => {
+              if (err) {
+                sentryLogger.error(`Failed to send data through UDP: ${err}`);
+              }
+            });
+          } catch (e) {
+            sentryLogger.error(`Failed to send data through UDP ${e}`);
+          }
+        }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+
+        const stopUdp = () => {
+          try {
+            clearInterval(intervalId);
+            udpSocket.close();
+          } catch (e) {
+            // Ignore; there may be multiple calls to this function.
+          }
+        }
+
+        // Give up after the timeout elapses.
+        setTimeout(() => {
+          stopUdp();
+          reject(new Error("Remote UDP forwarding disabled"));
+        }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+    });
+  });
+}
+
+// Returns a buffer containing a DNS request to google.com.
+function getDnsRequest() {
+  return Buffer.from([
+    0, 0, // [0-1]   query ID
+    1, 0, // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+    0, 1, // [4-5]   QDCOUNT (number of queries)
+    0, 0, // [6-7]   ANCOUNT (number of answers)
+    0, 0, // [8-9]   NSCOUNT (number of name server records)
+    0, 0, // [10-11] ARCOUNT (number of additional records)
+    6, 103,  111, 111, 103, 108, 101, // google
+    3, 99, 111, 109, // com
+    0, // null terminator of FQDN (root TLD)
+    0, 1, // QTYPE, set to A
+    0, 1 // QCLASS, set to 1 = IN (Internet)
+  ]);
 }
 
 function startTun2socks(host: string, onDisconnected: () => void): Promise<void> {

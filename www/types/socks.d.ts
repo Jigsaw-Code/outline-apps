@@ -21,11 +21,18 @@ declare module 'socks' {
   import * as net from 'net';
 
   export interface SocksSocketOptions {
-    proxy: {ipaddress: string; port: number; type: 4 | 5};
-    target: {host: string; port: number};
+    proxy: {ipaddress: string; port: number; type: 4 | 5, command?: string};
+    target: SocksAddress;
     timeout?: number;
   }
 
+  export interface SocksAddress {
+    host: string,
+    port: number
+  }
+
   export function createConnection(
-      options: SocksSocketOptions, callback: (err: Error, socket: net.Socket) => void): void;
+      options: SocksSocketOptions, callback: (err: Error, socket: net.Socket, info: SocksAddress) => void): void;
+
+  export function createUDPFrame(target: SocksAddress, data: Buffer, frame?: number): Buffer;
 }
