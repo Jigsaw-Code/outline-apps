@@ -136,7 +136,11 @@ app.on('ready', () => {
     }]));
   } else {
     // TODO: Run this periodically, e.g. every 4-6 hours.
-    autoUpdater.checkForUpdates();
+     try {
+      autoUpdater.checkForUpdates();
+    } catch (e) {
+      console.error(`Failed to check for updates: ${e.message}`);
+    }
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
