@@ -56,7 +56,6 @@ const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
 const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
-let previousGateway: string;
 let currentProxyServer: string;
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
@@ -390,7 +389,6 @@ function configureRoutingWithDelay(host: string, delayMs: number) {
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string) {
-  // TODO: disable logging to Sentry in this method (logs will contain IPs) after Trusted Tester release.
   try {
     const out = execFileSync(
         pathToEmbeddedExe('setsystemroute'), ['on', TUN2SOCKS_VIRTUAL_ROUTER_IP, proxyServer]);
@@ -398,17 +396,6 @@ function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string)
 
     // Store the current proxy server and gateway, for when we disconnect.
     currentProxyServer = proxyServer;
-    const lines = out.toString().split('\n');
-    const gatewayLines = lines.filter((line) => {
-      return line.startsWith('current gateway:');
-    });
-    if (gatewayLines.length < 1) {
-      throw new Error(`could not determine previous gateway`);
-    }
-    const tokens = gatewayLines[0].split(' ');
-    const p = tokens[tokens.length - 1];
-    console.log(`previous gateway: ${p}`);
-    previousGateway = p;
   } catch (e) {
     sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
     console.log(e);
@@ -417,17 +404,13 @@ function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string)
 }
 
 function resetRouting() {
-  // TODO: disable logging to Sentry in this method (logs will contain IPs) after Trusted Tester release.
-  if (!previousGateway) {
-    throw new Error('i do not know the previous gateway');
-  }
   if (!currentProxyServer) {
     throw new Error('i do not know the current proxy server');
   }
   try {
     const out = execFileSync(
         pathToEmbeddedExe('setsystemroute'),
-        ['off', TUN2SOCKS_VIRTUAL_ROUTER_IP, currentProxyServer, previousGateway]);
+        ['off', TUN2SOCKS_VIRTUAL_ROUTER_IP, currentProxyServer]);
     sentryLogger.info(`setsystemroute:\n===\n${out}===`);
   } catch (e) {
     sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);

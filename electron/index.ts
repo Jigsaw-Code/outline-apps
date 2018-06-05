@@ -194,6 +194,9 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
         sentryLogger.error(`error tearing down the VPN: ${e}`);
       })
       .then(() => {
+        if (mainWindow) {
+          mainWindow.webContents.send(`proxy-reconnecting-${id}`);
+        }
         return process_manager
             .startVpn(
                 config,
