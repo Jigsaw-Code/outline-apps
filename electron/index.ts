@@ -76,8 +76,12 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
     if (connectionAtShutdown) {
-      sentryLogger.info(`Automatically starting connection ${connectionAtShutdown.id}`);
-      startVpn(connectionAtShutdown.config, connectionAtShutdown.id);
+      const serverId = connectionAtShutdown.id;
+      sentryLogger.info(`Automatically starting connection ${serverId}`);
+      if (mainWindow) {
+         mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
+      }
+      startVpn(connectionAtShutdown.config, serverId);
     }
   });
 
@@ -194,9 +198,6 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
         sentryLogger.error(`error tearing down the VPN: ${e}`);
       })
       .then(() => {
-        if (mainWindow) {
-          mainWindow.webContents.send(`proxy-reconnecting-${id}`);
-        }
         return process_manager
             .startVpn(
                 config,
