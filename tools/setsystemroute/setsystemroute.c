@@ -30,7 +30,7 @@
 const static char* IPV6_ROUTES[] = {"fc00::/7", "2000::/4", "3000::/4"};
 
 void usage(const char* path) {
-  printf("usage: on <tun2socks> <proxy>|off <tun2socks> <proxy> <previous gateway>\n");
+  printf("usage: on <tun2socks> <proxy>|off <tun2socks> <proxy>\n");
   exit(1);
 }
 
@@ -59,46 +59,52 @@ DWORD getInterfaceMetric(DWORD interfaceIndex) {
   return interfaceRow.Metric;
 }
 
-PMIB_IPFORWARDROW createIpForwardRow() {
-  PMIB_IPFORWARDROW route = (PMIB_IPFORWARDROW)malloc(sizeof(MIB_IPFORWARDROW));
-  if (!route) {
-    printf("could not allocate memory for new route\n");
-    exit(1);
-  }
-
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366850(v=vs.85).aspx
-  route->dwForwardDest = 0;
-  route->dwForwardMask = 0xFFFFFFFF;  // 255.255.255.255
-  route->dwForwardPolicy = 0;
-  route->dwForwardNextHop = 0;
-  route->dwForwardIfIndex = 0;
-  route->dwForwardType = 4;
-  route->dwForwardProto = 3;
-  route->dwForwardAge = 0;
-  route->dwForwardNextHopAS = 0;
-  route->dwForwardMetric1 = 0;
-  route->dwForwardMetric2 = 0;
-  route->dwForwardMetric3 = 0;
-  route->dwForwardMetric4 = 0;
-  route->dwForwardMetric5 = 0;
-
-  return route;
-}
-
-void createRoute(PMIB_IPFORWARDROW route) {
-  DWORD status = CreateIpForwardEntry(route);
-  if (status != ERROR_SUCCESS) {
-    printf("could not create route: %lu\n", status);
-    exit(1);
-  }
-}
-
 void deleteRoute(PMIB_IPFORWARDROW route) {
   DWORD status = DeleteIpForwardEntry(route);
   if (status != ERROR_SUCCESS) {
     printf("could not delete route: %lu\n", status);
     exit(1);
   }
+}
+
+PMIB_IPFORWARDROW createRoute(DWORD gatewayIp, DWORD forwardDestIp, DWORD forwardMask) {
+  PMIB_IPFORWARDROW route = (PMIB_IPFORWARDROW)malloc(sizeof(MIB_IPFORWARDROW));
+  if (!route) {
+    printf("could not allocate memory for new route\n");
+    exit(1);
+  }
+
+  int gatewayInterfaceIndex = getBestInterfaceIndexForIp(gatewayIp);
+  // Note: Fetching the interface metric is *crucial*, or else you will run
+  //       into extremely weird and day-wasting errors. This step is *not*
+  //       mentioned in any of the SDK documentation; the most useful page
+  //       I could find was: http://www.nynaeve.net/?p=74
+  DWORD gatewayInterfaceMetric = getInterfaceMetric(gatewayInterfaceIndex);
+
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366850(v=vs.85).aspx
+  route->dwForwardDest = forwardDestIp;
+  route->dwForwardMask = forwardMask;
+  route->dwForwardPolicy = 0;
+  route->dwForwardNextHop = gatewayIp;
+  route->dwForwardIfIndex = gatewayInterfaceIndex;
+  route->dwForwardType = 4;
+  route->dwForwardProto = 3;
+  route->dwForwardAge = 0;
+  route->dwForwardNextHopAS = 0;
+  route->dwForwardMetric1 = gatewayInterfaceMetric;
+  route->dwForwardMetric2 = 0;
+  route->dwForwardMetric3 = 0;
+  route->dwForwardMetric4 = 0;
+  route->dwForwardMetric5 = 0;
+
+  // Add the route to the routing table.
+  DWORD status = CreateIpForwardEntry(route);
+  if (status != ERROR_SUCCESS) {
+    printf("could not create route: %lu\n", status);
+    exit(1);
+  }
+
+  return route;
 }
 
 // Spawns a process and runs `cmd` syncrhonously. Exits if the process cannot be created.
@@ -163,15 +169,11 @@ void enableIpv6Routing() {
 
 // TODO: handle host names
 int main(int argc, char* argv[]) {
-  if (argc < 2) {
+  if (argc < 4) {
     usage(argv[0]);
   }
 
   int connecting = strcmp(argv[1], "on") == 0;
-
-  if (argc != (connecting ? 4 : 5)) {
-    usage(argv[0]);
-  }
 
   DWORD tun2socksGatewayIp = INADDR_NONE;
   tun2socksGatewayIp = inet_addr(argv[2]);
@@ -188,13 +190,6 @@ int main(int argc, char* argv[]) {
   }
 
   DWORD systemGatewayIp = INADDR_NONE;
-  if (!connecting) {
-    systemGatewayIp = inet_addr(argv[4]);
-    if (systemGatewayIp == INADDR_NONE) {
-      printf("could not parse system gateway IP\n");
-      return 1;
-    }
-  }
 
   // Fetch the system's routing table.
   PMIB_IPFORWARDTABLE routingTable = (MIB_IPFORWARDTABLE*)MALLOC(sizeof(MIB_IPFORWARDTABLE));
@@ -250,6 +245,7 @@ int main(int argc, char* argv[]) {
         exit(1);
       }
       proxyServerRoute = route;
+      systemGatewayIp = route->dwForwardNextHop;
     }
   }
 
@@ -280,60 +276,31 @@ int main(int argc, char* argv[]) {
     // always have a higher priority than any existing ethernet device - messing
     // with that is probably not going to end well.
 
-    if (!systemGatewayRoute) {
-      printf("found no other gateway, cannot handle\n");
+    if (!systemGatewayRoute && systemGatewayIp == INADDR_NONE){
+      printf("found no default gateway, cannot handle\n");
       exit(1);
+    } else if (systemGatewayRoute && systemGatewayIp == INADDR_NONE) {
+      systemGatewayIp = systemGatewayRoute->dwForwardNextHop;
     }
 
     if (!tun2socksGatewayRoute) {
       // NOTE: tun2socks *must* have made its own additions to the routing table
       //       before this returns the correct result.
-      int tun2socksGatewayInterfaceIndex = getBestInterfaceIndexForIp(tun2socksGatewayIp);
-
-      // Note: Fetching the interface metric is *crucial*, or else you will run
-      //       into extremely weird and day-wasting errors. This step is *not*
-      //       mentioned in any of the SDK documentation; the most useful page
-      //       I could find was this:
-      //         http://www.nynaeve.net/?p=74
-      DWORD tun2socksGatewayInterfaceMetric = getInterfaceMetric(tun2socksGatewayInterfaceIndex);
-
-      tun2socksGatewayRoute = createIpForwardRow();
-      tun2socksGatewayRoute->dwForwardMask = 0;
-      tun2socksGatewayRoute->dwForwardNextHop = tun2socksGatewayIp;
-      tun2socksGatewayRoute->dwForwardIfIndex = tun2socksGatewayInterfaceIndex;
-      tun2socksGatewayRoute->dwForwardMetric1 = tun2socksGatewayInterfaceMetric;
-
-      createRoute(tun2socksGatewayRoute);
+      tun2socksGatewayRoute = createRoute(tun2socksGatewayIp, 0, 0);
       printf("added new gateway\n");
     }
 
-    // Delete the previous gateway and print its IP so that Outline can restore it
-    // when the user disconnects.
-    systemGatewayIp = systemGatewayRoute->dwForwardNextHop;
-    char systemGatewayIpString[128];
-    struct in_addr ip;
-    ip.S_un.S_addr = (u_long)systemGatewayRoute->dwForwardNextHop;
-    strcpy(systemGatewayIpString, inet_ntoa(ip));
-    // This *must* be kept in sync with the code in process_manager.ts.
-    printf("current gateway: %s\n", systemGatewayIpString);
-
-    deleteRoute(systemGatewayRoute);
-    printf("removed old gateway\n");
-
-    int systemGatewayInterfaceIndex = getBestInterfaceIndexForIp(systemGatewayIp);
-    DWORD systemGatewayInterfaceMetric = getInterfaceMetric(systemGatewayInterfaceIndex);
+    if (systemGatewayRoute) {
+      deleteRoute(systemGatewayRoute);
+      printf("removed old gateway\n");
+    }
 
     // Add a route to the proxy server.
     if (proxyServerRoute) {
       deleteRoute(proxyServerRoute);
       printf("removed old route to proxy server\n");
     }
-    proxyServerRoute = createIpForwardRow();
-    proxyServerRoute->dwForwardDest = proxyServerIp;
-    proxyServerRoute->dwForwardNextHop = systemGatewayIp;
-    proxyServerRoute->dwForwardMetric1 = systemGatewayInterfaceMetric;
-    proxyServerRoute->dwForwardIfIndex = systemGatewayInterfaceIndex;
-    createRoute(proxyServerRoute);
+    proxyServerRoute = createRoute(systemGatewayIp, proxyServerIp, 0xFFFFFFFF);
     printf("added route to proxy server\n");
 
     disableIpv6Routing(); // Disable IPv6 routing to prevent leakage.
@@ -341,24 +308,13 @@ int main(int argc, char* argv[]) {
     // Disconnect from Shadowsocks:
     //  - delete the routes to the proxy server and tun2socks virtual router, if found
     //  - add a route to the actual system gateway
-    //
-    // TODO: When we aren't told the previous gateway, make a guess.
     if (tun2socksGatewayRoute) {
       deleteRoute(tun2socksGatewayRoute);
       printf("removed tun2socks gateway\n");
     }
 
     if (!systemGatewayRoute) {
-      int systemGatewayInterfaceIndex = getBestInterfaceIndexForIp(systemGatewayIp);
-      DWORD systemGatewayInterfaceMetric = getInterfaceMetric(systemGatewayInterfaceIndex);
-
-      systemGatewayRoute = createIpForwardRow();
-      systemGatewayRoute->dwForwardMask = 0;
-      systemGatewayRoute->dwForwardNextHop = systemGatewayIp;
-      systemGatewayRoute->dwForwardIfIndex = systemGatewayInterfaceIndex;
-      systemGatewayRoute->dwForwardMetric1 = systemGatewayInterfaceMetric;
-
-      createRoute(systemGatewayRoute);
+      systemGatewayRoute = createRoute(systemGatewayIp, 0, 0);
       printf("restored gateway\n");
     }
 
