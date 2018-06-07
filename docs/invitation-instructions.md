@@ -31,11 +31,11 @@ Open the app and confirm your new server. Tap or click to connect.
 2. Make it executable by running: `chmod a+x <path_to_shadowsocks_qt5>`
 3. Run it: `./<path_to_shadowsocks_qt5>`
 4. Go to 'Connection' -> 'Add' -> 'URI' and paste the access key (`ss://xxx`).
-5. Specify the local port for the newly added connection, i.e. 1080.
+5. Choose an unused local port for the connection. Try 1080!
 
 ![Shadowsocks-QT5 port](img/qt5-port.png "Specify the local port")
 
-6. Right-click on the new connection, and click 'Connect'.
+6. Right-click on the newly added connection row, and click 'Connect'.
 
 ![Shadowsocks-QT5 connect](img/qt5-connect.png "Specify the local port")
 
