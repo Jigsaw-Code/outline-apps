@@ -3,12 +3,12 @@
 Have an invitation to connect to an Outline server? Follow these instructions to access to the open internet from your device. No personal information will be collected.
 
 ## 1. Copy your access code
-![alt text](invitation-instructions-001.png "Copy your access code")
+![alt text](img/invitation-instructions-001.png "Copy your access code")
 `ss://xxx` located at the bottom of your invitation email or message. The Outline app will instantly add this server from your clipboard.
 
 
 ## 2. Install Outline
-![alt text](invitation-instructions-002.png "Install Outline")
+![alt text](img/invitation-instructions-002.png "Install Outline")
 
 |Download|  |
 | ------------- | ------------- |
@@ -20,7 +20,7 @@ Have an invitation to connect to an Outline server? Follow these instructions to
 
 
 ## 3. Add server and start connecting
-![alt text](invitation-instructions-003.png "Add server and start connecting")
+![alt text](img/invitation-instructions-003.png "Add server and start connecting")
 Open the app and confirm your new server. Tap or click to connect.
 **Having trouble?** Try copying your access code again to add your server.
 
@@ -32,7 +32,11 @@ Open the app and confirm your new server. Tap or click to connect.
 3. Run it: `./<path_to_shadowsocks_qt5>`
 4. Go to 'Connection' -> 'Add' -> 'URI' and paste the access key (`ss://xxx`).
 5. Specify the local port for the newly added connection, i.e. 1080.
-![Shadowsocks-QT5 port](qt5-port.png "Specify the local port")
+
+![Shadowsocks-QT5 port](img/qt5-port.png "Specify the local port")
+
 6. Right-click on the new connection, and click 'Connect'.
-![Shadowsocks-QT5 connect](qt5-connect.png "Specify the local port")
+
+![Shadowsocks-QT5 connect](img/qt5-connect.png "Specify the local port")
+
 7. Go to your browser / applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
