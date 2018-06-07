@@ -26,11 +26,13 @@ Open the app and confirm your new server. Tap or click to connect.
 
 
 ## Linux set-up instructions
-1.  [Get Outline for Linux](https://www.google.com). Download and install the latest version of the Shadowsocks client from GitHub.
-2. Copy and paste the following command in your terminal.
-`ss-local -s 162.243.222.47 -p 54114 -l <your_local_port> -k khVr8sW7RGHy] -m aes-256-cfb`
-3. Update your browser settings.
-  * Use SOCKS5 proxy
-  * Configured at 127.0.0.1
-  * On <your_local_port>
-  * Click Connect to access the internet from your Outline server
+
+1. Download the [Shadowsocks QT5 client](https://github.com/shadowsocks/shadowsocks-qt5/releases/latest). This is an AppImage file.
+2. Make it executable by running: `chmod a+x <path_to_shadowsocks_qt5>`
+3. Run it: `./<path_to_shadowsocks_qt5>`
+4. Go to 'Connection' -> 'Add' -> 'URI' and paste the access key (`ss://xxx`).
+5. Specify the local port for the newly added connection, i.e. 1080.
+![Shadowsocks-QT5 port](qt5-port.png "Specify the local port")
+6. Right-click on the new connection, and click 'Connect'.
+![Shadowsocks-QT5 connect](qt5-connect.png "Specify the local port")
+7. Go to your browser / applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
