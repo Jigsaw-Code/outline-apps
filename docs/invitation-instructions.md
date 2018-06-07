@@ -3,12 +3,12 @@
 Have an invitation to connect to an Outline server? Follow these instructions to access to the open internet from your device. No personal information will be collected.
 
 ## 1. Copy your access key
-![alt text](img/invitation-instructions-001.png "Copy your access key")
+![Copy access key](img/invitation-instructions-001.png "Copy your access key")
 `ss://xxx` located at the bottom of your invitation email or message. The Outline app will instantly add this server from your clipboard.
 
 
 ## 2. Install Outline
-![alt text](img/invitation-instructions-002.png "Install Outline")
+![Install Outline](img/invitation-instructions-002.png "Install Outline")
 
 |Download|  |
 | ------------- | ------------- |
@@ -19,8 +19,8 @@ Have an invitation to connect to an Outline server? Follow these instructions to
 | Linux | See Linux set-up instructions below. |
 
 
-## 3. Add server and start connecting
-![alt text](img/invitation-instructions-003.png "Add server and start connecting")
+## 3. Add server and connect
+![Add server and connect](img/invitation-instructions-003.png "Add server and connect")
 Open the app and confirm your new server. Tap or click to connect.
 **Having trouble?** Try copying your access key again to add your server.
 
@@ -39,4 +39,4 @@ Open the app and confirm your new server. Tap or click to connect.
 
 ![Shadowsocks-QT5 connect](img/qt5-connect.png "Specify the local port")
 
-7. Go to your browser / applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
+7. Go to your browser/applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
