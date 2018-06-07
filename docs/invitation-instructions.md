@@ -2,8 +2,8 @@
 
 Have an invitation to connect to an Outline server? Follow these instructions to access to the open internet from your device. No personal information will be collected.
 
-## 1. Copy your access code
-![alt text](img/invitation-instructions-001.png "Copy your access code")
+## 1. Copy your access key
+![alt text](img/invitation-instructions-001.png "Copy your access key")
 `ss://xxx` located at the bottom of your invitation email or message. The Outline app will instantly add this server from your clipboard.
 
 
@@ -22,7 +22,7 @@ Have an invitation to connect to an Outline server? Follow these instructions to
 ## 3. Add server and start connecting
 ![alt text](img/invitation-instructions-003.png "Add server and start connecting")
 Open the app and confirm your new server. Tap or click to connect.
-**Having trouble?** Try copying your access code again to add your server.
+**Having trouble?** Try copying your access key again to add your server.
 
 
 ## Linux set-up instructions
