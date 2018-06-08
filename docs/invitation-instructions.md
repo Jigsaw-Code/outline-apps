@@ -41,4 +41,4 @@ Open the app and confirm your new server. Tap or click to connect.
 
 ![Shadowsocks-QT5 connect](img/qt5-connect.png "Specify the local port")
 
-6. Go to your browser/applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
+6. Go to your browser and applications and point them to use a SOCKS5 proxy, on localhost, on the local port you selected on step 5.
