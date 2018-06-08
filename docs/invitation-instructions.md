@@ -27,8 +27,8 @@ Open the app and confirm your new server. Tap or click to connect.
 
 ## Linux set-up instructions
 
-1. Download the [Shadowsocks QT5 client](https://github.com/shadowsocks/shadowsocks-qt5/releases/latest). This is an AppImage file.
-2. Make it executable and run it:
+1. Download the [Shadowsocks QT5 client](https://github.com/shadowsocks/shadowsocks-qt5/releases/latest).
+2. Change directory to the downloaded file location and run:
   ```
     chmod a+x Shadowsocks-Qt5-*.AppImage && ./Shadowsocks-Qt5-*.AppImage
   ```
