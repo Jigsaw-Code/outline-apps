@@ -38,10 +38,7 @@ const CONFIG_BY_PLATFORM = {
     platformArgs: '--gradleArg=-PcdvBuildMultipleApks=true'
   },
   browser: {targetDir: `platforms/browser/${SRC_DIR}`},
-  ios: {
-    targetDir: `platforms/ios/${SRC_DIR}`,
-    compileArgs: '--device'
-  },
+  ios: {targetDir: `platforms/ios/${SRC_DIR}`, compileArgs: '--device'},
   osx: {targetDir: `platforms/osx/${SRC_DIR}`}
 };
 
