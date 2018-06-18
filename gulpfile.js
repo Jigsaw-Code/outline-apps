@@ -34,14 +34,11 @@ const SRC_DIR = 'www';
 
 const CONFIG_BY_PLATFORM = {
   android: {
-    targetDir: `platforms/android/assets/${SRC_DIR}`,
+    targetDir: `platforms/android/app/src/main/assets/${SRC_DIR}`,
     platformArgs: '--gradleArg=-PcdvBuildMultipleApks=true'
   },
   browser: {targetDir: `platforms/browser/${SRC_DIR}`},
-  ios: {
-    targetDir: `platforms/ios/${SRC_DIR}`,
-    compileArgs: '--device'
-  },
+  ios: {targetDir: `platforms/ios/${SRC_DIR}`, compileArgs: '--device'},
   osx: {targetDir: `platforms/osx/${SRC_DIR}`}
 };
 

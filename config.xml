@@ -118,7 +118,7 @@
     <plugin name="com.borismus.webintent" spec="https://github.com/cordova-misc/cordova-webintent.git#v1.1.0" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <plugin name="cordova-plugin-splashscreen" spec="~5.0.2" />
-    <plugin name="cordova-custom-config" spec="~4.0.2" />
+    <plugin name="cordova-custom-config" spec="^5.0.2" />
     <plugin name="cordova-plugin-outline" spec="./cordova-plugin-outline" />
     <plugin name="cordova-plugin-device" spec="~1.1.6" />
     <plugin name="cordova-plugin-statusbar" spec="~2.2.3" />
@@ -132,7 +132,7 @@
         <release-native dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c:568f6c78f9f94f91afba4aba05756001@sentry.io/159502" />
     </sentry>
 
-    <engine name="android" spec="~5.2.2" />
+    <engine name="android" spec="^7.1.0" />
     <engine name="browser" spec="^4.1.0" />
     <!-- Depend on these commits until the next release. -->
     <engine name="ios" spec="https://github.com/apache/cordova-ios#7397337c" />

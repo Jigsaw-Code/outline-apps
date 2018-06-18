@@ -38,7 +38,7 @@
     "browserify": "^14.4.0",
     "clang-format": "^1.0.55",
     "cordova": "^6.5.0",
-    "cordova-custom-config": "^4.0.2",
+    "cordova-custom-config": "^5.0.2",
     "electron": "^1.8.6",
     "electron-builder": "^20.13.3",
     "electron-icon-maker": "^0.0.4",
