@@ -74,5 +74,7 @@
   "got-it": "Entendido",
   "save": "guardar",
   "cancel": "cancelar",
-  "update-downloaded": "Se ha descargado una versión actualizada de Outline. Se instalará cuando reinicie Outline."
+  "update-downloaded": "Se ha descargado una versión actualizada de Outline. Se instalará cuando reinicie Outline.",
+  "privacy-title": "Outline nunca recolectará tu información personal",
+  "privacy-text": "Alguna información técnica es envíada si envías comentarios, si hay una falla en la aplicación, o si tu administrador del servidor elige compartir datos anónimos sobre el uso del servidor."
 }
