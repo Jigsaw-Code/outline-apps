@@ -161,13 +161,12 @@ export class App {
   }
 
   private arePrivacyTermsAcked() {
-    let privacyAcked = false;
     try {
-      privacyAcked = this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
+      return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
     } catch (e) {
       console.error(`could not read privacy acknowledgement setting, assuming not akcnowledged`);
     }
-    return privacyAcked;
+    return false;
   }
 
   private displayPrivacyView() {
