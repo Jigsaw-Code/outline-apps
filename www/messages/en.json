@@ -74,5 +74,7 @@
   "got-it": "Got it",
   "save": "save",
   "cancel": "cancel",
-  "update-downloaded": "An updated version of Outline has been downloaded. It will be installed when you restart Outline."
+  "update-downloaded": "An updated version of Outline has been downloaded. It will be installed when you restart Outline.",
+  "privacy-title": "Outline will never collect your personal information",
+  "privacy-text": "Some technical information is sent if you submit feedback, if there's an app error or crash, or if your server administrator opts in to share anonymous server usage data."
 }
