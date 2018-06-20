@@ -37,10 +37,11 @@
 <link rel="import" href="about-view.html">
 <link rel="import" href="add-server-view.html">
 <link rel="import" href="feedback-view.html">
-<link rel="import" href="servers-view.html">
-<link rel="import" href="server-rename-dialog.html">
 <link rel="import" href="licenses-view.html">
 <link rel="import" href="outline-icons.html">
+<link rel="import" href="privacy-view.html">
+<link rel="import" href="servers-view.html">
+<link rel="import" href="server-rename-dialog.html">
 
 <dom-module id="app-root">
 
@@ -219,6 +220,8 @@
     </style>
     <app-location route="{{route}}" url-space-regex="^/index.html" use-hash-as-path></app-location>
     <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route>
+
+    <privacy-view id="privacyView" root-path="[[rootPath]]" localize="[[localize]]" hidden></privacy-view>
 
     <app-header-layout fullbleed>
       <app-header slot="header" fixed>
