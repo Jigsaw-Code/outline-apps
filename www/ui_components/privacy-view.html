@@ -121,7 +121,7 @@
             <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">
               <paper-button class="faded">[[localize('learn-more')]]</paper-button>
             </a>
-            <paper-button on-tap="_onPrivacyAck">[[localize('got-it')]]</paper-button>
+            <paper-button on-tap="_privacyTermsAcked">[[localize('got-it')]]</paper-button>
           </div>
         </div>
       </div>
@@ -133,13 +133,11 @@
     Polymer({
       is: 'privacy-view',
       properties: {
-        // Need to declare localize function passed in from parent, or else
-        // localize() calls within the template won't be updated.
         localize: Function,
         rootPath: String,
       },
-      _onPrivacyAck: function() {
-        this.fire('PrivacyAcked');
+      _privacyTermsAcked: function() {
+        this.fire('PrivacyTermsAcked');
       }
     });
   </script>
