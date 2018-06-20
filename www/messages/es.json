@@ -76,5 +76,5 @@
   "cancel": "cancelar",
   "update-downloaded": "Se ha descargado una versión actualizada de Outline. Se instalará cuando reinicie Outline.",
   "privacy-title": "Outline nunca recolectará tu información personal",
-  "privacy-text": "Alguna información técnica es envíada si envías comentarios, si hay una falla en la aplicación, o si tu administrador del servidor elige compartir datos anónimos sobre el uso del servidor."
+  "privacy-text": "Se envía cierta información técnica si mandas comentarios, si hay un error en la aplicación, o si el administrador del servidor opta por compartir datos de uso del servidor anónimos."
 }
