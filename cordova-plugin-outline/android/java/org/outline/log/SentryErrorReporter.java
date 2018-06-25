@@ -23,6 +23,7 @@ import io.sentry.event.EventBuilder;
 import io.sentry.Sentry;
 import java.lang.IllegalStateException;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -95,7 +96,7 @@ class SentryErrorReporter {
     // inactivity results in its deletion after 90 days.
     // Don't build the event so the event builder runs and adds platform data.
     Sentry.capture(new EventBuilder()
-                       .withMessage(String.format("Android report (%s)", uuid))
+                       .withMessage(String.format(Locale.ROOT, "Android report (%s)", uuid))
                        .withTag("user_event_id", uuid));
   }
 

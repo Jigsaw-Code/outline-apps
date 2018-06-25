@@ -16,6 +16,7 @@ package org.outline.log;
 
 import android.content.Context;
 import android.util.Log;
+import java.util.Locale;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -122,7 +123,7 @@ public class OutlineLogger {
   private static void recordMessage(
       Level level, final String tag, final String msg, final Throwable thrown) {
     try {
-      final String breadcrumb = String.format("%s:%s", tag, msg);
+      final String breadcrumb = String.format(Locale.ROOT, "%s:%s", tag, msg);
       int levelValue = level.intValue();
       int androidLevel = Log.DEBUG;
       if (levelValue >= Level.SEVERE.intValue()) {
@@ -141,7 +142,7 @@ public class OutlineLogger {
         Log.println(androidLevel, tag, msg);
       }
     } catch (RuntimeException e) {
-      Log.e(LOG_TAG, String.format("Error logging message: [%s] %s", tag, msg), e);
+      Log.e(LOG_TAG, String.format(Locale.ROOT, "Error logging message: [%s] %s", tag, msg), e);
     }
   }
 

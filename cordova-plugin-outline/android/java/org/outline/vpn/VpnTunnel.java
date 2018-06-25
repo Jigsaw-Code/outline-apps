@@ -17,6 +17,7 @@ package org.outline.vpn;
 import android.os.ParcelFileDescriptor;
 import java.io.IOException;
 import java.util.Random;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.outline.tun2socks.Tun2SocksJni;
@@ -68,17 +69,15 @@ public class VpnTunnel {
     LOG.info("Establishing the VPN.");
     try {
       dnsResolverAddress = selectDnsResolverAddress();
-      tunFd =
-          vpnService
-              .newBuilder()
-              .setSession(vpnService.getApplicationName())
-              .setMtu(VPN_INTERFACE_MTU)
-              .addAddress(
-                  String.format(VPN_INTERFACE_PRIVATE_LAN, "1"), VPN_INTERFACE_PREFIX_LENGTH)
-              .addRoute("0.0.0.0", 0)
-              .addDnsServer(dnsResolverAddress)
-              .addDisallowedApplication(vpnService.getPackageName())
-              .establish();
+      tunFd = vpnService.newBuilder()
+                  .setSession(vpnService.getApplicationName())
+                  .setMtu(VPN_INTERFACE_MTU)
+                  .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
+                      VPN_INTERFACE_PREFIX_LENGTH)
+                  .addRoute("0.0.0.0", 0)
+                  .addDnsServer(dnsResolverAddress)
+                  .addDisallowedApplication(vpnService.getPackageName())
+                  .establish();
       return tunFd != null;
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to establish the VPN", e);
@@ -126,16 +125,12 @@ public class VpnTunnel {
     tun2socksThread =
         new Thread() {
           public void run() {
-            Tun2SocksJni.start(
-                tunFd.getFd(),
-                VPN_INTERFACE_MTU,
-                String.format(VPN_INTERFACE_PRIVATE_LAN, "2"), // Router IP address
-                VPN_INTERFACE_NETMASK,
-                socksServerAddress,
+            Tun2SocksJni.start(tunFd.getFd(), VPN_INTERFACE_MTU,
+                String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "2"), // Router IP address
+                VPN_INTERFACE_NETMASK, socksServerAddress,
                 socksServerAddress, // UDP relay IP address
-                String.format("%s:%d", dnsResolverAddress, DNS_RESOLVER_PORT),
-                TRANSPARENT_DNS_ENABLED,
-                SOCKS5_UDP_ENABLED);
+                String.format(Locale.ROOT, "%s:%d", dnsResolverAddress, DNS_RESOLVER_PORT),
+                TRANSPARENT_DNS_ENABLED, SOCKS5_UDP_ENABLED);
           }
         };
     tun2socksThread.start();
