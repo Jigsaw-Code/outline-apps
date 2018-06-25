@@ -15,6 +15,7 @@
 package org.outline.shadowsocks;
 
 import android.content.Context;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -34,7 +35,7 @@ public class Shadowsocks {
   public Shadowsocks(final Context context) {
     final String nativeLibraryDir =
         context.getApplicationContext().getApplicationInfo().nativeLibraryDir;
-    this.ssPath = String.format("%s/%s", nativeLibraryDir, LIB_SS_LOCAL_NAME);
+    this.ssPath = String.format(Locale.ROOT, "%s/%s", nativeLibraryDir, LIB_SS_LOCAL_NAME);
   }
 
   // Launches ss-local as a separate process with the provided configuration.
@@ -79,7 +80,7 @@ public class Shadowsocks {
     if (this.ssProcess == null) {
       throw new IllegalStateException("ss-local has not been started");
     }
-    return String.format("%s:%s", LOCAL_SERVER_ADDRESS, LOCAL_SERVER_PORT);
+    return String.format(Locale.ROOT, "%s:%s", LOCAL_SERVER_ADDRESS, LOCAL_SERVER_PORT);
   }
 
   // Returns whether |process| is running.
