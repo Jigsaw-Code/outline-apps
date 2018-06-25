@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -87,7 +88,7 @@ public class VpnTunnelService extends VpnService {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    LOG.info(String.format("Starting VPN service: %s", intent));
+    LOG.info(String.format(Locale.ROOT, "Starting VPN service: %s", intent));
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
     if (intent != null) {
       boolean wasConectedAtShutdown =
@@ -142,12 +143,13 @@ public class VpnTunnelService extends VpnService {
 
   private void startConnection(
       final String connectionId, final JSONObject config, boolean performConnectivityChecks) {
-    LOG.info(String.format("Starting connection %s.", connectionId));
+    LOG.info(String.format(Locale.ROOT, "Starting connection %s.", connectionId));
     boolean isRestart = false;
     if (connectionId == null || config == null) {
       throw new IllegalArgumentException("Must provide a connection ID and configuration.");
     } else if (connectionId.equals(activeConnectionId)) {
-      LOG.info(String.format("Already running tunnel for connection ID %s", connectionId));
+      LOG.info(
+          String.format(Locale.ROOT, "Already running tunnel for connection ID %s", connectionId));
       broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR); // Start is idempotent.
       return;
     } else if (activeConnectionId != null) {
@@ -200,7 +202,8 @@ public class VpnTunnelService extends VpnService {
     if (connectionId == null) {
       throw new IllegalArgumentException("Must provide a connection ID.");
     } else if (!connectionId.equals(activeConnectionId)) {
-      throw new IllegalStateException(String.format("Connection %s not active.", connectionId));
+      throw new IllegalStateException(
+          String.format(Locale.ROOT, "Connection %s not active.", connectionId));
     }
     broadcastVpnStop();
     tearDownActiveConnection();
@@ -312,11 +315,9 @@ public class VpnTunnelService extends VpnService {
       } else {
         boolean isReachable = reachabilityCheckResult.get();
         boolean credentialsAreValid = credentialsCheckResult.get();
-        LOG.info(
-            String.format(
-                "Server connectivity: UDP forwarding disabled, server %s, credentials %s",
-                isReachable ? "reachable" : "unreachable",
-                credentialsAreValid ? "valid" : "invalid"));
+        LOG.info(String.format(Locale.ROOT,
+            "Server connectivity: UDP forwarding disabled, server %s, credentials %s",
+            isReachable ? "reachable" : "unreachable", credentialsAreValid ? "valid" : "invalid"));
         if (credentialsAreValid) {
           return OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED;
         } else if (isReachable) {
@@ -344,8 +345,8 @@ public class VpnTunnelService extends VpnService {
     public void onAvailable(Network network) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
       NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-      LOG.fine(String.format(
-          "Network available: %s\nActive network: %s", networkInfo, activeNetworkInfo));
+      LOG.fine(String.format(Locale.ROOT, "Network available: %s\nActive network: %s", networkInfo,
+          activeNetworkInfo));
       if (networkInfo == null || !networkEquals(networkInfo, activeNetworkInfo)) {
         return;
       } else if (activeNetworkInfo != null
@@ -357,7 +358,8 @@ public class VpnTunnelService extends VpnService {
 
     @Override
     public void onLost(Network network) {
-      LOG.fine(String.format("Network lost: %s", connectivityManager.getNetworkInfo(network)));
+      LOG.fine(String.format(
+          Locale.ROOT, "Network lost: %s", connectivityManager.getNetworkInfo(network)));
       NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
       if (activeNetworkInfo != null
           && activeNetworkInfo.getState() == NetworkInfo.State.CONNECTED) {
@@ -517,7 +519,8 @@ public class VpnTunnelService extends VpnService {
       Class<?> cls = Class.forName(getPackageName() + ".R$drawable");
       resId = (Integer) cls.getDeclaredField(drawable).get(Integer.class);
     } catch (Exception e) {
-      LOG.warning(String.format("Failed to get resource id for drawable: %s", drawable));
+      LOG.warning(
+          String.format(Locale.ROOT, "Failed to get resource id for drawable: %s", drawable));
       throw e;
     }
     return resId;
