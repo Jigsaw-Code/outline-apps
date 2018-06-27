@@ -7,3 +7,4 @@ Makefile text eol=crlf
 *.h text eol=crlf
 *.swift text eol=crlf
 *.m text eol=crlf
+*.xml text eol=crlf
