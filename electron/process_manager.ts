@@ -25,8 +25,10 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 import {SentryLogger} from './sentry_logger';
+import * as routing from './routing_service';
 
 const sentryLogger = new SentryLogger();
+const routingService = new routing.WindowsRoutingService();
 
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
@@ -55,8 +57,6 @@ const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
 const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
-
-let currentProxyServer: string;
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
@@ -93,11 +93,13 @@ export function startVpn(
                   .then(() => {
                     return checkUdpForwardingEnabled()
                         .catch((e) => {
+                          stopProcesses();
                           throw errors.ErrorCode.UDP_RELAY_NOT_ENABLED;
                         })
                         .then(() => {
                           return startTun2socks(config.host || '', onDisconnected)
                               .catch((e) => {
+                                stopProcesses();
                                 throw errors.ErrorCode.VPN_START_FAILURE;
                               })
                               .then((port) => {
@@ -108,6 +110,7 @@ export function startVpn(
                                 sentryLogger.info('waiting 5s for tun2socks to come up...');
                                 return configureRoutingWithDelay(
                                     config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
+                                      stopProcesses();
                                       throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
                                     });
                               });
@@ -267,7 +270,7 @@ function checkUdpForwardingEnabled() {
           } catch (e) {
             // Ignore; there may be multiple calls to this function.
           }
-        }
+        };
 
         // Give up after the timeout elapses.
         setTimeout(() => {
@@ -316,7 +319,6 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
 
     try {
       tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
-
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
@@ -330,13 +332,11 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
             sentryLogger.info('Restarting tun2socks...');
             setTimeout(() => {
               startTun2socks(host, onDisconnected).then(() => {
-                sentryLogger.info('Re-configuring routing, waiting 5s for tun2socks to come up...');
-                configureRoutingWithDelay(host, TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
-                  sentryLogger.error('Failed to re-configure routing');
-                  teardownVpn();
-                  onDisconnected();
-                  return;
-                });
+                resolve();
+              }).catch((e) => {
+                sentryLogger.error('Failed to restart tun2socks');
+                onDisconnected();
+                teardownVpn();
               });
             }, 3000);
             return;
@@ -376,53 +376,39 @@ function stopTun2socks() {
 }
 
 function configureRoutingWithDelay(host: string, delayMs: number) {
-  return new Promise((F, R) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
-        try {
-          configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, host);
-          F();
-        } catch (e) {
-          R(e);
-        }
+        configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, host).then(() => {
+          resolve()
+        }).catch(reject);
       }, delayMs);
   });
 }
 
-function configureRouting(tun2socksVirtualRouterIp: string, proxyServer: string) {
-  try {
-    const out = execFileSync(
-        pathToEmbeddedExe('setsystemroute'), ['on', TUN2SOCKS_VIRTUAL_ROUTER_IP, proxyServer]);
-    sentryLogger.info(`setsystemroute:\n===\n${out}===`);
-
-    // Store the current proxy server and gateway, for when we disconnect.
-    currentProxyServer = proxyServer;
-  } catch (e) {
-    sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
-    console.log(e);
-    throw new Error(`could not configure routing`);
-  }
+function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
+  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp)
+      .then((success) => {
+        if (!success) {
+          throw new Error('Failed to configure routing');
+        }
+      });
 }
 
-function resetRouting() {
-  if (!currentProxyServer) {
-    throw new Error('i do not know the current proxy server');
-  }
-  try {
-    const out = execFileSync(
-        pathToEmbeddedExe('setsystemroute'),
-        ['off', TUN2SOCKS_VIRTUAL_ROUTER_IP, currentProxyServer]);
-    sentryLogger.info(`setsystemroute:\n===\n${out}===`);
-  } catch (e) {
-    sentryLogger.error(`setsystemroute failed:\n===\n${e.stdout.toString()}===`);
-    throw new Error(`could not reset routing`);
-  }
+function resetRouting(): Promise<void> {
+  return routingService.resetRouting().then((success) => {
+    if (!success) {
+      throw new Error('Failed to reset routing');
+    }
+  });
 }
 
 export function teardownVpn() {
-  try {
-    resetRouting();
-  } catch (e) {
+  resetRouting().catch((e) => {
     sentryLogger.error(`failed to reset routing: ${e.message}`);
-  }
+  });
+  return stopProcesses();
+}
+
+function stopProcesses() {
   return Promise.all([stopSsLocal(), stopTun2socks()]);
 }

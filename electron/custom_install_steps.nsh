@@ -14,6 +14,10 @@
 
 !include x64.nsh
 
+!macro customHeader
+  RequestExecutionLevel admin
+!macroend
+
 !macro customInstall
   MessageBox MB_OK "Your computer may ask you to trust a piece of software by OpenVPN. Outline uses this to protect all of the network traffic on your computer. Please answer yes when prompted."
 
@@ -28,12 +32,24 @@
   ${EndIf}
 
   Pop $0
-  StrCmp $0 0 noabort
+  StrCmp $0 0 installservice
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try running the installer again. If you still cannot install Outline, please get in touch with us."
   ; TODO: Abort gracefully, i.e. uninstall, before exiting.
   Quit
 
-  noabort:
+  installservice:
+
+  File "${PROJECT_DIR}\electron\bin\win32\OutlineService.exe"
+  File "${PROJECT_DIR}\electron\bin\win32\Newtonsoft.Json.dll"
+  File "${PROJECT_DIR}\electron\install_windows_service.bat"
+
+  nsExec::Exec install_windows_service.bat
+  Pop $0
+  StrCmp $0 0 success
+  MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try running the installer again. If you still cannot install Outline, please get in touch with us."
+
+  success:
+
 !macroend
 
 ; TODO: Remove the TAP device on uninstall. This is impossible to implement safely
