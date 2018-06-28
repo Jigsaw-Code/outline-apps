@@ -1,7 +1,7 @@
 {
   "name": "outline-client",
   "productName": "Outline Beta",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "clean": "rm -rf build www/bower_components www/cordova_main.js node_modules platforms/* plugins/*",
     "precommit": "tslint -p . --fix; git-clang-format",
@@ -38,7 +38,7 @@
     "browserify": "^14.4.0",
     "clang-format": "^1.0.55",
     "cordova": "^6.5.0",
-    "cordova-custom-config": "^4.0.2",
+    "cordova-custom-config": "^5.0.2",
     "electron": "^1.8.6",
     "electron-builder": "19.50.0",
     "electron-icon-maker": "^0.0.4",

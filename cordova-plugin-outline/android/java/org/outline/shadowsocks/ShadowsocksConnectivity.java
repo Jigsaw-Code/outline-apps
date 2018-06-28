@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
@@ -98,7 +99,8 @@ public class ShadowsocksConnectivity {
       buffer = new byte[SOCKS_RESPONSE_NUM_BYTES];
       inputStream.readFully(buffer);  // Don't parse, this is a fake response
 
-      final String httpRequest = String.format("HEAD / HTTP/1.1\r\nHost: %s\r\n\r\n", targetDomain);
+      final String httpRequest =
+          String.format(Locale.ROOT, "HEAD / HTTP/1.1\r\nHost: %s\r\n\r\n", targetDomain);
       outputStream.write(httpRequest.getBytes());
       BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       final String httpResponse = reader.readLine();
@@ -133,8 +135,8 @@ public class ShadowsocksConnectivity {
       int attempt = 1;
       boolean success = false;
       while (attempt <= UDP_MAX_RETRY_ATTEMPTS) {
-        LOG.info(String.format("Checking remote UDP forwarding (%d/%d)",
-                               attempt, UDP_MAX_RETRY_ATTEMPTS));
+        LOG.info(String.format(Locale.ROOT, "Checking remote UDP forwarding (%d/%d)", attempt,
+            UDP_MAX_RETRY_ATTEMPTS));
         socket.send(dnsRequest);
         try {
           socket.receive(dnsResponse);
@@ -186,8 +188,8 @@ public class ShadowsocksConnectivity {
         return true;
       }
     }
-    LOG.severe(String.format("Failed to reach server after %d attempts, giving up",
-                             SERVER_CONNECT_MAX_ATTEMPTS));
+    LOG.severe(String.format(Locale.ROOT, "Failed to reach server after %d attempts, giving up",
+        SERVER_CONNECT_MAX_ATTEMPTS));
     return false;
   }
 
