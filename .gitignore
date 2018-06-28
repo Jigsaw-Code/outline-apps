@@ -17,3 +17,4 @@ dist/
 .vs/
 obj/
 packages/
+*.pdb

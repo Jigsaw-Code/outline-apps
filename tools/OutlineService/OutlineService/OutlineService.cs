@@ -57,6 +57,8 @@ namespace OutlineService {
     private EventLog eventLog;
     private NamedPipeServerStream pipe;
     private string proxyIp;
+    private int proxyInterfaceIndex = ERROR_CODE_INTERNAL;
+    private IPAddress systemGatewayIp;
 
     public OutlineService() {
       InitializeComponent();
@@ -67,25 +69,45 @@ namespace OutlineService {
       eventLog.Source = EVENT_LOG_SOURCE;
       eventLog.Log = EVENT_LOG_NAME;
 
-      createPipe();
+      CreatePipe();
     }
 
     protected override void OnStart(string[] args) {
       eventLog.WriteEntry("OutlineService starting");
+      NetworkChange.NetworkAddressChanged +=
+          new NetworkAddressChangedEventHandler(NetworkAddressChanged);
       pipe.BeginWaitForConnection(HandleConnection, null);
     }
 
     protected override void OnStop() {
       eventLog.WriteEntry("OutlineService stopping");
+      DestroyPipe();
+      NetworkChange.NetworkAddressChanged -= NetworkAddressChanged;
     }
 
-    private void createPipe() {
+    private void CreatePipe() {
       var pipeSecurity = new PipeSecurity();
       pipeSecurity.AddAccessRule(new PipeAccessRule("Users", PipeAccessRights.ReadWrite, AccessControlType.Allow));
       pipeSecurity.AddAccessRule(new PipeAccessRule("CREATOR OWNER", PipeAccessRights.FullControl, AccessControlType.Allow));
       pipeSecurity.AddAccessRule(new PipeAccessRule("SYSTEM", PipeAccessRights.FullControl, AccessControlType.Allow));
       pipe = new NamedPipeServerStream(PIPE_NAME, PipeDirection.InOut, -1, PipeTransmissionMode.Message,
                                        PipeOptions.Asynchronous, (int)BUFFER_SIZE_BYTES, (int)BUFFER_SIZE_BYTES, pipeSecurity);
+    }
+
+    private void DestroyPipe() {
+      if (pipe == null) {
+        return;
+      }
+      try {
+        if (pipe.IsConnected) {
+          pipe.Disconnect();
+        }
+        pipe.Close();
+        pipe = null;
+      } catch (Exception e) {
+        eventLog.WriteEntry($"Got an exception while destroying the pipe: {e.ToString()}",
+                            EventLogEntryType.Warning);
+      }
     }
 
     private void HandleConnection(IAsyncResult result) {
@@ -102,12 +124,9 @@ namespace OutlineService {
       } catch (Exception e) {
         eventLog.WriteEntry($"Failed to handle connection: {e.ToString()}", EventLogEntryType.Error);
       } finally {
-        if (pipe.IsConnected) {
-          pipe.Disconnect();
-        }
-        pipe.Close();
         // Pipe streams are one-to-one connections. Recreate the pipe to handle subsequent requests.
-        createPipe();
+        DestroyPipe();
+        CreatePipe();
         pipe.BeginWaitForConnection(HandleConnection, null);
       }
     }
@@ -179,13 +198,12 @@ namespace OutlineService {
 
     // Routes all device traffic through the router, at IP address `routerIp`. The proxy's IP is configured
     // to bypass the router, and connect through the system's default gateway.
-    // TODO: listen for network interface changes in order to update the proxy gateway.
     private int ConfigureRouting(string routerIp, string proxyIp) {
       if (routerIp == null || proxyIp == null) {
         eventLog.WriteEntry("Got null router and/or proxy IP.", EventLogEntryType.Error);
         return ERROR_CODE_INTERNAL;
       }
-      var systemGatewayIp = GetSystemGatewayIp();
+      systemGatewayIp = GetSystemGatewayIp();
       if (systemGatewayIp == null) {
         eventLog.WriteEntry("Failed to retrieve the system gateway IP", EventLogEntryType.Error);
         return ERROR_CODE_INTERNAL;
@@ -193,15 +211,15 @@ namespace OutlineService {
       eventLog.WriteEntry($"Got system gateway IP {systemGatewayIp.ToString()}");
 
       // Proxy routing: the proxy's IP address should be the only one that bypasses the router.
-      var interfaceIndex = GetBestInterfaceIndex(systemGatewayIp);
-      if (interfaceIndex == ERROR_CODE_INTERNAL) {
-        eventLog.WriteEntry("Failed to get best interface for address", EventLogEntryType.Error);
+      // Save the best interface index for the proxy's address before we add the route. This
+      // is necessary for updating the proxy route when the network changes; otherwise we get the
+      // TAP device as the best interface.
+      proxyInterfaceIndex = GetBestInterfaceIndex(systemGatewayIp);
+      if (proxyInterfaceIndex == ERROR_CODE_INTERNAL) {
+        eventLog.WriteEntry("Failed to get interface for the proxy's address", EventLogEntryType.Error);
         return ERROR_CODE_INTERNAL;
       }
-      var proxyRoutingResult = RunCommand(
-          CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp.ToString()} " +
-          $"interface={interfaceIndex} metric=0");
-      eventLog.WriteEntry($"netsh (proxy) exited with {proxyRoutingResult.ExitCode}");
+      var proxyRoutingResult = AddProxyRoute(proxyIp, systemGatewayIp.ToString(), proxyInterfaceIndex);
       this.proxyIp = proxyIp; // Save the proxy's IP so we can reset routing.
 
       // Route IPv4 traffic through the router. Instead of deleting the default IPv4 gateway (0.0.0.0/0),
@@ -234,22 +252,20 @@ namespace OutlineService {
         eventLog.WriteEntry("Got null proxy IP.", EventLogEntryType.Error);
         return ERROR_CODE_INTERNAL;
       }
-      // Proxy routing
-      var interfaceIndex = GetBestInterfaceIndex(IPAddress.Parse(proxyIp));
-      if (interfaceIndex == ERROR_CODE_INTERNAL) {
-        eventLog.WriteEntry("Failed to get best interface for address", EventLogEntryType.Error);
+      if (proxyInterfaceIndex == ERROR_CODE_INTERNAL) {
+        eventLog.WriteEntry("Proxy interface index not set.", EventLogEntryType.Error);
         return ERROR_CODE_INTERNAL;
       }
-      var proxyRoutingResult = RunCommand(
-          CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface={interfaceIndex}");
-      eventLog.WriteEntry($"netsh (proxy) exited with {proxyRoutingResult.ExitCode}");
+
+      // Proxy routing
+      var proxyRoutingResult = DeleteProxyRoute(proxyIp, proxyInterfaceIndex);
       this.proxyIp = null;
+      this.proxyInterfaceIndex = ERROR_CODE_INTERNAL;
 
       // IPv4 routing: delete routes to the router.
       var argsFormat = "interface ipv4 delete route {0} interface={1}";
       foreach (string subnet in IPV4_SUBNETS) {
         var result = RunCommand(CMD_NETSH, string.Format(argsFormat, subnet, TAP_DEVICE_NAME));
-        eventLog.WriteEntry($"netsh (IPv4) exited with {result.ExitCode}");
       }
 
       // IPv6 routing: enable IPv6 by removing the routes to the local interface.
@@ -257,10 +273,19 @@ namespace OutlineService {
       foreach (string subnet in IPV6_SUBNETS) {
         var result = RunCommand(
             CMD_NETSH, string.Format(argsFormat, subnet, NetworkInterface.IPv6LoopbackInterfaceIndex));
-        eventLog.WriteEntry($"netsh (IPv6) exited with {result.ExitCode}");
       }
 
       return 0;
+    }
+
+    private CommandResult AddProxyRoute(string proxyIp, string systemGatewayIp, int interfaceIndex) {
+      return RunCommand(
+          CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} " +
+          $"interface={interfaceIndex} metric=0");
+    }
+
+    private CommandResult DeleteProxyRoute(string proxyIp, int interfaceIndex) {
+      return RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface={interfaceIndex}");
     }
 
     // Runs a shell process, `cmd`, with arguments, `args` synchronously.
@@ -328,6 +353,36 @@ namespace OutlineService {
       return (int)interfaceIndex;
     }
 
+    private void NetworkAddressChanged(object sender, EventArgs e) {
+      if (proxyIp == null || systemGatewayIp == null ||
+          proxyInterfaceIndex == ERROR_CODE_INTERNAL) {
+        return;  // Outline is not connected.
+      }
+      var newSystemGatewayIp = GetSystemGatewayIp();
+      if (newSystemGatewayIp == null) {
+        eventLog.WriteEntry("Failed to retrieve the system gateway IP", EventLogEntryType.Error);
+        return;
+      }
+      eventLog.WriteEntry($"Network change. System gateway IP: {newSystemGatewayIp.ToString()}, " +
+                          $"Previous IP: {systemGatewayIp.ToString()}");
+      if (newSystemGatewayIp.Equals(systemGatewayIp)) {
+        return;  // No need to update the proxy route.
+      }
+
+      // Get the best interface for the new system gateway, in case the interface itself has changed
+      // (i.e. Ethernet -> WiFi).
+      var newInterfaceIndex = GetBestInterfaceIndex(newSystemGatewayIp);
+      if (newInterfaceIndex == ERROR_CODE_INTERNAL) {
+        eventLog.WriteEntry($"Failed to get best interface for address {newSystemGatewayIp.ToString()}",
+                            EventLogEntryType.Error);
+        return;
+      }
+      DeleteProxyRoute(proxyIp, proxyInterfaceIndex);
+      AddProxyRoute(proxyIp, newSystemGatewayIp.ToString(), newInterfaceIndex);
+      proxyInterfaceIndex = newInterfaceIndex;
+      systemGatewayIp = newSystemGatewayIp;
+    }
+
     // Debug function to print the network interfaces.
     private void PrintNetworkInfo() {
       var adapters = NetworkInterface.GetAllNetworkInterfaces();
@@ -344,7 +399,7 @@ namespace OutlineService {
         foreach (var addr in props.GatewayAddresses) {
           sb.Append($"{addr.Address.ToString()}\t");
         }
-        sb.Append("\n\n");
+        sb.Append("\n");
       }
       eventLog.WriteEntry(sb.ToString());
     }
