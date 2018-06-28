@@ -15,6 +15,7 @@
 package org.outline.tun2socks;
 
 import java.util.logging.Level;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 public class Tun2SocksJni {
@@ -60,7 +61,7 @@ public class Tun2SocksJni {
 
   /** Called from tun2socks when an event is to be logged. */
   public static void log(int level, String channel, String msg) {
-    LOG.log(bLogToJavaLogLevel(level), String.format("(%s): %s", channel, msg));
+    LOG.log(bLogToJavaLogLevel(level), String.format(Locale.ROOT, "(%s): %s", channel, msg));
   }
 
   static {

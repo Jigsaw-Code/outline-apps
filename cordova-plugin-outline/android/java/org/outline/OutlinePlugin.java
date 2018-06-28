@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.cordova.CallbackContext;
@@ -186,9 +187,7 @@ public class OutlinePlugin extends CordovaPlugin {
       connectionId = args.getString(0);
       addListener(connectionId, action, callbackContext);
     }
-    LOG.fine(
-        String.format(
-            "action: %s, connection ID: %s", action, connectionId));
+    LOG.fine(String.format(Locale.ROOT, "action: %s, connection ID: %s", action, connectionId));
 
     if (Action.ON_STATUS_CHANGE.is(action)) {
       return true; // We have already set the callback listener for this action.
@@ -240,7 +239,8 @@ public class OutlinePlugin extends CordovaPlugin {
                     OutlineLogger.sendLogs(uuid);
                     callback.success();
                   } else {
-                    LOG.severe(String.format("Unexpected asynchronous action %s", action));
+                    LOG.severe(
+                        String.format(Locale.ROOT, "Unexpected asynchronous action %s", action));
                     callback.error(ErrorCode.UNEXPECTED.value);
                   }
                 } catch (Exception e) {
@@ -366,7 +366,8 @@ public class OutlinePlugin extends CordovaPlugin {
       final String action = intent.getAction();
       String connectionId = intent.getStringExtra(IntentExtra.CONNECTION_ID.value);
       int errorCode = intent.getIntExtra(IntentExtra.ERROR_CODE.value, ErrorCode.UNEXPECTED.value);
-      LOG.fine(String.format("Service broadcast: %s, %s, %d", action, connectionId, errorCode));
+      LOG.fine(String.format(
+          Locale.ROOT, "Service broadcast: %s, %s, %d", action, connectionId, errorCode));
 
       PluginResult result;
       boolean keepCallback = false;
@@ -396,16 +397,14 @@ public class OutlinePlugin extends CordovaPlugin {
       final PluginResult result,
       boolean keepCallback) {
     if (connectionId == null || action == null) {
-      LOG.warning(
-          String.format(
-              "failed to retrieve listener for connection ID %s, action %s", connectionId, action));
+      LOG.warning(String.format(Locale.ROOT,
+          "failed to retrieve listener for connection ID %s, action %s", connectionId, action));
       return;
     }
     final Pair<String, String> key = new Pair(connectionId, action);
     if (!listeners.containsKey(key)) {
-      LOG.warning(
-          String.format(
-              "failed to retrieve listener for connection ID %s, action %s", connectionId, action));
+      LOG.warning(String.format(Locale.ROOT,
+          "failed to retrieve listener for connection ID %s, action %s", connectionId, action));
       return;
     }
 

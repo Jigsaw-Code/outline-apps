@@ -75,6 +75,7 @@ export class App {
     this.rootEl.addEventListener(
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
+    this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
@@ -87,6 +88,9 @@ export class App {
 
     this.eventQueue.startPublishing();
 
+    if (!this.arePrivacyTermsAcked()) {
+      this.displayPrivacyView();
+    }
     this.displayZeroStateUi();
     this.pullClipboardText();
   }
@@ -147,6 +151,26 @@ export class App {
     if (this.rootEl.$.serversView.shouldShowZeroState) {
       this.rootEl.$.addServerView.openAddServerSheet();
     }
+  }
+
+  private arePrivacyTermsAcked() {
+    try {
+      return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
+    } catch (e) {
+      console.error(`could not read privacy acknowledgement setting, assuming not akcnowledged`);
+    }
+    return false;
+  }
+
+  private displayPrivacyView() {
+    this.rootEl.$.serversView.hidden = true;
+    this.rootEl.$.privacyView.hidden = false;
+  }
+
+  private ackPrivacyTerms() {
+    this.rootEl.$.serversView.hidden = false;
+    this.rootEl.$.privacyView.hidden = true;
+    this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
   }
 
   private handleClipboardText(text: string) {
