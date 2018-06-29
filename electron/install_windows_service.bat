@@ -36,3 +36,6 @@ if !errorlevel! neq 0 (
   echo "Failed to install OutlineService"
   exit \b 1
 )
+
+:: Start the service to avoid requesting admin permissions in the app.
+net start OutlineService

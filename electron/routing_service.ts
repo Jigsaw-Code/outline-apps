@@ -108,6 +108,13 @@ export class WindowsRoutingService implements RoutingService {
           // Prompt the user for admimn permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
+              if (/service has already been started|net helpmsg 2182/i.test(sudoError.message)) {
+                // Wait for the service to start before sending the request.
+                sentryLogger.info('Waiting for routing servcie to come up...');
+                return setTimeout(() => {
+                  this.sendRequest(request).then(resolve, reject);
+                }, 2000);
+              }
               return reject(new Error(`Failed to start routing service: ${sudoError}`));
             }
             this.sendRequest(request).then(resolve, reject); // Retry now that the service is running

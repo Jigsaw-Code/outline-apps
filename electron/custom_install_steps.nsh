@@ -39,6 +39,10 @@
 
   installservice:
 
+  ; Stop the service so we can extract the updated executable.
+  nsExec::Exec "net stop OutlineService"
+  Pop $0
+
   File "${PROJECT_DIR}\electron\bin\win32\OutlineService.exe"
   File "${PROJECT_DIR}\electron\bin\win32\Newtonsoft.Json.dll"
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
