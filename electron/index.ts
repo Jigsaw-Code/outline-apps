@@ -179,11 +179,9 @@ app.on('activate', () => {
 });
 
 app.on('quit', () => {
-  try {
-    process_manager.teardownVpn();
-  } catch (e) {
+  process_manager.teardownVpn().catch((e) => {
     sentryLogger.error(`could not tear down proxy on exit: ${e}`);
-  }
+  });
 });
 
 myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {

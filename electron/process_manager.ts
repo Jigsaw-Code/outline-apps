@@ -41,7 +41,7 @@ function pathToEmbeddedExe(basename: string) {
 // Three tools are required to launch the proxy on Windows:
 //  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
 //  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
-//  - setsystemroute.exe configures the system to route via a TAP-like network device
+//  - OutlineService configures the system to route via a TAP-like network device, must be installed
 
 let ssLocal: ChildProcess|undefined;
 let tun2socks: ChildProcess|undefined;
@@ -345,7 +345,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
         onDisconnected();
       });
 
-      // Ignore stdio if not consuming the process output (pass  {stdio: 'igonore'} to spawn);
+      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
       // otherwise the process execution is suspended when the unconsumed streams exceed the system
       // limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {
@@ -403,10 +403,7 @@ function resetRouting(): Promise<void> {
 }
 
 export function teardownVpn() {
-  resetRouting().catch((e) => {
-    sentryLogger.error(`failed to reset routing: ${e.message}`);
-  });
-  return stopProcesses();
+  return Promise.all([resetRouting().catch(e => e), stopProcesses()]);
 }
 
 function stopProcesses() {
