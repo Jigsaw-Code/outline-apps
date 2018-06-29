@@ -47,14 +47,20 @@
         <splash density="xxhdpi" src="resources/splashscreen/android/splashscreen_xxhdpi.png" />
         <splash density="xxxhdpi" src="resources/splashscreen/android/splashscreen_xxxhdpi.png" />
 
-        <config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
+        <custom-config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="ss" />
             </intent-filter>
-        </config-file>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="s3.amazonaws.com" android:path="/outline-vpn/invite.html" />
+            </intent-filter>
+        </custom-config-file>
     </platform>
 
     <!-- browser -->
