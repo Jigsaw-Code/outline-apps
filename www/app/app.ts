@@ -486,12 +486,12 @@ export class App {
           continue;
         }
         const fragment: string = decodeURIComponent(invite.hash);
-        const mark = '/invite/';
+        const mark = 'ss://';
         const index = fragment.indexOf(mark);
         if (index < 0) {
           return url;
         }
-        return fragment.slice(index + mark.length);
+        return fragment.substr(index);
       }
     } catch (e) {
       console.warn('Invalid invite', e);
