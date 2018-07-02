@@ -50,8 +50,6 @@ const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = 'outline-tap0';
-const TUN2SOCKS_PROCESS_WAIT_TIME_MS = 5000;
-
 // TODO: read these from the network device!
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
@@ -103,13 +101,8 @@ export function startVpn(
                                 throw errors.ErrorCode.VPN_START_FAILURE;
                               })
                               .then((port) => {
-                                // there is a slight delay before tun2socks
-                                // correctly configures the virtual router. before then,
-                                // configuring the route table will not work as expected.
-                                // TODO: hack tun2socks to write something to stdout when it's ready
-                                sentryLogger.info('waiting 5s for tun2socks to come up...');
-                                return configureRoutingWithDelay(
-                                    config.host || '', TUN2SOCKS_PROCESS_WAIT_TIME_MS).catch((e) => {
+                                return configureRouting(
+                                    TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '').catch((e) => {
                                       stopProcesses();
                                       throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
                                     });
@@ -373,16 +366,6 @@ function stopTun2socks() {
   }
   tun2socks.kill();
   return Promise.resolve();
-}
-
-function configureRoutingWithDelay(host: string, delayMs: number) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-        configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, host).then(() => {
-          resolve()
-        }).catch(reject);
-      }, delayMs);
-  });
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
