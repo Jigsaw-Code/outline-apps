@@ -37,7 +37,6 @@ electron-builder \
   --win nsis \
   --config.nsis.perMachine=true \
   --config.nsis.include=electron/custom_install_steps.nsh \
-  --config.win.requestedExecutionLevel=requireAdministrator \
   --config.win.icon=icons/win/icon.ico \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.nsis.artifactName='Outline-Client.${ext}'
