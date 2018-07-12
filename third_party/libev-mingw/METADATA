@@ -1,0 +1,12 @@
+name: "libev"
+description:
+    "Shadowsocks' MinGW-optimised fork of libev."
+    "This is the mingw branch @ 423be52."
+
+third_party {
+  url {
+    type: GIT
+    value: "https://github.com/shadowsocks/libev"
+  }
+  last_upgrade_date { year: 2018 month: 7 day: 12 }
+}
