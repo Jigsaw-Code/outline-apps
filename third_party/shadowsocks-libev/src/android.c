@@ -1,7 +1,7 @@
 /*
  * android.c - Setup IPC for shadowsocks-android
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -56,9 +56,9 @@ protect_socket(int fd)
         return -1;
     }
 
-    // Set timeout to 1s
+    // Set timeout to 3s
     struct timeval tv;
-    tv.tv_sec  = 1;
+    tv.tv_sec  = 3;
     tv.tv_usec = 0;
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
     setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval));
@@ -129,14 +129,5 @@ send_traffic_stat(uint64_t tx, uint64_t rx)
         return -1;
     }
 
-    char ret = 0;
-
-    if (recv(sock, &ret, 1, 0) == -1) {
-        ERROR("[android] recv");
-        close(sock);
-        return -1;
-    }
-
     close(sock);
-    return ret;
 }

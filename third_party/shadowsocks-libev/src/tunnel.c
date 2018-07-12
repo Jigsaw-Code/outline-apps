@@ -1,7 +1,7 @@
 /*
  * tunnel.c - Setup a local port forwarding through remote shadowsocks server
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -29,13 +29,13 @@
 #include <strings.h>
 #include <unistd.h>
 #include <getopt.h>
-
+#ifndef __MINGW32__
 #include <errno.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
-
+#endif
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -52,6 +52,7 @@
 #include "utils.h"
 #include "plugin.h"
 #include "tunnel.h"
+#include "winsock.h"
 
 #ifndef EAGAIN
 #define EAGAIN EWOULDBLOCK
@@ -95,11 +96,22 @@ static int mode      = TCP_ONLY;
 static int nofile = 0;
 #endif
 static int no_delay = 0;
+static int ret_val  = 0;
 
 static struct ev_signal sigint_watcher;
 static struct ev_signal sigterm_watcher;
+#ifndef __MINGW32__
 static struct ev_signal sigchld_watcher;
+#else
+static struct plugin_watcher_t {
+    ev_io io;
+    SOCKET fd;
+    uint16_t port;
+    int valid;
+} plugin_watcher;
+#endif
 
+#ifndef __MINGW32__
 static int
 setnonblocking(int fd)
 {
@@ -109,6 +121,7 @@ setnonblocking(int fd)
     }
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
+#endif
 
 int
 create_and_bind(const char *addr, const char *port)
@@ -170,17 +183,6 @@ create_and_bind(const char *addr, const char *port)
 }
 
 static void
-delayed_connect_cb(EV_P_ ev_timer *watcher, int revents)
-{
-    server_t *server = cork_container_of(watcher, server_t,
-                                         delayed_connect_watcher);
-    remote_t *remote = server->remote;
-
-    if (server->abuf != NULL)
-        remote_send_cb(EV_A_ & remote->send_ctx->io, revents);
-}
-
-static void
 server_recv_cb(EV_P_ ev_io *w, int revents)
 {
     server_ctx_t *server_recv_ctx = (server_ctx_t *)w;
@@ -221,14 +223,6 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
         close_and_free_remote(EV_A_ remote);
         close_and_free_server(EV_A_ server);
         return;
-    }
-
-    if (server->abuf != NULL) {
-        ev_timer_stop(EV_A_ & server->delayed_connect_watcher);
-        bprepend(remote->buf, server->abuf, BUF_SIZE);
-        bfree(server->abuf);
-        ss_free(server->abuf);
-        server->abuf = NULL;
     }
 
     int s = send(remote->fd, remote->buf->data, remote->buf->len, 0);
@@ -400,12 +394,10 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
         int r = getpeername(remote->fd, (struct sockaddr *)&addr, &len);
         if (r == 0) {
             remote_send_ctx->connected = 1;
-            ev_io_stop(EV_A_ & remote_send_ctx->io);
             ev_timer_stop(EV_A_ & remote_send_ctx->watcher);
 
-            server->abuf = (buffer_t *)ss_malloc(sizeof(buffer_t));
-            buffer_t *abuf = server->abuf;
-            balloc(abuf, BUF_SIZE);
+            assert(remote->buf->len == 0);
+            buffer_t *abuf = remote->buf;
 
             ss_addr_t *sa = &server->destaddr;
             struct cork_ip ip;
@@ -454,18 +446,14 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
             int err = crypto->encrypt(abuf, server->e_ctx, BUF_SIZE);
 
             if (err) {
-                bfree(abuf);
                 LOGE("invalid password or cipher");
                 close_and_free_remote(EV_A_ remote);
                 close_and_free_server(EV_A_ server);
                 return;
             }
 
-            ev_timer_start(EV_A_ & server->delayed_connect_watcher);
             ev_io_start(EV_A_ & remote->recv_ctx->io);
-            ev_io_start(EV_A_ & server->recv_ctx->io);
 
-            return;
         } else {
             ERROR("getpeername");
             // not connected
@@ -473,43 +461,36 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
             close_and_free_server(EV_A_ server);
             return;
         }
+    }
+
+    if (remote->buf->len == 0) {
+        // close and free
+        close_and_free_remote(EV_A_ remote);
+        close_and_free_server(EV_A_ server);
+        return;
     } else {
-        if (remote->buf->len == 0 && server->abuf->len == 0) {
-            // close and free
-            close_and_free_remote(EV_A_ remote);
-            close_and_free_server(EV_A_ server);
+        // has data to send
+        ssize_t s = send(remote->fd, remote->buf->data + remote->buf->idx,
+                remote->buf->len, 0);
+        if (s == -1) {
+            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                ERROR("send");
+                // close and free
+                close_and_free_remote(EV_A_ remote);
+                close_and_free_server(EV_A_ server);
+            }
+            return;
+        } else if (s < remote->buf->len) {
+            // partly sent, move memory, wait for the next time to send
+            remote->buf->len -= s;
+            remote->buf->idx += s;
             return;
         } else {
-            // has data to send
-            if (server->abuf != NULL) {
-                assert(remote->buf->len == 0);
-                bprepend(remote->buf, server->abuf, BUF_SIZE);
-                bfree(server->abuf);
-                ss_free(server->abuf);
-                server->abuf = NULL;
-            }
-            ssize_t s = send(remote->fd, remote->buf->data + remote->buf->idx,
-                             remote->buf->len, 0);
-            if (s == -1) {
-                if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                    ERROR("send");
-                    // close and free
-                    close_and_free_remote(EV_A_ remote);
-                    close_and_free_server(EV_A_ server);
-                }
-                return;
-            } else if (s < remote->buf->len) {
-                // partly sent, move memory, wait for the next time to send
-                remote->buf->len -= s;
-                remote->buf->idx += s;
-                return;
-            } else {
-                // all sent out, wait for reading
-                remote->buf->len = 0;
-                remote->buf->idx = 0;
-                ev_io_stop(EV_A_ & remote_send_ctx->io);
-                ev_io_start(EV_A_ & server->recv_ctx->io);
-            }
+            // all sent out, wait for reading
+            remote->buf->len = 0;
+            remote->buf->idx = 0;
+            ev_io_stop(EV_A_ & remote_send_ctx->io);
+            ev_io_start(EV_A_ & server->recv_ctx->io);
         }
     }
 }
@@ -593,9 +574,6 @@ new_server(int fd)
     ev_io_init(&server->recv_ctx->io, server_recv_cb, fd, EV_READ);
     ev_io_init(&server->send_ctx->io, server_send_cb, fd, EV_WRITE);
 
-    ev_timer_init(&server->delayed_connect_watcher,
-                  delayed_connect_cb, 0.05, 0);
-
     return server;
 }
 
@@ -612,10 +590,6 @@ free_server(server_t *server)
     if (server->d_ctx != NULL) {
         crypto->ctx_release(server->d_ctx);
         ss_free(server->d_ctx);
-    }
-    if (server->abuf != NULL) {
-        bfree(server->abuf);
-        ss_free(server->abuf);
     }
     if (server->buf != NULL) {
         bfree(server->buf);
@@ -738,21 +712,50 @@ signal_cb(EV_P_ ev_signal *w, int revents)
 {
     if (revents & EV_SIGNAL) {
         switch (w->signum) {
+#ifndef __MINGW32__
         case SIGCHLD:
-            if (!is_plugin_running())
+            if (!is_plugin_running()) {
                 LOGE("plugin service exit unexpectedly");
+                ret_val = -1;
+            }
             else
                 return;
+#endif
         case SIGINT:
         case SIGTERM:
             ev_signal_stop(EV_DEFAULT, &sigint_watcher);
             ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+#ifndef __MINGW32__
             ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
+#else
+            ev_io_stop(EV_DEFAULT, &plugin_watcher.io);
+#endif
             keep_resolving = 0;
             ev_unloop(EV_A_ EVUNLOOP_ALL);
         }
     }
 }
+
+#ifdef __MINGW32__
+static void
+plugin_watcher_cb(EV_P_ ev_io *w, int revents)
+{
+    char buf[1];
+    SOCKET fd = accept(plugin_watcher.fd, NULL, NULL);
+    if (fd == INVALID_SOCKET) {
+        return;
+    }
+    recv(fd, buf, 1, 0);
+    closesocket(fd);
+    LOGE("plugin service exit unexpectedly");
+    ret_val = -1;
+    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+    ev_io_stop(EV_DEFAULT, &plugin_watcher.io);
+    keep_resolving = 0;
+    ev_unloop(EV_A_ EVUNLOOP_ALL);
+}
+#endif
 
 int
 main(int argc, char **argv)
@@ -921,7 +924,7 @@ main(int argc, char **argv)
 
     if (argc == 1) {
         if (conf_path == NULL) {
-            conf_path = DEFAULT_CONF_PATH;
+            conf_path = get_default_conf();
         }
     }
 
@@ -993,6 +996,10 @@ main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+#ifdef __MINGW32__
+    winsock_init();
+#endif
+
     if (plugin != NULL) {
         uint16_t port = get_local_port();
         if (port == 0) {
@@ -1002,11 +1009,19 @@ main(int argc, char **argv)
         plugin_host = "127.0.0.1";
         plugin_port = tmp_port;
 
+#ifdef __MINGW32__
+        memset(&plugin_watcher, 0, sizeof(plugin_watcher));
+        plugin_watcher.port = get_local_port();
+        if (plugin_watcher.port == 0) {
+            LOGE("failed to assign a control port for plugin");
+        }
+#endif
+
         LOGI("plugin \"%s\" enabled", plugin);
     }
 
     if (method == NULL) {
-        method = "rc4-md5";
+        method = "chacha20-ietf-poly1305";
     }
 
     if (timeout == NULL) {
@@ -1046,6 +1061,40 @@ main(int argc, char **argv)
         FATAL("tunnel port is not defined");
     }
 
+#ifdef __MINGW32__
+    // Listen on plugin control port
+    if (plugin != NULL && plugin_watcher.port != 0) {
+        SOCKET fd;
+        fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (fd != INVALID_SOCKET) {
+            plugin_watcher.valid = 0;
+            do {
+                struct sockaddr_in addr;
+                memset(&addr, 0, sizeof(addr));
+                addr.sin_family = AF_INET;
+                addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+                addr.sin_port = htons(plugin_watcher.port);
+                if (bind(fd, (struct sockaddr *)&addr, sizeof(addr))) {
+                    LOGE("failed to bind plugin control port");
+                    break;
+                }
+                if (listen(fd, 1)) {
+                    LOGE("failed to listen on plugin control port");
+                    break;
+                }
+                plugin_watcher.fd = fd;
+                ev_io_init(&plugin_watcher.io, plugin_watcher_cb, fd, EV_READ);
+                ev_io_start(EV_DEFAULT, &plugin_watcher.io);
+                plugin_watcher.valid = 1;
+            } while (0);
+            if (!plugin_watcher.valid) {
+                closesocket(fd);
+                plugin_watcher.port = 0;
+            }
+        }
+    }
+#endif
+
     if (plugin != NULL) {
         int len          = 0;
         size_t buf_size  = 256 * remote_num;
@@ -1057,22 +1106,31 @@ main(int argc, char **argv)
             len = strlen(remote_str);
         }
         int err = start_plugin(plugin, plugin_opts, remote_str,
-                               remote_port, plugin_host, plugin_port, MODE_CLIENT);
+                               remote_port, plugin_host, plugin_port,
+#ifdef __MINGW32__
+                               plugin_watcher.port,
+#endif
+                               MODE_CLIENT);
         if (err) {
+            ERROR("start_plugin");
             FATAL("failed to start the plugin");
         }
     }
 
+#ifndef __MINGW32__
     // ignore SIGPIPE
     signal(SIGPIPE, SIG_IGN);
     signal(SIGABRT, SIG_IGN);
+#endif
 
     ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
     ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
-    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigint_watcher);
     ev_signal_start(EV_DEFAULT, &sigterm_watcher);
+#ifndef __MINGW32__
+    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigchld_watcher);
+#endif
 
     // Setup keys
     LOGI("initializing ciphers... %s", method);
@@ -1107,6 +1165,8 @@ main(int argc, char **argv)
     listen_ctx.timeout = atoi(timeout);
     listen_ctx.iface   = iface;
     listen_ctx.mptcp   = mptcp;
+
+    LOGI("listening at %s:%s", local_addr, local_port);
 
     struct ev_loop *loop = EV_DEFAULT;
 
@@ -1147,8 +1207,7 @@ main(int argc, char **argv)
         LOGI("TCP relay disabled");
     }
 
-    LOGI("listening at %s:%s", local_addr, local_port);
-
+#ifndef __MINGW32__
     // setuid
     if (user != NULL && !run_as(user)) {
         FATAL("failed to switch user");
@@ -1157,6 +1216,7 @@ main(int argc, char **argv)
     if (geteuid() == 0) {
         LOGI("running from root user");
     }
+#endif
 
     ev_run(loop, 0);
 
@@ -1164,5 +1224,13 @@ main(int argc, char **argv)
         stop_plugin();
     }
 
-    return 0;
+#ifdef __MINGW32__
+    if (plugin_watcher.valid) {
+        closesocket(plugin_watcher.fd);
+    }
+
+    winsock_cleanup();
+#endif
+
+    return ret_val;
 }
