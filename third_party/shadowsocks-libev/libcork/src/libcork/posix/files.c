@@ -26,6 +26,7 @@
 #include "libcork/ds/buffer.h"
 #include "libcork/helpers/errors.h"
 #include "libcork/helpers/posix.h"
+#include "libcork/helpers/mingw.h"
 #include "libcork/os/files.h"
 #include "libcork/os/subprocess.h"
 
