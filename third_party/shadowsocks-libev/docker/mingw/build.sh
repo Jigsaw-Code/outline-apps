@@ -41,6 +41,10 @@ build_proj() {
     else
         cd proj
     fi
+    # Because Outline works with a mirror of the repo rather than a source archive
+    # downloaded from https://github.com/shadowsocks/shadowsocks-libev/releases, it
+    # must call autogen.sh before calling configure.
+    ./autogen.sh
     ./configure --host=${host} --prefix=${prefix} \
       --disable-documentation \
       --with-ev="$dep" \
@@ -84,29 +88,6 @@ dk_build() {
 }
 
 dk_package() {
-    rm -rf "$BASE/pack"
-    mkdir -p "$BASE/pack"
-    cd "$BASE/pack"
-    mkdir -p ss-libev-${PROJ_REV}
-    cd ss-libev-${PROJ_REV}
-    for bin in local server tunnel; do
-        cp ${DIST}/i686/bin/ss-${bin}.exe ss-${bin}-x86.exe
-        cp ${DIST}/x86_64/bin/ss-${bin}.exe ss-${bin}-x64.exe
-    done
-    for bin in local server; do
-        cp ${DIST}/i686/bin/obfs-${bin}.exe obfs-${bin}-x86.exe || true
-        cp ${DIST}/x86_64/bin/obfs-${bin}.exe obfs-${bin}-x64.exe || true
-    done
-    pushd "$SRC/proj"
-    GIT_REV="$(git rev-parse --short HEAD)"
-    popd
-    echo "SHA1 checksum for build $(date +"%y%m%d")-${GIT_REV}" > checksum
-    for f in *.exe; do
-        echo "  $f:" >> checksum
-        echo "    $(sha1sum $f | cut -d ' ' -f 1)" >> checksum
-    done
-    sed -e 's/$/\r/' checksum > checksum.txt
-    rm -f checksum
-    cd ..
-    tar zcf /bin.tgz ss-libev-${PROJ_REV}
+    # Outline just needs ss-local.exe.
+    cp ${DIST}/i686/bin/ss-local.exe /
 }

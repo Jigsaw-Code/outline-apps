@@ -11,4 +11,6 @@ third_party {
   }
   version: "3.2.0"
   last_upgrade_date { year: 2018 month: 7 day: 12 }
+  local_modifications:
+    "Patched docker/mingw to build our mirrored sources."
 }

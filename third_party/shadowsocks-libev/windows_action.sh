@@ -14,66 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Builds ss-local.exe, for Windows.
+# Builds ss-local.exe with the help of shadowsocks-libev's MinGW build
+# scripts which have been modified slightly in our mirror to build from
+# our mirrored sources.
 #
-# Tested on Cygwin (32 bit) under Windows 10 with the following packages:
-# - gcc-core
-# - gcc-g++
-# - make
-#
-# Each package is installed to /usr/local. This makes it a kind of
-# scratch directory. To get a totally fresh build, you'll probably
-# want to nuke that folder first.
-#
-# BTW, the order in which the dependencies appear here is the same as
-# shadowsocks-libev's configure script searches for them.
+# Requires Docker; tested on Linux.
 
 TMPDIR=$(mktemp -d)
 echo "building in $TMPDIR"
-cp -R third_party/{pcre,mbedtls,sodium,c-ares,libev,shadowsocks-libev} $TMPDIR
 
-# PCRE
-pushd $TMPDIR/pcre
-./autogen.sh
-./configure --enable-static --disable-shared
-make
-make install
-popd
+mkdir $TMPDIR/src
 
-# mbed TLS
-pushd $TMPDIR/mbedtls
-make no_test # no_test avoids the need for Perl
-make install
-popd
+# Build scripts.
+cp third_party/shadowsocks-libev/docker/mingw/* $TMPDIR
 
-# Sodium.
-pushd $TMPDIR/sodium
-./autogen.sh
-./configure --enable-static --disable-shared
-make
-make install
-popd
+# Dependency sources, used by deps.sh.
+cp -R third_party/{pcre,mbedtls,sodium,c-ares,libev-mingw} $TMPDIR/src/
+# shadowsocks-libev source, used by build.sh.
+cp -R third_party/shadowsocks-libev $TMPDIR/src/proj
 
-# c-ares.
-pushd $TMPDIR/c-ares
-./buildconf
-./configure --enable-static --disable-shared
-make
-make install
-popd
-
-# libev.
-pushd $TMPDIR/libev
-./autogen.sh
-./configure --enable-static --disable-shared
-make
-make install
-popd
-
-# shadowsocks-libev.
-pushd $TMPDIR/shadowsocks-libev
-./autogen.sh
-./configure --disable-documentation
+pushd $TMPDIR
 make
 popd
-cp -v $TMPDIR/shadowsocks-libev/src/ss-local.exe third_party/shadowsocks-libev/windows/
+
+cp -v $TMPDIR/ss-local.exe third_party/shadowsocks-libev/windows/
+chmod 755 third_party/shadowsocks-libev/windows/ss-local.exe
