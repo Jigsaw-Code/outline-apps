@@ -331,6 +331,9 @@
 /* Define to 1 if you have the ws2tcpip.h header file. */
 #cmakedefine HAVE_WS2TCPIP_H
 
+/* Define to 1 if you have the __system_property_get function */
+#cmakedefine HAVE___SYSTEM_PROPERTY_GET
+
 /* Define to 1 if you need the malloc.h header file even with stdlib.h */
 #cmakedefine NEED_MALLOC_H
 

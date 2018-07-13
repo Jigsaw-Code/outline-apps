@@ -36,6 +36,17 @@ namespace test {
 
 extern bool verbose;
 extern int mock_port;
+extern const std::vector<int> both_families;
+extern const std::vector<int> ipv4_family;
+extern const std::vector<int> ipv6_family;
+
+extern const std::vector<std::pair<int, bool>> both_families_both_modes;
+extern const std::vector<std::pair<int, bool>> ipv4_family_both_modes;
+extern const std::vector<std::pair<int, bool>> ipv6_family_both_modes;
+
+// Which parameters to use in tests
+extern std::vector<int> families;
+extern std::vector<std::pair<int, bool>> families_modes;
 
 // Process all pending work on ares-owned file descriptors, plus
 // optionally the given set-of-FDs + work function.

@@ -45,6 +45,11 @@ if they complete successfully or fail.
 specific file descriptors (sockets) you pass in to the function. Use
 ARES_SOCKET_BAD for "no action". This function is provided to allow users of
 c-ares to void \fIselect(3)\fP in their applications and within c-ares.
+
+To only process possible timeout conditions without a socket event occurring,
+one may pass NULL as the values for both \fIread_fds\fP and \fIwrite_fds\fP for
+\fBares_process(3)\fP, or ARES_SOCKET_BAD for both \fIread_fd\fP and
+\fIwrite_fd\fP for \fBares_process_fd(3)\fP.
 .SH EXAMPLE
 The following code fragment waits for all pending queries on a channel
 to complete:
