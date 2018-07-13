@@ -30,7 +30,9 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build
 
-RUN /bin/bash -c "source /prepare.sh && dk_download"
+# For Outline, there is no need to run dk_download: windows_action.sh
+# should have already copied across the relevant folders from third_party.
+ADD src /build/src
 
 ADD deps.sh /
 RUN /bin/bash -c "source /deps.sh && dk_deps"

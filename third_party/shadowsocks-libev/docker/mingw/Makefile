@@ -31,7 +31,8 @@ build:
 	  --build-arg REV=$(REV) --build-arg REPO=$(REPO) \
 	  --build-arg REBUILD="$$(date +%Y-%m-%d-%H-%M-%S)" \
 	  --build-arg PLUGIN=$(PLUGIN) .
-	docker run --rm --entrypoint cat $(IMAGE) /bin.tgz > $(DIST)
+  # Outline just needs ss-local.exe.
+	docker run --rm --entrypoint cat $(IMAGE) /ss-local.exe > ss-local.exe
 
 clean:
 	rm -f $(DIST)
