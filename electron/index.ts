@@ -80,7 +80,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     if (!mainWindow || isAppQuitting) {
       return;
     }
-    event.preventDefault();
+    event.preventDefault(); // Prevent the app from exiting on the 'close' event.
     mainWindow.hide();
   };
   mainWindow.on('minimize', minimizeWindowToTray);
@@ -132,13 +132,12 @@ function createTrayIcon(status: ConnectionStatus) {
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
-// Singals that the app is quitting and quits the app. This is necessary because we override the
+// Signals that the app is quitting and quits the app. This is necessary because we override the
 // window 'close' event to support minimizing to the system tray.
 function quitApp() {
   isAppQuitting = true;
   app.quit();
 }
-
 
 const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
   interceptShadowsocksLink(argv);
