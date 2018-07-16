@@ -15,6 +15,7 @@
 #include "libcork/ds.h"
 #include "libcork/os/subprocess.h"
 #include "libcork/helpers/errors.h"
+#include "libcork/helpers/mingw.h"
 
 #if defined(__APPLE__)
 /* Apple doesn't provide access to the "environ" variable from a shared library.

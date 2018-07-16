@@ -14,6 +14,7 @@
 #include "libcork/core/timestamp.h"
 #include "libcork/core/types.h"
 #include "libcork/helpers/errors.h"
+#include "libcork/helpers/mingw.h"
 
 void
 cork_timestamp_init_now(cork_timestamp *ts)
