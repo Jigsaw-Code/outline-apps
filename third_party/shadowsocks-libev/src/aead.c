@@ -1,7 +1,7 @@
 /*
  * aead.c - Manage AEAD ciphers
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -31,11 +31,14 @@
 #include <assert.h>
 
 #include <sodium.h>
+#ifndef __MINGW32__
 #include <arpa/inet.h>
+#endif
 
 #include "ppbloom.h"
 #include "aead.h"
 #include "utils.h"
+#include "winsock.h"
 
 #define NONE                    (-1)
 #define AES128GCM               0
@@ -644,15 +647,19 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
     }
     plaintext->len = plen;
 
-    brealloc(ciphertext, plaintext->len, capacity);
-    memcpy(ciphertext->data, plaintext->data, plaintext->len);
-    ciphertext->len = plaintext->len;
-
     // Add the salt to bloom filter
     if (cipher_ctx->init == 1) {
+        if (ppbloom_check((void *)cipher_ctx->salt, salt_len) == 1) {
+            LOGE("crypto: AEAD: repeat salt detected");
+            return CRYPTO_ERROR;
+        }
         ppbloom_add((void *)cipher_ctx->salt, salt_len);
         cipher_ctx->init = 2;
     }
+
+    brealloc(ciphertext, plaintext->len, capacity);
+    memcpy(ciphertext->data, plaintext->data, plaintext->len);
+    ciphertext->len = plaintext->len;
 
     return CRYPTO_OK;
 }
@@ -712,8 +719,8 @@ aead_init(const char *pass, const char *key, const char *method)
                 break;
             }
         if (m >= AEAD_CIPHER_NUM) {
-            LOGE("Invalid cipher name: %s, use aes-256-gcm instead", method);
-            m = AES256GCM;
+            LOGE("Invalid cipher name: %s, use chacha20-ietf-poly1305 instead", method);
+            m = CHACHA20POLY1305IETF;
         }
     }
     return aead_key_init(m, pass, key);

@@ -31,6 +31,29 @@ namespace test {
 bool verbose = false;
 int mock_port = 5300;
 
+const std::vector<int> both_families = {AF_INET, AF_INET6};
+const std::vector<int> ipv4_family = {AF_INET};
+const std::vector<int> ipv6_family = {AF_INET6};
+
+const std::vector<std::pair<int, bool>> both_families_both_modes = {
+  std::make_pair<int, bool>(AF_INET, false),
+  std::make_pair<int, bool>(AF_INET, true),
+  std::make_pair<int, bool>(AF_INET6, false),
+  std::make_pair<int, bool>(AF_INET6, true)
+};
+const std::vector<std::pair<int, bool>> ipv4_family_both_modes = {
+  std::make_pair<int, bool>(AF_INET, false),
+  std::make_pair<int, bool>(AF_INET, true)
+};
+const std::vector<std::pair<int, bool>> ipv6_family_both_modes = {
+  std::make_pair<int, bool>(AF_INET6, false),
+  std::make_pair<int, bool>(AF_INET6, true)
+};
+
+// Which parameters to use in tests
+std::vector<int> families = both_families;
+std::vector<std::pair<int, bool>> families_modes = both_families_both_modes;
+
 unsigned long long LibraryTest::fails_ = 0;
 std::map<size_t, int> LibraryTest::size_fails_;
 
@@ -280,7 +303,7 @@ void MockServer::ProcessFD(int fd) {
   qlen -= enclen;
   question += enclen;
   std::string namestr(name);
-  free(name);
+  ares_free_string(name);
 
   if (qlen < 4) {
     std::cerr << "Unexpected question size (" << qlen
