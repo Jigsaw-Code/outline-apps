@@ -1,13 +1,17 @@
 # Many of the Android build tools require glibc and are
 # built for 32 bit systems. Running such binaries is a
 # lot easier on Ubuntu than on Alpine.  
-FROM ubuntu:artful
+FROM ubuntu:18.04
 
 # We install curl because while wget may be much smaller,
 # some of the install scripts themselves invoke curl.
 
-# Bower requires git.
-RUN apt update && apt install -y curl unzip openjdk-8-jdk git && apt clean
+# Notes on dependencies:
+#  - Bower requires git
+#  - gnupg is needed by the Node.js installer to add an Apt repository.
+#  - Specify openjdk-8-jre-headless explicitly to prevent versions >8
+#    from being installed, which aren't compatible with the Android tools.
+RUN apt update && apt install -y curl unzip openjdk-8-jdk openjdk-8-jre-headless gradle git gnupg && apt clean
 
 # Node.js.
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -33,14 +37,10 @@ ENV CI=true
 # maintains images with many useful hints:
 #   https://github.com/bitrise-docker/android 
 
-# Android SDK ("just the command line tools"):
+# Android SDK ("command line tools only"):
 #   https://developer.android.com/studio/index.html#downloads
-# We can't update past this version because 25.3.0 introduced
-# breaking changes for the version of the Android engine we
-# currently use with Cordova:
-#   https://developer.android.com/studio/releases/sdk-tools.html
-ENV ANDROID_TOOLS_VERSION 25.2.5
-RUN curl -o /tmp/android-tools.zip "https://dl.google.com/android/repository/tools_r${ANDROID_TOOLS_VERSION}-linux.zip" && \
+# This is version 26.1.1.
+RUN curl -o /tmp/android-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     mkdir /opt/android-sdk && \
     unzip /tmp/android-tools.zip -d /opt/android-sdk && \
     rm /tmp/android-tools.zip
@@ -51,11 +51,5 @@ ENV ANDROID_HOME /opt/android-sdk
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
-ENV ANDROID_BUILD_TOOLS_VERSION 26.0.2
+ENV ANDROID_BUILD_TOOLS_VERSION 28.0.1
 RUN yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
-
-# We need version 23 of the Android SDK.
-RUN yes | sdkmanager 'platforms;android-23'
-
-# Android Support Repository.
-RUN yes | sdkmanager 'extras;android;m2repository'
