@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {SentryClient} from '@sentry/electron';
-import {app, BrowserWindow, dialog, ipcMain, Menu, shell} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, Tray, shell} from 'electron';
 import {PromiseIpc} from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
@@ -35,9 +35,13 @@ const connectionStore = new ConnectionStore(app.getPath('userData'));
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow|null;
 
+let tray: Tray;
+let isAppQuitting = false;
+
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const iconPath = path.join(__dirname, 'outline.ico');
+const iconPath = path.join(path.dirname(__dirname), 'icons/win/icon.ico');
+const grayscaleIconPath = path.join(__dirname, 'logo_grayscale.png');
 
 const sentryLogger = new SentryLogger();
 
@@ -72,6 +76,16 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     mainWindow = null;
   });
 
+  const minimizeWindowToTray = (event: Event) => {
+    if (!mainWindow || isAppQuitting) {
+      return;
+    }
+    event.preventDefault();
+    mainWindow.hide();
+  };
+  mainWindow.on('minimize', minimizeWindowToTray);
+  mainWindow.on('close', minimizeWindowToTray);
+
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
@@ -90,6 +104,38 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   });
 }
 
+function createTrayIcon(status: ConnectionStatus) {
+  const isConnected = status === ConnectionStatus.CONNECTED;
+  const trayIconPath = isConnected ? iconPath : grayscaleIconPath;
+  if (tray) {
+    tray.setImage(trayIconPath);
+  } else {
+    tray = new Tray(trayIconPath);
+    tray.on('click', () => {
+      if (mainWindow) {
+        mainWindow.restore();
+        mainWindow.show();
+      } else {
+        createWindow();
+      }
+    });
+    tray.setToolTip('Outline');
+  }
+  const menuTemplate = [
+    {label: `Status: ${isConnected ? 'Connected' : 'Disconnected'}`, enabled: false},
+    {type: 'separator'} as MenuItemConstructorOptions, {label: 'Exit', click: quitApp}
+  ];
+  tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
+}
+
+// Singals that the app is quitting and quits the app. This is necessary because we override the
+// window 'close' event to support minimizing to the system tray.
+function quitApp() {
+  isAppQuitting = true;
+  app.quit();
+}
+
+
 const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
   interceptShadowsocksLink(argv);
 
@@ -103,7 +149,7 @@ const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
 });
 
 if (isSecondInstance) {
-  app.quit();
+  quitApp();
 }
 
 app.setAsDefaultProtocolClient('ss');
@@ -146,20 +192,12 @@ app.on('ready', () => {
     }).catch((err) => {
       // The user was not connected at shutdown.
       // Quitting the app will reset the system proxy configuration before exiting.
-      app.quit();
+      quitApp();
     });
   } else {
     createWindow();
   }
-});
-
-// Quit when all windows are closed.
-app.on('window-all-closed', () => {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  createTrayIcon(ConnectionStatus.DISCONNECTED);
 });
 
 app.on('activate', () => {
@@ -207,6 +245,7 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
                   connectionStore.clear().catch((err) => {
                     sentryLogger.error('Failed to clear connection store.');
                   });
+                  createTrayIcon(ConnectionStatus.DISCONNECTED);
                 })
             .then(() => {
               connectionStore.save({config, id}).catch((err) => {
@@ -215,6 +254,7 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
               if (mainWindow) {
                 mainWindow.webContents.send(`proxy-connected-${id}`);
               }
+              createTrayIcon(ConnectionStatus.CONNECTED);
             });
       });
 }
@@ -239,6 +279,8 @@ app.on('browser-window-focus', () => {
 ipcMain.on('environment-info', (event: Event, info: {appVersion: string, sentryDsn: string}) => {
   SentryClient.create({dsn: info.sentryDsn, release: info.appVersion, maxBreadcrumbs: 100});
 });
+
+ipcMain.on('quit-app', quitApp);
 
 // Notify the UI of updates.
 autoUpdater.on('update-downloaded', (ev, info) => {

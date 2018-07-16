@@ -40,7 +40,7 @@ export class App {
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
       private environmentVars: EnvironmentVariables, private hasSystemVpnSupport: boolean,
-      private updater: Updater, document = window.document) {
+      private updater: Updater, private quitApplication: () => void, document = window.document) {
     this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
 
@@ -115,12 +115,6 @@ export class App {
         this.rootEl.showToast(msg, toastDuration);
       }, 500);
     }
-  }
-
-  // Terminates the application by calling the native Outline plugin. The quit option is only
-  // displayed in macOS, since menu bar apps provide no alternative way of quitting.
-  private quitApplication() {
-    cordova.plugins.outline.quitApplication();
   }
 
   private pullClipboardText() {
