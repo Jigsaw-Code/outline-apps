@@ -112,11 +112,15 @@ function createTrayIcon(status: ConnectionStatus) {
   } else {
     tray = new Tray(trayIconPath);
     tray.on('click', () => {
-      if (mainWindow) {
+      if (!mainWindow) {
+        createWindow();
+        return;
+      }
+      if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
         mainWindow.restore();
         mainWindow.show();
       } else {
-        createWindow();
+        mainWindow.hide();
       }
     });
     tray.setToolTip('Outline');
