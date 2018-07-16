@@ -1,6 +1,6 @@
 /* * redir.h - Define the redirector's buffers and callbacks
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -57,9 +57,6 @@ typedef struct server {
     struct server_ctx *recv_ctx;
     struct server_ctx *send_ctx;
     struct remote *remote;
-
-    char *hostname;
-    size_t hostname_len;
 
     struct sockaddr_storage destaddr;
     ev_timer delayed_connect_watcher;

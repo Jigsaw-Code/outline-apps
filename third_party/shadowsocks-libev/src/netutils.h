@@ -1,7 +1,7 @@
 /*
  * netutils.h - Network utilities
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -23,7 +23,11 @@
 #ifndef _NETUTILS_H
 #define _NETUTILS_H
 
+#ifdef __MINGW32__
+#include "winsock.h"
+#else
 #include <sys/socket.h>
+#endif
 
 #ifdef HAVE_LINUX_TCP_H
 #include <linux/tcp.h>
