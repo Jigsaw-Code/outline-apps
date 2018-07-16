@@ -83,7 +83,8 @@ export function main(platform: OutlinePlatform) {
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
                 platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
-                environmentVars, platform.hasSystemVpnSupport(), platform.getUpdater());
+                environmentVars, platform.hasSystemVpnSupport(), platform.getUpdater(),
+                platform.quitApplication);
           },
           (e) => {
             onUnexpectedError(e);

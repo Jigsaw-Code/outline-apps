@@ -39,4 +39,6 @@ export interface OutlinePlatform {
   hasSystemVpnSupport(): boolean;
 
   getUpdater(): Updater;
+
+  quitApplication(): void;
 }
