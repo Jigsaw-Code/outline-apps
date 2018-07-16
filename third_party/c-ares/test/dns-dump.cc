@@ -1,6 +1,10 @@
 #include <sys/types.h>
 #include <fcntl.h>
-#include <unistd.h>
+#ifdef _MSC_VER
+#  include <io.h>
+#else
+#  include <unistd.h>
+#endif
 
 #include <iostream>
 #include <vector>
@@ -31,5 +35,6 @@ int main(int argc, char* argv[]) {
   for (int ii = 1; ii < argc; ++ii) {
     ares::ShowFile(argv[ii]);
   }
+  return 0;
 }
 

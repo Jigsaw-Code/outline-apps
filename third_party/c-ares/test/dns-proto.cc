@@ -248,7 +248,7 @@ std::string QuestionToString(const std::vector<byte>& packet,
   *len -= enclen;
   *data += enclen;
   ss << "'" << name << "' ";
-  free(name);
+  ares_free_string(name);
   if (*len < NS_QFIXEDSZ) {
     ss << "(too short, len left " << *len << ")";
     return ss.str();
@@ -284,7 +284,7 @@ std::string RRToString(const std::vector<byte>& packet,
   *len -= enclen;
   *data += enclen;
   ss << "'" << name << "' ";
-  free(name);
+  ares_free_string(name);
   name = nullptr;
 
   if (*len < NS_RRFIXEDSZ) {
@@ -336,7 +336,7 @@ std::string RRToString(const std::vector<byte>& packet,
         break;
       }
       ss << " '" << name << "'";
-      free(name);
+      ares_free_string(name);
       break;
     }
     case ns_t_mx:
@@ -347,7 +347,7 @@ std::string RRToString(const std::vector<byte>& packet,
           break;
         }
         ss << " " << DNS__16BIT(*data) << " '" << name << "'";
-        free(name);
+        ares_free_string(name);
       } else {
         ss << "(RR too short)";
       }
@@ -365,7 +365,7 @@ std::string RRToString(const std::vector<byte>& packet,
           break;
         }
         ss << prio << " " << weight << " " << port << " '" << name << "'";
-        free(name);
+        ares_free_string(name);
       } else {
         ss << "(RR too short)";
       }
@@ -379,7 +379,7 @@ std::string RRToString(const std::vector<byte>& packet,
         break;
       }
       ss << " '" << name << "'";
-      free(name);
+      ares_free_string(name);
       p += enclen;
       rc = ares_expand_name(p, packet.data(), packet.size(), &name, &enclen);
       if (rc != ARES_SUCCESS) {
@@ -387,7 +387,7 @@ std::string RRToString(const std::vector<byte>& packet,
         break;
       }
       ss << " '" << name << "'";
-      free(name);
+      ares_free_string(name);
       p += enclen;
       if ((p + 20) <= (*data + rdatalen)) {
         unsigned long serial = DNS__32BIT(p);
@@ -430,7 +430,7 @@ std::string RRToString(const std::vector<byte>& packet,
           break;
         }
         ss << " '" << name << "'";
-        free(name);
+        ares_free_string(name);
       } else {
         ss << "(RR too short)";
       }

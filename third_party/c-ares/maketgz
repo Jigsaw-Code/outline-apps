@@ -40,6 +40,9 @@ if(!-f "configure") {
 print "adding $version in the configure.ac file\n";
 `sed -e 's/AC_INIT.*/AC_INIT([c-ares], [$version],/' < configure.ac > configure.ac.dist`;
 
+print "adding $version in the CMakeLists.txt file\n";
+`sed -e 's/SET.*CARES_VERSION.*/SET (CARES_VERSION "$version")/' < CMakeLists.txt > CMakeLists.txt.dist && rm -f CMakeLists.txt && mv CMakeLists.txt.dist CMakeLists.txt`;
+
 # now make a new configure script with this
 print "makes a new configure script\n";
 `autoconf configure.ac.dist >configure`;
@@ -47,17 +50,6 @@ print "makes a new configure script\n";
 # now run this new configure to get a fine makefile
 print "running configure\n";
 `./configure`;
-
-# generate HTML versions of man pages
-# Deactivated for now. It seems that man pages need some adjustments
-# relative to paragraph and/or line breaks for proper html formatting.
-# EXTRA_DIST will need $(HTMLPAGES) when this is fully activated.
-# print "running make html\n";
-# `make -s html`;
-
-# generate PDF versions of man pages
-print "running make pdf\n";
-`make -s pdf`;
 
 print "produce CHANGES\n";
 `git log --pretty=fuller --no-color --date=short --decorate=full -1000 | ./git2changes.pl > CHANGES.dist`;

@@ -1,7 +1,7 @@
 /*
  * local.h - Define the client's buffers and callbacks
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -29,6 +29,10 @@
 #include <libev/ev.h>
 #else
 #include <ev.h>
+#endif
+
+#ifdef __MINGW32__
+#include "winsock.h"
 #endif
 
 #include "crypto.h"
@@ -85,6 +89,10 @@ typedef struct remote {
     int direct;
     int addr_len;
     uint32_t counter;
+#ifdef TCP_FASTOPEN_WINSOCK
+    OVERLAPPED olap;
+    int connect_ex_done;
+#endif
 
     buffer_t *buf;
 

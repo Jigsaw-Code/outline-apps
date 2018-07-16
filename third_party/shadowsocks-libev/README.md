@@ -9,7 +9,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.1.1 | [Changelog](debian/changelog)
+Current version: 3.2.0 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
@@ -55,6 +55,8 @@ You have to install libsodium at least 1.0.8, but recommended 1.0.12 or later ve
 - [FreeBSD](#freebsd)
 - [OpenWRT](#openwrt)
 - [OS X](#os-x)
+- [Windows (MinGW)](#windows-mingw)
+- [Docker](#docker)
 
 * * *
 
@@ -335,13 +337,43 @@ Install shadowsocks-libev:
 brew install shadowsocks-libev
 ```
 
+### Windows (MinGW)
+To build Windows native binaries, the recommended method is to use Docker:
+
+* On Windows: double-click `make.bat` in `docker\mingw`
+* On Unix-like system:
+
+        cd shadowsocks-libev/docker/mingw
+        make
+
+A tarball with 32-bit and 64-bit binaries will be generated in the same directory.
+
+You could also manually use MinGW-w64 compilers to build in Unix-like shell (MSYS2/Cygwin), or cross-compile on Unix-like systems (Linux/MacOS). Please refer to build scripts in `docker/mingw`.
+
+Currently you need to use a patched libev library for MinGW:
+
+* https://github.com/shadowsocks/libev/archive/mingw.zip
+
+Notice that TCP Fast Open (TFO) is only available on **Windows 10**, **1607** or later version (precisely, build >= 14393). If you are using **1709** (build 16299) or later version, you also need to run the following command in PowerShell/Command Prompt **as Administrator** and **reboot** to use TFO properly:
+
+        netsh int tcp set global fastopenfallback=disabled
+
+### Docker
+
+As you expect, simply pull the image and run.
+```
+docker pull shadowsocks/shadowsocks-libev
+docker run -e PASSWORD=<password> -p<server-port>:8388 -p<server-port>:8388/udp -d shadowsocks/shadowsocks-libev
+```
+
+More information about the image can be found [here](docker/alpine/README.md).
+
 ## Usage
 
 For a detailed and complete list of all supported arguments,
 you may refer to the man pages of the applications, respectively.
 
-```
-    ss-[local|redir|server|tunnel|manager]
+    ss-[local|redir|server|tunnel|manager]
 
        -s <server_host>           host name or ip address of your remote server
 
@@ -412,51 +444,44 @@ you may refer to the man pages of the applications, respectively.
 
        [-v]                       verbose mode
 
-notes:
+## Transparent proxy
 
-    ss-redir provides a transparent proxy function and only works on the
-    Linux platform with iptables.
-
-```
-
-## Advanced usage
-
-The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently.
+The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently, which is handy if you use a OpenWRT-powered router.
 
     # Create new chain
-    root@Wrt:~# iptables -t nat -N SHADOWSOCKS
-    root@Wrt:~# iptables -t mangle -N SHADOWSOCKS
+    iptables -t nat -N SHADOWSOCKS
+    iptables -t mangle -N SHADOWSOCKS
 
     # Ignore your shadowsocks server's addresses
     # It's very IMPORTANT, just be careful.
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 123.123.123.123 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 123.123.123.123 -j RETURN
 
     # Ignore LANs and any other addresses you'd like to bypass the proxy
     # See Wikipedia and RFC5735 for full list of reserved networks.
     # See ashi009/bestroutetb for a highly optimized CHN route list.
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
+    iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
 
     # Anything else should be redirected to shadowsocks's local port
-    root@Wrt:~# iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports 12345
+    iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports 12345
 
     # Add any UDP rules
-    root@Wrt:~# ip route add local default dev lo table 100
-    root@Wrt:~# ip rule add fwmark 1 lookup 100
-    root@Wrt:~# iptables -t mangle -A SHADOWSOCKS -p udp --dport 53 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
+    ip route add local default dev lo table 100
+    ip rule add fwmark 1 lookup 100
+    iptables -t mangle -A SHADOWSOCKS -p udp --dport 53 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
 
     # Apply the rules
-    root@Wrt:~# iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
-    root@Wrt:~# iptables -t mangle -A PREROUTING -j SHADOWSOCKS
+    iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+    iptables -t mangle -A PREROUTING -j SHADOWSOCKS
 
     # Start the shadowsocks-redir
-    root@Wrt:~# ss-redir -u -c /etc/config/shadowsocks.json -f /var/run/shadowsocks.pid
+    ss-redir -u -c /etc/config/shadowsocks.json -f /var/run/shadowsocks.pid
 
 ## Shadowsocks over KCP
 
@@ -491,7 +516,7 @@ setting up your server's firewall rules to limit connections from each user:
 
 ```
 Copyright: 2013-2015, Clow Windy <clowwindy42@gmail.com>
-           2013-2017, Max Lv <max.c.lv@gmail.com>
+           2013-2018, Max Lv <max.c.lv@gmail.com>
            2014, Linus Yang <linusyang@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
