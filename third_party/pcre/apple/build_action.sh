@@ -23,17 +23,17 @@ SRCDIR="pcre"
 ARCHS="x86_64 armv7 armv7s arm64"
 
 # Copy source from third_party/pcre
-rsync -a --exclude='apple*' .. $SRCDIR
+rsync -a --exclude='apple*' .. ${SRCDIR}
 
-pushd $SRCDIR > /dev/null
+pushd ${SRCDIR} > /dev/null
 ./autogen.sh
 
-for ARCH in $ARCHS
+for ARCH in ${ARCHS}
 do
   echo "Building $SRCDIR for $ARCH"
-  mkdir -p bin/$ARCH
+  mkdir -p bin/${ARCH}
 
-  case $ARCH in
+  case ${ARCH} in
     armv7 | armv7s | arm64 )
       export MINVERSION=9.0
       ;;
@@ -47,7 +47,7 @@ do
   esac
 
   export PREFIX="`pwd`/bin/$ARCH"
-  ../../../../apple/scripts/xconfig.sh $ARCH
+  ../../../../apple/scripts/xconfig.sh ${ARCH}
   make -j2 && make install
   make distclean > /dev/null
 done
@@ -56,15 +56,15 @@ popd > /dev/null
 mkdir -p lib include
 
 # Copy headers
-cp -R $SRCDIR/bin/x86_64/include/ include
+cp -R ${SRCDIR}/bin/x86_64/include/ include
 
 # Create FAT binary
 lipo -output lib/libpcre.a -create \
-  $SRCDIR/bin/x86_64/lib/libpcre.a \
-  $SRCDIR/bin/armv7/lib/libpcre.a \
-  $SRCDIR/bin/armv7s/lib/libpcre.a \
-  $SRCDIR/bin/arm64/lib/libpcre.a
+  ${SRCDIR}/bin/x86_64/lib/libpcre.a \
+  ${SRCDIR}/bin/armv7/lib/libpcre.a \
+  ${SRCDIR}/bin/armv7s/lib/libpcre.a \
+  ${SRCDIR}/bin/arm64/lib/libpcre.a
 
 # Clean up
-rm -rf $SRCDIR*
+rm -rf ${SRCDIR}*
 popd > /dev/null

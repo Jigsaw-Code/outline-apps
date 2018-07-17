@@ -21,15 +21,15 @@ set -eu
 
 readonly THIRD_PARTY_DIR=$(git rev-parse --show-toplevel)/third_party
 
-for i in $(find $THIRD_PARTY_DIR -name METADATA); do
-  PACKAGE_NAME=$(basename $(dirname $i))
-  HOMEPAGE=$(grep -C 2 HOMEPAGE $i | grep value | sed s/value:// | tr -d ' "')
+for i in $(find ${THIRD_PARTY_DIR} -name METADATA); do
+  PACKAGE_NAME=$(basename $(dirname ${i}))
+  HOMEPAGE=$(grep -C 2 HOMEPAGE ${i} | grep value | sed s/value:// | tr -d ' "')
 
   echo "The following software may be included in this product: $PACKAGE_NAME"
   echo "A copy of the source code may be downloaded from: $HOMEPAGE"
   echo "This software contains the following license and notice below:"
   echo
-  cat $(dirname $i)/LICENSE*
+  cat $(dirname ${i})/LICENSE*
   echo
   echo
 done

@@ -14,20 +14,14 @@
 
 import * as url from 'url';
 
-import {OperationTimedOut} from '../model/errors';
 import {EventQueue} from '../model/events';
-import {Server} from '../model/server';
 
 import {App} from './app';
-import {Clipboard} from './clipboard';
-import {EnvironmentVariables, onceEnvVars} from './environment';
-import {OutlineErrorReporter} from './error_reporter';
+import {onceEnvVars} from './environment';
 import {getLocalizedErrorMessage} from './i18n';
-import {OutlineServer} from './outline_server';
-import {PersistentServer, PersistentServerFactory, PersistentServerRepository} from './persistent_server';
+import {PersistentServerFactory, PersistentServerRepository} from './persistent_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {UrlInterceptor} from './url_interceptor';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;

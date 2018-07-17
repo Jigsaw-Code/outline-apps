@@ -23,7 +23,7 @@ function do_action() {
   local action=$1
   echo "[Running $action]"
   shift
-  $ROOT_DIR/${action}_action.sh "$@"
+  ${ROOT_DIR}/${action}_action.sh "$@"
   echo "[Done $action]"
 }
 export -f do_action

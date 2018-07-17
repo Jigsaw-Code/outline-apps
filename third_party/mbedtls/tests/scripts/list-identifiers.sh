@@ -11,7 +11,7 @@ HEADERS=$( ls include/mbedtls/*.h | egrep -v 'compat-1\.3\.h|bn_mul' )
 
 rm -f identifiers
 
-grep '^[^ /#{]' $HEADERS | \
+grep '^[^ /#{]' ${HEADERS} | \
     sed -e 's/^[^:]*://' | \
     egrep -v '^(extern "C"|(typedef )?(struct|enum)( {)?$|};?$)' \
     > _decls

@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, exec, execFile, execFileSync} from 'child_process';
+import {ChildProcess, execFile, execFileSync} from 'child_process';
 import * as http from 'http';
 import * as httpproxytosocks from 'http-proxy-to-socks/lib/proxy_server';
 import * as net from 'net';
 import * as path from 'path';
-import * as process from 'process';
 import * as socks from 'socks';
-import * as url from 'url';
-
 // TODO: These should probably be pulled up a level now that Electron code also uses them.
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';

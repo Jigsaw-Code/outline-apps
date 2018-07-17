@@ -36,9 +36,9 @@ done
 
 if [ "X" = "X$IGNORE" ];
 then
-  [ $VERBOSE ] && echo "Ignoring Makefiles"
+  [ ${VERBOSE} ] && echo "Ignoring Makefiles"
   git update-index --assume-unchanged Makefile library/Makefile programs/Makefile tests/Makefile
 else
-  [ $VERBOSE ] && echo "Tracking Makefiles"
+  [ ${VERBOSE} ] && echo "Tracking Makefiles"
   git update-index --no-assume-unchanged Makefile library/Makefile programs/Makefile tests/Makefile
 fi

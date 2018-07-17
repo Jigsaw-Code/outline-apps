@@ -23,15 +23,15 @@ SRCDIR="libev"
 ARCHS="x86_64 armv7 armv7s arm64"
 
 # Copy source from third_party/libev
-rsync -a --exclude='apple*' .. $SRCDIR
+rsync -a --exclude='apple*' .. ${SRCDIR}
 
-pushd $SRCDIR > /dev/null
+pushd ${SRCDIR} > /dev/null
 ./autogen.sh
 
-for ARCH in $ARCHS
+for ARCH in ${ARCHS}
 do
   echo "Building $SRCDIR for $ARCH"
-  mkdir -p bin/$ARCH
+  mkdir -p bin/${ARCH}
 
   # SDKs for iOS 10 and macOS 10.12. weakly link the function `clock_gettime`. This means that for
   # earlier OS versions that do not not support it, `clock_gettime` is declared at compile time.
@@ -50,7 +50,7 @@ do
   #    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Info.plist
   #  - Change `MinimumSDKVersion` to 10.11 in
   #    /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/Info.plist
-  case $ARCH in
+  case ${ARCH} in
     armv7 | armv7s | arm64 )
       export MINVERSION=9.0
       export SDKVERSION=9.0
@@ -66,7 +66,7 @@ do
   esac
 
   export PREFIX="`pwd`/bin/$ARCH"
-  ../../../../apple/scripts/xconfig.sh $ARCH
+  ../../../../apple/scripts/xconfig.sh ${ARCH}
   make -j2 && make install
   make clean
 done
@@ -75,15 +75,15 @@ popd > /dev/null
 mkdir -p lib include
 
 # Copy headers
-cp -R $SRCDIR/bin/x86_64/include/ include
+cp -R ${SRCDIR}/bin/x86_64/include/ include
 
 # Create FAT binary
 lipo -output lib/libev.a -create \
-  $SRCDIR/bin/x86_64/lib/libev.a \
-  $SRCDIR/bin/armv7/lib/libev.a \
-  $SRCDIR/bin/armv7s/lib/libev.a \
-  $SRCDIR/bin/arm64/lib/libev.a
+  ${SRCDIR}/bin/x86_64/lib/libev.a \
+  ${SRCDIR}/bin/armv7/lib/libev.a \
+  ${SRCDIR}/bin/armv7s/lib/libev.a \
+  ${SRCDIR}/bin/arm64/lib/libev.a
 
 # Clean up
-rm -rf $SRCDIR*
+rm -rf ${SRCDIR}*
 popd > /dev/null

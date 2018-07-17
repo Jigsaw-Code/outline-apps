@@ -14,7 +14,7 @@ rsync -avP libev/. . --exclude CVS
 
 rm -f configure.ac
 
-cp $LE/evdns.h .
+cp ${LE}/evdns.h .
 
 perl -i -pe 's%^/.libevent-include./%#include "event_compat.h"%' event.h
 
@@ -35,34 +35,34 @@ perl -ne '
    next if /#include "log.h"/;
 
    print;
-' <$LE/evdns.c >evdns.c
+' <${LE}/evdns.c >evdns.c
 
-cp $LE/autogen.sh .
-cp $LE/epoll_sub.c .
-cp $LE/evbuffer.c .
-cp $LE/buffer.c .
-cp $LE/evhttp.h .
-cp $LE/evutil.h .
-cp $LE/evutil.c .
-cp $LE/event-config.h .
-cp $LE/event-internal.h .
-cp $LE/evrpc.h .
-cp $LE/evrpc.c .
-cp $LE/evrpc-internal.h .
-cp $LE/http.c .
-cp $LE/event_tagging.c .
-cp $LE/http-internal.h .
-cp $LE/strlcpy-internal.h .
-cp $LE/log.c .
-cp $LE/log.h .
-cp $LE/strlcpy.c .
-rsync -a $LE/WIN32* $LE/sample $LE/test $LE/compat . --del
+cp ${LE}/autogen.sh .
+cp ${LE}/epoll_sub.c .
+cp ${LE}/evbuffer.c .
+cp ${LE}/buffer.c .
+cp ${LE}/evhttp.h .
+cp ${LE}/evutil.h .
+cp ${LE}/evutil.c .
+cp ${LE}/event-config.h .
+cp ${LE}/event-internal.h .
+cp ${LE}/evrpc.h .
+cp ${LE}/evrpc.c .
+cp ${LE}/evrpc-internal.h .
+cp ${LE}/http.c .
+cp ${LE}/event_tagging.c .
+cp ${LE}/http-internal.h .
+cp ${LE}/strlcpy-internal.h .
+cp ${LE}/log.c .
+cp ${LE}/log.h .
+cp ${LE}/strlcpy.c .
+rsync -a ${LE}/WIN32* ${LE}/sample ${LE}/test ${LE}/compat . --del
 #rename 's/libevent/libev/' WIN32-Prj/lib*
-cp $LE/aclocal.m4 .
+cp ${LE}/aclocal.m4 .
 #cp $LE/acconfig.h .
-cp $LE/config.h.in .
-cp $LE/event_rpcgen.py .
-cp $LE/*.3 .
+cp ${LE}/config.h.in .
+cp ${LE}/event_rpcgen.py .
+cp ${LE}/*.3 .
 
 #perl -i -pe 's/libevent/libev/g' sample/Makefile.am
 #perl -i -pe 's/libevent/libev/g' test/Makefile.am
@@ -101,7 +101,7 @@ perl -ne '
    s/^(SYS_LIBS\s*=)/$1 -lm /;
    #s/libevent/libev/g;
    print;
-' <$LE/Makefile.am >Makefile.am
+' <${LE}/Makefile.am >Makefile.am
 
 perl -ne '
    #s/-Wall/-Wall -Wno-comment -Wunused-function -Wno-unused-value/;
@@ -119,7 +119,7 @@ perl -ne '
    s/AC_LIBOBJ\(rtsig\)/: ;/g;
    print "m4_include([libev.m4])\n" if /^AC_OUTPUT/;
    print;
-' <$LE/configure.in >configure.in
+' <${LE}/configure.in >configure.in
 
 aclocal-1.7
 automake-1.7 --add-missing

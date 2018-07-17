@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -x $TILERA_ROOT/bin/tile-monitor ]; then
+if [ ! -x ${TILERA_ROOT}/bin/tile-monitor ]; then
     # If no tile-monitor is installed, then there is nothing to test.
     echo "No tile-monitor installed in $TILERA_ROOT/bin"
     exit 1
@@ -16,7 +16,7 @@ export TILERA_COMMON_ARGS=" \
     --mount-tile /lib \
     --upload . $TEST_DIR/build \
     --upload ../tests $TEST_DIR/tests \
-    --env LD_LIBRARY_PATH="$TEST_DIR/build/src:/usr/local/lib:/usr/lib:/lib" \
+    --env LD_LIBRARY_PATH="${TEST_DIR}/build/src:/usr/local/lib:/usr/lib:/lib" \
     --env PATH="/usr/local/bin:$PATH" \
     --cd $TEST_DIR/build \
     --run -+- ctest -+- --quit"
@@ -25,7 +25,7 @@ export TILERA_COMMON_ARGS=" \
 # connection and has a hostname of 'tilera'.  Trust us - you don't want
 # to run tests over the serial connection.
 export TILERA_DEV_ARGS="$TILERA_COMMON_ARGS --net tilera --resume"
-$TILERA_ROOT/bin/tile-monitor $TILERA_DEV_ARGS
+${TILERA_ROOT}/bin/tile-monitor ${TILERA_DEV_ARGS}
 
 ## Uncomment the following four lines and comment the previous two if
 ## you want to run the tests on the Tilera simulator.

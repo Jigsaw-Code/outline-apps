@@ -27,20 +27,20 @@ exit 1
 
 PLATFORM=ios
 while getopts :p:h? opt; do
-  case $opt in
+  case ${opt} in
     p) PLATFORM=$OPTARG ;;
     *) usage ;;
   esac
 done
 shift $((OPTIND-1))
 
-PLATFORM_DIR=platforms/$PLATFORM/
-if [ ! -d $PLATFORM_DIR ]; then
+PLATFORM_DIR=platforms/${PLATFORM}/
+if [ ! -d ${PLATFORM_DIR} ]; then
   # Generate the Xcode project through Cordova.
-  yarn gulp build --platform=$PLATFORM --release
+  yarn gulp build --platform=${PLATFORM} --release
 fi
 
 # Install the fastlane scripts and metadata.
-cp -R apple/fastlane/* $PLATFORM_DIR
-pushd $PLATFORM_DIR
+cp -R apple/fastlane/* ${PLATFORM_DIR}
+pushd ${PLATFORM_DIR}
 bundle install

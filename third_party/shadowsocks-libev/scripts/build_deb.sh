@@ -64,18 +64,18 @@ apt_init() {
 		[ -n "$DEPS_EXTRA" -a "$DEPS_EXTRA" = "sloppy" ] &&
 			sudo sh -c "printf \"\\ndeb $REPO ${OSVER}-backports-sloppy main\" >> /etc/apt/sources.list.d/${OSVER}-backports.list"
 		sudo apt-get update
-		sudo apt-get install --no-install-recommends -y -t $BPO $DEPS_BPO
+		sudo apt-get install --no-install-recommends -y -t ${BPO} ${DEPS_BPO}
 		[ -n "$DEPS_EXTRA" -a "$DEPS_EXTRA" = "sloppy" ] &&
-			sudo apt-get install --no-install-recommends -y -t ${BPO}-sloppy $DEPS_BPO
+			sudo apt-get install --no-install-recommends -y -t ${BPO}-sloppy ${DEPS_BPO}
 	else
 		sudo apt-get update
 	fi
-	sudo apt-get install -y $DEPS
+	sudo apt-get install -y ${DEPS}
 }
 
 # Cleanup
 apt_clean() {
-	sudo apt-get purge -y $DEPS $DEPS_BPO debhelper \
+	sudo apt-get purge -y ${DEPS} ${DEPS_BPO} debhelper \
 		libbloom-dev libcork-dev libcorkipset-dev libmbedtls-dev libsodium-dev
 	sudo apt-get purge -y libcork-build-deps libcorkipset-build-deps \
 		libsodium-build-deps mbedtls-build-deps
@@ -83,7 +83,7 @@ apt_clean() {
 	sudo apt-get purge -y simple-obfs-build-deps
 	sudo apt-get purge -y shadowsocks-libev-build-deps
 
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	sudo apt-get purge -y golang-github-klauspost-reedsolomon-build-deps \
 		golang-github-xtaci-kcp-build-deps golang-github-xtaci-smux-build-deps \
 		kcptun-build-deps
@@ -105,9 +105,9 @@ gbp_build() {
 	REPO=$1
 	BRANCH=$2
 	PROJECT_NAME=$(basename $1|sed s/\.git$//)
-	gbp clone --pristine-tar $REPO
-	cd $PROJECT_NAME
-	[ -n "$BRANCH" ] && git checkout $BRANCH
+	gbp clone --pristine-tar ${REPO}
+	cd ${PROJECT_NAME}
+	[ -n "$BRANCH" ] && git checkout ${BRANCH}
 	[ -n "$BRANCH" -a "$BRANCH" = "trusty" ] && # try to rebase the trusty patch
 		if ! git rebase master; then git rebase --abort; git rebase debian; fi
 	[ -n "$DEPS_BPO" ] && BPO_REPO="-t ${OSVER}-backports"
@@ -123,9 +123,9 @@ git_build() {
 	REPO=$1
 	BRANCH=$2
 	PROJECT_NAME=$(basename $1|sed s/\.git$//)
-	git clone $REPO
-	cd $PROJECT_NAME
-	[ -n "$BRANCH" ] && git checkout $BRANCH
+	git clone ${REPO}
+	cd ${PROJECT_NAME}
+	[ -n "$BRANCH" ] && git checkout ${BRANCH}
 	mk-build-deps --root-cmd sudo --install --tool "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
 	rm ${PROJECT_NAME}-build-deps_*.deb
 	gbp buildpackage -us -uc --git-ignore-branch
@@ -137,8 +137,8 @@ git_build() {
 dsc_build() {
 	DSC=$1
 	DSC_FILE=$(basename $1)
-	dget -ux $DSC
-	PROJECT_NAME=$(grep ^Source: $DSC_FILE|cut -d" " -f2)
+	dget -ux ${DSC}
+	PROJECT_NAME=$(grep ^Source: ${DSC_FILE}|cut -d" " -f2)
 	echo cd ${PROJECT_NAME}-*
 	cd ${PROJECT_NAME}-*
 	mk-build-deps --root-cmd sudo --install --tool "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
@@ -149,10 +149,10 @@ dsc_build() {
 
 # Build and install libcork deb
 build_install_libcork() {
-if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	if [ $BUILD_LIB -eq 1 ]; then
-		gbp_build https://github.com/rogers0/libcork $BRANCH
+	if [ ${BUILD_LIB} -eq 1 ]; then
+		gbp_build https://github.com/rogers0/libcork ${BRANCH}
 	else
 		ls libcork-dev_*.deb libcork16_*.deb 2>&1 > /dev/null ||
 			help_lib "libcork-dev libcork16"
@@ -163,10 +163,10 @@ fi
 
 # Build and install libcorkipset deb
 build_install_libcorkipset() {
-if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	if [ $BUILD_LIB -eq 1 ]; then
-		gbp_build https://github.com/rogers0/libcorkipset $BRANCH
+	if [ ${BUILD_LIB} -eq 1 ]; then
+		gbp_build https://github.com/rogers0/libcorkipset ${BRANCH}
 	else
 		ls libcorkipset-dev_*.deb libcorkipset1_*.deb 2>&1 > /dev/null ||
 			help_lib "libcorkipset-dev libcorkipset1"
@@ -177,10 +177,10 @@ fi
 
 # Build libmbedtls deb
 build_install_libmbedtls() {
-if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	if [ $BUILD_LIB -eq 1 ]; then
-		gbp_build https://salsa.debian.org/debian/mbedtls.git $BRANCH
+	if [ ${BUILD_LIB} -eq 1 ]; then
+		gbp_build https://salsa.debian.org/debian/mbedtls.git ${BRANCH}
 	else
 		ls libmbed*.deb 2>&1 > /dev/null ||
 			help_lib libmbedtls
@@ -191,21 +191,21 @@ fi
 
 # Build libsodium deb
 build_install_libsodium() {
-if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
-	if [ $BUILD_LIB -eq 1 ]; then
+if [ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ]; then
+	if [ ${BUILD_LIB} -eq 1 ]; then
 		git clone https://github.com/gcsideal/debian-libsodium.git libsodium
 		cd libsodium; LIBSODIUM=$(dpkg-parsechangelog --show-field Version); cd -
 		dget -ud https://deb.debian.org/debian/pool/main/libs/libsodium/libsodium_${LIBSODIUM}.dsc
 		DHVER=$(dpkg -l debhelper|grep debhelper|awk '{print $3}'|head -n1)
 		cd libsodium
-		if dpkg --compare-versions $DHVER lt 10; then
+		if dpkg --compare-versions ${DHVER} lt 10; then
 			sed -i 's/debhelper ( >= 11)/debhelper (>= 9), dh-autoreconf/' debian/control;
 			sed -i 's/debhelper ( >= 10)/debhelper (>= 9), dh-autoreconf/' debian/control;
 			echo 9 > debian/compat;
 			dch -D unstable -l~bpo~ "Rebuild as backports"
 			git add -u;
 			git commit -m "Patch to work with ubuntu"
-		elif dpkg --compare-versions $DHVER lt 11; then
+		elif dpkg --compare-versions ${DHVER} lt 11; then
 			sed -i 's/debhelper ( >= 11)/debhelper (>= 10)/' debian/control;
 			echo 10 > debian/compat;
 			dch -D unstable -l~bpo~ "Rebuild as backports"
@@ -226,10 +226,10 @@ fi
 
 # Build libbloom deb
 build_install_libbloom() {
-if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	if [ $BUILD_LIB -eq 1 ]; then
-		gbp_build https://anonscm.debian.org/git/collab-maint/libbloom.git $BRANCH
+	if [ ${BUILD_LIB} -eq 1 ]; then
+		gbp_build https://anonscm.debian.org/git/collab-maint/libbloom.git ${BRANCH}
 	else
 		ls libbloom-dev_*.deb libbloom1_*.deb 2>&1 > /dev/null ||
 			help_lib "libbloom-dev libbloom1"
@@ -240,11 +240,11 @@ fi
 
 # Add patch to work on system with debhelper 9 only
 patch_sslibev_dh9() {
-if [ $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
 	gbp clone --pristine-tar https://salsa.debian.org/bridges-team/shadowsocks-libev.git
 	cd shadowsocks-libev
-	[ -n "$BRANCH" ] && git checkout $BRANCH
+	[ -n "$BRANCH" ] && git checkout ${BRANCH}
 	sed -i 's/dh $@/dh $@ --with systemd,autoreconf/' debian/rules
 	sed -i 's/debhelper (>= 10)/debhelper (>= 9), dh-systemd, dh-autoreconf/' debian/control
 	echo 9 > debian/compat
@@ -257,9 +257,9 @@ fi
 
 # Build and install shadowsocks-libev deb
 build_install_sslibev() {
-if [ $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/bridges-team/shadowsocks-libev.git $BRANCH
+	gbp_build https://salsa.debian.org/bridges-team/shadowsocks-libev.git ${BRANCH}
 	sudo dpkg -i shadowsocks-libev_*.deb
 	sudo apt-get install -fy
 fi
@@ -267,9 +267,9 @@ fi
 
 # Build and install simple-obfs
 build_install_simpleobfs() {
-if [ $BUILD_BIN -eq 1 ]; then
+if [ ${BUILD_BIN} -eq 1 ]; then
 	BRANCH=$1
-	git_build https://anonscm.debian.org/git/collab-maint/simple-obfs.git $BRANCH
+	git_build https://anonscm.debian.org/git/collab-maint/simple-obfs.git ${BRANCH}
 	sudo dpkg -i simple-obfs_*.deb
 	sudo apt-get install -fy
 fi
@@ -277,9 +277,9 @@ fi
 
 # Build and install dh-golang deb
 build_install_dhgolang() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/dh-golang.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/dh-golang.git ${BRANCH}
 	sudo dpkg -i dh-golang_*.deb
 	sudo apt-get install -fy
 fi
@@ -287,9 +287,9 @@ fi
 
 # Build and install golang-github-klauspost-reedsolomon deb
 build_install_reedsolomondev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-klauspost-reedsolomon.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-klauspost-reedsolomon.git ${BRANCH}
 	sudo dpkg -i golang-github-klauspost-reedsolomon-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -297,9 +297,9 @@ fi
 
 # Build and install golang-github-pkg-errors deb
 build_install_errorsdev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-pkg-errors.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-pkg-errors.git ${BRANCH}
 	sudo dpkg -i golang-github-pkg-errors-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -307,11 +307,11 @@ fi
 
 # Add patch to work on system with xenial
 patch_urfaveclidev_xenial() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
 	gbp clone --pristine-tar https://salsa.debian.org/go-team/packages/golang-github-urfave-cli.git
 	cd golang-github-urfave-cli
-	[ -n "$BRANCH" ] && git checkout $BRANCH
+	[ -n "$BRANCH" ] && git checkout ${BRANCH}
 	sed -i 's/golang-github-burntsushi-toml-dev/golang-toml-dev/; s/golang-gopkg-yaml.v2-dev/golang-yaml.v2-dev/' debian/control
 	dch -D unstable -l~bpo~ "Rebuild as backports"
 	git add -u
@@ -322,9 +322,9 @@ fi
 
 # Build and install golang-github-urfave-cli-dev deb
 build_install_urfaveclidev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-urfave-cli.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-urfave-cli.git ${BRANCH}
 	sudo dpkg -i build-area/golang-github-urfave-cli-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -332,9 +332,9 @@ fi
 
 # Build and install golang-github-golang-snappy deb
 build_install_snappydev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-golang-snappy.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-golang-snappy.git ${BRANCH}
 	sudo dpkg -i golang-github-golang-snappy-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -342,9 +342,9 @@ fi
 
 # Build and install golang-github-xtaci-kcp deb
 build_install_kcpdev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-xtaci-kcp.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-xtaci-kcp.git ${BRANCH}
 	sudo dpkg -i golang-github-xtaci-kcp-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -352,9 +352,9 @@ fi
 
 # Build and install golang-github-xtaci-smux deb
 build_install_smuxdev() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/golang-github-xtaci-smux.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/golang-github-xtaci-smux.git ${BRANCH}
 	sudo dpkg -i golang-github-xtaci-smux-dev_*.deb
 	sudo apt-get install -fy
 fi
@@ -362,9 +362,9 @@ fi
 
 # Build and install kcptun deb
 build_install_kcptun() {
-if [ $BUILD_KCP -eq 1 ]; then
+if [ ${BUILD_KCP} -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://salsa.debian.org/go-team/packages/kcptun.git $BRANCH
+	gbp_build https://salsa.debian.org/go-team/packages/kcptun.git ${BRANCH}
 	sudo dpkg -i kcptun_*.deb
 	sudo apt-get install -fy
 fi
@@ -415,11 +415,11 @@ xenial)
 	BPO=debhelper
 	;;
 esac
-apt_init "git-buildpackage pristine-tar equivs" "$BPO" $BPOEXTRA
+apt_init "git-buildpackage pristine-tar equivs" "$BPO" ${BPOEXTRA}
 
-[ $BUILD_KCP -eq 1 ] && case "$OSVER" in
+[ ${BUILD_KCP} -eq 1 ] && case "$OSVER" in
 wheezy|precise|trusty)
-	echo Sorry, your system $OSID/$OSVER is not supported.
+	echo Sorry, your system ${OSID}/${OSVER} is not supported.
 	;;
 jessie)
 	build_install_urfaveclidev
@@ -447,9 +447,9 @@ xenial)
 	;;
 esac
 
-[ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ] && case "$OSVER" in
+[ ${BUILD_LIB} -eq 1 -o ${BUILD_BIN} -eq 1 ] && case "$OSVER" in
 wheezy|precise)
-	echo Sorry, your system $OSID/$OSVER is not supported.
+	echo Sorry, your system ${OSID}/${OSVER} is not supported.
 	;;
 jessie|stretch|buster|testing|unstable|sid)
 	build_install_sslibev
@@ -484,7 +484,7 @@ trusty)
 	build_install_simpleobfs trusty
 	;;
 *)
-	echo Your system $OSID/$OSVER is not supported yet.
+	echo Your system ${OSID}/${OSVER} is not supported yet.
 	echo Please report issue:
 	echo "    https://github.com/shadowsocks/shadowsocks-libev/issues/new"
 	;;

@@ -35,7 +35,7 @@ exit 1
 }
 
 while getopts h? opt; do
-  case $opt in
+  case ${opt} in
     *) usage ;;
   esac
 done
@@ -50,9 +50,9 @@ if (( $# > 0 )); then
   readonly GIT_ROOT=$(git rev-parse --show-toplevel)
   # Rather than a working directory of something like "/worker", mirror
   # the path on the host so that symlink tricks work as expected.
-  docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" $IMAGE_NAME "$@"
+  docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" ${IMAGE_NAME} "$@"
   # GNU stat uses -c for format, which BSD stat does not accept; it uses -f instead
   stat -c 2>&1 | grep -q illegal && STATFLAG="f" || STATFLAG="c"
   # TODO: Don't spin up a second container just to chown.
-  docker run --rm -ti -v "$GIT_ROOT":/worker -w /worker $IMAGE_NAME chown -R $(stat -$STATFLAG "%u:%g" .git) /worker
+  docker run --rm -ti -v "$GIT_ROOT":/worker -w /worker ${IMAGE_NAME} chown -R $(stat -${STATFLAG} "%u:%g" .git) /worker
 fi

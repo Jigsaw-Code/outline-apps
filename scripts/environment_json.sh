@@ -29,7 +29,7 @@ function usage () {
 }
 
 while getopts rp:h? opt; do
-  case $opt in
+  case ${opt} in
     r) TYPE=release ;;
     p) PLATFORM=$OPTARG ;;
     h) usage ;;
@@ -71,7 +71,7 @@ function pull_from_osx_plist() {
   pull_from_plist "apple/xcode/osx/Outline/Outline-Info.plist" $1
 }
 
-case $PLATFORM in
+case ${PLATFORM} in
   android | browser)
     APP_VERSION=$(pull_from_config_xml 'result.widget.$["version"]')
     APP_BUILD_NUMBER=$(pull_from_config_xml 'result.widget.$["android-versionCode"]')
@@ -93,9 +93,9 @@ esac
 
 cat << EOM
 {
-  "APP_VERSION": "$APP_VERSION",
-  "APP_BUILD_NUMBER": "$APP_BUILD_NUMBER",
-  "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].$TYPE[0].$.dsn)",
-  "SENTRY_NATIVE_DSN": "$(pull_from_config_xml result.widget.sentry[0][\"$TYPE-native\"][0].$.dsn)"
+  "APP_VERSION": "${APP_VERSION}",
+  "APP_BUILD_NUMBER": "${APP_BUILD_NUMBER}",
+  "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].${TYPE}[0].$.dsn)",
+  "SENTRY_NATIVE_DSN": "$(pull_from_config_xml result.widget.sentry[0][\"${TYPE}-native\"][0].$.dsn)"
 }
 EOM

@@ -16,30 +16,30 @@
 
 echo "Building PacketProcessor frameworks..."
 
-POTATSO_DIR=$ROOT_DIR/third_party/Potatso
-BUILD_DIR=$POTATSO_DIR/build
-INSTALL_DIR=$POTATSO_DIR/frameworks
+POTATSO_DIR=${ROOT_DIR}/third_party/Potatso
+BUILD_DIR=${POTATSO_DIR}/build
+INSTALL_DIR=${POTATSO_DIR}/frameworks
 
-rm -rf $INSTALL_DIR
-mkdir -p  $BUILD_DIR $INSTALL_DIR/ios $INSTALL_DIR/macos
+rm -rf ${INSTALL_DIR}
+mkdir -p  ${BUILD_DIR} ${INSTALL_DIR}/ios ${INSTALL_DIR}/macos
 
-pushd $POTATSO_DIR > /dev/null
+pushd ${POTATSO_DIR} > /dev/null
 
 # Install dependencies
 pod install
 
 COMMON_XCODE_ARGS="-workspace ShadowPath.xcworkspace -configuration Release only_active_arch=no -derivedDataPath $BUILD_DIR"
 # Build iOS framework
-xcodebuild $COMMON_XCODE_ARGS -scheme PacketProcessor_iOS -destination "generic/platform=iOS" archive
+xcodebuild ${COMMON_XCODE_ARGS} -scheme PacketProcessor_iOS -destination "generic/platform=iOS" archive
 # Build macOS framework
-xcodebuild $COMMON_XCODE_ARGS -scheme PacketProcessor_macOS -destination "platform=macOS,arch=x86_64" archive
+xcodebuild ${COMMON_XCODE_ARGS} -scheme PacketProcessor_macOS -destination "platform=macOS,arch=x86_64" archive
 
 # Install
-cp -RL $BUILD_DIR/Build/Intermediates.noindex/ArchiveIntermediates/PacketProcessor_iOS/BuildProductsPath/Release-iphoneos/PacketProcessor_iOS.framework \
-       $INSTALL_DIR/ios/
-cp -RL $BUILD_DIR/Build/Intermediates.noindex/ArchiveIntermediates/PacketProcessor_macOS/BuildProductsPath/Release/PacketProcessor_macOS.framework \
-       $INSTALL_DIR/macos/
+cp -RL ${BUILD_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/PacketProcessor_iOS/BuildProductsPath/Release-iphoneos/PacketProcessor_iOS.framework \
+       ${INSTALL_DIR}/ios/
+cp -RL ${BUILD_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/PacketProcessor_macOS/BuildProductsPath/Release/PacketProcessor_macOS.framework \
+       ${INSTALL_DIR}/macos/
 
 # Clean up
-rm -rf $BUILD_DIR
+rm -rf ${BUILD_DIR}
 echo "Installed PacketProcessor_[macOS|iOS].framework to $INSTALL_DIR."

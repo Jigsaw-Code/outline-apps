@@ -32,13 +32,13 @@ print_version()
     fi
 
     BIN=`which "$BIN"`
-    VERSION_STR=`$BIN $ARGS 2>&1`
+    VERSION_STR=`${BIN} ${ARGS} 2>&1`
 
     # Apply all filters
     while [ $# -gt 0 ]; do
         FILTER="$1"
         shift
-        VERSION_STR=`echo "$VERSION_STR" | $FILTER`
+        VERSION_STR=`echo "$VERSION_STR" | ${FILTER}`
     done
 
     echo "* ${BIN##*/}: $BIN: $VERSION_STR"

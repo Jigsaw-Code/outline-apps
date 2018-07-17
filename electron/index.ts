@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {SentryClient} from '@sentry/electron';
-import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, Tray, shell} from 'electron';
+import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell, Tray} from 'electron';
 import {PromiseIpc} from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';

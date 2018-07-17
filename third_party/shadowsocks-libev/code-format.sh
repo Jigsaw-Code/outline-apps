@@ -6,7 +6,7 @@ source="$root"/src
 function format() {
   filelist=$(ls "$1")
   pushd "$1"
-  for file in $filelist; do
+  for file in ${filelist}; do
     if test -d "$file"; then
       echo "format directory $file"
       format "$file"

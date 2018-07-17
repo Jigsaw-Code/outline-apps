@@ -16,7 +16,6 @@
 
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {Server} from '../model/server';
 
 import {PersistentServer} from './persistent_server';
 

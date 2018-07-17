@@ -66,24 +66,24 @@ TIMESTAMP0=$(date)
 
 mkdir -p ${CHROOT}/etc
 echo en_US.UTF-8 UTF-8 > ${CHROOT}/etc/locale.gen
-if ! debootstrap --variant=minbase --include=ca-certificates,git,sudo,wget,whiptail --exclude=upstart,systemd $OSVER $CHROOT $REPO; then
+if ! debootstrap --variant=minbase --include=ca-certificates,git,sudo,wget,whiptail --exclude=upstart,systemd ${OSVER} ${CHROOT} ${REPO}; then
 	echo debootstrap failed. Please kindly check whether proper sudo or not.
 	exit 1
 fi
 case "$OSID" in
 debian)
-	echo deb $REPO ${OSVER} main > ${CHROOT}/etc/apt/sources.list
-	echo deb $REPO ${OSVER}-updates main >> ${CHROOT}/etc/apt/sources.list
-	echo deb $REPO-security ${OSVER}/updates main >> ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO} ${OSVER} main > ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO} ${OSVER}-updates main >> ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO}-security ${OSVER}/updates main >> ${CHROOT}/etc/apt/sources.list
 	;;
 ubuntu)
-	echo deb $REPO $OSVER main universe > ${CHROOT}/etc/apt/sources.list
-	echo deb $REPO ${OSVER}-updates main universe >> ${CHROOT}/etc/apt/sources.list
-	echo deb $REPO ${OSVER}-security main universe >> ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO} ${OSVER} main universe > ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO} ${OSVER}-updates main universe >> ${CHROOT}/etc/apt/sources.list
+	echo deb ${REPO} ${OSVER}-security main universe >> ${CHROOT}/etc/apt/sources.list
 	;;
 esac
 
-cat << EOL | chroot $CHROOT
+cat << EOL | chroot ${CHROOT}
 apt-get purge -y udev
 apt-get update
 apt-get -fy install
@@ -96,12 +96,12 @@ mount tmpfs /dev/shm -t tmpfs
 date > /TIMESTAMP1
 git config --global user.email "script@example.com"
 git config --global user.name "build script"
-if [ -n "$http_proxy" ]; then
-	git config --global proxy.http $http_proxy
-	echo Acquire::http::Proxy \"$http_proxy\"\; > /etc/apt/apt.conf
-	export http_proxy=$http_proxy
-	export https_proxy=$https_proxy
-	export no_proxy=$no_proxy
+if [ -n "${http_proxy}" ]; then
+	git config --global proxy.http ${http_proxy}
+	echo Acquire::http::Proxy \"${http_proxy}\"\; > /etc/apt/apt.conf
+	export http_proxy=${http_proxy}
+	export https_proxy=${https_proxy}
+	export no_proxy=${no_proxy}
 fi
 cd /tmp
 wget https://raw.githubusercontent.com/shadowsocks/shadowsocks-libev/master/scripts/build_deb.sh
@@ -119,7 +119,7 @@ TIMESTAMP3=$(date)
 printf \\n"All built deb packages:"\\n
 ls -l ${CHROOT}/tmp/*.deb
 echo
-echo Start-Time: $TIMESTAMP0
-echo ChrootDone: $TIMESTAMP1
-echo SsDeb-Done: $TIMESTAMP2
-echo \ Kcp-Done : $TIMESTAMP3
+echo Start-Time: ${TIMESTAMP0}
+echo ChrootDone: ${TIMESTAMP1}
+echo SsDeb-Done: ${TIMESTAMP2}
+echo \ Kcp-Done : ${TIMESTAMP3}

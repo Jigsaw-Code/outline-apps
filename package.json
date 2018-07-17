@@ -59,6 +59,7 @@
     "typescript": "^2.5.2",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.9.0",
-    "xml2js": "^0.4.17"
+    "xml2js": "^0.4.17",
+    "polymer": "latest"
   }
 }

@@ -23,43 +23,43 @@ TESTSUITE=$(basename $1 .data)
 
 THIS_DIR=$(basename $PWD)
 
-if [ -d ../library -a -d ../include -a -d ../tests -a $THIS_DIR == "tests" ];
+if [ -d ../library -a -d ../include -a -d ../tests -a ${THIS_DIR} == "tests" ];
 then :;
 else
     echo " [!] Must be run from mbed TLS tests directory" >&2
     exit 1
 fi
 
-DEST_TESTCASE_DIR=$TESTSUITE-afl-tests
-DEST_OUTPUT_DIR=$TESTSUITE-afl-out
+DEST_TESTCASE_DIR=${TESTSUITE}-afl-tests
+DEST_OUTPUT_DIR=${TESTSUITE}-afl-out
 
 echo " [+] Creating output directories" >&2
 
-if [ -e $DEST_OUTPUT_DIR/* ];
+if [ -e ${DEST_OUTPUT_DIR}/* ];
 then :
     echo " [!] Test output files already exist." >&2
     exit 1
 else
-    mkdir -p $DEST_OUTPUT_DIR
+    mkdir -p ${DEST_OUTPUT_DIR}
 fi
 
-if [ -e $DEST_TESTCASE_DIR/* ];
+if [ -e ${DEST_TESTCASE_DIR}/* ];
 then :
     echo " [!] Test output files already exist." >&2
 else
-    mkdir -p $DEST_TESTCASE_DIR
+    mkdir -p ${DEST_TESTCASE_DIR}
 fi
 
 echo " [+] Creating test cases" >&2
-cd $DEST_TESTCASE_DIR
+cd ${DEST_TESTCASE_DIR}
 
-split -p '^\s*$' ../$SRC_FILEPATH
+split -p '^\s*$' ../${SRC_FILEPATH}
 
 for f in *;
 do
     # Strip out any blank lines (no trim on OS X)
-    sed '/^\s*$/d' $f >testcase_$f
-    rm $f
+    sed '/^\s*$/d' ${f} >testcase_${f}
+    rm ${f}
 done
 
 cd ..

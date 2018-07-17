@@ -58,7 +58,7 @@ rm -f "$DONE_FILE"
 
 echo
 
-emconfigure ./configure $CONFIG_EXTRA --disable-shared --prefix="$PREFIX" \
+emconfigure ./configure ${CONFIG_EXTRA} --disable-shared --prefix="$PREFIX" \
                         --without-pthreads \
                         --disable-ssp --disable-asm --disable-pie \
                         CFLAGS="$CFLAGS" && \
@@ -69,10 +69,10 @@ if [ "$DIST" = yes ]; then
   emccLibsodium () {
     outFile="${1}"
     shift
-    emcc "$CFLAGS" --llvm-lto 1 $CPPFLAGS $LDFLAGS $JS_EXPORTS_FLAGS ${@} \
+    emcc "$CFLAGS" --llvm-lto 1 ${CPPFLAGS} ${LDFLAGS} ${JS_EXPORTS_FLAGS} ${@} \
       "${PREFIX}/lib/libsodium.a" -o "${outFile}" || exit 1
   }
-  emmake make $MAKE_FLAGS install || exit 1
+  emmake make ${MAKE_FLAGS} install || exit 1
   emccLibsodium "${PREFIX}/lib/libsodium.asm.tmp.js" -Oz -s RUNNING_JS_OPTS=1 -s NO_EXIT_RUNTIME=1
   emccLibsodium "${PREFIX}/lib/libsodium.wasm.tmp.js" -O3 -s WASM=1
 
@@ -114,9 +114,9 @@ fi
 
 if test "x$NODE" = x; then
   for candidate in node nodejs; do
-    case $($candidate --version 2>&1) in #(
+    case $(${candidate} --version 2>&1) in #(
       v*)
-        NODE=$candidate
+        NODE=${candidate}
         break ;;
     esac
   done
@@ -124,7 +124,7 @@ fi
 
 if [ "x$BROWSER_TESTS" != "x" ]; then
   echo 'Compiling the test suite for web browsers...' && \
-    emmake make $MAKE_FLAGS CPPFLAGS="$CPPFLAGS -DBROWSER_TESTS=1" check > /dev/null 2>&1
+    emmake make ${MAKE_FLAGS} CPPFLAGS="$CPPFLAGS -DBROWSER_TESTS=1" check > /dev/null 2>&1
 else
   if test "x$NODE" = x; then
     echo 'node.js not found - test suite skipped' >&2
@@ -132,7 +132,7 @@ else
   fi
   echo "Using [${NODE}] as a Javascript runtime"
   echo 'Compiling the test suite...' && \
-    emmake make $MAKE_FLAGS check > /dev/null 2>&1
+    emmake make ${MAKE_FLAGS} check > /dev/null 2>&1
 fi
 
 if [ "x$BROWSER_TESTS" != "x" ]; then
@@ -161,7 +161,7 @@ else
       mv -f "${file}.tmp" "$file"
     done
   )
-  make $MAKE_FLAGS check || exit 1
+  make ${MAKE_FLAGS} check || exit 1
   touch "$DONE_FILE"
 fi
 

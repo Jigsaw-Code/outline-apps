@@ -14,7 +14,7 @@
 # Puts object files and the executable in the working directory.
 #
 
-if [[ -z $SRCDIR ]] || [[ ! -e $SRCDIR/CMakeLists.txt ]]; then
+if [[ -z ${SRCDIR} ]] || [[ ! -e ${SRCDIR}/CMakeLists.txt ]]; then
     echo "SRCDIR is wrong"
     exit 1
 fi
@@ -24,14 +24,14 @@ if ! "${CC}" --version &>/dev/null; then
     exit 1
 fi
 
-if [[ $ENDIAN != "little" ]] && [[ $ENDIAN != "big" ]]; then
+if [[ ${ENDIAN} != "little" ]] && [[ ${ENDIAN} != "big" ]]; then
     echo "ENDIAN is wrong"
     exit 1
 fi
 
-if [[ -z $KERNEL ]]; then
+if [[ -z ${KERNEL} ]]; then
     KERNEL="2.6"
-elif [[ $KERNEL != "2.6" ]] && [[ $KERNEL != "2.4" ]]; then
+elif [[ ${KERNEL} != "2.6" ]] && [[ ${KERNEL} != "2.4" ]]; then
     echo "KERNEL is wrong"
     exit 1
 fi
@@ -40,9 +40,9 @@ CFLAGS="${CFLAGS} -std=gnu99"
 INCLUDES=( "-I${SRCDIR}" "-I${SRCDIR}/lwip/src/include/ipv4" "-I${SRCDIR}/lwip/src/include/ipv6" "-I${SRCDIR}/lwip/src/include" "-I${SRCDIR}/lwip/custom" )
 DEFS=( -DBADVPN_THREAD_SAFE=0 -DBADVPN_LINUX -DBADVPN_BREACTOR_BADVPN -D_GNU_SOURCE )
 
-[[ $KERNEL = "2.4" ]] && DEFS=( "${DEFS[@]}" -DBADVPN_USE_SELFPIPE -DBADVPN_USE_POLL ) || DEFS=( "${DEFS[@]}" -DBADVPN_USE_SIGNALFD -DBADVPN_USE_EPOLL )
+[[ ${KERNEL} = "2.4" ]] && DEFS=( "${DEFS[@]}" -DBADVPN_USE_SELFPIPE -DBADVPN_USE_POLL ) || DEFS=( "${DEFS[@]}" -DBADVPN_USE_SIGNALFD -DBADVPN_USE_EPOLL )
 
-[[ $ENDIAN = "little" ]] && DEFS=( "${DEFS[@]}" -DBADVPN_LITTLE_ENDIAN ) || DEFS=( "${DEFS[@]}" -DBADVPN_BIG_ENDIAN )
+[[ ${ENDIAN} = "little" ]] && DEFS=( "${DEFS[@]}" -DBADVPN_LITTLE_ENDIAN ) || DEFS=( "${DEFS[@]}" -DBADVPN_BIG_ENDIAN )
     
 SOURCES="
 base/BLog_syslog.c
@@ -103,7 +103,7 @@ set -e
 set -x
 
 OBJS=()
-for f in $SOURCES; do
+for f in ${SOURCES}; do
     obj=$(basename "${f}").o
     "${CC}" -c ${CFLAGS} "${INCLUDES[@]}" "${DEFS[@]}" "${SRCDIR}/${f}" -o "${obj}"
     OBJS=( "${OBJS[@]}" "${obj}" )

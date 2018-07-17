@@ -47,7 +47,7 @@ fi
 export ARCH=$1
 
 # Infer HOST and SDK from architecture
-case $ARCH in
+case ${ARCH} in
   armv7 | armv7s )
     export HOST=arm-apple-darwin*
     export SDK=iphoneos
@@ -68,12 +68,12 @@ esac
 
 # Export supplied SDKVERSION or use system default
 if [ ! -z "$SDKVERSION" ]; then
-  SDKNAME=$(basename $(xcrun --sdk $SDK --show-sdk-platform-path) .platform)
+  SDKNAME=$(basename $(xcrun --sdk ${SDK} --show-sdk-platform-path) .platform)
   export SDKVERSION
-  export SDKROOT=$(xcrun --sdk $SDK --show-sdk-platform-path)"/Developer/SDKs/$SDKNAME$SDKVERSION.sdk"
+  export SDKROOT=$(xcrun --sdk ${SDK} --show-sdk-platform-path)"/Developer/SDKs/$SDKNAME$SDKVERSION.sdk"
 else
-  export SDKVERSION=$(xcrun --sdk $SDK --show-sdk-version)
-  export SDKROOT=$(xcrun --sdk $SDK --show-sdk-path)
+  export SDKVERSION=$(xcrun --sdk ${SDK} --show-sdk-version)
+  export SDKROOT=$(xcrun --sdk ${SDK} --show-sdk-path)
 fi
 
 # Export supplied PREFIX
@@ -84,14 +84,14 @@ fi
 if [ ! -z "$MINVERSION" ]; then
   export MINVERSION
 else
-  export MINVERSION=$SDKVERSION  # Default to SDK version
+  export MINVERSION=${SDKVERSION}  # Default to SDK version
 fi
 
 # Binaries
-export CC=$(xcrun --sdk $SDK --find gcc)
-export CPP=$(xcrun --sdk $SDK --find gcc)" -E"
-export CXX=$(xcrun --sdk $SDK --find g++)
-export LD=$(xcrun --sdk $SDK --find ld)
+export CC=$(xcrun --sdk ${SDK} --find gcc)
+export CPP=$(xcrun --sdk ${SDK} --find gcc)" -E"
+export CXX=$(xcrun --sdk ${SDK} --find g++)
+export LD=$(xcrun --sdk ${SDK} --find ld)
 
 # Flags
 export CFLAGS="$CFLAGS -arch $ARCH -isysroot $SDKROOT -m$SDK-version-min=$MINVERSION"

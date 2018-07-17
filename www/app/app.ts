@@ -22,7 +22,6 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {getLocalizedErrorMessage, LocalizationFunction} from './i18n';
-import {OutlineServer} from './outline_server';
 import {PersistentServerRepository} from './persistent_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';

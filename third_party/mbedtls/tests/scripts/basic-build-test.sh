@@ -76,28 +76,28 @@ TEST_OUTPUT=out_${PPID}
 cd tests
 
 # Step 2a - Unit Tests
-perl scripts/run-test-suites.pl -v |tee unit-test-$TEST_OUTPUT
+perl scripts/run-test-suites.pl -v |tee unit-test-${TEST_OUTPUT}
 echo
 
 # Step 2b - System Tests
-sh ssl-opt.sh |tee sys-test-$TEST_OUTPUT
+sh ssl-opt.sh |tee sys-test-${TEST_OUTPUT}
 echo
 
 # Step 2c - Compatibility tests
 sh compat.sh -m 'tls1 tls1_1 tls1_2 dtls1 dtls1_2' | \
-    tee compat-test-$TEST_OUTPUT
+    tee compat-test-${TEST_OUTPUT}
 OPENSSL_CMD="$OPENSSL_LEGACY"                               \
-    sh compat.sh -m 'ssl3' |tee -a compat-test-$TEST_OUTPUT
+    sh compat.sh -m 'ssl3' |tee -a compat-test-${TEST_OUTPUT}
 OPENSSL_CMD="$OPENSSL_LEGACY"                                       \
     GNUTLS_CLI="$GNUTLS_LEGACY_CLI"                                 \
     GNUTLS_SERV="$GNUTLS_LEGACY_SERV"                               \
     sh compat.sh -e '3DES\|DES-CBC3' -f 'NULL\|DES\|RC4\|ARCFOUR' | \
-    tee -a compat-test-$TEST_OUTPUT
+    tee -a compat-test-${TEST_OUTPUT}
 echo
 
 # Step 3 - Process the coverage report
 cd ..
-make lcov |tee tests/cov-$TEST_OUTPUT
+make lcov |tee tests/cov-${TEST_OUTPUT}
 
 
 # Step 4 - Summarise the test report
@@ -111,10 +111,10 @@ cd tests
 # Step 4a - Unit tests
 echo "Unit tests - tests/scripts/run-test-suites.pl"
 
-PASSED_TESTS=$(tail -n6 unit-test-$TEST_OUTPUT|sed -n -e 's/test cases passed :[\t]*\([0-9]*\)/\1/p'| tr -d ' ')
-SKIPPED_TESTS=$(tail -n6 unit-test-$TEST_OUTPUT|sed -n -e 's/skipped :[ \t]*\([0-9]*\)/\1/p'| tr -d ' ')
-TOTAL_SUITES=$(tail -n6 unit-test-$TEST_OUTPUT|sed -n -e 's/.* (\([0-9]*\) .*, [0-9]* tests run)/\1/p'| tr -d ' ')
-FAILED_TESTS=$(tail -n6 unit-test-$TEST_OUTPUT|sed -n -e 's/failed :[\t]*\([0-9]*\)/\1/p' |tr -d ' ')
+PASSED_TESTS=$(tail -n6 unit-test-${TEST_OUTPUT}|sed -n -e 's/test cases passed :[\t]*\([0-9]*\)/\1/p'| tr -d ' ')
+SKIPPED_TESTS=$(tail -n6 unit-test-${TEST_OUTPUT}|sed -n -e 's/skipped :[ \t]*\([0-9]*\)/\1/p'| tr -d ' ')
+TOTAL_SUITES=$(tail -n6 unit-test-${TEST_OUTPUT}|sed -n -e 's/.* (\([0-9]*\) .*, [0-9]* tests run)/\1/p'| tr -d ' ')
+FAILED_TESTS=$(tail -n6 unit-test-${TEST_OUTPUT}|sed -n -e 's/failed :[\t]*\([0-9]*\)/\1/p' |tr -d ' ')
 
 echo "No test suites     : $TOTAL_SUITES"
 echo "Passed             : $PASSED_TESTS"
@@ -124,18 +124,18 @@ echo "Total exec'd tests : $(($PASSED_TESTS + $FAILED_TESTS))"
 echo "Total avail tests  : $(($PASSED_TESTS + $FAILED_TESTS + $SKIPPED_TESTS))"
 echo
 
-TOTAL_PASS=$PASSED_TESTS
-TOTAL_FAIL=$FAILED_TESTS
-TOTAL_SKIP=$SKIPPED_TESTS
+TOTAL_PASS=${PASSED_TESTS}
+TOTAL_FAIL=${FAILED_TESTS}
+TOTAL_SKIP=${SKIPPED_TESTS}
 TOTAL_AVAIL=$(($PASSED_TESTS + $FAILED_TESTS + $SKIPPED_TESTS))
 TOTAL_EXED=$(($PASSED_TESTS + $FAILED_TESTS))
 
 # Step 4b - TLS Options tests
 echo "TLS Options tests - tests/ssl-opt.sh"
 
-PASSED_TESTS=$(tail -n5 sys-test-$TEST_OUTPUT|sed -n -e 's/.* (\([0-9]*\) \/ [0-9]* tests ([0-9]* skipped))$/\1/p')
-SKIPPED_TESTS=$(tail -n5 sys-test-$TEST_OUTPUT|sed -n -e 's/.* ([0-9]* \/ [0-9]* tests (\([0-9]*\) skipped))$/\1/p')
-TOTAL_TESTS=$(tail -n5 sys-test-$TEST_OUTPUT|sed -n -e 's/.* ([0-9]* \/ \([0-9]*\) tests ([0-9]* skipped))$/\1/p')
+PASSED_TESTS=$(tail -n5 sys-test-${TEST_OUTPUT}|sed -n -e 's/.* (\([0-9]*\) \/ [0-9]* tests ([0-9]* skipped))$/\1/p')
+SKIPPED_TESTS=$(tail -n5 sys-test-${TEST_OUTPUT}|sed -n -e 's/.* ([0-9]* \/ [0-9]* tests (\([0-9]*\) skipped))$/\1/p')
+TOTAL_TESTS=$(tail -n5 sys-test-${TEST_OUTPUT}|sed -n -e 's/.* ([0-9]* \/ \([0-9]*\) tests ([0-9]* skipped))$/\1/p')
 FAILED_TESTS=$(($TOTAL_TESTS - $PASSED_TESTS))
 
 echo "Passed             : $PASSED_TESTS"
@@ -155,9 +155,9 @@ TOTAL_EXED=$(($TOTAL_EXED + $TOTAL_TESTS))
 # Step 4c - System Compatibility tests
 echo "System/Compatibility tests - tests/compat.sh"
 
-PASSED_TESTS=$(cat compat-test-$TEST_OUTPUT | sed -n -e 's/.* (\([0-9]*\) \/ [0-9]* tests ([0-9]* skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
-SKIPPED_TESTS=$(cat compat-test-$TEST_OUTPUT | sed -n -e 's/.* ([0-9]* \/ [0-9]* tests (\([0-9]*\) skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
-EXED_TESTS=$(cat compat-test-$TEST_OUTPUT | sed -n -e 's/.* ([0-9]* \/ \([0-9]*\) tests ([0-9]* skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
+PASSED_TESTS=$(cat compat-test-${TEST_OUTPUT} | sed -n -e 's/.* (\([0-9]*\) \/ [0-9]* tests ([0-9]* skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
+SKIPPED_TESTS=$(cat compat-test-${TEST_OUTPUT} | sed -n -e 's/.* ([0-9]* \/ [0-9]* tests (\([0-9]*\) skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
+EXED_TESTS=$(cat compat-test-${TEST_OUTPUT} | sed -n -e 's/.* ([0-9]* \/ \([0-9]*\) tests ([0-9]* skipped))$/\1/p' | awk 'BEGIN{ s = 0 } { s += $1 } END{ print s }')
 FAILED_TESTS=$(($EXED_TESTS - $PASSED_TESTS))
 
 echo "Passed             : $PASSED_TESTS"
@@ -189,10 +189,10 @@ echo
 # Step 4e - Coverage
 echo "Coverage"
 
-LINES_TESTED=$(tail -n3 cov-$TEST_OUTPUT|sed -n -e 's/  lines......: [0-9]*.[0-9]% (\([0-9]*\) of [0-9]* lines)/\1/p')
-LINES_TOTAL=$(tail -n3 cov-$TEST_OUTPUT|sed -n -e 's/  lines......: [0-9]*.[0-9]% ([0-9]* of \([0-9]*\) lines)/\1/p')
-FUNCS_TESTED=$(tail -n3 cov-$TEST_OUTPUT|sed -n -e 's/  functions..: [0-9]*.[0-9]% (\([0-9]*\) of [0-9]* functions)$/\1/p')
-FUNCS_TOTAL=$(tail -n3 cov-$TEST_OUTPUT|sed -n -e 's/  functions..: [0-9]*.[0-9]% ([0-9]* of \([0-9]*\) functions)$/\1/p')
+LINES_TESTED=$(tail -n3 cov-${TEST_OUTPUT}|sed -n -e 's/  lines......: [0-9]*.[0-9]% (\([0-9]*\) of [0-9]* lines)/\1/p')
+LINES_TOTAL=$(tail -n3 cov-${TEST_OUTPUT}|sed -n -e 's/  lines......: [0-9]*.[0-9]% ([0-9]* of \([0-9]*\) lines)/\1/p')
+FUNCS_TESTED=$(tail -n3 cov-${TEST_OUTPUT}|sed -n -e 's/  functions..: [0-9]*.[0-9]% (\([0-9]*\) of [0-9]* functions)$/\1/p')
+FUNCS_TOTAL=$(tail -n3 cov-${TEST_OUTPUT}|sed -n -e 's/  functions..: [0-9]*.[0-9]% ([0-9]* of \([0-9]*\) functions)$/\1/p')
 
 LINES_PERCENT=$((1000*$LINES_TESTED/$LINES_TOTAL))
 LINES_PERCENT="$(($LINES_PERCENT/10)).$(($LINES_PERCENT-($LINES_PERCENT/10)*10))"
@@ -205,10 +205,10 @@ echo "Functions Tested   : $FUNCS_TESTED of $FUNCS_TOTAL $FUNCS_PERCENT%"
 echo
 
 
-rm unit-test-$TEST_OUTPUT
-rm sys-test-$TEST_OUTPUT
-rm compat-test-$TEST_OUTPUT
-rm cov-$TEST_OUTPUT
+rm unit-test-${TEST_OUTPUT}
+rm sys-test-${TEST_OUTPUT}
+rm compat-test-${TEST_OUTPUT}
+rm cov-${TEST_OUTPUT}
 
 cd ..
 
