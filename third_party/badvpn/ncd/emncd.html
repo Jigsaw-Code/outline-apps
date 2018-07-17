@@ -10,14 +10,14 @@
 
 <script>
 
-var cfunc_emncd_start = Module.cwrap('emncd_start', 'null', ['string']);
-var cfunc_emncd_stop = Module.cwrap('emncd_stop', 'null', []);
+    const cfunc_emncd_start = Module.cwrap('emncd_start', 'null', ['string']);
+    const cfunc_emncd_stop = Module.cwrap('emncd_stop', 'null', []);
 
 function on_start ()
 {
-    var code = document.getElementById('codetext').value;
-    
-    var loglevel = 0;
+    const code = document.getElementById('codetext').value;
+
+    let loglevel = 0;
     for (i = 0; i <= 5; i++) {
         if (document.getElementById('loglevel' + i).checked) {
             loglevel = i;

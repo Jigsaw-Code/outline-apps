@@ -351,8 +351,8 @@
          Polymer.AppLocalizeBehavior
       ],
       ready: function () {
-        var url = this.rootPath + 'messages/' + this.language + '.json';
-        this.loadResources(url, this.language);
+          const url = this.rootPath + 'messages/' + this.language + '.json';
+          this.loadResources(url, this.language);
         const languageProperties = this.LANGUAGES_AVAILABLE[this.language];
         if (!!languageProperties && languageProperties.dir === 'rtl') {
           document.documentElement.setAttribute('dir', 'rtl');
@@ -364,9 +364,12 @@
         // Monkeypatch the faulty Polymer.IronButtonStateImpl._detectKeyboardFocus implementation
         // with a no-op for the three buttons where the focus styles are incorrectly applied most
         // often / where it looks most noticeably broken.
-        function noop() {};
-        var buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
-        for (var i = 0, button = buttons[i]; button; button = buttons[++i]) {
+          function noop() {
+          }
+
+          const buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
+          const i = 0, button = buttons[i];
+          for (; button; button = buttons[++i]) {
           button._detectKeyboardFocus = noop;
         }
 
@@ -376,9 +379,9 @@
             if (this.path) {
               return this.path; // ShadowDOM v0 equivalent property.
             }
-            var composedPath = [];
-            var target = this.target;
-            while (target) {
+              const composedPath = [];
+              let target = this.target;
+              while (target) {
               composedPath.push(target);
               if (target.assignedSlot) {
                 target = target.assignedSlot;
@@ -506,8 +509,8 @@
         this.async(function () {
           this.$.toast.text = text;
           this.$.toast.duration = typeof duration !== 'undefined' ? duration : 3000;
-          var undoButton = this.$.undoButton;
-          if (typeof onUndoTapped === 'function') {
+            const undoButton = this.$.undoButton;
+            if (typeof onUndoTapped === 'function') {
             undoButton.hidden = false;
             undoButton._handler = onUndoTapped;
           } else {
@@ -524,9 +527,9 @@
         this.set('route.path', '/' + page);
       },
       _callUndoHandler: function () {
-        var undoButton = this.$.undoButton;
-        var handler = undoButton._handler;
-        if (!handler) return console.error('No undo handler found');
+          const undoButton = this.$.undoButton;
+          let handler = undoButton._handler;
+          if (!handler) return console.error('No undo handler found');
         // Close the toast and unbind the handler so there's no chance the
         // user can somehow trigger the same onUndoTapped handler twice.
         this.$.toast.close();

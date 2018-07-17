@@ -22,4 +22,4 @@ module.exports = function(context) {
   ['armeabi-v7a', 'x86'].forEach((arch) => {
       child_process.execSync(`cp third_party/shadowsocks-libev/android/libs/${arch}/*.so plugins/cordova-plugin-outline/android/libs/${arch}/`);
   });
-}
+};

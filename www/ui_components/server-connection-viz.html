@@ -213,13 +213,13 @@
         }
         if (this.state === 'CONNECTED' || this.state === 'DISCONNECTED') {
           if (this._isAnimating(this.animationState)) {
-            var now = new Date().getTime();
-            var elapsedAnimationMs = now - this._animationStartMs;
-            var remainingAnimationMs =
-                this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
-            // Update the state only after the animation cycle has finished to avoid jumpiness.
-            var _this = this;
-            this.async(function () {
+              const now = new Date().getTime();
+              const elapsedAnimationMs = now - this._animationStartMs;
+              const remainingAnimationMs =
+                  this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
+              // Update the state only after the animation cycle has finished to avoid jumpiness.
+              const _this = this;
+              this.async(function () {
               _this.animationState = _this.state;
             }, remainingAnimationMs);
             return;

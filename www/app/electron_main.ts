@@ -18,13 +18,12 @@ import * as os from 'os';
 
 import {EventQueue} from '../model/events';
 
-import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
-import {OutlinePlatform} from './platform';
-import {AbstractUpdater, UpdateListener, Updater} from './updater';
+import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {WindowsOutlineConnection} from './windows_connection';
 

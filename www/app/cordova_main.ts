@@ -18,7 +18,7 @@ import * as Raven from 'raven-js';
 
 import {EventQueue} from '../model/events';
 
-import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {FakeOutlineConnection} from './fake_connection';

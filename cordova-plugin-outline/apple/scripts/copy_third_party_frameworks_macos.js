@@ -25,4 +25,4 @@ module.exports = function(context) {
   child_process.execSync('cp -R third_party/Potatso/frameworks/macos/PacketProcessor_macos.framework plugins/cordova-plugin-outline/apple/lib/macos/');
   child_process.execSync('cp -R third_party/sentry-cocoa/macos/Sentry.framework plugins/cordova-plugin-outline/apple/lib/macos/');
   child_process.execSync('cp -R third_party/shadowsocks-libev/apple/frameworks/macos/Shadowsocks_macOS.framework plugins/cordova-plugin-outline/apple/lib/macos/');
-}
+};

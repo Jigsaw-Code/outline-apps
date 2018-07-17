@@ -56,8 +56,9 @@
         servers: Array
       },
       getServerCard: function (serverId) {
-       var cards = this.shadowRoot.querySelectorAll('server-card');
-       for (var i = 0, card = cards[i]; card; card = cards[++i]) {
+          const cards = this.shadowRoot.querySelectorAll('server-card');
+          let i = 0, card = cards[i];
+          for (; card; card = cards[++i]) {
          if (card.serverId === serverId) {
             return card;
           }

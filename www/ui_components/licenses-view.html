@@ -50,14 +50,14 @@
       ready: function () {
         // This complexity is to avoid unconditionally loading the (huge) license
         // text at startup.
-        var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        window.addEventListener('location-changed', function () {
+          const appRoot = Polymer.dom(this).getOwnerRoot().host;
+          window.addEventListener('location-changed', function () {
           if (this._licensesLoaded || appRoot.page !== 'licenses') {
             return;
           }
 
-          var xhr = new XMLHttpRequest();
-          xhr.onload = () => {
+              const xhr = new XMLHttpRequest();
+              xhr.onload = () => {
             this.$.licensesText.innerText = xhr.responseText;
             this._licensesLoaded = true;
           };

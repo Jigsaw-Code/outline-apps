@@ -173,9 +173,9 @@
         }
       },
       _onConnectToggled: function() {
-        var connect = this.state === 'DISCONNECTED';
-        var eventId = (connect ? 'C' : 'Disc') + 'onnectPressed';
-        this.fire(eventId, {serverId: this.serverId});
+          const connect = this.state === 'DISCONNECTED';
+          const eventId = (connect ? 'C' : 'Disc') + 'onnectPressed';
+          this.fire(eventId, {serverId: this.serverId});
       },
       _computeStatusMessage: function (state, localize) {
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this

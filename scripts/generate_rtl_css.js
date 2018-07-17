@@ -33,4 +33,4 @@ module.exports = function(src, dest) {
       // rtlcss generates [dir] selectors for rules unaffected by directionality; ignore them.
       .pipe(replace('[dir]', ''))
       .pipe(gulp.dest(dest));
-}
+};

@@ -37,7 +37,7 @@ function quitApplication() {
   exec(function() {}, function() {}, PLUGIN_NAME, 'quitApplication', []);
 }
 
-var globalId = 100;  // Internal, incremental ID.
+let globalId = 100;  // Internal, incremental ID.
 
 // This must be kept in sync with:
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
@@ -65,7 +65,7 @@ const ConnectionStatus = {
   CONNECTED: 0,
   DISCONNECTED: 1,
   RECONNECTING: 2
-}
+};
 
 function Connection(config, id) {
   if (id) {

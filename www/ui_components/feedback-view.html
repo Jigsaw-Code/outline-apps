@@ -112,13 +112,13 @@
         }
       },
       ready: function () {
-        var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        window.addEventListener('location-changed', function () {
+          const appRoot = Polymer.dom(this).getOwnerRoot().host;
+          window.addEventListener('location-changed', function () {
           if (appRoot.page !== 'feedback') return;
           // Workaround: https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
           if (!this.$.dropdownMenu.value) {
-            var tmp = this.$.categoryList.selected;
-            this.$.categoryList.selected = undefined;
+              const tmp = this.$.categoryList.selected;
+              this.$.categoryList.selected = undefined;
             this.$.categoryList.selected = tmp;
           }
         }.bind(this));
@@ -127,12 +127,13 @@
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this
         // again once localize has been defined at which point we will return the right value.
         if (!localize) return '';
-        var label = submitting ? 'submitting' : 'submit';
-        return this.localize(label);
+          const label = submitting ? 'submitting' : 'submit';
+          return this.localize(label);
       },
       getValidatedFormData: function () {
-        var inputs = [this.$.categoryList, this.$.feedback, this.$.email];
-        for (var i = 0, input = inputs[i]; input; input = inputs[++i]) {
+          const inputs = [this.$.categoryList, this.$.feedback, this.$.email];
+          let i = 0, input = inputs[i];
+          for (; input; input = inputs[++i]) {
           if (input.validate && !input.validate()) {
             // The input.validate() call gives the input "invalid" styles if it's invalid,
             // so the user can see they have to fix it.

@@ -232,8 +232,8 @@
         }, 750);
       },
       _addServerFromInput: function() {
-        var accessKeyInput = this.$.accessKeyInput;
-        if (!this.accessKey || this.accessKey === '') {
+          const accessKeyInput = this.$.accessKeyInput;
+          if (!this.accessKey || this.accessKey === '') {
           accessKeyInput.invalid = false;
           return;
         }
@@ -251,8 +251,8 @@
       },
       // Event listeners
       _openChanged: function(event) {
-        var dialog = event.target;
-        if (dialog.opened) {
+          const dialog = event.target;
+          if (dialog.opened) {
           // Scroll the page to the bottom to prevent the dialog from moving when the keyboard
           // appears. Also disallow scrolling to prevent the dialog from sliding under the keyboard.
           // See https://github.com/PolymerElements/iron-overlay-behavior/issues/140.
@@ -263,14 +263,14 @@
           document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
           if (dialog.id === 'serverDetectedSheet') {
             this.serverConfig = undefined;
-          } else if (dialog.id == 'addServerSheet') {
+          } else if (dialog.id === 'addServerSheet') {
             this.accessKey = '';
           }
         }
       },
       _inputFocusChanged: function(event) {
-        var input = event.target;
-        if (input.focused) {
+          const input = event.target;
+          if (input.focused) {
           this.$.accessKeyInput.label = '';
         } else {
           this.$.accessKeyInput.label = this.localize('server-access-key-label', 'ssProtocol', 'ss://');
@@ -278,8 +278,8 @@
         input.toggleClass('input-focus', input.focused);
       },
       _inputInvalidChanged: function(event) {
-        var input = event.target;
-        input.toggleClass('input-invalid', input.invalid);
+          const input = event.target;
+          input.toggleClass('input-invalid', input.invalid);
         if (input.invalid) {
           this.$.addServerFooter.hidden = true;
           this.$.invalidAccessKeyFooter.hidden = false;
