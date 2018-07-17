@@ -117,14 +117,14 @@ get_options() {
 
 # skip next test if the flag is not enabled in config.h
 requires_config_enabled() {
-    if grep "^#define $1" $CONFIG_H > /dev/null; then :; else
+    if grep "^#define $1" ${CONFIG_H} > /dev/null; then :; else
         SKIP_NEXT="YES"
     fi
 }
 
 # skip next test if the flag is enabled in config.h
 requires_config_disabled() {
-    if grep "^#define $1" $CONFIG_H > /dev/null; then
+    if grep "^#define $1" ${CONFIG_H} > /dev/null; then
         SKIP_NEXT="YES"
     fi
 }
@@ -132,7 +132,7 @@ requires_config_disabled() {
 # skip next test if OpenSSL doesn't support FALLBACK_SCSV
 requires_openssl_with_fallback_scsv() {
     if [ -z "${OPENSSL_HAS_FBSCSV:-}" ]; then
-        if $OPENSSL_CMD s_client -help 2>&1 | grep fallback_scsv >/dev/null
+        if ${OPENSSL_CMD} s_client -help 2>&1 | grep fallback_scsv >/dev/null
         then
             OPENSSL_HAS_FBSCSV="YES"
         else
@@ -161,16 +161,16 @@ requires_gnutls() {
 # skip next test if IPv6 isn't available on this host
 requires_ipv6() {
     if [ -z "${HAS_IPV6:-}" ]; then
-        $P_SRV server_addr='::1' > $SRV_OUT 2>&1 &
+        ${P_SRV} server_addr='::1' > ${SRV_OUT} 2>&1 &
         SRV_PID=$!
         sleep 1
-        kill $SRV_PID >/dev/null 2>&1
-        if grep "NET - Binding of the socket failed" $SRV_OUT >/dev/null; then
+        kill ${SRV_PID} >/dev/null 2>&1
+        if grep "NET - Binding of the socket failed" ${SRV_OUT} >/dev/null; then
             HAS_IPV6="NO"
         else
             HAS_IPV6="YES"
         fi
-        rm -r $SRV_OUT
+        rm -r ${SRV_OUT}
     fi
 
     if [ "$HAS_IPV6" = "NO" ]; then
@@ -214,7 +214,7 @@ print_name() {
     LINE="$LINE$1"
     printf "$LINE "
     LEN=$(( 72 - `echo "$LINE" | wc -c` ))
-    for i in `seq 1 $LEN`; do printf '.'; done
+    for i in `seq 1 ${LEN}`; do printf '.'; done
     printf ' '
 
 }
@@ -224,10 +224,10 @@ fail() {
     echo "FAIL"
     echo "  ! $1"
 
-    mv $SRV_OUT o-srv-${TESTS}.log
-    mv $CLI_OUT o-cli-${TESTS}.log
+    mv ${SRV_OUT} o-srv-${TESTS}.log
+    mv ${CLI_OUT} o-cli-${TESTS}.log
     if [ -n "$PXY_CMD" ]; then
-        mv $PXY_OUT o-pxy-${TESTS}.log
+        mv ${PXY_OUT} o-pxy-${TESTS}.log
     fi
     echo "  ! outputs saved to o-XXX-${TESTS}.log"
 
@@ -257,7 +257,7 @@ is_polar() {
 check_osrv_dtls() {
     if echo "$SRV_CMD" | grep 's_server.*-dtls' >/dev/null; then
         NEEDS_INPUT=1
-        SRV_CMD="$( echo $SRV_CMD | sed s/-www// )"
+        SRV_CMD="$( echo ${SRV_CMD} | sed s/-www// )"
     else
         NEEDS_INPUT=0
     fi
@@ -265,7 +265,7 @@ check_osrv_dtls() {
 
 # provide input to commands that need it
 provide_input() {
-    if [ $NEEDS_INPUT -eq 0 ]; then
+    if [ ${NEEDS_INPUT} -eq 0 ]; then
         return
     fi
 
@@ -294,24 +294,24 @@ wait_server_start() {
 
         # make a tight loop, server usually takes less than 1 sec to start
         if [ "$DTLS" -eq 1 ]; then
-            while [ $DONE -eq 0 ]; do
+            while [ ${DONE} -eq 0 ]; do
                 if lsof -nbi UDP:"$SRV_PORT" 2>/dev/null | grep UDP >/dev/null
                 then
                     DONE=1
-                elif [ $(( $( date +%s ) - $START_TIME )) -gt $DOG_DELAY ]; then
+                elif [ $(( $( date +%s ) - $START_TIME )) -gt ${DOG_DELAY} ]; then
                     echo "SERVERSTART TIMEOUT"
-                    echo "SERVERSTART TIMEOUT" >> $SRV_OUT
+                    echo "SERVERSTART TIMEOUT" >> ${SRV_OUT}
                     DONE=1
                 fi
             done
         else
-            while [ $DONE -eq 0 ]; do
+            while [ ${DONE} -eq 0 ]; do
                 if lsof -nbi TCP:"$SRV_PORT" 2>/dev/null | grep LISTEN >/dev/null
                 then
                     DONE=1
-                elif [ $(( $( date +%s ) - $START_TIME )) -gt $DOG_DELAY ]; then
+                elif [ $(( $( date +%s ) - $START_TIME )) -gt ${DOG_DELAY} ]; then
                     echo "SERVERSTART TIMEOUT"
-                    echo "SERVERSTART TIMEOUT" >> $SRV_OUT
+                    echo "SERVERSTART TIMEOUT" >> ${SRV_OUT}
                     DONE=1
                 fi
             done
@@ -329,18 +329,18 @@ wait_client_done() {
     CLI_DELAY=$(( $DOG_DELAY * $CLI_DELAY_FACTOR ))
     CLI_DELAY_FACTOR=1
 
-    ( sleep $CLI_DELAY; echo "===CLIENT_TIMEOUT===" >> $CLI_OUT; kill $CLI_PID ) &
+    ( sleep ${CLI_DELAY}; echo "===CLIENT_TIMEOUT===" >> ${CLI_OUT}; kill ${CLI_PID} ) &
     DOG_PID=$!
 
-    wait $CLI_PID
+    wait ${CLI_PID}
     CLI_EXIT=$?
 
-    kill $DOG_PID >/dev/null 2>&1
-    wait $DOG_PID
+    kill ${DOG_PID} >/dev/null 2>&1
+    wait ${DOG_PID}
 
-    echo "EXIT: $CLI_EXIT" >> $CLI_OUT
+    echo "EXIT: $CLI_EXIT" >> ${CLI_OUT}
 
-    sleep $SRV_DELAY_SECONDS
+    sleep ${SRV_DELAY_SECONDS}
     SRV_DELAY_SECONDS=0
 }
 
@@ -403,9 +403,9 @@ run_test() {
 
     # fix client port
     if [ -n "$PXY_CMD" ]; then
-        CLI_CMD=$( echo "$CLI_CMD" | sed s/+SRV_PORT/$PXY_PORT/g )
+        CLI_CMD=$( echo "$CLI_CMD" | sed s/+SRV_PORT/${PXY_PORT}/g )
     else
-        CLI_CMD=$( echo "$CLI_CMD" | sed s/+SRV_PORT/$SRV_PORT/g )
+        CLI_CMD=$( echo "$CLI_CMD" | sed s/+SRV_PORT/${SRV_PORT}/g )
     fi
 
     # update DTLS variable
@@ -422,37 +422,37 @@ run_test() {
     fi
 
     TIMES_LEFT=2
-    while [ $TIMES_LEFT -gt 0 ]; do
+    while [ ${TIMES_LEFT} -gt 0 ]; do
         TIMES_LEFT=$(( $TIMES_LEFT - 1 ))
 
         # run the commands
         if [ -n "$PXY_CMD" ]; then
-            echo "$PXY_CMD" > $PXY_OUT
-            $PXY_CMD >> $PXY_OUT 2>&1 &
+            echo "$PXY_CMD" > ${PXY_OUT}
+            ${PXY_CMD} >> ${PXY_OUT} 2>&1 &
             PXY_PID=$!
             # assume proxy starts faster than server
         fi
 
         check_osrv_dtls
-        echo "$SRV_CMD" > $SRV_OUT
-        provide_input | $SRV_CMD >> $SRV_OUT 2>&1 &
+        echo "$SRV_CMD" > ${SRV_OUT}
+        provide_input | ${SRV_CMD} >> ${SRV_OUT} 2>&1 &
         SRV_PID=$!
         wait_server_start
 
-        echo "$CLI_CMD" > $CLI_OUT
-        eval "$CLI_CMD" >> $CLI_OUT 2>&1 &
+        echo "$CLI_CMD" > ${CLI_OUT}
+        eval "${CLI_CMD}" >> ${CLI_OUT} 2>&1 &
         wait_client_done
 
         # terminate the server (and the proxy)
-        kill $SRV_PID
-        wait $SRV_PID
+        kill ${SRV_PID}
+        wait ${SRV_PID}
         if [ -n "$PXY_CMD" ]; then
-            kill $PXY_PID >/dev/null 2>&1
-            wait $PXY_PID
+            kill ${PXY_PID} >/dev/null 2>&1
+            wait ${PXY_PID}
         fi
 
         # retry only on timeouts
-        if grep '===CLIENT_TIMEOUT===' $CLI_OUT >/dev/null; then
+        if grep '===CLIENT_TIMEOUT===' ${CLI_OUT} >/dev/null; then
             printf "RETRY "
         else
             TIMES_LEFT=0
@@ -464,14 +464,14 @@ run_test() {
     # expected client exit to incorrectly succeed in case of catastrophic
     # failure)
     if is_polar "$SRV_CMD"; then
-        if grep "Performing the SSL/TLS handshake" $SRV_OUT >/dev/null; then :;
+        if grep "Performing the SSL/TLS handshake" ${SRV_OUT} >/dev/null; then :;
         else
             fail "server or client failed to reach handshake stage"
             return
         fi
     fi
     if is_polar "$CLI_CMD"; then
-        if grep "Performing the SSL/TLS handshake" $CLI_OUT >/dev/null; then :;
+        if grep "Performing the SSL/TLS handshake" ${CLI_OUT} >/dev/null; then :;
         else
             fail "server or client failed to reach handshake stage"
             return
@@ -499,28 +499,28 @@ run_test() {
     do
         case $1 in
             "-s")
-                if grep -v '^==' $SRV_OUT | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then :; else
+                if grep -v '^==' ${SRV_OUT} | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then :; else
                     fail "pattern '$2' MUST be present in the Server output"
                     return
                 fi
                 ;;
 
             "-c")
-                if grep -v '^==' $CLI_OUT | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then :; else
+                if grep -v '^==' ${CLI_OUT} | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then :; else
                     fail "pattern '$2' MUST be present in the Client output"
                     return
                 fi
                 ;;
 
             "-S")
-                if grep -v '^==' $SRV_OUT | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then
+                if grep -v '^==' ${SRV_OUT} | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then
                     fail "pattern '$2' MUST NOT be present in the Server output"
                     return
                 fi
                 ;;
 
             "-C")
-                if grep -v '^==' $CLI_OUT | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then
+                if grep -v '^==' ${CLI_OUT} | grep -v 'Serious error when reading debug info' | grep "$2" >/dev/null; then
                     fail "pattern '$2' MUST NOT be present in the Client output"
                     return
                 fi
@@ -534,14 +534,14 @@ run_test() {
                 # A line with '--' will remain in the result from previous outputs, so the number of lines in the result will be 1
                 # if there were no duplicates.
             "-U")
-                if [ $(grep -v '^==' $SRV_OUT | grep -v 'Serious error when reading debug info' | grep -A1 "$2" | grep -v "$2" | sort | uniq -d | wc -l) -gt 1 ]; then
+                if [ $(grep -v '^==' ${SRV_OUT} | grep -v 'Serious error when reading debug info' | grep -A1 "$2" | grep -v "$2" | sort | uniq -d | wc -l) -gt 1 ]; then
                     fail "lines following pattern '$2' must be unique in Server output"
                     return
                 fi
                 ;;
 
             "-u")
-                if [ $(grep -v '^==' $CLI_OUT | grep -v 'Serious error when reading debug info' | grep -A1 "$2" | grep -v "$2" | sort | uniq -d | wc -l) -gt 1 ]; then
+                if [ $(grep -v '^==' ${CLI_OUT} | grep -v 'Serious error when reading debug info' | grep -A1 "$2" | grep -v "$2" | sort | uniq -d | wc -l) -gt 1 ]; then
                     fail "lines following pattern '$2' must be unique in Client output"
                     return
                 fi
@@ -556,11 +556,11 @@ run_test() {
 
     # check valgrind's results
     if [ "$MEMCHECK" -gt 0 ]; then
-        if is_polar "$SRV_CMD" && has_mem_err $SRV_OUT; then
+        if is_polar "$SRV_CMD" && has_mem_err ${SRV_OUT}; then
             fail "Server has memory errors"
             return
         fi
-        if is_polar "$CLI_CMD" && has_mem_err $CLI_OUT; then
+        if is_polar "$CLI_CMD" && has_mem_err ${CLI_OUT}; then
             fail "Client has memory errors"
             return
         fi
@@ -569,19 +569,19 @@ run_test() {
     # if we're here, everything is ok
     echo "PASS"
     if [ "$PRESERVE_LOGS" -gt 0 ]; then
-        mv $SRV_OUT o-srv-${TESTS}.log
-        mv $CLI_OUT o-cli-${TESTS}.log
+        mv ${SRV_OUT} o-srv-${TESTS}.log
+        mv ${CLI_OUT} o-cli-${TESTS}.log
     fi
 
-    rm -f $SRV_OUT $CLI_OUT $PXY_OUT
+    rm -f ${SRV_OUT} ${CLI_OUT} ${PXY_OUT}
 }
 
 cleanup() {
-    rm -f $CLI_OUT $SRV_OUT $PXY_OUT $SESSION
-    test -n "${SRV_PID:-}" && kill $SRV_PID >/dev/null 2>&1
-    test -n "${PXY_PID:-}" && kill $PXY_PID >/dev/null 2>&1
-    test -n "${CLI_PID:-}" && kill $CLI_PID >/dev/null 2>&1
-    test -n "${DOG_PID:-}" && kill $DOG_PID >/dev/null 2>&1
+    rm -f ${CLI_OUT} ${SRV_OUT} ${PXY_OUT} ${SESSION}
+    test -n "${SRV_PID:-}" && kill ${SRV_PID} >/dev/null 2>&1
+    test -n "${PXY_PID:-}" && kill ${PXY_PID} >/dev/null 2>&1
+    test -n "${CLI_PID:-}" && kill ${CLI_PID} >/dev/null 2>&1
+    test -n "${DOG_PID:-}" && kill ${DOG_PID} >/dev/null 2>&1
     exit 1
 }
 
@@ -615,7 +615,7 @@ if [ "$MEMCHECK" -gt 0 ]; then
         exit 1
     fi
 fi
-if which $OPENSSL_CMD >/dev/null 2>&1; then :; else
+if which ${OPENSSL_CMD} >/dev/null 2>&1; then :; else
     echo "Command '$OPENSSL_CMD' not found"
     exit 1
 fi
@@ -3984,7 +3984,7 @@ run_test    "DTLS proxy: 3d, gnutls server, fragmentation, nbio" \
 
 echo "------------------------------------------------------------------------"
 
-if [ $FAILS = 0 ]; then
+if [ ${FAILS} = 0 ]; then
     printf "PASSED"
 else
     printf "FAILED"
@@ -3992,4 +3992,4 @@ fi
 PASSES=$(( $TESTS - $FAILS ))
 echo " ($PASSES / $TESTS tests ($SKIPS skipped))"
 
-exit $FAILS
+exit ${FAILS}

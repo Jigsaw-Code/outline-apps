@@ -29,15 +29,15 @@ SRVMEM=0
 : ${GNUTLS_SERV:=gnutls-serv}
 
 # do we have a recent enough GnuTLS?
-if ( which $GNUTLS_CLI && which $GNUTLS_SERV ) >/dev/null 2>&1; then
-    G_VER="$( $GNUTLS_CLI --version | head -n1 )"
+if ( which ${GNUTLS_CLI} && which ${GNUTLS_SERV} ) >/dev/null 2>&1; then
+    G_VER="$( ${GNUTLS_CLI} --version | head -n1 )"
     if echo "$G_VER" | grep '@VERSION@' > /dev/null; then # git version
         PEER_GNUTLS=" GnuTLS"
     else
-        eval $( echo $G_VER | sed 's/.* \([0-9]*\)\.\([0-9]\)*\.\([0-9]*\)$/MAJOR="\1" MINOR="\2" PATCH="\3"/' )
-        if [ $MAJOR -lt 3 -o \
-            \( $MAJOR -eq 3 -a $MINOR -lt 2 \) -o \
-            \( $MAJOR -eq 3 -a $MINOR -eq 2 -a $PATCH -lt 15 \) ]
+        eval $( echo ${G_VER} | sed 's/.* \([0-9]*\)\.\([0-9]\)*\.\([0-9]*\)$/MAJOR="\1" MINOR="\2" PATCH="\3"/' )
+        if [ ${MAJOR} -lt 3 -o \
+            \( ${MAJOR} -eq 3 -a ${MINOR} -lt 2 \) -o \
+            \( ${MAJOR} -eq 3 -a ${MINOR} -eq 2 -a ${PATCH} -lt 15 \) ]
         then
             PEER_GNUTLS=""
         else
@@ -117,8 +117,8 @@ get_options() {
     done
 
     # sanitize some options (modes checked later)
-    VERIFIES="$( echo $VERIFIES | tr [a-z] [A-Z] )"
-    TYPES="$( echo $TYPES | tr [a-z] [A-Z] )"
+    VERIFIES="$( echo ${VERIFIES} | tr [a-z] [A-Z] )"
+    TYPES="$( echo ${TYPES} | tr [a-z] [A-Z] )"
 }
 
 log() {
@@ -168,7 +168,7 @@ filter()
       EXCLMODE="$EXCLUDE"
   fi
 
-  for i in $LIST;
+  for i in ${LIST};
   do
     NEW_LIST="$NEW_LIST $( echo "$i" | grep "$FILTER" | grep -v "$EXCLMODE" )"
   done
@@ -228,7 +228,7 @@ reset_ciphersuites()
 
 add_common_ciphersuites()
 {
-    case $TYPE in
+    case ${TYPE} in
 
         "ECDSA")
             if [ `minor_ver "$MODE"` -gt 0 ]
@@ -424,7 +424,7 @@ add_common_ciphersuites()
 
 add_openssl_ciphersuites()
 {
-    case $TYPE in
+    case ${TYPE} in
 
         "ECDSA")
             if [ `minor_ver "$MODE"` -gt 0 ]
@@ -479,7 +479,7 @@ add_openssl_ciphersuites()
 
 add_gnutls_ciphersuites()
 {
-    case $TYPE in
+    case ${TYPE} in
 
         "ECDSA")
             if [ `minor_ver "$MODE"` -ge 3 ]
@@ -663,7 +663,7 @@ add_gnutls_ciphersuites()
 
 add_mbedtls_ciphersuites()
 {
-    case $TYPE in
+    case ${TYPE} in
 
         "ECDSA")
             if [ `minor_ver "$MODE"` -gt 0 ]
@@ -797,7 +797,7 @@ setup_arguments()
         G_CLIENT_ARGS="$G_CLIENT_ARGS --insecure"
     fi
 
-    case $TYPE in
+    case ${TYPE} in
         "ECDSA")
             M_SERVER_ARGS="$M_SERVER_ARGS crt_file=data_files/server5.crt key_file=data_files/server5.key"
             O_SERVER_ARGS="$O_SERVER_ARGS -cert data_files/server5.crt -key data_files/server5.key"
@@ -890,9 +890,9 @@ start_server() {
     SERVER_NAME=$1
 
     log "$SERVER_CMD"
-    echo "$SERVER_CMD" > $SRV_OUT
+    echo "$SERVER_CMD" > ${SRV_OUT}
     # for servers without -www or equivalent
-    while :; do echo bla; sleep 1; done | $SERVER_CMD >> $SRV_OUT 2>&1 &
+    while :; do echo bla; sleep 1; done | ${SERVER_CMD} >> ${SRV_OUT} 2>&1 &
     PROCESS_ID=$!
 
     sleep 1
@@ -900,25 +900,25 @@ start_server() {
 
 # terminate the running server
 stop_server() {
-    kill $PROCESS_ID 2>/dev/null
-    wait $PROCESS_ID 2>/dev/null
+    kill ${PROCESS_ID} 2>/dev/null
+    wait ${PROCESS_ID} 2>/dev/null
 
     if [ "$MEMCHECK" -gt 0 ]; then
-        if is_mbedtls "$SERVER_CMD" && has_mem_err $SRV_OUT; then
+        if is_mbedtls "$SERVER_CMD" && has_mem_err ${SRV_OUT}; then
             echo "  ! Server had memory errors"
             SRVMEM=$(( $SRVMEM + 1 ))
             return
         fi
     fi
 
-    rm -f $SRV_OUT
+    rm -f ${SRV_OUT}
 }
 
 # kill the running server (used when killed by signal)
 cleanup() {
-    rm -f $SRV_OUT $CLI_OUT
-    kill $PROCESS_ID >/dev/null 2>&1
-    kill $WATCHDOG_PID >/dev/null 2>&1
+    rm -f ${SRV_OUT} ${CLI_OUT}
+    kill ${PROCESS_ID} >/dev/null 2>&1
+    kill ${WATCHDOG_PID} >/dev/null 2>&1
     exit 1
 }
 
@@ -927,28 +927,28 @@ cleanup() {
 wait_client_done() {
     CLI_PID=$!
 
-    ( sleep "$DOG_DELAY"; echo "TIMEOUT" >> $CLI_OUT; kill $CLI_PID ) &
+    ( sleep "$DOG_DELAY"; echo "TIMEOUT" >> ${CLI_OUT}; kill ${CLI_PID} ) &
     WATCHDOG_PID=$!
 
-    wait $CLI_PID
+    wait ${CLI_PID}
     EXIT=$?
 
-    kill $WATCHDOG_PID
-    wait $WATCHDOG_PID
+    kill ${WATCHDOG_PID}
+    wait ${WATCHDOG_PID}
 
-    echo "EXIT: $EXIT" >> $CLI_OUT
+    echo "EXIT: $EXIT" >> ${CLI_OUT}
 }
 
 # run_client <name> <cipher>
 run_client() {
     # announce what we're going to do
     TESTS=$(( $TESTS + 1 ))
-    VERIF=$(echo $VERIFY | tr '[:upper:]' '[:lower:]')
-    TITLE="`echo $1 | head -c1`->`echo $SERVER_NAME | head -c1`"
+    VERIF=$(echo ${VERIFY} | tr '[:upper:]' '[:lower:]')
+    TITLE="`echo $1 | head -c1`->`echo ${SERVER_NAME} | head -c1`"
     TITLE="$TITLE $MODE,$VERIF $2"
     printf "$TITLE "
     LEN=$(( 72 - `echo "$TITLE" | wc -c` ))
-    for i in `seq 1 $LEN`; do printf '.'; done; printf ' '
+    for i in `seq 1 ${LEN}`; do printf '.'; done; printf ' '
 
     # should we skip?
     if [ "X$SKIP_NEXT" = "XYES" ]; then
@@ -963,15 +963,15 @@ run_client() {
         [Oo]pen*)
             CLIENT_CMD="$OPENSSL_CMD s_client $O_CLIENT_ARGS -cipher $2"
             log "$CLIENT_CMD"
-            echo "$CLIENT_CMD" > $CLI_OUT
-            printf 'GET HTTP/1.0\r\n\r\n' | $CLIENT_CMD >> $CLI_OUT 2>&1 &
+            echo "$CLIENT_CMD" > ${CLI_OUT}
+            printf 'GET HTTP/1.0\r\n\r\n' | ${CLIENT_CMD} >> ${CLI_OUT} 2>&1 &
             wait_client_done
 
-            if [ $EXIT -eq 0 ]; then
+            if [ ${EXIT} -eq 0 ]; then
                 RESULT=0
             else
                 # If the cipher isn't supported... 
-                if grep 'Cipher is (NONE)' $CLI_OUT >/dev/null; then
+                if grep 'Cipher is (NONE)' ${CLI_OUT} >/dev/null; then
                     RESULT=1
                 else
                     RESULT=2
@@ -988,18 +988,18 @@ run_client() {
             fi
             CLIENT_CMD="$GNUTLS_CLI $G_CLIENT_ARGS --priority $G_PRIO_MODE:$2 $G_HOST"
             log "$CLIENT_CMD"
-            echo "$CLIENT_CMD" > $CLI_OUT
-            printf 'GET HTTP/1.0\r\n\r\n' | $CLIENT_CMD >> $CLI_OUT 2>&1 &
+            echo "$CLIENT_CMD" > ${CLI_OUT}
+            printf 'GET HTTP/1.0\r\n\r\n' | ${CLIENT_CMD} >> ${CLI_OUT} 2>&1 &
             wait_client_done
 
-            if [ $EXIT -eq 0 ]; then
+            if [ ${EXIT} -eq 0 ]; then
                 RESULT=0
             else
                 RESULT=2
                 # interpret early failure, with a handshake_failure alert
                 # before the server hello, as "no ciphersuite in common"
-                if grep -F 'Received alert [40]: Handshake failed' $CLI_OUT; then
-                    if grep -i 'SERVER HELLO .* was received' $CLI_OUT; then :
+                if grep -F 'Received alert [40]: Handshake failed' ${CLI_OUT}; then
+                    if grep -i 'SERVER HELLO .* was received' ${CLI_OUT}; then :
                     else
                         RESULT=1
                     fi
@@ -1013,11 +1013,11 @@ run_client() {
                 CLIENT_CMD="valgrind --leak-check=full $CLIENT_CMD"
             fi
             log "$CLIENT_CMD"
-            echo "$CLIENT_CMD" > $CLI_OUT
-            $CLIENT_CMD >> $CLI_OUT 2>&1 &
+            echo "$CLIENT_CMD" > ${CLI_OUT}
+            ${CLIENT_CMD} >> ${CLI_OUT} 2>&1 &
             wait_client_done
 
-            case $EXIT in
+            case ${EXIT} in
                 # Success
                 "0")    RESULT=0    ;;
 
@@ -1029,7 +1029,7 @@ run_client() {
             esac
 
             if [ "$MEMCHECK" -gt 0 ]; then
-                if is_mbedtls "$CLIENT_CMD" && has_mem_err $CLI_OUT; then
+                if is_mbedtls "$CLIENT_CMD" && has_mem_err ${CLI_OUT}; then
                     RESULT=2
                 fi
             fi
@@ -1042,10 +1042,10 @@ run_client() {
             ;;
     esac
 
-    echo "EXIT: $EXIT" >> $CLI_OUT
+    echo "EXIT: $EXIT" >> ${CLI_OUT}
 
     # report and count result
-    case $RESULT in
+    case ${RESULT} in
         "0")
             echo PASS
             ;;
@@ -1055,8 +1055,8 @@ run_client() {
             ;;
         "2")
             echo FAIL
-            cp $SRV_OUT c-srv-${TESTS}.log
-            cp $CLI_OUT c-cli-${TESTS}.log
+            cp ${SRV_OUT} c-srv-${TESTS}.log
+            cp ${CLI_OUT} c-cli-${TESTS}.log
             echo "  ! outputs saved to c-srv-${TESTS}.log, c-cli-${TESTS}.log"
 
             if [ "X${USER:-}" = Xbuildbot -o "X${LOGNAME:-}" = Xbuildbot ]; then
@@ -1071,7 +1071,7 @@ run_client() {
             ;;
     esac
 
-    rm -f $CLI_OUT
+    rm -f ${CLI_OUT}
 }
 
 #
@@ -1111,7 +1111,7 @@ if echo "$PEERS" | grep -i gnutls > /dev/null; then
     done
 fi
 
-for PEER in $PEERS; do
+for PEER in ${PEERS}; do
     case "$PEER" in
         mbed*|[Oo]pen*|[Gg]nu*)
             ;;
@@ -1123,7 +1123,7 @@ done
 
 # Pick a "unique" port in the range 10000-19999.
 PORT="0000$$"
-PORT="1$(echo $PORT | tail -c 5)"
+PORT="1$(echo ${PORT} | tail -c 5)"
 
 # Also pick a unique name for intermediate files
 SRV_OUT="srv_out.$$"
@@ -1140,10 +1140,10 @@ SKIP_NEXT="NO"
 
 trap cleanup INT TERM HUP
 
-for VERIFY in $VERIFIES; do
-    for MODE in $MODES; do
-        for TYPE in $TYPES; do
-            for PEER in $PEERS; do
+for VERIFY in ${VERIFIES}; do
+    for MODE in ${MODES}; do
+        for TYPE in ${TYPES}; do
+            for PEER in ${PEERS}; do
 
             setup_arguments
 
@@ -1162,17 +1162,17 @@ for VERIFY in $VERIFIES; do
 
                     if [ "X" != "X$M_CIPHERS" ]; then
                         start_server "OpenSSL"
-                        for i in $M_CIPHERS; do
-                            check_openssl_server_bug $i
-                            run_client mbedTLS $i
+                        for i in ${M_CIPHERS}; do
+                            check_openssl_server_bug ${i}
+                            run_client mbedTLS ${i}
                         done
                         stop_server
                     fi
 
                     if [ "X" != "X$O_CIPHERS" ]; then
                         start_server "mbedTLS"
-                        for i in $O_CIPHERS; do
-                            run_client OpenSSL $i
+                        for i in ${O_CIPHERS}; do
+                            run_client OpenSSL ${i}
                         done
                         stop_server
                     fi
@@ -1188,16 +1188,16 @@ for VERIFY in $VERIFIES; do
 
                     if [ "X" != "X$M_CIPHERS" ]; then
                         start_server "GnuTLS"
-                        for i in $M_CIPHERS; do
-                            run_client mbedTLS $i
+                        for i in ${M_CIPHERS}; do
+                            run_client mbedTLS ${i}
                         done
                         stop_server
                     fi
 
                     if [ "X" != "X$G_CIPHERS" ]; then
                         start_server "mbedTLS"
-                        for i in $G_CIPHERS; do
-                            run_client GnuTLS $i
+                        for i in ${G_CIPHERS}; do
+                            run_client GnuTLS ${i}
                         done
                         stop_server
                     fi
@@ -1215,8 +1215,8 @@ for VERIFY in $VERIFIES; do
 
                     if [ "X" != "X$M_CIPHERS" ]; then
                         start_server "mbedTLS"
-                        for i in $M_CIPHERS; do
-                            run_client mbedTLS $i
+                        for i in ${M_CIPHERS}; do
+                            run_client mbedTLS ${i}
                         done
                         stop_server
                     fi
@@ -1237,7 +1237,7 @@ done
 
 echo "------------------------------------------------------------------------"
 
-if [ $FAILED -ne 0 -o $SRVMEM -ne 0 ];
+if [ ${FAILED} -ne 0 -o ${SRVMEM} -ne 0 ];
 then
     printf "FAILED"
 else
@@ -1254,4 +1254,4 @@ PASSED=$(( $TESTS - $FAILED ))
 echo " ($PASSED / $TESTS tests ($SKIPPED skipped$MEMREPORT))"
 
 FAILED=$(( $FAILED + $SRVMEM ))
-exit $FAILED
+exit ${FAILED}

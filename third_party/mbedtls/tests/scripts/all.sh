@@ -182,9 +182,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if [ $FORCE -eq 1 ]; then
+if [ ${FORCE} -eq 1 ]; then
     rm -rf yotta/module "$OUT_OF_SOURCE_DIR"
-    git checkout-index -f -q $CONFIG_H
+    git checkout-index -f -q ${CONFIG_H}
     cleanup
 else
 
@@ -211,7 +211,7 @@ else
     fi
 fi
 
-if [ $RELEASE -eq 1 ]; then
+if [ ${RELEASE} -eq 1 ]; then
     # Fix the seed value to 1 to ensure that the tests are deterministic.
     SEED=1
 fi

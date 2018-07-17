@@ -7,9 +7,9 @@ function run_test {
     echo "running test: $command $@"
     printf '\e[0m'
 
-    $command "$@"
+    ${command} "$@"
     status=$?
-    if [ $status -ne 0 ]; then
+    if [ ${status} -ne 0 ]; then
         printf '\e[0;31m'
         echo "test failed: $command $@"
         printf '\e[0m'
@@ -32,13 +32,13 @@ if [ "$http_proxy" ]; then
     exit 0
 fi
 
-run_test python tests/test.py $BIN -c tests/aes.json
-run_test python tests/test.py $BIN -c tests/aes-gcm.json
-run_test python tests/test.py $BIN -c tests/aes-ctr.json
-run_test python tests/test.py $BIN -c tests/rc4-md5.json
-run_test python tests/test.py $BIN -c tests/salsa20.json
-run_test python tests/test.py $BIN -c tests/chacha20.json
-run_test python tests/test.py $BIN -c tests/chacha20-ietf.json
-run_test python tests/test.py $BIN -c tests/chacha20-ietf-poly1305.json
+run_test python tests/test.py ${BIN} -c tests/aes.json
+run_test python tests/test.py ${BIN} -c tests/aes-gcm.json
+run_test python tests/test.py ${BIN} -c tests/aes-ctr.json
+run_test python tests/test.py ${BIN} -c tests/rc4-md5.json
+run_test python tests/test.py ${BIN} -c tests/salsa20.json
+run_test python tests/test.py ${BIN} -c tests/chacha20.json
+run_test python tests/test.py ${BIN} -c tests/chacha20-ietf.json
+run_test python tests/test.py ${BIN} -c tests/chacha20-ietf-poly1305.json
 
-exit $result
+exit ${result}

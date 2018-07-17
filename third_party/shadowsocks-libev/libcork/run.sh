@@ -34,8 +34,8 @@ esac
 # Find all of the src subdirectories in the build directory, and use
 # those as the LD_LIBRARY_PATH.
 
-SRC_DIRS=$(find build/$BUILD -name src)
-JOINED=$(echo $SRC_DIRS | perl -ne 'print join(":", split)')
+SRC_DIRS=$(find build/${BUILD} -name src)
+JOINED=$(echo ${SRC_DIRS} | perl -ne 'print join(":", split)')
 
 
 # Run the desired program, and pass on any command-line arguments

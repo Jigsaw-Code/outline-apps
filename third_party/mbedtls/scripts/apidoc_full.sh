@@ -11,15 +11,15 @@ set -eu
 
 CONFIG_H='include/mbedtls/config.h'
 
-if [ -r $CONFIG_H ]; then :; else
+if [ -r ${CONFIG_H} ]; then :; else
     echo "$CONFIG_H not found" >&2
     exit 1
 fi
 
 CONFIG_BAK=${CONFIG_H}.bak
-cp -p $CONFIG_H $CONFIG_BAK
+cp -p ${CONFIG_H} ${CONFIG_BAK}
 
 scripts/config.pl realfull
 make apidoc
 
-mv $CONFIG_BAK $CONFIG_H
+mv ${CONFIG_BAK} ${CONFIG_H}

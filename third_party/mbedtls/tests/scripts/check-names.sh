@@ -39,8 +39,8 @@ diff macros identifiers | sed -n -e 's/< //p' > actual-macros
 
 for THING in actual-macros enum-consts; do
     printf "Names of $THING: "
-    test -r $THING
-    BAD=$( grep -v '^MBEDTLS_[0-9A-Z_]*[0-9A-Z]$\|^YOTTA_[0-9A-Z_]*[0-9A-Z]$' $THING || true )
+    test -r ${THING}
+    BAD=$( grep -v '^MBEDTLS_[0-9A-Z_]*[0-9A-Z]$\|^YOTTA_[0-9A-Z_]*[0-9A-Z]$' ${THING} || true )
     if [ "x$BAD" = "x" ]; then
         echo "PASS"
     else
@@ -52,8 +52,8 @@ done
 
 for THING in identifiers; do
     printf "Names of $THING: "
-    test -r $THING
-    BAD=$( grep -v '^mbedtls_[0-9a-z_]*[0-9a-z]$' $THING || true )
+    test -r ${THING}
+    BAD=$( grep -v '^mbedtls_[0-9a-z_]*[0-9a-z]$' ${THING} || true )
     if [ "x$BAD" = "x" ]; then
         echo "PASS"
     else
@@ -69,7 +69,7 @@ HEADERS=$( ls include/mbedtls/*.h | egrep -v 'compat-1\.3\.h' )
 NL='
 '
 sed -n 's/MBED..._[A-Z0-9_]*/\'"$NL"'&\'"$NL"/gp \
-    $HEADERS library/*.c \
+    ${HEADERS} library/*.c \
     | grep MBEDTLS | sort -u > _MBEDTLS_XXX
 TYPOS=$( diff _caps _MBEDTLS_XXX | sed -n 's/^> //p' \
             | egrep -v 'XXX|__|_$|^MBEDTLS_.*CONFIG_FILE$' || true )

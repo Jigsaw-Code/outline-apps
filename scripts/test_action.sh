@@ -15,4 +15,4 @@
 # limitations under the License.
 
 tsc
-jasmine --config=$ROOT_DIR/jasmine.json
+jasmine --config=${ROOT_DIR}/jasmine.json

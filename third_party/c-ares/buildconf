@@ -15,7 +15,7 @@ die(){
 findtool(){
   file="$1"
 
-  if { echo "$file" | grep "/" >/dev/null 2>&1; } then
+  if { echo "${file}" | grep "/" >/dev/null 2>&1; } then
     # when file is given with a path check it first
     if test -f "$file"; then
       echo "$file"
@@ -26,14 +26,14 @@ findtool(){
   old_IFS=$IFS; IFS=':'
   for path in $PATH
   do
-    IFS=$old_IFS
+    IFS=${old_IFS}
     # echo "checks for $file in $path" >&2
     if test -f "$path/$file"; then
       echo "$path/$file"
       return
     fi
   done
-  IFS=$old_IFS
+  IFS=${old_IFS}
 }
 
 #--------------------------------------------------------------------------
@@ -87,15 +87,15 @@ if test -z "$libtoolize"; then
   exit 1
 fi
 
-lt_pver=`$libtoolize --version 2>/dev/null|head -n 1`
-lt_qver=`echo $lt_pver|sed -e "s/([^)]*)//g" -e "s/^[^0-9]*//g"`
-lt_version=`echo $lt_qver|sed -e "s/[- ].*//" -e "s/\([a-z]*\)$//"`
+lt_pver=`${libtoolize} --version 2>/dev/null|head -n 1`
+lt_qver=`echo ${lt_pver}|sed -e "s/([^)]*)//g" -e "s/^[^0-9]*//g"`
+lt_version=`echo ${lt_qver}|sed -e "s/[- ].*//" -e "s/\([a-z]*\)$//"`
 if test -z "$lt_version"; then
   echo "buildconf: libtoolize not found."
   echo "    You need GNU libtoolize $want_lt_version or newer installed."
   exit 1
 fi
-old_IFS=$IFS; IFS='.'; set $lt_version; IFS=$old_IFS
+old_IFS=$IFS; IFS='.'; set ${lt_version}; IFS=${old_IFS}
 lt_major=$1
 lt_minor=$2
 lt_patch=$3
@@ -191,14 +191,14 @@ if test "$lt_major" = "1" && test "$lt_minor" = "5"; then
   if test -z "$lt_patch" || test "$lt_patch" -lt "26"; then
     echo "buildconf: copying libtool.m4 to local m4 subdir"
     ac_dir=`${ACLOCAL:-aclocal} --print-ac-dir`
-    if test -f $ac_dir/libtool.m4; then
-      cp -f $ac_dir/libtool.m4 m4/libtool.m4
+    if test -f ${ac_dir}/libtool.m4; then
+      cp -f ${ac_dir}/libtool.m4 m4/libtool.m4
     else
       echo "buildconf: $ac_dir/libtool.m4 not found"
     fi
     if test -f m4/libtool.m4; then
       echo "buildconf: renaming some variables in local m4/libtool.m4"
-      $PERL -i.tmp -pe \
+      ${PERL} -i.tmp -pe \
         's/lt_prog_compiler_pic_works/lt_cv_prog_compiler_pic_works/g; \
          s/lt_prog_compiler_static_works/lt_cv_prog_compiler_static_works/g;' \
         m4/libtool.m4
@@ -209,15 +209,15 @@ fi
 
 if test -f m4/libtool.m4; then
   echo "buildconf: converting all mv to mv -f in local m4/libtool.m4"
-  $PERL -i.tmp -pe 's/\bmv +([^-\s])/mv -f $1/g' m4/libtool.m4
+  ${PERL} -i.tmp -pe 's/\bmv +([^-\s])/mv -f $1/g' m4/libtool.m4
   rm -f m4/libtool.m4.tmp
 fi
 
 echo "buildconf: running aclocal"
-${ACLOCAL:-aclocal} -I m4 $ACLOCAL_FLAGS || die "aclocal command failed"
+${ACLOCAL:-aclocal} -I m4 ${ACLOCAL_FLAGS} || die "aclocal command failed"
 
 echo "buildconf: converting all mv to mv -f in local aclocal.m4"
-$PERL -i.bak -pe 's/\bmv +([^-\s])/mv -f $1/g' aclocal.m4
+${PERL} -i.bak -pe 's/\bmv +([^-\s])/mv -f $1/g' aclocal.m4
 
 echo "buildconf: running autoheader"
 ${AUTOHEADER:-autoheader} || die "autoheader command failed"
@@ -239,7 +239,7 @@ if test ! -f ./config.guess; then
   echo "buildconf: config.guess not found"
 else
   buildhost=`./config.guess 2>/dev/null|head -n 1`
-  case $buildhost in
+  case ${buildhost} in
     *-*-darwin*)
       need_lt_major=1
       need_lt_minor=5

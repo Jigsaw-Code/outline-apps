@@ -29,8 +29,8 @@ SRC="$BASE/src"
 DIST="$BASE/dist"
 
 # Project URL
-PROJ_SITE=$REPO   # Change REPO in Makefile
-PROJ_REV=$REV     # Change REV in Makefile
+PROJ_SITE=${REPO}   # Change REPO in Makefile
+PROJ_REV=${REV}     # Change REV in Makefile
 PROJ_URL=https://github.com/${PROJ_SITE}/shadowsocks-libev.git
 
 # Libraries from project
@@ -78,7 +78,7 @@ dk_download() {
         src=${pkg}_SRC
         url=${pkg}_URL
         out="${!src}".tar.gz
-        $DOWN ${!url} -o "${out}"
+        ${DOWN} ${!url} -o "${out}"
         echo "Unpacking ${out}..."
         tar zxf ${out}
     done

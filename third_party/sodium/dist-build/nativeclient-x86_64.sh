@@ -7,7 +7,7 @@ export PREFIX="$(pwd)/libsodium-nativeclient-x86_64"
 export PATH="${NACL_BIN}:$PATH"
 export CFLAGS="-O3 -fomit-frame-pointer -fforce-addr"
 
-mkdir -p $PREFIX || exit 1
+mkdir -p ${PREFIX} || exit 1
 
 make distclean > /dev/null
 

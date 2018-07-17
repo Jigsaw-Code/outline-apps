@@ -22,26 +22,26 @@ echo "Building Shadowsocks frameworks..."
 pushd $(dirname $0) > /dev/null
 
 APPLE_DIR=apple
-BUILD_DIR=`pwd`/$APPLE_DIR/build
-INSTALL_DIR=$APPLE_DIR/frameworks
+BUILD_DIR=`pwd`/${APPLE_DIR}/build
+INSTALL_DIR=${APPLE_DIR}/frameworks
 
-rm -rf $INSTALL_DIR
-mkdir -p  $BUILD_DIR $INSTALL_DIR/ios $INSTALL_DIR/macos
-pushd $APPLE_DIR/Shadowsocks > /dev/null
+rm -rf ${INSTALL_DIR}
+mkdir -p  ${BUILD_DIR} ${INSTALL_DIR}/ios ${INSTALL_DIR}/macos
+pushd ${APPLE_DIR}/Shadowsocks > /dev/null
 
 # Build iOS framework
-xcodebuild -scheme Shadowsocks_iOS -derivedDataPath $BUILD_DIR build
+xcodebuild -scheme Shadowsocks_iOS -derivedDataPath ${BUILD_DIR} build
 # Build macOS framework
-xcodebuild -scheme Shadowsocks_macOS -derivedDataPath $BUILD_DIR build
+xcodebuild -scheme Shadowsocks_macOS -derivedDataPath ${BUILD_DIR} build
 
 popd > /dev/null
 
 # Install
-cp -R $BUILD_DIR/Build/Products/Debug/Shadowsocks_macOS.framework \
-      $INSTALL_DIR/macos/
-cp -R $BUILD_DIR/Build/Products/Debug-iphoneos/Shadowsocks_iOS.framework \
-      $INSTALL_DIR/ios/
+cp -R ${BUILD_DIR}/Build/Products/Debug/Shadowsocks_macOS.framework \
+      ${INSTALL_DIR}/macos/
+cp -R ${BUILD_DIR}/Build/Products/Debug-iphoneos/Shadowsocks_iOS.framework \
+      ${INSTALL_DIR}/ios/
 # Clean up
-rm -rf $BUILD_DIR
+rm -rf ${BUILD_DIR}
 popd > /dev/null
 echo "Installed Shadowsocks_[macOS|iOS].framework to $INSTALL_DIR."

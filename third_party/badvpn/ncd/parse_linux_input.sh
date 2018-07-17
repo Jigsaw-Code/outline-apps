@@ -18,41 +18,41 @@ while read LINE; do
     tab=$'\t'
     space="[ ${tab}]"
     regex="^#define ((EV|KEY|BTN|REL|ABS|SW|MSC|LED|REP|SND|FF_STATUS)_[A-Z0-9_]+)${space}"
-    if [[ $LINE =~ $regex ]]; then
+    if [[ ${LINE} =~ $regex ]]; then
         type=${BASH_REMATCH[2]}
         name=${BASH_REMATCH[1]}
-        if [[ $type = "EV" ]]; then
-            if [[ $name != "EV_VERSION" ]]; then
+        if [[ ${type} = "EV" ]]; then
+            if [[ ${name} != "EV_VERSION" ]]; then
                 types="${types}    [${name}] = \"${name}\",
 "
             fi
-        elif [[ $type = "KEY" ]] || [[ $type = "BTN" ]]; then
-            if [[ $name != "KEY_MIN_INTERESTING" ]]; then
+        elif [[ ${type} = "KEY" ]] || [[ ${type} = "BTN" ]]; then
+            if [[ ${name} != "KEY_MIN_INTERESTING" ]]; then
                 keys="${keys}    [${name}] = \"${name}\",
 "
             fi
-        elif [[ $type = "REL" ]]; then
+        elif [[ ${type} = "REL" ]]; then
             rels="${rels}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "ABS" ]]; then
+        elif [[ ${type} = "ABS" ]]; then
             abss="${abss}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "SW" ]]; then
+        elif [[ ${type} = "SW" ]]; then
             sws="${sws}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "MSC" ]]; then
+        elif [[ ${type} = "MSC" ]]; then
             mscs="${mscs}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "LED" ]]; then
+        elif [[ ${type} = "LED" ]]; then
             leds="${leds}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "REP" ]]; then
+        elif [[ ${type} = "REP" ]]; then
             reps="${reps}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "SND" ]]; then
+        elif [[ ${type} = "SND" ]]; then
             snds="${snds}    [${name}] = \"${name}\",
 "
-        elif [[ $type = "FF_STATUS" ]]; then
+        elif [[ ${type} = "FF_STATUS" ]]; then
             ffstatuss="${ffstatuss}    [${name}] = \"${name}\",
 "
         fi

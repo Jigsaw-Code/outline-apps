@@ -16,27 +16,27 @@
 
 echo "Building Shadowsocks frameworks..."
 
-SHADOWSOCKS_DIR=$ROOT_DIR/third_party/shadowsocks-libev/apple
-BUILD_DIR=$SHADOWSOCKS_DIR/build
-INSTALL_DIR=$SHADOWSOCKS_DIR/frameworks
+SHADOWSOCKS_DIR=${ROOT_DIR}/third_party/shadowsocks-libev/apple
+BUILD_DIR=${SHADOWSOCKS_DIR}/build
+INSTALL_DIR=${SHADOWSOCKS_DIR}/frameworks
 
-rm -rf $INSTALL_DIR
-mkdir -p  $BUILD_DIR $INSTALL_DIR/ios $INSTALL_DIR/macos
+rm -rf ${INSTALL_DIR}
+mkdir -p  ${BUILD_DIR} ${INSTALL_DIR}/ios ${INSTALL_DIR}/macos
 
-pushd $SHADOWSOCKS_DIR > /dev/null
+pushd ${SHADOWSOCKS_DIR} > /dev/null
 
 COMMON_XCODE_ARGS="-project Shadowsocks/Shadowsocks.xcodeproj -configuration Release only_active_arch=no -derivedDataPath $BUILD_DIR"
 # Build iOS framework
-xcodebuild $COMMON_XCODE_ARGS -scheme Shadowsocks_iOS -destination "generic/platform=iOS" archive
+xcodebuild ${COMMON_XCODE_ARGS} -scheme Shadowsocks_iOS -destination "generic/platform=iOS" archive
 # Build macOS framework
-xcodebuild $COMMON_XCODE_ARGS -scheme Shadowsocks_macOS -destination "platform=macOS,arch=x86_64" archive
+xcodebuild ${COMMON_XCODE_ARGS} -scheme Shadowsocks_macOS -destination "platform=macOS,arch=x86_64" archive
 
 # Install
-cp -RL $BUILD_DIR/Build/Intermediates.noindex/ArchiveIntermediates/Shadowsocks_iOS/BuildProductsPath/Release-iphoneos/Shadowsocks_iOS.framework \
-       $INSTALL_DIR/ios/
-cp -RL $BUILD_DIR/Build/Intermediates.noindex/ArchiveIntermediates/Shadowsocks_macOS/BuildProductsPath/Release/Shadowsocks_macOS.framework \
-       $INSTALL_DIR/macos/
+cp -RL ${BUILD_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/Shadowsocks_iOS/BuildProductsPath/Release-iphoneos/Shadowsocks_iOS.framework \
+       ${INSTALL_DIR}/ios/
+cp -RL ${BUILD_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/Shadowsocks_macOS/BuildProductsPath/Release/Shadowsocks_macOS.framework \
+       ${INSTALL_DIR}/macos/
 
 # Clean up
-rm -rf $BUILD_DIR
+rm -rf ${BUILD_DIR}
 echo "Installed Shadowsocks_[macOS|iOS].framework to $INSTALL_DIR."

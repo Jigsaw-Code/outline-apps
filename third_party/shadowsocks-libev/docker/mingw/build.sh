@@ -26,9 +26,9 @@ set -e
 
 build_proj() {
     arch=$1
-    host=$arch-w64-mingw32
-    prefix=${DIST}/$arch
-    dep=${PREFIX}/$arch
+    host=${arch}-w64-mingw32
+    prefix=${DIST}/${arch}
+    dep=${PREFIX}/${arch}
     cpu="$(nproc --all)"
 
     cd "$SRC"
@@ -54,7 +54,7 @@ build_proj() {
       --with-cares="$dep" \
       CFLAGS="-DCARES_STATICLIB -DPCRE_STATIC"
     make clean
-    make -j$cpu LDFLAGS="-all-static -L${dep}/lib"
+    make -j${cpu} LDFLAGS="-all-static -L${dep}/lib"
     make install-strip
 
     # Reference SIP003 plugin (Experimental)
@@ -77,13 +77,13 @@ build_proj() {
       --disable-documentation \
       --with-ev="$dep"
     make clean
-    make -j$cpu LDFLAGS="-all-static -L${dep}/lib"
+    make -j${cpu} LDFLAGS="-all-static -L${dep}/lib"
     make install-strip
 }
 
 dk_build() {
     for arch in i686 x86_64; do
-        build_proj $arch
+        build_proj ${arch}
     done
 }
 

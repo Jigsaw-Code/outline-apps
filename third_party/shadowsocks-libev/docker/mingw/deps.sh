@@ -26,21 +26,21 @@ set -e
 
 build_deps() {
     arch=$1
-    host=$arch-w64-mingw32
-    prefix=${PREFIX}/$arch
+    host=${arch}-w64-mingw32
+    prefix=${PREFIX}/${arch}
     args="--host=${host} --prefix=${prefix} --disable-shared --enable-static"
     cpu="$(nproc --all)"
 
     # libev
     cd "$SRC/$LIBEV_SRC"
-    ./configure $args
+    ./configure ${args}
     make clean
-    make -j$cpu install
+    make -j${cpu} install
 
     # mbedtls
     cd "$SRC/$MBEDTLS_SRC"
     make clean
-    make -j$cpu lib WINDOWS=1 CC="${host}-gcc" AR="${host}-ar"
+    make -j${cpu} lib WINDOWS=1 CC="${host}-gcc" AR="${host}-ar"
     ## "make install" command from mbedtls
     DESTDIR="${prefix}"
     mkdir -p "${DESTDIR}"/include/mbedtls
@@ -53,26 +53,26 @@ build_deps() {
 
     # sodium
     cd "$SRC/$SODIUM_SRC"
-    ./configure $args
+    ./configure ${args}
     make clean
-    make -j$cpu install
+    make -j${cpu} install
 
     # pcre
     cd "$SRC/$PCRE_SRC"
-    ./configure $args --disable-cpp \
+    ./configure ${args} --disable-cpp \
       --enable-unicode-properties
     make clean
-    make -j$cpu install
+    make -j${cpu} install
 
     # c-ares
     cd "$SRC/$CARES_SRC"
-    ./configure $args
+    ./configure ${args}
     make clean
-    make -j$cpu install
+    make -j${cpu} install
 }
 
 dk_deps() {
     for arch in i686 x86_64; do
-        build_deps $arch
+        build_deps ${arch}
     done
 }

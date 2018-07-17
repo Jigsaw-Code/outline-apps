@@ -36,7 +36,7 @@ run_test()
 {
     TEST=$1
     echo "running '$TEST'"
-    if ! `$TEST > /dev/null 2>&1`; then
+    if ! `${TEST} > /dev/null 2>&1`; then
         echo "test '$TEST' failed"
         return 1
     fi

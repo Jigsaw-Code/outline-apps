@@ -34,12 +34,12 @@ CONF=/etc/shadowsocks-libev/config.json
 #GROUP="nobody"
 
 # Take care of pidfile permissions
-mkdir /var/run/$NAME 2>/dev/null || true
+mkdir /var/run/${NAME} 2>/dev/null || true
 #chown "$USER:$GROUP" /var/run/$NAME
 
 # Check the configuration file exists.
 #
-if [ ! -f $CONF ] ; then
+if [ ! -f ${CONF} ] ; then
 echo "The configuration file cannot be found!"
 exit 0
 fi
@@ -50,7 +50,7 @@ LOCK_FILE=/var/lock/subsys/shadowsocks
 
 # Path to the pid file.
 #
-PID=/var/run/$NAME/pid
+PID=/var/run/${NAME}/pid
 
 
 #====================================================================
@@ -63,20 +63,20 @@ RETVAL=0
 # Start shadowsocks as daemon.
 #
 start() {
-if [ -f $LOCK_FILE ]; then
+if [ -f ${LOCK_FILE} ]; then
 echo "$NAME is already running!"
 exit 0
 else
 echo -n $"Starting ${NAME}: "
 #daemon --check $DAEMON --user $USER "$DAEMON -f $PID -c $CONF > /dev/null"
-daemon $DAEMON -u -c $CONF -f $PID
+daemon ${DAEMON} -u -c ${CONF} -f ${PID}
 fi
 
 RETVAL=$?
-[ $RETVAL -eq 0 ] && success
+[ ${RETVAL} -eq 0 ] && success
 echo
-[ $RETVAL -eq 0 ] && touch $LOCK_FILE
-return $RETVAL
+[ ${RETVAL} -eq 0 ] && touch ${LOCK_FILE}
+return ${RETVAL}
 }
 
 
@@ -86,11 +86,11 @@ stop() {
 echo -n $"Shutting down ${NAME}: "
 killproc -p ${PID}
 RETVAL=$?
-[ $RETVAL -eq 0 ]
-rm -f $LOCK_FILE
+[ ${RETVAL} -eq 0 ]
+rm -f ${LOCK_FILE}
 rm -f ${PID}
 echo
-return $RETVAL
+return ${RETVAL}
 }
 
 # See how we were called.
@@ -106,14 +106,14 @@ stop
 start
 ;;
 condrestart)
-if [ -f $LOCK_FILE ]; then
+if [ -f ${LOCK_FILE} ]; then
 stop
 start
 RETVAL=$?
 fi
 ;;
 status)
-status $DAEMON
+status ${DAEMON}
 RETVAL=$?
 ;;
 *)
@@ -121,4 +121,4 @@ echo $"Usage: $0 {start|stop|restart|condrestart|status}"
 RETVAL=1
 esac
 
-exit $RETVAL
+exit ${RETVAL}

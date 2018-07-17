@@ -22,7 +22,7 @@ set -eu
 
 CONFIG_H='include/mbedtls/config.h'
 
-if [ -r $CONFIG_H ]; then :; else
+if [ -r ${CONFIG_H} ]; then :; else
     echo "$CONFIG_H not found" >&2
     echo "This script needs to be run from the root of" >&2
     echo "a git checkout or uncompressed tarball" >&2
@@ -57,9 +57,9 @@ doit()
     log ""
     log "$NAME ($FILE):"
 
-    cp $CONFIG_H ${CONFIG_H}.bak
-    if [ "$FILE" != $CONFIG_H ]; then
-        cp "$FILE"  $CONFIG_H
+    cp ${CONFIG_H} ${CONFIG_H}.bak
+    if [ "$FILE" != ${CONFIG_H} ]; then
+        cp "$FILE"  ${CONFIG_H}
     fi
 
     {
@@ -78,7 +78,7 @@ doit()
     log "$( head -n1 "$OUT" )"
     log "$( tail -n1 "$OUT" )"
 
-    cp ${CONFIG_H}.bak $CONFIG_H
+    cp ${CONFIG_H}.bak ${CONFIG_H}
 }
 
 # truncate the file just this time
@@ -89,7 +89,7 @@ log "Footprint of standard configurations (minus net_sockets.c, timing.c, fs_io)
 log "for bare-metal ARM Cortex-M3/M4 microcontrollers."
 
 VERSION_H="include/mbedtls/version.h"
-MBEDTLS_VERSION=$( sed -n 's/.*VERSION_STRING *"\(.*\)"/\1/p' $VERSION_H )
+MBEDTLS_VERSION=$( sed -n 's/.*VERSION_STRING *"\(.*\)"/\1/p' ${VERSION_H} )
 if git rev-parse HEAD >/dev/null; then
     GIT_HEAD=$( git rev-parse HEAD | head -c 10 )
     GIT_VERSION=" (git head: $GIT_HEAD)"

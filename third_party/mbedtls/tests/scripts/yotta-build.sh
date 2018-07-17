@@ -27,10 +27,10 @@ yotta_build()
     TARGET=$1
 
     echo; echo "*** $TARGET (release) ***"
-    yt -t $TARGET build
+    yt -t ${TARGET} build
 
     echo; echo "*** $TARGET (debug) ***"
-    yt -t $TARGET build -d
+    yt -t ${TARGET} build -d
 }
 
 # Make sure the tools we need are available.

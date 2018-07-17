@@ -23,14 +23,14 @@ fi
 FILES="o-srv-*.log o-cli-*.log c-srv-*.log c-cli-*.log o-pxy-*.log"
 MAX_LOG_SIZE=1048576
 
-for PATTERN in $FILES; do
-    for LOG in $( ls tests/$PATTERN 2>/dev/null ); do
+for PATTERN in ${FILES}; do
+    for LOG in $( ls tests/${PATTERN} 2>/dev/null ); do
         echo
         echo "****** BEGIN file: $LOG ******"
         echo
-        tail -c $MAX_LOG_SIZE $LOG
+        tail -c ${MAX_LOG_SIZE} ${LOG}
         echo "****** END file: $LOG ******"
         echo
-        rm $LOG
+        rm ${LOG}
     done
 done

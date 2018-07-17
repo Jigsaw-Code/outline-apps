@@ -14,10 +14,10 @@ check()
     FILE=$1
     SCRIPT=$2
 
-    cp $FILE $FILE.bak
-    $SCRIPT
-    diff $FILE $FILE.bak
-    mv $FILE.bak $FILE
+    cp ${FILE} ${FILE}.bak
+    ${SCRIPT}
+    diff ${FILE} ${FILE}.bak
+    mv ${FILE}.bak ${FILE}
 }
 
 check library/error.c scripts/generate_errors.pl
