@@ -26,7 +26,6 @@ ARCHS="x86_64 armv7 armv7s arm64"
 rsync -a --exclude='apple*' .. $SRCDIR
 
 pushd $SRCDIR > /dev/null
-./autogen.sh
 
 for ARCH in $ARCHS
 do
