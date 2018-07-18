@@ -1,10 +1,2 @@
-.gitattributes text eol=crlf
-*.bat text eol=crlf
-*.ts text eol=crlf
-*.c text eol=crlf
-*.md text eol=crlf
-Makefile text eol=crlf
-*.h text eol=crlf
-*.swift text eol=crlf
-*.m text eol=crlf
-*.xml text eol=crlf
+* text=auto eol=lf
+*.bat eol=crlf
