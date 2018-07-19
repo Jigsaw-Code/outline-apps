@@ -1,1 +1,2 @@
-*.ts text eol=clrf
+* text=auto eol=lf
+*.bat eol=crlf
