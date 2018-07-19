@@ -83,7 +83,8 @@ export function main(platform: OutlinePlatform) {
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
                 platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
-                environmentVars, platform.getUpdater());
+                environmentVars, platform.getUpdater(),
+                platform.quitApplication);
           },
           (e) => {
             onUnexpectedError(e);

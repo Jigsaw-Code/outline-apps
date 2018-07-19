@@ -1,10 +1,4 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.12)
-
-# Fix for CMake policy warning when building with CMake >= 3.0.
-# TODO: remove this fix once minimum version is updated to 3.0 or newer.
-IF (NOT CMAKE_VERSION VERSION_LESS 3.0)
-	CMAKE_POLICY (SET CMP0048 NEW)
-ENDIF ()
+CMAKE_MINIMUM_REQUIRED (VERSION 3.1.0)
 
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckTypeSize)
@@ -16,6 +10,9 @@ INCLUDE (CheckLibraryExists)
 INCLUDE (GNUInstallDirs)
 
 PROJECT (c-ares C)
+
+# Set this version before release
+SET (CARES_VERSION "1.14.0")
 
 # This is for libtool compatibility, and specified in a form that is easily
 # translatable from libtool (even if the actual form doesn't make sense).
@@ -35,7 +32,29 @@ OPTION (CARES_STATIC     "Build as a static library"                            
 OPTION (CARES_SHARED     "Build as a shared library"                                             ON)
 OPTION (CARES_INSTALL    "Create installation targets (chain builders may want to disable this)" ON)
 OPTION (CARES_STATIC_PIC "Build the static library as PIC (position independent)"                OFF)
+OPTION (CARES_BUILD_TESTS "Build and run tests"                                                  OFF)
 
+# allow linking against the static runtime library in msvc
+IF (MSVC)
+	OPTION (CARES_MSVC_STATIC_RUNTIME "Link against the static runtime library" OFF)
+	IF (CARES_MSVC_STATIC_RUNTIME)
+		# CMAKE_CONFIGURATION_TYPES is empty on non-IDE generators (Ninja, NMake)
+		# and that's why we also use CMAKE_BUILD_TYPE to cover for those generators.
+		# For IDE generators, CMAKE_BUILD_TYPE is usually empty
+		FOREACH (config_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+			STRING (TOUPPER ${config_type} upper_config_type)
+			SET (flag_var "CMAKE_C_FLAGS_${upper_config_type}")
+			IF (${flag_var} MATCHES "/MD")
+				STRING (REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+			ENDIF ()
+		ENDFOREACH ()
+
+		# clean up
+		SET (upper_config_type)
+		SET (config_type)
+		SET (flag_var)
+	ENDIF ()
+ENDIF ()
 
 # Keep build organized.
 SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -103,9 +122,10 @@ IF (IOS AND HAVE_LIBRESOLV)
 ENDIF()
 
 CHECK_LIBRARY_EXISTS (nsl gethostbyname "" HAVE_LIBNSL)
-CHECK_LIBRARY_EXISTS (socket gethostbyname "" HAVE_LIBSOCKET)
-IF (NOT HAVE_LIBSOCKET)
-	CHECK_LIBRARY_EXISTS (socket socket "" HAVE_LIBSOCKET)
+CHECK_LIBRARY_EXISTS (socket gethostbyname "" HAVE_GHBN_LIBSOCKET)
+CHECK_LIBRARY_EXISTS (socket socket "" HAVE_SOCKET_LIBSOCKET)
+IF (HAVE_GHBN_LIBSOCKET OR HAVE_SOCKET_LIBSOCKET)
+	SET(HAVE_LIBSOCKET TRUE)
 ENDIF ()
 CHECK_LIBRARY_EXISTS (rt clock_gettime "" HAVE_LIBRT)
 
@@ -246,6 +266,7 @@ MACRO (CARES_TYPE_EXISTS type var)
 	SET(_CARES_C_SOURCE "${_CARES_C_SOURCE}
 		int main() {
 			${type} var_exists;
+			(void)var_exists;
 			return 0;
 		}
 	")
@@ -327,6 +348,10 @@ CHECK_SYMBOL_EXISTS (strncasecmp     "${CMAKE_EXTRA_INCLUDE_FILES}" HAVE_STRNCAS
 CHECK_SYMBOL_EXISTS (strncmpi        "${CMAKE_EXTRA_INCLUDE_FILES}" HAVE_STRNCMPI)
 CHECK_SYMBOL_EXISTS (strnicmp        "${CMAKE_EXTRA_INCLUDE_FILES}" HAVE_STRNICMP)
 CHECK_SYMBOL_EXISTS (writev          "${CMAKE_EXTRA_INCLUDE_FILES}" HAVE_WRITEV)
+
+# On Android, the system headers may define __system_property_get(), but excluded
+# from libc.  We need to perform a link test instead of a header/symbol test.
+CHECK_FUNCTION_EXISTS (__system_property_get HAVE___SYSTEM_PROPERTY_GET)
 
 # Unset temporary data
 SET (CMAKE_EXTRA_INCLUDE_FILES)
@@ -605,6 +630,10 @@ IF (CARES_STATIC)
 	ENDIF ()
 ENDIF ()
 
+IF (CARES_BUILD_TESTS)
+	ENABLE_TESTING ()
+	ADD_SUBDIRECTORY (test)
+ENDIF ()
 
 # Headers installation target
 IF (CARES_INSTALL)
@@ -623,6 +652,16 @@ IF (CARES_INSTALL)
 	)
 	INSTALL (EXPORT ${PROJECT_NAME}-targets DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ${PROJECT_NAME}::)
 	INSTALL (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake" DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+
+	# pkgconfig support
+	IF (NOT CARES_SHARED)
+		SET (CPPFLAG_CARES_STATICLIB "-DCARES_STATICLIB")
+		FOREACH (LIB ${CARES_DEPENDENT_LIBS})
+			SET (CARES_PRIVATE_LIBS "${CARES_PRIVATE_LIBS} -l${LIB}")
+		ENDFOREACH ()
+	ENDIF ()
+	CONFIGURE_FILE("libcares.pc.cmake" "libcares.pc" @ONLY)
+	INSTALL (FILES "${CMAKE_CURRENT_BINARY_DIR}/libcares.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 ENDIF ()
 
 # Legacy chain-building variables (provided for compatibility with old code).

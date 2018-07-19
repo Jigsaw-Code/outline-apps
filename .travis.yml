@@ -15,7 +15,7 @@
 language: node_js
 
 node_js:
-  - "8"
+  - "10"
 
 cache:
   yarn: true
@@ -133,7 +133,7 @@ deploy:
     secure: "rVCXm4JU1B39WCvDKm7tAYoEznEkVG+MgLJTYBQTiOsalh5kjc5rGrzBtWANEZbAHOEAxx3vmUL8XMNOuekB44rubqRBJTKvnjqhekNWH+4Jga/7Y6r8HkktI17F0vkWmcILe2yJNXjX6Tb7gPS4xQkTHUM4dykAmiuNGQ7v557TmtZxGAR4M61h2pEv6LsDiH4UmlPcr0UPUz/Igam2//rMx8y+YQgIJuFINQJOnOz19q4Vg+Bnk4OO4sNKY6EtVO/4o8onbdOCJ1Il6JH82CTZmutGurCf3xl2+NTnsjakcirviZvXoZxk6d9FgMd4croEPRA95rlze9ODqyJRp0z8QbLjaoJChJf0B1Mds9mvolMPtLwOi++bHyPedpe9/9VCey4/geB8iISdI5wd6FuvixtdOZeirOJMqYfQrfwvlJS0BFDy4W70Ei9EJ3Dz8/1pHj47WddNdqREhFIMACG4Wjtp+tp1IZcooNDfvGA3rZONTxV6ZYnELj1+slX5I9HGFFcgUOvDibod/DO5fjF6L1ujaliFKZBzjQq/srFJFqsFD4V4cX99ZFWcDZDrWpllFh5KKB2BrskgKsEe7n6QarswlVzbTEJobhKXPnaV3RAWTFJKh28+Yt65UMB4vZJR4VwvXG3WJd7+e5Sqo/MIF6bujhkzW/E75Ym82xo="
   file_glob: true
   file:
-    - platforms/android/build/outputs/apk/*.apk
+    - platforms/android/app/build/outputs/apk/**/*.apk
     - platforms/ios/Outline.ipa
     - build/windows/dist/*.exe
   skip_cleanup: true

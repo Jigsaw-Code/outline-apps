@@ -9,7 +9,11 @@ ds_src = src/libcork/ds/array.c src/libcork/ds/bitset.c src/libcork/ds/buffer.c 
 		 src/libcork/ds/ring-buffer.c src/libcork/ds/slice.c
 posix_src = src/libcork/posix/directory-walker.c src/libcork/posix/env.c src/libcork/posix/exec.c \
 			src/libcork/posix/files.c src/libcork/posix/process.c
+if !BUILD_WINCOMPAT
 posix_src += src/libcork/posix/subprocess.c src/libcork/pthreads/thread.c
+else
+posix_src += src/libcork/posix/mingw.c
+endif
 
 libcork_la_SOURCES = $(cli_src) $(core_src) $(ds_src) $(pthreads_src) $(posix_src)
 libcork_la_CFLAGS = -I$(top_srcdir)/libcork/include -DCORK_API=CORK_LOCAL

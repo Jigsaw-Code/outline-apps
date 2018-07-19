@@ -9,9 +9,9 @@ third_party {
     value: "https://www.pcre.org/"
   }
   url {
-    type: SVN
-    value: "svn://vcs.exim.org/pcre/code/tags/pcre-8.41"
+    type: ARCHIVE
+    value: "https://ftp.pcre.org/pub/pcre/pcre-8.42.tar.gz"
   }
-  version: "8.41"
-  last_upgrade_date { year: 2017 month: 12 day: 8 }
+  version: "8.42"
+  last_upgrade_date { year: 2018 month: 7 day: 13 }
 }

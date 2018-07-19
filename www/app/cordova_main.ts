@@ -101,6 +101,11 @@ class CordovaPlatform implements OutlinePlatform {
   getUpdater() {
     return new AbstractUpdater();
   }
+
+  quitApplication() {
+    // Only used in macOS because menu bar apps provide no alternative way of quitting.
+    cordova.plugins.outline.quitApplication();
+  }
 }
 
 // https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready

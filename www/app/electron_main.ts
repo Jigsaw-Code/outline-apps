@@ -92,5 +92,8 @@ main({
   },
   getUpdater: () => {
     return new ElectronUpdater();
+  },
+  quitApplication: () => {
+    ipcRenderer.send('quit-app');
   }
 });

@@ -16,9 +16,9 @@
 // https://github.com/oyyd/http-proxy-to-socks
 
 declare module 'http-proxy-to-socks/lib/proxy_server' {
-  // Normally imports would come first but we must make the first statement of the file be a declare
-  // in order for the TypeScript compiler to accept this file as a .d.ts.
-  import * as http from 'http';
+// Normally imports would come first but we must make the first statement of the file be a declare
+// in order for the TypeScript compiler to accept this file as a .d.ts.
+import * as http from 'http';
 
   function createServer(args: {socks: string;}): http.Server;
 }
