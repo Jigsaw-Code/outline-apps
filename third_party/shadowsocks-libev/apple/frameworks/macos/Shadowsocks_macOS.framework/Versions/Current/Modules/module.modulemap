@@ -1,0 +1,6 @@
+framework module Shadowsocks_macOS {
+  umbrella header "Shadowsocks_macOS.h"
+
+  export *
+  module * { export * }
+}
