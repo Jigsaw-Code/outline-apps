@@ -3,8 +3,9 @@
 
 #include "crypto_hash_sha512.h"
 #include "crypto_sign_ed25519.h"
-#include "ed25519_ref10.h"
-#include "private/curve25519_ref10.h"
+#include "sign_ed25519_ref10.h"
+#include "private/ed25519_ref10.h"
+#include "randombytes.h"
 #include "utils.h"
 
 void
@@ -23,6 +24,43 @@ _crypto_sign_ed25519_ref10_hinit(crypto_hash_sha512_state *hs, int prehashed)
     }
 }
 
+static inline void
+_crypto_sign_ed25519_clamp(unsigned char k[32])
+{
+    k[0] &= 248;
+    k[31] &= 127;
+    k[31] |= 64;
+}
+
+#ifdef ED25519_NONDETERMINISTIC
+/* r = hash(B || empty_labelset || Z || pad1 || k || pad2 || empty_labelset || K || extra || M) (mod q) */
+static void
+_crypto_sign_ed25519_synthetic_r_hv(crypto_hash_sha512_state *hs,
+                                    unsigned char Z[32],
+                                    const unsigned char sk[64])
+{
+    static const unsigned char B[32] = {
+        0x58, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+        0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+        0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+        0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+    };
+    static const unsigned char zeros[128] = { 0x00 };
+    static const unsigned char empty_labelset[3] = { 0x02, 0x00, 0x00 };
+
+    crypto_hash_sha512_update(hs, B, 32);
+    crypto_hash_sha512_update(hs, empty_labelset, 3);
+    randombytes_buf(Z, 32);
+    crypto_hash_sha512_update(hs, Z, 32);
+    crypto_hash_sha512_update(hs, zeros, 128 - (32 + 3 + 32) % 128);
+    crypto_hash_sha512_update(hs, sk, 32);
+    crypto_hash_sha512_update(hs, zeros, 128 - 32 % 128);
+    crypto_hash_sha512_update(hs, empty_labelset, 3);
+    crypto_hash_sha512_update(hs, sk + 32, 32);
+    /* empty extra */
+}
+#endif
+
 int
 _crypto_sign_ed25519_detached(unsigned char *sig, unsigned long long *siglen_p,
                               const unsigned char *m, unsigned long long mlen,
@@ -32,33 +70,38 @@ _crypto_sign_ed25519_detached(unsigned char *sig, unsigned long long *siglen_p,
     unsigned char            az[64];
     unsigned char            nonce[64];
     unsigned char            hram[64];
-    ge_p3                    R;
-
-    crypto_hash_sha512(az, sk, 32);
-    az[0] &= 248;
-    az[31] &= 63;
-    az[31] |= 64;
+    ge25519_p3               R;
 
     _crypto_sign_ed25519_ref10_hinit(&hs, prehashed);
+
+#ifdef ED25519_NONDETERMINISTIC
+    memcpy(az, sk, 32);
+    _crypto_sign_ed25519_synthetic_r_hv(&hs, nonce, az);
+#else
+    crypto_hash_sha512(az, sk, 32);
     crypto_hash_sha512_update(&hs, az + 32, 32);
+#endif
+
     crypto_hash_sha512_update(&hs, m, mlen);
     crypto_hash_sha512_final(&hs, nonce);
 
     memmove(sig + 32, sk + 32, 32);
 
-    sc_reduce(nonce);
-    ge_scalarmult_base(&R, nonce);
-    ge_p3_tobytes(sig, &R);
+    sc25519_reduce(nonce);
+    ge25519_scalarmult_base(&R, nonce);
+    ge25519_p3_tobytes(sig, &R);
 
     _crypto_sign_ed25519_ref10_hinit(&hs, prehashed);
     crypto_hash_sha512_update(&hs, sig, 64);
     crypto_hash_sha512_update(&hs, m, mlen);
     crypto_hash_sha512_final(&hs, hram);
 
-    sc_reduce(hram);
-    sc_muladd(sig + 32, hram, az, nonce);
+    sc25519_reduce(hram);
+    _crypto_sign_ed25519_clamp(az);
+    sc25519_muladd(sig + 32, hram, az, nonce);
 
     sodium_memzero(az, sizeof az);
+    sodium_memzero(nonce, sizeof nonce);
 
     if (siglen_p != NULL) {
         *siglen_p = 64U;

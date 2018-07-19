@@ -1,7 +1,7 @@
 /*
  * tunnel.h - Define tunnel's buffers and callbacks
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -55,15 +55,12 @@ typedef struct server {
     int fd;
 
     buffer_t *buf;
-    buffer_t *abuf;
     cipher_ctx_t *e_ctx;
     cipher_ctx_t *d_ctx;
     struct server_ctx *recv_ctx;
     struct server_ctx *send_ctx;
     struct remote *remote;
     ss_addr_t destaddr;
-
-    ev_timer delayed_connect_watcher;
 } server_t;
 
 typedef struct remote_ctx {

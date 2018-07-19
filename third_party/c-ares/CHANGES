@@ -1,7 +1,4210 @@
-This file no longer holds the changelog. Now you can generate it yourself
-like this:
+   Changelog for the c-ares project. Generated with git2changes.pl
 
- $ git log --pretty=fuller --no-color --date=short --decorate=full -1000 |
-   ./git2changes.pl
+Version 1.14.0 (16 Feb 2018)
 
-The older, manually edited, changelog is found in git named CHANGES.0
+Daniel Stenberg (16 Feb 2018)
+- ares_android.c: fix warning: ISO C forbids an empty translation unit
+
+- RELEASE-NOTES: some more work we did and people who helped
+
+Brad House (16 Feb 2018)
+- travis: skip Autotools style testing for cmake
+  
+  Fix cmake test build by skipping autotools portion of test script.
+
+- travis: standardize CMake test off of Autotools tests
+  
+  Instead of running 'make test', run the tests directly like autotools
+  does.  It provides more verbose output.
+
+- travis: Enable building tests for CMake
+  
+  Travis should auto-build and run tests for cmake builds now that
+  PR #168 is merged.
+
+- fix version in pkgconfig
+
+- Add version update to CMakeLists in maketgz
+
+- Release prep.  Add support for pkgconfig in cmake, set versions appropriately
+
+Gregor Jasny (15 Feb 2018)
+- CMake: Add tests
+
+Brad House (14 Feb 2018)
+- [Gregor Jasny brought this change]
+
+  Use cmake3 package provided by Ubuntu (#182)
+
+- Cmake 3.1 instead of 3.2.1 should be the minimum
+
+- Update RELEASE-NOTES and RELEASE-PROCEDURE.md to prepare for next release
+
+- get rid of c++ style comments
+
+- Use trusty for all builds, precise is EOL.  Update clang and cmake versions.
+
+- Current CMakeLists.txt doesn't support 2.8.12 anymore, we need to bump the version to 3.2.1 minimum
+
+- Re-organize sections in INSTALL.md and add CMake section
+
+- [Sergey Kolomenkin brought this change]
+
+  remove compilation warnings in MSVC (#47)
+
+- document handling of timeouts for ares_process and ares_process_fd to close PR #57
+
+- As per Issue #155, since we do not require gethostname() during init, if it fails, there's no reason for init to fail as it is only used to populate the domain
+
+GitHub (7 Feb 2018)
+- [David Drysdale brought this change]
+
+  Document WSAStartup requirement (#180)
+
+David Drysdale (6 Feb 2018)
+- [Antonio Tajuelo brought this change]
+
+  Added coderelease.io badge to readme.md for letting people subscribe to new versions (#174)
+
+- [Sheel Bedi brought this change]
+
+  Update year in LICENSE.md to 2018 (#170)
+
+GitHub (4 Feb 2018)
+- [David Drysdale brought this change]
+
+  travis: use VM not container for {L,A}SAN builds (#177)
+  
+  As per https://github.com/travis-ci/travis-ci/issues/9033, container
+  based builds do not currently allow ptrace, which is used by LSAN and
+  ASAN.
+
+Brad House (3 Feb 2018)
+- [acthompson-google-com brought this change]
+
+  Android JNI code leaks local references in some cases (#175)
+  
+  * Add Google LLC to AUTHORS.
+  
+  * android: Explicitly delete all JNI local references, and cache JNI method IDs at initialization.
+  
+  * android: Only return ARES_ENOTINITIALIZED on failures in initialization code.
+
+Gregor Jasny (2 Jan 2018)
+- Embed fused Google Test 1.8.0
+
+Brad House (21 Dec 2017)
+- [John Schember brought this change]
+
+  android: Check returns for obj and classes are not NULL. Document API levels for various Android functions and objects used. (#166)
+
+- CARES_CHECK_TYPE should reference variable so a warning is not produced for -Werror compatibility
+
+- [Brad Spencer brought this change]
+
+  Fix computation of IPv6 blacklist mask for values of netmask > 8. (#164)
+
+David Drysdale (14 Dec 2017)
+- travis: Only do coverage/distcheck on normal build
+
+- travis: only do pip install on Linux
+
+- travis: only test in IPv4 mode
+  
+  Travis' Trusty environment does not support IPv6.
+
+- test: allow restriction to one IP address family
+
+- [Roman Teterin brought this change]
+
+  Fix a typo in init_by_resolv_conf (#160)
+
+Brad House (11 Dec 2017)
+- @gvanem says MSVC -RTCc option fails, looks erroneous to me, but the additional mask is harmless
+
+- Fix some other mingw warnings
+
+- Issue #143, get rid of windows build warning due to passing 'char **' to argument expecting 'const char **'
+
+- [Gregor Jasny brought this change]
+
+  Distribute CMake files (#130)
+
+- Android variants may not have __system_property_get
+  
+  Some android systems like ARM64 may not have the __system_property_get
+  symbol in libc (but still have it in the public headers).  Detect this
+  condition at build time.  The __system_property_get method of retrieving
+  name servers is deprecated as of Oreo so should strictly be a fallback
+  mechanism anyhow.
+
+David Drysdale (9 Nov 2017)
+- [David Hotham brought this change]
+
+  Wrong function name throughout man page (#154)
+
+- ares_data.c: iterate through substructs when freeing
+  
+  Previous code recursed into substructures, which makes it more likely
+  that large/heavily-nested responses could use up lots of stack.
+
+- test: test ares_free_data on long chain of structs
+
+- [Felix Yan brought this change]
+
+  Fix a typo in inet_ntop.c (#151)
+
+Daniel Stenberg (29 Sep 2017)
+- ares_gethostbyname.3: fix callback status values
+  
+  - ARES_ENOTFOUND means the _name_ wasn't found
+  
+  - ARES_ENODATA can be returned when a resolve fails
+  
+  Reported-by: Jakub Hrozek
+  Bug: https://c-ares.haxx.se/mail/c-ares-archive-2011-06/0012.shtml
+
+Brad House (28 Sep 2017)
+- [John Schember brought this change]
+
+  Fix DNS server lookup breaking with Android O due to Android removing access to net.dns# system properties. (#148)
+  
+  As of Android 8 (Oreo) access to net.dns# has been removed (https://developer.android.com/about/versions/oreo/android-8.0-changes.html). The reasoning given is that it, "improves privacy on the platform". Currently c-ares uses this to get the list of DNS servers.
+  
+  Now the only way to access the DNS server list is by using the Connectivity Manager though Java. This adds the necessary JNI code to use the Connectivity Manager and pull the DNS server list. The old way using __system_property_get with net.dns# remains for compatibilty.
+  
+  Using the Connectivity Manager requires the ACCESS_NETWORK_STATE permission to be set on the app. Existing applications most likely are not setting this and keeping the previous method as a fallback will at the very least ensure those apps don't break on older versions of Android. They will need to add this permission for Android 8 compatibility.
+  
+  Included in the patch are two initalization functions which are required. The JVM must be registered as well as the Connectivity Manager itself. There is no way to get the Connectivity Manager except though Java. Either being passed down to C directly or by passing in an Android Context which can be used to get the Connectivity Manager. Examples are provided in the documentation.
+
+- [Konstantinos Sofokleous brought this change]
+
+  allow linking against the static msvc runtime library (#133)
+  
+  allow linking against the static msvc runtime library
+
+- [Gergely Nagy brought this change]
+
+  Force using the ANSI versions of WinAPI functions (#142)
+  
+  When compiling c-ares with a build system that defines UNICODE,
+  bad versions of WinAPI functions are used causing failures or even
+  crashes. When windows.h is included in MBCS mode (like in the default
+  build system), the ..A versions are the same as using the one without
+  any suffix.
+
+- [cmake] build fix on Solaris
+
+GitHub (11 Sep 2017)
+- [Brad House brought this change]
+
+  Win32 exclude legacy ipv6 subnets (#144)
+  
+  win32 ipv6: add infrastructure to exclude ipv6 subnets that are known to cause issues
+
+- [David Drysdale brought this change]
+
+  windows: only look for ancient compilers (#146)
+  
+  Also drop the use of a versioned output directory; just use
+  .\msvc
+
+- [David Drysdale brought this change]
+
+  ares_init_options.3: match up sock_state_cb args (#141)
+  
+  Fixes #140
+
+Daniel Stenberg (25 Aug 2017)
+- [Anna Henningsen brought this change]
+
+  gethostbyaddr: fail with `ECANCELLED` for `ares_cancel()`
+  
+  When `ares_cancel()` was invoked, `ares_gethostbyaddr()`
+  queries would fail with `ENOTFOUND` instead of `ECANCELLED`.
+  
+  It seems appropriate to treat `ares_cancel()` like `ares_destroy()`,
+  but I would appreciate review of the correctness of this change.
+  
+  Ref: https://github.com/nodejs/node/issues/14814
+  
+  Closes #138
+
+David Drysdale (18 Aug 2017)
+- [David Hotham brought this change]
+
+  support most recent Visual Studio 2017
+
+Brad House (26 Jul 2017)
+- Preserve original DNS server order on Windows for equal metrics.
+  
+  qsort is not stable, in order to make it stable we need to record
+  the original index and add it as a secondary sort value when the
+  metrics are equal to prevent using DNS servers that may not work
+  at all as reported by some users.
+
+David Drysdale (15 Jul 2017)
+- [Anna Henningsen brought this change]
+
+  ares_parse_naptr_reply: make buffer length check more accurate
+  
+  9478908a490a6bf009ba58d81de8c1d06d50a117 introduced a length check
+  for records parsed by `ares_parse_naptr_reply()`. However, that
+  function is designed to parse replies which also contain non-NAPTR
+  records; for A records, the `rr_len > 7` check will fail as there
+  are only 4 bytes of payload.
+  In particular, parsing ANY replies for NAPTR records was broken
+  by that patch.
+  
+  Fix that by moving the check into the case in which it is already
+  known that the record is a NAPTR record.
+
+- appveyor: run dnsdump as a sanity check
+
+- travis: run dnsdump as a sanity check
+
+- test: use ares_free_string() throughout
+  
+  As pointed out by Gisle Vanem in #125.
+
+Daniel Stenberg (3 Jul 2017)
+- RELEASE-PROCEDURE.md: how to release
+  
+  Fixes #115
+  Closes #116
+
+David Drysdale (2 Jul 2017)
+- test: Build dnsdump on Windows too
+  
+  Thanks to Gisle Vanem for showing the way:
+  https://github.com/c-ares/c-ares/commit/b701af8a24cf9d173b1dbe5faedcea34642e92da#commitcomment-22830845
+
+Brad House (26 Jun 2017)
+- [Christian Ammer brought this change]
+
+  fix statement like #define - ares ssize_t define had a trailing semicolon (#120)
+
+David Drysdale (21 Jun 2017)
+- test: distribute the fuzzcheck.sh script
+  
+  The TESTS target runs fuzzcheck.sh so make sure it is included
+  in the distributed tarball.
+  
+  (The test itself will be pointless when run on a distribution, because
+  the fuzzing corpus directories are not shipped, but at least this
+  means that `make -C test test` should work.)
+
+- test: run the name-parsing corpus check too
+
+Daniel Stenberg (21 Jun 2017)
+- dist: don't build/ship PDF versions in release archives
+  
+  ... experience says very few read them and they can still get build by
+  those who want them.a
+
+- ares_version.h: bump version
+
+Version 1.13.0 (20 Jun 2017)
+
+Daniel Stenberg (20 Jun 2017)
+- RELEASE-NOTES: 1.13.0
+
+- ares_set_socket_functions.3: added in 1.13.0
+
+David Drysdale (18 Jun 2017)
+- ares_parse_naptr_reply: check sufficient data
+  
+  Check that there is enough data for the required elements
+  of an NAPTR record (2 int16, 3 bytes for string lengths)
+  before processing a record.
+
+- test: Feed in short NAPTR
+
+- test: Add fuzz input with short NAPTR
+
+- test: add ares_parse_naptr_reply to fuzzer
+
+- [noiz brought this change]
+
+  Update ares.h to support compiling with QNX
+
+- [Dionna Glaze brought this change]
+
+  Simple changes to appease stricter compilers.
+  
+  ares_process.c uses htonl, which needs <arpa/inet.h> included.
+  ares_getnameinfo.c uses a dynamically selected format string for
+  sprintf, which -Wformat-literal doesn't like. Usually one would use
+  inttypes.h and a format string "%" PRIu32, but C99 is too new for some
+  supported platforms.
+
+GitHub (16 Jun 2017)
+- [Gregor Jasny brought this change]
+
+  CMake: Emulate interface library on import (#108)
+  
+  Closes: #104
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+Brad House (6 Jun 2017)
+- [ChristianAmmer brought this change]
+
+  Added support for Windows DNS Suffix Search List (#93)
+  
+  This change solves issue #53.
+  
+  Support for suffix search lists was already built in for Linux. The search list could be set via set_search. With this change the suffix search list from Windows is read from the registry and then set into the ares configuration via set_search. There are two sources for the search list:
+  
+  The global DNS suffix search list.
+  The primary and connection specific DNS suffixes if the global is not available.
+  
+  Contributed by @ChristianAmmer
+
+Daniel Stenberg (25 May 2017)
+- [Thomas Köckerbauer brought this change]
+
+  configure: do not heck for ar if specified manually
+  
+  Closes #62
+
+David Drysdale (23 May 2017)
+- ares_expand_name: limit number of indirections
+
+- test: fuzz input file that takes a while to process
+
+- test: copy data in fuzz regression driver
+  
+  Oops.
+
+GitHub (23 May 2017)
+- [David Drysdale brought this change]
+
+  Convert char from ISO-8859-1 to UTF-8 (#99)
+  
+  Fixes #97
+
+- [Gregor Jasny brought this change]
+
+  travis: Use trusty for cmake builds (#109)
+  
+  kubuntu-backports dropped the CMake package for Precise
+
+David Drysdale (2 May 2017)
+- [David Hotham brought this change]
+
+  msvc_ver.inc support most recent Visual Studio 2017 (#101)
+
+- test: use io.h not unistd.h for Windows
+
+- test: try building fuzz binaries on Windows
+
+- test: stick to int in ares-fuzz.c
+  
+  Using int rather than ares_ssize_t means this file
+  needs no c-ares dependency - it's a general driver for
+  any libFuzzer-style entrypoint.
+
+- test: force ARES_OPT_NOROTATE for no-rotate tests
+
+- test: check expected NOROTATE value
+
+- ares_create_query: use ares_free not naked free
+  
+  Accidentally added in commit 65c71be1cbe5
+  ("ares_create_query: avoid single-byte buffer overwrite")
+
+Brad House (17 Mar 2017)
+- Need ares.h for ares_ssize_t
+
+- tests should not use ssize_t, use ares_ssize_t
+
+GitHub (16 Mar 2017)
+- [Brad House brought this change]
+
+  Portability updates for legacy systems. (#92)
+  
+  Socklen_t should not be used in code, instead ares_socklen_t should be used.
+  Convert ssize_t to ares_ssize_t for portability since the public API now exposes this.
+
+David Drysdale (14 Mar 2017)
+- [Michael Osei brought this change]
+
+  Update msvc_ver.inc (#91)
+  
+  For Visual Studio 2017 builds
+
+Daniel Stenberg (13 Mar 2017)
+- [Brad House brought this change]
+
+  Windows DNS server sorting (#81)
+  
+  Original Patch From Brad Spencer:
+  https://c-ares.haxx.se/mail/c-ares-archive-2016-04/0000.shtml
+  
+  My modifications include:
+   * Dynamically find GetBestRoute2 since it is a Windows Vista+ symbol, and will fall back to prior behavior when not available.
+   * Prefer get_DNS_AdaptersAddresses as the modifications should alleviate the concerns which caused us to prefer get_DNS_NetworkParams
+   * Update AppVeyor to use MinGW-w64 instead of the legacy MinGW
+   * Fix compile error in test suite for Windows.
+  
+  Original message from patch below:
+  
+  From: Brad Spencer <bspencer@blackberry.com>
+  Date: Fri, 29 Apr 2016 14:26:23 -0300
+  
+  On Windows, the c-ares DNS resolver tries first to get a full list of
+  DNS server addresses by enumerating the system's IPv4/v6 interfaces and
+  then getting the per-interface DNS server lists from those interfaces
+  and joining them together. The OS, at least in the way the c-ares
+  prefers to query them (which also may be the only or best way in some
+  environments), does not provide a unified list of DNS servers ordered
+  according to "current network conditions". Currently, c-ares will then
+  try to use them in whatever order the nested enumeration produces, which
+  may result in DNS requests being sent to servers on one interface
+  (hosting the current default route, for example) that are only intended
+  to be used via another interface (intended to be used when the first
+  interface is not available, for example). This, in turn, can lead to
+  spurious failures and timeouts simply because of the server address
+  order that resulted because of the enumeration process.
+  
+  This patch makes the (safe?) assumption that there is no other better
+  rule to chose which interface's DNS server list should be prioritized.
+  After all, a DNS lookup isn't something "per network"; applications
+  don't look up "these DNS names on this interface and those DNS names on
+  that interface". There is a single resource pool of DNS servers and the
+  application should presume that any server will give it the "right"
+  answer. However, even if all DNS servers are assumed to give equally
+  useful responses, it is reasonable to expect that some DNS servers will
+  not accept requests on all interfaces. This patch avoids the problem by
+  sorting the DNS server addresses using the Windows IPv4/v6 routing tables.
+  
+  For example, a request to DNS server C on interface 2 that is actually
+  sent over interface 1 (which may happen to have the default route) may
+  be rejected by or not delivered to DNS server C. So, better to use DNS
+  servers A and B associated with interface 1, at least as a first try.
+  
+  By using the metric of the route to the DNS server itself as a proxy for
+  priority of the DNS server in the list, this patch is able to adapt
+  dynamically to changes in the interface list, the DNS server lists per
+  interface, which interfaces are active, the routing table, and so on,
+  while always picking a good "best" DNS server first.
+  
+  In cases where any DNS server on any interface will do, this patch still
+  seems useful because it will prioritize a lower-metric route's (and thus
+  interface's) servers.
+
+David Drysdale (22 Feb 2017)
+- [Sergii Pylypenko brought this change]
+
+  docs: fixed references to ares_set_local_ip4 and ares_set_local_ip6
+
+- [Calle Wilund brought this change]
+
+  ares test: fix win32 build errors with virtual socket function tests
+  
+  The added api requires both some typedefs not previously imported
+  into the test build + the test code did not fully deal with
+  socket differences on windows.
+
+- [Calle Wilund brought this change]
+
+  ares_process: fix return type of socket_create function (win32 warning)
+
+Daniel Stenberg (31 Jan 2017)
+- [Calle Wilund brought this change]
+
+  ares_set_socket_functions: Add man page
+  
+  Providing some rudimentary documentation for the added functionality
+  
+  Closes #72
+
+- [Calle Wilund brought this change]
+
+  ares-test: Add test helpers and cases for virtual socket IO
+  
+  * Added test case macro to automatically run tests twice, once "normal",
+    once with virtual IO.
+  * Changed most "live" query tests to run in dual mode to verify
+    at least simple socket IO via virtual functions
+  * Added test case for settings/duping socket functions & callback data
+
+- [elcallio brought this change]
+
+  Implement using virtual socket IO functions when set
+  
+  Uses virtual socket IO functions when set on a channel.
+  Note that no socket options are set, nor is any binding
+  done by the library in this case, since the client defining
+  these is probably more suited to deal with this.
+
+- [elcallio brought this change]
+
+  Add virtual function set for socket IO
+  
+  Defines a structure of basic create, close, read/write
+  functions as virtual function calls, settable for individual
+  c-ares channels.
+
+David Drysdale (30 Jan 2017)
+- test: ignore aresfuzzname binary
+
+Gregor Jasny (14 Jan 2017)
+- [Stephen Sorley brought this change]
+
+  Always use check_symbol_exists instead of check_function_exists.
+
+- Also add includes to TARGETS_INST_DEST
+
+- [Stephen Sorley brought this change]
+
+  Windows build fixes
+
+- CMake: Export targets
+
+- CMake: Use GNUInstallDirs for install location defaults
+
+David Drysdale (11 Jan 2017)
+- Update Makefile.am for renamed INSTALL.md
+
+GitHub (11 Jan 2017)
+- [David Drysdale brought this change]
+
+  docs: convert INSTALL to MarkDown & tweak (#83)
+
+- [Gregor Jasny brought this change]
+
+  Merge pull request #77 from stephen-sorley/cmake_modernize
+  
+  Updated CMake minimum version to 2.8.12.
+
+Stephen Sorley (4 Jan 2017)
+- Changed executables to depend directly on internal libcares target, instead of against
+  the external-facing alias targets.
+
+- Updated Travis to pull CMake 2.8.12 from kubuntu-backports ppa.
+
+- Updated CMake minimum version to 2.8.12.
+  
+  Changed the way usage requirements (include dirs, compile defs, dependent libraries) are specified, to match the recommended standard practice for modern CMake. This involves using target-specific functions (target_include_directories, target_compile_definitions, etc.), along with the PUBLIC, PRIVATE or INTERFACE modifiers.
+  
+  Updated chain-building support to imitate new-style Find modules (import libs), instead of old-style Find modules (cache variables).
+
+David Drysdale (26 Dec 2016)
+- [Chris Araman brought this change]
+
+  configure: clock_gettime workaround (#75)
+  
+  Commits 7518c26, c41726b, and bc14ee7 brought this workaround to the CMake build system. This expands it to the autoconf build system.
+  
+  Fixes #71
+
+- test: add fuzz entrypoint for ares_create_query()
+
+- test: Add gTest/gMock files to SOURCES
+  
+  Built tarballs are not including all of the files needed
+  to build the test suite because they are missing from the
+  <target>_SOURCES variable in Makefile.am.
+
+- travis: Move build scripts under travis/
+  
+  Travis doesn't always propagate errors in inline multi-line
+  scripts, so move them all to be explicit shell scripts, each
+  with set -e.
+
+- travis: check distributed tarball builds
+
+Daniel Stenberg (25 Oct 2016)
+- dist: ship msvc_ver.inc too
+  
+  Reported-by: Bruce Stephens
+  
+  Fixes #69
+
+- [Aaron Bieber brought this change]
+
+  fix build on OpenBSD
+
+- ares_version.h: bump, working on 1.12.1 now
+
+GitHub (18 Oct 2016)
+- [Gregor Jasny brought this change]
+
+  Merge pull request #64 from bradh352/master
+  
+  Add CMake build system support to C-Ares.
+
+Brad House (5 Oct 2016)
+- suggested PROJECT_NAME change broke chain building as it needs the magic PROJECT_NAME set in the ADD_LIBRARY for matching. Fix to make both goals work
+
+- update MacOSX 10.12 detection
+
+- Expand XCode clock_gettime fix to include MacOS 10.12, not just iOS10
+
+David Drysdale (4 Oct 2016)
+- Revert "travis: work around bug in PyCParser"
+  
+  This reverts commit a24a10a348fc00b8cfd684d91894a1df14880ea9.
+
+- travis: work around bug in PyCParser
+  
+  See https://github.com/pyca/cryptography/issues/3187
+
+Brad House (3 Oct 2016)
+- PROJECT_SOURCE_DIR instead of CMAKE_CURRENT_SOURCE_DIR as per @gjasny
+
+- use a project name of c-ares as per @gjasny
+
+- Import curl conversion of Makefile.inc to cmake form dynamically as per bdoetsch@ameritech.net to make maintaining multiple build systems easier
+
+Daniel Stenberg (30 Sep 2016)
+- dist: add ares_library_initialized.* to the tarball
+
+David Drysdale (30 Sep 2016)
+- test: check ares_create_query with too-long name
+
+Daniel Stenberg (30 Sep 2016)
+- man pages: minor formatting edits
+
+Brad House (29 Sep 2016)
+- merge fc7917e from @daviddrysdale ... travis build updates for cmake
+
+- cleanups as per @gjasny ... Use naked IF statements and use NOT DEFINED
+
+Version 1.12.0 (29 Sep 2016)
+
+Daniel Stenberg (29 Sep 2016)
+- RELEASE-NOTES: 1.12.0
+
+- [David Drysdale brought this change]
+
+  ares-test-misc: test ares_create_query with escaped trailing dot
+
+- ares_create_query: avoid single-byte buffer overwrite
+  
+  ... when the name ends with an escaped dot.
+  
+  CVE-2016-5180
+  
+  Bug: https://c-ares.haxx.se/adv_20160929.html
+
+Brad House (29 Sep 2016)
+- CMake: Unify library versioning with the libtool methodology to make keeping library versions in sync easier with the autotools build system
+
+Daniel Stenberg (29 Sep 2016)
+- ares_library_initialized.3: added
+
+- make: bump CARES_VERSION_INFO for release
+
+David Drysdale (29 Sep 2016)
+- man: update ares_init_options.3
+
+Daniel Stenberg (29 Sep 2016)
+- ares_library_init.3: corrected the ares_library_init_mem proto
+
+Brad House (28 Sep 2016)
+- XCode v8 introduced clock_gettime() for iOS v10.  However, it is a weak symbol, which means when earlier iOS versions try to use clock_gettime() it results in a crash due to the missing symbol.  Detect this condition and do not set HAVE_CLOCK_GETTIME_MONOTONIC.
+
+- Adds cmake build system support to C-Ares.
+  
+  The patch does not modify any source files, it only adds 3 new files
+  (CMakelists.txt, ares_build.h.cmake, ares_config.h.cmake) which form the
+  build system.  I've tried to go through as much of the autotools tests and
+  extracted what I thought was appropriate, though many of the tests aren't
+  as in-depth in CMake as they are for autotools ... it is unclear why some
+  of them exist at all, I'm guessing for legacy systems that CMake probably
+  doesn't support anyhow.
+  
+  Building the library, and examples (adig, ahost, acountry) plus installation
+  should work across a large number of tested platforms.  The tests have not
+  yet been integrated.
+
+Daniel Stenberg (27 Sep 2016)
+- README.md: remove space from link
+
+- README: link to the correct c-ares badge!
+  
+  Reported-by: David Hotham
+  
+  Fixes #63
+
+- docs: minor formatting edits
+
+- ares_destroy.3: formatting polish
+
+- ares_init.3: split the init docs into two separate man pages
+
+- SECURITY: point to the vulnerabilities page now
+
+- RELEASE-NOTES: synced with daa7235b1a5
+
+- ares_create_query.3: edit language
+  
+  Tried to make the man page more readable.
+
+David Drysdale (26 Sep 2016)
+- test: fix gMock to work with gcc >= 6.x
+  
+  Taken from:
+  https://github.com/google/googletest/issues/705#issuecomment-235067917
+
+Daniel Stenberg (26 Sep 2016)
+- [Brad House brought this change]
+
+  headers: remove checks for and defines of variable sizes
+  
+  ... they're not really used and by avoiding them in the ares_build.h
+  output we make the public header less dependent on data sizes.
+
+David Drysdale (24 Sep 2016)
+- api: add ARES_OPT_NOROTATE optmask value
+  
+  Fix up a couple of problems with configuring whether c-ares rotates
+  between different name servers between requests.
+  
+  Firstly, ares_save_options() returns (in *optmask) the value of
+  (channel->optmask & ARES_OPT_ROTATE), which doesn't necessarily
+  indicate whether the channel is or is not actually doing rotation.
+  This can be confusing/incorrect if:
+   - the channel was originally configured without ARES_OPT_ROTATE
+     (so it appears that the channel is not rotating)
+   - the /etc/resolv.conf file includes the 'rotate' option
+     (so the channel is actually performing rotation).
+  
+  Secondly, it is not possible to reliably configure a channel
+  to not-rotate; leaving off ARES_OPT_ROTATE is not enough, since
+  a 'rotate' option in /etc/resolv.conf will turn it on again.
+  
+  Therefore:
+   - add an ARES_OPT_NOROTATE optmask value to allow explicit
+     configuration of no-rotate behaviour
+   - in ares_save_options(), report the value of channel->rotate
+     as exactly one of (optmask & ARES_OPT_ROTATE) or
+     (optmask & ARES_OPT_NOROTATE).
+  
+  In terms of back-compatibility:
+   - existing apps that set ARES_OPT_ROTATE will continue to rotate,
+     and to have ARES_OPT_ROTATE reported back from ares_save_options()
+   - existing apps that don't set ARES_OPT_ROTATE will continue to
+     use local config/defaults to decide whether to rotate, and will
+     now get ARES_OPT_ROTATE or ARES_OPT_NOROTATE reported back from
+     ares_save_options() rather than 0.
+
+- ares_init_options: only propagate init failures from options
+  
+  Commit 46bb820be3a8 ("ares_init_options: don't lose init failure")
+  changed init behaviour so that earlier errors in initialization
+  weren't lost.  In particular, if the user passes in specific
+  options but they are not applied (e.g. because of an allocation
+  failure), that failure needs to be reported back to the user; this
+  also applies when duplicating a channel with ares_dup().
+  
+  However, other initialization failures can be ignored and
+  overridden -- in particular, if init_by_resolv_conf() or
+  init_by_environment() fail, then falling back to default values
+  is OK.
+  
+  So only preserve failures from the init_by_options() stage, not
+  from all initialization stages.
+  
+  Fixes issue 60.
+
+- test: Force reinstall of libtool on OSX
+  
+  Travis build environment appears to have changed.
+
+- test: Add valgrind build variant
+
+- test: Add null pointer to gtest args
+  
+  GoogleTest assumes that there is a null pointer in argv[argc],
+  so make it look like that. Without this change, tests run with
+  command-line arguments get memory errors under valgrind/ASAN.
+
+Daniel Stenberg (21 Aug 2016)
+- AUTHOR: maybe gitgub isn't really an author =)
+
+- AUTHORS: added contributors from the git log
+
+- LICENSE.md: add a stand-alone license file
+  
+  Just the MIT license used in the top the source files moved out to a
+  stand-alone file for easier reference and discovery.
+
+- README: added "CII best practices" badge
+
+- SECURITY.md: suggested "security process" for the project
+
+David Drysdale (17 Aug 2016)
+- test: Add Clang static analysis build to Travis
+  
+  Run scan-build over the library source code, but skip the
+  tests.  Needs a later Clang install in Travis
+
+- test: more info on how to run fuzz testing
+
+- test: make fuzzer driver code C not C++
+
+- test: fuzzer mode for AFL's persistent mode
+  
+  When fuzzing with AFL, if the LLVM-based instrumentation is
+  used (via the afl-clang-fast wrapper), then it is possible to
+  have a single execution of the fuzzer program iterate multiple
+  times over the fuzzing entrypoint (similar to libFuzzer's normal
+  mode of execution) with different data.  This is much (e.g. 10x)
+  faster.
+  
+  Add code to support this, by checking whether __AFL_LOOP is
+  defined at compile-time.
+  
+  Also, shift the code to effectively be C rather than C++.
+
+- test: simplify deps for fuzzer entrypoint
+  
+  No need to depend on the rest of the test code (ares-test.h) for
+  the fuzzer entrypoint; this makes the entrypoint slightly simpler
+  to build with LLVM's libFuzzer.
+  
+  Also shift the code to effectively be C rather than C++
+
+- test: disable MinGW tests
+  
+  The test binary built in the MinGW build is failing for some
+  reason.  It works for me when I build locally, so I'm guessing
+  it's down to some sort of AppVeyor environment issue.
+  
+  Disable for now.
+
+Daniel Stenberg (16 Aug 2016)
+- read_tcp_data: remove superfluous NULL check
+  
+  CID 56884 by Coverity. The pointer is already derefenced before this
+  point so it can't be NULL here anyway.
+
+- web: http => https
+
+GitHub (20 Jul 2016)
+- [David Drysdale brought this change]
+
+  Merge pull request #59 from fuze/master
+  
+  Update msvc_ver.inc for VS2015 Update 3
+
+- [Chris Araman brought this change]
+
+  Update msvc_ver.inc
+  
+  support Visual Studio 2015 Update 3
+
+David Drysdale (2 May 2016)
+- Fix trailing comment for #endif
+
+Daniel Stenberg (30 Apr 2016)
+- email: use Gisle's "new" address
+
+David Drysdale (18 Apr 2016)
+- test: drop superfluous fuzz inputs
+  
+  Where there are multiple fuzz input files that only differ in
+  the first two bytes (the query ID), just keep the first such
+  file.
+
+svante karlsson (15 Apr 2016)
+- Update msvc_ver.inc
+  
+  support Visual Studio 2015 Update 2
+
+David Drysdale (31 Mar 2016)
+- test: Run fuzzcheck.sh in Travis build
+
+- test: add fuzzing check script to tests
+  
+  Add a test script that runs the fuzzing command over the
+  corpus of DNS packets.  This doesn't actually do any fuzzing
+  (it just runs them as inputs without generating any variations)
+  but it does ensure that the fuzzing entrypoint is still working.
+
+- test: allow multiple files in aresfuzz command line
+  
+  If no arguments are specified, use stdin as input.
+  Otherwise treat each argument as a filename and feed
+  its contents to the fuzz entrypoint.
+
+- test: Add corpus of DNS packets
+  
+  For fuzz testing it is useful to start from a corpus of valid
+  packets, so fill out the test/fuzzinput/ directory with a bunch
+  of inputs.
+  
+  These packets were generated by temporarily modifying the c-ares
+  process_answer() function to save off any incoming response messages.
+
+- test: Add utility to show DNS packet from file
+
+- [nordsturm brought this change]
+
+  Fix nsort initialization
+  
+  Author: Alexander Drachevskiy
+  http://c-ares.haxx.se/mail/c-ares-archive-2014-07/0004.shtml
+  http://c-ares.haxx.se/mail/c-ares-archive-2014-07/0014.shtml
+
+- test: Check setting nsort=0 option is respected
+
+- test: Update fuzzing function prototype
+  
+  libFuzzer changed expected return type from void to int
+  in LLVM 3.8.
+
+- Explicitly clear struct servent before use
+  
+  On a build where MSAN has been manually set up (which involves
+  using an MSAN-instrumented version of the standard C++ library, see
+  https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo)
+  there's a warning about use of uninitialized memory here.  It
+  might be a false positive, but the fix is trivial so include it.
+
+- test: for AF_UNSPEC, return CNAME only for AAAA, but valid A record
+  
+  Also shuffle expected responses rsp6/rsp4 into the order they will occur.
+
+- [Chris Araman brought this change]
+
+  msvc_ver.inc: support Visual Studio 2015 Update 1
+
+- build: commonize MSVC version detection
+  
+  Remove the need to copy/paste version number mapping between
+  Makefile.msvc and test/Makefile.msvc.
+
+- test: Use different name in live test
+
+- test: Only pass unused args to GoogleTest
+
+- ahost.c: add cast to fix C++ compile
+  
+  If ahost.c is force-compiled as C++ the missing cast from
+  (void *) to (char **) is problematic.
+
+- ares_library_cleanup: reset ares_realloc too
+  
+  Otherwise a subsequent use of the library might use a previous
+  incarnation's realloc() implementation.
+
+Daniel Stenberg (9 Mar 2016)
+- [Brad House brought this change]
+
+  configure: check if tests can get built before enabled
+  
+  The current approach for disabling tests is not a good solution because
+  it forces you to pass --disable-tests, rather than auto-detect if your
+  system can support the tests in the first place.  Many (most?) systems
+  do not have C++11.  This also causes issues when chain-building c-ares,
+  the hosting system needs to be updated to support passing this
+  additional flag if necessary, it doesn't seem reasonable to add this
+  requirement which breaks compatibility.
+  
+  This change auto-detects if the system can build the tests and
+  automatically disable them if it cannot.  If you pass --enable-tests to
+  configure and the system cannot build them either due to lack of system
+  support, or because cross-compilation is being used, it will throw an
+  appropriate error since the user indicated they really did want the
+  tests.
+
+David Drysdale (3 Mar 2016)
+- [Viktor Szakats brought this change]
+
+  Makefile.m32: add support for CROSSPREFIX
+
+- [Viktor Szakats brought this change]
+
+  Makefile.m32: add support for extra flags
+  
+  Allow specification of CARES_{LD,C}FLAG_EXTRAS envvars
+  for mingw
+
+- test: Build with MinGW on AppVeyor
+
+- test: avoid in6addr_* constants
+  
+  These aren't available on MinGW, so use explicit addresses instead.
+
+- test: add missing #includes for dns-proto.cc
+
+- [Gregor Jasny brought this change]
+
+  Fix man page typos detected by Lintian
+
+Daniel Stenberg (19 Feb 2016)
+- configure: acknowledge --disable-tests
+  
+  Fixes #44
+
+- AUTHORS: added contributors from the 1.11.0 release
+
+- bump: start working on the next version
+
+Version 1.11.0 (19 Feb 2016)
+
+Daniel Stenberg (19 Feb 2016)
+- RELEASE-NOTES: final edits for 1.11.0
+
+David Drysdale (15 Feb 2016)
+- ares_dup.3: remove mention of nonexistent function
+  
+  ares_dup_options() doesn't exist, so don't document it.
+
+- test: skip repeated build steps
+  
+  Top-level buildconf/configure now triggers for the
+  test/ subdir too, so don't need to do explicitly.
+
+- test: namespaces unavailable when cross-compiling
+
+Daniel Stenberg (13 Feb 2016)
+- configure: only run configure in test when NOT cross-compiling
+  
+  ... as the tests won't run cross-compiled anyway
+
+David Drysdale (13 Feb 2016)
+- test: prefer ON_CALL to EXPECT_CALL to reduce flakes
+  
+  For UDP tests, there's a chance of a retry.  EXPECT_CALL only
+  expects a single request to arrive at the server; ON_CALL allows
+  for a UDP retry and repeats the same answer.
+  
+  Note that ON_CALL and EXPECT_CALL can't be mixed in the same
+  test, and that tests that have a varied sequence of responses
+  for the same repeated request still have to use EXPECT_CALL.
+
+Daniel Stenberg (13 Feb 2016)
+- configure: run configure in 'test' too
+  
+  Having the test dir completely stand-alone causes too many issues for
+  users and devs. It still needs to be built specifically.
+
+- configure: build silently by default
+
+- buildconf: run test/buildconf too if present
+
+- test/configure: build silently by default
+
+- [Gregor Jasny brought this change]
+
+  dist: Distribute README.md
+  
+  Closes #42
+
+Version 1.11.0 (11 Feb 2016)
+
+Daniel Stenberg (11 Feb 2016)
+- Makefile.am: distribute the test dir too
+
+- RELEASE-NOTES: synced with 385582bd14b68a
+
+- [Nicolas \"Pixel\" Noble brought this change]
+
+  ares_win32_init: make LoadLibrary work when using UNICODE too
+  
+  Closes #17
+
+David Drysdale (11 Feb 2016)
+- Use "resolve" as synonym of "dns" in nsswitch.conf
+  
+  Modern Linux systems may have libnss_resolve from systemd as the
+  resolver, which is then configured in /etc/nsswitch.conf with
+  the "resolve" keyword rather than "dns".
+  
+  Fixes #33
+
+- ares_set_socket_callback: make manpage match code
+  
+  The code in ares_process.c that invokes the socket creation/connection
+  callback only checks for rc < 0, not for standard ares error codes.
+
+- Merge pull request #36 from AGWA-forks/master
+  
+  Add ares_set_socket_configure_callback()
+
+- test: Update init tests to match behaviour
+  
+  Unreadable config files are now treated the same way
+  as absent config files.
+
+- [Fedor Indutny brought this change]
+
+  Ignore `fopen` errors to use default values
+  
+  After 46bb820be3a83520e70e6c5f0c5133253fcd69cd `init_by_resolv_conf`
+  errors are no longer swallowed in `ares_init_options`. This has exposed
+  a previously unknown bug in `lookups` initialization code.
+  
+  If there is no lookup configuration in `resolv.conf`,
+  `init_by_resolv_conf` will attempt to read it from other files available
+  on the system. However, some of these files may have restricted
+  permissions (like `600`), which will lead to `EACCESS` errno, which in
+  turn is handled like a fatal error by `init_by_resolv_conf`.
+  
+  However, it sounds illogical that this error should be handled as a
+  fatal. There is a `init_by_defaults` call that overrides `lookups` with
+  default value, and certainly possible absence of lookup information is
+  the reason why this function exists in a first place!
+  
+  I suggest handling any `fopen` errors as non-fatal ones, allowing to
+  pick up the `lookups` value from different config files, or to pick up
+  default value.
+
+Andrew Ayer (9 Feb 2016)
+- Document callback type in man page for ares_set_socket_callback
+
+- Add ares_set_socket_configure_callback()
+  
+  This function sets a callback that is invoked after the socket is
+  created, but before the connection is established.  This is an ideal
+  time to customize various socket options.
+
+David Drysdale (9 Feb 2016)
+- test: ares_set_socket_callback failure behaviour
+
+- test: Check ares_parse_txt_reply_ext() entrypoint
+
+- [Fedor Indutny brought this change]
+
+  txt: introduce `ares_parse_txt_reply_ext`
+  
+  Introduce `ares_txt_ext` structure with an extra `record_start`
+  field, which indicates a start of a new TXT record, thus allowing to
+  differentiate the chunks in the same record, from a chunks in a
+  different record.
+  
+  Introduce a new API method: `ares_parse_txt_reply_ext` that works with
+  this kind of struct.
+
+- doc: Update missed repo references
+
+- doc: Update docs on contributing
+
+- test: Run command line tools in Travis
+  
+  Do a quick execution of each of the command line tools
+  in the continuous integration build, so that any (say)
+  sanitizer failures show up.
+
+- acountry: drop inert test
+  
+  If ver_1 is true, then z0 and z1 must both be 'z', and so
+  (z0 != 'z' && z1 != 'z') can never be true.
+  
+  CID 56879, pointed out by Coverity.
+
+- doc: update badge locations to master repo
+
+- test: Enable maintainer mode + debug in Travis
+
+- test: Add an iOS build target
+
+- test: Ignore SIGPIPE in tests
+
+- test: More initialization tests
+
+- test: Improve containerized test mechanism
+  
+  Aim is to ensure that code coverage information can escape the
+  container.  To do this:
+   - Enter a new mount namespace too, so that we can...
+   - Bind mount the expected source directory into the container
+   - Share memory with the sub-process so coverage information is
+     shared too.
+
+- test: Make contained tests easier to write
+
+- test: Add framework for containerized testing
+  
+  On Linux we can potentially use user and UTS namespaces to run  a test
+  in a pseudo-container with:
+   - arbitrary filesystem (e.g. /etc/resolv.conf, /etc/nsswitch.conf, /etc/hosts)
+   - arbitrary hostname/domainname.
+  
+  Include a first pass at the framework code to allow this, along with a
+  first test case that uses the container.
+
+- test: Use a longer timeout for less flakiness
+  
+  Having occasional test failures from timeout before multiple
+  queries can complete, so up the default timeout for the test
+  from 100ms to 1500ms.
+
+- test: Make failure tests more robust
+  
+  Different platforms will do different numbers of allocations
+  in the processing of a given API call; just check that the
+  return code is either success or ENOMEM, and free off any
+  returned state in the former case.
+  
+  Also cope with ECONNREFUSED as well as ENOTFOUND.
+
+- test: Get test code building under Windows
+  
+   - Initial nmake file based off library nmake file
+   - Cast socket call arguments to (char *)
+   - Use wrapper sclose() that maps to closesocket() or close()
+   - Build a config.h indicating presence of headers
+   - Conditionally include netdb.h
+   - Remove unnecessary include of sys/socket.h
+   - Force longer bitmask for allocation failure tracking
+   - Call WSAStartup() / WSACleanup() in main()
+   - Set TCP_NODELAY for mock server
+   - Turn on tests in AppVeyor build
+
+- test: Disable tests that manipulate env on Windows
+
+- test: Move file lists into Makefile.inc
+  
+  In preparation for a Win32 build of the test suite.
+
+- test: Add a simple multi-server test
+  
+  Check rotate option does something
+
+- test: Allow for multiple mock servers
+  
+   - Update the MockServer to allow separate specification of
+     UDP and TCP ports
+   - Have an array of mock servers listening on consecutive
+     sets of ports.
+   - Rename Process(fd) to ProcessFD(fd) to avoid confusion.
+   - Initialize channel by using the new ares_set_servers_ports()
+     entrypoint, so multiple ports on the same loopback address
+     can be used.
+
+- test: Update test for set/get_servers variants
+  
+  Ports are significant in the _ports_ variant functions, so update test to cope.
+
+- test: Make GetNameServers() utility function port-aware
+  
+  Also make it generally available.
+
+- test: more testing, including of internal static functions
+
+- test: more tests, especially fallback processing
+  
+   - Make mock server listen on UDP + TCP in parallel.
+   - Test UDP->TCP fallback on truncation
+   - Test EDNS->no-EDNS fallback
+   - Test some environment init options
+   - Test nonsense reply
+  
+  test: short response
+
+- test: more tests, particularly of initialization
+
+- test: Run mock tests over both TCP and UDP
+  
+  With the exception of a few tests that make use of the timed
+  retry aspect of UDP.
+
+- test: Run mock tests over both IPv4 and IPv6
+
+- test: Add more tests for edge cases
+
+- test: more nooks and crannies of pton functions
+
+- test: More tests for PTR parsing
+
+- test: Use of HOSTALIAS environment variable
+
+- test: Add RAII utility classes for testing
+  
+   - TempFile holds specific contents
+   - EnvValue sets an environment variable
+
+- test: More search domain scenarios
+
+- test: Remove duplicate flags from Makefile.am
+
+- test: Make test code leak-free
+
+- test: More tests
+  
+   - test use of sortlist
+   - test gethostbyname(AF_UNSPEC)
+
+- test: Test ares_gethostbyname_file()
+
+- test: Add more tests of ares_getnameinfo()
+
+- test: Tweak tests, add alloc failure test
+
+- test: Test init with options
+
+- test: More tests
+  
+   - ares_inet_net_pton() variants
+   - ares_getsock() variants
+
+- test: Expose ProcessWork() function
+
+- test: More parsing tests
+  
+  Including:
+   - Split each parse function test set out into separate files.
+   - Add an allocation failure test for each parsing function.
+   - Add error check test for each parsing function.
+
+- test: Add various additional tests
+
+- test: More tests
+  
+  Include tests of internal functions, based on the value of the
+  CARES_SYMBOL_HIDING macro; need to configure the library with
+  --disable-symbol-hiding to enable these tests.
+
+- test: Allow command line override of mock server port
+
+- test: Add README.md documentation
+
+- test: Temporarily avoid latest Python requests package
+  
+  Currently get error from Travis on this install step, and downgrading one
+  version appears to fix the problem.
+  
+  "Could not find any downloads that satisfy the requirement pyOpenSSL>=0.13
+  (from requests[security])"
+
+- test: Add AppVeyor config file for Windows build
+
+- test: Add configuration for a Travis build
+  
+  Cover Linux & OSX on the container infrastructure, but install
+  a later G++ to satisfy the tests' need for C++11.
+  
+  Use a build matrix to include a variety of build variants:
+   - ASAN
+   - UBSAN
+   - LSAN
+   - Coverage via coveralls.io
+  
+  test: invoke ASAN and coverage in Travis build
+  
+  Also shift to use explicit build matrix
+  
+  test: Use coveralls.io for coverage tracking
+  
+  test: Add a build with UBSAN
+  
+  Also expand and re-order the setting of environment variables
+  for easier modification.
+  
+  test: Add LSAN build to Travis config
+
+- test: Add initial unit tests for c-ares library
+  
+  The tests are written in C++11, using the GoogleTest and GoogleMock
+  frameworks.  They have their own independent autoconf setup, so that
+  users of the library need not have a C++ compiler just to get c-ares
+  working (however, the test/configure.ac file does assume the use of
+  a shared top-level m4/ directory).  However, this autoconf setup has
+  only been tested on Linux and OSX so far.
+  
+  Run with "./arestest", or "./arestest -v" to see extra debug info.
+  The GoogleTest options for running specific tests are also
+  available (e.g. "./arestest --gtest_filter=*Live*").
+  
+  The tests are nowhere near complete yet (currently hitting around
+  60% coverage as reported by gcov), but they do include examples
+  of a few different styles of testing:
+  
+   - There are live tests (ares-test-live.cc), which assume that the
+     current machine has a valid DNS setup and connection to the
+     internet; these tests issue queries for real domains but don't
+     particularly check what gets returned.  The tests will fail on
+     an offline machine.
+  
+   - There a few mock tests (ares-test-mock.cc) that set up a fake DNS
+     server and inject its port into the c-ares library configuration.
+     These tests allow specific response messages to be crafted and
+     injected, and so are likely to be used for many more tests in
+     future.
+  
+      - To make this generation/injection easier, the dns-proto.h file
+        includes C++ helper classes for building DNS packets.
+  
+   - Other library entrypoints that don't require network activity
+     (e.g. ares_parse_*_reply) are tested directly.
+  
+   - There are few tests of library-internal functions that are not
+     normally visible to API users (in ares-test-internal.cc).
+  
+   - A couple of the tests use a helper method of the test fixture to
+     inject memory allocation failures, using the earlier change to the
+     library to allow override of malloc/realloc/free.
+  
+   - There is also an entrypoint to allow Clang's libfuzzer to drive
+     the packet parsing code in ares_parse_*_reply, together with a
+     standalone wrapper for it (./aresfuzz) to allow use of afl-fuzz
+     for further fuzz testing.
+
+- test: Add local copy of GoogleMock/GoogleTest 1.7.0
+  
+  Don't check in gtest/m4 files, as they are unused and interfere
+  with the top-level configure process.
+
+- doc: Show build badges in README.md
+  
+  Note that these URLs will need to be updated if/when the test branch
+  gets pulled into the master repo/branch.
+
+- doc: Convert README to README.md
+  
+  Gives better display on GitHub
+
+- doc: Update in preparation for next release
+  
+  Assume 1.11.0 is next (as there are various API additions).
+  Also add myself to AUTHORS.
+
+- build: Allow header compilation by Windows C++ compiler
+
+- build: Expose whether symbol hiding is on
+  
+  Adding the CARES_SYMBOL_HIDING definition allows the test suite to
+  detect whether internal symbols are available or not.
+
+- build: Add autoconf macros for C++11 code using pthreads
+  
+  Pull in testing macros from the GNU autoconf archive to allow
+  configure scripts to test for and setup use of a C++11 compiler
+  (AX_CXX_COMPILE_STDCXX_11) and the pthreads library (AX_PTHREAD).
+  
+  Note that these macros are not used by the main library autoconf,
+  just by the tests (which share the same m4/ directory).
+
+- build: Add a code coverage option
+  
+  Configure with:
+    ./configure --enable-code-coverage
+  Show coverage output with:
+    make code-coverage-capture
+  
+  Built on m4/ax_code_coverage.m4 from the GNU autoconf archive
+  to provide the macros to check for presence of gcov + lcov;
+  upstream macro modified to:
+   - Remove use of $(AM_DEFAULT_VERBOSITY) , as earlier versions of
+     autoconf (such as the one used by default on Travis) do not have this.
+   - Rather than automatically defining CODE_COVERAGE_RULES to be a set
+     of makefile rules that use ifeq/endif (which is GNU make-specific),
+     instead only define CODE_COVERAGE_RULES if coverages is turned on,
+     and in that case don't use conditionals in the makefile.
+
+- api: Add entrypoints to allow use of per-server ports
+  
+  Add user-visible entrypoints ares_{get,set}_servers_ports(3), which
+  take struct ares_addr_port_node rather than struct ares_addr_node.
+  This structure includes a UDP and TCP port number; if this is set
+  to zero, the channel-wide port values are used as before.
+  
+  Similarly, add a new ares_set_servers_ports_csv(3) entrypoint, which
+  is analogous to ares_set_servers(3) except it doesn't ignore any
+  specified port information; instead, any per-server specified port
+  is used as both the UDP and TCP port for that server.
+  
+  The internal struct ares_addr is extended to hold the UDP/TCP ports,
+  stored in network order, with the convention that a value of zero
+  indicates that the channel-wide UDP/TCP port should be used.
+  
+  For the internal implementation of ares_dup(3), shift to use the
+  _ports() version of the get/set functions, so port information is
+  transferred correctly to the new channel.
+  
+  Update manpages, and add missing ares_set_servers_csv to the lists
+  while we're at it
+
+- api: Add ares_set_sortlist(3) entrypoint
+  
+  Allow explicit configuration of the channel's sortlist, by
+  specifying a string in the same format as the equivalent
+  /etc/resolv.conf option.
+  
+  This allows library users to perform the same configuration
+  that is available via /etc/resolv.conf, but without needing
+  to change that file.
+
+- api: Allow injection of user-specified malloc/free functions
+  
+  Add a new ares_library_init_mem() initialization function for the
+  library which allows the library user to specify their own malloc,
+  realloc & free equivalents for use library-wide.
+  
+  Store these function pointers in library-wide global variables,
+  defaulting to libc's malloc(), realloc() and free().
+  
+  Change all calls to malloc, realloc and free to use the function pointer
+  instead.  Also ensure that ares_strdup() is always available
+  (even if the local environment includes strdup(3)), and change the
+  library code to always use it.
+  
+  Convert calls to calloc() to use ares_malloc() + memset
+
+- api: Add option to expose some internal functions
+  
+  Purely for testing, add --enable-expose-statics option to configure
+  which converts some static internal functions to be externally visible.
+
+- api: Expose the ares_library_initialized() function
+
+- ahost: Allow repeated -s <domain> options
+  
+  This also removes a potential leak where later -s options would
+  replace earlier ones without freeing the relevant string.
+
+- Mark unhittable lines
+  
+  Add comments for the benefit of the lcov tool, marking
+  lines that cannot be hit.  Typically these are fall-back
+  protection arms that are already covered by earlier checks,
+  and so it's not worth taking out the unhittable code (in case
+  someone changes the code between the two places in future).
+
+- ares_set_servers_csv.3: make return type match code
+
+- bitncmp: update comment to match code behaviour
+
+- ares_striendstr: fix so non-NULL return can happen
+  
+  This looks to have been broken since it was first introduced in 2005 in
+  commit aba0b775ea30 ("Added ares_getnameinfo which mimics the
+  getnameinfo API")
+
+- config_sortlist: free any existing sortlist on (re)alloc failure
+  
+  If we get an allocation failure on 2nd or later entry in the sortlist, the
+  code would return ENOMEM but still leave the initial entries allocated.
+  Ensure that *sortlist is set to NULL whenever ENOMEM is returned.
+
+- ares_dup: clear new channel on failure
+  
+  If the attempt to transfer IPv6 servers from the old to the new channel
+  fails, the previous code would still return a channel to the user even though
+  an error return code was generated.  This makes it likely that users would
+  leak the channel, so explicitly clear the channel in this case.
+
+- ares_init_options: don't lose init failure
+  
+  If (say) init_by_options() fails, the subsequent call to
+  init_by_defaults() was overwriting the return code with
+  success.  Still call init_by_defaults() regardless, but track
+  its return value separately
+
+- ares_gethostbyname: don't leak valid-but-empty hostent
+  
+  If an AF_UNSPEC query gets a valid response to its AAAA query,
+  but which has no IPv6 addresses in it, then the code chains on to
+  a A record query.  However, the hostent from the AAAA response
+  was being leaked along the way (because it gets replaced before
+  the follow-on end_hquery() invocation).
+
+- ares_parse_txt_reply: propagate errors from per-substring loop
+  
+  If we get an allocation failure when processing a particular substring in a
+  TXT record, that failure is silently lost; fix that by propagating errors from
+  the inner loop to the outer loop.
+
+- process_answer: fix things up correctly when removing EDNS option
+  
+  When a server rejects an EDNS-equipped request, we retry without
+  the EDNS option.  However, in TCP mode, the 2-byte length prefix was
+  being calculated wrong -- it was built from the answer length rather than
+  the length of the original request.
+  
+  Also, it is theoretically possible that the call to realloc() might change
+  the data pointed to; to allow for this, qbuf also needs updating.
+  
+  (Both these fixes were actually included in a patchset sent on the mailing
+  list in Oct 2012, but were included with other functional changes that
+  didn't get merged:
+  http://c-ares.haxx.se/mail/c-ares-archive-2012-10/0004.shtml)
+
+- ares__read_line: clear buf pointer on realloc failure
+
+- ares_expand_name: check for valid bits in label length
+  
+  The top two bits of the label length indicate whether this is a
+  label length (00) or an index to a name elsewhere in the message
+  (11).  RFC1035 4.1.4 says that the other possible values for the
+  top two bits (01, 10) are reserved for future use.
+
+Daniel Stenberg (23 Jan 2016)
+- [Gregor Jasny brought this change]
+
+  Fix typos detected by lintian
+  
+  Closes #32
+
+- [Gregor Jasny brought this change]
+
+  Distribute all man pages
+
+- README.cares: s/I/Daniel
+  
+  ... and add a pointer to an existing version of the original area 1.1.1
+  package.a
+
+- read_tcp_data: don't try to use NULL pointer after malloc failure
+  
+  CID 56884, pointed out by Coverity. We really should make this function
+  return an error code so that a malloc() failure can return back a major
+  failure.
+
+- configure_socket: explicitly ignore return code
+  
+  CID 56889 in Coverity pointed out the return code from setsocknonblock()
+  is ignored, and this added typecast to (void) makes it explicit.
+
+- ahost: check the select() return code
+  
+  Fixes CID 137189, pointed out by Coverity
+
+David Drysdale (18 Jan 2016)
+- Fix buildconf on platforms using glibtoolize
+  
+  Commit c49a87eea538 changed buildconf to only check for
+  libtoolize, but missed a line
+
+- Don't exit loop early leaving uninitialized entries
+  
+  Update for commit affc63cba875d.
+  
+  The original patch from Gregor Jasny did not have the break
+  statement; I incorrectly added it to prevent continuing the loop.
+  However, the later entries in the array would then be left
+  uninitialized, causing problems for later cleanup.
+  
+  So fix to match Gregor's original patch, with apologies.
+
+Daniel Stenberg (18 Jan 2016)
+- buildconf: remove check for libtool, it only requires libtoolize
+
+David Drysdale (17 Jan 2016)
+- [Gregor Jasny brought this change]
+
+  Use libresolv to initialize cares on iPhone targets
+  
+  On iPhone targets like iOS, watchOS or tvOS the file
+  /etc/resolv.conf cannot be used to configure cares.
+  
+  Instead the resolver library is queried for configuration
+  values.
+  
+  CC: Yury Kirpichev <ykirpichev@yandex-team.ru>
+
+Daniel Stenberg (17 Jan 2016)
+- README: updated to new repo URL
+
+David Drysdale (14 Jan 2016)
+- [Lei Shi brought this change]
+
+  Fixing slow DNS lookup issue
+  
+  This patch is fixing the dns lookup issue due to dummy dns information
+  of a disconnected adapter(in my case is a bluetooth adapter). I changed
+  the dns lookup policy to try GetNetworkParams first because the
+  GetNetworkParams provides the most reliable dns information (lots of
+  checks were done by system). I also filter out inoperable adapter in
+  DNS_AdaptersAddresses in case GetNetworkParams fail.
+
+- Merge pull request #30 from p-push/vs-2015
+  
+  Support Visual Studio 2015
+
+Oleg Pudeyev (3 Jan 2016)
+- [Gisle Vanem brought this change]
+
+  Support Visual Studio 2015
+
+David Drysdale (11 Nov 2015)
+- [Andrew Andkjar brought this change]
+
+  added another version case to Makefile.msvc
+  
+  nmake version 11.00.61030.0 resolves to CC_VERS_NUM = 110
+
+- Merge pull request #26 from bitbouncer/vs-2013
+  
+  added define for visual studio 2013
+
+svante karlsson (25 Jun 2015)
+- added define for visual studio 2013
+
+Jakub Hrozek (6 Nov 2014)
+- ares__read_line: free buf on realloc failure
+
+- Destroy options if ares_save_options fails
+  
+  It's possible that, if ares_save_options failed, the opts structure
+  would contain some allocated memory. Calling ares_destroy_options in
+  this case is safe, because ares_save_options zeroes out the memory
+  initially.
+
+- [David Drysdale brought this change]
+
+  Continue loop if space for hostname not large enough
+  
+  When attempting to build a search domain from the local hostname
+  (used as a fallback when no other methods have given a search
+  domain), the code doubles the buffer size on each loop iteration.
+  
+  However, the loop previously had a WHILE_FALSE terminator so the continue
+  statement exited the loop rather than going round again.
+
+Daniel Stenberg (30 Oct 2014)
+- ares_getnameinfo.3: there is no ares_getaddrinfo
+
+David Drysdale (30 Sep 2014)
+- [Gregor Jasny brought this change]
+
+  Prevent tmpbuf from overrunning
+  
+  Fix Coverity error CID 56886.
+  
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+- [Gregor Jasny brought this change]
+
+  Re-start loop if select fails
+  
+  Fix Coverity error CID 56882
+  
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+- [Gregor Jasny brought this change]
+
+  Free temporary variable in error path
+  
+  Fix Coverity CID 56890
+  
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+- [Gregor Jasny brought this change]
+
+  Fix integer shift overflow if both tcp_socket and udp_socket are set
+  
+  The problem occurs if at the start of the loop the sockindex is at the
+  last valid ARES_GETSOCK_MAXNUM position. If then both udp_socket and
+  tcp_socket are valid, sockindex gets incremented for UDP first and
+  points one entry behind the array for the tcp block.
+  So the fix is to check after every increment of sockindex if it is still
+  valid.
+  
+  Fix Coverity error CID 56878
+  
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+- [Gregor Jasny brought this change]
+
+  Null check before dereference
+  
+  Fix Coverity error CID 56880
+  
+  Signed-off-by: Gregor Jasny <gjasny@googlemail.com>
+
+Jakub Hrozek (28 Jul 2014)
+- [Gisle Vanem brought this change]
+
+  Comment in ares_ipv6.h
+
+David Drysdale (25 Jul 2014)
+- CONTRIBUTING: add file to indicate mailing list is preferred
+
+- Add -t u option to ahost
+  
+  Add an option to allow specification of the AF_UNSPEC
+  address family.
+
+Jakub Hrozek (24 Jul 2014)
+- host_callback: Fall back to AF_INET on searching with AF_UNSPEC
+  
+  Previously, when an ares_gethostbyname() searched with AF_UNSPEC and the
+  first AF_INET6 call only returned CNAMEs, the host_callback never
+  retried AF_INET.
+  
+  This patch makes sure than on ARES_SUCCESS, the result of AF_INET6 is
+  taken as authoritative only if the result contains some addresses.
+
+- [David Drysdale brought this change]
+
+  Move memset call below platform-specific declarations
+  
+  A GitHub commenter [1] says that my recent change to ahost.c has
+  problems compiling on Windows + C89 platforms.
+  
+  [1]  https://github.com/bagder/c-ares/commit/ee22246507c9#commitcomment-6587616
+
+- [David Drysdale brought this change]
+
+  Update ahost man page to describe -s option.
+  
+  Commit ee22246507c9 added the -s <domain> option to the
+  ahost command, but neglected to update the man page to
+  describe it.
+  
+  Also fix typo in description of -t option.
+
+- ares_parse_soa_reply: Do not leak rr_name on allocation failure
+  
+  If ares_malloc_data failed, already allocated rr_name would go out of
+  scope.
+
+- [David Drysdale brought this change]
+
+  Don't override explicitly specified search domains
+  
+  Only set search domains from /etc/resolv.conf if there isn't a value
+  already present in the channel.
+
+- [David Drysdale brought this change]
+
+  Allow specification of search domain in ahost
+  
+  Add the "-s domain" command line option to override the search
+  domains.
+
+Daniel Stenberg (12 May 2014)
+- Revert "ares_parse_aaaa_reply: fix leak when reply contains 1 alias and no address"
+  
+  This reverts commit 440110b303fdbfadb3ad53d30eeb98cc45d70451.
+
+- [Frederic Germain brought this change]
+
+  ares_parse_aaaa_reply: fix leak when reply contains 1 alias and no address
+
+- [Doug Kwan brought this change]
+
+  ares_build.h: fix building on 64-bit powerpc
+  
+  There are two issues.
+  
+  1. gcc actually does not use __ppc__ and __ppc64__ but __PPC__ and
+  __PPC64__.  The tests of __ILP32__ and __LP64__ are sufficient for gcc.
+  
+  2. clang defines __GNU__ and defines both __ppc64__ and __ppc__ when
+  targeting ppc64.  This makes CARES_SIZEOF_LONG to be 4 on a ppc64 system
+  when building with clang.
+  
+  My patch is two change the order of the checks so that we check the
+  64-bit case first.
+
+- refresh: updated now with automake 1.14
+
+- [David Drysdale brought this change]
+
+  single_domain: Invalid memory access for empty string input
+  
+  We noticed a small buglet in ares_search() when it gets an empty string
+  as input -- the single_domain() utility function in ares_search.c
+  accesses invalid memory (before the start of the string).
+
+Guenter Knauf (31 Aug 2013)
+- Fixed warning 'type specifier missing'.
+
+Daniel Stenberg (30 Aug 2013)
+- [Tor Arntsen brought this change]
+
+  ares_rules.h: CARES_SIZEOF_LONG doesn't exist anymore, don't test for it
+  
+  It was removed in f19387dd72432
+
+- nowarn: use <limits.h> instead of configure for size of long
+  
+  This makes the header file much more multi-arch friendly and can be used
+  as-is with both 32 bit and 64 bit builds.
+
+- timeoffset: made static and private
+  
+  ares__timeoffset() was only used once within this single source file
+
+- timeadd: make static
+  
+  ares__timeadd() was only ever used from within the same source
+
+Yang Tse (18 Jul 2013)
+- xc-am-iface.m4: comments refinement
+
+- configure: fix 'subdir-objects' distclean related issue
+  
+  See XC_AMEND_DISTCLEAN comments for details.
+
+- configure: automake 1.14 compatibility tweak (use XC_AUTOMAKE)
+
+- xc-am-iface.m4: provide XC_AUTOMAKE macro
+
+Daniel Stenberg (12 May 2013)
+- gitignore: ignore all ares_*pdf but also CHANGES.dist
+
+- bump: start working towards 1.10.1
+
+Version 1.10.0 (12 May 2013)
+
+Daniel Stenberg (12 May 2013)
+- RELEASE-NOTES: two more bug fixes
+
+- [Keith Shaw brought this change]
+
+  ares_set_servers_csv: fixed IPv6 address parsing
+  
+  Fixed bug that caused the last part of an IPv6 address to be parsed as
+  the port number when the last part is all numeric.
+
+- nroff: fix two syntax mistakes
+  
+  ares_parse_a_reply and ares_parse_aaaa_reply both had two \fB instead of
+  \fP
+  
+  Reported-by: Alexander Klauer
+  Bug: http://c-ares.haxx.se/mail/c-ares-archive-2013-03/0010.shtml
+
+- [Alex Loukissas brought this change]
+
+  build: fix build on msvc11
+
+- Makefile.am: increment -version-info for 1.10.0 release
+
+- README: remove unnecessary comment
+
+- ares_version.h: copyright end range year is now 2013
+
+- RELEASE-NOTES: synced with fb0737f3a0a1c37
+
+- [Paul Saab brought this change]
+
+  ares_parse_aaaa_reply: Plug memory leak
+  
+  This change is similar to ares_parse_a_reply.c in commit
+  bffd67f16a8f42fe6dbf79ab2e39d92eea05c8a6
+
+- [Patrick Valsecchi brought this change]
+
+  ares_parse_txt_reply: return a ares_txt_reply node for each sub-string
+  
+  Previously, the function would wrongly return all substrings merged into
+  one.
+
+- [Alexander Klauer brought this change]
+
+  library init: documentation update
+  
+  This commit updates the documentation of ares_library_init() and
+  ares_library_cleanup() with regard to the newly introduced reference
+  counting of initializations and deinitializations.
+
+- [Alexander Klauer brought this change]
+
+  library init: be recursive
+  
+  Previously, a single call to ares_library_cleanup() would deinitialise
+  the c-ares library, regardless of how many times ares_library_init() was
+  called. This behaviour may cause problems in programs linking two or
+  more libraries which, in turn, use c-ares. The present commit fixes this
+  problem, deinitializing the library only after a number of calls to
+  ares_library_cleanup() matching the number of calls to
+  ares_library_init().
+
+- [Patrick Valsecchi brought this change]
+
+  protocol parsing: check input data stricter
+  
+  ... so that bad length fields aren't blindly accepted
+  
+  Bug: http://c-ares.haxx.se/mail/c-ares-archive-2013-04/0016.shtml
+
+Guenter Knauf (11 Apr 2013)
+- Create ares_build.h when buidling from Git.
+
+- Added -DCARES_STATICLIB to CFLAGS.
+  
+  Currently this static makefile does only support building the
+  static library libcares.a.
+
+Daniel Stenberg (8 Apr 2013)
+- [Alexander Klauer brought this change]
+
+  .gitignore: ignore patch files
+  
+  This commit adds a line to .gitignore to the effect that patch files
+  generated by 'git format-patch' are excluded from the repository.
+
+- [Alexander Klauer brought this change]
+
+  ares_destroy() documentation: no new requests
+  
+  Clarify that no new requests may be added to a resolver channel that is
+  currently being destroyed.
+
+- [Alexander Klauer brought this change]
+
+  Documentation: properly document ARES_ECANCELLED
+  
+  This commit clarifies the behaviour of ares_cancel() with respect to
+  callbacks and adds missing documentation of ARES_ECANCELLED to the man
+  pages of the affected functions.
+
+- [Alexander Klauer brought this change]
+
+  ares_cancel(): cancel requests safely
+  
+  An invocation of ares_cancel() walks through the request list, calling
+  the callbacks of all pending requests on a channel. Previously, if such
+  a callback added a new request to the channel, the request list might
+  not end up empty, causing an abort by assertion failure. The present
+  commit ensures that precisely all requests present upon entry of
+  ares_cancel() are cancelled, and that adding new requests through
+  callbacks is safe.
+
+Yang Tse (10 Mar 2013)
+- ares.h: stricter CARES_EXTERN linkage decorations logic
+  
+  No API change involved.
+
+- ares_build.h.dist: enhance non-configure GCC ABI detection logic
+  
+  GCC specific adjustments:
+  
+  - check __ILP32__ before 32 and 64bit processor architectures in
+    order to detect ILP32 programming model on 64 bit processors
+    which, of course, also support LP64 programming model, when using
+    gcc 4.7 or newer.
+  
+  - keep 32bit processor architecture checks in order to support gcc
+    versions older than 4.7 which don't define __ILP32__
+  
+  - check __LP64__ for gcc 3.3 and newer, while keeping 64bit processor
+    architecture checks for older versions which don't define __LP64__
+
+Daniel Stenberg (9 Mar 2013)
+- ares.h: there is no ares_free_soa function
+
+Yang Tse (9 Mar 2013)
+- Makefile.am: empty AM_LDFLAGS definition for automake 1.7 compatibility
+
+- ares_inet_ntop.3: s/socklen_t/ares_socklen_t
+
+- configure: use XC_LIBTOOL for portability across libtool versions
+
+- xc-lt-iface.m4: provide XC_LIBTOOL macro
+
+- Makefile.am: use AM_CPPFLAGS instead of INCLUDES
+
+- inet_ntop.c: s/socklen_t/ares_socklen_t
+
+- inet_ntop.c: s/socklen_t/ares_socklen_t for portability
+
+Daniel Stenberg (19 Feb 2013)
+- ares.h: s/socklen_t/ares_socklen_t for portability
+
+- ares_inet_ntop.3: 4th argument is socklen_t!
+
+- spell inet correctly!
+
+- ares_inet_pton/ntop: cleanup
+  
+  Make sure that the symbols are always exported and present in c-ares.
+  
+  Make the headers prefixed with 'ares'.
+  
+  Removed the inet_ntop.h version as it no longer features any content.
+
+- ares_inet_ntop/ares_inet_pton: added man pages
+
+Yang Tse (15 Feb 2013)
+- [Gisle Vanem brought this change]
+
+  curl_setup_once.h: definition of HAVE_CLOSE_S defines sclose() to close_s()
+
+- [Gisle Vanem brought this change]
+
+  config-dos.h: define HAVE_CLOSE_S for MSDOS/Watt-32
+
+- [Gisle Vanem brought this change]
+
+  config-dos.h: define strerror() to strerror_s_() for High-C
+
+Daniel Stenberg (13 Feb 2013)
+- ares_get_datatype: removed unused function
+  
+  it was also wrongly named as internal functions require two underscores
+
+- ares__bitncmp: use two underscores for private functions
+  
+  It used a single one previously making it look like a public one
+
+- ares__generate_new_id: moved to ares_query.c
+  
+  ... and ares__rc4 is turned into a local static function.
+
+- ares__swap_lists: make private and static
+  
+  ... since there's only one user, make it static within ares_process.c
+
+Yang Tse (13 Feb 2013)
+- Makefile.msvc: add four VS version strings
+
+Daniel Stenberg (13 Feb 2013)
+- ares_expand_name.3: clarify how to free the data
+
+Yang Tse (30 Jan 2013)
+- zz40-xc-ovr.m4: fix 'wc' detection - follow-up 2
+  
+  - Fix a pair of single quotes to double quotes.
+  
+  URL: http://curl.haxx.se/mail/lib-2013-01/0355.html
+  Reported by: Tor Arntsen
+
+- zz40-xc-ovr.m4: fix 'wc' detection - follow-up
+  
+  - Take into account that 'wc' may return leading spaces and/or tabs.
+  
+  - Set initial IFS to space, tab and newline.
+
+- zz40-xc-ovr.m4: fix 'wc' detection
+  
+  - Take into account that 'wc' may return leading spaces.
+  
+  - Set internationalization behavior variables.
+  
+  Tor Arntsen analyzed and reported the issue.
+  
+  URL: http://curl.haxx.se/mail/lib-2013-01/0351.html
+
+- zz40-xc-ovr.m4: check another three basic utilities
+
+- zz40-xc-ovr.m4: 1.0 interface stabilization
+  
+  - Stabilization results in 4 public interface m4 macros:
+    XC_CONFIGURE_PREAMBLE
+    XC_CONFIGURE_PREAMBLE_VER_MAJOR
+    XC_CONFIGURE_PREAMBLE_VER_MINOR
+    XC_CHECK_PATH_SEPARATOR
+  - Avoid one level of internal indirection
+  - Update comments
+  - Drop XC_OVR_ZZ40 macro
+
+- zz40-xc-ovr.m4: emit witness message in configure BODY
+  
+  This avoids witness message in output when running configure --help,
+  while sending the message to config.log for other configure runs.
+
+- zz40-xc-ovr.m4: truly do version conditional overriding
+  
+  - version conditional overriding
+  - catch unexpanded XC macros
+  - fix double words in comments
+
+- zz40-xc-ovr.m4: fix variable assignment of subshell output bashism
+  
+  Tor Arntsen analyzed and reported the issue.
+  
+  URL: http://curl.haxx.se/mail/lib-2013-01/0306.html
+
+- zz40-xc-ovr.m4: reinstate strict AC_REQUIRE macro dependencies
+
+- zz40-xc-ovr.m4: avoid double single-quote usage
+
+- zz40-xc-ovr.m4: parentheses balancing of 'case' statements
+  
+  m4 quadrigraph shell comment technique allows proper autoconf
+  parentheses balancing in shell 'case' statements. The presence
+  of unbalanced parentheses may otherwise trigger expansion bugs.
+
+- zz40-xc-ovr.m4: internals overhauling
+  
+  - Update comments
+  - Execute commands in subshells
+  - Faster path separator check
+  - Fix missing 'test' command
+  - Rename private macros
+  - Minimize AC_REQUIRE usage
+
+- zz40-xc-ovr.m4: redirect errors and warnings to stderr
+
+- configure: use XC_CONFIGURE_PREAMBLE early checks
+  
+  Some basic checks we make were placed early enough in generated
+  configure script when using autoconf 2.5X versions. Newer autoconf
+  versions expand these checks much further into the configure script,
+  rendering them useless. Using XC_CONFIGURE_PREAMBLE fixes placement
+  of early intended checks across all our autoconf supported versions.
+
+- zz40-xc-ovr.m4: provide XC_CONFIGURE_PREAMBLE macro
+
+- configure: autotools compatibility fixes - step I
+  
+  Fix proper macro expansion order across autotools versions for
+  C compiler and preprocessor program checks.
+
+- configure: fix automake 1.13 compatibility
+  
+  Tested with:
+  
+  buildconf: autoconf version 2.69
+  buildconf: autom4te version 2.69
+  buildconf: autoheader version 2.69
+  buildconf: automake version 1.13.1
+  buildconf: aclocal version 1.13.1
+  buildconf: libtool version 2.4
+  buildconf: GNU m4 version 1.4.16
+
+- ares_private.h: use again memdebug.h instead of curl_memdebug.h
+
+- configure.ac: replace AM_CONFIG_HEADER with AC_CONFIG_HEADERS
+  
+  automake 1.13 errors if AM_CONFIG_HEADER is used in configure script.
+
+- cares-override.m4: provide AC_CONFIG_MACRO_DIR definition conditionally
+  
+  Provide a 'traceable' AC_CONFIG_MACRO_DIR definition only when using
+  an autoconf version that does not provide it, instead of what we were
+  doing up to now of providing and overriding AC_CONFIG_MACRO_DIR for
+  all autoconf versions.
+
+- ares_private.h: use curl_memdebug.h instead of memdebug.h
+
+- vc6cares.dsp: add ares_create_query.c and ares_parse_soa_reply.c
+
+- cares-functions.m4: improve gethostname arg 2 data type check
+
+- setup_once.h: HP-UX specific 'bool', 'false' and 'true' definitions.
+  
+  Also reverts commit bceb40095a
+
+- configure: check if compiler halts on function prototype mismatch
+
+- cares-functions.m4: add gethostname arg 2 data type check and definition
+
+- cares-functions.m4: update thread-safeness detection of getaddrinfo()
+  
+  Take in account that POSIX standard Issue 7 drops h_errno support. Now, we also
+  consider getaddrinfo() to be thread-safe when (_POSIX_C_SOURCE >= 200809L) or
+  (_XOPEN_SOURCE >= 700) independently of whether h_errno exists or not.
+  
+  Take in account that h_errno might be a modifiable lvalue not defined as
+  a C preprocessor macro.
+
+- setup_once.h: HP-UX <sys/socket.h> issue workaround
+  
+  Issue: When building a 32bit target with large file support HP-UX
+  <sys/socket.h> header file may simultaneously provide two different
+  sets of declarations for sendfile and sendpath functions, one with
+  static and another with external linkage. Given that we do not use
+  mentioned functions we really don't care which linkage is the
+  appropriate one, but on the other hand, the double declaration emmits
+  warnings when using the HP-UX compiler and errors when using modern
+  gcc versions resulting in fatal compilation errors.
+  
+  Mentioned issue is now fixed as long as we don't use sendfile nor
+  sendpath functions.
+
+- setup_once.h: refactor inclusion of <unistd.h> and <sys/socket.h>
+  
+  Inclusion of these two header files now done in setup_once.h
+
+- Header inclusion clean-up
+  
+  Remove header inclusions already done in setup_once.h
+
+- setup_once.h: HP-UX specific TRUE and FALSE definitions
+  
+  Some HP-UX system headers require TRUE defined to 1 and FALSE to 0.
+
+- ares_timeout.c: fix compiler warning
+
+- ares_create_query.c: IRIX compilation fix
+
+- c-ares/nameser.h: add some T_* defines for ns_t_* values
+
+Daniel Stenberg (7 Nov 2012)
+- Revert "ares_parse_aaaa_reply: fix memory leak"
+  
+  This reverts commit 50f25d8a4b2d16f4c5e0ef620238688b7a315c7a.
+
+- ares_parse_aaaa_reply: fix memory leak
+  
+  an allocated buffer was not freed in the successful case.
+
+- [Gisle Vanem brought this change]
+
+  adig: perror() doesn't work for socket errors on windows
+  
+  ... so print the SOCKERRNO instead
+
+- get_DNS_AdaptersAddresses: fix IPv6 parsing
+  
+  Use of the wrong define made the function not parse IPv6 addresses
+  properly.
+  
+  Bug: http://c-ares.haxx.se/mail/c-ares-archive-2012-06/0028.shtml
+  Reported by: Saúl Ibarra Corretgé
+
+- version: bumped to 1.10.0
+  
+  Due to the newly added function: ares_create_query()
+
+- AUTHORS: synced with 83093ac450
+  
+  Added 21 authors since this document was last updated
+
+- ares_create_query.3: mention when this is added
+
+- [hpopescu@ixiacom.com brought this change]
+
+  Added new feature (rfc2671)
+
+- code police: fix indents, < 80 columns, reflowed comments
+
+Guenter Knauf (11 Jul 2012)
+- Cleaned up version awk script.
+
+Daniel Stenberg (30 Jun 2012)
+- [Gisle Vanem brought this change]
+
+  read_udp_packets: bail out loop on bad sockets
+  
+  I can see that recvfrom() in ares_process.c many times is called with
+  'udp_socket' == ARES_SOCKET_BAD. The code takes care not to call
+  recv/recvfrom with ARES_SOCKET_BAD in the outer-loop. So should the
+  inner-loop.
+
+Yang Tse (29 Jun 2012)
+- cares-compilers.m4: remove -Wstrict-aliasing=3 from clang
+  
+  Currently it is unknown if there is any version of clang that
+  actually supports -Wstrict-aliasing. What is known is that there
+  are several that don't support it.
+
+- cares-compilers.m4: -Wstrict-aliasing=3 for warning enabled gcc and clang builds
+
+Daniel Stenberg (18 Jun 2012)
+- version: work towards 1.9.2 (at least)
+
+Version 1.9.1 (18 Jun 2012)
+
+Daniel Stenberg (18 Jun 2012)
+- RELEASE-NOTES: 1.9.1 coming up
+
+Version 1.9.0 (16 Jun 2012)
+
+Daniel Stenberg (16 Jun 2012)
+- ares_version.h: next version is 1.9.0
+
+- [Marko Kreen brought this change]
+
+  ares_data.h: ARES_DATATYPE_SOA_REPLY is added in 1.9.0
+
+- RELEASE-NOTES: synced with 979bf951d
+  
+  Next release deemed to become 1.9.0 due to the new function
+
+- [Marko Kreen brought this change]
+
+  SOA parser added
+  
+  I need to do SOA queries, so here is a parser for them.
+  
+  - ares_soa_reply: new struct
+  - ares_malloc_data/ares_free_soa: ARES_DATATYPE_SOA_REPLY
+  - ares_parse_soa_reply: actual function
+
+Yang Tse (14 Jun 2012)
+- Kill compiler warning
+
+- Fix libcares.pc generation for static MingW* cross builds
+
+Daniel Stenberg (21 May 2012)
+- [Nick Alcock brought this change]
+
+  Fix UDP and TCP port byte order in saved options.
+  
+  The UDP and TCP port are stored in network byte order in the
+  ares_channeldata, but are passed in to ares_init_options() in host byte
+  order.  Thus we must return them from ares_save_options() in host byte
+  order too, or a duplicated channel will convert them again, leading to a
+  nonfunctional channel and a mysterious connection refused error from
+  ares_gethostbyname().  This breaks ares_dup(), thus the curl easy API
+  when c-ares is used by curl, and thus all the curl easy API's users.
+
+Yang Tse (28 Apr 2012)
+- version: start working on 1.8.1-DEV
+
+Version 1.8.0 (27 Apr 2012)
+
+Daniel Stenberg (27 Apr 2012)
+- RELEASE-NOTES: call next 1.8 instead
+  
+  Since we added a function, let's use a stricter bumping scheme
+
+Yang Tse (25 Apr 2012)
+- INSTALL: some adjustments
+
+Daniel Stenberg (25 Apr 2012)
+- GIT-INFO: mention buildconf
+
+Yang Tse (25 Apr 2012)
+- INSTALL: remove more sections that don't apply to c-ares
+
+- ares_timeout.c: fix compiler warning
+
+Daniel Stenberg (25 Apr 2012)
+- [Ben Noordhuis brought this change]
+
+  Makefile.m32: fix mingw32 build
+  
+  * add . to include path so ares_build.h is picked up
+  * make ar configurable to ease cross-compiling
+
+- RELEASE-NOTES: added what's happened since 1.7.5
+
+Guenter Knauf (22 Apr 2012)
+- Updated copyright year.
+
+Yang Tse (21 Apr 2012)
+- ares_init.c: Further refactoring of Windows system's DNS fetching code
+
+Guenter Knauf (20 Apr 2012)
+- Android: small changes to dns property part.
+  
+  Prefix prop vars; kill var; use DNS_PROP_NAME_PREFIX macro.
+
+- Handle CNAME-only in ares_parse_aaaa_reply().
+  
+  posted to the c-ares list by Peter Griess <pg@std.in>.
+
+- Add support for multiple DNS servers on Android.
+  
+  Before, c-ares always used the first DNS server on Android, causing
+  network problems if this DNS server was not available.
+  
+  Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+- Added INSTALL so it gets into tarballs.
+
+- Added some more ifdefs to silent compiler warnings.
+
+Yang Tse (17 Apr 2012)
+- INSTALL: remove a non c-ares section
+
+- cares-compilers.m4: -Wno-pedantic-ms-format for Windows gcc 4.5 builds
+  
+  When building a Windows target with gcc 4.5 or newer and strict compiler
+  warnings enabled use -Wno-pedantic-ms-format in addition to other flags.
+
+- setup_once.h: tighten requirements for stdbool.h header inclusion
+  
+  Include stdbool.h only when it is available and configure is capable of
+  detecting a proper 'bool' data type when the header is included.
+
+- configure: NATIVE_WINDOWS no longer defined in config file
+
+- cares-compilers.m4: double underscore decoration for visibility attribute
+
+- build adjustments: CARES_SYMBOL_HIDING no longer defined in config files
+  
+  configure script now provides conditional definitions for Makefile.am
+  that result in CARES_SYMBOL_HIDING being defined by resulting makefiles
+  when appropriate.
+
+- configure: Windows cross-compilation fixes
+  
+  CARES_BUILDING_LIBRARY and CARES_STATICLIB no longer defined in ares_config.h,
+  configure will generate appropriate conditionals so that mentioned symbols
+  get defined and used in Makefile derived from Makefile.am at compilation time.
+
+Guenter Knauf (17 Apr 2012)
+- Added INSTALL file adapted from libcurl.
+  
+  Not yet ready, and needs further edits.
+
+Yang Tse (16 Apr 2012)
+- ares_init.c: get_iphlpapi_dns_info() refactoring
+
+Guenter Knauf (16 Apr 2012)
+- Kill some more compiler warnings.
+
+- Kill compiler warning about unused var.
+
+- Fixed my last commit: wrong preprocessor directive.
+
+- Check for __ANDROID__ in addition to ANDROID macro.
+
+- Check for __ANDROID__ in addition to ANDROID macro.
+  
+  Posted to c-ares list by Wayne.
+
+- Fix for Android to disable useless arpa/nameser.h.
+
+- Fix for Android to include sys/select.h for fd_set.
+
+Yang Tse (17 Mar 2012)
+- ares_data.c: some NAPTR related fixes
+
+Daniel Stenberg (16 Mar 2012)
+- port numbers: convert them to network order!
+  
+  When the config options ARES_OPT_UDP_PORT or ARES_OPT_TCP_PORT are used,
+  make sure to convert them to network byte order!
+  
+  Bug: http://c-ares.haxx.se/mail/c-ares-archive-2012-02/0004.shtml
+
+- white space cleanup
+  
+  - Keep code within 80 columns
+  
+  - Removed funny spaces after open paren and before closing paren
+
+- [Poul Thomas Lomholt brought this change]
+
+  get_iphlpapi_dns_info: fix buffer overrun
+  
+  I experienced a buffer overrun exception in c-ares on Windows and
+  tracked it down to be an error in the calculation of the 'left' variable
+  in get_iphlpapi_dns_info().
+  
+  I changed the variable type of 'left' to a _signed_ type because of the
+  subtraction arithmetic; not sure if a long is the best choice
+
+- Merge pull request #7 from saghul/naptr
+  
+  Added support for parsing NAPTR records
+
+saghul (23 Feb 2012)
+- Added support for parsing NAPTR records
+
+Yang Tse (19 Jan 2012)
+- ares_init.c: fix compiler warning on winsock builds
+
+- configure: libtool 1.5 tweaks
+
+Daniel Stenberg (19 Dec 2011)
+- ares_timeout.3: fix the NAME section
+  
+  It was clearly a copy n' paste error
+
+Yang Tse (27 Sep 2011)
+- [Albert Chin brought this change]
+
+  configure - m4: make CURL_CHECK_DEF ignore leading whitespace on symbol def
+  
+  When using Sun C compiler the preprocessor somehow inserts an extra space
+  in front of replaced symbol, breaking CURL_CHECK_DEF macro. To workaround
+  this, macro CURL_CHECK_DEF now ignores all leading whitespace in front of
+  symbol substitution result.
+
+- ares_init.c: fix segfault triggered in ares_init_options() upon previous
+               failure of init_by_defaults() and incomplete cleanup there.
+
+- ares_process.c: fix compiler warning
+
+- fix MSVC compiler warning 'conditional expression is constant'
+
+- setup_once.h cleanup and sync
+
+- [Denis Bilenko brought this change]
+
+  ares_getnameinfo: fix random results with c-ares 1.7.5
+  
+  In ares_getnameinfo memcpy did not copy enough bytes, causing
+  it to return arbitrary memory contents as a result.
+
+- warnings: fix another 'conversion may lose significant bits' compiler warning
+
+- ares_dns.h: adjust DNS__16BIT and DNS__32BIT macro definitions
+  
+  Fixing compiler warnings existing definitions triggered on these.
+
+- ares_destroy.c: fix segfault in ares_destroy_options()
+
+Daniel Stenberg (21 Aug 2011)
+- ares_parse_srv_reply: silence compiler warnings
+  
+  ... by adding ugly typecasts.
+
+- CHANGES: generate from script
+  
+  The CHANGES file is now generated automatically with 'git2changes.pl',
+  invoked by the maketgz script which is used to build release archives.
+  
+  The former human edited CHANGES file was renamed to CHANGES.0 in git.
+
+Yang Tse (21 Aug 2011)
+- Makefile.netware: SIZEOF_SHORT definition
+
+- warnings: fix some 'conversion may lose significant bits' compiler warnings
+
+- configure: fix symbol hiding usability check
+  
+  A more thorough test is done now in order to determine visibility attribute
+  usability, given that some compilers don't support visibility attribute on
+  all configurations.
+
+Daniel Stenberg (16 Aug 2011)
+- 1.7.6: start working...
+
+Version 1.7.5 (16 Aug 2011)
+
+Daniel Stenberg (16 Aug 2011)
+- CHANGES: synced for 1.7.5 release
+
+- RELEASE-NOTES: synced with bb4096effef7f000
+
+Jakub Hrozek (15 Aug 2011)
+- Only fall back to AF_INET searches when looking for AF_UNSPEC addresses
+
+Yang Tse (10 Aug 2011)
+- [Gisle Vanem brought this change]
+
+  ares_iphlpapi.h: Watcom C fix
+  
+    Added "!defined(_WS2DEF_)" since Watcom doesn't have
+    a per type guard for the typedefs 'CSADDR_INFO' (that MingW has) or
+    'SOCKET_ADDRESS' (that MSVC has). But we can use the header-guard for
+    <ws2def.h> instead.
+
+- [Gisle Vanem brought this change]
+
+  Makefile.Watcom:
+    * The 'NTDDI_VERSION' needs to be raised to 0x05010000
+      in order for SOCKADDR_STORAGE etc. to be typedefed.
+    * Replaced '-dUSE_WATT32' with '-dWATT32'.
+    * Added $(DEMOS) to the 'all' target and removed the 'demos'
+      target to be consistent with e.g. Makefile.msvc etc.
+    * 'ENABLE_IPV6' is no longer used. Hence removed the '%use_ipv6' construct.
+    * object-file order seems to be important (Watcom v.19). Hence
+      'ares_getopt.obj' must be put after the .obj that references getopt().
+
+- cares-compilers.m4: CARES_CONVERT_INCLUDE_TO_ISYSTEM adjustments
+  
+  Add CARES_CHECK_COMPILER as a requirement.
+  
+  Ensure macro does nothing unless GNU_C or CLANG compiler is used.
+  
+  This should allow usage of this macro in unforeseen placements.
+
+- config-win32.h: comments adjustments - followup
+
+- config-win32.h: comments adjustments
+
+Daniel Stenberg (5 Aug 2011)
+- [Tom Hughes brought this change]
+
+  ares_parse_a_reply: fix memleak
+
+Yang Tse (29 Jul 2011)
+- cares-functions.m4 serial # bump
+
+- Revert "configure: additional flag checks for fcntl() and socket()"
+  
+  This reverts commit 5f2a3b0e48f26d24cb1fefea0dccb92d417dcbf7.
+
+- configure: additional flag checks for fcntl() and socket()
+
+- xc-translit.m4 fix quoting
+
+- configure: avoid direct usage of AS_TR_* macros
+
+- xc-translit.m4 provides transliteration macros with well defined behavior.
+
+Jakub Hrozek (15 Jun 2011)
+- Revert "Only fall back to AF_INET searches when looking for AF_UNSPEC addresses"
+  
+  This reverts commit b5823d65706af687c0e5110af8f0cfdcd068997d.
+  
+  This patch was not reviewed properly before pushing
+
+- Revert "Do not use sized constants in public headers"
+  
+  This reverts commit 22c01e96f7b2ae9923e1baa50bfe3c0d22297a7d.
+  
+  This is a Red Hat specific patch that does not belong into upstream
+
+- Use correct sizeof in ares_getnameinfo()
+
+- Do not leak rr_name on failures inside ares_parse_ptr_reply
+
+- Do not leak rr_name on failures inside ares_parse_a_reply
+
+- Do not leak rr_name on failures inside ares_parse_aaaa_reply
+
+- Do not leak rr_name on failures inside ares_parse_ns_reply
+
+- Fix incorrect sizeof() in ares_save_options
+
+- Fix incorrect allocation in ares_parse_ptr_reply()
+
+- Only fall back to AF_INET searches when looking for AF_UNSPEC addresses
+
+- Do not use sized constants in public headers
+
+Daniel Stenberg (13 Jun 2011)
+- [Jakub Hrozek brought this change]
+
+  ares_free_hostent(NULL) should be a noop
+
+Yang Tse (8 Jun 2011)
+- configure: fix recvfrom 5th arg type qualifier detection (followup)
+
+- configure: fix recvfrom 5th arg type qualifier detection
+  
+  Additionally remove whitespace from EOL
+
+Daniel Stenberg (4 Jun 2011)
+- strlen: use size_t to receive the return
+
+Yang Tse (4 Jun 2011)
+- xlc: avoid preprocessor definition usage when linking
+
+- ares_nowarn: icc 9.1 workaround
+
+- ares_nowarn: header inclusion fix
+
+- ares_init: make ares_private.h last included header again
+
+- compiler warning: fix
+  
+  Fix compiler warning: conversion may lose significant bits
+
+- compiler warning: fix
+  
+  Fix compiler warning: variable was set but never used
+  
+  Fix compiler warning: clobber ignored
+
+- ares_iphlpapi: fix compiler warnings
+
+- winsock: compilation fixes
+  
+  Provide winsock iphlpapi alternative definitions to prevent compilation
+  failures when using a variety of winsock header implementations.
+
+Daniel Stenberg (17 May 2011)
+- [David Stuart brought this change]
+
+  IPv6-on-windows: find DNS servers correctly
+
+- man pages: docs for the c-ares utility programs
+
+- ares_parse_ns_reply.c: remove CVSism
+
+Yang Tse (27 Mar 2011)
+- build: fix header inclusion
+
+- getservbyport replacement for Win CE
+
+- renamed getplatform() to ares__getplatform() to avoid namespace pollution
+
+- configure: fix libtool warning
+  
+  Recent versions of libtool are now tracing usage of AC_CONFIG_MACRO_DIR
+  macro and warn heavily when not used in configure script along with
+  ACLOCAL_AMFLAGS in Makefile.am.  So in order to make libtool happy
+  while keeping backwards compatibility this is added.
+
+- adig: RFC4034 resource record type detection
+  
+  Can be tested with: adig -s 8.8.8.8 -t ANY example.com
+
+- nameser.h: RFC4034 resource record type definitions
+
+- build: move platform stuff to ares_platform.c and ares_platform.h
+
+- build: find out windows platform using GetVersionEx()
+
+- build: use getenv() replacement function for systems which lack it
+
+- setup_once: system error codes for Windows CE
+
+- ares_search: use ERRNO macro for portability sake
+
+- System's errno.h inclusion cleanup follow-up.
+  
+  System's errno.h is conditionally included from setup_once.h
+
+- Windows CE specific adjustment
+  
+  All versions of Windows CE support Winsock 1.1
+
+- System's errno.h inclusion cleanup.
+  
+  System's errno.h is conditionally included from setup_once.h
+
+- ares_init: fix gethostname error detection on winsock platforms
+
+- configure: r-enable temporarily disabled detection of system's inet_ntop()
+  
+  Detection was temporarily disabled in commit 674e044ccb21f2f63537da53565fce868f
+
+Daniel Stenberg (15 Mar 2011)
+- configure: stop using the deprecated AM_INIT_AUTOMAKE syntax
+
+- [Gisle Vanem brought this change]
+
+  Watt-32: use errno
+  
+  Make sure Watt-32 programs use 'errno' even on Win32 targets
+
+Guenter Knauf (18 Feb 2011)
+- Removed commented CLFAGS no longer needed.
+
+- Fixed CFLAGS for NetWare.
+  
+  Added -m32 to enable compilation with x86_64 compilers;
+  added conditional to set -fpcc-struct-return only for gcc compiler.
+
+Daniel Stenberg (18 Feb 2011)
+- [Gisle Vanem brought this change]
+
+  Watt32: fix server init
+  
+  Somewhere in the process, programs using the Watt-32 tcp/ip stack
+  stopped working.
+
+- [Dima Tisnek brought this change]
+
+  config_sortlist: (win32) missing else
+  
+  Without an else there, contents of "pat" that could have been
+  successfully set just above, may be clobbered by successive unsuccessful
+  calls to "xxx_pton" or "ip_addr".
+
+Yang Tse (17 Jan 2011)
+- Makefile.msvc: add a couple of VS version strings
+
+- Makefile.msvc: add a couple of VS version strings
+
+- build: add install target to Makefile.msvc
+
+Daniel Stenberg (27 Dec 2010)
+- ares_set_servers_csv: remove unused variables
+
+- init_by_resolv_conf: fix compiler warnings
+  
+  The code received the return codes in the 'status' variable without
+  using it. Instead we just ignore those particular errors.
+
+- getv4: Value stored to 'dst' is never read
+
+- advance_tcp_send_queue: avoid NULL ptr dereference
+  
+  If given a too large 'num_bytes' value, it would cause a NULL ptr
+  dereference. Instead the code will now break out of the loop at the end
+  of the list.
+
+- [Peter Pentchev brought this change]
+
+  configure: fix a bashism
+
+- cleanup: avoid unsafe typecasts
+  
+  Avoid the risk of reading 16bit data from an unaligned address by using
+  a macro that is adapted for this.
+
+- [Stefan Bühler brought this change]
+
+  ares_expand_name: Fix encoded length for indirect root
+
+Yang Tse (18 Dec 2010)
+- build: add some explicit file references to VS project files
+
+- config-win32: provide HAVE_ASSERT_H definition
+
+- build: include ares_nowarn in sample program VS project files
+
+- build: include ares_nowarn among SAMPLESOURCES and SAMPLEHEADERS
+
+- configure: temporarily disable detection of system's inet_ntop()
+  
+  This is done to allow compilation of ares_inet_ntop() by some daily
+  builds picky compilers that otherwise do not need this function.
+
+- changes: mention last fix
+
+- ares_inet_ntop: remove definition and usage of macro SPRINTF
+  
+  Existing definition of SPRINTF always resulted in sprintf() being used,
+  and sprintf() returning 'int' is already used throughout the library.
+
+- ares_inet_ntop: reapply changes from previous c-ares version (III)
+  
+  - Replace 'u_char' with 'unsigned char'.
+  - Replace 'u_int' with 'unsigned int'.
+  - use macros ERRNO and SET_ERRNO() for errno handling.
+
+- ares_inet_ntop: reapply changes from previous c-ares version (II)
+  
+  - Remove rcsid.
+  - Adjust header file inclusions.
+  - ares_inet_ntop used only on systems without a proper inet_ntop function.
+
+- ares_inet_ntop: reapply changes from previous c-ares version (I)
+  
+  - Replace tabs with spaces.
+  - Use ANSI C style for function declarations and definitions.
+  - Use sizeof with parentheses.
+
+- ares_inet_ntop: fix off by one error triggering out of bounds write
+  
+  ares_inet_ntop would trigger an out of bounds write when the representation
+  of the address required 15 characters, due to not taking in account null
+  termination character.
+  
+  Full import of inet_ntop.c from bind-9.5.3rc1 to pull additional fixes.
+
+- ares_nowarn: add conditional inclusion of assert.h header
+
+- fix compiler warning: conversion may lose significant bits
+
+- ares_inet_net_pton: fix non-rejection of some malformed literals
+  
+  ares_inet_net_pton would return wrong values when excessively large,
+  and invalid, netmasks are used. Fixes are from bind-9.5.3rc1,
+  issue also described in the WLB-2008080064 advisory.
+
+- setup_once: provide ISASCII macro
+
+- configure: inet_net_pton function check adjustments
+  
+  Define HAVE_INET_NET_PTON only when system's inet_net_pton function is IPv6
+  capable and is not affected by the WLB-2008080064 advisory.
+  
+  HAVE_INET_NET_PTON_IPV6 is no longer defined nor used.
+
+- ares_init: fix detection of semicolon comments in resolv.conf
+  
+  File resolv.conf may either use a hash '#' or a semicolon ';' character as an
+  indication that the rest of the line is a comment.  This fixes not recognizing
+  the semicolon as a valid comment indicator in resolv.conf.
+
+- version: start working on 1.7.5
+
+Version 1.7.4 (8 Dec 2010)
+
+Daniel Stenberg (8 Dec 2010)
+- release-preps: CHANGES and RELEASE-NOTES synced
+
+- ares_set_local_*: added in 1.7.4, not before
+
+Yang Tse (3 Dec 2010)
+- build: provide SIZEOF_SIZE_T definition for non-configure builds
+
+- build: config.dos renamed to config-dos.h
+
+- build: provide SIZEOF_SIZE_T netware definition
+
+- ares_gethostbyaddr: fix compiler warning: conversion may lose significant bits
+
+- configure: undo using autobuilds to temporarily verify strict aliasing warnings.
+
+- fix compiler warning: rounding, sign extension, or loss of accuracy may result
+
+Daniel Stenberg (2 Dec 2010)
+- [Ben Noordhuis brought this change]
+
+  ares_parse_a_reply: fix CNAME response parsing
+  
+  Reply to a CNAME query doesn't contain addresses, causing
+  ares_parse_a_reply() to bail out with ARES_ENODATA
+  
+  Bug: http://groups.google.com/group/nodejs/browse_thread/thread/a1268c9ea5e9ad9b
+
+Yang Tse (1 Dec 2010)
+- fix compiler warning: conversion may lose significant bits
+
+- atoi: remove atoi usage
+
+- ares_init: fix compiler warning: conversion may lose significant bits
+
+- configure: fix autoconf warning
+
+- inet_pton: fix compiler warning
+
+- configure: use autobuilds to temporarily verify strict aliasing warnings.
+  
+  Temporarily, When cross-compiling with gcc 3.0 or later, enable strict aliasing
+  rules and warnings. Given that cross-compiled targets autobuilds do not run the
+  test-suite, there is no risk of running code that violates strict aliasing rules
+
+- ares_getnameinfo: Partially revert commit 85520d66e0ac7ac73411bc25e98769a88b2f
+  
+  Upon socket address family and length validation failure return ARES_ENOTIMP
+  in callback again, this is the error code documented in man page and used
+  mostly all over the library.
+
+- ares_getnameinfo: Validate socket address family and length.
+  
+  Validate socket address family and that the socket address length is appropriate
+  for the specified family. Failure is reported with ARES_EBADFAMILY in callback.
+
+- ares_getnameinfo: fix two compiler warnings
+
+- Added another VS10 version string
+
+- Fix GCC 4 compiler warning 'dereferencing type-punned pointer might break strict-aliasing rules'.
+
+- Revert commit 494274e653936335c255a47599970de3df21e7c4
+
+- configure: fix autoconf 2.68 warning: no AC_LANG_SOURCE call detected in body
+
+- Fix compiler warning: array subscript has type 'char'
+
+- Fix GCC 4 compiler warning 'dereferencing type-punned pointer might break strict-aliasing rules'.
+
+- Revert following commits:
+    07bc7ea79509bcc9ef6e09151e81766ed00d3392
+    3392a50ea3f8573ea4b7a9d82b9833dab60cb0e9
+    9912637d32c9987719a1ea12db591aee2941891c
+  
+  The purpose of the whole patch was to silence a compiler warning triggered
+  with GCC 4 on file ares_process.c  The specific compiler warning was
+  'dereferencing type-punned pointer might break strict-aliasing rules'.
+  
+  A simpler patch will follow to equally silence the warning.
+
+- ares_options: reorder header inclusions to make inclusion of
+  ares_private.h the last included one again.
+
+Daniel Stenberg (12 Nov 2010)
+- [Patrik Thunstrom brought this change]
+
+  adig: fix NAPTR parsing
+  
+  I ran across a small "issue" in your adig example.
+  
+  It is simply the last part of the NAPTR record, the replacement element,
+  which is not a string, as currently handled in adig, but a domain name.
+
+- ares_save_options: assignments instead of memcpy
+
+- init_by_options: don't copy an empty sortlist
+  
+  If there aren't any sort items to copy, don't bother. Without this
+  little precaution it would do a malloc(0) which causes undefined
+  behaviors and is frowned upon by curl's memdebug-system.
+
+Guenter Knauf (3 Oct 2010)
+- Minor Watcom makefile tweaks.
+
+Daniel Stenberg (30 Sep 2010)
+- [Mike Crowe brought this change]
+
+  Fix lookup with HOSTALIASES set.
+  
+  ares__read_line returns ARES_EOF when it reaches the end of the
+  file. This will happen every time when reading to the end of the
+  HOSTALIASES file. Unfortunately single_domain treats this error as
+  being fatal.
+  
+  Signed-off-by: Mike Crowe <mac@mcrowe.com>
+
+Ben Greear (24 Aug 2010)
+- Add missing break that caused get_ares_servers to fail.
+  
+  Reported-by: Ning Dong <flintning@163.com>
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+Yang Tse (11 Aug 2010)
+- configure: werror related adjustments
+
+Guenter Knauf (8 Aug 2010)
+- Added copyright string to ares_version.h and make use of it in other files.
+
+- Block created ares_build.h for NetWare to avoid usage from other platforms.
+
+- Fix to overwrite default libname.
+
+- Some more Watcom makefile massage ...
+
+- Some more Watcom makefile massage ...
+
+Ben Greear (4 Aug 2010)
+- sock-addr-storage:  Detect and deal with lack of .ss_family member.
+  
+  AIX, at least, does not have sockaddr_storage.ss_family member.
+  Detect this in the configure logic and use proper #ifdefs in the
+  ares_process logic.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+  Tested-by: Tor Arntsen <tor@spacetec.no>
+
+Guenter Knauf (3 Aug 2010)
+- Added Watcom makefile based on libcurl's Makefile.Watcom.
+
+Ben Greear (31 Jul 2010)
+- typo:  Fix compile bug for platforms that don't have sockaddr_storage.
+  
+  Bug was introduced by me in previous commit.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- Fix aliasing warning in gcc 4.4.4 (at least).
+  
+  Should be no functional change, though the code gets a bit
+  ugglier.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+Daniel Stenberg (31 Jul 2010)
+- ares_set_servers_csv: use ISDIGIT
+  
+  The IS*() set of macros are preferred to the regular is*() functions as
+  they help us avoid the most common pitfalls.
+
+Ben Greear (30 Jul 2010)
+- cast arg to isdigit to int
+  
+  Looks like it might silence a warning on Netware build.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- remove all uses of uint32_t
+  
+  Previous fix forgot a few.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- fix signed v/s unsigned casts warning in ares_gethostbyaddr.c
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- local-bind-fixup:  Fix inet_pton warning.
+  
+  Conditionally include <arpa/inet.h> for inet_pton
+  headers.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- build:  Enable compiling with -Werror.
+  
+  This helps find compile warnings because they simply break
+  the build.
+  
+  To use:
+  ./configure --enable-warnings --enable-werror
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- ipv6: Fix some build issues related to the local-bind feature.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+Guenter Knauf (29 Jul 2010)
+- Replaced uint32_t with unsigned int to fix broken builds on a couple of platforms.
+
+Daniel Stenberg (18 Jul 2010)
+- [Ben Greear brought this change]
+
+  local-bind:  Support binding to local interface/IPs
+  
+  Add 3 new functions to set the local binding for the out-going
+  socket connection, and add ares_set_servers_csv() to set a
+  list of servers at once as a comma-separated string.
+  
+  Signed-off-by: Ben Greear <greearb@candelatech.com>
+
+- version: now start on 1.7.4
+
+- [Andrew C. Morrow brought this change]
+
+  fix memory leak in ares_getnameinfo
+
+Version 1.7.3 (11 Jun 2010)
+
+Daniel Stenberg (11 Jun 2010)
+- changelogs: updated for 1.7.3
+
+- [BogDan Vatra brought this change]
+
+  init: allow c-ares to work on Android OS
+
+- changelog: fill in the 1.7.2 changes
+
+- added another pdf to ignore
+
+Yang Tse (11 Jun 2010)
+- add ares_parse_mx_reply.c to VS dsp file
+
+Daniel Stenberg (10 Jun 2010)
+- tarball: add $(CSOURCES) $(HHEADERS) to EXTRA_DIST
+  
+  It's not clear to me why we need this, but we apparently may
+  otherwise not get all files bundled in the dist tarball.
+
+- version: start working on 1.7.3
+
+Version 1.7.2 (10 Jun 2010)
+
+Daniel Stenberg (10 Jun 2010)
+- RELEASE-NOTES: 1.7.2 details added
+
+- [Jakub Hrozek brought this change]
+
+  ares_init: Last, not first instance of domain or search should win
+
+- style: make code less than 80 columns wide
+
+Yang Tse (31 May 2010)
+- [Tor Arntsen brought this change]
+
+  improve alternative definition of bool to use enum instead of unsigned char
+
+- fix VS2010 compiler warnings
+
+Daniel Stenberg (18 Apr 2010)
+- [Jérémy Lal brought this change]
+
+  added ares_parse_mx_reply
+
+- repair the file mode
+
+- remove all $Id$ lines
+
+- remove all .cvsignore files
+
+- spell fix
+  
+  reported by Gregor Jasny on the mailing list
+
+- [Peter Pentchev brought this change]
+
+  Fix a couple of typos and grammar nits.
+
+- ignore the GPG signature files too
+
+- start the journey towards 1.7.2
+
+- no longer CVS tagging
+
+- ignore generated PDFs
+
+Version 1.7.1 (23 Mar 2010)
+
+Daniel Stenberg (23 Mar 2010)
+- 1.7.1
+
+- made README the primary readme file
+  
+  ... and did README.cares to contain a historic reason etc.
+
+- s/CVS/git
+
+- git now, not CVS
+
+- ignore lots of generated files
+
+- [Daniel Johnson brought this change]
+
+  Fix warnings for clang
+
+Yang Tse (17 Mar 2010)
+- replaced intel compiler option -no-ansi-alias with -fno-strict-aliasing
+
+- update outdated serial number
+
+- fix compiler warning
+
+- watt32 compilation fix
+
+- Added another VS10 version string
+
+- fix line break
+
+- removed usage of 's6_addr', fixing compilation issue triggered with no
+  longer using 'in6_addr' but only our 'ares_in6_addr' struct
+
+Daniel Stenberg (5 Mar 2010)
+- Daniel Johnson provided fixes for building with the clang compiler
+
+Yang Tse (5 Mar 2010)
+- Added IPv6 name servers support
+
+Gisle Vanem (5 Mar 2010)
+- Ops!. Readded ares_nowarn.h.
+
+- Added ares_nowarn.c.
+
+Yang Tse (28 Feb 2010)
+- Added SIZEOF_INT and SIZEOF_SHORT definitions for non-configure systems
+
+- Added ares_nowarn.* to VC6 project file
+
+- Added SIZEOF_INT definition
+
+- fix compiler warning
+
+- fix compiler warning
+
+- fix compiler warning
+
+Daniel Stenberg (17 Feb 2010)
+- ares_reinit()
+  
+  - To allow an app to force a re-read of /etc/resolv.conf etc, pretty much
+    like the res_init() resolver function offers
+
+- - Tommie Gannert pointed out a silly bug in ares_process_fd() since it didn't
+    check for broken connections like ares_process() did. Based on that, I
+    merged the two functions into a single generic one with two front-ends.
+
+Yang Tse (30 Dec 2009)
+- VMS specific preprocessor symbol checking adjustments
+
+- Mention last changes
+
+- - Fix configure_socket() to use ares_socket_t instead of int data type.
+
+- - Where run-time error checks enabling compiler option /GZ was used it is now
+    replaced with equivalent /RTCsu for Visual Studio 2003 and newer versions.
+  
+  - Compiler option /GX is now replaced with equivalent /EHsc for all versions.
+
+- - Ingmar Runge noticed that Windows config-win32.h configuration file
+    did not include a definition for HAVE_CLOSESOCKET which resulted in
+    function close() being inappropriately used to close sockets.
+
+Daniel Stenberg (30 Nov 2009)
+- start working on 1.7.1
+
+Version 1.7.0 (27 Nov 2009)
+
+Yang Tse (27 Nov 2009)
+- Preserve empty line following last target
+
+- - Larry Lansing fixed ares_parse_srv_reply to properly parse replies
+    which might contain non-SRV answers, skipping over potential non-SRV
+    ones such as CNAMEs.
+
+- When using icc, compile with -fpic and link with intel dynamic libraries.
+
+- Added 'currently' in italics to insist on transient situation.
+
+- Fix language
+
+- Daniel wants upcoming release to be 1.7.0
+
+- Mention last changes
+
+- - Removed from external interface preprocessor symbol definition for
+    CARES_HAVE_ARES_FREE_DATA. Current functionality of ares_free_data()
+    makes it unnecessary.
+
+- Added README.msvc
+
+- Changed c-ares naming conventions when using MSVC as described in README.msvc
+
+- - Mention other recent changes
+
+- - Jakub Hrozek renamed addrttl and addr6ttl structs to ares_addrttl and
+    ares_addr6ttl in order to prevent name space pollution, along with
+    necessary changes to code base and man pages.This change does not break
+    ABI, there is no need to recompile existing applications. But existing
+    applications using these structs with the old name will need source code
+    adjustments when recompiled using c-ares 1.6.1.
+
+- - Jakub Hrozek fixed more function prototypes in man pages to sync them
+    with the ones declared in ares.h
+
+- Make configure remove the ares_build.h file included in distribution tarballs.
+
+- Fix macro redefinition.
+
+- Fix name space pollution.
+
+- Allow using different extra import libraries for debug and release builds.
+
+- Add manifest stuff to msvc makefile
+
+- Sync man page with reality
+
+- Add missing external API decoration for ares_set_socket_callback()
+
+- Add ares_free_data() man page.
+
+- - Provide in external interface preprocessor symbol definitions for
+    CARES_HAVE_ARES_FREE_DATA as an indication of function availability.
+
+- Remove typecast
+
+- Fix comment
+
+- Add ares_data.c and ares_data.h
+
+- Jakub Hrozek modified ares_parse_srv_reply() and ares_parse_txt_reply() API
+  to return a linked lists of results. These were also modified to internally
+  use the ares_data memory struct and as such its result must be free'ed with
+  ares_free_data().
+
+- Initial support for the generic ares_free_data() function that will allow
+  applications to free memory allocated and returned by some c-ares funtions.
+
+- Make usage of calloc()'s arguments consistent with rest of code base
+
+- workaround icc 9.1 optimizer issue
+
+- Add icc fvisibility bug test
+
+- Fix icc 9.0 compiler warning: external definition with no prior declaration
+
+- Fix three var names
+
+- Add check for assert.h header file
+
+- getaddrinfo is fully thread safe on solaris versions which
+  implement the function even when h_errno is not a macro.
+  
+  The h_errno macro test now only done on systems for which there
+  is no hard coded knowledge about getaddrinfo's thread safeness.
+
+- Remove files generated on previous buildconf/configure run
+
+- Remove enable-thread / disable-thread configure option. These were only placebo
+  options. The library is always built as thread safe as possible on every system.
+
+- Refactor how preprocessor symbol _THREAD_SAFE definition is done.
+
+- Assume that getaddrinfo is thread safe, unless hard coded
+  knowledge says the contrary or h_errno is not defined.
+
+- Related with the threadsafe capability of getaddrinfo:
+  
+  - Constantine Sapuntzakis reported that Darwin 6.0 a.k.a. MAC OS X 10.2
+    and newer have a threadsafe getaddrinfo.
+  
+  - Fix Dragonfly BSD triplet detection.
+  
+  - In case the hard-coded knowledge says that getaddrinfo is threadsafe,
+    an additional check is done to verify that h_errno is also defined.
+    If h_errno isn't defined, we finally assume that it isn't threadsafe.
+    Jamie Lokier provided the inspiration for this extra check.
+
+- AIX 5.2 and newer have threadsafe getaddrinfo.
+  
+  Add some comments to better understand what the regex's pretend to achieve.
+
+- HP-UX 11.11 and later have threadsafe getaddrinfo
+
+- Check if getaddrinfo is threadsafe when function check allows it to be used
+
+- Renamed fpGetNetworkParams and fpSystemFunction036 to avoid namespace pollution with static library
+
+- Add kernel32.lib
+
+- Mention last changes
+
+- Reinstate copyright symbol lost in previous commit
+
+- Make some strings different in resource file for debug or release builds
+
+- Ignore more subdirs
+
+- Fix compiler warning: conditional expression is constant
+
+- Sync linker and resource compiler options with Makefile.msvc
+
+- Follow Makefile.msvc subdirectory naming scheme, and sync compiler options
+
+- Updated MSVC makefile that allows building dynamic and static
+  c-ares libraries in debug and release flavours.
+  
+  Additionally each of the three sample programs is built against
+  each of the four possible c-ares libraries, generating all this
+  a total number of 12 executables and 4 libraries.
+
+- Test for USE_WINSOCK since it is more restrictive than WIN32
+
+- Make header inclusion depend on HAVE_*_H definition
+
+- Remove unneeded preprocessor directives
+
+- Adjust c-ares include paths for memory tracking enabled (--enable-curldebug) builds
+
+- source files used by sample programs
+
+- Renamed c-ares setup.h to ares_setup.h
+
+- Adjust include paths to take in account that currently:
+  
+  c-ares with --enable-curldebug uses memdebug.h from libcurl's lib subdirectory.
+  
+  memdebug.h needs access to libcurl's setup.h from libcurl's lib subdirectory
+  and also needs access to libcurl's generated curl_config.h
+
+- Undo old temporary change once used for testing purposes
+
+- Mention many changes
+
+- Mention --enable-symbol-hiding configure option
+
+- Symbol hiding configure options renamed to the hopefully less ambiguous
+  --enable-symbol-hiding and --disable-symbol-hiding as well as related
+  macro names and some internal variables used for them.
+  
+  Related configuration file preprocessor symbols named to
+  CARES_SYMBOL_HIDING and CARES_SYMBOL_SCOPE_EXTERN.
+
+- Header inclusion depending on HAVE_* symbol.
+  Fix two typos.
+
+- Comparison of the Initial revision of this file with ares_parse_a_reply.c
+  shows that this one is actually a modified copy of ares_parse_a_reply.c.
+  
+  In order to comply with ares_parse_a_reply.c's M.I.T. license, the old
+  1998 M.I.T. copyright notice is now also preserved in this file the same
+  as it is done in other ares_parse_*.c files.
+
+- Add CVS Id tag.
+  Fix identation of some license lines.
+
+- Add CVS Id tag.
+
+- Fix comment
+
+- In no particular order, changed/fixed all of the following in
+  ares_parse_txt_reply() current version:
+  
+  - Fixed a couple of potential double free's.
+  
+  - Fixed memory leaks upon out of memory condition.
+  
+  - Fixed pointer arithmetic.
+  
+  - Setting ntxtreply to zero upon entry for all failure cases.
+  
+  - Changed data type to size_t for variables substr_len, str_len and
+    the length member of ares_txt_reply struct.
+  
+  - Avoided a couple of memcpy() calls.
+  
+  - Changed i data type to unsigned int to prevent compiler warnings.
+  
+  - Adjusted a comment.
+  
+  - Use ARES_SUCCESS literal for successfull completion.
+  
+  - Added CVS Id tag.
+
+- Add c-ares DLL resource file to distribution archive
+
+- ignore files
+
+- Empty subdir
+
+- Updated MSVC 6.0 workspace and project files that allows building
+  dynamic and static c-ares libraries in debug and release flavours.
+  
+  Additionally each of the three sample programs is built against
+  each of the four possible c-ares libraries, generating all this
+  a total number of 12 executables and 4 libraries.
+
+Daniel Stenberg (29 Oct 2009)
+- no need to check for NULL pointers before dereferencing, as the pointers
+  MUST be valid and they are dereferenced further down in the function
+  unconditionally!
+
+- shorten the descriptions somewhat
+
+- update to the new struct name
+
+- Jakub Hrozek added ares_parse_txt_reply() for TXT parsing
+
+- use 'ares_srv_reply' for proper name-spacing
+
+Yang Tse (29 Oct 2009)
+- Add reference for ares_parse_srv_reply.pdf
+
+- Add reference for ares_parse_srv_reply docs
+
+- External API function linkage decoration adjustment
+
+- External API function linkage decoration adjustment
+
+- Initial step towards the ability to reduce c-ares exported symbols
+  based on the 'visibility' attribute for GNUC and __global for Sun
+  compilers, taking also in account __declspec function decoration
+  for Win32 and Symbian DLL's.
+  
+  Introducing configure options --enable-hidden-symbols and
+  --disable-hidden-symbols following libcurl's naming.
+
+- Fix comment
+
+- Fix spelling
+
+- Fix Pelles C Win32 target compilation issues
+
+- John Engelhart noticed an unreleased problem relative to a duplicate
+  ARES_ECANCELLED error code value and missing error code description.
+
+- Fix compiler warning: local variable may be used without having been initialized
+
+- Use *_CHECK_PATH_SEPARATOR_REQUIRED to ensure that *_CHECK_PATH_SEPARATOR
+  is only expanded and included once in the configure script.
+
+- Our _AS_PATH_SEPARATOR_PREPARE override is now m4_defun'd instead of m4_define'd
+  due to autoconf 2.64 m4_require'ing it in _AS_SHELL_SANITIZE indirectly through
+  _AS_PATH_WALK.
+
+- Fix compiler warning: argument is incompatible with corresponding format string conversion
+
+- Fix potential out-of-bounds read
+
+- Fix compiler warning: loop without body
+
+- Fix compiler warning
+
+- Fix compiler warning
+
+- Fix compiler warning
+
+- Fix compiler warning: addition result could be truncated before cast to bigger sized type
+
+- Overhauled ares__get_hostent()
+  
+  - Fixing out of bounds memory overwrite triggered with malformed /etc/hosts file.
+  - Improving parsing of /etc/hosts file.
+  - Validating requested address family.
+  - Ensuring that failures always return a NULL pointer.
+  - Adjusting header inclusions.
+
+- Fix ssize_t redefinition errors on WIN64 reported by Alexey Simak
+
+- more files to ignore
+
+- Check if _REENTRANT definition is required to
+  make errno available as a preprocessor macro.
+
+- Attempt to silence bogus compiler warning: "Potential null pointer dereference"
+
+- ignore more files
+
+Gisle Vanem (7 Sep 2009)
+- Suppress warnings about unused prototypes in Watt32 and Win32 programs.
+
+- Update email address.
+
+- Update my email address. Add ares_config.h as dependency for 'make depend'.
+
+Yang Tse (6 Sep 2009)
+- T_SRV portability check
+
+Gunter Knauf (5 Sep 2009)
+- changed includes to match style how we do with all other *.c files.
+
+- changed u_int16_t to unsigned short because it is the only place within ares and curl where such a type would be used;
+  also it broke many autobuilds. We should probably introduce an ares_port_t if we want to use a type here.
+
+Gisle Vanem (5 Sep 2009)
+- Replace 'uint16_t' with 'u_int16_t' since the latter is used in ares.h.
+
+- Added 'ares_parse_srv_reply.obj'. Added definition of 'u_int16_t'. This is I don't like; we should not depend on such non-universal types in a public header. But this is just a quick fix.
+
+Daniel Stenberg (4 Sep 2009)
+- - Jakub Hrozek added ares_parse_srv_reply() for SRV parsing
+
+Steinar H. Gunderson (27 Aug 2009)
+- Support lookup of IPv4 literals in ares_gethostbyname(), even when the address family is set to AF_INET6.
+
+Gisle Vanem (3 Aug 2009)
+- Remove call to LoadLibrary(). (leftover from debugging).
+
+- Fix bad sentence.
+
+Daniel Stenberg (3 Aug 2009)
+- - Timo Teras changed the reason code used in the resolve callback done when
+    ares_cancel() is used, to be ARES_ECANCELLED instead of ARES_ETIMEOUT to
+    better allow the callback to know what's happening.
+
+- - Joshua Kwan fixed the init routine to fill in the defaults for stuff that
+    fails to get inited by other means. This fixes a case of when the c-ares
+    init fails when internet access is fone.
+
+Gunter Knauf (16 Jul 2009)
+- test if adding ../lib to includes can fix the current break ...
+
+- renamed generated config.h to ares_config.h in order to avoid clashes when libcurl is used with other projects which also have a config.h.
+
+Yang Tse (21 Jun 2009)
+- Refactor how libraries are checked for connect() function, follow-up.
+
+- Refactor how libraries are checked for connect() function,
+  and check for connect() as it is done for other functions.
+
+Gisle Vanem (20 Jun 2009)
+- Remove unneeded defines.
+
+- Use select_s() and not select().
+
+Yang Tse (19 Jun 2009)
+- sclose() function-like macro definition used to close a socket,
+  now solely based on HAVE_CLOSESOCKET and HAVE_CLOSESOCKET_CAMEL
+  config file preprocessor definitions.
+
+- add CloseSocket camel case function check
+
+- check for socket() and closesocket() as it is done for other functions
+
+- Remove HAVE_CONFIG_H definition from here,
+  CFLAGS from common.dj already defines it.
+
+- initial step towards decoupling c-ares from libcurl for DOS
+
+- don't ignore these subdirs, they must be removed first
+
+- Remove DEBUGBUILD symbol definition, is not required for programs using the library.
+
+- DEBUGBUILD symbol definition for debug builds
+
+- ignore some subdirs
+
+- fix comment
+
+- Try to make more clear that --enable-curldebug has nothing to do with --enable-debug for this library.
+
+- Revert last change, it is inappropriate.
+
+Gisle Vanem (12 Jun 2009)
+- Replace CURLDEBUG with DEBUGBUILD.
+
+Yang Tse (11 Jun 2009)
+- when running automake copy missing files instead of symlinking them
+
+- Adjusted to take in account that...
+  
+  With the curl memory tracking feature decoupled from the debug build feature,
+  CURLDEBUG and DEBUGBUILD preprocessor symbol definitions are used as follows:
+  
+  CURLDEBUG used for curl debug memory tracking specific code (--enable-curldebug)
+  
+  DEBUGBUILD used for debug enabled specific code (--enable-debug)
+
+- c-ares' --enable-debug --enable-curldebug decoupling follow-up
+
+- mention last changes
+
+- Remove buildconf.bat from release and daily snapshot archives.
+  
+  buildconf.bat is only for CVS tree builds.
+
+- Ensure that buildconf.bat does nothing unless it is used with a CVS checkout.
+
+- CVS-INFO file only present in CVS tree, never in release nor daily snapshot
+  archives. Used as a sentinel file in buildconf.bat to differentiate CVS builds.
+
+Gisle Vanem (8 Jun 2009)
+- Update comment about "ML". Removed "-D_USE_32BIT_TIME_T" (not a requirement).
+
+Yang Tse (8 Jun 2009)
+- just comment it out
+
+- For debugging purposes...
+  
+  Disable the '-export-symbols-regex' to discard this as the origin
+  of link failures related with shared libraries and non-GNU linkers.
+
+- c-ares Makefile.am back to using $(top_builddir) for *_LDADD
+
+- c-ares' -no-undefined and --enable-curldebug adjustments
+
+- Use relative path to built c-ares tree libtool library
+
+- John E. Malmberg noticed that the configure script was failing to detect the
+  timeval struct on VMS when building with _XOPEN_SOURCE_EXTENDED undefined due
+  to definition taking place in socket.h instead of time.h
+
+- Fix compiler warning: out of bound access
+
+- fix compilation on AIX
+
+- c-ares' --enable-curldebug adjustments
+
+- Remove temporarily introduced memory leak.
+
+- Temporarily introduce a memory leak to verify curl debug memory tracking works.
+
+- Allow curl debug memory tracking when building a shared library on
+  systems which support external, undefined, symbols in shared libraries.
+
+Daniel Stenberg (26 May 2009)
+- language fix
+
+Yang Tse (26 May 2009)
+- Make ares_init(), ares_dup() and ares_init_options() return ARES_ENOTINITIALIZED
+  if library initialization has not been performed calling ares_library_init().
+
+- c-ares's --enable-curldebug configure option decoupled from c-ares's --enable-debug
+
+- Prevent copying 'sourced' manpages for build targets that don't use them.
+
+Daniel Stenberg (23 May 2009)
+- minor edits
+
+Yang Tse (21 May 2009)
+- Include .pdf versions of c-ares man pages in distribution tarball.
+
+- Allow generation of .html and .pdf versions of c-ares man pages.
+
+Gisle Vanem (21 May 2009)
+- $(OBJ_DIR)/ares_getopt.o must be cleaned explicitly.
+
+Yang Tse (20 May 2009)
+- Mention last changes
+
+- Initial ares_library_cleanup(3) man page
+
+- Update man page
+
+- Update man page
+
+- Initial ares_library_init(3) man page attempt
+
+- Force revision update, to force CVS to update the $Id date string format
+
+- Add same copyright notice as other c-ares files
+
+- Fix case
+
+- Remove run-time requirement for advapi32.dll since
+  c-ares can work even with no advapi32.dll at all.
+
+- Intentionally avoid checking if the address of SystemFunction036, a.k.a.
+  RtlGenRandom, has been located or not. This function is only available on
+  WinXP and later. When unavailable c-ares uses portable rand() function.
+
+- - Provide in external interface preprocessor symbol definitions for
+    CARES_HAVE_ARES_LIBRARY_INIT and CARES_HAVE_ARES_LIBRARY_CLEANUP
+    to ease the use of new capabilities.
+  
+  - Move ares_version() prototype to ares.h
+
+- Introduction of ares_library_init() and ares_library_cleanup()
+
+- Introduction of ares_library_init() and ares_library_cleanup()
+
+- remove outdated comment
+
+- Fix preprocessor conditional expression
+
+- fiX *__SOCKLEN_T definitions for remaining targets
+
+- *__SOCKLEN_T definitions for OS400 already fixed
+
+- fIX *__SOCKLEN_T definitions for SYMBIAN32 and VMS targets
+
+Daniel Stenberg (11 May 2009)
+- - Gregor Jasny made c-ares link with libtool 's -export-symbols-regex option to
+    only expose functions starting with ares_.
+
+Yang Tse (11 May 2009)
+- Remove experimental check. Currently there's no need for it.
+
+- Fix an m4 overquoting triggering a spurious 'AS_TR_CPP' symbol definition
+  attempt in generated config.h
+
+- Proper naming for the experimental compiler test and moved to *-compilers.m4
+
+- Moved *_CHECK_COMPILER_HALT_ON_ERROR and *_CHECK_COMPILER_ARRAY_SIZE_NEGATIVE to *-compilers.m4 along with other *_CHECK_COMPILER_*
+
+- fIX *__SOCKLEN_T definitions for OS400 and generic GCC targets
+
+- fIX *__SOCKLEN_T definitions for MVS and 370 targets
+
+- fIX *__SOCKLEN_T definitions for several Windows target tool-chains
+
+- HP-UX's X/Open network library requirement check follow-up
+
+- HP-UX's X/Open network library requirement check follow-up
+
+- Use build-time configured ares_socklen_t instead of socklen_t
+
+- David McCreedy's "TPF-platform specific changes to various files" patch follow-up
+
+Daniel Stenberg (1 May 2009)
+- s/libcurl/c-ares
+
+- version number typo fix
+
+Yang Tse (1 May 2009)
+- David McCreedy's "TPF-platform specific changes to various files" patch
+
+- Check definition of _XOPEN_SOURCE_EXTENDED with the compiler
+
+- Check if X/Open network library is required
+
+- cope with ares_build.h and ares_rules.h follow-up
+
+- Added some notes regarding ares_build.h
+
+- fix EOL
+
+- fix EOL
+
+- cope with ares_build.h and ares_rules.h
+
+- buildconf.bat for CVS-tree c-ares
+
+- Use 'unsigned int' instead of size_t attempting to avoid header inclusion
+
+- NetWare LibC's getpeername() third argument data type is size_t
+
+- Remove temporary debug tracing for ares_socklen_t Windows targets
+
+- ares_socklen_t follow-up
+
+- ares_build.h Windows follow-up
+
+- Add temporary debug tracing for ares_socklen_t Windows targets
+
+- ares_build.h NetWare follow-up
+
+- ares_build.h NetWare attempt
+
+- Initial step towards a configure time ares_socklen_t definition
+
+- ignore stamp-h*
+
+- Added CARES_INCLUDES_SYS_TYPES
+
+- Initial step towards a configure time curl_socklen_t definition
+
+- avoid use of alloca()
+
+- Moved potential inclusion of system's malloc.h and memory.h header files to
+  setup_once.h.  Inclusion of each header file is based on the definition of
+  NEED_MALLOC_H and NEED_MEMORY_H respectively.
+
+- ignore
+
+Gisle Vanem (18 Apr 2009)
+- Added '-DHAVE_LIMITS_H'.
+
+Yang Tse (17 Apr 2009)
+- remove compiler options used while debugging the icc 9.1 optimizer issue
+
+- moved HAVE_LIMITS_H to common defines
+
+- Set HP-UX compiler warning level back to the one that exposes
+  the socklen_t issue on this platform.
+
+- HAVE_LIMITS_H definition for NetWare CLIB
+
+- use HAVE_LIMITS_H symbol to protect limits.h inclusion
+
+- fix compiler warning: implicit conversion shortens 64-bit value into a 32-bit value
+
+- s/u_long/unsigned long/
+
+- Do not halt compilation when using VS2008 to build a Windows 2000 target
+
+- ignore
+
+Phil Blundell (3 Feb 2009)
+- * February 3 2009 (Phil Blundell)
+  - If the server returns garbage or nothing at all in response to an AAAA query,
+    go on and ask for A records anyway.
+
+Daniel Stenberg (31 Jan 2009)
+- - ares_gethostbyname() now accepts 'AF_UNSPEC' as a family for resolving
+    either AF_INET6 or AF_INET. It works by accepting any of the looksups in the
+    hosts file, and it resolves the AAAA field with a fallback to A.
+
+Gisle Vanem (18 Jan 2009)
+- fopen() returns error in 'errno' even on Windows.
+  So don't use ERRNO (GetLastError()). Trimmed trailing
+  blanks.
+
+- Constified some arguments in local functions.
+
+Daniel Stenberg (14 Jan 2009)
+- - ares.h no longer uses the HAVE_STRUCT_IN6_ADDR define check, but instead it
+    now declares the private struct ares_in6_addr for all systems instead of
+    relying on one possibly not present in the system.
+
+Phil Blundell (13 Jan 2009)
+- - ares__send_query() now varies the retry timeout pseudo-randomly to avoid
+    packet storms when several queries were started at the same time.
+
+Daniel Stenberg (11 Jan 2009)
+- - Phil Blundell added the internal function ares__expand_name_for_response()
+    that is now used by the ares_parse_*_reply() functions instead of the
+    ares_expand_name() simply to easier return ARES_EBADRESP for the cases where
+    the name expansion fails as in responses that really isn't expected.
+
+Gunter Knauf (30 Dec 2008)
+- added HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID to ares Makefile.netware and sync'd with other Makefile.netware.
+
+Daniel Stenberg (9 Dec 2008)
+- use the new URL
+
+- start over on the 1.6.1 release...
+
+Version 1.6.0 (9 Dec 2008)
+
+Daniel Stenberg (9 Dec 2008)
+- add space
+
+Gisle Vanem (9 Dec 2008)
+- Fix for Win32 targets using Watt-32.
+
+Dan Fandrich (9 Dec 2008)
+- C89 compilers (like Minix' ACK) only need to handle 31 functions arguments
+  so split a long sprintf into two calls to get below that number.
+
+Gisle Vanem (8 Dec 2008)
+- Added needed defines for Watt-32 on Windows.
+
+- Undefine 'optarg', 'optind' and 'opterr' when using Watt-32
+  (to get correct linkage on Windows).
+
+- ares_writev() shall not be exported when using Watt-32 (has writev).
+  Added _USE_32BIT_TIME_T to avoid runtime warning. Applies to
+  VC-2008+ only.
+
+- Removed unneeded defines HAVE_SIGNAL_H, HAVE_SIG_ATOMIC_T,
+  RETSIGTYPE and HAVE_PROCESS_H.
+
+Daniel Stenberg (4 Dec 2008)
+- the initial version of the ares_set_socket_callback man page
+
+- Gregor Jasny provided the patch that introduces ares_set_socket_callback(),
+  and I edited it to also get duped by ares_dup().
+
+Dan Fandrich (4 Dec 2008)
+- Bring the sys/include.h include test in line with curl's.
+
+Daniel Stenberg (3 Dec 2008)
+- Let's not call ares_save_options() deprecated just yet
+
+- Introduce ares_dup(3) and new thoughts about API/ABI and how to move forwards.
+  Also discussed on the ml.
+
+Dan Fandrich (2 Dec 2008)
+- Make sure sys/socket.h is included before netinet/in.h (required by
+  OpenWatcom C, and condoned by SUS)
+
+Daniel Stenberg (1 Dec 2008)
+- minor indent fix
+
+- Convert the public config struct to the same binary size/construct as in the
+  latest releases to remain ABI compatible.
+
+Gisle Vanem (29 Nov 2008)
+- Added '-DHAVE_GETHOSTNAME'.
+
+Dan Fandrich (29 Nov 2008)
+- Make sure sys/socket.h is included before netinet/in.h (required by
+  OpenWatcom C)
+
+- Netware has gethostname()
+
+- Fixed a couple of typos
+
+- Don't tweak the HAVE_* macros when using autoconf
+
+- Make use of gethostname() conditional on it being available
+
+- Only set TCP_NODELAY when it exists
+
+Daniel Stenberg (28 Nov 2008)
+- updated with changes, preparing for a release soon
+
+Yang Tse (26 Nov 2008)
+- Gerald Combs fixed a bug in ares_parse_ptr_reply() which would cause a
+  buffer to shrink instead of expand if a reply contained 8 or more records.
+
+- Brad Spencer provided changes to allow buildconf to work on OS X.
+
+- In preparation for the upcomming IPv6 nameservers patch, the internal
+  ares_addr union is now changed into an internal struct which also holds
+  the address family.
+
+Dan Fandrich (20 Nov 2008)
+- Make checking for struct ifreq a prerequisite for setting
+  HAVE_IOCTL_SIOCGIFADDR since it's needed to use SIOCGIFADDR and Watcom C
+  doesn't currently define it.
+
+Daniel Stenberg (20 Nov 2008)
+- use unsigned short better intead of mixing with ints to prevent compiler
+  warnings
+
+- please the picky compilers by staying with short as the data we get is short
+  only
+
+- - Brad Spencer brought the new function ares_gethostbyname_file() which simply
+    resolves a host name from the given file, using the regular hosts syntax.
+
+Yang Tse (19 Nov 2008)
+- user provided PATH_SEPARATOR always overrides auto-detected one
+
+- attempting to keep lines below 80 chars
+
+- provide a common PATH_SEPARATOR check method which is required by
+  upcomming work to support the broadest range of Autoconf versions
+
+- check for gethostbyaddr and gethostbyname as it is done for other functions
+
+- Make configure script check if ioctl with the SIOCGIFADDR command can be
+  used, and define HAVE_IOCTL_SIOCGIFADDR if appropriate.
+
+- fix leftover from previous commit
+
+- fix inet_pton() runtime configure check
+
+- trim down configure script size
+
+Daniel Stenberg (15 Nov 2008)
+- Fixed an OOM condition reported by Jim Meyering
+
+Yang Tse (14 Nov 2008)
+- fix typo affecting inclusion of <arpa/inet.h> in configure
+  checks for inet_ntoa_r() inet_ntop() and inet_pton()
+
+- #include <string.h> in the getaddrinfo() runtime check for the memset() prototype
+
+- fix symbol definition check for fcntl.h inclusion
+
+- Refactor configure script detection of functions used to set sockets into
+  non-blocking mode, and decouple function detection from function capability.
+
+Daniel Stenberg (1 Nov 2008)
+- Added a TODO file to list things we want changed, added or fixed.
+
+- - Carlo Contavalli added support for the glibc "rotate" option, as documented
+    in man resolv.conf:
+  
+    causes round robin selection of nameservers from among those listed.  This
+    has the effect of spreading the query load among all listed servers, rather
+    than having all clients try the first listed server first every time.
+  
+    You can enable it with ARES_OPT_ROTATE
+
+Yang Tse (1 Nov 2008)
+- Adjust WIN32 freeaddrinfo, getaddrinfo and getnameinfo availability
+
+- WIN32 availability of freeaddrinfo, getaddrinfo and getnameinfo functions is quite
+  convoluted, compiler dependant and in some cases even build target dependat.
+
+- check for freeaddrinfo() at configuration phase
+
+- update aclocal file serial number
+
+- remove verification of the freeability of the addrinfo struct pointer members
+
+- fix comment
+
+- make CHECK_FUNC_GETADDRINFO_UNFREEABLE_AI_ADDR
+   and CHECK_FUNC_GETADDRINFO_UNFREEABLE_AI_CANONNAME
+  internal to CHECK_FUNC_GETADDRINFO
+
+- fix leftover
+
+- Initial attempt to detect at configuration time if the getaddrinfo()
+  function returns an addrinfo with an unfreeable ai_canonname member ptr.
+
+- Initial attempt to detect at configuration time if the getaddrinfo()
+  function returns an addrinfo with an unfreeable ai_addr member ptr.

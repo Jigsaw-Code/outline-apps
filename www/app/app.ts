@@ -39,8 +39,8 @@ export class App {
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
-      private environmentVars: EnvironmentVariables, private updater: Updater,
-      document = window.document) {
+      private environmentVars: EnvironmentVariables,
+      private updater: Updater, private quitApplication: () => void, document = window.document) {
     this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
 
@@ -110,12 +110,6 @@ export class App {
     }
   }
 
-  // Terminates the application by calling the native Outline plugin. The quit option is only
-  // displayed in macOS, since menu bar apps provide no alternative way of quitting.
-  private quitApplication() {
-    cordova.plugins.outline.quitApplication();
-  }
-
   private pullClipboardText() {
     this.clipboard.getContents().then(
         (text: string) => {
@@ -179,7 +173,7 @@ export class App {
     // keep an in-memory cache of user-ignored access keys.
     text = text.substring(0, 1000).trim();
     try {
-      this.confirmAddServer(text, true);
+      this.confirmAddServer(this.unwrapInvite(text), true);
     } catch (err) {
       // Don't alert the user; high false positive rate.
     }
@@ -212,7 +206,7 @@ export class App {
     const accessKey = event.detail.accessKey;
     console.debug('Got add server confirmation request from UI');
     try {
-      this.confirmAddServer(accessKey);
+      this.confirmAddServer(this.unwrapInvite(accessKey));
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
       const addServerView = this.rootEl.$.addServerView;
@@ -425,11 +419,41 @@ export class App {
         });
   }
 
+  // If the provided url is actually an invite page, with the shadowsocks link in a URL
+  // fragment, this function extracts the shadowsocks link and returns it.  Otherwise,
+  // it returns the input unmodified.
+  private unwrapInvite(url: string): string {
+    try {
+      const invite: URL = new URL(url);
+      const baseURLs: string[] = [
+        'https://s3.amazonaws.com/outline-vpn/invite.html',
+        'https://s3.amazonaws.com/outline-vpn/index.html'
+      ];
+      for (const base of baseURLs) {
+        const parsed: URL = new URL(base);
+        if (parsed.origin !== invite.origin || parsed.pathname !== invite.pathname) {
+          continue;
+        }
+        const fragment: string = decodeURIComponent(invite.hash);
+        const mark = 'ss://';
+        const index = fragment.indexOf(mark);
+        if (index < 0) {
+          return url;
+        }
+        return fragment.substr(index);
+      }
+    } catch (e) {
+      console.warn('Invalid invite', e);
+    }
+    return url;
+  }
+
   private registerUrlInterceptionListener(urlInterceptor?: UrlInterceptor) {
     if (!urlInterceptor) {
       return console.warn('no urlInterceptor, ss:// urls will not be intercepted');
     }
     urlInterceptor.registerListener((url) => {
+      url = this.unwrapInvite(url);
       const ssProto = SHADOWSOCKS_URI.PROTOCOL;
       if (!url || url.substring(0, ssProto.length) !== ssProto) {
         // This check is necessary to handle empty and malformed install-referrer URLs in Android.

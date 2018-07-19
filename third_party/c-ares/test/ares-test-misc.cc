@@ -276,7 +276,7 @@ std::string ExpandName(const std::vector<byte>& data, int offset,
   } else {
     result = "<error>";
   }
-  free(name);
+  ares_free_string(name);
   return result;
 }
 
@@ -467,7 +467,7 @@ TEST_F(LibraryTest, ExpandString) {
                                (unsigned char**)&result, &len));
   EXPECT_EQ("abc", std::string(result));
   EXPECT_EQ(1 + 3, len);  // amount of data consumed includes 1 byte len
-  free(result);
+  ares_free_string(result);
   result = nullptr;
   EXPECT_EQ(ARES_EBADSTR,
             ares_expand_string(s1.data() + 1, s1.data(), s1.size(),

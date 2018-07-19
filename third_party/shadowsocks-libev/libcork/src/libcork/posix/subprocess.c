@@ -477,10 +477,16 @@ int
 cork_subprocess_abort(struct cork_subprocess *self)
 {
     if (self->pid > 0) {
-        CORK_ATTR_UNUSED bool  progress;
+        CORK_ATTR_UNUSED bool  progress = false;
         DEBUG("Terminating child process %d\n", (int) self->pid);
         kill(self->pid, SIGTERM);
-        return cork_subprocess_reap(self, 0, &progress);
+        int exitcode = cork_subprocess_reap(self, WNOHANG, &progress);
+        if (progress) {
+            return exitcode;
+        } else {
+            kill(self->pid, SIGKILL);
+            return 0;
+        }
     } else {
         return 0;
     }

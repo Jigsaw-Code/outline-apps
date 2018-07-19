@@ -1,7 +1,7 @@
 /*
  * encrypt.h - Define the enryptor's interface
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -23,7 +23,9 @@
 #ifndef _STREAM_H
 #define _STREAM_H
 
+#ifndef __MINGW32__
 #include <sys/socket.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

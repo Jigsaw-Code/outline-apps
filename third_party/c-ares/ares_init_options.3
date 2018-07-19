@@ -139,16 +139,16 @@ should be set to a string of the characters "b" or "f", where "b"
 indicates a DNS lookup and "f" indicates a lookup in the hosts file.
 .TP 18
 .B ARES_OPT_SOCK_STATE_CB
-.B void (*\fIsock_state_cb\fP)(void *data, int s, int read, int write);
+.B void (*\fIsock_state_cb\fP)(void *data, ares_socket_t socket_fd, int readable, int writable);
 .br
 .B void *\fIsock_state_cb_data\fP;
 .br
 A callback function to be invoked when a socket changes state.
-.I s
+.I socket_fd
 will be passed the socket whose state has changed;
-.I read
+.I readable
 will be set to true if the socket should listen for read events, and
-.I write
+.I writable
 will be set to true if the socket should listen for write events.
 The value of
 .I sock_state_cb_data
@@ -280,4 +280,3 @@ Greg Hudson, MIT Information Systems
 Copyright 1998 by the Massachusetts Institute of Technology.
 .br
 Copyright (C) 2004-2010 by Daniel Stenberg.
-

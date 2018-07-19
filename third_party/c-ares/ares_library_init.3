@@ -68,6 +68,9 @@ that \fIares_library_init(3)\fP might call functions from other libraries that
 are thread unsafe, and could conflict with any other thread that is already
 using these other libraries.
 .PP
+On Windows platforms, the library user should ensure that \fIWSAStartup()\fP
+is called before the c-ares library is initialized and used.
+.PP
 Win32/64 application DLLs shall not call \fIares_library_init(3)\fP from the
 DllMain function. Doing so will produce deadlocks and other problems.
 .SH FLAGS

@@ -1,7 +1,7 @@
 /*
  * jconf.c - Parse the JSON format config file
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  * shadowsocks-libev is free software; you can redistribute it and/or modify
@@ -262,10 +262,6 @@ read_jconf(const char *file)
                 check_json_value_type(value, json_boolean,
                                       "invalid config file: option 'reuse_port' must be a boolean");
                 conf.reuse_port = value->u.boolean;
-            } else if (strcmp(name, "disable_sni") == 0) {
-                check_json_value_type(value, json_boolean,
-                                      "invalid config file: option 'disable_sni' must be a boolean");
-                conf.disable_sni = value->u.boolean;
             } else if (strcmp(name, "auth") == 0) {
                 FATAL("One time auth has been deprecated. Try AEAD ciphers instead.");
             } else if (strcmp(name, "nofile") == 0) {
@@ -298,7 +294,7 @@ read_jconf(const char *file)
 
                 if (mode_str == NULL)
                     conf.mode = TCP_ONLY;
-                if (strcmp(mode_str, "tcp_only") == 0)
+                else if (strcmp(mode_str, "tcp_only") == 0)
                     conf.mode = TCP_ONLY;
                 else if (strcmp(mode_str, "tcp_and_udp") == 0)
                     conf.mode = TCP_AND_UDP;

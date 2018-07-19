@@ -37,4 +37,6 @@ export interface OutlinePlatform {
   getErrorReporter(environment: EnvironmentVariables): OutlineErrorReporter;
 
   getUpdater(): Updater;
+
+  quitApplication(): void;
 }

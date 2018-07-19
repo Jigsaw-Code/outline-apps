@@ -186,11 +186,22 @@ TEST_F(LibraryTest, FreeCorruptData) {
 }
 
 #ifndef CARES_SYMBOL_HIDING
+TEST_F(LibraryTest, FreeLongChain) {
+  struct ares_addr_node *data = nullptr;
+  for (int ii = 0; ii < 100000; ii++) {
+    struct ares_addr_node *prev = (struct ares_addr_node*)ares_malloc_data(ARES_DATATYPE_ADDR_NODE);
+    prev->next = data;
+    data = prev;
+  }
+
+  ares_free_data(data);
+}
+
 TEST(LibraryInit, StrdupFailures) {
   EXPECT_EQ(ARES_SUCCESS, ares_library_init(ARES_LIB_INIT_ALL));
   char* copy = ares_strdup("string");
   EXPECT_NE(nullptr, copy);
-  free(copy);
+  ares_free(copy);
   ares_library_cleanup();
 }
 
@@ -248,7 +259,7 @@ TEST_F(LibraryTest, ReadLine) {
   TempFile temp("abcde\n0123456789\nXYZ\n012345678901234567890\n\n");
   FILE *fp = fopen(temp.filename(), "r");
   size_t bufsize = 4;
-  char *buf = (char *)malloc(bufsize);
+  char *buf = (char *)ares_malloc(bufsize);
 
   EXPECT_EQ(ARES_SUCCESS, ares__read_line(fp, &buf, &bufsize));
   EXPECT_EQ("abcde", std::string(buf));
@@ -261,7 +272,7 @@ TEST_F(LibraryTest, ReadLine) {
   EXPECT_EQ(nullptr, buf);
 
   fclose(fp);
-  free(buf);
+  ares_free(buf);
 }
 
 TEST_F(LibraryTest, ReadLineNoBuf) {
@@ -283,7 +294,7 @@ TEST_F(LibraryTest, ReadLineNoBuf) {
   EXPECT_EQ("012345678901234567890", std::string(buf));
 
   fclose(fp);
-  free(buf);
+  ares_free(buf);
 }
 
 TEST(Misc, GetHostent) {
@@ -373,7 +384,7 @@ TEST_F(DefaultChannelTest, SingleDomain) {
   channel_->flags |= ARES_FLAG_NOSEARCH|ARES_FLAG_NOALIASES;
   EXPECT_EQ(ARES_SUCCESS, single_domain(channel_, "www", &ptr));
   EXPECT_EQ("www", std::string(ptr));
-  free(ptr);
+  ares_free(ptr);
   ptr = nullptr;
 
   SetAllocFail(1);

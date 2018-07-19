@@ -1,7 +1,7 @@
 /*
  * jconf.h - Define the config data structure
  *
- * Copyright (C) 2013 - 2017, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  * shadowsocks-libev is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #define MAX_REMOTE_NUM 10
 #define MAX_DSCP_NUM 64
 #define MAX_CONF_SIZE 128 * 1024
-#define MAX_DNS_NUM 4
 #define MAX_CONNECT_TIMEOUT 10
 #define MAX_REQUEST_TIMEOUT 60
 #define MIN_UDP_TIMEOUT 10
@@ -76,7 +75,6 @@ typedef struct {
     char *plugin_opts;
     int fast_open;
     int reuse_port;
-    int disable_sni;
     int nofile;
     char *nameserver;
     int dscp_num;
