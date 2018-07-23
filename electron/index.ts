@@ -123,6 +123,7 @@ function createTrayIcon(status: ConnectionStatus) {
       if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
         mainWindow.restore();
         mainWindow.show();
+        mainWindow.focus();
       } else {
         mainWindow.hide();
       }
@@ -148,8 +149,9 @@ const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
 
   // Someone tried to run a second instance, we should focus our window.
   if (mainWindow) {
-    if (mainWindow.isMinimized()) {
+    if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
       mainWindow.restore();
+      mainWindow.show();
     }
     mainWindow.focus();
   }
