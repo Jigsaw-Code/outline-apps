@@ -27,6 +27,14 @@ scripts/environment_json.sh -p windows -r > build/windows/www/environment.json
 # Copy tap-windows6.
 cp -R third_party/tap-windows6/bin build/windows/tap-windows6
 
+# --config.asarUnpack must be kept in sync with:
+#  - the destination path for the binaries in build_action.sh
+#  - the value returned by process_manager.ts#pathToEmbeddedExe
+
+# In addition to per-user/per-machine, --config.nsis.perMachine=true
+# makes the installer require admin permissions, which are required
+# to install and configure the TAP device.
+
 electron-builder \
   --projectDir=build/windows \
   --config.asarUnpack=electron/bin \
@@ -35,8 +43,8 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
   --win nsis \
-  --config.nsis.perMachine=true \
-  --config.nsis.include=electron/custom_install_steps.nsh \
   --config.win.icon=icons/win/icon.ico \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
+  --config.nsis.perMachine=true \
+  --config.nsis.include=electron/custom_install_steps.nsh \
   --config.nsis.artifactName='Outline-Client.${ext}'
