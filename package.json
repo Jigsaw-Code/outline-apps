@@ -19,10 +19,10 @@
     "babel-polyfill": "^6.26.0",
     "electron-promise-ipc": "^0.0.4",
     "electron-updater": "^2.21.0",
-    "http-proxy-to-socks": "^1.0.2",
     "raven": "^2.2.1",
     "raven-js": "^3.20.1",
     "socks": "^1.1.10",
+    "sudo-prompt": "^8.2.0",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
@@ -46,6 +46,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "gulp-if": "^2.0.2",
+    "gulp-posthtml": "^3.0.4",
     "gulp-replace": "^0.6.1",
     "gulp-util": "^3.0.8",
     "husky": "^0.14.3",
@@ -53,7 +54,6 @@
     "merge-stream": "^1.0.1",
     "polymer-build": "^2.1.1",
     "postcss-rtl": "^1.2.3",
-    "gulp-posthtml": "^3.0.4",
     "posthtml-postcss": "^0.2.6",
     "tsify": "^2.0.8",
     "tslint": "^5.7.0",

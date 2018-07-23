@@ -36,8 +36,7 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   vpnStartFailure = 6,
   illegalServerConfiguration = 7,
   shadowsocksStartFailure = 8,
-  httpProxyStartFailure = 9,
-  configureSystemProxyFailure = 10
+  configureSystemProxyFailure = 9
 };
 
 @end

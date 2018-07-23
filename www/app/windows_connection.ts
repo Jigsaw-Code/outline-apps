@@ -31,6 +31,10 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
     ipcRenderer.once(`proxy-connected-${this.id}`, (e: Event) => {
       this.handleStatusChange(ConnectionStatus.CONNECTED);
     });
+
+    ipcRenderer.on(`proxy-reconnecting-${this.id}`, (e: Event) => {
+      this.handleStatusChange(ConnectionStatus.RECONNECTING);
+    });
   }
 
   start(): Promise<void> {

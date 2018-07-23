@@ -33,7 +33,8 @@ mkdir -p $BIN_DEST
 rsync -ac \
   --include '*.exe' --include '*.dll' \
   --exclude='*' \
-  third_party/shadowsocks-libev/windows/ tools/setsystemproxy/ third_party/cygwin/ \
+  third_party/shadowsocks-libev/windows/ third_party/badvpn/windows/ third_party/cygwin/ \
+  third_party/newtonsoft/ tools/OutlineService/OutlineService/bin/Release/ \
   $BIN_DEST
 
 # Version info and Sentry config.
