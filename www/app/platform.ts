@@ -36,8 +36,6 @@ export interface OutlinePlatform {
 
   getErrorReporter(environment: EnvironmentVariables): OutlineErrorReporter;
 
-  hasSystemVpnSupport(): boolean;
-
   getUpdater(): Updater;
 
   quitApplication(): void;

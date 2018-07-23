@@ -14,3 +14,7 @@ info.txt
 /Carthage
 xcuserdata/
 dist/
+.vs/
+obj/
+packages/
+*.pdb

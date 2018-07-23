@@ -76,8 +76,6 @@ export class OutlineServer implements PersistentServer {
           throw new errors.IllegalServerConfiguration(this.config);
         case errors.ErrorCode.SHADOWSOCKS_START_FAILURE:
           throw new errors.ShadowsocksStartFailure();
-        case errors.ErrorCode.HTTP_PROXY_START_FAILURE:
-          throw new errors.HttpProxyStartFailure();
         case errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
           throw new errors.ConfigureSystemProxyFailure();
         default:

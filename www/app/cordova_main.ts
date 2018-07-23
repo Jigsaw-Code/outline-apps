@@ -98,10 +98,6 @@ class CordovaPlatform implements OutlinePlatform {
         new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN, {});
   }
 
-  hasSystemVpnSupport() {
-    return !CordovaPlatform.isBrowser();
-  }
-
   getUpdater() {
     return new AbstractUpdater();
   }

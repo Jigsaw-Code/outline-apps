@@ -68,8 +68,6 @@
   "tips": "Tips",
   "auto-connect-dialog-title": "Stay protected, always",
   "auto-connect-dialog-detail": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device.",
-  "non-system-vpn-warning-title": "Verify your browser connection",
-  "non-system-vpn-warning-detail": "Most browsers connect automatically with Outline, some do not.",
   "get-help": "Get help",
   "got-it": "Got it",
   "save": "save",
