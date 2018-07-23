@@ -14,10 +14,6 @@
 
 !include x64.nsh
 
-!macro customHeader
-  RequestExecutionLevel admin
-!macroend
-
 !macro customInstall
   MessageBox MB_OK "Your computer may ask you to trust a piece of software by OpenVPN. Outline uses this to protect all of the network traffic on your computer. Please answer yes when prompted."
 

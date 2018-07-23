@@ -26,9 +26,9 @@ cp -R third_party/tap-windows6/bin build/windows/tap-windows6
 #  - the destination path for the binaries in build_action.sh
 #  - the value returned by process_manager.ts#pathToEmbeddedExe
 
-# --config.nsis.perMachine=true makes the installer require
-# admin permissions, which are required to install and configure
-# the TAP device.
+# In addition to per-user/per-machine, --config.nsis.perMachine=true
+# makes the installer require admin permissions, which are required
+# to install and configure the TAP device.
 
 electron-builder \
   --projectDir=build/windows \
