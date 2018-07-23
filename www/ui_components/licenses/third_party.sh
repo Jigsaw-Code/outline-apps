@@ -29,7 +29,7 @@ for i in $(find $THIRD_PARTY_DIR -name METADATA); do
   echo "A copy of the source code may be downloaded from: $HOMEPAGE"
   echo "This software contains the following license and notice below:"
   echo
-  cat $(dirname $i)/LICENSE*
+  cat $(dirname $i)/LICEN?E*
   echo
   echo
 done
