@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, exec, execFile, execFileSync} from 'child_process';
-import * as http from 'http';
-import * as httpproxytosocks from 'http-proxy-to-socks/lib/proxy_server';
+import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
+import * as dgram from 'dgram';
 import * as net from 'net';
 import * as path from 'path';
 import * as process from 'process';
@@ -26,8 +25,10 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 import {SentryLogger} from './sentry_logger';
+import * as routing from './routing_service';
 
 const sentryLogger = new SentryLogger();
+const routingService = new routing.WindowsRoutingService();
 
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
@@ -38,33 +39,40 @@ function pathToEmbeddedExe(basename: string) {
 }
 
 // Three tools are required to launch the proxy on Windows:
-//  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy.
-//  - http-proxy-to-socks fronts the SOCKS5 proxy with a HTTP proxy (Windows cannot connect to a
-//  SOCKS5 server directly).
-//  - setsystemproxy.exe configures the system to use the HTTP proxy.
+//  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
+//  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
+//  - OutlineService configures the system to route via a TAP-like network device, must be installed
 
 let ssLocal: ChildProcess|undefined;
-let httpProxy: http.Server|undefined;
+let tun2socks: ChildProcess|undefined;
 
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
 
+const TUN2SOCKS_TAP_DEVICE_NAME = 'outline-tap0';
+// TODO: read these from the network device!
+const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
+const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
+const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
+const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
+
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
+const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
+const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
-// Fulfills with true iff both proxy binaries were started, the system configured to use the HTTP
-// proxy, and we can both connect to the Shadowsocks server port *and* connect to a semi-random test
-// site through the Shadowsocks proxy.
+// Fulfills with true iff shadowsocks and tun2socks binaries were started, the system configured to
+// route all traffic through the proxy, the remote server has enabled UDP forwarding, and we can
+// both connect to the Shadowsocks server port *and* connect to a semi-random test site through the
+// Shadowsocks proxy.
 //
 // Rejects with an ErrorCode number if for any reason the proxy cannot be started, or a connection
 // cannot be made to the server (it does *not* reject with an Error, just an integer, owing to how
 // electron-promise-ipc propagates errors).
 //
 // The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
-// Electron counterpart to VpnTunnelService.startShadowsocks. The biggest difference is that we do
-// not test the Shadowsocks server's support for UDP because on Windows the Shadowsocks proxy is
-// fronted by a HTTP proxy, which does not support UDP.
-export function launchProxy(
+// Electron counterpart to VpnTunnelService.startShadowsocks.
+export function startVpn(
     config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
       .catch((e) => {
@@ -81,16 +89,24 @@ export function launchProxy(
                     throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
                   })
                   .then(() => {
-                    return startHttpProxy()
+                    return checkUdpForwardingEnabled()
                         .catch((e) => {
-                          throw errors.ErrorCode.HTTP_PROXY_START_FAILURE;
+                          stopProcesses();
+                          throw errors.ErrorCode.UDP_RELAY_NOT_ENABLED;
                         })
-                        .then((port) => {
-                          try {
-                            configureSystemProxy(port);
-                          } catch (e) {
-                            throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
-                          }
+                        .then(() => {
+                          return startTun2socks(config.host || '', onDisconnected)
+                              .catch((e) => {
+                                stopProcesses();
+                                throw errors.ErrorCode.VPN_START_FAILURE;
+                              })
+                              .then((port) => {
+                                return configureRouting(
+                                    TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '').catch((e) => {
+                                      stopProcesses();
+                                      throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+                                    });
+                              });
                         });
                   });
             });
@@ -99,7 +115,8 @@ export function launchProxy(
 
 // Resolves with true iff a TCP connection can be established with the Shadowsocks server.
 //
-// This has the same function as ShadowsocksConnectivity.isServerReachable in cordova-plugin-outline.
+// This has the same function as ShadowsocksConnectivity.isServerReachable in
+// cordova-plugin-outline.
 export function isServerReachable(config: cordova.plugins.outline.ServerConfig) {
   return util.timeoutPromise(
       new Promise<void>((fulfill, reject) => {
@@ -121,15 +138,16 @@ export function isServerReachable(config: cordova.plugins.outline.ServerConfig) 
 function startLocalShadowsocksProxy(
     serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const ssLocalArgs: string[] = ['-l', SS_LOCAL_PORT.toString()];
     ssLocalArgs.push('-s', serverConfig.host || '');
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
+    ssLocalArgs.push('-u');
 
     try {
-      ssLocal = execFile(pathToEmbeddedExe('ss-local'), ssLocalArgs);
+      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs, {stdio: 'ignore'});
 
       ssLocal.on('exit', (code, signal) => {
         // We assume any signal sent to ss-local was sent by us.
@@ -195,18 +213,142 @@ function validateServerCredentials() {
   });
 }
 
-function startHttpProxy(): Promise<number> {
-  return new Promise((fulfill, reject) => {
-    const newHttpProxy = httpproxytosocks.createServer({socks: `${PROXY_IP}:${SS_LOCAL_PORT}`});
-    newHttpProxy.listen(0, PROXY_IP)
-        .on('listening',
-            () => {
-              httpProxy = newHttpProxy;
-              fulfill(newHttpProxy.address().port);
-            })
-        .on('error', (e: Error) => {
-          reject(new Error(`could not start HTTP proxy: ${e.message}`));
+// Verifies that the remote server has enabled UDP forwarding by sending a DNS request through it.
+function checkUdpForwardingEnabled() {
+  return new Promise((resolve, reject) => {
+    socks.createConnection(
+      {
+        proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate'},
+        target: {host: "0.0.0.0", port: 0},  // Specify the actual target once we get a response.
+      },
+      (err, socket, info) => {
+        if (err) {
+          sentryLogger.error(`Failed to create UDP connection to local proxy: ${err.message}`);
+          reject(new Error());
+          return;
+        }
+        const dnsRequest = getDnsRequest();
+        const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
+        const udpSocket = dgram.createSocket('udp4');
+
+        udpSocket.on('error', (err) => {
+          const msg = `UDP socket failure: ${err}`;
+          sentryLogger.error(msg);
+          reject(new Error(msg));
         });
+
+        udpSocket.on('message', (msg, info) => {
+          sentryLogger.info('UDP forwarding enabled');
+          stopUdp();
+          resolve();
+        });
+
+        // Retry sending the query every second.
+        const intervalId = setInterval(() => {
+          try {
+            udpSocket.send(packet, info.port, info.host, (err) => {
+              if (err) {
+                sentryLogger.error(`Failed to send data through UDP: ${err}`);
+              }
+            });
+          } catch (e) {
+            sentryLogger.error(`Failed to send data through UDP ${e}`);
+          }
+        }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+
+        const stopUdp = () => {
+          try {
+            clearInterval(intervalId);
+            udpSocket.close();
+          } catch (e) {
+            // Ignore; there may be multiple calls to this function.
+          }
+        };
+
+        // Give up after the timeout elapses.
+        setTimeout(() => {
+          stopUdp();
+          reject(new Error("Remote UDP forwarding disabled"));
+        }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+    });
+  });
+}
+
+// Returns a buffer containing a DNS request to google.com.
+function getDnsRequest() {
+  return Buffer.from([
+    0, 0, // [0-1]   query ID
+    1, 0, // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+    0, 1, // [4-5]   QDCOUNT (number of queries)
+    0, 0, // [6-7]   ANCOUNT (number of answers)
+    0, 0, // [8-9]   NSCOUNT (number of name server records)
+    0, 0, // [10-11] ARCOUNT (number of additional records)
+    6, 103,  111, 111, 103, 108, 101, // google
+    3, 99, 111, 109, // com
+    0, // null terminator of FQDN (root TLD)
+    0, 1, // QTYPE, set to A
+    0, 1 // QCLASS, set to 1 = IN (Internet)
+  ]);
+}
+
+function startTun2socks(host: string, onDisconnected: () => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // ./badvpn-tun2socks.exe \
+    //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
+    //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
+    //   --socks-server-addr 127.0.0.1:1081 \
+    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
+    const args: string[] = [];
+    args.push(
+        '--tundev',
+        `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+            TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
+    args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
+    args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+    args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    args.push('--socks5-udp');
+    args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    args.push('--loglevel', 'error');
+
+    try {
+      tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
+      tun2socks.on('exit', (code, signal) => {
+        if (signal) {
+          // tun2socks exits with SIGTERM when we stop it.
+          sentryLogger.info(`tun2socks exited with signal ${signal}`);
+        } else {
+          sentryLogger.info(`tun2socks exited with code ${code}`);
+          if (code === 1) {
+            // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
+            // due to a failure to read the tap device.
+            // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
+            sentryLogger.info('Restarting tun2socks...');
+            setTimeout(() => {
+              startTun2socks(host, onDisconnected).then(() => {
+                resolve();
+              }).catch((e) => {
+                sentryLogger.error('Failed to restart tun2socks');
+                onDisconnected();
+                teardownVpn();
+              });
+            }, 3000);
+            return;
+          }
+        }
+        onDisconnected();
+      });
+
+      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
+      // otherwise the process execution is suspended when the unconsumed streams exceed the system
+      // limit (~200KB). See https://github.com/nodejs/node/issues/4236
+      tun2socks.stdout.on('data', (data) => {
+        sentryLogger.error(`${data}`);
+      });
+
+      resolve();
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 
@@ -218,52 +360,35 @@ function stopSsLocal() {
   return Promise.resolve();
 }
 
-function stopHttpProxy() {
-  return new Promise((resolve) => {
-    if (httpProxy) {
-      // Because http-proxy-to-socks doesn't give us any control over
-      // connection timeouts, it can take a long time for the server to
-      // fully shutdown - freezing the UI. So, resolve immediately
-      // and log when it finally happens.
-      httpProxy.close((e: Error) => {
-        if (e) {
-          sentryLogger.error(`could not stop HTTP proxy: ${e}`);
-          return;
+function stopTun2socks() {
+  if (!tun2socks) {
+    return Promise.resolve();
+  }
+  tun2socks.kill();
+  return Promise.resolve();
+}
+
+function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
+  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp)
+      .then((success) => {
+        if (!success) {
+          throw new Error('Failed to configure routing');
         }
-        sentryLogger.info('HTTP proxy stopped');
       });
+}
+
+function resetRouting(): Promise<void> {
+  return routingService.resetRouting().then((success) => {
+    if (!success) {
+      throw new Error('Failed to reset routing');
     }
-    resolve();
   });
 }
 
-// Configures the system to use our proxy.
-// TODO: Make some effort to backup and restore the system proxy settings.
-function configureSystemProxy(httpProxyPort: number) {
-  try {
-    execFileSync(
-        pathToEmbeddedExe('setsystemproxy'), ['on', `${PROXY_IP}:${httpProxyPort}`],
-        {timeout: 1500});
-  } catch (e) {
-    throw new Error(`could not configure system proxy: ${e.stderr}`);
-  }
+export function teardownVpn() {
+  return Promise.all([resetRouting().catch(e => e), stopProcesses()]);
 }
 
-// Configures the system to no longer use our proxy.
-function resetSystemProxy() {
-  sentryLogger.info(`resetting system proxy`);
-  try {
-    execFileSync(pathToEmbeddedExe('setsystemproxy'), ['off']);
-  } catch (e) {
-    throw new Error(`could not reset system proxy: ${e.stderr}`);
-  }
-}
-
-export function teardownProxy() {
-  try {
-    resetSystemProxy();
-    return Promise.all([stopSsLocal(), stopHttpProxy()]);
-  } catch (e) {
-    return Promise.reject(e);
-  }
+function stopProcesses() {
+  return Promise.all([stopSsLocal(), stopTun2socks()]);
 }

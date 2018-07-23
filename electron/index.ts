@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {SentryClient} from '@sentry/electron';
-import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, Tray, shell} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, shell, Tray} from 'electron';
 import {PromiseIpc} from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
@@ -80,7 +80,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     if (!mainWindow || isAppQuitting) {
       return;
     }
-    event.preventDefault(); // Prevent the app from exiting on the 'close' event.
+    event.preventDefault();  // Prevent the app from exiting on the 'close' event.
     mainWindow.hide();
   };
   mainWindow.on('minimize', minimizeWindowToTray);
@@ -90,8 +90,12 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   mainWindow.webContents.on('did-finish-load', () => {
     interceptShadowsocksLink(process.argv);
     if (connectionAtShutdown) {
-      sentryLogger.info(`Automatically starting connection ${connectionAtShutdown.id}`);
-      startProxying(connectionAtShutdown.config, connectionAtShutdown.id);
+      const serverId = connectionAtShutdown.id;
+      sentryLogger.info(`Automatically starting connection ${serverId}`);
+      if (mainWindow) {
+        mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
+      }
+      startVpn(connectionAtShutdown.config, serverId);
     }
   });
 
@@ -183,22 +187,28 @@ app.on('ready', () => {
     }]));
   } else {
     // TODO: Run this periodically, e.g. every 4-6 hours.
-    autoUpdater.checkForUpdates();
+    try {
+      autoUpdater.checkForUpdates();
+    } catch (e) {
+      console.error(`Failed to check for updates: ${e.message}`);
+    }
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
   app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
 
   if (process.argv.includes(Options.AUTOSTART)) {
-    connectionStore.load().then((connection) => {
-      // The user was connected at shutdown. Create the main window and wait for the UI ready event
-      // to start the proxy.
-      createWindow(connection);
-    }).catch((err) => {
-      // The user was not connected at shutdown.
-      // Quitting the app will reset the system proxy configuration before exiting.
-      quitApp();
-    });
+    connectionStore.load()
+        .then((connection) => {
+          // The user was connected at shutdown. Create the main window and wait for the UI ready
+          // event to start the VPN.
+          createWindow(connection);
+        })
+        .catch((err) => {
+          // The user was not connected at shutdown.
+          // Quitting the app will reset the system proxy configuration before exiting.
+          quitApp();
+        });
   } else {
     createWindow();
   }
@@ -214,11 +224,9 @@ app.on('activate', () => {
 });
 
 app.on('quit', () => {
-  try {
-    process_manager.teardownProxy();
-  } catch (e) {
+  process_manager.teardownVpn().catch((e) => {
     sentryLogger.error(`could not tear down proxy on exit: ${e}`);
-  }
+  });
 });
 
 myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
@@ -231,14 +239,14 @@ myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) =
       });
 });
 
-function startProxying(config: cordova.plugins.outline.ServerConfig, id: string) {
-  return process_manager.teardownProxy()
+function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
+  return process_manager.teardownVpn()
       .catch((e) => {
-        sentryLogger.error(`error tearing down current proxy: ${e}`);
+        sentryLogger.error(`error tearing down the VPN: ${e}`);
       })
       .then(() => {
         return process_manager
-            .launchProxy(
+            .startVpn(
                 config,
                 () => {
                   if (mainWindow) {
@@ -266,11 +274,11 @@ function startProxying(config: cordova.plugins.outline.ServerConfig, id: string)
 
 myPromiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return startProxying(args.config, args.id);
+      return startVpn(args.config, args.id);
     });
 
 myPromiseIpc.on('stop-proxying', () => {
-  return process_manager.teardownProxy();
+  return process_manager.teardownVpn();
 });
 
 // This event fires whenever the app's window receives focus.

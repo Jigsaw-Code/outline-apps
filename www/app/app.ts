@@ -39,15 +39,10 @@ export class App {
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
-      private environmentVars: EnvironmentVariables, private hasSystemVpnSupport: boolean,
+      private environmentVars: EnvironmentVariables,
       private updater: Updater, private quitApplication: () => void, document = window.document) {
     this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
-
-    if (debugMode) {
-      console.log(`running in debug mode - resetting non-system VPN warning`);
-      this.setNonSystemVpnWarningDismissed(false);
-    }
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
@@ -75,8 +70,6 @@ export class App {
     this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
     this.rootEl.addEventListener('RenameRequested', this.renameServer.bind(this));
     this.rootEl.addEventListener('QuitPressed', this.quitApplication.bind(this));
-    this.rootEl.addEventListener(
-        'NonSystemVpnWarningDismissed', this.nonSystemVpnWarningDismissed.bind(this));
     this.rootEl.addEventListener(
         'AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
     this.rootEl.addEventListener(
@@ -293,7 +286,6 @@ export class App {
         () => {
           card.state = 'CONNECTED';
           this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
-          this.maybeShowNonSystemWarning();
           this.maybeShowAutoConnectDialog();
         },
         (err: errors.OutlinePluginError) => {
@@ -304,15 +296,9 @@ export class App {
   }
 
   private maybeShowAutoConnectDialog() {
-    // TODO: remove this check when Windows full system VPN is released.
-    let vpnWarningDismissed = false;
-    try {
-      vpnWarningDismissed = this.getNonSystemVpnWarningDismissed();
-    } catch (e) {
-      console.error(`Could not read full-system VPN warning status, assuming not dismissed: ${e}`);
-    }
-    if (!this.hasSystemVpnSupport && !vpnWarningDismissed) {
-      // Only show the dialog on Windows if the non-VPN warning has been dismissed.
+    if (!('cordova' in window)) {
+      // NOTE: auto-connect doesn't currently work in Windows because the executable requires admin
+      // rights and cannot be automatically started on boot.
       return;
     }
     let dismissed = false;
@@ -330,34 +316,6 @@ export class App {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
-  private maybeShowNonSystemWarning() {
-    if (this.hasSystemVpnSupport) {
-      return;
-    }
-
-    let dismissed = false;
-    try {
-      dismissed = this.getNonSystemVpnWarningDismissed();
-    } catch (e) {
-      console.error(`could not read full-system VPN warning status, assuming not dismissed`);
-    }
-    if (!dismissed) {
-      this.rootEl.$.serversView.$.nonSystemVpnWarning.show();
-    }
-  }
-
-  private getNonSystemVpnWarningDismissed() {
-    return this.settings.get(SettingsKey.VPN_WARNING_DISMISSED) === 'true';
-  }
-
-  private setNonSystemVpnWarningDismissed(dismissed: boolean) {
-    this.settings.set(SettingsKey.VPN_WARNING_DISMISSED, dismissed ? 'true' : 'false');
-  }
-
-  private nonSystemVpnWarningDismissed(event: CustomEvent) {
-    this.setNonSystemVpnWarningDismissed(true);
-  }
-
   private disconnectServer(event: CustomEvent) {
     const [server, card] = this.getServerAndCardByServerId(event.detail.serverId);
     card.state = 'DISCONNECTING';
@@ -365,9 +323,6 @@ export class App {
         () => {
           card.state = 'DISCONNECTED';
           this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
-          // The user may not have dismissed the warning before disconnecting.
-          // If so, hide the warning for now - it'll appear next time.
-          this.rootEl.$.serversView.$.nonSystemVpnWarning.hide();
         },
         (err: errors.OutlinePluginError) => {
           card.state = 'CONNECTED';
