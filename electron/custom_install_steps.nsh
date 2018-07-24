@@ -15,8 +15,6 @@
 !include x64.nsh
 
 !macro customInstall
-  MessageBox MB_OK "Your computer may ask you to trust a piece of software by OpenVPN. Outline uses this to protect all of the network traffic on your computer. Please answer yes when prompted."
-
   File /r "${PROJECT_DIR}\tap-windows6"
   File "${PROJECT_DIR}\electron\add_tap_device.bat"
 
