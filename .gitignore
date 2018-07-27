@@ -18,3 +18,5 @@ dist/
 obj/
 packages/
 *.pdb
+tools/OutlineService/OutlineService/bin/*
+!tools/OutlineService/OutlineService/bin/*.exe
