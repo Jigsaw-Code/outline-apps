@@ -224,6 +224,25 @@ namespace OutlineService {
       }
       eventLog.WriteEntry($"Got system gateway IP {systemGatewayIp.ToString()}");
 
+      // Set a low device metric for the TAP device, to ensure the system
+      // favours the (non-filtered) DNS server(s) associated with the TAP
+      // device:
+      //   https://github.com/Jigsaw-Code/outline-client/issues/191
+      //
+      // Note:
+      //  - This is *not* necessary to ensure that traffic is routed via the
+      //    proxy (though it does make the output of "route print" easier to
+      //    grok).
+      //  - We could, on disconnection, reset the device metric to auto but
+      //    since the TAP device is essentially unused unless the VPN
+      //    connection is active, there doesn't seem to be a big reason to do
+      //    so. To do it manually:
+      //      netsh interface ip set interface outline-tap0 metric=auto
+      //  - To show the metrics of all interfaces:
+      //      netsh interface ip show interface
+      RunCommand(CMD_NETSH, string.Format("interface ip set interface {0} metric=0", TAP_DEVICE_NAME));
+      eventLog.WriteEntry("Configured low TAP device metric", EventLogEntryType.Information);
+
       // Proxy routing: the proxy's IP address should be the only one that bypasses the router.
       // Save the best interface index for the proxy's address before we add the route. This
       // is necessary for updating the proxy route when the network changes; otherwise we get the
