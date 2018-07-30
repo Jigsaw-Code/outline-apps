@@ -224,9 +224,9 @@ namespace OutlineService {
       }
       eventLog.WriteEntry($"Got system gateway IP {systemGatewayIp.ToString()}");
 
-      // Set a low device metric for the TAP device, to ensure the system
-      // favours the (non-filtered) DNS server(s) associated with the TAP
-      // device:
+      // Set the lowest possible device metric for the TAP device, to ensure
+      // the system favours the (non-filtered) DNS server(s) associated with
+      // the TAP device:
       //   https://github.com/Jigsaw-Code/outline-client/issues/191
       //
       // Note:
