@@ -28,6 +28,32 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
+// If s a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
+// otherwise return s.
+function unwrapInvite(s: string): string {
+  try {
+    const url = new URL(s);
+    if (url.hash) {
+      const decodedFragment = decodeURIComponent(url.hash);
+
+      // Search in the fragment for ss:// for two reasons:
+      //  - URL.hash includes the leading # (what).
+      //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
+      //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since that seems like a reasonable
+      //    thing to do, let's support those URLs too.
+      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
+
+      if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
+        return possibleShadowsocksUrl;
+      }
+    }
+  } catch (e) {
+    // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
+    // crazy things in the clipboard.
+  }
+  return s;
+}
+
 export class App {
   private serverListEl: polymer.Base;
   private feedbackViewEl: polymer.Base;
@@ -39,8 +65,8 @@ export class App {
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
-      private environmentVars: EnvironmentVariables,
-      private updater: Updater, private quitApplication: () => void, document = window.document) {
+      private environmentVars: EnvironmentVariables, private updater: Updater,
+      private quitApplication: () => void, document = window.document) {
     this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
 
@@ -50,7 +76,12 @@ export class App {
 
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
-    this.registerUrlInterceptionListener(urlInterceptor);
+    if (urlInterceptor) {
+      this.registerUrlInterceptionListener(urlInterceptor);
+    } else {
+      console.warn('no urlInterceptor, ss:// urls will not be intercepted');
+    }
+
     this.clipboard.setListener(this.handleClipboardText.bind(this));
 
     this.updater.setListener(this.updateDownloaded.bind(this));
@@ -173,7 +204,7 @@ export class App {
     // keep an in-memory cache of user-ignored access keys.
     text = text.substring(0, 1000).trim();
     try {
-      this.confirmAddServer(this.unwrapInvite(text), true);
+      this.confirmAddServer(text, true);
     } catch (err) {
       // Don't alert the user; high false positive rate.
     }
@@ -206,7 +237,7 @@ export class App {
     const accessKey = event.detail.accessKey;
     console.debug('Got add server confirmation request from UI');
     try {
-      this.confirmAddServer(this.unwrapInvite(accessKey));
+      this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
       const addServerView = this.rootEl.$.addServerView;
@@ -215,6 +246,7 @@ export class App {
   }
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
+    accessKey = unwrapInvite(accessKey);
     if (fromClipboard && accessKey in this.ignoredAccessKeys) {
       console.debug('Ignoring access key');
       return;
@@ -297,8 +329,8 @@ export class App {
 
   private maybeShowAutoConnectDialog() {
     if (!('cordova' in window)) {
-      // NOTE: auto-connect doesn't currently work in Windows because the executable requires admin
-      // rights and cannot be automatically started on boot.
+      // NOTE: auto-connect doesn't currently work in Windows because the executable requires
+      // admin rights and cannot be automatically started on boot.
       return;
     }
     let dismissed = false;
@@ -419,43 +451,9 @@ export class App {
         });
   }
 
-  // If the provided url is actually an invite page, with the shadowsocks link in a URL
-  // fragment, this function extracts the shadowsocks link and returns it.  Otherwise,
-  // it returns the input unmodified.
-  private unwrapInvite(url: string): string {
-    try {
-      const invite: URL = new URL(url);
-      const baseURLs: string[] = [
-        'https://s3.amazonaws.com/outline-vpn/invite.html',
-        'https://s3.amazonaws.com/outline-vpn/index.html'
-      ];
-      for (const base of baseURLs) {
-        const parsed: URL = new URL(base);
-        if (parsed.origin !== invite.origin || parsed.pathname !== invite.pathname) {
-          continue;
-        }
-        const fragment: string = decodeURIComponent(invite.hash);
-        const mark = 'ss://';
-        const index = fragment.indexOf(mark);
-        if (index < 0) {
-          return url;
-        }
-        return fragment.substr(index);
-      }
-    } catch (e) {
-      console.warn('Invalid invite', e);
-    }
-    return url;
-  }
-
-  private registerUrlInterceptionListener(urlInterceptor?: UrlInterceptor) {
-    if (!urlInterceptor) {
-      return console.warn('no urlInterceptor, ss:// urls will not be intercepted');
-    }
+  private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener((url) => {
-      url = this.unwrapInvite(url);
-      const ssProto = SHADOWSOCKS_URI.PROTOCOL;
-      if (!url || url.substring(0, ssProto.length) !== ssProto) {
+      if (!url) {
         // This check is necessary to handle empty and malformed install-referrer URLs in Android.
         // TODO: Stop receiving install referrer intents so we can remove this.
         return console.debug(`Ignoring intercepted non-shadowsocks url`);
