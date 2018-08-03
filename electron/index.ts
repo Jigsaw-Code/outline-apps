@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SentryClient} from '@sentry/electron';
+import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, shell, Tray} from 'electron';
 import {PromiseIpc} from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
@@ -22,7 +22,6 @@ import * as url from 'url';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
-import {SentryLogger} from './sentry_logger';
 
 // TODO: Figure out the TypeScript magic to use the default, export-ed instance.
 const myPromiseIpc = new PromiseIpc();
@@ -42,8 +41,6 @@ const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const iconPath = path.join(path.dirname(__dirname), 'icons/win/icon.ico');
 const grayscaleIconPath = path.join(__dirname, 'logo_grayscale.png');
-
-const sentryLogger = new SentryLogger();
 
 const enum Options {
   AUTOSTART = '--autostart'
@@ -65,7 +62,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
 
   const webAppUrlAsString = webAppUrl.toString();
 
-  console.log(`loading web app from ${webAppUrlAsString}`);
+  console.info(`loading web app from ${webAppUrlAsString}`);
   mainWindow.loadURL(webAppUrlAsString);
 
   // Emitted when the window is closed.
@@ -91,7 +88,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     interceptShadowsocksLink(process.argv);
     if (connectionAtShutdown) {
       const serverId = connectionAtShutdown.id;
-      sentryLogger.info(`Automatically starting connection ${serverId}`);
+      console.info(`Automatically starting connection ${serverId}`);
       if (mainWindow) {
         mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
       }
@@ -170,7 +167,7 @@ function interceptShadowsocksLink(argv: string[]) {
       if (mainWindow) {
         mainWindow.webContents.send('add-server', url);
       } else {
-        sentryLogger.error('called with URL but mainWindow not open');
+        console.error('called with URL but mainWindow not open');
       }
     }
   }
@@ -190,7 +187,7 @@ app.on('ready', () => {
     try {
       autoUpdater.checkForUpdates();
     } catch (e) {
-      console.error(`Failed to check for updates: ${e.message}`);
+      console.error(`Failed to check for updates`, e);
     }
   }
 
@@ -225,7 +222,7 @@ app.on('activate', () => {
 
 app.on('quit', () => {
   process_manager.teardownVpn().catch((e) => {
-    sentryLogger.error(`could not tear down proxy on exit: ${e}`);
+    console.error(`could not tear down proxy on exit`, e);
   });
 });
 
@@ -242,7 +239,7 @@ myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) =
 function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
   return process_manager.teardownVpn()
       .catch((e) => {
-        sentryLogger.error(`error tearing down the VPN: ${e}`);
+        console.error(`error tearing down the VPN`, e);
       })
       .then(() => {
         return process_manager
@@ -252,17 +249,16 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
                   if (mainWindow) {
                     mainWindow.webContents.send(`proxy-disconnected-${id}`);
                   } else {
-                    sentryLogger.error(
-                        `received proxy-disconnected event but no mainWindow to notify`);
+                    console.warn(`received proxy-disconnected event but no mainWindow to notify`);
                   }
                   connectionStore.clear().catch((err) => {
-                    sentryLogger.error('Failed to clear connection store.');
+                    console.error('Failed to clear connection store.');
                   });
                   createTrayIcon(ConnectionStatus.DISCONNECTED);
                 })
             .then(() => {
               connectionStore.save({config, id}).catch((err) => {
-                sentryLogger.error('Failed to store connection.');
+                console.error('Failed to store connection.');
               });
               if (mainWindow) {
                 mainWindow.webContents.send(`proxy-connected-${id}`);
@@ -289,8 +285,11 @@ app.on('browser-window-focus', () => {
 });
 
 // Error reporting.
-ipcMain.on('environment-info', (event: Event, info: {appVersion: string, sentryDsn: string}) => {
-  SentryClient.create({dsn: info.sentryDsn, release: info.appVersion, maxBreadcrumbs: 100});
+// This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
+ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
+  sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
+  // To clearly identify app restarts in Sentry.
+  console.info(`Outline is starting`);
 });
 
 ipcMain.on('quit-app', quitApp);

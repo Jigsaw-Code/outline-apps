@@ -14,13 +14,10 @@
 
 import * as net from 'net';
 import * as sudo from 'sudo-prompt';
-import {SentryLogger} from './sentry_logger';
 
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 const SERVICE_START_COMMAND = 'net start OutlineService';
-
-const sentryLogger = new SentryLogger();
 
 interface RoutingServiceRequest {
   action: string,
@@ -67,7 +64,7 @@ export class WindowsRoutingService implements RoutingService {
        return response.statusCode === 0;
     }).catch((e) => {
       const msg = `Failed to configure routing: ${e.message}`;
-      sentryLogger.error(msg);
+      console.error(msg);
       return Promise.reject(new Error(msg));
     });
   }
@@ -82,7 +79,7 @@ export class WindowsRoutingService implements RoutingService {
       return response.statusCode === 0;
     }).catch((e) => {
       const msg = `Failed to reset routing: ${e.message}`;
-      sentryLogger.error(msg);
+      console.error(msg);
       return Promise.reject(new Error(msg));
     });
   }
@@ -104,13 +101,13 @@ export class WindowsRoutingService implements RoutingService {
       this.ipcConnection.on('error', (err) => {
         const netErr = err as NetError;
         if (netErr.errno === 'ENOENT') {
-          sentryLogger.info(`Routing service not running. Attempting to start.`)
+          console.info(`Routing service not running. Attempting to start.`)
           // Prompt the user for admimn permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
               if (/service has already been started|net helpmsg 2182/i.test(sudoError.message)) {
                 // Wait for the service to start before sending the request.
-                sentryLogger.info('Waiting for routing servcie to come up...');
+                console.info('Waiting for routing servcie to come up...');
                 return setTimeout(() => {
                   this.sendRequest(request).then(resolve, reject);
                 }, 2000);
