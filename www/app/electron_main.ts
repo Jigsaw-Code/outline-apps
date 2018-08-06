@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SentryClient} from '@sentry/electron';
+import * as sentry from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';
 
@@ -57,12 +57,13 @@ class ElectronUpdater extends AbstractUpdater {
 
 class ElectronErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, privateDsn: string) {
-    SentryClient.create({dsn: privateDsn, release: appVersion});
+    sentry.init({dsn: privateDsn, release: appVersion});
   }
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    return SentryClient.captureEvent(
+    sentry.captureEvent(
         {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+    return Promise.resolve();
   }
 }
 
@@ -85,9 +86,7 @@ main({
   },
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
-    ipcRenderer.send(
-        'environment-info', {'appVersion': env.APP_VERSION, 'sentryDsn': env.SENTRY_NATIVE_DSN});
-
+    ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
     return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN);
   },
   getUpdater: () => {

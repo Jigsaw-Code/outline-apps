@@ -25,7 +25,6 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 import * as routing from './routing_service';
-import {SentryLogger} from './sentry_logger';
 
 // Errors raised by spawn contain these extra fields, at least on Windows.
 declare class SpawnError extends Error {
@@ -33,7 +32,6 @@ declare class SpawnError extends Error {
   code: string;
 }
 
-const sentryLogger = new SentryLogger();
 const routingService = new routing.WindowsRoutingService();
 
 // The returned path must be kept in sync with:
@@ -169,16 +167,16 @@ function startLocalShadowsocksProxy(
     // want to send that exception to Sentry* since it contains ss-local's arguments which
     // encode an access key to the server.
     ssLocal.on('error', (e: SpawnError) => {
-      sentryLogger.error(`ss-local failed to start with code ${e.code}`);
+      console.error(`ss-local failed to start with code ${e.code}`);
       reject(new Error(`ss-local launch failure`));
     });
 
     ssLocal.on('exit', (code, signal) => {
       // We assume any signal sent to ss-local was sent by us.
       if (signal) {
-        sentryLogger.info(`ss-local exited with signal ${signal}`);
+        console.info(`ss-local exited with signal ${signal}`);
       } else {
-        sentryLogger.info(`ss-local exited with code ${code}`);
+        console.info(`ss-local exited with code ${code}`);
       }
       onDisconnected();
     });
@@ -238,7 +236,7 @@ function checkUdpForwardingEnabled() {
         },
         (err, socket, info) => {
           if (err) {
-            sentryLogger.error(`Failed to create UDP connection to local proxy: ${err.message}`);
+            console.error(`Failed to create UDP connection to local proxy: ${err.message}`);
             reject(new Error());
             return;
           }
@@ -248,12 +246,12 @@ function checkUdpForwardingEnabled() {
 
           udpSocket.on('error', (err) => {
             const msg = `UDP socket failure: ${err}`;
-            sentryLogger.error(msg);
+            console.error(msg);
             reject(new Error(msg));
           });
 
           udpSocket.on('message', (msg, info) => {
-            sentryLogger.info('UDP forwarding enabled');
+            console.info('UDP forwarding enabled');
             stopUdp();
             resolve();
           });
@@ -263,11 +261,11 @@ function checkUdpForwardingEnabled() {
             try {
               udpSocket.send(packet, info.port, info.host, (err) => {
                 if (err) {
-                  sentryLogger.error(`Failed to send data through UDP: ${err}`);
+                  console.error(`Failed to send data through UDP: ${err}`);
                 }
               });
             } catch (e) {
-              sentryLogger.error(`Failed to send data through UDP ${e}`);
+              console.error(`Failed to send data through UDP ${e}`);
             }
           }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
 
@@ -330,21 +328,21 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
-          sentryLogger.info(`tun2socks exited with signal ${signal}`);
+          console.info(`tun2socks exited with signal ${signal}`);
         } else {
-          sentryLogger.info(`tun2socks exited with code ${code}`);
+          console.info(`tun2socks exited with code ${code}`);
           if (code === 1) {
             // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
             // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            sentryLogger.info('Restarting tun2socks...');
+            console.info('Restarting tun2socks...');
             setTimeout(() => {
               startTun2socks(host, onDisconnected)
                   .then(() => {
                     resolve();
                   })
                   .catch((e) => {
-                    sentryLogger.error('Failed to restart tun2socks');
+                    console.error('Failed to restart tun2socks');
                     onDisconnected();
                     teardownVpn();
                   });
@@ -359,7 +357,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       // otherwise the process execution is suspended when the unconsumed streams exceed the system
       // limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {
-        sentryLogger.error(`${data}`);
+        console.error(`${data}`);
       });
 
       resolve();
