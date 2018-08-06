@@ -28,7 +28,7 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
-// If s a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
+// If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
 function unwrapInvite(s: string): string {
   try {
@@ -39,8 +39,8 @@ function unwrapInvite(s: string): string {
       // Search in the fragment for ss:// for two reasons:
       //  - URL.hash includes the leading # (what).
       //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
-      //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since that seems like a reasonable
-      //    thing to do, let's support those URLs too.
+      //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
+      //    seems like a reasonable thing to do, let's support those URLs too.
       const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
 
       if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
