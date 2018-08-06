@@ -26,6 +26,12 @@ import * as errors from '../www/model/errors';
 
 import * as routing from './routing_service';
 
+// Errors raised by spawn contain these extra fields, at least on Windows.
+declare class SpawnError extends Error {
+  // e.g. ENOENT
+  code: string;
+}
+
 const routingService = new routing.WindowsRoutingService();
 
 // The returned path must be kept in sync with:
@@ -144,27 +150,36 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-m', serverConfig.method || '');
     ssLocalArgs.push('-u');
 
-    try {
-      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs, {stdio: 'ignore'});
+    // Note that if you run with -v then ss-local may output a lot of data to stderr which
+    // will cause the binary to fail:
+    //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
+    ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs);
 
-      ssLocal.on('exit', (code, signal) => {
-        // We assume any signal sent to ss-local was sent by us.
-        if (signal) {
-          console.info(`ss-local exited with signal ${signal}`);
-          onDisconnected();
-          return;
-        }
-
-        console.info(`ss-local exited with code ${code}`);
-        onDisconnected();
-      });
-
-      // There's NO WAY to tell programmatically when ss-local.exe has successfully
-      // launched; only when it fails.
+    // Amazingly, there's no documented way to tell whether spawn has successfully launched a
+    // binary. This handler allows us to implicitly test that, by listening for ss-local's
+    // "listening on port xxx" startup output.
+    ssLocal.stdout.on('data', (s) => {
       resolve();
-    } catch (e) {
-      reject(e);
-    }
+    });
+
+    // In addition to being a sensible way to listen for launch failures, setting this handler
+    // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
+    // want to send that exception to Sentry* since it contains ss-local's arguments which
+    // encode an access key to the server.
+    ssLocal.on('error', (e: SpawnError) => {
+      console.error(`ss-local failed to start with code ${e.code}`);
+      reject(new Error(`ss-local launch failure`));
+    });
+
+    ssLocal.on('exit', (code, signal) => {
+      // We assume any signal sent to ss-local was sent by us.
+      if (signal) {
+        console.info(`ss-local exited with signal ${signal}`);
+      } else {
+        console.info(`ss-local exited with code ${code}`);
+      }
+      onDisconnected();
+    });
   });
 }
 
