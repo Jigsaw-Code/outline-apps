@@ -24,10 +24,14 @@ import * as url from 'url';
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
-import {SentryLogger} from './sentry_logger';
 import * as routing from './routing_service';
 
-const sentryLogger = new SentryLogger();
+// Errors raised by spawn contain these extra fields, at least on Windows.
+declare class SpawnError extends Error {
+  // e.g. ENOENT
+  code: string;
+}
+
 const routingService = new routing.WindowsRoutingService();
 
 // The returned path must be kept in sync with:
@@ -72,8 +76,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //
 // The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
 // Electron counterpart to VpnTunnelService.startShadowsocks.
-export function startVpn(
-    config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
+export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
       .catch((e) => {
         throw errors.ErrorCode.SERVER_UNREACHABLE;
@@ -102,7 +105,8 @@ export function startVpn(
                               })
                               .then((port) => {
                                 return configureRouting(
-                                    TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '').catch((e) => {
+                                           TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '')
+                                    .catch((e) => {
                                       stopProcesses();
                                       throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
                                     });
@@ -146,27 +150,36 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-m', serverConfig.method || '');
     ssLocalArgs.push('-u');
 
-    try {
-      ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs, {stdio: 'ignore'});
+    // Note that if you run with -v then ss-local may output a lot of data to stderr which
+    // will cause the binary to fail:
+    //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
+    ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs);
 
-      ssLocal.on('exit', (code, signal) => {
-        // We assume any signal sent to ss-local was sent by us.
-        if (signal) {
-          sentryLogger.info(`ss-local exited with signal ${signal}`);
-          onDisconnected();
-          return;
-        }
-
-        sentryLogger.info(`ss-local exited with code ${code}`);
-        onDisconnected();
-      });
-
-      // There's NO WAY to tell programmatically when ss-local.exe has successfully
-      // launched; only when it fails.
+    // Amazingly, there's no documented way to tell whether spawn has successfully launched a
+    // binary. This handler allows us to implicitly test that, by listening for ss-local's
+    // "listening on port xxx" startup output.
+    ssLocal.stdout.on('data', (s) => {
       resolve();
-    } catch (e) {
-      reject(e);
-    }
+    });
+
+    // In addition to being a sensible way to listen for launch failures, setting this handler
+    // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
+    // want to send that exception to Sentry* since it contains ss-local's arguments which
+    // encode an access key to the server.
+    ssLocal.on('error', (e: SpawnError) => {
+      console.error(`ss-local failed to start with code ${e.code}`);
+      reject(new Error(`ss-local launch failure`));
+    });
+
+    ssLocal.on('exit', (code, signal) => {
+      // We assume any signal sent to ss-local was sent by us.
+      if (signal) {
+        console.info(`ss-local exited with signal ${signal}`);
+      } else {
+        console.info(`ss-local exited with code ${code}`);
+      }
+      onDisconnected();
+    });
   });
 }
 
@@ -217,77 +230,77 @@ function validateServerCredentials() {
 function checkUdpForwardingEnabled() {
   return new Promise((resolve, reject) => {
     socks.createConnection(
-      {
-        proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate'},
-        target: {host: "0.0.0.0", port: 0},  // Specify the actual target once we get a response.
-      },
-      (err, socket, info) => {
-        if (err) {
-          sentryLogger.error(`Failed to create UDP connection to local proxy: ${err.message}`);
-          reject(new Error());
-          return;
-        }
-        const dnsRequest = getDnsRequest();
-        const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
-        const udpSocket = dgram.createSocket('udp4');
-
-        udpSocket.on('error', (err) => {
-          const msg = `UDP socket failure: ${err}`;
-          sentryLogger.error(msg);
-          reject(new Error(msg));
-        });
-
-        udpSocket.on('message', (msg, info) => {
-          sentryLogger.info('UDP forwarding enabled');
-          stopUdp();
-          resolve();
-        });
-
-        // Retry sending the query every second.
-        const intervalId = setInterval(() => {
-          try {
-            udpSocket.send(packet, info.port, info.host, (err) => {
-              if (err) {
-                sentryLogger.error(`Failed to send data through UDP: ${err}`);
-              }
-            });
-          } catch (e) {
-            sentryLogger.error(`Failed to send data through UDP ${e}`);
+        {
+          proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate'},
+          target: {host: '0.0.0.0', port: 0},  // Specify the actual target once we get a response.
+        },
+        (err, socket, info) => {
+          if (err) {
+            console.error(`Failed to create UDP connection to local proxy: ${err.message}`);
+            reject(new Error());
+            return;
           }
-        }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+          const dnsRequest = getDnsRequest();
+          const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
+          const udpSocket = dgram.createSocket('udp4');
 
-        const stopUdp = () => {
-          try {
-            clearInterval(intervalId);
-            udpSocket.close();
-          } catch (e) {
-            // Ignore; there may be multiple calls to this function.
-          }
-        };
+          udpSocket.on('error', (err) => {
+            const msg = `UDP socket failure: ${err}`;
+            console.error(msg);
+            reject(new Error(msg));
+          });
 
-        // Give up after the timeout elapses.
-        setTimeout(() => {
-          stopUdp();
-          reject(new Error("Remote UDP forwarding disabled"));
-        }, UDP_FORWARDING_TEST_TIMEOUT_MS);
-    });
+          udpSocket.on('message', (msg, info) => {
+            console.info('UDP forwarding enabled');
+            stopUdp();
+            resolve();
+          });
+
+          // Retry sending the query every second.
+          const intervalId = setInterval(() => {
+            try {
+              udpSocket.send(packet, info.port, info.host, (err) => {
+                if (err) {
+                  console.error(`Failed to send data through UDP: ${err}`);
+                }
+              });
+            } catch (e) {
+              console.error(`Failed to send data through UDP ${e}`);
+            }
+          }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+
+          const stopUdp = () => {
+            try {
+              clearInterval(intervalId);
+              udpSocket.close();
+            } catch (e) {
+              // Ignore; there may be multiple calls to this function.
+            }
+          };
+
+          // Give up after the timeout elapses.
+          setTimeout(() => {
+            stopUdp();
+            reject(new Error('Remote UDP forwarding disabled'));
+          }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+        });
   });
 }
 
 // Returns a buffer containing a DNS request to google.com.
 function getDnsRequest() {
   return Buffer.from([
-    0, 0, // [0-1]   query ID
-    1, 0, // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
-    0, 1, // [4-5]   QDCOUNT (number of queries)
-    0, 0, // [6-7]   ANCOUNT (number of answers)
-    0, 0, // [8-9]   NSCOUNT (number of name server records)
-    0, 0, // [10-11] ARCOUNT (number of additional records)
-    6, 103,  111, 111, 103, 108, 101, // google
-    3, 99, 111, 109, // com
-    0, // null terminator of FQDN (root TLD)
-    0, 1, // QTYPE, set to A
-    0, 1 // QCLASS, set to 1 = IN (Internet)
+    0, 0,                             // [0-1]   query ID
+    1, 0,                             // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+    0, 1,                             // [4-5]   QDCOUNT (number of queries)
+    0, 0,                             // [6-7]   ANCOUNT (number of answers)
+    0, 0,                             // [8-9]   NSCOUNT (number of name server records)
+    0, 0,                             // [10-11] ARCOUNT (number of additional records)
+    6, 103, 111, 111, 103, 108, 101,  // google
+    3, 99,  111, 109,                 // com
+    0,                                // null terminator of FQDN (root TLD)
+    0, 1,                             // QTYPE, set to A
+    0, 1                              // QCLASS, set to 1 = IN (Internet)
   ]);
 }
 
@@ -315,22 +328,24 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
-          sentryLogger.info(`tun2socks exited with signal ${signal}`);
+          console.info(`tun2socks exited with signal ${signal}`);
         } else {
-          sentryLogger.info(`tun2socks exited with code ${code}`);
+          console.info(`tun2socks exited with code ${code}`);
           if (code === 1) {
             // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
             // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            sentryLogger.info('Restarting tun2socks...');
+            console.info('Restarting tun2socks...');
             setTimeout(() => {
-              startTun2socks(host, onDisconnected).then(() => {
-                resolve();
-              }).catch((e) => {
-                sentryLogger.error('Failed to restart tun2socks');
-                onDisconnected();
-                teardownVpn();
-              });
+              startTun2socks(host, onDisconnected)
+                  .then(() => {
+                    resolve();
+                  })
+                  .catch((e) => {
+                    console.error('Failed to restart tun2socks');
+                    onDisconnected();
+                    teardownVpn();
+                  });
             }, 3000);
             return;
           }
@@ -342,7 +357,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       // otherwise the process execution is suspended when the unconsumed streams exceed the system
       // limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {
-        sentryLogger.error(`${data}`);
+        console.error(`${data}`);
       });
 
       resolve();
@@ -369,12 +384,11 @@ function stopTun2socks() {
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
-  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp)
-      .then((success) => {
-        if (!success) {
-          throw new Error('Failed to configure routing');
-        }
-      });
+  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp).then((success) => {
+    if (!success) {
+      throw new Error('Failed to configure routing');
+    }
+  });
 }
 
 function resetRouting(): Promise<void> {
