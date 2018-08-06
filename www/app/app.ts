@@ -30,7 +30,7 @@ import {UrlInterceptor} from './url_interceptor';
 
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
-function unwrapInvite(s: string): string {
+export function unwrapInvite(s: string): string {
   try {
     const url = new URL(s);
     if (url.hash) {
