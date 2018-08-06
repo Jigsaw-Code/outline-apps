@@ -20,12 +20,12 @@ const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 const SERVICE_START_COMMAND = 'net start OutlineService';
 
 interface RoutingServiceRequest {
-  action: string,
-  parameters: {[parameter: string]: string}
+  action: string;
+  parameters: {[parameter: string]: string};
 }
 
 interface RoutingServiceResponse {
-  statusCode: number
+  statusCode: number;
 }
 
 export interface RoutingService {
@@ -40,10 +40,10 @@ enum RoutingServiceAction {
 
 // Define the error type thrown by the net moudle.
 interface NetError extends Error {
-  code?: string|number,
-  errno?: string,
-  syscall?: string,
-  address?: string
+  code?: string|number;
+  errno?: string;
+  syscall?: string;
+  address?: string;
 }
 
 // Abstracts IPC with OutlineService in order to configure routing.
@@ -101,7 +101,7 @@ export class WindowsRoutingService implements RoutingService {
       this.ipcConnection.on('error', (err) => {
         const netErr = err as NetError;
         if (netErr.errno === 'ENOENT') {
-          console.info(`Routing service not running. Attempting to start.`)
+          console.info(`Routing service not running. Attempting to start.`);
           // Prompt the user for admimn permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
