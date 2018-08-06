@@ -27,6 +27,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Security.Principal;
 
 /*
  * Windows Service, part of the Outline Windows client, to configure routing.
@@ -74,22 +75,24 @@ namespace OutlineService {
     private int proxyInterfaceIndex = ERROR_CODE_INTERNAL;
     private IPAddress systemGatewayIp;
 
+    // Do as little as possible here because any error thrown will cause "net start" to fail
+    // without anything being added to the application log.
     public OutlineService() {
       InitializeComponent();
+
       eventLog = new EventLog();
       if (!EventLog.SourceExists(EVENT_LOG_SOURCE)) {
         EventLog.CreateEventSource(EVENT_LOG_SOURCE, EVENT_LOG_NAME);
       }
       eventLog.Source = EVENT_LOG_SOURCE;
       eventLog.Log = EVENT_LOG_NAME;
-
-      CreatePipe();
     }
 
     protected override void OnStart(string[] args) {
       eventLog.WriteEntry("OutlineService starting");
       NetworkChange.NetworkAddressChanged +=
           new NetworkAddressChangedEventHandler(NetworkAddressChanged);
+      CreatePipe();
       pipe.BeginWaitForConnection(HandleConnection, null);
     }
 
@@ -99,11 +102,15 @@ namespace OutlineService {
       NetworkChange.NetworkAddressChanged -= NetworkAddressChanged;
     }
 
-    private void CreatePipe() {
+    private void CreatePipe() { 
       var pipeSecurity = new PipeSecurity();
-      pipeSecurity.AddAccessRule(new PipeAccessRule("Users", PipeAccessRights.ReadWrite, AccessControlType.Allow));
-      pipeSecurity.AddAccessRule(new PipeAccessRule("CREATOR OWNER", PipeAccessRights.FullControl, AccessControlType.Allow));
-      pipeSecurity.AddAccessRule(new PipeAccessRule("SYSTEM", PipeAccessRights.FullControl, AccessControlType.Allow));
+      pipeSecurity.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(
+          WellKnownSidType.CreatorOwnerSid, null),
+          PipeAccessRights.FullControl, AccessControlType.Allow));
+      pipeSecurity.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(
+          WellKnownSidType.AuthenticatedUserSid, null),
+          PipeAccessRights.ReadWrite, AccessControlType.Allow));
+
       pipe = new NamedPipeServerStream(PIPE_NAME, PipeDirection.InOut, -1, PipeTransmissionMode.Message,
                                        PipeOptions.Asynchronous, (int)BUFFER_SIZE_BYTES, (int)BUFFER_SIZE_BYTES, pipeSecurity);
     }
