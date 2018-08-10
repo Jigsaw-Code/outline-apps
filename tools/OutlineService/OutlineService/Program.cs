@@ -19,21 +19,40 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OutlineService
-{
-    static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        static void Main()
-        {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new OutlineService()
-            };
-            ServiceBase.Run(ServicesToRun);
-        }
+namespace OutlineService {
+static class Program {
+  static void Main(string[] args) {
+    if (!Environment.UserInteractive) {
+      ServiceBase[] ServicesToRun;
+      ServicesToRun = new ServiceBase[]{new OutlineService()};
+      ServiceBase.Run(ServicesToRun);
+    } else {
+      var service = new OutlineService();
+      // To run as a service from the command-line:
+      // service.OnStart(null);
+      // System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+      if (args.Length != 2) {
+        ShowUsageAndExit();
+      }
+      switch (args[0]) {
+        case "on":
+          service.ConfigureRouting("10.0.85.1", args[1]);
+          break;
+        case "off":
+          // "Ethernet" is the most common name but will probably need to be changed on VMs, etc.
+          service.ResetRouting(args[1], "Ethernet");
+          break;
+        default:
+          ShowUsageAndExit();
+          break;
+      }
+      Console.WriteLine($"network config: {service.GetNetworkInfo()}");
     }
+  }
+
+  static void ShowUsageAndExit() {
+    Console.WriteLine("usage: on|off <proxy server ip>");
+    Environment.Exit(1);
+  }
 }
+}  // namespace OutlineService
