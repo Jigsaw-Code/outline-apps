@@ -25,12 +25,14 @@ interface RoutingServiceRequest {
 }
 
 interface RoutingServiceResponse {
+  // 0 iff the operation was successful.
   statusCode: number;
+  errorMessage?: string;
 }
 
 export interface RoutingService {
-  configureRouting(routerIp: string, proxyIp: string): Promise<boolean>;
-  resetRouting(): Promise<boolean>;
+  configureRouting(routerIp: string, proxyIp: string): Promise<void>;
+  resetRouting(): Promise<void>;
 }
 
 enum RoutingServiceAction {
@@ -50,38 +52,40 @@ interface NetError extends Error {
 export class WindowsRoutingService implements RoutingService {
   private ipcConnection: net.Socket;
 
-  // Configures all system routes, except `proxyIp`, to go through `routerIp`.
-  // Disables IPv6 routing.s
-  configureRouting(routerIp: string, proxyIp: string): Promise<boolean> {
-    const request = {
-      action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {
-        proxyIp,
-        routerIp,
-      }
-    };
-    return this.sendRequest(request).then((response) => {
-       return response.statusCode === 0;
-    }).catch((e) => {
-      const msg = `Failed to configure routing: ${e.message}`;
-      console.error(msg);
-      return Promise.reject(new Error(msg));
-    });
+  // Asks OutlineService to configure all traffic, except that bound for the proxy server,
+  // to route via routerIp.
+  configureRouting(routerIp: string, proxyIp: string): Promise<void> {
+    return this
+        .sendRequest({
+          action: RoutingServiceAction.CONFIGURE_ROUTING,
+          parameters: {
+            proxyIp,
+            routerIp,
+          }
+        })
+        .then(
+            (response) => {
+              if (response.statusCode !== 0) {
+                throw new Error(`OutlineService says: ${response.errorMessage}`);
+              }
+            },
+            (e) => {
+              throw new Error(`could not contact OutlineService: ${e.errorMessage}`);
+            });
   }
 
   // Restores the default system routes.
-  resetRouting(): Promise<boolean> {
-    const request = {
-      action: RoutingServiceAction.RESET_ROUTING,
-      parameters: {}
-    };
-    return this.sendRequest(request).then((response) => {
-      return response.statusCode === 0;
-    }).catch((e) => {
-      const msg = `Failed to reset routing: ${e.message}`;
-      console.error(msg);
-      return Promise.reject(new Error(msg));
-    });
+  resetRouting(): Promise<void> {
+    return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}})
+        .then(
+            (response) => {
+              if (response.statusCode !== 0) {
+                throw new Error(`OutlineService says: ${response.errorMessage}`);
+              }
+            },
+            (e) => {
+              throw new Error(`could not contact OutlineService: ${e.errorMessage}`);
+            });
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
@@ -114,7 +118,8 @@ export class WindowsRoutingService implements RoutingService {
               }
               return reject(new Error(`Failed to start routing service: ${sudoError}`));
             }
-            this.sendRequest(request).then(resolve, reject); // Retry now that the service is running
+            this.sendRequest(request).then(
+                resolve, reject);  // Retry now that the service is running
           });
           return;
         }
@@ -135,7 +140,7 @@ export class WindowsRoutingService implements RoutingService {
         }
         try {
           this.ipcConnection.destroy();
-        } catch(e) {
+        } catch (e) {
           // Don't reject, the service may have disconnected the pipe already.
         }
       });

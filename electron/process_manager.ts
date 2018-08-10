@@ -108,6 +108,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
                                            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '')
                                     .catch((e) => {
                                       stopProcesses();
+                                      console.error(`could not configure routing: ${e.message}`);
                                       throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
                                     });
                               });
@@ -384,18 +385,13 @@ function stopTun2socks() {
 }
 
 function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
-  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp).then((success) => {
-    if (!success) {
-      throw new Error('Failed to configure routing');
-    }
-  });
+  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp);
 }
 
 function resetRouting(): Promise<void> {
-  return routingService.resetRouting().then((success) => {
-    if (!success) {
-      throw new Error('Failed to reset routing');
-    }
+  return routingService.resetRouting().catch((e) => {
+    console.error(`could not reset routing: ${e.message}`);
+    throw e;
   });
 }
 
