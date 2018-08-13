@@ -375,8 +375,6 @@ namespace OutlineService {
     // gatewayInterfaceName iff the routing table can be modified to route via Outline.
     // Otherwise, throws with a description of the problem, e.g. system has multiple gateways.
     private void GetSystemGateway() {
-      throw new Exception("bah humbug");
-
       // Find active network interfaces with gateways.
       var interfacesWithGateways = NetworkInterface.GetAllNetworkInterfaces()
           .Where(i => i.GetIPProperties().GatewayAddresses.Count > 0);
