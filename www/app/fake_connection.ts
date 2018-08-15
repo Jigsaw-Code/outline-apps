@@ -14,35 +14,46 @@
 
 /// <reference path='../types/outlinePlugin.d.ts'/>
 
-import {sleep} from './util';
+import * as errors from '../model/errors';
 
+// Note that because this implementation does not emit disconnection events, "switching" between
+// servers in the server list will not work as expected.
 export class FakeOutlineConnection implements cordova.plugins.outline.Connection {
   private running = false;
-  private broken: boolean;
-  private reachable: boolean;
 
-  constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {
-    const serverName = this.config.name || this.config.host || '';
-    this.broken = serverName.toLowerCase().includes('broken');
-    this.reachable = !serverName.toLowerCase().includes('unreachable');
+  constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {}
+
+  private playBroken() {
+    return this.config.name && this.config.name.toLowerCase().includes('broken');
+  }
+
+  private playUnreachable() {
+    return !(this.config.name && this.config.name.toLowerCase().includes('unreachable'));
   }
 
   start(): Promise<void> {
-    if (this.running) return Promise.resolve();
-    return sleep(250).then(() => {
-      if (this.broken) {
-        throw new Error(`FakeServer ${this.id} fake failed to connect (broken is true)`);
-      } else {
-        this.running = true;
-      }
-    });
+    if (this.running) {
+      return Promise.resolve();
+    }
+
+    if (!this.playUnreachable()) {
+      return Promise.reject(new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE));
+    } else if (this.playBroken()) {
+      return Promise.reject(
+          new errors.OutlinePluginError(errors.ErrorCode.INVALID_SERVER_CREDENTIALS));
+    } else {
+      this.running = true;
+      return Promise.resolve();
+    }
   }
 
   stop(): Promise<void> {
-    if (!this.running) return Promise.resolve();
-    return sleep(250).then(() => {
-      this.running = false;
-    });
+    if (!this.running) {
+      return Promise.resolve();
+    }
+
+    this.running = false;
+    return Promise.resolve();
   }
 
   isRunning(): Promise<boolean> {
@@ -50,7 +61,7 @@ export class FakeOutlineConnection implements cordova.plugins.outline.Connection
   }
 
   isReachable(): Promise<boolean> {
-    return Promise.resolve(this.reachable);
+    return Promise.resolve(!this.playUnreachable());
   }
 
   onStatusChange(listener: (status: ConnectionStatus) => void): void {

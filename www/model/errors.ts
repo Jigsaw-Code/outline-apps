@@ -55,78 +55,52 @@ export class FeedbackSubmissionError extends OutlineError {
   }
 }
 
+// Error thrown by "native" code.
+// Must be kept in sync with its Cordova doppelganger:
+//   cordova-plugin-outline/outlinePlugin.js
 export class OutlinePluginError extends OutlineError {
-  constructor() {
+  constructor(public readonly errorCode: ErrorCode) {
     super();
   }
 }
 
-export class UnexpectedPluginError extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
-export class VpnPermissionNotGranted extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
+// Marker class for errors originating in native code.
+// Bifurcates into two subclasses:
+//  - "expected" errors originating in native code, e.g. incorrect password
+//  - "unexpected" errors originating in native code, e.g. unhandled routing table
+export class NativeError extends OutlineError {}
+export class RegularNativeError extends NativeError {}
+export class RedFlagNativeError extends NativeError {}
 
-export class InvalidServerCredentials extends OutlinePluginError {
-  constructor(public readonly server: Server) {
-    super();
-  }
-}
+//////
+// "Expected" errors.
+//////
+export class UnexpectedPluginError extends RegularNativeError {}
+export class VpnPermissionNotGranted extends RegularNativeError {}
+export class InvalidServerCredentials extends RegularNativeError {}
+export class RemoteUdpForwardingDisabled extends RegularNativeError {}
+export class ServerUnreachable extends RegularNativeError {}
+export class IllegalServerConfiguration extends RegularNativeError {}
+// TODO: Seems like a candidate for RedFlagNativeError; only used by Android?
+export class VpnStartFailure extends RegularNativeError {}
 
-export class RemoteUdpForwardingDisabled extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
-
-export class ServerUnreachable extends OutlinePluginError {
-  constructor(public readonly server: Server) {
-    super();
-  }
-}
-
-export class NetworkSystemError extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
-
-export class IllegalServerConfiguration extends OutlinePluginError {
-  constructor(public readonly serverConfig: cordova.plugins.outline.ServerConfig) {
-    super();
-  }
-}
-
-export class ShadowsocksStartFailure extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
-
-export class ConfigureSystemProxyFailure extends OutlinePluginError {
-  constructor() {
-    super();
-  }
-}
-
-// For passing errors between JS and the native plugin components.
-export class OutlineNativeError extends Error {
-  constructor(public readonly errorCode: number) {
-    super();
-  }
-}
+//////
+// Now, "unexpected" errors.
+// Use these sparingly beacause each occurrence triggers a Sentry report.
+//////
+export class ShadowsocksStartFailure extends RedFlagNativeError {}
+export class ConfigureSystemProxyFailure extends RedFlagNativeError {}
 
 // This must be kept in sync with:
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
 //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
 //  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
-export enum ErrorCode {
+//
+// TODO: Is it safe to re-use values here, i.e. is native node rebuilt in step with the TypeScript?
+export const enum ErrorCode {
+  // TODO: NO_ERROR is weird. Only used internally by the Android plugin?
   NO_ERROR = 0,
+  // TODO: Rename to something more specific, or remove - only used by Android?
   UNEXPECTED = 1,
   VPN_PERMISSION_NOT_GRANTED = 2,
   INVALID_SERVER_CREDENTIALS = 3,
@@ -136,4 +110,32 @@ export enum ErrorCode {
   ILLEGAL_SERVER_CONFIGURATION = 7,
   SHADOWSOCKS_START_FAILURE = 8,
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9
+}
+
+// Converts an ErrorCode - originating in "native" code - to an instance of the relevant
+// OutlineError subclass.
+// Throws if the error code is not one defined in ErrorCode or is ErrorCode.NO_ERROR.
+export function fromErrorCode(errorCode: ErrorCode): NativeError {
+  switch (errorCode) {
+    case ErrorCode.UNEXPECTED:
+      return new UnexpectedPluginError();
+    case ErrorCode.VPN_PERMISSION_NOT_GRANTED:
+      return new VpnPermissionNotGranted();
+    case ErrorCode.INVALID_SERVER_CREDENTIALS:
+      return new InvalidServerCredentials();
+    case ErrorCode.UDP_RELAY_NOT_ENABLED:
+      return new RemoteUdpForwardingDisabled();
+    case ErrorCode.SERVER_UNREACHABLE:
+      return new ServerUnreachable();
+    case ErrorCode.VPN_START_FAILURE:
+      return new VpnStartFailure();
+    case ErrorCode.ILLEGAL_SERVER_CONFIGURATION:
+      return new IllegalServerConfiguration();
+    case ErrorCode.SHADOWSOCKS_START_FAILURE:
+      return new ShadowsocksStartFailure();
+    case ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
+      return new ConfigureSystemProxyFailure();
+    default:
+      throw new Error(`unknown ErrorCode ${errorCode}`);
+  }
 }
