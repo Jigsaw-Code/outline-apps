@@ -14,7 +14,7 @@
 
 import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, shell, Tray} from 'electron';
-import {PromiseIpc} from 'electron-promise-ipc';
+import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
 import * as process from 'process';
@@ -22,9 +22,6 @@ import * as url from 'url';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
-
-// TODO: Figure out the TypeScript magic to use the default, export-ed instance.
-const myPromiseIpc = new PromiseIpc();
 
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
@@ -226,7 +223,7 @@ app.on('quit', () => {
   });
 });
 
-myPromiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
+promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
   return process_manager.isServerReachable(config)
       .then(() => {
         return true;
@@ -268,12 +265,12 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
       });
 }
 
-myPromiseIpc.on(
+promiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
       return startVpn(args.config, args.id);
     });
 
-myPromiseIpc.on('stop-proxying', () => {
+promiseIpc.on('stop-proxying', () => {
   return process_manager.teardownVpn();
 });
 

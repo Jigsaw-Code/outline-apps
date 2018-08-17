@@ -23,7 +23,7 @@ import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {getLocalizedErrorMessage, LocalizationFunction} from './i18n';
 import {OutlineServer} from './outline_server';
-import {PersistentServerRepository} from './persistent_server';
+import {PersistentServer, PersistentServerRepository} from './persistent_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -126,15 +126,12 @@ export class App {
     this.pullClipboardText();
   }
 
-  showLocalizedError(err?: Error, toastDuration = 10000) {
-    if (err && err.message) {
-      console.error(err.message);
-    }
+  showLocalizedError(e?: Error, toastDuration = 10000) {
+    // TODO: Why would these not be set?
     if (this.rootEl && this.rootEl.async && this.rootEl.showToast) {
-      const msg = getLocalizedErrorMessage(err || new errors.OutlineError(), this.localize);
-      // Defer this by 500ms so that this toast is shown after any toasts that get
-      // shown when any currently-in-flight domain events land (e.g. fake servers
-      // added).
+      const msg = getLocalizedErrorMessage(e, this.localize);
+      // Defer this by 500ms so that this toast is shown after any toasts that get shown when any
+      // currently-in-flight domain events land (e.g. fake servers added).
       this.rootEl.async(() => {
         this.rootEl.showToast(msg, toastDuration);
       }, 500);
@@ -311,19 +308,36 @@ export class App {
     this.serverRepo.rename(serverId, newName);
   }
 
-  private connectServer(event: CustomEvent) {
-    const [server, card] = this.getServerAndCardByServerId(event.detail.serverId);
+  // Note that as a top-level method (invoked via an event handler on the connect button) any
+  // exceptions thrown by this method will result in a console message and Sentry report. Certain
+  // "expected" exceptions are trapped here, e.g. invalid password, to avoid cluttering Sentry.
+  private connectServer(event: CustomEvent): void {
+    const serverId = event.detail.serverId;
+    if (!serverId) {
+      throw new Error(`connectServer event had no server ID`);
+    }
+
+    const server = this.getServerByServerId(serverId);
+    const card = this.getCardByServerId(serverId);
+
+    console.log(`connecting to server ${serverId}`);
+
     card.state = 'CONNECTING';
-    return server.connect().then(
+    server.connect().then(
         () => {
           card.state = 'CONNECTED';
+          console.log(`connected to server ${serverId}`);
           this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
           this.maybeShowAutoConnectDialog();
         },
-        (err: errors.OutlinePluginError) => {
-          console.error(`Failed to connect to server with plugin error: ${err.name}`);
+        (e) => {
           card.state = 'DISCONNECTED';
-          this.showLocalizedError(err);
+          this.showLocalizedError(e);
+          if (e instanceof errors.RegularNativeError) {
+            console.warn(`could not connect to server ${serverId}: ${e.name}`);
+          } else {
+            throw e;
+          }
         });
   }
 
@@ -348,17 +362,33 @@ export class App {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
-  private disconnectServer(event: CustomEvent) {
-    const [server, card] = this.getServerAndCardByServerId(event.detail.serverId);
+  // See the comments for #connectServer on how uncaught exceptions are handled here.
+  private disconnectServer(event: CustomEvent): void {
+    const serverId = event.detail.serverId;
+    if (!serverId) {
+      throw new Error(`disconnectServer event had no server ID`);
+    }
+
+    const server = this.getServerByServerId(serverId);
+    const card = this.getCardByServerId(serverId);
+
+    console.log(`disconnecting from server ${serverId}`);
+
     card.state = 'DISCONNECTING';
-    return server.disconnect().then(
+    server.disconnect().then(
         () => {
           card.state = 'DISCONNECTED';
+          console.log(`disconnected from server ${serverId}`);
           this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
         },
-        (err: errors.OutlinePluginError) => {
+        (e) => {
           card.state = 'CONNECTED';
-          this.showLocalizedError(err);
+          this.showLocalizedError(e);
+          if (e instanceof errors.RegularNativeError) {
+            console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
+          } else {
+            throw e;
+          }
         });
   }
 
@@ -470,10 +500,19 @@ export class App {
     this.rootEl.changePage(this.rootEl.DEFAULT_PAGE);
   }
 
-  private getServerAndCardByServerId(serverId: string) {
+  // Returns the server having serverId, throws if the server cannot be found.
+  private getServerByServerId(serverId: string): PersistentServer {
     const server = this.serverRepo.getById(serverId);
-    const card = this.serverListEl.getServerCard(serverId);
-    return [server, card];
+    if (!server) {
+      throw new Error(`could not find server with ID ${serverId}`);
+    }
+    return server;
+  }
+
+  // Returns the card associated with serverId, throws if no such card exists.
+  // See server-list.html.
+  private getCardByServerId(serverId: string) {
+    return this.serverListEl.getServerCard(serverId);
   }
 
   private showLocalizedErrorInDefaultPage(err: Error) {

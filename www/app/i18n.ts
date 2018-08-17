@@ -16,35 +16,35 @@ import * as errors from '../model/errors';
 
 export type LocalizationFunction = (...args: string[]) => string;
 
-export function getLocalizedErrorMessage(error: {}, localize: LocalizationFunction) {
+export function getLocalizedErrorMessage(e: Error = new Error(), localize?: LocalizationFunction) {
   if (!localize) {
     console.error('Localization function not available');
     return 'An unexpected error occurred. Please submit feedback.';
   }
   let messageLocalizationKey: string;
-  if (error instanceof errors.UnexpectedPluginError) {
+  if (e instanceof errors.UnexpectedPluginError) {
     messageLocalizationKey = 'outline-plugin-error-unexpected';
-  } else if (error instanceof errors.VpnPermissionNotGranted) {
+  } else if (e instanceof errors.VpnPermissionNotGranted) {
     messageLocalizationKey = 'outline-plugin-error-vpn-permission-not-granted';
-  } else if (error instanceof errors.InvalidServerCredentials) {
+  } else if (e instanceof errors.InvalidServerCredentials) {
     messageLocalizationKey = 'outline-plugin-error-invalid-server-credentials';
-  } else if (error instanceof errors.RemoteUdpForwardingDisabled) {
+  } else if (e instanceof errors.RemoteUdpForwardingDisabled) {
     messageLocalizationKey = 'outline-plugin-error-udp-forwarding-not-enabled';
-  } else if (error instanceof errors.ServerUnreachable) {
+  } else if (e instanceof errors.ServerUnreachable) {
     messageLocalizationKey = 'outline-plugin-error-server-unreachable';
-  } else if (error instanceof errors.OutlinePluginError) {
+  } else if (e instanceof errors.OutlinePluginError) {
     messageLocalizationKey = 'outline-plugin-error-networking-error';
-  } else if (error instanceof errors.FeedbackSubmissionError) {
+  } else if (e instanceof errors.FeedbackSubmissionError) {
     messageLocalizationKey = 'error-feedback-submission';
-  } else if (error instanceof errors.ServerUrlInvalid) {
+  } else if (e instanceof errors.ServerUrlInvalid) {
     messageLocalizationKey = 'error-invalid-access-key';
-  } else if (error instanceof errors.ServerIncompatible) {
+  } else if (e instanceof errors.ServerIncompatible) {
     messageLocalizationKey = 'error-server-incompatible';
-  } else if (error instanceof errors.OperationTimedOut) {
+  } else if (e instanceof errors.OperationTimedOut) {
     messageLocalizationKey = 'error-timeout';
-  } else if (error instanceof errors.ServerAlreadyAdded) {
+  } else if (e instanceof errors.ServerAlreadyAdded) {
     // Handle differently due to the use of localization parameters.
-    return localize('error-server-already-added', 'serverName', error.server.name);
+    return localize('error-server-already-added', 'serverName', e.server.name);
   } else {
     messageLocalizationKey = 'error-unexpected';
   }

@@ -13,11 +13,9 @@
 // limitations under the License.
 
 import {ipcRenderer} from 'electron';
-import {PromiseIpc} from 'electron-promise-ipc';
-import * as errors from '../model/errors';
+import * as promiseIpc from 'electron-promise-ipc';
 
-// TODO: Figure out the TypeScript magic to use the default, export-ed instance.
-const myPromiseIpc = new PromiseIpc();
+import * as errors from '../model/errors';
 
 export class WindowsOutlineConnection implements cordova.plugins.outline.Connection {
   private statusChangeListener: (status: ConnectionStatus) => void;
@@ -46,12 +44,12 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
       this.handleStatusChange(ConnectionStatus.DISCONNECTED);
     });
 
-    return myPromiseIpc.send('start-proxying', {config: this.config, id: this.id})
+    return promiseIpc.send('start-proxying', {config: this.config, id: this.id})
         .then(() => {
           this.running = true;
         })
         .catch((e: Error) => {
-          throw new errors.OutlineNativeError(parseInt(e.message, 10));
+          throw new errors.OutlinePluginError(parseInt(e.message, 10));
         });
   }
 
@@ -60,7 +58,7 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
       return Promise.resolve();
     }
 
-    return myPromiseIpc.send('stop-proxying').then(() => {
+    return promiseIpc.send('stop-proxying').then(() => {
       this.running = false;
     });
   }
@@ -70,7 +68,7 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
   }
 
   isReachable(): Promise<boolean> {
-    return myPromiseIpc.send('is-reachable', this.config);
+    return promiseIpc.send('is-reachable', this.config);
   }
 
   onStatusChange(listener: (status: ConnectionStatus) => void): void {

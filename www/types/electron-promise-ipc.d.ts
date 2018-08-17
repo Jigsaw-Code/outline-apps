@@ -16,10 +16,14 @@
 // https://www.npmjs.com/package/electron-promise-ipc
 
 declare module 'electron-promise-ipc' {
-  export class PromiseIpc {
+  // TODO: Export this class definition in addition to the default instance.
+  class PromiseIpc {
     constructor(args?: {maxTimeoutMs?: number});
     on(eventName: string, callback: Function): void;
     // tslint:disable-next-line:no-any
     send(eventName: string, arg?: {}): Promise<any>;
   }
+
+  const defaultInstance: PromiseIpc;
+  export = defaultInstance;
 }
