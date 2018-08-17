@@ -21,6 +21,7 @@ import {EventQueue} from '../model/events';
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
+import {FakeOutlineConnection} from './fake_connection';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
@@ -75,7 +76,10 @@ main({
     return (serverId: string, config: cordova.plugins.outline.ServerConfig,
             eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, config, new WindowsOutlineConnection(config, serverId), eventQueue);
+          serverId, config,
+          isWindows ? new WindowsOutlineConnection(config, serverId) :
+                      new FakeOutlineConnection(config, serverId),
+          eventQueue);
     };
   },
   getUrlInterceptor: () => {

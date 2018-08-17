@@ -57,6 +57,8 @@ const ERROR_CODE = {
   CONFIGURE_SYSTEM_PROXY_FAILURE: 10
 };
 
+// This must be kept in sync with the TypeScript definition:
+//   www/model/errors.ts
 function OutlinePluginError(errorCode) {
   this.errorCode = errorCode || ERROR_CODE.UNEXPECTED;
 }

@@ -58,36 +58,21 @@ export class OutlineServer implements PersistentServer {
   }
 
   connect(): Promise<void> {
-    console.log('Connecting to server');
-    return this.start().catch((error: errors.OutlineNativeError) => {
-      const errorCode = error.errorCode;
-      switch (errorCode) {
-        case errors.ErrorCode.UNEXPECTED:
-          throw new errors.UnexpectedPluginError();
-        case errors.ErrorCode.VPN_PERMISSION_NOT_GRANTED:
-          throw new errors.VpnPermissionNotGranted();
-        case errors.ErrorCode.INVALID_SERVER_CREDENTIALS:
-          throw new errors.InvalidServerCredentials(this);
-        case errors.ErrorCode.UDP_RELAY_NOT_ENABLED:
-          throw new errors.RemoteUdpForwardingDisabled();
-        case errors.ErrorCode.SERVER_UNREACHABLE:
-          throw new errors.ServerUnreachable(this);
-        case errors.ErrorCode.ILLEGAL_SERVER_CONFIGURATION:
-          throw new errors.IllegalServerConfiguration(this.config);
-        case errors.ErrorCode.SHADOWSOCKS_START_FAILURE:
-          throw new errors.ShadowsocksStartFailure();
-        case errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
-          throw new errors.ConfigureSystemProxyFailure();
-        default:
-          throw new errors.NetworkSystemError();
+    return this.connection.start().catch((e) => {
+      // Since "instanceof OutlinePluginError" may not work for errors originating from Sentry,
+      // inspect this field directly.
+      if (e.errorCode) {
+        throw errors.fromErrorCode(e.errorCode);
+      } else {
+        throw new Error(`native code did not set errorCode`);
       }
     });
   }
 
   disconnect(): Promise<void> {
-    console.log('Disconnecting from server');
-    return this.stop().catch((error: {}) => {
-      throw new errors.NetworkSystemError();
+    return this.connection.stop().catch((e) => {
+      // TODO: None of the plugins currently return an ErrorCode on disconnection.
+      throw new errors.RegularNativeError();
     });
   }
 
@@ -97,19 +82,5 @@ export class OutlineServer implements PersistentServer {
 
   checkReachable(): Promise<boolean> {
     return this.connection.isReachable();
-  }
-
-  private start(): Promise<void> {
-    console.log('starting shadowsocks proxy...');
-    return this.connection.start().then(() => {
-      console.debug(`connected to shadowsocks server`);
-    });
-  }
-
-  private stop(): Promise<void> {
-    console.debug('stopping shadowsocks...');
-    return this.connection.stop().then(() => {
-      console.debug('shadowsocks proxy stopped');
-    });
   }
 }

@@ -14,12 +14,6 @@
 
 import * as errors from '../model/errors';
 
-export function sleep(ms: number) {
-  return new Promise<void>((resolve, reject) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 // tslint:disable-next-line:no-any
 export function timeoutPromise(promise: Promise<any>, ms: number, name = '') {
   // tslint:disable-next-line:no-any

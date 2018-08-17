@@ -59,6 +59,7 @@ declare namespace cordova.plugins.outline {
     // server as dictated by its configuration. If there is another running
     // instance, broadcasts a disconnect event and stops the running connection.
     // In such case, restarts tunneling while preserving the VPN connection.
+    // Rejects with an OutlinePluginError.
     start(): Promise<void>;
 
     // Stops the connection and VPN service.
