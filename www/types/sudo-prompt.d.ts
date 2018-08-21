@@ -16,13 +16,15 @@
 // https://www.npmjs.com/package/sudo-prompt
 
 declare module 'sudo-prompt' {
-
   export interface SudoPromptOptions {
-    name?: string,
-    icns?: string
+    name?: string, icns?: string
   }
 
   export function exec(
       command: string, options?: SudoPromptOptions,
-      callback?: (error: Error, stdout: string|Buffer, stderr: string|Buffer) => void): void;
+      // Even though from reading the source it looks like error would be an
+      // instance of Error, in practice it's always a string (a simple error
+      // message in some cases, e.g. when the user does not grant permission, or
+      // the output of the command - with newlines! - when the command fails).
+      callback?: (error: string, stdout: string|Buffer, stderr: string|Buffer) => void): void;
 }
