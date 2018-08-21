@@ -294,7 +294,7 @@ namespace OutlineService {
         // system reboot). Thus, we resort to creating three IPv6 routes (see IPV6_SUBNETS) to the loopback
         // interface that are more specific than the default route, causing IPv6 traffic to get dropped.
         foreach (string subnet in IPV6_SUBNETS) {
-          RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex));} metric=0");
+          RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0");
         }
       } catch (Exception e) {
         throw new Exception($"could not disable IPv6: {e.Message}");
@@ -310,7 +310,11 @@ namespace OutlineService {
     public void ResetRouting(string proxyIp, string proxyInterfaceName) {
       // Proxy server.
       if (proxyIp != null) {
-        DeleteProxyRoute(proxyIp, proxyInterfaceName);
+        try {
+          DeleteProxyRoute(proxyIp, proxyInterfaceName);
+        } catch (Exception e) {
+          eventLog.WriteEntry($"failed to remove route to proxy server: {e.Message}", EventLogEntryType.Error);
+        }
       } else {
         eventLog.WriteEntry("cannot remove route to proxy server, have not previously set",
             EventLogEntryType.Warning);
