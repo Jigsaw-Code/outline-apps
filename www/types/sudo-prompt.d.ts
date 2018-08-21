@@ -16,13 +16,11 @@
 // https://www.npmjs.com/package/sudo-prompt
 
 declare module 'sudo-prompt' {
-
   export interface SudoPromptOptions {
-    name?: string,
-    icns?: string
+    name?: string, icns?: string
   }
 
   export function exec(
       command: string, options?: SudoPromptOptions,
-      callback?: (error: Error, stdout: string|Buffer, stderr: string|Buffer) => void): void;
+      callback?: (error: string, stdout: string|Buffer, stderr: string|Buffer) => void): void;
 }
