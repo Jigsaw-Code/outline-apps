@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Security.Principal;
@@ -146,7 +145,7 @@ namespace OutlineService {
           response.statusCode = 1;
         } else {
           try {
-            response.statusCode = HandleRequest(request);
+            HandleRequest(request);
           } catch (Exception e) {
             response.statusCode = 1;
             response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
@@ -210,28 +209,27 @@ namespace OutlineService {
       return null;
     }
 
-    private int HandleRequest(ServiceRequest request) {
-      if (request == null) {
-        return ERROR_CODE_INTERNAL;
-      }
+    private void HandleRequest(ServiceRequest request) {
       switch (request.action) {
         case ACTION_CONFIGURE_ROUTING:
-          return ConfigureRouting(request.parameters[PARAM_ROUTER_IP], request.parameters[PARAM_PROXY_IP]);
+          ConfigureRouting(request.parameters[PARAM_ROUTER_IP], request.parameters[PARAM_PROXY_IP]);
+          break;
         case ACTION_RESET_ROUTING:
-          return ResetRouting(proxyIp, gatewayInterfaceName);
+          ResetRouting(proxyIp, gatewayInterfaceName);
+          break;
         default:
           eventLog.WriteEntry($"Received invalid request: {request.action}", EventLogEntryType.Error);
           break;
       }
-      return ERROR_CODE_INTERNAL;
     }
 
     // Routes all device traffic through the router, at IP address `routerIp`. The proxy's IP is configured
     // to bypass the router, and connect through the system's default gateway.
-    public int ConfigureRouting(string routerIp, string proxyIp) {
+    //
+    // Throws and exits early if any step fails.
+    public void ConfigureRouting(string routerIp, string proxyIp) {
       if (routerIp == null || proxyIp == null) {
-        eventLog.WriteEntry("Got null router and/or proxy IP.", EventLogEntryType.Error);
-        return ERROR_CODE_INTERNAL;
+        throw new Exception("do not know router or proxy IPs");
       }
 
       // Set the lowest possible device metric for the TAP device, to ensure
@@ -250,7 +248,11 @@ namespace OutlineService {
       //      netsh interface ip set interface outline-tap0 metric=auto
       //  - To show the metrics of all interfaces:
       //      netsh interface ip show interface
-      RunCommand(CMD_NETSH, string.Format("interface ip set interface {0} metric=0", TAP_DEVICE_NAME));
+      try {
+        RunCommand(CMD_NETSH, string.Format("interface ip set interface {0} metric=0", TAP_DEVICE_NAME));
+      } catch (Exception e) {
+        throw new Exception($"could not set low interface metric: {e.Message}");
+      }
       eventLog.WriteEntry("Configured low TAP device metric", EventLogEntryType.Information);
 
       // Proxy routing: the proxy's IP address should be the only one that bypasses the router.
@@ -262,113 +264,140 @@ namespace OutlineService {
       } catch (Exception e) {
         throw new Exception($"unsupported routing table: {e.Message}");
       }
-      AddProxyRoute(proxyIp, gatewayIp.ToString(), gatewayInterfaceName);
 
-      this.proxyIp = proxyIp; // Save the proxy's IP so we can reset routing.
-
-      // Route IPv4 traffic through the router. Instead of deleting the default IPv4 gateway (0.0.0.0/0),
-      // we resort to creating two more specific routes (see IPV4_SUBNETS) that take precedence over the
-      // default gateway. This way, we need not worry about the default gateway being recreated with a lower
-      // metric upon device sleep. This 'hack' was inspired by OpenVPN;
-      // see https://github.com/OpenVPN/openvpn3/commit/d08cc059e7132a3d3aee3dcd946fce4c35b1ced3#diff-1d76f0fd7ec04c6d1398288214a879c5R358.
-      var argsFormat = "interface ipv4 add route {0} nexthop={1} interface={2} metric=0";
-      foreach (string subnet in IPV4_SUBNETS) {
-        RunCommand(CMD_NETSH, string.Format(argsFormat, subnet, routerIp, TAP_DEVICE_NAME));
+      try {
+        AddProxyRoute(proxyIp, gatewayIp.ToString(), gatewayInterfaceName);
+      } catch (Exception e) {
+        throw new Exception($"could not add route to proxy server: {e.Message}");
       }
 
-      // Outline does not currently support IPv6, so we resort to disabling it while the VPN is active to
-      // prevent leakage. Removing the deafault IPv6 gateway is not enough since it gets re-created
-      // through router advertisements and DHCP (disabling these or IPv6 routing altogether requires a
-      // system reboot). Thus, we resort to creating three IPv6 routes (see IPV6_SUBNETS) to the loopback
-      // interface that are more specific than the default route, causing IPv6 traffic to get dropped.
-      argsFormat = "interface ipv6 add route {0} interface={1} metric=0";
-      foreach (string subnet in IPV6_SUBNETS) {
-        RunCommand(CMD_NETSH, string.Format(argsFormat, subnet, NetworkInterface.IPv6LoopbackInterfaceIndex));
+      // Save the proxy's IP so we can reset routing.
+      this.proxyIp = proxyIp;
+
+      try {
+        // Route IPv4 traffic through the router. Instead of deleting the default IPv4 gateway (0.0.0.0/0),
+        // we resort to creating two more specific routes (see IPV4_SUBNETS) that take precedence over the
+        // default gateway. This way, we need not worry about the default gateway being recreated with a lower
+        // metric upon device sleep. This 'hack' was inspired by OpenVPN;
+        // see https://github.com/OpenVPN/openvpn3/commit/d08cc059e7132a3d3aee3dcd946fce4c35b1ced3#diff-1d76f0fd7ec04c6d1398288214a879c5R358.
+        foreach (string subnet in IPV4_SUBNETS) {
+          RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0");
+        }
+      } catch (Exception e) {
+        throw new Exception($"could not change default gateway: {e.Message}");
       }
 
-      // TODO: inspect stderr, stdout for known errors (i.e. routes already exists); reset routing on failulre
-      return 0;
+      try {
+        // Outline does not currently support IPv6, so we resort to disabling it while the VPN is active to
+        // prevent leakage. Removing the default IPv6 gateway is not enough since it gets re-created
+        // through router advertisements and DHCP (disabling these or IPv6 routing altogether requires a
+        // system reboot). Thus, we resort to creating three IPv6 routes (see IPV6_SUBNETS) to the loopback
+        // interface that are more specific than the default route, causing IPv6 traffic to get dropped.
+        foreach (string subnet in IPV6_SUBNETS) {
+          RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0");
+        }
+      } catch (Exception e) {
+        throw new Exception($"could not disable IPv6: {e.Message}");
+      }
     }
 
-    // Resets the routing table to route traffic through the default IPv4 and IPv6 gatways.
-    public int ResetRouting(string proxyIp, string proxyInterfaceName) {
-      if (proxyIp == null) {
-        eventLog.WriteEntry("Asked to reset routing but we did not configure it!",
+    // Resets the routing table:
+    //  - remove route to the proxy server (if we know its IP)
+    //  - remove our default IPv4 gateways
+    //  - re-enable IPv6
+    //
+    // Does *not* throw or exit early if any step fails: keeps going!
+    public void ResetRouting(string proxyIp, string proxyInterfaceName) {
+      // Proxy server.
+      if (proxyIp != null) {
+        try {
+          DeleteProxyRoute(proxyIp, proxyInterfaceName);
+        } catch (Exception e) {
+          eventLog.WriteEntry($"failed to remove route to proxy server: {e.Message}", EventLogEntryType.Error);
+        }
+      } else {
+        eventLog.WriteEntry("cannot remove route to proxy server, have not previously set",
             EventLogEntryType.Warning);
-        throw new Exception("I do not know the proxy server IP");
       }
 
-      // Proxy routing
-      var proxyRoutingResult = DeleteProxyRoute(proxyIp, proxyInterfaceName);
       this.proxyIp = null;
       this.gatewayInterfaceName = null;
 
-      // IPv4 routing: delete routes to the router.
-      var argsFormat = "interface ipv4 delete route {0} interface={1}";
+      // IPv4.
       foreach (string subnet in IPV4_SUBNETS) {
-        var result = RunCommand(CMD_NETSH, string.Format(argsFormat, subnet, TAP_DEVICE_NAME));
+        try {
+          RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={TAP_DEVICE_NAME}");
+        } catch (Exception e) {
+          eventLog.WriteEntry($"failed to remove {subnet}: {e.Message}", EventLogEntryType.Error);
+        }
       }
 
-      // IPv6 routing: enable IPv6 by removing the routes to the local interface.
-      argsFormat = "interface ipv6 delete route {0} interface={1}";
+      // IPv6.
       foreach (string subnet in IPV6_SUBNETS) {
-        var result = RunCommand(
-            CMD_NETSH, string.Format(argsFormat, subnet, NetworkInterface.IPv6LoopbackInterfaceIndex));
+        try {
+          RunCommand(CMD_NETSH, $"interface ipv6 delete route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex}");
+        } catch (Exception e) {
+          eventLog.WriteEntry($"failed to remove {subnet}: {e.Message}", EventLogEntryType.Error);
+        }
       }
-
-      return 0;
     }
 
-    private CommandResult AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName) {
-      return RunCommand(
-          CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} " +
-          $"interface={interfaceName} metric=0");
-    }
-
-    private CommandResult DeleteProxyRoute(string proxyIp, string interfaceName) {
-      return RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface={interfaceName}");
-    }
-
-    // Runs a shell process, `cmd`, with arguments, `args` synchronously.
-    // Returns the process exit code and stanard output/error streams.
-    private CommandResult RunCommand(string cmd, string args) {
-      Console.WriteLine($"running command: {cmd} {args}");
-      var result = new CommandResult();
+    private void AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName) {
       try {
-        var startInfo = new ProcessStartInfo(cmd);
-        startInfo.Arguments = args;
-        startInfo.UseShellExecute = false;
-        startInfo.RedirectStandardError = true;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.CreateNoWindow = true;
-
-        Process p = new Process();
-        p.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
-          if (e == null || String.IsNullOrWhiteSpace(e.Data)) {
-            return;
-          }
-          result.StdOut.Append(e.Data);
-        };
-        p.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => {
-          if (e == null || String.IsNullOrWhiteSpace(e.Data)) {
-            return;
-          }
-          result.StdErr.Append(e.Data);
-        };
-        p.StartInfo = startInfo;
-        p.Start();
-        p.BeginOutputReadLine();
-        p.BeginErrorReadLine();
-        p.WaitForExit();
-
-        result.ExitCode = p.ExitCode;
+        RunCommand(CMD_NETSH,
+            $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface={interfaceName} metric=0");
       } catch (Exception e) {
-        eventLog.WriteEntry($"Failed to run command {e.ToString()}", EventLogEntryType.Error);
-        result.ExitCode = ERROR_CODE_INTERNAL;
+        // If "add" fails, it's possible there's already a route to this proxy
+        // server from a previous run of Outline which ResetRouting could
+        // not remove; try "set" before failing.
+        RunCommand(CMD_NETSH,
+            $"interface ipv4 set route {proxyIp}/32 nexthop={systemGatewayIp} interface={interfaceName} metric=0");
       }
-      eventLog.WriteEntry($"{cmd} {args} exited with {result.ExitCode}: " +
-                          $"{result.StdOut.ToString()} {result.StdErr.ToString()}");
-      return result;
+    }
+
+    private void DeleteProxyRoute(string proxyIp, string interfaceName) {
+      RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface={interfaceName}");
+    }
+
+    // Runs a shell command synchronously.
+    private void RunCommand(string cmd, string args) {
+      Console.WriteLine($"running command: {cmd} {args}");
+
+      var startInfo = new ProcessStartInfo(cmd);
+      startInfo.Arguments = args;
+      startInfo.UseShellExecute = false;
+      startInfo.RedirectStandardError = true;
+      startInfo.RedirectStandardOutput = true;
+      startInfo.CreateNoWindow = true;
+
+      Process p = new Process();
+      var stdout = new StringBuilder();
+      var stderr = new StringBuilder();
+      p.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
+        if (e == null || String.IsNullOrWhiteSpace(e.Data)) {
+          return;
+        }
+        stdout.Append(e.Data);
+      };
+      p.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => {
+        if (e == null || String.IsNullOrWhiteSpace(e.Data)) {
+        return;
+        }
+        stderr.Append(e.Data);
+      };
+      p.StartInfo = startInfo;
+      p.Start();
+      p.BeginOutputReadLine();
+      p.BeginErrorReadLine();
+      p.WaitForExit();
+
+      if (p.ExitCode != 0) {
+        // NOTE: Do *not* add args to this error message because it's piped
+        //       back to the client for inclusion in Sentry reports and
+        //       effectively contain access keys.
+        throw new Exception($"command exited with {p.ExitCode} " +
+            $"(stdout: {stdout.ToString()}, stderr: {stderr.ToString()})");
+      }
     }
 
     // Queries the system's network configuration, updating the values of gatewayIp and
@@ -482,16 +511,5 @@ namespace OutlineService {
       internal int statusCode;
     [DataMember]
       internal string errorMessage;
-  }
-
-  internal class CommandResult {
-    internal int ExitCode;
-    internal StringBuilder StdErr;
-    internal StringBuilder StdOut;
-
-    internal CommandResult() {
-      StdErr = new StringBuilder();
-      StdOut = new StringBuilder();
-    }
   }
 }
