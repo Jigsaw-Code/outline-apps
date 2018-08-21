@@ -40,7 +40,7 @@ enum RoutingServiceAction {
   RESET_ROUTING = 'resetRouting'
 }
 
-// Define the error type thrown by the net moudle.
+// Define the error type thrown by the net module.
 interface NetError extends Error {
   code?: string|number;
   errno?: string;
@@ -55,42 +55,23 @@ export class WindowsRoutingService implements RoutingService {
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
   configureRouting(routerIp: string, proxyIp: string): Promise<void> {
-    return this
-        .sendRequest({
-          action: RoutingServiceAction.CONFIGURE_ROUTING,
-          parameters: {
-            proxyIp,
-            routerIp,
-          }
-        })
-        .then(
-            (response) => {
-              if (response.statusCode !== 0) {
-                throw new Error(`OutlineService says: ${response.errorMessage}`);
-              }
-            },
-            (e) => {
-              throw new Error(`could not contact OutlineService: ${e.errorMessage}`);
-            });
+    return this.sendRequest({
+      action: RoutingServiceAction.CONFIGURE_ROUTING,
+      parameters: {
+        proxyIp,
+        routerIp,
+      }
+    });
   }
 
   // Restores the default system routes.
   resetRouting(): Promise<void> {
-    return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}})
-        .then(
-            (response) => {
-              if (response.statusCode !== 0) {
-                throw new Error(`OutlineService says: ${response.errorMessage}`);
-              }
-            },
-            (e) => {
-              throw new Error(`could not contact OutlineService: ${e.errorMessage}`);
-            });
+    return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest): Promise<RoutingServiceResponse> {
+  private sendRequest(request: RoutingServiceRequest): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
         console.log('Pipe connected');
@@ -106,24 +87,16 @@ export class WindowsRoutingService implements RoutingService {
         const netErr = err as NetError;
         if (netErr.errno === 'ENOENT') {
           console.info(`Routing service not running. Attempting to start.`);
-          // Prompt the user for admimn permissions to start the routing service.
+          // Prompt the user for admin permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
-              if (/service has already been started|net helpmsg 2182/i.test(sudoError.message)) {
-                // Wait for the service to start before sending the request.
-                console.info('Waiting for routing servcie to come up...');
-                return setTimeout(() => {
-                  this.sendRequest(request).then(resolve, reject);
-                }, 2000);
-              }
-              return reject(new Error(`Failed to start routing service: ${sudoError}`));
+              return reject(new Error(`could not start routing service: ${sudoError}`));
             }
-            this.sendRequest(request).then(
-                resolve, reject);  // Retry now that the service is running
+            return this.sendRequest(request).then(resolve, reject);
           });
-          return;
+        } else {
+          reject(new Error(`Received error from service connection: ${netErr.message}`));
         }
-        reject(new Error(`Received error from service connection: ${netErr.message}`));
       });
 
       this.ipcConnection.on('data', (data) => {
@@ -131,6 +104,9 @@ export class WindowsRoutingService implements RoutingService {
         if (data) {
           try {
             const response = JSON.parse(data.toString());
+            if (response.statusCode !== 0) {
+              reject(new Error(`OutlineService says: ${response.errorMessage}`));
+            }
             resolve(response);
           } catch (e) {
             reject(new Error(`Failed to deserialize service response: ${e.message}`));
