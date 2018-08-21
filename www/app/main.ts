@@ -14,20 +14,13 @@
 
 import * as url from 'url';
 
-import {OperationTimedOut} from '../model/errors';
 import {EventQueue} from '../model/events';
-import {Server} from '../model/server';
 
 import {App} from './app';
-import {Clipboard} from './clipboard';
-import {EnvironmentVariables, onceEnvVars} from './environment';
-import {OutlineErrorReporter} from './error_reporter';
-import {getLocalizedErrorMessage} from './i18n';
-import {OutlineServer} from './outline_server';
-import {PersistentServer, PersistentServerFactory, PersistentServerRepository} from './persistent_server';
+import {onceEnvVars} from './environment';
+import {PersistentServerFactory, PersistentServerRepository} from './persistent_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {UrlInterceptor} from './url_interceptor';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;
@@ -84,8 +77,7 @@ export function main(platform: OutlinePlatform) {
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
                 platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
-                environmentVars, platform.getUpdater(),
-                platform.quitApplication);
+                environmentVars, platform.getUpdater(), platform.quitApplication);
           },
           (e) => {
             onUnexpectedError(e);
@@ -96,7 +88,8 @@ export function main(platform: OutlinePlatform) {
 function onUnexpectedError(error: Error) {
   const rootEl = getRootEl();
   if (webComponentsAreReady && rootEl && rootEl.localize) {
-    rootEl.showToast(getLocalizedErrorMessage(error, rootEl.localize.bind(rootEl)), 10000);
+    // TODO:
+    // rootEl.showToast(getLocalizedErrorMessage(error, rootEl.localize.bind(rootEl)), 10000);
   } else {
     // Something went terribly wrong (i.e. Polymer failed to initialize). Provide some messaging to
     // the user, even if we are not able to display it in a toast or localize it.

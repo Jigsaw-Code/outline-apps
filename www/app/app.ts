@@ -21,8 +21,6 @@ import {Server} from '../model/server';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {getLocalizedErrorMessage, LocalizationFunction} from './i18n';
-import {OutlineServer} from './outline_server';
 import {PersistentServer, PersistentServerRepository} from './persistent_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -57,7 +55,7 @@ export function unwrapInvite(s: string): string {
 export class App {
   private serverListEl: polymer.Base;
   private feedbackViewEl: polymer.Base;
-  private localize: LocalizationFunction;
+  private localize: (...args: string[]) => string;
   private ignoredAccessKeys: {[accessKey: string]: boolean;} = {};
 
   constructor(
@@ -127,13 +125,65 @@ export class App {
   }
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
-    // TODO: Why would these not be set?
-    if (this.rootEl && this.rootEl.async && this.rootEl.showToast) {
-      const msg = getLocalizedErrorMessage(e, this.localize);
-      // Defer this by 500ms so that this toast is shown after any toasts that get shown when any
-      // currently-in-flight domain events land (e.g. fake servers added).
+    let messageKey: string;
+    let messageParams: string[]|undefined;
+    let buttonKey: string;
+    let buttonHandler: () => void;
+
+    if (e instanceof errors.UnexpectedPluginError) {
+      messageKey = 'outline-plugin-error-unexpected';
+    } else if (e instanceof errors.VpnPermissionNotGranted) {
+      messageKey = 'outline-plugin-error-vpn-permission-not-granted';
+    } else if (e instanceof errors.InvalidServerCredentials) {
+      messageKey = 'outline-plugin-error-invalid-server-credentials';
+    } else if (e instanceof errors.RemoteUdpForwardingDisabled) {
+      messageKey = 'outline-plugin-error-udp-forwarding-not-enabled';
+    } else if (e instanceof errors.ServerUnreachable) {
+      messageKey = 'outline-plugin-error-server-unreachable';
+      // TODO: uh, shouldn't happen?
+    } else if (e instanceof errors.OutlinePluginError) {
+      messageKey = 'outline-plugin-error-networking-error';
+    } else if (e instanceof errors.FeedbackSubmissionError) {
+      messageKey = 'error-feedback-submission';
+    } else if (e instanceof errors.ServerUrlInvalid) {
+      messageKey = 'error-invalid-access-key';
+    } else if (e instanceof errors.ServerIncompatible) {
+      messageKey = 'error-server-incompatible';
+    } else if (e instanceof errors.OperationTimedOut) {
+      messageKey = 'error-timeout';
+    } else if (e instanceof errors.ShadowsocksStartFailure) {
+      messageKey = 'outline-plugin-error-antivirus';
+      buttonKey = 'fix-this';
+      buttonHandler = () => {
+        // TODO:
+        console.warn('SHOW HELP CENTER NOW');
+      };
+    } else if (e instanceof errors.ConfigureSystemProxyFailure) {
+      messageKey = 'outline-plugin-error-routing-tables';
+      buttonKey = 'submit-feedback';
+      buttonHandler = () => {
+        // TODO:
+        console.warn('SUBMIT FEEDBACK NOW');
+      };
+    } else if (e instanceof errors.NoAdminPermissions) {
+      messageKey = 'outline-plugin-error-admin-permissions';
+    } else if (e instanceof errors.ServerAlreadyAdded) {
+      messageKey = 'error-server-already-added';
+      messageParams = ['serverName', e.server.name];
+    } else {
+      messageKey = 'error-unexpected';
+    }
+
+    const message =
+        messageParams ? this.localize(messageKey, ...messageParams) : this.localize(messageKey);
+
+    // Defer by 500ms so that this toast is shown after any toasts that get shown when any
+    // currently-in-flight domain events land (e.g. fake servers added).
+    if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
-        this.rootEl.showToast(msg, toastDuration);
+        this.rootEl.showToast(
+            message, toastDuration, buttonHandler,
+            buttonKey ? this.localize(buttonKey) : undefined);
       }, 500);
     }
   }

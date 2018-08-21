@@ -328,7 +328,7 @@
     </app-drawer>
 
     <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key>
-      <paper-button id="undoButton" on-tap="_callUndoHandler">[[localize('undo-button-label')]]</paper-button>
+      <paper-button id="undoButton" on-tap="_callUndoHandler"></paper-button>
     </paper-toast>
 
     <add-server-view id="addServerView" localize="[[localize]]"></add-server-view>
@@ -488,7 +488,7 @@
       closeDrawer: function () {
         this.$.drawer.close();
       },
-      showToast: function (text, duration, onUndoTapped) {
+      showToast: function (text, duration, onUndoTapped, buttonText) {
         // If the toast is already open, first close it. We then always wait a
         // little before calling open in a this.async call. This ensures that:
         // 1. we are compliant with the material design spec
@@ -510,6 +510,8 @@
           if (typeof onUndoTapped === 'function') {
             undoButton.hidden = false;
             undoButton._handler = onUndoTapped;
+            // TODO: is this kosher?
+            undoButton.innerText = buttonText;
           } else {
             undoButton.hidden = true;
           }

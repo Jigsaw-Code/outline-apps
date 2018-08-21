@@ -77,6 +77,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 // The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
 // Electron counterpart to VpnTunnelService.startShadowsocks.
 export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
+  // TODO: NoAdminPermissions
   return isServerReachable(config)
       .catch((e) => {
         throw errors.ErrorCode.SERVER_UNREACHABLE;
@@ -84,6 +85,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
       .then(() => {
         return startLocalShadowsocksProxy(config, onDisconnected)
             .catch((e) => {
+              // TODO
               throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
             })
             .then(() => {
@@ -107,6 +109,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
                                 return configureRouting(
                                            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '')
                                     .catch((e) => {
+                                      // TODO
                                       stopProcesses();
                                       console.error(`could not configure routing: ${e.message}`);
                                       throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
