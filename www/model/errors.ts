@@ -113,7 +113,9 @@ export const enum ErrorCode {
   VPN_START_FAILURE = 6,
   ILLEGAL_SERVER_CONFIGURATION = 7,
   SHADOWSOCKS_START_FAILURE = 8,
-  CONFIGURE_SYSTEM_PROXY_FAILURE = 9
+  CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
+  // TODO: sync
+  NO_ADMIN_PERMISSIONS = 10
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -139,7 +141,35 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new ShadowsocksStartFailure();
     case ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
       return new ConfigureSystemProxyFailure();
+    case ErrorCode.NO_ADMIN_PERMISSIONS:
+      return new NoAdminPermissions();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
+}
+
+// TODO:
+export function toErrorCode(e: NativeError): ErrorCode {
+  if (e instanceof UnexpectedPluginError) {
+    return ErrorCode.UNEXPECTED;
+  } else if (e instanceof VpnPermissionNotGranted) {
+    return ErrorCode.VPN_PERMISSION_NOT_GRANTED;
+  } else if (e instanceof InvalidServerCredentials) {
+    return ErrorCode.INVALID_SERVER_CREDENTIALS;
+  } else if (e instanceof RemoteUdpForwardingDisabled) {
+    return ErrorCode.UDP_RELAY_NOT_ENABLED;
+  } else if (e instanceof ServerUnreachable) {
+    return ErrorCode.SERVER_UNREACHABLE;
+  } else if (e instanceof VpnStartFailure) {
+    return ErrorCode.VPN_START_FAILURE;
+  } else if (e instanceof IllegalServerConfiguration) {
+    return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+  } else if (e instanceof ShadowsocksStartFailure) {
+    return ErrorCode.SHADOWSOCKS_START_FAILURE;
+  } else if (e instanceof ConfigureSystemProxyFailure) {
+    return ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+  } else if (e instanceof NoAdminPermissions) {
+    return ErrorCode.NO_ADMIN_PERMISSIONS;
+  }
+  throw new Error(`unknown NativeError ${e.name}`);
 }

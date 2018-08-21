@@ -20,6 +20,8 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as errors from '../www/model/errors';
+
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
 
@@ -267,7 +269,16 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
 
 promiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return startVpn(args.config, args.id);
+      return startVpn(args.config, args.id).catch((e1) => {
+        // Reject with an ErrorCode (number), which electron-promise-ipc can propagate to the
+        // renderer process.
+        try {
+          throw errors.toErrorCode(e1);
+        } catch (e2) {
+          // TODO: unknown error type?
+          throw 500;
+        }
+      });
     });
 
 promiseIpc.on('stop-proxying', () => {

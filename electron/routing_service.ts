@@ -15,6 +15,8 @@
 import * as net from 'net';
 import * as sudo from 'sudo-prompt';
 
+import * as errors from '../www/model/errors';
+
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 const SERVICE_START_COMMAND = 'net start OutlineService';
@@ -71,6 +73,7 @@ export class WindowsRoutingService implements RoutingService {
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
+  // TODO: rejects are crazy here
   private sendRequest(request: RoutingServiceRequest): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
@@ -90,7 +93,8 @@ export class WindowsRoutingService implements RoutingService {
           // Prompt the user for admin permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
-              return reject(new Error(`could not start routing service: ${sudoError}`));
+              console.error(`could not start routing service: ${sudoError}`);
+              return reject(new errors.NoAdminPermissions());
             }
             return this.sendRequest(request).then(resolve, reject);
           });
@@ -105,7 +109,8 @@ export class WindowsRoutingService implements RoutingService {
           try {
             const response = JSON.parse(data.toString());
             if (response.statusCode !== 0) {
-              reject(new Error(`OutlineService says: ${response.errorMessage}`));
+              console.error(`OutlineService says: ${response.errorMessage}`);
+              reject(new errors.ConfigureSystemProxyFailure());
             }
             resolve(response);
           } catch (e) {
