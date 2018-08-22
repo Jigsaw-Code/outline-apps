@@ -152,7 +152,7 @@ export class App {
     } else if (e instanceof errors.ShadowsocksStartFailure) {
       messageKey = 'outline-plugin-error-antivirus';
       buttonKey = 'fix-this';
-      buttonLink = 'https://getoutline.org/en/support/antivirusBlock';
+      buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
     } else if (e instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'submit-feedback';
