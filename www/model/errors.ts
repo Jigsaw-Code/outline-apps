@@ -84,16 +84,19 @@ export class InvalidServerCredentials extends RegularNativeError {}
 export class RemoteUdpForwardingDisabled extends RegularNativeError {}
 export class ServerUnreachable extends RegularNativeError {}
 export class IllegalServerConfiguration extends RegularNativeError {}
-// TODO: Seems like a candidate for RedFlagNativeError; only used by Android?
-export class VpnStartFailure extends RegularNativeError {}
 export class NoAdminPermissions extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
 // Use these sparingly beacause each occurrence triggers a Sentry report.
 //////
+
+// Windows.
 export class ShadowsocksStartFailure extends RedFlagNativeError {}
 export class ConfigureSystemProxyFailure extends RedFlagNativeError {}
+
+// Used on Android and Apple to indicate that the plugin failed to establish the VPN tunnel.
+export class VpnStartFailure extends RedFlagNativeError {}
 
 // This must be kept in sync with:
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
