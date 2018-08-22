@@ -91,7 +91,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
       if (mainWindow) {
         mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
       }
-      // TODO: handle error
+      // TODO: Handle errors, report.
       startVpn(connectionAtShutdown.config, serverId);
     }
   });
@@ -271,9 +271,8 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
 promiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
       return startVpn(args.config, args.id).catch((e) => {
-        // Detailed error messages can be useful when investigating issues.
-        console.error(`could not connect: ${e.name} (${e.message})`);
         // electron-promise-ipc can only propagate primitives to the renderer process.
+        console.error(`could not connect: ${e.name} (${e.message})`);
         throw errors.toErrorCode(e);
       });
     });

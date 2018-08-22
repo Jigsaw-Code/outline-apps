@@ -328,7 +328,8 @@
     </app-drawer>
 
     <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key>
-      <paper-button id="undoButton" on-tap="_callUndoHandler"></paper-button>
+      <paper-button id="toastButton" on-tap="_callToastHandler"></paper-button>
+      <a hidden id="toastUrl" href="[[toastUrl]]"></a>
     </paper-toast>
 
     <add-server-view id="addServerView" localize="[[localize]]"></add-server-view>
@@ -479,6 +480,9 @@
         shouldShowAppLogo: {
           type: Boolean,
           computed: '_computeShouldShowAppLogo(page)'
+        },
+        toastUrl: {
+          type: String
         }
       },
       openDrawer: function () {
@@ -488,7 +492,7 @@
       closeDrawer: function () {
         this.$.drawer.close();
       },
-      showToast: function (text, duration, onUndoTapped, buttonText) {
+      showToast: function (text, duration, buttonText, buttonHandler, buttonUrl) {
         // If the toast is already open, first close it. We then always wait a
         // little before calling open in a this.async call. This ensures that:
         // 1. we are compliant with the material design spec
@@ -505,15 +509,24 @@
         }
         this.async(function () {
           this.$.toast.text = text;
-          this.$.toast.duration = typeof duration !== 'undefined' ? duration : 3000;
-          var undoButton = this.$.undoButton;
-          if (typeof onUndoTapped === 'function') {
-            undoButton.hidden = false;
-            undoButton._handler = onUndoTapped;
-            // TODO: is this kosher?
-            undoButton.innerText = buttonText;
+          this.$.toast.duration = duration || 3000;
+
+          var button = this.$.toastButton;
+          if (buttonText) {
+            button.hidden = false;
+            button.innerText = buttonText;
+
+            // Button has either a handler or invokes a URL.
+            if (buttonHandler) {
+              button._handler = buttonHandler;
+            } else {
+              this.toastUrl = buttonUrl;
+              button._handler = function() {
+                this.$.toastUrl.click();
+              }.bind(this);
+            }
           } else {
-            undoButton.hidden = true;
+            button.hidden = true;
           }
           this.$.toast.open();
         }, 350);
@@ -525,14 +538,14 @@
         }
         this.set('route.path', '/' + page);
       },
-      _callUndoHandler: function () {
-        var undoButton = this.$.undoButton;
-        var handler = undoButton._handler;
-        if (!handler) return console.error('No undo handler found');
+      _callToastHandler: function () {
+        var toastButton = this.$.toastButton;
+        var handler = toastButton._handler;
+        if (!handler) return console.error('No toast handler found');
         // Close the toast and unbind the handler so there's no chance the
-        // user can somehow trigger the same onUndoTapped handler twice.
+        // user can somehow trigger the same handler twice.
         this.$.toast.close();
-        delete undoButton._handler;
+        delete toastButton._handler;
         handler();
       },
       promptAddServer: function () {

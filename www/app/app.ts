@@ -129,6 +129,7 @@ export class App {
     let messageParams: string[]|undefined;
     let buttonKey: string;
     let buttonHandler: () => void;
+    let buttonLink: string;
 
     if (e instanceof errors.UnexpectedPluginError) {
       messageKey = 'outline-plugin-error-unexpected';
@@ -140,9 +141,6 @@ export class App {
       messageKey = 'outline-plugin-error-udp-forwarding-not-enabled';
     } else if (e instanceof errors.ServerUnreachable) {
       messageKey = 'outline-plugin-error-server-unreachable';
-      // TODO: uh, shouldn't happen?
-    } else if (e instanceof errors.OutlinePluginError) {
-      messageKey = 'outline-plugin-error-networking-error';
     } else if (e instanceof errors.FeedbackSubmissionError) {
       messageKey = 'error-feedback-submission';
     } else if (e instanceof errors.ServerUrlInvalid) {
@@ -154,16 +152,12 @@ export class App {
     } else if (e instanceof errors.ShadowsocksStartFailure) {
       messageKey = 'outline-plugin-error-antivirus';
       buttonKey = 'fix-this';
-      buttonHandler = () => {
-        // TODO:
-        console.warn('SHOW HELP CENTER NOW');
-      };
+      buttonLink = 'https://getoutline.org/en/support/antivirusBlock';
     } else if (e instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'submit-feedback';
       buttonHandler = () => {
-        // TODO:
-        console.warn('SUBMIT FEEDBACK NOW');
+        this.rootEl.changePage('feedback');
       };
     } else if (e instanceof errors.NoAdminPermissions) {
       messageKey = 'outline-plugin-error-admin-permissions';
@@ -182,8 +176,8 @@ export class App {
     if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
         this.rootEl.showToast(
-            message, toastDuration, buttonHandler,
-            buttonKey ? this.localize(buttonKey) : undefined);
+            message, toastDuration, buttonKey ? this.localize(buttonKey) : undefined, buttonHandler,
+            buttonLink);
       }, 500);
     }
   }
@@ -479,7 +473,8 @@ export class App {
     console.debug('Server forgotten');
     this.syncServersToUI();
     this.rootEl.showToast(
-        this.localize('server-forgotten', 'serverName', server.name), 10000, () => {
+        this.localize('server-forgotten', 'serverName', server.name), 10000,
+        this.localize('undo-button-label'), () => {
           this.serverRepo.undoForget(server.id);
         });
   }

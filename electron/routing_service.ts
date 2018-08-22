@@ -73,7 +73,6 @@ export class WindowsRoutingService implements RoutingService {
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  // TODO: rejects are crazy here
   private sendRequest(request: RoutingServiceRequest): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {

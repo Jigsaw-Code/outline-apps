@@ -88,8 +88,8 @@ export function main(platform: OutlinePlatform) {
 function onUnexpectedError(error: Error) {
   const rootEl = getRootEl();
   if (webComponentsAreReady && rootEl && rootEl.localize) {
-    // TODO:
-    // rootEl.showToast(getLocalizedErrorMessage(error, rootEl.localize.bind(rootEl)), 10000);
+    const localize = rootEl.localize.bind(rootEl);
+    rootEl.showToast(localize('error-unexpected'), 120000);
   } else {
     // Something went terribly wrong (i.e. Polymer failed to initialize). Provide some messaging to
     // the user, even if we are not able to display it in a toast or localize it.

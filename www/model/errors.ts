@@ -114,7 +114,6 @@ export const enum ErrorCode {
   ILLEGAL_SERVER_CONFIGURATION = 7,
   SHADOWSOCKS_START_FAILURE = 8,
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
-  // TODO: sync
   NO_ADMIN_PERMISSIONS = 10
 }
 
@@ -148,7 +147,8 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
   }
 }
 
-// TODO:
+// Converts a NativeError to an ErrorCode.
+// Throws if the error is not a subclass of NativeError.
 export function toErrorCode(e: NativeError): ErrorCode {
   if (e instanceof UnexpectedPluginError) {
     return ErrorCode.UNEXPECTED;
