@@ -40,7 +40,7 @@ export class FakeOutlineConnection implements cordova.plugins.outline.Connection
       return Promise.reject(new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE));
     } else if (this.playBroken()) {
       return Promise.reject(
-          new errors.OutlinePluginError(errors.ErrorCode.INVALID_SERVER_CREDENTIALS));
+          new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE));
     } else {
       this.running = true;
       return Promise.resolve();

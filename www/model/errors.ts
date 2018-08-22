@@ -84,15 +84,19 @@ export class InvalidServerCredentials extends RegularNativeError {}
 export class RemoteUdpForwardingDisabled extends RegularNativeError {}
 export class ServerUnreachable extends RegularNativeError {}
 export class IllegalServerConfiguration extends RegularNativeError {}
-// TODO: Seems like a candidate for RedFlagNativeError; only used by Android?
-export class VpnStartFailure extends RegularNativeError {}
+export class NoAdminPermissions extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
 // Use these sparingly beacause each occurrence triggers a Sentry report.
 //////
+
+// Windows.
 export class ShadowsocksStartFailure extends RedFlagNativeError {}
 export class ConfigureSystemProxyFailure extends RedFlagNativeError {}
+
+// Used on Android and Apple to indicate that the plugin failed to establish the VPN tunnel.
+export class VpnStartFailure extends RedFlagNativeError {}
 
 // This must be kept in sync with:
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
@@ -112,7 +116,8 @@ export const enum ErrorCode {
   VPN_START_FAILURE = 6,
   ILLEGAL_SERVER_CONFIGURATION = 7,
   SHADOWSOCKS_START_FAILURE = 8,
-  CONFIGURE_SYSTEM_PROXY_FAILURE = 9
+  CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
+  NO_ADMIN_PERMISSIONS = 10
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -138,7 +143,36 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new ShadowsocksStartFailure();
     case ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
       return new ConfigureSystemProxyFailure();
+    case ErrorCode.NO_ADMIN_PERMISSIONS:
+      return new NoAdminPermissions();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
+}
+
+// Converts a NativeError to an ErrorCode.
+// Throws if the error is not a subclass of NativeError.
+export function toErrorCode(e: NativeError): ErrorCode {
+  if (e instanceof UnexpectedPluginError) {
+    return ErrorCode.UNEXPECTED;
+  } else if (e instanceof VpnPermissionNotGranted) {
+    return ErrorCode.VPN_PERMISSION_NOT_GRANTED;
+  } else if (e instanceof InvalidServerCredentials) {
+    return ErrorCode.INVALID_SERVER_CREDENTIALS;
+  } else if (e instanceof RemoteUdpForwardingDisabled) {
+    return ErrorCode.UDP_RELAY_NOT_ENABLED;
+  } else if (e instanceof ServerUnreachable) {
+    return ErrorCode.SERVER_UNREACHABLE;
+  } else if (e instanceof VpnStartFailure) {
+    return ErrorCode.VPN_START_FAILURE;
+  } else if (e instanceof IllegalServerConfiguration) {
+    return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+  } else if (e instanceof ShadowsocksStartFailure) {
+    return ErrorCode.SHADOWSOCKS_START_FAILURE;
+  } else if (e instanceof ConfigureSystemProxyFailure) {
+    return ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+  } else if (e instanceof NoAdminPermissions) {
+    return ErrorCode.NO_ADMIN_PERMISSIONS;
+  }
+  throw new Error(`unknown NativeError ${e.name}`);
 }
