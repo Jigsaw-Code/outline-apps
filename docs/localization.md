@@ -1,5 +1,13 @@
 # Localization
 
+## UI Messages
+
+The master messages file is at `resources/master_messages.json`. It is encoded in the Chrome Apps JSON format. The translated files, consumed by the application's UI, live in `www/messages/<locale>.json`.
+
+## Transifex
+
+This translation service is not currently in use by the project.
+
 ### Prerequisites
 
 - [Transifex CLI](https://docs.transifex.com/client/installing-the-client) (`tx`), to work with translations.
