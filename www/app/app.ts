@@ -157,6 +157,7 @@ export class App {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'submit-feedback';
       buttonHandler = () => {
+        // TODO: Drop-down has no selected item, why not?
         this.rootEl.changePage('feedback');
       };
     } else if (e instanceof errors.NoAdminPermissions) {
