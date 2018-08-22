@@ -337,6 +337,9 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
 
       resolve();
     } catch (e) {
+      // We haven't seen any failures related to tun2socks so use this error because it will make
+      // the UI point the user towards antivirus software, which seems the most likely culprit for
+      // tun2socks failing to launch.
       reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
     }
   });
