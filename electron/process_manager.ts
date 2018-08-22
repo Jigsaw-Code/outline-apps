@@ -69,7 +69,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //  - the remote server has enabled UDP forwarding
 //  - we can speak with a semi-random test site via the proxy
 //
-// This function is roughly Electron counterpart of VpnTunnelService.startShadowsocks.
+// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
 export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
       .then(() => {
