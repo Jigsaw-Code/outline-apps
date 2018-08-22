@@ -15,6 +15,8 @@
 import * as net from 'net';
 import * as sudo from 'sudo-prompt';
 
+import * as errors from '../www/model/errors';
+
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 const SERVICE_START_COMMAND = 'net start OutlineService';
@@ -90,7 +92,12 @@ export class WindowsRoutingService implements RoutingService {
           // Prompt the user for admin permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
-              return reject(new Error(`could not start routing service: ${sudoError}`));
+              // Yes, this seems to be the only way to tell.
+              if (sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                return reject(new errors.NoAdminPermissions());
+              } else {
+                return reject(new errors.ConfigureSystemProxyFailure(sudoError));
+              }
             }
             return this.sendRequest(request).then(resolve, reject);
           });
@@ -105,7 +112,8 @@ export class WindowsRoutingService implements RoutingService {
           try {
             const response = JSON.parse(data.toString());
             if (response.statusCode !== 0) {
-              reject(new Error(`OutlineService says: ${response.errorMessage}`));
+              reject(new errors.ConfigureSystemProxyFailure(
+                  `OutlineService says: ${response.errorMessage}`));
             }
             resolve(response);
           } catch (e) {

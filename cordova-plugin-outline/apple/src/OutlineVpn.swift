@@ -64,6 +64,7 @@ class OutlineVpn: NSObject {
     case illegalServerConfiguration = 7
     case shadowsocksStartFailure = 8
     case configureSystemProxyFailure = 9
+    case noAdminPermissions = 10
   }
 
   override private init() {

@@ -16,11 +16,8 @@ import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
 import * as dgram from 'dgram';
 import * as net from 'net';
 import * as path from 'path';
-import * as process from 'process';
 import * as socks from 'socks';
-import * as url from 'url';
 
-// TODO: These should probably be pulled up a level now that Electron code also uses them.
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
@@ -65,56 +62,34 @@ const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
-// Fulfills with true iff shadowsocks and tun2socks binaries were started, the system configured to
-// route all traffic through the proxy, the remote server has enabled UDP forwarding, and we can
-// both connect to the Shadowsocks server port *and* connect to a semi-random test site through the
-// Shadowsocks proxy.
+// Fulfills iff:
+//  - we can connect to the Shadowsocks server port
+//  - the shadowsocks and tun2socks binaries were started
+//  - the system configured to route all traffic through the proxy
+//  - the remote server has enabled UDP forwarding
+//  - we can speak with a semi-random test site via the proxy
 //
-// Rejects with an ErrorCode number if for any reason the proxy cannot be started, or a connection
-// cannot be made to the server (it does *not* reject with an Error, just an integer, owing to how
-// electron-promise-ipc propagates errors).
-//
-// The latter two tests are roughly what happens in cordova-plugin-outline, making this function the
-// Electron counterpart to VpnTunnelService.startShadowsocks.
+// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
 export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return isServerReachable(config)
-      .catch((e) => {
-        throw errors.ErrorCode.SERVER_UNREACHABLE;
+      .then(() => {
+        return startLocalShadowsocksProxy(config, onDisconnected);
       })
       .then(() => {
-        return startLocalShadowsocksProxy(config, onDisconnected)
-            .catch((e) => {
-              throw errors.ErrorCode.SHADOWSOCKS_START_FAILURE;
-            })
-            .then(() => {
-              return validateServerCredentials()
-                  .catch((e) => {
-                    throw errors.ErrorCode.INVALID_SERVER_CREDENTIALS;
-                  })
-                  .then(() => {
-                    return checkUdpForwardingEnabled()
-                        .catch((e) => {
-                          stopProcesses();
-                          throw errors.ErrorCode.UDP_RELAY_NOT_ENABLED;
-                        })
-                        .then(() => {
-                          return startTun2socks(config.host || '', onDisconnected)
-                              .catch((e) => {
-                                stopProcesses();
-                                throw errors.ErrorCode.VPN_START_FAILURE;
-                              })
-                              .then((port) => {
-                                return configureRouting(
-                                           TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '')
-                                    .catch((e) => {
-                                      stopProcesses();
-                                      console.error(`could not configure routing: ${e.message}`);
-                                      throw errors.ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
-                                    });
-                              });
-                        });
-                  });
-            });
+        return validateServerCredentials();
+      })
+      .then(() => {
+        return checkUdpForwardingEnabled();
+      })
+      .then(() => {
+        return startTun2socks(config.host || '', onDisconnected);
+      })
+      .then(() => {
+        return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '');
+      })
+      .catch((e) => {
+        stopProcesses();
+        throw e;
       });
 }
 
@@ -134,7 +109,7 @@ export function isServerReachable(config: cordova.plugins.outline.ServerConfig) 
                   fulfill();
                 })
             .on('error', () => {
-              reject(new Error(`could not create socket, or connect to host`));
+              reject(new errors.ServerUnreachable());
             });
       }),
       REACHABILITY_TEST_TIMEOUT_MS);
@@ -144,7 +119,7 @@ function startLocalShadowsocksProxy(
     serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
-    const ssLocalArgs: string[] = ['-l', SS_LOCAL_PORT.toString()];
+    const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
     ssLocalArgs.push('-s', serverConfig.host || '');
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
@@ -168,8 +143,7 @@ function startLocalShadowsocksProxy(
     // want to send that exception to Sentry* since it contains ss-local's arguments which
     // encode an access key to the server.
     ssLocal.on('error', (e: SpawnError) => {
-      console.error(`ss-local failed to start with code ${e.code}`);
-      reject(new Error(`ss-local launch failure`));
+      reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
     });
 
     ssLocal.on('exit', (code, signal) => {
@@ -200,7 +174,8 @@ function validateServerCredentials() {
         },
         (e, socket) => {
           if (e) {
-            reject(new Error(`could not connect to remote test website: ${e.message}`));
+            reject(new errors.InvalidServerCredentials(
+                `could not connect to remote test website: ${e.message}`));
             return;
           }
 
@@ -212,12 +187,13 @@ function validateServerCredentials() {
               fulfill();
             } else {
               socket.end();
-              reject(new Error(`unexpected response from remote test website`));
+              reject(new errors.InvalidServerCredentials(
+                  `unexpected response from remote test website`));
             }
           });
 
           socket.on('close', () => {
-            reject(new Error(`could not connect to remote test website`));
+            reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
           });
 
           // Sockets must be resumed before any data will come in, as they are paused right before
@@ -237,27 +213,24 @@ function checkUdpForwardingEnabled() {
         },
         (err, socket, info) => {
           if (err) {
-            console.error(`Failed to create UDP connection to local proxy: ${err.message}`);
-            reject(new Error());
+            reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
             return;
           }
           const dnsRequest = getDnsRequest();
           const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
           const udpSocket = dgram.createSocket('udp4');
 
-          udpSocket.on('error', (err) => {
-            const msg = `UDP socket failure: ${err}`;
-            console.error(msg);
-            reject(new Error(msg));
+          udpSocket.on('error', (e) => {
+            reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
           });
 
           udpSocket.on('message', (msg, info) => {
-            console.info('UDP forwarding enabled');
             stopUdp();
             resolve();
           });
 
           // Retry sending the query every second.
+          // TODO: logging here is a bit verbose
           const intervalId = setInterval(() => {
             try {
               udpSocket.send(packet, info.port, info.host, (err) => {
@@ -282,7 +255,7 @@ function checkUdpForwardingEnabled() {
           // Give up after the timeout elapses.
           setTimeout(() => {
             stopUdp();
-            reject(new Error('Remote UDP forwarding disabled'));
+            reject(new errors.RemoteUdpForwardingDisabled());
           }, UDP_FORWARDING_TEST_TIMEOUT_MS);
         });
   });
@@ -324,6 +297,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
     args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--loglevel', 'error');
 
+    // TODO: Duplicate ss-local's error handling.
     try {
       tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
       tun2socks.on('exit', (code, signal) => {
@@ -363,7 +337,10 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
 
       resolve();
     } catch (e) {
-      reject(e);
+      // We haven't seen any failures related to tun2socks so use this error because it will make
+      // the UI point the user towards antivirus software, which seems the most likely culprit for
+      // tun2socks failing to launch.
+      reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
     }
   });
 }
@@ -384,19 +361,13 @@ function stopTun2socks() {
   return Promise.resolve();
 }
 
-function configureRouting(tun2socksVirtualRouterIp: string, proxyIp: string): Promise<void> {
-  return routingService.configureRouting(tun2socksVirtualRouterIp, proxyIp);
-}
-
-function resetRouting(): Promise<void> {
-  return routingService.resetRouting().catch((e) => {
-    console.error(`could not reset routing: ${e.message}`);
-    throw e;
-  });
-}
-
 export function teardownVpn() {
-  return Promise.all([resetRouting().catch(e => e), stopProcesses()]);
+  return Promise.all([
+    routingService.resetRouting().catch((e) => {
+      console.error(`could not reset routing: ${e.message}`);
+    }),
+    stopProcesses()
+  ]);
 }
 
 function stopProcesses() {

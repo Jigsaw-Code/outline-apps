@@ -20,6 +20,8 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as errors from '../www/model/errors';
+
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
 
@@ -89,6 +91,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
       if (mainWindow) {
         mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
       }
+      // TODO: Handle errors, report.
       startVpn(connectionAtShutdown.config, serverId);
     }
   });
@@ -267,7 +270,11 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string) {
 
 promiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return startVpn(args.config, args.id);
+      return startVpn(args.config, args.id).catch((e) => {
+        // electron-promise-ipc can only propagate primitives to the renderer process.
+        console.error(`could not connect: ${e.name} (${e.message})`);
+        throw errors.toErrorCode(e);
+      });
     });
 
 promiseIpc.on('stop-proxying', () => {
