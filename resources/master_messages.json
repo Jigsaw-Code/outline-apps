@@ -369,9 +369,21 @@
     "message": "Something happened and we couldn’t connect. If this happens again, please submit feedback.",
     "description": "A general error message when failing to connect to a server."
   },
-  "outline_plugin_error_networking_error": {
-    "message": "A networking error occurred. If this happens again, please submit feedback.",
-    "description": "An error message when the application experiences unspecified connection issues."
+  "outline-plugin-error-admin-permissions": {
+    "message": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
+    "description": "An error message when the application is not granted administrator permissions."
+  },
+  "outline-plugin-error-routing-tables": {
+    "message": "We were not able to configure your routing tables successfully. If this happens again, please reach out to us.",
+    "description": "An error message when the application is not able to configure the system for proxying."
+  },
+  "outline-plugin-error-antivirus": {
+    "message": "It seems like your antivirus software is preventing us from successfully connecting.",
+    "description": "An error message when the application encounters antivirus software that prevents it from connecting."
+  },
+  "fix-this": {
+    "message": "Fix this",
+    "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article"
   },
   "tips": {
     "message": "Tips",
