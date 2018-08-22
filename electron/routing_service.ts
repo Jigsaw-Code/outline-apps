@@ -93,8 +93,12 @@ export class WindowsRoutingService implements RoutingService {
           // Prompt the user for admin permissions to start the routing service.
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
-              console.error(`could not start routing service: ${sudoError}`);
-              return reject(new errors.NoAdminPermissions());
+              // Yes, this seems to be the only way to tell.
+              if (sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                return reject(new errors.NoAdminPermissions());
+              } else {
+                return reject(new errors.ConfigureSystemProxyFailure(sudoError));
+              }
             }
             return this.sendRequest(request).then(resolve, reject);
           });
@@ -109,8 +113,8 @@ export class WindowsRoutingService implements RoutingService {
           try {
             const response = JSON.parse(data.toString());
             if (response.statusCode !== 0) {
-              console.error(`OutlineService says: ${response.errorMessage}`);
-              reject(new errors.ConfigureSystemProxyFailure());
+              reject(new errors.ConfigureSystemProxyFailure(
+                  `OutlineService says: ${response.errorMessage}`));
             }
             resolve(response);
           } catch (e) {

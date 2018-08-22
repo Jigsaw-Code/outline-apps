@@ -88,8 +88,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '');
       })
       .catch((e) => {
-        // TODO:
-        console.warn('CLEANUP');
+        stopProcesses();
         throw e;
       });
 }
@@ -120,7 +119,7 @@ function startLocalShadowsocksProxy(
     serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
-    const ssLocalArgs: string[] = ['-l', SS_LOCAL_PORT.toString()];
+    const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
     ssLocalArgs.push('-s', serverConfig.host || '');
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
@@ -144,8 +143,7 @@ function startLocalShadowsocksProxy(
     // want to send that exception to Sentry* since it contains ss-local's arguments which
     // encode an access key to the server.
     ssLocal.on('error', (e: SpawnError) => {
-      console.error(`ss-local failed to start with code ${e.code}`);
-      reject(new errors.ShadowsocksStartFailure());
+      reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
     });
 
     ssLocal.on('exit', (code, signal) => {
@@ -176,7 +174,8 @@ function validateServerCredentials() {
         },
         (e, socket) => {
           if (e) {
-            reject(new errors.InvalidServerCredentials());
+            reject(new errors.InvalidServerCredentials(
+                `could not connect to remote test website: ${e.message}`));
             return;
           }
 
@@ -188,12 +187,13 @@ function validateServerCredentials() {
               fulfill();
             } else {
               socket.end();
-              reject(new errors.InvalidServerCredentials());
+              reject(new errors.InvalidServerCredentials(
+                  `unexpected response from remote test website`));
             }
           });
 
           socket.on('close', () => {
-            reject(new errors.InvalidServerCredentials());
+            reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
           });
 
           // Sockets must be resumed before any data will come in, as they are paused right before
@@ -213,27 +213,24 @@ function checkUdpForwardingEnabled() {
         },
         (err, socket, info) => {
           if (err) {
-            console.error(`Failed to create UDP connection to local proxy: ${err.message}`);
-            reject(new errors.RemoteUdpForwardingDisabled());
+            reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
             return;
           }
           const dnsRequest = getDnsRequest();
           const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
           const udpSocket = dgram.createSocket('udp4');
 
-          udpSocket.on('error', (err) => {
-            const msg = `UDP socket failure: ${err}`;
-            console.error(msg);
-            reject(new errors.RemoteUdpForwardingDisabled());
+          udpSocket.on('error', (e) => {
+            reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
           });
 
           udpSocket.on('message', (msg, info) => {
-            console.info('UDP forwarding enabled');
             stopUdp();
             resolve();
           });
 
           // Retry sending the query every second.
+          // TODO: logging here is a bit verbose
           const intervalId = setInterval(() => {
             try {
               udpSocket.send(packet, info.port, info.host, (err) => {
@@ -300,6 +297,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
     args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--loglevel', 'error');
 
+    // TODO: Duplicate ss-local's error handling.
     try {
       tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
       tun2socks.on('exit', (code, signal) => {
@@ -339,8 +337,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
 
       resolve();
     } catch (e) {
-      // TODO: right error?
-      reject(new errors.ShadowsocksStartFailure());
+      reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
     }
   });
 }
@@ -361,16 +358,13 @@ function stopTun2socks() {
   return Promise.resolve();
 }
 
-// TODO: de-factor
-function resetRouting(): Promise<void> {
-  return routingService.resetRouting().catch((e) => {
-    console.error(`could not reset routing: ${e.message}`);
-    throw e;
-  });
-}
-
 export function teardownVpn() {
-  return Promise.all([resetRouting().catch(e => e), stopProcesses()]);
+  return Promise.all([
+    routingService.resetRouting().catch((e) => {
+      console.error(`could not reset routing: ${e.message}`);
+    }),
+    stopProcesses()
+  ]);
 }
 
 function stopProcesses() {
