@@ -73,7 +73,7 @@ public class ShadowsocksConnectivity {
    * test by issuing an HTTP HEAD request to a target domain.
    */
   public static boolean validateServerCredentials(final String localProxyIp, final int localProxyPort) {
-    LOG.fine("Starting credentials verification");
+    LOG.fine("Starting server creds. validation.");
     Socket socket = null;
     DataOutputStream outputStream = null;
     DataInputStream inputStream = null;
@@ -106,7 +106,7 @@ public class ShadowsocksConnectivity {
       final String httpResponse = reader.readLine();
       return httpResponse != null && httpResponse.startsWith("HTTP/1.1");
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Got exception in credentials check", e);
+      LOG.log(Level.WARNING, "Got exception in server creds. validation", e);
     } finally {
       closeSocket(socket);
     }
