@@ -353,9 +353,6 @@ export class App {
     this.serverRepo.rename(serverId, newName);
   }
 
-  // Note that as a top-level method (invoked via an event handler on the connect button) any
-  // exceptions thrown by this method will result in a console message and Sentry report. Certain
-  // "expected" exceptions are trapped here, e.g. invalid password, to avoid cluttering Sentry.
   private connectServer(event: CustomEvent): void {
     const serverId = event.detail.serverId;
     if (!serverId) {
@@ -378,10 +375,9 @@ export class App {
         (e) => {
           card.state = 'DISCONNECTED';
           this.showLocalizedError(e);
-          if (e instanceof errors.RegularNativeError) {
-            console.warn(`could not connect to server ${serverId}: ${e.name}`);
-          } else {
-            throw e;
+          console.error(`could not connect to server ${serverId}: ${e.name}`);
+          if (!(e instanceof errors.RegularNativeError)) {
+            this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
           }
         });
   }
@@ -407,7 +403,6 @@ export class App {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
-  // See the comments for #connectServer on how uncaught exceptions are handled here.
   private disconnectServer(event: CustomEvent): void {
     const serverId = event.detail.serverId;
     if (!serverId) {
@@ -429,11 +424,7 @@ export class App {
         (e) => {
           card.state = 'CONNECTED';
           this.showLocalizedError(e);
-          if (e instanceof errors.RegularNativeError) {
-            console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
-          } else {
-            throw e;
-          }
+          console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
         });
   }
 
