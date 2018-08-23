@@ -22,7 +22,7 @@ import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineConnection} from './fake_connection';
-import {main} from './main';
+import {getLocalizationFunction, main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater, UpdateListener, Updater} from './updater';
@@ -35,6 +35,20 @@ const isWindows = os.platform() === 'win32';
 const interceptor = new UrlInterceptor();
 ipcRenderer.on('add-server', (e: Event, url: string) => {
   interceptor.executeListeners(url);
+});
+
+ipcRenderer.on('localizationRequest', (e: Event, localizationKeys: string[]) => {
+  const localize = getLocalizationFunction();
+  if (!localize) {
+    console.error('Localization function not available.');
+    ipcRenderer.send('localizationResponse', null);
+    return;
+  }
+  const localizationResult: {[key: string]: string} = {};
+  for (const key of localizationKeys) {
+    localizationResult[key] = localize(key);
+  }
+  ipcRenderer.send('localizationResponse', localizationResult);
 });
 
 // Pushes a clipboard event whenever the app window receives focus.

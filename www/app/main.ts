@@ -98,3 +98,12 @@ function onUnexpectedError(error: Error) {
   }
   console.error(error);
 }
+
+// Returns Polymer's localization function. Must be called after WebComponentsReady has fired.
+export function getLocalizationFunction() {
+  const rootEl = getRootEl();
+  if (!rootEl) {
+    return null;
+  }
+  return rootEl.localize;
+}
