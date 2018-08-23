@@ -316,7 +316,7 @@ public class VpnTunnelService extends VpnService {
         boolean isReachable = reachabilityCheckResult.get();
         boolean credentialsAreValid = credentialsCheckResult.get();
         LOG.info(String.format(Locale.ROOT,
-            "Server connectivity: UDP forwarding disabled, server %s, credentials %s",
+            "Server connectivity: UDP forwarding disabled, server %s, creds. %s",
             isReachable ? "reachable" : "unreachable", credentialsAreValid ? "valid" : "invalid"));
         if (credentialsAreValid) {
           return OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED;
