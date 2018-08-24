@@ -345,18 +345,18 @@ namespace OutlineService {
     private void AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName) {
       try {
         RunCommand(CMD_NETSH,
-            $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface={interfaceName} metric=0");
+            $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
       } catch (Exception e) {
         // If "add" fails, it's possible there's already a route to this proxy
         // server from a previous run of Outline which ResetRouting could
         // not remove; try "set" before failing.
         RunCommand(CMD_NETSH,
-            $"interface ipv4 set route {proxyIp}/32 nexthop={systemGatewayIp} interface={interfaceName} metric=0");
+            $"interface ipv4 set route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
       }
     }
 
     private void DeleteProxyRoute(string proxyIp, string interfaceName) {
-      RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface={interfaceName}");
+      RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface=\"{interfaceName}\"");
     }
 
     // Runs a shell command synchronously.
