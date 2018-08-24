@@ -94,6 +94,7 @@ export class NoAdminPermissions extends RegularNativeError {}
 // Windows.
 export class ShadowsocksStartFailure extends RedFlagNativeError {}
 export class ConfigureSystemProxyFailure extends RedFlagNativeError {}
+export class UnsupportedRoutingTable extends RedFlagNativeError {}
 
 // Used on Android and Apple to indicate that the plugin failed to establish the VPN tunnel.
 export class VpnStartFailure extends RedFlagNativeError {}
@@ -102,6 +103,7 @@ export class VpnStartFailure extends RedFlagNativeError {}
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
 //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
 //  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
+//  - cordova-plugin-outline/android/java/org/outline/OutlinePlugin.java#ErrorCode
 //
 // TODO: Is it safe to re-use values here, i.e. is native node rebuilt in step with the TypeScript?
 export const enum ErrorCode {
@@ -117,7 +119,8 @@ export const enum ErrorCode {
   ILLEGAL_SERVER_CONFIGURATION = 7,
   SHADOWSOCKS_START_FAILURE = 8,
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
-  NO_ADMIN_PERMISSIONS = 10
+  NO_ADMIN_PERMISSIONS = 10,
+  UNSUPPORTED_ROUTING_TABLE = 11
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -145,6 +148,8 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new ConfigureSystemProxyFailure();
     case ErrorCode.NO_ADMIN_PERMISSIONS:
       return new NoAdminPermissions();
+    case ErrorCode.UNSUPPORTED_ROUTING_TABLE:
+      return new UnsupportedRoutingTable();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
@@ -171,6 +176,8 @@ export function toErrorCode(e: NativeError): ErrorCode {
     return ErrorCode.SHADOWSOCKS_START_FAILURE;
   } else if (e instanceof ConfigureSystemProxyFailure) {
     return ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
+  } else if (e instanceof UnsupportedRoutingTable) {
+    return ErrorCode.UNSUPPORTED_ROUTING_TABLE;
   } else if (e instanceof NoAdminPermissions) {
     return ErrorCode.NO_ADMIN_PERMISSIONS;
   }

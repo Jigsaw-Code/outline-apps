@@ -66,6 +66,7 @@
   "outline-plugin-error-admin-permissions": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
   "outline-plugin-error-routing-tables": "We were not able to configure your routing tables successfully. If this happens again, please reach out to us.",
   "outline-plugin-error-antivirus": "It seems like your antivirus software is preventing us from successfully connecting.",
+  "outline-plugin-error-unsupported-routing-table": "It seems like another VPN is active. Please disconnect it and try again.",
   "fix-this": "Fix this",
   "submit-feedback": "Submit Feedback",
   "tips": "Tips",

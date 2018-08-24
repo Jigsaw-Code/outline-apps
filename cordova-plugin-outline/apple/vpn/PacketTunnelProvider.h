@@ -37,7 +37,8 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   illegalServerConfiguration = 7,
   shadowsocksStartFailure = 8,
   configureSystemProxyFailure = 9,
-  noAdminPermissions = 10
+  noAdminPermissions = 10,
+  unsupportedRoutingTable = 11
 };
 
 @end
