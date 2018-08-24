@@ -93,10 +93,14 @@ export class WindowsRoutingService implements RoutingService {
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
               // Yes, this seems to be the only way to tell.
-              if (sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+              if ((typeof sudoError === 'string') &&
+                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
                 return reject(new errors.NoAdminPermissions());
               } else {
-                return reject(new errors.ConfigureSystemProxyFailure(sudoError));
+                // It's unclear what type sudoError is because it has no message
+                // field. toString() seems to work in most cases, so use that -
+                // anything else will eventually show up in Sentry.
+                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
               }
             }
             return this.sendRequest(request).then(resolve, reject);
