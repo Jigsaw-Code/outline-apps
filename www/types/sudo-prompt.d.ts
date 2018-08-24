@@ -23,8 +23,13 @@ declare module 'sudo-prompt' {
   export function exec(
       command: string, options?: SudoPromptOptions,
       // Even though from reading the source it looks like error would be an
-      // instance of Error, in practice it's always a string (a simple error
-      // message in some cases, e.g. when the user does not grant permission, or
-      // the output of the command - with newlines! - when the command fails).
-      callback?: (error: string, stdout: string|Buffer, stderr: string|Buffer) => void): void;
+      // instance of Error, in practice it's almost always a string: a simple
+      // error message in some cases, e.g. when the user does not grant
+      // permission, or the output of the command - with newlines! - when the
+      // command fails.
+      //
+      // Hoever, because we've seen error reports from users indicating that in
+      // some cases it is indeed an Error, use a union type and force the caller
+      // to handle both cases.
+      callback?: (error: string|Error, stdout: string|Buffer, stderr: string|Buffer) => void): void;
 }
