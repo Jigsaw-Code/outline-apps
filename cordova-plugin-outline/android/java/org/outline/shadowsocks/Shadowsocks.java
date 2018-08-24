@@ -28,6 +28,7 @@ public class Shadowsocks {
   private static final int PROCESS_START_WAIT_MS = 250;
   public static final String LOCAL_SERVER_ADDRESS = "127.0.0.1";
   public static final String LOCAL_SERVER_PORT = "9999";
+  public static final int SS_LOCAL_TIMEOUT_SECS = Integer.MAX_VALUE;
 
   private final String ssPath;
   private Process ssProcess;
@@ -51,6 +52,7 @@ public class Shadowsocks {
         "-b", LOCAL_SERVER_ADDRESS,
         "-l", LOCAL_SERVER_PORT,
         "-m", serverConfig.getString("method"),
+        "-t", String.format(Locale.ROOT, "%d", SS_LOCAL_TIMEOUT_SECS),
         "-u"
         ).start();
       // Wait for the process to start and report whether it is running.
