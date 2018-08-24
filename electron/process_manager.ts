@@ -74,7 +74,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 // This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
 export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   // RoutingService requires an IP; perform a lookup now and use that throughout setup.
-  return lookup(config.host || '').then((ip: string) => {
+  return lookupIp(config.host || '').then((ip: string) => {
     return isServerReachableByIp(ip, config.port || 0)
         .then(() => {
           return startLocalShadowsocksProxy(ip, config, onDisconnected);
@@ -102,7 +102,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
 // https://nodejs.org/dist/latest-v10.x/docs/api/dns.html#dns_dns
 //
 // Effectively a no-op if hostname is already an IP.
-function lookup(hostname: string): Promise<string> {
+function lookupIp(hostname: string): Promise<string> {
   return util.timeoutPromise(
       new Promise<string>((fulfill, reject) => {
         dns.lookup(hostname, 4, (e, address) => {
@@ -120,7 +120,7 @@ function lookup(hostname: string): Promise<string> {
 // This has the same function as ShadowsocksConnectivity.isServerReachable in
 // cordova-plugin-outline.
 export function isServerReachable(config: cordova.plugins.outline.ServerConfig) {
-  return lookup(config.host || '').then((ip) => {
+  return lookupIp(config.host || '').then((ip) => {
     return isServerReachableByIp(ip, config.port || 0);
   });
 }
