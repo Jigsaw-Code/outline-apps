@@ -14,6 +14,7 @@
 
 import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
 import * as dgram from 'dgram';
+import * as dns from 'dns';
 import * as net from 'net';
 import * as path from 'path';
 import * as socks from 'socks';
@@ -59,6 +60,7 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
+const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
@@ -71,26 +73,46 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //
 // This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
 export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
-  return isServerReachable(config)
-      .then(() => {
-        return startLocalShadowsocksProxy(config, onDisconnected);
-      })
-      .then(() => {
-        return validateServerCredentials();
-      })
-      .then(() => {
-        return checkUdpForwardingEnabled();
-      })
-      .then(() => {
-        return startTun2socks(config.host || '', onDisconnected);
-      })
-      .then(() => {
-        return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '');
-      })
-      .catch((e) => {
-        stopProcesses();
-        throw e;
-      });
+  // RoutingService requires an IP; perform a lookup now and use that throughout setup.
+  return lookupIp(config.host || '').then((ip: string) => {
+    return isServerReachableByIp(ip, config.port || 0)
+        .then(() => {
+          return startLocalShadowsocksProxy(ip, config, onDisconnected);
+        })
+        .then(() => {
+          return validateServerCredentials();
+        })
+        .then(() => {
+          return checkUdpForwardingEnabled();
+        })
+        .then(() => {
+          return startTun2socks(ip, onDisconnected);
+        })
+        .then(() => {
+          return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, ip);
+        })
+        .catch((e) => {
+          stopProcesses();
+          throw e;
+        });
+  });
+}
+
+// Uses the OS' built-in functions, i.e. /etc/hosts, et al.:
+// https://nodejs.org/dist/latest-v10.x/docs/api/dns.html#dns_dns
+//
+// Effectively a no-op if hostname is already an IP.
+function lookupIp(hostname: string): Promise<string> {
+  return util.timeoutPromise(
+      new Promise<string>((fulfill, reject) => {
+        dns.lookup(hostname, 4, (e, address) => {
+          if (e) {
+            return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
+          }
+          fulfill(address);
+        });
+      }),
+      DNS_LOOKUP_TIMEOUT_MS);
 }
 
 // Resolves with true iff a TCP connection can be established with the Shadowsocks server.
@@ -98,12 +120,19 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
 // This has the same function as ShadowsocksConnectivity.isServerReachable in
 // cordova-plugin-outline.
 export function isServerReachable(config: cordova.plugins.outline.ServerConfig) {
+  return lookupIp(config.host || '').then((ip) => {
+    return isServerReachableByIp(ip, config.port || 0);
+  });
+}
+
+// As #isServerReachable but does not perform a DNS lookup.
+export function isServerReachableByIp(serverIp: string, serverPort: number) {
   return util.timeoutPromise(
       new Promise<void>((fulfill, reject) => {
         const socket = new net.Socket();
         socket
             .connect(
-                {host: config.host || '', port: config.port || 0},
+                {host: serverIp, port: serverPort},
                 () => {
                   socket.end();
                   fulfill();
@@ -116,11 +145,11 @@ export function isServerReachable(config: cordova.plugins.outline.ServerConfig) 
 }
 
 function startLocalShadowsocksProxy(
-    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
+    ip: string, serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
-    ssLocalArgs.push('-s', serverConfig.host || '');
+    ssLocalArgs.push('-s', ip);
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
@@ -329,8 +358,8 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       });
 
       // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
-      // otherwise the process execution is suspended when the unconsumed streams exceed the system
-      // limit (~200KB). See https://github.com/nodejs/node/issues/4236
+      // otherwise the process execution is suspended when the unconsumed streams exceed the
+      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {
         console.error(`${data}`);
       });
