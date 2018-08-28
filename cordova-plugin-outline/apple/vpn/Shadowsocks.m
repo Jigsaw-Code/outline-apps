@@ -14,6 +14,7 @@
 
 #import "Shadowsocks.h"
 #include <arpa/inet.h>
+#include <limits.h>
 #include <pthread.h>
 #if TARGET_OS_IPHONE
 #import <Shadowsocks_iOS/shadowsocks.h>
@@ -25,7 +26,7 @@
 @import CocoaLumberjack;
 
 const int kShadowsocksLocalPort = 9999;
-const int kShadowsocksTimeoutMs = 600;
+const int kShadowsocksTimeoutSecs = INT_MAX;
 const int kShadowsocksTcpAndUdpMode = 1;  // See https://github.com/shadowsocks/shadowsocks-libev/blob/4ea517/src/jconf.h#L44
 char *const kShadowsocksLocalAddress = "127.0.0.1";
 
@@ -123,20 +124,18 @@ void shadowsocksCallback(int socks_fd, int udp_fd, void *udata) {
   char *host = (char *)[self.config[@"host"] UTF8String];
   char *password = (char *)[self.config[@"password"] UTF8String];
   char *method = (char *)[self.config[@"method"] UTF8String];
-  const profile_t profile = {
-    .remote_host = host,
-    .local_addr = kShadowsocksLocalAddress,
-    .method = method,
-    .password = password,
-    .remote_port = port,
-    .local_port = kShadowsocksLocalPort,
-    .timeout = kShadowsocksTimeoutMs,
-    .acl = NULL,
-    .log = NULL,
-    .fast_open = 0,
-    .mode = kShadowsocksTcpAndUdpMode,
-    .verbose = 0
-  };
+  const profile_t profile = {.remote_host = host,
+                             .local_addr = kShadowsocksLocalAddress,
+                             .method = method,
+                             .password = password,
+                             .remote_port = port,
+                             .local_port = kShadowsocksLocalPort,
+                             .timeout = kShadowsocksTimeoutSecs,
+                             .acl = NULL,
+                             .log = NULL,
+                             .fast_open = 0,
+                             .mode = kShadowsocksTcpAndUdpMode,
+                             .verbose = 0};
   DDLogInfo(@"Starting Shadowsocks");
   int success = start_ss_local_server_with_callback(profile, shadowsocksCallback,
                                                     (__bridge void *)self);
