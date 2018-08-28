@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as sentry from '@sentry/electron';
-import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, shell, Tray} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
@@ -39,7 +39,10 @@ let isAppQuitting = false;
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const iconPath = path.join(path.dirname(__dirname), 'icons/win/icon.ico');
-const grayscaleIconPath = path.join(__dirname, 'logo_grayscale.png');
+const trayIconImages = {
+  connected: createTrayIconImage('logo.png'),
+  disconnected: createTrayIconImage('logo_grayscale.png')
+};
 
 const enum Options {
   AUTOSTART = '--autostart'
@@ -107,11 +110,11 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
 
 function createTrayIcon(status: ConnectionStatus) {
   const isConnected = status === ConnectionStatus.CONNECTED;
-  const trayIconPath = isConnected ? iconPath : grayscaleIconPath;
+  const trayIconImage = isConnected ? trayIconImages.connected : trayIconImages.disconnected;
   if (tray) {
-    tray.setImage(trayIconPath);
+    tray.setImage(trayIconImage);
   } else {
-    tray = new Tray(trayIconPath);
+    tray = new Tray(trayIconImage);
     tray.on('click', () => {
       if (!mainWindow) {
         createWindow();
@@ -132,6 +135,10 @@ function createTrayIcon(status: ConnectionStatus) {
     {type: 'separator'} as MenuItemConstructorOptions, {label: 'Exit', click: quitApp}
   ];
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
+}
+
+function createTrayIconImage(imageName: string) {
+  return nativeImage.createFromPath(path.join(__dirname, imageName)).resize({width: 16, height: 16});
 }
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the
