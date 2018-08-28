@@ -381,6 +381,10 @@
     "message": "It seems like your antivirus software is preventing us from successfully connecting.",
     "description": "An error message when the application encounters antivirus software that prevents it from connecting."
   },
+  "outline-plugin-error-unsupported-routing-table": {
+    "message":   "It seems like another VPN is active. Please disconnect it and try again.",
+    "description": "An error message when the application fails to connect due to another active VPN."
+  },
   "fix-this": {
     "message": "Fix this",
     "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article"
