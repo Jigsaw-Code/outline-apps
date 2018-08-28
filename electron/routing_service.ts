@@ -27,8 +27,7 @@ interface RoutingServiceRequest {
 }
 
 interface RoutingServiceResponse {
-  // 0 iff the operation was successful.
-  statusCode: number;
+  statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
 }
 
@@ -40,6 +39,12 @@ export interface RoutingService {
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting'
+}
+
+enum RoutingServiceStatusCode {
+  SUCCESS = 0,
+  GENERIC_FAILURE = 1,
+  UNSUPPORTED_ROUTING_TABLE = 2
 }
 
 // Define the error type thrown by the net module.
@@ -115,9 +120,12 @@ export class WindowsRoutingService implements RoutingService {
         if (data) {
           try {
             const response = JSON.parse(data.toString());
-            if (response.statusCode !== 0) {
-              reject(new errors.ConfigureSystemProxyFailure(
-                  `OutlineService says: ${response.errorMessage}`));
+            if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
+              const msg = `OutlineService says: ${response.errorMessage}`;
+              reject(
+                  response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE
+                      ? new errors.UnsupportedRoutingTable(msg)
+                      : new errors.ConfigureSystemProxyFailure(msg));
             }
             resolve(response);
           } catch (e) {

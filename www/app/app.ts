@@ -150,6 +150,7 @@ export class App {
     } else if (e instanceof errors.OperationTimedOut) {
       messageKey = 'error-timeout';
     } else if (e instanceof errors.ShadowsocksStartFailure) {
+      // TODO: only display this message if running on Windows.
       messageKey = 'outline-plugin-error-antivirus';
       buttonKey = 'fix-this';
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
@@ -162,6 +163,8 @@ export class App {
       };
     } else if (e instanceof errors.NoAdminPermissions) {
       messageKey = 'outline-plugin-error-admin-permissions';
+    } else if (e instanceof errors.UnsupportedRoutingTable) {
+      messageKey = 'outline-plugin-error-unsupported-routing-table';
     } else if (e instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
       messageParams = ['serverName', e.server.name];

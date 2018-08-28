@@ -66,7 +66,6 @@ namespace OutlineService {
     private const string CMD_NETSH = "netsh";
 
     private const uint BUFFER_SIZE_BYTES = 1024;
-    private const int ERROR_CODE_INTERNAL = -1;
 
     private EventLog eventLog;
     private NamedPipeServerStream pipe;
@@ -147,7 +146,9 @@ namespace OutlineService {
           try {
             HandleRequest(request);
           } catch (Exception e) {
-            response.statusCode = 1;
+            var statusCode = e is UnsupportedRoutingTableException ? ErrorCode.UnsupportedRoutingTable
+                                                                   : ErrorCode.GenericFailure;
+            response.statusCode = (int)statusCode;
             response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
           }
         }
@@ -262,7 +263,7 @@ namespace OutlineService {
       try {
         GetSystemGateway();
       } catch (Exception e) {
-        throw new Exception($"unsupported routing table: {e.Message}");
+        throw new UnsupportedRoutingTableException($"unsupported routing table: {e.Message}");
       }
 
       try {
@@ -511,5 +512,15 @@ namespace OutlineService {
       internal int statusCode;
     [DataMember]
       internal string errorMessage;
+  }
+
+  public enum ErrorCode {
+    Success = 0,
+    GenericFailure = 1,
+    UnsupportedRoutingTable = 2
+  }
+
+  internal class UnsupportedRoutingTableException : Exception {
+    public UnsupportedRoutingTableException(string message) : base(message) {}
   }
 }
