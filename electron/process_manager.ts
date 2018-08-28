@@ -59,6 +59,8 @@ const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
+const SS_LOCAL_TIMEOUT_SECS =
+    2 ^ 31 - 1;  // 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
@@ -153,6 +155,7 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
+    ssLocalArgs.push('-t', SS_LOCAL_TIMEOUT_SECS.toString());
     ssLocalArgs.push('-u');
 
     // Note that if you run with -v then ss-local may output a lot of data to stderr which
