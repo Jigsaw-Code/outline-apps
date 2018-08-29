@@ -406,8 +406,14 @@ namespace OutlineService {
     // Otherwise, throws with a description of the problem, e.g. system has multiple gateways.
     private void GetSystemGateway() {
       // Find active network interfaces with gateways.
+      //
+      // Ignore outline-tap0 as in certain rare situations - tun2socks crash? - it can
+      // have a "phantom" gateway from previous connection attempt(s) which "re-appears"
+      // in the routing table only once tun2socks restarts (so it doesn't get nuked by the
+      // client's call to ResetRouting).
       var interfacesWithGateways = NetworkInterface.GetAllNetworkInterfaces()
-          .Where(i => i.GetIPProperties().GatewayAddresses.Count > 0);
+          .Where(i => i.GetIPProperties().GatewayAddresses.Count > 0)
+          .Where(i => i.Name != TAP_DEVICE_NAME);
 
       // Ensure only one interface has gateway(s).
       if (interfacesWithGateways.Count() < 1) {
@@ -419,7 +425,7 @@ namespace OutlineService {
 
       var gatewayInterface = interfacesWithGateways.First();
 
-      // Ensure there is precisely one IPv4 interface.
+      // Ensure there is precisely one IPv4 gateway.
       if (gatewayInterface.GetIPProperties().GatewayAddresses
           .Select(g => g.Address)
           .Where(a => a.AddressFamily == AddressFamily.InterNetwork).Count() < 1) {
