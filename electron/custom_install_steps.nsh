@@ -45,6 +45,7 @@
   Pop $0
   StrCmp $0 0 success
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try running the installer again. If you still cannot install Outline, please get in touch with us."
+  Quit
 
   success:
 
@@ -53,3 +54,7 @@
 ; TODO: Remove the TAP device on uninstall. This is impossible to implement safely
 ;       with the bundled tapinstall.exe because it can only remove *all* devices
 ;       having hwid tap0901 and these may include non-Outline devices.
+!macro customUnInstall
+  nsExec::Exec "net stop OutlineService"
+  nsExec::Exec "sc delete OutlineService"
+!macroend

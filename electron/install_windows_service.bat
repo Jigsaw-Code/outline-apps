@@ -25,7 +25,7 @@ if !errorlevel! equ 0 (
   sc delete OutlineService
   if !errorlevel! neq 0 (
     echo "Failed to uninstall OutlineService"
-    exit \b 1
+    exit /b 1
   )
 )
 
@@ -34,7 +34,7 @@ if !errorlevel! equ 0 (
 sc create OutlineService binpath= "%PWD%OutlineService.exe" displayname= "OutlineService" start= "auto"
 if !errorlevel! neq 0 (
   echo "Failed to install OutlineService"
-  exit \b 1
+  exit /b 1
 )
 
 :: Start the service to avoid requesting admin permissions in the app.
