@@ -22,10 +22,10 @@ export function timeoutPromise(promise: Promise<any>, ms: number, name = '') {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
       if (winner) {
-        console.log(`Promise ${name}`, promise, `resolved before ${ms} ms.`);
+        console.log(`Promise "${name}" resolved before ${ms} ms.`);
         resolve();
       } else {
-        console.log(`Promise ${name}`, promise, `timed out after ${ms} ms.`);
+        console.log(`Promise "${name}" timed out after ${ms} ms.`);
         reject(new errors.OperationTimedOut(ms, name));
       }
     }, ms);
