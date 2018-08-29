@@ -19,7 +19,6 @@ export class UrlInterceptor {
   private listeners: Array<((url: string) => void)> = [];
 
   registerListener(listener: (url: string) => void) {
-    console.debug('registering URL interception listener', listener);
     this.listeners.push(listener);
     if (this.launchUrl) {
       listener(this.launchUrl);
@@ -37,7 +36,6 @@ export class UrlInterceptor {
       return;
     }
     for (const listener of this.listeners) {
-      console.debug('executing URL interception listener', listener);
       listener(url);
     }
   }

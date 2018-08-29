@@ -114,7 +114,7 @@ function lookupIp(hostname: string): Promise<string> {
           fulfill(address);
         });
       }),
-      DNS_LOOKUP_TIMEOUT_MS);
+      DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
 // Resolves with true iff a TCP connection can be established with the Shadowsocks server.
@@ -143,7 +143,7 @@ export function isServerReachableByIp(serverIp: string, serverPort: number) {
               reject(new errors.ServerUnreachable());
             });
       }),
-      REACHABILITY_TEST_TIMEOUT_MS);
+      REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
 }
 
 function startLocalShadowsocksProxy(
