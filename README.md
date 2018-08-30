@@ -26,7 +26,7 @@ UI components are located in [www/ui_components](www/ui_components).  The app lo
 Additional requirements for Android:
 
 * Android Studio
-* Android SDK 23
+* Android SDK 26
 
 To build for android, run:
 
