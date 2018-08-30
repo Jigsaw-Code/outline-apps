@@ -1622,6 +1622,7 @@ int process_device_udp_packet (uint8_t *data, int data_len)
                  "failed to associate dns request id to local address");
             goto fail;
         }
+        return 1;
     }
 #endif
     if (options.udpgw_remote_server_addr) {
