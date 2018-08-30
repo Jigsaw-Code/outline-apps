@@ -1,7 +1,7 @@
 {
   "name": "outline-client",
   "productName": "Outline",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "scripts": {
     "clean": "rm -rf build www/bower_components www/cordova_main.js node_modules platforms/* plugins/*",
     "precommit": "tslint -p . --fix; git-clang-format",
