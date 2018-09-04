@@ -102,7 +102,7 @@ export function startVpn(
         });
       })
       .then(() => {
-        return startTun2socks(onDisconnected);
+        return startTun2socks(config.host || '', true, onDisconnected);
       })
       .then(() => {
         return routingService.configureRouting(
@@ -164,9 +164,6 @@ function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promis
     return isServerReachableByIp(ip, config.port || 0)
       .then(() => {
         return validateServerCredentials();
-      })
-      .then(() => {
-        return checkUdpForwardingEnabled();
       })
       .then(() => {
         return ip;
@@ -383,13 +380,15 @@ function getDnsRequest() {
   ]);
 }
 
-function startTun2socks(onDisconnected: () => void): Promise<void> {
+function startTun2socks(
+    host: string, isUdpForwardingEnabled: boolean, onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
     //   --socks-server-addr 127.0.0.1:1081 \
-    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
+    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081 \
+    //   --transparent-dns
     const args: string[] = [];
     args.push(
       '--tundev',
@@ -398,9 +397,13 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-    args.push('--socks5-udp');
-    args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--loglevel', 'error');
+    args.push('--transparent-dns');
+    // Enabling transparent DNS without UDP options causes tun2socks to use TCP for DNS resolution.
+    if (isUdpForwardingEnabled) {
+      args.push('--socks5-udp');
+      args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    }
 
     // TODO: Duplicate ss-local's error handling.
     try {
@@ -417,15 +420,15 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
             console.info('Restarting tun2socks...');
             setTimeout(() => {
-              startTun2socks(onDisconnected)
-                .then(() => {
-                  resolve();
-                })
-                .catch((e) => {
-                  console.error('Failed to restart tun2socks');
-                  onDisconnected();
-                  teardownVpn();
-                });
+              startTun2socks(host, isUdpForwardingEnabled, onDisconnected)
+                  .then(() => {
+                    resolve();
+                  })
+                  .catch((e) => {
+                    console.error('Failed to restart tun2socks');
+                    onDisconnected();
+                    teardownVpn();
+                  });
             }, 3000);
             return;
           }
