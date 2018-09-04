@@ -162,28 +162,27 @@ public class VpnTunnelService extends VpnService {
       isRestart = true;
     }
     activeConnectionId = connectionId;
+    boolean remoteUdpForwardingEnabled = false;
     try {
       OutlinePlugin.ErrorCode errorCode = startShadowsocks(config, performConnectivityChecks).get();
-      if (errorCode != OutlinePlugin.ErrorCode.NO_ERROR) {
+      if (errorCode == OutlinePlugin.ErrorCode.SERVER_UNREACHABLE
+          || errorCode == OutlinePlugin.ErrorCode.INVALID_SERVER_CREDENTIALS) {
         onVpnStartFailure(errorCode);
         return;
       }
+      remoteUdpForwardingEnabled = errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     } catch (Exception e) {
       onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
       return;
     }
 
-    if (!isRestart) {
-      // Only establish the VPN and connect the tunnel if this is not a connection restart.
+    if (isRestart) {
+      // Disconnect the tunnel in case UDP forwarding support has changed.
+      vpnTunnel.disconnectTunnel();
+    } else {
+      // Only establish the VPN if this is not a connection restart.
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
-        onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
-        return;
-      }
-      try {
-        vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress());
-      } catch (Exception e) {
-        LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
         onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
         return;
       }
@@ -191,6 +190,14 @@ public class VpnTunnelService extends VpnService {
     } else {
       stopForeground();
     }
+    try {
+      vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress(), remoteUdpForwardingEnabled);
+    } catch (Exception e) {
+      LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
+      onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
+      return;
+    }
+
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
     startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
     storeActiveConnection(config);
