@@ -34,17 +34,21 @@
   installservice:
 
   ; Stop the service so we can extract the updated executable.
+  ; Note that ordinarily the uninstall steps, below, also stops the service.
+  ; This is for (really) old clients that don't have the uninstall step.
   nsExec::Exec "net stop OutlineService"
-  Pop $0
 
-  File "${PROJECT_DIR}\electron\bin\win32\OutlineService.exe"
-  File "${PROJECT_DIR}\electron\bin\win32\Newtonsoft.Json.dll"
+  File "${PROJECT_DIR}\OutlineService.exe"
+  File "${PROJECT_DIR}\Newtonsoft.Json.dll"
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 
   nsExec::Exec install_windows_service.bat
+
+  nsExec::Exec "sc query OutlineService"
   Pop $0
   StrCmp $0 0 success
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try running the installer again. If you still cannot install Outline, please get in touch with us."
+  ; TODO: Abort gracefully, i.e. uninstall, before exiting.
   Quit
 
   success:
