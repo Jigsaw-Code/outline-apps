@@ -484,6 +484,8 @@ public class VpnTunnelService extends VpnService {
       final JSONObject serverConfig, OutlinePlugin.ConnectionStatus status) {
     try {
       if (notificationBuilder == null) {
+        // Cache the notification builder so we can update the existing notification - creating a
+        // new notification has the side effect of reseting the connection timer.
         notificationBuilder = getNotificationBuilder(serverConfig);
       }
       final String statusStringResourceId = status == OutlinePlugin.ConnectionStatus.CONNECTED
