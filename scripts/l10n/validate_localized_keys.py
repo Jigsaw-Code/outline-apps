@@ -15,7 +15,7 @@ Copyright 2018 The Outline Authors
 
 
  Validates that all the keys in the master messages file are present in localized files.
- Usage: python tools/l10n/validate_localized_keys.py (from repository root)
+ Usage: python scripts/l10n/validate_localized_keys.py (from repository root)
 
 """
 
