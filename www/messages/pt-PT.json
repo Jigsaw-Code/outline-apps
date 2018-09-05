@@ -21,7 +21,7 @@
   "error-timeout": "Algo parece estar a demorar mais do que o esperado. Se sair e reiniciar, poder\u00e1 resolver o problema. Se este problema ocorrer novamente, envie coment\u00e1rios.", 
   "error-unexpected": "Lamentamos, mas ocorreu um erro inesperado. Se sair e reiniciar, poder\u00e1 resolver o problema. Se este problema ocorrer novamente, envie um coment\u00e1rio.", 
   "feedback-input": "Os seus coment\u00e1rios", 
-  "feedback-page-title": "Enviar coment\u00e1rios", 
+  "submit-feedback": "Enviar coment\u00e1rios", 
   "feedback-privacy": "O seu coment\u00e1rio, o seu endere\u00e7o de email (caso o tenha indicado), e as informa\u00e7\u00f5es adicionais referidas na {privacyPolicyLinkOpen}Pol\u00edtica de Recolha de Dados{privacyPolicyLinkClose} ser\u00e3o enviadas \u00e0 equipa do Outline. N\u00e3o inclua informa\u00e7\u00f5es pessoais no seu coment\u00e1rio.", 
   "feedback-thanks": "Obrigado por nos ajudar a melhorar! Agradecemos a sua opini\u00e3o.", 
   "fix-this": "Fix this", 
