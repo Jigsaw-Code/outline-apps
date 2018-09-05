@@ -33,6 +33,11 @@
 
   installservice:
 
+  ; Stop the service so we can extract the updated executable.
+  ; Note that ordinarily the uninstall steps, below, also stops the service.
+  ; This is for (really) old clients that don't have the uninstall step.
+  nsExec::Exec "net stop OutlineService"
+
   File "${PROJECT_DIR}\OutlineService.exe"
   File "${PROJECT_DIR}\Newtonsoft.Json.dll"
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
