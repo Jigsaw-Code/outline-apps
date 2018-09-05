@@ -12,30 +12,27 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
+:: Stops/uninstalls and starts/reinstalls OutlineService.
+:: Intended to be called by both the installer and client.
+::
+:: Does *not* fail if any step fails: the caller must check
+:: whether the service is actually running (see final exit statement).
+
 @echo off
 setlocal EnableDelayedExpansion
 
 set PWD=%~dp0%
 
-:: Check whether the service is already installed, if so remove it in case there has been an update.
-sc query OutlineService
-if !errorlevel! equ 0 (
-  echo "OutlineService already installed, uninstalling"
-  net stop OutlineService
-  sc delete OutlineService
-  if !errorlevel! neq 0 (
-    echo "Failed to uninstall OutlineService"
-    exit /b 1
-  )
-)
+:: Stop and delete the service.
+net stop OutlineService
+sc delete OutlineService
 
-:: Install the Outline Service and set it to run automatically on boot.
-:: NOTE: the spaces after the arguments are necessary for a correct installation, do not remove!
+:: Install and start the service, configuring it to restart on boot.
+:: NOTE: spaces after the arguments are necessary for a correct installation, do not remove!
 sc create OutlineService binpath= "%PWD%OutlineService.exe" displayname= "OutlineService" start= "auto"
-if !errorlevel! neq 0 (
-  echo "Failed to install OutlineService"
-  exit /b 1
-)
-
-:: Start the service to avoid requesting admin permissions in the app.
 net start OutlineService
+
+:: This is for the client: sudo-prompt discards stdout/stderr if the script
+:: exits with a non-zero return code *which will happen if any of the previous
+:: commands failed*.
+exit /b 0

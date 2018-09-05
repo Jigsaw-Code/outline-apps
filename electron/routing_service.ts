@@ -12,14 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {app} from 'electron';
 import * as net from 'net';
+import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
-const SERVICE_START_COMMAND = 'net start OutlineService';
+
+// Locating the script is tricky: when packaged, this basically boils down to:
+//   c:\program files\Outline\
+// but during development:
+//   build/windows
+//
+// Surrounding quotes important, consider "c:\program files"!
+const SERVICE_START_COMMAND = `"${
+    path.join(
+        app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
+        'install_windows_service.bat')}"`;
 
 interface RoutingServiceRequest {
   action: string;
@@ -78,7 +90,7 @@ export class WindowsRoutingService implements RoutingService {
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest): Promise<void> {
+  private sendRequest(request: RoutingServiceRequest, retry = true): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
         console.log('Pipe connected');
@@ -90,11 +102,9 @@ export class WindowsRoutingService implements RoutingService {
         }
       });
 
-      this.ipcConnection.on('error', (err) => {
-        const netErr = err as NetError;
-        if (netErr.errno === 'ENOENT') {
-          console.info(`Routing service not running. Attempting to start.`);
-          // Prompt the user for admin permissions to start the routing service.
+      this.ipcConnection.on('error', (e: NetError) => {
+        if (retry) {
+          console.info(`bouncing OutlineService (${e.errno})`);
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {
               // Yes, this seems to be the only way to tell.
@@ -108,11 +118,15 @@ export class WindowsRoutingService implements RoutingService {
                 return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
               }
             }
-            return this.sendRequest(request).then(resolve, reject);
+            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            this.sendRequest(request, false).then(resolve, reject);
           });
-        } else {
-          reject(new Error(`Received error from service connection: ${netErr.message}`));
+          return;
         }
+
+        // OutlineService could not be (re-)started.
+        reject(new errors.ConfigureSystemProxyFailure(
+            `Received error from service connection: ${e.message}`));
       });
 
       this.ipcConnection.on('data', (data) => {
@@ -123,9 +137,9 @@ export class WindowsRoutingService implements RoutingService {
             if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
               const msg = `OutlineService says: ${response.errorMessage}`;
               reject(
-                  response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE
-                      ? new errors.UnsupportedRoutingTable(msg)
-                      : new errors.ConfigureSystemProxyFailure(msg));
+                  response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE ?
+                      new errors.UnsupportedRoutingTable(msg) :
+                      new errors.ConfigureSystemProxyFailure(msg));
             }
             resolve(response);
           } catch (e) {
