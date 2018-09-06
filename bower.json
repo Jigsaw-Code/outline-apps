@@ -30,7 +30,7 @@
     "paper-styles": "PolymerElements/paper-styles#^2.0.0",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "polymer": "Polymer/polymer#^2.1.0",
-    "outline-i18n": "Jigsaw-Code/outline-i18n#^0.0.6",
+    "outline-i18n": "Jigsaw-Code/outline-i18n#^0.0.7",
     "web-animations-js": "web-animations/web-animations-js#^2.3.1",
     "webcomponentsjs": "^1.0.12"
   },
