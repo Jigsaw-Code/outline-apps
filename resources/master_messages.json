@@ -11,7 +11,7 @@
     "message": "Servers",
     "description": "The menu item text to navigate to the list of servers."
   },
-  "feedback_page_title": {
+  "submit_feedback": {
     "message": "Submit Feedback",
     "description": "The menu item text and title of a page for a user to send feedback to the app’s developers."
   },
@@ -374,8 +374,8 @@
     "description": "An error message when the application is not granted administrator permissions."
   },
   "outline-plugin-error-routing-tables": {
-    "message": "We were not able to configure your routing tables successfully. If this happens again, please reach out to us.",
-    "description": "An error message when the application is not able to configure the system for proxying."
+    "message": "We were not able to configure your routing tables successfully. If this happens again, please contact us.",
+    "description": "An error message when the application is not able to configure the system for proxying. A button is shown alongside this message to submit feedback."
   },
   "outline-plugin-error-antivirus": {
     "message": "It seems like your antivirus software is preventing us from successfully connecting.",
@@ -387,7 +387,7 @@
   },
   "fix-this": {
     "message": "Fix this",
-    "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article"
+    "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article."
   },
   "tips": {
     "message": "Tips",
