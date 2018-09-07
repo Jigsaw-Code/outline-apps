@@ -23,34 +23,34 @@
 using namespace std;
 using namespace outline;
 
-
 namespace testFixtures {
-    const string bestInterface = "wlp4s0";
-    const string randomHost = "54.243.197.34";
-}
+const string bestInterface = "wlp4s0";
+const string randomHost = "54.243.197.34";
+}  // namespace testFixtures
 
 TEST_CASE("Detectng Best interface index") {
-    OutlineProxyController testOutlineProxyController; //detectBestInterfaceIndex is called in the constructor
+  OutlineProxyController
+      testOutlineProxyController;  // detectBestInterfaceIndex is called in the constructor
 
-    REQUIRE(testOutlineProxyController.clientToServerRoutingInterface == testFixtures::bestInterface);
-    
+  REQUIRE(testOutlineProxyController.clientToServerRoutingInterface == testFixtures::bestInterface);
 }
 
 TEST_CASE("verifying routing through a random host") {
-    OutlineProxyController testOutlineProxyController;
+  OutlineProxyController testOutlineProxyController;
 
-    testOutlineProxyController.routeThroughOutline();
+  testOutlineProxyController.routeThroughOutline();
 
-    map<string,string> getRouteCommand;
+  map<string, string> getRouteCommand;
 
-    getRouteCommand["get"] = testFixtures::randomHost;
-    string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand["get"] = testFixtures::randomHost;
+  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
 
-    REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") == testOutlineProxyController.tunInterfaceRouterIp);
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.tunInterfaceRouterIp);
 
-    getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
-    routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
+  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
 
-    REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") == testOutlineProxyController.routingGatewayIP);
-
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.routingGatewayIP);
 }
