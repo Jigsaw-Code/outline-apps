@@ -26,25 +26,27 @@ if %errorlevel% equ 0 (
 )
 
 :: Add the device, recording the names of devices before and after to help
-:: us find the name of the new device.
+:: us find the name of the new device:
+::  - While we could limit the search to devices having ServiceName=tap0901,
+::    that will cause wmic to output just "no instances available" when there
+::    are no other TAP devices present, messing up the diff.
+::  - Pipe wmic output through find to suppress blank lines, which also mess up
+::    the diff.
 set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
 set DEVICE_DIFF=%tmp%\outlineinstaller-new-tap-device.txt
-:: While we could limit the search to devices having ServiceName=tap0901,
-:: that will cause wmic to output just "no instances available" when there
-:: are no other TAP devices present, messing up the diff later.
-wmic nic get netconnectionid > %BEFORE_DEVICES%
+wmic nic get netconnectionid /format:list | findstr "=" > %BEFORE_DEVICES%
 tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
 if %errorlevel% neq 0 (
   echo Could not create TAP device.
   exit /b 1
 )
-wmic nic get netconnectionid > %AFTER_DEVICES%
+wmic nic get netconnectionid /format:list | findstr "=" > %AFTER_DEVICES%
 
 :: Find the name of the new device:
 ::  - Use a temp file to save/load the result to avoid escaping issues.
 ::  - Pipe input from /dev/null to prevent Powershell hanging, waiting for EOF.
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).trim()" > %DEVICE_DIFF% < NUL
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim()" > %DEVICE_DIFF% < NUL
 set /p NEW_DEVICE= < %DEVICE_DIFF%
 echo New TAP device name: %NEW_DEVICE%
 
