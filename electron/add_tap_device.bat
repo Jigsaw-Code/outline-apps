@@ -25,34 +25,33 @@ if %errorlevel% equ 0 (
   exit /b
 )
 
-:: Add the device.
-tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901 >nul
+:: Add the device, recording the names of devices before and after to help
+:: us find the name of the new device:
+::  - While we could limit the search to devices having ServiceName=tap0901,
+::    that will cause wmic to output just "no instances available" when there
+::    are no other TAP devices present, messing up the diff.
+::  - Pipe wmic output through find to suppress blank lines, which also mess up
+::    the diff.
+set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
+set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
+set DEVICE_DIFF=%tmp%\outlineinstaller-new-tap-device.txt
+wmic nic get netconnectionid /format:list | findstr "=" > %BEFORE_DEVICES%
+tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
 if %errorlevel% neq 0 (
   echo Could not create TAP device.
   exit /b 1
 )
+wmic nic get netconnectionid /format:list | findstr "=" > %AFTER_DEVICES%
 
-:: Find the name of the new device.
-:: If there are other tap-windows6 applications installed, there could
-:: be several: assume the one we just created appears *last* in the list.
-for /f "tokens=2 delims=:" %%i in ('tap-windows6\%1\tapinstall hwids tap0901 ^|find "Name:"') do set RESULT=%%i
-:: Strip leading whitespace from the variable.
-for /f "tokens=* delims= " %%a in ("%RESULT%") do set RESULT=%%a
-echo New TAP device name: %RESULT%
-
-:: Now we now the new device's name.
-:: However, in order to use netsh on the new device, we needs its *ID*.
-::
-:: We can use some wmic magic; to see how this works, examine the output of:
-::   wmic /output:c:\wmic.csv nic
-::
-:: Escaping gets comically complicated - some help can be found here:
-::   https://stackoverflow.com/questions/15527071/wmic-command-not-working-in-for-loop-of-batch-file
-for /f "tokens=2 delims==" %%i in ('wmic nic where "name=\"%RESULT%\"" get netconnectionID /format:list') do set ID=%%i
-echo New TAP device ID: %ID%
+:: Find the name of the new device:
+::  - Use a temp file to save/load the result to avoid escaping issues.
+::  - Pipe input from /dev/null to prevent Powershell hanging, waiting for EOF.
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim()" > %DEVICE_DIFF% < NUL
+set /p NEW_DEVICE= < %DEVICE_DIFF%
+echo New TAP device name: %NEW_DEVICE%
 
 :: Rename the device.
-netsh interface set interface name = "%ID%" newname = "%DEVICE_NAME%" >nul
+netsh interface set interface name = "%NEW_DEVICE%" newname = "%DEVICE_NAME%" >nul
 if %errorlevel% neq 0 (
   echo Could not rename TAP device.
   exit /b 1
