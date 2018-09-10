@@ -41,9 +41,10 @@ if %errorlevel% neq 0 (
 )
 wmic nic get netconnectionid > %AFTER_DEVICES%
 
-:: Find the name of the new device.
-:: Use a temp file to save/load the result to avoid escaping issues.
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | where sideindicator -eq => | format-wide InputObject | out-string).trim()" > %DEVICE_DIFF%
+:: Find the name of the new device:
+::  - Use a temp file to save/load the result to avoid escaping issues.
+::  - Pipe input from /dev/null to prevent Powershell hanging, waiting for EOF.
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).trim()" > %DEVICE_DIFF% < NUL
 set /p NEW_DEVICE= < %DEVICE_DIFF%
 echo New TAP device name: %NEW_DEVICE%
 
