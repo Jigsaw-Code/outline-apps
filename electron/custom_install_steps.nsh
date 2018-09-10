@@ -18,12 +18,15 @@
   File /r "${PROJECT_DIR}\tap-windows6"
   File "${PROJECT_DIR}\electron\add_tap_device.bat"
 
+  ; ExecToStack captures stdout:
+  ;   http://nsis.sourceforge.net/Docs/nsExec/nsExec.txt
   ${If} ${RunningX64}
     nsExec::ExecToStack 'add_tap_device.bat amd64'
   ${Else}
     nsExec::ExecToStack 'add_tap_device.bat i386'
   ${EndIf}
 
+  
   Pop $0
   Pop $1
   StrCmp $0 0 installservice
