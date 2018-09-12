@@ -15,6 +15,8 @@
 package org.outline.vpn;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +28,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import java.util.concurrent.Callable;
@@ -50,6 +53,7 @@ public class VpnTunnelService extends VpnService {
   private static final int THREAD_POOL_SIZE = 5;
   private static final int NOTIFICATION_SERVICE_ID = 1;
   private static final int NOTIFICATION_COLOR = 0x00BFA5;
+  private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
   private static final String CONNECTION_ID_KEY = "id";
   private static final String CONNECTION_CONFIG_KEY = "config";
 
@@ -504,8 +508,18 @@ public class VpnTunnelService extends VpnService {
     Intent launchIntent = new Intent(this, getPackageMainActivityClass());
     PendingIntent mainActivityIntent =
         PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-    return new Notification.Builder(this)
-        .setContentTitle(getServerName(serverConfig))
+
+    Notification.Builder builder;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationChannel channel = new NotificationChannel(
+          NOTIFICATION_CHANNEL_ID, "Outline", NotificationManager.IMPORTANCE_LOW);
+      NotificationManager notificationManager = getSystemService(NotificationManager.class);
+      notificationManager.createNotificationChannel(channel);
+      builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+    } else {
+      builder = new Notification.Builder(this);
+    }
+    return builder.setContentTitle(getServerName(serverConfig))
         .setSmallIcon(getResourceIdForDrawable("small_icon"))
         .setColor(NOTIFICATION_COLOR)
         .setVisibility(Notification.VISIBILITY_SECRET) // Don't display in lock screen
