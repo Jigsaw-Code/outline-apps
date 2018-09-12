@@ -11,6 +11,8 @@
 		FC61AABA1F34DBF5005D1083 /* TunnelInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = FCFEE0771F2FEEC9006BB9C0 /* TunnelInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FC61AABB1F34DBF6005D1083 /* TunnelInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = FCFEE0771F2FEEC9006BB9C0 /* TunnelInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FC61AAC21F34E03A005D1083 /* Pods_PacketProcessor_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE8E06562CD8FA7ACF5284E2 /* Pods_PacketProcessor_macOS.framework */; };
+		FCAB68E3214732BB0060897F /* dns_proto.h in Headers */ = {isa = PBXBuildFile; fileRef = FCAB68E2214732BB0060897F /* dns_proto.h */; };
+		FCAB68E4214732BB0060897F /* dns_proto.h in Headers */ = {isa = PBXBuildFile; fileRef = FCAB68E2214732BB0060897F /* dns_proto.h */; };
 		FCD1106F200963F40079420A /* blog_channel_SocksUdpClient.h in Headers */ = {isa = PBXBuildFile; fileRef = FCD1106E200963F30079420A /* blog_channel_SocksUdpClient.h */; };
 		FCD11070200963F40079420A /* blog_channel_SocksUdpClient.h in Headers */ = {isa = PBXBuildFile; fileRef = FCD1106E200963F30079420A /* blog_channel_SocksUdpClient.h */; };
 		FCD1107B200969B30079420A /* SocksUdpClient.c in Sources */ = {isa = PBXBuildFile; fileRef = FCD11079200969B30079420A /* SocksUdpClient.c */; };
@@ -591,6 +593,7 @@
 		7FE4637137A4AF630B81A998 /* Pods-PacketProcessor_iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketProcessor_iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PacketProcessor_iOS/Pods-PacketProcessor_iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		B82847AE1CEB125500820456 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		EE8E06562CD8FA7ACF5284E2 /* Pods_PacketProcessor_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PacketProcessor_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCAB68E2214732BB0060897F /* dns_proto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dns_proto.h; sourceTree = "<group>"; };
 		FCD1106E200963F30079420A /* blog_channel_SocksUdpClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blog_channel_SocksUdpClient.h; sourceTree = "<group>"; };
 		FCD11079200969B30079420A /* SocksUdpClient.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SocksUdpClient.c; sourceTree = "<group>"; };
 		FCD1107A200969B30079420A /* SocksUdpClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SocksUdpClient.h; sourceTree = "<group>"; };
@@ -1593,6 +1596,7 @@
 				FCFEDFF11F2FEEC9006BB9C0 /* dead.h */,
 				FCFEDFF21F2FEEC9006BB9C0 /* debug.h */,
 				FCFEDFF31F2FEEC9006BB9C0 /* debugcounter.h */,
+				FCAB68E2214732BB0060897F /* dns_proto.h */,
 				FCFEDFF41F2FEEC9006BB9C0 /* debugerror.h */,
 				FCFEDFF51F2FEEC9006BB9C0 /* dhcp_proto.h */,
 				FCFEDFF61F2FEEC9006BB9C0 /* ethernet_proto.h */,
@@ -1788,6 +1792,7 @@
 				FCFEE1F91F2FEF8D006BB9C0 /* lwipopts.h in Headers */,
 				FCFEE12A1F2FEEFF006BB9C0 /* blog_channel_ncd_spawn.h in Headers */,
 				FCFEE11E1F2FEEFF006BB9C0 /* blog_channel_ncd_ondemand.h in Headers */,
+				FCAB68E3214732BB0060897F /* dns_proto.h in Headers */,
 				FCD1107D200969B30079420A /* SocksUdpClient.h in Headers */,
 				FCFEE1561F2FEEFF006BB9C0 /* blog_channel_StreamPeerIO.h in Headers */,
 				FCFEE0EC1F2FEEFF006BB9C0 /* blog_channel_ncd_assert.h in Headers */,
@@ -2024,6 +2029,7 @@
 				FCFEE1FD1F2FEF8E006BB9C0 /* lwipopts.h in Headers */,
 				FCFEE1C21F2FEF00006BB9C0 /* blog_channel_ncd_spawn.h in Headers */,
 				FCFEE1B61F2FEF00006BB9C0 /* blog_channel_ncd_ondemand.h in Headers */,
+				FCAB68E4214732BB0060897F /* dns_proto.h in Headers */,
 				FCD1107E200969B30079420A /* SocksUdpClient.h in Headers */,
 				FCFEE1EE1F2FEF00006BB9C0 /* blog_channel_StreamPeerIO.h in Headers */,
 				FCFEE1841F2FEF00006BB9C0 /* blog_channel_ncd_assert.h in Headers */,

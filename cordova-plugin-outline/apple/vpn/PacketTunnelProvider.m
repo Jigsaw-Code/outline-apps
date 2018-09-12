@@ -127,28 +127,33 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   [self.shadowsocks
       startWithConnectivityChecks:!isOnDemand
                        completion:^(ErrorCode errorCode) {
-                         if (errorCode == noError) {
-                           [self connectTunnel:[self getTunnelNetworkSettings]
-                                    completion:^(NSError *error) {
-                                      if (!error) {
-                                        [self setupPacketTunnelFlow];
-                                        [self startTun2SocksWithPort:kShadowsocksLocalPort];
-                                        [self execAppCallbackForAction:kActionStart
-                                                             errorCode:noError];
+                         ErrorCode clientErrorCode =
+                             (errorCode == noError || errorCode == udpRelayNotEnabled) ? noError
+                                                                                       : errorCode;
+                         if (clientErrorCode == noError) {
+                             [self connectTunnel:[self getTunnelNetworkSettings]
+                                      completion:^(NSError *error) {
+                                        if (!error) {
+                                            [self setupPacketTunnelFlow];
+                                            [TunnelInterface
+                                                setIsUdpForwardingEnabled:(errorCode == noError)];
+                                            [self startTun2SocksWithPort:kShadowsocksLocalPort];
+                                            [self execAppCallbackForAction:kActionStart
+                                                                 errorCode:noError];
 
-                                        [self.connectionStore save:connection];
-                                        self.connectionStore.status = ConnectionStatusConnected;
-                                      } else {
-                                        [self execAppCallbackForAction:kActionStart
-                                                             errorCode:vpnPermissionNotGranted];
-                                      }
-                                      completionHandler(error);
-                                    }];
+                                            [self.connectionStore save:connection];
+                                            self.connectionStore.status = ConnectionStatusConnected;
+                                        } else {
+                                            [self execAppCallbackForAction:kActionStart
+                                                                 errorCode:vpnPermissionNotGranted];
+                                        }
+                                        completionHandler(error);
+                                      }];
                          } else {
-                           [self execAppCallbackForAction:kActionStart errorCode:errorCode];
-                           completionHandler([NSError errorWithDomain:NEVPNErrorDomain
-                                                                 code:NEVPNErrorConnectionFailed
-                                                             userInfo:nil]);
+                             [self execAppCallbackForAction:kActionStart errorCode:clientErrorCode];
+                             completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                                   code:NEVPNErrorConnectionFailed
+                                                               userInfo:nil]);
                          }
                        }];
 }
@@ -476,15 +481,21 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
       [self.shadowsocks
           startWithConnectivityChecks:true
                            completion:^(ErrorCode errorCode) {
-                             [weakSelf execAppCallbackForAction:kActionStart errorCode:errorCode];
-                             if (errorCode != noError) {
-                               DDLogWarn(@"Tearing down VPN");
-                               [self cancelTunnelWithError:
-                                         [NSError errorWithDomain:NEVPNErrorDomain
-                                                             code:NEVPNErrorConnectionFailed
-                                                         userInfo:nil]];
-                               return;
+                             ErrorCode clientErrorCode =
+                                 errorCode == noError || errorCode == udpRelayNotEnabled
+                                     ? noError
+                                     : errorCode;
+                             [weakSelf execAppCallbackForAction:kActionStart
+                                                      errorCode:clientErrorCode];
+                             if (clientErrorCode != noError) {
+                                 DDLogWarn(@"Tearing down VPN");
+                                 [self cancelTunnelWithError:
+                                           [NSError errorWithDomain:NEVPNErrorDomain
+                                                               code:NEVPNErrorConnectionFailed
+                                                           userInfo:nil]];
+                                 return;
                              }
+                             [TunnelInterface setIsUdpForwardingEnabled:(errorCode == noError)];
                              [weakSelf.connectionStore save:self.connection];
                            }];
     }];
