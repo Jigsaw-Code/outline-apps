@@ -67,6 +67,8 @@ ${StrNSISToIO}
   ;    string that Sentry will like *and* can fit on one line, e.g.
   ;    "device not found\ncommand failed"; fortunately, StrFunc.nsh's StrNSISToIO does precisely
   ;    this.
+  ;  - RELEASE and SENTRY_DSN are defined in env.nsh which is generated at build time by
+  ;    {package,release}_action.sh.
 
   ; http://nsis.sourceforge.net/Docs/StrFunc/StrFunc.txt
   Var /GLOBAL FAILURE_MESSAGE
@@ -97,6 +99,8 @@ ${StrNSISToIO}
   nsExec::Exec "sc query OutlineService"
   Pop $0
   StrCmp $0 0 success
+  ; TODO: Trigger a Sentry report for service installation failure, too, and revisit
+  ;       the restart stuff in the TypeScript code.
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try \
     running the installer again. If you still cannot install Outline, please get in touch with us \
     and let us know that OutlineService failed to install."
