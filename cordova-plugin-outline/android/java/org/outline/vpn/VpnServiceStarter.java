@@ -17,6 +17,7 @@ package org.outline.vpn;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 // Starts the VpnTunnelService on boot and after app updates. Receives broadcasts for
 // android.intent.action.BOOT_COMPLETED and android.intent.action.MY_PACKAGE_REPLACED.
@@ -27,6 +28,10 @@ public class VpnServiceStarter extends BroadcastReceiver {
   public void onReceive(Context context, Intent intent) {
     Intent serviceIntent = new Intent(context, VpnTunnelService.class);
     serviceIntent.putExtra(AUTOSTART_EXTRA, true);
-    context.startService(serviceIntent);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      context.startForegroundService(serviceIntent);
+    } else {
+      context.startService(serviceIntent);
+    }
   }
 }
