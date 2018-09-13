@@ -22,7 +22,15 @@
 yarn do electron/build
 
 cp package.json build/windows/
-scripts/environment_json.sh -p windows -r > build/windows/www/environment.json
+
+# Environment variables.
+scripts/environment_json.sh -p windows > build/windows/www/environment.json
+# TODO: Share code with environment_json.sh.
+mkdir -p build/windows/build
+cat > build/windows/build/env.nsh << EOF
+!define RELEASE "$(node -r fs -p 'JSON.parse(fs.readFileSync("package.json")).version;')"
+!define SENTRY_DSN "https://sentry.io/api/159502/store/?sentry_version=7&sentry_key=6a1e6e7371a64db59f5ba6c34a77d78c"
+EOF
 
 # Copy tap-windows6.
 cp -R third_party/tap-windows6/bin build/windows/tap-windows6
