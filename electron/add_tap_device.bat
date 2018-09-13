@@ -46,12 +46,12 @@ wmic nic get netconnectionid /format:list | findstr "=" > %AFTER_DEVICES%
 :: Find the name of the new device:
 ::  - Use a temp file to save/load the result to avoid escaping issues.
 ::  - Pipe input from /dev/null to prevent Powershell hanging, waiting for EOF.
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim()" > %DEVICE_DIFF% < NUL
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim()" > %DEVICE_DIFF% <nul
 set /p NEW_DEVICE= < %DEVICE_DIFF%
 echo New TAP device name: %NEW_DEVICE%
 
 :: Rename the device.
-netsh interface set interface name = "%NEW_DEVICE%" newname = "%DEVICE_NAME%" >nul
+netsh interface set interface name = "%NEW_DEVICE%" newname = "%DEVICE_NAME%"
 if %errorlevel% neq 0 (
   echo Could not rename TAP device.
   exit /b 1
@@ -63,7 +63,7 @@ if %errorlevel% neq 0 (
 :: script will fail and the installer will show an error message to the user.
 :: TODO: Actually search the system for an unused subnet or make the subnet
 ::       configurable in the Outline client.
-netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0 >nul
+netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0
 if %errorlevel% neq 0 (
   echo Could not set TAP device subnet.
   exit /b 1
@@ -74,13 +74,13 @@ if %errorlevel% neq 0 (
 :: network device associated with the default gateway. This is good for us
 :: as it means we do not have to modify the DNS settings of any other network
 :: device in the system. Configure with OpenDNS and Dyn resolvers.
-netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222 >nul
+netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222
 if %errorlevel% neq 0 (
-  echo Could not configure TAP device DNS.
+  echo Could not configure TAP device primary DNS.
   exit /b 1
 )
-netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2 >nul
+netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2
 if %errorlevel% neq 0 (
-  echo Could not configure TAP device  secondary DNS.
+  echo Could not configure TAP device secondary DNS.
   exit /b 1
 )
