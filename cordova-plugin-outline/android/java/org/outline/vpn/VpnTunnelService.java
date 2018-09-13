@@ -142,11 +142,11 @@ public class VpnTunnelService extends VpnService {
    * @throws IllegalArgumentException if |connectionId| or |config| are missing.
    */
   public void startConnection(final String connectionId, final JSONObject config) {
-    startConnection(connectionId, config, true);
+    startConnection(connectionId, config, false);
   }
 
   private void startConnection(
-      final String connectionId, final JSONObject config, boolean performConnectivityChecks) {
+      final String connectionId, final JSONObject config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting connection %s.", connectionId));
     boolean isRestart = false;
     if (connectionId == null || config == null) {
@@ -164,13 +164,16 @@ public class VpnTunnelService extends VpnService {
     activeConnectionId = connectionId;
     boolean remoteUdpForwardingEnabled = false;
     try {
-      OutlinePlugin.ErrorCode errorCode = startShadowsocks(config, performConnectivityChecks).get();
-      if (errorCode == OutlinePlugin.ErrorCode.SERVER_UNREACHABLE
-          || errorCode == OutlinePlugin.ErrorCode.INVALID_SERVER_CREDENTIALS) {
+      // Do not perform connectivity checks when connecting on startup. We should avoid failing the
+      // connection due to a network error, as network may not be ready.
+      OutlinePlugin.ErrorCode errorCode = startShadowsocks(config, !isAutoStart).get();
+      if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
+              || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
         onVpnStartFailure(errorCode);
         return;
       }
-      remoteUdpForwardingEnabled = errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
+      remoteUdpForwardingEnabled = isAutoStart ? connectionStore.isUdpSupported()
+                                               : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     } catch (Exception e) {
       onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
       return;
@@ -179,6 +182,7 @@ public class VpnTunnelService extends VpnService {
     if (isRestart) {
       // Disconnect the tunnel in case UDP forwarding support has changed.
       vpnTunnel.disconnectTunnel();
+      stopForeground();
     } else {
       // Only establish the VPN if this is not a connection restart.
       if (!vpnTunnel.establishVpn()) {
@@ -187,9 +191,8 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       startNetworkConnectivityMonitor();
-    } else {
-      stopForeground();
     }
+
     try {
       vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress(), remoteUdpForwardingEnabled);
     } catch (Exception e) {
@@ -197,10 +200,9 @@ public class VpnTunnelService extends VpnService {
       onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
       return;
     }
-
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
     startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
-    storeActiveConnection(config);
+    storeActiveConnection(connectionId, config, remoteUdpForwardingEnabled);
   }
 
   /**
@@ -464,25 +466,26 @@ public class VpnTunnelService extends VpnService {
       final JSONObject config = connection.getJSONObject(CONNECTION_CONFIG_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.RECONNECTING);
-      // Do not perform connectivity checks when connecting on startup. We should avoid failing the
-      // connection due to a network error, as network may not be ready.
-      startConnection(connection.getString(CONNECTION_ID_KEY), config, false);
+      startConnection(connection.getString(CONNECTION_ID_KEY),
+          connection.getJSONObject(CONNECTION_CONFIG_KEY), true);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON connection data", e);
       stopSelf();
     }
   }
 
-  private void storeActiveConnection(final JSONObject config) {
+  private void storeActiveConnection(
+      final String connectionId, final JSONObject config, boolean isUdpSupported) {
     LOG.info("Storing active connection.");
     JSONObject connection = new JSONObject();
     try {
-      connection.put(CONNECTION_ID_KEY, activeConnectionId).put(CONNECTION_CONFIG_KEY, config);
+      connection.put(CONNECTION_ID_KEY, connectionId).put(CONNECTION_CONFIG_KEY, config);
       connectionStore.save(connection);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON connection data", e);
     }
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.CONNECTED);
+    connectionStore.setIsUdpSupported(isUdpSupported);
   }
 
   // Foreground service & notifications
