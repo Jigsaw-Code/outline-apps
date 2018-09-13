@@ -35,18 +35,21 @@ public class Tun2SocksJni {
    *     traffic. Should be set to non-blocking mode. tun2Socks does *not* take ownership of the
    *     file descriptor; the caller is responsible for closing it after tun2socks terminates.
    * @param vpnInterfaceMTU maximum transmission unit of the VPN, in bytes.
-   * @param vpnIpAddress router IP address to the VPN.
+   * @param vpnIpAddress router IPv4 address to the VPN.
    * @param vpnNetMask mask of the VPN interface.
+   * @param vpnIpV6Address router IPv6 address to the VPN, or null to disable IPv6 support.
    * @param socksServerAddress IP address of the SOCKS server to route TCP traffic.
    * @param udpRelayAddress IP address of the relay to route UDP traffic.
    * @param dnsResolverAddress IP address to a DNS resolver to route DNS queries.
    * @param transparentDNS if non-zero, will resolve DNS queries transparently.
+   * @param transparentDNS if non-zero, will direct UDP traffic through the SOCKS server.
    */
   public static native int start(
       int vpnInterfaceFileDescriptor,
       int vpnInterfaceMTU,
       String vpnIpAddress,
       String vpnNetMask,
+      String vpnIpV6Address,
       String socksServerAddress,
       String udpRelayAddress,
       String dnsResolverAddress,

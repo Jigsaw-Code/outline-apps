@@ -467,6 +467,7 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
     jint vpnInterfaceMTU,
     jstring vpnIpAddress,
     jstring vpnNetMask,
+    jstring vpnIpV6Address,
     jstring socksServerAddress,
     jstring udpRelayAddress,
     jstring dnsResolverAddress,
@@ -477,6 +478,9 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
 
     const char* vpnIpAddressStr = (*env)->GetStringUTFChars(env, vpnIpAddress, 0);
     const char* vpnNetMaskStr = (*env)->GetStringUTFChars(env, vpnNetMask, 0);
+    const char* vpnIpV6AddressStr = vpnIpV6Address != NULL
+                                        ? (*env)->GetStringUTFChars(env, vpnIpV6Address, 0)
+                                        : NULL;
     const char* socksServerAddressStr = (*env)->GetStringUTFChars(env, socksServerAddress, 0);
     const char* udpRelayAddressStr = (*env)->GetStringUTFChars(env, udpRelayAddress, 0);
     const char* dnsResolverAddressStr = (*env)->GetStringUTFChars(env, dnsResolverAddress, 0);
@@ -485,6 +489,7 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
 
     options.netif_ipaddr = (char*)vpnIpAddressStr;
     options.netif_netmask = (char*)vpnNetMaskStr;
+    options.netif_ip6addr = (char*)vpnIpV6AddressStr;
     options.socks_server_addr = (char*)socksServerAddressStr;
     options.udp_relay_addr = (char*)udpRelayAddressStr;
     options.dns_resolver_addr = (char*)dnsResolverAddressStr;
@@ -503,6 +508,9 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
 
     (*env)->ReleaseStringUTFChars(env, vpnIpAddress, vpnIpAddressStr);
     (*env)->ReleaseStringUTFChars(env, vpnNetMask, vpnNetMaskStr);
+    if (vpnIpV6Address != NULL) {
+        (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpAddressStr);
+    }
     (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
     (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
     (*env)->ReleaseStringUTFChars(env, dnsResolverAddress, dnsResolverAddressStr);

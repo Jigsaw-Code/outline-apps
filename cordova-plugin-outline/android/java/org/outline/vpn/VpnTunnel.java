@@ -31,6 +31,7 @@ public class VpnTunnel {
   private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
   private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
   private static final String VPN_INTERFACE_NETMASK = "255.255.255.0";
+  private static final String VPN_IPV6_NULL = null;  // No IPv6 support.
   private static final int VPN_INTERFACE_MTU = 1500;
   // OpenDNS and Dyn IP addresses.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
@@ -127,7 +128,7 @@ public class VpnTunnel {
           public void run() {
             Tun2SocksJni.start(tunFd.getFd(), VPN_INTERFACE_MTU,
                 String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "2"), // Router IP address
-                VPN_INTERFACE_NETMASK, socksServerAddress,
+                VPN_INTERFACE_NETMASK, VPN_IPV6_NULL, socksServerAddress,
                 socksServerAddress, // UDP relay IP address
                 String.format(Locale.ROOT, "%s:%d", dnsResolverAddress, DNS_RESOLVER_PORT),
                 TRANSPARENT_DNS_ENABLED, SOCKS5_UDP_ENABLED);
