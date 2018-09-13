@@ -365,7 +365,7 @@ public class VpnTunnelService extends VpnService {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
-        setUnderlyingNetworks(new Network[] {connectivityManager.getActiveNetwork()});
+        setUnderlyingNetworks(new Network[] {network});
       }
     }
 
