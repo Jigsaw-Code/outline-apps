@@ -362,6 +362,11 @@ public class VpnTunnelService extends VpnService {
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
       displayPersistentNotification(null, OutlinePlugin.ConnectionStatus.CONNECTED);
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        // Indicate that traffic will be sent over the current active network.
+        setUnderlyingNetworks(new Network[] {connectivityManager.getActiveNetwork()});
+      }
     }
 
     @Override
@@ -375,6 +380,10 @@ public class VpnTunnelService extends VpnService {
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
       displayPersistentNotification(null, OutlinePlugin.ConnectionStatus.RECONNECTING);
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        setUnderlyingNetworks(null);
+      }
     }
 
     // Returns whether the underlying networks of NetworkInfo objects are equal.
