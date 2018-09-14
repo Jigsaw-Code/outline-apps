@@ -134,18 +134,22 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                              [self connectTunnel:[self getTunnelNetworkSettings]
                                       completion:^(NSError *error) {
                                         if (!error) {
-                                            [self setupPacketTunnelFlow];
-                                            [TunnelInterface
-                                                setIsUdpForwardingEnabled:(errorCode == noError)];
-                                            [self startTun2SocksWithPort:kShadowsocksLocalPort];
-                                            [self execAppCallbackForAction:kActionStart
-                                                                 errorCode:noError];
+                                          BOOL isUdpSupported =
+                                              isOnDemand ? self.connectionStore.isUdpSupported
+                                                         : errorCode == noError;
+                                          [self setupPacketTunnelFlow];
+                                          [TunnelInterface
+                                              setIsUdpForwardingEnabled:isUdpSupported];
+                                          [self startTun2SocksWithPort:kShadowsocksLocalPort];
+                                          [self execAppCallbackForAction:kActionStart
+                                                               errorCode:noError];
 
-                                            [self.connectionStore save:connection];
-                                            self.connectionStore.status = ConnectionStatusConnected;
+                                          [self.connectionStore save:connection];
+                                          self.connectionStore.isUdpSupported = isUdpSupported;
+                                          self.connectionStore.status = ConnectionStatusConnected;
                                         } else {
-                                            [self execAppCallbackForAction:kActionStart
-                                                                 errorCode:vpnPermissionNotGranted];
+                                          [self execAppCallbackForAction:kActionStart
+                                                               errorCode:vpnPermissionNotGranted];
                                         }
                                         completionHandler(error);
                                       }];
@@ -488,15 +492,17 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                              [weakSelf execAppCallbackForAction:kActionStart
                                                       errorCode:clientErrorCode];
                              if (clientErrorCode != noError) {
-                                 DDLogWarn(@"Tearing down VPN");
-                                 [self cancelTunnelWithError:
-                                           [NSError errorWithDomain:NEVPNErrorDomain
-                                                               code:NEVPNErrorConnectionFailed
-                                                           userInfo:nil]];
-                                 return;
+                               DDLogWarn(@"Tearing down VPN");
+                               [self cancelTunnelWithError:
+                                         [NSError errorWithDomain:NEVPNErrorDomain
+                                                             code:NEVPNErrorConnectionFailed
+                                                         userInfo:nil]];
+                               return;
                              }
-                             [TunnelInterface setIsUdpForwardingEnabled:(errorCode == noError)];
+                             BOOL isUdpSupported = errorCode == noError;
+                             [TunnelInterface setIsUdpForwardingEnabled:isUdpSupported];
                              [weakSelf.connectionStore save:self.connection];
+                             weakSelf.connectionStore.isUdpSupported = isUdpSupported;
                            }];
     }];
   }
