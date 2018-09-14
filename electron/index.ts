@@ -182,9 +182,13 @@ app.setAsDefaultProtocolClient('ss');
 
 function interceptShadowsocksLink(argv: string[]) {
   if (argv.length > 1) {
-    const url = argv[1];
-    if (url.startsWith('ss://')) {
+    const protocol = 'ss://';
+    let url = argv[1];
+    if (url.startsWith(protocol)) {
       if (mainWindow) {
+        // The system adds a trailing slash to the intercepted URL (before the fragment).
+        // Remove it before sending to the UI.
+        url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
         mainWindow.webContents.send('add-server', url);
       } else {
         console.error('called with URL but mainWindow not open');
