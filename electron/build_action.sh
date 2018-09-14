@@ -55,5 +55,10 @@ cat << EOM > $OUTPUT/index.js
 require('./electron');
 EOM
 
+# Not strictly necessary when running from the command line but this sets fields
+# such as productName which influences things like the appData directory, easing
+# debugging.
+cp package.json $OUTPUT
+
 # Icons.
 electron-icon-maker --input=electron/logo.png --output=build/windows
