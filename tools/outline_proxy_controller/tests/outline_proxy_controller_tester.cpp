@@ -13,6 +13,7 @@
 // limitations under the License.
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <map>
+#include <regex>
 #include <string>
 
 #include "catch.hpp"
@@ -35,10 +36,35 @@ TEST_CASE("Detectng Best interface index") {
   REQUIRE(testOutlineProxyController.clientToServerRoutingInterface == testFixtures::bestInterface);
 }
 
-TEST_CASE("verifying routing through a random host") {
+TEST_CASE("Tun device creation") {
+  OutlineProxyController testOutlineProxyController;  // device gets created on construction
+
+  REQUIRE(testOutlineProxyController.outlineTunDeviceExsits());
+}
+
+TEST_CASE("Tun device gets deleted on delete") {
   OutlineProxyController testOutlineProxyController;
 
-  testOutlineProxyController.routeThroughOutline();
+  testOutlineProxyController.deleteOutlineTunDev();
+  // REQUIRE(!testOutlineProxyController.outlineTunDeviceExsits());
+}
+
+TEST_CASE("Tun device gets the expected IP") {
+  OutlineProxyController testOutlineProxyController;
+
+  map<string, string> getRouteCommand;
+
+  getRouteCommand["show"] = testOutlineProxyController.tunInterfaceName;
+  string AddressInfo = testOutlineProxyController.executeIPAddress(getRouteCommand);
+
+  std::regex IPRegex(testOutlineProxyController.tunInterfaceIp, std::regex_constants::ECMAScript);
+  REQUIRE(std::regex_search(AddressInfo, IPRegex));
+}
+
+TEST_CASE("verifying routing to a random host through outline") {
+  OutlineProxyController testOutlineProxyController;
+
+  testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
 
   map<string, string> getRouteCommand;
 
@@ -53,4 +79,78 @@ TEST_CASE("verifying routing through a random host") {
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
+
+  testOutlineProxyController.routeDirectly();
+}
+
+TEST_CASE("verifying a normal routing after disconnect") {
+  OutlineProxyController testOutlineProxyController;
+
+  testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
+
+  map<string, string> getRouteCommand;
+
+  getRouteCommand["get"] = testFixtures::randomHost;
+  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.tunInterfaceRouterIp);
+
+  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
+  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.routingGatewayIP);
+
+  testOutlineProxyController.routeDirectly();
+
+  getRouteCommand["get"] = testFixtures::randomHost;
+  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.routingGatewayIP);
+}
+
+TEST_CASE("verifying to a random host through outline and normal routing after disconnect") {
+  OutlineProxyController testOutlineProxyController;
+
+  testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
+
+  map<string, string> getRouteCommand;
+
+  getRouteCommand["get"] = testFixtures::randomHost;
+  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.tunInterfaceRouterIp);
+
+  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
+  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.routingGatewayIP);
+
+  testOutlineProxyController.routeDirectly();
+
+  getRouteCommand["get"] = testFixtures::randomHost;
+  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
+          testOutlineProxyController.routingGatewayIP);
+}
+
+TEST_CASE("verifying ipv6 is disbaled when outline is enabled") {
+  OutlineProxyController testOutlineProxyController;
+
+  testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
+
+  map<string, string> getSystemStatusCommand;
+
+  getSystemStatusCommand["-a"] = "";
+  string systemStatus = testOutlineProxyController.executeSysctl(getSystemStatusCommand);
+
+  std::regex enabledIPv6Regex("disable_ipv6 = 0", std::regex_constants::ECMAScript);
+  REQUIRE(std::regex_search(systemStatus, enabledIPv6Regex) == false);
+
+  testOutlineProxyController.routeDirectly();
 }
