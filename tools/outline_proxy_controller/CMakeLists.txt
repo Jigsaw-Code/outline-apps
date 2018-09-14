@@ -1,5 +1,14 @@
 cmake_minimum_required (VERSION 2.6)
 project (OutlineProxyController)
+find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS filesystem
+                                                        regex
+                                                        unit_test_framework
+                                                        program_options
+                                                        coroutine
+                                                        context
+                                                        thread
+                                                        date_time
+                                                        system)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -9,8 +18,22 @@ configure_file (
   )
 
 set(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -O0 -ggdb ${SANITIZE}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -Wall -O0 -ggdb ${SANITIZE}")
 
-#add_executable(OutlineProxyController outline_proxy_controller.cpp)
+include_directories(
+    "${Boost_INCLUDE_DIR}")
+
+##############################
 add_executable(OutlineProxyControllerTester outline_proxy_controller.cpp
                                             tests/outline_proxy_controller_tester.cpp)
+
+######################################
+add_executable(OutlineProxyController
+    outline_proxy_controller.cpp
+    outline_daemon.cpp
+    )
+
+target_link_libraries(OutlineProxyController
+    ${Boost_LIBRARIES}
+)
+
