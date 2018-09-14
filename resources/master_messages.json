@@ -345,10 +345,6 @@
     "message": "Sorry, we were unable to submit your feedback. Please check that you are connected to the internet and try again.",
     "description": "An error message shown when the user is trying to send feedback to the application developers but it is failing."
   },
-  "outline_plugin_error_unexpected": {
-    "message": "Sorry, an unexpected error occurred. If this happens again, please submit feedback.",
-    "description": "A generic error message shown when the cause is not known."
-  },
   "outline_plugin_error_vpn_permission_not_granted": {
     "message": "Outline needs your permission to set up a VPN connection to the server. Please try again, or submit feedback if you need help.",
     "description": "An error message shown when the application does not have the proper operating system permission to create a VPN connection. Outline is the product name and can be found in the translation glossary."
@@ -364,10 +360,6 @@
   "outline_plugin_error_server_unreachable": {
     "message": "We can’t seem to connect to your server. Please check that you are connected to the internet and try again.",
     "description": "An error message shown when the user tries to connect to a server that cannot be reached for some reason."
-  },
-  "outline_plugin_error_generic_start_failure": {
-    "message": "Something happened and we couldn’t connect. If this happens again, please submit feedback.",
-    "description": "A general error message when failing to connect to a server."
   },
   "outline-plugin-error-admin-permissions": {
     "message": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
