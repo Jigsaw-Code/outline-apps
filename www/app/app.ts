@@ -150,10 +150,13 @@ export class App {
     } else if (e instanceof errors.OperationTimedOut) {
       messageKey = 'error-timeout';
     } else if (e instanceof errors.ShadowsocksStartFailure) {
-      // TODO: only display this message if running on Windows.
-      messageKey = 'outline-plugin-error-antivirus';
-      buttonKey = 'fix-this';
-      buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
+      if (this.isWindows()) {
+        messageKey = 'outline-plugin-error-antivirus';
+        buttonKey = 'fix-this';
+        buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
+      } else {
+        messageKey = 'outline-plugin-error-generic-start-failure';
+      }
     } else if (e instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'submit-feedback';
@@ -386,7 +389,7 @@ export class App {
   }
 
   private maybeShowAutoConnectDialog() {
-    if (!('cordova' in window)) {
+    if (!this.isWindows()) {
       // NOTE: auto-connect doesn't currently work in Windows because the executable requires
       // admin rights and cannot be automatically started on boot.
       return;
@@ -558,5 +561,9 @@ export class App {
   private showLocalizedErrorInDefaultPage(err: Error) {
     this.changeToDefaultPage();
     this.showLocalizedError(err);
+  }
+
+  private isWindows() {
+    return !('cordova' in window);
   }
 }
