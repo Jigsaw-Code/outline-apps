@@ -40,6 +40,9 @@ import * as process_manager from './process_manager';
 //   C:\Users\bob\AppData\Roaming\Outline Beta\Local Storage\whatever.localstorage
 // to:
 //   C:\Users\bob\AppData\Roaming\Outline\Local Storage\whatever.localstorage
+//
+// Note that the uninstaller does *not* clear the appData directory, so users should still have
+// the beta appData directory on their system when they're updated to the new client.
 function migrateBetaServers() {
   if (os.platform() !== 'win32') {
     console.info('skipping server migration, not running on Windows');
