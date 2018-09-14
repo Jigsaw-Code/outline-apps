@@ -149,14 +149,11 @@ export class App {
       messageKey = 'error-server-incompatible';
     } else if (e instanceof errors.OperationTimedOut) {
       messageKey = 'error-timeout';
-    } else if (e instanceof errors.ShadowsocksStartFailure) {
-      if (this.isWindows()) {
-        messageKey = 'outline-plugin-error-antivirus';
-        buttonKey = 'fix-this';
-        buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
-      } else {
-        messageKey = 'outline-plugin-error-generic-start-failure';
-      }
+    } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
+      // Fall through to `error-unexpected` for other platforms.
+      messageKey = 'outline-plugin-error-antivirus';
+      buttonKey = 'fix-this';
+      buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
     } else if (e instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'submit-feedback';
