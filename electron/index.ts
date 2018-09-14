@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as sentry from '@sentry/electron';
-import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
+import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as path from 'path';
@@ -22,6 +22,7 @@ import * as url from 'url';
 
 import * as errors from '../www/model/errors';
 
+import {migrateBetaServers} from './beta_migration';
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
 
@@ -138,18 +139,19 @@ function createTrayIcon(status: ConnectionStatus) {
     tray.setToolTip('Outline');
   }
   // Retrieve localized strings, falling back to the pre-populated English default.
-  const statusString = isConnected ? localizedStrings['connected-server-state']
-                                   : localizedStrings['disconnected-server-state'];
-  const quitString =  localizedStrings['quit'];
+  const statusString = isConnected ? localizedStrings['connected-server-state'] :
+                                     localizedStrings['disconnected-server-state'];
+  const quitString = localizedStrings['quit'];
   const menuTemplate = [
-    {label: statusString, enabled: false},
-    {type: 'separator'} as MenuItemConstructorOptions, {label: quitString, click: quitApp}
+    {label: statusString, enabled: false}, {type: 'separator'} as MenuItemConstructorOptions,
+    {label: quitString, click: quitApp}
   ];
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
 function createTrayIconImage(imageName: string) {
-  return nativeImage.createFromPath(path.join(__dirname, imageName)).resize({width: 16, height: 16});
+  return nativeImage.createFromPath(path.join(__dirname, imageName))
+      .resize({width: 16, height: 16});
 }
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the
@@ -195,6 +197,8 @@ function interceptShadowsocksLink(argv: string[]) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+  migrateBetaServers();
+
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',
