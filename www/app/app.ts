@@ -131,9 +131,7 @@ export class App {
     let buttonHandler: () => void;
     let buttonLink: string;
 
-    if (e instanceof errors.UnexpectedPluginError) {
-      messageKey = 'outline-plugin-error-unexpected';
-    } else if (e instanceof errors.VpnPermissionNotGranted) {
+    if (e instanceof errors.VpnPermissionNotGranted) {
       messageKey = 'outline-plugin-error-vpn-permission-not-granted';
     } else if (e instanceof errors.InvalidServerCredentials) {
       messageKey = 'outline-plugin-error-invalid-server-credentials';
@@ -149,8 +147,8 @@ export class App {
       messageKey = 'error-server-incompatible';
     } else if (e instanceof errors.OperationTimedOut) {
       messageKey = 'error-timeout';
-    } else if (e instanceof errors.ShadowsocksStartFailure) {
-      // TODO: only display this message if running on Windows.
+    } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
+      // Fall through to `error-unexpected` for other platforms.
       messageKey = 'outline-plugin-error-antivirus';
       buttonKey = 'fix-this';
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
@@ -386,7 +384,7 @@ export class App {
   }
 
   private maybeShowAutoConnectDialog() {
-    if (!('cordova' in window)) {
+    if (!this.isWindows()) {
       // NOTE: auto-connect doesn't currently work in Windows because the executable requires
       // admin rights and cannot be automatically started on boot.
       return;
@@ -558,5 +556,9 @@ export class App {
   private showLocalizedErrorInDefaultPage(err: Error) {
     this.changeToDefaultPage();
     this.showLocalizedError(err);
+  }
+
+  private isWindows() {
+    return !('cordova' in window);
   }
 }
