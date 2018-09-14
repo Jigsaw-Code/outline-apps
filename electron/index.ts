@@ -28,48 +28,51 @@ import * as errors from '../www/model/errors';
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
 
-// no effect when running via the command line?
-console.log('TREV', app.getPath('userData'));
-
-// must call after the ready event, so that the application's directory
-// is ready but before creating the mainWindow (which will create Local Storage/)
-function migrate() {
+// Imports the server list from Outline Beta, if one exists, by copying localstorage from Outline
+// Beta's appData directory:
+//   https://electronjs.org/docs/api/app#appgetpathname
+//
+// This should be called after the ready event, so that the appData directroy exists, but before
+// creating the mainWindow (which uses and creates Local Storage/).
+//
+// Why is this necessary? When the productName (in package.json) changed, so did the appData
+// directory, e.g. for the user "bob", the file changed from:
+//   C:\Users\bob\AppData\Roaming\Outline Beta\Local Storage\whatever.localstorage
+// to:
+//   C:\Users\bob\AppData\Roaming\Outline\Local Storage\whatever.localstorage
+function migrateBetaServers() {
   if (os.platform() !== 'win32') {
+    console.info('skipping server migration, not running on Windows');
     return;
   }
 
-  // TODO: return if not windows
+  // Path under USERDATA at which local storage can be found.
+  // "file__0" seems to be the same on each platform (Linux, macOS, Windows).
+  const suffix = ['Local Storage', 'file__0.localstorage'];
 
-  // TODO: return if not prod mode?
+  const dest = path.join(app.getPath('userData'), ...suffix);
+  if (fs.existsSync(dest)) {
+    console.info('skipping server migration, localstorage already exists');
+    return;
+  }
 
-  // TODO: what's the likely install path?
-
-  // TODO: OMG does the old file even exist?
-
-  // for productName buzztown2, path is:
-  //  /Users/trevj/Library/Application Support/buzztown2
-
-  // cp "/Users/trevj/Library/Application Support/buzztown2/Local Storage/file__0.localstorage"
-
-  // TODO: dev or prod mode?
-
-  // https://github.com/jprichardson/node-fs-extra/blob/HEAD/docs/copy-sync.md
+  const src = path.normalize(path.join(app.getPath('userData'), '..', 'Outline Beta', ...suffix));
+  if (!fs.existsSync(src)) {
+    console.info('skipping server migration, no beta localstorage found');
+    return;
+  }
 
   try {
-    const p = path.join(app.getPath('userData'), 'Local Storage');
-    fs.mkdirSync(p);
+    // The parent folder, 'Local Storage', does not exist at this point.
+    fs.mkdirSync(path.dirname(path.join(app.getPath('userData'), ...suffix)));
 
-    const src =
-        path.join(app.getPath('userData'), 'Outline Beta', 'Local Storage', 'file__0.localstorage');
-
-    // TODO: what's dest for the per-machine install?
-
-    const yo = fsextra.copySync(
-        src, path.join(app.getPath('userData'), 'Local Storage', path.basename(src)),
-        {overwrite: true, errorOnExist: true});
-    console.log('RESULT', yo);
+    // TODO: Use fs.copyFileSync once we move to an Electron with Node.js 8.5+:
+    //       https://nodejs.org/dist/latest-v8.x/docs/api/fs.html#fs_fs_copyfilesync_src_dest_flags
+    fsextra.copySync(src, dest, {overwrite: true, errorOnExist: true});
+    console.info('migrated beta servers');
   } catch (e) {
-    console.error('COPY FAILURE', e);
+    // Do *not* the error since it almost certainly contains the PII-type info, viz. username.
+    console.error('beta server migration failed');
   }
 }
 
@@ -244,7 +247,7 @@ function interceptShadowsocksLink(argv: string[]) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  migrate();
+  migrateBetaServers();
 
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{

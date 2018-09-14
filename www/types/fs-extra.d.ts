@@ -16,8 +16,8 @@
 // https://www.npmjs.com/package/fs-extra
 
 declare module 'fs-extra' {
-  export function copySync(src: string, dest: string, options: {
-    overwrite?: boolean,
-    errorOnExist?: boolean
-  }): void;
+  // There are a few other options, see:
+  // https://github.com/jprichardson/node-fs-extra/blob/HEAD/docs/copy-sync.md
+  export function copySync(
+      src: string, dest: string, options: {overwrite?: boolean, errorOnExist?: boolean}): void;
 }
