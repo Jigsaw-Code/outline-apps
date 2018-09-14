@@ -16,6 +16,9 @@ import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
+import * as fs from 'fs';
+import * as fsextra from 'fs-extra';
+import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
@@ -24,6 +27,51 @@ import * as errors from '../www/model/errors';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
+
+// no effect when running via the command line?
+console.log('TREV', app.getPath('userData'));
+
+// must call after the ready event, so that the application's directory
+// is ready but before creating the mainWindow (which will create Local Storage/)
+function migrate() {
+  if (os.platform() !== 'win32') {
+    return;
+  }
+
+  // TODO: return if not windows
+
+  // TODO: return if not prod mode?
+
+  // TODO: what's the likely install path?
+
+  // TODO: OMG does the old file even exist?
+
+  // for productName buzztown2, path is:
+  //  /Users/trevj/Library/Application Support/buzztown2
+
+  // cp "/Users/trevj/Library/Application Support/buzztown2/Local Storage/file__0.localstorage"
+
+  // TODO: dev or prod mode?
+
+  // https://github.com/jprichardson/node-fs-extra/blob/HEAD/docs/copy-sync.md
+
+  try {
+    const p = path.join(app.getPath('userData'), 'Local Storage');
+    fs.mkdirSync(p);
+
+    const src =
+        path.join(app.getPath('userData'), 'Outline Beta', 'Local Storage', 'file__0.localstorage');
+
+    // TODO: what's dest for the per-machine install?
+
+    const yo = fsextra.copySync(
+        src, path.join(app.getPath('userData'), 'Local Storage', path.basename(src)),
+        {overwrite: true, errorOnExist: true});
+    console.log('RESULT', yo);
+  } catch (e) {
+    console.error('COPY FAILURE', e);
+  }
+}
 
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
@@ -138,18 +186,19 @@ function createTrayIcon(status: ConnectionStatus) {
     tray.setToolTip('Outline');
   }
   // Retrieve localized strings, falling back to the pre-populated English default.
-  const statusString = isConnected ? localizedStrings['connected-server-state']
-                                   : localizedStrings['disconnected-server-state'];
-  const quitString =  localizedStrings['quit'];
+  const statusString = isConnected ? localizedStrings['connected-server-state'] :
+                                     localizedStrings['disconnected-server-state'];
+  const quitString = localizedStrings['quit'];
   const menuTemplate = [
-    {label: statusString, enabled: false},
-    {type: 'separator'} as MenuItemConstructorOptions, {label: quitString, click: quitApp}
+    {label: statusString, enabled: false}, {type: 'separator'} as MenuItemConstructorOptions,
+    {label: quitString, click: quitApp}
   ];
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
 function createTrayIconImage(imageName: string) {
-  return nativeImage.createFromPath(path.join(__dirname, imageName)).resize({width: 16, height: 16});
+  return nativeImage.createFromPath(path.join(__dirname, imageName))
+      .resize({width: 16, height: 16});
 }
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the
@@ -195,6 +244,8 @@ function interceptShadowsocksLink(argv: string[]) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+  migrate();
+
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',

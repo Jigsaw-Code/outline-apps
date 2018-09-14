@@ -55,5 +55,7 @@ cat << EOM > $OUTPUT/index.js
 require('./electron');
 EOM
 
+cp package.json $OUTPUT
+
 # Icons.
 electron-icon-maker --input=electron/logo.png --output=build/windows

@@ -16,8 +16,6 @@
 
 yarn do electron/build
 
-cp package.json build/windows/
-
 # Environment variables.
 scripts/environment_json.sh -p windows > build/windows/www/environment.json
 # TODO: Share code with environment_json.sh (this is the dev/debug Sentry DSN).
