@@ -74,7 +74,7 @@ function migrateBetaServers() {
     fsextra.copySync(src, dest, {overwrite: true, errorOnExist: true});
     console.info('migrated beta servers');
   } catch (e) {
-    // Do *not* the error since it almost certainly contains the PII-type info, viz. username.
+    // Do *not* log the error since it almost certainly contains the PII-type info, viz. username.
     console.error('beta server migration failed');
   }
 }
