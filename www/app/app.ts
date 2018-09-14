@@ -131,9 +131,7 @@ export class App {
     let buttonHandler: () => void;
     let buttonLink: string;
 
-    if (e instanceof errors.UnexpectedPluginError) {
-      messageKey = 'outline-plugin-error-unexpected';
-    } else if (e instanceof errors.VpnPermissionNotGranted) {
+    if (e instanceof errors.VpnPermissionNotGranted) {
       messageKey = 'outline-plugin-error-vpn-permission-not-granted';
     } else if (e instanceof errors.InvalidServerCredentials) {
       messageKey = 'outline-plugin-error-invalid-server-credentials';

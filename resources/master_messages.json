@@ -345,10 +345,6 @@
     "message": "Sorry, we were unable to submit your feedback. Please check that you are connected to the internet and try again.",
     "description": "An error message shown when the user is trying to send feedback to the application developers but it is failing."
   },
-  "outline_plugin_error_unexpected": {
-    "message": "Sorry, an unexpected error occurred. If this happens again, please submit feedback.",
-    "description": "A generic error message shown when the cause is not known."
-  },
   "outline_plugin_error_vpn_permission_not_granted": {
     "message": "Outline needs your permission to set up a VPN connection to the server. Please try again, or submit feedback if you need help.",
     "description": "An error message shown when the application does not have the proper operating system permission to create a VPN connection. Outline is the product name and can be found in the translation glossary."
