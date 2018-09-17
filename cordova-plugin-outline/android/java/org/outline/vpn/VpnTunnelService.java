@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -190,10 +191,10 @@ public class VpnTunnelService extends VpnService {
       }
       startNetworkConnectivityMonitor();
     } else {
-      removePersistentNotification();
+      stopForeground();
     }
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
-    displayPersistentNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
+    startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
     storeActiveConnection(config);
   }
 
@@ -239,7 +240,7 @@ public class VpnTunnelService extends VpnService {
   /* Helper method to tear down an active connection. */
   private void tearDownActiveConnection() {
     stopVpnTunnel();
-    removePersistentNotification();
+    stopForeground();
     activeConnectionId = null;
     stopNetworkConnectivityMonitor();
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
@@ -361,7 +362,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
-      displayPersistentNotification(null, OutlinePlugin.ConnectionStatus.CONNECTED);
+      startForegroundWithNotification(null, OutlinePlugin.ConnectionStatus.CONNECTED);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
@@ -379,7 +380,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
-      displayPersistentNotification(null, OutlinePlugin.ConnectionStatus.RECONNECTING);
+      startForegroundWithNotification(null, OutlinePlugin.ConnectionStatus.RECONNECTING);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
@@ -468,10 +469,12 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
+      final JSONObject config = connection.getJSONObject(CONNECTION_CONFIG_KEY);
+      // Start the service in the foreground as per Android 8+ background service execution limits.
+      startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.RECONNECTING);
       // Do not perform connectivity checks when connecting on startup. We should avoid failing the
       // connection due to a network error, as network may not be ready.
-      startConnection(connection.getString(CONNECTION_ID_KEY),
-          connection.getJSONObject(CONNECTION_CONFIG_KEY), false);
+      startConnection(connection.getString(CONNECTION_ID_KEY), config, false);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON connection data", e);
       stopSelf();
@@ -490,10 +493,10 @@ public class VpnTunnelService extends VpnService {
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.CONNECTED);
   }
 
-  // Notifications
+  // Foreground service & notifications
 
-  /* Displays a persistent notification that sets a pending intent to open the app. */
-  private void displayPersistentNotification(
+  /* Starts the service in the foreground and  displays a persistent notification. */
+  private void startForegroundWithNotification(
       final JSONObject serverConfig, OutlinePlugin.ConnectionStatus status) {
     try {
       if (notificationBuilder == null) {
@@ -528,8 +531,12 @@ public class VpnTunnelService extends VpnService {
     } else {
       builder = new Notification.Builder(this);
     }
+    try {
+      builder.setSmallIcon(getResourceIdForDrawable("small_icon"));
+    } catch (Exception e) {
+      LOG.warning("Failed to retrieve the resource ID for the notification icon.");
+    }
     return builder.setContentTitle(getServerName(serverConfig))
-        .setSmallIcon(getResourceIdForDrawable("small_icon"))
         .setColor(NOTIFICATION_COLOR)
         .setVisibility(Notification.VISIBILITY_SECRET) // Don't display in lock screen
         .setContentIntent(mainActivityIntent)
@@ -537,8 +544,8 @@ public class VpnTunnelService extends VpnService {
         .setUsesChronometer(true);
   }
 
-  /* Removes a persistent notification from the notifications dropdown. */
-  private void removePersistentNotification() {
+  /* Stops the foreground service and removes the persistent notification. */
+  private void stopForeground() {
     stopForeground(true /* remove notification */);
     notificationBuilder = null;
   }
@@ -553,19 +560,9 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Gets the resource id for the given drawable. Uses reflection to access the package's R
-   * class. */
-  private int getResourceIdForDrawable(final String drawable) throws Exception {
-    int resId = 0;
-    try {
-      Class<?> cls = Class.forName(getPackageName() + ".R$drawable");
-      resId = (Integer) cls.getDeclaredField(drawable).get(Integer.class);
-    } catch (Exception e) {
-      LOG.warning(
-          String.format(Locale.ROOT, "Failed to get resource id for drawable: %s", drawable));
-      throw e;
-    }
-    return resId;
+  /* Gets the resource id for the given drawable. */
+  private int getResourceIdForDrawable(final String drawableId) throws Exception {
+    return getResources().getIdentifier(drawableId, "drawable", getPackageName());
   }
 
   /* Returns the server's name from |serverConfig|. If the name is not present, it falls back to the
@@ -593,6 +590,12 @@ public class VpnTunnelService extends VpnService {
 
   /* Retrieves a localized string by id from the application's resources. */
   private String getStringResource(final String resourceId) {
-    return getString(getResources().getIdentifier(resourceId, "string", getPackageName()));
+    String resource = "";
+    try {
+      resource = getString(getResources().getIdentifier(resourceId, "string", getPackageName()));
+    } catch (Exception e) {
+      LOG.warning(String.format(Locale.ROOT, "Failed to retrieve string resource: %s", resourceId));
+    }
+    return resource;
   }
 }
