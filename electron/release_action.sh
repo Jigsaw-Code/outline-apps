@@ -22,7 +22,7 @@
 yarn do electron/build
 
 # Environment variables.
-scripts/environment_json.sh -p windows > build/windows/www/environment.json
+scripts/environment_json.sh -p windows -r > build/windows/www/environment.json
 # TODO: Share code with environment_json.sh.
 mkdir -p build/windows/build
 cat > build/windows/build/env.nsh << EOF
