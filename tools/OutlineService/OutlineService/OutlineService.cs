@@ -261,7 +261,7 @@ namespace OutlineService {
       // is necessary for updating the proxy route when the network changes; otherwise we get the
       // TAP device as the best interface.
       try {
-        GetSystemGateway();
+        GetSystemIpv4Gateway();
       } catch (Exception e) {
         throw new UnsupportedRoutingTableException($"unsupported routing table: {e.Message}");
       }
@@ -401,42 +401,40 @@ namespace OutlineService {
       }
     }
 
-    // Queries the system's network configuration, updating the values of gatewayIp and
-    // gatewayInterfaceName iff the routing table can be modified to route via Outline.
+    // Queries the system's IPv4 network configuration, updating the values of gatewayIp and
+    // gatewayInterfaceName iff we think we can modify the routing to route via Outline.
     // Otherwise, throws with a description of the problem, e.g. system has multiple gateways.
-    private void GetSystemGateway() {
-      // Find active network interfaces with gateways.
+    private void GetSystemIpv4Gateway() {
+      // Find network interfaces with IPv4 gateways.
       //
-      // Ignore outline-tap0 as in certain rare situations - tun2socks crash? - it can
-      // have a "phantom" gateway from previous connection attempt(s) which "re-appears"
-      // in the routing table only once tun2socks restarts (so it doesn't get nuked by the
-      // client's call to ResetRouting).
-      var interfacesWithGateways = NetworkInterface.GetAllNetworkInterfaces()
-          .Where(i => i.GetIPProperties().GatewayAddresses.Count > 0)
-          .Where(i => i.Name != TAP_DEVICE_NAME);
+      // Notes:
+      //  - Ignore outline-tap0 as in certain rare situations - tun2socks crash? - it can
+      //    have a "phantom" gateway from previous connection attempt(s) which "re-appears"
+      //    in the routing table only once tun2socks restarts (so it doesn't get nuked by the
+      //    client's call to ResetRouting).
+      var interfacesWithIpv4Gateways = NetworkInterface.GetAllNetworkInterfaces()
+          .Where(i => i.Name != TAP_DEVICE_NAME)
+          .Where(i => i.GetIPProperties().GatewayAddresses
+              .Select(g => g.Address)
+              .Where(a => a.AddressFamily == AddressFamily.InterNetwork).Count() > 0);
 
-      // Ensure only one interface has gateway(s).
-      if (interfacesWithGateways.Count() < 1) {
-        throw new Exception("no interface has a default gateway");
-      } else if (interfacesWithGateways.Count() > 1) {
-        throw new Exception("multiple interfaces have default gateway(s): " +
-            $"{String.Join(", ", interfacesWithGateways.Select(i => i.Name))}");
+      // Ensure there is only one interface with IPv4 gateways.
+      // TODO: When we find multiple interfaces with IPv4 gateways, guess which one is active by,
+      //       for example, choosing the one with the lowest device metric.
+      if (interfacesWithIpv4Gateways.Count() < 1) {
+        throw new Exception("no interface has an IPv4 gateway");
+      } else if (interfacesWithIpv4Gateways.Count() > 1) {
+        throw new Exception("multiple interfaces have IPv4 gateways: " +
+            $"{String.Join(", ", interfacesWithIpv4Gateways.Select(i => i.Name))}");
       }
 
-      var gatewayInterface = interfacesWithGateways.First();
+      var gatewayInterface = interfacesWithIpv4Gateways.First();
 
-      // Ensure there is precisely one IPv4 gateway.
+      // Though it's unclear how this could happen, ensure the interface has just one IPv4 gateway.
       if (gatewayInterface.GetIPProperties().GatewayAddresses
           .Select(g => g.Address)
-          .Where(a => a.AddressFamily == AddressFamily.InterNetwork).Count() < 1) {
-        throw new Exception($"interface {gatewayInterface.Name} has no IPv4 gateway");
-      }
-
-      // Ensure there is one or zero IPv6 gateways.
-      if (gatewayInterface.GetIPProperties().GatewayAddresses
-         .Select(g => g.Address)
-         .Where(a => a.AddressFamily == AddressFamily.InterNetworkV6).Count() > 1) {
-        throw new Exception($"interface {gatewayInterface.Name} has multiple IPv6 gateways");
+          .Where(a => a.AddressFamily == AddressFamily.InterNetwork).Count() > 1) {
+        throw new Exception($"interface {gatewayInterface.Name} has multiple IPv4 gateways");
       }
 
       // OK, we can handle this routing table!
@@ -458,7 +456,7 @@ namespace OutlineService {
       var previousGatewayInterfaceName = gatewayInterfaceName;
 
       try {
-        GetSystemGateway();
+        GetSystemIpv4Gateway();
 
         if (previousGatewayIp.Equals(gatewayIp) &&
             previousGatewayInterfaceName == gatewayInterfaceName) {
