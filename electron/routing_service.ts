@@ -35,7 +35,7 @@ const SERVICE_START_COMMAND = `"${
 
 interface RoutingServiceRequest {
   action: string;
-  parameters: {[parameter: string]: string};
+  parameters: {[parameter: string]: string|boolean};
 }
 
 interface RoutingServiceResponse {
@@ -73,13 +73,10 @@ export class WindowsRoutingService implements RoutingService {
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string): Promise<void> {
+  configureRouting(routerIp: string, proxyIp: string, isAutoConnect = false): Promise<void> {
     return this.sendRequest({
       action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {
-        proxyIp,
-        routerIp,
-      }
+      parameters: {proxyIp, routerIp, isAutoConnect}
     });
   }
 
