@@ -135,7 +135,6 @@ namespace OutlineService {
 
     private void HandleConnection(IAsyncResult result) {
       eventLog.WriteEntry("Got incoming connection");
-      eventLog.WriteEntry(GetNetworkInfo());
 
       // Save the network config before we do anything. If the request fails
       // it will be sent to the client for inclusion in Sentry reports.
@@ -269,11 +268,8 @@ namespace OutlineService {
       try {
         var systemGateway = GetSystemIpv4Gateway();
         SetGatewayProperties(systemGateway);
-      } catch (Exception e) {
+      } catch (Exception e) when (isAutoConnect && e is NoDefaultGatewayFoundException) {
         // Allow the connection to proceed if there is no network connectivity during auto connect.
-        if (!isAutoConnect || !(e is NoDefautlGatewayFoundException)) {
-          throw new UnsupportedRoutingTableException($"unsupported routing table: {e.Message}");
-        }
       }
 
       if (gatewayIp != null) {
@@ -282,8 +278,8 @@ namespace OutlineService {
         } catch (Exception e) {
           throw new Exception($"could not add route to proxy server: {e.Message}");
         }
-        // Route traffic through the router if we have network connectivity.
-        StartRoutingIpv4(routerIp);
+        // Route IPv4 traffic through the router only if we have network connectivity.
+        AddIpv4Redirect(routerIp);
       }
       StopRoutingIpv6();
 
@@ -301,23 +297,23 @@ namespace OutlineService {
     public void ResetRouting(string proxyIp, string proxyInterfaceName) {
       // Proxy server.
       if (proxyIp != null) {
-        DeleteProxyRoute(proxyIp, proxyInterfaceName);
+        try {
+          DeleteProxyRoute(proxyIp, proxyInterfaceName);
+        } catch (Exception e) {
+          eventLog.WriteEntry($"failed to remove route to the proxy server: {e.Message}",
+              EventLogEntryType.Warning);
+        }
       } else {
         eventLog.WriteEntry("cannot remove route to proxy server, have not previously set",
             EventLogEntryType.Warning);
       }
 
       this.proxyIp = null;
-      this.gatewayInterfaceName = null;
-      this.gatewayIp = null;
+      SetGatewayProperties(null);
 
       // Restore system routes.
-      try {
-        StopRoutingIpv4();
-      } catch (Exception) {}
-      try {
-        StartRoutingIpv6();
-      } catch (Exception) {}
+      RemoveIpv4Redirect();
+      StartRoutingIpv6();
     }
 
     private void AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName) {
@@ -342,7 +338,7 @@ namespace OutlineService {
     // default gateway. This way, we need not worry about the default gateway being recreated with a lower
     // metric upon device sleep. This 'hack' was inspired by OpenVPN;
     // see https://github.com/OpenVPN/openvpn3/commit/d08cc059e7132a3d3aee3dcd946fce4c35b1ced3#diff-1d76f0fd7ec04c6d1398288214a879c5R358.
-    private void StartRoutingIpv4(string routerIp) {
+    private void AddIpv4Redirect(string routerIp) {
       try {
         foreach (string subnet in IPV4_SUBNETS) {
           RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0");
@@ -352,7 +348,7 @@ namespace OutlineService {
       }
     }
 
-    private void StopRoutingIpv4() {
+    private void RemoveIpv4Redirect() {
       foreach (string subnet in IPV4_SUBNETS) {
         try {
           RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={TAP_DEVICE_NAME}");
@@ -439,6 +435,7 @@ namespace OutlineService {
       //    have a "phantom" gateway from previous connection attempt(s) which "re-appears"
       //    in the routing table only once tun2socks restarts (so it doesn't get nuked by the
       //    client's call to ResetRouting).
+      //  - Ignore inactive interfaces as they may have gateways, yet are unable to route traffic.
       var interfacesWithIpv4Gateways = NetworkInterface.GetAllNetworkInterfaces()
           .Where(i => i.Name != TAP_DEVICE_NAME)
           .Where(i => i.OperationalStatus == OperationalStatus.Up)
@@ -448,7 +445,7 @@ namespace OutlineService {
 
       // Ensure there is only one interface with IPv4 gateways.
       if (interfacesWithIpv4Gateways.Count() < 1) {
-        throw new NoDefautlGatewayFoundException("no interface has an IPv4 gateway");
+        throw new NoDefaultGatewayFoundException("no interface has an IPv4 gateway");
       } else if (interfacesWithIpv4Gateways.Count() > 1) {
         throw new UnsupportedRoutingTableException("multiple interfaces have IPv4 gateways: " +
             $"{String.Join(", ", interfacesWithIpv4Gateways.Select(i => i.Name))}");
@@ -460,8 +457,8 @@ namespace OutlineService {
     }
 
     private void SetGatewayProperties(NetworkInterface gateway) {
-      gatewayIp = GetInterfaceGatewayIpv4(gateway);
-      gatewayInterfaceName = gateway.Name;
+      gatewayIp = gateway != null ? GetInterfaceGatewayIpv4(gateway) : null;
+      gatewayInterfaceName = gateway != null ? gateway.Name : null;
     }
 
     private IPAddress GetInterfaceGatewayIpv4(NetworkInterface networkInterface) {
@@ -484,9 +481,9 @@ namespace OutlineService {
       try {
         newGateway = GetSystemIpv4Gateway();
       } catch (Exception e) {
-        if (e is NoDefautlGatewayFoundException) {
+        if (e is NoDefaultGatewayFoundException) {
           eventLog.WriteEntry("No network connectivity, disabling IPv4 routing.");
-          StopRoutingIpv4();
+          RemoveIpv4Redirect();
         } else {
           eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
         }
@@ -501,7 +498,7 @@ namespace OutlineService {
         // Re-enable IPv4 routing in case it was disabled and the same interface used by the proxy
         // route came back up. Ignore errors, as the routes may already exist.
         try {
-          StartRoutingIpv4(routerIp);
+          AddIpv4Redirect(routerIp);
         } catch (Exception) {}
         return;
       }
@@ -521,7 +518,7 @@ namespace OutlineService {
       }
       // Re-enable IPv4 routing and store the new gateway properties.
       try {
-        StartRoutingIpv4(routerIp);
+        AddIpv4Redirect(routerIp);
       } catch (Exception) {
         eventLog.WriteEntry("Failed to configure IPv4 routes", EventLogEntryType.Error);
       }
@@ -579,7 +576,7 @@ namespace OutlineService {
     public UnsupportedRoutingTableException(string message) : base(message) {}
   }
 
-  internal class NoDefautlGatewayFoundException : UnsupportedRoutingTableException {
-    public NoDefautlGatewayFoundException(string message) : base(message) {}
+  internal class NoDefaultGatewayFoundException : UnsupportedRoutingTableException {
+    public NoDefaultGatewayFoundException(string message) : base(message) {}
   }
 }

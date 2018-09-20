@@ -78,7 +78,7 @@ export function startVpn(
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(() => {
         if (isAutoConnect) {
-          return Promise.resolve();
+          return;
         }
         // Only perform the connectivity checks when we're not automatically connecting on boot,
         // since we may not have network connectivity.
@@ -114,7 +114,7 @@ function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promis
           return checkUdpForwardingEnabled();
         })
         .then(() => {
-          return Promise.resolve(ip);
+          return ip;
         });
   });
 }
