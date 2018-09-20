@@ -97,13 +97,11 @@ public class VpnTunnelService extends VpnService {
     LOG.info(String.format(Locale.ROOT, "Starting VPN service: %s", intent));
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
     if (intent != null) {
-      boolean wasConectedAtShutdown =
-          OutlinePlugin.ConnectionStatus.CONNECTED.equals(connectionStore.getConnectionStatus());
       // VpnServiceStarter includes AUTOSTART_EXTRA in the intent if automatic start has occurred.
       boolean startedByVpnStarter =
           intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
       boolean startedByAlwaysOn = VpnService.SERVICE_INTERFACE.equals(intent.getAction());
-      if ((wasConectedAtShutdown && startedByVpnStarter) || startedByAlwaysOn) {
+      if (startedByVpnStarter || startedByAlwaysOn) {
         startLastSuccessfulConnectionOrExit();
       }
     }
