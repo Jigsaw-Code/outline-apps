@@ -21,7 +21,7 @@
   "error-timeout": "Something seems to be taking longer than expected. Quitting and restarting may help. If this happens again, please submit feedback.",
   "error-unexpected": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback.",
   "feedback-input": "Your feedback",
-  "submit-feedback": "Submit Feedback",
+  "feedback-page-title": "Submit Feedback",
   "feedback-privacy": "Your feedback, your email address (if provided), and additional information referred to in the {privacyPolicyLinkOpen}Data Collection Policy{privacyPolicyLinkClose} will be sent to the Outline team. Please do not include personal information in your feedback.",
   "feedback-thanks": "Thanks for helping us improve! We love hearing from you.",
   "fix-this": "Fix this",

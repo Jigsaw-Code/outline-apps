@@ -21,7 +21,7 @@
   "error-timeout": "Izgleda da ne\u0161to traje du\u017ee nego ina\u010de. Ne bi bilo lo\u0161e da prekinete vezu i ponovo je uspostavite. Ako se ovo ponovo desi, po\u0161aljite povratne informacije.", 
   "error-unexpected": "\u017dao nam je, do\u0161lo je do neo\u010dekivane gre\u0161ke. Ne bi bilo lo\u0161e da prekinete vezu i ponovo je uspostavite. Ako se ovo ponovo desi, po\u0161aljite povratne informacije.", 
   "feedback-input": "Va\u0161e povratne informacije", 
-  "submit-feedback": "Po\u0161aljite povratne informacije", 
+  "feedback-page-title": "Po\u0161aljite povratne informacije", 
   "feedback-privacy": "Povratne informacije, imejl adresa (ako se navede) i dodatne informacije pomenute u {privacyPolicyLinkOpen}smernicama o prikupljanju podataka{privacyPolicyLinkClose} \u0161alju se Outline timu. Nemojte da navodite li\u010dne podatke u povratnim informacijama.", 
   "feedback-thanks": "Hvala vam \u0161to nam poma\u017eete da se pobolj\u0161amo! Volimo da se \u010dujemo s vama.", 
   "fix-this": "Popravi ovo", 

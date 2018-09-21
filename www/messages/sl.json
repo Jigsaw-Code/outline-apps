@@ -21,7 +21,7 @@
   "error-timeout": "Zdi se, da nekaj traja nekoliko dlje kot obi\u010dajno. Morda boste te\u017eavo odpravili tako, da zapustite aplikacijo in jo znova za\u017eenete. \u010ce se to ponovi, po\u0161ljite povratne informacije.", 
   "error-unexpected": "\u017dal je pri\u0161lo do nepri\u010dakovane napake. Morda boste te\u017eavo odpravili tako, da zapustite aplikacijo in jo znova za\u017eenete. \u010ce se to ponovi, po\u0161ljite povratne informacije.", 
   "feedback-input": "Va\u0161e povratne informacije", 
-  "submit-feedback": "Po\u0161lji povratne informacije", 
+  "feedback-page-title": "Po\u0161lji povratne informacije", 
   "feedback-privacy": "Va\u0161e povratne informacije, e-po\u0161tni naslov (\u010de je naveden) in dodatni podatki, opredeljeni v {privacyPolicyLinkOpen}pravilniku o zbiranju podatkov{privacyPolicyLinkClose}, bodo poslani ekipi za Outline. V povratne informacije ne vklju\u010dujte osebnih podatkov.", 
   "feedback-thanks": "Hvala, da nam pomagate pri izbolj\u0161evanju. Cenimo va\u0161e mnenje.", 
   "fix-this": "Popravi to", 

@@ -21,7 +21,7 @@
   "error-timeout": "Noe ser ut til \u00e5 ta lengre tid enn forventet. Det kan hende at det hjelper \u00e5 avslutte appen og starte den p\u00e5 nytt. Send oss en tilbakemelding hvis dette skjer igjen.", 
   "error-unexpected": "Beklager, det oppsto en uventet feil. Det kan hende at det hjelper \u00e5 avslutte appen og starte den p\u00e5 nytt. Send oss en tilbakemelding hvis dette skjer igjen.", 
   "feedback-input": "Tilbakemeldingen din", 
-  "submit-feedback": "Gi tilbakemelding", 
+  "feedback-page-title": "Gi tilbakemelding", 
   "feedback-privacy": "Tilbakemeldingen din, e-postadressen din (hvis den er oppgitt) og tilleggsopplysningene som er omtalt i {privacyPolicyLinkOpen}retningslinjene for innsamling av data{privacyPolicyLinkClose}, blir sendt til Outline-teamet. Ikke ta med personopplysninger i tilbakemeldingen din.", 
   "feedback-thanks": "Takk for at du hjelper oss \u00e5 bli bedre! Vi setter stor pris p\u00e5 \u00e5 h\u00f8re fra deg.", 
   "fix-this": "Fiks dette", 

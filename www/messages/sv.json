@@ -21,7 +21,7 @@
   "error-timeout": "N\u00e5got verkar ta l\u00e4ngre tid \u00e4n v\u00e4ntat. Testa att avsluta och starta om. Skicka feedback om detta h\u00e4nder igen.", 
   "error-unexpected": "Ett ov\u00e4ntat fel uppstod. Testa att avsluta och starta om. Skicka feedback om detta h\u00e4nder igen.", 
   "feedback-input": "Din feedback", 
-  "submit-feedback": "Skicka feedback", 
+  "feedback-page-title": "Skicka feedback", 
   "feedback-privacy": "Din feedback, din e-postadress (om den har angetts) och ytterligare uppgifter som anges i {privacyPolicyLinkOpen}policyn f\u00f6r datainsamling{privacyPolicyLinkClose} skickas till Outline-teamet. Ange inga personliga uppgifter i din feedback.", 
   "feedback-thanks": "Tack f\u00f6r att du hj\u00e4lper oss att bli b\u00e4ttre! Vi uppskattar din feedback.", 
   "fix-this": "\u00c5tg\u00e4rda detta", 

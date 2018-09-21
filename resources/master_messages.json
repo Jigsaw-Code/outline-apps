@@ -11,7 +11,7 @@
     "message": "Servers",
     "description": "The menu item text to navigate to the list of servers."
   },
-  "submit_feedback": {
+  "feedback_page_title": {
     "message": "Submit Feedback",
     "description": "The menu item text and title of a page for a user to send feedback to the app’s developers."
   },

@@ -21,7 +21,7 @@
   "error-timeout": "N\u011bco trv\u00e1 d\u00e9le, ne\u017e by m\u011blo. Mohlo by pomoct aplikaci restartovat. Pokud se to stane znovu, po\u0161lete n\u00e1m zp\u011btnou vazbu.", 
   "error-unexpected": "Je n\u00e1m l\u00edto, do\u0161lo k\u00a0neo\u010dek\u00e1van\u00e9 chyb\u011b. Mohlo by pomoct aplikaci restartovat. Pokud se to stane znovu, po\u0161lete n\u00e1m zp\u011btnou vazbu.", 
   "feedback-input": "Va\u0161e zp\u011btn\u00e1 vazba", 
-  "submit-feedback": "Poslat zp\u011btnou vazbu", 
+  "feedback-page-title": "Poslat zp\u011btnou vazbu", 
   "feedback-privacy": "Va\u0161e zp\u011btn\u00e1 vazba, va\u0161e e-mailov\u00e1 adresa (pokud jste ji uvedli) a\u00a0dal\u0161\u00ed \u00fadaje zm\u00edn\u011bn\u00e9 v\u00a0{privacyPolicyLinkOpen}z\u00e1sad\u00e1ch sb\u011bru dat{privacyPolicyLinkClose} budou odesl\u00e1ny t\u00fdmu slu\u017eby Outline. Neuv\u00e1d\u011bjte ve zp\u011btn\u00e9 vazb\u011b osobn\u00ed \u00fadaje.", 
   "feedback-thanks": "D\u011bkujeme, \u017ee n\u00e1m pom\u00e1h\u00e1te se zlep\u0161ovat! Jsme r\u00e1di, \u017ee n\u00e1m p\u00ed\u0161ete.", 
   "fix-this": "Opravit", 

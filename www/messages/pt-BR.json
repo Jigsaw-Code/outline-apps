@@ -21,7 +21,7 @@
   "error-timeout": "O processo est\u00e1 demorando mais que o esperado. Feche e reinicie o app. Se isso ocorrer novamente, envie feedback.", 
   "error-unexpected": "Houve um erro inesperado. Feche e reinicie o app. Se isso ocorrer novamente, envie feedback.", 
   "feedback-input": "Seu feedback", 
-  "submit-feedback": "Enviar feedback", 
+  "feedback-page-title": "Enviar feedback", 
   "feedback-privacy": "Seu feedback, endere\u00e7o de e-mail (caso voc\u00ea tenha fornecido) e as informa\u00e7\u00f5es adicionais mencionadas na {privacyPolicyLinkOpen}Pol\u00edtica de coleta de dados{privacyPolicyLinkClose} ser\u00e3o enviados para a equipe do Outline. N\u00e3o inclua informa\u00e7\u00f5es pessoais no feedback.", 
   "feedback-thanks": "Agradecemos seu feedback para melhorar o Outline.", 
   "fix-this": "Corrigir o problema", 

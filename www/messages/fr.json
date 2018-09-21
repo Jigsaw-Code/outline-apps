@@ -21,7 +21,7 @@
   "error-timeout": "L'op\u00e9ration prend plus de temps que pr\u00e9vu. Vous pouvez essayer de quitter et de red\u00e9marrer pour r\u00e9soudre le probl\u00e8me. Si cela se reproduit, veuillez envoyer un commentaire.", 
   "error-unexpected": "Une erreur inattendue s'est produite. Vous pouvez essayer de quitter et de red\u00e9marrer pour r\u00e9soudre le probl\u00e8me. Si cela se reproduit, veuillez envoyer un commentaire.", 
   "feedback-input": "Votre commentaire", 
-  "submit-feedback": "Envoyer un commentaire", 
+  "feedback-page-title": "Envoyer un commentaire", 
   "feedback-privacy": "Vos commentaires, votre adresse e-mail (si vous l'avez fournie) et les informations compl\u00e9mentaires mentionn\u00e9es dans la {privacyPolicyLinkOpen}Politique de collecte des informations{privacyPolicyLinkClose} seront envoy\u00e9s \u00e0 l'\u00e9quipe Outline. Veuillez ne pas inclure d'informations personnelles dans vos commentaires.", 
   "feedback-thanks": "Merci de nous aider \u00e0 am\u00e9liorer notre produit\u00a0! Votre avis nous int\u00e9resse.", 
   "fix-this": "R\u00e9soudre ce probl\u00e8me", 
