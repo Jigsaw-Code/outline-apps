@@ -21,7 +21,7 @@
   "error-timeout": "Prisijungimo veiksmas trunka ilgiau, nei tik\u0117tasi. Problema gali b\u016bti i\u0161spr\u0119sta i\u0161\u0117jus ir paleidus i\u0161 naujo. Jei taip nutiks dar kart\u0105, pateikite atsiliepim\u0105.", 
   "error-unexpected": "Deja, \u012fvyko netik\u0117ta klaida. Problema gali b\u016bti i\u0161spr\u0119sta i\u0161\u0117jus ir paleidus i\u0161 naujo. Jei taip nutiks dar kart\u0105, pateikite atsiliepim\u0105.", 
   "feedback-input": "J\u016bs\u0173 atsiliepimas", 
-  "submit-feedback": "Pateikti atsiliepim\u0105", 
+  "feedback-page-title": "Pateikti atsiliepim\u0105", 
   "feedback-privacy": "J\u016bs\u0173 atsiliepimas, el. pa\u0161to adresas (jei nurodytas) ir papildoma informacija, nurodyta {privacyPolicyLinkOpen}duomen\u0173 rinkimo politikoje{privacyPolicyLinkClose}, bus i\u0161si\u0173sti \u201eOutline\u201c komandai. Ne\u012ftraukite asmens informacijos \u012f atsiliepim\u0105.", 
   "feedback-thanks": "D\u0117kojame, kad padedate tobulinti produkt\u0105! Labai laukiame j\u016bs\u0173 atsiliepim\u0173.", 
   "fix-this": "Pataisyti", 

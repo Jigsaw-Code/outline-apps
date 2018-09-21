@@ -21,7 +21,7 @@
   "error-timeout": "Nawi\u0105zywanie po\u0142\u0105czenia trwa d\u0142u\u017cej ni\u017c zwykle. Pom\u00f3c mo\u017ce zamkni\u0119cie i\u00a0ponowne uruchomienie aplikacji. Je\u015bli sytuacja si\u0119 powt\u00f3rzy, prze\u015blij opini\u0119.", 
   "error-unexpected": "Wyst\u0105pi\u0142 nieoczekiwany b\u0142\u0105d. Pom\u00f3c mo\u017ce zamkni\u0119cie i\u00a0ponowne uruchomienie aplikacji. Je\u015bli sytuacja si\u0119 powt\u00f3rzy, prze\u015blij opini\u0119.", 
   "feedback-input": "Twoja opinia", 
-  "submit-feedback": "Prze\u015blij opini\u0119", 
+  "feedback-page-title": "Prze\u015blij opini\u0119", 
   "feedback-privacy": "Twoja opinia, adres e-mail (je\u015bli go podasz) oraz dodatkowe informacje wskazane w\u00a0{privacyPolicyLinkOpen}Polityce zbierania danych{privacyPolicyLinkClose} zostan\u0105 wys\u0142ane do zespo\u0142u tw\u00f3rc\u00f3w aplikacji Outline. Nie umieszczaj w\u00a0opinii danych osobowych.", 
   "feedback-thanks": "Dzi\u0119kujemy za pomoc w\u00a0ulepszaniu aplikacji. Cieszy nas ka\u017cda opinia.", 
   "fix-this": "Napraw to", 

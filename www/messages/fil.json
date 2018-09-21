@@ -21,7 +21,7 @@
   "error-timeout": "Mukhang mayroong nagtatagal kaysa sa inaasahan. Maaaring makatulong ang pag-alis at pag-restart. Kung muli itong mangyayari, magsumite ng feedback.", 
   "error-unexpected": "Paumanhin, nagkaroon ng hindi inaasahang error. Maaaring makatulong ang pag-alis at pag-restart. Kung muli itong mangyayari, magsumite ng feedback.", 
   "feedback-input": "Ang iyong feedback", 
-  "submit-feedback": "Magsumite ng Feedback", 
+  "feedback-page-title": "Magsumite ng Feedback", 
   "feedback-privacy": "Ang iyong feedback, email address (kung ibinigay) mo, at karagdagang impormasyon na tinukoy sa {privacyPolicyLinkOpen}Patakaran ng Pangongolekta ng Data{privacyPolicyLinkClose} ay ipapadala sa Outline team. Huwag magsama ng personal na impormasyon sa iyong feedback.", 
   "feedback-thanks": "Salamat sa pagtulong sa aming humusay! Gusto naming may naririnig mula sa iyo.", 
   "fix-this": "Ayusin ito", 

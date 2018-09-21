@@ -21,7 +21,7 @@
   "error-timeout": "Bir i\u015flemin ger\u00e7ekle\u015ftirilmesi beklenenden uzun s\u00fcr\u00fcyor. \u00c7\u0131k\u0131p i\u015flemi yeniden ba\u015flatmak sorunu \u00e7\u00f6zebilir. Bu sorunla tekrar kar\u015f\u0131la\u015f\u0131rsan\u0131z l\u00fctfen geri bildirim g\u00f6nderin.", 
   "error-unexpected": "Maalesef beklenmeyen bir hata olu\u015ftu. \u00c7\u0131k\u0131p i\u015flemi yeniden ba\u015flatmak sorunu \u00e7\u00f6zebilir. Bu sorunla tekrar kar\u015f\u0131la\u015f\u0131rsan\u0131z l\u00fctfen geri bildirim g\u00f6nderin.", 
   "feedback-input": "Geri bildiriminiz", 
-  "submit-feedback": "Geri Bildirim G\u00f6nder", 
+  "feedback-page-title": "Geri Bildirim G\u00f6nder", 
   "feedback-privacy": "Geri bildiriminiz, e-posta adresiniz (sa\u011fland\u0131ysa) ve {privacyPolicyLinkOpen}Veri Toplama Politikas\u0131{privacyPolicyLinkClose}'nda belirtilen ek bilgiler Outline ekibine g\u00f6nderilecektir. L\u00fctfen geri bildiriminize ki\u015fisel bilgiler eklemeyin.", 
   "feedback-thanks": "Hizmetimizi iyile\u015ftirmemize yard\u0131mc\u0131 oldu\u011funuz i\u00e7in te\u015fekk\u00fcrler! Sizlerden geri bildirim almay\u0131 seviyoruz.", 
   "fix-this": "Bunu d\u00fczelt", 

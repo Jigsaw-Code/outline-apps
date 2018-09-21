@@ -21,7 +21,7 @@
   "error-timeout": "Parece que algo est\u00e1 demorando m\u00e1s de lo esperado. Es posible que sea \u00fatil que salgas de la app y la reinicies. Si vuelve a suceder lo mismo, env\u00edanos un comentario.", 
   "error-unexpected": "Se produjo un error inesperado. Es posible que sea \u00fatil que salgas de la app y la reinicies. Si vuelve a suceder lo mismo, env\u00edanos un comentario.", 
   "feedback-input": "Tus comentarios", 
-  "submit-feedback": "Enviar comentarios", 
+  "feedback-page-title": "Enviar comentarios", 
   "feedback-privacy": "Tus comentarios, tu direcci\u00f3n de correo electr\u00f3nico (si la proporcionas) y el resto de la informaci\u00f3n a la que se hace referencia en la {privacyPolicyLinkOpen}Pol\u00edtica de Recopilaci\u00f3n de Contenido{privacyPolicyLinkClose} se enviar\u00e1n al equipo de Outline. No incluyas informaci\u00f3n personal en tus comentarios.", 
   "feedback-thanks": "Gracias por ayudarnos a mejorar. Nos encanta recibir tus comentarios.", 
   "fix-this": "Corregir este problema", 

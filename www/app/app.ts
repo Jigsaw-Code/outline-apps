@@ -154,7 +154,7 @@ export class App {
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
     } else if (e instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
-      buttonKey = 'submit-feedback';
+      buttonKey = 'feedback-page-title';
       buttonHandler = () => {
         // TODO: Drop-down has no selected item, why not?
         this.rootEl.changePage('feedback');

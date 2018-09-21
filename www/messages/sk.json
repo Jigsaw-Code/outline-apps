@@ -21,7 +21,7 @@
   "error-timeout": "Zd\u00e1 sa, \u017ee nie\u010do trv\u00e1 dlh\u0161ie ne\u017e zvy\u010dajne. M\u00f4\u017ee pom\u00f4c\u0165 ukon\u010denie a\u00a0re\u0161tartovanie. Ak sa to stane znova, odo\u0161lite sp\u00e4tn\u00fa v\u00e4zbu.", 
   "error-unexpected": "\u013dutujeme, no vyskytla sa neo\u010dak\u00e1van\u00e1 chyba. M\u00f4\u017ee pom\u00f4c\u0165 ukon\u010denie a\u00a0re\u0161tartovanie. Ak sa to stane znova, odo\u0161lite sp\u00e4tn\u00fa v\u00e4zbu.", 
   "feedback-input": "Va\u0161a sp\u00e4tn\u00e1 v\u00e4zba", 
-  "submit-feedback": "Odosla\u0165 sp\u00e4tn\u00fa v\u00e4zbu", 
+  "feedback-page-title": "Odosla\u0165 sp\u00e4tn\u00fa v\u00e4zbu", 
   "feedback-privacy": "Va\u0161a sp\u00e4tn\u00e1 v\u00e4zba, va\u0161a e\u2011mailov\u00e1 adresa (ak ste ju poskytli) a\u00a0\u010fal\u0161ie inform\u00e1cie uveden\u00e9 v\u00a0{privacyPolicyLinkOpen}pravidl\u00e1ch zhroma\u017e\u010fovania \u00fadajov{privacyPolicyLinkClose} bud\u00fa odoslan\u00e9 t\u00edmu Outline. V\u00a0sp\u00e4tnej v\u00e4zbe neuv\u00e1dzajte osobn\u00e9 inform\u00e1cie.", 
   "feedback-thanks": "\u010eakujeme, \u017ee n\u00e1m pom\u00e1hate zlep\u0161ova\u0165 sa! Oce\u0148ujeme va\u0161u sp\u00e4tn\u00fa v\u00e4zbu.", 
   "fix-this": "Opravi\u0165", 

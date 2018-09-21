@@ -21,7 +21,7 @@
   "error-timeout": "Der er noget, der ser ud til at tage l\u00e6ngere tid end forventet. Problemet kan muligvis l\u00f8ses ved at lukke og genstarte. Hvis det sker igen, bedes du sende feedback.", 
   "error-unexpected": "Der opstod desv\u00e6rre en uventet fejl. Problemet kan muligvis l\u00f8ses ved at lukke og genstarte. Hvis det sker igen, bedes du sende feedback.", 
   "feedback-input": "Din feedback", 
-  "submit-feedback": "Send feedback", 
+  "feedback-page-title": "Send feedback", 
   "feedback-privacy": "Din feedback sendes sammen med din mailadresse (hvis den er oplyst) og yderligere oplysninger, der henvises til i {privacyPolicyLinkOpen}politikken for dataindsamling{privacyPolicyLinkClose}, til Outline-teamet. Undlad at angive personlige oplysninger i din feedback.", 
   "feedback-thanks": "Tak, fordi du hj\u00e6lper os med at forbedre produktet. Vi s\u00e6tter stor pris p\u00e5 din mening.", 
   "fix-this": "L\u00f8s problemet", 

@@ -21,7 +21,7 @@
   "error-timeout": "Jokin kest\u00e4\u00e4 odotettua kauemmin. Sulkeminen ja uudelleenk\u00e4ynnistys saattavat auttaa. Jos n\u00e4in k\u00e4y uudelleen, l\u00e4het\u00e4 palautetta.", 
   "error-unexpected": "Tapahtui odottamaton virhe. Sulkeminen ja uudelleenk\u00e4ynnistys saattavat auttaa. Jos n\u00e4in k\u00e4y uudelleen, l\u00e4het\u00e4 palautetta.", 
   "feedback-input": "Palautteesi", 
-  "submit-feedback": "L\u00e4het\u00e4 palautetta", 
+  "feedback-page-title": "L\u00e4het\u00e4 palautetta", 
   "feedback-privacy": "Palautteesi, s\u00e4hk\u00f6postiosoitteesi (jos annettu) ja lis\u00e4tiedot, joihin viitataan {privacyPolicyLinkOpen}datan ker\u00e4\u00e4mist\u00e4 koskevassa k\u00e4yt\u00e4nn\u00f6ss\u00e4{privacyPolicyLinkClose}, l\u00e4hetet\u00e4\u00e4n Outline-tiimille. \u00c4l\u00e4 liit\u00e4 henkil\u00f6tietoja palautteeseesi.", 
   "feedback-thanks": "Kiitos, ett\u00e4 autat parantamaan palvelua ja l\u00e4het\u00e4t palautetta.", 
   "fix-this": "Korjaa t\u00e4m\u00e4", 

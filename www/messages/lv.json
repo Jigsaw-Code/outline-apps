@@ -21,7 +21,7 @@
   "error-timeout": "Savienojuma izveide notiek ilg\u0101k nek\u0101 parasti. Var pal\u012bdz\u0113t darb\u012bbas p\u0101rtrauk\u0161ana un ats\u0101k\u0161ana. Ja \u0161\u012b probl\u0113ma atk\u0101rtojas, l\u016bdzu, iesniedziet atsauksmes.", 
   "error-unexpected": "Diem\u017e\u0113l rad\u0101s neparedz\u0113ta k\u013c\u016bda. Var pal\u012bdz\u0113t darb\u012bbas p\u0101rtrauk\u0161ana un ats\u0101k\u0161ana. Ja \u0161\u012b k\u013c\u016bda atk\u0101rtojas, l\u016bdzu, iesniedziet atsauksmes.", 
   "feedback-input": "J\u016bsu atsauksmes", 
-  "submit-feedback": "Iesniedziet atsauksmes", 
+  "feedback-page-title": "Iesniedziet atsauksmes", 
   "feedback-privacy": "Lietojumprogrammas Outline komandai tiks nos\u016bt\u012btas j\u016bsu atsauksmes, j\u016bsu e-pasta adrese (ja ir nor\u0101d\u012bta), k\u0101 ar\u012b papildu inform\u0101cija, kas piemin\u0113ta {privacyPolicyLinkOpen}datu apkopo\u0161anas politik\u0101{privacyPolicyLinkClose}. L\u016bdzu, neiek\u013caujiet sav\u0101s atsauksm\u0113s personas inform\u0101ciju.", 
   "feedback-thanks": "Paldies, ka pal\u012bdzat mums veikt uzlabojumus! M\u0113s priec\u0101jamies sa\u0146emt j\u016bsu atsauksmes.", 
   "fix-this": "Nov\u0113rst probl\u0113mu", 
