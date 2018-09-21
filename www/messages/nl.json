@@ -21,7 +21,7 @@
   "error-timeout": "Het duurt langer dan verwacht. Het kan helpen om het programma af te sluiten en opnieuw te starten. Verzend feedback als dit weer gebeurt.", 
   "error-unexpected": "Er is een onverwachte fout opgetreden. Het kan helpen om het programma af te sluiten en opnieuw te starten. Verzend feedback als dit weer gebeurt.", 
   "feedback-input": "Je feedback", 
-  "submit-feedback": "Feedback verzenden", 
+  "feedback-page-title": "Feedback verzenden", 
   "feedback-privacy": "Je feedback, je e-mailadres (als je dit hebt opgegeven) en aanvullende gegevens die je in het {privacyPolicyLinkOpen}beleid voor gegevens verzamelen{privacyPolicyLinkClose} vindt, worden verzonden naar Team Outline. Voeg geen persooonlijke gegevens toe aan de feedback.", 
   "feedback-thanks": "Bedankt dat je ons helpt ons product te verbeteren. We zijn erg blij met je feedback.", 
   "fix-this": "Dit probleem oplossen", 

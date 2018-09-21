@@ -21,7 +21,7 @@
   "error-timeout": "Der Verbindungsaufbau dauert l\u00e4nger als erwartet. Du solltest den Vorgang abbrechen und neu starten. Tritt dieses Problem noch einmal auf, sende bitte Feedback.", 
   "error-unexpected": "Ein Fehler ist aufgetreten. Du solltest den Vorgang abbrechen und neu starten. Kommt es noch einmal zu einem Fehler, sende bitte Feedback.", 
   "feedback-input": "Dein Feedback", 
-  "submit-feedback": "Feedback einreichen", 
+  "feedback-page-title": "Feedback einreichen", 
   "feedback-privacy": "An das Outline-Team werden dein Feedback, deine E-Mail-Adresse (falls angegeben) und zus\u00e4tzliche Informationen entsprechend den {privacyPolicyLinkOpen}Richtlinien f\u00fcr die Datenerhebung{privacyPolicyLinkClose} gesendet. Bitte gib keine personenbezogenen Daten an.", 
   "feedback-thanks": "Vielen Dank, dass du uns hilfst, Outline zu verbessern.", 
   "fix-this": "Beheben", 

@@ -21,7 +21,7 @@
   "error-timeout": "A folyamat a v\u00e1rtn\u00e1l tov\u00e1bb tart. A kil\u00e9p\u00e9s \u00e9s a folyamat \u00fajraind\u00edt\u00e1sa megoldhatja a probl\u00e9m\u00e1t. Ha a probl\u00e9ma tov\u00e1bbra is fenn\u00e1ll, k\u00fcldj\u00f6n visszajelz\u00e9st.", 
   "error-unexpected": "V\u00e1ratlan hiba t\u00f6rt\u00e9nt. A kil\u00e9p\u00e9s \u00e9s a folyamat \u00fajraind\u00edt\u00e1sa megoldhatja a probl\u00e9m\u00e1t. Ha a probl\u00e9ma tov\u00e1bbra is fenn\u00e1ll, k\u00fcldj\u00f6n visszajelz\u00e9st.", 
   "feedback-input": "Saj\u00e1t visszajelz\u00e9s", 
-  "submit-feedback": "Visszajelz\u00e9s k\u00fcld\u00e9se", 
+  "feedback-page-title": "Visszajelz\u00e9s k\u00fcld\u00e9se", 
   "feedback-privacy": "A visszajelz\u00e9s\u00e9t, az e-mail-c\u00edm\u00e9t (ha megadta) \u00e9s az {privacyPolicyLinkOpen}adatgy\u0171jt\u00e9si ir\u00e1nyelvek{privacyPolicyLinkClose} k\u00f6z\u00f6tt szerepl\u0151 t\u00f6bbi adatot elk\u00fcldj\u00fck az Outline csapat\u00e1nak. A visszajelz\u00e9s\u00e9ben ne adjon meg olyan inform\u00e1ci\u00f3t, amely szem\u00e9lyazonos\u00edt\u00e1sra alkalmas lehet.", 
   "feedback-thanks": "K\u00f6sz\u00f6nj\u00fck, hogy seg\u00edt a fejleszt\u00e9sben! \u00d6r\u00f6mmel vett\u00fck \u00fczenet\u00e9t.", 
   "fix-this": "Jav\u00edt\u00e1s", 

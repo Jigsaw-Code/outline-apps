@@ -21,7 +21,7 @@
   "error-timeout": "Se pare c\u0103 dureaz\u0103 mai mult dec\u00e2t de obicei. E posibil s\u0103 se rezolve problema dac\u0103 ie\u0219i\u021bi \u0219i reporni\u021bi. Dac\u0103 eroarea se repet\u0103, trimite\u021bi feedback.", 
   "error-unexpected": "A ap\u0103rut o eroare nea\u0219teptat\u0103. E posibil s\u0103 se rezolve problema dac\u0103 ie\u0219i\u021bi \u0219i reporni\u021bi. Dac\u0103 eroarea se produce din nou, trimite\u021bi feedback.", 
   "feedback-input": "Feedbackul dvs.", 
-  "submit-feedback": "Trimite\u021bi feedback", 
+  "feedback-page-title": "Trimite\u021bi feedback", 
   "feedback-privacy": "Feedbackul, adresa dvs. de e-mail (dac\u0103 a\u021bi introdus-o) \u0219i informa\u021biile suplimentare men\u021bionate \u00een {privacyPolicyLinkOpen}Politica de colectare a datelor{privacyPolicyLinkClose} vor fi trimise la echipa Outline. Nu include\u021bi informa\u021bii personale \u00een feedback.", 
   "feedback-thanks": "V\u0103 mul\u021bumim c\u0103 ne ajuta\u021bi s\u0103 \u00eembun\u0103t\u0103\u021bim produsul! Opinia dvs. este important\u0103 pentru noi.", 
   "fix-this": "Remedia\u021bi problema", 

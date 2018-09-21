@@ -21,7 +21,7 @@
   "error-timeout": "Sembla que algun proc\u00e9s est\u00e0 tardant m\u00e9s del que s'esperava. Prova de sortir i reiniciar per veure si es resol el problema. Si aix\u00f2 torna a passar, envia comentaris.", 
   "error-unexpected": "S'ha produ\u00eft un error inesperat. Prova de sortir i reiniciar per veure si es resol el problema. Si aix\u00f2 torna a passar, envia comentaris.", 
   "feedback-input": "Els teus comentaris", 
-  "submit-feedback": "Envia comentaris", 
+  "feedback-page-title": "Envia comentaris", 
   "feedback-privacy": "Els teus comentaris, la teva adre\u00e7a electr\u00f2nica (si l'has facilitada) i qualsevol altra informaci\u00f3 a qu\u00e8 es fa refer\u00e8ncia a la {privacyPolicyLinkOpen}Pol\u00edtica de recollida de dades{privacyPolicyLinkClose} s'enviar\u00e0 a l'equip d'Outline. No incloguis informaci\u00f3 personal als comentaris.", 
   "feedback-thanks": "Gr\u00e0cies per ajudar-nos a millorar! Apreciem molt els teus comentaris.", 
   "fix-this": "Corregeix aquest problema", 

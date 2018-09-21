@@ -21,7 +21,7 @@
   "error-timeout": "L'operazione sembra richiedere pi\u00f9 tempo del previsto. Prova a chiudere e riavviare. Se il problema dovesse verificarsi di nuovo, inviaci un feedback.", 
   "error-unexpected": "Si \u00e8 verificato un errore imprevisto. Prova a chiudere e riavviare. Se dovesse accadere di nuovo, inviaci un feedback.", 
   "feedback-input": "Il tuo feedback", 
-  "submit-feedback": "Invia feedback", 
+  "feedback-page-title": "Invia feedback", 
   "feedback-privacy": "I tuoi feedback, il tuo indirizzo email (se fornito) e le informazioni aggiuntive a cui si fa riferimento nelle {privacyPolicyLinkOpen}norme relative alla raccolta dei dati{privacyPolicyLinkClose} verranno inviati al team di Outline. Non inserire informazioni personali nei tuoi feedback.", 
   "feedback-thanks": "Grazie per averci aiutato a migliorare i nostri servizi. La tua opinione \u00e8 importante per noi.", 
   "fix-this": "Risolvi", 

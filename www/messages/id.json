@@ -21,7 +21,7 @@
   "error-timeout": "Ada proses yang sepertinya terlalu lama. Masalahnya mungkin bisa diselesaikan dengan berhenti dan memulai ulang. Silakan kirim masukan jika hal ini terjadi lagi.", 
   "error-unexpected": "Maaf, terjadi error tak terduga. Masalahnya mungkin bisa diselesaikan dengan berhenti dan memulai ulang. Silakan kirim masukan jika hal ini terjadi lagi.", 
   "feedback-input": "Masukan Anda", 
-  "submit-feedback": "Kirim Masukan", 
+  "feedback-page-title": "Kirim Masukan", 
   "feedback-privacy": "Masukan, alamat email Anda (jika diberikan), dan informasi tambahan yang disebutkan dalam {privacyPolicyLinkOpen}Kebijakan Pengumpulan Data{privacyPolicyLinkClose} akan dikirim ke tim Outline. Harap jangan menyertakan informasi pribadi dalam masukan Anda.", 
   "feedback-thanks": "Terima kasih atas bantuan Anda dalam upaya penyempurnaan kami. Senang sekali bisa mendengar pendapat Anda.", 
   "fix-this": "Perbaiki ini", 
