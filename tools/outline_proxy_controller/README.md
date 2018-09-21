@@ -10,7 +10,7 @@ To bulid
 To run 
 
     sudo ./OutlineProxyController /var/run/outline_controller
-    
+        
 then you can communincate with the controller through the socket.
 
 You then need to run ss-local and badvpn with parameter from the outline server.
@@ -26,4 +26,8 @@ Your traffic is sent over Outline. To disconnect, write
     disconnect 
     
 Into the socket.
+
+To run in daemon mode use -d option
+
+    sudo ./OutlineProxyController /var/run/outline_controller -d
 
