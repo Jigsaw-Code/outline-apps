@@ -66,15 +66,18 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
+// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
+//
 // Fulfills iff:
 //  - the shadowsocks and tun2socks binaries were started
 //  - the system configured to route all traffic through the proxy
 //  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
 //
-// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
+// Fulfills with a copy of `serverConfig` that includes the resolved hostname.
 export function startVpn(
-    config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
-    isAutoConnect = false) {
+    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
+    isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
+  const config = Object.assign({}, serverConfig);
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(() => {
         if (isAutoConnect) {
@@ -93,6 +96,9 @@ export function startVpn(
       .then(() => {
         return routingService.configureRouting(
             TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', isAutoConnect);
+      })
+      .then(() => {
+        return config;
       })
       .catch((e) => {
         stopProcesses();

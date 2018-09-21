@@ -282,8 +282,8 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string, isAu
                   createTrayIcon(ConnectionStatus.DISCONNECTED);
                 },
                 isAutoConnect)
-            .then(() => {
-              connectionStore.save({config, id}).catch((err) => {
+            .then((newConfig) => {
+              connectionStore.save({config: newConfig, id}).catch((err) => {
                 console.error('Failed to store connection.');
               });
               if (mainWindow) {
