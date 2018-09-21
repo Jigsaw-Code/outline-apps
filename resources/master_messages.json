@@ -31,17 +31,29 @@
     "message": "Quit",
     "description": "The text for a button that quits (closes) the application."
   },
-  "general_feedback": {
+  "feedback_general": {
     "message": "General Feedback",
-    "description": "This is one of three categories of feedback the user can select in a drop-down when sending a feedback to the app developers. This is general feedback, not related to performance or connection issues."
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is general feedback, not related to performance or connection issues."
   },
-  "performance_feedback": {
-    "message": "Performance",
-    "description": "This is one of three categories of feedback the user can select in a drop-down when sending a feedback to the app developers. This is for performance feedback, for example, the speed of connection."
+  "feedback_no_server": {
+    "message": "Don't have a server",
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not having a server to connect."
   },
-  "connection_feedback": {
-    "message": "Server Connection",
-    "description": "This is one of three categories of feedback the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to problems connecting to a server."
+  "feedback_connection": {
+    "message": "Can't connect to my server",
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to problems connecting to a server."
+  },
+  "feedback_cannot_add_server": {
+    "message": "Can't add a server",
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not being able to import a server into the application."
+  },
+  "feedback_performance": {
+    "message": "Outline is slow",
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for performance feedback, for example, the speed of connection."
+  },
+  "feedback_suggestion": {
+    "message": "Suggestions",
+    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for suggestions, for example, feature requests."
   },
   "feedback_input": {
     "message": "Your feedback",
@@ -50,6 +62,10 @@
   "email_feedback_input": {
     "message": "Email address (optional)",
     "description": "The hint text for a textbox for the user's email address when sending feedback. The email address is not a required field in the form."
+  },
+  "feedback_language_disclaimer": {
+    "message": "Please note that our team is only able to answer feedback in English.",
+    "description": "Text displayed below a feedback form explaining that the support team can only respond to feedback in English."
   },
   "feedback_privacy": {
     "message": "Your feedback, your email address (if provided), and additional information referred to in the $START_OF_LINK$Data Collection Policy$END_OF_LINK$ will be sent to the Outline team. Please do not include personal information in your feedback.",
