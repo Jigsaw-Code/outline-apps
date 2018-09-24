@@ -384,11 +384,6 @@ export class App {
   }
 
   private maybeShowAutoConnectDialog() {
-    if (!this.isWindows()) {
-      // NOTE: auto-connect doesn't currently work in Windows because the executable requires
-      // admin rights and cannot be automatically started on boot.
-      return;
-    }
     let dismissed = false;
     try {
       dismissed = this.settings.get(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED) === 'true';
