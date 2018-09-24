@@ -15,11 +15,13 @@
 package org.outline.vpn;
 
 import android.os.ParcelFileDescriptor;
+import android.net.VpnService;
 import java.io.IOException;
-import java.util.Random;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Random;
 import org.outline.tun2socks.Tun2SocksJni;
 
 /**
@@ -41,6 +43,7 @@ public class VpnTunnel {
   private static final int DNS_RESOLVER_PORT = 53;
   private static final int TRANSPARENT_DNS_ENABLED = 1;
   private static final int SOCKS5_UDP_ENABLED = 1;
+  private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
 
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
@@ -70,15 +73,22 @@ public class VpnTunnel {
     LOG.info("Establishing the VPN.");
     try {
       dnsResolverAddress = selectDnsResolverAddress();
-      tunFd = vpnService.newBuilder()
-                  .setSession(vpnService.getApplicationName())
-                  .setMtu(VPN_INTERFACE_MTU)
-                  .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
-                      VPN_INTERFACE_PREFIX_LENGTH)
-                  .addRoute("0.0.0.0", 0)
-                  .addDnsServer(dnsResolverAddress)
-                  .addDisallowedApplication(vpnService.getPackageName())
-                  .establish();
+      VpnService.Builder builder =
+          vpnService.newBuilder()
+              .setSession(vpnService.getApplicationName())
+              .setMtu(VPN_INTERFACE_MTU)
+              .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
+                  VPN_INTERFACE_PREFIX_LENGTH)
+              .addDnsServer(dnsResolverAddress)
+              .addDisallowedApplication(vpnService.getPackageName());
+
+      // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
+      // retrieve the list of subnets that excludes those reserved for special use.
+      final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
+      for (Subnet subnet : reservedBypassSubnets) {
+        builder.addRoute(subnet.address, subnet.prefix);
+      }
+      tunFd = builder.establish();
       return tunFd != null;
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to establish the VPN", e);
@@ -156,5 +166,43 @@ public class VpnTunnel {
   /* Returns a random IP address from |DNS_RESOLVER_IP_ADDRESSES|. */
   private String selectDnsResolverAddress() {
     return DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
+  }
+
+  /* Returns a subnet list that excludes reserved subnets. */
+  private ArrayList<Subnet> getReservedBypassSubnets() {
+    final String[] subnetStrings = vpnService.getResources().getStringArray(
+        vpnService.getResourceId(PRIVATE_LAN_BYPASS_SUBNETS_ID, "array"));
+    ArrayList<Subnet> subnets = new ArrayList<Subnet>();
+    for (final String subnetString : subnetStrings) {
+      try {
+        subnets.add(Subnet.parse(subnetString));
+      } catch (Exception e) {
+        LOG.warning(String.format(Locale.ROOT, "Failed to parse subnet: %s", subnetString));
+      }
+    }
+    return subnets;
+  }
+
+  /* Represents an IP subnet. */
+  private static class Subnet {
+    public String address;
+    public int prefix;
+
+    public Subnet(String address, int prefix) {
+      this.address = address;
+      this.prefix = prefix;
+    }
+
+    /* Parses a subnet in CIDR format. */
+    public static Subnet parse(final String subnet) throws IllegalArgumentException {
+      if (subnet == null) {
+        throw new IllegalArgumentException("Must provide a subnet string");
+      }
+      final String[] components = subnet.split("/", 2);
+      if (components.length != 2) {
+        throw new IllegalArgumentException("Malformed subnet string");
+      }
+      return new Subnet(components[0], Integer.parseInt(components[1]));
+    }
   }
 }

@@ -530,7 +530,7 @@ public class VpnTunnelService extends VpnService {
       builder = new Notification.Builder(this);
     }
     try {
-      builder.setSmallIcon(getResourceIdForDrawable("small_icon"));
+      builder.setSmallIcon(getResourceId("small_icon", "drawable"));
     } catch (Exception e) {
       LOG.warning("Failed to retrieve the resource ID for the notification icon.");
     }
@@ -558,9 +558,9 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Gets the resource id for the given drawable. */
-  private int getResourceIdForDrawable(final String drawableId) throws Exception {
-    return getResources().getIdentifier(drawableId, "drawable", getPackageName());
+  /* Retrieves the ID for a resource. This is equivalent to using the generated R class. */
+  public int getResourceId(final String name, final String type) {
+    return getResources().getIdentifier(name, type, getPackageName());
   }
 
   /* Returns the server's name from |serverConfig|. If the name is not present, it falls back to the
@@ -586,12 +586,12 @@ public class VpnTunnelService extends VpnService {
   }
 
   /* Retrieves a localized string by id from the application's resources. */
-  private String getStringResource(final String resourceId) {
+  private String getStringResource(final String name) {
     String resource = "";
     try {
-      resource = getString(getResources().getIdentifier(resourceId, "string", getPackageName()));
+      resource = getString(getResourceId(name, "string"));
     } catch (Exception e) {
-      LOG.warning(String.format(Locale.ROOT, "Failed to retrieve string resource: %s", resourceId));
+      LOG.warning(String.format(Locale.ROOT, "Failed to retrieve string resource: %s", name));
     }
     return resource;
   }
