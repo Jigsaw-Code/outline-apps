@@ -66,21 +66,53 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
+// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
+//
 // Fulfills iff:
-//  - we can connect to the Shadowsocks server port
 //  - the shadowsocks and tun2socks binaries were started
 //  - the system configured to route all traffic through the proxy
+//  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
+//
+// Fulfills with a copy of `serverConfig` that includes the resolved hostname.
+export function startVpn(
+    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
+    isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
+  const config = Object.assign({}, serverConfig);
+  return startLocalShadowsocksProxy(config, onDisconnected)
+      .then(() => {
+        if (isAutoConnect) {
+          return;
+        }
+        // Only perform the connectivity checks when we're not automatically connecting on boot,
+        // since we may not have network connectivity.
+        return checkConnectivity(config).then((ip) => {
+          // Cache the resolved IP so it can be stored for auto connect.
+          config.host = ip;
+        });
+      })
+      .then(() => {
+        return startTun2socks(onDisconnected);
+      })
+      .then(() => {
+        return routingService.configureRouting(
+            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', isAutoConnect);
+      })
+      .then(() => {
+        return config;
+      })
+      .catch((e) => {
+        stopProcesses();
+        throw e;
+      });
+}
+
+// Fulfills iff:
+//  - we can connect to the Shadowsocks server port
 //  - the remote server has enabled UDP forwarding
 //  - we can speak with a semi-random test site via the proxy
-//
-// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
-export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
-  // RoutingService requires an IP; perform a lookup now and use that throughout setup.
+function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promise<string> {
   return lookupIp(config.host || '').then((ip: string) => {
     return isServerReachableByIp(ip, config.port || 0)
-        .then(() => {
-          return startLocalShadowsocksProxy(ip, config, onDisconnected);
-        })
         .then(() => {
           return validateServerCredentials();
         })
@@ -88,18 +120,10 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
           return checkUdpForwardingEnabled();
         })
         .then(() => {
-          return startTun2socks(ip, onDisconnected);
-        })
-        .then(() => {
-          return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, ip);
-        })
-        .catch((e) => {
-          stopProcesses();
-          throw e;
+          return ip;
         });
   });
 }
-
 // Uses the OS' built-in functions, i.e. /etc/hosts, et al.:
 // https://nodejs.org/dist/latest-v10.x/docs/api/dns.html#dns_dns
 //
@@ -147,11 +171,11 @@ export function isServerReachableByIp(serverIp: string, serverPort: number) {
 }
 
 function startLocalShadowsocksProxy(
-    ip: string, serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
+    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
-    ssLocalArgs.push('-s', ip);
+    ssLocalArgs.push('-s', serverConfig.host || '');
     ssLocalArgs.push('-p', '' + serverConfig.port);
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
@@ -166,7 +190,7 @@ function startLocalShadowsocksProxy(
     // Amazingly, there's no documented way to tell whether spawn has successfully launched a
     // binary. This handler allows us to implicitly test that, by listening for ss-local's
     // "listening on port xxx" startup output.
-    ssLocal.stdout.on('data', (s) => {
+    ssLocal.stdout.once('data', (s) => {
       resolve();
     });
 
@@ -310,7 +334,7 @@ function getDnsRequest() {
   ]);
 }
 
-function startTun2socks(host: string, onDisconnected: () => void): Promise<void> {
+function startTun2socks(onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
@@ -344,7 +368,7 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
             console.info('Restarting tun2socks...');
             setTimeout(() => {
-              startTun2socks(host, onDisconnected)
+              startTun2socks(onDisconnected)
                   .then(() => {
                     resolve();
                   })
