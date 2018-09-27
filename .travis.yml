@@ -125,7 +125,7 @@ jobs:
       language: objective-c
       osx_image: xcode9.4
       script:
-        - yarn && yarn do apple/scripts/ios_release_remote
+        - yarn && yarn do apple/scripts/ios_package_remote
 
 deploy:
   provider: releases
