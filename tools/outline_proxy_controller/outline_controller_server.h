@@ -4,6 +4,9 @@
 #include <memory>
 #include <stdexcept>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
@@ -71,8 +74,12 @@ class OutlineControllerServer {
         unix_socket_name(file)
 
   {
+    ::unlink(unix_socket_name.c_str());
     boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
       stream_protocol::acceptor acceptor(io_context, stream_protocol::endpoint(unix_socket_name));
+      auto result = chmod(
+          unix_socket_name.c_str(),
+          S_IRWXU | S_IROTH | S_IWOTH);  // enables all user to read from and write into socket
 
       for (;;) {
         boost::system::error_code ec;
