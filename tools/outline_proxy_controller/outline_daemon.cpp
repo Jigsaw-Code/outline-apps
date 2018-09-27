@@ -30,8 +30,10 @@ int main(int argc, char* argv[]) {
       // also want to register for other signals, such as SIGHUP to trigger a
       // re-read of a configuration file.
       boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
-      signals.async_wait(
-          [&](boost::system::error_code /*ec*/, int /*signo*/) { io_context.stop(); });
+      signals.async_wait([&](boost::system::error_code /*ec*/, int /*signo*/) {
+        io_context.stop();
+        ::unlink(argv[1]);
+      });
 
       // Inform the io_context that we are about to become a daemon. The
       // io_context cleans up any internal resources, such as threads, that may
@@ -125,6 +127,7 @@ int main(int argc, char* argv[]) {
       // The io_context can now be used normally.
       syslog(LOG_INFO | LOG_USER, "Outline daemon started");
       io_context.run();
+      ::unlink(argv[1]);
       syslog(LOG_INFO | LOG_USER, "Outline daemon stopped");
     } else {
       // not demonized
