@@ -16,6 +16,7 @@ import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 import * as socks from 'socks';
 
@@ -30,7 +31,14 @@ declare class SpawnError extends Error {
   code: string;
 }
 
-const routingService = new routing.WindowsRoutingService();
+const delay = (time: {}) => (result: {}) =>
+    new Promise(resolve => setTimeout(() => resolve(result), time));
+
+const isWindows = os.platform() === 'win32';
+const isLinux = os.platform() === 'linux';
+
+// TODO (AZ) need to be OS specific
+const routingService = new routing.LinuxRoutingService();
 
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
@@ -81,6 +89,8 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         .then(() => {
           return startLocalShadowsocksProxy(ip, config, onDisconnected);
         })
+        // TODO (AZ): Need a better solution to check if the process is running
+        .then(delay(2000))
         .then(() => {
           return validateServerCredentials();
         })
@@ -90,6 +100,8 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         .then(() => {
           return startTun2socks(ip, onDisconnected);
         })
+        // TODO (AZ): Need a better solution to check if the process is running
+        .then(delay(2000))
         .then(() => {
           return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, ip);
         })
@@ -156,17 +168,37 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
     ssLocalArgs.push('-t', SS_LOCAL_TIMEOUT_SECS.toString());
+    // TODO (AZ) Do we need this?
+    ssLocalArgs.push('-b', '0.0.0.0');
     ssLocalArgs.push('-u');
 
     // Note that if you run with -v then ss-local may output a lot of data to stderr which
     // will cause the binary to fail:
     //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
-    ssLocal = spawn(pathToEmbeddedExe('ss-local'), ssLocalArgs);
+    let ssLocalFilename = 'ss-local';
+    if (isWindows) {
+      ssLocalFilename = pathToEmbeddedExe(ssLocalFilename);
+    } else if (isLinux) {
+      // TODO (AZ): need to be better defined
+      ssLocalFilename = `/usr/bin/${ssLocalFilename}`;
+    } else {
+      reject(new errors.ShadowsocksStartFailure(`Unsupported OS`));
+    }
+
+    ssLocal = spawn(ssLocalFilename, ssLocalArgs);
+
+    if (ssLocal === undefined) {
+      reject(new errors.ShadowsocksStartFailure(`Unable to spawn ss-local`));
+    }
 
     // Amazingly, there's no documented way to tell whether spawn has successfully launched a
     // binary. This handler allows us to implicitly test that, by listening for ss-local's
     // "listening on port xxx" startup output.
+    //
+    // AZ - In *nix world the output of programs are buffered so we can't use this method
+    // added a delay after this for now. We need a better solution - maybe node-ps
     ssLocal.stdout.on('data', (s) => {
+      console.log(`Data received ${s}`);
       resolve();
     });
 
@@ -187,6 +219,7 @@ function startLocalShadowsocksProxy(
       }
       onDisconnected();
     });
+    resolve();
   });
 }
 
@@ -318,27 +351,62 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
     //   --socks-server-addr 127.0.0.1:1081 \
     //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
     const args: string[] = [];
-    args.push(
-        '--tundev',
-        `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-            TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
+    // TODO (AZ): name of the tun device should not be hard coded
+    args.push('--tundev', 'outline-tun0');
+    //    `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+    //      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-    args.push('--socks5-udp');
-    args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    // TODO (AZ) what do we do with UDP
+    // args.push('--socks5-udp');
+    // args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--loglevel', 'error');
+
+    let tun2socksFilename = 'badvpn-tun2socks';
+    if (isWindows) {
+      tun2socksFilename = pathToEmbeddedExe(tun2socksFilename);
+    } else if (isLinux) {
+      tun2socksFilename = `/usr/bin/${tun2socksFilename}`;
+    } else {
+      reject(new errors.ShadowsocksStartFailure(`Unsupported OS`));
+    }
 
     // TODO: Duplicate ss-local's error handling.
     try {
-      tun2socks = spawn(pathToEmbeddedExe('badvpn-tun2socks'), args);
+      tun2socks = spawn(tun2socksFilename, args);
+
+      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
+      // otherwise the process execution is suspended when the unconsumed streams exceed the
+      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
+      //
+      // AZ - In *nix world std*'s are buffered so we can't use this method
+      // added a delay after this for now. We need a better solution - maybe node-ps
+      tun2socks.stdout.on('data', (s) => {
+        console.error(`${s}`);
+        resolve();
+      });
+
+      tun2socks.stderr.on('data', (data) => {
+        console.log(`stderr: ${data}`);
+      });
+
+      // In addition to being a sensible way to listen for launch failures, setting this handler
+      // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
+      // want to send that exception to Sentry* since it contains ss-local's arguments which
+      // encode an access key to the server.
+      tun2socks.on('error', (e: SpawnError) => {
+        reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
+      });
+
       tun2socks.on('exit', (code, signal) => {
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
           console.info(`tun2socks exited with signal ${signal}`);
         } else {
           console.info(`tun2socks exited with code ${code}`);
-          if (code === 1) {
+          // TODO (AZ): Return this back
+          /* if (code === 1) {
             // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
             // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
@@ -355,16 +423,9 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
                   });
             }, 3000);
             return;
-          }
+          } */
         }
         onDisconnected();
-      });
-
-      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
-      // otherwise the process execution is suspended when the unconsumed streams exceed the
-      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
-      tun2socks.stdout.on('data', (data) => {
-        console.error(`${data}`);
       });
 
       resolve();

@@ -19,6 +19,10 @@ import * as errors from '../www/model/errors';
 
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
+
+const SERVICE_USOCK_NAME = 'outline_controller';
+const SERVICE_USOCK_PATH = '/var/run/';
+
 const SERVICE_START_COMMAND = 'net start OutlineService';
 
 interface RoutingServiceRequest {
@@ -85,6 +89,8 @@ export class WindowsRoutingService implements RoutingService {
         try {
           const msg = JSON.stringify(request);
           this.ipcConnection.write(msg);
+          // TODO (AZ) Do we need this?
+          this.ipcConnection.write('\n');
         } catch (e) {
           reject(new Error(`Failed to serialize JSON request: ${e.message}`));
         }
@@ -126,6 +132,83 @@ export class WindowsRoutingService implements RoutingService {
                   response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE
                       ? new errors.UnsupportedRoutingTable(msg)
                       : new errors.ConfigureSystemProxyFailure(msg));
+            }
+            resolve(response);
+          } catch (e) {
+            reject(new Error(`Failed to deserialize service response: ${e.message}`));
+          }
+        } else {
+          reject(new Error('Failed to receive data form routing service'));
+        }
+        try {
+          this.ipcConnection.destroy();
+        } catch (e) {
+          // Don't reject, the service may have disconnected the pipe already.
+        }
+      });
+    });
+  }
+}
+
+// Abstracts IPC with OutlineService in order to configure routing.
+export class LinuxRoutingService implements RoutingService {
+  private ipcConnection: net.Socket;
+
+  // TODO (AZ): We can unify this with the WindowsRoutingService
+
+  // TODO (AZ): We need to change the way the daemon is communicating
+
+  // Asks OutlineService to configure all traffic, except that bound for the proxy server,
+  // to route via routerIp.
+  configureRouting(routerIp: string, proxyIp: string): Promise<void> {
+    return this.sendRequest({
+      action: RoutingServiceAction.CONFIGURE_ROUTING,
+      parameters: {
+        proxyIp,
+        routerIp,
+      }
+    });
+  }
+
+  // Restores the default system routes.
+  resetRouting(): Promise<void> {
+    return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
+  }
+
+  // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
+  // to start the service, in the event that it is not running.
+  private sendRequest(request: RoutingServiceRequest): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ipcConnection =
+          net.createConnection(`${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`, () => {
+            try {
+              const msg = JSON.stringify(request);
+              this.ipcConnection.write(msg);
+            } catch (e) {
+              reject(new Error(`Failed to serialize JSON request: ${e.message}`));
+            }
+          });
+
+      this.ipcConnection.on('error', (err) => {
+        const netErr = err as NetError;
+        if (netErr.errno === 'ENOENT') {
+          reject(new Error(`Routing Daemon not running.`));
+        } else {
+          reject(new Error(`Received error from service connection: ${netErr.message}`));
+        }
+      });
+
+      this.ipcConnection.on('data', (data) => {
+        console.log(`Got data from pipe (${data})`);
+        if (data) {
+          try {
+            const response = JSON.parse(data.toString());
+            if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
+              const msg = `OutlineService says: ${response.errorMessage}`;
+              reject(
+                  response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE ?
+                      new errors.UnsupportedRoutingTable(msg) :
+                      new errors.ConfigureSystemProxyFailure(msg));
             }
             resolve(response);
           } catch (e) {
