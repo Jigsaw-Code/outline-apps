@@ -32,11 +32,11 @@ declare class SpawnError extends Error {
 }
 
 const delay = (time: number) => () => new Promise(resolve => setTimeout(() => resolve(), time));
+const WAIT_FOR_PROCESS_TO_START = 1000;
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
-// TODO (AZ) need to be OS specific
 const routingService = new routing.RoutingService();
 
 // The returned path must be kept in sync with:
@@ -54,6 +54,7 @@ function pathToEmbeddedExe(basename: string) {
 
 let ssLocal: ChildProcess|undefined;
 let tun2socks: ChildProcess|undefined;
+let tunDeviceName: string|undefined;
 
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
@@ -88,7 +89,7 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         .then(() => {
           return startLocalShadowsocksProxy(ip, config, onDisconnected);
         })
-        .then(delay(2000))
+        .then(delay(WAIT_FOR_PROCESS_TO_START))
         .then(() => {
           return validateServerCredentials();
         })
@@ -96,9 +97,12 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
           return checkUdpForwardingEnabled();
         })
         .then(() => {
+          return getTunDeviceName();
+        })
+        .then(() => {
           return startTun2socks(ip, onDisconnected);
         })
-        .then(delay(2000))
+        .then(delay(WAIT_FOR_PROCESS_TO_START))
         .then(() => {
           return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, ip);
         })
@@ -165,8 +169,6 @@ function startLocalShadowsocksProxy(
     ssLocalArgs.push('-k', serverConfig.password || '');
     ssLocalArgs.push('-m', serverConfig.method || '');
     ssLocalArgs.push('-t', SS_LOCAL_TIMEOUT_SECS.toString());
-    // TODO (AZ) Do we need this?
-    ssLocalArgs.push('-b', '0.0.0.0');
     ssLocalArgs.push('-u');
 
     // Note that if you run with -v then ss-local may output a lot of data to stderr which
@@ -175,11 +177,6 @@ function startLocalShadowsocksProxy(
     let ssLocalFilename = 'ss-local';
     if (isWindows) {
       ssLocalFilename = pathToEmbeddedExe(ssLocalFilename);
-    } else if (isLinux) {
-      // TODO (AZ): need to be better defined
-      ssLocalFilename = `/usr/bin/${ssLocalFilename}`;
-    } else {
-      reject(new errors.ShadowsocksStartFailure(`Unsupported OS`));
     }
 
     ssLocal = spawn(ssLocalFilename, ssLocalArgs);
@@ -347,90 +344,84 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
     //   --socks-server-addr 127.0.0.1:1081 \
     //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
-    const args: string[] = [];
-    // TODO (AZ): name of the tun device should not be hard coded
-    args.push('--tundev', 'outline-tun0');
-    //    `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-    //      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
-    args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
-    args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-    // TODO (AZ) what do we do with UDP
-    // args.push('--socks5-udp');
-    // args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-    args.push('--loglevel', 'error');
+    if (tunDeviceName !== undefined) {
+      const args: string[] = [];
+      args.push('--tundev', tunDeviceName);
+      args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
+      args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+      args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+      // TODO (AZ) what do we do with UDP
+      // args.push('--socks5-udp');
+      // args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+      args.push('--loglevel', 'error');
 
-    let tun2socksFilename = 'badvpn-tun2socks';
-    if (isWindows) {
-      tun2socksFilename = pathToEmbeddedExe(tun2socksFilename);
-    } else if (isLinux) {
-      tun2socksFilename = `/usr/bin/${tun2socksFilename}`;
-    } else {
-      reject(new errors.ShadowsocksStartFailure(`Unsupported OS`));
-    }
+      let tun2socksFilename = 'badvpn-tun2socks';
+      if (isWindows) {
+        tun2socksFilename = pathToEmbeddedExe(tun2socksFilename);
+      }
 
-    // TODO: Duplicate ss-local's error handling.
-    try {
-      tun2socks = spawn(tun2socksFilename, args);
+      // TODO: Duplicate ss-local's error handling.
+      try {
+        tun2socks = spawn(tun2socksFilename, args);
 
-      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
-      // otherwise the process execution is suspended when the unconsumed streams exceed the
-      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
-      //
-      // AZ - In *nix world std*'s are buffered so we can't use this method
-      // added a delay after this for now. We need a better solution - maybe node-ps
-      tun2socks.stdout.on('data', (s) => {
-        console.error(`${s}`);
+        // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
+        // otherwise the process execution is suspended when the unconsumed streams exceed the
+        // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
+        //
+        // AZ - In *nix world std*'s are buffered so we can't use this method
+        // added a delay after this for now. We need a better solution - maybe node-ps
+        tun2socks.stdout.on('data', (s) => {
+          console.error(`${s}`);
+          resolve();
+        });
+
+        tun2socks.stderr.on('data', (data) => {
+          console.log(`stderr: ${data}`);
+        });
+
+        // In addition to being a sensible way to listen for launch failures, setting this handler
+        // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
+        // want to send that exception to Sentry* since it contains ss-local's arguments which
+        // encode an access key to the server.
+        tun2socks.on('error', (e: SpawnError) => {
+          reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
+        });
+
+        tun2socks.on('exit', (code, signal) => {
+          if (signal) {
+            // tun2socks exits with SIGTERM when we stop it.
+            console.info(`tun2socks exited with signal ${signal}`);
+          } else {
+            console.info(`tun2socks exited with code ${code}`);
+            if (code === 1) {
+              // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
+              // due to a failure to read the tap device.
+              // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
+              console.info('Restarting tun2socks...');
+              setTimeout(() => {
+                startTun2socks(host, onDisconnected)
+                    .then(() => {
+                      resolve();
+                    })
+                    .catch((e) => {
+                      console.error('Failed to restart tun2socks');
+                      onDisconnected();
+                      teardownVpn();
+                    });
+              }, 3000);
+              return;
+            }
+          }
+          onDisconnected();
+        });
+
         resolve();
-      });
-
-      tun2socks.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-      });
-
-      // In addition to being a sensible way to listen for launch failures, setting this handler
-      // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
-      // want to send that exception to Sentry* since it contains ss-local's arguments which
-      // encode an access key to the server.
-      tun2socks.on('error', (e: SpawnError) => {
-        reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
-      });
-
-      tun2socks.on('exit', (code, signal) => {
-        if (signal) {
-          // tun2socks exits with SIGTERM when we stop it.
-          console.info(`tun2socks exited with signal ${signal}`);
-        } else {
-          console.info(`tun2socks exited with code ${code}`);
-          // TODO (AZ): Return this back
-          /* if (code === 1) {
-            // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
-            // due to a failure to read the tap device.
-            // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            console.info('Restarting tun2socks...');
-            setTimeout(() => {
-              startTun2socks(host, onDisconnected)
-                  .then(() => {
-                    resolve();
-                  })
-                  .catch((e) => {
-                    console.error('Failed to restart tun2socks');
-                    onDisconnected();
-                    teardownVpn();
-                  });
-            }, 3000);
-            return;
-          } */
-        }
-        onDisconnected();
-      });
-
-      resolve();
-    } catch (e) {
-      // We haven't seen any failures related to tun2socks so use this error because it will make
-      // the UI point the user towards antivirus software, which seems the most likely culprit for
-      // tun2socks failing to launch.
-      reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
+      } catch (e) {
+        // We haven't seen any failures related to tun2socks so use this error because it will make
+        // the UI point the user towards antivirus software, which seems the most likely culprit for
+        // tun2socks failing to launch.
+        reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
+      }
     }
   });
 }
@@ -458,6 +449,21 @@ export function teardownVpn() {
     }),
     stopProcesses()
   ]);
+}
+
+function getTunDeviceName() {
+  if (isWindows) {
+    tunDeviceName = `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`;
+  } else if (isLinux) {
+    return routingService.getDeviceName()
+        .then((response) => {
+          tunDeviceName = response;
+        })
+        .catch((e) => {
+          console.log(`could not get device name: ${e.message}`);
+        });
+  }
 }
 
 function stopProcesses() {

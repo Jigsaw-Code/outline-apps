@@ -26,6 +26,7 @@ namespace outline {
 // Routing commands from App
 const std::string CONFIGURE_ROUTING = "configureRouting";
 const std::string RESET_ROUTING = "resetRouting";
+const std::string GET_DEVICE_NAME = "getDeviceName";
 
 // Error codes to communicate back to the app
 const int SUCCESS = 0;
@@ -62,8 +63,9 @@ class session : public std::enable_shared_from_this<session> {
               break;
             }
           }
-          int rc = runClientCommandJson(clientCommand);
-          response << "{\"statusCode\": " << rc << "}" << std::endl;
+          std::pair<int, std::string> rc = runClientCommandJson(clientCommand);
+          response << "{\"statusCode\": " << rc.first << ", \"returnValue\": \"" << rc.second
+                   << "\"}" << std::endl;
           boost::asio::async_write(
               socket_, boost::asio::buffer(response.str(), response.str().length()), yield);
           std::cout << "Wrote back (" << response.str() << ") to unix socket" << std::endl;
@@ -114,7 +116,7 @@ class session : public std::enable_shared_from_this<session> {
   /**
    * Parses input JSON from the app
    */
-  int runClientCommandJson(std::string clientCommand) {
+  std::pair<int, std::string> runClientCommandJson(std::string clientCommand) {
     std::stringstream ss;
     std::string action, outline_server_ip;
     boost::property_tree::ptree pt;
@@ -127,13 +129,13 @@ class session : public std::enable_shared_from_this<session> {
       boost::property_tree::read_json(ss, pt);
     } catch (std::exception const& e) {
       std::cerr << e.what() << std::endl;
-      return GENERIC_FAILURE;
+      return {GENERIC_FAILURE, "Invalid JSON"};
     }
 
     boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
     if (_action_iter == pt.not_found()) {
       std::cerr << "Invalid input JSON - action doesn't exist" << std::endl;
-      return GENERIC_FAILURE;
+      return {GENERIC_FAILURE, "Invalid JSON"};
     }
     action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
     // std::cout << action << std::endl;
@@ -142,13 +144,13 @@ class session : public std::enable_shared_from_this<session> {
       boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
       if (_parameters_iter == pt.not_found()) {
         std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-        return GENERIC_FAILURE;
+        return {GENERIC_FAILURE, "Invalid JSON"};
       }
       boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
       boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
       if (_proxyIp_iter == parameters.not_found()) {
         std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-        return GENERIC_FAILURE;
+        return {GENERIC_FAILURE, "Invalid JSON"};
       }
       outline_server_ip =
           boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
@@ -159,18 +161,21 @@ class session : public std::enable_shared_from_this<session> {
       // TODO (Vmon): Error handling and return
       outlineProxyController_->routeThroughOutline(outline_server_ip);
       std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
-      return SUCCESS;
+      return {SUCCESS, ""};
 
     } else if (action == RESET_ROUTING) {
       // TODO (Vmon): Error handling and return
       outlineProxyController_->routeDirectly();
       std::cout << "Reset Routing done" << std::endl;
-      return SUCCESS;
+      return {SUCCESS, ""};
+    } else if (action == GET_DEVICE_NAME) {
+      std::cout << "Reset Routing done" << std::endl;
+      return {SUCCESS, outlineProxyController_->getTunDeviceName()};
     } else {
       std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
     }
 
-    return GENERIC_FAILURE;
+    return {GENERIC_FAILURE, "Undefined Action"};
   }
 
   stream_protocol::socket socket_;

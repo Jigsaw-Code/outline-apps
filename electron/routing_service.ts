@@ -43,13 +43,15 @@ interface RoutingServiceResponse {
 }
 
 interface RoutingServiceInterface {
-  configureRouting(routerIp: string, proxyIp: string): Promise<void>;
-  resetRouting(): Promise<void>;
+  configureRouting(routerIp: string, proxyIp: string): Promise<string>;
+  resetRouting(): Promise<string>;
+  getDeviceName(): Promise<string>;
 }
 
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
-  RESET_ROUTING = 'resetRouting'
+  RESET_ROUTING = 'resetRouting',
+  GET_DEVICE_NAME = 'getDeviceName'
 }
 
 enum RoutingServiceStatusCode {
@@ -72,7 +74,7 @@ export class RoutingService implements RoutingServiceInterface {
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string): Promise<void> {
+  configureRouting(routerIp: string, proxyIp: string): Promise<string> {
     return this.sendRequest({
       action: RoutingServiceAction.CONFIGURE_ROUTING,
       parameters: {
@@ -83,13 +85,18 @@ export class RoutingService implements RoutingServiceInterface {
   }
 
   // Restores the default system routes.
-  resetRouting(): Promise<void> {
+  resetRouting(): Promise<string> {
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
+  }
+
+  // Returns the name of the device
+  getDeviceName(): Promise<string> {
+    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}});
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest): Promise<void> {
+  private sendRequest(request: RoutingServiceRequest): Promise<string> {
     return new Promise((resolve, reject) => {
 
       let ipcName = '';
@@ -151,7 +158,11 @@ export class RoutingService implements RoutingServiceInterface {
                       ? new errors.UnsupportedRoutingTable(msg)
                       : new errors.ConfigureSystemProxyFailure(msg));
             }
-            resolve(response);
+            if ('returnValue' in response) {
+              return resolve(response.returnValue);
+            } else {
+              return resolve(data.toString());
+            }
           } catch (e) {
             reject(new Error(`Failed to deserialize service response: ${e.message}`));
           }

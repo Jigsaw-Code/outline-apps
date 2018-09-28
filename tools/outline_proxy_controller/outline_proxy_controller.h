@@ -30,6 +30,13 @@ class OutlineProxyController {
    */
   void routeDirectly();
 
+  /**
+   *
+   * Returns the name of the tun device to be used by the app
+   *
+   */
+  std::string getTunDeviceName();
+
  private:
   // add a tun device
   // void addTunInterface();
