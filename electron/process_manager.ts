@@ -31,14 +31,13 @@ declare class SpawnError extends Error {
   code: string;
 }
 
-const delay = (time: {}) => (result: {}) =>
-    new Promise(resolve => setTimeout(() => resolve(result), time));
+const delay = (time: number) => () => new Promise(resolve => setTimeout(() => resolve(), time));
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
 // TODO (AZ) need to be OS specific
-const routingService = new routing.LinuxRoutingService();
+const routingService = new routing.RoutingService();
 
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
@@ -89,7 +88,6 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         .then(() => {
           return startLocalShadowsocksProxy(ip, config, onDisconnected);
         })
-        // TODO (AZ): Need a better solution to check if the process is running
         .then(delay(2000))
         .then(() => {
           return validateServerCredentials();
@@ -100,7 +98,6 @@ export function startVpn(config: cordova.plugins.outline.ServerConfig, onDisconn
         .then(() => {
           return startTun2socks(ip, onDisconnected);
         })
-        // TODO (AZ): Need a better solution to check if the process is running
         .then(delay(2000))
         .then(() => {
           return routingService.configureRouting(TUN2SOCKS_VIRTUAL_ROUTER_IP, ip);
