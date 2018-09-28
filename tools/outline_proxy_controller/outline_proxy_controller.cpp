@@ -220,6 +220,8 @@ std::string OutlineProxyController::executeIPAddress(
   return executeCommand(IPAddressCommand, args);
 }
 
+std::string OutlineProxyController::getTunDeviceName() { return tunInterfaceName; }
+
 OutlineProxyController::~OutlineProxyController() {
   routeDirectly();
   // deleteOutlineTunDev();
