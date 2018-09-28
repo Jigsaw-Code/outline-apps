@@ -13,17 +13,24 @@
 // limitations under the License.
 
 import * as net from 'net';
+import * as os from 'os';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
+const isWindows = os.platform() === 'win32';
+const isLinux = os.platform() === 'linux';
+
+// Windows Pipe Information ---- For Windows
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 
+const SERVICE_START_COMMAND = 'net start OutlineService';
+
+// Unix socket information ---- For Linux
 const SERVICE_USOCK_NAME = 'outline_controller';
 const SERVICE_USOCK_PATH = '/var/run/';
 
-const SERVICE_START_COMMAND = 'net start OutlineService';
 
 interface RoutingServiceRequest {
   action: string;
@@ -35,7 +42,7 @@ interface RoutingServiceResponse {
   errorMessage?: string;
 }
 
-export interface RoutingService {
+interface RoutingServiceInterface {
   configureRouting(routerIp: string, proxyIp: string): Promise<void>;
   resetRouting(): Promise<void>;
 }
@@ -60,7 +67,7 @@ interface NetError extends Error {
 }
 
 // Abstracts IPC with OutlineService in order to configure routing.
-export class WindowsRoutingService implements RoutingService {
+export class RoutingService implements RoutingServiceInterface {
   private ipcConnection: net.Socket;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
@@ -83,14 +90,22 @@ export class WindowsRoutingService implements RoutingService {
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
   private sendRequest(request: RoutingServiceRequest): Promise<void> {
+
     return new Promise((resolve, reject) => {
-      this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
+
+      let ipcName = "";
+      if (isWindows) {
+        ipcName = `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`;
+      } else if (isLinux) {
+        ipcName = `${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`;
+      } else {
+        reject(new Error(`Unsupported platform`));
+      }
+      this.ipcConnection = net.createConnection(ipcName, () => {
         console.log('Pipe connected');
         try {
           const msg = JSON.stringify(request);
           this.ipcConnection.write(msg);
-          // TODO (AZ) Do we need this?
-          this.ipcConnection.write('\n');
         } catch (e) {
           reject(new Error(`Failed to serialize JSON request: ${e.message}`));
         }
@@ -99,23 +114,27 @@ export class WindowsRoutingService implements RoutingService {
       this.ipcConnection.on('error', (err) => {
         const netErr = err as NetError;
         if (netErr.errno === 'ENOENT') {
-          console.info(`Routing service not running. Attempting to start.`);
-          // Prompt the user for admin permissions to start the routing service.
-          sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
-            if (sudoError) {
-              // Yes, this seems to be the only way to tell.
-              if ((typeof sudoError === 'string') &&
-                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                return reject(new errors.NoAdminPermissions());
-              } else {
-                // It's unclear what type sudoError is because it has no message
-                // field. toString() seems to work in most cases, so use that -
-                // anything else will eventually show up in Sentry.
-                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+          if (isWindows) {
+            console.info(`Routing service not running. Attempting to start.`);
+            // Prompt the user for admin permissions to start the routing service.
+            sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
+              if (sudoError) {
+                // Yes, this seems to be the only way to tell.
+                if ((typeof sudoError === 'string') &&
+                    sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                  return reject(new errors.NoAdminPermissions());
+                } else {
+                  // It's unclear what type sudoError is because it has no message
+                  // field. toString() seems to work in most cases, so use that -
+                  // anything else will eventually show up in Sentry.
+                  return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+                }
               }
-            }
-            return this.sendRequest(request).then(resolve, reject);
-          });
+              return this.sendRequest(request).then(resolve, reject);
+            });
+          } else {
+            reject(new Error(`Routing Daemon not running.`));
+          }
         } else {
           reject(new Error(`Received error from service connection: ${netErr.message}`));
         }
@@ -132,83 +151,6 @@ export class WindowsRoutingService implements RoutingService {
                   response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE
                       ? new errors.UnsupportedRoutingTable(msg)
                       : new errors.ConfigureSystemProxyFailure(msg));
-            }
-            resolve(response);
-          } catch (e) {
-            reject(new Error(`Failed to deserialize service response: ${e.message}`));
-          }
-        } else {
-          reject(new Error('Failed to receive data form routing service'));
-        }
-        try {
-          this.ipcConnection.destroy();
-        } catch (e) {
-          // Don't reject, the service may have disconnected the pipe already.
-        }
-      });
-    });
-  }
-}
-
-// Abstracts IPC with OutlineService in order to configure routing.
-export class LinuxRoutingService implements RoutingService {
-  private ipcConnection: net.Socket;
-
-  // TODO (AZ): We can unify this with the WindowsRoutingService
-
-  // TODO (AZ): We need to change the way the daemon is communicating
-
-  // Asks OutlineService to configure all traffic, except that bound for the proxy server,
-  // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string): Promise<void> {
-    return this.sendRequest({
-      action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {
-        proxyIp,
-        routerIp,
-      }
-    });
-  }
-
-  // Restores the default system routes.
-  resetRouting(): Promise<void> {
-    return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
-  }
-
-  // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
-  // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.ipcConnection =
-          net.createConnection(`${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`, () => {
-            try {
-              const msg = JSON.stringify(request);
-              this.ipcConnection.write(msg);
-            } catch (e) {
-              reject(new Error(`Failed to serialize JSON request: ${e.message}`));
-            }
-          });
-
-      this.ipcConnection.on('error', (err) => {
-        const netErr = err as NetError;
-        if (netErr.errno === 'ENOENT') {
-          reject(new Error(`Routing Daemon not running.`));
-        } else {
-          reject(new Error(`Received error from service connection: ${netErr.message}`));
-        }
-      });
-
-      this.ipcConnection.on('data', (data) => {
-        console.log(`Got data from pipe (${data})`);
-        if (data) {
-          try {
-            const response = JSON.parse(data.toString());
-            if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
-              const msg = `OutlineService says: ${response.errorMessage}`;
-              reject(
-                  response.statusCode === RoutingServiceStatusCode.UNSUPPORTED_ROUTING_TABLE ?
-                      new errors.UnsupportedRoutingTable(msg) :
-                      new errors.ConfigureSystemProxyFailure(msg));
             }
             resolve(response);
           } catch (e) {
