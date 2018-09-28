@@ -69,14 +69,6 @@ class Subnet: NSObject {
     let mask = UInt32(0xffffffff) << (32 - prefix);
     self.mask = mask.IPv4String()
   }
-
-  private func ipToString(_ ip: UInt32) -> String {
-    let byte1 = UInt8(ip & 0xff)
-    let byte2 = UInt8((ip>>8) & 0xff)
-    let byte3 = UInt8((ip>>16) & 0xff)
-    let byte4 = UInt8((ip>>24) & 0xff)
-    return "\(byte1).\(byte2).\(byte3)\(byte4)"
-  }
 }
 
 extension UInt32 {
