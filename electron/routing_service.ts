@@ -90,10 +90,9 @@ export class RoutingService implements RoutingServiceInterface {
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
   private sendRequest(request: RoutingServiceRequest): Promise<void> {
-
     return new Promise((resolve, reject) => {
 
-      let ipcName = "";
+      let ipcName = '';
       if (isWindows) {
         ipcName = `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`;
       } else if (isLinux) {
