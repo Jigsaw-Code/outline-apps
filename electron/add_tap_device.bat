@@ -26,32 +26,41 @@ if %errorlevel% equ 0 (
 )
 
 :: Add the device, recording the names of devices before and after to help
-:: us find the name of the new device:
+:: us find the name of the new device.
+::
+:: Note:
 ::  - While we could limit the search to devices having ServiceName=tap0901,
 ::    that will cause wmic to output just "no instances available" when there
 ::    are no other TAP devices present, messing up the diff.
-::  - Pipe wmic output through find to suppress blank lines, which also mess up
-::    the diff.
+::  - We do not use findstr, etc., to strip blank lines because those ancient tools
+::    typically don't understand/output non-Latin characters (wmic *does*, even on
+::    Windows 7).
 set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
-set DEVICE_DIFF=%tmp%\outlineinstaller-new-tap-device.txt
-wmic nic get netconnectionid /format:list | findstr "=" > %BEFORE_DEVICES%
+wmic nic get netconnectionid /format:list > %BEFORE_DEVICES%
 tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
 if %errorlevel% neq 0 (
   echo Could not create TAP device.
   exit /b 1
 )
-wmic nic get netconnectionid /format:list | findstr "=" > %AFTER_DEVICES%
+wmic nic get netconnectionid /format:list > %AFTER_DEVICES%
 
-:: Find the name of the new device:
-::  - Use a temp file to save/load the result to avoid escaping issues.
-::  - Pipe input from /dev/null to prevent Powershell hanging, waiting for EOF.
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim()" > %DEVICE_DIFF% <nul
-set /p NEW_DEVICE= < %DEVICE_DIFF%
-echo New TAP device name: %NEW_DEVICE%
-
-:: Rename the device.
-netsh interface set interface name = "%NEW_DEVICE%" newname = "%DEVICE_NAME%"
+:: Find the name of the new device and rename it.
+::
+:: Obviously, this command is a beast; roughly what it does, in this order, is:
+::  - perform a diff on the before and after text files
+::  - split the left column, InputObject, on the equals (=) sign
+::  - remove leading/trailing space and blank lines with trim()
+::  - store the result in NEW_DEVICE
+::  - print NEW_DEVICE, for debugging (though non-Latin characters may appear as ?)
+::  - invoke netsh
+::
+:: Running all this in one go helps reduce the need to deal with temporary
+:: files and the character encoding headaches that follow.
+::
+:: Note that we pipe input from /dev/null to prevent Powershell hanging forever
+:: waiting on EOF.
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
   echo Could not rename TAP device.
   exit /b 1
