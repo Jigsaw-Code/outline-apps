@@ -576,7 +576,7 @@ public class VpnTunnelService extends VpnService {
     } catch (Exception e) {
       LOG.severe("Failed to get name property from server config.");
     }
-    return getApplicationName();
+    return getStringResource("server_default_name_outline");
   }
 
   /* Returns the application name. */
