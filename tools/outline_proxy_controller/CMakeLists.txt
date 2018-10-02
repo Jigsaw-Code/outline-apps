@@ -30,6 +30,7 @@ add_executable(OutlineProxyControllerTester outline_proxy_controller.cpp
 ######################################
 add_executable(OutlineProxyController
     outline_proxy_controller.cpp
+    outline_controller_server.cpp
     outline_daemon.cpp
     )
 

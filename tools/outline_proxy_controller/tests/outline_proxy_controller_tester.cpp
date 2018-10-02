@@ -154,3 +154,32 @@ TEST_CASE("verifying ipv6 is disbaled when outline is enabled") {
 
   testOutlineProxyController.routeDirectly();
 }
+
+TEST_CASE("verify dns setting gets set and reset") {
+  OutlineProxyController testOutlineProxyController;
+
+  map<string, string> nslookupDomain;
+
+  nslookupDomain["google.com"] = "";
+
+  //we just keep the first line
+  auto result =  testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
+  auto originalDNSServer  = result.substr(0, result.find("\n"));
+
+  testOutlineProxyController.backupDNSSetting();
+  testOutlineProxyController.enforceGloballyReachableDNS();
+  
+  result =  testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
+  auto outlineDNSServer  = result.substr(0, result.find("\n"));
+
+  REQUIRE(outlineDNSServer == "Server:\t\t" + testOutlineProxyController.outlineDNSServer);
+
+  testOutlineProxyController.restoreDNSSetting();
+  
+  result =  testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
+  auto restoredDNSServer  = result.substr(0, result.find("\n"));
+
+  REQUIRE(restoredDNSServer == originalDNSServer);
+
+}
+  
