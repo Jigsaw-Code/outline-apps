@@ -565,8 +565,7 @@ public class VpnTunnelService extends VpnService {
 
   /* Returns the server's name from |serverConfig|. If the name is not present, it falls back to the
    * host name (IP address), or the application name if neither can be retrieved. */
-  private final String getServerName(final JSONObject serverConfig)
-      throws PackageManager.NameNotFoundException {
+  private final String getServerName(final JSONObject serverConfig) {
     try {
       String serverName = serverConfig.getString("name");
       if (serverName == null || serverName.equals("")) {
@@ -576,7 +575,7 @@ public class VpnTunnelService extends VpnService {
     } catch (Exception e) {
       LOG.severe("Failed to get name property from server config.");
     }
-    return getApplicationName();
+    return getStringResource("server_default_name_outline");
   }
 
   /* Returns the application name. */

@@ -26,7 +26,8 @@ import sys
 # Keys to import.
 NATIVE_KEYS = [
   "connected_server_state",
-  "reconnecting_server_state"
+  "reconnecting_server_state",
+  "server_default_name_outline"
 ]
 XML_TEMPLATE = '''<?xml version='1.0' encoding='utf-8'?>
 <resources>
