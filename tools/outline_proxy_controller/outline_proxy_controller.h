@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 
 namespace outline {
 
@@ -55,6 +56,23 @@ class OutlineProxyController {
 
   void setTunDeviceIP();
 
+  /** 
+   *  Should be called before changing DNS setting to backup the DNS
+   *  setting to restore after. 
+   */
+  void backupDNSSetting();
+
+  /** 
+   *  Should be called after diconnect to restore original DNS
+   *  setting 
+   */
+  void restoreDNSSetting();
+
+  /**
+   * set outline DNS setting
+   */
+  void enforceGloballyReachableDNS();
+    
   /**
    * exectues a shell command and returns the stdout
    */
@@ -110,14 +128,30 @@ class OutlineProxyController {
   const std::string IPTunTapCommand = "ip tuntap";
   const std::string sysctlCommand = "sysctl";
 
+  const std::string c_normal_traffic_priority_metric = "6";
+  const std::string c_proxy_priority_metric = "100";
+
   std::string tunInterfaceName = "outline-tun0";
   std::string tunInterfaceIp = "10.0.85.1";
   std::string tunInterfaceRouterIp = "10.0.85.2";
   std::string outlineServerIP = "138.197.150.245";
+  std::string outlineDNSServer = "8.8.8.8";
+
+
 
   std::string clientLocalIP;
   std::string routingGatewayIP;
   std::string clientToServerRoutingInterface;
+
+  //TODO [vmon] We have to keep track of connect request so if we receive two
+  //consequective connect request we have to disconnect first. So we don't
+  //over write our recovery data
+  
+  //we are going to backup both resolve.conf and resolv.conf.head
+  //and modify both to make sure that we are going to do stuff
+  std::stringstream backedupResolveConf;
+  std::stringstream backedupResolveConfHeader;
+  bool DNSSettingBackedup = false;
 
   // storing different route inorder to delete them later
   std::string throughGatewayRoute;

@@ -18,8 +18,8 @@
 
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 
-using boost::asio::local::stream_protocol;
 using namespace std;
+using boost::asio::local::stream_protocol;
 
 namespace outline {
 
@@ -43,172 +43,42 @@ class session : public std::enable_shared_from_this<session> {
       : socket_(std::move(sock)),
         strand_(socket_.get_io_context()),
         outlineProxyController_(outlineProxyController) {}
+    /**
+     * callback from async_accept, starts a new session when 
+     * a connection is comming in and reads the input from
+     * the client
+     */
+    void start();
 
-  void start() {
-    auto self(shared_from_this());
-    boost::asio::spawn(strand_, [this, self](boost::asio::yield_context yield) {
-      try {
-        std::ostringstream response;
-        std::string clientCommand, buffer;
-        std::cout << "Client Connected" << std::endl;
-        for (;;) {
-          for (;;) {
-            boost::asio::async_read_until(socket_, boost::asio::dynamic_buffer(buffer, 1024), "}",
-                                          yield);
-            std::cout << buffer << std::endl;
-            clientCommand.append(buffer);
-            buffer.clear();
-            if (isValidJson(clientCommand)) {
-              std::cout << "Valid JSON" << std::endl;
-              break;
-            }
-          }
-          std::pair<int, std::string> rc = runClientCommandJson(clientCommand);
-          response << "{\"statusCode\": " << rc.first << ", \"returnValue\": \"" << rc.second
-                   << "\"}" << std::endl;
-          boost::asio::async_write(
-              socket_, boost::asio::buffer(response.str(), response.str().length()), yield);
-          std::cout << "Wrote back (" << response.str() << ") to unix socket" << std::endl;
-          clientCommand.clear();
-          response.str(std::string());
-        }
-      } catch (std::exception& e) {
-        socket_.close();
-      }
-    });
-  }
+private:
+    /**
+     * Checks the input string and returns true if it's a valid json
+     */
+    bool isValidJson(std::string str);
 
- private:
-  /**
-   * Checks the input string and returns true if it's a valid json
-   */
-  bool isValidJson(std::string str) {
-    std::stringstream ss;
-    boost::property_tree::ptree pt;
+    /**
+     * interprets the commmands arriving as JSON input from the client app and
+     * act upon them
+     */
+    std::pair<int, std::string> runClientCommand(std::string clientCommand);
 
-    if (str.length() >= JSON_INPUT_MIN_LENGTH) {
-      ss << str;
-      try {
-        boost::property_tree::read_json(ss, pt);
-        return true;
-      } catch (std::exception const& e) {
-      }
-    }
-    return false;
-  }
-
-  void runClientCommand(std::string clientCommand) {
-    std::vector<std::string> command_parts;
-    boost::split(command_parts, clientCommand, [](char c) { return c == ' '; });
-
-    if (command_parts[0] == "connect") {
-      if (command_parts.size() < 2)
-        throw runtime_error("command connect is called with less than 2 arguments");
-
-      std::string outline_server_ip = command_parts[1];
-      outlineProxyController_->routeThroughOutline(outline_server_ip);
-
-    } else if (command_parts[0] == "disconnect") {
-      outlineProxyController_->routeDirectly();
-    }
-  }
-
-  /**
-   * Parses input JSON from the app
-   */
-  std::pair<int, std::string> runClientCommandJson(std::string clientCommand) {
-    std::stringstream ss;
-    std::string action, outline_server_ip;
-    boost::property_tree::ptree pt;
-
-    // std::cout << clientCommand << std::endl;
-
-    ss << clientCommand;
-
-    try {
-      boost::property_tree::read_json(ss, pt);
-    } catch (std::exception const& e) {
-      std::cerr << e.what() << std::endl;
-      return {GENERIC_FAILURE, "Invalid JSON"};
-    }
-
-    boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
-    if (_action_iter == pt.not_found()) {
-      std::cerr << "Invalid input JSON - action doesn't exist" << std::endl;
-      return {GENERIC_FAILURE, "Invalid JSON"};
-    }
-    action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
-    // std::cout << action << std::endl;
-
-    if (action == CONFIGURE_ROUTING) {
-      boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
-      if (_parameters_iter == pt.not_found()) {
-        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-        return {GENERIC_FAILURE, "Invalid JSON"};
-      }
-      boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
-      boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
-      if (_proxyIp_iter == parameters.not_found()) {
-        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-        return {GENERIC_FAILURE, "Invalid JSON"};
-      }
-      outline_server_ip =
-          boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
-
-      // std::cout << "action: [" << action << "]" << std::endl;
-      // std::cout << "outline_server_ip: [" << outline_server_ip << "]" << std::endl;
-
-      // TODO (Vmon): Error handling and return
-      outlineProxyController_->routeThroughOutline(outline_server_ip);
-      std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
-      return {SUCCESS, ""};
-
-    } else if (action == RESET_ROUTING) {
-      // TODO (Vmon): Error handling and return
-      outlineProxyController_->routeDirectly();
-      std::cout << "Reset Routing done" << std::endl;
-      return {SUCCESS, ""};
-    } else if (action == GET_DEVICE_NAME) {
-      std::cout << "Reset Routing done" << std::endl;
-      return {SUCCESS, outlineProxyController_->getTunDeviceName()};
-    } else {
-      std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
-    }
-
-    return {GENERIC_FAILURE, "Undefined Action"};
-  }
-
-  stream_protocol::socket socket_;
-  boost::asio::io_context::strand strand_;
-  std::shared_ptr<OutlineProxyController> outlineProxyController_;
+    stream_protocol::socket socket_;
+    boost::asio::io_context::strand strand_;
+    std::shared_ptr<OutlineProxyController> outlineProxyController_;
+    
 };
 
 class OutlineControllerServer {
  public:
-  OutlineControllerServer(boost::asio::io_context& io_context, const std::string& file)
-      : outlineProxyController_(std::make_shared<OutlineProxyController>()),
-        unix_socket_name(file)
-
-  {
-    ::unlink(unix_socket_name.c_str());
-    boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
-      stream_protocol::acceptor acceptor(io_context, stream_protocol::endpoint(unix_socket_name));
-      auto result = chmod(
-          unix_socket_name.c_str(),
-          S_IRWXU | S_IROTH | S_IWOTH);  // enables all user to read from and write into socket
-
-      for (;;) {
-        boost::system::error_code ec;
-        stream_protocol::socket socket(io_context);
-        acceptor.async_accept(socket, yield[ec]);
-        if (!ec) std::make_shared<session>(std::move(socket), outlineProxyController_)->start();
-      }
-    });
-  }
+    /*
+     * constructor: setup a listener on the file as a unix socket
+     */
+    OutlineControllerServer(boost::asio::io_context& io_context, const std::string& file);
 
  private:
   std::shared_ptr<OutlineProxyController> outlineProxyController_;
   std::string unix_socket_name;
+
 };
 
 }  // namespace outline
