@@ -19,7 +19,7 @@
 #  - the binary is signed (you'll need the hardware token, its password,
 #    and a real Windows box)
 
-yarn do electron/build
+yarn do src/electron/build
 
 # Environment variables.
 scripts/environment_json.sh -p windows -r > build/windows/www/environment.json

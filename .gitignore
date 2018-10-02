@@ -6,10 +6,7 @@ info.txt
 /node_modules
 /platforms
 /plugins
-/www/bower_components
-/www/babel-polyfill.min.js
-/www/cordova.js
-/www/cordova_main.js
+/www
 /third_party/Potatso/Pods
 /Carthage
 xcuserdata/

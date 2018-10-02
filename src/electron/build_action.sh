@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Build the web app.
-# TODO: move this to a separate target.
-tsc
-rsync -ac --exclude '*.ts' www electron build/
+yarn do src/www/build
+
+tsc -p src/electron
+rsync -ac --exclude '*.ts' src/electron build/
 
 # Copy the web app into the Electron folder.
 readonly OUTPUT=build/windows
 mkdir -p $OUTPUT
-rsync -ac build/{electron,www} $OUTPUT/
+rsync -ac build/electron www $OUTPUT/
 
 # Copy binaries into the Electron folder.
 # The destination folder must be kept in sync with:
@@ -35,7 +35,7 @@ rsync -ac \
   $BIN_DEST
 
 # Copy files for OutlineService.
-cp electron/install_windows_service.bat $OUTPUT
+cp src/electron/install_windows_service.bat $OUTPUT
 rsync -ac \
   --include '*.exe' --include '*.dll' \
   --exclude='*' \
@@ -61,4 +61,4 @@ EOM
 cp package.json $OUTPUT
 
 # Icons.
-electron-icon-maker --input=electron/logo.png --output=build/windows
+electron-icon-maker --input=src/electron/logo.png --output=build/windows
