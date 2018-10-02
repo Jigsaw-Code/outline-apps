@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (OutlineProxyController)
+set(BOOST_VERSION 1.67)
 find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS filesystem
                                                         regex
                                                         unit_test_framework
@@ -37,4 +38,3 @@ add_executable(OutlineProxyController
 target_link_libraries(OutlineProxyController
     ${Boost_LIBRARIES}
 )
-

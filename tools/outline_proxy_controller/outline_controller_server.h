@@ -43,42 +43,40 @@ class session : public std::enable_shared_from_this<session> {
       : socket_(std::move(sock)),
         strand_(socket_.get_io_context()),
         outlineProxyController_(outlineProxyController) {}
-    /**
-     * callback from async_accept, starts a new session when 
-     * a connection is comming in and reads the input from
-     * the client
-     */
-    void start();
+  /**
+   * callback from async_accept, starts a new session when
+   * a connection is comming in and reads the input from
+   * the client
+   */
+  void start();
 
-private:
-    /**
-     * Checks the input string and returns true if it's a valid json
-     */
-    bool isValidJson(std::string str);
+ private:
+  /**
+   * Checks the input string and returns true if it's a valid json
+   */
+  bool isValidJson(std::string str);
 
-    /**
-     * interprets the commmands arriving as JSON input from the client app and
-     * act upon them
-     */
-    std::pair<int, std::string> runClientCommand(std::string clientCommand);
+  /**
+   * interprets the commmands arriving as JSON input from the client app and
+   * act upon them
+   */
+  std::pair<int, std::string> runClientCommand(std::string clientCommand);
 
-    stream_protocol::socket socket_;
-    boost::asio::io_context::strand strand_;
-    std::shared_ptr<OutlineProxyController> outlineProxyController_;
-    
+  stream_protocol::socket socket_;
+  boost::asio::io_context::strand strand_;
+  std::shared_ptr<OutlineProxyController> outlineProxyController_;
 };
 
 class OutlineControllerServer {
  public:
-    /*
-     * constructor: setup a listener on the file as a unix socket
-     */
-    OutlineControllerServer(boost::asio::io_context& io_context, const std::string& file);
+  /*
+   * constructor: setup a listener on the file as a unix socket
+   */
+  OutlineControllerServer(boost::asio::io_context& io_context, const std::string& file);
 
  private:
   std::shared_ptr<OutlineProxyController> outlineProxyController_;
   std::string unix_socket_name;
-
 };
 
 }  // namespace outline
