@@ -1,24 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "downlevelIteration": true,
+    "target": "es2017",
     "removeComments": false,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
+    "strict": true,
     "module": "commonjs",
-    "moduleResolution": "node",
     "outDir": "../../build",
-    "lib": [
-      "dom",
-      "es5",
-      "es2015.promise",
-      "es2015.iterable",
-      "es2015.collection",
-      "es2016",
-      "es2017",
-      "scripthost"
-    ]
   },
   "include": [
     "**/*.ts",
