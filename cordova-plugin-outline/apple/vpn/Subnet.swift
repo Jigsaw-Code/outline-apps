@@ -14,6 +14,7 @@
 
 import Foundation
 
+// Represents an IP subnetwork.
 @objcMembers
 class Subnet: NSObject {
   static let kReservedSubnets = [
@@ -36,6 +37,7 @@ class Subnet: NSObject {
     "240.0.0.0/4"
   ]
 
+  // Parses a CIDR subnet into a Subnet object. Returns nil on failure.
   static func parse(_ cidrSubnet: String) -> Subnet? {
     let components = cidrSubnet.components(separatedBy: "/")
     guard components.count == 2 else {
@@ -49,6 +51,7 @@ class Subnet: NSObject {
     return Subnet(address: components[0], prefix: prefix)
   }
 
+  // Returns a list of reserved Subnets.
   static func getReservedSubnets() -> [Subnet] {
     var subnets: [Subnet] = []
     for cidrSubnet in kReservedSubnets {
@@ -72,6 +75,7 @@ class Subnet: NSObject {
 }
 
 extension UInt32 {
+  // Returns string representation of the integer, interpreted as an IP address.
   public func IPv4String() -> String {
     let ip = self
     let byte1 = UInt8(ip & 0xff)
