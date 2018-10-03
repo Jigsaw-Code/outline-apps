@@ -21,11 +21,8 @@
 
 yarn do electron/build
 
-cp package.json build/windows/
-scripts/environment_json.sh -p windows -r > build/windows/www/environment.json
-
-# Copy tap-windows6.
-cp -R third_party/tap-windows6/bin build/windows/tap-windows6
+cp package.json build/linux/
+scripts/environment_json.sh -p linux -r > build/linux/www/environment.json
 
 # --config.asarUnpack must be kept in sync with:
 #  - the destination path for the binaries in build_action.sh
@@ -36,15 +33,11 @@ cp -R third_party/tap-windows6/bin build/windows/tap-windows6
 # to install and configure the TAP device.
 
 electron-builder \
-  --projectDir=build/windows \
+  --projectDir=build/linux \
   --config.asarUnpack=electron/bin \
   --ia32 \
   --publish=never \
   --config.publish.provider=generic \
   --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
-  --win nsis \
-  --config.win.icon=icons/win/icon.ico \
-  --config.win.certificateSubjectName='Jigsaw Operations LLC' \
-  --config.nsis.perMachine=true \
-  --config.nsis.include=electron/custom_install_steps.nsh \
-  --config.nsis.artifactName='Outline-Client.${ext}'
+  --linux AppImage
+  --config.linux.icon=icons/mac/icon.icns
