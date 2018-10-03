@@ -25,6 +25,23 @@ ${StrNSISToIO}
 !endif
 
 !macro customInstall
+  ; Normally, because we mark the installer binary as requiring administrator permissions, the
+  ; installer will be running with administrator permissions at this point. The exception is when
+  ; the system is running with the *lowest* (least safe) UAC setting in which case the installer
+  ; can progress to this point without administrator permissions.
+  ;
+  ; If that's the case, exit now so we don't waste time to trying to install the TAP device, etc.
+  ; Additionally, the client can detect their absence and prompt the user to reinstall.
+  ;
+  ; The returned value does *not* seem to be based on the user's current diaplay language.
+  UserInfo::GetAccountType
+  Pop $0
+  StrCmp $0 "Admin" isadmin
+  MessageBox MB_OK "Sorry, Outline requires administrator permissions."
+  Quit
+
+  isadmin:
+
   ; TAP device files.
   File /r "${PROJECT_DIR}\tap-windows6"
   File "${PROJECT_DIR}\electron\add_tap_device.bat"
