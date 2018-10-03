@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../types/outlinePlugin.d.ts'/>
+/// <reference path='../../ambient/outlinePlugin.d.ts'/>
 
 import * as errors from '../model/errors';
 import * as events from '../model/events';

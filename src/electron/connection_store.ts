@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// <reference path="../ambient/outlinePlugin.d.ts" />
+
 import * as fs from 'fs';
 import * as path from 'path';
 

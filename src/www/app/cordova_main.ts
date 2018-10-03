@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../types/outlinePlugin.d.ts'/>
+/// <reference path='../../ambient/outlinePlugin.d.ts'/>
+/// <reference path='../../ambient/webintents.d.ts'/>
 
 import * as Raven from 'raven-js';
 

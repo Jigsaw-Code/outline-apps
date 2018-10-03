@@ -1,13 +1,6 @@
 {
-  "compilerOptions": {
-    "target": "es2017",
-    "removeComments": false,
-    "strict": true,
-    "module": "commonjs",
-    "outDir": "../../build",
-  },
+  "extends": "../tsconfig.json",
   "include": [
-    "**/*.ts",
-    "../www/types/*.d.ts"
+    "**/*.ts"
   ]
 }
