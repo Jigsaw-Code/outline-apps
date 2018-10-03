@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eux
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,5 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build
-jasmine --config=$ROOT_DIR/jasmine.json
+# Builds the TypeScript in this folder, placing a web app at /www (for Cordova).
+
+tsc -p src/www
+rsync -ac --exclude '*.ts' src/www/ www/
