@@ -24,8 +24,5 @@ electron-builder \
   --config.asarUnpack=electron/bin \
   --ia32 \
   --publish=never \
-  --linux nsis \
-  --config.linux.icon=icons/win/icon.ico \
-  --config.nsis.perMachine=true \
-  --config.nsis.include=electron/custom_install_steps.nsh \
-  --config.nsis.artifactName='Outline-Client.${ext}'
+  --linux AppImage \
+  --config.linux.icon=icons/mac/icon.icns
