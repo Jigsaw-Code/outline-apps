@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do electron/build
+yarn do src/electron/build
 
 # Environment variables.
 scripts/environment_json.sh -p windows > build/windows/www/environment.json

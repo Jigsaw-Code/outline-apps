@@ -11,7 +11,7 @@ FROM ubuntu:18.04
 #  - gnupg is needed by the Node.js installer to add an Apt repository.
 #  - Specify openjdk-8-jre-headless explicitly to prevent versions >8
 #    from being installed, which aren't compatible with the Android tools.
-RUN apt update && apt install -y curl unzip openjdk-8-jdk openjdk-8-jre-headless gradle git gnupg && apt clean
+RUN apt update && apt install -y curl unzip openjdk-8-jdk openjdk-8-jre-headless gradle git gnupg rsync && apt clean
 
 # Node.js.
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -

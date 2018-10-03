@@ -27,7 +27,6 @@ const gutil = require('gulp-util');
 const merge_stream = require('merge-stream');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
-const tsify = require('tsify');
 const watchify = require('watchify');
 
 const SRC_DIR = 'www';
@@ -88,12 +87,9 @@ function getBrowserifyInstance() {
   return browserify({
       basedir: '.',
       debug: true,
-      entries: [`${SRC_DIR}/app/cordova_main.ts`],
+      entries: [`${SRC_DIR}/app/cordova_main.js`],
       cache: {},
-      packageCache: {},
-      plugin: [tsify],
-      // Needed to avoid hitting https://github.com/TypeStrong/tsify/issues/86:
-      extensions: ['.js', '.ts']
+      packageCache: {}
   });
 }
 
@@ -210,6 +206,10 @@ function build(platform, config) {
   if (shouldWatch) {
     browserifyInstance = watch(browserifyInstance, config);
   }
+
+  // Build the web app.
+  child_process.execSync('yarn do src/www/build');
+
   return merge_stream(
     bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR))
   ).on('finish', () => {
