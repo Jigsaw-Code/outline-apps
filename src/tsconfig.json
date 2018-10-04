@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "removeComments": false,
+    "strict": true,
+    "module": "commonjs",
+    "outDir": "../build",
+    "typeRoots": [
+        "../node_modules/@types",
+        "./types/modules"
+    ]
+  }
+}

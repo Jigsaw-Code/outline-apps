@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../types/webintents.d.ts'/>
+/// <reference path='../../types/ambient/webintents.d.ts'/>
 
 export class UrlInterceptor {
   protected launchUrl?: string;
