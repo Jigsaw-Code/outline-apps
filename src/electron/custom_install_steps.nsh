@@ -22,6 +22,7 @@
 ; https://github.com/electron-userland/electron-builder/issues/888
 !ifndef BUILD_UNINSTALLER
 ${StrNSISToIO}
+${StrRep}
 !endif
 
 !macro customInstall
@@ -52,8 +53,7 @@ ${StrNSISToIO}
   File "${PROJECT_DIR}\Newtonsoft.Json.dll"
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 
-  ; ExecToStack captures stdout:
-  ;   http://nsis.sourceforge.net/Docs/nsExec/nsExec.txt
+  ; ExecToStack captures both stdout and stderr from the script, in the order output.
   ${If} ${RunningX64}
     nsExec::ExecToStack 'add_tap_device.bat amd64'
   ${Else}
@@ -65,7 +65,7 @@ ${StrNSISToIO}
   StrCmp $0 0 installservice
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try \
     running the installer again. If you still cannot install Outline, please get in \
-    touch with us and let us know that the TAP device failed to install with this error:$\n$\n$1"
+    touch with us and let us know that the TAP device could not be installed."
 
   ; Submit a Sentry error event.
   ;
@@ -90,6 +90,7 @@ ${StrNSISToIO}
   ; http://nsis.sourceforge.net/Docs/StrFunc/StrFunc.txt
   Var /GLOBAL FAILURE_MESSAGE
   ${StrNSISToIO} $FAILURE_MESSAGE $1
+  ${StrRep} $FAILURE_MESSAGE $FAILURE_MESSAGE '"' '\"'
 
   ${WinVerGetMajor} $R0
   ${WinVerGetMinor} $R1
