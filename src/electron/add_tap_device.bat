@@ -37,13 +37,20 @@ if %errorlevel% equ 0 (
 ::    Windows 7).
 set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
+
+echo Storing current network device list...
 wmic nic get netconnectionid /format:list > %BEFORE_DEVICES%
+type %BEFORE_DEVICES%
+
+echo Creating TAP network device...
 tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
 if %errorlevel% neq 0 (
-  echo Could not create TAP device.
+  echo Could not create TAP network device. >&2
   exit /b 1
 )
+echo Storing new network device list...
 wmic nic get netconnectionid /format:list > %AFTER_DEVICES%
+type %AFTER_DEVICES%
 
 :: Find the name of the new device and rename it.
 ::
@@ -60,11 +67,14 @@ wmic nic get netconnectionid /format:list > %AFTER_DEVICES%
 ::
 :: Note that we pipe input from /dev/null to prevent Powershell hanging forever
 :: waiting on EOF.
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide InputObject | out-string).split(\"=\")[1].trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
+echo Searching for new TAP network device name...
+powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide -autosize InputObject | out-string).split(\"=\")[1].trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
-  echo Could not rename TAP device.
+  echo Could not rename find or rename new TAP network device. >&2
   exit /b 1
 )
+
+echo Configuring new TAP network device...
 
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
@@ -74,7 +84,7 @@ if %errorlevel% neq 0 (
 ::       configurable in the Outline client.
 netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0
 if %errorlevel% neq 0 (
-  echo Could not set TAP device subnet.
+  echo Could not set TAP network device subnet. >&2
   exit /b 1
 )
 
@@ -85,11 +95,11 @@ if %errorlevel% neq 0 (
 :: device in the system. Configure with OpenDNS and Dyn resolvers.
 netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222
 if %errorlevel% neq 0 (
-  echo Could not configure TAP device primary DNS.
+  echo Could not configure TAP device primary DNS. >&2
   exit /b 1
 )
 netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2
 if %errorlevel% neq 0 (
-  echo Could not configure TAP device secondary DNS.
+  echo Could not configure TAP device secondary DNS. >&2
   exit /b 1
 )
