@@ -361,23 +361,23 @@
     "message": "We can’t seem to connect to your server. Please check that you are connected to the internet and try again.",
     "description": "An error message shown when the user tries to connect to a server that cannot be reached for some reason."
   },
-  "outline-plugin-error-admin-permissions": {
+  "outline_plugin_error_admin_permissions": {
     "message": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
     "description": "An error message when the application is not granted administrator permissions."
   },
-  "outline-plugin-error-routing-tables": {
+  "outline_plugin_error_routing_tables": {
     "message": "We were not able to configure your routing tables successfully. If this happens again, please contact us.",
     "description": "An error message when the application is not able to configure the system for proxying. A button is shown alongside this message to submit feedback."
   },
-  "outline-plugin-error-antivirus": {
+  "outline_plugin_error_antivirus": {
     "message": "It seems like your antivirus software is preventing us from successfully connecting.",
     "description": "An error message when the application encounters antivirus software that prevents it from connecting."
   },
-  "outline-plugin-error-unsupported-routing-table": {
+  "outline_plugin_error_unsupported_routing_table": {
     "message":   "It seems like another VPN is active. Please disconnect it and try again.",
     "description": "An error message when the application fails to connect due to another active VPN."
   },
-  "fix-this": {
+  "fix_this": {
     "message": "Fix this",
     "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article."
   },
