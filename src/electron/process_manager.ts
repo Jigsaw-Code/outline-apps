@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, exec, execFile, execFileSync, spawn} from 'child_process';
+import { ChildProcess, execSync, spawn } from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
 import * as net from 'net';
@@ -37,7 +37,7 @@ const routingService = new routing.WindowsRoutingService();
 //  - the value specified for --config.asarUnpack in package_action.sh
 function pathToEmbeddedExe(basename: string) {
   return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'win32', `${basename}.exe`);
+    __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'win32', `${basename}.exe`);
 }
 
 // Three tools are required to launch the proxy on Windows:
@@ -45,8 +45,8 @@ function pathToEmbeddedExe(basename: string) {
 //  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
 //  - OutlineService configures the system to route via a TAP-like network device, must be installed
 
-let ssLocal: ChildProcess|undefined;
-let tun2socks: ChildProcess|undefined;
+let ssLocal: ChildProcess | undefined;
+let tun2socks: ChildProcess | undefined;
 
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
@@ -60,7 +60,7 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const SS_LOCAL_TIMEOUT_SECS =
-    2 ^ 31 - 1;  // 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow
+  2 ^ 31 - 1;  // 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow
 const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
@@ -69,41 +69,71 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 // This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
 //
 // Fulfills iff:
+//  - the TAP device exists and is configured
 //  - the shadowsocks and tun2socks binaries were started
 //  - the system configured to route all traffic through the proxy
 //  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
 //
 // Fulfills with a copy of `serverConfig` that includes the resolved hostname.
 export function startVpn(
-    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
-    isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
+  serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
+  isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
+  // First, check that the TAP device exists and is configured. If not, reject with "unexpected
+  // error" on the assumption that the installer failed and showed a useful error message at that
+  // time.
+  try {
+    testTapDevice();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+
   const config = Object.assign({}, serverConfig);
   return startLocalShadowsocksProxy(config, onDisconnected)
-      .then(() => {
-        if (isAutoConnect) {
-          return;
-        }
-        // Only perform the connectivity checks when we're not automatically connecting on boot,
-        // since we may not have network connectivity.
-        return checkConnectivity(config).then((ip) => {
-          // Cache the resolved IP so it can be stored for auto connect.
-          config.host = ip;
-        });
-      })
-      .then(() => {
-        return startTun2socks(onDisconnected);
-      })
-      .then(() => {
-        return routingService.configureRouting(
-            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', isAutoConnect);
-      })
-      .then(() => {
-        return config;
-      })
-      .catch((e) => {
-        stopProcesses();
-        throw e;
+    .then(() => {
+      if (isAutoConnect) {
+        return;
+      }
+      // Only perform the connectivity checks when we're not automatically connecting on boot,
+      // since we may not have network connectivity.
+      return checkConnectivity(config).then((ip) => {
+        // Cache the resolved IP so it can be stored for auto connect.
+        config.host = ip;
       });
+    })
+    .then(() => {
+      return startTun2socks(onDisconnected);
+    })
+    .then(() => {
+      return routingService.configureRouting(
+        TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', isAutoConnect);
+    })
+    .then(() => {
+      return config;
+    })
+    .catch((e) => {
+      stopProcesses();
+      throw e;
+    });
+}
+
+// Raises an error if:
+//  - the TAP device does not exist
+//  - the TAP device does not have the expected IP/subnet
+//
+// Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
+// installer should have failed, too.
+function testTapDevice() {
+  let stdout: string;
+  try {
+    stdout = execSync(`netsh interface ipv4 show addresses ${TUN2SOCKS_TAP_DEVICE_NAME}`).toString();
+  } catch (e) {
+    throw new Error(`TAP device not found: ${e.stdout.toString()}`);
+  }
+  // Assumes that the presence of the expected IP means the device is correctly configured; this
+  // saves a bunch of parsing work and should work for all languages.
+  if (stdout.indexOf(TUN2SOCKS_TAP_DEVICE_IP) < 0) {
+    throw new Error(`TAP device has wrong IP`);
+  }
 }
 
 // Fulfills iff:
@@ -113,15 +143,15 @@ export function startVpn(
 function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promise<string> {
   return lookupIp(config.host || '').then((ip: string) => {
     return isServerReachableByIp(ip, config.port || 0)
-        .then(() => {
-          return validateServerCredentials();
-        })
-        .then(() => {
-          return checkUdpForwardingEnabled();
-        })
-        .then(() => {
-          return ip;
-        });
+      .then(() => {
+        return validateServerCredentials();
+      })
+      .then(() => {
+        return checkUdpForwardingEnabled();
+      })
+      .then(() => {
+        return ip;
+      });
   });
 }
 // Uses the OS' built-in functions, i.e. /etc/hosts, et al.:
@@ -130,15 +160,15 @@ function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promis
 // Effectively a no-op if hostname is already an IP.
 function lookupIp(hostname: string): Promise<string> {
   return util.timeoutPromise(
-      new Promise<string>((fulfill, reject) => {
-        dns.lookup(hostname, 4, (e, address) => {
-          if (e) {
-            return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
-          }
-          fulfill(address);
-        });
-      }),
-      DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
+    new Promise<string>((fulfill, reject) => {
+      dns.lookup(hostname, 4, (e, address) => {
+        if (e) {
+          return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
+        }
+        fulfill(address);
+      });
+    }),
+    DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
 // Resolves with true iff a TCP connection can be established with the Shadowsocks server.
@@ -154,24 +184,24 @@ export function isServerReachable(config: cordova.plugins.outline.ServerConfig) 
 // As #isServerReachable but does not perform a DNS lookup.
 export function isServerReachableByIp(serverIp: string, serverPort: number) {
   return util.timeoutPromise(
-      new Promise<void>((fulfill, reject) => {
-        const socket = new net.Socket();
-        socket
-            .connect(
-                {host: serverIp, port: serverPort},
-                () => {
-                  socket.end();
-                  fulfill();
-                })
-            .on('error', () => {
-              reject(new errors.ServerUnreachable());
-            });
-      }),
-      REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
+    new Promise<void>((fulfill, reject) => {
+      const socket = new net.Socket();
+      socket
+        .connect(
+          { host: serverIp, port: serverPort },
+          () => {
+            socket.end();
+            fulfill();
+          })
+        .on('error', () => {
+          reject(new errors.ServerUnreachable());
+        });
+    }),
+    REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
 }
 
 function startLocalShadowsocksProxy(
-    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
+  serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
   return new Promise((resolve, reject) => {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
@@ -222,40 +252,40 @@ function startLocalShadowsocksProxy(
 function validateServerCredentials() {
   return new Promise((fulfill, reject) => {
     const testDomain =
-        CREDENTIALS_TEST_DOMAINS[Math.floor(Math.random() * CREDENTIALS_TEST_DOMAINS.length)];
+      CREDENTIALS_TEST_DOMAINS[Math.floor(Math.random() * CREDENTIALS_TEST_DOMAINS.length)];
     socks.createConnection(
-        {
-          proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5},
-          target: {host: testDomain, port: 80}
-        },
-        (e, socket) => {
-          if (e) {
+      {
+        proxy: { ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5 },
+        target: { host: testDomain, port: 80 }
+      },
+      (e, socket) => {
+        if (e) {
+          reject(new errors.InvalidServerCredentials(
+            `could not connect to remote test website: ${e.message}`));
+          return;
+        }
+
+        socket.write(`HEAD / HTTP/1.1\r\nHost: ${testDomain}\r\n\r\n`);
+
+        socket.on('data', (data) => {
+          if (data.toString().startsWith('HTTP/1.1')) {
+            socket.end();
+            fulfill();
+          } else {
+            socket.end();
             reject(new errors.InvalidServerCredentials(
-                `could not connect to remote test website: ${e.message}`));
-            return;
+              `unexpected response from remote test website`));
           }
-
-          socket.write(`HEAD / HTTP/1.1\r\nHost: ${testDomain}\r\n\r\n`);
-
-          socket.on('data', (data) => {
-            if (data.toString().startsWith('HTTP/1.1')) {
-              socket.end();
-              fulfill();
-            } else {
-              socket.end();
-              reject(new errors.InvalidServerCredentials(
-                  `unexpected response from remote test website`));
-            }
-          });
-
-          socket.on('close', () => {
-            reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
-          });
-
-          // Sockets must be resumed before any data will come in, as they are paused right before
-          // this callback is fired.
-          socket.resume();
         });
+
+        socket.on('close', () => {
+          reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
+        });
+
+        // Sockets must be resumed before any data will come in, as they are paused right before
+        // this callback is fired.
+        socket.resume();
+      });
   });
 }
 
@@ -263,57 +293,57 @@ function validateServerCredentials() {
 function checkUdpForwardingEnabled() {
   return new Promise((resolve, reject) => {
     socks.createConnection(
-        {
-          proxy: {ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate'},
-          target: {host: '0.0.0.0', port: 0},  // Specify the actual target once we get a response.
-        },
-        (err, socket, info) => {
-          if (err) {
-            reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
-            return;
-          }
-          const dnsRequest = getDnsRequest();
-          const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
-          const udpSocket = dgram.createSocket('udp4');
+      {
+        proxy: { ipaddress: PROXY_IP, port: SS_LOCAL_PORT, type: 5, command: 'associate' },
+        target: { host: '0.0.0.0', port: 0 },  // Specify the actual target once we get a response.
+      },
+      (err, socket, info) => {
+        if (err) {
+          reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
+          return;
+        }
+        const dnsRequest = getDnsRequest();
+        const packet = socks.createUDPFrame({ host: '1.1.1.1', port: 53 }, dnsRequest);
+        const udpSocket = dgram.createSocket('udp4');
 
-          udpSocket.on('error', (e) => {
-            reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
-          });
-
-          udpSocket.on('message', (msg, info) => {
-            stopUdp();
-            resolve();
-          });
-
-          // Retry sending the query every second.
-          // TODO: logging here is a bit verbose
-          const intervalId = setInterval(() => {
-            try {
-              udpSocket.send(packet, info.port, info.host, (err) => {
-                if (err) {
-                  console.error(`Failed to send data through UDP: ${err}`);
-                }
-              });
-            } catch (e) {
-              console.error(`Failed to send data through UDP ${e}`);
-            }
-          }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
-
-          const stopUdp = () => {
-            try {
-              clearInterval(intervalId);
-              udpSocket.close();
-            } catch (e) {
-              // Ignore; there may be multiple calls to this function.
-            }
-          };
-
-          // Give up after the timeout elapses.
-          setTimeout(() => {
-            stopUdp();
-            reject(new errors.RemoteUdpForwardingDisabled());
-          }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+        udpSocket.on('error', (e) => {
+          reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
         });
+
+        udpSocket.on('message', (msg, info) => {
+          stopUdp();
+          resolve();
+        });
+
+        // Retry sending the query every second.
+        // TODO: logging here is a bit verbose
+        const intervalId = setInterval(() => {
+          try {
+            udpSocket.send(packet, info.port, info.host, (err) => {
+              if (err) {
+                console.error(`Failed to send data through UDP: ${err}`);
+              }
+            });
+          } catch (e) {
+            console.error(`Failed to send data through UDP ${e}`);
+          }
+        }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+
+        const stopUdp = () => {
+          try {
+            clearInterval(intervalId);
+            udpSocket.close();
+          } catch (e) {
+            // Ignore; there may be multiple calls to this function.
+          }
+        };
+
+        // Give up after the timeout elapses.
+        setTimeout(() => {
+          stopUdp();
+          reject(new errors.RemoteUdpForwardingDisabled());
+        }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+      });
   });
 }
 
@@ -327,7 +357,7 @@ function getDnsRequest() {
     0, 0,                             // [8-9]   NSCOUNT (number of name server records)
     0, 0,                             // [10-11] ARCOUNT (number of additional records)
     6, 103, 111, 111, 103, 108, 101,  // google
-    3, 99,  111, 109,                 // com
+    3, 99, 111, 109,                  // com
     0,                                // null terminator of FQDN (root TLD)
     0, 1,                             // QTYPE, set to A
     0, 1                              // QCLASS, set to 1 = IN (Internet)
@@ -343,9 +373,9 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
     //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
     const args: string[] = [];
     args.push(
-        '--tundev',
-        `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-            TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
+      '--tundev',
+      `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
@@ -369,14 +399,14 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
             console.info('Restarting tun2socks...');
             setTimeout(() => {
               startTun2socks(onDisconnected)
-                  .then(() => {
-                    resolve();
-                  })
-                  .catch((e) => {
-                    console.error('Failed to restart tun2socks');
-                    onDisconnected();
-                    teardownVpn();
-                  });
+                .then(() => {
+                  resolve();
+                })
+                .catch((e) => {
+                  console.error('Failed to restart tun2socks');
+                  onDisconnected();
+                  teardownVpn();
+                });
             }, 3000);
             return;
           }
