@@ -69,7 +69,7 @@ class Subnet: NSObject {
   init(address: String, prefix: UInt16) {
     self.address = address
     self.prefix = prefix
-    let mask = UInt32(0xffffffff) << (32 - prefix);
+    let mask = (0xffffffff as UInt32) << (32 - prefix);
     self.mask = mask.IPv4String()
   }
 }
