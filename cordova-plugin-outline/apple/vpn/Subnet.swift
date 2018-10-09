@@ -75,14 +75,14 @@ class Subnet: NSObject {
 }
 
 extension UInt32 {
-  // Returns string representation of the integer, interpreted as an IP address.
+  // Returns string representation of the integer as an IP address.
   public func IPv4String() -> String {
     let ip = self
-    let byte1 = UInt8(ip & 0xff)
-    let byte2 = UInt8((ip>>8) & 0xff)
-    let byte3 = UInt8((ip>>16) & 0xff)
-    let byte4 = UInt8((ip>>24) & 0xff)
-    return "\(byte1).\(byte2).\(byte3).\(byte4)"
+    let a = UInt8((ip>>24) & 0xff)
+    let b = UInt8((ip>>16) & 0xff)
+    let c = UInt8((ip>>8) & 0xff)
+    let d = UInt8(ip & 0xff)
+    return "\(a).\(b).\(c).\(d)"
   }
 }
 

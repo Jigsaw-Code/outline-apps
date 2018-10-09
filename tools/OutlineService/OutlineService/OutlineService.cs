@@ -252,7 +252,7 @@ namespace OutlineService {
     // Routes all device traffic through the router, at IP address `routerIp`. The proxy's IP is configured
     // to bypass the router, and connect through the system's default gateway.
     //
-    // Throws and exits early if any step fails.
+    // Throws and exits early if any step fails, other than bypassing reserved subnets.
     public void ConfigureRouting(string routerIp, string proxyIp, bool isAutoConnect) {
       if (routerIp == null || proxyIp == null) {
         throw new Exception("do not know router or proxy IPs");
@@ -280,10 +280,9 @@ namespace OutlineService {
         throw new Exception($"could not set low interface metric: {e.Message}");
       }
 
-      // Proxy routing: the proxy's IP address should be the only one that bypasses the router.
-      // Save the best interface index for the proxy's address before we add the route. This
-      // is necessary for updating the proxy route when the network changes; otherwise we get the
-      // TAP device as the best interface.
+      // Proxy routing: the proxy's IP address needs to bypass the router. Save the system gateway
+      // before we add the route. This is necessary for updating the proxy route when the network
+      // changes; otherwise we get the TAP device as default system gateway.
       try {
         var systemGateway = GetSystemIpv4Gateway();
         SetGatewayProperties(systemGateway);

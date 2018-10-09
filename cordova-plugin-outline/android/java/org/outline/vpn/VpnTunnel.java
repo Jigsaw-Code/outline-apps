@@ -172,7 +172,7 @@ public class VpnTunnel {
   private ArrayList<Subnet> getReservedBypassSubnets() {
     final String[] subnetStrings = vpnService.getResources().getStringArray(
         vpnService.getResourceId(PRIVATE_LAN_BYPASS_SUBNETS_ID, "array"));
-    ArrayList<Subnet> subnets = new ArrayList<Subnet>();
+    ArrayList<Subnet> subnets = new ArrayList<>(subnetStrings.length);
     for (final String subnetString : subnetStrings) {
       try {
         subnets.add(Subnet.parse(subnetString));
