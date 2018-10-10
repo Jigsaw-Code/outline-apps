@@ -16,9 +16,9 @@
 // https://www.npmjs.com/package/socks
 
 declare module 'socks' {
-// Normally imports would come first but we must make the first statement of the file be a declare
-// in order for the TypeScript compiler to accept this file as a .d.ts.
-import * as net from 'net';
+  // Normally imports would come first but we must make the first statement of the file be a declare
+  // in order for the TypeScript compiler to accept this file as a .d.ts.
+  import * as net from 'net';
 
   export interface SocksSocketOptions {
     proxy: {ipaddress: string; port: number; type: 4 | 5, command?: string};
@@ -26,9 +26,7 @@ import * as net from 'net';
     timeout?: number;
   }
 
-  export interface SocksAddress {
-    host: string, port: number
-  }
+  export interface SocksAddress { host: string, port: number }
 
   export function createConnection(
       options: SocksSocketOptions,

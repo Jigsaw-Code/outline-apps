@@ -85,11 +85,11 @@ function transpileUiComponents(config) {
 // See https://www.typescriptlang.org/docs/handbook/gulp.html
 function getBrowserifyInstance() {
   return browserify({
-      basedir: '.',
-      debug: true,
-      entries: [`${SRC_DIR}/app/cordova_main.js`],
-      cache: {},
-      packageCache: {}
+    basedir: '.',
+    debug: true,
+    entries: [`${SRC_DIR}/app/cordova_main.js`],
+    cache: {},
+    packageCache: {}
   });
 }
 

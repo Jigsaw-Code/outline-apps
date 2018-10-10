@@ -44,17 +44,9 @@ public class Tun2SocksJni {
    * @param transparentDNS if non-zero, will resolve DNS queries transparently.
    * @param transparentDNS if non-zero, will direct UDP traffic through the SOCKS server.
    */
-  public static native int start(
-      int vpnInterfaceFileDescriptor,
-      int vpnInterfaceMTU,
-      String vpnIpAddress,
-      String vpnNetMask,
-      String vpnIpV6Address,
-      String socksServerAddress,
-      String udpRelayAddress,
-      String dnsResolverAddress,
-      int transparentDNS,
-      int socks5UDP);
+  public static native int start(int vpnInterfaceFileDescriptor, int vpnInterfaceMTU,
+      String vpnIpAddress, String vpnNetMask, String vpnIpV6Address, String socksServerAddress,
+      String udpRelayAddress, String dnsResolverAddress, int transparentDNS, int socks5UDP);
 
   /**
    * Terminates tun2socks. This method is safe to call from a different thread than the one

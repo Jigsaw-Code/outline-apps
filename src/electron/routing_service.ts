@@ -127,7 +127,7 @@ export class RoutingService implements RoutingServiceInterface {
 
       this.ipcConnection.on('error', (e: NetError) => {
         if (isWindows) {
-          if(retry) {
+          if (retry) {
             console.info(`bouncing OutlineService (${e.errno})`);
             sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
               if (sudoError) {
@@ -142,7 +142,8 @@ export class RoutingService implements RoutingServiceInterface {
                   return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
                 }
               }
-              console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+              console.info(
+                  `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
               this.sendRequest(request, false).then(resolve, reject);
             });
             return;
