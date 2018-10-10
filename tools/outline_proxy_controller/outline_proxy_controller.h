@@ -1,16 +1,23 @@
 #pragma once
 
-#include <map>
+#include <queue>
 #include <sstream>
 #include <string>
+#include <utility>
+
+#include <cstdlib>
 
 namespace outline {
 
-class OutlineProxyController {
+  typedef std::pair<std::string, uint8_t> OutputAndStatus;
+  typedef std::pair<const std::string, const std::string> SubCommandPart;
+  typedef std::queue<SubCommandPart> SubCommand;
+
+  class OutlineProxyController {
  public:
   OutlineProxyController();
 
-  /**
+    /**
    * the destructor:
    *     - restore routing table
    *      - stops tun2sock
@@ -39,6 +46,27 @@ class OutlineProxyController {
   std::string getTunDeviceName();
 
  private:
+    //this enum is representing different stage of outing and "de"routing
+    //through outline proxy server. And is used for exmaple in undoing
+    //different steps in case the routing process fails
+    enum OutlineConnectionStage {
+                                 DNS_BACKED_UP,
+                                 OUTLINE_PRIORITY_SET_UP,
+                                 DEFAULT_GATEWAY_ROUTE_DELETED,
+                                 TRAFFIC_ROUTED_THROUGH_TUN,
+                                 OUTLINE_DNS_SET
+                          
+    };
+
+    
+
+    enum OutlineConnectionStatus {ROUTING_THROUGH_OUTLINE,
+                                  ROUTING_THROUGH_DEFAULT_GATEWAY} routingStatus;
+  /**
+   * auxilary function to check the status code of a command
+   */
+   inline bool isSuccessful(OutputAndStatus& result) { return (result.second == EXIT_SUCCESS);}
+     
   // add a tun device
   // void addTunInterface();
 
@@ -74,18 +102,25 @@ class OutlineProxyController {
   void enforceGloballyReachableDNS();
 
   /**
+   * reset routing setting to original setting in case we fail to 
+   * accomplish routing through outline in the intermediary stage
+   * 
+   */
+   void resetFailRoutingAttempt(OutlineConnectionStage failedStage);
+    
+  /**
    * exectues a shell command and returns the stdout
    */
-  std::string executeCommand(const std::string commandName,
-                             const std::map<std::string, std::string> args);
+  OutputAndStatus executeCommand(const std::string commandName,
+                             const SubCommand args);
 
-  std::string executeIPCommand(const std::map<std::string, std::string> args);
-  std::string executeIPRoute(const std::map<std::string, std::string> args);
-  std::string executeIPLink(const std::map<std::string, std::string> args);
-  std::string executeIPTunTap(const std::map<std::string, std::string> args);
-  std::string executeIPAddress(const std::map<std::string, std::string> args);
+  OutputAndStatus executeIPCommand(const SubCommand args);
+  OutputAndStatus executeIPRoute(const SubCommand args);
+  OutputAndStatus executeIPLink(const SubCommand args);
+  OutputAndStatus executeIPTunTap(const SubCommand args);
+  OutputAndStatus executeIPAddress(const SubCommand args);
 
-  std::string executeSysctl(const std::map<std::string, std::string> args);
+  OutputAndStatus executeSysctl(const SubCommand args);
 
   void detectBestInterfaceIndex();
   void processRoutingTable();
@@ -95,8 +130,15 @@ class OutlineProxyController {
 
   void createDefaultRouteThroughGateway();
 
-  void deleteDefaultRoute();
+  void deleteAllDefaultRoutes();
   void deleteOutlineServerRouting();
+
+  /**
+   * returns true  if the specific routePart shows up in the routing table
+   * returns false otherwise
+   *
+   */
+  bool checkRoutingTableForSpecificRoute(std::string routePart);
 
   void toggleIPv6(bool IPv6Status);
 
@@ -116,9 +158,11 @@ class OutlineProxyController {
   /**
    *  store created route as an string so it can be deleted later
    */
-  std::string createRoutingString(std::map<std::string, std::string> args);
+  std::string createRoutingString(SubCommand args);
 
- private:
+ private:    
+  const std::string c_redirect_stderr_into_stdout = " 2>&1";
+    
   const std::string resultDelimiter = " ";
 
   const std::string IPCommand = "ip";

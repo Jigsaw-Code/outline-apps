@@ -7,14 +7,17 @@
 #include <stdexcept>
 #include <string>
 
+#include "logger.h"
 #include "outline_proxy_controller.h"
 
 using namespace std;
 using namespace outline;
 
-string OutlineProxyController::getParamValueInResult(string resultString, string param) {
+extern Logger logger;
+
+string OutlineProxyController::getParamValueInResult(const string resultString, const string param) {
   auto paramPosition = resultString.find(param);
-  if (paramPosition == string::npos) throw std::runtime_error("param not found");
+  if (paramPosition == string::npos) throw std::invalid_argument("param not found");
 
   auto valuePosition = paramPosition + param.length() + resultDelimiter.length();
   if (valuePosition > resultString.length()) return "";
@@ -26,36 +29,44 @@ string OutlineProxyController::getParamValueInResult(string resultString, string
   return resultString.substr(valuePosition, delimiterPosition - valuePosition);
 }
 
-std::string OutlineProxyController::executeIPRoute(const std::map<string, string> args) {
+OutputAndStatus OutlineProxyController::executeIPRoute(const SubCommand args) {
   return executeCommand(IPRouteCommand, args);
 }
 
-std::string OutlineProxyController::executeIPLink(const std::map<string, string> args) {
+OutputAndStatus OutlineProxyController::executeIPLink(const SubCommand args) {
   return executeCommand(IPLinkCommand, args);
 }
 
-std::string OutlineProxyController::executeIPTunTap(const std::map<string, string> args) {
+OutputAndStatus OutlineProxyController::executeIPTunTap(const SubCommand args) {
   return executeCommand(IPTunTapCommand, args);
 }
 
-std::string OutlineProxyController::executeCommand(const std::string commandName,
-                                                   const std::map<string, string> args) {
+OutputAndStatus OutlineProxyController::executeCommand(const std::string commandName,
+                                                   const SubCommand received_args) {
   array<char, 128> buffer;
   string result;
   string cmd = commandName;
 
-  for (auto it = args.cbegin(); it != args.cend(); it++) {
-    cmd += " " + (it->first) + " " + (it->second);
+  SubCommand args = received_args;
+ 
+  while (!args.empty()) {
+    auto curArg = args.front();
+    cmd += " " + (curArg.first) + " " + (curArg.second);
+    args.pop();
+    
   }
 
-  std::shared_ptr<FILE> pipe(popen(cmd.c_str(), "r"), pclose);
+  cmd += c_redirect_stderr_into_stdout;
+
+  FILE* pipe = popen(cmd.c_str(), "r");
   if (!pipe) throw std::runtime_error("failed to run " + commandName + " command!");
 
-  while (!feof(pipe.get())) {
-    if (fgets(buffer.data(), 128, pipe.get()) != nullptr) result += buffer.data();
+  while (!feof(pipe)) {
+    if (fgets(buffer.data(), 128, pipe) != nullptr) result += buffer.data();
   }
 
-  return result;
+  return make_pair(result, WEXITSTATUS(pclose(pipe)));
+  
 }
 
 OutlineProxyController::OutlineProxyController() {
@@ -66,76 +77,164 @@ OutlineProxyController::OutlineProxyController() {
 
 void OutlineProxyController::addOutlineTunDev() {
   if (!outlineTunDeviceExsits()) {
-    map<string, string> createTunDeviceCommand;
-    createTunDeviceCommand["add dev"] = tunInterfaceName;
-    createTunDeviceCommand["mode"] = "tun";
-    std::string tunDeviceAdditionResult = executeIPTunTap(createTunDeviceCommand);
+    //first we check if it exists and not try to add it
+    SubCommand createTunDeviceCommand;
+    createTunDeviceCommand.push(SubCommandPart("add dev", tunInterfaceName));
+    createTunDeviceCommand.push(SubCommandPart("mode", "tun"));
+
+    auto tunDeviceAdditionResult  = executeIPTunTap(createTunDeviceCommand); 
 
     if (!outlineTunDeviceExsits()) {
+      logger.error(tunDeviceAdditionResult.first);
       throw runtime_error("failed to add outline tun network interface");
     }
+  } else {
+    logger.warn("tune device " +  tunInterfaceName + " already exists. is another instance of outline controller is running?");
   }
-
+  
   // set the device up
-  map<string, string> setUpTunDeviceCommand;
-  setUpTunDeviceCommand["set"] = tunInterfaceName;
-  setUpTunDeviceCommand["up"] = "";
-  std::string tunDeviceAdditionResult = executeIPLink(setUpTunDeviceCommand);
+  SubCommand setUpTunDeviceCommand;
+  setUpTunDeviceCommand.push(SubCommandPart("set", tunInterfaceName));
+  setUpTunDeviceCommand.push(SubCommandPart("up", ""));
+  auto tunDeviceAdditionResult = executeIPLink(setUpTunDeviceCommand);
+
+  //if we fail to set bring up the device that's an unrecoverable
+  if (!isSuccessful(tunDeviceAdditionResult)) {
+    logger.error(tunDeviceAdditionResult.first);
+    throw runtime_error("unable to bring up outline tun interface");
+  }
+    
 }
 
 bool OutlineProxyController::outlineTunDeviceExsits() {
-  map<string, string> checkDevCommand;
+  SubCommand checkDevCommand;
 
-  checkDevCommand["show"] = tunInterfaceName;
-  std::string tunDeviceExistanceResult = executeIPLink(checkDevCommand);
+  checkDevCommand.push(SubCommandPart("show", tunInterfaceName));
 
-  return (!tunDeviceExistanceResult.empty());
+  //this commands return non zero status if the device doesn't exists
+  auto tunDeviceExistanceResult = executeIPLink(checkDevCommand);
+
+  return isSuccessful(tunDeviceExistanceResult);
+  
 }
 
 void OutlineProxyController::setTunDeviceIP() {
   if (!outlineTunDeviceExsits()) {
-    throw runtime_error(
-        "can not set the ip address of a non-existing tun network interface, gone?");
+    throw runtime_error("can not set the ip address of a non-existing tun network interface, gone?");
   }
 
-  map<string, string> addIPCommand;
+  SubCommand addIPCommand;
 
-  addIPCommand["add"] = tunInterfaceIp + "/24";
-  addIPCommand["dev"] = tunInterfaceName;
-  std::string tunDeviceAdditionResult = executeIPAddress(addIPCommand);
+  addIPCommand.push(SubCommandPart("replace", tunInterfaceIp + "/24"));
+  addIPCommand.push(SubCommandPart("dev",tunInterfaceName));
+  auto tunDeviceAdditionResult = executeIPAddress(addIPCommand);
+
+  if (!isSuccessful(tunDeviceAdditionResult)) {
+    logger.error(tunDeviceAdditionResult.first);
+    throw runtime_error("failed to set the tun device ip address");
+  }
 }
 
 void OutlineProxyController::detectBestInterfaceIndex() {
-  map<string, string> getRouteCommand;
+  SubCommand getRouteCommand;
 
   // our best guest is the route that outline server already can be reached
   // it is the default gateway if outline is connected or not
-  getRouteCommand["get"] = outlineServerIP;
-  std::string routingData = executeIPRoute(getRouteCommand);
+  getRouteCommand.push(make_pair("get", outlineServerIP));
+  auto result = executeIPRoute(getRouteCommand);
 
-  routingGatewayIP = getParamValueInResult(routingData, "via");
-  clientToServerRoutingInterface = getParamValueInResult(routingData, "dev");
-  clientLocalIP = getParamValueInResult(routingData, "src");
+  if (!isSuccessful(result)) {
+    logger.error(result.first);
+    throw runtime_error("unable to query the default route to the outline proxy");
+  }
+
+  std::string routingData = result.first;
+
+  try {
+    routingGatewayIP = getParamValueInResult(routingData, "via");
+    clientToServerRoutingInterface = getParamValueInResult(routingData, "dev");
+    clientLocalIP = getParamValueInResult(routingData, "src");
+  } catch (runtime_error& e) {
+    logger.error(e.what());
+    throw runtime_error("Failed to parse the routing query response");
+  }
+
 }
 
 void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
+  // Sanity checks
+  if (outlineServerIP.empty()) {
+    logger.error("attempt to route throw a server whose IP we are not informed of");
+    throw runtime_error("outlineServerIP is empty");
+  }
+
+  logger.info("attempting to route through outline server "  + outlineServerIP);
+
   // TODO: make sure the routing rule isn't already in the table
+  if (routingStatus == ROUTING_THROUGH_OUTLINE){
+    logger.warn("it seems that we are already routing through outline server");
+  }
+
   this->outlineServerIP = outlineServerIP;
 
   backupDNSSetting();
 
-  createRouteforOutlineServer();
-  deleteDefaultRoute();  // drop the default route before adding another one
-  createDefaultRouteThroughTun();
-  toggleIPv6(false);
+  try {
+    createRouteforOutlineServer();
+  } catch (exception& e) {
+    //we can not continue
+    logger.error("failed to create a proirity route to outline proxy: " + string(e.what()));
+    //We failed to make a route through outline proxy. We just remove the flag
+    //indicating DNS is backed up.
+    resetFailRoutingAttempt(OUTLINE_PRIORITY_SET_UP); 
+    return;
+  }
 
-  enforceGloballyReachableDNS();
+  try {
+    deleteAllDefaultRoutes();  // drop the default route before adding another one
+  } catch (exception& e) {
+    logger.error("failed to remove the default route throw the current default router: " + string(e.what()));
+    resetFailRoutingAttempt(DEFAULT_GATEWAY_ROUTE_DELETED);
+    return;
+  }
+
+  try { 
+    createDefaultRouteThroughTun();
+  } catch (exception& e) {
+    logger.error("failed to route network traffic through outline tun interfacet: ", e.what());
+    resetFailRoutingAttempt(TRAFFIC_ROUTED_THROUGH_TUN);
+    return;
+  }
+
+  try {
+    toggleIPv6(false);
+  } catch (exception& e) {
+    //We are going ahead with routing through Outline even if we are not able
+    //to disable all IPV6 routes.
+    logger.warn("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " + string(e.what()));
+  }
+
+  try {
+    enforceGloballyReachableDNS();
+    
+  } catch (exception& e) {
+    //this might not break routing through outline if the DNS is in the same
+    //internal network or is a globally reachable. Notheless the user is
+    //vulnerable to DNS poisening so we are going to reverse everthing
+    logger.error("failed to enforce outline DNS server: ", e.what());
+    resetFailRoutingAttempt(OUTLINE_DNS_SET);
+    return;
+    
+  }
+
+  routingStatus = ROUTING_THROUGH_OUTLINE;
+  
 }
 
 void OutlineProxyController::backupDNSSetting() {
   // backing up resolv.conf
   if (DNSSettingBackedup) {
-    cout << "Warning: double backuping of DNS.x" << endl;
+    logger.warn("double backuping of DNS configuration");
     return;
   }
 
@@ -150,7 +249,8 @@ void OutlineProxyController::backupDNSSetting() {
   } catch (std::exception& e) {
     // If we can not backup the setting too bad,
     // we won't reset the setting after disconnect
-    std::cerr << e.what();
+    logger.warn("unable to backup current DNS configuration");
+    
   }
 
   // backing up resolv.conf.head
@@ -162,25 +262,67 @@ void OutlineProxyController::backupDNSSetting() {
 
   } catch (std::exception& e) {
     // it doesn't exists necessarily
-    std::cerr << e.what();
+    logger.info("unable to read resolv.conf.head. might not exits:" + string(e.what()));
   }
+  
 }
 
-void OutlineProxyController::deleteDefaultRoute() {
-  map<string, string> deleteRouteCommand;
+void OutlineProxyController::deleteAllDefaultRoutes() {
+  SubCommand deleteRouteCommand;
+  deleteRouteCommand.push(SubCommandPart("del", "default"));
 
-  deleteRouteCommand["del"] = "default";
-  std::string routingData = executeIPRoute(deleteRouteCommand);
+  //TODO: we are going to delete all default routes
+  //but the correct way of dealing with is to find the minimum
+  //metric of all default routing if it 0, then bump up all routing
+  //so no one has 0 routing, then setup our routing equal to min - 1
+
+  //try to see if there is still default route in the table
+  while(checkRoutingTableForSpecificRoute("default via")) {
+    //routing table has "default via" string, delete it
+    auto result = executeIPRoute(deleteRouteCommand);
+
+      if (!isSuccessful(result)) {
+        logger.error(result.first);
+        throw runtime_error("failed to delete default route from the routing table");
+      }
+  }
+     
+}
+
+bool OutlineProxyController::checkRoutingTableForSpecificRoute(std::string routePart) {
+  SubCommand getRoutingTableCommand; //that's just empty
+  
+  auto routingTableResult = executeIPRoute(getRoutingTableCommand);
+  if (!isSuccessful(routingTableResult)) {
+    logger.error(routingTableResult.first);
+    throw runtime_error("failed to query the routing table");
+  }
+
+  //try to see if the route part shows up in the routing table
+  try {
+    auto default_via = getParamValueInResult(routingTableResult.first, routePart);
+
+  } catch (const std::invalid_argument& e) {
+      //part was not found in the routing table
+    return false;
+  }
+
+  //no error means routing table has routePart string, delete it
+  return true;
 }
 
 void OutlineProxyController::createDefaultRouteThroughTun() {
-  map<string, string> createRouteCommand;
+  SubCommand createRouteCommand;
 
-  createRouteCommand["add"] = "default";
-  createRouteCommand["via"] = tunInterfaceRouterIp;
-  createRouteCommand["metric"] = c_normal_traffic_priority_metric;
+  createRouteCommand.push(SubCommandPart("add", "default"));
+  createRouteCommand.push(SubCommandPart("via", tunInterfaceRouterIp));
+  createRouteCommand.push(SubCommandPart("metric", c_normal_traffic_priority_metric));
 
-  std::string routingData = executeIPRoute(createRouteCommand);
+  auto result = executeIPRoute(createRouteCommand);
+  if (!isSuccessful(result)) {
+    logger.error(result.first);
+    throw runtime_error("failed to execute create default route through the tun device");
+  }
 }
 
 void OutlineProxyController::createRouteforOutlineServer() {
@@ -188,112 +330,223 @@ void OutlineProxyController::createRouteforOutlineServer() {
   if (outlineServerIP.empty()) throw runtime_error("no outline server is specified");
 
   // make sure we have the default Gateway IP
-  if (routingGatewayIP.empty()) throw runtime_error("default routing gateway is unknown");
+  if (routingGatewayIP.empty()) {
+    logger.warn("default routing gateway is unknown");
+    //because creating the priority route for outline proxy is the first
+    //step in routing through outline, we can still hope by query the routing
+    //table we get the default gateway IP.
+    detectBestInterfaceIndex();
+  }
 
-  map<string, string> createRouteCommand;
+  SubCommand createRouteCommand;
 
-  createRouteCommand["add"] = outlineServerIP;
-  createRouteCommand["via"] = routingGatewayIP;
-  createRouteCommand["metric"] = c_proxy_priority_metric;
+  createRouteCommand.push(SubCommandPart("add", outlineServerIP));
+  createRouteCommand.push(SubCommandPart("via", routingGatewayIP));
+  createRouteCommand.push(SubCommandPart("metric", c_proxy_priority_metric));
 
-  std::string routingData = executeIPRoute(createRouteCommand);
+  auto result = executeIPRoute(createRouteCommand);
+  if (!isSuccessful(result)) {
+    logger.error(result.first);
+    throw runtime_error("failed to create route for outline proxy");
+  }  
 }
 
 void OutlineProxyController::toggleIPv6(bool IPv6Status) {
   // TODO: Don't enable everything keep track of what was enabled before
-  map<string, string> disableIPv6Command;
+  SubCommand disableIPv6Command;
 
   std::string IPv6Disabled = (IPv6Status) ? "0" : "1";
 
-  disableIPv6Command["-w"] = "net.ipv6.conf.all.disable_ipv6=" + IPv6Disabled;
-  std::string sysctlResultAll = executeSysctl(disableIPv6Command);
+  disableIPv6Command.push(SubCommandPart("-w", "net.ipv6.conf.all.disable_ipv6=" + IPv6Disabled));
+  auto sysctlResultAll = executeSysctl(disableIPv6Command);
 
-  disableIPv6Command["-w"] = "net.ipv6.conf.default.disable_ipv6=" + IPv6Disabled;
-  std::string sysctlResultDefault = executeSysctl(disableIPv6Command);
+  disableIPv6Command.push(SubCommandPart("-w", "net.ipv6.conf.default.disable_ipv6=" + IPv6Disabled));
+  auto sysctlResultDefault = executeSysctl(disableIPv6Command);
+
+  if (!isSuccessful(sysctlResultAll) || !isSuccessful(sysctlResultDefault)) {
+    logger.error(sysctlResultAll.first);
+    logger.error(sysctlResultDefault.first);
+    throw runtime_error("failed to toggle systemwide ipv6 status");
+  }
 }
 
 void OutlineProxyController::enforceGloballyReachableDNS() {
   // if we fail to write into DNS we let the exception
   // to go down it is the connect routine's duting  to deal with
   // it
-  std::ofstream resolveConfFile("/etc/resolv.conf");
+  try {
+    std::ofstream resolveConfFile("/etc/resolv.conf");
 
-  resolveConfFile << "# Generated by outline \n";
-  resolveConfFile << "nameserver " + outlineDNSServer + "\n";
+    resolveConfFile << "# Generated by outline \n";
+    resolveConfFile << "nameserver " + outlineDNSServer + "\n";
 
-  //doing dns over tcp instead
-  resolveConfFile << "options use-vc\n";
+    // doing dns over tcp instead
+    resolveConfFile << "options use-vc\n";
 
-  resolveConfFile.close();
+    resolveConfFile.close();
+    
+  } catch (exception& e) {
+    //if we are unable to open resolve conf
+    logger.error(e.what());
+    throw runtime_error("unable to apply outline dns configuration");
+  }
 
-  // we also put our favorite dns in the head
-  // file in case resolvconf re-write resolv.conf
-  std::ofstream resolveHeadFile("/etc/resolv.conf.head");
+  try {
+    // we also put our favorite dns in the head
+    // file in case resolvconf re-write resolv.conf
+    std::ofstream resolveHeadFile("/etc/resolv.conf.head");
 
-  resolveHeadFile << "nameserver " + outlineDNSServer + "\n";
-  //doing dns over tcp instead
-  resolveConfFile << "options use-vc\n";
+    resolveHeadFile << "nameserver " + outlineDNSServer + "\n";
+    // doing dns over tcp instead
+    resolveHeadFile << "options use-vc\n";
 
-  resolveHeadFile.close();
+    resolveHeadFile.close();
+  } catch (exception& e) {
+    //this is less fatal
+    logger.warn("unable to update reslov.conf.head: " + string(e.what()));
+  }
+  
 }
 
-std::string OutlineProxyController::executeSysctl(
-    const std ::map<std ::string, std ::string> args) {
+void OutlineProxyController::resetFailRoutingAttempt(OutlineConnectionStage failedStage) 
+{
+  switch(failedStage) {
+  case OUTLINE_DNS_SET:
+    restoreDNSSetting();
+    
+  case TRAFFIC_ROUTED_THROUGH_TUN:
+  case DEFAULT_GATEWAY_ROUTE_DELETED:
+    //We need to delete the priority path to the default gateway
+    //plus make sure default route to the gateway is there.
+    createDefaultRouteThroughGateway();
+    deleteOutlineServerRouting();
+
+  case OUTLINE_PRIORITY_SET_UP:
+    //we just need to forget that we have backed up DNS
+    //in case DNS setting changes before our next attempt
+    DNSSettingBackedup = false;
+
+  default:
+    //we basically have to do nothing in other cases
+    break;
+  }
+
+  routingStatus = ROUTING_THROUGH_DEFAULT_GATEWAY;
+  
+}
+
+OutputAndStatus OutlineProxyController::executeSysctl(
+    const SubCommand args) {
   return executeCommand(sysctlCommand, args);
 }
 
 void OutlineProxyController::routeDirectly() {
-  deleteDefaultRoute();
-  createDefaultRouteThroughGateway();
-  deleteOutlineServerRouting();
-  toggleIPv6(true);
+  logger.info("attempting to dismantle routing through outline server");
+  if (routingStatus == ROUTING_THROUGH_DEFAULT_GATEWAY){
+    logger.warn("it does not seem that we are routing through outline server");
+  }
+  
+  try {
+    deleteAllDefaultRoutes();
+  } catch (exception& e) {
+    logger.error("failed to delete the route through outline proxy " + string(e.what()));
+    //this might be because our route got deleted, we are going to add the
+    //original default route nonetheless
+  }
+  
+  try {
+    createDefaultRouteThroughGateway();
+  } catch (exception& e) {
+    logger.error("failed to make a default route through the network gateway: " + string(e.what()));
+  }
 
-  restoreDNSSetting();
+  try {
+    deleteOutlineServerRouting();
+  } catch (exception& e) {
+    logger.warn("unable to delete priority route for outline proxy: " + string(e.what()));
+  }
+ 
+  try {
+    toggleIPv6(true);
+  } catch (exception& e) {
+    logger.error("failed to enable IPv6 for all interfaces:" + string(e.what()));
+  }
+
+  try {
+    restoreDNSSetting();
+  } catch (exception& e) {
+    logger.warn("unable restoring DNS configuration " + string(e.what()));
+  }
+
+  routingStatus = ROUTING_THROUGH_DEFAULT_GATEWAY;
+  
 }
 
 void OutlineProxyController::createDefaultRouteThroughGateway() {
-  map<string, string> createRouteCommand;
+  SubCommand createRouteCommand;
 
-  createRouteCommand["add"] = "default";
-  createRouteCommand["via"] = routingGatewayIP;
-  std::string routingData = executeIPRoute(createRouteCommand);
+  createRouteCommand.push(SubCommandPart("add", "default"));
+  createRouteCommand.push(SubCommandPart("via", routingGatewayIP));
+
+  auto result = executeIPRoute(createRouteCommand);
+  if (!isSuccessful(result)) {
+    logger.error(result.first);
+    throw runtime_error("failed to create back the route through network gateway");
+  }
+
 }
 
 void OutlineProxyController::deleteOutlineServerRouting() {
-  map<string, string> deleteRouteCommand;
+  SubCommand deleteRouteCommand;
 
-  deleteRouteCommand["del"] = outlineServerIP;
-  std::string routingData = executeIPRoute(deleteRouteCommand);
+  //first we check if such a route exists
+  if (checkRoutingTableForSpecificRoute(outlineServerIP + " via")) {
+    deleteRouteCommand.push(SubCommandPart("del", outlineServerIP));
+
+    auto result = executeIPRoute(deleteRouteCommand);
+    if (!isSuccessful(result)) {
+      logger.error(result.first);
+      throw runtime_error("failed to delete outline server direct routing entry.");
+    }
+  } else {
+    logger.warn("no specific routing entry for outline server to be deleted.");
+    
+  }
+  
 }
 
 void OutlineProxyController::restoreDNSSetting() {
   // we only restore if we were able to successfully
   // backup
-  if (!DNSSettingBackedup) return;
+  if (DNSSettingBackedup) {
+    // if we fail to restore, worst case is that
+    // user continues using outline dns
+    try {
+      std::ofstream resolveConfFile("/etc/resolv.conf");
+      resolveConfFile << backedupResolveConf.rdbuf();
+      resolveConfFile.close();
 
-  // if we fail to restore, worst case is that
-  // user continues using outline dns
-  try {
-    std::ofstream resolveConfFile("/etc/resolv.conf");
-    resolveConfFile << backedupResolveConf.rdbuf();
-    resolveConfFile.close();
+    } catch (exception& e) {
+      logger.warn("failed to restore original DNS configuration");
+      logger.warn(e.what());
+    }
+    
+    try {
+      std::ofstream resolveHeadFile("/etc/resolv.conf.head");
+      resolveHeadFile << backedupResolveConfHeader.rdbuf();
+      resolveHeadFile.close();
+      
+    } catch (exception& e) {
+      logger.warn("failed to restore original DNS configuration header.");
+      logger.warn(e.what());
+    }
 
-  } catch (exception& e) {
-    cerr << e.what() << endl;
+    backedupResolveConf.clear();
+    backedupResolveConfHeader.clear();
+    DNSSettingBackedup = false;
+    
   }
 
-  try {
-    std::ofstream resolveHeadFile("/etc/resolv.conf.head");
-    resolveHeadFile << backedupResolveConfHeader.rdbuf();
-    resolveHeadFile.close();
-
-  } catch (exception& e) {
-    cerr << e.what() << endl;
-  }
-
-  backedupResolveConf.clear();
-  backedupResolveConfHeader.clear();
-  DNSSettingBackedup = false;
 }
 
 void OutlineProxyController::processRoutingTable() {}
@@ -302,27 +555,31 @@ void OutlineProxyController::getIntefraceMetric() {}
 
 void OutlineProxyController::deleteOutlineTunDev() {
   if (outlineTunDeviceExsits()) {
-    map<string, string> deleteTunDeviceCommand;
+    SubCommand deleteTunDeviceCommand;
 
-    deleteTunDeviceCommand["del dev"] = tunInterfaceName;
-    deleteTunDeviceCommand["mode"] = "tun";
-    std::string tunDeviceAdditionResult = executeIPTunTap(deleteTunDeviceCommand);
+    deleteTunDeviceCommand.push(SubCommandPart("del dev", tunInterfaceName));
+    deleteTunDeviceCommand.push(SubCommandPart("mode", "tun"));
+    try {
+      OutputAndStatus tunDeviceAdditionResult = executeIPTunTap(deleteTunDeviceCommand);
+    } catch(exception& e) {
+      logger.warn("failed to delete outline tun interface: " + string(e.what()));
+    }
   }
 }
 
-std::string OutlineProxyController::executeIPCommand(
-    const std ::map<std ::string, std ::string> args) {
+OutputAndStatus OutlineProxyController::executeIPCommand(
+    const SubCommand args) {
   return executeCommand(IPCommand, args);
 }
 
-std::string OutlineProxyController::executeIPAddress(
-    const std ::map<std ::string, std ::string> args) {
+OutputAndStatus OutlineProxyController::executeIPAddress(const SubCommand args) {
   return executeCommand(IPAddressCommand, args);
 }
 
 std::string OutlineProxyController::getTunDeviceName() { return tunInterfaceName; }
 
 OutlineProxyController::~OutlineProxyController() {
-  routeDirectly();
-  // deleteOutlineTunDev();
+  if (routingStatus == ROUTING_THROUGH_OUTLINE)
+    routeDirectly();
+  deleteOutlineTunDev();
 }
