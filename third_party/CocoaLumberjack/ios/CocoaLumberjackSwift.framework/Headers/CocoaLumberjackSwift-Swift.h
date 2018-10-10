@@ -29,7 +29,7 @@
 # define SWIFT_TYPEDEFS 1
 # if __has_include(<uchar.h>)
 #  include <uchar.h>
-# elif !defined(__cplusplus)
+#elif !defined(__cplusplus)
 typedef uint_least16_t char16_t;
 typedef uint_least32_t char32_t;
 # endif
@@ -174,13 +174,16 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #pragma clang diagnostic ignored "-Wnullability"
 
 #if __has_attribute(external_source_symbol)
-# pragma push_macro("any")
-# undef any
-# pragma clang attribute push(__attribute__((external_source_symbol(language="Swift", defined_in="CocoaLumberjackSwift",generated_declaration))), apply_to=any(function,enum,objc_interface,objc_category,objc_protocol))
-# pragma pop_macro("any")
+#pragma push_macro("any")
+#undef any
+#pragma clang attribute push(                                                                      \
+    __attribute__((external_source_symbol(language = "Swift", defined_in = "CocoaLumberjackSwift", \
+                                          generated_declaration))),                                \
+    apply_to = any(function, enum, objc_interface, objc_category, objc_protocol))
+#pragma pop_macro("any")
 #endif
 
 #if __has_attribute(external_source_symbol)
-# pragma clang attribute pop
+#pragma clang attribute pop
 #endif
 #pragma clang diagnostic pop
