@@ -20,3 +20,4 @@ packages/
 *.pdb
 tools/OutlineService/OutlineService/bin/*
 !tools/OutlineService/OutlineService/bin/*.exe
+*.sw?
