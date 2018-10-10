@@ -36,7 +36,7 @@ static class Program {
       }
       switch (args[0]) {
         case "on":
-          service.ConfigureRouting("10.0.85.1", args[1]);
+          service.ConfigureRouting("10.0.85.1", args[1], false);
           break;
         case "off":
           // "Ethernet" is the most common name but will probably need to be changed on VMs, etc.

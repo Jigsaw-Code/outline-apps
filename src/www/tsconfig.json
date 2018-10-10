@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "es5",
+    "downlevelIteration": true,
+    "outDir": "../../www",
+    "lib": [
+      "dom",
+      "es5",
+      "es2017",
+      "scripthost"
+    ],
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}
