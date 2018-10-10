@@ -123,15 +123,32 @@ export function startVpn(
 // Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
 // installer should have failed, too.
 function testTapDevice() {
-  let stdout: string;
-  try {
-    stdout = execSync(`netsh interface ipv4 show addresses ${TUN2SOCKS_TAP_DEVICE_NAME}`).toString();
-  } catch (e) {
-    throw new Error(`TAP device not found: ${e.stdout.toString()}`);
+  // Sample output:
+  // =============
+  // $ netsh interface ipv4 dump
+  // # ----------------------------------
+  // # IPv4 Configuration
+  // # ----------------------------------
+  // pushd interface ipv4
+  //
+  // reset
+  // set global icmpredirects=disabled
+  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled ignoredefaultroutes=disabled
+  // set interface interface="outline-tap0" forwarding=enabled advertise=enabled nud=enabled ignoredefaultroutes=disabled
+  // add address name="outline-tap0" address=10.0.85.2 mask=255.255.255.0
+  //
+  // popd
+  // # End of IPv4 configuration
+  const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
+
+  // Find lines containing the TAP device name.
+  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
+  if (tapLines.length < 1) {
+    throw new Error(`TAP device not found`);
   }
-  // Assumes that the presence of the expected IP means the device is correctly configured; this
-  // saves a bunch of parsing work and should work for all languages.
-  if (stdout.indexOf(TUN2SOCKS_TAP_DEVICE_IP) < 0) {
+
+  // Within those lines, search for the expected IP.
+  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
     throw new Error(`TAP device has wrong IP`);
   }
 }
