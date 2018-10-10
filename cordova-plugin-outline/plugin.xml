@@ -80,6 +80,7 @@
       target-dir="app/src/main/jniLibs/x86" />
 
     <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
+    <resource-file src="android/resources/strings/" target="res/" />
 
     <framework src="android/java/build-extras.gradle" custom="true"
       type="gradleReference" />
