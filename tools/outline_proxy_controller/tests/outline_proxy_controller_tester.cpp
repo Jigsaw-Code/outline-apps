@@ -58,7 +58,7 @@ TEST_CASE("Tun device gets the expected IP") {
   auto result = testOutlineProxyController.executeIPAddress(getRouteCommand);
 
   REQUIRE(testOutlineProxyController.isSuccessful(result));
-  string AddressInfo= result.first;
+  string AddressInfo = result.first;
 
   std::regex IPRegex(testOutlineProxyController.tunInterfaceIp, std::regex_constants::ECMAScript);
   REQUIRE(std::regex_search(AddressInfo, IPRegex));
