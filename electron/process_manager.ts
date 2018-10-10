@@ -47,6 +47,11 @@ function pathToEmbeddedExe(basename: string) {
       __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'win32', `${basename}.exe`);
 }
 
+function pathToEmbeddedBinary(basename: string) {
+  return path.join(
+      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', 'linux', `${basename}`);
+}
+
 // Three tools are required to launch the proxy on Windows:
 //  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
 //  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
@@ -350,15 +355,17 @@ function startTun2socks(host: string, onDisconnected: () => void): Promise<void>
       args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
       args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
       args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-      // TODO (AZ) what do we do with UDP
-      // args.push('--socks5-udp');
-      // args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+      args.push('--socks5-udp');
+      args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
       args.push('--loglevel', 'error');
 
       let tun2socksFilename = 'badvpn-tun2socks';
       if (isWindows) {
         tun2socksFilename = pathToEmbeddedExe(tun2socksFilename);
+      } else if (isLinux) {
+        tun2socksFilename = pathToEmbeddedBinary(tun2socksFilename);
       }
+      console.log(tun2socksFilename);
 
       // TODO: Duplicate ss-local's error handling.
       try {

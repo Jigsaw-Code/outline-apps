@@ -589,7 +589,7 @@ int main (int argc, char **argv)
 
 fail0:
 
-  return 1;
+    return 1;
 }
 
 #endif
