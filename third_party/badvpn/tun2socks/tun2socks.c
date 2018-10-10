@@ -587,7 +587,9 @@ int main (int argc, char **argv)
 
     run();
 
-    return 1;
+fail0:
+
+  return 1;
 }
 
 #endif
