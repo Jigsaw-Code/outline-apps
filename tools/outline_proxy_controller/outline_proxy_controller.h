@@ -9,15 +9,15 @@
 
 namespace outline {
 
-  typedef std::pair<std::string, uint8_t> OutputAndStatus;
-  typedef std::pair<const std::string, const std::string> SubCommandPart;
-  typedef std::queue<SubCommandPart> SubCommand;
+typedef std::pair<std::string, uint8_t> OutputAndStatus;
+typedef std::pair<const std::string, const std::string> SubCommandPart;
+typedef std::queue<SubCommandPart> SubCommand;
 
-  class OutlineProxyController {
+class OutlineProxyController {
  public:
   OutlineProxyController();
 
-    /**
+  /**
    * the destructor:
    *     - restore routing table
    *      - stops tun2sock
@@ -46,27 +46,27 @@ namespace outline {
   std::string getTunDeviceName();
 
  private:
-    //this enum is representing different stage of outing and "de"routing
-    //through outline proxy server. And is used for exmaple in undoing
-    //different steps in case the routing process fails
-    enum OutlineConnectionStage {
-                                 DNS_BACKED_UP,
-                                 OUTLINE_PRIORITY_SET_UP,
-                                 DEFAULT_GATEWAY_ROUTE_DELETED,
-                                 TRAFFIC_ROUTED_THROUGH_TUN,
-                                 OUTLINE_DNS_SET
-                          
-    };
+  // this enum is representing different stage of outing and "de"routing
+  // through outline proxy server. And is used for exmaple in undoing
+  // different steps in case the routing process fails
+  enum OutlineConnectionStage {
+    DNS_BACKED_UP,
+    OUTLINE_PRIORITY_SET_UP,
+    DEFAULT_GATEWAY_ROUTE_DELETED,
+    TRAFFIC_ROUTED_THROUGH_TUN,
+    OUTLINE_DNS_SET
 
-    
+  };
 
-    enum OutlineConnectionStatus {ROUTING_THROUGH_OUTLINE,
-                                  ROUTING_THROUGH_DEFAULT_GATEWAY} routingStatus;
+  enum OutlineConnectionStatus {
+    ROUTING_THROUGH_OUTLINE,
+    ROUTING_THROUGH_DEFAULT_GATEWAY
+  } routingStatus;
   /**
    * auxilary function to check the status code of a command
    */
-   inline bool isSuccessful(OutputAndStatus& result) { return (result.second == EXIT_SUCCESS);}
-     
+  inline bool isSuccessful(OutputAndStatus& result) { return (result.second == EXIT_SUCCESS); }
+
   // add a tun device
   // void addTunInterface();
 
@@ -102,17 +102,16 @@ namespace outline {
   void enforceGloballyReachableDNS();
 
   /**
-   * reset routing setting to original setting in case we fail to 
+   * reset routing setting to original setting in case we fail to
    * accomplish routing through outline in the intermediary stage
-   * 
+   *
    */
-   void resetFailRoutingAttempt(OutlineConnectionStage failedStage);
-    
+  void resetFailRoutingAttempt(OutlineConnectionStage failedStage);
+
   /**
    * exectues a shell command and returns the stdout
    */
-  OutputAndStatus executeCommand(const std::string commandName,
-                             const SubCommand args);
+  OutputAndStatus executeCommand(const std::string commandName, const SubCommand args);
 
   OutputAndStatus executeIPCommand(const SubCommand args);
   OutputAndStatus executeIPRoute(const SubCommand args);
@@ -160,9 +159,9 @@ namespace outline {
    */
   std::string createRoutingString(SubCommand args);
 
- private:    
+ private:
   const std::string c_redirect_stderr_into_stdout = " 2>&1";
-    
+
   const std::string resultDelimiter = " ";
 
   const std::string IPCommand = "ip";
