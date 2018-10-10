@@ -26,6 +26,7 @@ include_directories(
 
 ##############################
 add_executable(OutlineProxyControllerTester outline_proxy_controller.cpp
+                                            logger.cpp
                                             tests/outline_proxy_controller_tester.cpp)
 
 ######################################
@@ -33,6 +34,7 @@ add_executable(OutlineProxyController
     outline_proxy_controller.cpp
     outline_controller_server.cpp
     outline_daemon.cpp
+    logger.cpp
     )
 
 target_link_libraries(OutlineProxyController

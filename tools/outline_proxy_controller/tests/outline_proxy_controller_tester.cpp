@@ -52,10 +52,13 @@ TEST_CASE("Tun device gets deleted on delete") {
 TEST_CASE("Tun device gets the expected IP") {
   OutlineProxyController testOutlineProxyController;
 
-  map<string, string> getRouteCommand;
+  SubCommand getRouteCommand;
 
-  getRouteCommand["show"] = testOutlineProxyController.tunInterfaceName;
-  string AddressInfo = testOutlineProxyController.executeIPAddress(getRouteCommand);
+  getRouteCommand.push(SubCommandPart("show", testOutlineProxyController.tunInterfaceName));
+  auto result = testOutlineProxyController.executeIPAddress(getRouteCommand);
+
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  string AddressInfo= result.first;
 
   std::regex IPRegex(testOutlineProxyController.tunInterfaceIp, std::regex_constants::ECMAScript);
   REQUIRE(std::regex_search(AddressInfo, IPRegex));
@@ -66,16 +69,21 @@ TEST_CASE("verifying routing to a random host through outline") {
 
   testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
 
-  map<string, string> getRouteCommand;
+  SubCommand getRouteCommand;
 
-  getRouteCommand["get"] = testFixtures::randomHost;
-  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.push(SubCommandPart("get", testFixtures::randomHost));
+  auto result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  string routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.tunInterfaceRouterIp);
 
-  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
-  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.pop();
+  getRouteCommand.push(SubCommandPart("get", testOutlineProxyController.outlineServerIP));
+  result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
@@ -88,24 +96,32 @@ TEST_CASE("verifying a normal routing after disconnect") {
 
   testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
 
-  map<string, string> getRouteCommand;
+  SubCommand getRouteCommand;
 
-  getRouteCommand["get"] = testFixtures::randomHost;
-  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.push(SubCommandPart("get", testFixtures::randomHost));
+  auto result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  string routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.tunInterfaceRouterIp);
 
-  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
-  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.pop();
+  getRouteCommand.push(SubCommandPart("get", testOutlineProxyController.outlineServerIP));
+  result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
 
   testOutlineProxyController.routeDirectly();
 
-  getRouteCommand["get"] = testFixtures::randomHost;
-  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.pop();
+  getRouteCommand.push(SubCommandPart("get", testFixtures::randomHost));
+  result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
@@ -116,24 +132,32 @@ TEST_CASE("verifying to a random host through outline and normal routing after d
 
   testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
 
-  map<string, string> getRouteCommand;
+  SubCommand getRouteCommand;
 
-  getRouteCommand["get"] = testFixtures::randomHost;
-  string routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.push(SubCommandPart("get", testFixtures::randomHost));
+  auto result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  string routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.tunInterfaceRouterIp);
 
-  getRouteCommand["get"] = testOutlineProxyController.outlineServerIP;
-  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.pop();
+  getRouteCommand.push(SubCommandPart("get", testOutlineProxyController.outlineServerIP));
+  result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
 
   testOutlineProxyController.routeDirectly();
 
-  getRouteCommand["get"] = testFixtures::randomHost;
-  routingData = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  getRouteCommand.pop();
+  getRouteCommand.push(SubCommandPart("get", testFixtures::randomHost));
+  result = testOutlineProxyController.executeIPRoute(getRouteCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  routingData = result.first;
 
   REQUIRE(testOutlineProxyController.getParamValueInResult(routingData, "via") ==
           testOutlineProxyController.routingGatewayIP);
@@ -144,10 +168,12 @@ TEST_CASE("verifying ipv6 is disbaled when outline is enabled") {
 
   testOutlineProxyController.routeThroughOutline(testOutlineProxyController.outlineServerIP);
 
-  map<string, string> getSystemStatusCommand;
+  SubCommand getSystemStatusCommand;
 
-  getSystemStatusCommand["-a"] = "";
-  string systemStatus = testOutlineProxyController.executeSysctl(getSystemStatusCommand);
+  getSystemStatusCommand.push(SubCommandPart("-a", ""));
+  auto result = testOutlineProxyController.executeSysctl(getSystemStatusCommand);
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  string systemStatus = result.first;
 
   std::regex enabledIPv6Regex("disable_ipv6 = 0", std::regex_constants::ECMAScript);
   REQUIRE(std::regex_search(systemStatus, enabledIPv6Regex) == false);
@@ -158,26 +184,29 @@ TEST_CASE("verifying ipv6 is disbaled when outline is enabled") {
 TEST_CASE("verify dns setting gets set and reset") {
   OutlineProxyController testOutlineProxyController;
 
-  map<string, string> nslookupDomain;
+  SubCommand nslookupDomain;
 
-  nslookupDomain["google.com"] = "";
+  nslookupDomain.push(SubCommandPart("google.com", ""));
 
   // we just keep the first line
   auto result = testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
-  auto originalDNSServer = result.substr(0, result.find("\n"));
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  auto originalDNSServer = result.first.substr(0, result.first.find("\n"));
 
   testOutlineProxyController.backupDNSSetting();
   testOutlineProxyController.enforceGloballyReachableDNS();
 
   result = testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
-  auto outlineDNSServer = result.substr(0, result.find("\n"));
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  auto outlineDNSServer = result.first.substr(0, result.first.find("\n"));
 
   REQUIRE(outlineDNSServer == "Server:\t\t" + testOutlineProxyController.outlineDNSServer);
 
   testOutlineProxyController.restoreDNSSetting();
 
   result = testOutlineProxyController.executeCommand("nslookup", nslookupDomain);
-  auto restoredDNSServer = result.substr(0, result.find("\n"));
+  REQUIRE(testOutlineProxyController.isSuccessful(result));
+  auto restoredDNSServer = result.first.substr(0, result.first.find("\n"));
 
   REQUIRE(restoredDNSServer == originalDNSServer);
 }
