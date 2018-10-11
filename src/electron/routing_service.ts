@@ -14,11 +14,16 @@
 
 import {app} from 'electron';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
+const isWindows = os.platform() === 'win32';
+const isLinux = os.platform() === 'linux';
+
+// Windows Pipe Information ---- For Windows
 const SERVICE_PIPE_NAME = 'OutlineServicePipe';
 const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 
@@ -33,6 +38,11 @@ const SERVICE_START_COMMAND = `"${
         app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
         'install_windows_service.bat')}"`;
 
+// Unix socket information ---- For Linux
+const SERVICE_USOCK_NAME = 'outline_controller';
+const SERVICE_USOCK_PATH = '/var/run/';
+
+
 interface RoutingServiceRequest {
   action: string;
   parameters: {[parameter: string]: string|boolean};
@@ -43,14 +53,16 @@ interface RoutingServiceResponse {
   errorMessage?: string;
 }
 
-export interface RoutingService {
-  configureRouting(routerIp: string, proxyIp: string): Promise<void>;
-  resetRouting(): Promise<void>;
+interface RoutingServiceInterface {
+  configureRouting(routerIp: string, proxyIp: string): Promise<string>;
+  resetRouting(): Promise<string>;
+  getDeviceName(): Promise<string>;
 }
 
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
-  RESET_ROUTING = 'resetRouting'
+  RESET_ROUTING = 'resetRouting',
+  GET_DEVICE_NAME = 'getDeviceName'
 }
 
 enum RoutingServiceStatusCode {
@@ -68,12 +80,12 @@ interface NetError extends Error {
 }
 
 // Abstracts IPC with OutlineService in order to configure routing.
-export class WindowsRoutingService implements RoutingService {
+export class RoutingService implements RoutingServiceInterface {
   private ipcConnection: net.Socket;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string, isAutoConnect = false): Promise<void> {
+  configureRouting(routerIp: string, proxyIp: string, isAutoConnect = false): Promise<string> {
     return this.sendRequest({
       action: RoutingServiceAction.CONFIGURE_ROUTING,
       parameters: {proxyIp, routerIp, isAutoConnect}
@@ -81,15 +93,29 @@ export class WindowsRoutingService implements RoutingService {
   }
 
   // Restores the default system routes.
-  resetRouting(): Promise<void> {
+  resetRouting(): Promise<string> {
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
+  }
+
+  // Returns the name of the device
+  getDeviceName(): Promise<string> {
+    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}});
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest, retry = true): Promise<void> {
+  private sendRequest(request: RoutingServiceRequest, retry = true): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
+
+      let ipcName = '';
+      if (isWindows) {
+        ipcName = `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`;
+      } else if (isLinux) {
+        ipcName = `${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`;
+      } else {
+        reject(new Error(`Unsupported platform`));
+      }
+      this.ipcConnection = net.createConnection(ipcName, () => {
         console.log('Pipe connected');
         try {
           const msg = JSON.stringify(request);
@@ -100,27 +126,31 @@ export class WindowsRoutingService implements RoutingService {
       });
 
       this.ipcConnection.on('error', (e: NetError) => {
-        if (retry) {
-          console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
-            if (sudoError) {
-              // Yes, this seems to be the only way to tell.
-              if ((typeof sudoError === 'string') &&
-                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                return reject(new errors.NoAdminPermissions());
-              } else {
-                // It's unclear what type sudoError is because it has no message
-                // field. toString() seems to work in most cases, so use that -
-                // anything else will eventually show up in Sentry.
-                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+        if (isWindows) {
+          if (retry) {
+            console.info(`bouncing OutlineService (${e.errno})`);
+            sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
+              if (sudoError) {
+                // Yes, this seems to be the only way to tell.
+                if ((typeof sudoError === 'string') &&
+                    sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                  return reject(new errors.NoAdminPermissions());
+                } else {
+                  // It's unclear what type sudoError is because it has no message
+                  // field. toString() seems to work in most cases, so use that -
+                  // anything else will eventually show up in Sentry.
+                  return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+                }
               }
-            }
-            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-            this.sendRequest(request, false).then(resolve, reject);
-          });
-          return;
+              console.info(
+                  `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+              this.sendRequest(request, false).then(resolve, reject);
+            });
+            return;
+          }
+        } else {
+          reject(new Error(`Routing Daemon not running.`));
         }
-
         // OutlineService could not be (re-)started.
         reject(new errors.ConfigureSystemProxyFailure(
             `Received error from service connection: ${e.message}`));
@@ -138,7 +168,11 @@ export class WindowsRoutingService implements RoutingService {
                       new errors.UnsupportedRoutingTable(msg) :
                       new errors.ConfigureSystemProxyFailure(msg));
             }
-            resolve(response);
+            if ('returnValue' in response) {
+              return resolve(response.returnValue);
+            } else {
+              return resolve(data.toString());
+            }
           } catch (e) {
             reject(new Error(`Failed to deserialize service response: ${e.message}`));
           }
