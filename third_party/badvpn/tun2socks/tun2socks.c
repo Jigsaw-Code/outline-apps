@@ -585,7 +585,7 @@ int main (int argc, char **argv)
         case LOGGER_SYSLOG:
             if (!BLog_InitSyslog(options.logger_syslog_ident, options.logger_syslog_facility)) {
                 fprintf(stderr, "Failed to initialize syslog logger\n");
-                goto fail0;
+                return 1;
             }
             break;
         #endif
