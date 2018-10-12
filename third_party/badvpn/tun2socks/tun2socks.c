@@ -461,65 +461,54 @@ void PsiphonLog(int level, const char *channelStr, const char *msgStr)
 }
 
 JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
-    JNIEnv* env,
-    jclass cls,
-    jint vpnInterfaceFileDescriptor,
-    jint vpnInterfaceMTU,
-    jstring vpnIpAddress,
-    jstring vpnNetMask,
-    jstring vpnIpV6Address,
-    jstring socksServerAddress,
-    jstring udpRelayAddress,
-    jstring dnsResolverAddress,
-    jint transparentDNS,
-    jint socks5UDP)
-{
-    g_env = env;
+    JNIEnv *env, jclass cls, jint vpnInterfaceFileDescriptor, jint vpnInterfaceMTU,
+    jstring vpnIpAddress, jstring vpnNetMask, jstring vpnIpV6Address, jstring socksServerAddress,
+    jstring udpRelayAddress, jstring dnsResolverAddress, jint transparentDNS, jint socks5UDP) {
+  g_env = env;
 
-    const char* vpnIpAddressStr = (*env)->GetStringUTFChars(env, vpnIpAddress, 0);
-    const char* vpnNetMaskStr = (*env)->GetStringUTFChars(env, vpnNetMask, 0);
-    const char* vpnIpV6AddressStr = vpnIpV6Address != NULL
-                                        ? (*env)->GetStringUTFChars(env, vpnIpV6Address, 0)
-                                        : NULL;
-    const char* socksServerAddressStr = (*env)->GetStringUTFChars(env, socksServerAddress, 0);
-    const char* udpRelayAddressStr = (*env)->GetStringUTFChars(env, udpRelayAddress, 0);
-    const char* dnsResolverAddressStr = (*env)->GetStringUTFChars(env, dnsResolverAddress, 0);
+  const char *vpnIpAddressStr = (*env)->GetStringUTFChars(env, vpnIpAddress, 0);
+  const char *vpnNetMaskStr = (*env)->GetStringUTFChars(env, vpnNetMask, 0);
+  const char *vpnIpV6AddressStr =
+      vpnIpV6Address != NULL ? (*env)->GetStringUTFChars(env, vpnIpV6Address, 0) : NULL;
+  const char *socksServerAddressStr = (*env)->GetStringUTFChars(env, socksServerAddress, 0);
+  const char *udpRelayAddressStr = (*env)->GetStringUTFChars(env, udpRelayAddress, 0);
+  const char *dnsResolverAddressStr = (*env)->GetStringUTFChars(env, dnsResolverAddress, 0);
 
-    init_arguments("Outline tun2socks");
+  init_arguments("Outline tun2socks");
 
-    options.netif_ipaddr = (char*)vpnIpAddressStr;
-    options.netif_netmask = (char*)vpnNetMaskStr;
-    options.netif_ip6addr = (char*)vpnIpV6AddressStr;
-    options.socks_server_addr = (char*)socksServerAddressStr;
-    options.udp_relay_addr = (char*)udpRelayAddressStr;
-    options.dns_resolver_addr = (char*)dnsResolverAddressStr;
-    options.transparent_dns = transparentDNS;
-    options.socks5_udp = socks5UDP;
-    options.tun_fd = vpnInterfaceFileDescriptor;
-    options.tun_mtu = vpnInterfaceMTU;
-    options.set_signal = 0;
-    options.loglevel = 4;
+  options.netif_ipaddr = (char *)vpnIpAddressStr;
+  options.netif_netmask = (char *)vpnNetMaskStr;
+  options.netif_ip6addr = (char *)vpnIpV6AddressStr;
+  options.socks_server_addr = (char *)socksServerAddressStr;
+  options.udp_relay_addr = (char *)udpRelayAddressStr;
+  options.dns_resolver_addr = (char *)dnsResolverAddressStr;
+  options.transparent_dns = transparentDNS;
+  options.socks5_udp = socks5UDP;
+  options.tun_fd = vpnInterfaceFileDescriptor;
+  options.tun_mtu = vpnInterfaceMTU;
+  options.set_signal = 0;
+  options.loglevel = 4;
 
-    BLog_InitPsiphon();
+  BLog_InitPsiphon();
 
-    __sync_bool_compare_and_swap(&g_terminate, 1, 0);
+  __sync_bool_compare_and_swap(&g_terminate, 1, 0);
 
-    run();
+  run();
 
-    (*env)->ReleaseStringUTFChars(env, vpnIpAddress, vpnIpAddressStr);
-    (*env)->ReleaseStringUTFChars(env, vpnNetMask, vpnNetMaskStr);
-    if (vpnIpV6Address != NULL) {
-        (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpAddressStr);
-    }
-    (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
-    (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
-    (*env)->ReleaseStringUTFChars(env, dnsResolverAddress, dnsResolverAddressStr);
+  (*env)->ReleaseStringUTFChars(env, vpnIpAddress, vpnIpAddressStr);
+  (*env)->ReleaseStringUTFChars(env, vpnNetMask, vpnNetMaskStr);
+  if (vpnIpV6Address != NULL) {
+    (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpAddressStr);
+  }
+  (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
+  (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
+  (*env)->ReleaseStringUTFChars(env, dnsResolverAddress, dnsResolverAddressStr);
 
-    g_env = 0;
+  g_env = 0;
 
-    // TODO: return success/error
+  // TODO: return success/error
 
-    return 1;
+  return 1;
 }
 
 JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_stop(
@@ -595,7 +584,7 @@ int main (int argc, char **argv)
 
     run();
 
-    return 1;
+  return 1;
 }
 
 #endif

@@ -40,7 +40,7 @@
     "clang-format": "^1.0.55",
     "cordova": "^6.5.0",
     "cordova-custom-config": "^5.0.2",
-    "electron": "^1.8.6",
+    "electron": "^1.8.8",
     "electron-builder": "^20.13.3",
     "electron-icon-maker": "^0.0.4",
     "gulp": "^3.9.1",
