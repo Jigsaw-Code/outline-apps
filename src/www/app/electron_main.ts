@@ -31,6 +31,8 @@ import {WindowsOutlineConnection} from './windows_connection';
 
 // Currently, proxying is only supported on Windows.
 const isWindows = os.platform() === 'win32';
+const isLinux = os.platform() === 'linux';
+const isOsSupported = isWindows || isLinux;
 
 const interceptor = new UrlInterceptor();
 ipcRenderer.on('add-server', (e: Event, url: string) => {
@@ -84,15 +86,15 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 
 main({
   hasDeviceSupport: () => {
-    return isWindows;
+    return isOsSupported;
   },
   getPersistentServerFactory: () => {
     return (serverId: string, config: cordova.plugins.outline.ServerConfig,
             eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
-          isWindows ? new WindowsOutlineConnection(config, serverId) :
-                      new FakeOutlineConnection(config, serverId),
+          isOsSupported ? new WindowsOutlineConnection(config, serverId) :
+                          new FakeOutlineConnection(config, serverId),
           eventQueue);
     };
   },

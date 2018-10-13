@@ -1,9 +1,17 @@
 #pragma once
 
-#include <map>
+#include <queue>
+#include <sstream>
 #include <string>
+#include <utility>
+
+#include <cstdlib>
 
 namespace outline {
+
+typedef std::pair<std::string, uint8_t> OutputAndStatus;
+typedef std::pair<const std::string, const std::string> SubCommandPart;
+typedef std::queue<SubCommandPart> SubCommand;
 
 class OutlineProxyController {
  public:
@@ -30,7 +38,35 @@ class OutlineProxyController {
    */
   void routeDirectly();
 
+  /**
+   *
+   * Returns the name of the tun device to be used by the app
+   *
+   */
+  std::string getTunDeviceName();
+
  private:
+  // this enum is representing different stage of outing and "de"routing
+  // through outline proxy server. And is used for exmaple in undoing
+  // different steps in case the routing process fails
+  enum OutlineConnectionStage {
+    DNS_BACKED_UP,
+    OUTLINE_PRIORITY_SET_UP,
+    DEFAULT_GATEWAY_ROUTE_DELETED,
+    TRAFFIC_ROUTED_THROUGH_TUN,
+    OUTLINE_DNS_SET
+
+  };
+
+  enum OutlineConnectionStatus {
+    ROUTING_THROUGH_OUTLINE,
+    ROUTING_THROUGH_DEFAULT_GATEWAY
+  } routingStatus;
+  /**
+   * auxilary function to check the status code of a command
+   */
+  inline bool isSuccessful(OutputAndStatus& result) { return (result.second == EXIT_SUCCESS); }
+
   // add a tun device
   // void addTunInterface();
 
@@ -49,18 +85,41 @@ class OutlineProxyController {
   void setTunDeviceIP();
 
   /**
+   *  Should be called before changing DNS setting to backup the DNS
+   *  setting to restore after.
+   */
+  void backupDNSSetting();
+
+  /**
+   *  Should be called after diconnect to restore original DNS
+   *  setting
+   */
+  void restoreDNSSetting();
+
+  /**
+   * set outline DNS setting
+   */
+  void enforceGloballyReachableDNS();
+
+  /**
+   * reset routing setting to original setting in case we fail to
+   * accomplish routing through outline in the intermediary stage
+   *
+   */
+  void resetFailRoutingAttempt(OutlineConnectionStage failedStage);
+
+  /**
    * exectues a shell command and returns the stdout
    */
-  std::string executeCommand(const std::string commandName,
-                             const std::map<std::string, std::string> args);
+  OutputAndStatus executeCommand(const std::string commandName, const SubCommand args);
 
-  std::string executeIPCommand(const std::map<std::string, std::string> args);
-  std::string executeIPRoute(const std::map<std::string, std::string> args);
-  std::string executeIPLink(const std::map<std::string, std::string> args);
-  std::string executeIPTunTap(const std::map<std::string, std::string> args);
-  std::string executeIPAddress(const std::map<std::string, std::string> args);
+  OutputAndStatus executeIPCommand(const SubCommand args);
+  OutputAndStatus executeIPRoute(const SubCommand args);
+  OutputAndStatus executeIPLink(const SubCommand args);
+  OutputAndStatus executeIPTunTap(const SubCommand args);
+  OutputAndStatus executeIPAddress(const SubCommand args);
 
-  std::string executeSysctl(const std::map<std::string, std::string> args);
+  OutputAndStatus executeSysctl(const SubCommand args);
 
   void detectBestInterfaceIndex();
   void processRoutingTable();
@@ -70,8 +129,15 @@ class OutlineProxyController {
 
   void createDefaultRouteThroughGateway();
 
-  void deleteDefaultRoute();
+  void deleteAllDefaultRoutes();
   void deleteOutlineServerRouting();
+
+  /**
+   * returns true  if the specific routePart shows up in the routing table
+   * returns false otherwise
+   *
+   */
+  bool checkRoutingTableForSpecificRoute(std::string routePart);
 
   void toggleIPv6(bool IPv6Status);
 
@@ -91,9 +157,11 @@ class OutlineProxyController {
   /**
    *  store created route as an string so it can be deleted later
    */
-  std::string createRoutingString(std::map<std::string, std::string> args);
+  std::string createRoutingString(SubCommand args);
 
  private:
+  const std::string c_redirect_stderr_into_stdout = " 2>&1";
+
   const std::string resultDelimiter = " ";
 
   const std::string IPCommand = "ip";
@@ -103,14 +171,28 @@ class OutlineProxyController {
   const std::string IPTunTapCommand = "ip tuntap";
   const std::string sysctlCommand = "sysctl";
 
+  const std::string c_normal_traffic_priority_metric = "10";
+  const std::string c_proxy_priority_metric = "5";
+
   std::string tunInterfaceName = "outline-tun0";
   std::string tunInterfaceIp = "10.0.85.1";
   std::string tunInterfaceRouterIp = "10.0.85.2";
   std::string outlineServerIP = "138.197.150.245";
+  std::string outlineDNSServer = "8.8.8.8";
 
   std::string clientLocalIP;
   std::string routingGatewayIP;
   std::string clientToServerRoutingInterface;
+
+  // TODO [vmon] We have to keep track of connect request so if we receive two
+  // consequective connect request we have to disconnect first. So we don't
+  // over write our recovery data
+
+  // we are going to backup both resolve.conf and resolv.conf.head
+  // and modify both to make sure that we are going to do stuff
+  std::stringstream backedupResolveConf;
+  std::stringstream backedupResolveConfHeader;
+  bool DNSSettingBackedup = false;
 
   // storing different route inorder to delete them later
   std::string throughGatewayRoute;
