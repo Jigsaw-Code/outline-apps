@@ -24,7 +24,10 @@ import json
 import os
 
 ORIGINAL_MESSAGES_FILE = "resources/master_messages.json"
-SOURCE_FOLDER = "www/messages/"
+SOURCE_FOLDER = "src/www/messages/"
+ENGLISH_LOCALE = "en"
+# Message keys that are not expected to be translated, i.e. a key for 'Outline'.
+UNTRANSLATED_KEYS = ['servers-page-title']
 
 def read_json_content(filename):
   json_content = {}
@@ -36,17 +39,26 @@ def read_json_content(filename):
 
 def format_original_message_keys(orignal_messages):
   formatted_messages = {}
-  for key, message in orignal_messages.items():
-    formatted_messages[key.replace('_', '-')] = message
+  for key, data in orignal_messages.items():
+    formatted_messages[key.replace('_', '-')] = data['message']
   return formatted_messages
 
-def validate_keys(original_keys, translation_keys):
-  """ Prints keys present in |original_keys|, missing from |translation_keys|. """
+def validate_keys(original_messages, translation_messages, locale):
+  """ Prints keys present in |original_messages|, missing from |translation_messages|, or keys that
+      have not been translated.
+  """
   valid = True
-  for key in original_keys:
+  translation_keys = translation_messages.keys()
+  for key in original_messages.keys():
+    # print (key,original_messages[key], translation_messages[key])
     if key not in translation_keys:
       print("\tMissing key: %s" % key)
       valid = False
+    if key not in UNTRANSLATED_KEYS and locale != ENGLISH_LOCALE and \
+        original_messages[key] == translation_messages[key]:
+      # Don't mark as invalid because the translation could intentionally match the original English
+      # message.
+      print("\tKey %s ('%s') not translated" % (key, original_messages[key]))
   return valid
 
 def main():
@@ -59,9 +71,8 @@ def main():
 
       print("Validating %s" % lang)
       tranlsation_file = os.path.join(root, file)
-      if not validate_keys(orignal_messages.keys(), read_json_content(tranlsation_file).keys()):
+      if not validate_keys(orignal_messages, read_json_content(tranlsation_file), lang):
         raise Exception()
-
 
 if __name__ == "__main__":
   main()

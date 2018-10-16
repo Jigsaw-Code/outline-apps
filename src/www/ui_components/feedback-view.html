@@ -73,15 +73,19 @@
       <div class="card-content">
         <paper-dropdown-menu id="dropdownMenu" horizontal-align="left" no-label-float required>
           <paper-listbox id="categoryList" selected="{{category}}" attr-for-selected="value" slot="dropdown-content">
-            <paper-item value="general">[[localize('general-feedback')]]</paper-item>
-            <paper-item value="performance">[[localize('performance-feedback')]]</paper-item>
-            <paper-item value="connection">[[localize('connection-feedback')]]</paper-item>
+            <paper-item value="general">[[localize('feedback-general')]]</paper-item>
+            <paper-item value="no-server">[[localize('feedback-no-server')]]</paper-item>
+            <paper-item value="cannot-add-server">[[localize('feedback-cannot-add-server')]]</paper-item>
+            <paper-item value="connection">[[localize('feedback-connection')]]</paper-item>
+            <paper-item value="performance">[[localize('feedback-performance')]]</paper-item>
+            <paper-item value="suggestion">[[localize('feedback-suggestion')]]</paper-item>
           </paper-listbox>
         </paper-dropdown-menu>
 
-        <paper-textarea id="feedback" name="feedback" label="[[localize('feedback-input')]]" onkeydown="this.invalid = false;" required></paper-textarea>
+        <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" on-value-changed="_emailValueChanged"  onkeydown="this.invalid = false;"></paper-input>
+        <p class="info" hidden$=[[!shouldShowLanguageDisclaimer]]>[[localize('feedback-language-disclaimer')]]</p>
 
-        <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" onkeydown="this.invalid = false;"></paper-input>
+        <paper-textarea id="feedback" name="feedback" label="[[localize('feedback-input')]]" rows="3" onkeydown="this.invalid = false;" required></paper-textarea>
 
         <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"></p>
       </div>
@@ -101,6 +105,14 @@
         category: {
           type: String,
           value: 'general',
+        },
+        hasEnteredEmail: {
+          type: Boolean,
+          value: false,
+        },
+        shouldShowLanguageDisclaimer: {
+          type: Boolean,
+          computed: '_computeShouldShowLanguageDisclaimer(hasEnteredEmail)',
         },
         submitting: {
           type: Boolean,
@@ -123,12 +135,20 @@
           }
         }.bind(this));
       },
+      _emailValueChanged: function() {
+        this.hasEnteredEmail = !!this.$.email.value;
+      },
       _computeSubmitButtonLabel: function (submitting, localize) {
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this
         // again once localize has been defined at which point we will return the right value.
         if (!localize) return '';
         var label = submitting ? 'submitting' : 'submit';
         return this.localize(label);
+      },
+      // Returns whether the window's locale is English (i.e. EN, en-US) and the user has
+      // entered their email address.
+      _computeShouldShowLanguageDisclaimer: function (hasEnteredEmail) {
+        return !window.navigator.language.match(/^en/i) && hasEnteredEmail;
       },
       getValidatedFormData: function () {
         var inputs = [this.$.categoryList, this.$.feedback, this.$.email];
