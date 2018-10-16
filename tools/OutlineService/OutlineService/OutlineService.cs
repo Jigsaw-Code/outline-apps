@@ -66,6 +66,25 @@ namespace OutlineService {
 
     private static string[] IPV4_SUBNETS = { "0.0.0.0/1", "128.0.0.0/1" };
     private static string[] IPV6_SUBNETS = { "fc00::/7", "2000::/4", "3000::/4" };
+    private static string[] IPV4_RESERVED_SUBNETS = {
+        "0.0.0.0/8",
+        "10.0.0.0/8",
+        "100.64.0.0/10",
+        "127.0.0.0/8",
+        "169.254.0.0/16",
+        "172.16.0.0/12",
+        "192.0.0.0/24",
+        "192.0.2.0/24",
+        "192.31.196.0/24",
+        "192.52.193.0/24",
+        "192.88.99.0/24",
+        "192.168.0.0/16",
+        "192.175.48.0/24",
+        "198.18.0.0/15",
+        "198.51.100.0/24",
+        "203.0.113.0/24",
+        "240.0.0.0/4"
+    };
     private const string CMD_NETSH = "netsh";
 
     private const uint BUFFER_SIZE_BYTES = 1024;
@@ -233,7 +252,7 @@ namespace OutlineService {
     // Routes all device traffic through the router, at IP address `routerIp`. The proxy's IP is configured
     // to bypass the router, and connect through the system's default gateway.
     //
-    // Throws and exits early if any step fails.
+    // Throws and exits early if any step fails, other than bypassing reserved subnets.
     public void ConfigureRouting(string routerIp, string proxyIp, bool isAutoConnect) {
       if (routerIp == null || proxyIp == null) {
         throw new Exception("do not know router or proxy IPs");
@@ -261,10 +280,9 @@ namespace OutlineService {
         throw new Exception($"could not set low interface metric: {e.Message}");
       }
 
-      // Proxy routing: the proxy's IP address should be the only one that bypasses the router.
-      // Save the best interface index for the proxy's address before we add the route. This
-      // is necessary for updating the proxy route when the network changes; otherwise we get the
-      // TAP device as the best interface.
+      // Proxy routing: the proxy's IP address needs to bypass the router. Save the system gateway
+      // before we add the route. This is necessary for updating the proxy route when the network
+      // changes; otherwise we get the TAP device as default system gateway.
       try {
         var systemGateway = GetSystemIpv4Gateway();
         SetGatewayProperties(systemGateway);
@@ -273,13 +291,16 @@ namespace OutlineService {
       }
 
       if (gatewayIp != null) {
+        var gatewayIpStr = gatewayIp.ToString();
         try {
-          AddProxyRoute(proxyIp, gatewayIp.ToString(), gatewayInterfaceName);
+          AddProxyRoute(proxyIp, gatewayIpStr, gatewayInterfaceName);
         } catch (Exception e) {
           throw new Exception($"could not add route to proxy server: {e.Message}");
         }
-        // Route IPv4 traffic through the router only if we have network connectivity.
+        // Route IPv4 traffic through the router and bypass reserved subnets
+        // only if there is network connectivity.
         AddIpv4Redirect(routerIp);
+        AddReservedSubnetBypass(gatewayIpStr, gatewayInterfaceName);
       }
       StopRoutingIpv6();
 
@@ -313,6 +334,7 @@ namespace OutlineService {
 
       // Restore system routes.
       RemoveIpv4Redirect();
+      RemoveReservedSubnetBypass(proxyInterfaceName);
       StartRoutingIpv6();
     }
 
@@ -380,6 +402,29 @@ namespace OutlineService {
         }
       } catch (Exception e) {
         throw new Exception($"could not disable IPv6: {e.Message}");
+      }
+    }
+
+    // Routes reserved and private subnets through the default gateway so they bypass the VPN.
+    private void AddReservedSubnetBypass(string systemGatewayIp, string interfaceName) {
+      try {
+        foreach (string subnet in IPV4_RESERVED_SUBNETS) {
+          RunCommand(CMD_NETSH,
+            $"interface ipv4 add route {subnet} nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
+        }
+      } catch (Exception e) {
+        eventLog.WriteEntry($"Failed to bypass reserved subnets: {e.Message}");
+      }
+    }
+
+    // Removes reserved subnet routes created to bypass the VPN.
+    private void RemoveReservedSubnetBypass(string interfaceName) {
+      try {
+        foreach (string subnet in IPV4_RESERVED_SUBNETS) {
+          RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface=\"{interfaceName}\"");
+        }
+      } catch (Exception e) {
+        eventLog.WriteEntry($"Failed to remove reserved subnets bypass: {e.Message}");
       }
     }
 
@@ -516,6 +561,11 @@ namespace OutlineService {
         eventLog.WriteEntry("Failed to add the route to the proxy after a network change.",
                             EventLogEntryType.Error);
       }
+
+      // Update the reserved subnet bypass to use the new gateway.
+      RemoveReservedSubnetBypass(gatewayInterfaceName);
+      AddReservedSubnetBypass(newGatewayIp.ToString(), newGatewayInterfaceName);
+
       // Re-enable IPv4 routing and store the new gateway properties.
       try {
         AddIpv4Redirect(routerIp);
