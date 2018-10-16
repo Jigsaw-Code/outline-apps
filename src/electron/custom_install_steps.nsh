@@ -54,10 +54,11 @@ ${StrRep}
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
+  ReadEnvStr $0 COMSPEC
   ${If} ${RunningX64}
-    nsExec::ExecToStack 'add_tap_device.bat amd64'
+    nsExec::ExecToStack '$0 /c add_tap_device.bat amd64'
   ${Else}
-    nsExec::ExecToStack 'add_tap_device.bat i386'
+    nsExec::ExecToStack '$0 /c add_tap_device.bat i386'
   ${EndIf}
 
   Pop $0
@@ -98,7 +99,7 @@ ${StrRep}
 
   ; http://nsis.sourceforge.net/Inetc_plug-in#post
   inetc::post '{\
-    "message":"could not install TAP device",\
+    "message":"could not install TAP device ($0)",\
     "release":"${RELEASE}",\
     "tags":[\
       ["os", "Windows $R0.$R1.$R2"]\
