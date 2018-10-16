@@ -93,7 +93,8 @@ public class OutlinePlugin extends CordovaPlugin {
     SHADOWSOCKS_START_FAILURE(8),
     CONFIGURE_SYSTEM_PROXY_FAILURE (9),
     NO_ADMIN_PERMISSIONS (10),
-    UNSUPPORTED_ROUTING_TABLE (11);
+    UNSUPPORTED_ROUTING_TABLE (11),
+    SYSTEM_MISCONFIGURED (12);
 
     public final int value;
     ErrorCode(int value) {
