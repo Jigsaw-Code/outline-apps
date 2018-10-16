@@ -39,7 +39,7 @@ set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
 
 echo Storing current network device list...
-wmic nic get netconnectionid /format:list > %BEFORE_DEVICES%
+wmic nic where "netconnectionid like '%%'" get netconnectionid /format:list > %BEFORE_DEVICES%
 type %BEFORE_DEVICES%
 
 echo Creating TAP network device...
@@ -49,7 +49,7 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 echo Storing new network device list...
-wmic nic get netconnectionid /format:list > %AFTER_DEVICES%
+wmic nic where "netconnectionid like '%%'" get netconnectionid /format:list > %AFTER_DEVICES%
 type %AFTER_DEVICES%
 
 :: Find the name of the new device and rename it.
