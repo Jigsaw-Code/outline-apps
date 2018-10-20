@@ -75,6 +75,13 @@ if %errorlevel% neq 0 (
 
 echo Configuring new TAP network device...
 
+:: check if newly created TAP adapter is ready for netsh
+echo Waiting TAP adapter to become ready...
+:loop
+sleep 10
+netsh interface ip show interfaces | find "%DEVICE_NAME%"
+if errorlevel 1 goto :loop
+
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
 :: Windows uses 10.0.75.x by default): if the address is already in use the
