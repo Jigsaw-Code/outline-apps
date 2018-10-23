@@ -53,12 +53,6 @@ interface RoutingServiceResponse {
   errorMessage?: string;
 }
 
-interface RoutingServiceInterface {
-  configureRouting(routerIp: string, proxyIp: string): Promise<string>;
-  resetRouting(): Promise<string>;
-  getDeviceName(): Promise<string>;
-}
-
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting',
@@ -80,7 +74,7 @@ interface NetError extends Error {
 }
 
 // Abstracts IPC with OutlineService in order to configure routing.
-export class RoutingService implements RoutingServiceInterface {
+export class RoutingService {
   private ipcConnection: net.Socket;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
@@ -97,7 +91,7 @@ export class RoutingService implements RoutingServiceInterface {
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
   }
 
-  // Returns the name of the device
+  // Returns the name of the device.
   getDeviceName(): Promise<string> {
     return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}});
   }
@@ -126,30 +120,28 @@ export class RoutingService implements RoutingServiceInterface {
       });
 
       this.ipcConnection.on('error', (e: NetError) => {
-        if (isWindows) {
-          if (retry) {
-            console.info(`bouncing OutlineService (${e.errno})`);
-            sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
-              if (sudoError) {
-                // Yes, this seems to be the only way to tell.
-                if ((typeof sudoError === 'string') &&
-                    sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                  return reject(new errors.NoAdminPermissions());
-                } else {
-                  // It's unclear what type sudoError is because it has no message
-                  // field. toString() seems to work in most cases, so use that -
-                  // anything else will eventually show up in Sentry.
-                  return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
-                }
+        if (isWindows && retry) {
+          console.info(`bouncing OutlineService (${e.errno})`);
+          sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
+            if (sudoError) {
+              // Yes, this seems to be the only way to tell.
+              if ((typeof sudoError === 'string') &&
+                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                return reject(new errors.NoAdminPermissions());
+              } else {
+                // It's unclear what type sudoError is because it has no message
+                // field. toString() seems to work in most cases, so use that -
+                // anything else will eventually show up in Sentry.
+                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
               }
-              console.info(
-                  `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-              this.sendRequest(request, false).then(resolve, reject);
-            });
-            return;
-          }
+            }
+            console.info(
+                `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            this.sendRequest(request, false).then(resolve, reject);
+          });
+          return;
         } else {
-          reject(new Error(`Routing Daemon not running.`));
+          reject(new Error(`Routing Daemon/Service is not running.`));
         }
         // OutlineService could not be (re-)started.
         reject(new errors.ConfigureSystemProxyFailure(
