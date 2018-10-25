@@ -516,7 +516,7 @@ export class App {
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener((url) => {
-      if (!url) {
+      if (!url || !url.startsWith('ss://')) {
         // This check is necessary to handle empty and malformed install-referrer URLs in Android.
         // TODO: Stop receiving install referrer intents so we can remove this.
         return console.debug(`Ignoring intercepted non-shadowsocks url`);
