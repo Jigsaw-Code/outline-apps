@@ -148,7 +148,9 @@ function writeEnvJson(platform, config, isRelease) {
     throw new Error(`Failed to set up environment, no such path: ${config.targetDir}`);
   }
   const envFile = `${config.targetDir}/environment.json`;
-  runCommand(`scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function () {
+  const bashPathForWindows = process.platform.includes('win') ? 'sh ' : '';
+  const envScript = `${bashPathForWindows}scripts/environment_json.sh`;
+  runCommand(`${envScript} -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function () {
     gutil.log(`Wrote ${envFile}`);
   });
 }
