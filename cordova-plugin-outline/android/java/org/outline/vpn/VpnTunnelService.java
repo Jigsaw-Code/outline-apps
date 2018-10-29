@@ -350,9 +350,7 @@ public class VpnTunnelService extends VpnService {
     @Override
     public void onAvailable(Network network) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
-      NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-      LOG.fine(String.format(Locale.ROOT, "Network available: %s\nActive network: %s", networkInfo,
-          activeNetworkInfo));
+      LOG.fine(String.format(Locale.ROOT, "Network available: %s", networkInfo));
       if (networkInfo == null || networkInfo.getState() != NetworkInfo.State.CONNECTED) {
         return;
       }
