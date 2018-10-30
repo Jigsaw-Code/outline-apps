@@ -22,7 +22,7 @@ scripts/environment_json.sh -p linux > build/linux/www/environment.json
 electron-builder \
   --projectDir=build/linux \
   --config.asarUnpack=electron/bin \
-  --ia32 \
+  --x64 \
   --publish=never \
   --linux AppImage \
   --config.linux.icon=icons/mac/icon.icns
