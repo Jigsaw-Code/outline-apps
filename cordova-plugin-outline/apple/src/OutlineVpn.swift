@@ -66,6 +66,7 @@ class OutlineVpn: NSObject {
     case configureSystemProxyFailure = 9
     case noAdminPermissions = 10
     case unsupportedRoutingTable = 11
+    case systemMisconfigured = 12
   }
 
   override private init() {

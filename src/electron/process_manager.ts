@@ -85,13 +85,11 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 export function startVpn(
   serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
   isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
-  // First, check that the TAP device exists and is configured. If not, reject with "unexpected
-  // error" on the assumption that the installer failed and showed a useful error message at that
-  // time.
+  // First, check that the TAP device exists and is configured.
   try {
     testTapDevice();
   } catch (e) {
-    return Promise.reject(e);
+    return Promise.reject(new errors.SystemConfigurationException(e.message));
   }
 
   const config = Object.assign({}, serverConfig);

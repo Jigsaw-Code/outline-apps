@@ -272,6 +272,7 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[@"192.168.20.2"]
                                                                subnetMasks:@[@"255.255.255.0"]];
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
+
   // Although we don't support proxying IPv6 traffic, we need to set IPv6 routes so that the DNS
   // settings are respected on IPv6-only networks. Bind to a random unique local address (ULA).
   NEIPv6Settings *ipv6Settings = [[NEIPv6Settings alloc] initWithAddresses:@[@"fd66:f83a:c650::1"]
@@ -286,6 +287,16 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   settings.DNSSettings = [[NEDNSSettings alloc] initWithServers:@[@"208.67.222.222", @"216.146.35.35",
                                                                   @"208.67.220.220", @"216.146.36.36"]];
   return settings;
+}
+
+- (NSArray *)getExcludedIpv4Routes {
+  NSMutableArray *excludedIpv4Routes = [[NSMutableArray alloc] init];
+  for (Subnet *subnet in [Subnet getReservedSubnets]) {
+    NEIPv4Route *route =
+        [[NEIPv4Route alloc] initWithDestinationAddress:subnet.address subnetMask:subnet.mask];
+    [excludedIpv4Routes addObject:route];
+  }
+  return excludedIpv4Routes;
 }
 
 // Override setter for |defaultPath| so we get notified of network changes, instead of using KVO on self.
