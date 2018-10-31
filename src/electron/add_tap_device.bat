@@ -69,7 +69,7 @@ type %AFTER_DEVICES%
 echo Searching for new TAP network device name...
 powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
-  echo Could not rename find or rename new TAP network device. >&2
+  echo Could not find or rename new TAP network device. >&2
   exit /b 1
 )
 
