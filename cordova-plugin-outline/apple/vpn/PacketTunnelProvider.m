@@ -272,6 +272,7 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[@"192.168.20.2"]
                                                                subnetMasks:@[@"255.255.255.0"]];
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
+  ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
 
   // Although we don't support proxying IPv6 traffic, we need to set IPv6 routes so that the DNS
   // settings are respected on IPv6-only networks. Bind to a random unique local address (ULA).
