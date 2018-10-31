@@ -88,6 +88,10 @@ ${StrRep}
   ;  - RELEASE and SENTRY_DSN are defined in env.nsh which is generated at build time by
   ;    {package,release}_action.sh.
 
+  ; TODO: Remove this once we figure out why/if breadcrumbs are being truncated.
+  Var /GLOBAL FAILURE_MESSAGE_LENGTH
+  StrLen $FAILURE_MESSAGE_LENGTH $1
+
   ; http://nsis.sourceforge.net/Docs/StrFunc/StrFunc.txt
   Var /GLOBAL FAILURE_MESSAGE
   ${StrNSISToIO} $FAILURE_MESSAGE $1
@@ -102,7 +106,8 @@ ${StrRep}
     "message":"could not install TAP device ($0)",\
     "release":"${RELEASE}",\
     "tags":[\
-      ["os", "Windows $R0.$R1.$R2"]\
+      ["os", "Windows $R0.$R1.$R2"],\
+      ["error_message_length", "$FAILURE_MESSAGE_LENGTH"]\
     ],\
     "breadcrumbs":[\
       {"timestamp":1, "message":"$FAILURE_MESSAGE"}\
