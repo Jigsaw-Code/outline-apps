@@ -359,6 +359,11 @@ public class VpnTunnelService extends VpnService {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
+        // Although setting the underlying network to an available network may not seem like the
+        // correct behavior, this method has been observed only to fire only when a preferred
+        // network becomes available. It will not fire, for example, when the mobile network becomes
+        // available if WiFi is the active network. Additionally, `getActiveNetwork` and
+        // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
       }
     }
