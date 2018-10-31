@@ -43,14 +43,7 @@ ${StrRep}
 
   isadmin:
 
-  ; OutlineService files, stopping the service first in case it's still running.
-  nsExec::Exec "net stop OutlineService"
-  File "${PROJECT_DIR}\OutlineService.exe"
-  File "${PROJECT_DIR}\Newtonsoft.Json.dll"
-  File "${PROJECT_DIR}\electron\install_windows_service.bat"
-
   ; TAP device files.
-  File "${PROJECT_DIR}\electron\add_tap_device.bat"
   SetOutPath "$INSTDIR\tap-windows6"
   ${If} ${RunningX64}
     File /r "${PROJECT_DIR}\tap-windows6\amd64\*"
@@ -58,9 +51,16 @@ ${StrRep}
     File /r "${PROJECT_DIR}\tap-windows6\i386\*"
   ${EndIf}
   SetOutPath -
+  File "${PROJECT_DIR}\electron\add_tap_device.bat"
 
-  ReadEnvStr $0 COMSPEC
+  ; OutlineService files, stopping the service first in case it's still running.
+  nsExec::Exec "net stop OutlineService"
+  File "${PROJECT_DIR}\OutlineService.exe"
+  File "${PROJECT_DIR}\Newtonsoft.Json.dll"
+  File "${PROJECT_DIR}\electron\install_windows_service.bat"
+
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
+  ReadEnvStr $0 COMSPEC
   nsExec::ExecToStack '$0 /c add_tap_device.bat'
 
   Pop $0
