@@ -12,8 +12,6 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-:: Accepts one argument, the system's architecture (amd64 or i386).
-
 @echo off
 
 set DEVICE_NAME=outline-tap0
