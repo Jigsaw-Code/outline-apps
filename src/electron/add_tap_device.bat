@@ -39,8 +39,12 @@ set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
 
 echo Storing current network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > %BEFORE_DEVICES%
-type %BEFORE_DEVICES%
+wmic nic where "netconnectionid is not null" get netconnectionid > "%BEFORE_DEVICES%"
+if %errorlevel% neq 0 (
+  echo Could not store network device list. >&2
+  exit /b 1
+)
+type "%BEFORE_DEVICES%"
 
 echo Creating TAP network device...
 tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
@@ -49,8 +53,12 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 echo Storing new network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > %AFTER_DEVICES%
-type %AFTER_DEVICES%
+wmic nic where "netconnectionid is not null" get netconnectionid > "%AFTER_DEVICES%"
+if %errorlevel% neq 0 (
+  echo Could not store network device list. >&2
+  exit /b 1
+)
+type "%AFTER_DEVICES%"
 
 :: Find the name of the new device and rename it.
 ::
@@ -68,7 +76,7 @@ type %AFTER_DEVICES%
 :: Note that we pipe input from /dev/null to prevent Powershell hanging forever
 :: waiting on EOF.
 echo Searching for new TAP network device name...
-powershell "(compare-object (cat %BEFORE_DEVICES%).trim() (cat %AFTER_DEVICES%).trim() | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
+powershell "(compare-object (cat \"%BEFORE_DEVICES%\").trim() (cat \"%AFTER_DEVICES%\").trim() | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
   echo Could not find or rename new TAP network device. >&2
   exit /b 1
