@@ -44,7 +44,13 @@ ${StrRep}
   isadmin:
 
   ; TAP device files.
-  File /r "${PROJECT_DIR}\tap-windows6"
+  SetOutPath "$INSTDIR\tap-windows6"
+  ${If} ${RunningX64}
+    File /r "${PROJECT_DIR}\tap-windows6\amd64\*"
+  ${Else}
+    File /r "${PROJECT_DIR}\tap-windows6\i386\*"
+  ${EndIf}
+  SetOutPath -
   File "${PROJECT_DIR}\electron\add_tap_device.bat"
 
   ; OutlineService files, stopping the service first in case it's still running.
@@ -55,11 +61,7 @@ ${StrRep}
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
   ReadEnvStr $0 COMSPEC
-  ${If} ${RunningX64}
-    nsExec::ExecToStack '$0 /c add_tap_device.bat amd64'
-  ${Else}
-    nsExec::ExecToStack '$0 /c add_tap_device.bat i386'
-  ${EndIf}
+  nsExec::ExecToStack '$0 /c add_tap_device.bat'
 
   Pop $0
   Pop $1

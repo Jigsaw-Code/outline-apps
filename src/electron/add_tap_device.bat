@@ -12,8 +12,6 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-:: Accepts one argument, the system's architecture (amd64 or i386).
-
 @echo off
 
 set DEVICE_NAME=outline-tap0
@@ -47,7 +45,7 @@ if %errorlevel% neq 0 (
 type "%BEFORE_DEVICES%"
 
 echo Creating TAP network device...
-tap-windows6\%1\tapinstall install tap-windows6\%1\OemVista.inf tap0901
+tap-windows6\tapinstall install tap-windows6\OemVista.inf tap0901
 if %errorlevel% neq 0 (
   echo Could not create TAP network device. >&2
   exit /b 1
