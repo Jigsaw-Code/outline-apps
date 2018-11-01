@@ -25,5 +25,5 @@ electron-builder \
   --x64 \
   --publish=never \
   --linux AppImage \
-  --linux.category=Network \
+  --config.linux.category=Network \
   --config.linux.icon=icons/mac/icon.icns
