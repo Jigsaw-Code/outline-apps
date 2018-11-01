@@ -44,7 +44,8 @@ const routingService = new routing.RoutingService();
 //  - the value specified for --config.asarUnpack in package_action.sh
 function pathToEmbeddedBinary(basename: string) {
   return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(), `${basename}` + isWindows ? '.exe': '');
+      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
+      `${basename}` + (isWindows ? '.exe' : ''));
 }
 // Three tools are required to launch the proxy on Windows:
 //  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
@@ -87,7 +88,9 @@ export function startVpn(
   isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
   // First, check that the TAP device exists and is configured.
   try {
-    testTapDevice();
+    if (isWindows) {
+      testTapDevice();
+    }
   } catch (e) {
     return Promise.reject(new errors.SystemConfigurationException(e.message));
   }
@@ -240,11 +243,9 @@ function startLocalShadowsocksProxy(
     // will cause the binary to fail:
     //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
     let ssLocalFilename = 'ss-local';
-    if (isWindows) {
-      ssLocalFilename = pathToEmbeddedBinary(ssLocalFilename);
-    }
+    ssLocalFilename = pathToEmbeddedBinary(ssLocalFilename);
 
-    console.info('starting ss-local using ${ssLocalFilename}');
+    console.info(`starting ss-local using ${ssLocalFilename}`);
     ssLocal = spawn(ssLocalFilename, ssLocalArgs);
 
     if (ssLocal === undefined) {
