@@ -244,6 +244,7 @@ function startLocalShadowsocksProxy(
       ssLocalFilename = pathToEmbeddedBinary(ssLocalFilename);
     }
 
+    console.info('starting ss-local using ${ssLocalFilename}');
     ssLocal = spawn(ssLocalFilename, ssLocalArgs);
 
     if (ssLocal === undefined) {
