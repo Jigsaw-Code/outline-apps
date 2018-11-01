@@ -135,8 +135,7 @@ export class RoutingService {
                 return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
               }
             }
-            console.info(
-                `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
             this.sendRequest(request, false).then(resolve, reject);
           });
           return;
