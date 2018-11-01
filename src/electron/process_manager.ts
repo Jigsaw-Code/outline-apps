@@ -44,7 +44,8 @@ const routingService = new routing.RoutingService();
 //  - the value specified for --config.asarUnpack in package_action.sh
 function pathToEmbeddedBinary(basename: string) {
   return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(), `${basename}` + isWindows ? '.exe': '');
+      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
+      `${basename}` + isWindows ? '.exe' : '');
 }
 // Three tools are required to launch the proxy on Windows:
 //  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
@@ -107,6 +108,10 @@ export function startVpn(
           // Cache the resolved IP so it can be stored for auto connect.
           config.host = ip;
         });
+      })
+    .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START))
+      .then(() => {
+        return getTunDeviceName();
       })
       .then(() => {
         return startTun2socks(onDisconnected);
