@@ -109,7 +109,6 @@ export function startVpn(
           config.host = ip;
         });
       })
-      .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
       .then(() => {
         return getTunDeviceName();
       })
