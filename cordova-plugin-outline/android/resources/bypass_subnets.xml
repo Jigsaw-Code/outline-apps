@@ -149,6 +149,5 @@
     <item>203.128.0.0/9</item>
     <item>204.0.0.0/6</item>
     <item>208.0.0.0/4</item>
-    <item>224.0.0.0/4</item>
   </string-array>
 </resources>

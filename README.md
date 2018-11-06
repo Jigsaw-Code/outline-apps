@@ -71,8 +71,12 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 ## Windows
 
+Additional requirements for building on Windows:
+
+* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others)
+
 To build for Windows, run:
 
-    yarn do electron/build
+    yarn do src/electron/build
 
 Unlike the Android and Apple clients, the Windows build uses the Electron framework, rather than Cordova.

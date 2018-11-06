@@ -14,6 +14,9 @@
 
 package org.outline.vpn;
 
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.net.VpnService;
 import java.io.IOException;
@@ -82,6 +85,11 @@ public class VpnTunnel {
               .addDnsServer(dnsResolverAddress)
               .addDisallowedApplication(vpnService.getPackageName());
 
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        final Network activeNetwork =
+            vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
+        builder.setUnderlyingNetworks(new Network[] {activeNetwork});
+      }
       // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
       // retrieve the list of subnets that excludes those reserved for special use.
       final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
