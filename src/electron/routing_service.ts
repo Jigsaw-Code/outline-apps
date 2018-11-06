@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
+import * as util from './util'
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
@@ -36,7 +37,7 @@ const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 const SERVICE_START_COMMAND = `"${
     path.join(
         app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
-        'install_windows_service.bat')}"`;
+        'install_', os.platform(), '_service.' + (isWindows ? 'bat' : 'sh'))}"`;
 
 // Unix socket information ---- For Linux
 const SERVICE_USOCK_NAME = 'outline_controller';
@@ -120,7 +121,7 @@ export class RoutingService {
       });
 
       this.ipcConnection.on('error', (e: NetError) => {
-        if (isWindows && retry) {
+        if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
             if (sudoError) {

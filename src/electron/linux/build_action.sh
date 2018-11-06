@@ -30,6 +30,7 @@ rsync -ac build/electron www $OUTPUT/
 #  - the value returned by process_manager.ts#pathToEmbeddedExe
 readonly BIN_DEST=$OUTPUT/electron/bin/linux
 mkdir -p $BIN_DEST
+cp src/electron/install_linux_service.sh $OUTPUT
 rsync -ac \
   third_party/shadowsocks-libev/linux/ third_party/badvpn/linux/ tools/outline_proxy_controller/linux/ \
   $BIN_DEST

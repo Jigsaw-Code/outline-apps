@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ChildProcess, execSync, spawn } from 'child_process';
+import {ChildProcess, execSync, spawn} from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
 import * as net from 'net';
 import * as os from 'os';
-import * as path from 'path';
 import * as socks from 'socks';
 
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 import * as routing from './routing_service';
+import * as outline_util from './util'
 
 // Errors raised by spawn contain these extra fields, at least on Windows.
 declare class SpawnError extends Error {
@@ -32,21 +32,13 @@ declare class SpawnError extends Error {
 }
 
 const delay = (time: number) => () => new Promise(resolve => setTimeout(() => resolve(), time));
-const WAIT_FOR_PROCESS_TO_START_MS = 1000;
+const WAIT_FOR_PROCESS_TO_START_MS = 5000;
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
 const routingService = new routing.RoutingService();
 
-// The returned path must be kept in sync with:
-//  - the destination path for the binaries in build_action.sh
-//  - the value specified for --config.asarUnpack in package_action.sh
-function pathToEmbeddedBinary(basename: string) {
-  return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
-      `${basename}` + (isWindows ? '.exe' : ''));
-}
 // Three tools are required to launch the proxy on Windows:
 //  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
 //  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
@@ -247,7 +239,7 @@ function startLocalShadowsocksProxy(
     // will cause the binary to fail:
     //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
     let ssLocalFilename = 'ss-local';
-    ssLocalFilename = pathToEmbeddedBinary(ssLocalFilename);
+    ssLocalFilename = outline_util.pathToEmbeddedBinary(ssLocalFilename);
 
     console.info(`starting ss-local using ${ssLocalFilename}`);
     ssLocal = spawn(ssLocalFilename, ssLocalArgs);
@@ -427,7 +419,7 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
     args.push('--loglevel', 'error');
 
     let tun2socksFilename = 'badvpn-tun2socks';
-    tun2socksFilename = pathToEmbeddedBinary(tun2socksFilename);
+    tun2socksFilename = outline_util.pathToEmbeddedBinary(tun2socksFilename);
     console.log(tun2socksFilename);
 
     // TODO: Duplicate ss-local's error handling.

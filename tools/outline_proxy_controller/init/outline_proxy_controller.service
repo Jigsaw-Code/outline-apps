@@ -8,3 +8,4 @@ ExecStart=/usr/bin/OutlineProxyController --socket-filename=/var/run/outline_con
 
 [Install]
 WantedBy=multi-user.target
+  
