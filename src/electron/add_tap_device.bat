@@ -12,16 +12,10 @@
 :: See the License for the specific language governing permissions and
 :: limitations under the License.
 
-:: Accepts one argument, the system's architecture (amd64 or i386).
-
 @echo off
 
 set DEVICE_NAME=outline-tap0
 set DEVICE_HWID=tap0901
-
-:: https://support.microsoft.com/en-us/help/556009
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=i386 || set OS=amd64
-echo %OS%
 
 :: Check whether the device already exists.
 netsh interface show interface name=%DEVICE_NAME% >nul
@@ -44,23 +38,32 @@ set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
 
 echo Storing current network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > %BEFORE_DEVICES%
-type %BEFORE_DEVICES%
+wmic nic where "netconnectionid is not null" get netconnectionid > "%BEFORE_DEVICES%"
+if %errorlevel% neq 0 (
+  echo Could not store network device list. >&2
+  exit /b 1
+)
+type "%BEFORE_DEVICES%"
 
 echo Creating TAP network device...
-tap-windows6\%OS%\tapinstall install tap-windows6\%OS%\OemVista.inf %DEVICE_HWID%
+tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
 if %errorlevel% neq 0 (
   echo Could not create TAP network device. >&2
   exit /b 1
 )
 echo Storing new network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > %AFTER_DEVICES%
-type %AFTER_DEVICES%
+wmic nic where "netconnectionid is not null" get netconnectionid > "%AFTER_DEVICES%"
+if %errorlevel% neq 0 (
+  echo Could not store network device list. >&2
+  exit /b 1
+)
+type "%AFTER_DEVICES%"
 
 :: Find the name of the new device and rename it.
 ::
 :: Obviously, this command is a beast; roughly what it does, in this order, is:
-::  - perform a diff on the before and after text files
+::  - perform a diff on the *trimmed* (in case wmic uses different column widths) before and after
+::    text files
 ::  - remove leading/trailing space and blank lines with trim()
 ::  - store the result in NEW_DEVICE
 ::  - print NEW_DEVICE, for debugging (though non-Latin characters may appear as ?)
@@ -72,9 +75,9 @@ type %AFTER_DEVICES%
 :: Note that we pipe input from /dev/null to prevent Powershell hanging forever
 :: waiting on EOF.
 echo Searching for new TAP network device name...
-powershell "(compare-object (cat %BEFORE_DEVICES%) (cat %AFTER_DEVICES%) | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
+powershell "(compare-object (cat \"%BEFORE_DEVICES%\").trim() (cat \"%AFTER_DEVICES%\").trim() | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
-  echo Could not rename find or rename new TAP network device. >&2
+  echo Could not find or rename new TAP network device. >&2
   exit /b 1
 )
 
