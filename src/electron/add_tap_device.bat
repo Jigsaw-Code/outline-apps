@@ -15,6 +15,7 @@
 @echo off
 
 set DEVICE_NAME=outline-tap0
+set DEVICE_HWID=tap0901
 
 :: Check whether the device already exists.
 netsh interface show interface name=%DEVICE_NAME% >nul
@@ -27,7 +28,7 @@ if %errorlevel% equ 0 (
 :: us find the name of the new device.
 ::
 :: Note:
-::  - While we could limit the search to devices having ServiceName=tap0901,
+::  - While we could limit the search to devices having ServiceName=%DEVICE_HWID%,
 ::    that will cause wmic to output just "no instances available" when there
 ::    are no other TAP devices present, messing up the diff.
 ::  - We do not use findstr, etc., to strip blank lines because those ancient tools
@@ -45,7 +46,7 @@ if %errorlevel% neq 0 (
 type "%BEFORE_DEVICES%"
 
 echo Creating TAP network device...
-tap-windows6\tapinstall install tap-windows6\OemVista.inf tap0901
+tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
 if %errorlevel% neq 0 (
   echo Could not create TAP network device. >&2
   exit /b 1
