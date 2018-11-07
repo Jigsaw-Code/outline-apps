@@ -509,7 +509,7 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
     (*env)->ReleaseStringUTFChars(env, vpnIpAddress, vpnIpAddressStr);
     (*env)->ReleaseStringUTFChars(env, vpnNetMask, vpnNetMaskStr);
     if (vpnIpV6Address != NULL) {
-        (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpAddressStr);
+        (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpV6AddressStr);
     }
     (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
     (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
