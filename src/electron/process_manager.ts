@@ -245,11 +245,7 @@ function startLocalShadowsocksProxy(
     // Note that if you run with -v then ss-local may output a lot of data to stderr which
     // will cause the binary to fail:
     //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
-    let ssLocalFilename = 'ss-local';
-    ssLocalFilename = pathToEmbeddedBinary(ssLocalFilename);
-
-    console.info(`starting ss-local using ${ssLocalFilename}`);
-    ssLocal = spawn(ssLocalFilename, ssLocalArgs);
+    ssLocal = spawn(pathToEmbeddedBinary('ss-local'), ssLocalArgs);
 
     if (ssLocal === undefined) {
       reject(new errors.ShadowsocksStartFailure(`Unable to spawn ss-local`));
@@ -441,6 +437,9 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
         resolve();
       });
       tun2socks.on('exit', (code, signal) => {
+        if (isLinux) {
+          return;
+        }
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
           console.info(`tun2socks exited with signal ${signal}`);
@@ -478,34 +477,6 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
       // encode an access key to the server.
       tun2socks.on('error', (e: SpawnError) => {
         reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
-      });
-
-      tun2socks.on('exit', (code, signal) => {
-        if (signal) {
-          // tun2socks exits with SIGTERM when we stop it.
-          console.info(`tun2socks exited with signal ${signal}`);
-        } else {
-          console.info(`tun2socks exited with code ${code}`);
-          if (code === 1) {
-            // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
-            // due to a failure to read the tap device.
-            // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            console.info('Restarting tun2socks...');
-            setTimeout(() => {
-              startTun2socks(onDisconnected)
-                  .then(() => {
-                    resolve();
-                  })
-                  .catch((e) => {
-                    console.error('Failed to restart tun2socks');
-                    onDisconnected();
-                    teardownVpn();
-                  });
-            }, 3000);
-            return;
-          }
-        }
-        onDisconnected();
       });
 
       resolve();
