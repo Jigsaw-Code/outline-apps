@@ -77,8 +77,11 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   DDLogInfo(@"Starting tunnel");
   if (options == nil) {
     DDLogWarn(@"Received a connect request from preferences");
-    // TODO(alalama): l10n
-    [self displayMessage:@"Please use the Outline app to connect."
+    NSString *msg = NSLocalizedStringWithDefaultValue(
+        @"vpn-disconnect", @"Outline", [NSBundle mainBundle],
+        @"Please use the Outline app to connect.",
+        @"String shown when the user attempts to disconnect from settings");
+    [self displayMessage:msg
         completionHandler:^(BOOL success) {
           completionHandler([NSError errorWithDomain:NEVPNErrorDomain
                                                 code:NEVPNErrorConfigurationDisabled
