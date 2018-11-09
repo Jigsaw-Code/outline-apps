@@ -97,23 +97,18 @@ export class RoutingService {
   private sendRequest(request: RoutingServiceRequest, retry = true): Promise<string> {
     return new Promise((resolve, reject) => {
 
-      let ipcName = '';
-      if (isWindows) {
-        ipcName = `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`;
-      } else if (isLinux) {
-        ipcName = `${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`;
-      } else {
-        reject(new Error(`Unsupported platform`));
-      }
-      this.ipcConnection = net.createConnection(ipcName, () => {
-        console.log('Pipe connected');
-        try {
-          const msg = JSON.stringify(request);
-          this.ipcConnection.write(msg);
-        } catch (e) {
-          reject(new Error(`Failed to serialize JSON request: ${e.message}`));
-        }
-      });
+      this.ipcConnection = net.createConnection(
+          isWindows ? `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}` :
+                      `${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`,
+          () => {
+            console.log('Pipe connected');
+            try {
+              const msg = JSON.stringify(request);
+              this.ipcConnection.write(msg);
+            } catch (e) {
+              reject(new Error(`Failed to serialize JSON request: ${e.message}`));
+            }
+          });
 
       this.ipcConnection.on('error', (e: NetError) => {
         if (retry) {
@@ -158,6 +153,9 @@ export class RoutingService {
                       new errors.UnsupportedRoutingTable(msg) :
                       new errors.ConfigureSystemProxyFailure(msg));
             }
+            // In case the response has returnValue key we return the value otherwise
+            // we return the returned json value.
+            // This is used when we read tun device name from the daemon
             if ('returnValue' in response) {
               return resolve(response.returnValue);
             } else {
