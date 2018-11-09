@@ -32,7 +32,7 @@ declare class SpawnError extends Error {
 }
 
 const delay = (time: number) => () => new Promise(resolve => setTimeout(() => resolve(), time));
-const WAIT_FOR_PROCESS_TO_START_MS = 5000;
+const WAIT_FOR_PROCESS_TO_START_MS = 2000;
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';

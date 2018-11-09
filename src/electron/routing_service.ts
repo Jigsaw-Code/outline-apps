@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {app} from 'electron';
 import * as net from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
-import * as util from './util'
+import * as outline_util from './util'
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
@@ -34,10 +33,6 @@ const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
 //   build/windows
 //
 // Surrounding quotes important, consider "c:\program files"!
-const SERVICE_START_COMMAND = `"${
-    path.join(
-        app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
-        'install_', os.platform(), '_service.' + (isWindows ? 'bat' : 'sh'))}"`;
 
 // Unix socket information ---- For Linux
 const SERVICE_USOCK_NAME = 'outline_controller';
@@ -123,22 +118,25 @@ export class RoutingService {
       this.ipcConnection.on('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
-            if (sudoError) {
-              // Yes, this seems to be the only way to tell.
-              if ((typeof sudoError === 'string') &&
-                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                return reject(new errors.NoAdminPermissions());
-              } else {
-                // It's unclear what type sudoError is because it has no message
-                // field. toString() seems to work in most cases, so use that -
-                // anything else will eventually show up in Sentry.
-                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
-              }
-            }
-            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-            this.sendRequest(request, false).then(resolve, reject);
-          });
+          sudo.exec(
+              outline_util.getServiceStartCommand(), {name: 'Outline'},
+              (sudoError, stdout, stderr) => {
+                if (sudoError) {
+                  // Yes, this seems to be the only way to tell.
+                  if ((typeof sudoError === 'string') &&
+                      sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                    return reject(new errors.NoAdminPermissions());
+                  } else {
+                    // It's unclear what type sudoError is because it has no message
+                    // field. toString() seems to work in most cases, so use that -
+                    // anything else will eventually show up in Sentry.
+                    return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+                  }
+                }
+                console.info(
+                    `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+                this.sendRequest(request, false).then(resolve, reject);
+              });
           return;
         } else {
           reject(new Error(`Routing Daemon/Service is not running.`));

@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+echo "[Running linux build script]"
 
 yarn do src/www/build
 
@@ -30,10 +31,17 @@ rsync -ac build/electron www $OUTPUT/
 #  - the value returned by process_manager.ts#pathToEmbeddedExe
 readonly BIN_DEST=$OUTPUT/electron/bin/linux
 mkdir -p $BIN_DEST
-cp src/electron/install_linux_service.sh $OUTPUT
 rsync -ac \
-  third_party/shadowsocks-libev/linux/ third_party/badvpn/linux/ tools/outline_proxy_controller/linux/ \
+  third_party/shadowsocks-libev/linux/ third_party/badvpn/linux/ \
   $BIN_DEST
+
+
+  # Copy files for OutlineProxyController.
+echo $OUTPUT
+cp src/electron/install_linux_service.sh $BIN_DEST
+rsync -ac \
+  tools/outline_proxy_controller/linux/ \
+  tools/outline_proxy_controller/init/ $BIN_DEST
 
 # Version info and Sentry config.
 # In Electron, the path is relative to electron_index.html.
