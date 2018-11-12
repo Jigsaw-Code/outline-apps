@@ -78,9 +78,9 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   if (options == nil) {
     DDLogWarn(@"Received a connect request from preferences");
     NSString *msg = NSLocalizedStringWithDefaultValue(
-        @"vpn-disconnect", @"Outline", [NSBundle mainBundle],
+        @"vpn-connect", @"Outline", [NSBundle mainBundle],
         @"Please use the Outline app to connect.",
-        @"String shown when the user attempts to disconnect from settings");
+        @"Message shown in a system dialog when the user attempts to connect from settings");
     [self displayMessage:msg
         completionHandler:^(BOOL success) {
           completionHandler([NSError errorWithDomain:NEVPNErrorDomain
