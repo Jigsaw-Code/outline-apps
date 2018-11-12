@@ -75,7 +75,7 @@ type "%AFTER_DEVICES%"
 :: Note that we pipe input from /dev/null to prevent Powershell hanging forever
 :: waiting on EOF.
 echo Searching for new TAP network device name...
-powershell "(compare-object (cat \"%BEFORE_DEVICES%\").trim() (cat \"%AFTER_DEVICES%\").trim() | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
+powershell "(compare-object (cat \"%BEFORE_DEVICES%\" | foreach-object {$_.trim()}) (cat \"%AFTER_DEVICES%\" | foreach-object {$_.trim()}) | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
 if %errorlevel% neq 0 (
   echo Could not find or rename new TAP network device. >&2
   exit /b 1
