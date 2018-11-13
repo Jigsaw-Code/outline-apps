@@ -221,6 +221,9 @@
         this.$.addServerSheet.close();
         this.$.serverDetectedSheet.open();
       },
+      isAddingServer: function() {
+        return this.$.serverDetectedSheet.opened;
+      },
       close: function() {
         this.$.addServerSheet.close();
         this.$.serverDetectedSheet.close();
