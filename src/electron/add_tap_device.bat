@@ -85,14 +85,14 @@ if %errorlevel% neq 0 (
 :: purposes of configuring IP and DNS ("netsh interface show interface name=xxx" does not
 :: seem to be affected).
 echo Testing that the new TAP network device is visible to netsh...
-netsh interface ip show interfaces | find "%DEVICE_NAME%"
-if errorlevel 0 goto :configure
+netsh interface show interface name=%DEVICE_NAME% >nul
+if %errorlevel% equ 0 goto :configure
 
 :loop
 echo waiting...
 sleep 1
-netsh interface ip show interfaces | find "%DEVICE_NAME%"
-if errorlevel 1 goto :loop
+netsh interface show interface name=%DEVICE_NAME% >nul
+if %errorlevel% neq 1 goto :loop
 
 :configure
 echo Configuring new TAP network device...
