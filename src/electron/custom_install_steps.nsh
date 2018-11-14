@@ -61,7 +61,7 @@ ${StrRep}
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
   ReadEnvStr $0 COMSPEC
-  nsExec::ExecToStack '$0 /c add_tap_device.bat'
+  nsExec::ExecToStack /timeout=180000 '$0 /c add_tap_device.bat'
 
   Pop $0
   Pop $1
