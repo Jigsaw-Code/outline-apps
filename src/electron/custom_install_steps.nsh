@@ -60,8 +60,9 @@ ${StrRep}
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
+  ; Set a (long) timeout in case the device never becomes visible to netsh.
   ReadEnvStr $0 COMSPEC
-  nsExec::ExecToStack '$0 /c add_tap_device.bat'
+  nsExec::ExecToStack /timeout=180000 '$0 /c add_tap_device.bat'
 
   Pop $0
   Pop $1
