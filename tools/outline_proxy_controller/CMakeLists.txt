@@ -1,15 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
 project (OutlineProxyController)
 set(BOOST_VERSION 1.67)
-find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS filesystem
+find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS
                                                         regex
-                                                        unit_test_framework
                                                         program_options
+                                                        filesystem
                                                         coroutine
-                                                        context
-                                                        thread
-                                                        date_time
-                                                        system)
+                                                        context)
 
 # configure a header file to pass some of the CMake settings
 # to the source code

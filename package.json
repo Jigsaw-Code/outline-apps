@@ -14,7 +14,9 @@
   ],
   "dependencies": {
     "@sentry/electron": "^0.8.1",
+    "@types/auto-launch": "^5.0.0",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.8",
+    "auto-launch": "^5.0.5",
     "babel-polyfill": "^6.26.0",
     "electron-promise-ipc": "^0.1.3",
     "electron-updater": "^2.21.0",

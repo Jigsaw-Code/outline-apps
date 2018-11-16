@@ -16,6 +16,7 @@ import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
+import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
@@ -29,6 +30,9 @@ import * as process_manager from './process_manager';
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
 const connectionStore = new ConnectionStore(app.getPath('userData'));
+
+const isWindows = os.platform() === 'win32';
+const isLinux = os.platform() === 'linux';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -219,8 +223,28 @@ app.on('ready', () => {
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
   app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
+  if (isLinux && process.env.APPIMAGE) {
+    let AutoLaunch = require('auto-launch')
+    let outlineAutoLauncher = new AutoLaunch({
+      name: 'OutlineClient',
+      path: process.env.APPIMAGE,
+    });
 
-  if (process.argv.includes(Options.AUTOSTART)) {
+    outlineAutoLauncher.isEnabled()
+        .then(function(isEnabled: boolean) {
+          if (isEnabled) {
+            return;
+          }
+          outlineAutoLauncher.enable();
+        })
+        .catch((err: Error) => {
+          console.error('failed to add autolaunch entry for Outline');
+        });
+  }
+
+  // because autostart doesn't work for linux then we just assume we
+  // are auto started on linux
+  if (process.argv.includes(Options.AUTOSTART) || isLinux) {
     connectionStore.load()
         .then((connection) => {
           // The user was connected at shutdown. Create the main window and wait for the UI ready
@@ -230,7 +254,11 @@ app.on('ready', () => {
         .catch((err) => {
           // The user was not connected at shutdown.
           // Quitting the app will reset the system proxy configuration before exiting.
-          quitApp();
+          if (!isLinux) {
+            quitApp();
+          } else {
+            console.log('The user was not connected at shutdown.');
+          }
         });
   } else {
     createWindow();
