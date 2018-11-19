@@ -44,7 +44,13 @@ ${StrRep}
   isadmin:
 
   ; TAP device files.
-  File /r "${PROJECT_DIR}\tap-windows6"
+  SetOutPath "$INSTDIR\tap-windows6"
+  ${If} ${RunningX64}
+    File /r "${PROJECT_DIR}\tap-windows6\amd64\*"
+  ${Else}
+    File /r "${PROJECT_DIR}\tap-windows6\i386\*"
+  ${EndIf}
+  SetOutPath -
   File "${PROJECT_DIR}\electron\add_tap_device.bat"
 
   ; OutlineService files, stopping the service first in case it's still running.
@@ -54,12 +60,9 @@ ${StrRep}
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
+  ; Set a (long) timeout in case the device never becomes visible to netsh.
   ReadEnvStr $0 COMSPEC
-  ${If} ${RunningX64}
-    nsExec::ExecToStack '$0 /c add_tap_device.bat amd64'
-  ${Else}
-    nsExec::ExecToStack '$0 /c add_tap_device.bat i386'
-  ${EndIf}
+  nsExec::ExecToStack /timeout=180000 '$0 /c add_tap_device.bat'
 
   Pop $0
   Pop $1
@@ -88,6 +91,10 @@ ${StrRep}
   ;  - RELEASE and SENTRY_DSN are defined in env.nsh which is generated at build time by
   ;    {package,release}_action.sh.
 
+  ; TODO: Remove this once we figure out why/if breadcrumbs are being truncated.
+  Var /GLOBAL FAILURE_MESSAGE_LENGTH
+  StrLen $FAILURE_MESSAGE_LENGTH $1
+
   ; http://nsis.sourceforge.net/Docs/StrFunc/StrFunc.txt
   Var /GLOBAL FAILURE_MESSAGE
   ${StrNSISToIO} $FAILURE_MESSAGE $1
@@ -102,7 +109,8 @@ ${StrRep}
     "message":"could not install TAP device ($0)",\
     "release":"${RELEASE}",\
     "tags":[\
-      ["os", "Windows $R0.$R1.$R2"]\
+      ["os", "Windows $R0.$R1.$R2"],\
+      ["error_message_length", "$FAILURE_MESSAGE_LENGTH"]\
     ],\
     "breadcrumbs":[\
       {"timestamp":1, "message":"$FAILURE_MESSAGE"}\

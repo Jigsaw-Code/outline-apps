@@ -18,7 +18,6 @@ import Foundation
 @objcMembers
 class Subnet: NSObject {
   static let kReservedSubnets = [
-    "0.0.0.0/8",
     "10.0.0.0/8",
     "100.64.0.0/10",
     "169.254.0.0/16",
