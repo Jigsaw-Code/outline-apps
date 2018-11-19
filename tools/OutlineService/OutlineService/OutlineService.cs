@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -98,6 +99,8 @@ namespace OutlineService
         private string routerIp;
         private IPAddress gatewayIp;
         private string gatewayInterfaceName;
+
+        Process smartDnsBlock = new Process();
 
         // Do as little as possible here because any error thrown will cause "net start" to fail
         // without anything being added to the application log.
@@ -301,30 +304,7 @@ namespace OutlineService
                 throw new Exception("do not know router or proxy IPs");
             }
 
-            // Set the lowest possible device metric for the TAP device, to ensure
-            // the system favours the (non-filtered) DNS server(s) associated with
-            // the TAP device:
-            //   https://github.com/Jigsaw-Code/outline-client/issues/191
-            //
-            // Note:
-            //  - This is *not* necessary to ensure that traffic is routed via the
-            //    proxy (though it does make the output of "route print" easier to
-            //    grok).
-            //  - We could, on disconnection, reset the device metric to auto but
-            //    since the TAP device is essentially unused unless the VPN
-            //    connection is active, there doesn't seem to be a big reason to do
-            //    so. To do it manually:
-            //      netsh interface ip set interface outline-tap0 metric=auto
-            //  - To show the metrics of all interfaces:
-            //      netsh interface ip show interface
-            try
-            {
-                RunCommand(CMD_NETSH, string.Format("interface ip set interface {0} metric=0", TAP_DEVICE_NAME));
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not set low interface metric: {e.Message}");
-            }
+            StartSmartDnsBlock();
 
             // Proxy routing: the proxy's IP address needs to bypass the router. Save the system gateway
             // before we add the route. This is necessary for updating the proxy route when the network
@@ -396,6 +376,99 @@ namespace OutlineService
             RemoveIpv4Redirect();
             RemoveReservedSubnetBypass(proxyInterfaceName);
             StartRoutingIpv6();
+
+            try
+            {
+                StopSmartDnsBlock();
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"failed to lift Smart DNS block: {e.Message}",
+                    EventLogEntryType.Warning);
+            }
+        }
+
+        // Disable "Smart Multi-Homed Name Resolution", to ensure the system uses only the
+        // (non-filtered) DNS server(s) associated with the TAP device.
+        //
+        // Notes:
+        //  - To show the current firewall rules:
+        //      netsh wfp show filters
+        //  - This website is an easy way to quickly verify there are no DNS leaks:
+        //      https://ipleak.net/
+        //  - Because .Net provides *no way* to associate the new process with this one, the
+        //    new process will continue to run even if this service is interrupted or crashes.
+        //    Fortunately, since the changes it makes are *not* persistent, the system can, in
+        //    the worst case, be fixed by rebooting.
+        private void StartSmartDnsBlock()
+        {
+            // smartdnsblock.exe must be a sibling of OutlineService.exe.
+            smartDnsBlock.StartInfo.FileName = new DirectoryInfo(Process.GetCurrentProcess().MainModule.FileName).Parent.FullName +
+                Path.DirectorySeparatorChar + "smartdnsblock.exe";
+            smartDnsBlock.StartInfo.UseShellExecute = false;
+
+            smartDnsBlock.StartInfo.RedirectStandardError = true;
+            smartDnsBlock.StartInfo.RedirectStandardOutput = true;
+
+            ArrayList stdout = new ArrayList();
+            ArrayList stderr = new ArrayList();
+            smartDnsBlock.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    stdout.Add(e.Data);
+                }
+            };
+            smartDnsBlock.ErrorDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    stderr.Add(e.Data);
+                }
+            };
+
+            try
+            {
+                // Must cancel any previous reads.
+                try
+                {
+                    smartDnsBlock.CancelOutputRead();
+                }
+                catch { }
+                try
+                {
+                    smartDnsBlock.CancelErrorRead();
+                }
+                catch { }
+
+                smartDnsBlock.Start();
+                smartDnsBlock.BeginOutputReadLine();
+                smartDnsBlock.BeginErrorReadLine();
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not launch smartdnsblock at {smartDnsBlock.StartInfo.FileName}: { e.Message}");
+            }
+
+            // This does *not* throw if the process is still running after 1000ms.
+            smartDnsBlock.WaitForExit(1000);
+            if (smartDnsBlock.HasExited)
+            {
+                throw new Exception($"smartdnsblock failed " + $"(stdout: {String.Join(Environment.NewLine, stdout.ToArray())}, " +
+                    $"(stderr: {String.Join(Environment.NewLine, stderr.ToArray())})");
+            }
+        }
+
+        private void StopSmartDnsBlock()
+        {
+            try
+            {
+                smartDnsBlock.Kill();
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not kill smartdnsblock: {e.Message}");
+            }
         }
 
         private void AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName)
