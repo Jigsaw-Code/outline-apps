@@ -74,6 +74,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //  - the system configured to route all traffic through the proxy
 //  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
 //
+// Checks whether the remote server has enabled UDP forwarding.
 // Fulfills with a copy of `serverConfig` that includes the resolved hostname.
 export function startVpn(
     serverConfig: cordova.plugins.outline.ServerConfig,
@@ -89,6 +90,7 @@ export function startVpn(
     onConnectionStatusChange(ConnectionStatus.DISCONNECTED);
   };
   const config = Object.assign({}, serverConfig);
+  let isUdpForwardingEnabled = false;
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(() => {
         if (isAutoConnect) {
@@ -102,7 +104,16 @@ export function startVpn(
         });
       })
       .then(() => {
-        return startTun2socks(config.host || '', true, onDisconnected);
+        return checkUdpForwardingEnabled()
+            .then(() => {
+              isUdpForwardingEnabled = true;
+            })
+            .catch((e) => {
+              console.log('UDP forwarding disabled.');
+            });
+      })
+      .then(() => {
+        return startTun2socks(config.host || '', isUdpForwardingEnabled, onDisconnected);
       })
       .then(() => {
         return routingService.configureRouting(
@@ -157,7 +168,6 @@ function testTapDevice() {
 
 // Fulfills iff:
 //  - we can connect to the Shadowsocks server port
-//  - the remote server has enabled UDP forwarding
 //  - we can speak with a semi-random test site via the proxy
 function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promise<string> {
   return lookupIp(config.host || '').then((ip: string) => {
