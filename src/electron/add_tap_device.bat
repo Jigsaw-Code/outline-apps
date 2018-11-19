@@ -90,7 +90,7 @@ if %errorlevel% equ 0 goto :configure
 
 :loop
 echo waiting...
-sleep 1
+timeout /t 1 >nul
 netsh interface show interface name=%DEVICE_NAME% >nul
 if %errorlevel% neq 1 goto :loop
 
