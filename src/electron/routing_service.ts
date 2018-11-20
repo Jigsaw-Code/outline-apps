@@ -112,7 +112,7 @@ export class WindowsRoutingService implements RoutingService {
                 // It's unclear what type sudoError is because it has no message
                 // field. toString() seems to work in most cases, so use that -
                 // anything else will eventually show up in Sentry.
-                return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
+                return reject(new errors.SystemConfigurationException(sudoError.toString()));
               }
             }
             console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
@@ -122,7 +122,7 @@ export class WindowsRoutingService implements RoutingService {
         }
 
         // OutlineService could not be (re-)started.
-        reject(new errors.ConfigureSystemProxyFailure(
+        reject(new errors.SystemConfigurationException(
             `Received error from service connection: ${e.message}`));
       });
 
