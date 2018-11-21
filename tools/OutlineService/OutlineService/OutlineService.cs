@@ -100,7 +100,7 @@ namespace OutlineService
         private IPAddress gatewayIp;
         private string gatewayInterfaceName;
 
-        Process smartDnsBlock = new Process();
+        private Process smartDnsBlock = new Process();
 
         // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
         private const int SMART_DNS_BLOCK_TIMEOUT_MS = 1000;
