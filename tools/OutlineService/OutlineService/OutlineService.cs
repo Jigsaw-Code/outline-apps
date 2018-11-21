@@ -102,6 +102,9 @@ namespace OutlineService
 
         Process smartDnsBlock = new Process();
 
+        // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
+        private const int SMART_DNS_BLOCK_TIMEOUT_MS = 1000;
+
         // Do as little as possible here because any error thrown will cause "net start" to fail
         // without anything being added to the application log.
         public OutlineService()
@@ -450,8 +453,8 @@ namespace OutlineService
                 throw new Exception($"could not launch smartdnsblock at {smartDnsBlock.StartInfo.FileName}: { e.Message}");
             }
 
-            // This does *not* throw if the process is still running after 1000ms.
-            smartDnsBlock.WaitForExit(1000);
+            // This does *not* throw if the process is still running after Nms.
+            smartDnsBlock.WaitForExit(SMART_DNS_BLOCK_TIMEOUT_MS);
             if (smartDnsBlock.HasExited)
             {
                 throw new Exception($"smartdnsblock failed " + $"(stdout: {String.Join(Environment.NewLine, stdout.ToArray())}, " +
