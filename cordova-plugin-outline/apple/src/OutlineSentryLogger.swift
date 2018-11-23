@@ -30,17 +30,17 @@ class OutlineSentryLogger: DDAbstractLogger {
   private static let kDateFormat = "yyyy/MM/dd HH:mm:ss:SSS"
   private static let kDatePattern = "[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}"
 
-  private var fileLogger: DDFileLogger!
   private var breadcrumbQueue = [Breadcrumb]()
+  private var logsDirectory: String!
 
   // Initializes CocoaLumberjack, adding itself as a logger.
   func initializeLogging() {
-    // Instantiate a DDFileLogger to read VpnExtension logs.
-    let containerUrl = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: OutlineSentryLogger.kAppGroup)
-    let logsDirectory = containerUrl?.appendingPathComponent("Logs").path
-    let logFileManager = DDLogFileManagerDefault(logsDirectory: logsDirectory)
-    self.fileLogger = DDFileLogger(logFileManager: logFileManager)
+    guard let containerUrl = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: OutlineSentryLogger.kAppGroup) else {
+      DDLogError("Failed to retrive app container directory")
+      return
+    }
+    self.logsDirectory = containerUrl.appendingPathComponent("Logs").path
 
     DDLog.add(OutlineSentryLogger.sharedInstance)
     DDLog.add(DDASLLogger.sharedInstance)
@@ -85,31 +85,45 @@ class OutlineSentryLogger: DDAbstractLogger {
 
   // Reads VpnExtension logs and adds them to Sentry as breadcrumbs.
   func addVpnExtensionLogsToSentry() {
-    guard Client.shared != nil else {
+    guard let sentryClient = Client.shared else {
       DDLogWarn("Sentry client not initialized.")
       return
     }
+    var logs: [String]
+    do {
+      logs = try FileManager.default.contentsOfDirectory(atPath: self.logsDirectory)
+    } catch {
+      DDLogError("Failed to list logs directory. Not sending VPN logs")
+      return
+    }
+
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = OutlineSentryLogger.kDateFormat
+    // Breadcrumbs come from the application and VpnExtension processes. There is a limit to how
+    // many we send, definied in OutlinePlugin.kMaxBreadcrumbs.
+    // Set the number of breadcrumbs for the VPN process to the maximum of an even split of the
+    // total breadcrumbs and the remaining breadcrumbs.
+    let maxNumVpnExtensionBreadcrumbs = max(
+        OutlinePlugin.kMaxBreadcrumbs / 2,
+        OutlinePlugin.kMaxBreadcrumbs - sentryClient.breadcrumbs.count());
     var numBreadcrumbsAdded: UInt = 0
-    for logFileInfo in self.fileLogger.logFileManager.sortedLogFileInfos {
-      guard let logFilePath = logFileInfo.filePath else {
-        continue
-      }
+    // Log files are named by date, get the most recent.
+    for logFile in logs.sorted().reversed() {
+      let logFilePath = (self.logsDirectory as NSString).appendingPathComponent(logFile)
       DDLogDebug("Reading log file: \(String(describing: logFilePath))")
       do {
         let logContents = try String(contentsOf: NSURL.fileURL(withPath: logFilePath))
         // Order log lines descending by time.
         let logLines = logContents.components(separatedBy: "\n").reversed()
         for line in logLines {
-          if numBreadcrumbsAdded >= OutlinePlugin.kMaxBreadcrumbs {
+          if numBreadcrumbsAdded >= maxNumVpnExtensionBreadcrumbs {
             return
           }
           if let (timestamp, message) = parseTimestamp(in: line) {
             let breadcrumb = Breadcrumb(level: .info, category: "VpnExtension")
             breadcrumb.timestamp = dateFormatter.date(from: timestamp)
             breadcrumb.message = message
-            Client.shared?.breadcrumbs.add(breadcrumb)
+            sentryClient.breadcrumbs.add(breadcrumb)
             numBreadcrumbsAdded += 1
           }
         }

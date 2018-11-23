@@ -289,10 +289,12 @@ export class App {
   }
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
+    const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
     if (fromClipboard && accessKey in this.ignoredAccessKeys) {
-      console.debug('Ignoring access key');
-      return;
+      return console.debug('Ignoring access key');
+    } else if (fromClipboard && addServerView.isAddingServer()) {
+      return console.debug('Already adding a server');
     }
     // Expect SHADOWSOCKS_URI.parse to throw on invalid access key; propagate any exception.
     let shadowsocksConfig = null;
@@ -316,7 +318,6 @@ export class App {
       password: shadowsocksConfig.password.data,
       name,
     };
-    const addServerView = this.rootEl.$.addServerView;
     if (!this.serverRepo.containsServer(serverConfig)) {
       // Only prompt the user to add new servers.
       try {

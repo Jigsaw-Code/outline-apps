@@ -350,13 +350,8 @@ public class VpnTunnelService extends VpnService {
     @Override
     public void onAvailable(Network network) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
-      NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-      LOG.fine(String.format(Locale.ROOT, "Network available: %s\nActive network: %s", networkInfo,
-          activeNetworkInfo));
-      if (networkInfo == null || !networkEquals(networkInfo, activeNetworkInfo)) {
-        return;
-      } else if (activeNetworkInfo != null
-          && activeNetworkInfo.getState() != NetworkInfo.State.CONNECTED) {
+      LOG.fine(String.format(Locale.ROOT, "Network available: %s", networkInfo));
+      if (networkInfo == null || networkInfo.getState() != NetworkInfo.State.CONNECTED) {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
@@ -364,6 +359,11 @@ public class VpnTunnelService extends VpnService {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
+        // Although setting the underlying network to an available network may not seem like the
+        // correct behavior, this method has been observed only to fire only when a preferred
+        // network becomes available. It will not fire, for example, when the mobile network becomes
+        // available if WiFi is the active network. Additionally, `getActiveNetwork` and
+        // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
       }
     }
@@ -383,19 +383,6 @@ public class VpnTunnelService extends VpnService {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
       }
-    }
-
-    // Returns whether the underlying networks of NetworkInfo objects are equal.
-    // NetworkInfo.equals performs identity comparison, which is not useful in this context.
-    private boolean networkEquals(final NetworkInfo a, final NetworkInfo b) {
-      if (a == null || b == null) {
-        return false;
-      }
-      final String aExtraInfo = a.getExtraInfo();
-      final String bExtraInfo = b.getExtraInfo();
-      boolean extraInfoIsEqual = aExtraInfo == null ? bExtraInfo == null
-                                                    : aExtraInfo.equals(bExtraInfo);
-      return extraInfoIsEqual && a.getType() == b.getType() && a.getState() == b.getState();
     }
   }
 

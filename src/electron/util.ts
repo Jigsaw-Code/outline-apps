@@ -59,7 +59,11 @@ export function copyServiceFilesToTempFolder() {
   const binDestination = pathToEmbeddedBinaryFolder();
 
   const serviceRelatedFiles =
+<<<<<<< HEAD
       [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME];
+=======
+      [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME]
+>>>>>>> fe4ff8a669c7859d806b2dd5f0b2a08f99763d53
   for (let currentFile in serviceRelatedFiles) {
     const sourceDaemonFile = pathToEmbeddedBinary(serviceRelatedFiles[currentFile]);
     const destDaemonFile = path.join(LINUX_TEMP_FOLDER, serviceRelatedFiles[currentFile]);
