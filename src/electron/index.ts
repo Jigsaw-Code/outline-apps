@@ -258,6 +258,7 @@ app.on('ready', () => {
             quitApp();
           } else {
             console.log('The user was not connected at shutdown.');
+            createWindow();
           }
         });
   } else {

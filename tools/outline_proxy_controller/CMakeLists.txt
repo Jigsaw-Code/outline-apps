@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (OutlineProxyController)
 set(BOOST_VERSION 1.67)
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS
                                                         regex
                                                         program_options
