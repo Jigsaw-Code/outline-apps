@@ -45,10 +45,10 @@ def read_input(filename):
 def format_messages(messages_dict):
   """ Formats input messages in Polymer format to native Android format. This means replacing
       hyphens with underscores in keys and escaping apostrophes in values. """
-  formatted_mesages = {}
+  formatted_messages = {}
   for k,v in messages_dict.items():
-    formatted_mesages[k.replace("-", "_")] = v.replace("'", "\\'")
-  return formatted_mesages
+    formatted_messages[k.replace("-", "_")] = v.replace("'", "\\'")
+  return formatted_messages
 
 def write_output(output, filename):
   with open(filename, "w+") as f:
