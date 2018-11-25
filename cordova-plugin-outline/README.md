@@ -37,7 +37,7 @@ For debug builds, which enable asserts and improved backtraces, append `NDK_DEBU
 
 ### Apple update instructions
 
-We use a custom framework dependency, PacketProcesor, that implements tun2socks. To update it see `../third_party/Potatso/README.md`
+We use a custom framework dependency, PacketProcessor, that implements tun2socks. To update it see `../third_party/Potatso/README.md`
 
 ## Target Platforms
 
