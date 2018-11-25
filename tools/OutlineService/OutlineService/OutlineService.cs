@@ -40,7 +40,7 @@ using Newtonsoft.Json;
  * configureRouting: Modifies the system's routing table to route all traffic through `routerIp`,
  *    allowing only `proxyIp` to bypass it. Disables IPv6 traffic.
  *    { action: "configureRouting", parameters: {"proxyIp": <IPv4 address>, "routerIp": <IPv4 address>,
- *                                               "isAutoConnnect": "false" }
+ *                                               "isAutoConnect": "false" }
  *    }
  *
  *  resetRouting: Restores the system's default routing.
