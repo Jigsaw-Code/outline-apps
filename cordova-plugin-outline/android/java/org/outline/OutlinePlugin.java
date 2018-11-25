@@ -219,7 +219,7 @@ public class OutlinePlugin extends CordovaPlugin {
                     // onActivityResult
                     startRequestConnectionId = connectionId;
                     startRequestConfig = args.getJSONObject(1);
-                    prepareAndStartVpnConection();
+                    prepareAndStartVpnConnection();
                   } else if (Action.STOP.is(action)) {
                     stopVpnConnection(connectionId);
                   } else if (Action.IS_REACHABLE.is(action)) {
@@ -261,7 +261,7 @@ public class OutlinePlugin extends CordovaPlugin {
             });
   }
 
-  private void prepareAndStartVpnConection() {
+  private void prepareAndStartVpnConnection() {
     if (prepareVpnService()) {
       startVpnConnection();
     }
