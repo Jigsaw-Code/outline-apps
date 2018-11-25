@@ -28,7 +28,7 @@ declare module 'sudo-prompt' {
       // permission, or the output of the command - with newlines! - when the
       // command fails.
       //
-      // Hoever, because we've seen error reports from users indicating that in
+      // However, because we've seen error reports from users indicating that in
       // some cases it is indeed an Error, use a union type and force the caller
       // to handle both cases.
       callback?: (error: string|Error, stdout: string|Buffer, stderr: string|Buffer) => void): void;
