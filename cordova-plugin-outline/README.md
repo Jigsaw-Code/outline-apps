@@ -49,7 +49,7 @@ This plugin targets Android devices running Lollipop (API 21), or higher.
 ### Apple
 This plugin targets Apple devices running iOS 9.0+ and macOS/OS X 10.11.
 
-## Javascript API
+## JavaScript API
 
 ```ts
 
