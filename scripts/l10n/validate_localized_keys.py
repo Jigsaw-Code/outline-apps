@@ -70,8 +70,8 @@ def main():
         continue
 
       print("Validating %s" % lang)
-      tranlsation_file = os.path.join(root, file)
-      if not validate_keys(original_messages, read_json_content(tranlsation_file), lang):
+      translation_file = os.path.join(root, file)
+      if not validate_keys(original_messages, read_json_content(translation_file), lang):
         raise Exception()
 
 if __name__ == "__main__":
