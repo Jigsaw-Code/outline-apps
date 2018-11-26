@@ -32,6 +32,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -63,6 +64,7 @@ public class VpnTunnelService extends VpnService {
   private VpnTunnel vpnTunnel;
   private Shadowsocks shadowsocks;
   private String activeConnectionId = null;
+  private JSONObject activeServerConfig = null;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnConnectionStore connectionStore;
   private Notification.Builder notificationBuilder;
@@ -148,41 +150,36 @@ public class VpnTunnelService extends VpnService {
   private void startConnection(
       final String connectionId, final JSONObject config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting connection %s.", connectionId));
-    boolean isRestart = false;
     if (connectionId == null || config == null) {
       throw new IllegalArgumentException("Must provide a connection ID and configuration.");
-    } else if (connectionId.equals(activeConnectionId)) {
-      LOG.info(
-          String.format(Locale.ROOT, "Already running tunnel for connection ID %s", connectionId));
-      broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR); // Start is idempotent.
-      return;
-    } else if (activeConnectionId != null) {
+    }
+    boolean isRestart = activeConnectionId != null;
+    boolean isNewConnection = !connectionId.equals(activeConnectionId);
+    OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
+    if (isNewConnection) {
       // Broadcast the previous instance disconnect event before reassigning the connection ID.
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
-      isRestart = true;
-    }
-    activeConnectionId = connectionId;
-    boolean remoteUdpForwardingEnabled = false;
-    try {
-      // Do not perform connectivity checks when connecting on startup. We should avoid failing the
-      // connection due to a network error, as network may not be ready.
-      OutlinePlugin.ErrorCode errorCode = startShadowsocks(config, !isAutoStart).get();
-      if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
-              || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
-        onVpnStartFailure(errorCode);
+      stopForeground();
+      try {
+        // Only (re)start Shadowsocks if this is a new connection.
+        // Do not perform connectivity checks when connecting on startup. We should avoid failing
+        // the connection due to a network error, as network may not be ready.
+        errorCode = startShadowsocks(config, !isAutoStart).get();
+        if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
+                || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
+          onVpnStartFailure(errorCode);
+          return;
+        }
+      } catch (Exception e) {
+        onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
         return;
       }
-      remoteUdpForwardingEnabled = isAutoStart ? connectionStore.isUdpSupported()
-                                               : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
-    } catch (Exception e) {
-      onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
-      return;
     }
+    activeConnectionId = connectionId;
+    activeServerConfig = config;
 
     if (isRestart) {
-      // Disconnect the tunnel in case UDP forwarding support has changed.
       vpnTunnel.disconnectTunnel();
-      stopForeground();
     } else {
       // Only establish the VPN if this is not a connection restart.
       if (!vpnTunnel.establishVpn()) {
@@ -193,6 +190,9 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
+    boolean remoteUdpForwardingEnabled = !isNewConnection || isAutoStart
+        ? connectionStore.isUdpSupported()
+        : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
       vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress(), remoteUdpForwardingEnabled);
     } catch (Exception e) {
@@ -249,6 +249,7 @@ public class VpnTunnelService extends VpnService {
     stopVpnTunnel();
     stopForeground();
     activeConnectionId = null;
+    activeServerConfig = null;
     stopNetworkConnectivityMonitor();
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
   }
@@ -374,6 +375,16 @@ public class VpnTunnelService extends VpnService {
         // available if WiFi is the active network. Additionally, `getActiveNetwork` and
         // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
+      }
+
+      boolean wasUdpSupported = connectionStore.isUdpSupported();
+      boolean isUdpSupported = ShadowsocksConnectivity.isUdpForwardingEnabled(
+          Shadowsocks.LOCAL_SERVER_ADDRESS, Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT));
+      connectionStore.setIsUdpSupported(isUdpSupported);
+      LOG.info(String.format("UDP support: %s -> %s", wasUdpSupported, isUdpSupported));
+      if (isUdpSupported != wasUdpSupported) {
+        // UDP forwarding support changed with the network; restart the connection.
+        startConnection(activeConnectionId, activeServerConfig);
       }
     }
 
