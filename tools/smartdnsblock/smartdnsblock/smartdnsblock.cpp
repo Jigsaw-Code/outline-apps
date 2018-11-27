@@ -32,6 +32,9 @@ ULONG GET_ADAPTERS_ADDRESSES_BUFFER_SIZE = 16384;
 
 PCWSTR FILTER_PROVIDER_NAME = L"Outline";
 
+UINT64 LOWER_FILTER_WEIGHT = 10;
+UINT64 HIGHER_FILTER_WEIGHT = 20;
+
 int main(int argc, char **argv) {
   // Lookup the interface index of outline-tap0.
   PIP_ADAPTER_ADDRESSES adaptersAddresses =
@@ -71,59 +74,64 @@ int main(int argc, char **argv) {
   }
   cout << "connected to filtering engine" << endl;
 
-  // Create our filters.
+  // Create our filters:
+  //  - The first blocks all UDP traffic bound for port 53.
+  //  - The second whitelists all traffic on the TAP device.
   //
-  // We create two filters, each with multiple conditions:
-  //  - The first filter blocks all UDP traffic on port 53.
-  //  - The second "extends" the first filter to allow such traffic *on the TAP device*.
-  //
-  // This approach of "layering" conditions is the same as that used in the SDK documentation:
-  //   https://docs.microsoft.com/en-us/windows/desktop/fwp/reserving-ports
+  // Crucially, the second has a higher weight.
   //
   // Note:
   //  - Since OutlineService adds a blanket block on all IPv6 traffic, we only need to create IPv4
   //    filters.
   //  - Thanks to the simplicity of the filters and how they will be automatically destroyed on
   //    exit, there's no need to use a transaction here.
-  FWPM_FILTER_CONDITION0 conditions[3];
-
-  conditions[0].fieldKey = FWPM_CONDITION_IP_PROTOCOL;
-  conditions[0].matchType = FWP_MATCH_EQUAL;
-  conditions[0].conditionValue.type = FWP_UINT8;
-  conditions[0].conditionValue.uint16 = IPPROTO_UDP;
-
-  conditions[1].fieldKey = FWPM_CONDITION_IP_REMOTE_PORT;
-  conditions[1].matchType = FWP_MATCH_EQUAL;
-  conditions[1].conditionValue.type = FWP_UINT16;
-  conditions[1].conditionValue.uint16 = 53;
-
-  conditions[2].fieldKey = FWPM_CONDITION_LOCAL_INTERFACE_INDEX;
-  conditions[2].matchType = FWP_MATCH_EQUAL;
-  conditions[2].conditionValue.type = FWP_UINT32;
-  conditions[2].conditionValue.uint32 = interfaceIndex;
-
-  FWPM_FILTER0 filter;
-  memset(&filter, 0, sizeof(filter));
-  filter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
-  filter.filterCondition = conditions;
-  filter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
-
-  UINT64 filterId;
 
   // Blanket UDP port 53 block.
-  filter.numFilterConditions = 2;
-  filter.action.type = FWP_ACTION_BLOCK;
-  result = FwpmFilterAdd0(engine, &filter, NULL, &filterId);
+  FWPM_FILTER_CONDITION0 udpBlockConditions[2];
+  udpBlockConditions[0].fieldKey = FWPM_CONDITION_IP_PROTOCOL;
+  udpBlockConditions[0].matchType = FWP_MATCH_EQUAL;
+  udpBlockConditions[0].conditionValue.type = FWP_UINT8;
+  udpBlockConditions[0].conditionValue.uint16 = IPPROTO_UDP;
+  udpBlockConditions[1].fieldKey = FWPM_CONDITION_IP_REMOTE_PORT;
+  udpBlockConditions[1].matchType = FWP_MATCH_EQUAL;
+  udpBlockConditions[1].conditionValue.type = FWP_UINT16;
+  udpBlockConditions[1].conditionValue.uint16 = 53;
+
+  FWPM_FILTER0 udpBlockFilter;
+  memset(&udpBlockFilter, 0, sizeof(udpBlockFilter));
+  udpBlockFilter.filterCondition = udpBlockConditions;
+  udpBlockFilter.numFilterConditions = 2;
+  udpBlockFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
+  udpBlockFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
+  udpBlockFilter.action.type = FWP_ACTION_BLOCK;
+  udpBlockFilter.weight.type = FWP_UINT64;
+  udpBlockFilter.weight.uint64 = &LOWER_FILTER_WEIGHT;
+  UINT64 filterId;
+  result = FwpmFilterAdd0(engine, &udpBlockFilter, NULL, &filterId);
   if (result != ERROR_SUCCESS) {
     cerr << "could not block port 53: " << result << endl;
     return 1;
   }
   cout << "port 53 blocked with filter " << filterId << endl;
 
-  // Whitelist UDP port 53 on the TAP device.
-  filter.numFilterConditions = 3;
-  filter.action.type = FWP_ACTION_PERMIT;
-  result = FwpmFilterAdd0(engine, &filter, NULL, &filterId);
+  // Whitelist all traffic on the TAP device.
+  FWPM_FILTER_CONDITION0 tapDeviceWhitelistCondition[1];
+  tapDeviceWhitelistCondition[0].fieldKey = FWPM_CONDITION_LOCAL_INTERFACE_INDEX;
+  tapDeviceWhitelistCondition[0].matchType = FWP_MATCH_EQUAL;
+  tapDeviceWhitelistCondition[0].conditionValue.type = FWP_UINT32;
+  tapDeviceWhitelistCondition[0].conditionValue.uint32 = interfaceIndex;
+
+  FWPM_FILTER0 tapDeviceWhitelistFilter;
+  memset(&tapDeviceWhitelistFilter, 0, sizeof(tapDeviceWhitelistFilter));
+  tapDeviceWhitelistFilter.filterCondition = tapDeviceWhitelistCondition;
+  tapDeviceWhitelistFilter.numFilterConditions = 1;
+  tapDeviceWhitelistFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
+  tapDeviceWhitelistFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
+  tapDeviceWhitelistFilter.action.type = FWP_ACTION_PERMIT;
+  tapDeviceWhitelistFilter.weight.type = FWP_UINT64;
+  tapDeviceWhitelistFilter.weight.uint64 = &HIGHER_FILTER_WEIGHT;
+
+  result = FwpmFilterAdd0(engine, &tapDeviceWhitelistFilter, NULL, &filterId);
   if (result != ERROR_SUCCESS) {
     wcerr << "could not whitelist port 53 on " << TAP_DEVICE_NAME << ": " << result << endl;
     return 1;
