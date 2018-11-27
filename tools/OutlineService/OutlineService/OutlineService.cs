@@ -100,8 +100,6 @@ namespace OutlineService
         private IPAddress gatewayIp;
         private string gatewayInterfaceName;
 
-        private Process smartDnsBlock = new Process();
-
         // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
         private const int SMART_DNS_BLOCK_TIMEOUT_MS = 1000;
 
@@ -406,6 +404,7 @@ namespace OutlineService
         private void StartSmartDnsBlock()
         {
             // smartdnsblock.exe must be a sibling of OutlineService.exe.
+            Process smartDnsBlock = new Process();
             smartDnsBlock.StartInfo.FileName = new DirectoryInfo(Process.GetCurrentProcess().MainModule.FileName).Parent.FullName +
                 Path.DirectorySeparatorChar + "smartdnsblock.exe";
             smartDnsBlock.StartInfo.UseShellExecute = false;
@@ -432,18 +431,6 @@ namespace OutlineService
 
             try
             {
-                // Must cancel any previous reads.
-                try
-                {
-                    smartDnsBlock.CancelOutputRead();
-                }
-                catch { }
-                try
-                {
-                    smartDnsBlock.CancelErrorRead();
-                }
-                catch { }
-
                 smartDnsBlock.Start();
                 smartDnsBlock.BeginOutputReadLine();
                 smartDnsBlock.BeginErrorReadLine();
@@ -466,7 +453,7 @@ namespace OutlineService
         {
             try
             {
-                smartDnsBlock.Kill();
+                RunCommand("powershell", "stop-process -name smartdnsblock");
             }
             catch (Exception e)
             {
