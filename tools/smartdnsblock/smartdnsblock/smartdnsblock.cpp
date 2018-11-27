@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
   DWORD result = GetAdaptersAddresses(AF_INET, 0, NULL, adaptersAddresses,
                                       &GET_ADAPTERS_ADDRESSES_BUFFER_SIZE);
   if (result != NO_ERROR) {
-    cerr << "could not fetch network device list: " << result << endl;
+    wcerr << "could not fetch network device list: " << result << endl;
     return 1;
   }
 
@@ -69,10 +69,10 @@ int main(int argc, char **argv) {
   HANDLE engine = 0;
   result = FwpmEngineOpen0(NULL, RPC_C_AUTHN_DEFAULT, NULL, &session, &engine);
   if (result != ERROR_SUCCESS) {
-    cerr << "could not connect to to filtering engine: " << result << endl;
+    wcerr << "could not connect to to filtering engine: " << result << endl;
     return 1;
   }
-  cout << "connected to filtering engine" << endl;
+  wcout << "connected to filtering engine" << endl;
 
   // Create our filters:
   //  - The first blocks all UDP traffic bound for port 53.
@@ -109,10 +109,10 @@ int main(int argc, char **argv) {
   UINT64 filterId;
   result = FwpmFilterAdd0(engine, &udpBlockFilter, NULL, &filterId);
   if (result != ERROR_SUCCESS) {
-    cerr << "could not block port 53: " << result << endl;
+    wcerr << "could not block port 53: " << result << endl;
     return 1;
   }
-  cout << "port 53 blocked with filter " << filterId << endl;
+  wcout << "port 53 blocked with filter " << filterId << endl;
 
   // Whitelist all traffic on the TAP device.
   FWPM_FILTER_CONDITION0 tapDeviceWhitelistCondition[1];
