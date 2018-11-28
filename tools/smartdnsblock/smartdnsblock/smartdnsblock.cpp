@@ -162,10 +162,10 @@ int main(int argc, char **argv) {
 
   result = FwpmFilterAdd0(engine, &tapDeviceWhitelistFilter, NULL, &filterId);
   if (result != ERROR_SUCCESS) {
-    wcerr << "could not whitelist port 53 on " << TAP_DEVICE_NAME << ": " << result << endl;
+    wcerr << "could not whitelist traffic on " << TAP_DEVICE_NAME << ": " << result << endl;
     return 1;
   }
-  wcout << "port 53 whitelisted on " << TAP_DEVICE_NAME << " with filter " << filterId << endl;
+  wcout << "whitelisted traffic on " << TAP_DEVICE_NAME << " with filter " << filterId << endl;
 
   // Wait forever.
   system("pause");
