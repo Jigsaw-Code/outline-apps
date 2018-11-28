@@ -37,7 +37,7 @@ For debug builds, which enable asserts and improved backtraces, append `NDK_DEBU
 
 ### Apple update instructions
 
-We use a custom framework dependency, PacketProcesor, that implements tun2socks. To update it see `../third_party/Potatso/README.md`
+We use a custom framework dependency, PacketProcessor, that implements tun2socks. To update it see `../third_party/Potatso/README.md`
 
 ## Target Platforms
 
@@ -49,7 +49,7 @@ This plugin targets Android devices running Lollipop (API 21), or higher.
 ### Apple
 This plugin targets Apple devices running iOS 9.0+ and macOS/OS X 10.11.
 
-## Javascript API
+## JavaScript API
 
 ```ts
 

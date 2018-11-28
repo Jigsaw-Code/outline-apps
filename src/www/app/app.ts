@@ -225,7 +225,7 @@ export class App {
     try {
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
     } catch (e) {
-      console.error(`could not read privacy acknowledgement setting, assuming not akcnowledged`);
+      console.error(`could not read privacy acknowledgement setting, assuming not acknowledged`);
     }
     return false;
   }
