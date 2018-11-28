@@ -21,9 +21,11 @@
 
 #include <fwpmtypes.h>
 #include <fwpmu.h>
+#include <rpcdce.h>
 
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "fwpuclnt.lib")
+#pragma comment(lib, "rpcrt4.lib")
 
 using namespace ::std;
 
@@ -31,6 +33,7 @@ PCWSTR TAP_DEVICE_NAME = L"outline-tap0";
 ULONG GET_ADAPTERS_ADDRESSES_BUFFER_SIZE = 16384;
 
 PCWSTR FILTER_PROVIDER_NAME = L"Outline";
+PCWSTR SUBLAYER_NAME = L"Smart DNS Block";
 
 UINT64 LOWER_FILTER_WEIGHT = 10;
 UINT64 HIGHER_FILTER_WEIGHT = 20;
@@ -74,6 +77,30 @@ int main(int argc, char **argv) {
   }
   wcout << "connected to filtering engine" << endl;
 
+  // Create our own sublayer.
+  //
+  // This is recommended by the API documentation to avoid weird interactions with other
+  // applications' filters:
+  //   https://docs.microsoft.com/en-us/windows/desktop/fwp/best-practices
+  //
+  // Notes:
+  //  - Without a unique ID our filters will be added to FWPM_SUBLAYER_UNIVERSAL *even if they
+  //    reference this new sublayer*.
+  //  - Since the documentation doesn't say much about sublayer weights, we specify the highest
+  //    possible sublayer weight. This seems to work well.
+  FWPM_SUBLAYER0 sublayer;
+  memset(&sublayer, 0, sizeof(sublayer));
+  UuidCreate(&sublayer.subLayerKey);
+  sublayer.displayData.name = (PWSTR)SUBLAYER_NAME;
+  sublayer.weight = MAXUINT16;
+
+  result = FwpmSubLayerAdd0(engine, &sublayer, NULL);
+  if (result != ERROR_SUCCESS) {
+    wcerr << "could not create filtering sublayer: " << result << endl;
+    return 1;
+  }
+  wcout << "created filtering sublayer" << endl;
+
   // Create our filters:
   //  - The first blocks all UDP traffic bound for port 53.
   //  - The second whitelists all traffic on the TAP device.
@@ -102,6 +129,7 @@ int main(int argc, char **argv) {
   udpBlockFilter.filterCondition = udpBlockConditions;
   udpBlockFilter.numFilterConditions = 2;
   udpBlockFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
+  udpBlockFilter.subLayerKey = sublayer.subLayerKey;
   udpBlockFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
   udpBlockFilter.action.type = FWP_ACTION_BLOCK;
   udpBlockFilter.weight.type = FWP_UINT64;
@@ -126,6 +154,7 @@ int main(int argc, char **argv) {
   tapDeviceWhitelistFilter.filterCondition = tapDeviceWhitelistCondition;
   tapDeviceWhitelistFilter.numFilterConditions = 1;
   tapDeviceWhitelistFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
+  tapDeviceWhitelistFilter.subLayerKey = sublayer.subLayerKey;
   tapDeviceWhitelistFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
   tapDeviceWhitelistFilter.action.type = FWP_ACTION_PERMIT;
   tapDeviceWhitelistFilter.weight.type = FWP_UINT64;
