@@ -282,8 +282,8 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
                                                       networkPrefixLengths:@[@120]];
   ipv6Settings.includedRoutes = @[[NEIPv6Route defaultRoute]];
 
-  NEPacketTunnelNetworkSettings *settings = [[NEPacketTunnelNetworkSettings alloc]
-      initWithTunnelRemoteAddress:self.hostNetworkAddress];
+  NEPacketTunnelNetworkSettings *settings =
+      [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
   settings.IPv6Settings = ipv6Settings;
   // Configure with OpenDNS and Dyn DNS resolver addresses.
