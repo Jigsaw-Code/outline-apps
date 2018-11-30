@@ -271,9 +271,8 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
 }
 
 - (NEPacketTunnelNetworkSettings *) getTunnelNetworkSettings {
-  // TODO(alalama): check if the address is free, choose from pool.
-  NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[@"192.168.20.2"]
-                                                               subnetMasks:@[@"255.255.255.0"]];
+  NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[ @"192.168.20.1" ]
+                                                               subnetMasks:@[ @"255.255.255.0" ]];
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
   ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
 
@@ -284,7 +283,7 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   ipv6Settings.includedRoutes = @[[NEIPv6Route defaultRoute]];
 
   NEPacketTunnelNetworkSettings *settings = [[NEPacketTunnelNetworkSettings alloc]
-                                             initWithTunnelRemoteAddress:@"192.168.20.1"];
+      initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
   settings.IPv6Settings = ipv6Settings;
   // Configure with OpenDNS and Dyn DNS resolver addresses.
