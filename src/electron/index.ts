@@ -99,9 +99,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     if (connectionAtShutdown) {
       const serverId = connectionAtShutdown.id;
       console.info(`Automatically starting connection ${serverId}`);
-      if (mainWindow) {
-        mainWindow.webContents.send(`proxy-reconnecting-${serverId}`);
-      }
+      sendConnectionStatus(ConnectionStatus.RECONNECTING, serverId);
       // TODO: Handle errors, report.
       startVpn(connectionAtShutdown.config, serverId, true);
     }
@@ -271,27 +269,49 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string, isAu
             .startVpn(
                 config,
                 () => {
-                  if (mainWindow) {
-                    mainWindow.webContents.send(`proxy-disconnected-${id}`);
-                  } else {
-                    console.warn(`received proxy-disconnected event but no mainWindow to notify`);
-                  }
+                  sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
                   connectionStore.clear().catch((err) => {
                     console.error('Failed to clear connection store.');
                   });
                   createTrayIcon(ConnectionStatus.DISCONNECTED);
+                },
+                (status: ConnectionStatus) => {
+                  createTrayIcon(status);
+                  sendConnectionStatus(status, id);
                 },
                 isAutoConnect)
             .then((newConfig) => {
               connectionStore.save({config: newConfig, id}).catch((err) => {
                 console.error('Failed to store connection.');
               });
-              if (mainWindow) {
-                mainWindow.webContents.send(`proxy-connected-${id}`);
-              }
+              sendConnectionStatus(ConnectionStatus.CONNECTED, id);
               createTrayIcon(ConnectionStatus.CONNECTED);
             });
       });
+}
+
+function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
+  let statusString;
+  switch (status) {
+    case ConnectionStatus.CONNECTED:
+      statusString = 'connected';
+      break;
+    case ConnectionStatus.DISCONNECTED:
+      statusString = 'disconnected';
+      break;
+    case ConnectionStatus.RECONNECTING:
+      statusString = 'reconnecting';
+      break;
+    default:
+      console.error(`Cannot send unknown proxy status: ${status}`);
+      return;
+  }
+  const event = `proxy-${statusString}-${connectionId}`;
+  if (mainWindow) {
+    mainWindow.webContents.send(event);
+  } else {
+    console.warn(`received ${event} event but no mainWindow to notify`);
+  }
 }
 
 promiseIpc.on(
