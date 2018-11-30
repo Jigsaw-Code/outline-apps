@@ -17,3 +17,5 @@ packages/
 *.pdb
 tools/OutlineService/OutlineService/bin/*
 !tools/OutlineService/OutlineService/bin/*.exe
+tools/smartdnsblock/bin/*
+!tools/smartdnsblock/bin/*.exe

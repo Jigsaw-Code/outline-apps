@@ -429,7 +429,7 @@ function startTun2socks(onDisconnected: () => void): Promise<void> {
         onDisconnected();
       });
 
-      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
+      // Ignore stdio if not consuming the process output (pass {stdio: 'ignore'} to spawn);
       // otherwise the process execution is suspended when the unconsumed streams exceed the
       // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stdout.on('data', (data) => {

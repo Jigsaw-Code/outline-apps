@@ -14,7 +14,7 @@
 
 import Foundation
 
-// Class to handle URL interception in Cordova MacOS by surfacing the intercepted URL to Javascript.
+// Class to handle URL interception in Cordova MacOS by surfacing the intercepted URL to JavaScript.
 @objcMembers
 class CDVMacOsUrlHandler: NSObject {
   static let kCDVHandleOpenURLNotification = "CDVOpenURLNotification"

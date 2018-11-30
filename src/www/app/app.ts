@@ -196,7 +196,7 @@ export class App {
         });
   }
 
-  private showServerConnected(event: events.ServerDisconnected): void {
+  private showServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.server.id} connected`);
     const card = this.serverListEl.getServerCard(event.server.id);
     card.state = 'CONNECTED';
@@ -211,7 +211,7 @@ export class App {
     }
   }
 
-  private showServerReconnecting(event: events.ServerDisconnected): void {
+  private showServerReconnecting(event: events.ServerReconnecting): void {
     console.debug(`server ${event.server.id} reconnecting`);
     const card = this.serverListEl.getServerCard(event.server.id);
     card.state = 'RECONNECTING';
@@ -227,7 +227,7 @@ export class App {
     try {
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
     } catch (e) {
-      console.error(`could not read privacy acknowledgement setting, assuming not akcnowledged`);
+      console.error(`could not read privacy acknowledgement setting, assuming not acknowledged`);
     }
     return false;
   }
