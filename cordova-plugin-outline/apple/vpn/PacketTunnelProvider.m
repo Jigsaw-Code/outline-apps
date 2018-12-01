@@ -271,6 +271,7 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
 }
 
 - (NEPacketTunnelNetworkSettings *) getTunnelNetworkSettings {
+  // TODO(alalama): check if the address is free, choose from pool.
   NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[ @"192.168.20.1" ]
                                                                subnetMasks:@[ @"255.255.255.0" ]];
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
