@@ -114,13 +114,16 @@ if %errorlevel% neq 0 (
 :: network device associated with the default gateway. This is good for us
 :: as it means we do not have to modify the DNS settings of any other network
 :: device in the system. Configure with OpenDNS and Dyn resolvers.
+echo Configuring primary DNS...
 netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222
 if %errorlevel% neq 0 (
   echo Could not configure TAP device primary DNS. >&2
   exit /b 1
 )
+echo Configuring secondary DNS...
 netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2
 if %errorlevel% neq 0 (
   echo Could not configure TAP device secondary DNS. >&2
   exit /b 1
 )
+echo TAP network device added and configured successfully 
