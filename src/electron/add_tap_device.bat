@@ -90,7 +90,9 @@ if %errorlevel% equ 0 goto :configure
 
 :loop
 echo waiting...
-timeout /t 10 >nul
+:: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
+:: "ERROR: Input redirection is not supported, exiting the process immediately."
+waitfor /t 10 thisisnotarealsignalname >nul 2>&1
 netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
 if %errorlevel% neq 0 goto :loop
 
