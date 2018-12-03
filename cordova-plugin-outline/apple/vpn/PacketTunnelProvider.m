@@ -298,6 +298,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                                       networkPrefixLengths:@[@120]];
   ipv6Settings.includedRoutes = @[[NEIPv6Route defaultRoute]];
 
+  // The remote address is not used for routing, but for display in Settings > VPN > Outline.
   NEPacketTunnelNetworkSettings *settings =
       [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
