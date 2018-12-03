@@ -49,7 +49,6 @@ export interface RoutingService {
   configureRouting(
       routerIp: string, proxyIp: string,
       onStatusChange: (status: ConnectionStatus) => void): Promise<void>;
-  // configureRouting(routerIp: string, proxyIp: string): Promise<void>;
   resetRouting(): Promise<void>;
 }
 

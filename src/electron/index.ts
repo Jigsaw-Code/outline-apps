@@ -268,16 +268,14 @@ function startVpn(config: cordova.plugins.outline.ServerConfig, id: string, isAu
         return process_manager
             .startVpn(
                 config,
-                () => {
-                  sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
-                  connectionStore.clear().catch((err) => {
-                    console.error('Failed to clear connection store.');
-                  });
-                  createTrayIcon(ConnectionStatus.DISCONNECTED);
-                },
                 (status: ConnectionStatus) => {
                   createTrayIcon(status);
                   sendConnectionStatus(status, id);
+                  if (status === ConnectionStatus.DISCONNECTED) {
+                    connectionStore.clear().catch((err) => {
+                      console.error('Failed to clear connection store.');
+                    });
+                  }
                 },
                 isAutoConnect)
             .then((newConfig) => {

@@ -76,7 +76,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //
 // Fulfills with a copy of `serverConfig` that includes the resolved hostname.
 export function startVpn(
-    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void,
+    serverConfig: cordova.plugins.outline.ServerConfig,
     onConnectionStatusChange: (status: ConnectionStatus) => void,
     isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
   // First, check that the TAP device exists and is configured.
@@ -85,7 +85,9 @@ export function startVpn(
   } catch (e) {
     return Promise.reject(new errors.SystemConfigurationException(e.message));
   }
-
+  const onDisconnected = () => {
+    onConnectionStatusChange(ConnectionStatus.DISCONNECTED);
+  };
   const config = Object.assign({}, serverConfig);
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(() => {
