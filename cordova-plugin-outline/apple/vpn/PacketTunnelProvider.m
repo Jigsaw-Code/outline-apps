@@ -419,6 +419,8 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     }
     interface = interface->ifa_next;
   }
+  freeifaddrs(interfaces);
+
   return addresses;
 }
 
