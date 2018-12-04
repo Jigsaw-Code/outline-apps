@@ -85,14 +85,16 @@ if %errorlevel% neq 0 (
 :: purposes of configuring IP and DNS ("netsh interface show interface name=xxx" does not
 :: seem to be affected).
 echo Testing that the new TAP network device is visible to netsh...
-netsh interface show interface name=%DEVICE_NAME% >nul
+netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
 if %errorlevel% equ 0 goto :configure
 
 :loop
 echo waiting...
-timeout /t 1 >nul
-netsh interface show interface name=%DEVICE_NAME% >nul
-if %errorlevel% neq 1 goto :loop
+:: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
+:: "ERROR: Input redirection is not supported, exiting the process immediately."
+waitfor /t 10 thisisnotarealsignalname >nul 2>&1
+netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
+if %errorlevel% neq 0 goto :loop
 
 :configure
 echo Configuring new TAP network device...
@@ -114,13 +116,16 @@ if %errorlevel% neq 0 (
 :: network device associated with the default gateway. This is good for us
 :: as it means we do not have to modify the DNS settings of any other network
 :: device in the system. Configure with OpenDNS and Dyn resolvers.
+echo Configuring primary DNS...
 netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222
 if %errorlevel% neq 0 (
   echo Could not configure TAP device primary DNS. >&2
   exit /b 1
 )
+echo Configuring secondary DNS...
 netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2
 if %errorlevel% neq 0 (
   echo Could not configure TAP device secondary DNS. >&2
   exit /b 1
 )
+echo TAP network device added and configured successfully 
