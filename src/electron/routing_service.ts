@@ -39,18 +39,23 @@ interface RoutingServiceRequest {
 }
 
 interface RoutingServiceResponse {
+  action: RoutingServiceAction;  // Matches RoutingServiceRequest.action
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
+  connectionStatus: ConnectionStatus;
 }
 
 export interface RoutingService {
-  configureRouting(routerIp: string, proxyIp: string): Promise<void>;
+  configureRouting(
+      routerIp: string, proxyIp: string,
+      onStatusChange: (status: ConnectionStatus) => void): Promise<void>;
   resetRouting(): Promise<void>;
 }
 
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
-  RESET_ROUTING = 'resetRouting'
+  RESET_ROUTING = 'resetRouting',
+  STATUS_CHANGED = 'statusChanged'
 }
 
 enum RoutingServiceStatusCode {
@@ -73,15 +78,39 @@ export class WindowsRoutingService implements RoutingService {
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string, isAutoConnect = false): Promise<void> {
-    return this.sendRequest({
-      action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {proxyIp, routerIp, isAutoConnect}
-    });
+  configureRouting(
+      routerIp: string, proxyIp: string, onStatusChange: (status: ConnectionStatus) => void,
+      isAutoConnect = false): Promise<void> {
+    return this
+        .sendRequest({
+          action: RoutingServiceAction.CONFIGURE_ROUTING,
+          parameters: {proxyIp, routerIp, isAutoConnect}
+        })
+        .then(() => {
+          // Set a listener to monitor changes in the connection status.
+          this.ipcConnection.on('data', (data) => {
+            if (!data) {
+              return;
+            }
+            try {
+              const response: RoutingServiceResponse = JSON.parse(data.toString());
+              if (response.action === RoutingServiceAction.STATUS_CHANGED) {
+                onStatusChange(response.connectionStatus);
+              }
+            } catch (e) {
+              console.error(`Failed to deserialize service response: ${e.message}`);
+            }
+          });
+        });
   }
 
   // Restores the default system routes.
   resetRouting(): Promise<void> {
+    try {
+      this.ipcConnection.removeAllListeners();
+    } catch (e) {
+      // Ignore, the service may have disconnected the pipe.
+    }
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
   }
 
@@ -89,17 +118,26 @@ export class WindowsRoutingService implements RoutingService {
   // to start the service, in the event that it is not running.
   private sendRequest(request: RoutingServiceRequest, retry = true): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.ipcConnection = net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
-        console.log('Pipe connected');
+      if (!this.ipcConnection || this.ipcConnection.destroyed) {
+        this.ipcConnection =
+            net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
+              console.log('Pipe connected');
+              try {
+                this.writeRequest(request);
+              } catch (e) {
+                reject(e);
+              }
+            });
+      } else {
+        // We already have a connection, write the request.
         try {
-          const msg = JSON.stringify(request);
-          this.ipcConnection.write(msg);
+          this.writeRequest(request);
         } catch (e) {
-          reject(new Error(`Failed to serialize JSON request: ${e.message}`));
+          reject(e);
         }
-      });
+      }
 
-      this.ipcConnection.on('error', (e: NetError) => {
+      this.ipcConnection.once('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
           sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
@@ -131,6 +169,11 @@ export class WindowsRoutingService implements RoutingService {
         if (data) {
           try {
             const response = JSON.parse(data.toString());
+            if (response.action !== request.action) {
+              // Don't resolve yet; we got a status change response. This can happen when connecting
+              // to a new server without previously disconnecting.
+              return;
+            }
             if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
               const msg = `OutlineService says: ${response.errorMessage}`;
               reject(
@@ -145,12 +188,16 @@ export class WindowsRoutingService implements RoutingService {
         } else {
           reject(new Error('Failed to receive data form routing service'));
         }
-        try {
-          this.ipcConnection.destroy();
-        } catch (e) {
-          // Don't reject, the service may have disconnected the pipe already.
-        }
       });
     });
+  }
+
+  // Helper method to write a RoutingServiceRequest to the connected pipe.
+  private writeRequest(request: RoutingServiceRequest): void {
+    try {
+      this.ipcConnection.write(JSON.stringify(request));
+    } catch (e) {
+      throw new Error(`Failed to write request: ${e.message}`);
+    }
   }
 }

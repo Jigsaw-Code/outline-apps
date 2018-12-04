@@ -49,7 +49,12 @@ using Newtonsoft.Json;
  *
  * Response
  *
- *  { statusCode: <int>, errorMessage?: <string> }
+ *  { statusCode: <int>, action: <string> errorMessage?: <string> }
+ *  
+ *  The service will send connection status updates if the pipe connection is kept
+ *  open by the client. Such responses have the form:
+ *  
+ *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
  *
  */
 namespace OutlineService
@@ -64,6 +69,7 @@ namespace OutlineService
 
         private const string ACTION_CONFIGURE_ROUTING = "configureRouting";
         private const string ACTION_RESET_ROUTING = "resetRouting";
+        private const string ACTION_STATUS_CHANGED = "statusChanged";
         private const string PARAM_ROUTER_IP = "routerIp";
         private const string PARAM_PROXY_IP = "proxyIp";
         private const string PARAM_AUTO_CONNECT = "isAutoConnect";
@@ -124,7 +130,6 @@ namespace OutlineService
             NetworkChange.NetworkAddressChanged +=
                 new NetworkAddressChangedEventHandler(NetworkAddressChanged);
             CreatePipe();
-            pipe.BeginWaitForConnection(HandleConnection, null);
         }
 
         protected override void OnStop()
@@ -146,6 +151,7 @@ namespace OutlineService
 
             pipe = new NamedPipeServerStream(PIPE_NAME, PipeDirection.InOut, -1, PipeTransmissionMode.Message,
                                              PipeOptions.Asynchronous, (int)BUFFER_SIZE_BYTES, (int)BUFFER_SIZE_BYTES, pipeSecurity);
+            pipe.BeginWaitForConnection(HandleConnection, null);
         }
 
         private void DestroyPipe()
@@ -181,27 +187,32 @@ namespace OutlineService
             try
             {
                 pipe.EndWaitForConnection(result);
-                ServiceResponse response = new ServiceResponse();
-                var request = ReadRequest();
-                if (request == null)
+                // Keep the pipe connected to send connection status updates.
+                while (pipe.IsConnected)
                 {
-                    response.statusCode = 1;
+                  ServiceResponse response = new ServiceResponse();
+                  var request = ReadRequest();
+                  if (request == null)
+                  {
+                      response.statusCode = (int)ErrorCode.GenericFailure;
+                  }
+                  else
+                  {
+                      response.action = request.action;
+                      try
+                      {
+                          HandleRequest(request);
+                      }
+                      catch (Exception e)
+                      {
+                          var statusCode = e is UnsupportedRoutingTableException ? ErrorCode.UnsupportedRoutingTable
+                                                                                 : ErrorCode.GenericFailure;
+                          response.statusCode = (int)statusCode;
+                          response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
+                      }
+                  }
+                  WriteResponse(response);
                 }
-                else
-                {
-                    try
-                    {
-                        HandleRequest(request);
-                    }
-                    catch (Exception e)
-                    {
-                        var statusCode = e is UnsupportedRoutingTableException ? ErrorCode.UnsupportedRoutingTable
-                                                                               : ErrorCode.GenericFailure;
-                        response.statusCode = (int)statusCode;
-                        response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
-                    }
-                }
-                WriteResponse(response);
             }
             catch (Exception e)
             {
@@ -212,7 +223,6 @@ namespace OutlineService
                 // Pipe streams are one-to-one connections. Recreate the pipe to handle subsequent requests.
                 DestroyPipe();
                 CreatePipe();
-                pipe.BeginWaitForConnection(HandleConnection, null);
             }
         }
 
@@ -685,12 +695,12 @@ namespace OutlineService
                   .First();
         }
 
-        // TODO: Notify the UI of failures here - they could leave the system in a broken state.
+        // Updates the system routes when network changes occur and sends the result to the client.
         private void NetworkAddressChanged(object sender, EventArgs evt)
         {
             if (proxyIp == null)
             {
-                eventLog.WriteEntry("Network change but Outline is not connected, nothing to do.");
+                eventLog.WriteEntry("Network address changed but Outline is not connected, nothing to do.");
                 return;
             }
 
@@ -704,11 +714,13 @@ namespace OutlineService
                 if (e is NoDefaultGatewayFoundException)
                 {
                     eventLog.WriteEntry("No network connectivity, disabling IPv4 routing.");
+                    SendConnectionStatusChange(ConnectionStatus.Reconnecting);
                     RemoveIpv4Redirect();
                 }
                 else
                 {
                     eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
+                    ResetRoutingOnNetworkError();
                 }
                 return;
             }
@@ -719,6 +731,7 @@ namespace OutlineService
             if (newGatewayIp.Equals(gatewayIp) && newGatewayInterfaceName == gatewayInterfaceName)
             {
                 eventLog.WriteEntry("No route change required.");
+                SendConnectionStatusChange(ConnectionStatus.Connected);
                 // Re-enable IPv4 routing in case it was disabled and the same interface used by the proxy
                 // route came back up. Ignore errors, as the routes may already exist.
                 try
@@ -738,6 +751,8 @@ namespace OutlineService
             {
                 eventLog.WriteEntry("Failed to delete the route to the proxy after a network change.",
                                     EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
             try
             {
@@ -747,6 +762,8 @@ namespace OutlineService
             {
                 eventLog.WriteEntry("Failed to add the route to the proxy after a network change.",
                                     EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
 
             // Update the reserved subnet bypass to use the new gateway.
@@ -761,8 +778,40 @@ namespace OutlineService
             catch (Exception)
             {
                 eventLog.WriteEntry("Failed to configure IPv4 routes", EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
+            SendConnectionStatusChange(ConnectionStatus.Connected);
             SetGatewayProperties(newGateway);
+        }
+
+        // Writes the connection status to the pipe, if it is connected. 
+        private void SendConnectionStatusChange(ConnectionStatus status)
+        {
+            if (pipe == null || !pipe.IsConnected) 
+            {
+                eventLog.WriteEntry("Cannot send connection status change, pipe not connected.", EventLogEntryType.Error);
+                return;
+            }
+            ServiceResponse response = new ServiceResponse();
+            response.action = ACTION_STATUS_CHANGED;
+            response.statusCode = (int)ErrorCode.Success;
+            response.connectionStatus = (int)status;
+            try 
+            {
+                WriteResponse(response);
+            }
+            catch (Exception e) 
+            {
+                eventLog.WriteEntry($"Failed to send connection status change: {e.Message}");
+            }
+        }
+
+        // Restores the system routes and communicates the disconnection to the client.
+        private void ResetRoutingOnNetworkError()
+        {
+            ResetRouting(proxyIp, gatewayInterfaceName);
+            SendConnectionStatusChange(ConnectionStatus.Disconnected);
         }
 
         public string GetNetworkInfo()
@@ -805,9 +854,13 @@ namespace OutlineService
     internal class ServiceResponse
     {
         [DataMember]
+        internal string action;
+        [DataMember]
         internal int statusCode;
         [DataMember]
         internal string errorMessage;
+        [DataMember]
+        internal int connectionStatus;
     }
 
     public enum ErrorCode
@@ -815,6 +868,13 @@ namespace OutlineService
         Success = 0,
         GenericFailure = 1,
         UnsupportedRoutingTable = 2
+    }
+
+    public enum ConnectionStatus
+    {
+        Connected = 0,
+        Disconnected = 1,
+        Reconnecting = 2
     }
 
     internal class UnsupportedRoutingTableException : Exception
