@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Mukhang di-wasto ang iyong access key. Kung muli itong mangyayari, pakikontak ang admin ng iyong server.", 
   "outline-plugin-error-routing-tables": "Hindi namin na-configure nang matagumpay ang iyong mga talahanayan sa pagruruta. Kung muli itong mangyayari, pakikontak kami.", 
   "outline-plugin-error-server-unreachable": "Mukhang hindi kami makakonekta sa iyong server. Pakitingnan kung nakakonekta ka sa internet at subukang muli.", 
+  "outline-plugin-error-system-configuration": "Paumanhin, mukhang hindi naka-install nang maayos ang Outline. Pakisubukang i-install ito muli. Kung hindi iyon gagana, magsumite ng feedback sa pamamagitan ng app.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Mukhang hindi sinusuportahan ng server na ito ang UDP na pagpapasa. Kung muli itong mangyayari, pakikontak ang admin ng iyong server.", 
   "outline-plugin-error-unsupported-routing-table": "Mukhang aktibo ang isa pang VPN. Pakidiskonekta ito at subukang muli.", 
   "outline-plugin-error-vpn-permission-not-granted": "Kailangan ng Outline ng iyong pahintulot para mag-set up ng VPN na koneksyon sa server. Pakisubukang muli, o magsumite ng feedback kung kailangan mo ng tulong.", 

@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Wygl\u0105da na to, \u017ce Tw\u00f3j klucz dost\u0119pu jest nieprawid\u0142owy. Je\u015bli ten b\u0142\u0105d si\u0119 powt\u00f3rzy, skontaktuj si\u0119 z\u00a0administratorem serwera.", 
   "outline-plugin-error-routing-tables": "Nie uda\u0142o nam si\u0119 skonfigurowa\u0107 tablic trasowania. Je\u015bli ten b\u0142\u0105d si\u0119 powt\u00f3rzy, skontaktuj si\u0119 z\u00a0nami.", 
   "outline-plugin-error-server-unreachable": "Nie mo\u017cemy po\u0142\u0105czy\u0107 si\u0119 z\u00a0serwerem. Sprawd\u017a po\u0142\u0105czenie z\u00a0internetem i\u00a0spr\u00f3buj ponownie.", 
+  "outline-plugin-error-system-configuration": "Wygl\u0105da na to, \u017ce aplikacja Outline nie jest prawid\u0142owo zainstalowana. Zainstaluj j\u0105 ponownie, a\u00a0je\u015bli to nie pomo\u017ce, prze\u015blij opini\u0119 z\u00a0poziomu aplikacji.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Wygl\u0105da na to, \u017ce ten serwer nie obs\u0142uguje przekazywania pakiet\u00f3w UDP. Je\u015bli ten b\u0142\u0105d si\u0119 powt\u00f3rzy, skontaktuj si\u0119 z\u00a0administratorem serwera.", 
   "outline-plugin-error-unsupported-routing-table": "Wygl\u0105da na to, \u017ce jest aktywna inna sie\u0107 VPN. Od\u0142\u0105cz j\u0105 i\u00a0spr\u00f3buj ponownie.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline potrzebuje Twojej zgody na skonfigurowanie po\u0142\u0105czenia VPN z\u00a0serwerem. Spr\u00f3buj ponownie lub prze\u015blij opini\u0119, by uzyska\u0107 pomoc.", 

@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Der Zugriffsschl\u00fcssel ist ung\u00fcltig. Tritt dieses Problem noch einmal auf, wende dich bitte an den Serveradministrator.", 
   "outline-plugin-error-routing-tables": "Die Routingtabellen konnten nicht konfiguriert werden. Tritt dieser Fehler erneut auf, melde dich bitte bei uns.", 
   "outline-plugin-error-server-unreachable": "Die Verbindung mit dem Server konnte nicht hergestellt werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es noch einmal.", 
+  "outline-plugin-error-system-configuration": "Outline wurde anscheinend nicht korrekt installiert. Bitte versuchen Sie es noch einmal. Falls das Problem weiterhin besteht, senden Sie uns Feedback \u00fcber die App.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Der Server unterst\u00fctzt keine UDP-Weiterleitung. Tritt dieses Problem noch einmal auf, wende dich bitte an deinen Serveradministrator.", 
   "outline-plugin-error-unsupported-routing-table": "Anscheinend wird ein anderes virtuelles privates Netzwerk verwendet. Bitte deaktiviere es und versuche es noch einmal.", 
   "outline-plugin-error-vpn-permission-not-granted": "In Outline ist f\u00fcr eine VPN-Verbindung mit dem Server deine Genehmigung erforderlich. Bitte versuche es noch einmal oder sende Feedback, um Hilfe zu erhalten.", 

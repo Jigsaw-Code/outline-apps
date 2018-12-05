@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Det ser ikke ud til, at din adgangsn\u00f8gle er gyldig. Hvis det sker igen, b\u00f8r du kontakte din serveradministrator.", 
   "outline-plugin-error-routing-tables": "Vi kunne ikke konfigurere dine routingtabeller. Kontakt os, hvis denne fejl opst\u00e5r igen.", 
   "outline-plugin-error-server-unreachable": "Det lykkedes os ikke at oprette forbindelse til din server. Tjek, at du har forbindelse til internettet, og pr\u00f8v igen.", 
+  "outline-plugin-error-system-configuration": "Det ser desv\u00e6rre ikke ud til, at Outline er installeret korrekt. Pr\u00f8v at installere det igen. Hvis dette ikke l\u00f8ser problemet, m\u00e5 du meget gerne indsende feedback via appen.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Det ser ikke ud til, at denne server underst\u00f8tter UDP-videresendelse. Hvis det sker igen, b\u00f8r du kontakte din serveradministrator.", 
   "outline-plugin-error-unsupported-routing-table": "Det ser ud til, at et andet VPN-netv\u00e6rk er aktivt. Afbryd forbindelsen, og pr\u00f8v igen.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline skal bruge din tilladelse for at konfigurere en VPN-forbindelse til serveren. Pr\u00f8v igen, eller send feedback, hvis du har brug for hj\u00e6lp.", 
