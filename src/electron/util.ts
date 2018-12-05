@@ -11,7 +11,7 @@ const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
 const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
 const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
 
-const LINUX_TEMP_FOLDER = '/tmp/OutlineTemp';
+const LINUX_TEMP_FOLDER = fs.mkdtempSync('/tmp/');
 
 export function pathToEmbeddedBinaryFolder() {
   return path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform());
@@ -59,8 +59,7 @@ export function copyServiceFilesToTempFolder() {
   const binDestination = pathToEmbeddedBinaryFolder();
 
   const serviceRelatedFiles =
-      [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME,
-        LINUX_INSTALLER_FILENAME]
+      [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME];
   for (let currentFile in serviceRelatedFiles) {
     const sourceDaemonFile = pathToEmbeddedBinary(serviceRelatedFiles[currentFile]);
     const destDaemonFile = path.join(LINUX_TEMP_FOLDER, serviceRelatedFiles[currentFile]);

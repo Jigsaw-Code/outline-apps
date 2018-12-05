@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/OutlineProxyController --socket-filename=/var/run/outline_controller
+ExecStart=/usr/local/OutlineProxyController --socket-filename=/var/run/outline_controller
 
 [Install]
 WantedBy=multi-user.target

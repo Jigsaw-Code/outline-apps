@@ -21,22 +21,13 @@ import * as errors from '../www/model/errors';
 import * as outline_util from './util'
 
 const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
-
-// Windows Pipe Information ---- For Windows
-const SERVICE_PIPE_NAME = 'OutlineServicePipe';
-const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
-
 // Locating the script is tricky: when packaged, this basically boils down to:
 //   c:\program files\Outline\
 // but during development:
 //   build/windows
 //
 // Surrounding quotes important, consider "c:\program files"!
-
-// Unix socket information ---- For Linux
-const SERVICE_USOCK_NAME = 'outline_controller';
-const SERVICE_USOCK_PATH = '/var/run/';
+const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 
 interface RoutingServiceRequest {
@@ -89,7 +80,12 @@ export class RoutingService {
 
   // Returns the name of the device.
   getDeviceName(): Promise<string> {
-    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}});
+    // This is used when we read tun device name from the daemon and the value
+    // comes in returnValue in the json.
+    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}})
+        .then((json) => {
+          return JSON.parse(json).returnValue;
+        });
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
@@ -97,19 +93,15 @@ export class RoutingService {
   private sendRequest(request: RoutingServiceRequest, retry = true): Promise<string> {
     return new Promise((resolve, reject) => {
 
-      this.ipcConnection = net.createConnection(
-          isWindows ? `${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}` :
-                      `${SERVICE_USOCK_PATH}${SERVICE_USOCK_NAME}`,
-          () => {
-            console.log('Pipe connected');
-            try {
-              const msg = JSON.stringify(request);
-              this.ipcConnection.write(msg);
-            } catch (e) {
-              reject(new Error(`Failed to serialize JSON request: ${e.message}`));
-            }
-          });
-
+      this.ipcConnection = net.createConnection(SERVICE_NAME, () => {
+        console.log('Pipe connected');
+        try {
+          const msg = JSON.stringify(request);
+          this.ipcConnection.write(msg);
+        } catch (e) {
+          reject(new Error(`Failed to serialize JSON request: ${e.message}`));
+        }
+      });
       this.ipcConnection.on('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
@@ -129,7 +121,7 @@ export class RoutingService {
                   }
                 }
                 console.info(
-                    `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+                    `Error in starting routing service stdout: ${stdout}, stderr: ${stderr})`);
                 this.sendRequest(request, false).then(resolve, reject);
               });
           return;
@@ -153,14 +145,7 @@ export class RoutingService {
                       new errors.UnsupportedRoutingTable(msg) :
                       new errors.ConfigureSystemProxyFailure(msg));
             }
-            // In case the response has returnValue key we return the value otherwise
-            // we return the returned json value.
-            // This is used when we read tun device name from the daemon
-            if ('returnValue' in response) {
-              return resolve(response.returnValue);
-            } else {
-              return resolve(data.toString());
-            }
+            return resolve(data.toString());
           } catch (e) {
             reject(new Error(`Failed to deserialize service response: ${e.message}`));
           }

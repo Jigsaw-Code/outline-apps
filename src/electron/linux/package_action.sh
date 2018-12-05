@@ -16,6 +16,7 @@
 
 yarn do src/electron/build
 
+mkdir -p build/linux
 cp package.json build/linux/
 scripts/environment_json.sh -p linux > build/linux/www/environment.json
 
@@ -26,4 +27,4 @@ electron-builder \
   --publish=never \
   --linux AppImage \
   --config.linux.category=Network \
-  --config.linux.icon=icons/mac/icon.icns
+  --config.linux.icon=icons/png

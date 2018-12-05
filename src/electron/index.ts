@@ -20,6 +20,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
+const autoLaunch = require('auto-launch');
 
 import * as errors from '../www/model/errors';
 
@@ -31,7 +32,6 @@ import * as process_manager from './process_manager';
 // if the user was connected at shutdown.
 const connectionStore = new ConnectionStore(app.getPath('userData'));
 
-const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -222,29 +222,31 @@ app.on('ready', () => {
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
-  app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
-  if (isLinux && process.env.APPIMAGE) {
-    let AutoLaunch = require('auto-launch')
-    let outlineAutoLauncher = new AutoLaunch({
-      name: 'OutlineClient',
-      path: process.env.APPIMAGE,
-    });
+  if (isLinux) {
+    if (process.env.APPIMAGE) {
+      const outlineAutoLauncher = new autoLaunch({
+        name: 'OutlineClient',
+        path: process.env.APPIMAGE,
+      });
 
-    outlineAutoLauncher.isEnabled()
-        .then(function(isEnabled: boolean) {
-          if (isEnabled) {
-            return;
-          }
-          outlineAutoLauncher.enable();
-        })
-        .catch((err: Error) => {
-          console.error('failed to add autolaunch entry for Outline');
-        });
+      outlineAutoLauncher.isEnabled()
+          .then(function(isEnabled: boolean) {
+            if (isEnabled) {
+              return;
+            }
+            outlineAutoLauncher.enable();
+          })
+          .catch((err: Error) => {
+            console.error(`failed to add autolaunch entry for Outline ${err.message}`);
+          });
+    }
+  } else {
+    app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
   }
 
   // because autostart doesn't work for linux then we just assume we
   // are auto started on linux
-  if (process.argv.includes(Options.AUTOSTART) || isLinux) {
+  if (process.argv.includes(Options.AUTOSTART)) {
     connectionStore.load()
         .then((connection) => {
           // The user was connected at shutdown. Create the main window and wait for the UI ready
@@ -254,11 +256,7 @@ app.on('ready', () => {
         .catch((err) => {
           // The user was not connected at shutdown.
           // Quitting the app will reset the system proxy configuration before exiting.
-          if (!isLinux) {
-            quitApp();
-          } else {
-            console.log('The user was not connected at shutdown.');
-          }
+          console.log('The user was not connected at shutdown.');
         });
   } else {
     createWindow();
