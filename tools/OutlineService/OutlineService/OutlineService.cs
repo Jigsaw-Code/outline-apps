@@ -686,6 +686,18 @@ namespace OutlineService
             return interfacesWithIpv4Gateways.First();
         }
 
+        private Boolean IsInterfaceConnected(string interfaceName)
+        {
+            if (interfaceName == null)
+            {
+                return false;
+            }
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(i => i.Name == interfaceName)
+                .Where(i => i.OperationalStatus == OperationalStatus.Up)
+                .Count() > 0; 
+        }
+
         private void SetGatewayProperties(NetworkInterface gateway)
         {
             gatewayIp = gateway != null ? GetInterfaceGatewayIpv4(gateway) : null;
@@ -727,7 +739,11 @@ namespace OutlineService
                 else
                 {
                     eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
-                    ResetRoutingOnNetworkError();
+                    // A new interface came up. Don't fail the connection if the current interface is up. 
+                    if (!IsInterfaceConnected(gatewayInterfaceName))
+                    {
+                        ResetRoutingOnNetworkError();
+                    }
                 }
                 return;
             }
@@ -782,11 +798,10 @@ namespace OutlineService
             {
                 AddIpv4Redirect(routerIp);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                eventLog.WriteEntry("Failed to configure IPv4 routes", EventLogEntryType.Error);
-                ResetRoutingOnNetworkError();
-                return;
+                // Do not fail the connection. The route most likely already exist.
+                eventLog.WriteEntry($"Failed to configure IPv4 routes: {e.Message}", EventLogEntryType.Warning);
             }
             SendConnectionStatusChange(ConnectionStatus.Connected);
             SetGatewayProperties(newGateway);
