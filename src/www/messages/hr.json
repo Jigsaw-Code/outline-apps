@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "\u010cini se da va\u0161 pristupni klju\u010d nije valjan. Ako se to ponovi, obratite se administratoru poslu\u017eitelja.", 
   "outline-plugin-error-routing-tables": "Nismo uspjeli uspje\u0161no konfigurirati va\u0161e usmjeriva\u010dke tablice. Ako se to ponovo dogodi, obratite nam se.", 
   "outline-plugin-error-server-unreachable": "Ne mo\u017eemo se povezati s va\u0161im poslu\u017eiteljem. Provjerite jeste li povezani s internetom i poku\u0161ajte ponovno.", 
+  "outline-plugin-error-system-configuration": "Na\u017ealost, izgleda da Outline nije ispravno instaliran. Poku\u0161ajte ga ponovno instalirati. Ako to ne funkcionira, po\u0161aljite povratne informacije putem aplikacije.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "\u010cini se da ovaj poslu\u017eitelj ne podr\u017eava UDP proslje\u0111ivanje. Ako se to ponovi, obratite se administratoru poslu\u017eitelja.", 
   "outline-plugin-error-unsupported-routing-table": "\u010cini se da je drugi VPN aktivan. Isklju\u010dite ga i poku\u0161ajte ponovno.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline treba va\u0161e dopu\u0161tenje za postavljanje VPN veze s poslu\u017eiteljem. Poku\u0161ajte ponovno ili po\u0161aljite povratne informacije ako vam je potrebna pomo\u0107.", 

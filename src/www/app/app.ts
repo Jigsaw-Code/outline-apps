@@ -166,6 +166,8 @@ export class App {
     } else if (e instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
       messageParams = ['serverName', e.server.name];
+    } else if (e instanceof errors.SystemConfigurationException) {
+      messageKey = 'outline-plugin-error-system-configuration';
     } else {
       messageKey = 'error-unexpected';
     }

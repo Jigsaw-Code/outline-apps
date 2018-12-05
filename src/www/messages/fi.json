@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Vaikuttaa silt\u00e4, ettei p\u00e4\u00e4syavaimesi ole kelvollinen. Jos n\u00e4in k\u00e4y uudelleen, ota yhteytt\u00e4 palvelimen j\u00e4rjestelm\u00e4nvalvojaan.", 
   "outline-plugin-error-routing-tables": "Reititystaulukoiden m\u00e4\u00e4ritys ei onnistunut. Jos t\u00e4m\u00e4 toistuu, ota yhteytt\u00e4 meihin.", 
   "outline-plugin-error-server-unreachable": "Yhteyden muodostaminen palvelimeen ei onnistu. Tarkista, ett\u00e4 olet yhteydess\u00e4 internetiin, ja yrit\u00e4 uudelleen.", 
+  "outline-plugin-error-system-configuration": "Pahoittelut, n\u00e4ytt\u00e4\u00e4 silt\u00e4, ettei Outlinea ole asennettu kunnolla. Yrit\u00e4 asentaa se uudelleen. Jos t\u00e4m\u00e4 ei toimi, l\u00e4het\u00e4 palautetta sovelluksen kautta.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Vaikuttaa silt\u00e4, ett\u00e4 t\u00e4m\u00e4 palvelin ei tue UDP-edelleenl\u00e4hetyst\u00e4. Jos n\u00e4in k\u00e4y uudelleen, ota yhteytt\u00e4 palvelimen j\u00e4rjestelm\u00e4nvalvojaan.", 
   "outline-plugin-error-unsupported-routing-table": "Vaikuttaa silt\u00e4, ett\u00e4 toinen VPN on aktiivinen. Katkaise sen yhteys ja yrit\u00e4 uudelleen.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline tarvitsee luvan VPN-yhteyden m\u00e4\u00e4ritt\u00e4miseksi palvelimeen. Yrit\u00e4 uudelleen tai l\u00e4het\u00e4 palautetta, jos tarvitset apua.", 

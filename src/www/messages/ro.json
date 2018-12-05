@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Se pare c\u0103 aceast\u0103 cheie de acces nu este valid\u0103. Dac\u0103 eroarea se repet\u0103, contacta\u021bi administratorul serverului.", 
   "outline-plugin-error-routing-tables": "Nu v-am putut configura tabelele de rutare. Dac\u0103 acest lucru se repet\u0103, contacta\u021bi-ne.", 
   "outline-plugin-error-server-unreachable": "Se pare c\u0103 nu se poate face conexiunea la server. Verifica\u021bi dac\u0103 v-a\u021bi conectat la internet \u0219i \u00eencerca\u021bi din nou.", 
+  "outline-plugin-error-system-configuration": "Se pare c\u0103 Outline nu este instalat\u0103 corect. \u00cencerca\u021bi s\u0103 instala\u021bi din nou. Dac\u0103 nu func\u021bioneaz\u0103, trimite\u021bi feedback prin intermediul aplica\u021biei.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Se pare c\u0103 serverul nu accept\u0103 redirec\u021bionarea UDP. Dac\u0103 acest lucru se repet\u0103, contacta\u021bi administratorul serverului.", 
   "outline-plugin-error-unsupported-routing-table": "Se pare c\u0103 alt\u0103 VPN este activ\u0103. Deconecta\u021bi-v\u0103 \u0219i \u00eencerca\u021bi din nou.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline are nevoie de permisiunea dvs. pentru a configura o conexiune VPN la server. \u00cencerca\u021bi din nou sau trimite\u021bi feedback dac\u0103 ave\u021bi nevoie de ajutor.", 
