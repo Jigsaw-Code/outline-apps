@@ -69,9 +69,18 @@ OutputAndStatus OutlineProxyController::executeCommand(const std::string command
 }
 
 OutlineProxyController::OutlineProxyController() {
-  detectBestInterfaceIndex();
   addOutlineTunDev();
   setTunDeviceIP();
+
+  // we try to detect the best interface as early as possible before
+  // outline mess up with the routing table. But if we fail, we try
+  // again when the connect request comes in
+  try {
+    detectBestInterfaceIndex();
+  } catch (runtime_error& e) {
+    logger.warn(e.what());
+    logger.warn("we could not detect the best interface, will try again at connect");
+  }
 }
 
 void OutlineProxyController::addOutlineTunDev() {
@@ -440,6 +449,13 @@ void OutlineProxyController::routeDirectly() {
   }
 
   try {
+    // before deleting all route make sure that we have kept track of default
+    // router info.
+    if (routingGatewayIP.empty()) {
+      logger.warn("default routing gateway is unknown");
+      detectBestInterfaceIndex();
+    }
+
     deleteAllDefaultRoutes();
   } catch (exception& e) {
     logger.error("failed to delete the route through outline proxy " + string(e.what()));

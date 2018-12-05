@@ -67,11 +67,11 @@ class OutlineProxyController {
    */
   inline bool isSuccessful(OutputAndStatus& result) { return (result.second == EXIT_SUCCESS); }
 
-  // add a tun device
-  // void addTunInterface();
-
   /**
-   * adds outline tun interface in case it is missing
+   * adds outline tun interface in case it is missing.
+   * while Windows client creates the TAP device at installation time.
+   * Linux Outline service tries to create the tun device at start of
+   * each run.
    */
   void addOutlineTunDev();
 
