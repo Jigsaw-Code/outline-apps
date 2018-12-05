@@ -23,6 +23,7 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 import * as routing from './routing_service';
+import {SerializableConnection} from './connection_store';
 
 // Errors raised by spawn contain these extra fields, at least on Windows.
 declare class SpawnError extends Error {
@@ -47,6 +48,7 @@ function pathToEmbeddedExe(basename: string) {
 
 let ssLocal: ChildProcess | undefined;
 let tun2socks: ChildProcess | undefined;
+let activeConnection: SerializableConnection;
 
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
@@ -88,9 +90,18 @@ export function startVpn(
   }
   const onDisconnected = () => {
     onConnectionStatusChange(ConnectionStatus.DISCONNECTED);
+    teardownVpn();
+  };
+  const connectionStatusChanged = (status: ConnectionStatus) => {
+    if (status === ConnectionStatus.CONNECTED) {
+      handleUdpSupportChange(onDisconnected).catch((e) => {
+        console.log('Failed to handle UDP support change');
+      });
+    }
+    onConnectionStatusChange(status);
   };
   const config = Object.assign({}, serverConfig);
-  let isUdpForwardingEnabled = false;
+  let isUdpSupported = false;
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(() => {
         if (isAutoConnect) {
@@ -106,21 +117,22 @@ export function startVpn(
       .then(() => {
         return checkUdpForwardingEnabled()
             .then(() => {
-              isUdpForwardingEnabled = true;
+              isUdpSupported = true;
             })
             .catch((e) => {
               console.log('UDP forwarding disabled.');
             });
       })
       .then(() => {
-        return startTun2socks(config.host || '', isUdpForwardingEnabled, onDisconnected);
+        return startTun2socks(config.host || '', isUdpSupported, onDisconnected);
       })
       .then(() => {
         return routingService.configureRouting(
-            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', onConnectionStatusChange,
+            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', connectionStatusChanged,
             isAutoConnect);
       })
       .then(() => {
+        activeConnection = {id: '', config, isUdpSupported};
         return config;
       })
       .catch((e) => {
@@ -265,7 +277,6 @@ function startLocalShadowsocksProxy(
       } else {
         console.info(`ss-local exited with code ${code}`);
       }
-      onDisconnected();
     });
   });
 }
@@ -373,6 +384,18 @@ function checkUdpForwardingEnabled() {
   });
 }
 
+// Checks whether UDP forwarding support has changed and restarts tun2socks if it has.
+async function handleUdpSupportChange(onDisconnected: () => void): Promise<void> {
+  const isUdpSupported = await checkUdpForwardingEnabled().then(() => true).catch(e => false);
+  if (isUdpSupported !== activeConnection.isUdpSupported) {
+    console.info(`UDP support changed (${activeConnection.isUdpSupported} > ${isUdpSupported})`);
+    activeConnection.isUdpSupported = isUdpSupported;
+    await stopTun2socks();
+    await startTun2socks(
+        activeConnection.config!.host || '', activeConnection.isUdpSupported, onDisconnected);
+  }
+}
+
 // Returns a buffer containing a DNS request to google.com.
 function getDnsRequest() {
   return Buffer.from([
@@ -391,7 +414,7 @@ function getDnsRequest() {
 }
 
 function startTun2socks(
-    host: string, isUdpForwardingEnabled: boolean, onDisconnected: () => void): Promise<void> {
+    host: string, isUdpSupported: boolean, onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
@@ -410,7 +433,7 @@ function startTun2socks(
     args.push('--loglevel', 'error');
     args.push('--transparent-dns');
     // Enabling transparent DNS without UDP options causes tun2socks to use TCP for DNS resolution.
-    if (isUdpForwardingEnabled) {
+    if (isUdpSupported) {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     }
@@ -430,20 +453,19 @@ function startTun2socks(
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
             console.info('Restarting tun2socks...');
             setTimeout(() => {
-              startTun2socks(host, isUdpForwardingEnabled, onDisconnected)
+              isUdpSupported = activeConnection.isUdpSupported || isUdpSupported;
+              startTun2socks(host, isUdpSupported, onDisconnected)
                   .then(() => {
                     resolve();
                   })
                   .catch((e) => {
                     console.error('Failed to restart tun2socks');
                     onDisconnected();
-                    teardownVpn();
                   });
             }, 3000);
             return;
           }
         }
-        onDisconnected();
       });
 
       // Ignore stdio if not consuming the process output (pass {stdio: 'ignore'} to spawn);
