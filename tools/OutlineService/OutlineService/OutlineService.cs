@@ -422,6 +422,13 @@ namespace OutlineService
             smartDnsBlock.StartInfo.RedirectStandardError = true;
             smartDnsBlock.StartInfo.RedirectStandardOutput = true;
 
+            // This is for Windows 7: without it, the process exits immediately, presumably
+            // because stdin isn't connected to anything:
+            //   https://github.com/Jigsaw-Code/outline-client/issues/415
+            //
+            // This seems to make no difference on Windows 8 and 10.
+            smartDnsBlock.StartInfo.RedirectStandardInput = true;
+
             ArrayList stdout = new ArrayList();
             ArrayList stderr = new ArrayList();
             smartDnsBlock.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
