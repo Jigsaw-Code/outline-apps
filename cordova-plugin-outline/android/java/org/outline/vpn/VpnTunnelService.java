@@ -153,8 +153,8 @@ public class VpnTunnelService extends VpnService {
     if (connectionId == null || config == null) {
       throw new IllegalArgumentException("Must provide a connection ID and configuration.");
     }
-    boolean isRestart = activeConnectionId != null;
-    boolean isNewConnection = !connectionId.equals(activeConnectionId);
+    final boolean isRestart = activeConnectionId != null;
+    final boolean isNewConnection = !connectionId.equals(activeConnectionId);
     OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
     if (isNewConnection) {
       // Broadcast the previous instance disconnect event before reassigning the connection ID.
@@ -190,7 +190,7 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    boolean remoteUdpForwardingEnabled = !isNewConnection || isAutoStart
+    final boolean remoteUdpForwardingEnabled = !isNewConnection || isAutoStart
         ? connectionStore.isUdpSupported()
         : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
@@ -377,8 +377,8 @@ public class VpnTunnelService extends VpnService {
         setUnderlyingNetworks(new Network[] {network});
       }
 
-      boolean wasUdpSupported = connectionStore.isUdpSupported();
-      boolean isUdpSupported = ShadowsocksConnectivity.isUdpForwardingEnabled(
+      final boolean wasUdpSupported = connectionStore.isUdpSupported();
+      final boolean isUdpSupported = ShadowsocksConnectivity.isUdpForwardingEnabled(
           Shadowsocks.LOCAL_SERVER_ADDRESS, Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT));
       connectionStore.setIsUdpSupported(isUdpSupported);
       LOG.info(String.format("UDP support: %s -> %s", wasUdpSupported, isUdpSupported));
