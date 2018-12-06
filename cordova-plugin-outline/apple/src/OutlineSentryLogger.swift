@@ -37,7 +37,7 @@ class OutlineSentryLogger: DDAbstractLogger {
   func initializeLogging() {
     guard let containerUrl = FileManager.default.containerURL(
         forSecurityApplicationGroupIdentifier: OutlineSentryLogger.kAppGroup) else {
-      DDLogError("Failed to retrive app container directory")
+      DDLogError("Failed to retrieve app container directory")
       return
     }
     self.logsDirectory = containerUrl.appendingPathComponent("Logs").path

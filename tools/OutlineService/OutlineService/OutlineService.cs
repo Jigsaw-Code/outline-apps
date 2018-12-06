@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -40,7 +41,7 @@ using Newtonsoft.Json;
  * configureRouting: Modifies the system's routing table to route all traffic through `routerIp`,
  *    allowing only `proxyIp` to bypass it. Disables IPv6 traffic.
  *    { action: "configureRouting", parameters: {"proxyIp": <IPv4 address>, "routerIp": <IPv4 address>,
- *                                               "isAutoConnnect": "false" }
+ *                                               "isAutoConnect": "false" }
  *    }
  *
  *  resetRouting: Restores the system's default routing.
@@ -48,7 +49,12 @@ using Newtonsoft.Json;
  *
  * Response
  *
- *  { statusCode: <int>, errorMessage?: <string> }
+ *  { statusCode: <int>, action: <string> errorMessage?: <string> }
+ *  
+ *  The service will send connection status updates if the pipe connection is kept
+ *  open by the client. Such responses have the form:
+ *  
+ *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
  *
  */
 namespace OutlineService
@@ -63,6 +69,7 @@ namespace OutlineService
 
         private const string ACTION_CONFIGURE_ROUTING = "configureRouting";
         private const string ACTION_RESET_ROUTING = "resetRouting";
+        private const string ACTION_STATUS_CHANGED = "statusChanged";
         private const string PARAM_ROUTER_IP = "routerIp";
         private const string PARAM_PROXY_IP = "proxyIp";
         private const string PARAM_AUTO_CONNECT = "isAutoConnect";
@@ -99,6 +106,9 @@ namespace OutlineService
         private IPAddress gatewayIp;
         private string gatewayInterfaceName;
 
+        // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
+        private const int SMART_DNS_BLOCK_TIMEOUT_MS = 1000;
+
         // Do as little as possible here because any error thrown will cause "net start" to fail
         // without anything being added to the application log.
         public OutlineService()
@@ -120,7 +130,6 @@ namespace OutlineService
             NetworkChange.NetworkAddressChanged +=
                 new NetworkAddressChangedEventHandler(NetworkAddressChanged);
             CreatePipe();
-            pipe.BeginWaitForConnection(HandleConnection, null);
         }
 
         protected override void OnStop()
@@ -142,6 +151,7 @@ namespace OutlineService
 
             pipe = new NamedPipeServerStream(PIPE_NAME, PipeDirection.InOut, -1, PipeTransmissionMode.Message,
                                              PipeOptions.Asynchronous, (int)BUFFER_SIZE_BYTES, (int)BUFFER_SIZE_BYTES, pipeSecurity);
+            pipe.BeginWaitForConnection(HandleConnection, null);
         }
 
         private void DestroyPipe()
@@ -177,27 +187,32 @@ namespace OutlineService
             try
             {
                 pipe.EndWaitForConnection(result);
-                ServiceResponse response = new ServiceResponse();
-                var request = ReadRequest();
-                if (request == null)
+                // Keep the pipe connected to send connection status updates.
+                while (pipe.IsConnected)
                 {
-                    response.statusCode = 1;
+                  ServiceResponse response = new ServiceResponse();
+                  var request = ReadRequest();
+                  if (request == null)
+                  {
+                      response.statusCode = (int)ErrorCode.GenericFailure;
+                  }
+                  else
+                  {
+                      response.action = request.action;
+                      try
+                      {
+                          HandleRequest(request);
+                      }
+                      catch (Exception e)
+                      {
+                          var statusCode = e is UnsupportedRoutingTableException ? ErrorCode.UnsupportedRoutingTable
+                                                                                 : ErrorCode.GenericFailure;
+                          response.statusCode = (int)statusCode;
+                          response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
+                      }
+                  }
+                  WriteResponse(response);
                 }
-                else
-                {
-                    try
-                    {
-                        HandleRequest(request);
-                    }
-                    catch (Exception e)
-                    {
-                        var statusCode = e is UnsupportedRoutingTableException ? ErrorCode.UnsupportedRoutingTable
-                                                                               : ErrorCode.GenericFailure;
-                        response.statusCode = (int)statusCode;
-                        response.errorMessage = $"{e.Message} (network config: {beforeNetworkInfo})";
-                    }
-                }
-                WriteResponse(response);
             }
             catch (Exception e)
             {
@@ -208,7 +223,6 @@ namespace OutlineService
                 // Pipe streams are one-to-one connections. Recreate the pipe to handle subsequent requests.
                 DestroyPipe();
                 CreatePipe();
-                pipe.BeginWaitForConnection(HandleConnection, null);
             }
         }
 
@@ -301,30 +315,7 @@ namespace OutlineService
                 throw new Exception("do not know router or proxy IPs");
             }
 
-            // Set the lowest possible device metric for the TAP device, to ensure
-            // the system favours the (non-filtered) DNS server(s) associated with
-            // the TAP device:
-            //   https://github.com/Jigsaw-Code/outline-client/issues/191
-            //
-            // Note:
-            //  - This is *not* necessary to ensure that traffic is routed via the
-            //    proxy (though it does make the output of "route print" easier to
-            //    grok).
-            //  - We could, on disconnection, reset the device metric to auto but
-            //    since the TAP device is essentially unused unless the VPN
-            //    connection is active, there doesn't seem to be a big reason to do
-            //    so. To do it manually:
-            //      netsh interface ip set interface outline-tap0 metric=auto
-            //  - To show the metrics of all interfaces:
-            //      netsh interface ip show interface
-            try
-            {
-                RunCommand(CMD_NETSH, string.Format("interface ip set interface {0} metric=0", TAP_DEVICE_NAME));
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not set low interface metric: {e.Message}");
-            }
+            StartSmartDnsBlock();
 
             // Proxy routing: the proxy's IP address needs to bypass the router. Save the system gateway
             // before we add the route. This is necessary for updating the proxy route when the network
@@ -396,6 +387,95 @@ namespace OutlineService
             RemoveIpv4Redirect();
             RemoveReservedSubnetBypass(proxyInterfaceName);
             StartRoutingIpv6();
+
+            try
+            {
+                StopSmartDnsBlock();
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"failed to lift Smart DNS block: {e.Message}",
+                    EventLogEntryType.Warning);
+            }
+        }
+
+        // Disable "Smart Multi-Homed Name Resolution", to ensure the system uses only the
+        // (non-filtered) DNS server(s) associated with the TAP device.
+        //
+        // Notes:
+        //  - To show the current firewall rules:
+        //      netsh wfp show filters
+        //  - This website is an easy way to quickly verify there are no DNS leaks:
+        //      https://ipleak.net/
+        //  - Because .Net provides *no way* to associate the new process with this one, the
+        //    new process will continue to run even if this service is interrupted or crashes.
+        //    Fortunately, since the changes it makes are *not* persistent, the system can, in
+        //    the worst case, be fixed by rebooting.
+        private void StartSmartDnsBlock()
+        {
+            // smartdnsblock.exe must be a sibling of OutlineService.exe.
+            Process smartDnsBlock = new Process();
+            smartDnsBlock.StartInfo.FileName = new DirectoryInfo(Process.GetCurrentProcess().MainModule.FileName).Parent.FullName +
+                Path.DirectorySeparatorChar + "smartdnsblock.exe";
+            smartDnsBlock.StartInfo.UseShellExecute = false;
+
+            smartDnsBlock.StartInfo.RedirectStandardError = true;
+            smartDnsBlock.StartInfo.RedirectStandardOutput = true;
+
+            // This is for Windows 7: without it, the process exits immediately, presumably
+            // because stdin isn't connected to anything:
+            //   https://github.com/Jigsaw-Code/outline-client/issues/415
+            //
+            // This seems to make no difference on Windows 8 and 10.
+            smartDnsBlock.StartInfo.RedirectStandardInput = true;
+
+            ArrayList stdout = new ArrayList();
+            ArrayList stderr = new ArrayList();
+            smartDnsBlock.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    stdout.Add(e.Data);
+                }
+            };
+            smartDnsBlock.ErrorDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    stderr.Add(e.Data);
+                }
+            };
+
+            try
+            {
+                smartDnsBlock.Start();
+                smartDnsBlock.BeginOutputReadLine();
+                smartDnsBlock.BeginErrorReadLine();
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not launch smartdnsblock at {smartDnsBlock.StartInfo.FileName}: { e.Message}");
+            }
+
+            // This does *not* throw if the process is still running after Nms.
+            smartDnsBlock.WaitForExit(SMART_DNS_BLOCK_TIMEOUT_MS);
+            if (smartDnsBlock.HasExited)
+            {
+                throw new Exception($"smartdnsblock failed " + $"(stdout: {String.Join(Environment.NewLine, stdout.ToArray())}, " +
+                    $"(stderr: {String.Join(Environment.NewLine, stderr.ToArray())})");
+            }
+        }
+
+        private void StopSmartDnsBlock()
+        {
+            try
+            {
+                RunCommand("powershell", "stop-process -name smartdnsblock");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not kill smartdnsblock: {e.Message}");
+            }
         }
 
         private void AddProxyRoute(string proxyIp, string systemGatewayIp, string interfaceName)
@@ -622,12 +702,12 @@ namespace OutlineService
                   .First();
         }
 
-        // TODO: Notify the UI of failures here - they could leave the system in a broken state.
+        // Updates the system routes when network changes occur and sends the result to the client.
         private void NetworkAddressChanged(object sender, EventArgs evt)
         {
             if (proxyIp == null)
             {
-                eventLog.WriteEntry("Network change but Outline is not connected, nothing to do.");
+                eventLog.WriteEntry("Network address changed but Outline is not connected, nothing to do.");
                 return;
             }
 
@@ -641,11 +721,13 @@ namespace OutlineService
                 if (e is NoDefaultGatewayFoundException)
                 {
                     eventLog.WriteEntry("No network connectivity, disabling IPv4 routing.");
+                    SendConnectionStatusChange(ConnectionStatus.Reconnecting);
                     RemoveIpv4Redirect();
                 }
                 else
                 {
                     eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
+                    ResetRoutingOnNetworkError();
                 }
                 return;
             }
@@ -656,6 +738,7 @@ namespace OutlineService
             if (newGatewayIp.Equals(gatewayIp) && newGatewayInterfaceName == gatewayInterfaceName)
             {
                 eventLog.WriteEntry("No route change required.");
+                SendConnectionStatusChange(ConnectionStatus.Connected);
                 // Re-enable IPv4 routing in case it was disabled and the same interface used by the proxy
                 // route came back up. Ignore errors, as the routes may already exist.
                 try
@@ -675,6 +758,8 @@ namespace OutlineService
             {
                 eventLog.WriteEntry("Failed to delete the route to the proxy after a network change.",
                                     EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
             try
             {
@@ -684,6 +769,8 @@ namespace OutlineService
             {
                 eventLog.WriteEntry("Failed to add the route to the proxy after a network change.",
                                     EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
 
             // Update the reserved subnet bypass to use the new gateway.
@@ -698,8 +785,40 @@ namespace OutlineService
             catch (Exception)
             {
                 eventLog.WriteEntry("Failed to configure IPv4 routes", EventLogEntryType.Error);
+                ResetRoutingOnNetworkError();
+                return;
             }
+            SendConnectionStatusChange(ConnectionStatus.Connected);
             SetGatewayProperties(newGateway);
+        }
+
+        // Writes the connection status to the pipe, if it is connected. 
+        private void SendConnectionStatusChange(ConnectionStatus status)
+        {
+            if (pipe == null || !pipe.IsConnected) 
+            {
+                eventLog.WriteEntry("Cannot send connection status change, pipe not connected.", EventLogEntryType.Error);
+                return;
+            }
+            ServiceResponse response = new ServiceResponse();
+            response.action = ACTION_STATUS_CHANGED;
+            response.statusCode = (int)ErrorCode.Success;
+            response.connectionStatus = (int)status;
+            try 
+            {
+                WriteResponse(response);
+            }
+            catch (Exception e) 
+            {
+                eventLog.WriteEntry($"Failed to send connection status change: {e.Message}");
+            }
+        }
+
+        // Restores the system routes and communicates the disconnection to the client.
+        private void ResetRoutingOnNetworkError()
+        {
+            ResetRouting(proxyIp, gatewayInterfaceName);
+            SendConnectionStatusChange(ConnectionStatus.Disconnected);
         }
 
         public string GetNetworkInfo()
@@ -742,9 +861,13 @@ namespace OutlineService
     internal class ServiceResponse
     {
         [DataMember]
+        internal string action;
+        [DataMember]
         internal int statusCode;
         [DataMember]
         internal string errorMessage;
+        [DataMember]
+        internal int connectionStatus;
     }
 
     public enum ErrorCode
@@ -752,6 +875,13 @@ namespace OutlineService
         Success = 0,
         GenericFailure = 1,
         UnsupportedRoutingTable = 2
+    }
+
+    public enum ConnectionStatus
+    {
+        Connected = 0,
+        Disconnected = 1,
+        Reconnecting = 2
     }
 
     internal class UnsupportedRoutingTableException : Exception

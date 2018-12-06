@@ -56,6 +56,7 @@ ${StrRep}
   ; OutlineService files, stopping the service first in case it's still running.
   nsExec::Exec "net stop OutlineService"
   File "${PROJECT_DIR}\OutlineService.exe"
+  File "${PROJECT_DIR}\smartdnsblock.exe"
   File "${PROJECT_DIR}\Newtonsoft.Json.dll"
   File "${PROJECT_DIR}\electron\install_windows_service.bat"
 

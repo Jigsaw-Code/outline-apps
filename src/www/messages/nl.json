@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Deze toegangssleutel is ongeldig. Neem contact op met je serverbeheerder als dit weer gebeurt.", 
   "outline-plugin-error-routing-tables": "De routingtabellen kunnen niet worden geconfigureerd. Neem contact met ons op als dit weer gebeurt.", 
   "outline-plugin-error-server-unreachable": "Er kan geen verbinding worden gemaakt met de server. Controleer of je verbinding hebt met internet en probeer het opnieuw.", 
+  "outline-plugin-error-system-configuration": "Het lijkt erop dat Outline niet correct is ge\u00efnstalleerd. Probeer Outline opnieuw te installeren. Als dit niet werkt, verzend je feedback via de app.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Deze server ondersteunt geen UDP-doorsturen. Neem contact op met je serverbeheerder als dit weer gebeurt.", 
   "outline-plugin-error-unsupported-routing-table": "Het lijkt erop dat er een andere VPN actief is. Verbreek de verbinding met deze VPN en probeer het opnieuw.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline heeft toestemming nodig om een VPN-verbinding te maken met de server. Probeer het opnieuw of verzend feedback als je hulp nodig hebt.", 

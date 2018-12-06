@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Det ser ut til at tilgangsn\u00f8kkelen din ikke er gyldig. Kontakt tjeneradministratoren din hvis dette skjer igjen.", 
   "outline-plugin-error-routing-tables": "Vi kunne ikke konfigurere rutingtabellene dine. Hvis dette skjer igjen, ber vi om at du kontakter oss.", 
   "outline-plugin-error-server-unreachable": "Vi f\u00e5r ikke koblet til tjeneren din. Sjekk at du er koblet til Internett, og pr\u00f8v p\u00e5 nytt.", 
+  "outline-plugin-error-system-configuration": "Beklager \u2013 det ser ut til at Outline ikke er korrekt installert. Pr\u00f8v \u00e5 installere p\u00e5 nytt. Hvis det ikke hjelper, kan du sende inn tilbakemelding via appen.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Det ser ut til at denne tjeneren ikke st\u00f8tter UDP-viderekobling. Kontakt tjeneradministratoren din hvis dette skjer igjen.", 
   "outline-plugin-error-unsupported-routing-table": "Det ser ut til at et annet VPN er aktivt. Koble det fra, og pr\u00f8v p\u00e5 nytt.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline trenger tillatelse fra deg for \u00e5 kunne opprette en VPN-tilkobling til tjeneren. Pr\u00f8v p\u00e5 nytt, eller send oss en tilbakemelding hvis du trenger hjelp.", 

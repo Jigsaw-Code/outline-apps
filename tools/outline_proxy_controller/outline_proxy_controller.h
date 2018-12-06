@@ -177,8 +177,8 @@ class OutlineProxyController {
   std::string tunInterfaceName = "outline-tun0";
   std::string tunInterfaceIp = "10.0.85.1";
   std::string tunInterfaceRouterIp = "10.0.85.2";
-  std::string outlineServerIP = "138.197.150.245";
-  std::string outlineDNSServer = "8.8.8.8";
+  std::string outlineServerIP;
+  std::string outlineDNSServer = "216.146.35.35";
 
   std::string clientLocalIP;
   std::string routingGatewayIP;

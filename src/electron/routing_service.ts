@@ -36,14 +36,17 @@ interface RoutingServiceRequest {
 }
 
 interface RoutingServiceResponse {
+  action: RoutingServiceAction;  // Matches RoutingServiceRequest.action
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
+  connectionStatus: ConnectionStatus;
 }
 
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting',
-  GET_DEVICE_NAME = 'getDeviceName'
+  GET_DEVICE_NAME = 'getDeviceName',
+  STATUS_CHANGED = 'statusChanged'
 }
 
 enum RoutingServiceStatusCode {
@@ -66,15 +69,23 @@ export class RoutingService {
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string, isAutoConnect = false): Promise<string> {
+  configureRouting(routerIp: string, proxyIp: string, onStatusChange: (status: ConnectionStatus) => void,
+    isAutoConnect = false): Promise<string> {
     return this.sendRequest({
       action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {proxyIp, routerIp, isAutoConnect}
-    });
+      parameters: {proxyIp, routerIp, isAutoConnect}},
+      true,
+      onStatusChange
+    );
   }
 
   // Restores the default system routes.
   resetRouting(): Promise<string> {
+    try {
+      this.ipcConnection.removeAllListeners();
+    } catch (e) {
+      // Ignore, the service may have disconnected the pipe.
+    }
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
   }
 
@@ -90,46 +101,50 @@ export class RoutingService {
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest, retry = true): Promise<string> {
+  private sendRequest(request: RoutingServiceRequest, retry = true, onStatusChange?: (status: ConnectionStatus) => void): Promise<string> {
     return new Promise((resolve, reject) => {
-
+      if (!this.ipcConnection || this.ipcConnection.destroyed) {
       this.ipcConnection = net.createConnection(SERVICE_NAME, () => {
-        console.log('Pipe connected');
+          console.log('Pipe connected');
+          try {
+            this.writeRequest(request);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      } else {
+        // We already have a connection, write the request.
         try {
-          const msg = JSON.stringify(request);
-          this.ipcConnection.write(msg);
+          this.writeRequest(request);
         } catch (e) {
-          reject(new Error(`Failed to serialize JSON request: ${e.message}`));
+          reject(e);
         }
-      });
-      this.ipcConnection.on('error', (e: NetError) => {
+      }
+      this.ipcConnection.once('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(
-              outline_util.getServiceStartCommand(), {name: 'Outline'},
-              (sudoError, stdout, stderr) => {
-                if (sudoError) {
-                  // Yes, this seems to be the only way to tell.
-                  if ((typeof sudoError === 'string') &&
-                      sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                    return reject(new errors.NoAdminPermissions());
-                  } else {
-                    // It's unclear what type sudoError is because it has no message
-                    // field. toString() seems to work in most cases, so use that -
-                    // anything else will eventually show up in Sentry.
-                    return reject(new errors.ConfigureSystemProxyFailure(sudoError.toString()));
-                  }
-                }
-                console.info(
-                    `Error in starting routing service stdout: ${stdout}, stderr: ${stderr})`);
-                this.sendRequest(request, false).then(resolve, reject);
-              });
+          sudo.exec(outline_util.getServiceStartCommand(), {name: 'Outline'}, (sudoError, stdout, stderr) => {
+            if (sudoError) {
+              // Yes, this seems to be the only way to tell.
+              if ((typeof sudoError === 'string') &&
+                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                return reject(new errors.NoAdminPermissions());
+              } else {
+                // It's unclear what type sudoError is because it has no message
+                // field. toString() seems to work in most cases, so use that -
+                // anything else will eventually show up in Sentry.
+                return reject(new errors.SystemConfigurationException(sudoError.toString()));
+              }
+            }
+            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            this.sendRequest(request, false).then(resolve, reject);
+          });
           return;
         } else {
           reject(new Error(`Routing Daemon/Service is not running.`));
         }
         // OutlineService could not be (re-)started.
-        reject(new errors.ConfigureSystemProxyFailure(
+        reject(new errors.SystemConfigurationException(
             `Received error from service connection: ${e.message}`));
       });
 
@@ -137,7 +152,16 @@ export class RoutingService {
         console.log('Got data from pipe');
         if (data) {
           try {
-            const response = JSON.parse(data.toString());
+            const response: RoutingServiceResponse = JSON.parse(data.toString());
+            if (onStatusChange && response.action === RoutingServiceAction.STATUS_CHANGED) {
+              onStatusChange(response.connectionStatus);
+              return response;
+            }
+            if (response.action !== request.action) {
+              // Don't resolve yet; we got a status change response. This can happen when connecting
+              // to a new server without previously disconnecting.
+              return;
+            }
             if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
               const msg = `OutlineService says: ${response.errorMessage}`;
               reject(
@@ -152,12 +176,16 @@ export class RoutingService {
         } else {
           reject(new Error('Failed to receive data form routing service'));
         }
-        try {
-          this.ipcConnection.destroy();
-        } catch (e) {
-          // Don't reject, the service may have disconnected the pipe already.
-        }
       });
     });
+  }
+
+  // Helper method to write a RoutingServiceRequest to the connected pipe.
+  private writeRequest(request: RoutingServiceRequest): void {
+    try {
+      this.ipcConnection.write(JSON.stringify(request));
+    } catch (e) {
+      throw new Error(`Failed to write request: ${e.message}`);
+    }
   }
 }

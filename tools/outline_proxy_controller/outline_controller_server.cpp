@@ -30,8 +30,10 @@ void session::start() {
             break;
           }
         }
-        std::pair<int, std::string> rc = runClientCommand(clientCommand);
-        response << "{\"statusCode\": " << rc.first << ", \"returnValue\": \"" << rc.second << "\"}"
+        auto rc = runClientCommand(clientCommand);
+        response << "{\"statusCode\": " << std::get<0>(rc) \
+                 << ",\"returnValue\": \"" << std::get<1>(rc) << "\"" \
+                 << ",\"action\": \"" << std::get<2>(rc) << "\"}" \
                  << std::endl;
         boost::asio::async_write(
             socket_, boost::asio::buffer(response.str(), response.str().length()), yield);
@@ -60,7 +62,7 @@ bool session::isValidJson(std::string str) {
   return false;
 }
 
-std::pair<int, std::string> session::runClientCommand(std::string clientCommand) {
+std::tuple<int, std::string, std::string> session::runClientCommand(std::string clientCommand) {
   std::stringstream ss;
   std::string action, outline_server_ip;
   boost::property_tree::ptree pt;
@@ -73,13 +75,13 @@ std::pair<int, std::string> session::runClientCommand(std::string clientCommand)
     boost::property_tree::read_json(ss, pt);
   } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-    return {GENERIC_FAILURE, "Invalid JSON"};
+    return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", "");
   }
 
   boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
   if (_action_iter == pt.not_found()) {
     std::cerr << "Invalid input JSON - action doesn't exist" << std::endl;
-    return {GENERIC_FAILURE, "Invalid JSON"};
+    return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", "");
   }
   action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
   // std::cout << action << std::endl;
@@ -88,13 +90,13 @@ std::pair<int, std::string> session::runClientCommand(std::string clientCommand)
     boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
     if (_parameters_iter == pt.not_found()) {
       std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-      return {GENERIC_FAILURE, "Invalid JSON"};
+      return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
     }
     boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
     boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
     if (_proxyIp_iter == parameters.not_found()) {
       std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-      return {GENERIC_FAILURE, "Invalid JSON"};
+      return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
     }
     outline_server_ip =
         boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
@@ -102,24 +104,22 @@ std::pair<int, std::string> session::runClientCommand(std::string clientCommand)
     // std::cout << "action: [" << action << "]" << std::endl;
     // std::cout << "outline_server_ip: [" << outline_server_ip << "]" << std::endl;
 
-    // TODO (Vmon): Error handling and return
     outlineProxyController_->routeThroughOutline(outline_server_ip);
     std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
-    return {SUCCESS, ""};
+    return std::make_tuple(SUCCESS, "", action);
 
   } else if (action == RESET_ROUTING) {
-    // TODO (Vmon): Error handling and return
     outlineProxyController_->routeDirectly();
     std::cout << "Reset Routing done" << std::endl;
-    return {SUCCESS, ""};
+    return std::make_tuple(SUCCESS, "", action);
   } else if (action == GET_DEVICE_NAME) {
     std::cout << "Reset Routing done" << std::endl;
-    return {SUCCESS, outlineProxyController_->getTunDeviceName()};
+    return std::make_tuple(SUCCESS, outlineProxyController_->getTunDeviceName(), action);
   } else {
     std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
   }
 
-  return {GENERIC_FAILURE, "Undefined Action"};
+  return std::make_tuple(GENERIC_FAILURE, "Undefined Action", "");
 }
 
 OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_context,

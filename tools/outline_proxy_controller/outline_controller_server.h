@@ -60,7 +60,7 @@ class session : public std::enable_shared_from_this<session> {
    * interprets the commmands arriving as JSON input from the client app and
    * act upon them
    */
-  std::pair<int, std::string> runClientCommand(std::string clientCommand);
+  std::tuple<int, std::string, std::string> runClientCommand(std::string clientCommand);
 
   stream_protocol::socket socket_;
   boost::asio::io_context::strand strand_;

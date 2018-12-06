@@ -39,7 +39,7 @@ cp src/electron/install_windows_service.bat $OUTPUT
 rsync -ac \
   --include '*.exe' --include '*.dll' \
   --exclude='*' \
-  third_party/newtonsoft/ tools/OutlineService/OutlineService/bin/ \
+  third_party/newtonsoft/ tools/{OutlineService/OutlineService,smartdnsblock}/bin/ \
   $OUTPUT
 
 # Version info and Sentry config.

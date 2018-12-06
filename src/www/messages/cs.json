@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Zd\u00e1 se, \u017ee v\u00e1\u0161 p\u0159\u00edstupov\u00fd k\u00f3d nen\u00ed platn\u00fd. Pokud se to stane znovu, obra\u0165te se na administr\u00e1tora sv\u00e9ho serveru.", 
   "outline-plugin-error-routing-tables": "Nepoda\u0159ilo se n\u00e1m \u00fasp\u011b\u0161n\u011b nakonfigurovat sm\u011brovac\u00ed tabulky. Pokud se to stane znovu, dejte n\u00e1m v\u011bd\u011bt.", 
   "outline-plugin-error-server-unreachable": "Neda\u0159\u00ed se n\u00e1m p\u0159ipojit k\u00a0va\u0161emu serveru. Zkontrolujte, \u017ee jste p\u0159ipojeni k\u00a0internetu, a\u00a0zkuste to znovu.", 
+  "outline-plugin-error-system-configuration": "Je n\u00e1m l\u00edto, zd\u00e1 se, \u017ee aplikace Outline nen\u00ed spr\u00e1vn\u011b nainstalovan\u00e1. Zkuste ji nainstalovat znovu. Pokud to nepom\u016f\u017ee, po\u0161lete v\u00a0aplikaci zp\u011btnou vazbu.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Zd\u00e1 se, \u017ee tento server nepodporuje p\u0159esm\u011brov\u00e1n\u00ed UDP. Pokud se to stane znovu, obra\u0165te se na administr\u00e1tora sv\u00e9ho serveru.", 
   "outline-plugin-error-unsupported-routing-table": "Zd\u00e1 se, \u017ee je aktivn\u00ed je\u0161t\u011b jin\u00e1 s\u00ed\u0165 VPN. Odpojte ji a\u00a0zkuste to znovu.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline pot\u0159ebuje opr\u00e1vn\u011bn\u00ed nastavit p\u0159ipojen\u00ed VPN k\u00a0serveru. Zkuste to znovu nebo po\u0161lete zp\u011btnou vazbu s\u00a0\u017e\u00e1dost\u00ed o\u00a0pomoc.", 

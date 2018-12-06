@@ -89,7 +89,7 @@ export class SystemConfigurationException extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
-// Use these sparingly beacause each occurrence triggers a Sentry report.
+// Use these sparingly because each occurrence triggers a Sentry report.
 //////
 
 // Windows.

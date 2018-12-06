@@ -138,7 +138,7 @@ function copyBabelPolyfill(config) {
   });
 }
 
-// Writes a JSON file accessible to environvment.ts containing environment variables.
+// Writes a JSON file accessible to environment.ts containing environment variables.
 function writeEnvJson(platform, config, isRelease) {
   const platformPath = `platforms/${platform}`;
   if (!fs.existsSync(platformPath)) {

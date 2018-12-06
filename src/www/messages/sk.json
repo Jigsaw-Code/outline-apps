@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Zd\u00e1 sa, \u017ee v\u00e1\u0161 pr\u00edstupov\u00fd k\u013e\u00fa\u010d nie je platn\u00fd. Ak sa to stane znova, kontaktujte svojho spr\u00e1vcu servera.", 
   "outline-plugin-error-routing-tables": "Smerovacie tabu\u013eky sa n\u00e1m nepodarilo \u00faspe\u0161ne nakonfigurova\u0165. Ak sa to stane znova, kontaktujte n\u00e1s.", 
   "outline-plugin-error-server-unreachable": "Zd\u00e1 sa, \u017ee sa k\u00a0v\u00e1\u0161mu serveru nedok\u00e1\u017eeme pripoji\u0165. Skontrolujte, \u010di m\u00e1te internetov\u00e9 pripojenie, a\u00a0sk\u00faste to znova.", 
+  "outline-plugin-error-system-configuration": "\u013dutujeme, zd\u00e1 sa, \u017ee aplik\u00e1cia Outline nie je spr\u00e1vne nain\u0161talovan\u00e1. Sk\u00faste ju nain\u0161talova\u0165 znova. Ak to nepom\u00f4\u017ee, odo\u0161lite prostredn\u00edctvom aplik\u00e1cie sp\u00e4tn\u00fa v\u00e4zbu.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Zd\u00e1 sa, \u017ee tento server nepodporuje presmerovanie UDP. Ak sa to stane znova, kontaktujte svojho spr\u00e1vcu servera.", 
   "outline-plugin-error-unsupported-routing-table": "Zd\u00e1 sa, \u017ee je akt\u00edvna in\u00e1 sie\u0165 VPN. Odpojte ju a\u00a0sk\u00faste to znova.", 
   "outline-plugin-error-vpn-permission-not-granted": "Outline potrebuje va\u0161e povolenie na nastavenie pripojenia VPN k\u00a0serveru. Sk\u00faste to znova, pr\u00edpadne ak potrebujete pomoc, odo\u0161lite sp\u00e4tn\u00fa v\u00e4zbu.", 

@@ -43,6 +43,7 @@
   "outline-plugin-error-invalid-server-credentials": "Sua chave de acesso n\u00e3o \u00e9 v\u00e1lida. Se isso ocorrer novamente, entre em contato com o administrador do servidor.", 
   "outline-plugin-error-routing-tables": "N\u00e3o foi poss\u00edvel configurar as tabelas de roteamento. Se isso ocorrer novamente, entre em contato conosco.", 
   "outline-plugin-error-server-unreachable": "Houve um erro de conex\u00e3o com seu servidor. Verifique a conex\u00e3o com a Internet e tente novamente.", 
+  "outline-plugin-error-system-configuration": "Parece que houve um erro na instala\u00e7\u00e3o do Outline. Tente novamente. Se o problema persistir, envie seu feedback pelo app.", 
   "outline-plugin-error-udp-forwarding-not-enabled": "Este servidor n\u00e3o \u00e9 compat\u00edvel com o encaminhamento por UDP. Se isso ocorrer novamente, entre em contato com o administrador do servidor.", 
   "outline-plugin-error-unsupported-routing-table": "Parece que outra VPN est\u00e1 ativa. Desconecte-a e tente novamente.", 
   "outline-plugin-error-vpn-permission-not-granted": "O Outline requer sua permiss\u00e3o para configurar uma conex\u00e3o VPN com o servidor. Tente novamente ou envie feedback se precisar de ajuda.", 

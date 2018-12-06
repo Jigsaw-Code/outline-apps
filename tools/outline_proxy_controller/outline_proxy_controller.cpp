@@ -171,7 +171,7 @@ void OutlineProxyController::detectBestInterfaceIndex() {
 void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   // Sanity checks
   if (outlineServerIP.empty()) {
-    logger.error("attempt to route throw a server whose IP we are not informed of");
+    logger.error("Outline Server IP address cannot be empty");
     throw runtime_error("outlineServerIP is empty");
   }
 
@@ -219,7 +219,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   } catch (exception& e) {
     // We are going ahead with routing through Outline even if we are not able
     // to disable all IPV6 routes.
-    logger.warn("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
+    logger.error("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
                 string(e.what()));
   }
 

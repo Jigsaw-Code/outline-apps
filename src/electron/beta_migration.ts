@@ -22,7 +22,7 @@ import * as path from 'path';
 // Beta's appData directory:
 //   https://electronjs.org/docs/api/app#appgetpathname
 //
-// This should be called after the ready event, so that the appData directroy exists, but before
+// This should be called after the ready event, so that the appData directory exists, but before
 // creating the mainWindow (which uses and creates Local Storage/).
 //
 // Why is this necessary? When the productName (in package.json) changed, so did the appData
