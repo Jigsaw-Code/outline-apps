@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
-import * as outline_util from './util'
+import {getServiceStartCommand} from './util'
 
 const isWindows = os.platform() === 'win32';
 // Locating the script is tricky: when packaged, this basically boils down to:
@@ -127,7 +127,7 @@ export class RoutingService {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
           sudo.exec(
-              outline_util.getServiceStartCommand(), {name: 'Outline'},
+              getServiceStartCommand(), {name: 'Outline'},
               (sudoError, stdout, stderr) => {
                 if (sudoError) {
                   // Yes, this seems to be the only way to tell.
