@@ -112,8 +112,8 @@ export function startVpn(
       .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
       .then(() => {
         return routingService.configureRouting(
-          TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', onConnectionStatusChange,
-          isAutoConnect);
+            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', onConnectionStatusChange,
+            isAutoConnect);
       })
       .then(() => {
         return config;

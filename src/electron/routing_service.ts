@@ -69,14 +69,15 @@ export class RoutingService {
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
-  configureRouting(routerIp: string, proxyIp: string, onStatusChange: (status: ConnectionStatus) => void,
-    isAutoConnect = false): Promise<string> {
-    return this.sendRequest({
-      action: RoutingServiceAction.CONFIGURE_ROUTING,
-      parameters: {proxyIp, routerIp, isAutoConnect}},
-      true,
-      onStatusChange
-    );
+  configureRouting(
+      routerIp: string, proxyIp: string, onStatusChange: (status: ConnectionStatus) => void,
+      isAutoConnect = false): Promise<string> {
+    return this.sendRequest(
+        {
+          action: RoutingServiceAction.CONFIGURE_ROUTING,
+          parameters: {proxyIp, routerIp, isAutoConnect}
+        },
+        true, onStatusChange);
   }
 
   // Restores the default system routes.
@@ -101,10 +102,12 @@ export class RoutingService {
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest, retry = true, onStatusChange?: (status: ConnectionStatus) => void): Promise<string> {
+  private sendRequest(
+      request: RoutingServiceRequest, retry = true,
+      onStatusChange?: (status: ConnectionStatus) => void): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!this.ipcConnection || this.ipcConnection.destroyed) {
-      this.ipcConnection = net.createConnection(SERVICE_NAME, () => {
+        this.ipcConnection = net.createConnection(SERVICE_NAME, () => {
           console.log('Pipe connected');
           try {
             this.writeRequest(request);
@@ -123,22 +126,25 @@ export class RoutingService {
       this.ipcConnection.once('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(outline_util.getServiceStartCommand(), {name: 'Outline'}, (sudoError, stdout, stderr) => {
-            if (sudoError) {
-              // Yes, this seems to be the only way to tell.
-              if ((typeof sudoError === 'string') &&
-                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                return reject(new errors.NoAdminPermissions());
-              } else {
-                // It's unclear what type sudoError is because it has no message
-                // field. toString() seems to work in most cases, so use that -
-                // anything else will eventually show up in Sentry.
-                return reject(new errors.SystemConfigurationException(sudoError.toString()));
-              }
-            }
-            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-            this.sendRequest(request, false).then(resolve, reject);
-          });
+          sudo.exec(
+              outline_util.getServiceStartCommand(), {name: 'Outline'},
+              (sudoError, stdout, stderr) => {
+                if (sudoError) {
+                  // Yes, this seems to be the only way to tell.
+                  if ((typeof sudoError === 'string') &&
+                      sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                    return reject(new errors.NoAdminPermissions());
+                  } else {
+                    // It's unclear what type sudoError is because it has no message
+                    // field. toString() seems to work in most cases, so use that -
+                    // anything else will eventually show up in Sentry.
+                    return reject(new errors.SystemConfigurationException(sudoError.toString()));
+                  }
+                }
+                console.info(
+                    `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+                this.sendRequest(request, false).then(resolve, reject);
+              });
           return;
         } else {
           reject(new Error(`Routing Daemon/Service is not running.`));

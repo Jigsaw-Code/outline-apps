@@ -220,7 +220,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     // We are going ahead with routing through Outline even if we are not able
     // to disable all IPV6 routes.
     logger.error("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
-                string(e.what()));
+                 string(e.what()));
   }
 
   try {

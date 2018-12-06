@@ -31,10 +31,9 @@ void session::start() {
           }
         }
         auto rc = runClientCommand(clientCommand);
-        response << "{\"statusCode\": " << std::get<0>(rc) \
-                 << ",\"returnValue\": \"" << std::get<1>(rc) << "\"" \
-                 << ",\"action\": \"" << std::get<2>(rc) << "\"}" \
-                 << std::endl;
+        response << "{\"statusCode\": " << std::get<0>(rc) << ",\"returnValue\": \""
+                 << std::get<1>(rc) << "\""
+                 << ",\"action\": \"" << std::get<2>(rc) << "\"}" << std::endl;
         boost::asio::async_write(
             socket_, boost::asio::buffer(response.str(), response.str().length()), yield);
         std::cout << "Wrote back (" << response.str() << ") to unix socket" << std::endl;
