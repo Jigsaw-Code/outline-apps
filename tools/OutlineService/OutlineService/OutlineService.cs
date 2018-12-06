@@ -740,6 +740,8 @@ namespace OutlineService
                 {
                     eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
                     // A new interface came up. Don't fail the connection if the current interface is up. 
+                    // This commonly occurs when Ethernet is plugged in while connected to WiFi, causing
+                    // there to be multiple interfaces with gateways.
                     if (!IsInterfaceConnected(gatewayInterfaceName))
                     {
                         ResetRoutingOnNetworkError();
@@ -800,7 +802,7 @@ namespace OutlineService
             }
             catch (Exception e)
             {
-                // Do not fail the connection. The route most likely already exist.
+                // Do not fail the connection. The route most likely already exists.
                 eventLog.WriteEntry($"Failed to configure IPv4 routes: {e.Message}", EventLogEntryType.Warning);
             }
             SendConnectionStatusChange(ConnectionStatus.Connected);
