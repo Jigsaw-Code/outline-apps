@@ -13,10 +13,11 @@
 // limitations under the License.
 
 #import "PacketTunnelProvider.h"
-#import "Shadowsocks.h"
 #include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#import "Shadowsocks.h"
 #include "VpnExtension-Swift.h"
 #if TARGET_OS_IPHONE
 #import <PacketProcessor_iOS/TunnelInterface.h>
@@ -37,6 +38,7 @@ NSString *const kMessageKeyErrorCode = @"errorCode";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
 NSString *const kMessageKeyOnDemand = @"is-on-demand";
+static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
 @interface PacketTunnelProvider()
 @property (nonatomic) Shadowsocks *shadowsocks;
@@ -68,6 +70,12 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
   [DDLog addLogger:_fileLogger];
 
   _connectionStore = [[OutlineConnectionStore alloc] initWithAppGroup:appGroup];
+  kVpnSubnetCandidates = @{
+    @"10" : @"10.111.222.0",
+    @"172" : @"172.16.9.1",
+    @"192" : @"192.168.20.1",
+    @"169" : @"169.254.19.0"
+  };
 
   return self;
 }
@@ -207,6 +215,13 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
       self.connection = [[OutlineConnection alloc] initWithId:message[kMessageKeyConnectionId]
                                                       config:message[kMessageKeyConfig]];
       [self restartShadowsocks:true];
+      [self connectTunnel:[self getTunnelNetworkSettings]
+               completion:^(NSError *_Nullable error) {
+                 if (error != nil) {
+                   [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
+                   [self cancelTunnelWithError:error];
+                 }
+               }];
     }
   } else if ([kActionStop isEqualToString:action]) {
     self.stopCompletion = callbackWrapper;
@@ -271,9 +286,9 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
 }
 
 - (NEPacketTunnelNetworkSettings *) getTunnelNetworkSettings {
-  // TODO(alalama): check if the address is free, choose from pool.
-  NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[@"192.168.20.2"]
-                                                               subnetMasks:@[@"255.255.255.0"]];
+  NSString *vpnAddress = [self selectVpnAddress];
+  NEIPv4Settings *ipv4Settings =
+      [[NEIPv4Settings alloc] initWithAddresses:@[ vpnAddress ] subnetMasks:@[ @"255.255.255.0" ]];
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
   ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
 
@@ -283,8 +298,9 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
                                                       networkPrefixLengths:@[@120]];
   ipv6Settings.includedRoutes = @[[NEIPv6Route defaultRoute]];
 
-  NEPacketTunnelNetworkSettings *settings = [[NEPacketTunnelNetworkSettings alloc]
-                                             initWithTunnelRemoteAddress:@"192.168.20.1"];
+  // The remote address is not used for routing, but for display in Settings > VPN > Outline.
+  NEPacketTunnelNetworkSettings *settings =
+      [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
   settings.IPv6Settings = ipv6Settings;
   // Configure with OpenDNS and Dyn DNS resolver addresses.
@@ -384,6 +400,54 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     return NULL;
   }
   return [NSString stringWithUTF8String:networkAddress];
+}
+
+- (NSArray *)getNetworkInterfaceAddresses {
+  struct ifaddrs *interfaces = nil;
+  NSMutableArray *addresses = [NSMutableArray new];
+  if (getifaddrs(&interfaces) != 0) {
+    DDLogError(@"Failed to retrieve network interface addresses");
+    return addresses;
+  }
+  struct ifaddrs *interface = interfaces;
+  while (interface != nil) {
+    if (interface->ifa_addr->sa_family == AF_INET) {
+      // Only consider IPv4 interfaces.
+      NSString *address = [NSString
+          stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)interface->ifa_addr)->sin_addr)];
+      [addresses addObject:address];
+    }
+    interface = interface->ifa_next;
+  }
+  freeifaddrs(interfaces);
+
+  return addresses;
+}
+
+// Selects an IPv4 address for the VPN to bind to from a pool of private subnets by checking against
+// the subnets assigned to the existing network interfaces.
+- (NSString *)selectVpnAddress {
+  NSMutableDictionary *candidates =
+      [[NSMutableDictionary alloc] initWithDictionary:kVpnSubnetCandidates];
+  for (NSString *address in [self getNetworkInterfaceAddresses]) {
+    for (NSString *subnetPrefix in kVpnSubnetCandidates) {
+      if ([address hasPrefix:subnetPrefix]) {
+        // The subnet (not necessarily the address) is in use, remove it from our list.
+        [candidates removeObjectForKey:subnetPrefix];
+      }
+    }
+  }
+  if (candidates.count == 0) {
+    // Even though there is an interface bound to the subnet candidates, the collision probability
+    // with an actual address is low.
+    return [self selectRandomValueFromDictionary:kVpnSubnetCandidates];
+  }
+  // Select a random subnet from the remaining candidates.
+  return [self selectRandomValueFromDictionary:candidates];
+}
+
+- (id)selectRandomValueFromDictionary:(NSDictionary *)dict {
+  return [dict.allValues objectAtIndex:(arc4random_uniform((uint32_t)dict.count))];
 }
 
 # pragma mark - Shadowsocks
