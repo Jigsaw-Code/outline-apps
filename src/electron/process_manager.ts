@@ -429,15 +429,12 @@ function startTun2socks(onDisconnected: () => void, tunDeviceName: string): Prom
         resolve();
       });
       tun2socks.on('exit', (code, signal) => {
-        if (isLinux) {
-          return;
-        }
         if (signal) {
           // tun2socks exits with SIGTERM when we stop it.
           console.info(`tun2socks exited with signal ${signal}`);
         } else {
           console.info(`tun2socks exited with code ${code}`);
-          if (code === 1) {
+          if (!isLinux && code === 1) {
             // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
             // due to a failure to read the tap device.
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
