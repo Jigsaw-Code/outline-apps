@@ -116,11 +116,12 @@ export function startVpn(
       })
       .then(() => {
         return checkUdpForwardingEnabled()
-            .then(() => {
-              isUdpSupported = true;
+            .then((isRemoteUdpForwardingEnabled) => {
+              isUdpSupported = isRemoteUdpForwardingEnabled;
+              console.log('UDP forwarding', isUdpSupported ? 'enalbed' : 'disabled');
             })
             .catch((e) => {
-              console.log('UDP forwarding disabled.');
+              console.warn('UDP forwarding check failed, assuming disabled.');
             });
       })
       .then(() => {
@@ -327,7 +328,7 @@ function validateServerCredentials() {
 }
 
 // Verifies that the remote server has enabled UDP forwarding by sending a DNS request through it.
-function checkUdpForwardingEnabled() {
+function checkUdpForwardingEnabled(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     socks.createConnection(
       {
@@ -349,7 +350,7 @@ function checkUdpForwardingEnabled() {
 
         udpSocket.on('message', (msg, info) => {
           stopUdp();
-          resolve();
+          resolve(true);
         });
 
         // Retry sending the query every second.
@@ -378,7 +379,7 @@ function checkUdpForwardingEnabled() {
         // Give up after the timeout elapses.
         setTimeout(() => {
           stopUdp();
-          reject(new errors.RemoteUdpForwardingDisabled());
+          resolve(false);
         }, UDP_FORWARDING_TEST_TIMEOUT_MS);
       });
   });
@@ -386,7 +387,7 @@ function checkUdpForwardingEnabled() {
 
 // Checks whether UDP forwarding support has changed and restarts tun2socks if it has.
 async function handleUdpSupportChange(onDisconnected: () => void): Promise<void> {
-  const isUdpSupported = await checkUdpForwardingEnabled().then(() => true).catch(e => false);
+  const isUdpSupported = await checkUdpForwardingEnabled().catch(e => false);
   if (isUdpSupported !== activeConnection.isUdpSupported) {
     console.info(`UDP support changed (${activeConnection.isUdpSupported} > ${isUdpSupported})`);
     activeConnection.isUdpSupported = isUdpSupported;
