@@ -154,7 +154,6 @@ export class RoutingService {
       });
 
       this.ipcConnection.on('data', (data) => {
-        console.log('Got data from pipe');
         if (data) {
           try {
             const response: RoutingServiceResponse = JSON.parse(data.toString());
@@ -167,6 +166,7 @@ export class RoutingService {
               // to a new server without previously disconnecting.
               return;
             }
+            console.log(`Got data from pipe for action: ${response.action}`);
             if (response.statusCode !== RoutingServiceStatusCode.SUCCESS) {
               const msg = `OutlineService says: ${response.errorMessage}`;
               reject(
