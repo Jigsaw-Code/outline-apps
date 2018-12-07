@@ -42,7 +42,7 @@ export function getServiceStartCommand(): string {
 
     return path.join(LINUX_TEMP_FOLDER, LINUX_INSTALLER_FILENAME);
   } else {
-    throw 'unknown os';
+    throw new Error('Unsupported Operating System');
   }
 }
 
@@ -53,21 +53,21 @@ export function copyServiceFilesToTempFolder() {
   try {
     fs.mkdirSync(LINUX_TEMP_FOLDER);
   } catch (err) {
-    if (err.code !== 'EEXIST') throw err
+    if (err.code !== 'EEXIST') throw err;
   }
 
   const binDestination = pathToEmbeddedBinaryFolder();
 
   const serviceRelatedFiles =
       [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME];
-  for (let currentFile in serviceRelatedFiles) {
-    const sourceDaemonFile = pathToEmbeddedBinary(serviceRelatedFiles[currentFile]);
-    const destDaemonFile = path.join(LINUX_TEMP_FOLDER, serviceRelatedFiles[currentFile]);
+  serviceRelatedFiles.forEach((currentFile) => {
+    const sourceDaemonFile = pathToEmbeddedBinary(currentFile);
+    const destDaemonFile = path.join(LINUX_TEMP_FOLDER, currentFile);
 
     try {
-      fsextra.copySync(sourceDaemonFile, destDaemonFile, {overwrite: true})
+      fsextra.copySync(sourceDaemonFile, destDaemonFile, {overwrite: true});
     } catch (err) {
       throw err;
-    };
-  }
-};
+    }
+  });
+}

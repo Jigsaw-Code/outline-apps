@@ -20,7 +20,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
-const autoLaunch = require('auto-launch');
+import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as errors from '../www/model/errors';
 
@@ -228,15 +228,15 @@ app.on('ready', () => {
       });
 
       outlineAutoLauncher.isEnabled()
-          .then(function(isEnabled: boolean) {
-            if (isEnabled) {
-              return;
-            }
-            outlineAutoLauncher.enable();
-          })
-          .catch((err: Error) => {
-            console.error(`failed to add autolaunch entry for Outline ${err.message}`);
-          });
+        .then((isEnabled: boolean) => {
+          if (isEnabled) {
+            return;
+          }
+          outlineAutoLauncher.enable();
+        })
+        .catch((err: Error) => {
+          console.error(`failed to add autolaunch entry for Outline ${err.message}`);
+        });
     }
   } else {
     app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});

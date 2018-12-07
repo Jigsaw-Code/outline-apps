@@ -217,10 +217,11 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   try {
     toggleIPv6(false);
   } catch (exception& e) {
-    // We are going ahead with routing through Outline even if we are not able
-    // to disable all IPV6 routes.
+    // We are going to fail if we are not able to disable all IPV6 routes.
     logger.error("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
                  string(e.what()));
+    resetFailRoutingAttempt(IPV6_ROUTING_FAILED);
+    return;
   }
 
   try {
@@ -418,6 +419,7 @@ void OutlineProxyController::resetFailRoutingAttempt(OutlineConnectionStage fail
     case OUTLINE_DNS_SET:
       restoreDNSSetting();
 
+    case IPV6_ROUTING_FAILED:
     case TRAFFIC_ROUTED_THROUGH_TUN:
     case DEFAULT_GATEWAY_ROUTE_DELETED:
       // We need to delete the priority path to the default gateway
