@@ -18,10 +18,11 @@ SCRIPT_DIR=`dirname $0`
 
 # Stop and delete the service.
 systemctl stop outline_proxy_controller.service
-rm /usr/local/OutlineProxyController
+mkdir -p /usr/local/etc/systemd/system || true
+rm -f /usr/local/etc/systemd/system/OutlineProxyController || true
 
 # Install and start the service, configuring it to restart on boot.
-cp "$SCRIPT_DIR/OutlineProxyController" /usr/local/
+cp "$SCRIPT_DIR/OutlineProxyController" /usr/local/etc/systemd/system
 cp "$SCRIPT_DIR/outline_proxy_controller.service" /etc/systemd/system/
 
 systemctl daemon-reload

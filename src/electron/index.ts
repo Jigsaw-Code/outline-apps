@@ -228,15 +228,15 @@ app.on('ready', () => {
       });
 
       outlineAutoLauncher.isEnabled()
-        .then((isEnabled: boolean) => {
-          if (isEnabled) {
-            return;
-          }
-          outlineAutoLauncher.enable();
-        })
-        .catch((err: Error) => {
-          console.error(`failed to add autolaunch entry for Outline ${err.message}`);
-        });
+          .then((isEnabled: boolean) => {
+            if (isEnabled) {
+              return;
+            }
+            outlineAutoLauncher.enable();
+          })
+          .catch((err: Error) => {
+            console.error(`failed to add autolaunch entry for Outline ${err.message}`);
+          });
     }
   } else {
     app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});

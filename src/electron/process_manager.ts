@@ -441,17 +441,17 @@ function startTun2socks(onDisconnected: () => void, tunDeviceName: string): Prom
             console.info('Restarting tun2socks...');
             setTimeout(() => {
               getTunDeviceName()
-                .then((tunDeviceName) => {
-                  startTun2socks(onDisconnected, tunDeviceName);
-                })
-                .then(() => {
-                  resolve();
-                })
-                .catch((e) => {
-                  console.error('Failed to restart tun2socks');
-                  onDisconnected();
-                  teardownVpn();
-                });
+                  .then((tunDeviceName) => {
+                    startTun2socks(onDisconnected, tunDeviceName);
+                  })
+                  .then(() => {
+                    resolve();
+                  })
+                  .catch((e) => {
+                    console.error('Failed to restart tun2socks');
+                    onDisconnected();
+                    teardownVpn();
+                  });
             }, 3000);
             return;
           }
