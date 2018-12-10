@@ -12,26 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {app} from 'electron';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
+import {getServiceStartCommand} from './util';
 
-const SERVICE_PIPE_NAME = 'OutlineServicePipe';
-const SERVICE_PIPE_PATH = '\\\\.\\pipe\\';
-
+const isWindows = os.platform() === 'win32';
 // Locating the script is tricky: when packaged, this basically boils down to:
 //   c:\program files\Outline\
 // but during development:
 //   build/windows
 //
 // Surrounding quotes important, consider "c:\program files"!
-const SERVICE_START_COMMAND = `"${
-    path.join(
-        app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
-        'install_windows_service.bat')}"`;
+const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+
 
 interface RoutingServiceRequest {
   action: string;
@@ -45,16 +42,10 @@ interface RoutingServiceResponse {
   connectionStatus: ConnectionStatus;
 }
 
-export interface RoutingService {
-  configureRouting(
-      routerIp: string, proxyIp: string,
-      onStatusChange: (status: ConnectionStatus) => void): Promise<void>;
-  resetRouting(): Promise<void>;
-}
-
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting',
+  GET_DEVICE_NAME = 'getDeviceName',
   STATUS_CHANGED = 'statusChanged'
 }
 
@@ -73,39 +64,24 @@ interface NetError extends Error {
 }
 
 // Abstracts IPC with OutlineService in order to configure routing.
-export class WindowsRoutingService implements RoutingService {
+export class RoutingService {
   private ipcConnection: net.Socket;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
   configureRouting(
       routerIp: string, proxyIp: string, onStatusChange: (status: ConnectionStatus) => void,
-      isAutoConnect = false): Promise<void> {
-    return this
-        .sendRequest({
+      isAutoConnect = false): Promise<string> {
+    return this.sendRequest(
+        {
           action: RoutingServiceAction.CONFIGURE_ROUTING,
           parameters: {proxyIp, routerIp, isAutoConnect}
-        })
-        .then(() => {
-          // Set a listener to monitor changes in the connection status.
-          this.ipcConnection.on('data', (data) => {
-            if (!data) {
-              return;
-            }
-            try {
-              const response: RoutingServiceResponse = JSON.parse(data.toString());
-              if (response.action === RoutingServiceAction.STATUS_CHANGED) {
-                onStatusChange(response.connectionStatus);
-              }
-            } catch (e) {
-              console.error(`Failed to deserialize service response: ${e.message}`);
-            }
-          });
-        });
+        },
+        true, onStatusChange);
   }
 
   // Restores the default system routes.
-  resetRouting(): Promise<void> {
+  resetRouting(): Promise<string> {
     try {
       this.ipcConnection.removeAllListeners();
     } catch (e) {
@@ -114,20 +90,31 @@ export class WindowsRoutingService implements RoutingService {
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
   }
 
+  // Returns the name of the device.
+  getDeviceName(): Promise<string> {
+    // This is used when we read tun device name from the daemon and the value
+    // comes in returnValue in the json.
+    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}})
+        .then((json) => {
+          return JSON.parse(json).returnValue;
+        });
+  }
+
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
   // to start the service, in the event that it is not running.
-  private sendRequest(request: RoutingServiceRequest, retry = true): Promise<void> {
+  private sendRequest(
+      request: RoutingServiceRequest, retry = true,
+      onStatusChange?: (status: ConnectionStatus) => void): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!this.ipcConnection || this.ipcConnection.destroyed) {
-        this.ipcConnection =
-            net.createConnection(`${SERVICE_PIPE_PATH}${SERVICE_PIPE_NAME}`, () => {
-              console.log('Pipe connected');
-              try {
-                this.writeRequest(request);
-              } catch (e) {
-                reject(e);
-              }
-            });
+        this.ipcConnection = net.createConnection(SERVICE_NAME, () => {
+          console.log('Pipe connected');
+          try {
+            this.writeRequest(request);
+          } catch (e) {
+            reject(e);
+          }
+        });
       } else {
         // We already have a connection, write the request.
         try {
@@ -136,29 +123,31 @@ export class WindowsRoutingService implements RoutingService {
           reject(e);
         }
       }
-
       this.ipcConnection.once('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(SERVICE_START_COMMAND, {name: 'Outline'}, (sudoError, stdout, stderr) => {
-            if (sudoError) {
-              // Yes, this seems to be the only way to tell.
-              if ((typeof sudoError === 'string') &&
-                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                return reject(new errors.NoAdminPermissions());
-              } else {
-                // It's unclear what type sudoError is because it has no message
-                // field. toString() seems to work in most cases, so use that -
-                // anything else will eventually show up in Sentry.
-                return reject(new errors.SystemConfigurationException(sudoError.toString()));
-              }
-            }
-            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-            this.sendRequest(request, false).then(resolve, reject);
-          });
+          sudo.exec(
+              getServiceStartCommand(), {name: 'Outline'}, (sudoError, stdout, stderr) => {
+                if (sudoError) {
+                  // Yes, this seems to be the only way to tell.
+                  if ((typeof sudoError === 'string') &&
+                      sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                    return reject(new errors.NoAdminPermissions());
+                  } else {
+                    // It's unclear what type sudoError is because it has no message
+                    // field. toString() seems to work in most cases, so use that -
+                    // anything else will eventually show up in Sentry.
+                    return reject(new errors.SystemConfigurationException(sudoError.toString()));
+                  }
+                }
+                console.info(
+                    `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+                this.sendRequest(request, false).then(resolve, reject);
+              });
           return;
+        } else {
+          reject(new Error(`Routing Daemon/Service is not running.`));
         }
-
         // OutlineService could not be (re-)started.
         reject(new errors.SystemConfigurationException(
             `Received error from service connection: ${e.message}`));
@@ -167,7 +156,11 @@ export class WindowsRoutingService implements RoutingService {
       this.ipcConnection.on('data', (data) => {
         if (data) {
           try {
-            const response = JSON.parse(data.toString());
+            const response: RoutingServiceResponse = JSON.parse(data.toString());
+            if (onStatusChange && response.action === RoutingServiceAction.STATUS_CHANGED) {
+              onStatusChange(response.connectionStatus);
+              return response;
+            }
             if (response.action !== request.action) {
               // Don't resolve yet; we got a status change response. This can happen when connecting
               // to a new server without previously disconnecting.
@@ -181,7 +174,7 @@ export class WindowsRoutingService implements RoutingService {
                       new errors.UnsupportedRoutingTable(msg) :
                       new errors.ConfigureSystemProxyFailure(msg));
             }
-            resolve(response);
+            return resolve(data.toString());
           } catch (e) {
             reject(new Error(`Failed to deserialize service response: ${e.message}`));
           }

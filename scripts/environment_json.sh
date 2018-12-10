@@ -20,7 +20,7 @@ PLATFORM=
 function usage () {
   echo "$0 [-r] [-h]"
   echo "  -r: use prod Sentry keys"
-  echo "  -p: platform (android, ios, osx, browser, or windows)"
+  echo "  -p: platform (android, ios, osx, browser, windows, or linux)"
   echo "  -h: this help message"
   echo
   echo "Examples:"
@@ -84,7 +84,7 @@ case $PLATFORM in
     APP_VERSION=$(pull_from_osx_plist CFBundleShortVersionString)
     APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
     ;;
-  windows)
+  windows | linux)
     APP_VERSION=$(node -r fs -p 'JSON.parse(fs.readFileSync("package.json")).version;')
     APP_BUILD_NUMBER="NA"
     ;;
