@@ -22,11 +22,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -Wall -O0 -ggdb ${SA
 include_directories(
     "${Boost_INCLUDE_DIR}")
 
-##############################
-add_executable(OutlineProxyControllerTester outline_proxy_controller.cpp
-                                            logger.cpp
-                                            tests/outline_proxy_controller_tester.cpp)
-
 ######################################
 add_executable(OutlineProxyController
     outline_proxy_controller.cpp

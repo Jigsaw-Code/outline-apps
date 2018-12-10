@@ -83,10 +83,3 @@ Contains the main function which makes instances of ControllerConfig and Outline
   - routeDirectly: It basically reverse everything which routeThroughOutline does: Delete all defaults route on the system. Adds a default route for previously default gateway of the system. It then delete the exceptional route for the outline proxy server traffic. It enables IPv6 on all system interfaces and restore the DNS setting its backed-up values provided that such back exists.
   
   ~OutlineProxyController: the destructor, calls routeDirectly in case routing has been set to be through the tun device and then delete the tun device.
-  
-## Unit tests
-
-Unit tests are written in Catch minimalist framework. As writing unit test was not provisioned in the project, the tests are gauged toward the developers' environment and will likely to fails if run on other machines. Nonetheless, changing few constants makes them pass. To run the tests, simply run 
-
-   ./OutlineProxyControllerTester
-    
