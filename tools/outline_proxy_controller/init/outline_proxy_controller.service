@@ -1,0 +1,11 @@
+[Unit]
+Description=Outline Proxy Routing Controller
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/etc/systemd/system/OutlineProxyController --socket-filename=/var/run/outline_controller
+
+[Install]
+WantedBy=multi-user.target
