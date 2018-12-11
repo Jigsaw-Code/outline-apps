@@ -10,7 +10,7 @@
   },
   "__COMMENTS__": [
     "Do not upgrade to Cordova 7 without fixing the resulting breakages",
-    "natives@1.1.3 for Gulp on Node 10+: https://github.com/gulpjs/gulp/issues/2162#issuecomment-385197164"
+    "natives@1.1.6 for Gulp 3.x on Node 10.x: https://github.com/gulpjs/gulp/issues/2162#issuecomment-385197164"
   ],
   "dependencies": {
     "@sentry/electron": "^0.8.1",
@@ -64,6 +64,6 @@
     "xml2js": "^0.4.17"
   },
   "resolutions": {
-    "natives": "1.1.3"
+    "natives": "1.1.6"
   }
 }
