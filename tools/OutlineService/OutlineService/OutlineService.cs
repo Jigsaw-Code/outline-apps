@@ -483,7 +483,7 @@ namespace OutlineService
             try
             {
                 RunCommand(CMD_NETSH,
-                    $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
+                    $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0 store=active");
             }
             catch (Exception)
             {
@@ -511,7 +511,7 @@ namespace OutlineService
             {
                 foreach (string subnet in IPV4_SUBNETS)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0 store=active");
                 }
             }
             catch (Exception e)
@@ -561,7 +561,7 @@ namespace OutlineService
             {
                 foreach (string subnet in IPV6_SUBNETS)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0");
+                    RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0 store=active");
                 }
             }
             catch (Exception e)
@@ -578,7 +578,7 @@ namespace OutlineService
                 foreach (string subnet in IPV4_RESERVED_SUBNETS)
                 {
                     RunCommand(CMD_NETSH,
-                      $"interface ipv4 add route {subnet} nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
+                      $"interface ipv4 add route {subnet} nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0 store=active");
                 }
             }
             catch (Exception e)
