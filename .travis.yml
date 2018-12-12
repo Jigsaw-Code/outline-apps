@@ -32,7 +32,8 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 stages:
-  - build and unit test
+  - name: build and unit test
+    if: type != cron
   - name: tag
     if: type = cron
   - name: package
