@@ -21,6 +21,7 @@ import * as path from 'path';
 export interface SerializableConnection {
   id: string;
   config: cordova.plugins.outline.ServerConfig;
+  isUdpSupported?: boolean;
 }
 
 // Persistence layer for a single SerializableConnection.
