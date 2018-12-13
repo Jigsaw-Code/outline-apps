@@ -152,7 +152,7 @@ function writeEnvJson(platform, config, isRelease) {
   if (process.platform.includes('win')) {
     envScript = `sh ${envScript}`;
   }
-  runCommand(`${envScript} -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function () {
+  runCommand(`${envScript} -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function() {
     gutil.log(`Wrote ${envFile}`);
   });
 }

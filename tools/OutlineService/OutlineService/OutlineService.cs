@@ -483,7 +483,7 @@ namespace OutlineService
             try
             {
                 RunCommand(CMD_NETSH,
-                    $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
+                    $"interface ipv4 add route {proxyIp}/32 nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0 store=active");
             }
             catch (Exception)
             {
@@ -511,7 +511,7 @@ namespace OutlineService
             {
                 foreach (string subnet in IPV4_SUBNETS)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={routerIp} interface={TAP_DEVICE_NAME} metric=0 store=active");
                 }
             }
             catch (Exception e)
@@ -561,7 +561,7 @@ namespace OutlineService
             {
                 foreach (string subnet in IPV6_SUBNETS)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0");
+                    RunCommand(CMD_NETSH, $"interface ipv6 add route {subnet} interface={NetworkInterface.IPv6LoopbackInterfaceIndex} metric=0 store=active");
                 }
             }
             catch (Exception e)
@@ -578,7 +578,7 @@ namespace OutlineService
                 foreach (string subnet in IPV4_RESERVED_SUBNETS)
                 {
                     RunCommand(CMD_NETSH,
-                      $"interface ipv4 add route {subnet} nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0");
+                      $"interface ipv4 add route {subnet} nexthop={systemGatewayIp} interface=\"{interfaceName}\" metric=0 store=active");
                 }
             }
             catch (Exception e)
@@ -686,6 +686,18 @@ namespace OutlineService
             return interfacesWithIpv4Gateways.First();
         }
 
+        private Boolean IsInterfaceConnected(string interfaceName)
+        {
+            if (interfaceName == null)
+            {
+                return false;
+            }
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(i => i.Name == interfaceName)
+                .Where(i => i.OperationalStatus == OperationalStatus.Up)
+                .Count() > 0; 
+        }
+
         private void SetGatewayProperties(NetworkInterface gateway)
         {
             gatewayIp = gateway != null ? GetInterfaceGatewayIpv4(gateway) : null;
@@ -727,7 +739,13 @@ namespace OutlineService
                 else
                 {
                     eventLog.WriteEntry($"Unsupported routing table after network change: {e.Message}");
-                    ResetRoutingOnNetworkError();
+                    // A new interface came up. Don't fail the connection if the current interface is up. 
+                    // This commonly occurs when Ethernet is plugged in while connected to WiFi, causing
+                    // there to be multiple interfaces with gateways.
+                    if (!IsInterfaceConnected(gatewayInterfaceName))
+                    {
+                        ResetRoutingOnNetworkError();
+                    }
                 }
                 return;
             }
@@ -782,11 +800,10 @@ namespace OutlineService
             {
                 AddIpv4Redirect(routerIp);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                eventLog.WriteEntry("Failed to configure IPv4 routes", EventLogEntryType.Error);
-                ResetRoutingOnNetworkError();
-                return;
+                // Do not fail the connection. The route most likely already exists.
+                eventLog.WriteEntry($"Failed to configure IPv4 routes: {e.Message}", EventLogEntryType.Warning);
             }
             SendConnectionStatusChange(ConnectionStatus.Connected);
             SetGatewayProperties(newGateway);
