@@ -15,6 +15,6 @@ third_party {
   local_modifications:
     "Added support for proxying DNS traffic over Shadwosocks UDP relay - see
     " 'OUTLINE' comments in tun2socks/tun2socks.c. "
-    "Added SOCKS5 UDP support. "
+    "Added SOCKS5 UDP support with optimized DNS handling. "
   last_upgrade_date { year: 2017 month: 6 day: 29 }
 }

@@ -35,6 +35,8 @@
 
 #include <generated/blog_channel_SocksUdpClient.h>
 
+#define DNS_PORT 53
+
 static int addr_comparator (void *unused, BAddr *v1, BAddr *v2);
 static struct SocksUdpClient_connection * find_connection_by_addr (SocksUdpClient *o, BAddr addr);
 static void init_localhost4(uint32_t *ip4);
@@ -51,6 +53,7 @@ static void connection_free (struct SocksUdpClient_connection *con);
 static void connection_send (struct SocksUdpClient_connection *con, BAddr remote_addr, const uint8_t *data, int data_len);
 static void first_job_handler(struct SocksUdpClient_connection *con);
 static int compute_mtu(int udp_mtu);
+static int get_dns_id(BAddr *remote_addr, const uint8_t *data, int data_len);
 
 static int addr_comparator (void *unused, BAddr *v1, BAddr *v2)
 {
@@ -176,6 +179,20 @@ static void recv_if_handler_send(struct SocksUdpClient_connection *con, uint8_t 
     // pass packet to user
     SocksUdpClient *client = con->client;
     client->handler_received(client->user, con->local_addr, remote_addr, body_data, body_len);
+
+    if (con->dns_id >= 0) {
+        // This connection has only been used for a single DNS query.
+        int recv_dns_id = get_dns_id(&remote_addr, body_data, body_len);
+        if (recv_dns_id == con->dns_id) {
+            // We have now forwarded the response, so this connection is no longer needed.
+            connection_free(con);
+        } else {
+            BLog(BLOG_INFO,
+                 "DNS client port received an unexpected non-DNS packet.  "
+                 "Disabling DNS optimization.");
+            con->dns_id = -1;
+        }
+    }
 }
 
 static struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAddr local_addr,
@@ -205,6 +222,8 @@ static struct SocksUdpClient_connection *connection_init(SocksUdpClient *o, BAdd
     con->first_data_len = first_data_len;
     con->first_remote_addr = first_remote_addr;
     memcpy(con->first_data, first_data, first_data_len);
+    
+    con->dns_id = get_dns_id(&first_remote_addr, first_data, first_data_len);
     
     BPendingGroup *pg = BReactor_PendingGroup(o->reactor);
     
@@ -358,6 +377,15 @@ static void connection_send (struct SocksUdpClient_connection *con, BAddr remote
     ASSERT(data_len >= 0)
     ASSERT(data_len <= o->udp_mtu)
     
+    if (con->dns_id >= 0) {
+        // So far, this connection has only sent a single DNS query.
+        int new_dns_id = get_dns_id(&remote_addr, data, data_len);
+        if (new_dns_id != con->dns_id) {
+            BLog(BLOG_DEBUG, "Client reused DNS query port.  Disabling DNS optimization.");
+            con->dns_id = -1;
+        }
+    }
+    
     // Check if we're sending to an IPv4 or IPv6 destination.
     int atyp;
     size_t address_size;
@@ -422,6 +450,14 @@ static void first_job_handler(struct SocksUdpClient_connection *con)
 static int compute_mtu(int udp_mtu)
 {
     return udp_mtu + sizeof(struct socks_udp_header) + sizeof(struct socks_addr_ipv6);
+}
+
+static int get_dns_id(BAddr *remote_addr, const uint8_t *data, int data_len)
+{
+    if (BAddr_GetPort(remote_addr) == htons(DNS_PORT) && data_len >= 2) {
+        return (data[0] << 8) + data[1];
+    }
+    return -1;
 }
 
 void SocksUdpClient_Init (SocksUdpClient *o, int udp_mtu, int max_connections, btime_t keepalive_time,
