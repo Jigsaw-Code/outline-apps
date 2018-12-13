@@ -25,40 +25,38 @@ const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
 const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
 const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
 
-export function pathToEmbeddedBinaryFolder() {
-  return path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform());
-}
-
-export function pathToServiceInstallationScript() {}
-
 // The returned path must be kept in sync with:
 //  - the destination path for the binaries in build_action.sh
 //  - the value specified for --config.asarUnpack in package_action.sh
-export function pathToEmbeddedBinary(basename: string) {
+export function pathToEmbeddedBinary(filename: string) {
   return path.join(
-      pathToEmbeddedBinaryFolder(),
-      //      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
-      `${basename}` + (isWindows ? '.exe' : ''));
+      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
+      filename + (isWindows ? '.exe' : ''));
 }
 
 export function getServiceStartCommand(): string {
   if (isWindows) {
+    // Locating the script is tricky: when packaged, this basically boils down to:
+    //   c:\program files\Outline\
+    // but during development:
+    //   build/windows
+    //
+    // Surrounding quotes important, consider "c:\program files"!
     return `"${
         path.join(
             app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) :
                                                     app.getAppPath(),
-            'install_' + os.platform() + '_service.' + (isWindows ? 'bat' : 'sh'))}"`;
+            'install_windows_service.bat')}"`;
   } else if (isLinux) {
     return path.join(copyServiceFilesToTempFolder(), LINUX_INSTALLER_FILENAME);
   } else {
-    throw new Error('Unsupported Operating System');
+    throw new Error('unsupported os');
   }
 }
 
-// On some distributions, root is not allowed access the AppImage folder.
-// Instead, copy those files to /tmp.
-export function copyServiceFilesToTempFolder() {
-  const tmp = fs.mkdtempSync('/tmp/');
+// On some distributions, root is not allowed access the AppImage folder: copy the files to /tmp.
+function copyServiceFilesToTempFolder() {
+  const tmp = fs.mkdtempSync('/tmp');
   [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(
       (filename) => {
         const src = pathToEmbeddedBinary(filename);
