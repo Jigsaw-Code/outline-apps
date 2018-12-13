@@ -56,7 +56,8 @@ export function getServiceStartCommand(): string {
 
 // On some distributions, root is not allowed access the AppImage folder: copy the files to /tmp.
 function copyServiceFilesToTempFolder() {
-  const tmp = fs.mkdtempSync('/tmp');
+  const tmp = fs.mkdtempSync('/tmp/');
+  console.log(`copying service files to ${tmp}`);
   [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(
       (filename) => {
         const src = pathToEmbeddedBinary(filename);
