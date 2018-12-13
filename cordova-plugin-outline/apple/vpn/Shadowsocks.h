@@ -45,11 +45,6 @@ extern const int kShadowsocksLocalPort;
  */
 - (void)stop:(void (^)(ErrorCode))completion;
 
-/**
- * Determines weather the server is reachable via TCP at "host" and "port" in |config|.
- */
-- (void)isReachable:(void (^)(ErrorCode))completion;
-
 @end
 
 #endif /* Shadowsocks_h */

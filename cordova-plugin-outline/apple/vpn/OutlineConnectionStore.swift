@@ -21,6 +21,7 @@ import CocoaLumberjackSwift
 class OutlineConnectionStore: NSObject {
   private static let kConnectionStoreKey = "connectionStore"
   private static let kConnectionStatusKey = "connectionStatus"
+  private static let kUdpSupportKey = "udpSupport"
 
   private let defaults: UserDefaults?
 
@@ -56,6 +57,15 @@ class OutlineConnectionStore: NSObject {
     }
     set(newStatus) {
       defaults?.set(newStatus.rawValue, forKey: OutlineConnectionStore.kConnectionStatusKey)
+    }
+  }
+
+  var isUdpSupported: Bool {
+    get {
+      return defaults?.bool(forKey: OutlineConnectionStore.kUdpSupportKey) ?? false
+    }
+    set(udpSupport) {
+      defaults?.set(udpSupport, forKey: OutlineConnectionStore.kUdpSupportKey)
     }
   }
 }

@@ -60,6 +60,7 @@
 		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
 		FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */; };
+		FCABE26521AF5CF1009B7C93 /* ShadowsocksConnectivity.m in Sources */ = {isa = PBXBuildFile; fileRef = FCABE26321AF5CF1009B7C93 /* ShadowsocksConnectivity.m */; };
 		FCAFD3171FBA528C0057EE7F /* Shadowsocks_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCAFD3131FBA52690057EE7F /* Shadowsocks_macOS.framework */; };
 /* End PBXBuildFile section */
 
@@ -194,6 +195,8 @@
 		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.framework"; sourceTree = "<group>"; };
 		FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjackSwift.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.framework"; sourceTree = "<group>"; };
 		FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
+		FCABE26321AF5CF1009B7C93 /* ShadowsocksConnectivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShadowsocksConnectivity.m; sourceTree = "<group>"; };
+		FCABE26421AF5CF1009B7C93 /* ShadowsocksConnectivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowsocksConnectivity.h; sourceTree = "<group>"; };
 		FCAFD3131FBA52690057EE7F /* Shadowsocks_macOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shadowsocks_macOS.framework; path = "Outline/Plugins/cordova-plugin-outline/Shadowsocks_macOS.framework"; sourceTree = "<group>"; };
 		FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -385,6 +388,8 @@
 		FC5FF92C1F3E1E5F0032A745 /* VpnExtension */ = {
 			isa = PBXGroup;
 			children = (
+				FCABE26421AF5CF1009B7C93 /* ShadowsocksConnectivity.h */,
+				FCABE26321AF5CF1009B7C93 /* ShadowsocksConnectivity.m */,
 				FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */,
 				FC5FF9491F3E1EF00032A745 /* PacketTunnelProvider.h */,
 				FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */,
@@ -636,6 +641,7 @@
 			files = (
 				FC28C284201A93D6005FD743 /* OutlineConnection.swift in Sources */,
 				FC5FF94E1F3E1EF00032A745 /* PacketTunnelProvider.m in Sources */,
+				FCABE26521AF5CF1009B7C93 /* ShadowsocksConnectivity.m in Sources */,
 				FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */,
 				FC28C2B720223167005FD743 /* OutlineConnectionStore.swift in Sources */,
 				FC5FF94F1F3E1EF00032A745 /* Shadowsocks.m in Sources */,
