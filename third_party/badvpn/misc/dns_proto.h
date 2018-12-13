@@ -48,6 +48,7 @@ B_END_PACKED
 #define DNS_QR 0x80
 #define DNS_TC 0x02
 #define DNS_Z  0x70
+#define DNS_RCODE 0x0F
 
 #define DNS_ID_STRLEN 6
 
@@ -73,6 +74,16 @@ static int dns_check(const uint8_t *data, int data_len,
             && (out_header->ra_z_rcode & DNS_Z) == 0 /* Z is Zero */
             && out_header->qdcount > 0 /* some questions */
             && !out_header->nscount && !out_header->ancount /* no answers */;
+}
+
+// Synthesizes a truncated DNS response by modifying |query|.
+static void dns_synthesize_truncated_response(struct dns_header *query) {
+  query->qr_opcode_aa_tc_rd |= DNS_QR;
+  query->qr_opcode_aa_tc_rd |= DNS_TC;
+  query->ra_z_rcode &= ~DNS_RCODE;
+  query->ancount = query->qdcount;
+  query->nscount = 0;
+  query->arcount = 0;
 }
 
  #endif  // BADVPN_MISC_DNS_PROTO_H

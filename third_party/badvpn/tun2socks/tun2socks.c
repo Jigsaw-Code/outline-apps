@@ -132,9 +132,9 @@ struct {
     // ==== PSIPHON ====
     // ==== OUTLINE ====
 #ifndef BADVPN_USE_WINAPI
-    int transparent_dns;
     char *dns_resolver_addr;
 #endif
+    int transparent_dns;
     int socks5_udp;
     char *udp_relay_addr;
     // ==== OUTLINE ====
@@ -283,6 +283,11 @@ static void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr rem
 
 //==== OUTLINE ====
 #ifndef BADVPN_USE_WINAPI
+
+// Returns whether DNS resolution over UDP is supported.
+static int supports_dns_over_udp() {
+    return options.udp_relay_addr && options.dns_resolver_addr;
+}
 
 // UDP process control block, used for UDP communications housekeeping.
 typedef struct {
@@ -478,12 +483,18 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
 
     const char* vpnIpAddressStr = (*env)->GetStringUTFChars(env, vpnIpAddress, 0);
     const char* vpnNetMaskStr = (*env)->GetStringUTFChars(env, vpnNetMask, 0);
+    const char* socksServerAddressStr = socksServerAddress != NULL
+                                            ? (*env)->GetStringUTFChars(env, socksServerAddress, 0)
+                                            : NULL;
+    const char* udpRelayAddressStr = udpRelayAddress != NULL
+                                        ? (*env)->GetStringUTFChars(env, udpRelayAddress, 0)
+                                        : NULL;
     const char* vpnIpV6AddressStr = vpnIpV6Address != NULL
                                         ? (*env)->GetStringUTFChars(env, vpnIpV6Address, 0)
                                         : NULL;
-    const char* socksServerAddressStr = (*env)->GetStringUTFChars(env, socksServerAddress, 0);
-    const char* udpRelayAddressStr = (*env)->GetStringUTFChars(env, udpRelayAddress, 0);
-    const char* dnsResolverAddressStr = (*env)->GetStringUTFChars(env, dnsResolverAddress, 0);
+    const char* dnsResolverAddressStr = dnsResolverAddress != NULL
+                                        ? (*env)->GetStringUTFChars(env, dnsResolverAddress, 0)
+                                        : NULL;
 
     init_arguments("Outline tun2socks");
 
@@ -511,9 +522,15 @@ JNIEXPORT jint JNICALL Java_org_outline_tun2socks_Tun2SocksJni_start(
     if (vpnIpV6Address != NULL) {
         (*env)->ReleaseStringUTFChars(env, vpnIpV6Address, vpnIpV6AddressStr);
     }
-    (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
-    (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
-    (*env)->ReleaseStringUTFChars(env, dnsResolverAddress, dnsResolverAddressStr);
+    if (socksServerAddressStr != NULL) {
+        (*env)->ReleaseStringUTFChars(env, socksServerAddress, socksServerAddressStr);
+    }
+    if (udpRelayAddressStr != NULL) {
+        (*env)->ReleaseStringUTFChars(env, udpRelayAddress, udpRelayAddressStr);
+    }
+    if (dnsResolverAddressStr != NULL) {
+        (*env)->ReleaseStringUTFChars(env, dnsResolverAddress, dnsResolverAddressStr);
+    }
 
     g_env = 0;
 
@@ -742,8 +759,10 @@ void run()
 
     // ==== OUTLINE ====
 #ifndef BADVPN_USE_WINAPI
-    if (!udp_init(&udp_pcb)) {
-        goto fail5;
+    if (supports_dns_over_udp()) {
+        if (!udp_init(&udp_pcb)) {
+            goto fail5;
+        }
     }
 #endif
     // ==== OUTLINE ====
@@ -793,7 +812,9 @@ void run()
 
     // ==== OUTLINE ====
 #ifndef BADVPN_USE_WINAPI
-    udp_free(&udp_pcb);
+    if (supports_dns_over_udp()) {
+        udp_free(&udp_pcb);
+    }
 #endif
     // ==== OUTLINE ====
 
@@ -911,8 +932,8 @@ void init_arguments (const char* program_name)
     options.udpgw_max_connections = DEFAULT_UDPGW_MAX_CONNECTIONS;
     options.udpgw_connection_buffer_size = DEFAULT_UDPGW_CONNECTION_BUFFER_SIZE;
     // ==== OUTLINE ====
-#ifndef BADVPN_USE_WINAPI
     options.transparent_dns = 0;
+#ifndef BADVPN_USE_WINAPI
     options.dns_resolver_addr = NULL;
 #endif
     options.socks5_udp = 0;
@@ -1106,12 +1127,11 @@ int parse_arguments (int argc, char *argv[])
                 return 0;
             }
             i++;
-        }
         // ==== OUTLINE ====
-#ifndef BADVPN_USE_WINAPI
-        else if (!strcmp(arg, "--transparent-dns")) {
+        } else if (!strcmp(arg, "--transparent-dns")) {
             options.transparent_dns = 1;
         }
+#ifndef BADVPN_USE_WINAPI
         else if (!strcmp(arg, "--dns-resolver-addr")) {
             if (1 >= argc - i) {
                 fprintf(stderr, "%s: requires an argument\n", arg);
@@ -1251,12 +1271,7 @@ int process_arguments (void)
 
     // ==== OUTLINE ====
 #ifndef BADVPN_USE_WINAPI
-    if (options.transparent_dns) {
-        if (!options.dns_resolver_addr || !options.udp_relay_addr) {
-            BLog(BLOG_ERROR,
-                 "transparentDNS requires a DNS resolver address and a UDP relay address");
-            return 0;
-        }
+    if (options.dns_resolver_addr) {
         BLog(BLOG_INFO, "DNS resolver address: %s", options.dns_resolver_addr);
         // Resolve DNS server address
         if (!BAddr_Parse2(&dns_resolver_addr, options.dns_resolver_addr, NULL, 0, 0)) {
@@ -1484,7 +1499,8 @@ int process_device_udp_packet (uint8_t *data, int data_len)
 #ifndef BADVPN_USE_WINAPI
         !options.dns_resolver_addr &&
 #endif
-        !options.udp_relay_addr) {
+        !options.transparent_dns && !options.udp_relay_addr) {
+        BLog(BLOG_WARNING, "cannot process UDP packet");
         goto fail;
     }
 
@@ -1531,13 +1547,8 @@ int process_device_udp_packet (uint8_t *data, int data_len)
             BAddr_InitIPv4(&local_addr, ipv4_header.source_address, udp_header.source_port);
             BAddr_InitIPv4(&remote_addr, ipv4_header.destination_address, udp_header.dest_port);
 
-#ifndef BADVPN_USE_WINAPI
-            // if transparent DNS is enabled, any packet to the DNS resolver on
-            // port 53 is considered a DNS packet
-            is_dns = (options.transparent_dns &&
-                      remote_addr.ipv4.ip == dns_resolver_addr.ipv4.ip &&
-                      udp_header.dest_port == hton16(UDP_DNS_PORT));
-#endif
+            // Assume UDP packets to port 53 are DNS.
+            is_dns = udp_header.dest_port == hton16(UDP_DNS_PORT);
         } break;
 
         case 6: {
@@ -1598,8 +1609,8 @@ int process_device_udp_packet (uint8_t *data, int data_len)
     BLog(BLOG_DEBUG, "UDP: %s -> %s. DNS: %d", local_addr_str, remote_addr_str, is_dns);
 
 #ifndef BADVPN_USE_WINAPI
-    if (options.transparent_dns && is_dns) {
-        // Wrap the payload in a UDP SOCKS header.
+    if (options.transparent_dns && is_dns && supports_dns_over_udp()) {
+        // The SOCKS server supports UDP forwarding. Wrap the payload in a UDP SOCKS header.
         static size_t socks_udp_header_len = sizeof(struct socks_udp_header);
         struct socks_udp_header header;
         memset(&header, 0, socks_udp_header_len);
@@ -1639,6 +1650,11 @@ int process_device_udp_packet (uint8_t *data, int data_len)
                                       is_dns, data, data_len);
     } else if (options.socks5_udp) {
         SocksUdpClient_SubmitPacket(&socks_udp_client, local_addr, remote_addr, data, data_len);
+    } else if (options.transparent_dns && is_dns) {
+        // The SOCKS server does not support UDP forwarding. Send a DNS response with a
+        // truncated bit so that the client retries over TCP.
+        dns_synthesize_truncated_response((struct dns_header *)data);
+        udp_send_packet_to_device(NULL, local_addr, remote_addr, data, data_len);
     }
 
     return 1;
