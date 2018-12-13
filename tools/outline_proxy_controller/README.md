@@ -1,23 +1,19 @@
-# Outline Proxy Controller Daemon for GNU/Linux
+# Outline Proxy Controller
 
-## Building 
+## Introduction
 
-You need Boost C++ Libraries version 1.67 or newer to be able to make the proxy controller. you can download the source and build it as follows:
+A `systemd` daemon for Linux, like the Windows client's `OutlineService`.
 
-    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.bz2
-    tar xf boost_1_67_0.tar.bz2
-    cd boost_1_67_0
-    ./bootstrap.sh
-    ./b2 toolset=gcc -j`nproc`
+## Build
 
-To build controller daemon clone the outline client repo
+We provide a script to build the binary in a reproducible way:
 
-    cd outline-client/tools/outline_proxy_controller/
-    mkdir build
-    cd build
-    cmake .. -DBOOST_ROOT=/path/to/boost_1_67_0
-    make 
-    
+    yarn do tools/outline_proxy_controller/build
+
+When successful, it will update the binary checked into `tools/outline_proxy_controller/build/OutlineProxyController`.
+
+## Run
+
 To run 
 
     sudo ./OutlineProxyController /var/run/outline_controller [-d]
@@ -44,7 +40,7 @@ Your traffic is sent over Outline. To resume normal routing (not through outline
     
 Into the socket.
 
-## Hacking
+## Hack
 
 The boost libraries has been used mainly for argument processing, and async communication on unix socket.
 

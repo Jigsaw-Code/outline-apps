@@ -38,7 +38,7 @@ rsync -ac \
 echo $OUTPUT
 cp src/electron/install_linux_service.sh $BIN_DEST
 rsync -ac \
-  tools/outline_proxy_controller/build/ \
+  tools/outline_proxy_controller/bin/ \
   tools/outline_proxy_controller/init/ $BIN_DEST
 
 # Version info and Sentry config.
