@@ -132,7 +132,8 @@ export class RoutingService {
                 return reject(new errors.SystemConfigurationException(sudoError.toString()));
               }
             }
-            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            // TODO: stdout/stderr are empty on Linux
+            console.info(`installed routing service (stdout: ${stdout}, stderr: ${stderr})`);
             this.sendRequest(request, false).then(resolve, reject);
           });
           return;
