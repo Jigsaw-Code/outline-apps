@@ -20,15 +20,8 @@ import * as sudo from 'sudo-prompt';
 import * as errors from '../www/model/errors';
 import {getServiceStartCommand} from './util';
 
-const isWindows = os.platform() === 'win32';
-// Locating the script is tricky: when packaged, this basically boils down to:
-//   c:\program files\Outline\
-// but during development:
-//   build/windows
-//
-// Surrounding quotes important, consider "c:\program files"!
-const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
-
+const SERVICE_NAME =
+    os.platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 interface RoutingServiceRequest {
   action: string;
@@ -126,24 +119,22 @@ export class RoutingService {
       this.ipcConnection.once('error', (e: NetError) => {
         if (retry) {
           console.info(`bouncing OutlineService (${e.errno})`);
-          sudo.exec(
-              getServiceStartCommand(), {name: 'Outline'}, (sudoError, stdout, stderr) => {
-                if (sudoError) {
-                  // Yes, this seems to be the only way to tell.
-                  if ((typeof sudoError === 'string') &&
-                      sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
-                    return reject(new errors.NoAdminPermissions());
-                  } else {
-                    // It's unclear what type sudoError is because it has no message
-                    // field. toString() seems to work in most cases, so use that -
-                    // anything else will eventually show up in Sentry.
-                    return reject(new errors.SystemConfigurationException(sudoError.toString()));
-                  }
-                }
-                console.info(
-                    `ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
-                this.sendRequest(request, false).then(resolve, reject);
-              });
+          sudo.exec(getServiceStartCommand(), {name: 'Outline'}, (sudoError, stdout, stderr) => {
+            if (sudoError) {
+              // Yes, this seems to be the only way to tell.
+              if ((typeof sudoError === 'string') &&
+                  sudoError.toLowerCase().indexOf('did not grant permission') >= 0) {
+                return reject(new errors.NoAdminPermissions());
+              } else {
+                // It's unclear what type sudoError is because it has no message
+                // field. toString() seems to work in most cases, so use that -
+                // anything else will eventually show up in Sentry.
+                return reject(new errors.SystemConfigurationException(sudoError.toString()));
+              }
+            }
+            console.info(`ran install_windows_service.bat (stdout: ${stdout}, stderr: ${stderr})`);
+            this.sendRequest(request, false).then(resolve, reject);
+          });
           return;
         } else {
           reject(new Error(`Routing Daemon/Service is not running.`));

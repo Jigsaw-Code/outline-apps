@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo "[Running linux build script]"
 
 yarn do src/www/build
 
@@ -35,8 +34,7 @@ rsync -ac \
   third_party/shadowsocks-libev/linux/ third_party/badvpn/linux/ \
   $BIN_DEST
 
-
-  # Copy files for OutlineProxyController.
+# Copy files for OutlineProxyController.
 echo $OUTPUT
 cp src/electron/install_linux_service.sh $BIN_DEST
 rsync -ac \

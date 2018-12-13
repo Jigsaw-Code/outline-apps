@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/electron/build
+yarn do src/electron/linux/build
 
 mkdir -p build/linux
 cp package.json build/linux/
