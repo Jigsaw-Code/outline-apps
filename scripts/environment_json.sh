@@ -84,8 +84,12 @@ case $PLATFORM in
     APP_VERSION=$(pull_from_osx_plist CFBundleShortVersionString)
     APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
     ;;
-  windows | linux)
+  windows)
     APP_VERSION=$(node -r fs -p 'JSON.parse(fs.readFileSync("package.json")).version;')
+    APP_BUILD_NUMBER="NA"
+    ;;
+  linux)
+    APP_VERSION=BETA
     APP_BUILD_NUMBER="NA"
     ;;
   *) usage ;;

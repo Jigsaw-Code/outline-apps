@@ -107,6 +107,11 @@ jobs:
       script:
         - yarn && yarn do apple/scripts/ios_package_remote
 
+    - stage: package
+      env:
+        - DESC=linux
+      script: yarn do src/electron/linux/package
+
     - stage: android
       sudo: required
       services: docker
@@ -137,6 +142,7 @@ deploy:
     - platforms/android/app/build/outputs/apk/**/*.apk
     - platforms/ios/Outline.ipa
     - build/windows/dist/*.exe
+    - build/linux/dist/*.AppImage
   skip_cleanup: true
   on:
     tags: true

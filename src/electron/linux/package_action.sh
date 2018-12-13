@@ -27,4 +27,5 @@ electron-builder \
   --publish=never \
   --linux AppImage \
   --config.linux.category=Network \
-  --config.linux.icon=icons/png
+  --config.linux.icon=icons/png \
+  --config.artifactName='Outline-Client.${ext}'
