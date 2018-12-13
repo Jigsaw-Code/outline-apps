@@ -20,15 +20,8 @@ import * as sudo from 'sudo-prompt';
 import * as errors from '../www/model/errors';
 import {getServiceStartCommand} from './util';
 
-const isWindows = os.platform() === 'win32';
-// Locating the script is tricky: when packaged, this basically boils down to:
-//   c:\program files\Outline\
-// but during development:
-//   build/windows
-//
-// Surrounding quotes important, consider "c:\program files"!
-const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
-
+const SERVICE_NAME =
+    os.platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 interface RoutingServiceRequest {
   action: string;
