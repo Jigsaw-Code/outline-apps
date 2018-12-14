@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 INPUT=$1
 OUTPUT=$2
@@ -6,6 +6,7 @@ OUTPUT=$2
 types=""
 keys=""
 rels=""
+syns=""
 abss=""
 sws=""
 mscs=""
@@ -17,7 +18,7 @@ ffstatuss=""
 while read LINE; do
     tab=$'\t'
     space="[ ${tab}]"
-    regex="^#define ((EV|KEY|BTN|REL|ABS|SW|MSC|LED|REP|SND|FF_STATUS)_[A-Z0-9_]+)${space}"
+    regex="^#define ((EV|SYN|KEY|BTN|REL|ABS|SW|MSC|LED|REP|SND|FF_STATUS)_[A-Z0-9_]+)${space}"
     if [[ $LINE =~ $regex ]]; then
         type=${BASH_REMATCH[2]}
         name=${BASH_REMATCH[1]}
@@ -26,6 +27,9 @@ while read LINE; do
                 types="${types}    [${name}] = \"${name}\",
 "
             fi
+        elif [[ $type = "SYN" ]]; then
+            syns="${syns}    [${name}] = \"${name}\",
+"
         elif [[ $type = "KEY" ]] || [[ $type = "BTN" ]]; then
             if [[ $name != "KEY_MIN_INTERESTING" ]]; then
                 keys="${keys}    [${name}] = \"${name}\",
@@ -63,6 +67,9 @@ done < "${INPUT}"
 echo "
 static const char *type_names[] = {
 ${types}};
+
+static const char *syn_names[] = {
+${syns}};
 
 static const char *key_names[] = {
 ${keys}};

@@ -34,11 +34,15 @@
 #include <structure/BAVL.h>
 #include <structure/CHash.h>
 #include <structure/LinkedList0.h>
+#include <structure/Vector.h>
 #include <base/DebugObject.h>
+#include <ncd/NCDStringIndex.h>
 #include <ncd/NCDModule.h>
 #include <ncd/NCDMethodIndex.h>
 
 #define NCDMODULEINDEX_MODULES_HASH_SIZE 512
+#define NCDMODULEINDEX_FUNCTIONS_VEC_INITIAL_SIZE 32
+#define NCDMODULEINDEX_FUNCTIONS_HASH_SIZE 64
 
 struct NCDModuleIndex_module {
     struct NCDInterpModule imodule;
@@ -60,21 +64,36 @@ struct NCDModuleIndex_group {
     struct NCDModuleIndex_module modules[];
 };
 
+struct NCDModuleIndex__Func {
+    struct NCDInterpFunction ifunc;
+    int hash_next;
+};
+
 typedef struct NCDModuleIndex_module *NCDModuleIndex__mhash_link;
 typedef const char *NCDModuleIndex__mhash_key;
+
+typedef struct NCDModuleIndex_s NCDModuleIndex;
 
 #include "NCDModuleIndex_mhash.h"
 #include <structure/CHash_decl.h>
 
-typedef struct {
+#include "NCDModuleIndex_func_vec.h"
+#include <structure/Vector_decl.h>
+
+#include "NCDModuleIndex_fhash.h"
+#include <structure/CHash_decl.h>
+
+struct NCDModuleIndex_s {
     NCDModuleIndex__MHash modules_hash;
 #ifndef NDEBUG
     BAVL base_types_tree;
 #endif
     LinkedList0 groups_list;
     NCDMethodIndex method_index;
+    NCDModuleIndex__FuncVec func_vec;
+    NCDModuleIndex__FuncHash func_hash;
     DebugObject d_obj;
-} NCDModuleIndex;
+};
 
 int NCDModuleIndex_Init (NCDModuleIndex *o, NCDStringIndex *string_index) WARN_UNUSED;
 void NCDModuleIndex_Free (NCDModuleIndex *o);
@@ -82,5 +101,6 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
 const struct NCDInterpModule * NCDModuleIndex_FindModule (NCDModuleIndex *o, const char *type);
 int NCDModuleIndex_GetMethodNameId (NCDModuleIndex *o, const char *method_name);
 const struct NCDInterpModule * NCDModuleIndex_GetMethodModule (NCDModuleIndex *o, NCD_string_id_t obj_type, int method_name_id);
+const struct NCDInterpFunction * NCDModuleIndex_FindFunction (NCDModuleIndex *o, NCD_string_id_t func_name_id);
 
 #endif

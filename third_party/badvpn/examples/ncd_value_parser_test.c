@@ -47,12 +47,18 @@ int main (int argc, char *argv[])
     
     BLog_InitStdout();
     
+    NCDStringIndex string_index;
+    if (!NCDStringIndex_Init(&string_index)) {
+        DEBUG("NCDStringIndex_Init failed");
+        goto fail01;
+    }
+    
     NCDValMem mem;
-    NCDValMem_Init(&mem);
+    NCDValMem_Init(&mem, &string_index);
     
     // parse
     NCDValRef val;
-    if (!NCDValParser_Parse(argv[1], strlen(argv[1]), &mem, &val)) {
+    if (!NCDValParser_Parse(MemRef_MakeCstr(argv[1]), &mem, &val)) {
         DEBUG("NCDValParser_Parse failed");
         goto fail1;
     }
@@ -72,6 +78,8 @@ int main (int argc, char *argv[])
     free(str);
 fail1:
     NCDValMem_Free(&mem);
+    NCDStringIndex_Free(&string_index);
+fail01:
     BLog_Free();
 fail0:
     return res;

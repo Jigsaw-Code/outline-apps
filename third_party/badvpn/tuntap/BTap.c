@@ -109,8 +109,10 @@ static void fd_handler (BTap *o, int events)
         
         // try reading into the buffer
         int bytes = read(o->fd, o->output_packet, o->frame_mtu);
-        if (bytes < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        if (bytes <= 0) {
+            // Treat zero return value the same as EAGAIN.
+            // See: https://bugzilla.kernel.org/show_bug.cgi?id=96381
+            if (bytes == 0 || errno == EAGAIN || errno == EWOULDBLOCK) {
                 // retry later
                 break;
             }
@@ -165,8 +167,9 @@ void output_handler_recv (BTap *o, uint8_t *data)
     
     // attempt read
     int bytes = read(o->fd, data, o->frame_mtu);
-    if (bytes < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+    if (bytes <= 0) {
+        if (bytes == 0 || errno == EAGAIN || errno == EWOULDBLOCK) {
+            // See note about zero return in fd_handler.
             // retry later in fd_handler
             // remember packet
             o->output_packet = data;
@@ -269,9 +272,9 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     
     // get MTU
     
-    ULONG umtu = 0;
-
-    if (!DeviceIoControl(o->device, TAP_IOCTL_GET_MTU, &umtu, sizeof(umtu), &umtu, sizeof(umtu), &len, NULL)) {
+    ULONG umtu;
+    
+    if (!DeviceIoControl(o->device, TAP_IOCTL_GET_MTU, NULL, 0, &umtu, sizeof(umtu), &len, NULL)) {
         BLog(BLOG_ERROR, "DeviceIoControl(TAP_IOCTL_GET_MTU) failed");
         goto fail2;
     }

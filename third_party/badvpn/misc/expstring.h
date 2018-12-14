@@ -35,6 +35,7 @@
 #include <misc/debug.h>
 #include <misc/exparray.h>
 #include <misc/bsize.h>
+#include <misc/memref.h>
 
 typedef struct {
     struct ExpArray arr;
@@ -47,9 +48,11 @@ static int ExpString_Append (ExpString *c, const char *str);
 static int ExpString_AppendChar (ExpString *c, char ch);
 static int ExpString_AppendByte (ExpString *c, uint8_t x);
 static int ExpString_AppendBinary (ExpString *c, const uint8_t *data, size_t len);
+static int ExpString_AppendBinaryMr (ExpString *c, MemRef data);
 static int ExpString_AppendZeros (ExpString *c, size_t len);
 static char * ExpString_Get (ExpString *c);
 static size_t ExpString_Length (ExpString *c);
+static MemRef ExpString_GetMr (ExpString *c);
 
 int ExpString_Init (ExpString *c)
 {
@@ -133,6 +136,11 @@ int ExpString_AppendBinary (ExpString *c, const uint8_t *data, size_t len)
     return 1;
 }
 
+int ExpString_AppendBinaryMr (ExpString *c, MemRef data)
+{
+    return ExpString_AppendBinary(c, (uint8_t const *)data.ptr, data.len);
+}
+
 int ExpString_AppendZeros (ExpString *c, size_t len)
 {
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_add(bsize_fromsize(len), bsize_fromint(1)));
@@ -156,6 +164,11 @@ char * ExpString_Get (ExpString *c)
 size_t ExpString_Length (ExpString *c)
 {
     return c->n;
+}
+
+MemRef ExpString_GetMr (ExpString *c)
+{
+    return MemRef_Make((char const *)c->arr.v, c->n);
 }
 
 #endif

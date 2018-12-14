@@ -87,16 +87,12 @@
 #include <misc/offset.h>
 #include <structure/LinkedList0.h>
 #include <structure/LinkedList1.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
 #include <ncd/extra/NCDRequestClient.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/address_utils.h>
 
-#include <generated/blog_channel_ncd_sys_request_client.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
+#include <generated/blog_channel_ncd_sys_request_client.h>
 
 #define CSTATE_CONNECTING 1
 #define CSTATE_CONNECTED 2
@@ -491,7 +487,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     }
     
     // init client
-    if (!NCDRequestClient_Init(&o->client, addr, i->params->iparams->reactor, o,
+    if (!NCDRequestClient_Init(&o->client, addr, i->params->iparams->reactor, i->params->iparams->string_index, o,
         (NCDRequestClient_handler_error)client_handler_error,
         (NCDRequestClient_handler_connected)client_handler_connected)) {
         ModuleLog(o->i, BLOG_ERROR, "NCDRequestClient_Init failed");

@@ -201,8 +201,6 @@ static void connector_fd_handler (BConnector *o, int events)
     ASSERT_FORCE(result_len == sizeof(result))
     
     if (result != 0) {
-        // PSIPHON
-        // BLog(BLOG_ERROR, "connection failed");
         BLog(BLOG_WARNING, "connection failed");
         goto fail0;
     }
@@ -263,8 +261,6 @@ static void connection_send (BConnection *o)
             return;
         }
         
-        // PSIPHON
-        // BLog(BLOG_ERROR, "send failed");
         BLog(BLOG_WARNING, "send failed");
         connection_report_error(o);
         return;
@@ -305,8 +301,6 @@ static void connection_recv (BConnection *o)
             return;
         }
         
-        // PSIPHON
-        // BLog(BLOG_ERROR, "recv failed");
         BLog(BLOG_WARNING, "recv failed");
         connection_report_error(o);
         return;
@@ -444,86 +438,12 @@ int BConnection_AddressSupported (BAddr addr)
     return (addr.type == BADDR_TYPE_IPV4 || addr.type == BADDR_TYPE_IPV6);
 }
 
-int BListener_Init (BListener *o, BAddr addr, BReactor *reactor, void *user,
-                    BListener_handler handler)
-{
-    ASSERT(handler)
-    BNetwork_Assert();
-    
-    // init arguments
-    o->reactor = reactor;
-    o->user = user;
-    o->handler = handler;
-    
-    // set no unix socket path
-    o->unix_socket_path = NULL;
-    
-    // check address
-    if (!BConnection_AddressSupported(addr)) {
-        BLog(BLOG_ERROR, "address not supported");
-        goto fail0;
-    }
-    
-    // convert address
-    struct sys_addr sysaddr;
-    addr_socket_to_sys(&sysaddr, addr);
-    
-    // init fd
-    if ((o->fd = socket(sysaddr.addr.generic.sa_family, SOCK_STREAM, 0)) < 0) {
-        BLog(BLOG_ERROR, "socket failed");
-        goto fail0;
-    }
-    
-    // set non-blocking
-    if (!badvpn_set_nonblocking(o->fd)) {
-        BLog(BLOG_ERROR, "badvpn_set_nonblocking failed");
-        goto fail1;
-    }
-    
-    // set SO_REUSEADDR
-    int optval = 1;
-    if (setsockopt(o->fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-        BLog(BLOG_ERROR, "setsockopt(SO_REUSEADDR) failed");
-    }
-    
-    // bind
-    if (bind(o->fd, &sysaddr.addr.generic, sysaddr.len) < 0) {
-        BLog(BLOG_ERROR, "bind failed");
-        goto fail1;
-    }
-    
-    // listen
-    if (listen(o->fd, BCONNECTION_LISTEN_BACKLOG) < 0) {
-        BLog(BLOG_ERROR, "listen failed");
-        goto fail1;
-    }
-    
-    // init BFileDescriptor
-    BFileDescriptor_Init(&o->bfd, o->fd, (BFileDescriptor_handler)listener_fd_handler, o);
-    if (!BReactor_AddFileDescriptor(o->reactor, &o->bfd)) {
-        BLog(BLOG_ERROR, "BReactor_AddFileDescriptor failed");
-        goto fail1;
-    }
-    BReactor_SetFileDescriptorEvents(o->reactor, &o->bfd, BREACTOR_READ);
-    
-    // init default job
-    BPending_Init(&o->default_job, BReactor_PendingGroup(o->reactor), (BPending_handler)listener_default_job_handler, o);
-    
-    DebugObject_Init(&o->d_obj);
-    return 1;
-    
-fail1:
-    if (close(o->fd) < 0) {
-        BLog(BLOG_ERROR, "close failed");
-    }
-fail0:
-    return 0;
-}
-
-int BListener_InitUnix (BListener *o, const char *socket_path, BReactor *reactor, void *user,
+int BListener_InitFrom (BListener *o, struct BLisCon_from from,
+                        BReactor *reactor, void *user,
                         BListener_handler handler)
 {
-    ASSERT(socket_path)
+    ASSERT(from.type == BLISCON_FROM_ADDR || from.type == BLISCON_FROM_UNIX)
+    ASSERT(from.type != BLISCON_FROM_UNIX || from.u.from_unix.socket_path)
     ASSERT(handler)
     BNetwork_Assert();
     
@@ -532,24 +452,46 @@ int BListener_InitUnix (BListener *o, const char *socket_path, BReactor *reactor
     o->user = user;
     o->handler = handler;
     
-    // copy socket path
-    o->unix_socket_path = b_strdup(socket_path);
-    if (!o->unix_socket_path) {
-        BLog(BLOG_ERROR, "b_strdup failed");
-        goto fail0;
+    // init socket path
+    o->unix_socket_path = NULL;
+    if (from.type == BLISCON_FROM_UNIX) {
+        o->unix_socket_path = b_strdup(from.u.from_unix.socket_path);
+        if (!o->unix_socket_path) {
+            BLog(BLOG_ERROR, "b_strdup failed");
+            goto fail0;
+        }
     }
     
-    // build address
-    struct unix_addr addr;
-    if (!build_unix_address(&addr, socket_path)) {
-        BLog(BLOG_ERROR, "build_unix_address failed");
-        goto fail1;
-    }
+    struct unix_addr unixaddr;
+    struct sys_addr sysaddr;
     
-    // init fd
-    if ((o->fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-        BLog(BLOG_ERROR, "socket failed");
-        goto fail1;
+    if (from.type == BLISCON_FROM_UNIX) {
+        // build address
+        if (!build_unix_address(&unixaddr, o->unix_socket_path)) {
+            BLog(BLOG_ERROR, "build_unix_address failed");
+            goto fail1;
+        }
+        
+        // init fd
+        if ((o->fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+            BLog(BLOG_ERROR, "socket failed");
+            goto fail1;
+        }
+    } else {
+        // check address
+        if (!BConnection_AddressSupported(from.u.from_addr.addr)) {
+            BLog(BLOG_ERROR, "address not supported");
+            goto fail1;
+        }
+        
+        // convert address
+        addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
+        
+        // init fd
+        if ((o->fd = socket(sysaddr.addr.generic.sa_family, SOCK_STREAM, 0)) < 0) {
+            BLog(BLOG_ERROR, "socket failed");
+            goto fail1;
+        }
     }
     
     // set non-blocking
@@ -558,16 +500,30 @@ int BListener_InitUnix (BListener *o, const char *socket_path, BReactor *reactor
         goto fail2;
     }
     
-    // unlink existing socket
-    if (unlink(o->unix_socket_path) < 0 && errno != ENOENT) {
-        BLog(BLOG_ERROR, "unlink existing socket failed");
-        goto fail2;
-    }
-    
-    // bind
-    if (bind(o->fd, (struct sockaddr *)&addr.u.addr, addr.len) < 0) {
-        BLog(BLOG_ERROR, "bind failed");
-        goto fail2;
+    if (from.type == BLISCON_FROM_UNIX) {
+        // unlink existing socket
+        if (unlink(o->unix_socket_path) < 0 && errno != ENOENT) {
+            BLog(BLOG_ERROR, "unlink existing socket failed");
+            goto fail2;
+        }
+        
+        // bind
+        if (bind(o->fd, (struct sockaddr *)&unixaddr.u.addr, unixaddr.len) < 0) {
+            BLog(BLOG_ERROR, "bind failed");
+            goto fail2;
+        }
+    } else {
+        // set SO_REUSEADDR
+        int optval = 1;
+        if (setsockopt(o->fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+            BLog(BLOG_ERROR, "setsockopt(SO_REUSEADDR) failed");
+        }
+        
+        // bind
+        if (bind(o->fd, &sysaddr.addr.generic, sysaddr.len) < 0) {
+            BLog(BLOG_ERROR, "bind failed");
+            goto fail2;
+        }
     }
     
     // listen
@@ -591,8 +547,10 @@ int BListener_InitUnix (BListener *o, const char *socket_path, BReactor *reactor
     return 1;
     
 fail3:
-    if (unlink(o->unix_socket_path) < 0) {
-        BLog(BLOG_ERROR, "unlink socket failed");
+    if (from.type == BLISCON_FROM_UNIX) {
+        if (unlink(o->unix_socket_path) < 0) {
+            BLog(BLOG_ERROR, "unlink socket failed");
+        }
     }
 fail2:
     if (close(o->fd) < 0) {
@@ -632,91 +590,11 @@ void BListener_Free (BListener *o)
     }
 }
 
-int BConnector_Init (BConnector *o, BAddr addr, BReactor *reactor, void *user,
-                     BConnector_handler handler)
-{
-    ASSERT(handler)
-    BNetwork_Assert();
-    
-    // init arguments
-    o->reactor = reactor;
-    o->user = user;
-    o->handler = handler;
-    
-    // check address
-    if (!BConnection_AddressSupported(addr)) {
-        BLog(BLOG_ERROR, "address not supported");
-        goto fail0;
-    }
-    
-    // convert address
-    struct sys_addr sysaddr;
-    addr_socket_to_sys(&sysaddr, addr);
-    
-    // init job
-    BPending_Init(&o->job, BReactor_PendingGroup(o->reactor), (BPending_handler)connector_job_handler, o);
-    
-    // init fd
-    if ((o->fd = socket(sysaddr.addr.generic.sa_family, SOCK_STREAM, 0)) < 0) {
-        BLog(BLOG_ERROR, "socket failed");
-        goto fail1;
-    }
-    
-    // set fd non-blocking
-    if (!badvpn_set_nonblocking(o->fd)) {
-        BLog(BLOG_ERROR, "badvpn_set_nonblocking failed");
-        goto fail2;
-    }
-    
-    // connect fd
-    int res = connect(o->fd, &sysaddr.addr.generic, sysaddr.len);
-    if (res < 0 && errno != EINPROGRESS) {
-        BLog(BLOG_ERROR, "connect failed");
-        goto fail2;
-    }
-    
-    // set not connected
-    o->connected = 0;
-    
-    // set have no BFileDescriptor
-    o->have_bfd = 0;
-    
-    if (res < 0) {
-        // init BFileDescriptor
-        BFileDescriptor_Init(&o->bfd, o->fd, (BFileDescriptor_handler)connector_fd_handler, o);
-        if (!BReactor_AddFileDescriptor(o->reactor, &o->bfd)) {
-            BLog(BLOG_ERROR, "BReactor_AddFileDescriptor failed");
-            goto fail2;
-        }
-        BReactor_SetFileDescriptorEvents(o->reactor, &o->bfd, BREACTOR_WRITE);
-        
-        // set have BFileDescriptor
-        o->have_bfd = 1;
-    } else {
-        // set connected
-        o->connected = 1;
-        
-        // set job
-        BPending_Set(&o->job);
-    }
-    
-    DebugObject_Init(&o->d_obj);
-    return 1;
-    
-fail2:
-    if (close(o->fd) < 0) {
-        BLog(BLOG_ERROR, "close failed");
-    }
-fail1:
-    BPending_Free(&o->job);
-fail0:
-    return 0;
-}
-
-int BConnector_InitUnix (BConnector *o, const char *socket_path, BReactor *reactor, void *user,
+int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reactor, void *user,
                          BConnector_handler handler)
 {
-    ASSERT(socket_path)
+    ASSERT(from.type == BLISCON_FROM_ADDR || from.type == BLISCON_FROM_UNIX)
+    ASSERT(from.type != BLISCON_FROM_UNIX || from.u.from_unix.socket_path)
     ASSERT(handler)
     BNetwork_Assert();
     
@@ -725,20 +603,41 @@ int BConnector_InitUnix (BConnector *o, const char *socket_path, BReactor *react
     o->user = user;
     o->handler = handler;
     
-    // build address
-    struct unix_addr addr;
-    if (!build_unix_address(&addr, socket_path)) {
-        BLog(BLOG_ERROR, "build_unix_address failed");
-        goto fail0;
+    struct unix_addr unixaddr;
+    struct sys_addr sysaddr;
+    
+    if (from.type == BLISCON_FROM_UNIX) {
+        // build address
+        if (!build_unix_address(&unixaddr, from.u.from_unix.socket_path)) {
+            BLog(BLOG_ERROR, "build_unix_address failed");
+            goto fail0;
+        }
+    } else {
+        // check address
+        if (!BConnection_AddressSupported(from.u.from_addr.addr)) {
+            BLog(BLOG_ERROR, "address not supported");
+            goto fail0;
+        }
+        
+        // convert address
+        addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
     }
     
     // init job
     BPending_Init(&o->job, BReactor_PendingGroup(o->reactor), (BPending_handler)connector_job_handler, o);
     
-    // init fd
-    if ((o->fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-        BLog(BLOG_ERROR, "socket failed");
-        goto fail1;
+    if (from.type == BLISCON_FROM_UNIX) {
+        // init fd
+        if ((o->fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+            BLog(BLOG_ERROR, "socket failed");
+            goto fail1;
+        }
+    } else {
+        // init fd
+        if ((o->fd = socket(sysaddr.addr.generic.sa_family, SOCK_STREAM, 0)) < 0) {
+            BLog(BLOG_ERROR, "socket failed");
+            goto fail1;
+        }
     }
     
     // set fd non-blocking
@@ -748,9 +647,14 @@ int BConnector_InitUnix (BConnector *o, const char *socket_path, BReactor *react
     }
     
     // connect fd
-    int res = connect(o->fd, (struct sockaddr *)&addr.u.addr, addr.len);
-    if (res < 0 && errno != EINPROGRESS) {
-        BLog(BLOG_ERROR, "connect failed");
+    int connect_res;
+    if (from.type == BLISCON_FROM_UNIX) {
+        connect_res = connect(o->fd, (struct sockaddr *)&unixaddr.u.addr, unixaddr.len);
+    } else {
+        connect_res = connect(o->fd, &sysaddr.addr.generic, sysaddr.len);
+    }
+    if (connect_res < 0 && errno != EINPROGRESS) {
+        BLog(BLOG_WARNING, "connect failed");
         goto fail2;
     }
     
@@ -760,7 +664,7 @@ int BConnector_InitUnix (BConnector *o, const char *socket_path, BReactor *react
     // set have no BFileDescriptor
     o->have_bfd = 0;
     
-    if (res < 0) {
+    if (connect_res < 0) {
         // init BFileDescriptor
         BFileDescriptor_Init(&o->bfd, o->fd, (BFileDescriptor_handler)connector_fd_handler, o);
         if (!BReactor_AddFileDescriptor(o->reactor, &o->bfd)) {
@@ -882,7 +786,7 @@ int BConnection_Init (BConnection *o, struct BConnection_source source, BReactor
         case BCONNECTION_SOURCE_TYPE_PIPE: {
             // use user-provided fd
             o->fd = source.u.pipe.pipefd;
-            o->close_fd = 0;
+            o->close_fd = !!source.u.pipe.close_it;
             
             // set non-blocking
             if (!badvpn_set_nonblocking(o->fd)) {

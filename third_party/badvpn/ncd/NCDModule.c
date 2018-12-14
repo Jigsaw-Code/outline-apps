@@ -33,6 +33,7 @@
 #include <inttypes.h>
 #include <limits.h>
 
+#include <misc/offset.h>
 #include <ncd/NCDModule.h>
 #include <ncd/static_strings.h>
 
@@ -73,6 +74,13 @@ static void set_process_state (NCDModuleProcess *p, int state)
 #endif
 }
 
+static NCDObject persistent_obj_retobj (NCDPersistentObj const *pobj)
+{
+    NCDModuleInst *n = UPPER_OBJECT(pobj, NCDModuleInst, pobj);
+    
+    return NCDModuleInst_Object(n);
+}
+
 void NCDModuleInst_Init (NCDModuleInst *n, const struct NCDInterpModule *m, void *method_context, NCDValRef args, const struct NCDModuleInst_params *params)
 {
     ASSERT(m)
@@ -102,6 +110,9 @@ void NCDModuleInst_Init (NCDModuleInst *n, const struct NCDInterpModule *m, void
     // give NCDModuleInst to methods, not mem
     n->pass_mem_to_methods = 0;
     
+    // init persistent object interface
+    NCDPersistentObj_Init(&n->pobj, persistent_obj_retobj);
+    
     DebugObject_Init(&n->d_obj);
     
     struct NCDModuleInst_new_params new_params;
@@ -115,6 +126,9 @@ void NCDModuleInst_Free (NCDModuleInst *n)
 {
     DebugObject_Free(&n->d_obj);
     ASSERT(n->state == STATE_DEAD)
+    
+    // free persistent object interface
+    NCDPersistentObj_Free(&n->pobj);
 }
 
 void NCDModuleInst_Die (NCDModuleInst *n)
@@ -144,6 +158,9 @@ int NCDModuleInst_TryFree (NCDModuleInst *n)
     
     DebugObject_Free(&n->d_obj);
     
+    // free persistent object interface
+    NCDPersistentObj_Free(&n->pobj);
+    
     return 1;
 }
 
@@ -169,7 +186,7 @@ NCDObject NCDModuleInst_Object (NCDModuleInst *n)
     
     void *method_user = (n->pass_mem_to_methods ? n->mem : n);
     
-    return NCDObject_BuildFull(n->m->base_type_id, n, 0, method_user, object_func_getvar, object_func_getobj);
+    return NCDObject_BuildFull(n->m->base_type_id, n, 0, method_user, object_func_getvar, object_func_getobj, &n->pobj);
 }
 
 void NCDModuleInst_Backend_PassMemToMethods (NCDModuleInst *n)
@@ -211,7 +228,7 @@ static int object_func_getvar (const NCDObject *obj, NCD_string_id_t name, NCDVa
         if (NCDStringIndex_HasNulls(n->params->iparams->string_index, name)) {
             return 0;
         }
-        const char *name_str = NCDStringIndex_Value(n->params->iparams->string_index, name);
+        const char *name_str = NCDStringIndex_Value(n->params->iparams->string_index, name).ptr;
         res = n->m->module.func_getvar(n->mem, name_str, mem, out_value);
     }
     ASSERT(res == 0 || res == 1)
@@ -372,6 +389,35 @@ int NCDModuleInst_Backend_InterpLoadGroup (NCDModuleInst *n, const struct NCDMod
     return n->params->iparams->func_loadgroup(n->params->iparams->user, group);
 }
 
+void NCDModuleRef_Init (NCDModuleRef *o, NCDModuleInst *inst)
+{
+    ASSERT(!inst->pass_mem_to_methods)
+    
+    NCDObject obj = NCDModuleInst_Object(inst);
+    NCDObjRef_Init(&o->objref, NCDObject_Pobj(&obj));
+    
+    DebugObject_Init(&o->d_obj);
+}
+
+void NCDModuleRef_Free (NCDModuleRef *o)
+{
+    DebugObject_Free(&o->d_obj);
+    
+    NCDObjRef_Free(&o->objref);
+}
+
+NCDModuleInst * NCDModuleRef_Deref (NCDModuleRef *o)
+{
+    DebugObject_Access(&o->d_obj);
+    
+    NCDModuleInst *res = NULL;
+    NCDObject obj;
+    if (NCDObjRef_Deref(&o->objref, &obj)) {
+        res = NCDObject_MethodUser(&obj);
+    }
+    return res;
+}
+
 int NCDModuleProcess_InitId (NCDModuleProcess *o, NCDModuleInst *n, NCD_string_id_t template_name, NCDValRef args, NCDModuleProcess_handler_event handler_event)
 {
     DebugObject_Access(&n->d_obj);
@@ -431,14 +477,7 @@ int NCDModuleProcess_InitValue (NCDModuleProcess *o, NCDModuleInst *n, NCDValRef
     if (NCDVal_IsIdString(template_name)) {
         template_name_id = NCDVal_IdStringId(template_name);
     } else {
-        NCDValContString cts;
-        if (!NCDVal_StringContinuize(template_name, &cts)) {
-            BLog(BLOG_ERROR, "NCDVal_StringContinuize failed");
-            return 0;
-        }
-        
-        template_name_id = NCDStringIndex_GetBin(n->params->iparams->string_index, cts.data, NCDVal_StringLength(template_name));
-        NCDValContString_Free(&cts);
+        template_name_id = NCDStringIndex_GetBinMr(n->params->iparams->string_index, NCDVal_StringMemRef(template_name));
         if (template_name_id < 0) {
             BLog(BLOG_ERROR, "NCDStringIndex_GetBin failed");
             return 0;
@@ -572,7 +611,7 @@ int NCDModuleProcess_Interp_GetSpecialObj (NCDModuleProcess *o, NCD_string_id_t 
         if (name >= NCD_STRING_ARG0 && name <= NCD_STRING_ARG19) {
             int num = name - NCD_STRING_ARG0;
             if (num < NCDVal_ListCount(o->args)) {
-                *out_object = NCDObject_BuildFull(-1, o, num, NULL, process_arg_object_func_getvar, NCDObject_no_getobj);
+                *out_object = NCDObject_BuildFull(-1, o, num, NULL, process_arg_object_func_getvar, NCDObject_no_getobj, NULL);
                 return 1;
             }
         }
@@ -586,6 +625,81 @@ int NCDModuleProcess_Interp_GetSpecialObj (NCDModuleProcess *o, NCD_string_id_t 
     ASSERT(res == 0 || res == 1)
     
     return res;
+}
+
+int NCDCall_DoIt (
+    struct NCDCall_interp_shared const *interp_shared, void *interp_user,
+    struct NCDInterpFunction const *interp_function,
+    size_t arg_count, NCDValMem *res_mem, NCDValRef *res_out
+)
+{
+    NCDValRef res = NCDVal_NewInvalid();
+    
+    NCDCall call;
+    call.interp_shared = interp_shared;
+    call.interp_user = interp_user;
+    call.interp_function = interp_function;
+    call.arg_count = arg_count;
+    call.res_mem = res_mem;
+    call.out_ref = &res;
+    
+    interp_function->function.func_eval(call);
+    
+    if (NCDVal_IsInvalid(res)) {
+        return 0;
+    }
+    
+    *res_out = res;
+    return 1;
+}
+
+struct NCDInterpFunction const * NCDCall_InterpFunction (NCDCall const *o)
+{
+    return o->interp_function;
+}
+
+struct NCDModuleInst_iparams const * NCDCall_Iparams (NCDCall const *o)
+{
+    return o->interp_shared->iparams;
+}
+
+size_t NCDCall_ArgCount (NCDCall const *o)
+{
+    return o->arg_count;
+}
+
+NCDValRef NCDCall_EvalArg (NCDCall const *o, size_t index, NCDValMem *mem)
+{
+    ASSERT(index < o->arg_count)
+    ASSERT(mem)
+    
+    NCDValRef res;
+    
+    int eval_res = o->interp_shared->func_eval_arg(o->interp_user, index, mem, &res);
+    
+    ASSERT(eval_res == 0 || eval_res == 1)
+    ASSERT(eval_res == 0 || (NCDVal_Assert(res), 1))
+    
+    if (!eval_res) {
+        res = NCDVal_NewInvalid();
+    }
+    
+    return res;
+}
+
+NCDValMem * NCDCall_ResMem (NCDCall const *o)
+{
+    return o->res_mem;
+}
+
+void NCDCall_SetResult (NCDCall const *o, NCDValRef ref)
+{
+    *o->out_ref = ref;
+}
+
+BLogContext NCDCall_LogContext (NCDCall const *o)
+{
+    return BLog_MakeContext(o->interp_shared->logfunc, o->interp_user);
 }
 
 static int process_args_object_func_getvar (const NCDObject *obj, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out_value)

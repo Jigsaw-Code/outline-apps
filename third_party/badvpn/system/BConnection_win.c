@@ -437,9 +437,11 @@ int BConnection_AddressSupported (BAddr addr)
     return (addr.type == BADDR_TYPE_IPV4 || addr.type == BADDR_TYPE_IPV6);
 }
 
-int BListener_Init (BListener *o, BAddr addr, BReactor *reactor, void *user,
-                    BListener_handler handler)
+int BListener_InitFrom (BListener *o, struct BLisCon_from from,
+                        BReactor *reactor, void *user,
+                        BListener_handler handler)
 {
+    ASSERT(from.type == BLISCON_FROM_ADDR)
     ASSERT(handler)
     BNetwork_Assert();
     
@@ -449,14 +451,14 @@ int BListener_Init (BListener *o, BAddr addr, BReactor *reactor, void *user,
     o->handler = handler;
     
     // check address
-    if (!BConnection_AddressSupported(addr)) {
+    if (!BConnection_AddressSupported(from.u.from_addr.addr)) {
         BLog(BLOG_ERROR, "address not supported");
         goto fail0;
     }
     
     // convert address
     struct sys_addr sysaddr;
-    addr_socket_to_sys(&sysaddr, addr);
+    addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
     
     // remember family
     o->sys_family = sysaddr.addr.generic.sa_family;
@@ -562,9 +564,10 @@ void BListener_Free (BListener *o)
     BReactorIOCPOverlapped_Free(&o->olap);
 }
 
-int BConnector_Init (BConnector *o, BAddr addr, BReactor *reactor, void *user,
-                     BConnector_handler handler)
+int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reactor, void *user,
+                         BConnector_handler handler)
 {
+    ASSERT(from.type == BLISCON_FROM_ADDR)
     ASSERT(handler)
     BNetwork_Assert();
     
@@ -574,18 +577,18 @@ int BConnector_Init (BConnector *o, BAddr addr, BReactor *reactor, void *user,
     o->handler = handler;
     
     // check address
-    if (!BConnection_AddressSupported(addr)) {
+    if (!BConnection_AddressSupported(from.u.from_addr.addr)) {
         BLog(BLOG_ERROR, "address not supported");
         goto fail0;
     }
     
     // convert address
     struct sys_addr sysaddr;
-    addr_socket_to_sys(&sysaddr, addr);
+    addr_socket_to_sys(&sysaddr, from.u.from_addr.addr);
     
     // create local any address
     struct sys_addr local_sysaddr;
-    addr_any_to_sys(&local_sysaddr, addr.type);
+    addr_any_to_sys(&local_sysaddr, from.u.from_addr.addr.type);
     
     // init socket
     if ((o->sock = WSASocket(sysaddr.addr.generic.sa_family, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET) {

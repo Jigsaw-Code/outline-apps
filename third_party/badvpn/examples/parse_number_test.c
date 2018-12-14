@@ -54,7 +54,7 @@ static void test_random (int num_digits, int digit_modulo)
     int std_res = !*endptr && !(std_num == UINTMAX_MAX && errno == ERANGE);
     
     uintmax_t num = 0;
-    int res = parse_unsigned_integer_bin((const char *)digits, num_digits, &num);
+    int res = parse_unsigned_integer(MemRef_Make((const char *)digits, num_digits), &num);
     
     if (res != std_res) {
         printf("fail1 %s\n", (const char *)digits);
@@ -85,7 +85,7 @@ static void test_value (uintmax_t x)
     char str[40];
     sprintf(str, "%" PRIuMAX, x);
     uintmax_t y;
-    int res = parse_unsigned_integer_bin(str, strlen(str), &y);
+    int res = parse_unsigned_integer(MemRef_MakeCstr(str), &y);
     ASSERT_FORCE(res);
     ASSERT_FORCE(y == x);
     

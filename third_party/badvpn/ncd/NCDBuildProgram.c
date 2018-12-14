@@ -183,6 +183,7 @@ static char * make_include_path (const char *file_path, const char *dir_path, co
 static int process_file (struct build_state *st, int depth, const char *file_path, NCDProgram *out_program, int *out_guarded)
 {
     int ret_val = 0;
+    int res;
     
     if (depth > MAX_INCLUDE_DEPTH) {
         BLog(BLOG_ERROR, "file '%s': maximum include depth (%d) exceeded (include cycle?)", file_path, (int)MAX_INCLUDE_DEPTH);
@@ -202,7 +203,7 @@ static int process_file (struct build_state *st, int depth, const char *file_pat
     }
     
     NCDProgram program;
-    int res = NCDConfigParser_Parse((char *)data, len, &program);
+    res = NCDConfigParser_Parse((char *)data, len, &program);
     free(data);
     if (!res) {
         BLog(BLOG_ERROR, "file '%s': failed to parse", file_path);
@@ -263,7 +264,7 @@ static int process_file (struct build_state *st, int depth, const char *file_pat
         
         NCDProgram included_program;
         int included_guarded;
-        int res = process_file(st, depth + 1, real_target, &included_program, &included_guarded);
+        res = process_file(st, depth + 1, real_target, &included_program, &included_guarded);
         free(real_target);
         if (!res) {
             goto fail2;

@@ -32,6 +32,8 @@
 
 #include <stdlib.h>
 
+#include <misc/memref.h>
+
 #define NCD_ERROR -1
 #define NCD_EOF 0
 #define NCD_TOKEN_CURLY_OPEN 1
@@ -56,9 +58,14 @@
 #define NCD_TOKEN_AS 20
 #define NCD_TOKEN_INCLUDE 21
 #define NCD_TOKEN_INCLUDE_GUARD 22
+#define NCD_TOKEN_AT 23
+#define NCD_TOKEN_BLOCK 24
+#define NCD_TOKEN_CARET 25
+#define NCD_TOKEN_DO 26
+#define NCD_TOKEN_INTERRUPT 27
 
 typedef int (*NCDConfigTokenizer_output) (void *user, int token, char *value, size_t value_len, size_t line, size_t line_char);
 
-void NCDConfigTokenizer_Tokenize (char *str, size_t str_len, NCDConfigTokenizer_output output, void *user);
+void NCDConfigTokenizer_Tokenize (MemRef str, NCDConfigTokenizer_output output, void *user);
 
 #endif

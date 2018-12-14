@@ -107,7 +107,7 @@ int main ()
     }
     
     // init BConnection object backed by the stdin fd
-    if (!BConnection_Init(&pipe_con, BConnection_source_pipe(0), &reactor, NULL, connection_handler)) {
+    if (!BConnection_Init(&pipe_con, BConnection_source_pipe(0, 0), &reactor, NULL, connection_handler)) {
         fprintf(stderr, "BConnection_Init failed\n");
         goto fail3;
     }

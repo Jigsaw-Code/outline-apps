@@ -48,12 +48,10 @@
 #include <string.h>
 
 #include <misc/ipaddr.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_ipv4_addr_in_network.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -84,7 +82,7 @@ static void func_new_common (void *vo, NCDModuleInst *i, const struct NCDModuleI
     
     // parse addr
     uint32_t addr;
-    if (!ipaddr_parse_ipv4_addr_bin(NCDVal_StringData(arg_addr), NCDVal_StringLength(arg_addr), &addr)) {
+    if (!ipaddr_parse_ipv4_addr(NCDVal_StringMemRef(arg_addr), &addr)) {
         ModuleLog(o->i, BLOG_ERROR, "bad address");
         goto fail0;
     }
@@ -92,16 +90,16 @@ static void func_new_common (void *vo, NCDModuleInst *i, const struct NCDModuleI
     // parse network
     struct ipv4_ifaddr network;
     if (NCDVal_IsInvalid(arg_net_prefix)) {
-        if (!ipaddr_parse_ipv4_ifaddr_bin(NCDVal_StringData(arg_net_addr), NCDVal_StringLength(arg_net_addr), &network)) {
+        if (!ipaddr_parse_ipv4_ifaddr(NCDVal_StringMemRef(arg_net_addr), &network)) {
             ModuleLog(o->i, BLOG_ERROR, "bad network in CIDR notation");
             goto fail0;
         }
     } else {
-        if (!ipaddr_parse_ipv4_addr_bin(NCDVal_StringData(arg_net_addr), NCDVal_StringLength(arg_net_addr), &network.addr)) {
+        if (!ipaddr_parse_ipv4_addr(NCDVal_StringMemRef(arg_net_addr), &network.addr)) {
             ModuleLog(o->i, BLOG_ERROR, "bad network address");
             goto fail0;
         }
-        if (!ipaddr_parse_ipv4_prefix_bin(NCDVal_StringData(arg_net_prefix), NCDVal_StringLength(arg_net_prefix), &network.prefix)) {
+        if (!ipaddr_parse_ipv4_prefix(NCDVal_StringMemRef(arg_net_prefix), &network.prefix)) {
             ModuleLog(o->i, BLOG_ERROR, "bad network prefix");
             goto fail0;
         }
@@ -140,7 +138,7 @@ static int func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *o
     struct instance *o = vo;
     
     if (!strcmp(name, "")) {
-        *out = ncd_make_boolean(mem, o->value, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->value);
         return 1;
     }
     

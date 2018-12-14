@@ -48,12 +48,10 @@
 
 #include <misc/ipaddr.h>
 #include <arpprobe/BArpProbe.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_ipv4_arp_probe.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define STATE_UNKNOWN 1
 #define STATE_EXIST 2
@@ -135,7 +133,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     
     // parse address
     uint32_t addr;
-    if (!ipaddr_parse_ipv4_addr_bin(NCDVal_StringData(arg_addr), NCDVal_StringLength(arg_addr), &addr)) {
+    if (!ipaddr_parse_ipv4_addr(NCDVal_StringMemRef(arg_addr), &addr)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong address");
         goto fail0;
     }
@@ -188,7 +186,7 @@ static int func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *o
     ASSERT(o->state == STATE_EXIST || o->state == STATE_NOEXIST)
     
     if (!strcmp(name, "exists")) {
-        *out = ncd_make_boolean(mem, o->state == STATE_EXIST, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->state == STATE_EXIST);
         return 1;
     }
     

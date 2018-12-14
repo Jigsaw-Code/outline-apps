@@ -1140,6 +1140,11 @@ fail1:
 
 void client_dealloc_io (struct client_data *client)
 {
+    // stop using any buffers before they get freed
+    if (options.ssl) {
+        BSSLConnection_ReleaseBuffers(&client->sslcon);
+    }
+    
     // allow freeing fair queue flows
     PacketPassFairQueue_PrepareFree(&client->output_peers_fairqueue);
     

@@ -55,6 +55,7 @@ typedef void (*NCDRequestClientRequest_handler_finished) (void *user, int is_err
 
 typedef struct {
     BReactor *reactor;
+    NCDStringIndex *string_index;
     void *user;
     NCDRequestClient_handler_error handler_error;
     NCDRequestClient_handler_connected handler_connected;
@@ -96,7 +97,8 @@ struct NCDRequestClient_req {
     int state;
 };
 
-int NCDRequestClient_Init (NCDRequestClient *o, struct BConnection_addr addr, BReactor *reactor, void *user,
+int NCDRequestClient_Init (NCDRequestClient *o, struct BConnection_addr addr, BReactor *reactor, NCDStringIndex *string_index,
+                           void *user,
                            NCDRequestClient_handler_error handler_error,
                            NCDRequestClient_handler_connected handler_connected) WARN_UNUSED;
 void NCDRequestClient_Free (NCDRequestClient *o);

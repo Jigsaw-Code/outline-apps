@@ -158,6 +158,26 @@ static int tokenizer_output (void *user, int token, char *value, size_t value_le
             Parse(state->parser, INCLUDE_GUARD, minor, &state->out);
         } break;
         
+        case NCD_TOKEN_AT: {
+            Parse(state->parser, AT_SIGN, minor, &state->out);
+        } break;
+        
+        case NCD_TOKEN_BLOCK: {
+            Parse(state->parser, BLOCK, minor, &state->out);
+        } break;
+        
+        case NCD_TOKEN_CARET: {
+            Parse(state->parser, CARET, minor, &state->out);
+        } break;
+        
+        case NCD_TOKEN_DO: {
+            Parse(state->parser, TOKEN_DO, minor, &state->out);
+        } break;
+        
+        case NCD_TOKEN_INTERRUPT: {
+            Parse(state->parser, TOKEN_INTERRUPT, minor, &state->out);
+        } break;
+        
         default:
             BLog(BLOG_ERROR, "line %zu, character %zu: invalid token", line, line_char);
             free(minor.str);
@@ -196,7 +216,7 @@ int NCDConfigParser_Parse (char *config, size_t config_len, NCDProgram *out_ast)
     }
     
     // tokenize and parse
-    NCDConfigTokenizer_Tokenize(config, config_len, tokenizer_output, &state);
+    NCDConfigTokenizer_Tokenize(MemRef_Make(config, config_len), tokenizer_output, &state);
     
     ParseFree(state.parser, free);
     

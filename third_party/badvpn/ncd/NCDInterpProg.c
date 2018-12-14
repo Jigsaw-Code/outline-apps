@@ -41,13 +41,13 @@
 #include "NCDInterpProg_hash.h"
 #include <structure/CHash_impl.h>
 
-int NCDInterpProg_Init (NCDInterpProg *o, NCDProgram *prog, NCDStringIndex *string_index, NCDPlaceholderDb *pdb, NCDModuleIndex *module_index)
+int NCDInterpProg_Init (NCDInterpProg *o, NCDProgram *prog, NCDStringIndex *string_index, NCDEvaluator *eval, NCDModuleIndex *module_index)
 {
     ASSERT(prog)
     ASSERT(!NCDProgram_ContainsElemType(prog, NCDPROGRAMELEM_INCLUDE))
     ASSERT(!NCDProgram_ContainsElemType(prog, NCDPROGRAMELEM_INCLUDE_GUARD))
     ASSERT(string_index)
-    ASSERT(pdb)
+    ASSERT(eval)
     ASSERT(module_index)
     
     if (NCDProgram_NumElems(prog) > INT_MAX) {
@@ -80,7 +80,7 @@ int NCDInterpProg_Init (NCDInterpProg *o, NCDProgram *prog, NCDStringIndex *stri
             goto fail2;
         }
         
-        if (!NCDInterpProcess_Init(&e->iprocess, p, string_index, pdb, module_index)) {
+        if (!NCDInterpProcess_Init(&e->iprocess, p, string_index, eval, module_index)) {
             BLog(BLOG_ERROR, "NCDInterpProcess_Init failed");
             goto fail2;
         }

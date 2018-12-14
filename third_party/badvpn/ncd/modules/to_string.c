@@ -37,13 +37,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ncd/NCDModule.h>
 #include <ncd/NCDValGenerator.h>
-#include <ncd/static_strings.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_to_string.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -104,8 +102,7 @@ static struct NCDModule modules[] = {
         .func_new2 = func_new,
         .func_die = func_die,
         .func_getvar2 = func_getvar2,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = NULL
     }

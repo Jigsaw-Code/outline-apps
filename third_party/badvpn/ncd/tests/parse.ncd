@@ -8,6 +8,11 @@ process main {
     val_equal(x, "23182") a;
     assert(a);
 
+    parse_hex_number("012AF") x;
+    assert(x.succeeded);
+    val_equal(x, "4783") a;
+    assert(a);
+
     parse_ipv4_addr("192.168.61.007") x;
     assert(x.succeeded);
     val_equal(x, "192.168.61.7") a;

@@ -42,7 +42,7 @@
         ipaddr6_print_addr(addr, str); \
         ASSERT_FORCE(!strcmp(str, (string))); \
         struct ipv6_addr parsed_addr; \
-        int res = ipaddr6_parse_ipv6_addr_bin(str, strlen(str), &parsed_addr); \
+        int res = ipaddr6_parse_ipv6_addr(MemRef_MakeCstr(str), &parsed_addr); \
         ASSERT_FORCE(res); \
         ASSERT_FORCE(!memcmp(parsed_addr.bytes, addr.bytes, 16)); \
     }
@@ -51,7 +51,7 @@
     { \
         struct ipv6_addr exp_addr = {addr_bytes}; \
         struct ipv6_addr addr; \
-        int res = ipaddr6_parse_ipv6_addr_bin((string), strlen((string)), &addr); \
+        int res = ipaddr6_parse_ipv6_addr(MemRef_MakeCstr((string)), &addr); \
         ASSERT_FORCE(res); \
         ASSERT_FORCE(!memcmp(addr.bytes, exp_addr.bytes, 16)); \
     }
@@ -59,7 +59,7 @@
 #define PARSE_FAIL_TEST(string) \
     { \
         struct ipv6_addr addr; \
-        int res = ipaddr6_parse_ipv6_addr_bin((string), strlen((string)), &addr); \
+        int res = ipaddr6_parse_ipv6_addr(MemRef_MakeCstr((string)), &addr); \
         ASSERT_FORCE(!res); \
     }
 

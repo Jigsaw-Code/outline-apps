@@ -33,7 +33,8 @@
 #include <stddef.h>
 
 #include <misc/debug.h>
-#include <ncd/NCDVal.h>
+#include <structure/LinkedList0.h>
+#include <ncd/NCDVal_types.h>
 #include <ncd/NCDStringIndex.h>
 #include <ncd/static_strings.h>
 
@@ -51,6 +52,21 @@
  * be passed around by value.
  */
 typedef struct NCDObject_s NCDObject;
+
+/**
+ * Serves as an anchor point for NCDObjRef weak references.
+ * A callback produces the temporary NCDObject values on demand.
+ */
+typedef struct NCDPersistentObj_s NCDPersistentObj;
+
+/**
+ * A weak reference to an NCDPersistentObj.
+ * This means that the existence of a reference does not prevent
+ * the NCDPersistentObj from going away, rather when it goes away
+ * the NCDObjRef becomes a broken reference - any further
+ * dereference operations will fail "gracefully".
+ */
+typedef struct NCDObjRef_s NCDObjRef;
 
 /**
  * Callback function for variable resolution requests.
@@ -87,6 +103,12 @@ typedef int (*NCDObject_func_getvar) (const NCDObject *obj, NCD_string_id_t name
  */
 typedef int (*NCDObject_func_getobj) (const NCDObject *obj, NCD_string_id_t name, NCDObject *out_object);
 
+/**
+ * A callback of NCDPersistentObj which produces the corresponding temporary
+ * NCDObject value.
+ */
+typedef NCDObject (*NCDPersistentObj_func_retobj) (NCDPersistentObj const *pobj);
+
 struct NCDObject_s {
     NCD_string_id_t type;
     int data_int;
@@ -94,14 +116,25 @@ struct NCDObject_s {
     void *method_user;
     NCDObject_func_getvar func_getvar;
     NCDObject_func_getobj func_getobj;
+    NCDPersistentObj *pobj;
+};
+
+struct NCDPersistentObj_s {
+    NCDPersistentObj_func_retobj func_retobj;
+    LinkedList0 refs_list;
+};
+
+struct NCDObjRef_s {
+    NCDPersistentObj *pobj;
+    LinkedList0Node refs_list_node;
 };
 
 /**
  * Basic object construction function.
- * This is equivalent to calling {@link NCDObject_BuildFull} with data_int=0
- * and method_user=data_ptr. See that function for detailed documentation.
+ * This is equivalent to calling {@link NCDObject_BuildFull} with data_int=0,
+ * method_user=data_ptr and pobj=NULL. See that function for detailed documentation.
  */
-static NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj);
+NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj);
 
 /**
  * Constructs an {@link NCDObject} structure.
@@ -123,43 +156,51 @@ static NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObjec
  *                    be NULL; if the object exposes no variables, pass {@link NCDObject_no_getvar}.
  * @param func_getobj callback for resolving objects within the object. This must not
  *                    be NULL; if the object exposes no objects, pass {@link NCDObject_no_getobj}.
+ * @param pobj pointer to an NCDPersistentObj, serving as a reference anchor for this
+ *             object. NULL if references are not supported by the object.
  * @return an NCDObject structure encapsulating the information given
  */
-static NCDObject NCDObject_BuildFull (NCD_string_id_t type, void *data_ptr, int data_int, void *method_user, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj);
+NCDObject NCDObject_BuildFull (NCD_string_id_t type, void *data_ptr, int data_int, void *method_user, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj, NCDPersistentObj *pobj);
 
 /**
  * Returns the 'type' attribute; see {@link NCDObject_BuildFull}.
  */
-static NCD_string_id_t NCDObject_Type (const NCDObject *o);
+NCD_string_id_t NCDObject_Type (const NCDObject *o);
 
 /**
  * Returns the 'data_ptr' attribute; see {@link NCDObject_BuildFull}.
  */
-static void * NCDObject_DataPtr (const NCDObject *o);
+void * NCDObject_DataPtr (const NCDObject *o);
 
 /**
  * Returns the 'data_int' attribute; see {@link NCDObject_BuildFull}.
  */
-static int NCDObject_DataInt (const NCDObject *o);
+int NCDObject_DataInt (const NCDObject *o);
 
 /**
  * Returns the 'method_user' attribute; see {@link NCDObject_BuildFull}.
  */
-static void * NCDObject_MethodUser (const NCDObject *o);
+void * NCDObject_MethodUser (const NCDObject *o);
 
 /**
  * Attempts to resolve a variable within the object.
  * This just calls {@link NCDObject_func_getvar}, but also has some assertions to detect
  * incorrect behavior of the callback.
  */
-static int NCDObject_GetVar (const NCDObject *o, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
+int NCDObject_GetVar (const NCDObject *o, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
 
 /**
  * Attempts to resolve an object within the object.
  * This just calls {@link NCDObject_func_getobj}, but also has some assertions to detect
  * incorrect behavior of the callback.
  */
-static int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject *out_object) WARN_UNUSED;
+int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject *out_object) WARN_UNUSED;
+
+/**
+ * Returns a pointer to the NCDPersistentObj pointer for this
+ * object (if any).
+ */
+NCDPersistentObj * NCDObject_Pobj (const NCDObject *o);
 
 /**
  * Resolves a variable expression starting with this object.
@@ -182,7 +223,7 @@ static int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject
  *                  does not exist.
  * @return 1 if the variable exists, 0 if not
  */
-static int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
+int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
 
 /**
  * Resolves an object expression starting with this object.
@@ -199,7 +240,7 @@ static int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string
  *                   object. May be modified even if the object does not exist.
  * @return 1 if the object exists, 0 if not
  */
-static int NCDObject_ResolveObjExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDObject *out_object) WARN_UNUSED;
+int NCDObject_ResolveObjExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDObject *out_object) WARN_UNUSED;
 
 /**
  * Returns 0. This can be used as a dummy variable resolution callback.
@@ -211,146 +252,43 @@ int NCDObject_no_getvar (const NCDObject *obj, NCD_string_id_t name, NCDValMem *
  */
 int NCDObject_no_getobj (const NCDObject *obj, NCD_string_id_t name, NCDObject *out_object);
 
-//
+/**
+ * Initializes an NCDPersistentObj, an anchor point for NCDObjRef
+ * refrences.
+ * 
+ * @param func_retobj callback for producing NCDObject temporary objects
+ */
+void NCDPersistentObj_Init (NCDPersistentObj *o, NCDPersistentObj_func_retobj func_retobj);
 
-NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj)
-{
-    ASSERT(type >= -1)
-    ASSERT(func_getvar)
-    ASSERT(func_getobj)
-    
-    NCDObject obj;
-    obj.type = type;
-    obj.data_int = 0;
-    obj.data_ptr = data_ptr;
-    obj.method_user = data_ptr;
-    obj.func_getvar = func_getvar;
-    obj.func_getobj = func_getobj;
-    
-    return obj;
-}
+/**
+ * Frees the NCDPersistentObj.
+ * This breaks any NCDObjRef references referencing this object.
+ * This means that any further NCDObjRef_Deref calls on those
+ * references will fail.
+ */
+void NCDPersistentObj_Free (NCDPersistentObj *o);
 
-NCDObject NCDObject_BuildFull (NCD_string_id_t type, void *data_ptr, int data_int, void *method_user, NCDObject_func_getvar func_getvar, NCDObject_func_getobj func_getobj)
-{
-    ASSERT(type >= -1)
-    ASSERT(func_getvar)
-    ASSERT(func_getobj)
-    
-    NCDObject obj;
-    obj.type = type;
-    obj.data_int = data_int;
-    obj.data_ptr = data_ptr;
-    obj.method_user = method_user;
-    obj.func_getvar = func_getvar;
-    obj.func_getobj = func_getobj;
-    
-    return obj;
-}
+/**
+ * Initializes an object reference.
+ * 
+ * @param pobj the NCDPersistentObj for the reference, or NULL to make
+ *             a broken reference
+ */
+void NCDObjRef_Init (NCDObjRef *o, NCDPersistentObj *pobj);
 
-NCD_string_id_t NCDObject_Type (const NCDObject *o)
-{
-    return o->type;
-}
+/**
+ * Frees the object reference.
+ */
+void NCDObjRef_Free (NCDObjRef *o);
 
-void * NCDObject_DataPtr (const NCDObject *o)
-{
-    return o->data_ptr;
-}
-
-int NCDObject_DataInt (const NCDObject *o)
-{
-    return o->data_int;
-}
-
-void * NCDObject_MethodUser (const NCDObject *o)
-{
-    return o->method_user;
-}
-
-int NCDObject_GetVar (const NCDObject *o, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out_value)
-{
-    ASSERT(name >= 0)
-    ASSERT(mem)
-    ASSERT(out_value)
-    
-    int res = o->func_getvar(o, name, mem, out_value);
-    
-    ASSERT(res == 0 || res == 1)
-    ASSERT(res == 0 || (NCDVal_Assert(*out_value), 1))
-    
-    return res;
-}
-
-int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject *out_object)
-{
-    ASSERT(name >= 0)
-    ASSERT(out_object)
-    
-    int res = o->func_getobj(o, name, out_object);
-    
-    ASSERT(res == 0 || res == 1)
-    
-    return res;
-}
-
-static NCDObject NCDObject__dig_into_object (NCDObject object)
-{
-    NCDObject obj2;
-    while (NCDObject_GetObj(&object, NCD_STRING_EMPTY, &obj2)) {
-        object = obj2;
-    }
-    
-    return object;
-}
-
-int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDValMem *mem, NCDValRef *out_value)
-{
-    ASSERT(num_names == 0 || names)
-    ASSERT(mem)
-    ASSERT(out_value)
-    
-    NCDObject object = NCDObject__dig_into_object(*o);
-    
-    while (num_names > 0) {
-        NCDObject obj2;
-        if (!NCDObject_GetObj(&object, *names, &obj2)) {
-            if (num_names == 1 && NCDObject_GetVar(&object, *names, mem, out_value)) {
-                return 1;
-            }
-            
-            return 0;
-        }
-        
-        object = NCDObject__dig_into_object(obj2);
-        
-        names++;
-        num_names--;
-    }
-    
-    return NCDObject_GetVar(&object, NCD_STRING_EMPTY, mem, out_value);
-}
-
-int NCDObject_ResolveObjExprCompact (const NCDObject *o, const NCD_string_id_t *names, size_t num_names, NCDObject *out_object)
-{
-    ASSERT(num_names == 0 || names)
-    ASSERT(out_object)
-    
-    NCDObject object = NCDObject__dig_into_object(*o);
-    
-    while (num_names > 0) {
-        NCDObject obj2;
-        if (!NCDObject_GetObj(&object, *names, &obj2)) {
-            return 0;
-        }
-        
-        object = NCDObject__dig_into_object(obj2);
-        
-        names++;
-        num_names--;
-    }
-    
-    *out_object = object;
-    return 1;
-}
+/**
+ * Dereferences the object reference.
+ * Note that the refernce will be broken if the originally
+ * reference NCDPersistentObj was freed.
+ * 
+ * @param res on success, *res will be set to the resulting NCDObject
+ * @return 1 on success, 0 on failure (broken reference)
+ */
+int NCDObjRef_Deref (NCDObjRef *o, NCDObject *res) WARN_UNUSED;
 
 #endif

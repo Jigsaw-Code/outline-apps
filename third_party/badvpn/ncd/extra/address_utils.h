@@ -42,14 +42,16 @@
 #include <ncd/NCDVal.h>
 #include <ncd/extra/value_utils.h>
 
+typedef int (*ncd_read_bconnection_addr_CustomHandler) (void *user, NCDValRef protocol, NCDValRef data);
+
 static int ncd_read_baddr (NCDValRef val, BAddr *out) WARN_UNUSED;
 static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem);
 static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *out_addr) WARN_UNUSED;
+static int ncd_read_bconnection_addr_ext (NCDValRef val, ncd_read_bconnection_addr_CustomHandler custom_handler, void *user, struct BConnection_addr *out_addr) WARN_UNUSED;
 
 static int ncd_read_baddr (NCDValRef val, BAddr *out)
 {
     ASSERT(!NCDVal_IsInvalid(val))
-    ASSERT(NCDVal_HasOnlyContinuousStrings(val))
     ASSERT(out)
     
     if (!NCDVal_IsList(val)) {
@@ -79,13 +81,13 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
         if (!NCDVal_ListRead(val, 3, &type_val, &ipaddr_val, &port_val)) {
             goto fail;
         }
-        if (!NCDVal_IsString(ipaddr_val) || !NCDVal_IsString(port_val)) {
+        if (!NCDVal_IsString(ipaddr_val)) {
             goto fail;
         }
         
         addr.type = BADDR_TYPE_IPV4;
         
-        if (!ipaddr_parse_ipv4_addr_bin(NCDVal_StringData(ipaddr_val), NCDVal_StringLength(ipaddr_val), &addr.ipv4.ip)) {
+        if (!ipaddr_parse_ipv4_addr(NCDVal_StringMemRef(ipaddr_val), &addr.ipv4.ip)) {
             goto fail;
         }
         
@@ -101,14 +103,14 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
         if (!NCDVal_ListRead(val, 3, &type_val, &ipaddr_val, &port_val)) {
             goto fail;
         }
-        if (!NCDVal_IsString(ipaddr_val) || !NCDVal_IsString(port_val)) {
+        if (!NCDVal_IsString(ipaddr_val)) {
             goto fail;
         }
         
         addr.type = BADDR_TYPE_IPV6;
         
         struct ipv6_addr i6addr;
-        if (!ipaddr6_parse_ipv6_addr_bin(NCDVal_StringData(ipaddr_val), NCDVal_StringLength(ipaddr_val), &i6addr)) {
+        if (!ipaddr6_parse_ipv6_addr(NCDVal_StringMemRef(ipaddr_val), &i6addr)) {
             goto fail;
         }
         memcpy(addr.ipv6.ip, i6addr.bytes, 16);
@@ -235,8 +237,12 @@ fail:
 
 static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *out_addr)
 {
+    return ncd_read_bconnection_addr_ext(val, NULL, NULL, out_addr);
+}
+
+static int ncd_read_bconnection_addr_ext (NCDValRef val, ncd_read_bconnection_addr_CustomHandler custom_handler, void *user, struct BConnection_addr *out_addr)
+{
     ASSERT(!NCDVal_IsInvalid(val))
-    ASSERT(NCDVal_HasOnlyContinuousStrings(val))
     
     if (!NCDVal_IsList(val)) {
         goto fail;
@@ -257,7 +263,7 @@ static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *ou
             goto fail;
         }
         
-        *out_addr = BConnection_addr_unix(NCDVal_StringData(data_arg), NCDVal_StringLength(data_arg));
+        *out_addr = BConnection_addr_unix(NCDVal_StringMemRef(data_arg));
     }
     else if (NCDVal_StringEquals(protocol_arg, "tcp")) {
         BAddr baddr;
@@ -268,7 +274,11 @@ static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *ou
         *out_addr = BConnection_addr_baddr(baddr);
     }
     else {
-        goto fail;
+        if (!custom_handler || !custom_handler(user, protocol_arg, data_arg)) {
+            goto fail;
+        }
+        
+        out_addr->type = -1;
     }
     
     return 1;

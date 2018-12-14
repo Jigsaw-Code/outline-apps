@@ -2,6 +2,11 @@ process main {
     explode("FOO", "aaaFOObbbFOOcccFOOddd") l;
     val_equal(l, {"aaa", "bbb", "ccc", "ddd"}) a;
     assert(a);
+    
+    compile_search("FOO") comp;
+    comp->explode("aaaFOObbbFOOcccFOOddd") l;
+    val_equal(l, {"aaa", "bbb", "ccc", "ddd"}) a;
+    assert(a);
 
     explode("FOO", "FOObbbFOOFOO") l;
     val_equal(l, {"", "bbb", "", ""}) a;
@@ -17,6 +22,11 @@ process main {
 
     explode("participate in parachute", "parachute in participation of participate in parachuteparparticipate in parachute participate in parachut") l;
     val_equal(l, {"parachute in participation of ", "par", " participate in parachut"}) a;
+    assert(a);
+    
+    concat("aaaFOObbbFOOcccFOOddd") e;
+    explode("FOO", e) l;
+    val_equal(l, {"aaa", "bbb", "ccc", "ddd"}) a;
     assert(a);
 
     exit("0");

@@ -1,5 +1,5 @@
-add_library(nspr_support
+set(NSPRSUPPORT_SOURCES
     DummyPRFileDesc.c
     BSSLConnection.c
 )
-target_link_libraries(nspr_support system flow threadwork ${NSPR_LIBRARIES} ${NSS_LIBRARIES})
+badvpn_add_library(nspr_support "system;flow;threadwork" "${NSPR_LIBRARIES};${NSS_LIBRARIES}" "${NSPRSUPPORT_SOURCES}")

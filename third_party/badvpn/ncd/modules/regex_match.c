@@ -74,19 +74,16 @@
 #include <misc/expstring.h>
 #include <misc/debug.h>
 #include <misc/balloc.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_regex_match.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define MAX_MATCHES 64
 
 struct instance {
     NCDModuleInst *i;
-    const char *input;
-    size_t input_len;
+    MemRef input;
     int succeeded;
     int num_matches;
     regmatch_t matches[MAX_MATCHES];
@@ -94,8 +91,7 @@ struct instance {
 
 struct replace_instance {
     NCDModuleInst *i;
-    char *output;
-    size_t output_len;
+    MemRef output;
 };
 
 static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
@@ -114,11 +110,10 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    o->input = NCDVal_StringData(input_arg);
-    o->input_len = NCDVal_StringLength(input_arg);
+    o->input = NCDVal_StringMemRef(input_arg);
     
     // make sure we don't overflow regoff_t
-    if (o->input_len > INT_MAX) {
+    if (o->input.len > INT_MAX) {
         ModuleLog(o->i, BLOG_ERROR, "input string too long");
         goto fail0;
     }
@@ -141,8 +136,8 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     
     // execute match
     o->matches[0].rm_so = 0;
-    o->matches[0].rm_eo = o->input_len;
-    o->succeeded = (regexec(&preg, o->input, MAX_MATCHES, o->matches, REG_STARTEND) == 0);
+    o->matches[0].rm_eo = o->input.len;
+    o->succeeded = (regexec(&preg, o->input.ptr, MAX_MATCHES, o->matches, REG_STARTEND) == 0);
     
     // free regex
     regfree(&preg);
@@ -160,23 +155,23 @@ static int func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *o
     struct instance *o = vo;
     
     if (!strcmp(name, "succeeded")) {
-        *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->succeeded);
         return 1;
     }
     
     size_t pos;
     uintmax_t n;
-    if ((pos = string_begins_with(name, "match")) && parse_unsigned_integer(name + pos, &n)) {
+    if ((pos = string_begins_with(name, "match")) && parse_unsigned_integer(MemRef_MakeCstr(name + pos), &n)) {
         if (o->succeeded && n < MAX_MATCHES && o->matches[n].rm_so >= 0) {
             regmatch_t *m = &o->matches[n];
             
-            ASSERT(m->rm_so <= o->input_len)
+            ASSERT(m->rm_so <= o->input.len)
             ASSERT(m->rm_eo >= m->rm_so)
-            ASSERT(m->rm_eo <= o->input_len)
+            ASSERT(m->rm_eo <= o->input.len)
             
             size_t len = m->rm_eo - m->rm_so;
             
-            *out = NCDVal_NewStringBin(mem, (uint8_t *)o->input + m->rm_so, len);
+            *out = NCDVal_NewStringBinMr(mem, MemRef_Sub(o->input, m->rm_so, len));
             return 1;
         }
     }
@@ -252,12 +247,11 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
     }
     
     // input state
-    const char *in = NCDVal_StringData(input_arg);
+    MemRef in = NCDVal_StringMemRef(input_arg);
     size_t in_pos = 0;
-    size_t in_len = NCDVal_StringLength(input_arg);
     
     // process input
-    while (in_pos < in_len) {
+    while (in_pos < in.len) {
         // find first match
         int have_match = 0;
         size_t match_regex = 0; // to remove warning
@@ -265,8 +259,8 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
         for (size_t j = 0; j < num_regex; j++) {
             regmatch_t this_match;
             this_match.rm_so = 0;
-            this_match.rm_eo = in_len - in_pos;
-            if (regexec(&regs[j], in + in_pos, 1, &this_match, REG_STARTEND) == 0 && (!have_match || this_match.rm_so < match.rm_so)) {
+            this_match.rm_eo = in.len - in_pos;
+            if (regexec(&regs[j], in.ptr + in_pos, 1, &this_match, REG_STARTEND) == 0 && (!have_match || this_match.rm_so < match.rm_so)) {
                 have_match = 1;
                 match_regex = j;
                 match = this_match;
@@ -275,23 +269,23 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
         
         // if no match, append remaining data and finish
         if (!have_match) {
-            if (!ExpString_AppendBinary(&out, (const uint8_t *)in + in_pos, in_len - in_pos)) {
-                ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
+            if (!ExpString_AppendBinaryMr(&out, MemRef_SubFrom(in, in_pos))) {
+                ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinaryMr failed");
                 goto fail3;
             }
             break;
         }
         
         // append data before match
-        if (!ExpString_AppendBinary(&out, (const uint8_t *)in + in_pos, match.rm_so)) {
-            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
+        if (!ExpString_AppendBinaryMr(&out, MemRef_Sub(in, in_pos, match.rm_so))) {
+            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinaryMr failed");
             goto fail3;
         }
         
         // append replacement data
         NCDValRef replace = NCDVal_ListGet(replace_arg, match_regex);
-        if (!ExpString_AppendBinary(&out, (const uint8_t *)NCDVal_StringData(replace), NCDVal_StringLength(replace))) {
-            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
+        if (!ExpString_AppendBinaryMr(&out, NCDVal_StringMemRef(replace))) {
+            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinaryMr failed");
             goto fail3;
         }
         
@@ -299,8 +293,7 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
     }
     
     // set output
-    o->output = ExpString_Get(&out);
-    o->output_len = ExpString_Length(&out);
+    o->output = ExpString_GetMr(&out);
     
     // free compiled regex's
     while (num_done_regex-- > 0) {
@@ -330,7 +323,7 @@ static void replace_func_die (void *vo)
     struct replace_instance *o = vo;
     
     // free output
-    BFree(o->output);
+    BFree((char *)o->output.ptr);
     
     NCDModuleInst_Backend_Dead(o->i);
 }
@@ -340,7 +333,7 @@ static int replace_func_getvar (void *vo, const char *name, NCDValMem *mem, NCDV
     struct replace_instance *o = vo;
     
     if (!strcmp(name, "")) {
-        *out = NCDVal_NewStringBin(mem, (uint8_t *)o->output, o->output_len);
+        *out = NCDVal_NewStringBinMr(mem, o->output);
         return 1;
     }
     

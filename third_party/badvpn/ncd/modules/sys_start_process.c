@@ -34,7 +34,7 @@
  * Options:
  *   "keep_stdout":"true" - Start the program with the same stdout as the NCD process.
  *     Must not be present if the process is being opened for reading.
- *   "keep_stderr":true" - Start the program with the same stderr as the NCD process.
+ *   "keep_stderr":"true" - Start the program with the same stderr as the NCD process.
  *   "do_setsid":"true" - Call setsid() in the child before exec. This is needed to
  *     start the 'agetty' program.
  *   "username":username_string - Start the process under the permissions of the
@@ -142,16 +142,13 @@
 #include <structure/LinkedList0.h>
 #include <system/BProcess.h>
 #include <system/BConnection.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
 #include <ncd/extra/NCDBuf.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/build_cmdline.h>
 #include <ncd/extra/NCDBProcessOpts.h>
 
-#include <generated/blog_channel_ncd_sys_start_process.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_sys_start_process.h>
 
 #define READ_BUF_SIZE 8192
 
@@ -217,8 +214,7 @@ struct write_pipe_instance {
 struct write_instance {
     NCDModuleInst *i;
     struct write_pipe_instance *write_pipe_inst;
-    b_cstring cstr;
-    size_t pos;
+    MemRef data;
 };
 
 static int parse_mode (NCDModuleInst *i, NCDValRef mode_arg, int *out_read, int *out_write)
@@ -231,9 +227,7 @@ static int parse_mode (NCDModuleInst *i, NCDValRef mode_arg, int *out_read, int 
     *out_read = 0;
     *out_write = 0;
     
-    b_cstring cstr = NCDVal_StringCstring(mode_arg);
-    
-    B_CSTRING_LOOP_CHARS(cstr, char_pos, ch, {
+    MEMREF_LOOP_CHARS(NCDVal_StringMemRef(mode_arg), char_pos, ch, {
         if (ch == 'r') {
             *out_read = 1;
         }
@@ -319,15 +313,18 @@ static int opts_func_unknown (void *user, NCDValRef key, NCDValRef val)
     struct process_instance *o = user;
     
     if (NCDVal_IsString(key) && NCDVal_StringEquals(key, "term_on_deinit")) {
-        o->term_on_deinit = ncd_read_boolean(val);
+        if (!ncd_read_boolean(val, &o->term_on_deinit)) {
+            ModuleLog(o->i, BLOG_ERROR, "term_on_deinit: bad value");
+            return 0;
+        }
         return 1;
     }
     
     if (NCDVal_IsString(key) && NCDVal_StringEquals(key, "deinit_kill_time")) {
-        if (NCDVal_StringEquals(val, "never")) {
+        if (NCDVal_IsString(val) && NCDVal_StringEquals(val, "never")) {
             o->deinit_kill_time = -2;
         }
-        else if (NCDVal_StringEqualsId(val, NCD_STRING_EMPTY, o->i->params->iparams->string_index)) {
+        else if (NCDVal_IsString(val) && NCDVal_StringEqualsId(val, NCD_STRING_EMPTY)) {
             o->deinit_kill_time = -1;
         }
         else if (!ncd_read_time(val, &o->deinit_kill_time)) {
@@ -536,7 +533,7 @@ static int process_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, 
     
     if (name == NCD_STRING_IS_ERROR) {
         int is_error = (o->state == PROCESS_STATE_ERROR);
-        *out = ncd_make_boolean(mem, is_error, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, is_error);
         return 1;
     }
     
@@ -757,7 +754,7 @@ static void read_pipe_func_new (void *vo, NCDModuleInst *i, const struct NCDModu
     }
     
     // init connection
-    if (!BConnection_Init(&o->connection, BConnection_source_pipe(pinst->read_fd), i->params->iparams->reactor, o, read_pipe_connection_handler)) {
+    if (!BConnection_Init(&o->connection, BConnection_source_pipe(pinst->read_fd, 0), i->params->iparams->reactor, o, read_pipe_connection_handler)) {
         ModuleLog(i, BLOG_ERROR, "BConnection_Init failed");
         goto fail0;
     }
@@ -805,7 +802,7 @@ static int read_pipe_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem
     
     if (name == NCD_STRING_IS_ERROR) {
         int is_error = (o->state == READER_STATE_ERROR);
-        *out = ncd_make_boolean(mem, is_error, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, is_error);
         return 1;
     }
     
@@ -906,14 +903,14 @@ static int read_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, NCD
         if (o->read_size > 0) {
             *out = NCDVal_NewExternalString(mem, NCDBuf_Data(o->buf), o->read_size, NCDBuf_RefTarget(o->buf));
         } else {
-            *out = NCDVal_NewIdString(mem, NCD_STRING_EMPTY, o->i->params->iparams->string_index);
+            *out = NCDVal_NewIdString(mem, NCD_STRING_EMPTY);
         }
         return 1;
     }
     
     if (name == NCD_STRING_NOT_EOF) {
         int not_eof = (o->read_size > 0);
-        *out = ncd_make_boolean(mem, not_eof, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, not_eof);
         return 1;
     }
     
@@ -986,19 +983,17 @@ static void write_pipe_send_handler_done (void *vo, int data_len)
     ASSERT(o->write_inst)
     ASSERT(o->write_inst->write_pipe_inst == o)
     ASSERT(data_len > 0)
-    ASSERT(data_len <= o->write_inst->cstr.length - o->write_inst->pos)
+    ASSERT(data_len <= o->write_inst->data.len)
     
     struct write_instance *wr = o->write_inst;
     
     // update write progress
-    wr->pos += data_len;
+    wr->data = MemRef_SubFrom(wr->data, data_len);
     
     // if there is more data, start another write operation
-    if (wr->pos < wr->cstr.length) {
-        size_t chunk_length;
-        const char *chunk_data = b_cstring_get(wr->cstr, wr->pos, wr->cstr.length - wr->pos, &chunk_length);
-        size_t to_send = (chunk_length > INT_MAX ? INT_MAX : chunk_length);
-        StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&o->connection), (uint8_t *)chunk_data, to_send);
+    if (wr->data.len > 0) {
+        size_t to_send = (wr->data.len > INT_MAX) ? INT_MAX : wr->data.len;
+        StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&o->connection), (uint8_t *)wr->data.ptr, to_send);
         return;
     }
     
@@ -1027,7 +1022,7 @@ static void write_pipe_func_new (void *vo, NCDModuleInst *i, const struct NCDMod
     }
     
     // init connection
-    if (!BConnection_Init(&o->connection, BConnection_source_pipe(pinst->write_fd), i->params->iparams->reactor, o, write_pipe_connection_handler)) {
+    if (!BConnection_Init(&o->connection, BConnection_source_pipe(pinst->write_fd, 0), i->params->iparams->reactor, o, write_pipe_connection_handler)) {
         ModuleLog(i, BLOG_ERROR, "BConnection_Init failed");
         goto fail0;
     }
@@ -1072,7 +1067,7 @@ static int write_pipe_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *me
     
     if (name == NCD_STRING_IS_ERROR) {
         int is_error = (o->state == WRITER_STATE_ERROR);
-        *out = ncd_make_boolean(mem, is_error, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, is_error);
         return 1;
     }
     
@@ -1123,11 +1118,10 @@ static void write_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
     }
     
     // initialize write progress state
-    o->cstr = NCDVal_StringCstring(data_arg);
-    o->pos = 0;
+    o->data = NCDVal_StringMemRef(data_arg);
     
     // if there's nothing to send, go up immediately
-    if (o->cstr.length == 0) {
+    if (o->data.len == 0) {
         o->write_pipe_inst = NULL;
         NCDModuleInst_Backend_Up(i);
         return;
@@ -1140,10 +1134,8 @@ static void write_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
     write_pipe_inst->write_inst = o;
     
     // start send operation
-    size_t chunk_length;
-    const char *chunk_data = b_cstring_get(o->cstr, o->pos, o->cstr.length - o->pos, &chunk_length);
-    size_t to_send = (chunk_length > INT_MAX ? INT_MAX : chunk_length);
-    StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&write_pipe_inst->connection), (uint8_t *)chunk_data, to_send);
+    size_t to_send = (o->data.len > INT_MAX) ? INT_MAX : o->data.len;
+    StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&write_pipe_inst->connection), (uint8_t *)o->data.ptr, to_send);
     return;
     
 fail0:
@@ -1208,54 +1200,45 @@ static struct NCDModule modules[] = {
         .func_new2 = process_func_new,
         .func_die = process_func_die,
         .func_getvar2 = process_func_getvar,
-        .alloc_size = sizeof(struct process_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct process_instance)
     }, {
         .type = "sys.start_process::wait",
         .func_new2 = wait_func_new,
         .func_die = wait_func_die,
         .func_getvar2 = wait_func_getvar,
-        .alloc_size = sizeof(struct wait_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct wait_instance)
     }, {
         .type = "sys.start_process::terminate",
-        .func_new2 = terminate_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = terminate_func_new
     }, {
         .type = "sys.start_process::kill",
-        .func_new2 = kill_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = kill_func_new
     }, {
         .type = "sys.start_process::read_pipe",
         .func_new2 = read_pipe_func_new,
         .func_die = read_pipe_func_die,
         .func_getvar2 = read_pipe_func_getvar,
-        .alloc_size = sizeof(struct read_pipe_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct read_pipe_instance)
     }, {
         .type = "sys.start_process::read_pipe::read",
         .func_new2 = read_func_new,
         .func_die = read_func_die,
         .func_getvar2 = read_func_getvar,
-        .alloc_size = sizeof(struct read_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct read_instance)
     }, {
         .type = "sys.start_process::write_pipe",
         .func_new2 = write_pipe_func_new,
         .func_die = write_pipe_func_die,
         .func_getvar2 = write_pipe_func_getvar,
-        .alloc_size = sizeof(struct write_pipe_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct write_pipe_instance)
     }, {
         .type = "sys.start_process::write_pipe::write",
         .func_new2 = write_func_new,
         .func_die = write_func_die,
-        .alloc_size = sizeof(struct write_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct write_instance)
     }, {
         .type = "sys.start_process::write_pipe::close",
-        .func_new2 = close_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = close_func_new
     }, {
         .type = NULL
     }

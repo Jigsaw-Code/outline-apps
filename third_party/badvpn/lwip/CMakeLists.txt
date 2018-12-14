@@ -1,4 +1,4 @@
-add_library(lwip
+set(LWIP_SOURCES
     src/core/timers.c
     src/core/udp.c
     src/core/memp.c
@@ -24,3 +24,4 @@ add_library(lwip
     src/core/ipv6/ip6_frag.c
     custom/sys.c
 )
+badvpn_add_library(lwip "system" "" "${LWIP_SOURCES}")

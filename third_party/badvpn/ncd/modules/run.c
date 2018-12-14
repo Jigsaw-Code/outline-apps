@@ -47,9 +47,9 @@
 #include <ncd/extra/value_utils.h>
 #include <ncd/modules/command_template.h>
 
-#include <generated/blog_channel_ncd_run.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_run.h>
 
 static void template_free_func (void *vo, int is_error);
 
@@ -114,9 +114,8 @@ static int build_cmdline (NCDModuleInst *i, NCDValRef args, int remove, char **e
             goto fail2;
         }
         
-        b_cstring arg_cstr = NCDVal_StringCstring(arg);
-        if (!CmdLine_AppendCstring(cl, arg_cstr, 0, arg_cstr.length)) {
-            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendCstring failed");
+        if (!CmdLine_AppendNoNullMr(cl, NCDVal_StringMemRef(arg))) {
+            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendNoNull failed");
             goto fail2;
         }
     }
@@ -175,8 +174,7 @@ static struct NCDModule modules[] = {
         .type = "run",
         .func_new2 = func_new,
         .func_die = func_die,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = NULL
     }

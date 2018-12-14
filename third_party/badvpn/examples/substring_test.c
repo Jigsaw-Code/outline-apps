@@ -89,7 +89,7 @@ static void test_tables (int len, int count)
             word[j] = rand() % 2;
         }
         
-        build_substring_backtrack_table(word, len, table);
+        build_substring_backtrack_table(MemRef_Make(word, len), table);
         
         for (int j = 1; j < len; j++) {
             for (int k = j - 1; k >= 0; k--) {
@@ -126,7 +126,7 @@ static void test_substring (int word_len, int text_len, int word_count, int text
             word[j] = rand() % 2;
         }
         
-        build_substring_backtrack_table(word, word_len, table);
+        build_substring_backtrack_table(MemRef_Make(word, word_len), table);
         
         for (int j = 0; j < text_count; j++) {
             for (int k = 0; k < text_len; k++) {
@@ -134,7 +134,7 @@ static void test_substring (int word_len, int text_len, int word_count, int text
             }
             
             size_t pos = 36; // to remove warning
-            int res = find_substring(text, text_len, word, word_len, table, &pos);
+            int res = find_substring(MemRef_Make(text, text_len), MemRef_Make(word, word_len), table, &pos);
             
             size_t spos = 59; // to remove warning
             int sres = find_substring_slow(text, text_len, word, word_len, &spos);
@@ -180,10 +180,10 @@ int main (int argc, char *argv[])
         char text[] = "aggagaa";
         char word[] = "aga";
         size_t table[sizeof(word) - 1];
-        build_substring_backtrack_table(word, strlen(word), table);
+        build_substring_backtrack_table(MemRef_MakeCstr(word), table);
         
         size_t pos;
-        int res = find_substring(text, strlen(text), word, strlen(word), table, &pos);
+        int res = find_substring(MemRef_MakeCstr(text), MemRef_MakeCstr(word), table, &pos);
         ASSERT_FORCE(res)
         ASSERT_FORCE(pos == 3)
     }
@@ -192,10 +192,10 @@ int main (int argc, char *argv[])
         char text[] = "aagagga";
         char word[] = "aga";
         size_t table[sizeof(word) - 1];
-        build_substring_backtrack_table_reverse(word, strlen(word), table);
+        build_substring_backtrack_table_reverse(MemRef_MakeCstr(word), table);
         
         size_t pos;
-        int res = find_substring_reverse(text, strlen(text), word, strlen(word), table, &pos);
+        int res = find_substring_reverse(MemRef_MakeCstr(text), MemRef_MakeCstr(word), table, &pos);
         ASSERT_FORCE(res)
         ASSERT_FORCE(pos == 1)
     }

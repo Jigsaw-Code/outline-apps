@@ -41,12 +41,9 @@
  *   or "false".
  */
 
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_assert.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 static void func_new_common (NCDModuleInst *i, const struct NCDModuleInst_new_params *params, int is_false)
 {
@@ -65,8 +62,8 @@ static void func_new_common (NCDModuleInst *i, const struct NCDModuleInst_new_pa
     NCDModuleInst_Backend_Up(i);
     
     // if failed, initiate exit (before up!)
-    if ((!is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_TRUE, i->params->iparams->string_index)) ||
-        (is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_FALSE, i->params->iparams->string_index))
+    if ((!is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_TRUE)) ||
+        (is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_FALSE))
     ) {
         ModuleLog(i, BLOG_ERROR, "assertion failed");
         NCDModuleInst_Backend_InterpExit(i, 1);

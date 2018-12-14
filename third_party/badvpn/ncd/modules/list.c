@@ -95,12 +95,10 @@
 #include <misc/offset.h>
 #include <misc/parse_number.h>
 #include <structure/IndexedList.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_list.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct elem {
     IndexedListNode il_node;
@@ -151,7 +149,7 @@ static struct elem * insert_value (NCDModuleInst *i, struct instance *o, NCDValR
         goto fail0;
     }
     
-    NCDValMem_Init(&e->mem);
+    NCDValMem_Init(&e->mem, i->params->iparams->string_index);
     
     e->val = NCDVal_NewCopy(&e->mem, val);
     if (NCDVal_IsInvalid(e->val)) {
@@ -500,10 +498,6 @@ static void get_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst
         ModuleLog(o->i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    if (!NCDVal_IsString(index_arg)) {
-        ModuleLog(o->i, BLOG_ERROR, "wrong type");
-        goto fail0;
-    }
     uintmax_t index;
     if (!ncd_read_uintmax(index_arg, &index)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong value");
@@ -523,7 +517,7 @@ static void get_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst
     struct elem *e = get_elem_at(mo, index);
     
     // init mem
-    NCDValMem_Init(&o->mem);
+    NCDValMem_Init(&o->mem, i->params->iparams->string_index);
     
     // copy value
     o->val = NCDVal_NewCopy(&o->mem, e->val);
@@ -629,7 +623,7 @@ static int contains_func_getvar (void *vo, const char *name, NCDValMem *mem, NCD
     struct contains_instance *o = vo;
     
     if (!strcmp(name, "")) {
-        *out = ncd_make_boolean(mem, o->contains, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->contains);
         return 1;
     }
     
@@ -646,10 +640,6 @@ static void find_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
     NCDValRef value_arg;
     if (!NCDVal_ListRead(params->args, 2, &start_pos_arg, &value_arg)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(start_pos_arg)) {
-        ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     
@@ -697,7 +687,7 @@ static int find_func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValR
     }
     
     if (!strcmp(name, "found")) {
-        *out = ncd_make_boolean(mem, o->is_found, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->is_found);
         return 1;
     }
     
@@ -710,10 +700,6 @@ static void removeat_func_new (void *unused, NCDModuleInst *i, const struct NCDM
     NCDValRef remove_pos_arg;
     if (!NCDVal_ListRead(params->args, 1, &remove_pos_arg)) {
         ModuleLog(i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(remove_pos_arg)) {
-        ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     

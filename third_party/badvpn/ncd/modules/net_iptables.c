@@ -114,14 +114,11 @@
 #include <misc/debug.h>
 #include <misc/find_program.h>
 #include <misc/balloc.h>
-#include <ncd/extra/BEventLock.h>
-
 #include <ncd/modules/command_template.h>
 
-#include <generated/blog_channel_ncd_net_iptables.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleGlobal(i) ((i)->m->group->group_state)
+#include <generated/blog_channel_ncd_net_iptables.h>
 
 static void template_free_func (void *vo, int is_error);
 
@@ -173,10 +170,8 @@ static int build_append_or_insert_cmdline (NCDModuleInst *i, NCDValRef args, con
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    const char *table = NCDVal_StringData(table_arg);
-    size_t table_len = NCDVal_StringLength(table_arg);
-    const char *chain = NCDVal_StringData(chain_arg);
-    size_t chain_len = NCDVal_StringLength(chain_arg);
+    MemRef table = NCDVal_StringMemRef(table_arg);
+    MemRef chain = NCDVal_StringMemRef(chain_arg);
     
     // find program
     if (!(*exec = badvpn_find_program(prog))) {
@@ -191,7 +186,7 @@ static int build_append_or_insert_cmdline (NCDModuleInst *i, NCDValRef args, con
     }
     
     // add header
-    if (!CmdLine_Append(cl, *exec) || !CmdLine_Append(cl, "-t") || !CmdLine_AppendNoNull(cl, table, table_len) || !CmdLine_Append(cl, (remove ? "-D" : type)) || !CmdLine_AppendNoNull(cl, chain, chain_len)) {
+    if (!CmdLine_Append(cl, *exec) || !CmdLine_Append(cl, "-t") || !CmdLine_AppendNoNullMr(cl, table) || !CmdLine_Append(cl, (remove ? "-D" : type)) || !CmdLine_AppendNoNullMr(cl, chain)) {
         ModuleLog(i, BLOG_ERROR, "CmdLine_Append failed");
         goto fail2;
     }
@@ -206,8 +201,8 @@ static int build_append_or_insert_cmdline (NCDModuleInst *i, NCDValRef args, con
             goto fail2;
         }
         
-        if (!CmdLine_AppendNoNull(cl, NCDVal_StringData(arg), NCDVal_StringLength(arg))) {
-            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendNoNull failed");
+        if (!CmdLine_AppendNoNullMr(cl, NCDVal_StringMemRef(arg))) {
+            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendNoNullMr failed");
             goto fail2;
         }
     }
@@ -255,14 +250,10 @@ static int build_policy_cmdline (NCDModuleInst *i, NCDValRef args, const char *p
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    const char *table = NCDVal_StringData(table_arg);
-    size_t table_len = NCDVal_StringLength(table_arg);
-    const char *chain = NCDVal_StringData(chain_arg);
-    size_t chain_len = NCDVal_StringLength(chain_arg);
-    const char *target = NCDVal_StringData(target_arg);
-    size_t target_len = NCDVal_StringLength(target_arg);
-    const char *revert_target = NCDVal_StringData(revert_target_arg);
-    size_t revert_target_len = NCDVal_StringLength(revert_target_arg);
+    MemRef table = NCDVal_StringMemRef(table_arg);
+    MemRef chain = NCDVal_StringMemRef(chain_arg);
+    MemRef target = NCDVal_StringMemRef(target_arg);
+    MemRef revert_target = NCDVal_StringMemRef(revert_target_arg);
     
     // find program
     if (!(*exec = badvpn_find_program(prog))) {
@@ -277,9 +268,9 @@ static int build_policy_cmdline (NCDModuleInst *i, NCDValRef args, const char *p
     }
     
     // add arguments
-    if (!CmdLine_Append(cl, *exec) || !CmdLine_Append(cl, "-t") || !CmdLine_AppendNoNull(cl, table, table_len) ||
-        !CmdLine_Append(cl, "-P") || !CmdLine_AppendNoNull(cl, chain, chain_len) ||
-        !CmdLine_AppendNoNull(cl, (remove ? revert_target : target), (remove ? revert_target_len : target_len))
+    if (!CmdLine_Append(cl, *exec) || !CmdLine_Append(cl, "-t") || !CmdLine_AppendNoNullMr(cl, table) ||
+        !CmdLine_Append(cl, "-P") || !CmdLine_AppendNoNullMr(cl, chain) ||
+        !CmdLine_AppendNoNullMr(cl, (remove ? revert_target : target))
     ) {
         ModuleLog(i, BLOG_ERROR, "CmdLine_Append failed");
         goto fail2;
@@ -314,10 +305,8 @@ static int build_newchain_cmdline (NCDModuleInst *i, NCDValRef args, const char 
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    const char *table = (NCDVal_IsInvalid(table_arg) ? "filter" : NCDVal_StringData(table_arg));
-    size_t table_len = (NCDVal_IsInvalid(table_arg) ? 6 : NCDVal_StringLength(table_arg));
-    const char *chain = NCDVal_StringData(chain_arg);
-    size_t chain_len = NCDVal_StringLength(chain_arg);
+    MemRef table = NCDVal_IsInvalid(table_arg) ? MemRef_MakeCstr("filter") : NCDVal_StringMemRef(table_arg);
+    MemRef chain = NCDVal_StringMemRef(chain_arg);
     
     // find program
     if (!(*exec = badvpn_find_program(prog))) {
@@ -333,9 +322,9 @@ static int build_newchain_cmdline (NCDModuleInst *i, NCDValRef args, const char 
     
     // add arguments
     if (!CmdLine_AppendMulti(cl, 2, *exec, "-t") ||
-        !CmdLine_AppendNoNull(cl, table, table_len) ||
+        !CmdLine_AppendNoNullMr(cl, table) ||
         !CmdLine_Append(cl, (remove ? "-X" : "-N")) ||
-        !CmdLine_AppendNoNull(cl, chain, chain_len)
+        !CmdLine_AppendNoNullMr(cl, chain)
     ) {
         ModuleLog(i, BLOG_ERROR, "CmdLine_Append failed");
         goto fail2;

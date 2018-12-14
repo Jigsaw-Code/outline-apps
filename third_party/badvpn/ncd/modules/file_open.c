@@ -98,7 +98,6 @@
  *   the close() statement goes up .
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -106,14 +105,11 @@
 #include <misc/debug.h>
 #include <misc/balloc.h>
 #include <misc/parse_number.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/NCDBuf.h>
 
-#include <generated/blog_channel_ncd_file_open.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_file_open.h>
 
 #define READ_BUF_SIZE 8192
 
@@ -129,19 +125,19 @@ struct read_instance {
     size_t length;
 };
 
-static int parse_mode (b_cstring cstr, char *out)
+static int parse_mode (MemRef mr, char *out)
 {
     size_t pos = 0;
-    size_t left = cstr.length;
+    size_t left = mr.len;
     
     if (left == 0) {
         return 0;
     }
-    switch (b_cstring_at(cstr, pos)) {
+    switch (MemRef_At(mr, pos)) {
         case 'r':
         case 'w':
         case 'a':
-            *out++ = b_cstring_at(cstr, pos);
+            *out++ = MemRef_At(mr, pos);
             pos++;
             left--;
             break;
@@ -152,9 +148,9 @@ static int parse_mode (b_cstring cstr, char *out)
     if (left == 0) {
         goto finish;
     }
-    switch (b_cstring_at(cstr, pos)) {
+    switch (MemRef_At(mr, pos)) {
         case '+':
-            *out++ = b_cstring_at(cstr, pos);
+            *out++ = MemRef_At(mr, pos);
             pos++;
             left--;
             break;
@@ -214,7 +210,7 @@ static void open_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
     
     // check mode
     char mode[5];
-    if (!parse_mode(NCDVal_StringCstring(mode_arg), mode)) {
+    if (!parse_mode(NCDVal_StringMemRef(mode_arg), mode)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong mode");
         goto fail0;
     }
@@ -228,7 +224,7 @@ static void open_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
         
         if (!NCDVal_IsInvalid(value = NCDVal_MapGetValue(options_arg, "read_size"))) {
             uintmax_t read_size;
-            if (!NCDVal_IsString(value) || !ncd_read_uintmax(value, &read_size) || read_size > SIZE_MAX || read_size == 0) {
+            if (!ncd_read_uintmax(value, &read_size) || read_size > SIZE_MAX || read_size == 0) {
                 ModuleLog(o->i, BLOG_ERROR, "wrong read_size");
                 goto fail0;
             }
@@ -291,7 +287,7 @@ static int open_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, NCD
     struct open_instance *o = vo;
     
     if (name == NCD_STRING_IS_ERROR) {
-        *out = ncd_make_boolean(mem, !o->fh, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, !o->fh);
         return 1;
     }
     
@@ -378,7 +374,7 @@ static int read_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, NCD
     }
     
     if (name == NCD_STRING_NOT_EOF) {
-        *out = ncd_make_boolean(mem, (o->length != 0), o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, (o->length != 0));
         return 1;
     }
     
@@ -408,20 +404,18 @@ static void write_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
     }
     
     // write all the data
-    b_cstring data_cstr = NCDVal_StringCstring(data_arg);
-    B_CSTRING_LOOP(data_cstr, pos, chunk_data, chunk_length, {
-        size_t chunk_pos = 0;
-        while (chunk_pos < chunk_length) {
-            size_t written = fwrite(chunk_data + chunk_pos, 1, chunk_length - chunk_pos, open_inst->fh);
-            if (written == 0) {
-                ModuleLog(i, BLOG_ERROR, "fwrite failed");
-                trigger_error(open_inst);
-                return;
-            }
-            ASSERT(written < chunk_length - chunk_pos)
-            chunk_pos += written;
+    MemRef data_mr = NCDVal_StringMemRef(data_arg);
+    size_t pos = 0;
+    while (pos < data_mr.len) {
+        size_t written = fwrite(data_mr.ptr + pos, 1, data_mr.len - pos, open_inst->fh);
+        if (written == 0) {
+            ModuleLog(i, BLOG_ERROR, "fwrite failed");
+            trigger_error(open_inst);
+            return;
         }
-    })
+        ASSERT(written <= data_mr.len - pos)
+        pos += written;
+    }
     
     // go up
     NCDModuleInst_Backend_Up(i);
@@ -448,8 +442,7 @@ static void seek_func_new (void *unused, NCDModuleInst *i, const struct NCDModul
     // parse position
     int position_sign;
     uintmax_t position_mag;
-    b_cstring position_cstr = NCDVal_StringCstring(position_arg);
-    if (!parse_signmag_integer_cstr(position_cstr, 0, position_cstr.length, &position_sign, &position_mag)) {
+    if (!parse_signmag_integer(NCDVal_StringMemRef(position_arg), &position_sign, &position_mag)) {
         ModuleLog(i, BLOG_ERROR, "wrong position");
         goto fail0;
     }
@@ -554,27 +547,22 @@ static struct NCDModule modules[] = {
         .func_new2 = open_func_new,
         .func_die = open_func_die,
         .func_getvar2 = open_func_getvar,
-        .alloc_size = sizeof(struct open_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct open_instance)
     }, {
         .type = "file_open::read",
         .func_new2 = read_func_new,
         .func_die = read_func_die,
         .func_getvar2 = read_func_getvar,
-        .alloc_size = sizeof(struct read_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct read_instance)
     }, {
         .type = "file_open::write",
-        .func_new2 = write_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = write_func_new
     }, {
         .type = "file_open::seek",
-        .func_new2 = seek_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = seek_func_new
     }, {
         .type = "file_open::close",
-        .func_new2 = close_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = close_func_new
     }, {
         .type = NULL
     }

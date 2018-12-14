@@ -44,6 +44,7 @@
 #include <misc/parse_number.h>
 #include <misc/find_char.h>
 #include <misc/print_macros.h>
+#include <misc/memref.h>
 
 struct ipv6_addr {
     uint8_t bytes[16];
@@ -54,12 +55,9 @@ struct ipv6_ifaddr {
     int prefix;
 };
 
-static int ipaddr6_parse_ipv6_addr_bin (const char *name, size_t name_len, struct ipv6_addr *out_addr);
-static int ipaddr6_parse_ipv6_addr (const char *name, struct ipv6_addr *out_addr);
-static int ipaddr6_parse_ipv6_prefix_bin (const char *str, size_t str_len, int *out_num);
-static int ipaddr6_parse_ipv6_prefix (const char *str, int *out_num);
-static int ipaddr6_parse_ipv6_ifaddr_bin (const char *str, size_t str_len, struct ipv6_ifaddr *out);
-static int ipaddr6_parse_ipv6_ifaddr (const char *str, struct ipv6_ifaddr *out);
+static int ipaddr6_parse_ipv6_addr (MemRef name, struct ipv6_addr *out_addr);
+static int ipaddr6_parse_ipv6_prefix (MemRef str, int *out_num);
+static int ipaddr6_parse_ipv6_ifaddr (MemRef str, struct ipv6_ifaddr *out);
 static int ipaddr6_ipv6_ifaddr_from_addr_mask (struct ipv6_addr addr, struct ipv6_addr mask, struct ipv6_ifaddr *out);
 static void ipaddr6_ipv6_mask_from_prefix (int prefix, struct ipv6_addr *out_mask);
 static int ipaddr6_ipv6_prefix_from_mask (struct ipv6_addr mask, int *out_prefix);
@@ -70,7 +68,7 @@ static int ipaddr6_ipv6_addrs_in_network (struct ipv6_addr addr1, struct ipv6_ad
 static void ipaddr6_print_addr (struct ipv6_addr addr, char *out_buf);
 static void ipaddr6_print_ifaddr (struct ipv6_ifaddr addr, char *out_buf);
 
-int ipaddr6_parse_ipv6_addr_bin (const char *name, size_t name_len, struct ipv6_addr *out_addr)
+int ipaddr6_parse_ipv6_addr (MemRef name, struct ipv6_addr *out_addr)
 {
     int num_blocks = 0;
     int compress_pos = -1;
@@ -79,11 +77,11 @@ int ipaddr6_parse_ipv6_addr_bin (const char *name, size_t name_len, struct ipv6_
     
     size_t i = 0;
     
-    while (i < name_len) {
-        if (name[i] == '.') {
+    while (i < name.len) {
+        if (name.ptr[i] == '.') {
             goto ipv4_ending;
-        } else if (name[i] == ':') {
-            int is_double = (i + 1 < name_len && name[i + 1] == ':');
+        } else if (name.ptr[i] == ':') {
+            int is_double = (i + 1 < name.len && name.ptr[i + 1] == ':');
             
             if (i > 0) {
                 if (empty || num_blocks == 7) {
@@ -108,7 +106,7 @@ int ipaddr6_parse_ipv6_addr_bin (const char *name, size_t name_len, struct ipv6_
             
             i += 1 + is_double;
         } else {
-            int digit = decode_hex_digit(name[i]);
+            int digit = decode_hex_digit(name.ptr[i]);
             if (digit < 0) {
                 return 0;
             }
@@ -153,7 +151,7 @@ ipv4_ending:
         return 0;
     }
     
-    while (name[i - 1] != ':') {
+    while (name.ptr[i - 1] != ':') {
         i--;
     }
     
@@ -162,8 +160,8 @@ ipv4_ending:
     uint8_t byte = 0;
     empty = 1;
     
-    while (i < name_len) {
-        if (name[i] == '.') {
+    while (i < name.len) {
+        if (name.ptr[i] == '.') {
             if (empty || cur_byte == 3) {
                 return 0;
             }
@@ -175,7 +173,7 @@ ipv4_ending:
             if (!empty && byte == 0) {
                 return 0;
             }
-            int digit = decode_decimal_digit(name[i]);
+            int digit = decode_decimal_digit(name.ptr[i]);
             if (digit < 0) {
                 return 0;
             }
@@ -206,15 +204,10 @@ ipv4_ending:
     goto ipv4_done;
 }
 
-int ipaddr6_parse_ipv6_addr (const char *name, struct ipv6_addr *out_addr)
-{
-    return ipaddr6_parse_ipv6_addr_bin(name, strlen(name), out_addr);
-}
-
-int ipaddr6_parse_ipv6_prefix_bin (const char *str, size_t str_len, int *out_num)
+int ipaddr6_parse_ipv6_prefix (MemRef str, int *out_num)
 {
     uintmax_t d;
-    if (!parse_unsigned_integer_bin(str, str_len, &d)) {
+    if (!parse_unsigned_integer(str, &d)) {
         return 0;
     }
     if (d > 128) {
@@ -225,25 +218,15 @@ int ipaddr6_parse_ipv6_prefix_bin (const char *str, size_t str_len, int *out_num
     return 1;
 }
 
-int ipaddr6_parse_ipv6_prefix (const char *str, int *out_num)
-{
-    return ipaddr6_parse_ipv6_prefix_bin(str, strlen(str), out_num);
-}
-
-int ipaddr6_parse_ipv6_ifaddr_bin (const char *str, size_t str_len, struct ipv6_ifaddr *out)
+int ipaddr6_parse_ipv6_ifaddr (MemRef str, struct ipv6_ifaddr *out)
 {
     size_t slash_pos;
-    if (!b_find_char_bin(str, str_len, '/', &slash_pos)) {
+    if (!MemRef_FindChar(str, '/', &slash_pos)) {
         return 0;
     }
     
-    return (ipaddr6_parse_ipv6_addr_bin(str, slash_pos, &out->addr) &&
-            ipaddr6_parse_ipv6_prefix_bin(str + slash_pos + 1, str_len - slash_pos - 1, &out->prefix));
-}
-
-int ipaddr6_parse_ipv6_ifaddr (const char *str, struct ipv6_ifaddr *out)
-{
-    return ipaddr6_parse_ipv6_ifaddr_bin(str, strlen(str), out);
+    return (ipaddr6_parse_ipv6_addr(MemRef_SubTo(str, slash_pos), &out->addr) &&
+            ipaddr6_parse_ipv6_prefix(MemRef_SubFrom(str, slash_pos + 1), &out->prefix));
 }
 
 int ipaddr6_ipv6_ifaddr_from_addr_mask (struct ipv6_addr addr, struct ipv6_addr mask, struct ipv6_ifaddr *out)

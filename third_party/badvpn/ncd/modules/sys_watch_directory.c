@@ -54,11 +54,9 @@
 #include <misc/nonblocking.h>
 #include <misc/concat_strings.h>
 
-#include <ncd/NCDModule.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_sys_watch_directory.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define MAX_INOTIFY_EVENTS 128
 

@@ -33,5 +33,8 @@
 // how long to wait after an error before retrying
 #define DEFAULT_RETRY_TIME 5000
 
+// default exit code when terminated by SIGINT/SIGTERM
+#define DEFAULT_SIGNAL_EXIT_CODE 1
+
 // default loglevel
 #define DEFAULT_LOGLEVEL BLOG_WARNING

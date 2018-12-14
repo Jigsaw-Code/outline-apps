@@ -34,6 +34,7 @@
 #include <ncd/NCDValCons.h>
 #include <ncd/NCDValGenerator.h>
 
+static NCDStringIndex string_index;
 static NCDValMem mem;
 static NCDValCons cons;
 
@@ -87,9 +88,14 @@ static NCDValRef complete (NCDValConsVal cval)
 
 int main ()
 {
-    NCDValMem_Init(&mem);
+    int res;
     
-    int res = NCDValCons_Init(&cons, &mem);
+    res = NCDStringIndex_Init(&string_index);
+    ASSERT_FORCE(res)
+    
+    NCDValMem_Init(&mem, &string_index);
+    
+    res = NCDValCons_Init(&cons, &mem);
     ASSERT_FORCE(res)
     
     NCDValRef val1 = complete(list_prepend(list_prepend(list_prepend(make_list(), make_string("hello")), make_string("world")), make_list()));
@@ -107,5 +113,6 @@ int main ()
     
     NCDValCons_Free(&cons);
     NCDValMem_Free(&mem);
+    NCDStringIndex_Free(&string_index);
     return 0;
 }

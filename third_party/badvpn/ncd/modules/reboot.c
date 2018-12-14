@@ -36,11 +36,9 @@
 #include <unistd.h>
 #include <sys/reboot.h>
 
-#include <ncd/NCDModule.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_reboot.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 static void func_new_hard_reboot (void *unused, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {

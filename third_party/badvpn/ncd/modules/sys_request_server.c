@@ -86,15 +86,11 @@
 #include <flow/PacketPassFifoQueue.h>
 #include <ncd/NCDValParser.h>
 #include <ncd/NCDValGenerator.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/address_utils.h>
 
-#include <generated/blog_channel_ncd_sys_request_server.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
+#include <generated/blog_channel_ncd_sys_request_server.h>
 
 #define SEND_PAYLOAD_MTU 32768
 #define RECV_PAYLOAD_MTU 32768
@@ -384,9 +380,9 @@ static int request_init (struct connection *c, uint32_t request_id, const uint8_
     
     LinkedList0_Prepend(&c->requests_list, &r->requests_list_node);
     
-    NCDValMem_Init(&r->request_data_mem);
+    NCDValMem_Init(&r->request_data_mem, o->i->params->iparams->string_index);
     
-    if (!NCDValParser_Parse((const char *)data, data_len, &r->request_data_mem, &r->request_data)) {
+    if (!NCDValParser_Parse(MemRef_Make((const char *)data, data_len), &r->request_data_mem, &r->request_data)) {
         ModuleLog(o->i, BLOG_ERROR, "NCDValParser_Parse failed");
         goto fail1;
     }

@@ -621,7 +621,10 @@ nd6_input(struct pbuf *p, struct netif *inp)
 void
 nd6_tmr(void)
 {
-  s8_t i, j;
+  s8_t i;
+#if LWIP_IPV6_AUTOCONFIG
+  s8_t j;
+#endif
   struct netif * netif;
 
   /* Process neighbor entries. */

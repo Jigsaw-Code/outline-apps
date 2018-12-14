@@ -31,6 +31,7 @@
  * Synopsis:
  *   backtrack_point()
  *   backtrack_point::go()
+ *   backtrack_point::rgo()
  * 
  * Description:
  *   The backtrack_point() statement creates a backtrack point, going up immedietely.
@@ -38,15 +39,19 @@
  *   backtrack_point() statement go down and back up at atomically. The go() method
  *   itself goes up immedietely, but side effects of triggering backtracking have
  *   priority.
+ *   The rgo() method triggers backtracking when it deinitializes. In this case,
+ *   the immediate effects of triggering backtracking in the backtrack_point() have
+ *   priority over the immediate effects of rgo() deinitialization completion.
  */
 
-#include <stddef.h>
-
-#include <ncd/NCDModule.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_backtrack.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+struct rgo_instance {
+    NCDModuleInst *i;
+    NCDModuleRef bp_ref;
+};
 
 static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
@@ -86,6 +91,50 @@ fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
 
+static void rgo_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
+{
+    struct rgo_instance *o = vo;
+    o->i = i;
+    
+    // check arguments
+    if (!NCDVal_ListRead(params->args, 0)) {
+        ModuleLog(i, BLOG_ERROR, "wrong arity");
+        goto fail0;
+    }
+    
+    // get backtrack point
+    NCDModuleInst *backtrack_point_inst = params->method_user;
+    
+    // init object reference to the backtrack_point
+    NCDModuleRef_Init(&o->bp_ref, backtrack_point_inst);
+    
+    // go up
+    NCDModuleInst_Backend_Up(i);
+    return;
+    
+fail0:
+    NCDModuleInst_Backend_DeadError(i);
+}
+
+static void rgo_func_die (void *vo)
+{
+    struct rgo_instance *o = vo;
+    
+    // deref backtrack_point
+    NCDModuleInst *backtrack_point_inst = NCDModuleRef_Deref(&o->bp_ref);
+    
+    // free object reference
+    NCDModuleRef_Free(&o->bp_ref);
+    
+    // die
+    NCDModuleInst_Backend_Dead(o->i);
+    
+    // toggle backtrack_point
+    if (backtrack_point_inst) {
+        NCDModuleInst_Backend_DownUp(backtrack_point_inst);
+    }
+}
+
 static struct NCDModule modules[] = {
     {
         .type = "backtrack_point",
@@ -93,6 +142,11 @@ static struct NCDModule modules[] = {
     }, {
         .type = "backtrack_point::go",
         .func_new2 = go_func_new
+    }, {
+        .type = "backtrack_point::rgo",
+        .func_new2 = rgo_func_new,
+        .func_die = rgo_func_die,
+        .alloc_size = sizeof(struct rgo_instance)
     }, {
         .type = NULL
     }

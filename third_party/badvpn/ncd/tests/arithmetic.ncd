@@ -65,5 +65,23 @@ process main {
     strcmp(r, "1") a;
     assert(a);
 
+    num_add("18446744073709551615", "1") r;
+    assert(r.is_error);
+
+    num_subtract("0", "1") r;
+    assert(r.is_error);
+
+    num_multiply("9223372036854775808", "2") r;
+    assert(r.is_error);
+
+    num_divide("4", "0") r;
+    assert(r.is_error);
+    
+    num_modulo("4", "0") r;
+    assert(r.is_error);
+    
+    num_add("1", "1") r;
+    assert_false(r.is_error);
+
     exit("0");
 }

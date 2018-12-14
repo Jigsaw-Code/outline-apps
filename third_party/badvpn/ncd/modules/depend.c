@@ -62,17 +62,14 @@
 #include <misc/balloc.h>
 #include <structure/LinkedList1.h>
 #include <structure/LinkedList3.h>
-#include <ncd/NCDModule.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_depend.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleGlobal(i) ((i)->m->group->group_state)
-
 struct provide {
     NCDModuleInst *i;
-    const char *name;
-    size_t name_len;
+    MemRef name;
     int is_queued;
     union {
         struct {
@@ -89,8 +86,7 @@ struct provide {
 
 struct depend {
     NCDModuleInst *i;
-    const char *name;
-    size_t name_len;
+    MemRef name;
     struct provide *p;
     LinkedList1Node node;
 };
@@ -100,13 +96,13 @@ struct global {
     LinkedList1 free_depends;
 };
 
-static struct provide * find_provide (struct global *g, const char *name, size_t name_len)
+static struct provide * find_provide (struct global *g, MemRef name)
 {
     for (LinkedList1Node *n = LinkedList1_GetFirst(&g->provides); n; n = LinkedList1Node_Next(n)) {
         struct provide *p = UPPER_OBJECT(n, struct provide, provides_node);
         ASSERT(!p->is_queued)
         
-        if (p->name_len == name_len && !memcmp(p->name, name, name_len)) {
+        if (MemRef_Equal(p->name, name)) {
             return p;
         }
     }
@@ -117,7 +113,7 @@ static struct provide * find_provide (struct global *g, const char *name, size_t
 static void provide_promote (struct provide *o)
 {
     struct global *g = ModuleGlobal(o->i);
-    ASSERT(!find_provide(g, o->name, o->name_len))
+    ASSERT(!find_provide(g, o->name))
     
     // set not queued
     o->is_queued = 0;
@@ -138,7 +134,7 @@ static void provide_promote (struct provide *o)
         struct depend *d = UPPER_OBJECT(n, struct depend, node);
         ASSERT(!d->p)
         
-        if (d->name_len != o->name_len || memcmp(d->name, o->name, d->name_len)) {
+        if (!MemRef_Equal(d->name, o->name)) {
             n = next;
             continue;
         }
@@ -206,8 +202,7 @@ static void provide_func_new_templ (void *vo, NCDModuleInst *i, const struct NCD
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    o->name = NCDVal_StringData(name_arg);
-    o->name_len = NCDVal_StringLength(name_arg);
+    o->name = NCDVal_StringMemRef(name_arg);
     
     // signal up.
     // This comes above provide_promote(), so that effects on related depend statements are
@@ -215,7 +210,7 @@ static void provide_func_new_templ (void *vo, NCDModuleInst *i, const struct NCD
     NCDModuleInst_Backend_Up(o->i);
     
     // check for existing provide with this name
-    struct provide *ep = find_provide(g, o->name, o->name_len);
+    struct provide *ep = find_provide(g, o->name);
     if (ep) {
         ASSERT(!ep->is_queued)
         
@@ -324,11 +319,10 @@ static void depend_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleI
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    o->name = NCDVal_StringData(name_arg);
-    o->name_len = NCDVal_StringLength(name_arg);
+    o->name = NCDVal_StringMemRef(name_arg);
     
     // find a provide with our name
-    struct provide *p = find_provide(g, o->name, o->name_len);
+    struct provide *p = find_provide(g, o->name);
     ASSERT(!p || !p->is_queued)
     
     if (p && !p->dying) {

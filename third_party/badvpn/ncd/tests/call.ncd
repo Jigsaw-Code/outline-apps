@@ -6,6 +6,15 @@ process main {
     val_equal(c.x, "good_x") a;
     assert(a);
     
+    var("foo") foo;
+    Block {
+        concat(foo, _scope.foo, _caller.bar, _arg0) x;
+    } block;
+    var("bar") bar;
+    block->call("arg") c;
+    val_equal(c.x, "foofoobararg") a;
+    assert(a);
+    
     exit("0");
 }
 

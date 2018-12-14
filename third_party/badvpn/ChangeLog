@@ -1,3 +1,91 @@
+Version 1.999.130:
+
+- Fix TUN/TAP operation with Linux kernel 3.19. See: https://bugzilla.kernel.org/show_bug.cgi?id=96381
+
+- ncd: modules/daemon: Implement custom retry time.
+
+- ncd: modules/daemon: Fix the "daemon crashed" log message to include module context.
+
+- ncd: modules: arithmetic: Don't fail immediately on arithmetic errors, expose their occurrence.
+
+- ncd: Add clock_get_ms function.
+
+- ncd: Implement a simple checksum function as used in the Sphereo blue tooth protocol.
+
+- ncd: socket: Implement support for opening serial ports.
+
+- ncd: Implement struct_decode.
+
+- ncd: Implement struct_encode function.
+
+- ncd: sys.evdev: Provide event code strings for EV_SYN if available.
+
+- ncd: modules: blocker: Implement initial_state argument.
+
+- ncd: modules: blocker: Expose the up-state as a variable.
+
+- ncd: Implement Do-Interrupt.
+
+- ncd: Implement Do.
+
+- ncd: Implement lazy evaluation in If clause.
+
+- ncd: Implement ifel function to support future lazy If.
+
+- ncd: Optimize value::append().
+
+- ncd: Implement backtrack_point::rgo.
+
+- ncd: modules: explode: Pass through external strings (avoid copy).
+
+- ncd: modules: explode: Implement compiling search strings.
+
+- ncd: modules: parse: Implement parse_hex_number.
+
+- ncd: Implement caret syntax sugar. ^a.b.c = {"a", "b", "c"}
+
+- ncd: Fix bugs with bad expectations of null-terminated strings.
+
+- ncd: Implement object reference infrastructure and objref module.
+
+- ncd: Remove ComposedString type along with the buffer module.
+
+- ncd: Implement Block syntax as syntax-sugar around inline_code().
+
+- ncd: modules: call: Implement inline_code calls.
+
+- ncd: modules: call: Fix bug in call_with_caller_target deinit.
+
+- ncd: modules: socket: close: Fix completion order vs closing. 
+
+- ncd: Fix a bug that caused a bad assertion failure in file_write().
+
+- ncd: modules: socket: add read() eof variable
+
+- ncd: modules: socket: Implement _caller in client process.
+
+- ncd: Add --signal-exit-code option.
+
+- ncd: Implement syntax sugar @something = "something".
+
+- ncd: Fix crash with num_multiply(..., "0").
+
+- ncd: Infrastructure for built-in functions and implementation of many such functions.
+
+- ncd: Fix bad assertion regarding map values.
+
+Version 1.999.129:
+
+- ncd: modules: file_open: Fix typo in assertion.
+
+- server: Fix bug forgetting to call BSSLConnection_ReleaseBuffers(). Unless threads are enabled, this is an assert failure if NDEBUG is not defined an a non-issue otherwise.
+
+- ncd: Look for various programs in PATH instead of hardcoded paths.
+
+- Add compile-udpgw.sh.
+
+- ncd: modules: net_dns: Implement net.dns.resolvconf() forspecification of arbitrary resolv.conf lines
+
 Version 1.999.128:
 
 - tun2socks: add option --append-source-to-username to give the SOCKS server the source IP of the connection

@@ -62,7 +62,7 @@ int NCDIfConfig_remove_ipv4_blackhole_route (struct ipv4_ifaddr dest, int metric
 int NCDIfConfig_add_ipv6_blackhole_route (struct ipv6_ifaddr dest, int metric);
 int NCDIfConfig_remove_ipv6_blackhole_route (struct ipv6_ifaddr dest, int metric);
 
-int NCDIfConfig_set_dns_servers (uint32_t *servers, size_t num_servers);
+int NCDIfConfig_set_resolv_conf (const char *data, size_t data_len);
 
 int NCDIfConfig_make_tuntap (const char *ifname, const char *owner, int tun);
 int NCDIfConfig_remove_tuntap (const char *ifname, int tun);

@@ -71,6 +71,7 @@ static struct {
     char *config_file;
     int syntax_only;
     int retry_time;
+    int signal_exit_code;
     int no_udev;
     char **extra_args;
     int num_extra_args;
@@ -279,6 +280,7 @@ void print_help (const char *name)
         "        [--no-udev]\n"
         "        [--config-file <ncd_program_file>]\n"
         "        [--syntax-only]\n"
+        "        [--signal-exit-code <number>]\n"
         "        [-- program_args...]\n"
         "        [<ncd_program_file> program_args...]\n" ,
         name
@@ -310,6 +312,7 @@ int parse_arguments (int argc, char *argv[])
     options.config_file = NULL;
     options.syntax_only = 0;
     options.retry_time = DEFAULT_RETRY_TIME;
+    options.signal_exit_code = DEFAULT_SIGNAL_EXIT_CODE;
     options.no_udev = 0;
     options.extra_args = NULL;
     options.num_extra_args = 0;
@@ -414,6 +417,17 @@ int parse_arguments (int argc, char *argv[])
             }
             i++;
         }
+        else if (!strcmp(arg, "--signal-exit-code")) {
+            if (1 >= argc - i) {
+                fprintf(stderr, "%s: requires an argument\n", arg);
+                return 0;
+            }
+            if ((options.signal_exit_code = atoi(argv[i + 1])) < 0) {
+                fprintf(stderr, "%s: wrong argument\n", arg);
+                return 0;
+            }
+            i++;
+        }
         else if (!strcmp(arg, "--no-udev")) {
             options.no_udev = 1;
         }
@@ -454,7 +468,7 @@ void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
     
-    NCDInterpreter_RequestShutdown(&interpreter, 1);
+    NCDInterpreter_RequestShutdown(&interpreter, options.signal_exit_code);
 }
 
 void interpreter_handler_finished (void *user, int exit_code)

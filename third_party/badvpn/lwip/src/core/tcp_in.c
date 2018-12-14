@@ -220,7 +220,7 @@ tcp_input(struct pbuf *p, struct netif *inp)
        are LISTENing for incoming connections. */
     prev = NULL;
     struct tcp_pcb_listen *netif_pcb = NULL;
-    struct tcp_pcb *netif_pcb_prev;
+    struct tcp_pcb *netif_pcb_prev = NULL;
     for(lpcb = tcp_listen_pcbs.listen_pcbs; lpcb != NULL; lpcb = lpcb->next) {
       if (lpcb->bound_to_netif) {
         if (IP_PCB_IPVER_INPUT_MATCH(lpcb) && netif_is_named(inp, lpcb->local_netif)) {

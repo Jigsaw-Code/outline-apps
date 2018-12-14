@@ -1,7 +1,7 @@
-add_library(udevmonitor
+set(UDEVMONITOR_SOURCES
     NCDUdevMonitorParser.c
     NCDUdevMonitor.c
     NCDUdevCache.c
     NCDUdevManager.c
 )
-target_link_libraries(udevmonitor system flow stringmap)
+badvpn_add_library(udevmonitor "system;flow;stringmap" "" "${UDEVMONITOR_SOURCES}")

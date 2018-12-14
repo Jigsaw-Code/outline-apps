@@ -39,14 +39,10 @@
 #include <stdlib.h>
 
 #include <misc/strdup.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_getenv.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
 
 struct instance {
     NCDModuleInst *i;
@@ -128,7 +124,7 @@ static int func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRe
     }
     
     if (name == ModuleString(o->i, STRING_EXISTS)) {
-        *out = ncd_make_boolean(mem, !!o->value, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, !!o->value);
         return 1;
     }
     

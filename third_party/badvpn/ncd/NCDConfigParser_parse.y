@@ -95,16 +95,19 @@ static void free_value (struct value o) { if (o.have) NCDValue_Free(&o.v); }
 %type else_maybe { struct block }
 %type statements { struct block }
 %type dotted_name { char * }
-%type statement_args_maybe { struct value }
+%type list_contents_maybe { struct value }
 %type list_contents { struct value }
 %type list { struct value }
 %type map_contents { struct value }
 %type map  { struct value }
+%type invoc { struct value }
 %type value  { struct value }
 %type name_maybe { char * }
 %type process_or_template { int }
+%type name_list { struct value }
+%type interrupt_maybe { struct block }
 
-// mention parser_out in some destructor to a void unused variable warning
+// mention parser_out in some destructor to avoid an unused-variable warning
 %destructor processes { (void)parser_out; free_program($$); }
 %destructor statement { free_statement($$); }
 %destructor elif_maybe { free_ifblock($$); }
@@ -112,13 +115,16 @@ static void free_value (struct value o) { if (o.have) NCDValue_Free(&o.v); }
 %destructor else_maybe { free_block($$); }
 %destructor statements { free_block($$); }
 %destructor dotted_name { free($$); }
-%destructor statement_args_maybe { free_value($$); }
+%destructor list_contents_maybe { free_value($$); }
 %destructor list_contents { free_value($$); }
 %destructor list { free_value($$); }
 %destructor map_contents { free_value($$); }
 %destructor map { free_value($$); }
+%destructor invoc { free_value($$); }
 %destructor value { free_value($$); }
 %destructor name_maybe { free($$); }
+%destructor name_list { free_value($$); }
+%destructor interrupt_maybe { free_block($$); }
 
 %stack_size 0
 
@@ -245,7 +251,7 @@ doneB:
     free_program(N);
 }
 
-statement(R) ::= dotted_name(A) ROUND_OPEN statement_args_maybe(B) ROUND_CLOSE name_maybe(C) SEMICOLON. {
+statement(R) ::= dotted_name(A) ROUND_OPEN list_contents_maybe(B) ROUND_CLOSE name_maybe(C) SEMICOLON. {
     if (!A || !B.have) {
         goto failC0;
     }
@@ -267,7 +273,7 @@ doneC:
     free(C);
 }
 
-statement(R) ::= dotted_name(M) ARROW dotted_name(A) ROUND_OPEN statement_args_maybe(B) ROUND_CLOSE name_maybe(C) SEMICOLON. {
+statement(R) ::= dotted_name(M) ARROW dotted_name(A) ROUND_OPEN list_contents_maybe(B) ROUND_CLOSE name_maybe(C) SEMICOLON. {
     if (!M || !A || !B.have) {
         goto failD0;
     }
@@ -305,7 +311,7 @@ statement(R) ::= IF ROUND_OPEN value(A) ROUND_CLOSE CURLY_OPEN statements(B) CUR
         goto failE0;
     }
 
-    if (!NCDStatement_InitIf(&R.v, C, I.v)) {
+    if (!NCDStatement_InitIf(&R.v, C, I.v, NCDIFTYPE_IF)) {
         goto failE0;
     }
     I.have = 0;
@@ -455,6 +461,81 @@ else_maybe(R) ::= ELSE CURLY_OPEN statements(B) CURLY_CLOSE. {
     R = B;
 }
 
+statement(R) ::= BLOCK CURLY_OPEN statements(S) CURLY_CLOSE name_maybe(N) SEMICOLON. {
+    if (!S.have) {
+        goto failGA0;
+    }
+    
+    if (!NCDStatement_InitBlock(&R.v, N, S.v)) {
+        goto failGA0;
+    }
+    S.have = 0;
+    
+    R.have = 1;
+    goto doneGA0;
+    
+failGA0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneGA0:
+    free_block(S);
+    free(N);
+}
+
+interrupt_maybe(R) ::= . {
+    R.have = 0;
+}
+
+interrupt_maybe(R) ::= TOKEN_INTERRUPT CURLY_OPEN statements(S) CURLY_CLOSE. {
+    R = S;
+}
+
+statement(R) ::= TOKEN_DO CURLY_OPEN statements(S) CURLY_CLOSE interrupt_maybe(I) name_maybe(N) SEMICOLON. {
+    if (!S.have) {
+        goto failGB0;
+    }
+    
+    NCDIfBlock if_block;
+    NCDIfBlock_Init(&if_block);
+    
+    if (I.have) {
+        NCDIf int_if;
+        NCDIf_InitBlock(&int_if, I.v);
+        I.have = 0;
+        
+        if (!NCDIfBlock_PrependIf(&if_block, int_if)) {
+            NCDIf_Free(&int_if);
+            goto failGB1;
+        }
+    }
+    
+    NCDIf the_if;
+    NCDIf_InitBlock(&the_if, S.v);
+    S.have = 0;
+    
+    if (!NCDIfBlock_PrependIf(&if_block, the_if)) {
+        NCDIf_Free(&the_if);
+        goto failGB1;
+    }
+    
+    if (!NCDStatement_InitIf(&R.v, N, if_block, NCDIFTYPE_DO)) {
+        goto failGB1;
+    }
+    
+    R.have = 1;
+    goto doneGB0;
+    
+failGB1:
+    NCDIfBlock_Free(&if_block);
+failGB0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneGB0:
+    free_block(S);
+    free_block(I);
+    free(N);
+}
+
 statements(R) ::= statement(A). {
     if (!A.have) {
         goto failH0;
@@ -530,12 +611,71 @@ doneJ:
     free(N);
 }
 
-statement_args_maybe(R) ::= . {
+name_list(R) ::= NAME(A). {
+    if (!A.str) {
+        goto failK0;
+    }
+
+    NCDValue_InitList(&R.v);
+    
+    NCDValue this_string;
+    if (!NCDValue_InitString(&this_string, A.str)) {
+        goto failK1;
+    }
+    
+    if (!NCDValue_ListPrepend(&R.v, this_string)) {
+        goto failK2;
+    }
+
+    R.have = 1;
+    goto doneK;
+
+failK2:
+    NCDValue_Free(&this_string);
+failK1:
+    NCDValue_Free(&R.v);
+failK0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneK:
+    free_token(A);
+}
+
+name_list(R) ::= NAME(A) DOT name_list(N). {
+    if (!A.str || !N.have) {
+        goto failKA0;
+    }
+    
+    NCDValue this_string;
+    if (!NCDValue_InitString(&this_string, A.str)) {
+        goto failKA0;
+    }
+
+    if (!NCDValue_ListPrepend(&N.v, this_string)) {
+        goto failKA1;
+    }
+
+    R.have = 1;
+    R.v = N.v;
+    N.have = 0;
+    goto doneKA;
+
+failKA1:
+    NCDValue_Free(&this_string);
+failKA0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneKA:
+    free_token(A);
+    free_value(N);
+}
+
+list_contents_maybe(R) ::= . {
     R.have = 1;
     NCDValue_InitList(&R.v);
 }
 
-statement_args_maybe(R) ::= list_contents(A). {
+list_contents_maybe(R) ::= list_contents(A). {
     R = A;
 }
 
@@ -655,6 +795,27 @@ map(R) ::= BRACKET_OPEN map_contents(A) BRACKET_CLOSE. {
     R = A;
 }
 
+invoc(R) ::= value(F) ROUND_OPEN list_contents_maybe(A) ROUND_CLOSE. {
+    if (!F.have || !A.have) {
+        goto failQ0;
+    }
+    
+    if (!NCDValue_InitInvoc(&R.v, F.v, A.v)) {
+        goto failQ0;
+    }
+    F.have = 0;
+    A.have = 0;
+    R.have = 1;
+    goto doneQ;
+    
+failQ0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneQ:
+    free_value(F);
+    free_value(A);
+}
+
 value(R) ::= STRING(A). {
     ASSERT(A.str)
 
@@ -670,6 +831,29 @@ failU0:
     parser_out->out_of_memory = 1;
 doneU:
     free_token(A);
+}
+
+value(R) ::= AT_SIGN dotted_name(A). {
+    if (!A) {
+        goto failUA0;
+    }
+    
+    if (!NCDValue_InitString(&R.v, A)) {
+        goto failUA0;
+    }
+    
+    R.have = 1;
+    goto doneUA0;
+    
+failUA0:
+    R.have = 0;
+    parser_out->out_of_memory = 1;
+doneUA0:
+    free(A);
+}
+
+value(R) ::= CARET name_list(A). {
+    R = A;
 }
 
 value(R) ::= dotted_name(A). {
@@ -696,6 +880,14 @@ value(R) ::= list(A). {
 }
 
 value(R) ::= map(A). {
+    R = A;
+}
+
+value(R) ::= ROUND_OPEN value(A) ROUND_CLOSE. {
+    R = A;
+}
+
+value(R) ::= invoc(A). {
     R = A;
 }
 

@@ -40,12 +40,10 @@
 #include <stddef.h>
 
 #include <misc/debug.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_timer.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define STATE_DOWN 1
 #define STATE_UP 2
@@ -89,10 +87,6 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     NCDValRef up_time_arg;
     if (!NCDVal_ListRead(params->args, 2, &down_time_arg, &up_time_arg)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(down_time_arg) || !NCDVal_IsString(up_time_arg)) {
-        ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     

@@ -117,8 +117,24 @@ static int tokenizer_output (void *user, int token, char *value, size_t value_le
         case NCD_TOKEN_INCLUDE_GUARD:
             printf("include_guard\n");
             break;
+        case NCD_TOKEN_AT:
+            printf("at\n");
+            break;
+        case NCD_TOKEN_BLOCK:
+            printf("block\n");
+            break;
+        case NCD_TOKEN_CARET:
+            printf("caret\n");
+            break;
+        case NCD_TOKEN_DO:
+            printf("do\n");
+            break;
+        case NCD_TOKEN_INTERRUPT:
+            printf("interrupt\n");
+            break;
         default:
-            ASSERT(0);
+            printf("UNKNOWN_TOKEN\n");
+            break;
     }
     
     return 1;
@@ -139,7 +155,7 @@ int main (int argc, char **argv)
     
     error = 0;
     
-    NCDConfigTokenizer_Tokenize(argv[1], strlen(argv[1]), tokenizer_output, NULL);
+    NCDConfigTokenizer_Tokenize(MemRef_MakeCstr(argv[1]), tokenizer_output, NULL);
     
     if (error) {
         return 1;

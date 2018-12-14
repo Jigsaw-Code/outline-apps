@@ -1,4 +1,4 @@
-add_library(security
+set(SECURITY_SOURCES
     BSecurity.c
     BEncryption.c
     BHash.c
@@ -7,4 +7,4 @@ add_library(security
     OTPChecker.c
     OTPGenerator.c
 )
-target_link_libraries(security system threadwork ${LIBCRYPTO_LIBRARIES})
+badvpn_add_library(security "system;threadwork" "${LIBCRYPTO_LIBRARIES}" "${SECURITY_SOURCES}")

@@ -42,6 +42,7 @@
 #include <string.h>
 
 #include <misc/debug.h>
+#include <misc/memref.h>
 #include <base/BMutex.h>
 
 // auto-generated channel numbers and number of channels
@@ -105,7 +106,7 @@ static int BLog_WouldLog (int channel, int level);
 static void BLog_Begin (void);
 static void BLog_AppendVarArg (const char *fmt, va_list vl);
 static void BLog_Append (const char *fmt, ...);
-static void BLog_AppendBytes (const char *data, size_t len);
+static void BLog_AppendBytes (MemRef data);
 static void BLog_Finish (int channel, int level);
 static void BLog_LogToChannelVarArg (int channel, int level, const char *fmt, va_list vl);
 static void BLog_LogToChannel (int channel, int level, const char *fmt, ...);
@@ -236,7 +237,7 @@ void BLog_Append (const char *fmt, ...)
     va_end(vl);
 }
 
-void BLog_AppendBytes (const char *data, size_t len)
+void BLog_AppendBytes (MemRef data)
 {
     ASSERT(blog_global.initialized)
 #ifndef NDEBUG
@@ -246,10 +247,10 @@ void BLog_AppendBytes (const char *data, size_t len)
     ASSERT(blog_global.logbuf_pos < sizeof(blog_global.logbuf))
     
     size_t avail = (sizeof(blog_global.logbuf) - 1) - blog_global.logbuf_pos;
-    len = (len > avail ? avail : len);
+    data.len = (data.len > avail ? avail : data.len);
     
-    memcpy(blog_global.logbuf + blog_global.logbuf_pos, data, len);
-    blog_global.logbuf_pos += len;
+    memcpy(blog_global.logbuf + blog_global.logbuf_pos, data.ptr, data.len);
+    blog_global.logbuf_pos += data.len;
     blog_global.logbuf[blog_global.logbuf_pos] = '\0';
 }
 

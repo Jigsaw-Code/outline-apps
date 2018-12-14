@@ -36,27 +36,12 @@
 #include <base/DebugObject.h>
 #include <ncd/NCDAst.h>
 #include <ncd/NCDVal.h>
-#include <ncd/NCDPlaceholderDb.h>
+#include <ncd/NCDEvaluator.h>
 #include <ncd/NCDModule.h>
 #include <ncd/NCDModuleIndex.h>
 #include <ncd/NCDStringIndex.h>
 
-struct NCDInterpProcess__stmt {
-    NCD_string_id_t name;
-    NCD_string_id_t cmdname;
-    NCD_string_id_t *objnames;
-    size_t num_objnames;
-    union {
-        const struct NCDInterpModule *simple_module;
-        int method_name_id;
-    } binding;
-    NCDValMem arg_mem;
-    NCDValSafeRef arg_ref;
-    NCDValReplaceProg arg_prog;
-    int alloc_size;
-    int prealloc_offset;
-    int hash_next;
-};
+struct NCDInterpProcess__stmt;
 
 /**
  * A data structure which contains information about a process or
@@ -79,14 +64,14 @@ typedef struct {
     DebugObject d_obj;
 } NCDInterpProcess;
 
-int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIndex *string_index, NCDPlaceholderDb *pdb, NCDModuleIndex *module_index) WARN_UNUSED;
+int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIndex *string_index, NCDEvaluator *eval, NCDModuleIndex *module_index) WARN_UNUSED;
 void NCDInterpProcess_Free (NCDInterpProcess *o);
 int NCDInterpProcess_FindStatement (NCDInterpProcess *o, int from_index, NCD_string_id_t name);
 const char * NCDInterpProcess_StatementCmdName (NCDInterpProcess *o, int i, NCDStringIndex *string_index);
 void NCDInterpProcess_StatementObjNames (NCDInterpProcess *o, int i, const NCD_string_id_t **out_objnames, size_t *out_num_objnames);
 const struct NCDInterpModule * NCDInterpProcess_StatementGetSimpleModule (NCDInterpProcess *o, int i, NCDStringIndex *string_index, NCDModuleIndex *module_index);
 const struct NCDInterpModule * NCDInterpProcess_StatementGetMethodModule (NCDInterpProcess *o, int i, NCD_string_id_t obj_type, NCDModuleIndex *module_index);
-int NCDInterpProcess_CopyStatementArgs (NCDInterpProcess *o, int i, NCDValMem *out_valmem, NCDValRef *out_val, NCDValReplaceProg *out_prog) WARN_UNUSED;
+NCDEvaluatorExpr * NCDInterpProcess_GetStatementArgsExpr (NCDInterpProcess *o, int i);
 void NCDInterpProcess_StatementBumpAllocSize (NCDInterpProcess *o, int i, int alloc_size);
 int NCDInterpProcess_PreallocSize (NCDInterpProcess *o);
 int NCDInterpProcess_StatementPreallocSize (NCDInterpProcess *o, int i);

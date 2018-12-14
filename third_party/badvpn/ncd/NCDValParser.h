@@ -33,6 +33,7 @@
 #include <stddef.h>
 
 #include <misc/debug.h>
+#include <misc/memref.h>
 #include <ncd/NCDVal.h>
 
 /**
@@ -45,6 +46,6 @@
  *                  written here
  * @return 1 on success, 0 on failure
  */
-int NCDValParser_Parse (const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
+int NCDValParser_Parse (MemRef str, NCDValMem *mem, NCDValRef *out_value) WARN_UNUSED;
 
 #endif

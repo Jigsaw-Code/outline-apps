@@ -28,7 +28,7 @@ We use a custom framework dependency, Shadowsocks, that implements shadowsocks-l
 ### Android update instructions
 
 ```
-ndk-build -C ../third_party/badvpn APP_BUILD_SCRIPT=Android.mk NDK_PROJECT_PATH=`pwd` NDK_APPLICATION_MK=`pwd`/../third_party/badvpn/Application.mk
+ndk-build -C ../third_party/badvpn APP_BUILD_SCRIPT=Android.mk NDK_PROJECT_PATH=`pwd` NDK_APPLICATION_MK=`pwd`/android/Application.mk
 cp libs/armeabi-v7a/libtun2socks.so android/libs/armeabi-v7a/libtun2socks.so
 cp libs/x86/libtun2socks.so android/libs/x86/libtun2socks.so
 ```

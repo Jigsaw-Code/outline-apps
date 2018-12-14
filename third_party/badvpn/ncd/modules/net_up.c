@@ -37,12 +37,11 @@
 
 #include <stdlib.h>
 
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDIfConfig.h>
 
-#include <generated/blog_channel_ncd_net_up.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_net_up.h>
 
 struct instance {
     NCDModuleInst *i;

@@ -86,13 +86,10 @@
 #include <misc/read_file.h>
 #include <misc/write_file.h>
 #include <misc/parse_number.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_file.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct read_instance {
     NCDModuleInst *i;
@@ -189,8 +186,7 @@ static void write_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
     }
     
     // write file
-    b_cstring contents_cstr = NCDVal_StringCstring(contents_arg);
-    int res = write_file_cstring(filename_nts.data, contents_cstr, 0, contents_cstr.length);
+    int res = write_file(filename_nts.data, NCDVal_StringMemRef(contents_arg));
     NCDValNullTermString_Free(&filename_nts);
     if (!res) {
         ModuleLog(i, BLOG_ERROR, "failed to write file");
@@ -270,7 +266,7 @@ static int stat_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NC
     struct stat_instance *o = vo;
     
     if (name == NCD_STRING_SUCCEEDED) {
-        *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->succeeded);
         return 1;
     }
     
@@ -322,24 +318,20 @@ static struct NCDModule modules[] = {
         .func_new2 = read_func_new,
         .func_die = read_func_die,
         .func_getvar2 = read_func_getvar2,
-        .alloc_size = sizeof(struct read_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct read_instance)
     }, {
         .type = "file_write",
-        .func_new2 = write_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = write_func_new
     }, {
         .type = "file_stat",
         .func_new2 = stat_func_new,
         .func_getvar2 = stat_func_getvar2,
-        .alloc_size = sizeof(struct stat_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct stat_instance)
     }, {
         .type = "file_lstat",
         .func_new2 = lstat_func_new,
         .func_getvar2 = stat_func_getvar2,
-        .alloc_size = sizeof(struct stat_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct stat_instance)
     }, {
         .type = NULL
     }

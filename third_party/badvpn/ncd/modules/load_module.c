@@ -32,7 +32,6 @@
  *   load_module(string name)
  */
 
-#include <stddef.h>
 #include <limits.h>
 #include <string.h>
 #include <errno.h>
@@ -45,12 +44,10 @@
 #include <misc/offset.h>
 #include <misc/debug.h>
 #include <structure/LinkedList0.h>
-#include <ncd/NCDModule.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_load_module.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleGlobal(i) ((i)->m->group->group_state)
 
 struct global {
     LinkedList0 modules_list;
@@ -237,21 +234,27 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
         goto fail0;
     }
     
-    struct module *mod = find_module(NCDVal_StringData(name_arg), ModuleGlobal(i));
+    NCDValNullTermString name_nts;
+    if (!NCDVal_StringNullTerminate(name_arg, &name_nts)) {
+        ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
+        goto fail0;
+    }
+    
+    struct module *mod = find_module(name_nts.data, ModuleGlobal(i));
     ASSERT(!mod || mod->lib_handle)
     
     if (!mod) {
-        mod = module_init(NCDVal_StringData(name_arg), i);
+        mod = module_init(name_nts.data, i);
         if (!mod) {
             ModuleLog(i, BLOG_ERROR, "module_init failed");
-            goto fail0;
+            goto fail1;
         }
         
         // find module library
-        char *module_path = find_module_library(i, NCDVal_StringData(name_arg));
+        char *module_path = find_module_library(i, name_nts.data);
         if (!module_path) {
             module_free(mod, ModuleGlobal(i));
-            goto fail0;
+            goto fail1;
         }
         
         // load it as a dynamic library
@@ -260,16 +263,16 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
         if (!mod->lib_handle) {
             ModuleLog(i, BLOG_ERROR, "dlopen failed");
             module_free(mod, ModuleGlobal(i));
-            goto fail0;
+            goto fail1;
         }
     }
     
     if (!mod->ncdmodule_loaded) {
         // build name of NCDModuleGroup structure symbol
-        char *group_symbol = concat_strings(2, "ncdmodule_", NCDVal_StringData(name_arg));
+        char *group_symbol = concat_strings(2, "ncdmodule_", name_nts.data);
         if (!group_symbol) {
             ModuleLog(i, BLOG_ERROR, "concat_strings failed");
-            goto fail0;
+            goto fail1;
         }
         
         // resolve NCDModuleGroup structure symbol
@@ -277,22 +280,26 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
         BFree(group_symbol);
         if (!group) {
             ModuleLog(i, BLOG_ERROR, "dlsym failed");
-            goto fail0;
+            goto fail1;
         }
         
         // load module group
         if (!NCDModuleInst_Backend_InterpLoadGroup(i, (struct NCDModuleGroup *)group)) {
             ModuleLog(i, BLOG_ERROR, "NCDModuleInst_Backend_InterpLoadGroup failed");
-            goto fail0;
+            goto fail1;
         }
         
         mod->ncdmodule_loaded = 1;
     }
     
+    NCDValNullTermString_Free(&name_nts);
+    
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
     
+fail1:
+    NCDValNullTermString_Free(&name_nts);
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

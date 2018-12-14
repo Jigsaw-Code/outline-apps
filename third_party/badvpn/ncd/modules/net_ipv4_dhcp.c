@@ -60,11 +60,10 @@
 #include <misc/debug.h>
 #include <misc/ipaddr.h>
 #include <dhcpclient/BDHCPClient.h>
-#include <ncd/NCDModule.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_ipv4_dhcp.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;

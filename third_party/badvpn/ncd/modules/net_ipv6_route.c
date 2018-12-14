@@ -49,13 +49,11 @@
 #include <string.h>
 
 #include <misc/debug.h>
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDIfConfig.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_ipv6_route.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define TYPE_NORMAL 1
 #define TYPE_IFONLY 2
@@ -88,7 +86,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         goto fail0;
     }
     if (!NCDVal_IsString(dest_arg) || !NCDVal_IsString(gateway_arg) ||
-        !NCDVal_IsString(metric_arg) || !NCDVal_IsStringNoNulls(ifname_arg) ||
+        !NCDVal_IsStringNoNulls(ifname_arg) ||
         (!NCDVal_IsInvalid(dest_prefix_arg) && !NCDVal_IsString(dest_prefix_arg))
     ) {
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
@@ -97,16 +95,16 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     
     // read dest
     if (NCDVal_IsInvalid(dest_prefix_arg)) {
-        if (!ipaddr6_parse_ipv6_ifaddr_bin(NCDVal_StringData(dest_arg), NCDVal_StringLength(dest_arg), &o->dest)) {
+        if (!ipaddr6_parse_ipv6_ifaddr(NCDVal_StringMemRef(dest_arg), &o->dest)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong CIDR notation dest");
             goto fail0;
         }
     } else {
-        if (!ipaddr6_parse_ipv6_addr_bin(NCDVal_StringData(dest_arg), NCDVal_StringLength(dest_arg), &o->dest.addr)) {
+        if (!ipaddr6_parse_ipv6_addr(NCDVal_StringMemRef(dest_arg), &o->dest.addr)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong dest addr");
             goto fail0;
         }
-        if (!ipaddr6_parse_ipv6_prefix_bin(NCDVal_StringData(dest_prefix_arg), NCDVal_StringLength(dest_prefix_arg), &o->dest.prefix)) {
+        if (!ipaddr6_parse_ipv6_prefix(NCDVal_StringMemRef(dest_prefix_arg), &o->dest.prefix)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong dest prefix");
             goto fail0;
         }
@@ -119,7 +117,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     else if (NCDVal_StringEquals(gateway_arg, "blackhole")) {
         o->type = TYPE_BLACKHOLE;
     } else {
-        if (!ipaddr6_parse_ipv6_addr_bin(NCDVal_StringData(gateway_arg), NCDVal_StringLength(gateway_arg), &o->gateway)) {
+        if (!ipaddr6_parse_ipv6_addr(NCDVal_StringMemRef(gateway_arg), &o->gateway)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong gateway");
             goto fail0;
         }

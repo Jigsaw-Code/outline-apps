@@ -183,9 +183,9 @@ fail:
     return 0;
 }
 
-int NCDValParser_Parse (const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out_value)
+int NCDValParser_Parse (MemRef str, NCDValMem *mem, NCDValRef *out_value)
 {
-    ASSERT(str_len == 0 || str)
+    ASSERT(str.len == 0 || str.ptr)
     ASSERT(mem)
     ASSERT(out_value)
     
@@ -205,7 +205,7 @@ int NCDValParser_Parse (const char *str, size_t str_len, NCDValMem *mem, NCDValR
         goto fail1;
     }
     
-    NCDConfigTokenizer_Tokenize((char *)str, str_len, tokenizer_output, &state);
+    NCDConfigTokenizer_Tokenize(str, tokenizer_output, &state);
     
     ParseFree(state.parser, free);
     

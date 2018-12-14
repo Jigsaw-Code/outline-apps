@@ -42,6 +42,21 @@
 
 #include <generated/blog_channel_ncd.h>
 
+struct NCDInterpProcess__stmt {
+    NCD_string_id_t name;
+    NCD_string_id_t cmdname;
+    NCD_string_id_t *objnames;
+    size_t num_objnames;
+    union {
+        const struct NCDInterpModule *simple_module;
+        int method_name_id;
+    } binding;
+    NCDEvaluatorExpr arg_expr;
+    int alloc_size;
+    int prealloc_offset;
+    int hash_next;
+};
+
 static int compute_prealloc (NCDInterpProcess *o)
 {
     int size = 0;
@@ -65,107 +80,11 @@ static int compute_prealloc (NCDInterpProcess *o)
     return 1;
 }
 
-static int convert_value_recurser (NCDPlaceholderDb *pdb, NCDStringIndex *string_index, NCDValue *value, NCDValMem *mem, NCDValRef *out)
-{
-    ASSERT(pdb)
-    ASSERT(string_index)
-    ASSERT((NCDValue_Type(value), 1))
-    ASSERT(mem)
-    ASSERT(out)
-    
-    switch (NCDValue_Type(value)) {
-        case NCDVALUE_STRING: {
-            const char *str = NCDValue_StringValue(value);
-            size_t len = NCDValue_StringLength(value);
-            
-            NCD_string_id_t string_id = NCDStringIndex_GetBin(string_index, str, len);
-            if (string_id < 0) {
-                BLog(BLOG_ERROR, "NCDStringIndex_GetBin failed");
-                goto fail;
-            }
-            
-            *out = NCDVal_NewIdString(mem, string_id, string_index);
-            if (NCDVal_IsInvalid(*out)) {
-                goto fail;
-            }
-        } break;
-        
-        case NCDVALUE_LIST: {
-            *out = NCDVal_NewList(mem, NCDValue_ListCount(value));
-            if (NCDVal_IsInvalid(*out)) {
-                goto fail;
-            }
-            
-            for (NCDValue *e = NCDValue_ListFirst(value); e; e = NCDValue_ListNext(value, e)) {
-                NCDValRef vval;
-                if (!convert_value_recurser(pdb, string_index, e, mem, &vval)) {
-                    goto fail;
-                }
-                
-                if (!NCDVal_ListAppend(*out, vval)) {
-                    BLog(BLOG_ERROR, "depth limit exceeded");
-                    goto fail;
-                }
-            }
-        } break;
-        
-        case NCDVALUE_MAP: {
-            *out = NCDVal_NewMap(mem, NCDValue_MapCount(value));
-            if (NCDVal_IsInvalid(*out)) {
-                goto fail;
-            }
-            
-            for (NCDValue *ekey = NCDValue_MapFirstKey(value); ekey; ekey = NCDValue_MapNextKey(value, ekey)) {
-                NCDValue *eval = NCDValue_MapKeyValue(value, ekey);
-                
-                NCDValRef vkey;
-                NCDValRef vval;
-                if (!convert_value_recurser(pdb, string_index, ekey, mem, &vkey) ||
-                    !convert_value_recurser(pdb, string_index, eval, mem, &vval)
-                ) {
-                    goto fail;
-                }
-                
-                int inserted;
-                if (!NCDVal_MapInsert(*out, vkey, vval, &inserted)) {
-                    BLog(BLOG_ERROR, "depth limit exceeded");
-                    goto fail;
-                }
-                if (!inserted) {
-                    BLog(BLOG_ERROR, "duplicate key in map");
-                    goto fail;
-                }
-            }
-        } break;
-        
-        case NCDVALUE_VAR: {
-            int plid;
-            if (!NCDPlaceholderDb_AddVariable(pdb, NCDValue_VarName(value), &plid)) {
-                goto fail;
-            }
-            
-            if (NCDVAL_MINIDX + plid >= -1) {
-                goto fail;
-            }
-            
-            *out = NCDVal_NewPlaceholder(mem, plid);
-        } break;
-        
-        default:
-            goto fail;
-    }
-    
-    return 1;
-    
-fail:
-    return 0;
-}
-
-int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIndex *string_index, NCDPlaceholderDb *pdb, NCDModuleIndex *module_index)
+int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIndex *string_index, NCDEvaluator *eval, NCDModuleIndex *module_index)
 {
     ASSERT(process)
     ASSERT(string_index)
-    ASSERT(pdb)
+    ASSERT(eval)
     ASSERT(module_index)
     
     NCDBlock *block = NCDProcess_Block(process);
@@ -225,31 +144,21 @@ int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIn
             goto loop_fail0;
         }
         
-        NCDValMem_Init(&e->arg_mem);
-        
-        NCDValRef val;
-        if (!convert_value_recurser(pdb, string_index, NCDStatement_RegArgs(s), &e->arg_mem, &val)) {
-            BLog(BLOG_ERROR, "convert_value_recurser failed");
-            goto loop_fail1;
-        }
-        
-        e->arg_ref = NCDVal_ToSafe(val);
-        
-        if (!NCDValReplaceProg_Init(&e->arg_prog, val)) {
-            BLog(BLOG_ERROR, "NCDValReplaceProg_Init failed");
-            goto loop_fail1;
+        if (!NCDEvaluatorExpr_Init(&e->arg_expr, eval, NCDStatement_RegArgs(s))) {
+            BLog(BLOG_ERROR, "NCDEvaluatorExpr_Init failed");
+            goto loop_fail0;
         }
         
         if (NCDStatement_RegObjName(s)) {
             if (!ncd_make_name_indices(string_index, NCDStatement_RegObjName(s), &e->objnames, &e->num_objnames)) {
                 BLog(BLOG_ERROR, "ncd_make_name_indices failed");
-                goto loop_fail2;
+                goto loop_fail1;
             }
             
             e->binding.method_name_id = NCDModuleIndex_GetMethodNameId(module_index, NCDStatement_RegCmdName(s));
             if (e->binding.method_name_id == -1) {
                 BLog(BLOG_ERROR, "NCDModuleIndex_GetMethodNameId failed");
-                goto loop_fail3;
+                goto loop_fail2;
             }
         } else {
             e->binding.simple_module = NCDModuleIndex_FindModule(module_index, NCDStatement_RegCmdName(s));
@@ -264,12 +173,10 @@ int NCDInterpProcess_Init (NCDInterpProcess *o, NCDProcess *process, NCDStringIn
         o->num_stmts++;
         continue;
         
-    loop_fail3:
-        BFree(e->objnames);
     loop_fail2:
-        NCDValReplaceProg_Free(&e->arg_prog);
+        BFree(e->objnames);
     loop_fail1:
-        NCDValMem_Free(&e->arg_mem);
+        NCDEvaluatorExpr_Free(&e->arg_expr);
     loop_fail0:
         goto fail3;
     }
@@ -283,8 +190,7 @@ fail3:
     while (o->num_stmts-- > 0) {
         struct NCDInterpProcess__stmt *e = &o->stmts[o->num_stmts];
         BFree(e->objnames);
-        NCDValReplaceProg_Free(&e->arg_prog);
-        NCDValMem_Free(&e->arg_mem);
+        NCDEvaluatorExpr_Free(&e->arg_expr);
     }
     free(o->name);
 fail2:
@@ -302,8 +208,7 @@ void NCDInterpProcess_Free (NCDInterpProcess *o)
     while (o->num_stmts-- > 0) {
         struct NCDInterpProcess__stmt *e = &o->stmts[o->num_stmts];
         BFree(e->objnames);
-        NCDValReplaceProg_Free(&e->arg_prog);
-        NCDValMem_Free(&e->arg_mem);
+        NCDEvaluatorExpr_Free(&e->arg_expr);
     }
     
     free(o->name);
@@ -342,7 +247,7 @@ const char * NCDInterpProcess_StatementCmdName (NCDInterpProcess *o, int i, NCDS
     ASSERT(i < o->num_stmts)
     ASSERT(string_index)
     
-    return NCDStringIndex_Value(string_index, o->stmts[i].cmdname);
+    return NCDStringIndex_Value(string_index, o->stmts[i].cmdname).ptr;
 }
 
 void NCDInterpProcess_StatementObjNames (NCDInterpProcess *o, int i, const NCD_string_id_t **out_objnames, size_t *out_num_objnames)
@@ -367,7 +272,7 @@ const struct NCDInterpModule * NCDInterpProcess_StatementGetSimpleModule (NCDInt
     struct NCDInterpProcess__stmt *e = &o->stmts[i];
     
     if (!e->binding.simple_module) {
-        const char *cmdname = NCDStringIndex_Value(string_index, e->cmdname);
+        const char *cmdname = NCDStringIndex_Value(string_index, e->cmdname).ptr;
         e->binding.simple_module = NCDModuleIndex_FindModule(module_index, cmdname);
     }
     
@@ -386,24 +291,15 @@ const struct NCDInterpModule * NCDInterpProcess_StatementGetMethodModule (NCDInt
     return NCDModuleIndex_GetMethodModule(module_index, obj_type, o->stmts[i].binding.method_name_id);
 }
 
-int NCDInterpProcess_CopyStatementArgs (NCDInterpProcess *o, int i, NCDValMem *out_valmem, NCDValRef *out_val, NCDValReplaceProg *out_prog)
+NCDEvaluatorExpr * NCDInterpProcess_GetStatementArgsExpr (NCDInterpProcess *o, int i)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(i >= 0)
     ASSERT(i < o->num_stmts)
-    ASSERT(out_valmem)
-    ASSERT(out_val)
-    ASSERT(out_prog)
     
     struct NCDInterpProcess__stmt *e = &o->stmts[i];
     
-    if (!NCDValMem_InitCopy(out_valmem, &e->arg_mem)) {
-        return 0;
-    }
-    
-    *out_val = NCDVal_FromSafe(out_valmem, e->arg_ref);
-    *out_prog = e->arg_prog;
-    return 1;
+    return &e->arg_expr;
 }
 
 void NCDInterpProcess_StatementBumpAllocSize (NCDInterpProcess *o, int i, int alloc_size)

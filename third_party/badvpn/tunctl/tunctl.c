@@ -247,9 +247,9 @@ static int make_tuntap (const char *ifname, int is_tun, const char *user, const 
         }
         
         struct passwd pwd;
-        struct passwd *res;
-        getpwnam_r(user, &pwd, buf, bufsize, &res);
-        if (!res) {
+        struct passwd *pwd_res;
+        getpwnam_r(user, &pwd, buf, bufsize, &pwd_res);
+        if (!pwd_res) {
             fprintf(stderr, "Error: getpwnam_r failed\n");
             free(buf);
             goto fail1;
@@ -272,9 +272,9 @@ static int make_tuntap (const char *ifname, int is_tun, const char *user, const 
         }
         
         struct group grp;
-        struct group *res;
-        getgrnam_r(group, &grp, buf, bufsize, &res);
-        if (!res) {
+        struct group *grp_res;
+        getgrnam_r(group, &grp, buf, bufsize, &grp_res);
+        if (!grp_res) {
             fprintf(stderr, "Error: getgrnam_r failed\n");
             free(buf);
             goto fail1;

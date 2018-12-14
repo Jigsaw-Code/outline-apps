@@ -39,12 +39,9 @@
 
 #include <limits.h>
 
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_exit.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
@@ -52,10 +49,6 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
     NCDValRef exit_code_arg;
     if (!NCDVal_ListRead(params->args, 1, &exit_code_arg)) {
         ModuleLog(i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(exit_code_arg)) {
-        ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     

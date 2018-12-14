@@ -217,11 +217,11 @@ static void recv_if_handler_send (NCDRequestClient *o, uint8_t *data, int data_l
                 case RSTATE_READY: {
                     // init memory
                     NCDValMem mem;
-                    NCDValMem_Init(&mem);
+                    NCDValMem_Init(&mem, o->string_index);
                     
                     // parse payload
                     NCDValRef payload_value;
-                    if (!NCDValParser_Parse((char *)payload, payload_len, &mem, &payload_value)) {
+                    if (!NCDValParser_Parse(MemRef_Make((char *)payload, payload_len), &mem, &payload_value)) {
                         BLog(BLOG_ERROR, "failed to parse reply payload");
                         NCDValMem_Free(&mem);
                         goto fail;
@@ -467,7 +467,8 @@ static void req_qflow_send_iface_handler_done (struct NCDRequestClient_req *req)
     }
 }
 
-int NCDRequestClient_Init (NCDRequestClient *o, struct BConnection_addr addr, BReactor *reactor, void *user,
+int NCDRequestClient_Init (NCDRequestClient *o, struct BConnection_addr addr, BReactor *reactor, NCDStringIndex *string_index,
+                           void *user,
                            NCDRequestClient_handler_error handler_error,
                            NCDRequestClient_handler_connected handler_connected)
 {
@@ -476,6 +477,7 @@ int NCDRequestClient_Init (NCDRequestClient *o, struct BConnection_addr addr, BR
     
     // init arguments
     o->reactor = reactor;
+    o->string_index = string_index;
     o->user = user;
     o->handler_error = handler_error;
     o->handler_connected = handler_connected;

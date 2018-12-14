@@ -43,29 +43,16 @@
 
 #include <misc/debug.h>
 #include <misc/balloc.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
+#include <ncd/extra/NCDFastNames.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_alias.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-
-#define NUM_STATIC_NAMES 4
-
 struct instance {
     NCDModuleInst *i;
-    NCD_string_id_t *dynamic_names;
-    size_t num_names;
-    NCD_string_id_t static_names[NUM_STATIC_NAMES];
+    NCDFastNames names;
 };
-
-#define NAMES_PARAM_NAME AliasNames
-#define NAMES_PARAM_TYPE struct instance
-#define NAMES_PARAM_MEMBER_DYNAMIC_NAMES dynamic_names
-#define NAMES_PARAM_MEMBER_STATIC_NAMES static_names
-#define NAMES_PARAM_MEMBER_NUM_NAMES num_names
-#define NAMES_PARAM_NUM_STATIC_NAMES NUM_STATIC_NAMES
-#include <ncd/extra/make_fast_names.h>
 
 static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
@@ -84,8 +71,8 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     }
     
     // parse name string
-    if (!AliasNames_InitNames(o, i->params->iparams->string_index, NCDVal_StringData(target_arg), NCDVal_StringLength(target_arg))) {
-        ModuleLog(i, BLOG_ERROR, "make_names failed");
+    if (!NCDFastNames_Init(&o->names, i->params->iparams->string_index, NCDVal_StringMemRef(target_arg))) {
+        ModuleLog(i, BLOG_ERROR, "NCDFastNames_Init failed");
         goto fail0;
     }
     
@@ -101,7 +88,7 @@ static void func_die (void *vo)
 {
     struct instance *o = vo;
     
-    AliasNames_FreeNames(o);
+    NCDFastNames_Free(&o->names);
     
     NCDModuleInst_Backend_Dead(o->i);
 }
@@ -109,9 +96,8 @@ static void func_die (void *vo)
 static int func_getobj (void *vo, NCD_string_id_t name, NCDObject *out_object)
 {
     struct instance *o = vo;
-    ASSERT(o->num_names > 0)
     
-    NCD_string_id_t *names = AliasNames_GetNames(o);
+    NCD_string_id_t *names = NCDFastNames_GetNames(&o->names);
     
     NCDObject object;
     if (!NCDModuleInst_Backend_GetObj(o->i, names[0], &object)) {
@@ -119,7 +105,7 @@ static int func_getobj (void *vo, NCD_string_id_t name, NCDObject *out_object)
     }
     
     NCDObject obj2;
-    if (!NCDObject_ResolveObjExprCompact(&object, names + 1, o->num_names - 1, &obj2)) {
+    if (!NCDObject_ResolveObjExprCompact(&object, names + 1, NCDFastNames_GetNumNames(&o->names) - 1, &obj2)) {
         return 0;
     }
     

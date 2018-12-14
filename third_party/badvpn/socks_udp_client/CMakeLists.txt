@@ -1,2 +1,1 @@
-add_library(socks_udp_client SocksUdpClient.c)
-target_link_libraries(socks_udp_client system flow flowextra)
+badvpn_add_library(socks_udp_client "system;flow;flowextra" "" SocksUdpClient.c)

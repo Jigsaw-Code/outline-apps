@@ -80,6 +80,11 @@ struct process {
     struct statement statements[];
 };
 
+struct func_call_context {
+    struct statement *ps;
+    NCDEvaluatorArgs *args;
+};
+
 static void start_terminate (NCDInterpreter *interp, int exit_code);
 static char * implode_id_strings (NCDInterpreter *interp, const NCD_string_id_t *names, size_t num_names, char del);
 static void clear_process_cache (NCDInterpreter *interp);
@@ -98,7 +103,8 @@ static void process_work_job_handler_working (struct process *p);
 static void process_work_job_handler_up (struct process *p);
 static void process_work_job_handler_waiting (struct process *p);
 static void process_work_job_handler_terminating (struct process *p);
-static int replace_placeholders_callback (void *arg, int plid, NCDValMem *mem, NCDValRef *out);
+static int eval_func_eval_var (void *user, NCD_string_id_t const *varnames, size_t num_names, NCDValMem *mem, NCDValRef *out);
+static int eval_func_eval_call (void *user, NCD_string_id_t func_name_id, NCDEvaluatorArgs args, NCDValMem *mem, NCDValRef *out);
 static void process_advance (struct process *p);
 static void process_wait_timer_handler (BSmallTimer *timer);
 static int process_find_object (struct process *p, int pos, NCD_string_id_t name, NCDObject *out_object);
@@ -120,6 +126,8 @@ static btime_t statement_instance_func_interp_getretrytime (void *vinterp);
 static int statement_instance_func_interp_loadgroup (void *vinterp, const struct NCDModuleGroup *group);
 static void process_moduleprocess_func_event (struct process *p, int event);
 static int process_moduleprocess_func_getobj (struct process *p, NCD_string_id_t name, NCDObject *out_object);
+static void function_logfunc (void *user);
+static int function_eval_arg (void *user, size_t index, NCDValMem *mem, NCDValRef *out);
 
 #define STATEMENT_LOG(ps, channel, ...) if (BLog_WouldLog(BLOG_CURRENT_CHANNEL, channel)) statement_log(ps, channel, __VA_ARGS__)
 
@@ -190,14 +198,14 @@ int NCDInterpreter_Init (NCDInterpreter *o, NCDProgram program, struct NCDInterp
         goto fail3;
     }
     
-    // init placeholder database
-    if (!NCDPlaceholderDb_Init(&o->placeholder_db, &o->string_index)) {
-        BLog(BLOG_ERROR, "NCDPlaceholderDb_Init failed");
+    // init expression evaluator
+    if (!NCDEvaluator_Init(&o->evaluator, &o->string_index)) {
+        BLog(BLOG_ERROR, "NCDEvaluator_Init failed");
         goto fail3;
     }
     
     // init interp program
-    if (!NCDInterpProg_Init(&o->iprogram, &o->program, &o->string_index, &o->placeholder_db, &o->mindex)) {
+    if (!NCDInterpProg_Init(&o->iprogram, &o->program, &o->string_index, &o->evaluator, &o->mindex)) {
         BLog(BLOG_ERROR, "NCDInterpProg_Init failed");
         goto fail5;
     }
@@ -213,6 +221,9 @@ int NCDInterpreter_Init (NCDInterpreter *o, NCDProgram program, struct NCDInterp
     o->module_iparams.func_interp_getargs = statement_instance_func_interp_getargs;
     o->module_iparams.func_interp_getretrytime = statement_instance_func_interp_getretrytime;
     o->module_iparams.func_loadgroup = statement_instance_func_interp_loadgroup;
+    o->module_call_shared.logfunc = function_logfunc;
+    o->module_call_shared.func_eval_arg = function_eval_arg;
+    o->module_call_shared.iparams = &o->module_iparams;
     
     // init processes list
     LinkedList1_Init(&o->processes);
@@ -258,8 +269,8 @@ fail7:;
     // free interp program
     NCDInterpProg_Free(&o->iprogram);
 fail5:
-    // free placeholder database
-    NCDPlaceholderDb_Free(&o->placeholder_db);
+    // free evaluator
+    NCDEvaluator_Free(&o->evaluator);
 fail3:
     // free module index
     NCDModuleIndex_Free(&o->mindex);
@@ -293,8 +304,8 @@ void NCDInterpreter_Free (NCDInterpreter *o)
     // free interp program
     NCDInterpProg_Free(&o->iprogram);
     
-    // free placeholder database
-    NCDPlaceholderDb_Free(&o->placeholder_db);
+    // free evaluator
+    NCDEvaluator_Free(&o->evaluator);
     
     // free module index
     NCDModuleIndex_Free(&o->mindex);
@@ -355,7 +366,7 @@ char * implode_id_strings (NCDInterpreter *interp, const NCD_string_id_t *names,
         if (!is_first && !ExpString_AppendChar(&str, del)) {
             goto fail1;
         }
-        const char *name_str = NCDStringIndex_Value(&interp->string_index, *names);
+        const char *name_str = NCDStringIndex_Value(&interp->string_index, *names).ptr;
         if (!ExpString_Append(&str, name_str)) {
             goto fail1;
         }
@@ -812,18 +823,33 @@ again:
     return;
 }
 
-int replace_placeholders_callback (void *arg, int plid, NCDValMem *mem, NCDValRef *out)
+int eval_func_eval_var (void *user, NCD_string_id_t const *varnames, size_t num_names, NCDValMem *mem, NCDValRef *out)
 {
-    struct process *p = arg;
-    ASSERT(plid >= 0)
+    struct process *p = user;
+    ASSERT(varnames)
+    ASSERT(num_names > 0)
     ASSERT(mem)
     ASSERT(out)
     
-    const NCD_string_id_t *varnames;
-    size_t num_names;
-    NCDPlaceholderDb_GetVariable(&p->interp->placeholder_db, plid, &varnames, &num_names);
-    
     return process_resolve_variable_expr(p, p->ap, varnames, num_names, mem, out);
+}
+
+static int eval_func_eval_call (void *user, NCD_string_id_t func_name_id, NCDEvaluatorArgs args, NCDValMem *mem, NCDValRef *out)
+{
+    struct process *p = user;
+    struct statement *ps = &p->statements[p->ap];
+    
+    struct NCDInterpFunction const *ifunc = NCDModuleIndex_FindFunction(&p->interp->mindex, func_name_id);
+    if (!ifunc) {
+        STATEMENT_LOG(ps, BLOG_ERROR, "unknown function: %s", NCDStringIndex_Value(&p->interp->string_index, func_name_id).ptr);
+        return 0;
+    }
+    
+    struct func_call_context context;
+    context.ps = ps;
+    context.args = &args;
+    
+    return NCDCall_DoIt(&p->interp->module_call_shared, &context, ifunc, NCDEvaluatorArgs_Count(&args), mem, out);
 }
 
 void process_advance (struct process *p)
@@ -881,33 +907,22 @@ void process_advance (struct process *p)
         module = NCDInterpProcess_StatementGetMethodModule(p->iprocess, p->ap, object_type, &p->interp->mindex);
         
         if (!module) {
-            const char *type_str = NCDStringIndex_Value(&p->interp->string_index, object_type);
+            const char *type_str = NCDStringIndex_Value(&p->interp->string_index, object_type).ptr;
             const char *cmdname_str = NCDInterpProcess_StatementCmdName(p->iprocess, p->ap, &p->interp->string_index);
             STATEMENT_LOG(ps, BLOG_ERROR, "unknown method statement: %s::%s", type_str, cmdname_str);
             goto fail0;
         }
     }
     
-    // copy arguments
+    // get evaluator expression for the arguments
+    NCDEvaluatorExpr *expr = NCDInterpProcess_GetStatementArgsExpr(p->iprocess, ps->i);
+    
+    // evaluate arguments
     NCDValRef args;
-    NCDValReplaceProg prog;
-    if (!NCDInterpProcess_CopyStatementArgs(p->iprocess, ps->i, &ps->args_mem, &args, &prog)) {
-        STATEMENT_LOG(ps, BLOG_ERROR, "NCDInterpProcess_CopyStatementArgs failed");
+    NCDEvaluator_EvalFuncs funcs = {p, eval_func_eval_var, eval_func_eval_call};
+    if (!NCDEvaluatorExpr_Eval(expr, &p->interp->evaluator, &funcs, &ps->args_mem, &args)) {
+        STATEMENT_LOG(ps, BLOG_ERROR, "failed to evaluate arguments");
         goto fail0;
-    }
-    
-    // replace placeholders with values of variables
-    if (!NCDValReplaceProg_Execute(prog, &ps->args_mem, replace_placeholders_callback, p)) {
-        STATEMENT_LOG(ps, BLOG_ERROR, "failed to replace variables in arguments with values");
-        goto fail1;
-    }
-    
-    // convert non-continuous strings unless the module can handle them
-    if (!(module->module.flags & NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS)) {
-        if (!NCDValMem_ConvertNonContinuousStrings(&ps->args_mem, &args)) {
-            STATEMENT_LOG(ps, BLOG_ERROR, "NCDValMem_ConvertNonContinuousStrings failed");
-            goto fail1;
-        }
     }
     
     // allocate memory
@@ -1227,27 +1242,27 @@ int statement_instance_func_initprocess (void *vinterp, NCDModuleProcess* mp, NC
     // find process
     NCDInterpProcess *iprocess = NCDInterpProg_FindProcess(&interp->iprogram, template_name);
     if (!iprocess) {
-        const char *str = NCDStringIndex_Value(&interp->string_index, template_name);
+        const char *str = NCDStringIndex_Value(&interp->string_index, template_name).ptr;
         BLog(BLOG_ERROR, "no template named %s", str);
         return 0;
     }
     
     // make sure it's a template
     if (!NCDInterpProcess_IsTemplate(iprocess)) {
-        const char *str = NCDStringIndex_Value(&interp->string_index, template_name);
+        const char *str = NCDStringIndex_Value(&interp->string_index, template_name).ptr;
         BLog(BLOG_ERROR, "need template to create a process, but %s is a process", str);
         return 0;
     }
     
     // create process
     if (!process_new(interp, iprocess, mp)) {
-        const char *str = NCDStringIndex_Value(&interp->string_index, template_name);
+        const char *str = NCDStringIndex_Value(&interp->string_index, template_name).ptr;
         BLog(BLOG_ERROR, "failed to create process from template %s", str);
         return 0;
     }
     
     if (BLog_WouldLog(BLOG_INFO, BLOG_CURRENT_CHANNEL)) {
-        const char *str = NCDStringIndex_Value(&interp->string_index, template_name);
+        const char *str = NCDStringIndex_Value(&interp->string_index, template_name).ptr;
         BLog(BLOG_INFO, "created process from template %s", str);
     }
     
@@ -1353,4 +1368,21 @@ int process_moduleprocess_func_getobj (struct process *p, NCD_string_id_t name, 
     ASSERT(p->module_process)
     
     return process_find_object(p, p->num_statements, name, out_object);
+}
+
+void function_logfunc (void *user)
+{
+    struct func_call_context const *context = user;
+    ASSERT(context->ps->inst.istate == SSTATE_FORGOTTEN)
+    
+    statement_logfunc(context->ps);
+    BLog_Append("func_eval: ");
+}
+
+int function_eval_arg (void *user, size_t index, NCDValMem *mem, NCDValRef *out)
+{
+    struct func_call_context const *context = user;
+    ASSERT(context->ps->inst.istate == SSTATE_FORGOTTEN)
+    
+    return NCDEvaluatorArgs_EvalArg(context->args, index, mem, out);
 }

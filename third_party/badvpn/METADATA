@@ -11,10 +11,11 @@ third_party {
     type: GIT
     value: "https://github.com/mei3am/ps/tree/master/Android/badvpn"
   }
-  version: "1.999.128"
+  version: "1.999.130"
   local_modifications:
-    "Added support for proxying DNS traffic over Shadwosocks UDP relay - see
+    "Psiphon's modifications for Android support"
+    "Added support for proxying DNS traffic over Shadowsocks UDP relay - see
     " 'OUTLINE' comments in tun2socks/tun2socks.c. "
     "Added SOCKS5 UDP support with optimized DNS handling. "
-  last_upgrade_date { year: 2017 month: 6 day: 29 }
+  last_upgrade_date { year: 2018 month: 12 day: 14 }
 }

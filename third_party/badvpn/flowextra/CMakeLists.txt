@@ -1,5 +1,5 @@
-add_library(flowextra
+set(FLOWEXTRA_SOURCES
     PacketPassInactivityMonitor.c
     KeepaliveIO.c
 )
-target_link_libraries(flowextra flow system)
+badvpn_add_library(flowextra "flow;system" "" "${FLOWEXTRA_SOURCES}")

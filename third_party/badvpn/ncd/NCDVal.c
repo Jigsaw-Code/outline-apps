@@ -36,11 +36,15 @@
 #include <misc/balloc.h>
 #include <misc/strdup.h>
 #include <misc/offset.h>
+#include <structure/CAvl.h>
 #include <base/BLog.h>
 
 #include "NCDVal.h"
 
 #include <generated/blog_channel_NCDVal.h>
+
+#define NCDVAL_FIRST_SIZE 256
+#define NCDVAL_MAX_DEPTH 32
 
 #define TYPE_MASK_EXTERNAL_TYPE ((1 << 3) - 1)
 #define TYPE_MASK_INTERNAL_TYPE ((1 << 5) - 1)
@@ -49,7 +53,80 @@
 #define STOREDSTRING_TYPE (NCDVAL_STRING | (0 << 3))
 #define IDSTRING_TYPE (NCDVAL_STRING | (1 << 3))
 #define EXTERNALSTRING_TYPE (NCDVAL_STRING | (2 << 3))
-#define COMPOSEDSTRING_TYPE (NCDVAL_STRING | (3 << 3))
+
+#define NCDVAL_INSTR_PLACEHOLDER 0
+#define NCDVAL_INSTR_REINSERT 1
+#define NCDVAL_INSTR_BUMPDEPTH 2
+
+struct NCDVal__ref {
+    NCDVal__idx next;
+    BRefTarget *target;
+};
+
+struct NCDVal__string {
+    int type;
+    NCDVal__idx length;
+    char data[];
+};
+
+struct NCDVal__list {
+    int type;
+    NCDVal__idx maxcount;
+    NCDVal__idx count;
+    NCDVal__idx elem_indices[];
+};
+
+struct NCDVal__mapelem {
+    NCDVal__idx key_idx;
+    NCDVal__idx val_idx;
+    NCDVal__idx tree_child[2];
+    NCDVal__idx tree_parent;
+    int8_t tree_balance;
+};
+
+struct NCDVal__idstring {
+    int type;
+    NCD_string_id_t string_id;
+};
+
+struct NCDVal__externalstring {
+    int type;
+    const char *data;
+    size_t length;
+    struct NCDVal__ref ref;
+};
+
+typedef struct NCDVal__mapelem NCDVal__maptree_entry;
+typedef NCDValMem *NCDVal__maptree_arg;
+
+#include "NCDVal_maptree.h"
+#include <structure/CAvl_decl.h>
+
+struct NCDVal__map {
+    int type;
+    NCDVal__idx maxcount;
+    NCDVal__idx count;
+    NCDVal__MapTree tree;
+    struct NCDVal__mapelem elems[];
+};
+
+struct NCDVal__instr {
+    int type;
+    union {
+        struct {
+            NCDVal__idx plid;
+            NCDVal__idx plidx;
+        } placeholder;
+        struct {
+            NCDVal__idx mapidx;
+            NCDVal__idx elempos;
+        } reinsert;
+        struct {
+            NCDVal__idx parent_idx;
+            NCDVal__idx child_idx_idx;
+        } bumpdepth;
+    };
+};
 
 static int make_type (int internal_type, int depth)
 {
@@ -57,8 +134,7 @@ static int make_type (int internal_type, int depth)
            internal_type == NCDVAL_MAP ||
            internal_type == STOREDSTRING_TYPE ||
            internal_type == IDSTRING_TYPE ||
-           internal_type == EXTERNALSTRING_TYPE ||
-           internal_type == COMPOSEDSTRING_TYPE)
+           internal_type == EXTERNALSTRING_TYPE)
     ASSERT(depth >= 0)
     ASSERT(depth <= NCDVAL_MAX_DEPTH)
     
@@ -92,15 +168,15 @@ static int bump_depth (int *type_ptr, int elem_depth)
     return 1;
 }
 
-static void * NCDValMem__BufAt (NCDValMem *o, NCDVal__idx idx)
+static void * buffer_at (NCDValMem *o, NCDVal__idx idx)
 {
     ASSERT(idx >= 0)
     ASSERT(idx < o->used)
     
-    return (o->buf ? o->buf : o->fastbuf) + idx;
+    return ((o->size == NCDVAL_FASTBUF_SIZE) ? o->fastbuf : o->allocd_buf) + idx;
 }
 
-static NCDVal__idx NCDValMem__Alloc (NCDValMem *o, NCDVal__idx alloc_size, NCDVal__idx align)
+static NCDVal__idx buffer_allocate (NCDValMem *o, NCDVal__idx alloc_size, NCDVal__idx align)
 {
     NCDVal__idx mod = o->used % align;
     NCDVal__idx align_extra = mod ? (align - mod) : 0;
@@ -111,7 +187,7 @@ static NCDVal__idx NCDValMem__Alloc (NCDValMem *o, NCDVal__idx alloc_size, NCDVa
     NCDVal__idx aligned_alloc_size = align_extra + alloc_size;
     
     if (aligned_alloc_size > o->size - o->used) {
-        NCDVal__idx newsize = (o->buf ? o->size : NCDVAL_FIRST_SIZE);
+        NCDVal__idx newsize = (o->size == NCDVAL_FASTBUF_SIZE) ? NCDVAL_FIRST_SIZE : o->size;
         while (aligned_alloc_size > newsize - o->used) {
             if (newsize > NCDVAL_MAXIDX / 2) {
                 return -1;
@@ -121,21 +197,21 @@ static NCDVal__idx NCDValMem__Alloc (NCDValMem *o, NCDVal__idx alloc_size, NCDVa
         
         char *newbuf;
         
-        if (!o->buf) {
+        if (o->size == NCDVAL_FASTBUF_SIZE) {
             newbuf = malloc(newsize);
             if (!newbuf) {
                 return -1;
             }
             memcpy(newbuf, o->fastbuf, o->used);
         } else {
-            newbuf = realloc(o->buf, newsize);
+            newbuf = realloc(o->allocd_buf, newsize);
             if (!newbuf) {
                 return -1;
             }
         }
         
-        o->buf = newbuf;
         o->size = newsize;
+        o->allocd_buf = newbuf;
     }
     
     NCDVal__idx idx = o->used + align_extra;
@@ -144,7 +220,7 @@ static NCDVal__idx NCDValMem__Alloc (NCDValMem *o, NCDVal__idx alloc_size, NCDVa
     return idx;
 }
 
-static NCDValRef NCDVal__Ref (NCDValMem *mem, NCDVal__idx idx)
+static NCDValRef make_ref (NCDValMem *mem, NCDVal__idx idx)
 {
     ASSERT(idx == -1 || mem)
     
@@ -152,26 +228,25 @@ static NCDValRef NCDVal__Ref (NCDValMem *mem, NCDVal__idx idx)
     return ref;
 }
 
-static void NCDVal__AssertMem (NCDValMem *mem)
+static void assert_mem (NCDValMem *mem)
 {
     ASSERT(mem)
-    ASSERT(mem->size >= 0)
+    ASSERT(mem->string_index)
+    ASSERT(mem->size == NCDVAL_FASTBUF_SIZE || mem->size >= NCDVAL_FIRST_SIZE)
     ASSERT(mem->used >= 0)
     ASSERT(mem->used <= mem->size)
-    ASSERT(mem->buf || mem->size == NCDVAL_FASTBUF_SIZE)
-    ASSERT(!mem->buf || mem->size >= NCDVAL_FIRST_SIZE)
 }
 
-static void NCDVal_AssertExternal (NCDValMem *mem, const void *e_buf, size_t e_len)
+static void assert_external (NCDValMem *mem, const void *e_buf, size_t e_len)
 {
 #ifndef NDEBUG
     const char *e_cbuf = e_buf;
-    char *buf = (mem->buf ? mem->buf : mem->fastbuf);
+    char *buf = (mem->size == NCDVAL_FASTBUF_SIZE) ? mem->fastbuf : mem->allocd_buf;
     ASSERT(e_cbuf >= buf + mem->size || e_cbuf + e_len <= buf)
 #endif
 }
 
-static void NCDVal__AssertValOnly (NCDValMem *mem, NCDVal__idx idx)
+static void assert_val_only (NCDValMem *mem, NCDVal__idx idx)
 {
     // placeholders
     if (idx < -1) {
@@ -182,7 +257,7 @@ static void NCDVal__AssertValOnly (NCDValMem *mem, NCDVal__idx idx)
     ASSERT(idx + sizeof(int) <= mem->used)
     
 #ifndef NDEBUG
-    int *type_ptr = NCDValMem__BufAt(mem, idx);
+    int *type_ptr = buffer_at(mem, idx);
     
     ASSERT(get_depth(*type_ptr) >= 0)
     ASSERT(get_depth(*type_ptr) <= NCDVAL_MAX_DEPTH)
@@ -190,13 +265,13 @@ static void NCDVal__AssertValOnly (NCDValMem *mem, NCDVal__idx idx)
     switch (get_internal_type(*type_ptr)) {
         case STOREDSTRING_TYPE: {
             ASSERT(idx + sizeof(struct NCDVal__string) <= mem->used)
-            struct NCDVal__string *str_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__string *str_e = buffer_at(mem, idx);
             ASSERT(str_e->length >= 0)
             ASSERT(idx + sizeof(struct NCDVal__string) + str_e->length + 1 <= mem->used)
         } break;
         case NCDVAL_LIST: {
             ASSERT(idx + sizeof(struct NCDVal__list) <= mem->used)
-            struct NCDVal__list *list_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__list *list_e = buffer_at(mem, idx);
             ASSERT(list_e->maxcount >= 0)
             ASSERT(list_e->count >= 0)
             ASSERT(list_e->count <= list_e->maxcount)
@@ -204,7 +279,7 @@ static void NCDVal__AssertValOnly (NCDValMem *mem, NCDVal__idx idx)
         } break;
         case NCDVAL_MAP: {
             ASSERT(idx + sizeof(struct NCDVal__map) <= mem->used)
-            struct NCDVal__map *map_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__map *map_e = buffer_at(mem, idx);
             ASSERT(map_e->maxcount >= 0)
             ASSERT(map_e->count >= 0)
             ASSERT(map_e->count <= map_e->maxcount)
@@ -212,36 +287,28 @@ static void NCDVal__AssertValOnly (NCDValMem *mem, NCDVal__idx idx)
         } break;
         case IDSTRING_TYPE: {
             ASSERT(idx + sizeof(struct NCDVal__idstring) <= mem->used)
-            struct NCDVal__idstring *ids_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__idstring *ids_e = buffer_at(mem, idx);
             ASSERT(ids_e->string_id >= 0)
-            ASSERT(ids_e->string_index)
         } break;
         case EXTERNALSTRING_TYPE: {
             ASSERT(idx + sizeof(struct NCDVal__externalstring) <= mem->used)
-            struct NCDVal__externalstring *exs_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__externalstring *exs_e = buffer_at(mem, idx);
             ASSERT(exs_e->data)
             ASSERT(!exs_e->ref.target || exs_e->ref.next >= -1)
             ASSERT(!exs_e->ref.target || exs_e->ref.next < mem->used)
-        } break;
-        case COMPOSEDSTRING_TYPE: {
-            ASSERT(idx + sizeof(struct NCDVal__composedstring) <= mem->used)
-            struct NCDVal__composedstring *cms_e = NCDValMem__BufAt(mem, idx);
-            ASSERT(cms_e->func_getptr)
-            ASSERT(!cms_e->ref.target || cms_e->ref.next >= -1)
-            ASSERT(!cms_e->ref.target || cms_e->ref.next < mem->used)
         } break;
         default: ASSERT(0);
     }
 #endif
 }
 
-static void NCDVal__AssertVal (NCDValRef val)
+static void assert_val (NCDValRef val)
 {
-    NCDVal__AssertMem(val.mem);
-    NCDVal__AssertValOnly(val.mem, val.idx);
+    assert_mem(val.mem);
+    assert_val_only(val.mem, val.idx);
 }
 
-static NCDValMapElem NCDVal__MapElem (NCDVal__idx elemidx)
+static NCDValMapElem make_map_elem (NCDVal__idx elemidx)
 {
     ASSERT(elemidx >= 0 || elemidx == -1)
     
@@ -249,31 +316,31 @@ static NCDValMapElem NCDVal__MapElem (NCDVal__idx elemidx)
     return me;
 }
 
-static void NCDVal__MapAssertElemOnly (NCDValRef map, NCDVal__idx elemidx)
+static void assert_map_elem_only (NCDValRef map, NCDVal__idx elemidx)
 {
 #ifndef NDEBUG
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     ASSERT(elemidx >= map.idx + offsetof(struct NCDVal__map, elems))
     ASSERT(elemidx < map.idx + offsetof(struct NCDVal__map, elems) + map_e->count * sizeof(struct NCDVal__mapelem))
 
-    struct NCDVal__mapelem *me_e = NCDValMem__BufAt(map.mem, elemidx);
-    NCDVal__AssertValOnly(map.mem, me_e->key_idx);
-    NCDVal__AssertValOnly(map.mem, me_e->val_idx);
+    struct NCDVal__mapelem *me_e = buffer_at(map.mem, elemidx);
+    assert_val_only(map.mem, me_e->key_idx);
+    assert_val_only(map.mem, me_e->val_idx);
 #endif
 }
 
-static void NCDVal__MapAssertElem (NCDValRef map, NCDValMapElem me)
+static void assert_map_elem (NCDValRef map, NCDValMapElem me)
 {
     ASSERT(NCDVal_IsMap(map))
-    NCDVal__MapAssertElemOnly(map, me.elemidx);
+    assert_map_elem_only(map, me.elemidx);
 }
 
-static NCDVal__idx NCDVal__MapElemIdx (NCDVal__idx mapidx, NCDVal__idx pos)
+static NCDVal__idx make_map_elem_idx (NCDVal__idx mapidx, NCDVal__idx pos)
 {
     return mapidx + offsetof(struct NCDVal__map, elems) + pos * sizeof(struct NCDVal__mapelem);
 }
 
-static int NCDVal__Depth (NCDValRef val)
+static int get_val_depth (NCDValRef val)
 {
     ASSERT(val.idx != -1)
     
@@ -282,7 +349,7 @@ static int NCDVal__Depth (NCDValRef val)
         return 0;
     }
     
-    int *elem_type_ptr = NCDValMem__BufAt(val.mem, val.idx);
+    int *elem_type_ptr = buffer_at(val.mem, val.idx);
     int depth = get_depth(*elem_type_ptr);
     ASSERT(depth >= 0)
     ASSERT(depth <= NCDVAL_MAX_DEPTH)
@@ -290,140 +357,67 @@ static int NCDVal__Depth (NCDValRef val)
     return depth;
 }
 
-static int NCDValMem__NeedRegisterLink (NCDValMem *mem, NCDVal__idx val_idx)
+static void register_ref (NCDValMem *o, NCDVal__idx refidx, struct NCDVal__ref *ref)
 {
-    NCDVal__AssertValOnly(mem, val_idx);
+    ASSERT(ref == buffer_at(o, refidx))
+    ASSERT(ref->target)
     
-    return !(val_idx < -1) && get_internal_type(*(int *)NCDValMem__BufAt(mem, val_idx)) == COMPOSEDSTRING_TYPE;
-}
-
-static int NCDValMem__RegisterLink (NCDValMem *mem, NCDVal__idx val_idx, NCDVal__idx link_idx)
-{
-    NCDVal__AssertValOnly(mem, val_idx);
-    ASSERT(NCDValMem__NeedRegisterLink(mem, val_idx))
-    
-    NCDVal__idx cms_link_idx = NCDValMem__Alloc(mem, sizeof(struct NCDVal__cms_link), __alignof(struct NCDVal__cms_link));
-    if (cms_link_idx < 0) {
-        return 0;
-    }
-    
-    struct NCDVal__cms_link *cms_link = NCDValMem__BufAt(mem, cms_link_idx);
-    cms_link->link_idx = link_idx;
-    cms_link->next_cms_link = mem->first_cms_link;
-    mem->first_cms_link = cms_link_idx;
-    
-    return 1;
-}
-
-static void NCDValMem__PopLastRegisteredLink (NCDValMem *mem)
-{
-    ASSERT(mem->first_cms_link != -1)
-    
-    struct NCDVal__cms_link *cms_link = NCDValMem__BufAt(mem, mem->first_cms_link);
-    mem->first_cms_link = cms_link->next_cms_link;
-}
-
-static NCDValRef NCDVal__CopyComposedStringToStored (NCDValRef val)
-{
-    ASSERT(NCDVal_IsComposedString(val))
-    
-    struct NCDVal__composedstring cms_e = *(struct NCDVal__composedstring *)NCDValMem__BufAt(val.mem, val.idx);
-    
-    NCDValRef copy = NCDVal_NewStringUninitialized(val.mem, cms_e.length);
-    if (NCDVal_IsInvalid(copy)) {
-        return NCDVal_NewInvalid();
-    }
-    
-    char *copy_data = (char *)NCDVal_StringData(copy);
-    
-    size_t pos = 0;
-    while (pos < cms_e.length) {
-        const char *chunk_data;
-        size_t chunk_len;
-        cms_e.func_getptr(cms_e.user, cms_e.offset + pos, &chunk_data, &chunk_len);
-        ASSERT(chunk_data)
-        ASSERT(chunk_len > 0)
-        if (chunk_len > cms_e.length - pos) {
-            chunk_len = cms_e.length - pos;
-        }
-        memcpy(copy_data + pos, chunk_data, chunk_len);
-        pos += chunk_len;
-    }
-    
-    return copy;
-}
-
-static const char * NCDVal__composedstring_cstring_func (const b_cstring *cstr, size_t offset, size_t *out_length)
-{
-    ASSERT(offset < cstr->length)
-    ASSERT(out_length)
-    ASSERT(cstr->func == NCDVal__composedstring_cstring_func)
-    
-    size_t str_offset = cstr->user1.size;
-    NCDVal_ComposedString_func_getptr func_getptr = (NCDVal_ComposedString_func_getptr)cstr->user2.fptr;
-    void *user = cstr->user3.ptr;
-    
-    const char *data;
-    func_getptr(user, str_offset + offset, &data, out_length);
-    
-    ASSERT(data)
-    ASSERT(*out_length > 0)
-    
-    return data;
+    ref->next = o->first_ref;
+    o->first_ref = refidx;
 }
 
 #include "NCDVal_maptree.h"
 #include <structure/CAvl_impl.h>
 
-void NCDValMem_Init (NCDValMem *o)
+void NCDValMem_Init (NCDValMem *o, NCDStringIndex *string_index)
 {
-    o->buf = NULL;
+    ASSERT(string_index)
+    
+    o->string_index = string_index;
     o->size = NCDVAL_FASTBUF_SIZE;
     o->used = 0;
     o->first_ref = -1;
-    o->first_cms_link = -1;
 }
 
 void NCDValMem_Free (NCDValMem *o)
 {
-    NCDVal__AssertMem(o);
+    assert_mem(o);
     
     NCDVal__idx refidx = o->first_ref;
     while (refidx != -1) {
-        struct NCDVal__ref *ref = NCDValMem__BufAt(o, refidx);
+        struct NCDVal__ref *ref = buffer_at(o, refidx);
         ASSERT(ref->target)
         BRefTarget_Deref(ref->target);
         refidx = ref->next;
     }
     
-    if (o->buf) {
-        BFree(o->buf);
+    if (o->size != NCDVAL_FASTBUF_SIZE) {
+        BFree(o->allocd_buf);
     }
 }
 
 int NCDValMem_InitCopy (NCDValMem *o, NCDValMem *other)
 {
-    NCDVal__AssertMem(other);
+    assert_mem(other);
     
+    o->string_index = other->string_index;
     o->size = other->size;
     o->used = other->used;
     o->first_ref = other->first_ref;
-    o->first_cms_link = other->first_cms_link;
     
-    if (!other->buf) {
-        o->buf = NULL;
+    if (other->size == NCDVAL_FASTBUF_SIZE) {
         memcpy(o->fastbuf, other->fastbuf, other->used);
     } else {
-        o->buf = BAlloc(other->size);
-        if (!o->buf) {
+        o->allocd_buf = BAlloc(other->size);
+        if (!o->allocd_buf) {
             goto fail0;
         }
-        memcpy(o->buf, other->buf, other->used);
+        memcpy(o->allocd_buf, other->allocd_buf, other->used);
     }
     
     NCDVal__idx refidx = o->first_ref;
     while (refidx != -1) {
-        struct NCDVal__ref *ref = NCDValMem__BufAt(o, refidx);
+        struct NCDVal__ref *ref = buffer_at(o, refidx);
         ASSERT(ref->target)
         if (!BRefTarget_Ref(ref->target)) {
             goto fail1;
@@ -436,55 +430,27 @@ int NCDValMem_InitCopy (NCDValMem *o, NCDValMem *other)
 fail1:;
     NCDVal__idx undo_refidx = o->first_ref;
     while (undo_refidx != refidx) {
-        struct NCDVal__ref *ref = NCDValMem__BufAt(o, undo_refidx);
+        struct NCDVal__ref *ref = buffer_at(o, undo_refidx);
         BRefTarget_Deref(ref->target);
         undo_refidx = ref->next;
     }
-    if (o->buf) {
-        BFree(o->buf);
+    if (other->size != NCDVAL_FASTBUF_SIZE) {
+        BFree(o->allocd_buf);
     }
 fail0:
     return 0;
 }
 
-int NCDValMem_ConvertNonContinuousStrings (NCDValMem *o, NCDValRef *root_val)
+NCDStringIndex * NCDValMem_StringIndex (NCDValMem *o)
 {
-    NCDVal__AssertMem(o);
-    ASSERT(root_val)
-    ASSERT(root_val->mem == o)
-    NCDVal__AssertValOnly(o, root_val->idx);
+    assert_mem(o);
     
-    while (o->first_cms_link != -1) {
-        struct NCDVal__cms_link cms_link = *(struct NCDVal__cms_link *)NCDValMem__BufAt(o, o->first_cms_link);
-        
-        NCDVal__idx val_idx = *(NCDVal__idx *)NCDValMem__BufAt(o, cms_link.link_idx);
-        NCDValRef val = NCDVal__Ref(o, val_idx);
-        ASSERT(NCDVal_IsComposedString(val))
-        
-        NCDValRef copy = NCDVal__CopyComposedStringToStored(val);
-        if (NCDVal_IsInvalid(copy)) {
-            return 0;
-        }
-        
-        *(int *)NCDValMem__BufAt(o, cms_link.link_idx) = copy.idx;
-        
-        o->first_cms_link = cms_link.next_cms_link;
-    }
-    
-    if (NCDVal_IsComposedString(*root_val)) {
-        NCDValRef copy = NCDVal__CopyComposedStringToStored(*root_val);
-        if (NCDVal_IsInvalid(copy)) {
-            return 0;
-        }
-        *root_val = copy;
-    }
-    
-    return 1;
+    return o->string_index;
 }
 
 void NCDVal_Assert (NCDValRef val)
 {
-    ASSERT(val.idx == -1 || (NCDVal__AssertVal(val), 1))
+    ASSERT(val.idx == -1 || (assert_val(val), 1))
 }
 
 int NCDVal_IsInvalid (NCDValRef val)
@@ -503,13 +469,13 @@ int NCDVal_IsPlaceholder (NCDValRef val)
 
 int NCDVal_Type (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
     if (val.idx < -1) {
         return NCDVAL_PLACEHOLDER;
     }
     
-    int *type_ptr = NCDValMem__BufAt(val.mem, val.idx);
+    int *type_ptr = buffer_at(val.mem, val.idx);
     
     return get_external_type(*type_ptr);
 }
@@ -522,9 +488,9 @@ NCDValRef NCDVal_NewInvalid (void)
 
 NCDValRef NCDVal_NewPlaceholder (NCDValMem *mem, int plid)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(plid >= 0)
-    ASSERT(NCDVAL_MINIDX + plid < -1)
+    ASSERT(plid < NCDVAL_TOPPLID)
     
     NCDValRef ref = {mem, NCDVAL_MINIDX + plid};
     return ref;
@@ -539,68 +505,62 @@ int NCDVal_PlaceholderId (NCDValRef val)
 
 NCDValRef NCDVal_NewCopy (NCDValMem *mem, NCDValRef val)
 {
-    NCDVal__AssertMem(mem);
-    NCDVal__AssertVal(val);
+    assert_mem(mem);
+    assert_val(val);
     
     if (val.idx < -1) {
         return NCDVal_NewPlaceholder(mem, NCDVal_PlaceholderId(val));
     }
     
-    void *ptr = NCDValMem__BufAt(val.mem, val.idx);
+    void *ptr = buffer_at(val.mem, val.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
             struct NCDVal__string *str_e = ptr;
             
             NCDVal__idx size = sizeof(struct NCDVal__string) + str_e->length + 1;
-            NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__string));
+            NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__string));
             if (idx < 0) {
                 goto fail;
             }
             
-            str_e = NCDValMem__BufAt(val.mem, val.idx);
-            struct NCDVal__string *new_str_e = NCDValMem__BufAt(mem, idx);
+            str_e = buffer_at(val.mem, val.idx);
+            struct NCDVal__string *new_str_e = buffer_at(mem, idx);
             
             memcpy(new_str_e, str_e, size);
             
-            return NCDVal__Ref(mem, idx);
+            return make_ref(mem, idx);
         } break;
         
         case NCDVAL_LIST: {
             struct NCDVal__list *list_e = ptr;
             
             NCDVal__idx size = sizeof(struct NCDVal__list) + list_e->maxcount * sizeof(NCDVal__idx);
-            NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__list));
+            NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__list));
             if (idx < 0) {
                 goto fail;
             }
             
-            list_e = NCDValMem__BufAt(val.mem, val.idx);
-            struct NCDVal__list *new_list_e = NCDValMem__BufAt(mem, idx);
+            list_e = buffer_at(val.mem, val.idx);
+            struct NCDVal__list *new_list_e = buffer_at(mem, idx);
             
             *new_list_e = *list_e;
             
             NCDVal__idx count = list_e->count;
             
             for (NCDVal__idx i = 0; i < count; i++) {
-                NCDValRef elem_copy = NCDVal_NewCopy(mem, NCDVal__Ref(val.mem, list_e->elem_indices[i]));
+                NCDValRef elem_copy = NCDVal_NewCopy(mem, make_ref(val.mem, list_e->elem_indices[i]));
                 if (NCDVal_IsInvalid(elem_copy)) {
                     goto fail;
                 }
                 
-                if (NCDValMem__NeedRegisterLink(mem, elem_copy.idx)) {
-                    if (!NCDValMem__RegisterLink(mem, elem_copy.idx, idx + offsetof(struct NCDVal__list, elem_indices) + i * sizeof(NCDVal__idx))) {
-                        goto fail;
-                    }
-                }
-                
-                list_e = NCDValMem__BufAt(val.mem, val.idx);
-                new_list_e = NCDValMem__BufAt(mem, idx);
+                list_e = buffer_at(val.mem, val.idx);
+                new_list_e = buffer_at(mem, idx);
                 
                 new_list_e->elem_indices[i] = elem_copy.idx;
             }
             
-            return NCDVal__Ref(mem, idx);
+            return make_ref(mem, idx);
         } break;
         
         case NCDVAL_MAP: {
@@ -630,34 +590,23 @@ NCDValRef NCDVal_NewCopy (NCDValMem *mem, NCDValRef val)
         
         case IDSTRING_TYPE: {
             NCDVal__idx size = sizeof(struct NCDVal__idstring);
-            NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__idstring));
+            NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__idstring));
             if (idx < 0) {
                 goto fail;
             }
             
-            struct NCDVal__idstring *ids_e = NCDValMem__BufAt(val.mem, val.idx);
-            struct NCDVal__idstring *new_ids_e = NCDValMem__BufAt(mem, idx);
+            struct NCDVal__idstring *ids_e = buffer_at(val.mem, val.idx);
+            struct NCDVal__idstring *new_ids_e = buffer_at(mem, idx);
             
             *new_ids_e = *ids_e;
             
-            return NCDVal__Ref(mem, idx);
+            return make_ref(mem, idx);
         } break;
         
         case EXTERNALSTRING_TYPE: {
             struct NCDVal__externalstring *exs_e = ptr;
             
             return NCDVal_NewExternalString(mem, exs_e->data, exs_e->length, exs_e->ref.target);
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            struct NCDVal__composedstring *cms_e = ptr;
-            
-            NCDValComposedStringResource resource;
-            resource.func_getptr = cms_e->func_getptr;
-            resource.user = cms_e->user;
-            resource.ref_target = cms_e->ref.target;
-            
-            return NCDVal_NewComposedString(mem, resource, cms_e->offset, cms_e->length);
         } break;
         
         default: ASSERT(0);
@@ -671,8 +620,8 @@ fail:
 
 int NCDVal_Compare (NCDValRef val1, NCDValRef val2)
 {
-    NCDVal__AssertVal(val1);
-    NCDVal__AssertVal(val2);
+    assert_val(val1);
+    assert_val(val2);
     
     int type1 = NCDVal_Type(val1);
     int type2 = NCDVal_Type(val2);
@@ -768,8 +717,8 @@ NCDValSafeRef NCDVal_ToSafe (NCDValRef val)
 
 NCDValRef NCDVal_FromSafe (NCDValMem *mem, NCDValSafeRef sval)
 {
-    NCDVal__AssertMem(mem);
-    ASSERT(sval.idx == -1 || (NCDVal__AssertValOnly(mem, sval.idx), 1))
+    assert_mem(mem);
+    ASSERT(sval.idx == -1 || (assert_val_only(mem, sval.idx), 1))
     
     NCDValRef val = {mem, sval.idx};
     return val;
@@ -777,140 +726,86 @@ NCDValRef NCDVal_FromSafe (NCDValMem *mem, NCDValSafeRef sval)
 
 NCDValRef NCDVal_Moved (NCDValMem *mem, NCDValRef val)
 {
-    NCDVal__AssertMem(mem);
-    ASSERT(val.idx == -1 || (NCDVal__AssertValOnly(mem, val.idx), 1))
+    assert_mem(mem);
+    ASSERT(val.idx == -1 || (assert_val_only(mem, val.idx), 1))
     
     NCDValRef val2 = {mem, val.idx};
     return val2;
 }
 
-int NCDVal_HasOnlyContinuousStrings (NCDValRef val)
+int NCDVal_IsSafeRefPlaceholder (NCDValSafeRef sval)
 {
-    NCDVal__AssertVal(val);
+    return (sval.idx < -1);
+}
+
+int NCDVal_GetSafeRefPlaceholderId (NCDValSafeRef sval)
+{
+    ASSERT(NCDVal_IsSafeRefPlaceholder(sval))
     
-    switch (NCDVal_Type(val)) {
-        case NCDVAL_STRING: {
-            if (!NCDVal_IsContinuousString(val)) {
-                return 0;
-            }
-        } break;
-        
-        case NCDVAL_LIST: {
-            size_t count = NCDVal_ListCount(val);
-            for (size_t i = 0; i < count; i++) {
-                NCDValRef elem = NCDVal_ListGet(val, i);
-                if (!NCDVal_HasOnlyContinuousStrings(elem)) {
-                    return 0;
-                }
-            }
-        } break;
-        
-        case NCDVAL_MAP: {
-            for (NCDValMapElem me = NCDVal_MapFirst(val); !NCDVal_MapElemInvalid(me); me = NCDVal_MapNext(val, me)) {
-                NCDValRef e_key = NCDVal_MapElemKey(val, me);
-                NCDValRef e_val = NCDVal_MapElemVal(val, me);
-                if (!NCDVal_HasOnlyContinuousStrings(e_key) || !NCDVal_HasOnlyContinuousStrings(e_val)) {
-                    return 0;
-                }
-            }
-        } break;
-        
-        case NCDVAL_PLACEHOLDER: {
-        } break;
-        
-        default:
-            ASSERT(0);
-    }
-    
-    return 1;
+    return (sval.idx - NCDVAL_MINIDX);
 }
 
 int NCDVal_IsString (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
     return NCDVal_Type(val) == NCDVAL_STRING;
 }
 
-int NCDVal_IsContinuousString (NCDValRef val)
-{
-    NCDVal__AssertVal(val);
-    
-    if (val.idx < -1) {
-        return 0;
-    }
-    
-    switch (get_internal_type(*(int *)NCDValMem__BufAt(val.mem, val.idx))) {
-        case STOREDSTRING_TYPE:
-        case IDSTRING_TYPE:
-        case EXTERNALSTRING_TYPE:
-            return 1;
-        default:
-            return 0;
-    }
-}
-
 int NCDVal_IsStoredString (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
-    return !(val.idx < -1) && get_internal_type(*(int *)NCDValMem__BufAt(val.mem, val.idx)) == STOREDSTRING_TYPE;
+    return !(val.idx < -1) && get_internal_type(*(int *)buffer_at(val.mem, val.idx)) == STOREDSTRING_TYPE;
 }
 
 int NCDVal_IsIdString (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
-    return !(val.idx < -1) && get_internal_type(*(int *)NCDValMem__BufAt(val.mem, val.idx)) == IDSTRING_TYPE;
+    return !(val.idx < -1) && get_internal_type(*(int *)buffer_at(val.mem, val.idx)) == IDSTRING_TYPE;
 }
 
 int NCDVal_IsExternalString (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
-    return !(val.idx < -1) && get_internal_type(*(int *)NCDValMem__BufAt(val.mem, val.idx)) == EXTERNALSTRING_TYPE;
-}
-
-int NCDVal_IsComposedString (NCDValRef val)
-{
-    NCDVal__AssertVal(val);
-    
-    return !(val.idx < -1) && get_internal_type(*(int *)NCDValMem__BufAt(val.mem, val.idx)) == COMPOSEDSTRING_TYPE;
+    return !(val.idx < -1) && get_internal_type(*(int *)buffer_at(val.mem, val.idx)) == EXTERNALSTRING_TYPE;
 }
 
 int NCDVal_IsStringNoNulls (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
     return NCDVal_Type(val) == NCDVAL_STRING && !NCDVal_StringHasNulls(val);
 }
 
 NCDValRef NCDVal_NewString (NCDValMem *mem, const char *data)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(data)
-    NCDVal_AssertExternal(mem, data, strlen(data));
+    assert_external(mem, data, strlen(data));
     
     return NCDVal_NewStringBin(mem, (const uint8_t *)data, strlen(data));
 }
 
 NCDValRef NCDVal_NewStringBin (NCDValMem *mem, const uint8_t *data, size_t len)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(len == 0 || data)
-    NCDVal_AssertExternal(mem, data, len);
+    assert_external(mem, data, len);
     
     if (len > NCDVAL_MAXIDX - sizeof(struct NCDVal__string) - 1) {
         goto fail;
     }
     
     NCDVal__idx size = sizeof(struct NCDVal__string) + len + 1;
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__string));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__string));
     if (idx < 0) {
         goto fail;
     }
     
-    struct NCDVal__string *str_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__string *str_e = buffer_at(mem, idx);
     str_e->type = make_type(STOREDSTRING_TYPE, 0);
     str_e->length = len;
     if (len > 0) {
@@ -918,55 +813,58 @@ NCDValRef NCDVal_NewStringBin (NCDValMem *mem, const uint8_t *data, size_t len)
     }
     str_e->data[len] = '\0';
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
 }
 
+NCDValRef NCDVal_NewStringBinMr (NCDValMem *mem, MemRef data)
+{
+    return NCDVal_NewStringBin(mem, (uint8_t const *)data.ptr, data.len);
+}
+
 NCDValRef NCDVal_NewStringUninitialized (NCDValMem *mem, size_t len)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     
     if (len > NCDVAL_MAXIDX - sizeof(struct NCDVal__string) - 1) {
         goto fail;
     }
     
     NCDVal__idx size = sizeof(struct NCDVal__string) + len + 1;
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__string));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__string));
     if (idx < 0) {
         goto fail;
     }
     
-    struct NCDVal__string *str_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__string *str_e = buffer_at(mem, idx);
     str_e->type = make_type(STOREDSTRING_TYPE, 0);
     str_e->length = len;
     str_e->data[len] = '\0';
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
 }
 
-NCDValRef NCDVal_NewIdString (NCDValMem *mem, NCD_string_id_t string_id, NCDStringIndex *string_index)
+NCDValRef NCDVal_NewIdString (NCDValMem *mem, NCD_string_id_t string_id)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(string_id >= 0)
-    ASSERT(string_index)
     
     NCDVal__idx size = sizeof(struct NCDVal__idstring);
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__idstring));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__idstring));
     if (idx < 0) {
         goto fail;
     }
     
-    struct NCDVal__idstring *ids_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__idstring *ids_e = buffer_at(mem, idx);
     ids_e->type = make_type(IDSTRING_TYPE, 0);
     ids_e->string_id = string_id;
-    ids_e->string_index = string_index;
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
@@ -975,12 +873,12 @@ fail:
 NCDValRef NCDVal_NewExternalString (NCDValMem *mem, const char *data, size_t len,
                                     BRefTarget *ref_target)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(data)
-    NCDVal_AssertExternal(mem, data, len);
+    assert_external(mem, data, len);
     
     NCDVal__idx size = sizeof(struct NCDVal__externalstring);
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__externalstring));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__externalstring));
     if (idx < 0) {
         goto fail;
     }
@@ -991,64 +889,27 @@ NCDValRef NCDVal_NewExternalString (NCDValMem *mem, const char *data, size_t len
         }
     }
     
-    struct NCDVal__externalstring *exs_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__externalstring *exs_e = buffer_at(mem, idx);
     exs_e->type = make_type(EXTERNALSTRING_TYPE, 0);
     exs_e->data = data;
     exs_e->length = len;
     exs_e->ref.target = ref_target;
     
     if (ref_target) {
-        exs_e->ref.next = mem->first_ref;
-        mem->first_ref = idx + offsetof(struct NCDVal__externalstring, ref);
+        register_ref(mem, idx + offsetof(struct NCDVal__externalstring, ref), &exs_e->ref);
     }
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
 }
 
-NCDValRef NCDVal_NewComposedString (NCDValMem *mem, NCDValComposedStringResource resource, size_t offset, size_t length)
+const char * NCDVal_StringData (NCDValRef string)
 {
-    NCDVal__AssertMem(mem);
-    ASSERT(resource.func_getptr)
+    ASSERT(NCDVal_IsString(string))
     
-    NCDVal__idx size = sizeof(struct NCDVal__composedstring);
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__composedstring));
-    if (idx < 0) {
-        goto fail;
-    }
-    
-    if (resource.ref_target) {
-        if (!BRefTarget_Ref(resource.ref_target)) {
-            goto fail;
-        }
-    }
-    
-    struct NCDVal__composedstring *cms_e = NCDValMem__BufAt(mem, idx);
-    cms_e->type = make_type(COMPOSEDSTRING_TYPE, 0);
-    cms_e->offset = offset;
-    cms_e->length = length;
-    cms_e->func_getptr = resource.func_getptr;
-    cms_e->user = resource.user;
-    cms_e->ref.target = resource.ref_target;
-    
-    if (resource.ref_target) {
-        cms_e->ref.next = mem->first_ref;
-        mem->first_ref = idx + offsetof(struct NCDVal__composedstring, ref);
-    }
-    
-    return NCDVal__Ref(mem, idx);
-    
-fail:
-    return NCDVal_NewInvalid();
-}
-
-const char * NCDVal_StringData (NCDValRef contstring)
-{
-    ASSERT(NCDVal_IsContinuousString(contstring))
-    
-    void *ptr = NCDValMem__BufAt(contstring.mem, contstring.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
@@ -1058,7 +919,7 @@ const char * NCDVal_StringData (NCDValRef contstring)
         
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            const char *value = NCDStringIndex_Value(ids_e->string_index, ids_e->string_id);
+            const char *value = NCDStringIndex_Value(string.mem->string_index, ids_e->string_id).ptr;
             return value;
         } break;
         
@@ -1077,7 +938,7 @@ size_t NCDVal_StringLength (NCDValRef string)
 {
     ASSERT(NCDVal_IsString(string))
     
-    void *ptr = NCDValMem__BufAt(string.mem, string.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
@@ -1087,17 +948,12 @@ size_t NCDVal_StringLength (NCDValRef string)
         
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            return NCDStringIndex_Length(ids_e->string_index, ids_e->string_id);
+            return NCDStringIndex_Value(string.mem->string_index, ids_e->string_id).len;
         } break;
         
         case EXTERNALSTRING_TYPE: {
             struct NCDVal__externalstring *exs_e = ptr;
             return exs_e->length;
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            struct NCDVal__composedstring *cms_e = ptr;
-            return cms_e->length;
         } break;
         
         default:
@@ -1106,53 +962,31 @@ size_t NCDVal_StringLength (NCDValRef string)
     }
 }
 
-b_cstring NCDValComposedStringResource_Cstring (NCDValComposedStringResource resource, size_t offset, size_t length)
-{
-    b_cstring cstr;
-    cstr.length = length;
-    cstr.func = NCDVal__composedstring_cstring_func;
-    cstr.user1.size = offset;
-    cstr.user2.fptr = (void (*) (void))resource.func_getptr;
-    cstr.user3.ptr = resource.user;
-    return cstr;
-}
-
-b_cstring NCDVal_StringCstring (NCDValRef string)
+MemRef NCDVal_StringMemRef (NCDValRef string)
 {
     ASSERT(NCDVal_IsString(string))
     
-    void *ptr = NCDValMem__BufAt(string.mem, string.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
             struct NCDVal__string *str_e = ptr;
-            return b_cstring_make_buf(str_e->data, str_e->length);
+            return MemRef_Make(str_e->data, str_e->length);
         } break;
         
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            return b_cstring_make_buf(NCDStringIndex_Value(ids_e->string_index, ids_e->string_id), NCDStringIndex_Length(ids_e->string_index, ids_e->string_id));
+            return NCDStringIndex_Value(string.mem->string_index, ids_e->string_id);
         } break;
         
         case EXTERNALSTRING_TYPE: {
             struct NCDVal__externalstring *exs_e = ptr;
-            return b_cstring_make_buf(exs_e->data, exs_e->length);
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            struct NCDVal__composedstring *cms_e = ptr;
-            b_cstring cstr;
-            cstr.length = cms_e->length;
-            cstr.func = NCDVal__composedstring_cstring_func;
-            cstr.user1.size = cms_e->offset;
-            cstr.user2.fptr = (void (*) (void))cms_e->func_getptr;
-            cstr.user3.ptr = cms_e->user;
-            return cstr;
+            return MemRef_Make(exs_e->data, exs_e->length);
         } break;
         
         default: {
             ASSERT(0);
-            return b_cstring_make_empty();
+            return MemRef_Make(NULL, 0);
         } break;
     }
 }
@@ -1162,7 +996,7 @@ int NCDVal_StringNullTerminate (NCDValRef string, NCDValNullTermString *out)
     ASSERT(NCDVal_IsString(string))
     ASSERT(out)
     
-    void *ptr = NCDValMem__BufAt(string.mem, string.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
@@ -1174,7 +1008,7 @@ int NCDVal_StringNullTerminate (NCDValRef string, NCDValNullTermString *out)
         
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            out->data = (char *)NCDStringIndex_Value(ids_e->string_index, ids_e->string_id);
+            out->data = (char *)NCDStringIndex_Value(string.mem->string_index, ids_e->string_id).ptr;
             out->is_allocated = 0;
             return 1;
         } break;
@@ -1186,27 +1020,6 @@ int NCDVal_StringNullTerminate (NCDValRef string, NCDValNullTermString *out)
             if (!copy) {
                 return 0;
             }
-            
-            out->data = copy;
-            out->is_allocated = 1;
-            return 1;
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            struct NCDVal__composedstring *cms_e = ptr;
-            size_t length = cms_e->length;
-            
-            if (length == SIZE_MAX) {
-                return 0;
-            }
-            
-            char *copy = BAlloc(length + 1);
-            if (!copy) {
-                return 0;
-            }
-            
-            NCDVal_StringCopyOut(string, 0, length, copy);
-            copy[length] = '\0';
             
             out->data = copy;
             out->is_allocated = 1;
@@ -1234,127 +1047,37 @@ void NCDValNullTermString_Free (NCDValNullTermString *o)
     }
 }
 
-int NCDVal_StringContinuize (NCDValRef string, NCDValContString *out)
-{
-    ASSERT(NCDVal_IsString(string))
-    ASSERT(out)
-    
-    if (NCDVal_IsContinuousString(string)) {
-        out->data = (char *)NCDVal_StringData(string);
-        out->is_allocated = 0;
-        return 1;
-    }
-    
-    size_t length = NCDVal_StringLength(string);
-    
-    char *data = BAlloc(length);
-    if (!data) {
-        return 0;
-    }
-    
-    NCDVal_StringCopyOut(string, 0, length, data);
-    
-    out->data = data;
-    out->is_allocated = 1;
-    return 1;
-}
-
-NCDValContString NCDValContString_NewDummy (void)
-{
-    NCDValContString cts;
-    cts.data = NULL;
-    cts.is_allocated = 0;
-    return cts;
-}
-
-void NCDValContString_Free (NCDValContString *o)
-{
-    if (o->is_allocated) {
-        BFree(o->data);
-    }
-}
-
-void NCDVal_IdStringGet (NCDValRef idstring, NCD_string_id_t *out_string_id,
-                         NCDStringIndex **out_string_index)
-{
-    ASSERT(NCDVal_IsIdString(idstring))
-    ASSERT(out_string_id)
-    ASSERT(out_string_index)
-    
-    struct NCDVal__idstring *ids_e = NCDValMem__BufAt(idstring.mem, idstring.idx);
-    *out_string_id = ids_e->string_id;
-    *out_string_index = ids_e->string_index;
-}
-
 NCD_string_id_t NCDVal_IdStringId (NCDValRef idstring)
 {
     ASSERT(NCDVal_IsIdString(idstring))
     
-    struct NCDVal__idstring *ids_e = NCDValMem__BufAt(idstring.mem, idstring.idx);
+    struct NCDVal__idstring *ids_e = buffer_at(idstring.mem, idstring.idx);
     return ids_e->string_id;
-}
-
-NCDStringIndex * NCDVal_IdStringStringIndex (NCDValRef idstring)
-{
-    ASSERT(NCDVal_IsIdString(idstring))
-    
-    struct NCDVal__idstring *ids_e = NCDValMem__BufAt(idstring.mem, idstring.idx);
-    return ids_e->string_index;
 }
 
 BRefTarget * NCDVal_ExternalStringTarget (NCDValRef externalstring)
 {
     ASSERT(NCDVal_IsExternalString(externalstring))
     
-    struct NCDVal__externalstring *exs_e = NCDValMem__BufAt(externalstring.mem, externalstring.idx);
+    struct NCDVal__externalstring *exs_e = buffer_at(externalstring.mem, externalstring.idx);
     return exs_e->ref.target;
-}
-
-NCDValComposedStringResource NCDVal_ComposedStringResource (NCDValRef composedstring)
-{
-    ASSERT(NCDVal_IsComposedString(composedstring))
-    
-    struct NCDVal__composedstring *cms_e = NCDValMem__BufAt(composedstring.mem, composedstring.idx);
-    
-    NCDValComposedStringResource res;
-    res.func_getptr = cms_e->func_getptr;
-    res.user = cms_e->user;
-    res.ref_target = cms_e->ref.target;
-    
-    return res;
-}
-
-size_t NCDVal_ComposedStringOffset (NCDValRef composedstring)
-{
-    ASSERT(NCDVal_IsComposedString(composedstring))
-    
-    struct NCDVal__composedstring *cms_e = NCDValMem__BufAt(composedstring.mem, composedstring.idx);
-    
-    return cms_e->offset;
 }
 
 int NCDVal_StringHasNulls (NCDValRef string)
 {
     ASSERT(NCDVal_IsString(string))
     
-    void *ptr = NCDValMem__BufAt(string.mem, string.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            return NCDStringIndex_HasNulls(ids_e->string_index, ids_e->string_id);
+            return NCDStringIndex_HasNulls(string.mem->string_index, ids_e->string_id);
         } break;
         
         case STOREDSTRING_TYPE:
         case EXTERNALSTRING_TYPE: {
-            const char *data = NCDVal_StringData(string);
-            size_t length = NCDVal_StringLength(string);
-            return !!memchr(data, '\0', length);
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            b_cstring cstr = NCDVal_StringCstring(string);
-            return b_cstring_memchr(cstr, 0, cstr.length, '\0', NULL);
+            return MemRef_FindChar(NCDVal_StringMemRef(string), '\0', NULL);
         } break;
         
         default:
@@ -1373,41 +1096,27 @@ int NCDVal_StringEquals (NCDValRef string, const char *data)
     return NCDVal_StringLength(string) == data_len && NCDVal_StringRegionEquals(string, 0, data_len, data);
 }
 
-int NCDVal_StringEqualsId (NCDValRef string, NCD_string_id_t string_id,
-                           NCDStringIndex *string_index)
+int NCDVal_StringEqualsId (NCDValRef string, NCD_string_id_t string_id)
 {
     ASSERT(NCDVal_IsString(string))
     ASSERT(string_id >= 0)
-    ASSERT(string_index)
     
-    void *ptr = NCDValMem__BufAt(string.mem, string.idx);
+    void *ptr = buffer_at(string.mem, string.idx);
     
     switch (get_internal_type(*(int *)ptr)) {
         case STOREDSTRING_TYPE: {
             struct NCDVal__string *str_e = ptr;
-            const char *string_data = NCDStringIndex_Value(string_index, string_id);
-            size_t string_length = NCDStringIndex_Length(string_index, string_id);
-            return (string_length == str_e->length) && !memcmp(string_data, str_e->data, string_length);
+            return MemRef_Equal(NCDStringIndex_Value(string.mem->string_index, string_id), MemRef_Make(str_e->data, str_e->length));
         } break;
         
         case IDSTRING_TYPE: {
             struct NCDVal__idstring *ids_e = ptr;
-            ASSERT(ids_e->string_index == string_index)
             return ids_e->string_id == string_id;
         } break;
         
         case EXTERNALSTRING_TYPE: {
             struct NCDVal__externalstring *exs_e = ptr;
-            const char *string_data = NCDStringIndex_Value(string_index, string_id);
-            size_t string_length = NCDStringIndex_Length(string_index, string_id);
-            return (string_length == exs_e->length) && !memcmp(string_data, exs_e->data, string_length);
-        } break;
-        
-        case COMPOSEDSTRING_TYPE: {
-            struct NCDVal__composedstring *cms_e = ptr;
-            const char *string_data = NCDStringIndex_Value(string_index, string_id);
-            size_t string_length = NCDStringIndex_Length(string_index, string_id);
-            return (string_length == cms_e->length) && NCDVal_StringRegionEquals(string, 0, string_length, string_data);
+            return MemRef_Equal(NCDStringIndex_Value(string.mem->string_index, string_id), MemRef_Make(exs_e->data, exs_e->length));
         } break;
         
         default:
@@ -1425,13 +1134,7 @@ int NCDVal_StringMemCmp (NCDValRef string1, NCDValRef string2, size_t start1, si
     ASSERT(length <= NCDVal_StringLength(string1) - start1)
     ASSERT(length <= NCDVal_StringLength(string2) - start2)
     
-    if (NCDVal_IsContinuousString(string1) && NCDVal_IsContinuousString(string2)) {
-        return memcmp(NCDVal_StringData(string1) + start1, NCDVal_StringData(string2) + start2, length);
-    }
-    
-    b_cstring cstr1 = NCDVal_StringCstring(string1);
-    b_cstring cstr2 = NCDVal_StringCstring(string2);
-    return b_cstring_memcmp(cstr1, cstr2, start1, start2, length);
+    return memcmp(NCDVal_StringData(string1) + start1, NCDVal_StringData(string2) + start2, length);
 }
 
 void NCDVal_StringCopyOut (NCDValRef string, size_t start, size_t length, char *dst)
@@ -1440,13 +1143,7 @@ void NCDVal_StringCopyOut (NCDValRef string, size_t start, size_t length, char *
     ASSERT(start <= NCDVal_StringLength(string))
     ASSERT(length <= NCDVal_StringLength(string) - start)
     
-    if (NCDVal_IsContinuousString(string)) {
-        memcpy(dst, NCDVal_StringData(string) + start, length);
-        return;
-    }
-    
-    b_cstring cstr = NCDVal_StringCstring(string);
-    b_cstring_copy_to_buf(cstr, start, length, dst);
+    memcpy(dst, NCDVal_StringData(string) + start, length);
 }
 
 int NCDVal_StringRegionEquals (NCDValRef string, size_t start, size_t length, const char *data)
@@ -1455,41 +1152,36 @@ int NCDVal_StringRegionEquals (NCDValRef string, size_t start, size_t length, co
     ASSERT(start <= NCDVal_StringLength(string))
     ASSERT(length <= NCDVal_StringLength(string) - start)
     
-    if (NCDVal_IsContinuousString(string)) {
-        return !memcmp(NCDVal_StringData(string) + start, data, length);
-    }
-    
-    b_cstring cstr = NCDVal_StringCstring(string);
-    return b_cstring_equals_buffer(cstr, start, length, data);
+    return !memcmp(NCDVal_StringData(string) + start, data, length);
 }
 
 int NCDVal_IsList (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
     return NCDVal_Type(val) == NCDVAL_LIST;
 }
 
 NCDValRef NCDVal_NewList (NCDValMem *mem, size_t maxcount)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     
     if (maxcount > (NCDVAL_MAXIDX - sizeof(struct NCDVal__list)) / sizeof(NCDVal__idx)) {
         goto fail;
     }
     
     NCDVal__idx size = sizeof(struct NCDVal__list) + maxcount * sizeof(NCDVal__idx);
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__list));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__list));
     if (idx < 0) {
         goto fail;
     }
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__list *list_e = buffer_at(mem, idx);
     list_e->type = make_type(NCDVAL_LIST, 0);
     list_e->maxcount = maxcount;
     list_e->count = 0;
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
@@ -1500,20 +1192,13 @@ int NCDVal_ListAppend (NCDValRef list, NCDValRef elem)
     ASSERT(NCDVal_IsList(list))
     ASSERT(NCDVal_ListCount(list) < NCDVal_ListMaxCount(list))
     ASSERT(elem.mem == list.mem)
-    NCDVal__AssertValOnly(list.mem, elem.idx);
+    assert_val_only(list.mem, elem.idx);
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     int new_type = list_e->type;
-    if (!bump_depth(&new_type, NCDVal__Depth(elem))) {
+    if (!bump_depth(&new_type, get_val_depth(elem))) {
         return 0;
-    }
-    
-    if (NCDValMem__NeedRegisterLink(list.mem, elem.idx)) {
-        if (!NCDValMem__RegisterLink(list.mem, elem.idx, list.idx + offsetof(struct NCDVal__list, elem_indices) + list_e->count * sizeof(NCDVal__idx))) {
-            return 0;
-        }
-        list_e = NCDValMem__BufAt(list.mem, list.idx);
     }
     
     list_e->type = new_type;
@@ -1526,7 +1211,7 @@ size_t NCDVal_ListCount (NCDValRef list)
 {
     ASSERT(NCDVal_IsList(list))
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     return list_e->count;
 }
@@ -1535,7 +1220,7 @@ size_t NCDVal_ListMaxCount (NCDValRef list)
 {
     ASSERT(NCDVal_IsList(list))
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     return list_e->maxcount;
 }
@@ -1545,12 +1230,12 @@ NCDValRef NCDVal_ListGet (NCDValRef list, size_t pos)
     ASSERT(NCDVal_IsList(list))
     ASSERT(pos < NCDVal_ListCount(list))
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     ASSERT(pos < list_e->count)
-    NCDVal__AssertValOnly(list.mem, list_e->elem_indices[pos]);
+    assert_val_only(list.mem, list_e->elem_indices[pos]);
     
-    return NCDVal__Ref(list.mem, list_e->elem_indices[pos]);
+    return make_ref(list.mem, list_e->elem_indices[pos]);
 }
 
 int NCDVal_ListRead (NCDValRef list, int num, ...)
@@ -1558,7 +1243,7 @@ int NCDVal_ListRead (NCDValRef list, int num, ...)
     ASSERT(NCDVal_IsList(list))
     ASSERT(num >= 0)
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     if (num != list_e->count) {
         return 0;
@@ -1569,7 +1254,32 @@ int NCDVal_ListRead (NCDValRef list, int num, ...)
     
     for (int i = 0; i < num; i++) {
         NCDValRef *dest = va_arg(ap, NCDValRef *);
-        *dest = NCDVal__Ref(list.mem, list_e->elem_indices[i]);
+        *dest = make_ref(list.mem, list_e->elem_indices[i]);
+    }
+    
+    va_end(ap);
+    
+    return 1;
+}
+
+int NCDVal_ListReadStart (NCDValRef list, int start, int num, ...)
+{
+    ASSERT(NCDVal_IsList(list))
+    ASSERT(start <= NCDVal_ListCount(list))
+    ASSERT(num >= 0)
+    
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
+    
+    if (num != list_e->count - start) {
+        return 0;
+    }
+    
+    va_list ap;
+    va_start(ap, num);
+    
+    for (int i = 0; i < num; i++) {
+        NCDValRef *dest = va_arg(ap, NCDValRef *);
+        *dest = make_ref(list.mem, list_e->elem_indices[start + i]);
     }
     
     va_end(ap);
@@ -1582,7 +1292,7 @@ int NCDVal_ListReadHead (NCDValRef list, int num, ...)
     ASSERT(NCDVal_IsList(list))
     ASSERT(num >= 0)
     
-    struct NCDVal__list *list_e = NCDValMem__BufAt(list.mem, list.idx);
+    struct NCDVal__list *list_e = buffer_at(list.mem, list.idx);
     
     if (num > list_e->count) {
         return 0;
@@ -1593,7 +1303,7 @@ int NCDVal_ListReadHead (NCDValRef list, int num, ...)
     
     for (int i = 0; i < num; i++) {
         NCDValRef *dest = va_arg(ap, NCDValRef *);
-        *dest = NCDVal__Ref(list.mem, list_e->elem_indices[i]);
+        *dest = make_ref(list.mem, list_e->elem_indices[i]);
     }
     
     va_end(ap);
@@ -1603,32 +1313,32 @@ int NCDVal_ListReadHead (NCDValRef list, int num, ...)
 
 int NCDVal_IsMap (NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     
     return NCDVal_Type(val) == NCDVAL_MAP;
 }
 
 NCDValRef NCDVal_NewMap (NCDValMem *mem, size_t maxcount)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     
     if (maxcount > (NCDVAL_MAXIDX - sizeof(struct NCDVal__map)) / sizeof(struct NCDVal__mapelem)) {
         goto fail;
     }
     
     NCDVal__idx size = sizeof(struct NCDVal__map) + maxcount * sizeof(struct NCDVal__mapelem);
-    NCDVal__idx idx = NCDValMem__Alloc(mem, size, __alignof(struct NCDVal__map));
+    NCDVal__idx idx = buffer_allocate(mem, size, __alignof(struct NCDVal__map));
     if (idx < 0) {
         goto fail;
     }
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(mem, idx);
+    struct NCDVal__map *map_e = buffer_at(mem, idx);
     map_e->type = make_type(NCDVAL_MAP, 0);
     map_e->maxcount = maxcount;
     map_e->count = 0;
     NCDVal__MapTree_Init(&map_e->tree);
     
-    return NCDVal__Ref(mem, idx);
+    return make_ref(mem, idx);
     
 fail:
     return NCDVal_NewInvalid();
@@ -1640,33 +1350,19 @@ int NCDVal_MapInsert (NCDValRef map, NCDValRef key, NCDValRef val, int *out_inse
     ASSERT(NCDVal_MapCount(map) < NCDVal_MapMaxCount(map))
     ASSERT(key.mem == map.mem)
     ASSERT(val.mem == map.mem)
-    NCDVal__AssertValOnly(map.mem, key.idx);
-    NCDVal__AssertValOnly(map.mem, val.idx);
+    assert_val_only(map.mem, key.idx);
+    assert_val_only(map.mem, val.idx);
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     int new_type = map_e->type;
-    if (!bump_depth(&new_type, NCDVal__Depth(key)) || !bump_depth(&new_type, NCDVal__Depth(val))) {
+    if (!bump_depth(&new_type, get_val_depth(key)) || !bump_depth(&new_type, get_val_depth(val))) {
         goto fail0;
     }
     
-    NCDVal__idx elemidx = NCDVal__MapElemIdx(map.idx, map_e->count);
+    NCDVal__idx elemidx = make_map_elem_idx(map.idx, map_e->count);
     
-    if (NCDValMem__NeedRegisterLink(map.mem, key.idx)) {
-        if (!NCDValMem__RegisterLink(map.mem, key.idx, elemidx + offsetof(struct NCDVal__mapelem, key_idx))) {
-            goto fail0;
-        }
-        map_e = NCDValMem__BufAt(map.mem, map.idx);
-    }
-    
-    if (NCDValMem__NeedRegisterLink(map.mem, val.idx)) {
-        if (!NCDValMem__RegisterLink(map.mem, val.idx, elemidx + offsetof(struct NCDVal__mapelem, val_idx))) {
-            goto fail1;
-        }
-        map_e = NCDValMem__BufAt(map.mem, map.idx);
-    }
-    
-    struct NCDVal__mapelem *me_e = NCDValMem__BufAt(map.mem, elemidx);
+    struct NCDVal__mapelem *me_e = buffer_at(map.mem, elemidx);
     ASSERT(me_e == &map_e->elems[map_e->count])
     me_e->key_idx = key.idx;
     me_e->val_idx = val.idx;
@@ -1687,10 +1383,6 @@ int NCDVal_MapInsert (NCDValRef map, NCDValRef key, NCDValRef val, int *out_inse
     }
     return 1;
     
-fail1:
-    if (NCDValMem__NeedRegisterLink(map.mem, key.idx)) {
-        NCDValMem__PopLastRegisteredLink(map.mem);
-    }
 fail0:
     return 0;
 }
@@ -1699,7 +1391,7 @@ size_t NCDVal_MapCount (NCDValRef map)
 {
     ASSERT(NCDVal_IsMap(map))
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     return map_e->count;
 }
@@ -1708,7 +1400,7 @@ size_t NCDVal_MapMaxCount (NCDValRef map)
 {
     ASSERT(NCDVal_IsMap(map))
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     return map_e->maxcount;
 }
@@ -1724,91 +1416,91 @@ NCDValMapElem NCDVal_MapFirst (NCDValRef map)
 {
     ASSERT(NCDVal_IsMap(map))
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     if (map_e->count == 0) {
-        return NCDVal__MapElem(-1);
+        return make_map_elem(-1);
     }
     
-    NCDVal__idx elemidx = NCDVal__MapElemIdx(map.idx, 0);
-    NCDVal__MapAssertElemOnly(map, elemidx);
+    NCDVal__idx elemidx = make_map_elem_idx(map.idx, 0);
+    assert_map_elem_only(map, elemidx);
     
-    return NCDVal__MapElem(elemidx);
+    return make_map_elem(elemidx);
 }
 
 NCDValMapElem NCDVal_MapNext (NCDValRef map, NCDValMapElem me)
 {
-    NCDVal__MapAssertElem(map, me);
+    assert_map_elem(map, me);
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     ASSERT(map_e->count > 0)
     
-    NCDVal__idx last_elemidx = NCDVal__MapElemIdx(map.idx, map_e->count - 1);
+    NCDVal__idx last_elemidx = make_map_elem_idx(map.idx, map_e->count - 1);
     ASSERT(me.elemidx <= last_elemidx)
     
     if (me.elemidx == last_elemidx) {
-        return NCDVal__MapElem(-1);
+        return make_map_elem(-1);
     }
     
     NCDVal__idx elemidx = me.elemidx + sizeof(struct NCDVal__mapelem);
-    NCDVal__MapAssertElemOnly(map, elemidx);
+    assert_map_elem_only(map, elemidx);
     
-    return NCDVal__MapElem(elemidx);
+    return make_map_elem(elemidx);
 }
 
 NCDValMapElem NCDVal_MapOrderedFirst (NCDValRef map)
 {
     ASSERT(NCDVal_IsMap(map))
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     NCDVal__MapTreeRef ref = NCDVal__MapTree_GetFirst(&map_e->tree, map.mem);
-    ASSERT(ref.link == -1 || (NCDVal__MapAssertElemOnly(map, ref.link), 1))
+    ASSERT(ref.link == -1 || (assert_map_elem_only(map, ref.link), 1))
     
-    return NCDVal__MapElem(ref.link);
+    return make_map_elem(ref.link);
 }
 
 NCDValMapElem NCDVal_MapOrderedNext (NCDValRef map, NCDValMapElem me)
 {
-    NCDVal__MapAssertElem(map, me);
+    assert_map_elem(map, me);
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     NCDVal__MapTreeRef ref = NCDVal__MapTree_GetNext(&map_e->tree, map.mem, NCDVal__MapTreeDeref(map.mem, me.elemidx));
-    ASSERT(ref.link == -1 || (NCDVal__MapAssertElemOnly(map, ref.link), 1))
+    ASSERT(ref.link == -1 || (assert_map_elem_only(map, ref.link), 1))
     
-    return NCDVal__MapElem(ref.link);
+    return make_map_elem(ref.link);
 }
 
 NCDValRef NCDVal_MapElemKey (NCDValRef map, NCDValMapElem me)
 {
-    NCDVal__MapAssertElem(map, me);
+    assert_map_elem(map, me);
     
-    struct NCDVal__mapelem *me_e = NCDValMem__BufAt(map.mem, me.elemidx);
+    struct NCDVal__mapelem *me_e = buffer_at(map.mem, me.elemidx);
     
-    return NCDVal__Ref(map.mem, me_e->key_idx);
+    return make_ref(map.mem, me_e->key_idx);
 }
 
 NCDValRef NCDVal_MapElemVal (NCDValRef map, NCDValMapElem me)
 {
-    NCDVal__MapAssertElem(map, me);
+    assert_map_elem(map, me);
     
-    struct NCDVal__mapelem *me_e = NCDValMem__BufAt(map.mem, me.elemidx);
+    struct NCDVal__mapelem *me_e = buffer_at(map.mem, me.elemidx);
     
-    return NCDVal__Ref(map.mem, me_e->val_idx);
+    return make_ref(map.mem, me_e->val_idx);
 }
 
 NCDValMapElem NCDVal_MapFindKey (NCDValRef map, NCDValRef key)
 {
     ASSERT(NCDVal_IsMap(map))
-    NCDVal__AssertVal(key);
+    assert_val(key);
     
-    struct NCDVal__map *map_e = NCDValMem__BufAt(map.mem, map.idx);
+    struct NCDVal__map *map_e = buffer_at(map.mem, map.idx);
     
     NCDVal__MapTreeRef ref = NCDVal__MapTree_LookupExact(&map_e->tree, map.mem, key);
-    ASSERT(ref.link == -1 || (NCDVal__MapAssertElemOnly(map, ref.link), 1))
+    ASSERT(ref.link == -1 || (assert_map_elem_only(map, ref.link), 1))
     
-    return NCDVal__MapElem(ref.link);
+    return make_map_elem(ref.link);
 }
 
 NCDValRef NCDVal_MapGetValue (NCDValRef map, const char *key_str)
@@ -1817,7 +1509,7 @@ NCDValRef NCDVal_MapGetValue (NCDValRef map, const char *key_str)
     ASSERT(key_str)
     
     NCDValMem mem;
-    mem.buf = NULL;
+    mem.string_index = map.mem->string_index;
     mem.size = NCDVAL_FASTBUF_SIZE;
     mem.used = sizeof(struct NCDVal__externalstring);
     mem.first_ref = -1;
@@ -1828,7 +1520,7 @@ NCDValRef NCDVal_MapGetValue (NCDValRef map, const char *key_str)
     exs_e->length = strlen(key_str);
     exs_e->ref.target = NULL;
     
-    NCDValRef key = NCDVal__Ref(&mem, 0);
+    NCDValRef key = make_ref(&mem, 0);
     
     NCDValMapElem elem = NCDVal_MapFindKey(map, key);
     if (NCDVal_MapElemInvalid(elem)) {
@@ -1841,20 +1533,19 @@ NCDValRef NCDVal_MapGetValue (NCDValRef map, const char *key_str)
 static void replaceprog_build_recurser (NCDValMem *mem, NCDVal__idx idx, size_t *out_num_instr, NCDValReplaceProg *prog)
 {
     ASSERT(idx >= 0)
-    NCDVal__AssertValOnly(mem, idx);
+    assert_val_only(mem, idx);
     ASSERT(out_num_instr)
     
     *out_num_instr = 0;
     
-    void *ptr = NCDValMem__BufAt(mem, idx);
+    void *ptr = buffer_at(mem, idx);
     
     struct NCDVal__instr instr;
     
     switch (get_internal_type(*((int *)(ptr)))) {
         case STOREDSTRING_TYPE:
         case IDSTRING_TYPE:
-        case EXTERNALSTRING_TYPE:
-        case COMPOSEDSTRING_TYPE: {
+        case EXTERNALSTRING_TYPE: {
         } break;
         
         case NCDVAL_LIST: {
@@ -1972,7 +1663,7 @@ static void replaceprog_build_recurser (NCDValMem *mem, NCDVal__idx idx, size_t 
 
 int NCDValReplaceProg_Init (NCDValReplaceProg *o, NCDValRef val)
 {
-    NCDVal__AssertVal(val);
+    assert_val(val);
     ASSERT(!NCDVal_IsPlaceholder(val))
     
     size_t num_instrs;
@@ -2001,7 +1692,7 @@ void NCDValReplaceProg_Free (NCDValReplaceProg *o)
 
 int NCDValReplaceProg_Execute (NCDValReplaceProg prog, NCDValMem *mem, NCDVal_replace_func replace, void *arg)
 {
-    NCDVal__AssertMem(mem);
+    assert_mem(mem);
     ASSERT(replace)
     
     for (size_t i = 0; i < prog.num_instrs; i++) {
@@ -2010,7 +1701,7 @@ int NCDValReplaceProg_Execute (NCDValReplaceProg prog, NCDValMem *mem, NCDVal_re
         switch (instr.type) {
             case NCDVAL_INSTR_PLACEHOLDER: {
 #ifndef NDEBUG
-                NCDVal__idx *check_plptr = NCDValMem__BufAt(mem, instr.placeholder.plidx);
+                NCDVal__idx *check_plptr = buffer_at(mem, instr.placeholder.plidx);
                 ASSERT(*check_plptr < -1)
                 ASSERT(*check_plptr - NCDVAL_MINIDX == instr.placeholder.plid)
 #endif
@@ -2020,22 +1711,18 @@ int NCDValReplaceProg_Execute (NCDValReplaceProg prog, NCDValMem *mem, NCDVal_re
                 }
                 ASSERT(repval.mem == mem)
                 
-                if (NCDValMem__NeedRegisterLink(mem, repval.idx)) {
-                    NCDValMem__RegisterLink(mem, repval.idx, instr.placeholder.plidx);
-                }
-                
-                NCDVal__idx *plptr = NCDValMem__BufAt(mem, instr.placeholder.plidx);
+                NCDVal__idx *plptr = buffer_at(mem, instr.placeholder.plidx);
                 *plptr = repval.idx;
             } break;
             
             case NCDVAL_INSTR_REINSERT: {
-                NCDVal__AssertValOnly(mem, instr.reinsert.mapidx);
-                struct NCDVal__map *map_e = NCDValMem__BufAt(mem, instr.reinsert.mapidx);
-                ASSERT(map_e->type == NCDVAL_MAP)
+                assert_val_only(mem, instr.reinsert.mapidx);
+                struct NCDVal__map *map_e = buffer_at(mem, instr.reinsert.mapidx);
+                ASSERT(get_internal_type(map_e->type) == NCDVAL_MAP)
                 ASSERT(instr.reinsert.elempos >= 0)
                 ASSERT(instr.reinsert.elempos < map_e->count)
                 
-                NCDVal__MapTreeRef ref = {&map_e->elems[instr.reinsert.elempos], NCDVal__MapElemIdx(instr.reinsert.mapidx, instr.reinsert.elempos)};
+                NCDVal__MapTreeRef ref = {&map_e->elems[instr.reinsert.elempos], make_map_elem_idx(instr.reinsert.mapidx, instr.reinsert.elempos)};
                 NCDVal__MapTree_Remove(&map_e->tree, mem, ref);
                 if (!NCDVal__MapTree_Insert(&map_e->tree, mem, ref, NULL)) {
                     BLog(BLOG_ERROR, "duplicate key in map");
@@ -2044,12 +1731,12 @@ int NCDValReplaceProg_Execute (NCDValReplaceProg prog, NCDValMem *mem, NCDVal_re
             } break;
             
             case NCDVAL_INSTR_BUMPDEPTH: {
-                NCDVal__AssertValOnly(mem, instr.bumpdepth.parent_idx);
-                int *parent_type_ptr = NCDValMem__BufAt(mem, instr.bumpdepth.parent_idx);
+                assert_val_only(mem, instr.bumpdepth.parent_idx);
+                int *parent_type_ptr = buffer_at(mem, instr.bumpdepth.parent_idx);
                 
-                NCDVal__idx *child_type_idx_ptr = NCDValMem__BufAt(mem, instr.bumpdepth.child_idx_idx);
-                NCDVal__AssertValOnly(mem, *child_type_idx_ptr);
-                int *child_type_ptr = NCDValMem__BufAt(mem, *child_type_idx_ptr);
+                NCDVal__idx *child_type_idx_ptr = buffer_at(mem, instr.bumpdepth.child_idx_idx);
+                assert_val_only(mem, *child_type_idx_ptr);
+                int *child_type_ptr = buffer_at(mem, *child_type_idx_ptr);
                 
                 if (!bump_depth(parent_type_ptr, get_depth(*child_type_ptr))) {
                     BLog(BLOG_ERROR, "depth limit exceeded");

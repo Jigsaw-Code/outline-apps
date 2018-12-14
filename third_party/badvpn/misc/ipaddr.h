@@ -42,18 +42,16 @@
 #include <misc/parse_number.h>
 #include <misc/find_char.h>
 #include <misc/print_macros.h>
+#include <misc/memref.h>
 
 struct ipv4_ifaddr {
     uint32_t addr;
     int prefix;
 };
 
-static int ipaddr_parse_ipv4_addr_bin (const char *name, size_t name_len, uint32_t *out_addr);
-static int ipaddr_parse_ipv4_addr (const char *name, uint32_t *out_addr);
-static int ipaddr_parse_ipv4_prefix_bin (const char *str, size_t str_len, int *num);
-static int ipaddr_parse_ipv4_prefix (const char *str, int *num);
-static int ipaddr_parse_ipv4_ifaddr_bin (const char *str, size_t str_len, struct ipv4_ifaddr *out);
-static int ipaddr_parse_ipv4_ifaddr (const char *str, struct ipv4_ifaddr *out);
+static int ipaddr_parse_ipv4_addr (MemRef name, uint32_t *out_addr);
+static int ipaddr_parse_ipv4_prefix (MemRef str, int *num);
+static int ipaddr_parse_ipv4_ifaddr (MemRef str, struct ipv4_ifaddr *out);
 static int ipaddr_ipv4_ifaddr_from_addr_mask (uint32_t addr, uint32_t mask, struct ipv4_ifaddr *out);
 static uint32_t ipaddr_ipv4_mask_from_prefix (int prefix);
 static int ipaddr_ipv4_prefix_from_mask (uint32_t mask, int *out_prefix);
@@ -64,13 +62,13 @@ static int ipaddr_ipv4_addrs_in_network (uint32_t addr1, uint32_t addr2, int net
 static void ipaddr_print_addr (uint32_t addr, char *out);
 static void ipaddr_print_ifaddr (struct ipv4_ifaddr ifaddr, char *out);
 
-int ipaddr_parse_ipv4_addr_bin (const char *name, size_t name_len, uint32_t *out_addr)
+int ipaddr_parse_ipv4_addr (MemRef name, uint32_t *out_addr)
 {
     for (size_t i = 0; ; i++) {
         size_t j;
-        for (j = 0; j < name_len && name[j] != '.'; j++);
+        for (j = 0; j < name.len && name.ptr[j] != '.'; j++);
         
-        if ((j == name_len && i < 3) || (j < name_len && i == 3)) {
+        if ((j == name.len && i < 3) || (j < name.len && i == 3)) {
             return 0;
         }
         
@@ -79,7 +77,7 @@ int ipaddr_parse_ipv4_addr_bin (const char *name, size_t name_len, uint32_t *out
         }
         
         uintmax_t d;
-        if (!parse_unsigned_integer_bin(name, j, &d)) {
+        if (!parse_unsigned_integer(MemRef_SubTo(name, j), &d)) {
             return 0;
         }
         
@@ -93,20 +91,15 @@ int ipaddr_parse_ipv4_addr_bin (const char *name, size_t name_len, uint32_t *out
             return 1;
         }
         
-        name += j + 1;
-        name_len -= j + 1;
+        name.ptr += j + 1;
+        name.len -= j + 1;
     }
 }
 
-int ipaddr_parse_ipv4_addr (const char *name, uint32_t *out_addr)
-{
-    return ipaddr_parse_ipv4_addr_bin(name, strlen(name), out_addr);
-}
-
-int ipaddr_parse_ipv4_prefix_bin (const char *str, size_t str_len, int *num)
+int ipaddr_parse_ipv4_prefix (MemRef str, int *num)
 {
     uintmax_t d;
-    if (!parse_unsigned_integer_bin(str, str_len, &d)) {
+    if (!parse_unsigned_integer(str, &d)) {
         return 0;
     }
     if (d > 32) {
@@ -117,25 +110,15 @@ int ipaddr_parse_ipv4_prefix_bin (const char *str, size_t str_len, int *num)
     return 1;
 }
 
-int ipaddr_parse_ipv4_prefix (const char *str, int *num)
-{
-    return ipaddr_parse_ipv4_prefix_bin(str, strlen(str), num);
-}
-
-int ipaddr_parse_ipv4_ifaddr_bin (const char *str, size_t str_len, struct ipv4_ifaddr *out)
+int ipaddr_parse_ipv4_ifaddr (MemRef str, struct ipv4_ifaddr *out)
 {
     size_t slash_pos;
-    if (!b_find_char_bin(str, str_len, '/', &slash_pos)) {
+    if (!MemRef_FindChar(str, '/', &slash_pos)) {
         return 0;
     }
     
-    return (ipaddr_parse_ipv4_addr_bin(str, slash_pos, &out->addr) &&
-            ipaddr_parse_ipv4_prefix_bin(str + slash_pos + 1, str_len - slash_pos - 1, &out->prefix));
-}
-
-int ipaddr_parse_ipv4_ifaddr (const char *str, struct ipv4_ifaddr *out)
-{
-    return ipaddr_parse_ipv4_ifaddr_bin(str, strlen(str), out);
+    return (ipaddr_parse_ipv4_addr(MemRef_SubTo(str, slash_pos), &out->addr) &&
+            ipaddr_parse_ipv4_prefix(MemRef_SubFrom(str, slash_pos + 1), &out->prefix));
 }
 
 int ipaddr_ipv4_ifaddr_from_addr_mask (uint32_t addr, uint32_t mask, struct ipv4_ifaddr *out)

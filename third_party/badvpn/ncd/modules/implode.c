@@ -40,17 +40,14 @@
 #include <string.h>
 
 #include <misc/expstring.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_implode.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-
 struct instance {
     NCDModuleInst *i;
-    char *result;
-    size_t result_len;
+    MemRef result;
 };
 
 static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
@@ -89,22 +86,21 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         
         // append glue
         if (j > 0) {
-            if (!ExpString_AppendBinary(&str, (const uint8_t *)NCDVal_StringData(glue_arg), NCDVal_StringLength(glue_arg))) {
-                ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
+            if (!ExpString_AppendBinaryMr(&str, NCDVal_StringMemRef(glue_arg))) {
+                ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinaryMr failed");
                 goto fail1;
             }
         }
         
         // append piece
-        if (!ExpString_AppendBinary(&str, (const uint8_t *)NCDVal_StringData(piece), NCDVal_StringLength(piece))) {
-            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
+        if (!ExpString_AppendBinaryMr(&str, NCDVal_StringMemRef(piece))) {
+            ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinaryMr failed");
             goto fail1;
         }
     }
     
     // store result
-    o->result = ExpString_Get(&str);
-    o->result_len = ExpString_Length(&str);
+    o->result = ExpString_GetMr(&str);
     
     // signal up
     NCDModuleInst_Backend_Up(i);
@@ -121,7 +117,7 @@ static void func_die (void *vo)
     struct instance *o = vo;
     
     // free result
-    free(o->result);
+    free((char *)o->result.ptr);
     
     NCDModuleInst_Backend_Dead(o->i);
 }
@@ -131,7 +127,7 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
     struct instance *o = vo;
     
     if (name == NCD_STRING_EMPTY) {
-        *out = NCDVal_NewStringBin(mem, (uint8_t *)o->result, o->result_len);
+        *out = NCDVal_NewStringBinMr(mem, o->result);
         return 1;
     }
     

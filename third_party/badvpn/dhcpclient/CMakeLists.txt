@@ -1,13 +1,10 @@
-add_library(dhcpclientcore
-    BDHCPClientCore.c
-)
-target_link_libraries(dhcpclientcore system flow flowextra badvpn_random)
+badvpn_add_library(dhcpclientcore "system;flow;flowextra;badvpn_random" "" BDHCPClientCore.c)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_library(dhcpclient
+    set(DHCPCLIENT_SOURCES
         BDHCPClient.c
         DHCPIpUdpEncoder.c
         DHCPIpUdpDecoder.c
     )
-    target_link_libraries(dhcpclient system flow dhcpclientcore)
+    badvpn_add_library(dhcpclient "system;flow;dhcpclientcore" "" "${DHCPCLIENT_SOURCES}")
 endif ()

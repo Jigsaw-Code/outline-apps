@@ -35,6 +35,7 @@
 #include <misc/debug.h>
 #include <system/BReactor.h>
 #include <base/BLog.h>
+#include <ncd/NCDVal.h>
 #include <ncd/NCDObject.h>
 #include <ncd/NCDStringIndex.h>
 
@@ -59,6 +60,8 @@ struct NCDModuleProcess_s;
 struct NCDModuleGroup;
 struct NCDInterpModule;
 struct NCDInterpModuleGroup;
+struct NCDCall_interp_shared;
+struct NCDInterpFunction;
 
 /**
  * Function called to inform the interpeter of state changes of the
@@ -258,9 +261,7 @@ struct NCDModuleInst_new_params {
     /**
      * A reference to the argument list for the module instance.
      * The reference remains valid as long as the backend instance
-     * exists. Unless the module has the NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
-     * flag set, it is guaranteed that any strings within the arguments will be
-     * some kind of ContinuousString.
+     * exists.
      */
     NCDValRef args;
     
@@ -377,8 +378,17 @@ typedef struct NCDModuleInst_s {
     unsigned int state:3;
     unsigned int pass_mem_to_methods:1;
     unsigned int istate:3; // untouched by NCDModuleInst
+    NCDPersistentObj pobj;
     DebugObject d_obj;
 } NCDModuleInst;
+
+/**
+ * Weak NCDModuleInst reference.
+ */
+typedef struct {
+    NCDObjRef objref;
+    DebugObject d_obj;
+} NCDModuleRef;
 
 /**
  * Process created from a process template on behalf of a module backend
@@ -421,10 +431,7 @@ typedef struct NCDModuleProcess_s {
  *                       The caller must ensure that the NCDObject that was used is of the type
  *                       expected by the module being instanciated.
  * @param args arguments to the module. Must be a list value. Must be available and unchanged
- *             as long as the instance exists. Unless the module has the
- *             NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS flag set, any strings within the
- *             arguments must be some kind of ContinuousString. This can be ensured by calling
- *             {@link NCDValMem_ConvertNonContinuousStrings}.
+ *             as long as the instance exists.
  * @param user argument to callback functions
  * @param params more parameters, see {@link NCDModuleInst_params}
  */
@@ -613,6 +620,24 @@ btime_t NCDModuleInst_Backend_InterpGetRetryTime (NCDModuleInst *n);
  * @return 1 on success, 0 on failure
  */
 int NCDModuleInst_Backend_InterpLoadGroup (NCDModuleInst *n, const struct NCDModuleGroup *group);
+
+/**
+ * Initializes a weak reference to a module instance.
+ * The instane must no have had NCDModuleInst_Backend_PassMemToMethods
+ * called.
+ */
+void NCDModuleRef_Init (NCDModuleRef *o, NCDModuleInst *inst);
+
+/**
+ * Frees the reference.
+ */
+void NCDModuleRef_Free (NCDModuleRef *o);
+
+/**
+ * Dereferences the reference.
+ * If the reference was broken, returns NULL.
+ */
+NCDModuleInst * NCDModuleRef_Deref (NCDModuleRef *o);
 
 /**
  * Initializes a process in the interpreter from a process template.
@@ -847,7 +872,6 @@ typedef int (*NCDModule_func_getobj) (void *o, NCD_string_id_t name, NCDObject *
 typedef void (*NCDModule_func_clean) (void *o);
 
 #define NCDMODULE_FLAG_CAN_RESOLVE_WHEN_DOWN (1 << 0)
-#define NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS (1 << 1)
 
 /**
  * Structure encapsulating the implementation of a module backend.
@@ -909,12 +933,6 @@ struct NCDModule {
      *   Whether the interpreter is allowed to call func_getvar and func_getobj
      *   even when the backend instance is in down state (as opposed to just
      *   in up state.
-     * 
-     * - NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
-     *   If not set, strings within arguments which are not some kind of ContinuousString
-     *   will be converted to some kind of ContinuousString before the module's init
-     *   function is called. If set, they will not be, and the module must work with any
-     *   kind of strings (i.e. {@link NCDVal_StringData} may not be allowed).
      */
     int flags;
     
@@ -958,6 +976,13 @@ struct NCDModuleGroup {
      * {@link NCDInterpModuleGroup}.
      */
     const char *const*strings;
+    
+    /**
+     * A pointer to an array of global functions implemented by this module
+     * group. The array must be terminated with a structure that has a NULL
+     * func_name member. May be NULL.
+     */
+    struct NCDModuleFunction const *functions;
 };
 
 /**
@@ -1006,6 +1031,211 @@ struct NCDInterpModuleGroup {
      * read or write it.
      */
     void *group_state;
+};
+
+/**
+ * An abstraction of function call evaluations, mutually decoupling the
+ * interpreter and the function implementations.
+ * 
+ * The function implementation is given an instance of this structure
+ * in the evaluation callback (func_eval), and uses it to request
+ * information and submit results. The function implementation does these
+ * things by calling the various NCDCall functions with the NCDCall
+ * instance. Note that function arguments are evaluated on demand from
+ * the function implementation. This enables behavior such as
+ * short-circuit evaluation of logical operators.
+ * 
+ * The NCDCall struct has a value semantic - it can be copied
+ * around freely by the function implementation during the
+ * lifetime of the evaluation call.
+ */
+typedef struct {
+    struct NCDCall_interp_shared const *interp_shared;
+    void *interp_user;
+    struct NCDInterpFunction const *interp_function;
+    size_t arg_count;
+    NCDValMem *res_mem;
+    NCDValRef *out_ref;
+} NCDCall;
+
+/**
+ * Used by the intepreter to call a function.
+ * 
+ * It calls the func_eval callback of the function implementation
+ * with an appropriately initialized NCDCall value. This is the only
+ * NCDCall related function used by the interpreter.
+ * 
+ * As part of the call, callbacks to the interpreter (given in interp_shared)
+ * may occur. All of these callbacks are passed interp_user as the first
+ * argument. The callbacks are:
+ * - logfunc (to log a message),
+ * - func_eval_arg (to evaluate a particular function argument).
+ * 
+ * @param interp_shared pointer to things expected to be the same for all
+ *   function calls by the interpreter. This includes interpreter callbacks.
+ * @param interp_user pointer to be passed through to interpreter callbacks
+ * @param interp_function the function to call. The evaluation function of
+ *   the function implementation that will be called is taken from here
+ *   (interp_function->function.func_eval), but this is also exposed to the
+ *   function implementation, so it should be initialized appropriately.
+ * @param arg_count number of arguments passed to the function.
+ *   The function implementation is only permitted to attempt evaluation
+ *   of arguments with indices lesser than arg_count.
+ * @param res_mem the (initialized) value memory object for the result to
+ *   be stored into. However this may also be used as storage for temporary
+ *   values computed as part of the call.
+ * @param res_out on success, *res_out will be set to the result of the call
+ * @return 1 on success, 0 on error
+ */
+int NCDCall_DoIt (
+    struct NCDCall_interp_shared const *interp_shared, void *interp_user,
+    struct NCDInterpFunction const *interp_function,
+    size_t arg_count, NCDValMem *res_mem, NCDValRef *res_out
+) WARN_UNUSED;
+
+/**
+ * Returns a pointer to the NCDInterpFunction object for the function,
+ * initialized by the interpreter. This alows, among other things,
+ * determining which function is being called, and getting the module
+ * group's private data pointer.
+ */
+struct NCDInterpFunction const * NCDCall_InterpFunction (NCDCall const *o);
+
+/**
+ * Returns a pointer to an NCDModuleInst_iparams structure, exposing
+ * services provided by the interpreter.
+ */
+struct NCDModuleInst_iparams const * NCDCall_Iparams (NCDCall const *o);
+
+/**
+ * Returns the number of arguments for the function call.
+ */
+size_t NCDCall_ArgCount (NCDCall const *o);
+
+/**
+ * Attempts to evaluate a function argument.
+ * 
+ * @param index the index of the argument to be evaluated. Must be
+ *   in the range [0, ArgCount).
+ * @param mem the value memory object for the value to be stored into.
+ *   However temporary value data may also be stored here.
+ * @return on success, the value reference to the argument value;
+ *   on failure, an invalid value reference
+ */
+NCDValRef NCDCall_EvalArg (NCDCall const *o, size_t index, NCDValMem *mem);
+
+/**
+ * Returns a pointer to the value memory object that the result
+ * of the call should be stored into. The memory object may also
+ * be used to store temporary value data.
+ */
+NCDValMem * NCDCall_ResMem (NCDCall const *o);
+
+/**
+ * Provides result value of the evaluation to the interpreter.
+ * Note that this only stores the result without any immediate
+ * action.
+ * 
+ * Passing an invalid value reference indicates failure of the
+ * call, though failure is also assumed if this function is
+ * not called at all during the call. When a non-invalid
+ * value reference is passed (indicating success), it must point
+ * to a value stored within the memory object returned by
+ * NCDCall_ResMem.
+ * 
+ * @param ref the result value for the call, or an invalid
+ *   value reference to indicate failure of the call
+ */
+void NCDCall_SetResult (NCDCall const *o, NCDValRef ref);
+
+/**
+ * Returns a log context that can be used to log messages
+ * associated with the call.
+ */
+BLogContext NCDCall_LogContext (NCDCall const *o);
+
+/**
+ * A structure initialized by the interpreter and passed
+ * to NCDCall_DoIt for function evaluations.
+ * It contains a pointer to things expected to be the same for all
+ * function calls by the interpreter, so it can be initialized once
+ * and not for every call.
+ */
+struct NCDCall_interp_shared {
+    /**
+     * A callack for log messages originating from the function call.
+     * The first argument is the interp_user argument to NCDCall_DoIt.
+     */
+    BLog_logfunc logfunc;
+    
+    /**
+     * A callback for evaluating function arguments.
+     * 
+     * @param user interpreter private data (the interp_user argument
+     *   to NCDCall_DoIt)
+     * @param index the index of the argument to be evaluated.
+     *   This will be in the range [0, arg_count).
+     * @param mem the value memory object where the result of the
+     *   evaluation should be stored. Temporary value data may also
+     *   be stored here.
+     * @param out on success, *out should be set to the value reference
+     *   to the result of the evaluation. An invalid value reference is
+     *   permitted, in which case failure is assumed.
+     * @return 1 on success (but see above), 0 on failure
+     */
+    int (*func_eval_arg) (void *user, size_t index, NCDValMem *mem, NCDValRef *out);
+    
+    /**
+     * A pointer to an NCDModuleInst_iparams structure, exposing
+     * services provided by the interpreter.
+     */
+    struct NCDModuleInst_iparams const *iparams;
+};
+
+/**
+ * This structure is initialized statically by a function
+ * implementation to describe the function and provide
+ * the resources required for its evaluation by the interpreter.
+ * 
+ * These structures always appear in arrays, pointed to by
+ * the functions pointer in the NCDModuleGroup structure.
+ */
+struct NCDModuleFunction {
+    /**
+     * The name of the function.
+     * NULL to terminate the array of functions.
+     */
+    char const *func_name;
+    
+    /**
+     * Callback for evaluating the function.
+     */
+    void (*func_eval) (NCDCall call);
+};
+
+/**
+ * Represents an {@link NCDModuleFunction} within an interpreter.
+ * This structure is initialized by the interpreter when it loads a module group.
+ */
+struct NCDInterpFunction {
+    /**
+     * A copy of the original NCDModuleFunction structure.
+     * We could just use a pointer to the original statically defined structure,
+     * but then we wouldn't be annoying the premature-optimization hipsters.
+     */
+    struct NCDModuleFunction function;
+    
+    /**
+     * The string identifier of this functions's name. according to
+     * {@link NCDStringIndex}.
+     */
+    NCD_string_id_t func_name_id;
+    
+    /**
+     * A pointer to the {@link NCDInterpModuleGroup} representing the group
+     * this function belongs to.
+     */
+    struct NCDInterpModuleGroup *group;
 };
 
 #endif

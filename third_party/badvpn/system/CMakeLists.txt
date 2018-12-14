@@ -5,6 +5,7 @@ if (NOT EMSCRIPTEN)
     list(APPEND BSYSTEM_ADDITIONAL_SOURCES
         BSignal.c
         BNetwork.c
+        BConnection_common.c
     )
 
     if (WIN32)

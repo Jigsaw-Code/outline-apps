@@ -62,8 +62,11 @@ static int string_equals (char *str, int str_len, char *needle)
     return (str_len == strlen(needle) && !memcmp(str, needle, str_len));
 }
 
-void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_output output, void *user)
+void NCDConfigTokenizer_Tokenize (MemRef the_str, NCDConfigTokenizer_output output, void *user)
 {
+    char const *str = the_str.ptr;
+    size_t left = the_str.len;
+    
     size_t line = 1;
     size_t line_char = 1;
     
@@ -111,6 +114,12 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
         else if (l = data_begins_with(str, left, "]")) {
             token = NCD_TOKEN_BRACKET_CLOSE;
         }
+        else if (l = data_begins_with(str, left, "@")) {
+            token = NCD_TOKEN_AT;
+        }
+        else if (l = data_begins_with(str, left, "^")) {
+            token = NCD_TOKEN_CARET;
+        }
         else if (l = data_begins_with(str, left, "->")) {
             token = NCD_TOKEN_ARROW;
         }
@@ -134,6 +143,15 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
         }
         else if (l = data_begins_with(str, left, "As")) {
             token = NCD_TOKEN_AS;
+        }
+        else if (l = data_begins_with(str, left, "Block")) {
+            token = NCD_TOKEN_BLOCK;
+        }
+        else if (l = data_begins_with(str, left, "Do")) {
+            token = NCD_TOKEN_DO;
+        }
+        else if (l = data_begins_with(str, left, "Interrupt")) {
+            token = NCD_TOKEN_INTERRUPT;
         }
         else if (l = data_begins_with(str, left, "include_guard")) {
             token = NCD_TOKEN_INCLUDE_GUARD;
@@ -230,7 +248,7 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                             }
                             
                             uintmax_t hex_val;
-                            if (!parse_unsigned_hex_integer_bin(&str[l + 2], 2, &hex_val)) {
+                            if (!parse_unsigned_hex_integer(MemRef_Make(&str[l + 2], 2), &hex_val)) {
                                 BLog(BLOG_ERROR, "hexadecimal escape found in string but two hex characters don't follow");
                                 goto string_fail1;
                             }

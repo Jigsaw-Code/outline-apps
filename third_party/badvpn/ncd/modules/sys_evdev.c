@@ -58,16 +58,12 @@
 
 #include <misc/nonblocking.h>
 #include <misc/debug.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_sys_evdev.h>
 
 #include "linux_input_names.h"
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
 
 struct instance {
     NCDModuleInst *i;
@@ -95,6 +91,7 @@ static const char * evdev_##_name_##_to_str (uint16_t type) \
 }
 
 MAKE_LOOKUP_FUNC(type)
+MAKE_LOOKUP_FUNC(syn)
 MAKE_LOOKUP_FUNC(key)
 MAKE_LOOKUP_FUNC(rel)
 MAKE_LOOKUP_FUNC(abs)
@@ -263,6 +260,9 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
         switch (o->event.type) {
             #ifdef EV_KEY
             MAKE_CASE(EV_KEY, key)
+            #endif
+            #ifdef EV_SYN
+            MAKE_CASE(EV_SYN, syn)
             #endif
             #ifdef EV_REL
             MAKE_CASE(EV_REL, rel)

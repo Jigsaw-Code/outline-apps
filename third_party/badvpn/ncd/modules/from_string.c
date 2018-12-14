@@ -37,13 +37,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ncd/NCDModule.h>
 #include <ncd/NCDValParser.h>
-#include <ncd/static_strings.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_from_string.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -68,10 +66,10 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     }
     
     // init mem
-    NCDValMem_Init(&o->mem);
+    NCDValMem_Init(&o->mem, i->params->iparams->string_index);
     
     // parse value string
-    if (!NCDValParser_Parse(NCDVal_StringData(str_arg), NCDVal_StringLength(str_arg), &o->mem, &o->val)) {
+    if (!NCDValParser_Parse(NCDVal_StringMemRef(str_arg), &o->mem, &o->val)) {
         ModuleLog(i, BLOG_ERROR, "failed to parse");
         goto fail1;
     }

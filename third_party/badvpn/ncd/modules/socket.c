@@ -45,7 +45,8 @@
  *   in one of the following forms:
  *   - {"tcp", {"ipv4", ipv4_address, port_number}},
  *   - {"tcp", {"ipv6", ipv6_address, port_number}},
- *   - {"unix", socket_path}.
+ *   - {"unix", socket_path},
+ *   - {"device", device_path}.
  *   When the connection attempt is finished, the sys.connect() statement goes
  *   up, and the 'is_error' variable should be used to check for connection
  *   failure. If there was no error, the read(), write() and close() methods
@@ -56,6 +57,8 @@
  *   errors with the connection can be handled at the place of sys.connect(),
  *   and no special care is normally needed to handle error in read() and
  *   write().
+ *   The special "device" address type may be used to connect to a serial
+ *   port. But you need to configure the port yourself first (stty).
  *   WARNING: when you're not trying to either send or receive data, the
  *   connection may be unable to detect any events with the connection.
  *   You should never be neither sending nor receiving for an indefinite time.
@@ -65,7 +68,9 @@
  * 
  * Variables:
  *   string (empty) - some data received from the socket, or empty on EOF
- *   string not_eof - "true" if EOF was not encountered, "false" if it was
+ *   string eof - "true" if EOF was encountered, "false" if not
+ *   string not_eof - (deprecated) "true" if EOF was not encountered,
+ *     "false" if it was
  * 
  * Description:
  *   Receives data from the connection. If EOF was encountered (remote host
@@ -122,7 +127,9 @@
  *     {"ipv4", "1.2.3.4", "4000"}.
  * 
  * Description:
- *   Starts listening on the specified address. The 'is_error' variable
+ *   Starts listening on the specified address. The format of the device is
+ *   as described for sys.connect, but without the "device" address type.
+ *   The 'is_error' variable
  *   reflects the success of listening initiation. If listening succeeds,
  *   then for every client that connects, a process is automatically created
  *   from the template specified by 'client_template', and the 'args' list
@@ -136,22 +143,21 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <misc/offset.h>
 #include <misc/debug.h>
 #include <structure/LinkedList0.h>
 #include <system/BConnection.h>
 #include <system/BConnectionGeneric.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/address_utils.h>
 #include <ncd/extra/NCDBuf.h>
 
-#include <generated/blog_channel_ncd_socket.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
+#include <generated/blog_channel_ncd_socket.h>
 
 #define CONNECTION_TYPE_CONNECT 1
 #define CONNECTION_TYPE_LISTEN 2
@@ -197,8 +203,7 @@ struct read_instance {
 struct write_instance {
     NCDModuleInst *i;
     struct connection *con_inst;
-    b_cstring cstr;
-    size_t pos;
+    MemRef data;
 };
 
 struct listen_instance {
@@ -224,12 +229,14 @@ static void connection_free_connection (struct connection *o);
 static void connection_error (struct connection *o);
 static void connection_abort (struct connection *o);
 static void connection_connector_handler (void *user, int is_error);
+static void connection_complete_establish (struct connection *o);
 static void connection_connection_handler (void *user, int event);
 static void connection_send_handler_done (void *user, int data_len);
 static void connection_recv_handler_done (void *user, int data_len);
 static void connection_process_handler (struct NCDModuleProcess_s *process, int event);
 static int connection_process_func_getspecialobj (struct NCDModuleProcess_s *process, NCD_string_id_t name, NCDObject *out_object);
 static int connection_process_socket_obj_func_getvar (const NCDObject *obj, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out_value);
+static int connection_process_caller_obj_func_getobj (const NCDObject *obj, NCD_string_id_t name, NCDObject *out_object);
 static void listen_listener_handler (void *user);
 
 static int parse_options (NCDModuleInst *i, NCDValRef options, size_t *out_read_size)
@@ -249,7 +256,7 @@ static int parse_options (NCDModuleInst *i, NCDValRef options, size_t *out_read_
         
         if (!NCDVal_IsInvalid(value = NCDVal_MapGetValue(options, "read_size"))) {
             uintmax_t read_size;
-            if (!NCDVal_IsString(value) || !ncd_read_uintmax(value, &read_size) || read_size > SIZE_MAX || read_size == 0) {
+            if (!ncd_read_uintmax(value, &read_size) || read_size > SIZE_MAX || read_size == 0) {
                 ModuleLog(i, BLOG_ERROR, "wrong read_size");
                 return 0;
             }
@@ -386,6 +393,17 @@ static void connection_connector_handler (void *user, int is_error)
         goto fail;
     }
     
+    // free connector
+    BConnector_Free(&o->connect.connector);
+    
+    return connection_complete_establish(o);
+    
+fail:
+    connection_error(o);
+}
+
+static void connection_complete_establish (struct connection *o)
+{
     // init connection interfaces
     BConnection_SendAsync_Init(&o->connection);
     BConnection_RecvAsync_Init(&o->connection);
@@ -402,18 +420,11 @@ static void connection_connector_handler (void *user, int is_error)
     o->write_inst = NULL;
     o->recv_closed = 0;
     
-    // free connector
-    BConnector_Free(&o->connect.connector);
-    
     // set state
     o->state = CONNECTION_STATE_ESTABLISHED;
     
     // go up
     NCDModuleInst_Backend_Up(o->connect.i);
-    return;
-    
-fail:
-    connection_error(o);
 }
 
 static void connection_connection_handler (void *user, int event)
@@ -450,21 +461,18 @@ static void connection_send_handler_done (void *user, int data_len)
     ASSERT(o->state == CONNECTION_STATE_ESTABLISHED)
     ASSERT(o->write_inst)
     ASSERT(o->write_inst->con_inst == o)
-    ASSERT(o->write_inst->pos < o->write_inst->cstr.length)
     ASSERT(data_len > 0)
-    ASSERT(data_len <= o->write_inst->cstr.length - o->write_inst->pos)
+    ASSERT(data_len <= o->write_inst->data.len)
     
     struct write_instance *wr = o->write_inst;
     
     // update send state
-    wr->pos += data_len;
+    wr->data = MemRef_SubFrom(wr->data, data_len);
     
     // if there's more to send, send again
-    if (wr->pos < wr->cstr.length) {
-        size_t chunk_len;
-        const char *chunk_data = b_cstring_get(wr->cstr, wr->pos, wr->cstr.length - wr->pos, &chunk_len);
-        size_t to_send = (chunk_len > INT_MAX ? INT_MAX : chunk_len);
-        StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&o->connection), (uint8_t *)chunk_data, to_send);
+    if (wr->data.len > 0) {
+        size_t to_send = (wr->data.len > INT_MAX) ? INT_MAX : wr->data.len;
+        StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&o->connection), (uint8_t *)wr->data.ptr, to_send);
         return;
     }
     
@@ -543,6 +551,11 @@ static int connection_process_func_getspecialobj (struct NCDModuleProcess_s *pro
         return 1;
     }
     
+    if (name == NCD_STRING_CALLER) {
+        *out_object = NCDObject_Build(-1, o, NCDObject_no_getvar, connection_process_caller_obj_func_getobj);
+        return 1;
+    }
+    
     return 0;
 }
 
@@ -560,6 +573,14 @@ static int connection_process_socket_obj_func_getvar (const NCDObject *obj, NCD_
     }
     
     return 0;
+}
+
+static int connection_process_caller_obj_func_getobj (const NCDObject *obj, NCD_string_id_t name, NCDObject *out_object)
+{
+    struct connection *o = NCDObject_DataPtr(obj);
+    ASSERT(o->type == CONNECTION_TYPE_LISTEN)
+    
+    return NCDModuleInst_Backend_GetObj(o->listen.listen_inst->i, name, out_object);
 }
 
 static void listen_listener_handler (void *user)
@@ -627,6 +648,19 @@ fail0:
     return;
 }
 
+static int connect_custom_addr_handler (void *user, NCDValRef protocol, NCDValRef data)
+{
+    NCDValRef *device_path = user;
+    if (NCDVal_StringEquals(protocol, "device")) {
+        if (!NCDVal_IsStringNoNulls(data)) {
+            return 0;
+        }
+        *device_path = data;
+        return 1;
+    }
+    return 0;
+}
+
 static void connect_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
     struct connection *o = vo;
@@ -654,19 +688,47 @@ static void connect_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
     
     // read address
     struct BConnection_addr address;
-    if (!ncd_read_bconnection_addr(address_arg, &address)) {
+    NCDValRef device_path;
+    if (!ncd_read_bconnection_addr_ext(address_arg, connect_custom_addr_handler, &device_path, &address)) {
         ModuleLog(i, BLOG_ERROR, "wrong address");
         goto error;
     }
     
-    // init connector
-    if (!BConnector_InitGeneric(&o->connect.connector, address, i->params->iparams->reactor, o, connection_connector_handler)) {
-        ModuleLog(i, BLOG_ERROR, "BConnector_InitGeneric failed");
-        goto error;
+    // Did the custom handler handle the address as a device?
+    if (address.type == -1) {
+        // get null terminated device path
+        NCDValNullTermString device_path_nts;
+        if (!NCDVal_StringNullTerminate(device_path, &device_path_nts)) {
+            ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
+            goto error;
+        }
+        
+        // open the device
+        int devfd = open(device_path_nts.data, O_RDWR|O_NONBLOCK);
+        NCDValNullTermString_Free(&device_path_nts);
+        if (devfd < 0) {
+            ModuleLog(i, BLOG_ERROR, "open failed");
+            goto error;
+        }
+        
+        // init connection
+        if (!BConnection_Init(&o->connection, BConnection_source_pipe(devfd, 1), i->params->iparams->reactor, o, connection_connection_handler)) {
+            ModuleLog(i, BLOG_ERROR, "BConnection_Init failed");
+            goto error;
+        }
+        
+        connection_complete_establish(o);
+    } else {
+        // init connector
+        if (!BConnector_InitGeneric(&o->connect.connector, address, i->params->iparams->reactor, o, connection_connector_handler)) {
+            ModuleLog(i, BLOG_ERROR, "BConnector_InitGeneric failed");
+            goto error;
+        }
+        
+        // set state
+        o->state = CONNECTION_STATE_CONNECTING;
     }
     
-    // set state
-    o->state = CONNECTION_STATE_CONNECTING;
     return;
     
 error:
@@ -705,7 +767,7 @@ static int connect_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, 
     
     if (name == NCD_STRING_IS_ERROR) {
         int is_error = (o->state == CONNECTION_STATE_ERROR);
-        *out = ncd_make_boolean(mem, is_error, o->connect.i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, is_error);
         return 1;
     }
     
@@ -796,8 +858,8 @@ static int read_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, NCD
         return 1;
     }
     
-    if (name == NCD_STRING_NOT_EOF) {
-        *out = ncd_make_boolean(mem, (o->read_size != 0), o->i->params->iparams->string_index);
+    if (name == NCD_STRING_EOF || name == NCD_STRING_NOT_EOF) {
+        *out = ncd_make_boolean(mem, (o->read_size == 0) == (name == NCD_STRING_EOF));
         return 1;
     }
     
@@ -836,11 +898,10 @@ static void write_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
     }
     
     // set send state
-    o->cstr = NCDVal_StringCstring(data_arg);
-    o->pos = 0;
+    o->data = NCDVal_StringMemRef(data_arg);
     
     // if there's nothing to send, go up immediately
-    if (o->cstr.length == 0) {
+    if (o->data.len == 0) {
         o->con_inst = NULL;
         NCDModuleInst_Backend_Up(i);
         return;
@@ -853,10 +914,8 @@ static void write_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
     con_inst->write_inst = o;
     
     // send
-    size_t chunk_len;
-    const char *chunk_data = b_cstring_get(o->cstr, o->pos, o->cstr.length - o->pos, &chunk_len);
-    size_t to_send = (chunk_len > INT_MAX ? INT_MAX : chunk_len);
-    StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&con_inst->connection), (uint8_t *)chunk_data, to_send);
+    size_t to_send = (o->data.len > INT_MAX) ? INT_MAX : o->data.len;
+    StreamPassInterface_Sender_Send(BConnection_SendAsync_GetIf(&con_inst->connection), (uint8_t *)o->data.ptr, to_send);
     return;
     
 fail0:
@@ -894,11 +953,11 @@ static void close_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
         goto fail0;
     }
     
-    // abort
-    connection_abort(con_inst);
-    
     // go up
     NCDModuleInst_Backend_Up(i);
+    
+    // abort
+    connection_abort(con_inst);
     return;
     
 fail0:
@@ -1006,7 +1065,7 @@ static int listen_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, N
     struct listen_instance *o = vo;
     
     if (name == NCD_STRING_IS_ERROR) {
-        *out = ncd_make_boolean(mem, o->have_error, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->have_error);
         return 1;
     }
     
@@ -1020,32 +1079,27 @@ static struct NCDModule modules[] = {
         .func_new2 = connect_func_new,
         .func_die = connect_func_die,
         .func_getvar2 = connect_func_getvar,
-        .alloc_size = sizeof(struct connection),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct connection)
     }, {
         .type = "sys.socket::read",
         .func_new2 = read_func_new,
         .func_die = read_func_die,
         .func_getvar2 = read_func_getvar,
-        .alloc_size = sizeof(struct read_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct read_instance)
     }, {
         .type = "sys.socket::write",
         .func_new2 = write_func_new,
         .func_die = write_func_die,
-        .alloc_size = sizeof(struct write_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct write_instance)
     }, {
         .type = "sys.socket::close",
-        .func_new2 = close_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = close_func_new
     }, {
         .type = "sys.listen",
         .func_new2 = listen_func_new,
         .func_die = listen_func_die,
         .func_getvar2 = listen_func_getvar,
-        .alloc_size = sizeof(struct listen_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct listen_instance)
     }, {
         .type = NULL
     }

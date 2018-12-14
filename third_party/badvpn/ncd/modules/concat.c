@@ -39,36 +39,18 @@
  *   themselves.
  */
 
-#include <stddef.h>
-#include <string.h>
+#include <misc/bsize.h>
+#include <ncd/extra/NCDRefString.h>
 
-#include <misc/balloc.h>
-#include <misc/offset.h>
-#include <misc/BRefTarget.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_concat.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-
-struct result {
-    BRefTarget ref_target;
-    size_t length;
-    char data[];
-};
-
 struct instance {
     NCDModuleInst *i;
-    struct result *result;
+    size_t length;
+    NCDRefString *refstr;
 };
-
-static void result_ref_target_func_release (BRefTarget *ref_target)
-{
-    struct result *result = UPPER_OBJECT(ref_target, struct result, ref_target);
-    
-    BFree(result);
-}
 
 static void new_concat_common (void *vo, NCDModuleInst *i, NCDValRef list)
 {
@@ -77,37 +59,37 @@ static void new_concat_common (void *vo, NCDModuleInst *i, NCDValRef list)
     o->i = i;
     
     size_t count = NCDVal_ListCount(list);
-    bsize_t result_size = bsize_fromsize(sizeof(struct result));
+    bsize_t result_size = bsize_fromsize(0);
     
     // check arguments and compute result size
     for (size_t j = 0; j < count; j++) {
         NCDValRef arg = NCDVal_ListGet(list, j);
-        
         if (!NCDVal_IsString(arg)) {
             ModuleLog(i, BLOG_ERROR, "wrong type");
             goto fail0;
         }
-        
         result_size = bsize_add(result_size, bsize_fromsize(NCDVal_StringLength(arg)));
     }
-    
-    // allocate result
-    o->result = BAllocSize(result_size);
-    if (!o->result) {
-        ModuleLog(i, BLOG_ERROR, "BAllocSize failed");
+    if (result_size.is_overflow) {
+        ModuleLog(i, BLOG_ERROR, "size overflow");
         goto fail0;
     }
     
-    // init ref target
-    BRefTarget_Init(&o->result->ref_target, result_ref_target_func_release);
+    // allocate result
+    char *result_data;
+    o->refstr = NCDRefString_New(result_size.value, &result_data);
+    if (!o->refstr) {
+        ModuleLog(i, BLOG_ERROR, "NCDRefString_New failed");
+        goto fail0;
+    }
     
     // copy data to result
-    o->result->length = 0;
+    o->length = 0;
     for (size_t j = 0; j < count; j++) {
         NCDValRef arg = NCDVal_ListGet(list, j);
-        b_cstring cstr = NCDVal_StringCstring(arg);
-        b_cstring_copy_to_buf(cstr, 0, cstr.length, o->result->data + o->result->length);
-        o->result->length += cstr.length;
+        MemRef mr = NCDVal_StringMemRef(arg);
+        MemRef_CopyOut(mr, result_data + o->length);
+        o->length += mr.len;
     }
     
     // signal up
@@ -147,7 +129,7 @@ static void func_die (void *vo)
     struct instance *o = vo;
     
     // release result reference
-    BRefTarget_Deref(&o->result->ref_target);
+    BRefTarget_Deref(NCDRefString_RefTarget(o->refstr));
     
     NCDModuleInst_Backend_Dead(o->i);
 }
@@ -157,7 +139,7 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
     struct instance *o = vo;
     
     if (name == NCD_STRING_EMPTY) {
-        *out = NCDVal_NewExternalString(mem, o->result->data, o->result->length, &o->result->ref_target);
+        *out = NCDVal_NewExternalString(mem, NCDRefString_GetBuf(o->refstr), o->length, NCDRefString_RefTarget(o->refstr));
         return 1;
     }
     
@@ -170,15 +152,13 @@ static struct NCDModule modules[] = {
         .func_new2 = func_new_concat,
         .func_die = func_die,
         .func_getvar2 = func_getvar2,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = "concatv",
         .func_new2 = func_new_concatv,
         .func_die = func_die,
         .func_getvar2 = func_getvar2,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = NULL
     }

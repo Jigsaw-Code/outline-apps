@@ -1,2 +1,1 @@
-add_library(arpprobe BArpProbe.c)
-target_link_libraries(arpprobe base system flow)
+badvpn_add_library(arpprobe "base;system;flow" "" BArpProbe.c)

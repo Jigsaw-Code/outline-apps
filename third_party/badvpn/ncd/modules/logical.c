@@ -46,13 +46,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_logical.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -71,12 +67,13 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             ModuleLog(o->i, BLOG_ERROR, "wrong arity");
             goto fail0;
         }
-        if (!NCDVal_IsString(arg)) {
-            ModuleLog(o->i, BLOG_ERROR, "wrong type");
+        int arg_val;
+        if (!ncd_read_boolean(arg, &arg_val)) {
+            ModuleLog(o->i, BLOG_ERROR, "bad argument");
             goto fail0;
         }
         
-        o->value = !ncd_read_boolean(arg);
+        o->value = !arg_val;
     } else {
         o->value = (is_or ? 0 : 1);
         
@@ -85,12 +82,12 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         for (size_t j = 0; j < count; j++) {
             NCDValRef arg = NCDVal_ListGet(params->args, j);
             
-            if (!NCDVal_IsString(arg)) {
-                ModuleLog(o->i, BLOG_ERROR, "wrong type");
+            int this_value;
+            if (!ncd_read_boolean(arg, &this_value)) {
+                ModuleLog(o->i, BLOG_ERROR, "bad argument");
                 goto fail0;
             }
             
-            int this_value = ncd_read_boolean(arg);
             if (is_or) {
                 o->value = o->value || this_value;
             } else {
@@ -127,7 +124,7 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
     struct instance *o = vo;
     
     if (name == NCD_STRING_EMPTY) {
-        *out = ncd_make_boolean(mem, o->value, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->value);
         return 1;
     }
     

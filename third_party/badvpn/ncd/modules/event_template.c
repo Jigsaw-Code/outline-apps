@@ -81,8 +81,8 @@ void event_template_new (event_template *o, NCDModuleInst *i, int blog_channel, 
     // init events lists
     LinkedList1_Init(&o->events_list);
     LinkedList1_Init(&o->free_list);
-    for (int i = 0; i < maxevents; i++) {
-        LinkedList1_Append(&o->free_list, &o->events[i].events_list_node);
+    for (int j = 0; j < maxevents; j++) {
+        LinkedList1_Append(&o->free_list, &o->events[j].events_list_node);
     }
     
     // set not enabled

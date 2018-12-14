@@ -42,29 +42,23 @@
 #include <string.h>
 #include <limits.h>
 
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_substr.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-
 struct substr_instance {
     NCDModuleInst *i;
-    const char *data;
-    size_t length;
+    MemRef data;
     int is_external;
     BRefTarget *external_ref_target;
 };
 
-static void substr_func_new_common (void *vo, NCDModuleInst *i, const char *data, size_t length, int is_external, BRefTarget *external_ref_target)
+static void substr_func_new_common (void *vo, NCDModuleInst *i, MemRef data, int is_external, BRefTarget *external_ref_target)
 {
     struct substr_instance *o = vo;
     o->i = i;
     
     o->data = data;
-    o->length = length;
     o->is_external = is_external;
     o->external_ref_target = external_ref_target;
     
@@ -77,9 +71,9 @@ static int substr_func_getvar (void *vo, NCD_string_id_t name, NCDValMem *mem, N
     
     if (name == NCD_STRING_EMPTY) {
         if (o->is_external) {
-            *out = NCDVal_NewExternalString(mem, o->data, o->length, o->external_ref_target);
+            *out = NCDVal_NewExternalString(mem, o->data.ptr, o->data.len, o->external_ref_target);
         } else {
-            *out = NCDVal_NewStringBin(mem, (const uint8_t *)o->data, o->length);
+            *out = NCDVal_NewStringBinMr(mem, o->data);
         }
         return 1;
     }
@@ -98,9 +92,7 @@ static void func_new_substr (void *vo, NCDModuleInst *i, const struct NCDModuleI
         ModuleLog(i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    if (!NCDVal_IsString(str_arg) || !NCDVal_IsString(start_arg) ||
-        (!NCDVal_IsInvalid(max_arg) && !NCDVal_IsString(max_arg))
-    ) {
+    if (!NCDVal_IsString(str_arg)) {
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
@@ -119,16 +111,15 @@ static void func_new_substr (void *vo, NCDModuleInst *i, const struct NCDModuleI
         }
     }
     
-    const char *str_data = NCDVal_StringData(str_arg);
-    size_t str_length = NCDVal_StringLength(str_arg);
+    MemRef str = NCDVal_StringMemRef(str_arg);
     
-    if (start > str_length) {
+    if (start > str.len) {
         ModuleLog(i, BLOG_ERROR, "start is beyond the end of the string");
         goto fail0;
     }
     
-    const char *sub_data = str_data + start;
-    size_t sub_length = str_length - start;
+    const char *sub_data = str.ptr + start;
+    size_t sub_length = str.len - start;
     if (sub_length > max) {
         sub_length = max;
     }
@@ -144,7 +135,7 @@ static void func_new_substr (void *vo, NCDModuleInst *i, const struct NCDModuleI
         is_external = 1;
     }
     
-    substr_func_new_common(vo, i, sub_data, sub_length, is_external, external_ref_target);
+    substr_func_new_common(vo, i, MemRef_Make(sub_data, sub_length), is_external, external_ref_target);
     return;
     
 fail0:

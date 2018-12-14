@@ -55,12 +55,11 @@
 #include <misc/parse_number.h>
 #include <structure/LinkedList1.h>
 #include <udevmonitor/NCDUdevManager.h>
-#include <ncd/NCDModule.h>
 #include <ncd/modules/event_template.h>
 
-#include <generated/blog_channel_ncd_sys_watch_usb.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_sys_watch_usb.h>
 
 struct device {
     char *devname;
@@ -284,8 +283,8 @@ static void client_handler (struct instance *o, char *devpath, int have_map, BSt
     if (!(subsystem && !strcmp(subsystem, "usb") &&
           devname &&
           devtype && !strcmp(devtype, "usb_device") &&
-          vendor_id_str && parse_unsigned_hex_integer(vendor_id_str, &vendor_id) &&
-          model_id_str && parse_unsigned_hex_integer(model_id_str, &model_id)
+          vendor_id_str && parse_unsigned_hex_integer(MemRef_MakeCstr(vendor_id_str), &vendor_id) &&
+          model_id_str && parse_unsigned_hex_integer(MemRef_MakeCstr(model_id_str), &model_id)
     )) {
         if (ex_device) {
             remove_device(o, ex_device);

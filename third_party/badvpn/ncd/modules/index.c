@@ -45,14 +45,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
 
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_index.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -77,10 +73,6 @@ static void func_new_from_value (void *vo, NCDModuleInst *i, const struct NCDMod
     NCDValRef arg_value;
     if (!NCDVal_ListRead(params->args, 1, &arg_value)) {
         ModuleLog(i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(arg_value)) {
-        ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     

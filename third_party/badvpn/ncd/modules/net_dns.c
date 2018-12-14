@@ -31,6 +31,7 @@
  * DNS servers module.
  * 
  * Synopsis: net.dns(list(string) servers, string priority)
+ * Synopsis: net.dns.resolvconf(list({string type, string value}) lines, string priority)
  */
 
 #include <stdlib.h>
@@ -41,25 +42,25 @@
 #include <misc/bsort.h>
 #include <misc/balloc.h>
 #include <misc/compare.h>
+#include <misc/concat_strings.h>
+#include <misc/expstring.h>
+#include <misc/ipaddr.h>
 #include <structure/LinkedList1.h>
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDIfConfig.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_dns.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleGlobal(i) ((i)->m->group->group_state)
-
 struct instance {
     NCDModuleInst *i;
-    LinkedList1 ipv4_dns_servers;
+    LinkedList1 entries;
     LinkedList1Node instances_node; // node in instances
 };
 
-struct ipv4_dns_entry {
-    LinkedList1Node list_node; // node in instance.ipv4_dns_servers
-    uint32_t addr;
+struct dns_entry {
+    LinkedList1Node list_node; // node in instance.entries
+    char *line;
     int priority;
 };
 
@@ -67,49 +68,62 @@ struct global {
     LinkedList1 instances;
 };
 
-static struct ipv4_dns_entry * add_ipv4_dns_entry (struct instance *o, uint32_t addr, int priority)
+static struct dns_entry * add_dns_entry (struct instance *o, const char *type, const char *value, int priority)
 {
     // allocate entry
-    struct ipv4_dns_entry *entry = malloc(sizeof(*entry));
+    struct dns_entry *entry = malloc(sizeof(*entry));
     if (!entry) {
-        return NULL;
+        goto fail0;
+    }
+    
+    // generate line
+    entry->line = concat_strings(4, type, " ", value, "\n");
+    if (!entry->line) {
+        goto fail1;
     }
     
     // set info
-    entry->addr = addr;
     entry->priority = priority;
     
     // add to list
-    LinkedList1_Append(&o->ipv4_dns_servers, &entry->list_node);
+    LinkedList1_Append(&o->entries, &entry->list_node);
     
     return entry;
+    
+fail1:
+    free(entry);
+fail0:
+    return NULL;
 }
 
-static void remove_ipv4_dns_entry (struct instance *o, struct ipv4_dns_entry *entry)
+static void remove_dns_entry (struct instance *o, struct dns_entry *entry)
 {
     // remove from list
-    LinkedList1_Remove(&o->ipv4_dns_servers, &entry->list_node);
+    LinkedList1_Remove(&o->entries, &entry->list_node);
+    
+    // free line
+    free(entry->line);
     
     // free entry
     free(entry);
 }
 
-static void remove_ipv4_dns_entries (struct instance *o)
+static void remove_entries (struct instance *o)
 {
     LinkedList1Node *n;
-    while (n = LinkedList1_GetFirst(&o->ipv4_dns_servers)) {
-        struct ipv4_dns_entry *e = UPPER_OBJECT(n, struct ipv4_dns_entry, list_node);
-        remove_ipv4_dns_entry(o, e);
+    while (n = LinkedList1_GetFirst(&o->entries)) {
+        struct dns_entry *e = UPPER_OBJECT(n, struct dns_entry, list_node);
+        remove_dns_entry(o, e);
     }
 }
 
-static size_t num_servers (struct global *g)
+static size_t count_entries (struct global *g)
 {
     size_t c = 0;
     
     for (LinkedList1Node *n = LinkedList1_GetFirst(&g->instances); n; n = LinkedList1Node_Next(n)) {
         struct instance *o = UPPER_OBJECT(n, struct instance, instances_node);
-        for (LinkedList1Node *en = LinkedList1_GetFirst(&o->ipv4_dns_servers); en; en = LinkedList1Node_Next(en)) {
+        for (LinkedList1Node *en = LinkedList1_GetFirst(&o->entries); en; en = LinkedList1Node_Next(en)) {
             c++;
         }
     }
@@ -118,7 +132,7 @@ static size_t num_servers (struct global *g)
 }
 
 struct dns_sort_entry {
-    uint32_t addr;
+    char *line;
     int priority;
 };
 
@@ -134,52 +148,53 @@ static int set_servers (struct global *g)
     int ret = 0;
     
     // count servers
-    size_t num_ipv4_dns_servers = num_servers(g);
+    size_t num_entries = count_entries(g);
     
     // allocate sort array
-    struct dns_sort_entry *servers = BAllocArray(num_ipv4_dns_servers, sizeof(servers[0]));
-    if (!servers) {
+    struct dns_sort_entry *sort_entries = BAllocArray(num_entries, sizeof(sort_entries[0]));
+    if (!sort_entries) {
         goto fail0;
     }
-    size_t num_servers = 0;
     
     // fill sort array
+    num_entries = 0;
     for (LinkedList1Node *n = LinkedList1_GetFirst(&g->instances); n; n = LinkedList1Node_Next(n)) {
         struct instance *o = UPPER_OBJECT(n, struct instance, instances_node);
-        for (LinkedList1Node *en = LinkedList1_GetFirst(&o->ipv4_dns_servers); en; en = LinkedList1Node_Next(en)) {
-            struct ipv4_dns_entry *e = UPPER_OBJECT(en, struct ipv4_dns_entry, list_node);
-            servers[num_servers].addr = e->addr;
-            servers[num_servers].priority= e->priority;
-            num_servers++;
+        for (LinkedList1Node *en = LinkedList1_GetFirst(&o->entries); en; en = LinkedList1Node_Next(en)) {
+            struct dns_entry *e = UPPER_OBJECT(en, struct dns_entry, list_node);
+            sort_entries[num_entries].line = e->line;
+            sort_entries[num_entries].priority= e->priority;
+            num_entries++;
         }
     }
-    ASSERT(num_servers == num_ipv4_dns_servers)
     
     // sort by priority
     // use a custom insertion sort instead of qsort() because we want a stable sort
-    struct dns_sort_entry sort_temp;
-    BInsertionSort(servers, num_servers, sizeof(servers[0]), dns_sort_comparator, &sort_temp);
+    struct dns_sort_entry temp;
+    BInsertionSort(sort_entries, num_entries, sizeof(sort_entries[0]), dns_sort_comparator, &temp);
     
-    // copy addresses into an array
-    uint32_t *addrs = BAllocArray(num_servers, sizeof(addrs[0]));
-    if (!addrs) {
+    ExpString estr;
+    if (!ExpString_Init(&estr)) {
         goto fail1;
     }
-    for (size_t i = 0; i < num_servers; i++) {
-        addrs[i] = servers[i].addr;
+    
+    for (size_t i = 0; i < num_entries; i++) {
+        if (!ExpString_Append(&estr, sort_entries[i].line)) {
+            goto fail2;
+        }
     }
     
     // set servers
-    if (!NCDIfConfig_set_dns_servers(addrs, num_servers)) {
+    if (!NCDIfConfig_set_resolv_conf(ExpString_Get(&estr), ExpString_Length(&estr))) {
         goto fail2;
     }
     
     ret = 1;
     
 fail2:
-    BFree(addrs);
+    ExpString_Free(&estr);
 fail1:
-    BFree(servers);
+    BFree(sort_entries);
 fail0:
     return ret;
 }
@@ -218,7 +233,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     o->i = i;
     
     // init servers list
-    LinkedList1_Init(&o->ipv4_dns_servers);
+    LinkedList1_Init(&o->entries);
     
     // get arguments
     NCDValRef servers_arg;
@@ -227,7 +242,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong arity");
         goto fail1;
     }
-    if (!NCDVal_IsList(servers_arg) || !NCDVal_IsString(priority_arg)) {
+    if (!NCDVal_IsList(servers_arg)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail1;
     }
@@ -249,12 +264,15 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         }
         
         uint32_t addr;
-        if (!ipaddr_parse_ipv4_addr_bin((char *)NCDVal_StringData(server_arg), NCDVal_StringLength(server_arg), &addr)) {
+        if (!ipaddr_parse_ipv4_addr(NCDVal_StringMemRef(server_arg), &addr)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong addr");
             goto fail1;
         }
         
-        if (!add_ipv4_dns_entry(o, addr, priority)) {
+        char addr_str[IPADDR_PRINT_MAX];
+        ipaddr_print_addr(addr, addr_str);
+        
+        if (!add_dns_entry(o, "nameserver", addr_str, priority)) {
             ModuleLog(o->i, BLOG_ERROR, "failed to add dns entry");
             goto fail1;
         }
@@ -276,7 +294,100 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 fail2:
     LinkedList1_Remove(&g->instances, &o->instances_node);
 fail1:
-    remove_ipv4_dns_entries(o);
+    remove_entries(o);
+    NCDModuleInst_Backend_DeadError(i);
+}
+
+static void func_new_resolvconf (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
+{
+    struct global *g = ModuleGlobal(i);
+    struct instance *o = vo;
+    o->i = i;
+    
+    // init servers list
+    LinkedList1_Init(&o->entries);
+    
+    // get arguments
+    NCDValRef lines_arg;
+    NCDValRef priority_arg;
+    if (!NCDVal_ListRead(params->args, 2, &lines_arg, &priority_arg)) {
+        ModuleLog(o->i, BLOG_ERROR, "wrong arity");
+        goto fail1;
+    }
+    if (!NCDVal_IsList(lines_arg)) {
+        ModuleLog(o->i, BLOG_ERROR, "wrong type");
+        goto fail1;
+    }
+    
+    uintmax_t priority;
+    if (!ncd_read_uintmax(priority_arg, &priority) || priority > INT_MAX) {
+        ModuleLog(o->i, BLOG_ERROR, "wrong priority");
+        goto fail1;
+    }
+    
+    // read lines
+    size_t count = NCDVal_ListCount(lines_arg);
+    for (size_t j = 0; j < count; j++) {
+        int loop_failed = 1;
+        
+        NCDValRef line = NCDVal_ListGet(lines_arg, j);
+        if (!NCDVal_IsList(line) || NCDVal_ListCount(line) != 2) {
+            ModuleLog(o->i, BLOG_ERROR, "lines element is not a list with two elements");
+            goto loop_fail0;
+        }
+        
+        NCDValRef type = NCDVal_ListGet(line, 0);
+        NCDValRef value = NCDVal_ListGet(line, 1);
+        if (!NCDVal_IsStringNoNulls(type) || !NCDVal_IsStringNoNulls(value)) {
+            ModuleLog(o->i, BLOG_ERROR, "wrong type of type or value");
+            goto loop_fail0;
+        }
+        
+        NCDValNullTermString type_nts;
+        if (!NCDVal_StringNullTerminate(type, &type_nts)) {
+            ModuleLog(o->i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
+            goto loop_fail0;
+        }
+        
+        NCDValNullTermString value_nts;
+        if (!NCDVal_StringNullTerminate(value, &value_nts)) {
+            ModuleLog(o->i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
+            goto loop_fail1;
+        }
+        
+        if (!add_dns_entry(o, type_nts.data, value_nts.data, priority)) {
+            ModuleLog(o->i, BLOG_ERROR, "failed to add dns entry");
+            goto loop_fail2;
+        }
+        
+        loop_failed = 0;
+    loop_fail2:
+        NCDValNullTermString_Free(&value_nts);
+    loop_fail1:
+        NCDValNullTermString_Free(&type_nts);
+    loop_fail0:
+        if (loop_failed) {
+            goto fail1;
+        }
+    }
+    
+    // add to instances
+    LinkedList1_Append(&g->instances, &o->instances_node);
+    
+    // set servers
+    if (!set_servers(g)) {
+        ModuleLog(o->i, BLOG_ERROR, "failed to set DNS servers");
+        goto fail2;
+    }
+    
+    // signal up
+    NCDModuleInst_Backend_Up(o->i);
+    return;
+    
+fail2:
+    LinkedList1_Remove(&g->instances, &o->instances_node);
+fail1:
+    remove_entries(o);
     NCDModuleInst_Backend_DeadError(i);
 }
 
@@ -292,7 +403,7 @@ static void func_die (void *vo)
     set_servers(g);
     
     // free servers
-    remove_ipv4_dns_entries(o);
+    remove_entries(o);
     
     NCDModuleInst_Backend_Dead(o->i);
 }
@@ -301,6 +412,11 @@ static struct NCDModule modules[] = {
     {
         .type = "net.dns",
         .func_new2 = func_new,
+        .func_die = func_die,
+        .alloc_size = sizeof(struct instance)
+    }, {
+        .type = "net.dns.resolvconf",
+        .func_new2 = func_new_resolvconf,
         .func_die = func_die,
         .alloc_size = sizeof(struct instance)
     }, {

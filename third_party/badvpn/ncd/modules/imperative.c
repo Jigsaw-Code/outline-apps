@@ -54,13 +54,10 @@
 
 #include <misc/string_begins_with.h>
 #include <misc/offset.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_imperative.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define STATE_INIT_WORKING 1
 #define STATE_INIT_CLEANING 2
@@ -247,8 +244,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         goto fail0;
     }
     if (!NCDVal_IsString(init_template_arg) || !NCDVal_IsList(init_args)  ||
-        !NCDVal_IsString(deinit_template_arg) || !NCDVal_IsList(o->deinit_args) ||
-        !NCDVal_IsString(deinit_timeout_arg)) {
+        !NCDVal_IsString(deinit_template_arg) || !NCDVal_IsList(o->deinit_args)) {
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }

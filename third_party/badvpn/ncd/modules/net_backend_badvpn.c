@@ -37,22 +37,19 @@
 #include <string.h>
 
 #include <misc/cmdline.h>
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDIfConfig.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_net_backend_badvpn.h>
 
 #define RETRY_TIME 5000
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-
 struct instance {
     NCDModuleInst *i;
     NCDValNullTermString ifname_nts;
-    const char *user;
-    size_t user_len;
-    const char *exec;
-    size_t exec_len;
+    NCDValNullTermString user_nts;
+    MemRef exec;
     NCDValRef args;
     int dying;
     int started;
@@ -73,7 +70,7 @@ void try_process (struct instance *o)
     }
     
     // append exec
-    if (!CmdLine_AppendNoNull(&c, o->exec, o->exec_len)) {
+    if (!CmdLine_AppendNoNullMr(&c, o->exec)) {
         goto fail1;
     }
     
@@ -86,7 +83,7 @@ void try_process (struct instance *o)
     size_t count = NCDVal_ListCount(o->args);
     for (size_t j = 0; j < count; j++) {
         NCDValRef arg = NCDVal_ListGet(o->args, j);
-        if (!CmdLine_AppendNoNull(&c, NCDVal_StringData(arg), NCDVal_StringLength(arg))) {
+        if (!CmdLine_AppendNoNullMr(&c, NCDVal_StringMemRef(arg))) {
             goto fail1;
         }
     }
@@ -97,7 +94,7 @@ void try_process (struct instance *o)
     }
     
     // start process
-    if (!BProcess_Init(&o->process, o->i->params->iparams->manager, (BProcess_handler)process_handler, o, ((char **)c.arr.v)[0], (char **)c.arr.v, o->user)) {
+    if (!BProcess_Init(&o->process, o->i->params->iparams->manager, (BProcess_handler)process_handler, o, ((char **)c.arr.v)[0], (char **)c.arr.v, o->user_nts.data)) {
         ModuleLog(o->i, BLOG_ERROR, "BProcess_Init failed");
         goto fail1;
     }
@@ -168,10 +165,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         goto fail0;
     }
     
-    o->user = NCDVal_StringData(user_arg);
-    o->user_len = NCDVal_StringLength(user_arg);
-    o->exec = NCDVal_StringData(exec_arg);
-    o->exec_len = NCDVal_StringLength(exec_arg);
+    o->exec = NCDVal_StringMemRef(exec_arg);
     o->args = args_arg;
     
     // check arguments
@@ -184,22 +178,28 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         }
     }
     
-    // null terminate ifname
-    if (!NCDVal_StringNullTerminate(ifname_arg, &o->ifname_nts)) {
+    // null terminate user
+    if (!NCDVal_StringNullTerminate(user_arg, &o->user_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
     
-    // create TAP device
-    if (!NCDIfConfig_make_tuntap(o->ifname_nts.data, o->user, 0)) {
-        ModuleLog(o->i, BLOG_ERROR, "failed to create TAP device");
+    // null terminate ifname
+    if (!NCDVal_StringNullTerminate(ifname_arg, &o->ifname_nts)) {
+        ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail1;
+    }
+    
+    // create TAP device
+    if (!NCDIfConfig_make_tuntap(o->ifname_nts.data, o->user_nts.data, 0)) {
+        ModuleLog(o->i, BLOG_ERROR, "failed to create TAP device");
+        goto fail2;
     }
     
     // set device up
     if (!NCDIfConfig_set_up(o->ifname_nts.data)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to set device up");
-        goto fail2;
+        goto fail3;
     }
     
     // set not dying
@@ -215,12 +215,14 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     try_process(o);
     return;
     
-fail2:
+fail3:
     if (!NCDIfConfig_remove_tuntap(o->ifname_nts.data, 0)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to remove TAP device");
     }
-fail1:
+fail2:
     NCDValNullTermString_Free(&o->ifname_nts);
+fail1:
+    NCDValNullTermString_Free(&o->user_nts);
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -244,6 +246,9 @@ void instance_free (struct instance *o)
     
     // free ifname nts
     NCDValNullTermString_Free(&o->ifname_nts);
+    
+    // free user nts
+    NCDValNullTermString_Free(&o->user_nts);
     
     NCDModuleInst_Backend_Dead(o->i);
 }

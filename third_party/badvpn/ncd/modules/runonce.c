@@ -41,7 +41,7 @@
  *     "term_on_deinit":"true" - If we get a deinit request while the process is
  *       running, send it SIGTERM.
  *     "keep_stdout":"true" - Start the program with the same stdout as the NCD process.
- *     "keep_stderr":true" - Start the program with the same stderr as the NCD process.
+ *     "keep_stderr":"true" - Start the program with the same stderr as the NCD process.
  *     "do_setsid":"true" - Call setsid() in the child before exec. This is needed to
  *       start the 'agetty' program.
  *     "username":username_string - Start the process under the permissions of the
@@ -57,13 +57,11 @@
 #include <misc/cmdline.h>
 #include <misc/strdup.h>
 #include <system/BProcess.h>
-#include <ncd/NCDModule.h>
-#include <ncd/extra/value_utils.h>
 #include <ncd/extra/NCDBProcessOpts.h>
 
-#include <generated/blog_channel_ncd_runonce.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_runonce.h>
 
 #define STATE_RUNNING 1
 #define STATE_RUNNING_DIE 2
@@ -126,9 +124,8 @@ static int build_cmdline (NCDModuleInst *i, NCDValRef cmd_arg, char **exec, CmdL
             goto fail2;
         }
         
-        b_cstring arg_cstr = NCDVal_StringCstring(arg);
-        if (!CmdLine_AppendCstring(cl, arg_cstr, 0, arg_cstr.length)) {
-            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendCstring failed");
+        if (!CmdLine_AppendNoNullMr(cl, NCDVal_StringMemRef(arg))) {
+            ModuleLog(i, BLOG_ERROR, "CmdLine_AppendNoNull failed");
             goto fail2;
         }
     }
@@ -177,7 +174,10 @@ static int opts_func_unknown (void *user, NCDValRef key, NCDValRef val)
     struct instance *o = user;
     
     if (NCDVal_IsString(key) && NCDVal_StringEquals(key, "term_on_deinit")) {
-        o->term_on_deinit = ncd_read_boolean(val);
+        if (!ncd_read_boolean(val, &o->term_on_deinit)) {
+            ModuleLog(o->i, BLOG_ERROR, "term_on_deinit: bad value");
+            return 0;
+        }
         return 1;
     }
     
@@ -319,8 +319,7 @@ static struct NCDModule modules[] = {
         .func_new2 = func_new,
         .func_die = func_die,
         .func_getvar = func_getvar,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = NULL
     }

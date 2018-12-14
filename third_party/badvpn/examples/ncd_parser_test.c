@@ -141,6 +141,30 @@ static int generate_val (NCDValue *value, ExpString *out_str)
             }
         } break;
         
+        case NCDVALUE_VAR: {
+            if (!ExpString_Append(out_str, NCDValue_VarName(value))) {
+                goto fail;
+            }
+        } break;
+        
+        case NCDVALUE_INVOC: {
+            if (!generate_val(NCDValue_InvocFunc(value), out_str)) {
+                goto fail;
+            }
+            
+            if (!ExpString_AppendChar(out_str, '(')) {
+                goto fail;
+            }
+            
+            if (!generate_val(NCDValue_InvocArg(value), out_str)) {
+                goto fail;
+            }
+            
+            if (!ExpString_AppendChar(out_str, ')')) {
+                goto fail;
+            }
+        } break;
+        
         default: ASSERT(0);
     }
     
@@ -229,7 +253,17 @@ static void print_block (NCDBlock *block, unsigned int indent)
                 print_block(NCDStatement_ForeachBlock(st), indent + 2);
             } break;
             
-            default: ASSERT(0);
+            case NCDSTATEMENT_BLOCK: {
+                print_indent(indent);
+                printf("block name=%s\n", name);
+                
+                print_block(NCDStatement_BlockBlock(st), indent + 2);
+            } break;
+            
+            default: {
+                print_indent(indent);
+                printf("unknown_statement_type name=%s\n", name);
+            } break;
         }
     }
 }

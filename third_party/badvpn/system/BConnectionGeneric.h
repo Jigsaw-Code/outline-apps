@@ -34,6 +34,7 @@
 
 #include <misc/debug.h>
 #include <misc/strdup.h>
+#include <misc/memref.h>
 #include <base/BLog.h>
 #include <system/BConnection.h>
 
@@ -59,12 +60,12 @@ static struct BConnection_addr BConnection_addr_baddr (BAddr baddr)
     return addr;
 }
 
-static struct BConnection_addr BConnection_addr_unix (const char *unix_socket_path, size_t len)
+static struct BConnection_addr BConnection_addr_unix (MemRef unix_socket_path)
 {
     struct BConnection_addr addr;
     addr.type = BCONNECTION_ADDR_TYPE_UNIX;
-    addr.u.unix_socket_path.str = unix_socket_path;
-    addr.u.unix_socket_path.len = len;
+    addr.u.unix_socket_path.str = unix_socket_path.ptr;
+    addr.u.unix_socket_path.len = unix_socket_path.len;
     return addr;
 }
 

@@ -1,3 +1,1 @@
-add_library(stringmap
-    BStringMap.c
-)
+badvpn_add_library(stringmap "" "" BStringMap.c)

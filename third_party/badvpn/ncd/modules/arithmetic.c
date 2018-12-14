@@ -60,7 +60,11 @@
  *   If any of these restrictions is violated, an error is triggered.
  * 
  * Variables:
- *   (empty) - the result of the operation as a string representing a decimal number
+ *   is_error - whether there was an arithmetic error with the operation (true/false).
+ *   (empty) - the result of the operation as a string representing a decimal number.
+ *             If an attempt is made to access this variable after an arithmetic error,
+ *             the variable resolution will fail, and an error will be logged including
+ *             information about the particular arithemtic error.
  */
 
 #include <stdio.h>
@@ -70,13 +74,10 @@
 #include <limits.h>
 
 #include <misc/parse_number.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_arithmetic.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct boolean_instance {
     NCDModuleInst *i;
@@ -87,10 +88,11 @@ typedef int (*boolean_compute_func) (uintmax_t n1, uintmax_t n2);
 
 struct number_instance {
     NCDModuleInst *i;
+    char const *error;
     uintmax_t value;
 };
 
-typedef int (*number_compute_func) (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out);
+typedef char const * (*number_compute_func) (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out);
 
 static int compute_lesser (uintmax_t n1, uintmax_t n2)
 {
@@ -122,54 +124,49 @@ static int compute_different (uintmax_t n1, uintmax_t n2)
     return n1 != n2;
 }
 
-static int compute_add (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
+static char const * compute_add (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
 {
     if (n1 > UINTMAX_MAX - n2) {
-        ModuleLog(i, BLOG_ERROR, "addition overflow");
-        return 0;
+        return "addition overflow";
     }
     *out = n1 + n2;
-    return 1;
+    return NULL;
 }
 
-static int compute_subtract (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
+static char const * compute_subtract (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
 {
     if (n1 < n2) {
-        ModuleLog(i, BLOG_ERROR, "subtraction underflow");
-        return 0;
+        return "subtraction underflow";
     }
     *out = n1 - n2;
-    return 1;
+    return NULL;
 }
 
-static int compute_multiply (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
+static char const * compute_multiply (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
 {
-    if (n1 > UINTMAX_MAX / n2) {
-        ModuleLog(i, BLOG_ERROR, "multiplication overflow");
-        return 0;
+    if (n2 != 0 && n1 > UINTMAX_MAX / n2) {
+        return "multiplication overflow";
     }
     *out = n1 * n2;
-    return 1;
+    return NULL;
 }
 
-static int compute_divide (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
+static char const * compute_divide (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
 {
     if (n2 == 0) {
-        ModuleLog(i, BLOG_ERROR, "division quotient is zero");
-        return 0;
+        return "division quotient is zero";
     }
     *out = n1 / n2;
-    return 1;
+    return NULL;
 }
 
-static int compute_modulo (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
+static char const * compute_modulo (NCDModuleInst *i, uintmax_t n1, uintmax_t n2, uintmax_t *out)
 {
     if (n2 == 0) {
-        ModuleLog(i, BLOG_ERROR, "modulo modulus is zero");
-        return 0;
+        return "modulo modulus is zero";
     }
     *out = n1 % n2;
-    return 1;
+    return NULL;
 }
 
 static void new_boolean_templ (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params, boolean_compute_func cfunc)
@@ -181,10 +178,6 @@ static void new_boolean_templ (void *vo, NCDModuleInst *i, const struct NCDModul
     NCDValRef n2_arg;
     if (!NCDVal_ListRead(params->args, 2, &n1_arg, &n2_arg)) {
         ModuleLog(i, BLOG_ERROR, "wrong arity");
-        goto fail0;
-    }
-    if (!NCDVal_IsString(n1_arg) || !NCDVal_IsString(n2_arg)) {
-        ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
     
@@ -214,7 +207,7 @@ static int boolean_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem,
     struct boolean_instance *o = vo;
     
     if (name == NCD_STRING_EMPTY) {
-        *out = ncd_make_boolean(mem, o->value, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->value);
         return 1;
     }
     
@@ -232,10 +225,6 @@ static void new_number_templ (void *vo, NCDModuleInst *i, const struct NCDModule
         ModuleLog(i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    if (!NCDVal_IsString(n1_arg) || !NCDVal_IsString(n2_arg)) {
-        ModuleLog(o->i, BLOG_ERROR, "wrong type");
-        goto fail0;
-    }
     
     uintmax_t n1;
     if (!ncd_read_uintmax(n1_arg, &n1)) {
@@ -249,9 +238,7 @@ static void new_number_templ (void *vo, NCDModuleInst *i, const struct NCDModule
         goto fail0;
     }
     
-    if (!cfunc(i, n1, n2, &o->value)) {
-        goto fail0;
-    }
+    o->error = cfunc(i, n1, n2, &o->value);
     
     NCDModuleInst_Backend_Up(i);
     return;
@@ -264,7 +251,16 @@ static int number_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, 
 {
     struct number_instance *o = vo;
     
+    if (name == NCD_STRING_IS_ERROR) {
+        *out = ncd_make_boolean(mem, !!o->error);
+        return 1;
+    }
+    
     if (name == NCD_STRING_EMPTY) {
+        if (o->error) {
+            ModuleLog(o->i, BLOG_ERROR, "%s", o->error);
+            return 0;
+        }
         *out = ncd_make_uintmax(mem, o->value);
         return 1;
     }
@@ -332,68 +328,57 @@ static struct NCDModule modules[] = {
         .type = "num_lesser",
         .func_new2 = func_new_lesser,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_greater",
         .func_new2 = func_new_greater,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_lesser_equal",
         .func_new2 = func_new_lesser_equal,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_greater_equal",
         .func_new2 = func_new_greater_equal,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_equal",
         .func_new2 = func_new_equal,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_different",
         .func_new2 = func_new_different,
         .func_getvar2 = boolean_func_getvar2,
-        .alloc_size = sizeof(struct boolean_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct boolean_instance)
     }, {
         .type = "num_add",
         .func_new2 = func_new_add,
         .func_getvar2 = number_func_getvar2,
-        .alloc_size = sizeof(struct number_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct number_instance)
     }, {
         .type = "num_subtract",
         .func_new2 = func_new_subtract,
         .func_getvar2 = number_func_getvar2,
-        .alloc_size = sizeof(struct number_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct number_instance)
     }, {
         .type = "num_multiply",
         .func_new2 = func_new_multiply,
         .func_getvar2 = number_func_getvar2,
-        .alloc_size = sizeof(struct number_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct number_instance)
     }, {
         .type = "num_divide",
         .func_new2 = func_new_divide,
         .func_getvar2 = number_func_getvar2,
-        .alloc_size = sizeof(struct number_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct number_instance)
     }, {
         .type = "num_modulo",
         .func_new2 = func_new_modulo,
         .func_getvar2 = number_func_getvar2,
-        .alloc_size = sizeof(struct number_instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct number_instance)
     }, {
         .type = NULL
     }

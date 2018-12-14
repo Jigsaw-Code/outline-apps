@@ -74,12 +74,10 @@
 #include <misc/debug.h>
 #include <misc/balloc.h>
 #include <structure/LinkedList1.h>
-#include <ncd/NCDModule.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_multidepend.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleGlobal(i) ((i)->m->group->group_state)
 
 struct provide {
     NCDModuleInst *i;

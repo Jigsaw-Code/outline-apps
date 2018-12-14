@@ -1,36 +1,37 @@
 #include <stddef.h>
 
 #include <misc/debug.h>
+#include <misc/memref.h>
 
-static void build_substring_backtrack_table (const char *str, size_t len, size_t *out_table)
+static void build_substring_backtrack_table (MemRef str, size_t *out_table)
 {
-    ASSERT(len > 0)
+    ASSERT(str.len > 0)
     
     size_t x = 0;
     
-    for (size_t i = 1; i < len; i++) {
+    for (size_t i = 1; i < str.len; i++) {
         out_table[i] = x;
-        while (x > 0 && str[i] != str[x]) {
+        while (x > 0 && str.ptr[i] != str.ptr[x]) {
             x = out_table[x];
         }
-        if (str[i] == str[x]) {
+        if (str.ptr[i] == str.ptr[x]) {
             x++;
         }
     }
 }
 
-static int find_substring (const char *text, size_t text_len, const char *word, size_t word_len, const size_t *table, size_t *out_position)
+static int find_substring (MemRef text, MemRef word, const size_t *table, size_t *out_position)
 {
-    ASSERT(word_len > 0)
+    ASSERT(word.len > 0)
     
     size_t x = 0;
     
-    for (size_t i = 0; i < text_len; i++) {
-        while (x > 0 && text[i] != word[x]) {
+    for (size_t i = 0; i < text.len; i++) {
+        while (x > 0 && text.ptr[i] != word.ptr[x]) {
             x = table[x];
         }
-        if (text[i] == word[x]) {
-            if (x + 1 == word_len) {
+        if (text.ptr[i] == word.ptr[x]) {
+            if (x + 1 == word.len) {
                 *out_position = i - x;
                 return 1;
             }
@@ -41,36 +42,36 @@ static int find_substring (const char *text, size_t text_len, const char *word, 
     return 0;
 }
 
-static void build_substring_backtrack_table_reverse (const char *str, size_t len, size_t *out_table)
+static void build_substring_backtrack_table_reverse (MemRef str, size_t *out_table)
 {
-    ASSERT(len > 0)
+    ASSERT(str.len > 0)
     
     size_t x = 0;
     
-    for (size_t i = 1; i < len; i++) {
+    for (size_t i = 1; i < str.len; i++) {
         out_table[i] = x;
-        while (x > 0 && str[len - 1 - i] != str[len - 1 - x]) {
+        while (x > 0 && str.ptr[str.len - 1 - i] != str.ptr[str.len - 1 - x]) {
             x = out_table[x];
         }
-        if (str[len - 1 - i] == str[len - 1 - x]) {
+        if (str.ptr[str.len - 1 - i] == str.ptr[str.len - 1 - x]) {
             x++;
         }
     }
 }
 
-static int find_substring_reverse (const char *text, size_t text_len, const char *word, size_t word_len, const size_t *table, size_t *out_position)
+static int find_substring_reverse (MemRef text, MemRef word, const size_t *table, size_t *out_position)
 {
-    ASSERT(word_len > 0)
+    ASSERT(word.len > 0)
     
     size_t x = 0;
     
-    for (size_t i = 0; i < text_len; i++) {
-        while (x > 0 && text[text_len - 1 - i] != word[word_len - 1 - x]) {
+    for (size_t i = 0; i < text.len; i++) {
+        while (x > 0 && text.ptr[text.len - 1 - i] != word.ptr[word.len - 1 - x]) {
             x = table[x];
         }
-        if (text[text_len - 1 - i] == word[word_len - 1 - x]) {
-            if (x + 1 == word_len) {
-                *out_position = (text_len - 1 - i);
+        if (text.ptr[text.len - 1 - i] == word.ptr[word.len - 1 - x]) {
+            if (x + 1 == word.len) {
+                *out_position = (text.len - 1 - i);
                 return 1;
             }
             x++;

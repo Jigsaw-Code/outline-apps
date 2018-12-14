@@ -43,13 +43,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_choose.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 struct instance {
     NCDModuleInst *i;
@@ -92,13 +88,14 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             ModuleLog(i, BLOG_ERROR, "wrong choice contents arity");
             goto fail0;
         }
-        if (!NCDVal_IsString(c_cond)) {
-            ModuleLog(i, BLOG_ERROR, "wrong choice condition type");
+        int c_cond_val;
+        if (!ncd_read_boolean(c_cond, &c_cond_val)) {
+            ModuleLog(i, BLOG_ERROR, "wrong choice condition");
             goto fail0;
         }
         
         // update result
-        if (!have_result && ncd_read_boolean(c_cond)) {
+        if (!have_result && c_cond_val) {
             o->result = c_result;
             have_result = 1;
         }

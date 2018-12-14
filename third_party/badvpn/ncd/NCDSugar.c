@@ -41,7 +41,9 @@ struct desugar_state {
 static int add_template (struct desugar_state *state, NCDBlock block, NCDValue *out_name_val);
 static int desugar_block (struct desugar_state *state, NCDBlock *block);
 static int desugar_if (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next);
+static int desugar_do (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next);
 static int desugar_foreach (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next);
+static int desugar_blockstmt (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next);
 
 static int add_template (struct desugar_state *state, NCDBlock block, NCDValue *out_name_val)
 {
@@ -86,7 +88,16 @@ static int desugar_block (struct desugar_state *state, NCDBlock *block)
             } break;
             
             case NCDSTATEMENT_IF: {
-                if (!desugar_if(state, block, stmt, &stmt)) {
+                int iftype = NCDStatement_IfType(stmt);
+                
+                int res = 0;
+                if (iftype == NCDIFTYPE_IF) {
+                    res = desugar_if(state, block, stmt, &stmt);
+                } else if (iftype == NCDIFTYPE_DO) {
+                    res = desugar_do(state, block, stmt, &stmt);
+                }
+                
+                if (!res) {
                     return 0;
                 }
             } break;
@@ -97,7 +108,15 @@ static int desugar_block (struct desugar_state *state, NCDBlock *block)
                 }
             } break;
             
-            default: ASSERT(0);
+            case NCDSTATEMENT_BLOCK: {
+                if (!desugar_blockstmt(state, block, stmt, &stmt)) {
+                    return 0;
+                }
+            } break;
+            
+            default: {
+                return 0;
+            } break;
         }
     }
     
@@ -107,6 +126,7 @@ static int desugar_block (struct desugar_state *state, NCDBlock *block)
 static int desugar_if (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next)
 {
     ASSERT(NCDStatement_Type(stmt) == NCDSTATEMENT_IF)
+    ASSERT(NCDStatement_IfType(stmt) == NCDIFTYPE_IF)
     
     NCDValue args;
     NCDValue_InitList(&args);
@@ -123,37 +143,63 @@ static int desugar_if (struct desugar_state *state, NCDBlock *block, NCDStatemen
         if (!NCDValue_ListAppend(&args, if_cond)) {
             NCDValue_Free(&if_cond);
             NCDBlock_Free(&if_block);
-            goto fail;
+            goto fail_args;
         }
         
         NCDValue action_arg;
         if (!add_template(state, if_block, &action_arg)) {
-            goto fail;
+            goto fail_args;
         }
         
         if (!NCDValue_ListAppend(&args, action_arg)) {
             NCDValue_Free(&action_arg);
-            goto fail;
+            goto fail_args;
         }
     }
+    
+    NCDValue action_arg;
     
     if (NCDStatement_IfElse(stmt)) {
         NCDBlock else_block = NCDStatement_IfGrabElse(stmt);
         
-        NCDValue action_arg;
         if (!add_template(state, else_block, &action_arg)) {
-            goto fail;
+            goto fail_args;
         }
-        
-        if (!NCDValue_ListAppend(&args, action_arg)) {
-            NCDValue_Free(&action_arg);
-            goto fail;
+    } else {
+        if (!NCDValue_InitString(&action_arg, "<none>")) {
+            goto fail_args;
         }
     }
     
+    if (!NCDValue_ListAppend(&args, action_arg)) {
+        NCDValue_Free(&action_arg);
+        goto fail_args;
+    }
+    
+    NCDValue func;
+    if (!NCDValue_InitString(&func, "ifel")) {
+        goto fail_args;
+    }
+    
+    NCDValue invoc;
+    if (!NCDValue_InitInvoc(&invoc, func, args)) {
+        NCDValue_Free(&func);
+        goto fail_args;
+    }
+    
+    NCDValue stmt_args;
+    NCDValue_InitList(&stmt_args);
+    
+    if (!NCDValue_ListAppend(&stmt_args, invoc)) {
+        NCDValue_Free(&stmt_args);
+        NCDValue_Free(&invoc);
+        goto fail0;
+    }
+    
     NCDStatement new_stmt;
-    if (!NCDStatement_InitReg(&new_stmt, NCDStatement_Name(stmt), NULL, "embcall2_multif", args)) {
-        goto fail;
+    if (!NCDStatement_InitReg(&new_stmt, NCDStatement_Name(stmt), NULL, "embcall", stmt_args)) {
+        NCDValue_Free(&stmt_args);
+        goto fail0;
     }
     
     stmt = NCDBlock_ReplaceStatement(block, stmt, new_stmt);
@@ -161,8 +207,50 @@ static int desugar_if (struct desugar_state *state, NCDBlock *block, NCDStatemen
     *out_next = NCDBlock_NextStatement(block, stmt);
     return 1;
     
-fail:
+fail_args:
     NCDValue_Free(&args);
+fail0:
+    return 0;
+}
+
+
+static int desugar_do (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next)
+{
+    ASSERT(NCDStatement_Type(stmt) == NCDSTATEMENT_IF)
+    ASSERT(NCDStatement_IfType(stmt) == NCDIFTYPE_DO)
+    
+    NCDIfBlock *ifblock = NCDStatement_IfBlock(stmt);
+    
+    NCDValue stmt_args;
+    NCDValue_InitList(&stmt_args);
+    
+    while (NCDIfBlock_FirstIf(ifblock)) {
+        NCDIf the_if = NCDIfBlock_GrabIf(ifblock, NCDIfBlock_FirstIf(ifblock));
+        NCDBlock if_block = NCDIf_FreeGrabBlock(&the_if);
+        
+        NCDValue action_arg;
+        if (!add_template(state, if_block, &action_arg)) {
+            goto fail1;
+        }
+        
+        if (!NCDValue_ListAppend(&stmt_args, action_arg)) {
+            NCDValue_Free(&action_arg);
+            goto fail1;
+        }
+    }
+    
+    NCDStatement new_stmt;
+    if (!NCDStatement_InitReg(&new_stmt, NCDStatement_Name(stmt), NULL, "do", stmt_args)) {
+        goto fail1;
+    }
+    
+    stmt = NCDBlock_ReplaceStatement(block, stmt, new_stmt);
+    
+    *out_next = NCDBlock_NextStatement(block, stmt);
+    return 1;
+    
+fail1:
+    NCDValue_Free(&stmt_args);
     return 0;
 }
 
@@ -218,6 +306,40 @@ static int desugar_foreach (struct desugar_state *state, NCDBlock *block, NCDSta
     
     NCDStatement new_stmt;
     if (!NCDStatement_InitReg(&new_stmt, NCDStatement_Name(stmt), NULL, "foreach_emb", args)) {
+        goto fail;
+    }
+    
+    stmt = NCDBlock_ReplaceStatement(block, stmt, new_stmt);
+    
+    *out_next = NCDBlock_NextStatement(block, stmt);
+    return 1;
+    
+fail:
+    NCDValue_Free(&args);
+    return 0;
+}
+
+static int desugar_blockstmt (struct desugar_state *state, NCDBlock *block, NCDStatement *stmt, NCDStatement **out_next)
+{
+    ASSERT(NCDStatement_Type(stmt) == NCDSTATEMENT_BLOCK)
+    
+    NCDValue args;
+    NCDValue_InitList(&args);
+    
+    NCDBlock block_block = NCDStatement_BlockGrabBlock(stmt);
+    
+    NCDValue template_arg;
+    if (!add_template(state, block_block, &template_arg)) {
+        goto fail;
+    }
+    
+    if (!NCDValue_ListAppend(&args, template_arg)) {
+        NCDValue_Free(&template_arg);
+        goto fail;
+    }
+    
+    NCDStatement new_stmt;
+    if (!NCDStatement_InitReg(&new_stmt, NCDStatement_Name(stmt), NULL, "inline_code", args)) {
         goto fail;
     }
     

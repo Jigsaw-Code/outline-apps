@@ -1,6 +1,6 @@
-add_library(predicate
+set(PREDICATE_SOURCES
     BPredicate.c
     ${PROJECT_SOURCE_DIR}/generated/flex_BPredicate.c
     ${PROJECT_SOURCE_DIR}/generated/bison_BPredicate.c
 )
-target_link_libraries(predicate system)
+badvpn_add_library(predicate "system" "" "${PREDICATE_SOURCES}")

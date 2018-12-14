@@ -1,4 +1,1 @@
-add_library(socksclient
-    BSocksClient.c
-)
-target_link_libraries(socksclient system flow flowextra)
+badvpn_add_library(socksclient "system;flow;flowextra" "" BSocksClient.c)

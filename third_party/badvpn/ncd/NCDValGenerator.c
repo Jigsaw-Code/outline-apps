@@ -45,14 +45,12 @@ static int generate_val (NCDValRef value, ExpString *out_str)
     
     switch (NCDVal_Type(value)) {
         case NCDVAL_STRING: {
-            b_cstring cstr = NCDVal_StringCstring(value);
-            
             if (!ExpString_AppendChar(out_str, '"')) {
                 BLog(BLOG_ERROR, "ExpString_AppendChar failed");
                 goto fail;
             }
             
-            B_CSTRING_LOOP_CHARS(cstr, char_pos, ch, {
+            MEMREF_LOOP_CHARS(NCDVal_StringMemRef(value), char_pos, ch, {
                 if (ch == '\0') {
                     char buf[5];
                     snprintf(buf, sizeof(buf), "\\x%02"PRIx8, (uint8_t)ch);

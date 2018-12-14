@@ -54,12 +54,11 @@
 #include <misc/bsize.h>
 #include <structure/LinkedList1.h>
 #include <udevmonitor/NCDUdevManager.h>
-#include <ncd/NCDModule.h>
 #include <ncd/modules/event_template.h>
 
-#include <generated/blog_channel_ncd_net_watch_interfaces.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_net_watch_interfaces.h>
 
 #define DEVPATH_REGEX "/net/[^/]+$"
 #define DEVPATH_USB_REGEX "/usb[^/]*(/[^/]+)+/([^/]+)/net/[^/]+$"
@@ -313,7 +312,7 @@ static void client_handler (struct instance *o, char *devpath, int have_map, BSt
     const char *ifindex_str = BStringMap_Get(cache_map, "IFINDEX");
     
     uintmax_t ifindex;
-    if (!(!match_res && interface && ifindex_str && parse_unsigned_integer(ifindex_str, &ifindex))) {
+    if (!(!match_res && interface && ifindex_str && parse_unsigned_integer(MemRef_MakeCstr(ifindex_str), &ifindex))) {
         if (ex_device) {
             remove_device(o, ex_device);
         }

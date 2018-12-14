@@ -39,7 +39,7 @@
 #include <ncd/NCDStringIndex.h>
 #include <ncd/NCDModuleIndex.h>
 #include <ncd/NCDAst.h>
-#include <ncd/NCDPlaceholderDb.h>
+#include <ncd/NCDEvaluator.h>
 #include <ncd/NCDInterpProg.h>
 #include <ncd/NCDModule.h>
 #include <structure/LinkedList1.h>
@@ -103,8 +103,8 @@ typedef struct {
     // program AST
     NCDProgram program;
 
-    // placeholder database
-    NCDPlaceholderDb placeholder_db;
+    // expression evaluator
+    NCDEvaluator evaluator;
 
     // structure for efficient interpretation
     NCDInterpProg iprogram;
@@ -112,6 +112,7 @@ typedef struct {
     // common module parameters
     struct NCDModuleInst_params module_params;
     struct NCDModuleInst_iparams module_iparams;
+    struct NCDCall_interp_shared module_call_shared;
     
     // processes
     LinkedList1 processes;

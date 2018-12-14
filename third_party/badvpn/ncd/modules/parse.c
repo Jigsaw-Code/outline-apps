@@ -30,6 +30,7 @@
  * 
  * Synopsis:
  *   parse_number(string str)
+ *   parse_hex_number(string str)
  *   parse_value(string str)
  *   parse_ipv4_addr(string str)
  *   parse_ipv6_addr(string str)
@@ -57,14 +58,10 @@
 #include <misc/ipaddr.h>
 #include <misc/ipaddr6.h>
 #include <ncd/NCDValParser.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_parse.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
-#define ModuleString(i, id) ((i)->m->group->strings[(id)])
 
 struct instance {
     NCDModuleInst *i;
@@ -91,12 +88,12 @@ static const char *strings[] = {
     "addr", "prefix", NULL
 };
 
-typedef int (*parse_func) (NCDModuleInst *i, const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out);
+typedef int (*parse_func) (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out);
 
-static int parse_number (NCDModuleInst *i, const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out)
+static int parse_number (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out)
 {
     uintmax_t n;
-    if (!parse_unsigned_integer_bin(str, str_len, &n)) {
+    if (!parse_unsigned_integer(str, &n)) {
         ModuleLog(i, BLOG_ERROR, "failed to parse number");
         return 0;
     }
@@ -109,9 +106,25 @@ static int parse_number (NCDModuleInst *i, const char *str, size_t str_len, NCDV
     return 1;
 }
 
-static int parse_value (NCDModuleInst *i, const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out)
+static int parse_hex_number (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out)
 {
-    if (!NCDValParser_Parse(str, str_len, mem, out)) {
+    uintmax_t n;
+    if (!parse_unsigned_hex_integer(str, &n)) {
+        ModuleLog(i, BLOG_ERROR, "failed to parse hex number");
+        return 0;
+    }
+    
+    *out = ncd_make_uintmax(mem, n);
+    if (NCDVal_IsInvalid(*out)) {
+        return 0;
+    }
+    
+    return 1;
+}
+
+static int parse_value (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out)
+{
+    if (!NCDValParser_Parse(str, mem, out)) {
         ModuleLog(i, BLOG_ERROR, "failed to parse value");
         return 0;
     }
@@ -119,10 +132,10 @@ static int parse_value (NCDModuleInst *i, const char *str, size_t str_len, NCDVa
     return 1;
 }
 
-static int parse_ipv4_addr (NCDModuleInst *i, const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out)
+static int parse_ipv4_addr (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out)
 {
     uint32_t addr;
-    if (!ipaddr_parse_ipv4_addr_bin(str, str_len, &addr)) {
+    if (!ipaddr_parse_ipv4_addr(str, &addr)) {
         ModuleLog(i, BLOG_ERROR, "failed to parse ipv4 addresss");
         return 0;
     }
@@ -138,10 +151,10 @@ static int parse_ipv4_addr (NCDModuleInst *i, const char *str, size_t str_len, N
     return 1;
 }
 
-static int parse_ipv6_addr (NCDModuleInst *i, const char *str, size_t str_len, NCDValMem *mem, NCDValRef *out)
+static int parse_ipv6_addr (NCDModuleInst *i, MemRef str, NCDValMem *mem, NCDValRef *out)
 {
     struct ipv6_addr addr;
-    if (!ipaddr6_parse_ipv6_addr_bin(str, str_len, &addr)) {
+    if (!ipaddr6_parse_ipv6_addr(str, &addr)) {
         ModuleLog(i, BLOG_ERROR, "failed to parse ipv6 addresss");
         return 0;
     }
@@ -174,10 +187,10 @@ static void new_templ (void *vo, NCDModuleInst *i, const struct NCDModuleInst_ne
     }
     
     // init mem
-    NCDValMem_Init(&o->mem);
+    NCDValMem_Init(&o->mem, i->params->iparams->string_index);
     
     // parse
-    o->succeeded = pfunc(i, NCDVal_StringData(str_arg), NCDVal_StringLength(str_arg), &o->mem, &o->value);
+    o->succeeded = pfunc(i, NCDVal_StringMemRef(str_arg), &o->mem, &o->value);
     
     // signal up
     NCDModuleInst_Backend_Up(i);
@@ -202,7 +215,7 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
     struct instance *o = vo;
     
     if (name == NCD_STRING_SUCCEEDED) {
-        *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->succeeded);
         return 1;
     }
     
@@ -217,6 +230,11 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
 static void func_new_parse_number (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
     new_templ(vo, i, params, parse_number);
+}
+
+static void func_new_parse_hex_number (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
+{
+    new_templ(vo, i, params, parse_hex_number);
 }
 
 static void func_new_parse_value (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
@@ -249,7 +267,7 @@ static void ipv4_cidr_addr_func_new (void *vo, NCDModuleInst *i, const struct NC
         goto fail0;
     }
     
-    o->succeeded = ipaddr_parse_ipv4_ifaddr_bin(NCDVal_StringData(str_arg), NCDVal_StringLength(str_arg), &o->ifaddr);
+    o->succeeded = ipaddr_parse_ipv4_ifaddr(NCDVal_StringMemRef(str_arg), &o->ifaddr);
     
     NCDModuleInst_Backend_Up(i);
     return;
@@ -263,7 +281,7 @@ static int ipv4_cidr_addr_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMe
     struct ipv4_cidr_instance *o = vo;
     
     if (name == NCD_STRING_SUCCEEDED) {
-        *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->succeeded);
         return 1;
     }
     
@@ -305,7 +323,7 @@ static void ipv6_cidr_addr_func_new (void *vo, NCDModuleInst *i, const struct NC
         goto fail0;
     }
     
-    o->succeeded = ipaddr6_parse_ipv6_ifaddr_bin(NCDVal_StringData(str_arg), NCDVal_StringLength(str_arg), &o->ifaddr);
+    o->succeeded = ipaddr6_parse_ipv6_ifaddr(NCDVal_StringMemRef(str_arg), &o->ifaddr);
     
     NCDModuleInst_Backend_Up(i);
     return;
@@ -319,7 +337,7 @@ static int ipv6_cidr_addr_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMe
     struct ipv6_cidr_instance *o = vo;
     
     if (name == NCD_STRING_SUCCEEDED) {
-        *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
+        *out = ncd_make_boolean(mem, o->succeeded);
         return 1;
     }
     
@@ -350,6 +368,12 @@ static struct NCDModule modules[] = {
     {
         .type = "parse_number",
         .func_new2 = func_new_parse_number,
+        .func_die = func_die,
+        .func_getvar2 = func_getvar2,
+        .alloc_size = sizeof(struct instance)
+    }, {
+        .type = "parse_hex_number",
+        .func_new2 = func_new_parse_hex_number,
         .func_die = func_die,
         .func_getvar2 = func_getvar2,
         .alloc_size = sizeof(struct instance)

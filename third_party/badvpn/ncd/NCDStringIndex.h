@@ -33,6 +33,7 @@
 #include <limits.h>
 
 #include <misc/debug.h>
+#include <misc/memref.h>
 #include <structure/CHash.h>
 #include <base/DebugObject.h>
 
@@ -75,8 +76,8 @@ NCD_string_id_t NCDStringIndex_Lookup (NCDStringIndex *o, const char *str);
 NCD_string_id_t NCDStringIndex_LookupBin (NCDStringIndex *o, const char *str, size_t str_len);
 NCD_string_id_t NCDStringIndex_Get (NCDStringIndex *o, const char *str);
 NCD_string_id_t NCDStringIndex_GetBin (NCDStringIndex *o, const char *str, size_t str_len);
-const char * NCDStringIndex_Value (NCDStringIndex *o, NCD_string_id_t id);
-size_t NCDStringIndex_Length (NCDStringIndex *o, NCD_string_id_t id);
+NCD_string_id_t NCDStringIndex_GetBinMr (NCDStringIndex *o, MemRef str);
+MemRef NCDStringIndex_Value (NCDStringIndex *o, NCD_string_id_t id);
 int NCDStringIndex_HasNulls (NCDStringIndex *o, NCD_string_id_t id);
 int NCDStringIndex_GetRequests (NCDStringIndex *o, struct NCD_string_request *requests) WARN_UNUSED;
 

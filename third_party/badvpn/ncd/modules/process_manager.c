@@ -76,13 +76,10 @@
 #include <misc/strdup.h>
 #include <misc/balloc.h>
 #include <structure/LinkedList1.h>
-#include <ncd/NCDModule.h>
-#include <ncd/static_strings.h>
-#include <ncd/extra/value_utils.h>
+
+#include <ncd/module_common.h>
 
 #include <generated/blog_channel_ncd_process_manager.h>
-
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
 
 #define RETRY_TIME 10000
 
@@ -165,7 +162,7 @@ static int process_new (struct instance *o, NCDValMem *mem, NCDValSafeRef name, 
     BSmallTimer_Init(&p->retry_timer, process_retry_timer_handler);
     
     // init template name
-    p->template_name = ncd_get_string_id(NCDVal_FromSafe(mem, template_name), o->i->params->iparams->string_index);
+    p->template_name = ncd_get_string_id(NCDVal_FromSafe(mem, template_name));
     if (p->template_name < 0) {
         ModuleLog(o->i, BLOG_ERROR, "ncd_get_string_id failed");
         goto fail1;
@@ -518,16 +515,13 @@ static struct NCDModule modules[] = {
         .type = "process_manager",
         .func_new2 = func_new,
         .func_die = func_die,
-        .alloc_size = sizeof(struct instance),
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .alloc_size = sizeof(struct instance)
     }, {
         .type = "process_manager::start",
-        .func_new2 = start_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = start_func_new
     }, {
         .type = "process_manager::stop",
-        .func_new2 = stop_func_new,
-        .flags = NCDMODULE_FLAG_ACCEPT_NON_CONTINUOUS_STRINGS
+        .func_new2 = stop_func_new
     }, {
         .type = NULL
     }

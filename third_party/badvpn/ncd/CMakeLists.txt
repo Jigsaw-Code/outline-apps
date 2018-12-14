@@ -31,6 +31,7 @@ if (NOT EMSCRIPTEN)
         extra/NCDIfConfig.c
         extra/build_cmdline.c
         extra/NCDBProcessOpts.c
+        extra/NCDFastNames.c
         modules/command_template.c
         modules/event_template.c
         modules/regex_match.c
@@ -96,10 +97,12 @@ set(NCDINTERPRETER_SOURCES
     NCDModuleIndex.c
     NCDInterpProcess.c
     NCDInterpProg.c
-    NCDPlaceholderDb.c
+    NCDEvaluator.c
     NCDMethodIndex.c
     extra/BEventLock.c
     extra/NCDBuf.c
+    extra/value_utils.c
+    extra/NCDRefString.c
     modules/var.c
     modules/list.c
     modules/depend.c
@@ -144,8 +147,9 @@ set(NCDINTERPRETER_SOURCES
     modules/depend_scope.c
     modules/substr.c
     modules/log.c
-    modules/buffer.c
     modules/getenv.c
+    modules/basic_functions.c
+    modules/objref.c
     ${NCD_ADDITIONAL_SOURCES}
 )
 set(NCDINTERPRETER_LIBS
@@ -170,7 +174,7 @@ if (BADVPN_USE_LINUX_INPUT)
 
     message(STATUS "Generating linux_input_names.h from ${LINUX_INPUT_H_PATH}")
 
-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/parse_linux_input.sh 
+    execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/parse_linux_input.sh 
                             ${LINUX_INPUT_H_PATH}
                             ${CMAKE_CURRENT_BINARY_DIR}/linux_input_names.h
                     RESULT_VARIABLE LINUX_INPUT_PARSE_RESULT)

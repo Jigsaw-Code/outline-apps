@@ -104,7 +104,7 @@ int tapwin32_parse_tun_spec (char *name, char **out_component_id, char **out_hum
     }
     
     for (int i = 0; i < 3; i++) {
-        if (!ipaddr_parse_ipv4_addr(addr_strs[i], &out_addrs[i])) {
+        if (!ipaddr_parse_ipv4_addr(MemRef_MakeCstr(addr_strs[i]), &out_addrs[i])) {
             goto fail1;
         }
     }

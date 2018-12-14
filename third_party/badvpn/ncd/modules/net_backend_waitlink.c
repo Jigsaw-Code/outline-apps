@@ -37,13 +37,12 @@
 #include <string.h>
 
 #include <misc/get_iface_info.h>
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDIfConfig.h>
 #include <ncd/extra/NCDInterfaceMonitor.h>
 
-#include <generated/blog_channel_ncd_net_backend_waitlink.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_net_backend_waitlink.h>
 
 struct instance {
     NCDModuleInst *i;

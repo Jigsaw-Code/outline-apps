@@ -49,12 +49,11 @@
 
 #include <misc/get_iface_info.h>
 #include <misc/ipaddr6.h>
-#include <ncd/NCDModule.h>
 #include <ncd/extra/NCDInterfaceMonitor.h>
 
-#include <generated/blog_channel_ncd_net_ipv6_wait_dynamic_addr.h>
+#include <ncd/module_common.h>
 
-#define ModuleLog(i, ...) NCDModuleInst_Backend_Log((i), BLOG_CURRENT_CHANNEL, __VA_ARGS__)
+#include <generated/blog_channel_ncd_net_ipv6_wait_dynamic_addr.h>
 
 struct instance {
     NCDModuleInst *i;
