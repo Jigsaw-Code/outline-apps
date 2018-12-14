@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2018 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[Unit]
-Description=Outline Proxy Routing Controller
-Wants=network.target
-After=network.target
+readonly PREFIX=/usr/local
+readonly SERVICE_NAME=outline_proxy_controller.service
 
-[Service]
-Type=simple
-ExecStart=/usr/local/etc/systemd/system/OutlineProxyController --socket-filename=/var/run/outline_controller
+# Copy/update the service's files.
+readonly SCRIPT_DIR=$(dirname $0)
+cp -f "$SCRIPT_DIR/OutlineProxyController" $PREFIX/sbin
+cp -f "$SCRIPT_DIR/$SERVICE_NAME" /etc/systemd/system/
 
-[Install]
-WantedBy=multi-user.target
+# (Re-)start the service.
+systemctl daemon-reload
+systemctl enable $SERVICE_NAME
+systemctl restart $SERVICE_NAME
