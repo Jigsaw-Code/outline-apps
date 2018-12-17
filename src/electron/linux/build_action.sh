@@ -36,10 +36,7 @@ rsync -ac \
 
 # Copy files for OutlineProxyController.
 echo $OUTPUT
-cp src/electron/install_linux_service.sh $BIN_DEST
-rsync -ac \
-  tools/outline_proxy_controller/bin/ \
-  tools/outline_proxy_controller/init/ $BIN_DEST
+cp tools/outline_proxy_controller/dist/* $BIN_DEST
 
 # Version info and Sentry config.
 # In Electron, the path is relative to electron_index.html.

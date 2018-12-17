@@ -1,5 +1,3 @@
-#!/bin/bash -eux
-
 # Copyright 2018 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Docker image with which to build the binary.
-readonly DOCKER_IMAGE_NAME=outline_proxy_controller-build
-docker build -t $DOCKER_IMAGE_NAME $(dirname $0)
+[Unit]
+Description=Outline Proxy Routing Controller
+Wants=network.target
+After=network.target
 
-# Work in a directory which Docker on OSX will by default make available to containers.
-readonly TEMP=$(mktemp -d /tmp/temp.XXXX)
-cp -Rv tools/outline_proxy_controller/* $TEMP/
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/OutlineProxyController --socket-filename=/var/run/outline_controller
 
-# Build!
-pushd $TEMP
-docker run --rm -ti -v $TEMP:$TEMP -w $TEMP/build $DOCKER_IMAGE_NAME sh -c 'cmake .. && make'
-popd
-
-# Copy the new binary into the repo.
-cp $TEMP/build/OutlineProxyController tools/outline_proxy_controller/dist/
+[Install]
+WantedBy=multi-user.target
