@@ -271,10 +271,11 @@ int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTa
     }
     
     // get MTU
-    
-    ULONG umtu;
-    
-    if (!DeviceIoControl(o->device, TAP_IOCTL_GET_MTU, NULL, 0, &umtu, sizeof(umtu), &len, NULL)) {
+    // This section has been reverted to maintain compatibility with NDIS 6.
+    // TODO: Return to latest tun2socks code here once tap-windows6 has been fixed.
+    ULONG umtu = 0;
+
+    if (!DeviceIoControl(o->device, TAP_IOCTL_GET_MTU, &umtu, sizeof(umtu), &umtu, sizeof(umtu), &len, NULL)) {
         BLog(BLOG_ERROR, "DeviceIoControl(TAP_IOCTL_GET_MTU) failed");
         goto fail2;
     }
