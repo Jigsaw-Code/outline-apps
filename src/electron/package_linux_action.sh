@@ -14,18 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/electron/linux/build
+yarn do src/electron/package_common
 
-mkdir -p build/linux
-cp package.json build/linux/
-scripts/environment_json.sh -p linux > build/linux/www/environment.json
-
-electron-builder \
-  --projectDir=build/linux \
-  --config.asarUnpack=electron/bin \
-  --x64 \
-  --publish=never \
-  --linux AppImage \
-  --config.linux.category=Network \
-  --config.linux.icon=icons/png \
-  --config.artifactName='Outline-Client.${ext}'
+electron-builder --config src/electron/electron-builder.json --publish never --linux

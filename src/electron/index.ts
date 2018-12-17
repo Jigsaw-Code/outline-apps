@@ -63,7 +63,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false, icon: iconPath});
 
-  const pathToIndexHtml = path.join(__dirname, '..', 'www', 'electron_index.html');
+  const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.

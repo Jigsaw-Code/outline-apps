@@ -15,8 +15,10 @@
 import {ChildProcess, execSync, spawn} from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
+import {app} from 'electron';
 import * as net from 'net';
 import * as os from 'os';
+import * as path from 'path';
 import * as socks from 'socks';
 
 import * as util from '../www/app/util';
@@ -240,7 +242,7 @@ function startLocalShadowsocksProxy(
     // Note that if you run with -v then ss-local may output a lot of data to stderr which
     // will cause the binary to fail:
     //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
-    ssLocal = spawn(pathToEmbeddedBinary('ss-local'), ssLocalArgs);
+    ssLocal = spawn(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'), ssLocalArgs);
 
     if (ssLocal === undefined) {
       reject(new errors.ShadowsocksStartFailure(`Unable to spawn ss-local`));
@@ -419,7 +421,7 @@ function startTun2socks(onDisconnected: () => void, tunDeviceName: string): Prom
 
     // TODO: Duplicate ss-local's error handling.
     try {
-      tun2socks = spawn(pathToEmbeddedBinary('badvpn-tun2socks'), args);
+      tun2socks = spawn(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'), args);
 
       // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
       // otherwise the process execution is suspended when the unconsumed streams exceed the

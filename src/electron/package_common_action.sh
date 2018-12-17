@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -16,5 +16,8 @@
 
 yarn do src/electron/build
 
-export OUTLINE_DEBUG=true
-electron .
+# Generate CSS rules to mirror the UI in RTL languages.	
+node -e "require('./scripts/generate_rtl_css.js')('www/ui_components/*.html', 'www/ui_components')"
+
+# Icons.
+electron-icon-maker --input=src/electron/logo.png --output=build

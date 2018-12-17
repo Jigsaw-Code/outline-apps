@@ -1,0 +1,44 @@
+{
+  "files": [
+    "build/electron",
+    "www",
+    "!node_modules/electron"
+  ],
+  "asarUnpack": [
+    "third_party",
+    "tools"
+  ],
+  "artifactName": "Outline-Client.${ext}",
+  "directories": {
+    "output": "build/dist"
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "files": [
+      "third_party/badvpn/linux",
+      "third_party/shadowsocks-libev/linux",
+      "tools/outline_proxy_controller/dist"
+    ],
+    "icon": "build/icons/png",
+    "category": "Network"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": "ia32"
+      }
+    ],
+    "files": [
+      "third_party/badvpn/win32",
+      "third_party/shadowsocks-libev/win32"
+    ],
+    "icon": "build/icons/win/icon.ico"
+  },
+  "nsis": {
+    "perMachine": true,
+    "include": "src/electron/custom_install_steps.nsh"
+  }
+}
