@@ -137,7 +137,9 @@ function execSyncVerbosely(cmd) {
     // tsc errors appear on stdout, not stderr (which is already shown)
     console.log(`--- STDOUT ---`);
     console.log(error.stdout.toString());
-    throw error;
+    // Throwing the error is not really helpful (long error from gulp, distracting from the tsc error)
+    //throw error;
+    process.exit(1);
   }
 }
 
