@@ -130,19 +130,6 @@ function runCommand(command, options, done) {
   child.stderr.pipe(process.stderr);
 }
 
-function execSyncVerbosely(cmd) {
-  try {
-    return child_process.execSync(cmd).toString();
-  } catch (error) {
-    // tsc errors appear on stdout, not stderr (which is already shown)
-    console.log(`--- STDOUT ---`);
-    console.log(error.stdout.toString());
-    // Throwing the error is not really helpful (long error from gulp, distracting from the tsc error)
-    //throw error;
-    process.exit(1);
-  }
-}
-
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
 function copyBabelPolyfill(config) {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
@@ -225,7 +212,7 @@ function build(platform, config) {
   }
 
   // Build the web app.
-  execSyncVerbosely('yarn do src/www/build');
+  child_process.execSync('yarn do src/www/build', {stdio: 'inherit'});
 
   return merge_stream(
     bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR))
