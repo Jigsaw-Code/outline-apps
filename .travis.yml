@@ -86,7 +86,7 @@ jobs:
             -v ~/.cache/electron:/root/.cache/electron
             -v ~/.cache/electron-builder:/root/.cache/electron-builder
             electronuserland/builder:wine
-            /bin/bash -c "apt update && apt install -y rsync && yarn do src/electron/package" || travis_terminate $?
+            /bin/bash -c "apt update && apt install -y rsync && yarn do src/electron/package_windows" || travis_terminate $?
 
     - stage: package
       os: osx
@@ -110,7 +110,7 @@ jobs:
     - stage: package
       env:
         - DESC=linux
-      script: yarn do src/electron/linux/package
+      script: yarn do src/electron/package_linux
 
     - stage: android
       sudo: required
@@ -141,8 +141,8 @@ deploy:
   file:
     - platforms/android/app/build/outputs/apk/**/*.apk
     - platforms/ios/Outline.ipa
-    - build/windows/dist/*.exe
-    - build/linux/dist/*.AppImage
+    - build/dist/*.exe
+    - build/dist/*.AppImage
   skip_cleanup: true
   on:
     tags: true

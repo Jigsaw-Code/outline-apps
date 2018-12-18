@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/electron/linux/build
+yarn do src/electron/package_common
 
-export OUTLINE_DEBUG=true
-electron build/linux
+# TODO: Share code with environment_json.sh (this is the dev/debug Sentry DSN).
+# TODO: Move env.sh to build/electron/.
+cat > build/env.nsh << EOF
+!define RELEASE "$(node -r fs -p 'JSON.parse(fs.readFileSync("package.json")).version;')"
+!define SENTRY_DSN "https://sentry.io/api/159503/store/?sentry_version=7&sentry_key=319145c481df41458bb6e84c1a99c9ff"
+EOF
+
+electron-builder --config src/electron/electron-builder.json --publish never --win

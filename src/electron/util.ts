@@ -21,16 +21,20 @@ import * as path from 'path';
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
+const OUTLINE_PROXY_CONTROLLER_PATH =
+    path.join(unpackedAppPath(), 'tools', 'outline_proxy_controller', 'dist');
+
 const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
 const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
 const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
 
-// The returned path must be kept in sync with:
-//  - the destination path for the binaries in build_action.sh
-//  - the value specified for --config.asarUnpack in package_action.sh
-export function pathToEmbeddedBinary(filename: string) {
+function unpackedAppPath() {
+  return app.getAppPath().replace('app.asar', 'app.asar.unpacked');
+}
+
+export function pathToEmbeddedBinary(toolname: string, filename: string) {
   return path.join(
-      __dirname.replace('app.asar', 'app.asar.unpacked'), 'bin', os.platform(),
+      unpackedAppPath(), 'third_party', toolname, os.platform(),
       filename + (isWindows ? '.exe' : ''));
 }
 
@@ -60,7 +64,7 @@ function copyServiceFilesToTempFolder() {
   console.log(`copying service files to ${tmp}`);
   [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(
       (filename) => {
-        const src = pathToEmbeddedBinary(filename);
+        const src = path.join(OUTLINE_PROXY_CONTROLLER_PATH, filename);
         // https://github.com/jprichardson/node-fs-extra/issues/323
         const dest = path.join(tmp, filename);
         fsextra.copySync(src, dest, {overwrite: true});

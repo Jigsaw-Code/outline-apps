@@ -41,4 +41,4 @@ cmake --build .
 popd
 
 PATH=$OLDPATH
-cp -v $TMPDIR/badvpn/tun2socks/badvpn-tun2socks.exe third_party/badvpn/windows/
+cp -v $TMPDIR/badvpn/tun2socks/badvpn-tun2socks.exe third_party/badvpn/win32/
