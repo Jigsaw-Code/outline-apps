@@ -212,7 +212,7 @@ function build(platform, config) {
   }
 
   // Build the web app.
-  child_process.execSync('yarn do src/www/build');
+  child_process.execSync('yarn do src/www/build', {stdio: 'inherit'});
 
   return merge_stream(
     bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR))
