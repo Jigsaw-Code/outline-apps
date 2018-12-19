@@ -16,4 +16,8 @@
 
 yarn do src/electron/package_common
 
-electron-builder --config src/electron/electron-builder.json --publish never --linux
+electron-builder \
+  --linux \
+  --publish never \
+  --config src/electron/electron-builder.json \
+  --config.extraMetadata.version=$(scripts/semantic_version.sh -p dev)
