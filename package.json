@@ -1,7 +1,6 @@
 {
   "name": "outline-client",
   "productName": "Outline",
-  "version": "1.2.23",
   "scripts": {
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
     "precommit": "tslint -p . --fix; git-clang-format",

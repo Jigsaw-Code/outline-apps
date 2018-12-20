@@ -42,6 +42,8 @@ stages:
     if: tag =~ ^android
   - name: ios
     if: tag =~ ^ios
+  - name: linux
+    if: tag =~ ^linux
 
 # Stages with the same name define multiple jobs which run in parallel.
 # To make it more apparent in the Travis UI exactly what each job is
@@ -132,6 +134,9 @@ jobs:
       osx_image: xcode9.4
       script:
         - yarn && yarn do apple/scripts/ios_release_remote
+
+    - stage: linux
+      script: yarn do src/electron/release_linux
 
 deploy:
   provider: releases

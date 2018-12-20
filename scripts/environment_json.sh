@@ -17,10 +17,13 @@
 TYPE=dev
 PLATFORM=
 
+# TODO: Remove -p dev once the Electron clients can function without an environment.json file (see
+#       src/electron/build_action.sh for more info).
+
 function usage () {
   echo "$0 [-r] [-h]"
   echo "  -r: use prod Sentry keys"
-  echo "  -p: platform (android, ios, osx, browser, or electron)"
+  echo "  -p: platform (android, ios, osx, browser, windows, linux, or dev)"
   echo "  -h: this help message"
   echo
   echo "Examples:"
@@ -84,8 +87,8 @@ case $PLATFORM in
     APP_VERSION=$(pull_from_osx_plist CFBundleShortVersionString)
     APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
     ;;
-  electron)
-    APP_VERSION=$(node -r fs -p 'JSON.parse(fs.readFileSync("package.json")).version;')
+  windows | linux | dev)
+    APP_VERSION=$($(dirname $0)/semantic_version.sh -p $PLATFORM)
     APP_BUILD_NUMBER="NA"
     ;;
   *) usage ;;

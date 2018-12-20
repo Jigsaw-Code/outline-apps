@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,10 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build
+# Same as package, except:
+#  - prod Sentry keys are used
+#  - auto-updates are configured
 
-tsc -p src/electron
+yarn do src/electron/package_common
 
-# Environment variables.
-# TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+scripts/environment_json.sh -r -p linux > www/environment.json
+
+electron-builder \
+  --linux \
+  --publish never \
+  --config src/electron/electron-builder.json \
+  --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  --config.publish.provider=generic \
+  --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/
