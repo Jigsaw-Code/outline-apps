@@ -58,7 +58,8 @@ interface NetError extends Error {
 
 // Abstracts IPC with OutlineService in order to configure routing.
 export class RoutingService {
-  private ipcConnection!: net.Socket;
+  // TODO: make this a constructor argument
+  private ipcConnection: net.Socket|null = null;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.
@@ -76,7 +77,9 @@ export class RoutingService {
   // Restores the default system routes.
   resetRouting(): Promise<string> {
     try {
-      this.ipcConnection.removeAllListeners();
+      if (this.ipcConnection) {
+        this.ipcConnection.removeAllListeners();
+      }
     } catch (e) {
       // Ignore, the service may have disconnected the pipe.
     }
@@ -180,7 +183,9 @@ export class RoutingService {
   // Helper method to write a RoutingServiceRequest to the connected pipe.
   private writeRequest(request: RoutingServiceRequest): void {
     try {
-      this.ipcConnection.write(JSON.stringify(request));
+      if (this.ipcConnection) {
+        this.ipcConnection.write(JSON.stringify(request));
+      }
     } catch (e) {
       throw new Error(`Failed to write request: ${e.message}`);
     }

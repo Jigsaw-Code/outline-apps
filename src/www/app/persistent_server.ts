@@ -34,7 +34,7 @@ export class PersistentServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
   private static readonly SERVERS_STORAGE_KEY = 'servers';
   private serverById = new Map<string, PersistentServer>();
-  private lastForgottenServer!: PersistentServer|null;
+  private lastForgottenServer: PersistentServer|null = null;
 
   constructor(
       public readonly createServer: PersistentServerFactory, private eventQueue: events.EventQueue,

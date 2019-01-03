@@ -28,7 +28,7 @@ export interface Clipboard {
 
 // Generic clipboard. Implementations should only have to implement getContents().
 export class AbstractClipboard implements Clipboard {
-  private listener!: ClipboardListener;
+  private listener: ClipboardListener|null = null;
 
   getContents(): Promise<string> {
     return Promise.reject(new Error('unimplemented skeleton method'));
