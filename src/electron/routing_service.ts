@@ -58,7 +58,7 @@ interface NetError extends Error {
 
 // Abstracts IPC with OutlineService in order to configure routing.
 export class RoutingService {
-  private ipcConnection: net.Socket;
+  private ipcConnection!: net.Socket;
 
   // Asks OutlineService to configure all traffic, except that bound for the proxy server,
   // to route via routerIp.

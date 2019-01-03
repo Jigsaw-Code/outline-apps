@@ -85,7 +85,7 @@ describe('Settings', () => {
 const FAKE_SETTINGS_KEYS = ['key', 'key1', 'key2'];
 
 class InMemoryStorage implements Storage {
-  readonly length: number;
+  readonly length!: number;
   [key: string]: {};
   [index: number]: string;
 

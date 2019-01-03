@@ -200,9 +200,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/polymer@^1.1.31":
-  version "1.1.31"
-  resolved "https://registry.yarnpkg.com/@types/polymer/-/polymer-1.1.31.tgz#a6686f90fdc59498b2c9efa246659582a1da7915"
+"@types/polymer@^1.2.6":
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/@types/polymer/-/polymer-1.2.6.tgz#8bca96590641f91fe53b5d95e0c5ea670134bee9"
+  integrity sha512-owPC/ehCA/NjURy/UniAC68gNt7uJ7vY5sqI7Sr9OrEj1irH7NbpG+rB5mbr8yctnhPGdtMQ+kpQJhEVYpqZug==
   dependencies:
     "@types/webcomponents.js" "*"
 
@@ -233,8 +234,9 @@
     "@types/node" "*"
 
 "@types/webcomponents.js@*":
-  version "0.6.32"
-  resolved "https://registry.yarnpkg.com/@types/webcomponents.js/-/webcomponents.js-0.6.32.tgz#aba4bbfcb6889205aa8f8e0adec0bfc595b4f6cd"
+  version "0.6.33"
+  resolved "https://registry.yarnpkg.com/@types/webcomponents.js/-/webcomponents.js-0.6.33.tgz#c1dc561478d7c542235aab951e8b1f946b2dde48"
+  integrity sha512-mewDgZJjxKznpW45pwhoZ8BCCbGi2US4OS/EFyJpiKzMda+zXdgv7iuWRSKyZKaIJIh2svbndHPRECHzfRBhsA==
 
 "@types/winston@^2.2.0":
   version "2.3.7"
@@ -7578,9 +7580,10 @@ typedarray@^0.0.6, typedarray@~0.0.5:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript@^2.5.2:
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.5.2.tgz#038a95f7d9bbb420b1bf35ba31d4c5c1dd3ffe34"
+typescript@~3.1.0:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.1.6.tgz#b6543a83cfc8c2befb3f4c8fba6896f5b0c9be68"
+  integrity sha512-tDMYfVtvpb96msS1lDX9MEdHrW4yOuZ4Kdc4Him9oU796XldPYF/t2+uKoX0BBa0hXXwDlqYQbXY5Rzjzc5hBA==
 
 typical@^2.6.0:
   version "2.6.1"

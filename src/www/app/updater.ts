@@ -20,7 +20,7 @@ export interface Updater {
 }
 
 export class AbstractUpdater implements Updater {
-  private listener: UpdateListener;
+  private listener!: UpdateListener;
 
   setListener(listener: UpdateListener) {
     this.listener = listener;
