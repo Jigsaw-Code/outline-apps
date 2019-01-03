@@ -33,7 +33,7 @@ export type PersistentServerFactory =
 export class PersistentServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
   private static readonly SERVERS_STORAGE_KEY = 'servers';
-  private serverById = new Map<string, PersistentServer>();
+  private serverById!: Map<string, PersistentServer>;
   private lastForgottenServer: PersistentServer|null = null;
 
   constructor(
@@ -122,6 +122,7 @@ export class PersistentServerRepository implements ServerRepository {
   // Loads servers from storage,
   // raising an error if there is any problem loading.
   private loadServers() {
+    this.serverById = new Map<string, PersistentServer>();
     const serversJson = this.storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY);
     if (!serversJson) {
       console.debug(`no servers found in storage`);
