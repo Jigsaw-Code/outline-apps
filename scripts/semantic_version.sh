@@ -61,11 +61,13 @@ elif [[ "$PLATFORM" != "dev" ]]; then
   fi
 fi
 
-# windows-v1.0.1 -> 1.0.1
-# daily-2018-01-01 -> ''
-SEMVER=$(echo "$TAG" | sed 's/.*-//' | cut -dv -f2)
+# Search for a semantic version in the tag, e.g. windows-v1.0.1 -> 1.0.1.
+if echo "$TAG" | grep -q '.*-v'; then
+  SEMVER=$(echo "$TAG" | sed 's/.*-//' | cut -dv -f2)
+fi
 
 if [[ -n "$SEMVER" ]]; then
+  # Production build.
   echo "$SEMVER"
 elif [[ -n "$TAG" ]]; then
   # Pre-release, e.g. daily build:
