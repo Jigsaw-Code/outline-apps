@@ -17,7 +17,8 @@
 
 declare module 'sudo-prompt' {
   export interface SudoPromptOptions {
-    name?: string, icns?: string
+    name?: string;
+    icns?: string;
   }
 
   export function exec(

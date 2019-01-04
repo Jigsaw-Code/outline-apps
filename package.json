@@ -67,7 +67,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "tslint -p . --fix; git-clang-format"
+      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format"
     }
   }
 }

@@ -27,7 +27,8 @@ import * as net from 'net';
   }
 
   export interface SocksAddress {
-    host: string, port: number
+    host: string;
+    port: number;
   }
 
   export function createConnection(
