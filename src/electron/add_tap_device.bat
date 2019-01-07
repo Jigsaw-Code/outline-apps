@@ -20,8 +20,8 @@ set DEVICE_HWID=tap0901
 :: Check whether the device already exists.
 netsh interface show interface name=%DEVICE_NAME% >nul
 if %errorlevel% equ 0 (
-  echo %DEVICE_NAME% already exists.
-  exit /b
+  echo TAP network device already exists.
+  goto :configure
 )
 
 :: Add the device, recording the names of devices before and after to help
@@ -37,6 +37,7 @@ if %errorlevel% equ 0 (
 set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
 set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
 
+echo Creating TAP network device...
 echo Storing current network device list...
 wmic nic where "netconnectionid is not null" get netconnectionid > "%BEFORE_DEVICES%"
 if %errorlevel% neq 0 (
@@ -97,7 +98,7 @@ netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
 if %errorlevel% neq 0 goto :loop
 
 :configure
-echo Configuring new TAP network device...
+echo (Re-)configuring TAP network device...
 
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
