@@ -146,8 +146,7 @@ deploy:
   file:
     - platforms/android/app/build/outputs/apk/**/*.apk
     - platforms/ios/Outline.ipa
-    - build/dist/*.exe
-    - build/dist/*.AppImage
+    - build/dist/*.*
   skip_cleanup: true
   on:
     tags: true
