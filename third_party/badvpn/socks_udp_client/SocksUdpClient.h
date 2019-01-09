@@ -80,6 +80,10 @@ struct SocksUdpClient_connection {
     uint8_t *first_data;
     int first_data_len;
     BAddr first_remote_addr;
+    // If all packets sent so far have been sent to the same IP, port 53, with the
+    // same DNS ID, then this is that ID.  Otherwise, it is -1.  This is used to
+    // close ephemeral DNS query connections once a response is received.
+    int dns_id;
     BPending first_job;
     BAVLNode connections_tree_node;
 };
@@ -114,6 +118,9 @@ void SocksUdpClient_Free (SocksUdpClient *o);
  * This will reuse an existing connection for packets from local_addr, or create one if
  * there is none.  If the number of live connections exceeds max_connections, or if the number of
  * buffered packets from this port exceeds a limit, packets will be dropped silently.
+ * 
+ * As a resource optimization, if a connection has only been used to send one DNS query, then
+ * the connection will be closed and freed once the reply is received.
  * 
  * @param o the object
  * @param local_addr the UDP packet's source address, and the expected destination for replies

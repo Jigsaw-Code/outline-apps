@@ -10,7 +10,6 @@ info.txt
 /third_party/Potatso/Pods
 /Carthage
 xcuserdata/
-dist/
 .vs/
 obj/
 packages/

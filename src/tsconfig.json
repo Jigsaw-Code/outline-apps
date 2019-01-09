@@ -4,10 +4,9 @@
     "removeComments": false,
     "strict": true,
     "module": "commonjs",
-    "outDir": "../build",
     "typeRoots": [
-        "../node_modules/@types",
-        "./types/modules"
+      "../node_modules/@types",
+      "./types/modules"
     ]
   }
 }

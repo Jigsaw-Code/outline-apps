@@ -46,19 +46,19 @@ ${StrRep}
   ; TAP device files.
   SetOutPath "$INSTDIR\tap-windows6"
   ${If} ${RunningX64}
-    File /r "${PROJECT_DIR}\tap-windows6\amd64\*"
+    File /r "${PROJECT_DIR}\third_party\tap-windows6\bin\amd64\*"
   ${Else}
-    File /r "${PROJECT_DIR}\tap-windows6\i386\*"
+    File /r "${PROJECT_DIR}\third_party\tap-windows6\bin\i386\*"
   ${EndIf}
   SetOutPath -
-  File "${PROJECT_DIR}\electron\add_tap_device.bat"
+  File "${PROJECT_DIR}\src\electron\add_tap_device.bat"
 
   ; OutlineService files, stopping the service first in case it's still running.
   nsExec::Exec "net stop OutlineService"
-  File "${PROJECT_DIR}\OutlineService.exe"
-  File "${PROJECT_DIR}\smartdnsblock.exe"
-  File "${PROJECT_DIR}\Newtonsoft.Json.dll"
-  File "${PROJECT_DIR}\electron\install_windows_service.bat"
+  File "${PROJECT_DIR}\tools\OutlineService\OutlineService\bin\OutlineService.exe"
+  File "${PROJECT_DIR}\tools\smartdnsblock\bin\smartdnsblock.exe"
+  File "${PROJECT_DIR}\third_party\newtonsoft\Newtonsoft.Json.dll"
+  File "${PROJECT_DIR}\src\electron\install_windows_service.bat"
 
   ; ExecToStack captures both stdout and stderr from the script, in the order output.
   ; Set a (long) timeout in case the device never becomes visible to netsh.

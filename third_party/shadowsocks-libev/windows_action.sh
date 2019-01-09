@@ -37,5 +37,5 @@ pushd $TMPDIR
 make
 popd
 
-cp -v $TMPDIR/ss-local.exe third_party/shadowsocks-libev/windows/
-chmod 755 third_party/shadowsocks-libev/windows/ss-local.exe
+cp -v $TMPDIR/ss-local.exe third_party/shadowsocks-libev/win32/
+chmod 755 third_party/shadowsocks-libev/win32/ss-local.exe

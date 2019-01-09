@@ -24,7 +24,6 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as errors from '../www/model/errors';
 
-import {migrateBetaServers} from './beta_migration';
 import {ConnectionStore, SerializableConnection} from './connection_store';
 import * as process_manager from './process_manager';
 
@@ -63,7 +62,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false, icon: iconPath});
 
-  const pathToIndexHtml = path.join(__dirname, '..', 'www', 'electron_index.html');
+  const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.
@@ -203,8 +202,6 @@ function interceptShadowsocksLink(argv: string[]) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  migrateBetaServers();
-
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',
