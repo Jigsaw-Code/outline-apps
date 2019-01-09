@@ -21,4 +21,5 @@
 + (void)writePacket: (NSData *)packet;
 + (void)startTun2Socks: (int)socksServerPort;
 + (void)stop;
++ (void)setIsUdpForwardingEnabled:(BOOL)enabled;
 @end

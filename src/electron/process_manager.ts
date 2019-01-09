@@ -24,6 +24,7 @@ import * as socks from 'socks';
 import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
+import {SerializableConnection} from './connection_store';
 import * as routing from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
@@ -48,6 +49,7 @@ const routingService = new routing.RoutingService();
 
 let ssLocal: ChildProcess | undefined;
 let tun2socks: ChildProcess | undefined;
+let activeConnection: SerializableConnection;
 
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
@@ -75,6 +77,7 @@ const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 //  - the system configured to route all traffic through the proxy
 //  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
 //
+// Checks whether the remote server has enabled UDP forwarding.
 // Fulfills with a copy of `serverConfig` that includes the resolved hostname.
 export function startVpn(
     serverConfig: cordova.plugins.outline.ServerConfig,
@@ -90,8 +93,18 @@ export function startVpn(
   }
   const onDisconnected = () => {
     onConnectionStatusChange(ConnectionStatus.DISCONNECTED);
+    teardownVpn();
+  };
+  const connectionStatusChanged = (status: ConnectionStatus) => {
+    if (status === ConnectionStatus.CONNECTED) {
+      handleUdpSupportChange(onDisconnected).catch((e) => {
+        console.log('Failed to handle UDP support change');
+      });
+    }
+    onConnectionStatusChange(status);
   };
   const config = Object.assign({}, serverConfig);
+  let isUdpSupported = false;
   return startLocalShadowsocksProxy(config, onDisconnected)
       .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
       .then(() => {
@@ -106,18 +119,29 @@ export function startVpn(
         });
       })
       .then(() => {
+        return checkUdpForwardingEnabled()
+            .then((isRemoteUdpForwardingEnabled) => {
+              isUdpSupported = isRemoteUdpForwardingEnabled;
+              console.log('UDP forwarding', isUdpSupported ? 'enabled' : 'disabled');
+            })
+            .catch((e) => {
+              console.warn('UDP forwarding check failed, assuming disabled.');
+            });
+      })
+      .then(() => {
         return getTunDeviceName();
       })
       .then((tunDeviceName) => {
-        return startTun2socks(onDisconnected, tunDeviceName);
+        return startTun2socks(tunDeviceName, isUdpSupported, onDisconnected);
       })
       .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
       .then(() => {
         return routingService.configureRouting(
-            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', onConnectionStatusChange,
+            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', connectionStatusChanged,
             isAutoConnect);
       })
       .then(() => {
+        activeConnection = {id: '', config, isUdpSupported};
         return config;
       })
       .catch((e) => {
@@ -165,16 +189,12 @@ function testTapDevice() {
 
 // Fulfills iff:
 //  - we can connect to the Shadowsocks server port
-//  - the remote server has enabled UDP forwarding
 //  - we can speak with a semi-random test site via the proxy
 function checkConnectivity(config: cordova.plugins.outline.ServerConfig): Promise<string> {
   return lookupIp(config.host || '').then((ip: string) => {
     return isServerReachableByIp(ip, config.port || 0)
       .then(() => {
         return validateServerCredentials();
-      })
-      .then(() => {
-        return checkUdpForwardingEnabled();
       })
       .then(() => {
         return ip;
@@ -277,7 +297,6 @@ function startLocalShadowsocksProxy(
       } else {
         console.info(`ss-local exited with code ${code}`);
       }
-      onDisconnected();
     });
   });
 }
@@ -328,7 +347,7 @@ function validateServerCredentials() {
 }
 
 // Verifies that the remote server has enabled UDP forwarding by sending a DNS request through it.
-function checkUdpForwardingEnabled() {
+function checkUdpForwardingEnabled(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     socks.createConnection(
       {
@@ -350,7 +369,7 @@ function checkUdpForwardingEnabled() {
 
         udpSocket.on('message', (msg, info) => {
           stopUdp();
-          resolve();
+          resolve(true);
         });
 
         // Retry sending the query every second.
@@ -379,10 +398,22 @@ function checkUdpForwardingEnabled() {
         // Give up after the timeout elapses.
         setTimeout(() => {
           stopUdp();
-          reject(new errors.RemoteUdpForwardingDisabled());
+          resolve(false);
         }, UDP_FORWARDING_TEST_TIMEOUT_MS);
       });
   });
+}
+
+// Checks whether UDP forwarding support has changed and restarts tun2socks if it has.
+async function handleUdpSupportChange(onDisconnected: () => void): Promise<void> {
+  const isUdpSupported = await checkUdpForwardingEnabled().catch(e => false);
+  if (isUdpSupported !== activeConnection.isUdpSupported) {
+    console.info(`UDP support changed (${activeConnection.isUdpSupported} > ${isUdpSupported})`);
+    activeConnection.isUdpSupported = isUdpSupported;
+    await stopTun2socks();
+    const tunDeviceName = await getTunDeviceName();
+    await startTun2socks(tunDeviceName, activeConnection.isUdpSupported, onDisconnected);
+  }
 }
 
 // Returns a buffer containing a DNS request to google.com.
@@ -402,22 +433,27 @@ function getDnsRequest() {
   ]);
 }
 
-function startTun2socks(onDisconnected: () => void, tunDeviceName: string): Promise<void> {
+function startTun2socks(
+    tunDeviceName: string, isUdpSupported: boolean, onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
     //   --socks-server-addr 127.0.0.1:1081 \
-    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081
-
+    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081 \
+    //   --transparent-dns
     const args: string[] = [];
     args.push('--tundev', tunDeviceName);
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
-    args.push('--socks5-udp');
-    args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
     args.push('--loglevel', 'error');
+    args.push('--transparent-dns');
+    // Enabling transparent DNS without UDP options causes tun2socks to use TCP for DNS resolution.
+    if (isUdpSupported) {
+      args.push('--socks5-udp');
+      args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    }
 
     // TODO: Duplicate ss-local's error handling.
     try {
@@ -442,27 +478,26 @@ function startTun2socks(onDisconnected: () => void, tunDeviceName: string): Prom
             // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
             console.info('Restarting tun2socks...');
             setTimeout(() => {
-              getTunDeviceName()
-                  .then((tunDeviceName) => {
-                    startTun2socks(onDisconnected, tunDeviceName);
-                  })
+              isUdpSupported = activeConnection.isUdpSupported || isUdpSupported;
+              startTun2socks(tunDeviceName, isUdpSupported, onDisconnected)
                   .then(() => {
                     resolve();
                   })
                   .catch((e) => {
                     console.error('Failed to restart tun2socks');
                     onDisconnected();
-                    teardownVpn();
                   });
             }, 3000);
             return;
           }
         }
-        onDisconnected();
       });
 
+      // Ignore stdio if not consuming the process output (pass {stdio: 'ignore'} to spawn);
+      // otherwise the process execution is suspended when the unconsumed streams exceed the
+      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
       tun2socks.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
+        console.error(`tun2socks stderr: ${data}`);
       });
 
       // In addition to being a sensible way to listen for launch failures, setting this handler

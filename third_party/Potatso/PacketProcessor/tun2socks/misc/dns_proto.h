@@ -30,60 +30,58 @@
 #define BADVPN_MISC_DNS_PROTO_H
 
 #include <stdint.h>
-#include <misc/byteorder.h>
 
 B_START_PACKED
 struct dns_header {
-  uint16_t id;
-  uint8_t qr_opcode_aa_tc_rd;
-  uint8_t ra_z_rcode;
-  uint16_t qdcount;
-  uint16_t ancount;
-  uint16_t nscount;
-  uint16_t arcount;
+    uint16_t id;
+    uint8_t qr_opcode_aa_tc_rd;
+    uint8_t ra_z_rcode;
+    uint16_t qdcount;
+    uint16_t ancount;
+    uint16_t nscount;
+    uint16_t arcount;
 } B_PACKED;
 B_END_PACKED
 
 // DNS header field masks
 #define DNS_QR 0x80
 #define DNS_TC 0x02
-#define DNS_Z  0x70
+#define DNS_Z 0x70
 #define DNS_RCODE 0x0F
 
 #define DNS_ID_STRLEN 6
 
 static void dns_get_header_id_str(char* id_str, uint8_t* data) {
-  struct dns_header* dnsh = (struct dns_header*)data;
-  sprintf(id_str, "%u", dnsh->id);
-  id_str[DNS_ID_STRLEN - 1] = '\0';
+    struct dns_header* dnsh = (struct dns_header*)data;
+    sprintf(id_str, "%u", dnsh->id);
+    id_str[DNS_ID_STRLEN - 1] = '\0';
 }
 
-static int dns_check(const uint8_t *data, int data_len,
-                     struct dns_header *out_header) {
-  ASSERT(data_len >= 0)
-  ASSERT(out_header)
+static int dns_check(const uint8_t* data, int data_len, struct dns_header* out_header) {
+    ASSERT(data_len >= 0)
+    ASSERT(out_header)
 
-  // parse DNS header
-  if (data_len < sizeof(struct dns_header)) {
-    return 0;
-  }
-  memcpy(out_header, data, sizeof(*out_header));
+    // parse DNS header
+    if (data_len < sizeof(struct dns_header)) {
+        return 0;
+    }
+    memcpy(out_header, data, sizeof(*out_header));
 
-  // verify DNS header is request
-  return (out_header->qr_opcode_aa_tc_rd & DNS_QR) == 0 /* query */
-            && (out_header->ra_z_rcode & DNS_Z) == 0 /* Z is Zero */
-            && out_header->qdcount > 0 /* some questions */
-            && !out_header->nscount && !out_header->ancount /* no answers */;
+    // verify DNS header is request
+    return (out_header->qr_opcode_aa_tc_rd & DNS_QR) == 0 /* query */
+           && (out_header->ra_z_rcode & DNS_Z) == 0       /* Z is Zero */
+           && out_header->qdcount > 0                     /* some questions */
+           && !out_header->nscount && !out_header->ancount /* no answers */;
 }
 
 // Synthesizes a truncated DNS response by modifying |query|.
-static void dns_synthesize_truncated_response(struct dns_header *query) {
-  query->qr_opcode_aa_tc_rd |= DNS_QR;
-  query->qr_opcode_aa_tc_rd |= DNS_TC;
-  query->ra_z_rcode &= ~DNS_RCODE;
-  query->ancount = query->qdcount;
-  query->nscount = 0;
-  query->arcount = 0;
+static void dns_synthesize_truncated_response(struct dns_header* query) {
+    query->qr_opcode_aa_tc_rd |= DNS_QR;
+    query->qr_opcode_aa_tc_rd |= DNS_TC;
+    query->ra_z_rcode &= ~DNS_RCODE;
+    query->ancount = query->qdcount;
+    query->nscount = 0;
+    query->arcount = 0;
 }
 
- #endif  // BADVPN_MISC_DNS_PROTO_H
+#endif  // BADVPN_MISC_DNS_PROTO_H

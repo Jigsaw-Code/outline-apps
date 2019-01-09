@@ -13,8 +13,11 @@ third_party {
   }
   version: "1.999.128"
   local_modifications:
-    "Added support for proxying DNS traffic over Shadwosocks UDP relay - see
+    "Added support for proxying DNS traffic over Shadwosocks UDP relay - see"
     " 'OUTLINE' comments in tun2socks/tun2socks.c. "
     "Added SOCKS5 UDP support with optimized DNS handling. "
-  last_upgrade_date { year: 2017 month: 6 day: 29 }
+    "Disabled non-Windows compatible logic in transparent DNS. "
+    "Resolve DNS over TCP when transparent DNS is enabled, and no UDP relay or"
+    " DNS resolver are specified."
+  last_upgrade_date { year: 2019 month: 1 day: 9 }
 }

@@ -26,6 +26,7 @@ class VpnConnectionStore {
   private static final Logger LOG = Logger.getLogger(VpnConnectionStore.class.getName());
   private static final String CONNECTION_KEY = "connection";
   private static final String CONNECTION_STATUS_KEY = "connectionStatus";
+  private static final String CONNECTION_SUPPORTS_UDP = "connectionSupportsUdp";
 
   private final SharedPreferences preferences;
 
@@ -75,5 +76,14 @@ class VpnConnectionStore {
     }
     SharedPreferences.Editor editor = preferences.edit();
     editor.putString(CONNECTION_STATUS_KEY, status.toString()).commit();
+  }
+
+  public void setIsUdpSupported(boolean isUdpSupported) {
+    SharedPreferences.Editor editor = preferences.edit();
+    editor.putBoolean(CONNECTION_SUPPORTS_UDP, isUdpSupported).commit();
+  }
+
+  public boolean isUdpSupported() {
+    return preferences.getBoolean(CONNECTION_SUPPORTS_UDP, false);
   }
 }

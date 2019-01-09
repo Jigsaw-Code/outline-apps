@@ -51,6 +51,7 @@
 		FC9A17F91F4F5CE8001E7BC1 /* PacketProcessor_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC9A17F61F4F5CE8001E7BC1 /* PacketProcessor_iOS.framework */; };
 		FC9A17FC1F4F5CF6001E7BC1 /* PacketProcessor_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC9A17F61F4F5CE8001E7BC1 /* PacketProcessor_iOS.framework */; };
 		FC9A17FD1F4F5CF6001E7BC1 /* PacketProcessor_iOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC9A17F61F4F5CE8001E7BC1 /* PacketProcessor_iOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FCABE26121AF5C78009B7C93 /* ShadowsocksConnectivity.m in Sources */ = {isa = PBXBuildFile; fileRef = FCABE26021AF5C78009B7C93 /* ShadowsocksConnectivity.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -175,6 +176,8 @@
 		FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
 		FC8C310A1FAA814A004262BE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		FC9A17F61F4F5CE8001E7BC1 /* PacketProcessor_iOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PacketProcessor_iOS.framework; path = "Outline/Plugins/cordova-plugin-outline/PacketProcessor_iOS.framework"; sourceTree = "<group>"; };
+		FCABE25E21AF5C78009B7C93 /* ShadowsocksConnectivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowsocksConnectivity.h; sourceTree = "<group>"; };
+		FCABE26021AF5C78009B7C93 /* ShadowsocksConnectivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShadowsocksConnectivity.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -337,6 +340,8 @@
 		3B0347491F212F0200C8EF1F /* VpnExtension */ = {
 			isa = PBXGroup;
 			children = (
+				FCABE25E21AF5C78009B7C93 /* ShadowsocksConnectivity.h */,
+				FCABE26021AF5C78009B7C93 /* ShadowsocksConnectivity.m */,
 				3B03477A1F21337900C8EF1F /* Shadowsocks.h */,
 				3B03477B1F21337900C8EF1F /* Shadowsocks.m */,
 				3B0347591F212F2D00C8EF1F /* PacketTunnelProvider.h */,
@@ -552,6 +557,7 @@
 			files = (
 				FC28C29A201BB4F3005FD743 /* OutlineConnection.swift in Sources */,
 				3B03475D1F212F2D00C8EF1F /* PacketTunnelProvider.m in Sources */,
+				FCABE26121AF5C78009B7C93 /* ShadowsocksConnectivity.m in Sources */,
 				FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */,
 				FC28C2B32022268B005FD743 /* OutlineConnectionStore.swift in Sources */,
 				3B03477C1F21337900C8EF1F /* Shadowsocks.m in Sources */,
