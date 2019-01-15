@@ -14,7 +14,7 @@
     "@sentry/electron": "^0.15.0",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.8",
     "auto-launch": "^5.0.5",
-    "electron-promise-ipc": "^0.1.3",
+    "electron-promise-ipc": "^1.0.0",
     "electron-updater": "3.2.3",
     "fs-extra": "^7.0.0",
     "raven": "^2.2.1",
