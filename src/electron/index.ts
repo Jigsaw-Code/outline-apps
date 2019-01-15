@@ -48,7 +48,6 @@ let localizedStrings: {[key: string]: string} = {
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const iconPath = path.join(path.dirname(__dirname), 'icons/win/icon.ico');
 const trayIconImages = {
   connected: createTrayIconImage('logo.png'),
   disconnected: createTrayIconImage('logo_grayscale.png')
@@ -60,7 +59,7 @@ const enum Options {
 
 function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false, icon: iconPath});
+  mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false});
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
