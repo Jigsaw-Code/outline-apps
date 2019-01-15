@@ -11,7 +11,7 @@
     "natives@1.1.6 for Gulp 3.x on Node 10.x: https://github.com/gulpjs/gulp/issues/2162#issuecomment-385197164"
   ],
   "dependencies": {
-    "@sentry/electron": "^0.8.1",
+    "@sentry/electron": "^0.15.0",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.8",
     "auto-launch": "^5.0.5",
     "electron-promise-ipc": "^0.1.3",
