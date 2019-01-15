@@ -50,8 +50,8 @@ const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const iconPath = path.join(path.dirname(__dirname), 'icons/win/icon.ico');
 const trayIconImages = {
-  connected: createTrayIconImage('logo.png'),
-  disconnected: createTrayIconImage('logo_grayscale.png')
+  connected: createTrayIconImage('connected.png'),
+  disconnected: createTrayIconImage('disconnected.png')
 };
 
 const enum Options {
@@ -151,8 +151,12 @@ function createTrayIcon(status: ConnectionStatus) {
 }
 
 function createTrayIconImage(imageName: string) {
-  return nativeImage.createFromPath(path.join(__dirname, imageName))
-      .resize({width: 16, height: 16});
+  const image =
+      nativeImage.createFromPath(path.join(app.getAppPath(), 'resources', 'tray', imageName));
+  if (image.isEmpty()) {
+    throw new Error(`cannot find ${imageName} tray icon image`);
+  }
+  return image;
 }
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the

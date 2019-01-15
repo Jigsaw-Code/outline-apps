@@ -2,6 +2,7 @@
   "files": [
     "build/electron",
     "www",
+    "resources/tray",
     "!node_modules/electron"
   ],
   "asarUnpack": [
