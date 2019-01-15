@@ -21,6 +21,7 @@
 ; StrFunc weirdness; this fix suggested here:
 ; https://github.com/electron-userland/electron-builder/issues/888
 !ifndef BUILD_UNINSTALLER
+${StrLoc}
 ${StrNSISToIO}
 ${StrRep}
 !endif
@@ -68,6 +69,27 @@ ${StrRep}
   Pop $0
   Pop $1
   StrCmp $0 0 installservice
+
+  ; The TAP device may have failed to install because the user did not want to
+  ; install the device driver. If so:
+  ;  - tell the user that they need to install the driver
+  ;  - skip the Sentry report
+  ;  - quit
+  ;
+  ; When this happens, tapinstall.exe prints an error message like this:
+  ; UpdateDriverForPlugAndPlayDevices failed, GetLastError=-536870333
+  ;
+  ; We can use the presence of that magic number to detect this case.
+  Var /GLOBAL DRIVER_FAILURE_MAGIC_NUMBER_INDEX
+  ${StrLoc} $DRIVER_FAILURE_MAGIC_NUMBER_INDEX $1 "536870333" ">"
+
+  StrCmp $DRIVER_FAILURE_MAGIC_NUMBER_INDEX "" submitsentryreport
+  ; The term "device software" is the same as that used by the prompt, at least on Windows 7.
+  MessageBox MB_OK "Sorry, you must install the device software in order to use Outline. Please try \
+    running the installer again."
+  Quit
+
+  submitsentryreport:
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try \
     running the installer again. If you still cannot install Outline, please get in \
     touch with us and let us know that the TAP device could not be installed."
