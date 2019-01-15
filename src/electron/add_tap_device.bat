@@ -13,9 +13,18 @@
 :: limitations under the License.
 
 @echo off
+setlocal
 
 set DEVICE_NAME=outline-tap0
 set DEVICE_HWID=tap0901
+
+:: Because we've seen multiple failures due to commands (netsh, etc.) not being
+:: found, append some common directories to the PATH.
+::
+:: Note:
+::  - %SystemRoot% almost always expands to c:\windows.
+::  - Do *not* surround with quotes.
+set PATH=%PATH%;%SystemRoot%\system32;%SystemRoot%\system32\wbem;%SystemRoot%\system32\WindowsPowerShell/v1.0
 
 :: Check whether the device already exists.
 netsh interface show interface name=%DEVICE_NAME% >nul
