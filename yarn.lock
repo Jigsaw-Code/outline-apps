@@ -2748,12 +2748,14 @@ electron-osx-sign@0.4.11:
     minimist "^1.2.0"
     plist "^3.0.1"
 
-electron-promise-ipc@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/electron-promise-ipc/-/electron-promise-ipc-0.1.3.tgz#aa63388988157737c79d51f65d111263da8b2b67"
+electron-promise-ipc@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/electron-promise-ipc/-/electron-promise-ipc-1.0.0.tgz#c02711142d63c10c00ca3440164f2ad4a95cb7e0"
+  integrity sha512-gju+gdXV8sDznr+5mw/v0V0xn3Q4yAIqw4mYPyoWApSkcjvHMdPKRo/6n8EFyaU0pMm0TmOS624qGVYk9QsPTg==
   dependencies:
     bluebird "^3.4.7"
     is-electron-renderer "^2.0.1"
+    serialize-error "^3.0.0"
     uuid "^3.0.1"
 
 electron-publish@20.33.2:
@@ -7043,6 +7045,11 @@ send@0.15.3:
 sequencify@~0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/sequencify/-/sequencify-0.0.7.tgz#90cff19d02e07027fd767f5ead3e7b95d1e7380c"
+
+serialize-error@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-3.0.0.tgz#80100282b09be33c611536f50033481cb9cc87cf"
+  integrity sha512-+y3nkkG/go1Vdw+2f/+XUXM1DXX1XcxTl99FfiD/OEPUNw4uo0i6FKABfTAN5ZcgGtjTRZcEbxcE/jtXbEY19A==
 
 serve-static@1.12.3:
   version "1.12.3"
