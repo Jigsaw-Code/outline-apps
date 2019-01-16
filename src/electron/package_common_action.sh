@@ -20,4 +20,4 @@ yarn do src/electron/build
 node -e "require('./scripts/generate_rtl_css.js')('www/ui_components/*.html', 'www/ui_components')"
 
 # Icons.
-electron-icon-maker --input=src/electron/logo.png --output=build
+electron-icon-maker --input=resources/electron/icon.png --output=build
