@@ -341,7 +341,6 @@ function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
 promiseIpc.on(
     'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
       return startVpn(args.config, args.id).catch((e) => {
-        // electron-promise-ipc can only propagate primitives to the renderer process.
         console.error(`could not connect: ${e.name} (${e.message})`);
         throw errors.toErrorCode(e);
       });

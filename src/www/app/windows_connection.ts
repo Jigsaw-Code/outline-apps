@@ -17,6 +17,7 @@ import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
 
+// TODO: Rename this class - it's also used on Linux.
 export class WindowsOutlineConnection implements cordova.plugins.outline.Connection {
   private statusChangeListener: ((status: ConnectionStatus) => void)|null = null;
 
@@ -48,8 +49,12 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
         .then(() => {
           this.running = true;
         })
-        .catch((e: Error) => {
-          throw new errors.OutlinePluginError(parseInt(e.message, 10));
+        .catch((e: errors.ErrorCode|Error) => {
+          if (typeof e === 'number') {
+            throw new errors.OutlinePluginError(e);
+          } else {
+            throw e;
+          }
         });
   }
 
