@@ -59,13 +59,12 @@ export class OutlineServer implements PersistentServer {
 
   connect(): Promise<void> {
     return this.connection.start().catch((e) => {
-      // Since "instanceof OutlinePluginError" may not work for errors originating from Sentry,
-      // inspect this field directly.
+      // e originates in "native" code: either Cordova or Electron's main process.
+      // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
       if (e.errorCode) {
         throw errors.fromErrorCode(e.errorCode);
-      } else {
-        throw new Error(`native code did not set errorCode`);
       }
+      throw e;
     });
   }
 
