@@ -22,6 +22,7 @@ import * as process from 'process';
 import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
+import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
@@ -276,7 +277,7 @@ app.on('quit', () => {
 });
 
 promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
-  return process_manager.isServerReachable(config)
+  return connectivity.isServerReachable(config)
       .then(() => {
         return true;
       })
