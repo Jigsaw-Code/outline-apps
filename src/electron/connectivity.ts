@@ -27,6 +27,21 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
+// DNS request to google.com.
+const DNS_REQUEST = Buffer.from([
+  0, 0,                             // [0-1]   query ID
+  1, 0,                             // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+  0, 1,                             // [4-5]   QDCOUNT (number of queries)
+  0, 0,                             // [6-7]   ANCOUNT (number of answers)
+  0, 0,                             // [8-9]   NSCOUNT (number of name server records)
+  0, 0,                             // [10-11] ARCOUNT (number of additional records)
+  6, 103, 111, 111, 103, 108, 101,  // google
+  3, 99,  111, 109,                 // com
+  0,                                // null terminator of FQDN (root TLD)
+  0, 1,                             // QTYPE, set to A
+  0, 1                              // QCLASS, set to 1 = IN (Internet)
+]);
+
 // Uses the OS' built-in functions, i.e. /etc/hosts, et al.:
 // https://nodejs.org/dist/latest-v10.x/docs/api/dns.html#dns_dns
 //
@@ -131,8 +146,7 @@ export function checkUdpForwardingEnabled(proxyAddress: string, proxyIp: number)
             reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
             return;
           }
-          const dnsRequest = getDnsRequest();
-          const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, dnsRequest);
+          const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, DNS_REQUEST);
           const udpSocket = dgram.createSocket('udp4');
 
           udpSocket.on('error', (e) => {
@@ -174,21 +188,4 @@ export function checkUdpForwardingEnabled(proxyAddress: string, proxyIp: number)
           }, UDP_FORWARDING_TEST_TIMEOUT_MS);
         });
   });
-}
-
-// Returns a buffer containing a DNS request to google.com.
-function getDnsRequest() {
-  return Buffer.from([
-    0, 0,                             // [0-1]   query ID
-    1, 0,                             // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
-    0, 1,                             // [4-5]   QDCOUNT (number of queries)
-    0, 0,                             // [6-7]   ANCOUNT (number of answers)
-    0, 0,                             // [8-9]   NSCOUNT (number of name server records)
-    0, 0,                             // [10-11] ARCOUNT (number of additional records)
-    6, 103, 111, 111, 103, 108, 101,  // google
-    3, 99,  111, 109,                 // com
-    0,                                // null terminator of FQDN (root TLD)
-    0, 1,                             // QTYPE, set to A
-    0, 1                              // QCLASS, set to 1 = IN (Internet)
-  ]);
 }
