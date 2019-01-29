@@ -27,28 +27,11 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
-// Fulfills iff:
-//  - we can connect to the Shadowsocks server port
-//  - we can speak with a semi-random test site via the proxy
-export function checkConnectivity(
-    config: cordova.plugins.outline.ServerConfig, proxyAddress: string,
-    proxyIp: number): Promise<string> {
-  return lookupIp(config.host || '').then((ip: string) => {
-    return isServerReachableByIp(ip, config.port || 0)
-        .then(() => {
-          return validateServerCredentials(proxyAddress, proxyIp);
-        })
-        .then(() => {
-          return ip;
-        });
-  });
-}
-
 // Uses the OS' built-in functions, i.e. /etc/hosts, et al.:
 // https://nodejs.org/dist/latest-v10.x/docs/api/dns.html#dns_dns
 //
 // Effectively a no-op if hostname is already an IP.
-function lookupIp(hostname: string): Promise<string> {
+export function lookupIp(hostname: string): Promise<string> {
   return util.timeoutPromise(
       new Promise<string>((fulfill, reject) => {
         dns.lookup(hostname, 4, (e, address) => {
@@ -72,7 +55,7 @@ export function isServerReachable(config: cordova.plugins.outline.ServerConfig) 
 }
 
 // As #isServerReachable but does not perform a DNS lookup.
-function isServerReachableByIp(serverIp: string, serverPort: number) {
+export function isServerReachableByIp(serverIp: string, serverPort: number) {
   return util.timeoutPromise(
       new Promise<void>((fulfill, reject) => {
         const socket = new net.Socket();
@@ -95,8 +78,8 @@ function isServerReachableByIp(serverIp: string, serverPort: number) {
 //
 // This has the same function as ShadowsocksConnectivity.validateServerCredentials in
 // cordova-plugin-outline.
-function validateServerCredentials(proxyAddress: string, proxyIp: number) {
-  return new Promise((fulfill, reject) => {
+export function validateServerCredentials(proxyAddress: string, proxyIp: number) {
+  return new Promise<void>((fulfill, reject) => {
     const testDomain =
         CREDENTIALS_TEST_DOMAINS[Math.floor(Math.random() * CREDENTIALS_TEST_DOMAINS.length)];
     socks.createConnection(

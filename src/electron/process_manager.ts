@@ -100,11 +100,16 @@ export function startVpn(
           return;
         }
         // Only perform the connectivity checks when we're not automatically connecting on boot,
-        // since we may not have network connectivity.
-        return connectivity.checkConnectivity(config, PROXY_IP, SS_LOCAL_PORT).then((ip) => {
-          // Cache the resolved IP so it can be stored for auto connect.
-          config.host = ip;
-        });
+        // since we may not have network connectivity. While we're at it, resolve the proxy server's
+        // IP so that it will be cached for use by auto-connect.
+        return connectivity.lookupIp(config.host || '')
+            .then((ip: string) => {
+              config.host = ip;
+              return connectivity.isServerReachableByIp(ip, config.port || 0);
+            })
+            .then(() => {
+              return connectivity.validateServerCredentials(PROXY_IP, SS_LOCAL_PORT);
+            });
       })
       .then(() => {
         return connectivity.checkUdpForwardingEnabled(PROXY_IP, SS_LOCAL_PORT)
@@ -154,9 +159,10 @@ function testTapDevice() {
   //
   // reset
   // set global icmpredirects=disabled
-  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled ignoredefaultroutes=disabled
-  // set interface interface="outline-tap0" forwarding=enabled advertise=enabled nud=enabled ignoredefaultroutes=disabled
-  // add address name="outline-tap0" address=10.0.85.2 mask=255.255.255.0
+  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled
+  // ignoredefaultroutes=disabled set interface interface="outline-tap0" forwarding=enabled
+  // advertise=enabled nud=enabled ignoredefaultroutes=disabled add address name="outline-tap0"
+  // address=10.0.85.2 mask=255.255.255.0
   //
   // popd
   // # End of IPv4 configuration
