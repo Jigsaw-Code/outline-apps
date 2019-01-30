@@ -14,7 +14,6 @@
 
 import * as net from 'net';
 import * as os from 'os';
-import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
@@ -38,7 +37,6 @@ interface RoutingServiceResponse {
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting',
-  GET_DEVICE_NAME = 'getDeviceName',
   STATUS_CHANGED = 'statusChanged'
 }
 
@@ -84,16 +82,6 @@ export class RoutingService {
       // Ignore, the service may have disconnected the pipe.
     }
     return this.sendRequest({action: RoutingServiceAction.RESET_ROUTING, parameters: {}});
-  }
-
-  // Returns the name of the device.
-  getDeviceName(): Promise<string> {
-    // This is used when we read tun device name from the daemon and the value
-    // comes in returnValue in the json.
-    return this.sendRequest({action: RoutingServiceAction.GET_DEVICE_NAME, parameters: {}})
-        .then((json) => {
-          return JSON.parse(json).returnValue;
-        });
   }
 
   // Helper method to perform IPC with the Windows Service. Prompts the user for admin permissions
