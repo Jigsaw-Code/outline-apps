@@ -48,11 +48,11 @@ let activeConnection: SerializableConnection;
 const PROXY_IP = '127.0.0.1';
 const SS_LOCAL_PORT = 1081;
 
-const TUN2SOCKS_TAP_DEVICE_NAME = 'outline-tap0';
+const TUN2SOCKS_DEVICE_NAME = isWindows ? 'outline-tap0' : 'outline-tun0';
 // TODO: read these from the network device!
-const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
+const TUN2SOCKS_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
-const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
+const TUN2SOCKS_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 const SS_LOCAL_TIMEOUT_SECS =
@@ -122,10 +122,7 @@ export function startVpn(
             });
       })
       .then(() => {
-        return getTunDeviceName();
-      })
-      .then((tunDeviceName) => {
-        return startTun2socks(tunDeviceName, isUdpSupported, onDisconnected);
+        return startTun2socks(isUdpSupported, onDisconnected);
       })
       .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
       .then(() => {
@@ -169,13 +166,13 @@ function testTapDevice() {
   const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
 
   // Find lines containing the TAP device name.
-  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
+  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_DEVICE_NAME) !== -1);
   if (tapLines.length < 1) {
     throw new Error(`TAP device not found`);
   }
 
   // Within those lines, search for the expected IP.
-  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
+  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_DEVICE_IP) !== -1).length < 1) {
     throw new Error(`TAP device has wrong IP`);
   }
 }
@@ -243,13 +240,11 @@ async function handleUdpSupportChange(onDisconnected: () => void): Promise<void>
     console.info(`UDP support changed (${activeConnection.isUdpSupported} > ${isUdpSupported})`);
     activeConnection.isUdpSupported = isUdpSupported;
     await stopTun2socks();
-    const tunDeviceName = await getTunDeviceName();
-    await startTun2socks(tunDeviceName, activeConnection.isUdpSupported, onDisconnected);
+    await startTun2socks(activeConnection.isUdpSupported, onDisconnected);
   }
 }
 
-function startTun2socks(
-    tunDeviceName: string, isUdpSupported: boolean, onDisconnected: () => void): Promise<void> {
+function startTun2socks(isUdpSupported: boolean, onDisconnected: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
@@ -258,7 +253,11 @@ function startTun2socks(
     //   --socks5-udp --udp-relay-addr 127.0.0.1:1081 \
     //   --transparent-dns
     const args: string[] = [];
-    args.push('--tundev', tunDeviceName);
+    args.push(
+        '--tundev',
+        isWindows ? `tap0901:${TUN2SOCKS_DEVICE_NAME}:${TUN2SOCKS_DEVICE_IP}:${
+                        TUN2SOCKS_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}` :
+                    TUN2SOCKS_DEVICE_NAME);
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
@@ -294,7 +293,7 @@ function startTun2socks(
             console.info('Restarting tun2socks...');
             setTimeout(() => {
               isUdpSupported = activeConnection.isUdpSupported || isUdpSupported;
-              startTun2socks(tunDeviceName, isUdpSupported, onDisconnected)
+              startTun2socks(isUdpSupported, onDisconnected)
                   .then(() => {
                     resolve();
                   })
@@ -356,17 +355,6 @@ export function teardownVpn() {
     }),
     stopProcesses()
   ]);
-}
-
-function getTunDeviceName(): Promise<string> {
-  if (isWindows) {
-    return Promise.resolve(`tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-        TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
-  } else if (isLinux) {
-    return routingService.getDeviceName();
-  } else {
-    return Promise.reject(new Error(`unsupported platform`));
-  }
 }
 
 function stopProcesses() {
