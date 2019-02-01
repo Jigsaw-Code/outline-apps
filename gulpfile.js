@@ -24,7 +24,6 @@ const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
 const gutil = require('gulp-util');
-const merge_stream = require('merge-stream');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
 const watchify = require('watchify');
@@ -211,7 +210,8 @@ function build(platform, config) {
   // Build the web app.
   child_process.execSync('yarn do src/www/build', {stdio: 'inherit'});
 
-  return merge_stream(bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR))).on('finish', () => {
+  // Bundle the code starting at www/app/cordova_main.js -> www/cordova_main.js.
+  return bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR)).on('finish', () => {
     // cordova-custom-config isn't be invoked as part of "cordova prepare"
     // unless, beforehand, the platform has been added.
     runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`, {}, function() {
