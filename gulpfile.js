@@ -58,7 +58,7 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-function transpileBowerComponents(config) {
+function transpileBowerComponents() {
   gutil.log('Transpiling Bower components');
   // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
   // polyfills, and minified files, which are generally already transpiled.
@@ -67,13 +67,13 @@ function transpileBowerComponents(config) {
     '!www/bower_components/webcomponentsjs/**/*.js',
     '!www/bower_components/webcomponentsjs/**/*.html', '!www/bower_components/**/*.min.js'
   ];
-  const bowerComponentsDest = `${config.targetDir}/bower_components`;
+  const bowerComponentsDest = `${SRC_DIR}/bower_components`;
   return transpile(bowerComponentsSrc, bowerComponentsDest);
 }
 
-function transpileUiComponents(config) {
+function transpileUiComponents() {
   gutil.log('Transpiling UI components');
-  return transpile(['www/ui_components/*.html'], `${config.targetDir}/ui_components`);
+  return transpile(['www/ui_components/*.html'], `${SRC_DIR}/ui_components`);
 }
 
 // See https://www.typescriptlang.org/docs/handbook/gulp.html
@@ -127,30 +127,22 @@ function runCommand(command, options, done) {
 }
 
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
-function copyBabelPolyfill(config) {
+function copyBabelPolyfill() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  runCommand(`cp -v ${babelPolyfill} ${config.targetDir}/babel-polyfill.min.js`, {}, function() {
+  runCommand(`cp -v ${babelPolyfill} ${SRC_DIR}/babel-polyfill.min.js`, {}, function() {
     gutil.log(`Copied Babel polyfill.`);
   });
 }
 
 // Writes a JSON file accessible to environment.ts containing environment variables.
-function writeEnvJson(platform, config, isRelease) {
-  const platformPath = `platforms/${platform}`;
-  if (!fs.existsSync(platformPath)) {
-    throw new Error(`Failed to set up environment, no such path: ${platformPath}`);
-  }
-  if (!fs.existsSync(config.targetDir)) {
-    throw new Error(`Failed to set up environment, no such path: ${config.targetDir}`);
-  }
-  const envFile = `${config.targetDir}/environment.json`;
-  let envScript = 'scripts/environment_json.sh';
-  if (process.platform.includes('win')) {
-    envScript = `sh ${envScript}`;
-  }
-  runCommand(`${envScript} -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function() {
-    gutil.log(`Wrote ${envFile}`);
-  });
+function writeEnvJson(platform, isRelease) {
+  // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
+  runCommand(
+      `bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
+          SRC_DIR}/environment.json`,
+      {}, function() {
+        gutil.log(`Wrote environment.json`);
+      });
 }
 
 // Expected environment variables when the release flag is set.
@@ -212,44 +204,48 @@ function build(platform, config) {
 
   // Bundle the code starting at www/app/cordova_main.js -> www/cordova_main.js.
   return bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR)).on('finish', () => {
-    // cordova-custom-config isn't be invoked as part of "cordova prepare"
-    // unless, beforehand, the platform has been added.
-    runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`, {}, function() {
-      // cordova build == cordova prepare + cordova compile
-      runCommand(`cordova prepare ${platform}`, {}, function() {
-        copyBabelPolyfill(config);
-        writeEnvJson(platform, config, envVars.RELEASE);
-        transpileBowerComponents(config).on('finish', function() {
-          transpileUiComponents(config).on('finish', function() {
-            generateRtlCss(
-                `${config.targetDir}/ui_components/*.html`, `${config.targetDir}/ui_components`)
-                .on('finish', function() {
-                  const compileArgs = config.compileArgs || '';
-                  const releaseArgs =
-                      envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
-                  const platformArgs = config.platformArgs || '';
-                  // Do this now, otherwise "cordova compile" fails.
-                  // TODO: use some gulp plugin
-                  // -c means "use file's checksum, not last modified time"
-                  const syncXcode = platform === 'ios' || platform === 'osx' ?
-                      `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
-                      ':';
-                  runCommand(syncXcode, {}, () => {
-                    runCommand(
-                        `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${
-                            platformArgs}`,
-                        {}, function() {
-                          if (shouldWatch) {
-                            gutil.log('Running...');
-                            runCommand(`cordova run ${platform} --noprepare --nobuild`);
-                          } else {
-                            gutil.log('Done');
-                          }
-                        });
+    copyBabelPolyfill();
+    transpileBowerComponents().on('finish', function() {
+      transpileUiComponents().on('finish', function() {
+        generateRtlCss(`${SRC_DIR}/ui_components/*.html`, `${SRC_DIR}/ui_components`)
+            .on('finish', function() {
+              // cordova-custom-config isn't be invoked as part of "cordova prepare"
+              // unless, beforehand, the platform has been added.
+              runCommand(
+                  `test -d platforms/${platform} || cordova platform add ${platform}`, {},
+                  function() {
+                    // Between them, "cordova prepare" and "cordova compile" will pull this out of
+                    // www/ into platforms/<platform>/www/.
+                    writeEnvJson(platform, envVars.RELEASE);
+
+                    // cordova build == cordova prepare + cordova compile
+                    runCommand(`cordova prepare ${platform}`, {}, function() {
+                      const compileArgs = config.compileArgs || '';
+                      const releaseArgs =
+                          envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
+                      const platformArgs = config.platformArgs || '';
+                      // Do this now, otherwise "cordova compile" fails.
+                      // TODO: use some gulp plugin
+                      // -c means "use file's checksum, not last modified time"
+                      const syncXcode = platform === 'ios' || platform === 'osx' ?
+                          `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
+                          ':';
+                      runCommand(syncXcode, {}, () => {
+                        runCommand(
+                            `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${
+                                platformArgs}`,
+                            {}, function() {
+                              if (shouldWatch) {
+                                gutil.log('Running...');
+                                runCommand(`cordova run ${platform} --noprepare --nobuild`);
+                              } else {
+                                gutil.log('Done');
+                              }
+                            });
+                      });
+                    });
                   });
-                });
-          });
-        });
+            });
       });
     });
   });
