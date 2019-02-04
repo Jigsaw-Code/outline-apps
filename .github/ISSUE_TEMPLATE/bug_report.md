@@ -34,5 +34,8 @@ If applicable, add screenshots to help explain your problem.
  - Browser [e.g. stock browser, safari]
  - Version [e.g. 22]
 
+**Submit Feedback**
+Please submit feedback through the app and label it with this issue number.
+
 **Additional context**
 Add any other context about the problem here.
