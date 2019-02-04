@@ -209,8 +209,8 @@ function build(platform, config) {
       transpileUiComponents().on('finish', function() {
         generateRtlCss(`${SRC_DIR}/ui_components/*.html`, `${SRC_DIR}/ui_components`)
             .on('finish', function() {
-              // cordova-custom-config isn't be invoked as part of "cordova prepare"
-              // unless, beforehand, the platform has been added.
+              // cordova-custom-config isn't invoked as part of "cordova prepare" unless,
+              // beforehand, the platform has been added.
               runCommand(
                   `test -d platforms/${platform} || cordova platform add ${platform}`, {},
                   function() {
