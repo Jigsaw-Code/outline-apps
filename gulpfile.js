@@ -26,18 +26,15 @@ const gulpif = require('gulp-if');
 const gutil = require('gulp-util');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
-const watchify = require('watchify');
 
-const SRC_DIR = 'www';
+const SRC_WWW = 'src/www';
+const DEST_WWW = 'www';
 
 const CONFIG_BY_PLATFORM = {
-  android: {
-    targetDir: `platforms/android/app/src/main/assets/${SRC_DIR}`,
-    platformArgs: '--gradleArg=-PcdvBuildMultipleApks=true'
-  },
-  browser: {targetDir: `platforms/browser/${SRC_DIR}`},
-  ios: {targetDir: `platforms/ios/${SRC_DIR}`, compileArgs: '--device'},
-  osx: {targetDir: `platforms/osx/${SRC_DIR}`}
+  android: {platformArgs: '--gradleArg=-PcdvBuildMultipleApks=true'},
+  browser: {},
+  ios: {compileArgs: '--device'},
+  osx: {}
 };
 
 function getConfigByPlatform(platform) {
@@ -58,22 +55,25 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-function transpileBowerComponents(config) {
+// Note: This is currently done "in-place", i.e. the components are downloaded to src/www and
+// transpiled there, but this seems to work just fine (idempodent).
+function transpileBowerComponents() {
   gutil.log('Transpiling Bower components');
   // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
   // polyfills, and minified files, which are generally already transpiled.
   const bowerComponentsSrc = [
-    'www/bower_components/**/*.html', 'www/bower_components/**/*.js',
-    '!www/bower_components/webcomponentsjs/**/*.js',
-    '!www/bower_components/webcomponentsjs/**/*.html', '!www/bower_components/**/*.min.js'
+    `${DEST_WWW}/bower_components/**/*.html`, `${DEST_WWW}/bower_components/**/*.js`,
+    `!${DEST_WWW}/bower_components/webcomponentsjs/**/*.js`,
+    `!${DEST_WWW}/bower_components/webcomponentsjs/**/*.html`,
+    `!${DEST_WWW}/bower_components/**/*.min.js`
   ];
-  const bowerComponentsDest = `${config.targetDir}/bower_components`;
+  const bowerComponentsDest = `${DEST_WWW}/bower_components`;
   return transpile(bowerComponentsSrc, bowerComponentsDest);
 }
 
-function transpileUiComponents(config) {
+function transpileUiComponents() {
   gutil.log('Transpiling UI components');
-  return transpile(['www/ui_components/*.html'], `${config.targetDir}/ui_components`);
+  return transpile([`${SRC_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
 }
 
 // See https://www.typescriptlang.org/docs/handbook/gulp.html
@@ -81,7 +81,7 @@ function getBrowserifyInstance() {
   return browserify({
     basedir: '.',
     debug: true,
-    entries: [`${SRC_DIR}/app/cordova_main.js`],
+    entries: [`${DEST_WWW}/app/cordova_main.js`],
     cache: {},
     packageCache: {}
   });
@@ -89,30 +89,13 @@ function getBrowserifyInstance() {
 
 function bundleJs(browserifyInstance) {
   gutil.log('Running browserify');
-  const notWatch = !gutil.env.watch;
   const log = gutil.log.bind(gutil, 'Browserify Error:');
   const bundle = browserifyInstance.bundle();
   bundle.once('error', function(...args) {
     log(...args);
-    if (notWatch) {
-      return process.exit(1);
-    }
+    return process.exit(1);
   });
   return bundle.pipe(source('cordova_main.js'));
-}
-
-// TODO: watch for changes in .html files too, not just .ts files
-function watch(browserifyInstance, config) {
-  const log = gutil.log.bind(gutil, 'Browserify:');
-  const watchified = watchify(browserifyInstance);
-  watchified.on('log', log);
-  watchified.on('update', function(deps) {
-    gutil.log(`The following dependencies were modified, rebuilding...
-      ${deps}`);
-    bundleJs(watchified).pipe(gulp.dest(config.targetDir));
-    gutil.log('Rebuilt');
-  });
-  return browserifyInstance;
 }
 
 function runCommand(command, options, done) {
@@ -127,30 +110,22 @@ function runCommand(command, options, done) {
 }
 
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
-function copyBabelPolyfill(config) {
+function copyBabelPolyfill() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  runCommand(`cp -v ${babelPolyfill} ${config.targetDir}/babel-polyfill.min.js`, {}, function() {
+  runCommand(`cp -v ${babelPolyfill} ${DEST_WWW}/babel-polyfill.min.js`, {}, function() {
     gutil.log(`Copied Babel polyfill.`);
   });
 }
 
 // Writes a JSON file accessible to environment.ts containing environment variables.
-function writeEnvJson(platform, config, isRelease) {
-  const platformPath = `platforms/${platform}`;
-  if (!fs.existsSync(platformPath)) {
-    throw new Error(`Failed to set up environment, no such path: ${platformPath}`);
-  }
-  if (!fs.existsSync(config.targetDir)) {
-    throw new Error(`Failed to set up environment, no such path: ${config.targetDir}`);
-  }
-  const envFile = `${config.targetDir}/environment.json`;
-  let envScript = 'scripts/environment_json.sh';
-  if (process.platform.includes('win')) {
-    envScript = `sh ${envScript}`;
-  }
-  runCommand(`${envScript} -p ${platform} ${isRelease ? '-r' : ''} > ${envFile}`, {}, function() {
-    gutil.log(`Wrote ${envFile}`);
-  });
+function writeEnvJson(platform, isRelease) {
+  // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
+  runCommand(
+      `bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
+          DEST_WWW}/environment.json`,
+      {}, function() {
+        gutil.log(`Wrote environment.json`);
+      });
 }
 
 // Expected environment variables when the release flag is set.
@@ -198,58 +173,49 @@ gulp.task('build', function() {
 
 function build(platform, config) {
   const envVars = getReleaseEnvironmentVariables(platform);
-  const shouldWatch = !!gutil.env.watch;
-  let browserifyInstance = getBrowserifyInstance().transform('babelify', {
+  const browserifyInstance = getBrowserifyInstance().transform('babelify', {
     global: true,  // Transpile required node modules
     presets: ['env']
   });
-  if (shouldWatch) {
-    browserifyInstance = watch(browserifyInstance, config);
-  }
 
   // Build the web app.
   child_process.execSync('yarn do src/www/build', {stdio: 'inherit'});
 
   // Bundle the code starting at www/app/cordova_main.js -> www/cordova_main.js.
-  return bundleJs(browserifyInstance).pipe(gulp.dest(SRC_DIR)).on('finish', () => {
-    // cordova-custom-config isn't be invoked as part of "cordova prepare"
-    // unless, beforehand, the platform has been added.
-    runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`, {}, function() {
-      // cordova build == cordova prepare + cordova compile
-      runCommand(`cordova prepare ${platform}`, {}, function() {
-        copyBabelPolyfill(config);
-        writeEnvJson(platform, config, envVars.RELEASE);
-        transpileBowerComponents(config).on('finish', function() {
-          transpileUiComponents(config).on('finish', function() {
-            generateRtlCss(
-                `${config.targetDir}/ui_components/*.html`, `${config.targetDir}/ui_components`)
-                .on('finish', function() {
-                  const compileArgs = config.compileArgs || '';
-                  const releaseArgs =
-                      envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
-                  const platformArgs = config.platformArgs || '';
-                  // Do this now, otherwise "cordova compile" fails.
-                  // TODO: use some gulp plugin
-                  // -c means "use file's checksum, not last modified time"
-                  const syncXcode = platform === 'ios' || platform === 'osx' ?
-                      `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
-                      ':';
-                  runCommand(syncXcode, {}, () => {
-                    runCommand(
-                        `cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${
-                            platformArgs}`,
-                        {}, function() {
-                          if (shouldWatch) {
-                            gutil.log('Running...');
-                            runCommand(`cordova run ${platform} --noprepare --nobuild`);
-                          } else {
-                            gutil.log('Done');
-                          }
-                        });
+  return bundleJs(browserifyInstance).pipe(gulp.dest(DEST_WWW)).on('finish', () => {
+    copyBabelPolyfill();
+    transpileBowerComponents().on('finish', function() {
+      transpileUiComponents().on('finish', function() {
+        generateRtlCss(`${SRC_WWW}/ui_components/*.html`, `${DEST_WWW}/ui_components`)
+            .on('finish', function() {
+              // cordova-custom-config isn't invoked as part of "cordova prepare" unless,
+              // beforehand, the platform has been added.
+              runCommand(
+                  `test -d platforms/${platform} || cordova platform add ${platform}`, {},
+                  function() {
+                    // Between them, "cordova prepare" and "cordova compile" will pull this out of
+                    // www/ into platforms/<platform>/www/.
+                    writeEnvJson(platform, envVars.RELEASE);
+
+                    // cordova build == cordova prepare + cordova compile
+                    runCommand(`cordova prepare ${platform}`, {}, function() {
+                      const compileArgs = config.compileArgs || '';
+                      const releaseArgs =
+                          envVars.RELEASE ? getReleaseCompileArgs(platform, envVars) : '';
+                      const platformArgs = config.platformArgs || '';
+                      // Do this now, otherwise "cordova compile" fails.
+                      // TODO: use some gulp plugin
+                      // -c means "use file's checksum, not last modified time"
+                      const syncXcode = platform === 'ios' || platform === 'osx' ?
+                          `rsync -avzc apple/xcode/${platform}/ platforms/${platform}/` :
+                          ':';
+                      runCommand(syncXcode, {}, () => {
+                        runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${
+                            platformArgs}`);
+                      });
+                    });
                   });
-                });
-          });
-        });
+            });
       });
     });
   });
