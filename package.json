@@ -7,8 +7,7 @@
     "do": "bash ./scripts/do_action.sh"
   },
   "__COMMENTS__": [
-    "Do not upgrade to Cordova 7 without fixing the resulting breakages",
-    "natives@1.1.6 for Gulp 3.x on Node 10.x: https://github.com/gulpjs/gulp/issues/2162#issuecomment-385197164"
+    "Do not upgrade to Cordova 7 without fixing the resulting breakages"
   ],
   "dependencies": {
     "@sentry/electron": "^0.15.0",
@@ -44,7 +43,7 @@
     "electron": "2.0.16",
     "electron-builder": "20.34.0",
     "electron-icon-maker": "^0.0.4",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-babel": "^7.0.0",
     "gulp-if": "^2.0.2",
     "gulp-posthtml": "^3.0.4",
@@ -57,11 +56,8 @@
     "posthtml-postcss": "^0.2.6",
     "tslint": "^5.12.0",
     "typescript": "~3.1.0",
-    "vinyl-source-stream": "^1.1.0",
+    "vinyl-source-stream": "^2.0.0",
     "xml2js": "^0.4.17"
-  },
-  "resolutions": {
-    "natives": "1.1.6"
   },
   "main": "build/electron/electron/index.js",
   "husky": {
