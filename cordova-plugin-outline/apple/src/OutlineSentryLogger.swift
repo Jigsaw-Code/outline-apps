@@ -44,7 +44,7 @@ class OutlineSentryLogger: DDAbstractLogger {
 
     DDLog.add(OutlineSentryLogger.sharedInstance)
     DDLog.add(DDASLLogger.sharedInstance)
-    defaultDebugLevel = DDLogLevel.info
+    dynamicLogLevel = DDLogLevel.info
   }
 
   // Adds |logMessage| to Sentry as a breadcrumb.
