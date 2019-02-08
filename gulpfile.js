@@ -76,26 +76,22 @@ function transpileUiComponents() {
   return transpile([`${SRC_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
 }
 
-// See https://www.typescriptlang.org/docs/handbook/gulp.html
-function getBrowserifyInstance() {
-  return browserify({
-    basedir: '.',
-    debug: true,
-    entries: [`${DEST_WWW}/app/cordova_main.js`],
-    cache: {},
-    packageCache: {}
-  });
-}
-
-function bundleJs(browserifyInstance) {
+// Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
+//
+// Useful Gulp/Browserify examples:
+//   https://github.com/gulpjs/gulp/tree/master/docs/recipes
+function bundleJs() {
   gutil.log('Running browserify');
-  const log = gutil.log.bind(gutil, 'Browserify Error:');
-  const bundle = browserifyInstance.bundle();
-  bundle.once('error', function(...args) {
-    log(...args);
-    return process.exit(1);
-  });
-  return bundle.pipe(source('cordova_main.js'));
+  return browserify({entries: `${DEST_WWW}/app/cordova_main.js`, debug: true})
+      .transform('babelify', {
+        // Transpile code in node_modules, too.
+        global: true,
+        presets: ['env']
+      })
+      .bundle()
+      // Transform the bundle() output stream into one regular Gulp plugins understand.
+      .pipe(source('cordova_main.js'))
+      .pipe(gulp.dest(DEST_WWW));
 }
 
 function runCommand(command, options, done) {
@@ -168,21 +164,12 @@ gulp.task('build', function() {
   const platform = gutil.env.platform || DEFAULT_PLATFORM;
   const config = getConfigByPlatform(platform);
   gutil.log(`Building for platform ${platform}...`);
-  build(platform, config);
-});
-
-function build(platform, config) {
   const envVars = getReleaseEnvironmentVariables(platform);
-  const browserifyInstance = getBrowserifyInstance().transform('babelify', {
-    global: true,  // Transpile required node modules
-    presets: ['env']
-  });
 
   // Build the web app.
   child_process.execSync('yarn do src/www/build', {stdio: 'inherit'});
 
-  // Bundle the code starting at www/app/cordova_main.js -> www/cordova_main.js.
-  return bundleJs(browserifyInstance).pipe(gulp.dest(DEST_WWW)).on('finish', () => {
+  return bundleJs().on('finish', () => {
     copyBabelPolyfill();
     transpileBowerComponents().on('finish', function() {
       transpileUiComponents().on('finish', function() {
@@ -219,4 +206,4 @@ function build(platform, config) {
       });
     });
   });
-}
+});
