@@ -76,6 +76,9 @@
         border-top-style: solid;
       }
       paper-button {
+        display: flex;
+        flex-direction: column;
+        text-transform: none;
         outline: none; /* Remove outline for Safari. */
       }
     </style>
@@ -84,9 +87,9 @@
         <div class="flex-column-container">
           <paper-button noink on-tap="_requestPromptAddServer">
             <server-connection-viz state="ZERO_STATE" root-path="[[rootPath]]"></server-connection-viz>
+            <div class="header">[[localize('server-add')]]</div>
+            <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
-          <div class="header">[[localize('server-add')]]</div>
-          <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
         </div>
         <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]">
         </div>
