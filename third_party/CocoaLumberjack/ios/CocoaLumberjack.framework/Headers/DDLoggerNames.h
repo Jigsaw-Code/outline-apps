@@ -15,24 +15,12 @@
 
 #import <Foundation/Foundation.h>
 
-// Disable legacy macros
-#ifndef DD_LEGACY_MACROS
-    #define DD_LEGACY_MACROS 0
-#endif
+NS_ASSUME_NONNULL_BEGIN
 
-#import "DDLog.h"
+typedef NSString *DDLoggerName NS_TYPED_EXTENSIBLE_ENUM;
+FOUNDATION_EXPORT DDLoggerName const DDLoggerNameASL NS_SWIFT_NAME(DDLoggerName.asl); // DDASLLogger
+FOUNDATION_EXPORT DDLoggerName const DDLoggerNameTTY NS_SWIFT_NAME(DDLoggerName.tty); // DDTTYLogger
+FOUNDATION_EXPORT DDLoggerName const DDLoggerNameOS NS_SWIFT_NAME(DDLoggerName.os); // DDOSLogger
+FOUNDATION_EXPORT DDLoggerName const DDLoggerNameFile NS_SWIFT_NAME(DDLoggerName.file); // DDFileLogger
 
-/**
- * This class provides a logger for the Apple os_log facility.
- **/
-API_AVAILABLE(macos(10.12), ios(10.0), watchos(3.0), tvos(10.0))
-@interface DDOSLogger : DDAbstractLogger <DDLogger>
-
-/**
- *  Singleton method
- *
- *  @return the shared instance
- */
-@property (class, readonly, strong) DDOSLogger *sharedInstance;
-
-@end
+NS_ASSUME_NONNULL_END

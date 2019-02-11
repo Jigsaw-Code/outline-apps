@@ -6,7 +6,7 @@ third_party {
     type: GIT
     value: "https://github.com/CocoaLumberjack/CocoaLumberjack"
   }
-  version: "3.4.2"
+  version: "3.5.1"
   local_modifications: "We use Carthage to manage CocoaLumberjack."
-  last_upgrade_date { year: 2018 month: 9 day: 26 }
+  last_upgrade_date { year: 2019 month: 2 day: 8 }
 }

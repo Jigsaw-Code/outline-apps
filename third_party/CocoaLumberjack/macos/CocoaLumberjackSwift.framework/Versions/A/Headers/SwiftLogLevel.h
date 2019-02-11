@@ -13,26 +13,14 @@
 //   to endorse or promote products derived from this software without specific
 //   prior written permission of Deusty, LLC.
 
-#import <Foundation/Foundation.h>
+#ifndef SwiftLogLevel_h
+#define SwiftLogLevel_h
 
-// Disable legacy macros
-#ifndef DD_LEGACY_MACROS
-    #define DD_LEGACY_MACROS 0
+#ifndef DD_LOG_LEVEL
+// #warning 'DD_LOG_LEVEL' is not defined. Using 'DDLogLevelAll' as default. Consider defining it yourself.
+#define DD_LOG_LEVEL DDLogLevelAll
 #endif
 
-#import "DDLog.h"
+static const DDLogLevel DDDefaultLogLevel = DD_LOG_LEVEL;
 
-/**
- * This class provides a logger for the Apple os_log facility.
- **/
-API_AVAILABLE(macos(10.12), ios(10.0), watchos(3.0), tvos(10.0))
-@interface DDOSLogger : DDAbstractLogger <DDLogger>
-
-/**
- *  Singleton method
- *
- *  @return the shared instance
- */
-@property (class, readonly, strong) DDOSLogger *sharedInstance;
-
-@end
+#endif /* SwiftLogLevel_h */

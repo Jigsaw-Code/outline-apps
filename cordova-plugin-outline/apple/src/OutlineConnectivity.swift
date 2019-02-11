@@ -61,7 +61,7 @@ class OutlineConnectivity: NSObject, GCDAsyncSocketDelegate {
     var info: UnsafeMutablePointer<addrinfo>?
     var err = getaddrinfo(ipv4Address, nil, &hints, &info)
     if err != 0 {
-      DDLogError("getaddrinfo failed \(gai_strerror(err))")
+      DDLogError("getaddrinfo failed \(String(describing: gai_strerror(err)))")
       return nil
     }
     defer {

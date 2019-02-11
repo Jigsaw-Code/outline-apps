@@ -13,26 +13,19 @@
 //   to endorse or promote products derived from this software without specific
 //   prior written permission of Deusty, LLC.
 
-#import <Foundation/Foundation.h>
+#import "CocoaLumberjack.h"
 
-// Disable legacy macros
-#ifndef DD_LEGACY_MACROS
-    #define DD_LEGACY_MACROS 0
-#endif
+NS_ASSUME_NONNULL_BEGIN
 
-#import "DDLog.h"
+@interface DDFileLogger (Internal)
 
-/**
- * This class provides a logger for the Apple os_log facility.
- **/
-API_AVAILABLE(macos(10.12), ios(10.0), watchos(3.0), tvos(10.0))
-@interface DDOSLogger : DDAbstractLogger <DDLogger>
+- (void)logData:(NSData *)data;
 
-/**
- *  Singleton method
- *
- *  @return the shared instance
- */
-@property (class, readonly, strong) DDOSLogger *sharedInstance;
+// Will assert if used outside logger's queue.
+- (void)lt_logData:(NSData *)data;
+
+- (NSData *)lt_dataForMessage:(DDLogMessage *)message;
 
 @end
+
+NS_ASSUME_NONNULL_END
