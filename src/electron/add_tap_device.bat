@@ -107,7 +107,16 @@ netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
 if %errorlevel% neq 0 goto :loop
 
 :configure
-echo (Re-)configuring TAP network device...
+
+:: Try to enable the device, in case it's somehow been disabled.
+::
+:: Annoyingly, this returns an error and outputs a confusing message if the device exists and is
+:: already enabled:
+::   This network connection does not exist.
+::
+:: So, continue even if this command fails - and always include its output.
+echo (Re-)enabling TAP network device...
+netsh interface set interface "%DEVICE_NAME%" admin=enabled
 
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
@@ -115,6 +124,7 @@ echo (Re-)configuring TAP network device...
 :: script will fail and the installer will show an error message to the user.
 :: TODO: Actually search the system for an unused subnet or make the subnet
 ::       configurable in the Outline client.
+echo Configuring TAP device subnet...
 netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0
 if %errorlevel% neq 0 (
   echo Could not set TAP network device subnet. >&2
