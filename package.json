@@ -4,6 +4,7 @@
   "scripts": {
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
     "postinstall": "bower install || echo no bower needed",
+    "tsc:watch": "tsc -p src/www --watch",
     "do": "bash ./scripts/do_action.sh"
   },
   "dependencies": {
