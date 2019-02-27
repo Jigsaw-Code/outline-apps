@@ -243,19 +243,15 @@ app.on('ready', () => {
     app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
   }
 
-  // because autostart doesn't work for linux then we just assume we
-  // are auto started on linux
+  // TODO: --autostart is never set on Linux, what can we do?
   if (process.argv.includes(Options.AUTOSTART)) {
     connectionStore.load()
         .then((connection) => {
-          // The user was connected at shutdown. Create the main window and wait for the UI ready
-          // event to start the VPN.
           createWindow(connection);
         })
-        .catch((err) => {
-          // The user was not connected at shutdown.
-          // Quitting the app will reset the system proxy configuration before exiting.
-          console.log('The user was not connected at shutdown.');
+        .catch((e) => {
+          // No connection at shutdown, or failure - either way, we need a main window.
+          createWindow();
         });
   } else {
     createWindow();
