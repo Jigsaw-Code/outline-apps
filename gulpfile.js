@@ -85,11 +85,18 @@ function copyBabelPolyfill() {
 //   https://github.com/gulpjs/gulp/tree/master/docs/recipes
 function browserifyAndBabelify() {
   let browserifyInstance =
-      browserify({entries: `${WEBAPP_OUT}/app/cordova_main.js`, debug: true}).transform('babelify', {
-        // Transpile code in node_modules, too.
-        global: true,
-        presets: ['env']
-      });
+      browserify({
+            entries: `${WEBAPP_OUT}/app/cordova_main.js`,
+            debug: true,
+            // This enables caching, which makes it much faster on repeated runs (when watching)
+            cache: {},
+            packageCache: {}
+          })
+          .transform('babelify', {
+            // Transpile code in node_modules, too.
+            global: true,
+            presets: ['env']
+          });
   if (shouldWatch) {
     browserifyInstance = watch(browserifyInstance);
   }
