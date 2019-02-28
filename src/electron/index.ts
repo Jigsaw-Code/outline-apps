@@ -250,8 +250,9 @@ app.on('ready', () => {
           createWindow(connection);
         })
         .catch((e) => {
-          // No connection at shutdown, or failure - either way, we need a main window.
-          createWindow();
+          // No connection at shutdown, or failure - either way, no need to start.
+          // TODO: Instead of quitting, how about creating the system tray icon?
+          app.quit();
         });
   } else {
     createWindow();
