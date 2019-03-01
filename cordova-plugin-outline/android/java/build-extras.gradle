@@ -1,4 +1,11 @@
+repositories {
+  flatDir {
+    dirs 'src/main/libs'
+  }
+}
+
 dependencies {
+  compile(name:'tun2socks', ext:'aar')
   compile 'com.android.support:appcompat-v7:23.4.0'
   compile 'io.sentry:sentry-android:1.7.3'
 }

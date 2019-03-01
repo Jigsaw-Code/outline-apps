@@ -195,7 +195,8 @@ public class VpnTunnelService extends VpnService {
         ? connectionStore.isUdpSupported()
         : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
-      vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress(), remoteUdpForwardingEnabled);
+      vpnTunnel.connectTunnel(Shadowsocks.LOCAL_SERVER_ADDRESS,
+          Short.parseShort(Shadowsocks.LOCAL_SERVER_PORT), remoteUdpForwardingEnabled);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
