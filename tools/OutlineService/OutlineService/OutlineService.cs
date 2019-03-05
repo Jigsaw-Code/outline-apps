@@ -504,9 +504,11 @@ namespace OutlineService
                 {
                     eventLog.WriteEntry($"failed to delete route to proxy: {e.Message}", EventLogEntryType.Error);
                 }
-
                 this.proxyIp = null;
+            }
 
+            if (gatewayIp != null)
+            {
                 try
                 {
                     RemoveReservedSubnetBypass(gatewayInterfaceIndex);
@@ -516,10 +518,7 @@ namespace OutlineService
                 {
                     eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
                 }
-            }
-            else
-            {
-                eventLog.WriteEntry("do not know proxy address, cannot delete route to proxy or LAN bypass routes", EventLogEntryType.Warning);
+                this.gatewayIp = null;
             }
 
             try
@@ -780,6 +779,8 @@ namespace OutlineService
         // - https://github.com/reactos/reactos/blob/master/dll/win32/iphlpapi/iphlpapi_main.c
         private void GetSystemIpv4Gateway(string proxyIp)
         {
+            gatewayIp = null;
+
             int tapInterfaceIndex;
             try
             {
@@ -842,7 +843,6 @@ namespace OutlineService
 
             if (bestRow == null)
             {
-                gatewayIp = null;
                 throw new Exception("no gateway found");
             }
 
