@@ -918,6 +918,12 @@ namespace OutlineService
             }
             catch (Exception e)
             {
+                // TODO: This isn't quite right: because we successfully updated
+                //       the route to the proxy, the client *is* connected; it's
+                //       just not "fully" connected, in the way we like. We
+                //       should distinguish between "cannot reconnect right now,
+                //       because no internet" and "cannot reconnect because
+                //       netsh commands are failing".
                 eventLog.WriteEntry($"could not update LAN bypass routes: {e.Message}");
                 return;
             }
