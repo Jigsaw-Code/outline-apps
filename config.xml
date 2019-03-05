@@ -24,7 +24,7 @@
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <preference name="android-minSdkVersion" value="21" />
-    <preference name="android-targetSdkVersion" value="26" />
+    <preference name="android-targetSdkVersion" value="28" />
     <preference name="AndroidLaunchMode" value="singleInstance" />
     <preference name="ShowSplashScreenSpinner" value="false" />
 
@@ -61,6 +61,8 @@
                 <data android:scheme="https" android:host="s3.amazonaws.com" android:path="/outline-vpn/invite.html" />
             </intent-filter>
         </custom-config-file>
+
+        <hook type="after_platform_add" src="scripts/update_android_target_version.js" />
     </platform>
 
     <!-- browser -->
