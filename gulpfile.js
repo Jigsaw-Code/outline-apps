@@ -61,13 +61,12 @@ function runCommand(command) {
 //////////////////
 //////////////////
 
-const SRC_WWW = 'src/www';
-const DEST_WWW = 'www';
+const WEBAPP_OUT = 'www';
 
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
 function copyBabelPolyfill() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  return runCommand(`cp -v ${babelPolyfill} ${DEST_WWW}/babel-polyfill.min.js`);
+  return runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);
 }
 
 // Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
@@ -75,7 +74,7 @@ function copyBabelPolyfill() {
 // Useful Gulp/Browserify examples:
 //   https://github.com/gulpjs/gulp/tree/master/docs/recipes
 function browserifyAndBabelify() {
-  return browserify({entries: `${DEST_WWW}/app/cordova_main.js`, debug: true})
+  return browserify({entries: `${WEBAPP_OUT}/app/cordova_main.js`, debug: true})
       .transform('babelify', {
         // Transpile code in node_modules, too.
         global: true,
@@ -84,7 +83,7 @@ function browserifyAndBabelify() {
       .bundle()
       // Transform the bundle() output stream into one regular Gulp plugins understand.
       .pipe(source('cordova_main.js'))
-      .pipe(gulp.dest(DEST_WWW));
+      .pipe(gulp.dest(WEBAPP_OUT));
 }
 
 // Transpiles to |src| to ES5, copying the output to |dest|.
@@ -97,27 +96,30 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-// Note: This is currently done "in-place", i.e. the components are downloaded to src/www and
+// Note: This is currently done "in-place", i.e. the components are downloaded to `WEBAPP_OUT` and
 // transpiled there, but this seems to work just fine (idempodent).
 function transpileBowerComponents() {
   // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
   // polyfills, and minified files, which are generally already transpiled.
   const bowerComponentsSrc = [
-    `${DEST_WWW}/bower_components/**/*.html`, `${DEST_WWW}/bower_components/**/*.js`,
-    `!${DEST_WWW}/bower_components/webcomponentsjs/**/*.js`,
-    `!${DEST_WWW}/bower_components/webcomponentsjs/**/*.html`,
-    `!${DEST_WWW}/bower_components/**/*.min.js`
+    `${WEBAPP_OUT}/bower_components/**/*.html`, `${WEBAPP_OUT}/bower_components/**/*.js`,
+    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.js`,
+    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.html`,
+    `!${WEBAPP_OUT}/bower_components/**/*.min.js`
   ];
-  const bowerComponentsDest = `${DEST_WWW}/bower_components`;
+  const bowerComponentsDest = `${WEBAPP_OUT}/bower_components`;
   return transpile(bowerComponentsSrc, bowerComponentsDest);
 }
 
+// Transpiling and generating RTL CSS happens sequentially, which means that the output of the first
+// step must be the source of the next; otherwise the last step will clobber the previous steps.
+// To avoid this, we transpile and generate RTL CSS in-place, with `WEBAPP_OUT` as input and output.
 function transpileUiComponents() {
-  return transpile([`${SRC_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
+  return transpile([`${WEBAPP_OUT}/ui_components/*.html`], `${WEBAPP_OUT}/ui_components`);
 }
 
 function rtlCss() {
-  return generateRtlCss(`${SRC_WWW}/ui_components/*.html`, `${DEST_WWW}/ui_components`)
+  return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.html`, `${WEBAPP_OUT}/ui_components`)
 }
 
 function buildWebApp() {
@@ -185,7 +187,7 @@ const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
 function writeEnvJson() {
   // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
   return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
-      DEST_WWW}/environment.json`);
+      WEBAPP_OUT}/environment.json`);
 }
 
 exports.build = gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova);
