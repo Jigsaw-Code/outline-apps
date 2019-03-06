@@ -62,7 +62,7 @@
             </intent-filter>
         </custom-config-file>
 
-        <hook type="after_platform_add" src="scripts/update_android_target_version.js" />
+        <hook type="after_platform_add" src="scripts/update_android_target_version.sh" />
     </platform>
 
     <!-- browser -->
