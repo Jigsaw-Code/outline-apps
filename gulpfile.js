@@ -61,7 +61,6 @@ function runCommand(command) {
 //////////////////
 //////////////////
 
-const SRC_WWW = 'src/www';
 const DEST_WWW = 'www';
 
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
@@ -113,11 +112,11 @@ function transpileBowerComponents() {
 }
 
 function transpileUiComponents() {
-  return transpile([`${SRC_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
+  return transpile([`${DEST_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
 }
 
 function rtlCss() {
-  return generateRtlCss(`${SRC_WWW}/ui_components/*.html`, `${DEST_WWW}/ui_components`)
+  return generateRtlCss(`${DEST_WWW}/ui_components/*.html`, `${DEST_WWW}/ui_components`)
 }
 
 function buildWebApp() {
