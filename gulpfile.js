@@ -96,7 +96,7 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-// Note: This is currently done "in-place", i.e. the components are downloaded to src/www and
+// Note: This is currently done "in-place", i.e. the components are copied to `DEST_WWW` and
 // transpiled there, but this seems to work just fine (idempodent).
 function transpileBowerComponents() {
   // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
@@ -111,6 +111,9 @@ function transpileBowerComponents() {
   return transpile(bowerComponentsSrc, bowerComponentsDest);
 }
 
+// Transpiling and generating RTL CSS happens sequentially, which means that the output of the first
+// step must be the source of the next; otherwise the last step will clobber the previous steps.
+// To avoid this, we transpile and generate RTL CSS in-place, with `DEST_WWW` as input and output.
 function transpileUiComponents() {
   return transpile([`${DEST_WWW}/ui_components/*.html`], `${DEST_WWW}/ui_components`);
 }
