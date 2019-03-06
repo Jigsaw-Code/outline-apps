@@ -26,7 +26,7 @@ import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
-import * as process_manager from './process_manager';
+import {ConnectionMediator} from './process_manager';
 
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
@@ -57,6 +57,8 @@ const trayIconImages = {
 const enum Options {
   AUTOSTART = '--autostart'
 }
+
+let currentConnection: ConnectionMediator|undefined;
 
 function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
@@ -99,12 +101,11 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow!.webContents.send('localizationRequest', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
+
     if (connectionAtShutdown) {
-      const serverId = connectionAtShutdown.id;
-      console.info(`Automatically starting connection ${serverId}`);
-      sendConnectionStatus(ConnectionStatus.RECONNECTING, serverId);
-      // TODO: Handle errors, report.
-      startVpn(connectionAtShutdown.config, serverId, true);
+      console.info(`was connected at shutdown, reconnecting`);
+      sendConnectionStatus(ConnectionStatus.RECONNECTING, connectionAtShutdown.id);
+      startVpn(connectionAtShutdown.config, connectionAtShutdown.id, true);
     }
   });
 
@@ -268,9 +269,12 @@ app.on('activate', () => {
 });
 
 app.on('quit', () => {
-  process_manager.teardownVpn().catch((e) => {
-    console.error(`could not tear down proxy on exit`, e);
-  });
+  if (currentConnection) {
+    currentConnection.stop();
+    currentConnection.onceStopped.catch((e) => {
+      console.error(`could not tear down proxy on exit`, e);
+    });
+  }
 });
 
 promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
@@ -283,33 +287,26 @@ promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => 
       });
 });
 
-function startVpn(config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
-  return process_manager.teardownVpn()
-      .catch((e) => {
-        console.error(`error tearing down the VPN`, e);
-      })
-      .then(() => {
-        return process_manager
-            .startVpn(
-                config,
-                (status: ConnectionStatus) => {
-                  createTrayIcon(status);
-                  sendConnectionStatus(status, id);
-                  if (status === ConnectionStatus.DISCONNECTED) {
-                    connectionStore.clear().catch((err) => {
-                      console.error('Failed to clear connection store.');
-                    });
-                  }
-                },
-                isAutoConnect)
-            .then((newConfig) => {
-              connectionStore.save({config: newConfig, id}).catch((err) => {
-                console.error('Failed to store connection.');
-              });
-              sendConnectionStatus(ConnectionStatus.CONNECTED, id);
-              createTrayIcon(ConnectionStatus.CONNECTED);
-            });
-      });
+// Invoked by both the start-proxying event handler and auto-connect.
+async function startVpn(
+    config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
+  if (currentConnection) {
+    throw new Error('already connected');
+  }
+
+  console.log(`*** connecting to ${id}...`);
+  return ConnectionMediator.newInstance(config, isAutoConnect).then((newConnection) => {
+    currentConnection = newConnection;
+
+    newConnection.onceStopped.then(() => {
+      console.log(`*** disconnected from ${id}`);
+      currentConnection = undefined;
+      sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
+    });
+
+    console.log(`*** connected to ${id}`);
+    sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+  });
 }
 
 function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
@@ -336,16 +333,50 @@ function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
   }
 }
 
+// TODO: reachability tests
 promiseIpc.on(
-    'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return startVpn(args.config, args.id).catch((e) => {
-        console.error(`could not connect: ${e.name} (${e.message})`);
-        throw errors.toErrorCode(e);
-      });
+    'start-proxying', async (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
+      // yes, it's weird the UI doesn't do this.
+      if (currentConnection) {
+        console.log('*** disconnecting from current server...');
+        currentConnection.stop();
+        await currentConnection.onceStopped;
+      }
+
+      // The IP is needed by auto-connect. Look it up now to avoid repeatedly resolving it in a
+      // (possibly) fingerprint-able way.
+      return connectivity.lookupIp(args.config.host || '')
+          .catch((e) => {
+            // TODO: pick a concrete error
+            throw new Error('could not resolve hostname');
+          })
+          .then((ip) => {
+            args.config.host = ip;
+            return startVpn(args.config, args.id)
+                .then(
+                    () => {
+                      connectionStore.save(args).catch((e) => {
+                        console.error('Failed to store connection.');
+                      });
+                    },
+                    (e) => {
+                      console.error(`could not connect: ${e.name} (${e.message})`);
+                      throw errors.toErrorCode(e);
+                    });
+          });
     });
 
 promiseIpc.on('stop-proxying', () => {
-  return process_manager.teardownVpn();
+  if (!currentConnection) {
+    return Promise.resolve();
+  }
+
+  connectionStore.clear().catch((e) => {
+    console.error('Failed to clear connection store.');
+  });
+
+  currentConnection.stop();
+  return currentConnection.onceStopped;
 });
 
 // This event fires whenever the app's window receives focus.
