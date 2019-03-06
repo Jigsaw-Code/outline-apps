@@ -96,7 +96,7 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-// Note: This is currently done "in-place", i.e. the components are copied to `WEBAPP_OUT` and
+// Note: This is currently done "in-place", i.e. the components are downloaded to `WEBAPP_OUT` and
 // transpiled there, but this seems to work just fine (idempodent).
 function transpileBowerComponents() {
   // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
