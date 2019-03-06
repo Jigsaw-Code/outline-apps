@@ -79,7 +79,7 @@ export class RoutingService {
       const socket = createConnection(SERVICE_NAME, () => {
                        socket.once('data', (data) => {
                          const message: RoutingServiceResponse = JSON.parse(data.toString());
-                         if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING &&
+                         if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
                              message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
                            // TODO: concrete error
                            R(new Error(message.errorMessage));
