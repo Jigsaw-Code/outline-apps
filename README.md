@@ -1,32 +1,31 @@
 # Outline Client
 [![Build Status](https://travis-ci.org/Jigsaw-Code/outline-client.svg?branch=master)](https://travis-ci.org/Jigsaw-Code/outline-client)
 
-The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS.  The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server that has UDP support enabled.
+The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS.  The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
 The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0.  Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
 
 ## Requirements for all builds
 
-All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to other per-platform requirements.  After cloning this repo, you should run "yarn" to install all dependencies.
+All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to other per-platform requirements. After cloning this repo, you should run "yarn" to install all dependencies.
 
 ## Building the web app
 
-Outline clients shares the same web app across all platforms.  This code is located in the www directory.  If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
+Outline clients shares the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    yarn gulp build --platform=browser --watch
+    yarn gulp build --platform=browser
+    yarn cordova run browser
 
-This command will automatically rebuild after any typescript file in the www directory changes, however it will need to be re-run to pick up other file changes.
+The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
-Browser platform development will use fake servers to test successful and unsuccessful connections.
-
-UI components are located in [www/ui_components](www/ui_components).  The app logic is located in [www/app](www/app).
+UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](www/app).
 
 ## Building the Android app
 
 Additional requirements for Android:
 
 * Android Studio
-* Android SDK 26
+* Android SDK 28
 
 To build for android, run:
 
@@ -56,7 +55,7 @@ A Docker image with all pre-requisites for Android builds is included.  To build
 Additional requirements for Apple:
 
 * An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
-* XCode 9+ ([download](https://developer.apple.com/xcode/))
+* XCode 10+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools
 
 To build for macOS (OS X), run:
