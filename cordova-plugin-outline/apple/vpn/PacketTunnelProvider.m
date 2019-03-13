@@ -52,7 +52,6 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 @property (nonatomic) DDFileLogger *fileLogger;
 @property (nonatomic) OutlineConnection *connection;
 @property (nonatomic) OutlineConnectionStore *connectionStore;
-@property(nonatomic) NWPath *lastDefaultPath;
 @end
 
 @implementation PacketTunnelProvider
@@ -146,16 +145,16 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                         [self startTun2SocksWithPort:kShadowsocksLocalPort];
                                         [self execAppCallbackForAction:kActionStart
                                                              errorCode:noError];
-
                                         // Listen for network changes.
                                         [self addObserver:self
                                                forKeyPath:kDefaultPathKey
-                                                  options:0
+                                                  options:NSKeyValueObservingOptionOld
                                                   context:nil];
 
                                         [self.connectionStore save:connection];
                                         self.connectionStore.isUdpSupported = isUdpSupported;
                                         self.connectionStore.status = ConnectionStatusConnected;
+
                                       } else {
                                         [self execAppCallbackForAction:kActionStart
                                                              errorCode:vpnPermissionNotGranted];
@@ -177,6 +176,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   [TunnelInterface stop];
   self.connectionStore.status = ConnectionStatusDisconnected;
   self.isTunnelConnected = NO;
+  [self removeObserver:self forKeyPath:kDefaultPathKey];
   [self.shadowsocks stop:^(ErrorCode errorCode) {
     DDLogInfo(@"Shadowsocks stopped");
     [self cancelTunnelWithError:nil];
@@ -349,16 +349,22 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   if (![kDefaultPathKey isEqualToString:keyPath]) {
     return;
   }
+  // Since iOS 11, we have observed that this KVO event fires repeatedly when connecting over Wifi,
+  // even though the underlying network has not changed (i.e. `isEqualToPath` returns false),
+  // leading to "wakeup crashes" due to excessive network activity. Guard against false positives by
+  // comparing the paths' string description, which includes properties not exposed by the class.
+  NWPath *lastPath = change[NSKeyValueChangeOldKey];
+  if (lastPath == nil || [lastPath isEqualToPath:self.defaultPath] ||
+      [lastPath.description isEqualToString:self.defaultPath.description]) {
+    return;
+  }
+
   dispatch_async(dispatch_get_main_queue(), ^{
     [self handleNetworkChange:self.defaultPath];
   });
 }
 
 - (void)handleNetworkChange:(NWPath *)newDefaultPath {
-  if (newDefaultPath == nil || [newDefaultPath isEqualToPath:self.lastDefaultPath]) {
-    return;
-  }
-  self.lastDefaultPath = newDefaultPath;
   DDLogInfo(@"Network connectivity changed");
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
@@ -566,7 +572,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 - (void)onTun2SocksDone {
   DDLogInfo(@"tun2socks done");
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self removeObserver:self forKeyPath:kDefaultPathKey];
 }
 
 # pragma mark - App IPC
