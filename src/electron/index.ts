@@ -346,10 +346,6 @@ promiseIpc.on(
       // The IP is needed by auto-connect. Look it up now to avoid repeatedly resolving it in a
       // (possibly) fingerprint-able way.
       return connectivity.lookupIp(args.config.host || '')
-          .catch((e) => {
-            // TODO: pick a concrete error
-            throw new Error('could not resolve hostname');
-          })
           .then((ip) => {
             args.config.host = ip;
           })
