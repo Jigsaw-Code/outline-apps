@@ -20,8 +20,8 @@ import {pathToEmbeddedBinary} from './util';
 
 const isLinux = platform() === 'linux';
 
-const PROXY_ADDRESS = '127.0.0.1';
-const PROXY_PORT = 1081;
+export const PROXY_ADDRESS = '127.0.0.1';
+export const PROXY_PORT = 1081;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';

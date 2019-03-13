@@ -26,7 +26,7 @@ import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
-import {ConnectionMediator} from './process_manager';
+import {ConnectionMediator, PROXY_ADDRESS, PROXY_PORT} from './process_manager';
 
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
@@ -333,7 +333,7 @@ function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
   }
 }
 
-// TODO: reachability tests
+// Connects to the specified server, if that server is reachable and the credentials are valid.
 promiseIpc.on(
     'start-proxying', async (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
       // yes, it's weird the UI doesn't do this.
@@ -352,17 +352,35 @@ promiseIpc.on(
           })
           .then((ip) => {
             args.config.host = ip;
-            return startVpn(args.config, args.id)
-                .then(
-                    () => {
-                      connectionStore.save(args).catch((e) => {
-                        console.error('Failed to store connection.');
-                      });
-                    },
-                    (e) => {
-                      console.error(`could not connect: ${e.name} (${e.message})`);
-                      throw errors.toErrorCode(e);
-                    });
+          })
+          .then(() => {
+            return connectivity.isServerReachableByIp(
+                args.config.host || '', args.config.port || 0);
+          })
+          .then(() => {
+            return startVpn(args.config, args.id);
+          })
+          .then(() => {
+            // This is a bit ugly, though hard to avoid given that the Shadowsocks proxy needs to be
+            // up and running in order to perform the test *and* we don't want the call to startVpn
+            // to fail when we are performing auto-connect.
+            return connectivity.validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+          })
+          .then(() => {
+            connectionStore.save(args).catch((e) => {
+              console.error('Failed to store connection.');
+            });
+          })
+          .catch((e) => {
+            console.error(`could not connect: ${e.name} (${e.message})`);
+
+            // This should have been set by a successful call to #startVpn; see the note above for
+            // why we don't tie #startVpn success to #validateServerCredentials.
+            if (currentConnection) {
+              currentConnection.stop();
+            }
+
+            throw errors.toErrorCode(e);
           });
     });
 
