@@ -88,6 +88,33 @@ export function isServerReachableByIp(serverIp: string, serverPort: number) {
       REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
 }
 
+// TODO: consolidate with the #isServerReachable functions
+export function waitForListen(host: string, port: number, maxAttempts = 1, retryIntervalMs = 100) {
+  let attempt = 0;
+  return new Promise((fulfill, reject) => {
+    const attemptConnect = () => {
+      attempt++;
+
+      const socket = new net.Socket();
+      socket
+          .connect(
+              {host, port},
+              () => {
+                socket.end();
+                fulfill();
+              })
+          .on('error', () => {
+            if (attempt < maxAttempts) {
+              setTimeout(attemptConnect, retryIntervalMs);
+            } else {
+              reject(new Error('could not connect to host:port'));
+            }
+          });
+    };
+    attemptConnect();
+  });
+}
+
 // Resolves with true iff a response can be received from a semi-randomly-chosen website through the
 // Shadowsocks proxy.
 //
