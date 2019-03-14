@@ -103,9 +103,16 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     interceptShadowsocksLink(process.argv);
 
     if (connectionAtShutdown) {
-      console.info(`was connected at shutdown, reconnecting`);
+      console.info(`*** was connected at shutdown, reconnecting to ${connectionAtShutdown.id}`);
       sendConnectionStatus(ConnectionStatus.RECONNECTING, connectionAtShutdown.id);
-      startVpn(connectionAtShutdown.config, connectionAtShutdown.id, true);
+      startVpn(connectionAtShutdown.config, connectionAtShutdown.id, true)
+          .then(
+              () => {
+                console.log(`*** reconnected to ${connectionAtShutdown.id}`);
+              },
+              (e) => {
+                console.error(`*** could not reconnect: ${e.name} (${e.message})`);
+              });
     }
   });
 
@@ -294,7 +301,6 @@ async function startVpn(
     throw new Error('already connected');
   }
 
-  console.log(`*** connecting to ${id}...`);
   return ConnectionMediator.newInstance(config, isAutoConnect).then((newConnection) => {
     currentConnection = newConnection;
 
@@ -304,7 +310,6 @@ async function startVpn(
       sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
     });
 
-    console.log(`*** connected to ${id}`);
     sendConnectionStatus(ConnectionStatus.CONNECTED, id);
   });
 }
@@ -343,6 +348,8 @@ promiseIpc.on(
         await currentConnection.onceStopped;
       }
 
+      console.log(`*** connecting to ${args.id}...`);
+
       // The IP is needed by auto-connect. Look it up now to avoid repeatedly resolving it in a
       // (possibly) fingerprint-able way.
       return connectivity.lookupIp(args.config.host || '')
@@ -356,12 +363,14 @@ promiseIpc.on(
             return startVpn(args.config, args.id);
           })
           .then(() => {
+            console.log(`*** connected to ${args.id}`);
+
             connectionStore.save(args).catch((e) => {
               console.error('Failed to store connection.');
             });
           })
           .catch((e) => {
-            console.error(`could not connect: ${e.name} (${e.message})`);
+            console.error(`*** could not connect: ${e.name} (${e.message})`);
             throw errors.toErrorCode(e);
           });
     });
