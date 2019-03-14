@@ -89,7 +89,7 @@ export class ConnectionMediator {
 
   private constructor(
       private readonly routing: RoutingService, private readonly ssLocal: SsLocal,
-      udpEnabled: boolean) {
+      private udpEnabled: boolean) {
     const exits = [
       this.routing.onceStopped.then(() => {
         console.log(`disconnected from routing service`);
@@ -133,10 +133,30 @@ export class ConnectionMediator {
 
   private networkChanged(status: ConnectionStatus) {
     if (status === ConnectionStatus.CONNECTED) {
-      // TODO: restart tun2socks when UDP support changes
-      if (this.reconnectedListener) {
-        this.reconnectedListener();
-      }
+      // re-test for UDP availability and, if necessary, restart tun2socks.
+      checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)
+          .then(
+              (udpNowEnabled) => {
+                if (udpNowEnabled === this.udpEnabled) {
+                  console.log('no change in UDP availability');
+                  return;
+                }
+
+                console.log(`UDP support change: ${this.udpEnabled} -> ${udpNowEnabled}`);
+
+                this.udpEnabled = udpNowEnabled;
+                this.tun2socks.restart(this.udpEnabled);
+
+                // of course, tun2socks may immediately exit but in that case
+                // onceStopped will fulfill.
+                if (this.reconnectedListener) {
+                  this.reconnectedListener();
+                }
+              },
+              (e) => {
+                // TODO: what can we do?
+                console.error(`could not test for UDP availability: ${e.message}`);
+              });
     } else if (status === ConnectionStatus.RECONNECTING) {
       // the routing service cannot currently connect (probably there's no
       // network connectivity).
@@ -230,6 +250,25 @@ class SingletonProcess {
     this.process.on('exit', onExit.bind((this)));
   }
 
+  // NOTE: definitely not tested for multiple concurrent calls.
+  protected restartInternal(args: string[]) {
+    if (!this.process) {
+      throw new Error('not running');
+    }
+
+    // cache the current exit listener - if any - and swap it back in once the
+    // current process has exited.
+    const previousListener = this.exitListener;
+    this.setExitListener(() => {
+      console.log('current process exited, restarting');
+      this.setExitListener(previousListener);
+      this.startInternal(args);
+    });
+
+    // and restart!
+    this.stop();
+  }
+
   stop() {
     if (this.process) {
       this.process.kill();
@@ -262,7 +301,7 @@ class Tun2socks extends SingletonProcess {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
 
-  start(udpEnabled: boolean) {
+  private getArgs(udpEnabled: boolean) {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
@@ -285,6 +324,15 @@ class Tun2socks extends SingletonProcess {
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
 
-    this.startInternal(args);
+    return args;
+  }
+
+  start(udpEnabled: boolean) {
+    this.startInternal(this.getArgs(udpEnabled));
+  }
+
+  restart(udpEnabled: boolean) {
+    console.log('restarting');
+    this.restartInternal(this.getArgs(udpEnabled));
   }
 }
