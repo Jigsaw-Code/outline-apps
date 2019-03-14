@@ -17,7 +17,7 @@ import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
 
-import {checkUdpForwardingEnabled, waitForListen} from './connectivity';
+import {checkUdpForwardingEnabled, isServerReachable} from './connectivity';
 import {RoutingService} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
@@ -62,7 +62,8 @@ export class ConnectionMediator {
       });
       ssLocal.start(config);
 
-      waitForListen(PROXY_ADDRESS, PROXY_PORT)
+      // ss-local should always start: use a very short timeout with fast retries.
+      isServerReachable(PROXY_ADDRESS, PROXY_PORT, 10, 10, 100)
           .then(() => {
             return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
           })

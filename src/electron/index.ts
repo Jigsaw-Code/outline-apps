@@ -278,7 +278,7 @@ app.on('quit', () => {
 });
 
 promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
-  return connectivity.isServerReachable(config)
+  return connectivity.isServerReachable(config.host || '', config.port || 0)
       .then(() => {
         return true;
       })
@@ -350,8 +350,7 @@ promiseIpc.on(
             args.config.host = ip;
           })
           .then(() => {
-            return connectivity.isServerReachableByIp(
-                args.config.host || '', args.config.port || 0);
+            return connectivity.isServerReachable(args.config.host || '', args.config.port || 0);
           })
           .then(() => {
             return startVpn(args.config, args.id);

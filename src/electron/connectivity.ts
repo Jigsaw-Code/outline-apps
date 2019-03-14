@@ -59,57 +59,32 @@ export function lookupIp(hostname: string): Promise<string> {
       DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
-// Resolves with true iff a TCP connection can be established with the Shadowsocks server.
-//
-// This has the same function as ShadowsocksConnectivity.isServerReachable in
-// cordova-plugin-outline.
-export function isServerReachable(config: cordova.plugins.outline.ServerConfig) {
-  return lookupIp(config.host || '').then((ip) => {
-    return isServerReachableByIp(ip, config.port || 0);
-  });
-}
-
-// As #isServerReachable but does not perform a DNS lookup.
-export function isServerReachableByIp(serverIp: string, serverPort: number) {
-  return util.timeoutPromise(
-      new Promise<void>((fulfill, reject) => {
-        const socket = new net.Socket();
-        socket
-            .connect(
-                {host: serverIp, port: serverPort},
-                () => {
-                  socket.end();
-                  fulfill();
-                })
-            .on('error', () => {
-              reject(new errors.ServerUnreachable());
-            });
-      }),
-      REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
-}
-
-// TODO: consolidate with the #isServerReachable functions
-export function waitForListen(host: string, port: number, maxAttempts = 1, retryIntervalMs = 100) {
+// Resolves with true iff a TCP connection can be established with the specified destination.
+export function isServerReachable(
+    host: string, port: number, timeout = REACHABILITY_TEST_TIMEOUT_MS, maxAttempts = 1,
+    retryIntervalMs = 100) {
   let attempt = 0;
   return new Promise((fulfill, reject) => {
     const attemptConnect = () => {
       attempt++;
 
       const socket = new net.Socket();
-      socket
-          .connect(
-              {host, port},
-              () => {
-                socket.end();
-                fulfill();
-              })
-          .on('error', () => {
-            if (attempt < maxAttempts) {
-              setTimeout(attemptConnect, retryIntervalMs);
-            } else {
-              reject(new Error('could not connect to host:port'));
-            }
-          });
+      socket.on('error', () => {
+        if (attempt < maxAttempts) {
+          setTimeout(attemptConnect, retryIntervalMs);
+        } else {
+          reject(new errors.ServerUnreachable());
+        }
+      });
+
+      if (timeout) {
+        socket.setTimeout(timeout);
+      }
+
+      socket.connect({host, port}, () => {
+        socket.end();
+        fulfill();
+      });
     };
     attemptConnect();
   });
