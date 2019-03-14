@@ -17,15 +17,15 @@ import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
 
-import {checkUdpForwardingEnabled, isServerReachable} from './connectivity';
+import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
 import {RoutingService} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
 
-export const PROXY_ADDRESS = '127.0.0.1';
-export const PROXY_PORT = 1081;
+const PROXY_ADDRESS = '127.0.0.1';
+const PROXY_PORT = 1081;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
@@ -64,6 +64,14 @@ export class ConnectionMediator {
 
       // ss-local should always start: use a very short timeout with fast retries.
       isServerReachable(PROXY_ADDRESS, PROXY_PORT, 10, 10, 100)
+          .then(() => {
+            // Don't validate credentials on boot: if the key was revoked, we want the system to
+            // stay "connected" so that traffic doesn't leak.
+            if (isAutoConnect) {
+              return;
+            }
+            return validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+          })
           .then(() => {
             return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
           })
