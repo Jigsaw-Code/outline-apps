@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, spawn} from 'child_process';
+import {ChildProcess, execSync, spawn} from 'child_process';
 import {platform} from 'os';
+
+import * as errors from '../www/model/errors';
 
 import {checkUdpForwardingEnabled, waitForListen} from './connectivity';
 import {RoutingService} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
 const isLinux = platform() === 'linux';
+const isWindows = platform() === 'win32';
 
 export const PROXY_ADDRESS = '127.0.0.1';
 export const PROXY_PORT = 1081;
@@ -42,6 +45,14 @@ export class ConnectionMediator {
 
   static newInstance(config: cordova.plugins.outline.ServerConfig, isAutoConnect: boolean):
       Promise<ConnectionMediator> {
+    if (isWindows) {
+      try {
+        testTapDevice();
+      } catch (e) {
+        return Promise.reject(new errors.SystemConfigurationException(e.message));
+      }
+    }
+
     return new Promise((F, R) => {
       // test whether UDP is available; this determines the flags passed to tun2socks.
       // to perform this test, ss-local must be up and running.
@@ -105,6 +116,44 @@ export class ConnectionMediator {
     this.routing.stop();
     this.ssLocal.stop();
     this.tun2socks.stop();
+  }
+}
+
+// Raises an error if:
+//  - the TAP device does not exist
+//  - the TAP device does not have the expected IP/subnet
+//
+// Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
+// installer should have failed, too.
+function testTapDevice() {
+  // Sample output:
+  // =============
+  // $ netsh interface ipv4 dump
+  // # ----------------------------------
+  // # IPv4 Configuration
+  // # ----------------------------------
+  // pushd interface ipv4
+  //
+  // reset
+  // set global icmpredirects=disabled
+  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled
+  // ignoredefaultroutes=disabled set interface interface="outline-tap0" forwarding=enabled
+  // advertise=enabled nud=enabled ignoredefaultroutes=disabled add address name="outline-tap0"
+  // address=10.0.85.2 mask=255.255.255.0
+  //
+  // popd
+  // # End of IPv4 configuration
+  const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
+
+  // Find lines containing the TAP device name.
+  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
+  if (tapLines.length < 1) {
+    throw new Error(`TAP device not found`);
+  }
+
+  // Within those lines, search for the expected IP.
+  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
+    throw new Error(`TAP device has wrong IP`);
   }
 }
 
