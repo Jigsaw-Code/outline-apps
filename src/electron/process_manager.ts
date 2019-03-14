@@ -35,8 +35,6 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 // Coordinates routing and helper processes to establish a full-system VPN.
 // Follows the Mediator pattern.
-//
-// TODO: restart tun2socks when UDP support changes
 export class ConnectionMediator {
   private tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
 
@@ -116,8 +114,38 @@ export class ConnectionMediator {
     // once they've *all* failed/exited, we're done.
     this.onceStopped = Promise.all(exits).then(() => {});
 
+    // listen for network change events.
+    this.routing.setNetworkChangeListener(this.networkChanged.bind(this));
+
     // and go.
     this.tun2socks.start(udpEnabled);
+  }
+
+  private reconnectingListener?: () => void;
+  setReconnectingListener(newListener?: () => void) {
+    this.reconnectingListener = newListener;
+  }
+
+  private reconnectedListener?: () => void;
+  setReconnectedListener(newListener?: () => void) {
+    this.reconnectedListener = newListener;
+  }
+
+  private networkChanged(status: ConnectionStatus) {
+    if (status === ConnectionStatus.CONNECTED) {
+      // TODO: restart tun2socks when UDP support changes
+      if (this.reconnectedListener) {
+        this.reconnectedListener();
+      }
+    } else if (status === ConnectionStatus.RECONNECTING) {
+      // the routing service cannot currently connect (probably there's no
+      // network connectivity).
+      if (this.reconnectingListener) {
+        this.reconnectingListener();
+      }
+    } else {
+      console.error(`unknown network change status ${status} from routing service`);
+    }
   }
 
   // returns immediately; use onceStopped for notifications.

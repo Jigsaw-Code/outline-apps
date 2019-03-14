@@ -63,7 +63,6 @@ enum RoutingServiceStatusCode {
 //    net stop OutlineService
 //    net start OutlineService
 //
-// TODO: network change notifications
 // TODO: offer to install the service (linux)
 export class RoutingService {
   private fulfillStopped!: () => void;
@@ -72,6 +71,12 @@ export class RoutingService {
   public readonly onceStopped = new Promise<void>((F) => {
     this.fulfillStopped = F;
   });
+
+  private networkChangeListener?: (status:ConnectionStatus) => void;
+
+  setNetworkChangeListener(newListener?: (status:ConnectionStatus) => void) {
+    this.networkChangeListener = newListener;
+  }
 
   static getInstanceAndStart(proxyAddress: string, isAutoConnect: boolean):
       Promise<RoutingService> {
@@ -106,7 +111,9 @@ export class RoutingService {
       const message: RoutingServiceResponse = JSON.parse(data.toString());
       switch (message.action) {
         case RoutingServiceAction.STATUS_CHANGED:
-          console.log(`ROUTING CHANGE: ${data.toString()}`);
+          if (this.networkChangeListener) {
+            this.networkChangeListener(message.connectionStatus);
+          }
           break;
         case RoutingServiceAction.RESET_ROUTING:
           // TODO: examine statusCode

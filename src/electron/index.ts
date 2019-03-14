@@ -310,6 +310,16 @@ async function startVpn(
       sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
     });
 
+    newConnection.setReconnectingListener(() => {
+      console.log(`*** reconnecting to ${id}`);
+      sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
+    });
+
+    newConnection.setReconnectedListener(() => {
+      console.log(`*** reconnected to ${id}`);
+      sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+    });
+
     sendConnectionStatus(ConnectionStatus.CONNECTED, id);
   });
 }
