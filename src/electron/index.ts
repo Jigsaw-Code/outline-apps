@@ -346,6 +346,7 @@ function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
   } else {
     console.warn(`received ${event} event but no mainWindow to notify`);
   }
+  createTrayIcon(status);
 }
 
 // Connects to the specified server, if that server is reachable and the credentials are valid.
