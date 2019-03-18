@@ -134,7 +134,7 @@
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/macos/PacketProcessor_macOS.framework" custom="true" />
+    <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/macos/Shadowsocks_macOS.framework" custom="true" />
     <framework src="apple/lib/macos/CocoaAsyncSocket.framework" custom="true" />
     <framework src="apple/lib/macos/Sentry.framework" custom="true" />

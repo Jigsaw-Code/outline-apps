@@ -22,7 +22,6 @@
 		737FCE3329B34151A67331B4 /* OutlinePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */; };
 		7536DC53ADCD48E08CE24B94 /* CDVDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 512326387AA5498389C6B4BA /* CDVDevice.m */; };
 		7A5BA083B0B5480CA037B818 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = D83B939D01CF4540A9A3DF86 /* vpn */; };
-		7C38CF57F8B548379A15F2AB /* PacketProcessor_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3679D25B96374CD5BE52C04F /* PacketProcessor_macOS.framework */; };
 		DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 469466FF1BDB44C081741BF5 /* CDVClipboard.m */; };
 		EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */ = {isa = PBXBuildFile; fileRef = A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */; };
 		FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0799E82037532A00A1C822 /* AppDelegate.swift */; };
@@ -41,16 +40,17 @@
 		FC28C283201A93D0005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineConnection.swift */; };
 		FC28C284201A93D6005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineConnection.swift */; };
 		FC28C2B720223167005FD743 /* OutlineConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */; };
-		FC5FF90D1F3E1CEE0032A745 /* PacketProcessor_macOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3679D25B96374CD5BE52C04F /* PacketProcessor_macOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FC5FF90F1F3E1CEE0032A745 /* CocoaAsyncSocket.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65F10DB2408748869386705A /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FC5FF93A1F3E1E5F0032A745 /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		FC5FF9421F3E1E7B0032A745 /* PacketProcessor_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3679D25B96374CD5BE52C04F /* PacketProcessor_macOS.framework */; };
 		FC5FF9441F3E1E7B0032A745 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F10DB2408748869386705A /* CocoaAsyncSocket.framework */; };
 		FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */; };
 		FC5FF94E1F3E1EF00032A745 /* PacketTunnelProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */; };
 		FC5FF94F1F3E1EF00032A745 /* Shadowsocks.m in Sources */ = {isa = PBXBuildFile; fileRef = FC5FF94C1F3E1EF00032A745 /* Shadowsocks.m */; };
 		FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */; };
 		FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */; };
+		FC7B59BB223C585F00828002 /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
+		FC7B59BC223C586800828002 /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
+		FC7B59BD223C586800828002 /* Tun2socks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7D56041F86969E00ABD5CA /* EventMonitor.swift */; };
 		FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; };
 		FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -95,9 +95,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FC5FF90D1F3E1CEE0032A745 /* PacketProcessor_macOS.framework in Embed Frameworks */,
 				FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */,
 				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
+				FC7B59BD223C586800828002 /* Tun2socks.framework in Embed Frameworks */,
 				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
 				FC5FF90F1F3E1CEE0032A745 /* CocoaAsyncSocket.framework in Embed Frameworks */,
 			);
@@ -190,6 +190,7 @@
 		FC5FF94B1F3E1EF00032A745 /* Shadowsocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Shadowsocks.h; path = Outline/Resources/vpn/Shadowsocks.h; sourceTree = SOURCE_ROOT; };
 		FC5FF94C1F3E1EF00032A745 /* Shadowsocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Shadowsocks.m; path = Outline/Resources/vpn/Shadowsocks.m; sourceTree = SOURCE_ROOT; };
 		FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CDVMacOsUrlHandler.swift; sourceTree = "<group>"; };
+		FC7B59BA223C585F00828002 /* Tun2socks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tun2socks.framework; path = "Outline/Plugins/cordova-plugin-outline/Tun2socks.framework"; sourceTree = "<group>"; };
 		FC7D56041F86969E00ABD5CA /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		FC8C30D61FA78D1A004262BE /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.framework"; sourceTree = "<group>"; };
 		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.framework"; sourceTree = "<group>"; };
@@ -207,6 +208,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */,
+				FC7B59BC223C586800828002 /* Tun2socks.framework in Frameworks */,
 				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Frameworks */,
 				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
 				70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */,
@@ -214,7 +216,6 @@
 				70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */,
 				70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */,
 				FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */,
-				7C38CF57F8B548379A15F2AB /* PacketProcessor_macOS.framework in Frameworks */,
 				FC0FFD701FCDBE4E00EB0129 /* Shadowsocks_macOS.framework in Frameworks */,
 				FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */,
 				2945BC6F307942AD9ED49E83 /* CocoaAsyncSocket.framework in Frameworks */,
@@ -234,9 +235,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC5FF9421F3E1E7B0032A745 /* PacketProcessor_macOS.framework in Frameworks */,
 				FCAFD3171FBA528C0057EE7F /* Shadowsocks_macOS.framework in Frameworks */,
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
+				FC7B59BB223C585F00828002 /* Tun2socks.framework in Frameworks */,
 				FC8C30EC1FA7C106004262BE /* CocoaLumberjack.framework in Frameworks */,
 				FC5FF9441F3E1E7B0032A745 /* CocoaAsyncSocket.framework in Frameworks */,
 			);
@@ -291,6 +292,7 @@
 		70BD682518FFB02D00A1EFCF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FC7B59BA223C585F00828002 /* Tun2socks.framework */,
 				FC0799F82037545D00A1C822 /* ServiceManagement.framework */,
 				FCAFD3131FBA52690057EE7F /* Shadowsocks_macOS.framework */,
 				FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */,

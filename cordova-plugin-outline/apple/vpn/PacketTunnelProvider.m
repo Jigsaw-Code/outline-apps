@@ -20,11 +20,7 @@
 #import "Shadowsocks.h"
 #import "ShadowsocksConnectivity.h"
 #include "VpnExtension-Swift.h"
-#if TARGET_OS_IPHONE
 #import <Tun2Socks/Tun2socks.h>
-#else
-#import <PacketProcessor_macOS/TunnelInterface.h>
-#endif
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kActionStart = @"start";
