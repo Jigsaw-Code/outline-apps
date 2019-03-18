@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {ChildProcess, execSync, spawn} from 'child_process';
+import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
@@ -87,6 +88,8 @@ export class ConnectionMediator {
     });
   }
 
+  private tun2socksExitListener?: () => void;
+
   private constructor(
       private readonly routing: RoutingService, private readonly ssLocal: SsLocal,
       private udpEnabled: boolean) {
@@ -101,10 +104,11 @@ export class ConnectionMediator {
         });
       }),
       new Promise<void>((F) => {
-        this.tun2socks.setExitListener(() => {
+        this.tun2socksExitListener = () => {
           console.log(`tun2socks terminated`);
           F();
-        });
+        };
+        this.tun2socks.setExitListener(this.tun2socksExitListener);
       })
     ];
 
@@ -116,6 +120,39 @@ export class ConnectionMediator {
 
     // listen for network change events.
     this.routing.setNetworkChangeListener(this.networkChanged.bind(this));
+
+    // tun2socks fails on suspend; we must listen for suspend/resume events and restart.
+    const suspendListener = () => {
+      powerMonitor.removeListener('suspend', suspendListener);
+
+      // swap out the current listener, log.
+      this.tun2socks.setExitListener(() => {
+        console.log('stopped tun2socks in preparation for suspend');
+      });
+
+      powerMonitor.once('resume', () => {
+        console.log('restarting tun2socks');
+        checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)
+            .then(
+                (udpNowEnabled) => {
+                  console.log(`UDP support: ${udpNowEnabled}`);
+                  this.udpEnabled = udpNowEnabled;
+
+                  // reinstate the "real" exit listener before (re-)starting.
+                  this.tun2socks.setExitListener(this.tun2socksExitListener);
+                  this.tun2socks.start(this.udpEnabled);
+
+                  if (this.reconnectedListener) {
+                    this.reconnectedListener();
+                  }
+                },
+                (e) => {
+                  // TODO: what can we do?
+                  console.error(`could not test for UDP availability: ${e.message}`);
+                });
+      });
+    };
+    powerMonitor.on('suspend', suspendListener);
 
     // and go.
     this.tun2socks.start(udpEnabled);
@@ -139,19 +176,28 @@ export class ConnectionMediator {
               (udpNowEnabled) => {
                 if (udpNowEnabled === this.udpEnabled) {
                   console.log('no change in UDP availability');
+                  if (this.reconnectedListener) {
+                    this.reconnectedListener();
+                  }
                   return;
                 }
 
                 console.log(`UDP support change: ${this.udpEnabled} -> ${udpNowEnabled}`);
-
                 this.udpEnabled = udpNowEnabled;
-                this.tun2socks.restart(this.udpEnabled);
 
-                // of course, tun2socks may immediately exit but in that case
-                // onceStopped will fulfill.
-                if (this.reconnectedListener) {
-                  this.reconnectedListener();
-                }
+                // swap out the current listener, restart once the current process exits.
+                this.tun2socks.setExitListener(() => {
+                  console.log('terminated tun2socks for UDP change');
+
+                  this.tun2socks.setExitListener(this.tun2socksExitListener);
+                  this.tun2socks.start(this.udpEnabled);
+
+                  if (this.reconnectedListener) {
+                    this.reconnectedListener();
+                  }
+                });
+
+                this.tun2socks.stop();
               },
               (e) => {
                 // TODO: what can we do?
@@ -170,7 +216,13 @@ export class ConnectionMediator {
 
   // returns immediately; use onceStopped for notifications.
   stop() {
-    this.routing.stop();
+    try {
+      this.routing.stop();
+    } catch (e) {
+      // the service may have stopped while we were connected.
+      console.error(`could not stop routing: ${e.message}`);
+    }
+
     this.ssLocal.stop();
     this.tun2socks.stop();
   }
@@ -250,25 +302,6 @@ class SingletonProcess {
     this.process.on('exit', onExit.bind((this)));
   }
 
-  // NOTE: definitely not tested for multiple concurrent calls.
-  protected restartInternal(args: string[]) {
-    if (!this.process) {
-      throw new Error('not running');
-    }
-
-    // cache the current exit listener - if any - and swap it back in once the
-    // current process has exited.
-    const previousListener = this.exitListener;
-    this.setExitListener(() => {
-      console.log('current process exited, restarting');
-      this.setExitListener(previousListener);
-      this.startInternal(args);
-    });
-
-    // and restart!
-    this.stop();
-  }
-
   stop() {
     if (this.process) {
       this.process.kill();
@@ -295,13 +328,12 @@ class SsLocal extends SingletonProcess {
   }
 }
 
-// TODO: handle exits caused by suspend/resume?
 class Tun2socks extends SingletonProcess {
   constructor(private proxyAddress: string, private proxyPort: number) {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
 
-  private getArgs(udpEnabled: boolean) {
+  start(udpEnabled: boolean) {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
@@ -324,15 +356,6 @@ class Tun2socks extends SingletonProcess {
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
 
-    return args;
-  }
-
-  start(udpEnabled: boolean) {
-    this.startInternal(this.getArgs(udpEnabled));
-  }
-
-  restart(udpEnabled: boolean) {
-    console.log('restarting');
-    this.restartInternal(this.getArgs(udpEnabled));
+    this.startInternal(args);
   }
 }

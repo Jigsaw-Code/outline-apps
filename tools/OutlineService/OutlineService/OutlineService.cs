@@ -131,8 +131,11 @@ namespace OutlineService
 
         // https://docs.microsoft.com/en-us/windows/desktop/api/ipmib/ns-ipmib-_mib_ipforwardtable
         //
-        // NOTE: Because of the variable-length array, Marshal.PtrToStructure will *not* populate
-        //       the table field. See #GetSystemIpv4Gateway for how to traverse the table.
+        // NOTE: Because of the variable-length array, Marshal.PtrToStructure
+        //       will *not* populate the table field. Additionally, we have seen
+        //       crashes following suspend/resume while trying to marshal this
+        //       structure. See #GetSystemIpv4Gateway for more on this, as well
+        //       as for how to traverse the table.
         [StructLayout(LayoutKind.Sequential)]
         internal class MIB_IPFORWARDTABLE
         {
@@ -811,11 +814,16 @@ namespace OutlineService
                 Marshal.FreeHGlobal(buffer);
                 throw new Exception("could not fetch routing table");
             }
-            MIB_IPFORWARDTABLE table = (MIB_IPFORWARDTABLE)Marshal.PtrToStructure(buffer, typeof(MIB_IPFORWARDTABLE));
 
+            // NOTE: We deliberately *do not marshal the entire
+            //       MIB_IPFORWARDTABLE* owing to unexplained crashes following
+            //       suspend/resume. Fortunately, since that structure is
+            //       logically just a DWORD followed by an array, this entails
+            //       little extra work.
+            var numEntries = Marshal.ReadInt32(buffer);
             MIB_IPFORWARDROW bestRow = null;
-            var rowPtr = buffer + Marshal.SizeOf(table.dwNumEntries);
-            for (int i = 0; i < table.dwNumEntries; i++)
+            var rowPtr = buffer + Marshal.SizeOf(numEntries);
+            for (int i = 0; i < numEntries; i++)
             {
                 MIB_IPFORWARDROW row = (MIB_IPFORWARDROW)Marshal.PtrToStructure(rowPtr, typeof(MIB_IPFORWARDROW));
 
@@ -861,8 +869,10 @@ namespace OutlineService
         //
         // Notes:
         //  - *This function must not throw*. If it does, the handler is unset.
-        //  - This function also updates the LAN bypass routes, which must route
-        //    through the gateway.
+        //  - This function also updates two further sets of routes: the LAN
+        //    bypass routes (which must route through the gateway) and the IPv4
+        //    redirect routes (which "fall back" to the system gateway once the
+        //    TAP device temporarily disappears due to tun2socks' exit).
         //  - The NetworkChange.NetworkAddressChanged callback is *extremely
         //    noisy*. In particular, it seems to be called twice for every
         //    change to the routing table. There does not seem to be any useful
@@ -899,6 +909,18 @@ namespace OutlineService
             }
 
             SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+
+            // Do this as soon as possible to minimise leaks.
+            try
+            {
+                AddIpv4Redirect();
+                eventLog.WriteEntry($"refreshed IPv4 redirect");
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
+                return;
+            }
 
             try
             {
