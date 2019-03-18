@@ -26,3 +26,7 @@ cp -f "$SCRIPT_DIR/$SERVICE_NAME" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable $SERVICE_NAME
 systemctl restart $SERVICE_NAME
+
+# Because the .service file specifies Type=simple, the installation script exits immediately.
+# Sleep for a couple of seconds before exiting.
+sleep 2

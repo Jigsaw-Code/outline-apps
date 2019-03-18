@@ -13,12 +13,17 @@
 // limitations under the License.
 
 import {createConnection, Socket} from 'net';
-import * as os from 'os';
+import {platform} from 'os';
+import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
+import {getServiceStartCommand} from './util';
+
 const SERVICE_NAME =
-    os.platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+    platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+
+const isLinux = platform() === 'linux';
 
 interface RoutingServiceRequest {
   action: string;
@@ -62,8 +67,6 @@ enum RoutingServiceStatusCode {
 //  - Windows:
 //    net stop OutlineService
 //    net start OutlineService
-//
-// TODO: offer to install the service (linux)
 export class RoutingService {
   private fulfillStopped!: () => void;
 
@@ -72,36 +75,51 @@ export class RoutingService {
     this.fulfillStopped = F;
   });
 
-  private networkChangeListener?: (status:ConnectionStatus) => void;
+  private networkChangeListener?: (status: ConnectionStatus) => void;
 
-  setNetworkChangeListener(newListener?: (status:ConnectionStatus) => void) {
+  setNetworkChangeListener(newListener?: (status: ConnectionStatus) => void) {
     this.networkChangeListener = newListener;
   }
 
-  static getInstanceAndStart(proxyAddress: string, isAutoConnect: boolean):
+  static getInstanceAndStart(proxyAddress: string, isAutoConnect: boolean, retry = true):
       Promise<RoutingService> {
     return new Promise((F, R) => {
       const socket = createConnection(SERVICE_NAME, () => {
-                       socket.once('data', (data) => {
-                         const message: RoutingServiceResponse = JSON.parse(data.toString());
-                         if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
-                             message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
-                           // TODO: concrete error
-                           R(new Error(message.errorMessage));
-                           socket.end();
-                           return;
-                         }
+        socket.once('data', (data) => {
+          const message: RoutingServiceResponse = JSON.parse(data.toString());
+          if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
+              message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
+            // TODO: concrete error
+            R(new Error(message.errorMessage));
+            socket.end();
+            return;
+          }
 
-                         F(new RoutingService(socket));
-                       });
+          F(new RoutingService(socket));
+        });
 
-                       socket.write(JSON.stringify({
-                         action: RoutingServiceAction.CONFIGURE_ROUTING,
-                         parameters: {'proxyIp': proxyAddress, 'isAutoConnect': isAutoConnect}
-                       }));
-                     }).once('error', (e) => {
-        // TODO: concrete error
-        R(new Error(`could not connect: ${e.message}`));
+        socket.write(JSON.stringify({
+          action: RoutingServiceAction.CONFIGURE_ROUTING,
+          parameters: {'proxyIp': proxyAddress, 'isAutoConnect': isAutoConnect}
+        }));
+      });
+
+      socket.once('error', (e) => {
+        if (!(isLinux && retry)) {
+          R(new Error(`routing daemon is not running`));
+          return;
+        }
+
+        console.info(`(re-)installing routing daemon`);
+        sudo.exec(getServiceStartCommand(), {name: 'Outline'}, (sudoError) => {
+          if (sudoError) {
+            // NOTE: The script could have failed to run - see the comment in sudo-prompt's typings.
+            R(new errors.NoAdminPermissions());
+            return;
+          }
+
+          F(this.getInstanceAndStart(proxyAddress, isAutoConnect, false));
+        });
       });
     });
   }
