@@ -169,8 +169,11 @@ function createTrayIconImage(imageName: string) {
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the
 // window 'close' event to support minimizing to the system tray.
-function quitApp() {
+async function quitApp() {
   isAppQuitting = true;
+  if (currentConnection) {
+    await currentConnection.stop();
+  }
   app.quit();
 }
 
@@ -272,15 +275,6 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
     createWindow();
-  }
-});
-
-app.on('quit', () => {
-  if (currentConnection) {
-    currentConnection.stop();
-    currentConnection.onceStopped.catch((e) => {
-      console.error(`could not tear down proxy on exit`, e);
-    });
   }
 });
 
