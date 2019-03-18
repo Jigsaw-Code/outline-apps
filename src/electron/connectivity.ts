@@ -21,11 +21,13 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
-const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
 
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
+
+const REACHABILITY_DEFAULT_TIMEOUT_MS = 10000;
+const REACHABILITY_DEFAULT_RETRY_INTERVAL_MS = 100;
 
 // DNS request to google.com.
 const DNS_REQUEST = Buffer.from([
@@ -59,19 +61,20 @@ export function lookupIp(hostname: string): Promise<string> {
       DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
-// Resolves with true iff a TCP connection can be established with the specified destination.
+// Resolves iff a (TCP) connection can be established with the specified destination in the
+// specified timeout, optionally retrying with a delay.
 export function isServerReachable(
-    host: string, port: number, timeout = REACHABILITY_TEST_TIMEOUT_MS, maxAttempts = 1,
-    retryIntervalMs = 100) {
+    host: string, port: number, timeout = REACHABILITY_DEFAULT_TIMEOUT_MS, maxAttempts = 1,
+    retryIntervalMs = REACHABILITY_DEFAULT_RETRY_INTERVAL_MS) {
   let attempt = 0;
   return new Promise((fulfill, reject) => {
-    const attemptConnect = () => {
+    const connect = () => {
       attempt++;
 
       const socket = new net.Socket();
-      socket.on('error', () => {
+      socket.once('error', () => {
         if (attempt < maxAttempts) {
-          setTimeout(attemptConnect, retryIntervalMs);
+          setTimeout(connect, retryIntervalMs);
         } else {
           reject(new errors.ServerUnreachable());
         }
@@ -86,7 +89,7 @@ export function isServerReachable(
         fulfill();
       });
     };
-    attemptConnect();
+    connect();
   });
 }
 

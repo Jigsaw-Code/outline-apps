@@ -61,8 +61,8 @@ export class ConnectionMediator {
       });
       ssLocal.start(config);
 
-      // ss-local should always start: use a very short timeout with fast retries.
-      isServerReachable(PROXY_ADDRESS, PROXY_PORT, 10, 10, 100)
+      // ss-local should always start: wait a few seconds, with very fast retries and no timeout.
+      isServerReachable(PROXY_ADDRESS, PROXY_PORT, undefined, 30)
           .then(() => {
             // Don't validate credentials on boot: if the key was revoked, we want the system to
             // stay "connected" so that traffic doesn't leak.
