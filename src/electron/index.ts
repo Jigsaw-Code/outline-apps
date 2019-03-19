@@ -26,7 +26,7 @@ import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
 import {ConnectionStore, SerializableConnection} from './connection_store';
-import {ConnectionMediator} from './process_manager';
+import {ConnectionManager} from './process_manager';
 
 // Used for the auto-connect feature. There will be a connection in store
 // if the user was connected at shutdown.
@@ -58,7 +58,7 @@ const enum Options {
   AUTOSTART = '--autostart'
 }
 
-let currentConnection: ConnectionMediator|undefined;
+let currentConnection: ConnectionManager|undefined;
 
 function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
@@ -295,7 +295,7 @@ async function startVpn(
     throw new Error('already connected');
   }
 
-  return ConnectionMediator.newInstance(config, isAutoConnect).then((newConnection) => {
+  return ConnectionManager.create(config, isAutoConnect).then((newConnection) => {
     currentConnection = newConnection;
 
     newConnection.onceStopped.then(() => {
@@ -304,15 +304,15 @@ async function startVpn(
       sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
     });
 
-    newConnection.setReconnectingListener(() => {
+    newConnection.onReconnecting = () => {
       console.log(`*** reconnecting to ${id}`);
       sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
-    });
+    };
 
-    newConnection.setReconnectedListener(() => {
+    newConnection.onReconnected = () => {
       console.log(`*** reconnected to ${id}`);
       sendConnectionStatus(ConnectionStatus.CONNECTED, id);
-    });
+    };
 
     sendConnectionStatus(ConnectionStatus.CONNECTED, id);
   });
