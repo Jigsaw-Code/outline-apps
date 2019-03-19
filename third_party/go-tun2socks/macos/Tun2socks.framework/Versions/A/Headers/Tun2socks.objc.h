@@ -7,7 +7,6 @@
 #define __Tun2socks_H__
 
 @import Foundation;
-#include "ref.h"
 #include "Universe.objc.h"
 
 
@@ -15,12 +14,14 @@
 @class Tun2socksPacketFlow;
 
 @protocol Tun2socksPacketFlow <NSObject>
-- (void)writePacket:(NSData* _Nullable)packet;
+- (void)writePacket:(NSData*)packet;
 @end
 
-FOUNDATION_EXPORT void Tun2socksInputPacket(NSData* _Nullable data);
+FOUNDATION_EXPORT void Tun2socksInputPacket(NSData* data);
 
-FOUNDATION_EXPORT void Tun2socksStartSocks(id<Tun2socksPacketFlow> _Nullable packetFlow, NSString* _Nullable proxyHost, long proxyPort);
+FOUNDATION_EXPORT BOOL Tun2socksSetUDPSupport(BOOL isUDPSupported, NSError** error);
+
+FOUNDATION_EXPORT BOOL Tun2socksStartSocks(id<Tun2socksPacketFlow> packetFlow, NSString* proxyHost, long proxyPort, BOOL isUDPSupported, NSError** error);
 
 FOUNDATION_EXPORT void Tun2socksStopSocks(void);
 
@@ -31,7 +32,7 @@ FOUNDATION_EXPORT void Tun2socksStopSocks(void);
 @property(strong, readonly) id _ref;
 
 - (instancetype)initWithRef:(id)ref;
-- (void)writePacket:(NSData* _Nullable)packet;
+- (void)writePacket:(NSData*)packet;
 @end
 
 #endif

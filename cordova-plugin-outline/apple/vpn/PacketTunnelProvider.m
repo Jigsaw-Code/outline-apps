@@ -137,7 +137,14 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                             isOnDemand ? self.connectionStore.isUdpSupported
                                                        : errorCode == noError;
 
-                                        [self startTun2SocksWithPort:kShadowsocksLocalPort];
+                                        if (![self startTun2Socks:isUdpSupported]) {
+                                          [self execAppCallbackForAction:kActionStart
+                                                               errorCode:vpnStartFailure];
+                                          return completionHandler([NSError
+                                              errorWithDomain:NEVPNErrorDomain
+                                                         code:NEVPNErrorConnectionFailed
+                                                     userInfo:nil]);
+                                        }
                                         [self execAppCallbackForAction:kActionStart
                                                              errorCode:noError];
                                         // Listen for network changes.
@@ -168,10 +175,10 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
            completionHandler:(void (^)(void))completionHandler {
   DDLogInfo(@"Stopping tunnel");
-  // TODO(alalama): expose a method to stop go-tun2socks-ios.
   self.connectionStore.status = ConnectionStatusDisconnected;
   self.isTunnelConnected = NO;
   [self removeObserver:self forKeyPath:kDefaultPathKey];
+  Tun2socksStopSocks();
   [self.shadowsocks stop:^(ErrorCode errorCode) {
     DDLogInfo(@"Shadowsocks stopped");
     [self cancelTunnelWithError:nil];
@@ -352,13 +359,16 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   DDLogInfo(@"Network connectivity changed");
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
-    // TODO(alalama): handle network connectivity and UDP support changes in go-tun2socks-ios.
     // Check whether UDP support has changed with the network.
     ShadowsocksConnectivity *ssConnectivity =
         [[ShadowsocksConnectivity alloc] initWithPort:kShadowsocksLocalPort];
     [ssConnectivity isUdpForwardingEnabled:^(BOOL isUdpSupported) {
       DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
-      //      [TunnelInterface setIsUdpForwardingEnabled:isUdpSupported];
+      NSError *err;
+      if (!Tun2socksSetUDPSupport(isUdpSupported, &err)) {
+        DDLogError(@"Failed to set tun2socks UDP support: %@", err);
+        return [self cancelTunnelWithError:err];
+      }
       self.connectionStore.isUdpSupported = isUdpSupported;
     }];
     [self restartShadowsocks:false];
@@ -552,13 +562,17 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }];
 }
 
-- (void)startTun2SocksWithPort:(int) port {
+- (BOOL)startTun2Socks:(BOOL)isUdpSupported {
   if (self.isTunnelConnected) {
     [self execAppCallbackForAction:kActionStart errorCode:noError];
-    return;  // tun2socks already running
+    return YES;  // tun2socks already running
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  Tun2socksStartSocks(weakSelf, @"127.0.0.1", port);
+  NSError *err;
+  if (!Tun2socksStartSocks(weakSelf, @"127.0.0.1", kShadowsocksLocalPort, isUdpSupported, &err)) {
+    DDLogError(@"Failed to start tun2socks: %@", err);
+    return NO;
+  }
 
   self.isTunnelConnected = YES;
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
@@ -567,11 +581,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                             toTarget:self
                                           withObject:nil];
                  });
-}
-
-- (void)onTun2SocksDone {
-  DDLogInfo(@"tun2socks done");
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  return YES;
 }
 
 # pragma mark - App IPC
