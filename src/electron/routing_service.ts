@@ -85,6 +85,8 @@ export class RoutingService {
       Promise<RoutingService> {
     return new Promise((F, R) => {
       const socket = createConnection(SERVICE_NAME, () => {
+        socket.removeListener('error', initialErrorHandler);
+
         socket.once('data', (data) => {
           const message: RoutingServiceResponse = JSON.parse(data.toString());
           if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
@@ -104,7 +106,10 @@ export class RoutingService {
         }));
       });
 
-      socket.once('error', (e) => {
+      // for initial, "connection time", failures. everything else - chiefly unexpected closures or
+      // writing to the socket when it's already closed - is handled by the close handler, added by
+      // the constructor.
+      const initialErrorHandler = () => {
         if (!(isLinux && retry)) {
           R(new Error(`routing daemon is not running`));
           return;
@@ -120,7 +125,9 @@ export class RoutingService {
 
           F(this.getInstanceAndStart(proxyAddress, isAutoConnect, false));
         });
-      });
+      };
+
+      socket.on('error', initialErrorHandler);
     });
   }
 
@@ -142,7 +149,7 @@ export class RoutingService {
       }
     });
 
-    // Invoked as both a result of calling end() and service/socket failure.
+    // once the socket is connected, this is called for closures of all reasons, including errors.
     socket.once('close', () => {
       socket.removeAllListeners();
       this.fulfillStopped();
