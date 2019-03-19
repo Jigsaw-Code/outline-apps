@@ -19,7 +19,7 @@ import {platform} from 'os';
 import * as errors from '../www/model/errors';
 
 import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
-import {RoutingService} from './routing_service';
+import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
 const isLinux = platform() === 'linux';
@@ -117,10 +117,9 @@ export class ConnectionManager {
           })
           .then((udpEnabled) => {
             console.log(`UDP support: ${udpEnabled}`);
-            return RoutingService.getInstanceAndStart(config.host || '', isAutoConnect)
-                .then((routing) => {
-                  fulfill(new ConnectionManager(routing, ssLocal, udpEnabled));
-                });
+            return RoutingDaemon.create(config.host || '', isAutoConnect).then((routing) => {
+              fulfill(new ConnectionManager(routing, ssLocal, udpEnabled));
+            });
           })
           .catch((e) => {
             ssLocal.stop();
@@ -143,15 +142,15 @@ export class ConnectionManager {
   private reconnectedListener?: () => void;
 
   private constructor(
-      private readonly routing: RoutingService, private readonly ssLocal: SsLocal,
+      private readonly routing: RoutingDaemon, private readonly ssLocal: SsLocal,
       private udpEnabled: boolean) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceStopped.then(() => {
-        console.log(`disconnected from routing service`);
+      this.routing.onceDisconnected.then(() => {
+        console.log(`disconnected from routing daemon`);
       }),
       new Promise<void>((fulfill) => {
         this.ssLocal.onExit = () => {
@@ -171,7 +170,7 @@ export class ConnectionManager {
     this.onAllHelpersStopped = Promise.all(exits).then(() => {});
 
     // Handle network changes and, on Windows, suspend events.
-    this.routing.setNetworkChangeListener(this.networkChanged.bind(this));
+    this.routing.onNetworkChange = this.networkChanged.bind(this);
     if (isWindows) {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
     }
@@ -221,7 +220,7 @@ export class ConnectionManager {
         this.reconnectingListener();
       }
     } else {
-      console.error(`unknown network change status ${status} from routing service`);
+      console.error(`unknown network change status ${status} from routing daemon`);
     }
   }
 
@@ -260,7 +259,7 @@ export class ConnectionManager {
     try {
       this.routing.stop();
     } catch (e) {
-      // This can happen for several reasons, e.g. the service may have stopped while we were
+      // This can happen for several reasons, e.g. the daemon may have stopped while we were
       // connected.
       console.error(`could not stop routing: ${e.message}`);
     }
@@ -277,12 +276,12 @@ export class ConnectionManager {
     return this.onAllHelpersStopped;
   }
 
-  // Sets an optional callback for when the routing service is attempting to re-connect.
+  // Sets an optional callback for when the routing daemon is attempting to re-connect.
   public set onReconnecting(newListener: () => void|undefined) {
     this.reconnectingListener = newListener;
   }
 
-  // Sets an optional callback for when the routing service successfully reconnects.
+  // Sets an optional callback for when the routing daemon successfully reconnects.
   public set onReconnected(newListener: () => void|undefined) {
     this.reconnectedListener = newListener;
   }

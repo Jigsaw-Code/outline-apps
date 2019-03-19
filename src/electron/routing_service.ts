@@ -51,39 +51,23 @@ enum RoutingServiceStatusCode {
 
 // Communicates with the Outline routing daemon via a Unix socket.
 //
-// Works on both Windows and Linux.
+// A minimal life-cycle is supported:
+//  - CONFIGURE_ROUTING is *always* the first message sent on the pipe.
+//  - The only subsequent supported operation is RESET_ROUTING.
+//  - In the meantime, the client may receive zero or more STATUS_CHANGED events.
 //
-// Due to the complexity of emulating a Promise-like interface (currently expected by the rest of
-// the system) on top of a pipe-like connection to the service, *multiple, concurrent calls to
-// start() or stop() are not recommended*. For this reason - and because on Windows multiple clients
-// cannot connect to the pipe concurrently - this class connects to the service for *as short a time
-// as possible*: CONFIGURE_ROUTING always uses a *new* connection to the service and the socket is
-// always closed after receiving a RESET_ROUTING response.
+// That's it! This helps us connect to the service for *as short a time as possible* which is
+// important when trying to implement a Promise-like interface over what is essentially a pipe *and*
+// on Windows where only one client may be connected to the service at any given time.
 //
-// Run these commands to start/stop the service:
-//  - Linux:
-//    sudo systemctl start outline_proxy_controller.service
-//    sudo systemctl stop outline_proxy_controller.service
-//  - Windows:
-//    net stop OutlineService
-//    net start OutlineService
-export class RoutingService {
-  private fulfillStopped!: () => void;
-
-  // TODO: getter?
-  public readonly onceStopped = new Promise<void>((F) => {
-    this.fulfillStopped = F;
-  });
-
-  private networkChangeListener?: (status: ConnectionStatus) => void;
-
-  setNetworkChangeListener(newListener?: (status: ConnectionStatus) => void) {
-    this.networkChangeListener = newListener;
-  }
-
-  static getInstanceAndStart(proxyAddress: string, isAutoConnect: boolean, retry = true):
-      Promise<RoutingService> {
-    return new Promise((F, R) => {
+// To test:
+//  - Linux: systemctl start|stop outline_proxy_controller.service
+//  - Windows: net start|stop OutlineService
+export class RoutingDaemon {
+  // Fulfills once a connection is established with the routing daemon *and* it has successfully
+  // configured the system's routing table.
+  static async create(proxyAddress: string, isAutoConnect: boolean, retry = true) {
+    return new Promise<RoutingDaemon>((fulfill, reject) => {
       const socket = createConnection(SERVICE_NAME, () => {
         socket.removeListener('error', initialErrorHandler);
 
@@ -92,44 +76,50 @@ export class RoutingService {
           if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
               message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
             // TODO: concrete error
-            R(new Error(message.errorMessage));
+            reject(new Error(message.errorMessage));
             socket.end();
             return;
           }
 
-          F(new RoutingService(socket));
+          fulfill(new RoutingDaemon(socket));
         });
 
         socket.write(JSON.stringify({
           action: RoutingServiceAction.CONFIGURE_ROUTING,
           parameters: {'proxyIp': proxyAddress, 'isAutoConnect': isAutoConnect}
-        }));
+        } as RoutingServiceRequest));
       });
 
-      // for initial, "connection time", failures. everything else - chiefly unexpected closures or
-      // writing to the socket when it's already closed - is handled by the close handler, added by
-      // the constructor.
       const initialErrorHandler = () => {
         if (!(isLinux && retry)) {
-          R(new Error(`routing daemon is not running`));
+          reject(new Error(`routing daemon is not running`));
           return;
         }
 
         console.info(`(re-)installing routing daemon`);
         sudo.exec(getServiceStartCommand(), {name: 'Outline'}, (sudoError) => {
           if (sudoError) {
-            // NOTE: The script could have failed to run - see the comment in sudo-prompt's typings.
-            R(new errors.NoAdminPermissions());
+            // NOTE: The script could have terminated with an error - see the comment in
+            //       sudo-prompt's typings definition.
+            reject(new errors.NoAdminPermissions());
             return;
           }
 
-          F(this.getInstanceAndStart(proxyAddress, isAutoConnect, false));
+          fulfill(this.create(proxyAddress, isAutoConnect, false));
         });
       };
 
       socket.on('error', initialErrorHandler);
     });
   }
+
+  private fulfillDisconnect: (() => void)|undefined;
+
+  private disconnected = new Promise<void>((F) => {
+    this.fulfillDisconnect = F;
+  });
+
+  private networkChangeListener?: (status: ConnectionStatus) => void;
 
   private constructor(private readonly socket: Socket) {
     socket.on('data', (data) => {
@@ -149,15 +139,25 @@ export class RoutingService {
       }
     });
 
-    // once the socket is connected, this is called for closures of all reasons, including errors.
     socket.once('close', () => {
       socket.removeAllListeners();
-      this.fulfillStopped();
+      if (this.fulfillDisconnect) {
+        this.fulfillDisconnect();
+      }
     });
   }
 
-  // returns immediately; use onceStopped for notifications.
+  // Returns synchronously: use #onceDisconnected to be notified when the connection terminates.
   stop() {
-    this.socket.write(JSON.stringify({action: RoutingServiceAction.RESET_ROUTING, parameters: {}}));
+    this.socket.write(JSON.stringify(
+        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest));
+  }
+
+  public get onceDisconnected() {
+    return this.disconnected;
+  }
+
+  public set onNetworkChange(newListener: ((status: ConnectionStatus) => void)|undefined) {
+    this.networkChangeListener = newListener;
   }
 }
