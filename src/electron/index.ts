@@ -346,7 +346,9 @@ function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
 // Connects to the specified server, if that server is reachable and the credentials are valid.
 promiseIpc.on(
     'start-proxying', async (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      // yes, it's weird the UI doesn't do this.
+      // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
+      //       being faster, this would help prevent traffic leaks - the Cordova clients already do
+      //       this).
       if (currentConnection) {
         console.log('*** disconnecting from current server...');
         currentConnection.stop();
