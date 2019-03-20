@@ -26,9 +26,6 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
-const REACHABILITY_DEFAULT_TIMEOUT_MS = 10000;
-const REACHABILITY_DEFAULT_RETRY_INTERVAL_MS = 100;
-
 // DNS request to google.com.
 const DNS_REQUEST = Buffer.from([
   0, 0,                             // [0-1]   query ID
@@ -61,11 +58,10 @@ export function lookupIp(hostname: string): Promise<string> {
       DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
-// Resolves iff a (TCP) connection can be established with the specified destination in the
-// specified timeout, optionally retrying with a delay.
+// Resolves iff a (TCP) connection can be established with the specified destination within the
+// specified timeout (zero means "no timeout"), optionally retrying with a delay.
 export function isServerReachable(
-    host: string, port: number, timeout = REACHABILITY_DEFAULT_TIMEOUT_MS, maxAttempts = 1,
-    retryIntervalMs = REACHABILITY_DEFAULT_RETRY_INTERVAL_MS) {
+    host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0) {
   let attempt = 0;
   return new Promise((fulfill, reject) => {
     const connect = () => {
@@ -80,7 +76,7 @@ export function isServerReachable(
         }
       });
 
-      if (timeout) {
+      if (timeout > 0) {
         socket.setTimeout(timeout);
       }
 

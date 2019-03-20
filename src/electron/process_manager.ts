@@ -34,6 +34,11 @@ const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
 const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
+// ss-local will almost always start, and fast: short timeouts, fast retries.
+const SSLOCAL_CONNECTION_TIMEOUT = 10;
+const SSLOCAL_MAX_ATTEMPTS = 30;
+const SSLOCAL_RETRY_INTERVAL_MS = 100;
+
 // Raises an error if:
 //  - the TAP device does not exist
 //  - the TAP device does not have the expected IP/subnet
@@ -98,7 +103,9 @@ export class ConnectionManager {
       };
       ssLocal.start(config);
 
-      isServerReachable(PROXY_ADDRESS, PROXY_PORT, undefined, 30)
+      isServerReachable(
+          PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+          SSLOCAL_RETRY_INTERVAL_MS)
           .then(() => {
             // Don't validate credentials on boot: if the key was revoked, we want the system to
             // stay "connected" so that traffic doesn't leak.

@@ -58,6 +58,8 @@ const enum Options {
   AUTOSTART = '--autostart'
 }
 
+const REACHABILITY_TIMEOUT_MS = 10000;
+
 let currentConnection: ConnectionManager|undefined;
 
 function createWindow(connectionAtShutdown?: SerializableConnection) {
@@ -279,7 +281,8 @@ app.on('activate', () => {
 });
 
 promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
-  return connectivity.isServerReachable(config.host || '', config.port || 0)
+  return connectivity
+      .isServerReachable(config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS)
       .then(() => {
         return true;
       })
@@ -362,7 +365,8 @@ promiseIpc.on(
         // resolve it just once, upfront.
         args.config.host = await connectivity.lookupIp(args.config.host || '');
 
-        await connectivity.isServerReachable(args.config.host || '', args.config.port || 0);
+        await connectivity.isServerReachable(
+            args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
         await startVpn(args.config, args.id);
 
         console.log(`*** connected to ${args.id}`);
