@@ -357,29 +357,24 @@ promiseIpc.on(
 
       console.log(`*** connecting to ${args.id}...`);
 
-      // The IP is needed by auto-connect. Look it up now to avoid repeatedly resolving it in a
-      // (possibly) fingerprint-able way.
-      return connectivity.lookupIp(args.config.host || '')
-          .then((ip) => {
-            args.config.host = ip;
-          })
-          .then(() => {
-            return connectivity.isServerReachable(args.config.host || '', args.config.port || 0);
-          })
-          .then(() => {
-            return startVpn(args.config, args.id);
-          })
-          .then(() => {
-            console.log(`*** connected to ${args.id}`);
+      try {
+        // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
+        // resolve it just once, upfront.
+        args.config.host = await connectivity.lookupIp(args.config.host || '');
 
-            connectionStore.save(args).catch((e) => {
-              console.error('Failed to store connection.');
-            });
-          })
-          .catch((e) => {
-            console.error(`*** could not connect: ${e.name} (${e.message})`);
-            throw errors.toErrorCode(e);
-          });
+        await connectivity.isServerReachable(args.config.host || '', args.config.port || 0);
+        await startVpn(args.config, args.id);
+
+        console.log(`*** connected to ${args.id}`);
+
+        // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
+        connectionStore.save(args).catch((e) => {
+          console.error('Failed to store connection.');
+        });
+      } catch (e) {
+        console.error(`*** could not connect: ${e.name} (${e.message})`);
+        throw errors.toErrorCode(e);
+      }
     });
 
 promiseIpc.on('stop-proxying', () => {
