@@ -88,15 +88,10 @@ export class ConnectionManager {
       testTapDevice();
     }
 
-    // ss-local must be up and running before we test whether UDP is available (and, if
-    // isAutoConnect is true, that the supplied credentials are valid).
-    //
-    // Since there's no notification for when a process is up and running, we just have to wait a
-    // few seconds for its port to become active: as it should in almost all cases, unless the
-    // binary is missing or somehow blocked by something like a virus checker, start give it just a
-    // few seconds with a fast retry.
+    // ss-local must be up and running before we can test whether UDP is available (and, if
+    // isAutoConnect is true, that the supplied credentials are valid). So, create an instance now
+    // and "re-use" it by passing it to the constructed object.
     return new Promise<ConnectionManager>((fulfill, reject) => {
-      // This instance will be "forwarded" to the constructed object, if one is created.
       const ssLocal = new SsLocal(PROXY_PORT);
       ssLocal.onExit = () => {
         reject(new Error('ss-local exited during UDP check'));
