@@ -174,7 +174,8 @@ function createTrayIconImage(imageName: string) {
 async function quitApp() {
   isAppQuitting = true;
   if (currentConnection) {
-    await currentConnection.stop();
+    currentConnection.stop();
+    await currentConnection.onceStopped;
   }
   app.quit();
 }
