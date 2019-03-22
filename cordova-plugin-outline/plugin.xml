@@ -62,9 +62,6 @@
       src="android/java/org/outline/shadowsocks"
       target-dir="app/src/main/java/org/outline" />
     <source-file
-      src="android/java/org/outline/tun2socks"
-      target-dir="app/src/main/java/org/outline" />
-    <source-file
       src="android/java/org/outline/log"
       target-dir="app/src/main/java/org/outline" />
 

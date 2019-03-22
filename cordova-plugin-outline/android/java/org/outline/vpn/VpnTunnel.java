@@ -25,7 +25,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
-import org.outline.tun2socks.Tun2Socks;
+import tun2socks.AndroidTunnel;
+import tun2socks.Tun2socks;
 
 /**
  * Manages the life-cycle of the system VPN, and of the tunnel that processes its traffic.
@@ -35,8 +36,6 @@ public class VpnTunnel {
 
   private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
   private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
-  private static final String VPN_INTERFACE_NETMASK = "255.255.255.0";
-  private static final String VPN_IPV6_NULL = null;  // No IPv6 support.
   private static final int VPN_INTERFACE_MTU = 1500;
   // OpenDNS and Dyn IP addresses.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
@@ -52,7 +51,7 @@ public class VpnTunnel {
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
-  private Thread tun2socksThread = null;
+  private AndroidTunnel tunnel;
 
   /**
    * Constructor.
@@ -125,15 +124,16 @@ public class VpnTunnel {
    * Connects a tunnel between a SOCKS server and the VPN TUN interface, by using the tun2socks
    * native library.
    *
-   * @param socksServerAddress IP address of the SOCKS server.
+   * @param socksServerIp IP address of the SOCKS server.
    * @param socksServerPort port of the SOCKS server.
-   * @param remoteUdpForwardingEnabled whether the remote server supports UDP forwarding.
+   * @param isUdpSupported whether the remote server supports UDP forwarding.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
+   * @throws Exception when the tunnel fails to connect.
    */
   public synchronized void connectTunnel(
-      final String socksServerIp, short socksServerPort, boolean remoteUdpForwardingEnabled) {
+      final String socksServerIp, short socksServerPort, boolean isUdpSupported) throws Exception {
     LOG.info("Connecting the tunnel.");
     if (socksServerIp == null || socksServerPort <= 0) {
       throw new IllegalArgumentException("Must provide an IP address and port to a SOCKS server.");
@@ -141,35 +141,38 @@ public class VpnTunnel {
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
     }
-    if (tun2socksThread != null) {
+    if (isTunnelConnected()) {
       throw new IllegalStateException("Tunnel already connected");
     }
 
-    LOG.fine("Starting tun2socks thread");
-    tun2socksThread =
-        new Thread() {
-          public void run() {
-            // TODO(alalama): UDP support
-            Tun2Socks.start(tunFd, socksServerIp, socksServerPort);
-          }
-        };
-    tun2socksThread.start();
+    LOG.fine("Starting tun2socks...");
+    tunnel =
+        Tun2socks.connectSocksTunnel(tunFd.getFd(), socksServerIp, socksServerPort, isUdpSupported);
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */
   public synchronized void disconnectTunnel() {
     LOG.info("Disconnecting the tunnel.");
-    if (tun2socksThread == null) {
+    if (!isTunnelConnected()) {
       return;
     }
-    try {
-      Tun2Socks.stop();
-      tun2socksThread.join();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    } finally {
-      tun2socksThread = null;
+    tunnel.disconnect();
+  }
+
+  /**
+   * Updates the tunnel's UDP forwarding capabilities.
+   *
+   * @param isUdpSupported whether the remote server supports UDP forwarding.
+   */
+  public synchronized void setUdpSupport(boolean isUdpSupported) {
+    if (!isTunnelConnected()) {
+      return;
     }
+    tunnel.setUDPEnabled(isUdpSupported);
+  }
+
+  private boolean isTunnelConnected() {
+    return tunnel != null && tunnel.isConnected();
   }
 
   /* Returns a random IP address from |DNS_RESOLVER_IP_ADDRESSES|. */
