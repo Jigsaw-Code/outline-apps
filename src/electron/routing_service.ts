@@ -64,6 +64,18 @@ enum RoutingServiceStatusCode {
 //  - Linux: systemctl start|stop outline_proxy_controller.service
 //  - Windows: net start|stop OutlineService
 export class RoutingDaemon {
+  private socket: Socket|undefined;
+
+  private fulfillDisconnect!: () => void;
+
+  private disconnected = new Promise<void>((F) => {
+    this.fulfillDisconnect = F;
+  });
+
+  private networkChangeListener?: (status: ConnectionStatus) => void;
+
+  constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
+
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
   async start(retry = true) {
@@ -120,20 +132,7 @@ export class RoutingDaemon {
     });
   }
 
-  private socket: Socket|undefined;
-
-  private fulfillDisconnect!: () => void;
-
-  private disconnected = new Promise<void>((F) => {
-    this.fulfillDisconnect = F;
-  });
-
-  private networkChangeListener?: (status: ConnectionStatus) => void;
-
-  constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
-
   private dataHandler(data: Buffer) {
-    console.log('routing', data.toString());
     const message: RoutingServiceResponse = JSON.parse(data.toString());
     switch (message.action) {
       case RoutingServiceAction.STATUS_CHANGED:

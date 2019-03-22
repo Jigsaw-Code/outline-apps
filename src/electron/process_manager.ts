@@ -93,45 +93,6 @@ function testTapDevice() {
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
 export class ConnectionManager {
-  // Fulfills once all three helpers have started successfully.
-  async start() {
-    if (isWindows) {
-      testTapDevice();
-    }
-
-    // ss-local must be up and running before we can test whether UDP is available (and, if
-    // isAutoConnect is true, that the supplied credentials are valid). So, create an instance now
-    // and "re-use" it by passing it to the constructed object.
-    return new Promise<void>((fulfill, reject) => {
-      this.ssLocal.start(this.config);
-
-      isServerReachable(
-          PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
-          SSLOCAL_RETRY_INTERVAL_MS)
-          .then(() => {
-            // Don't validate credentials on boot: if the key was revoked, we want the system to
-            // stay "connected" so that traffic doesn't leak.
-            if (this.isAutoConnect) {
-              return;
-            }
-            return validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
-          })
-          .then(() => {
-            return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
-          })
-          .then((isUdpEnabled) => {
-            console.log(`UDP support: ${isUdpEnabled}`);
-            this.tun2socks.start(isUdpEnabled);
-            return this.routing.start(isUdpEnabled);
-          })
-          .then(fulfill)
-          .catch((e) => {
-            this.ssLocal.stop();
-            reject(e);
-          });
-    });
-  }
-
   private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(PROXY_PORT);
   private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
@@ -183,6 +144,45 @@ export class ConnectionManager {
     if (isWindows) {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
     }
+  }
+
+  // Fulfills once all three helpers have started successfully.
+  async start() {
+    if (isWindows) {
+      testTapDevice();
+    }
+
+    // ss-local must be up and running before we can test whether UDP is available (and, if
+    // isAutoConnect is true, that the supplied credentials are valid). So, create an instance now
+    // and "re-use" it by passing it to the constructed object.
+    return new Promise<void>((fulfill, reject) => {
+      this.ssLocal.start(this.config);
+
+      isServerReachable(
+          PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+          SSLOCAL_RETRY_INTERVAL_MS)
+          .then(() => {
+            // Don't validate credentials on boot: if the key was revoked, we want the system to
+            // stay "connected" so that traffic doesn't leak.
+            if (this.isAutoConnect) {
+              return;
+            }
+            return validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+          })
+          .then(() => {
+            return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
+          })
+          .then((isUdpEnabled) => {
+            console.log(`UDP support: ${isUdpEnabled}`);
+            this.tun2socks.start(isUdpEnabled);
+            return this.routing.start(isUdpEnabled);
+          })
+          .then(fulfill)
+          .catch((e) => {
+            this.ssLocal.stop();
+            reject(e);
+          });
+    });
   }
 
   private networkChanged(status: ConnectionStatus) {
