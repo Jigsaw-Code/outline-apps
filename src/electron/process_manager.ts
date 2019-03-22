@@ -85,7 +85,10 @@ function testTapDevice() {
 // ss-local and tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
 // anything about the others.
 //
-// In addition to the basic lifecycle of the three helper processes, this There are a couple of
+// In addition to the basic lifecycle of the three helper processes, this handles a few special
+// situations:
+//  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
+//  - silently restart tun2socks when the system is about to suspend (Windows only)
 export class ConnectionManager {
   // Fulfills once all three helpers have started successfully.
   static async create(config: cordova.plugins.outline.ServerConfig, isAutoConnect: boolean) {
