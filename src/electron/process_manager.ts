@@ -146,37 +146,23 @@ export class ConnectionManager {
       testTapDevice();
     }
 
-    // ss-local must be up and running before we can test whether UDP is available (and, if
-    // isAutoConnect is true, that the supplied credentials are valid). So, create an instance now
-    // and "re-use" it by passing it to the constructed object.
-    return new Promise<void>((fulfill, reject) => {
-      this.ssLocal.start(this.config);
+    // ss-local must be up in order to test UDP support and validate credentials.
+    this.ssLocal.start(this.config);
+    await isServerReachable(
+        PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+        SSLOCAL_RETRY_INTERVAL_MS);
 
-      isServerReachable(
-          PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
-          SSLOCAL_RETRY_INTERVAL_MS)
-          .then(() => {
-            // Don't validate credentials on boot: if the key was revoked, we want the system to
-            // stay "connected" so that traffic doesn't leak.
-            if (this.isAutoConnect) {
-              return;
-            }
-            return validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
-          })
-          .then(() => {
-            return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
-          })
-          .then((isUdpEnabled) => {
-            console.log(`UDP support: ${isUdpEnabled}`);
-            this.tun2socks.start(isUdpEnabled);
-            return this.routing.start(isUdpEnabled);
-          })
-          .then(fulfill)
-          .catch((e) => {
-            this.ssLocal.stop();
-            reject(e);
-          });
-    });
+    // Don't validate credentials on boot: if the key was revoked, we want the system to stay
+    // "connected" so that traffic doesn't leak.
+    if (!this.isAutoConnect) {
+      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+    }
+
+    this.isUdpEnabled = await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
+    console.log(`UDP support: ${this.isUdpEnabled}`);
+    this.tun2socks.start(this.isUdpEnabled);
+
+    await this.routing.start();
   }
 
   private networkChanged(status: ConnectionStatus) {
