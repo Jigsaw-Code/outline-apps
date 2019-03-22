@@ -119,25 +119,19 @@ export class ConnectionManager {
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceDisconnected.then(() => {
-        console.log(`disconnected from routing daemon`);
-      }),
+      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
       new Promise<void>((fulfill) => {
-        this.ssLocal.onExit = () => {
-          console.log(`ss-local terminated`);
-          fulfill();
-        };
-      }),
-      new Promise<void>((fulfill) => {
-        this.tun2socksExitListener = () => {
-          console.log(`tun2socks terminated`);
-          fulfill();
-        };
+        this.tun2socksExitListener = fulfill;
         this.tun2socks.onExit = this.tun2socksExitListener;
       })
     ];
-    Promise.race(exits).then(this.stop.bind(this));
-    this.onAllHelpersStopped = Promise.all(exits).then(() => {});
+    Promise.race(exits).then(() => {
+      console.log('a helper has exited, disconnecting');
+      this.stop();
+    });
+    this.onAllHelpersStopped = Promise.all(exits).then(() => {
+      console.log('all helpers have exited');
+    });
 
     // Handle network changes and, on Windows, suspend events.
     this.routing.onNetworkChange = this.networkChanged.bind(this);
