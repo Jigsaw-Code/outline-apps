@@ -105,15 +105,15 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     interceptShadowsocksLink(process.argv);
 
     if (connectionAtShutdown) {
-      console.info(`*** was connected at shutdown, reconnecting to ${connectionAtShutdown.id}`);
+      console.info(`was connected at shutdown, reconnecting to ${connectionAtShutdown.id}`);
       sendConnectionStatus(ConnectionStatus.RECONNECTING, connectionAtShutdown.id);
       startVpn(connectionAtShutdown.config, connectionAtShutdown.id, true)
           .then(
               () => {
-                console.log(`*** reconnected to ${connectionAtShutdown.id}`);
+                console.log(`reconnected to ${connectionAtShutdown.id}`);
               },
               (e) => {
-                console.error(`*** could not reconnect: ${e.name} (${e.message})`);
+                console.error(`could not reconnect: ${e.name} (${e.message})`);
               });
     }
   });
@@ -301,18 +301,18 @@ async function startVpn(
   currentConnection = new ConnectionManager(config, isAutoConnect);
 
   currentConnection.onceStopped.then(() => {
-    console.log(`*** disconnected from ${id}`);
+    console.log(`disconnected from ${id}`);
     currentConnection = undefined;
     sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
   });
 
   currentConnection.onReconnecting = () => {
-    console.log(`*** reconnecting to ${id}`);
+    console.log(`reconnecting to ${id}`);
     sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
   };
 
   currentConnection.onReconnected = () => {
-    console.log(`*** reconnected to ${id}`);
+    console.log(`reconnected to ${id}`);
     sendConnectionStatus(ConnectionStatus.CONNECTED, id);
   };
 
@@ -352,12 +352,12 @@ promiseIpc.on(
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
       if (currentConnection) {
-        console.log('*** disconnecting from current server...');
+        console.log('disconnecting from current server...');
         currentConnection.stop();
         await currentConnection.onceStopped;
       }
 
-      console.log(`*** connecting to ${args.id}...`);
+      console.log(`connecting to ${args.id}...`);
 
       try {
         // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
@@ -368,14 +368,14 @@ promiseIpc.on(
             args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
         await startVpn(args.config, args.id);
 
-        console.log(`*** connected to ${args.id}`);
+        console.log(`connected to ${args.id}`);
 
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
         connectionStore.save(args).catch((e) => {
           console.error('Failed to store connection.');
         });
       } catch (e) {
-        console.error(`*** could not connect: ${e.name} (${e.message})`);
+        console.error(`could not connect: ${e.name} (${e.message})`);
         throw errors.toErrorCode(e);
       }
     });
