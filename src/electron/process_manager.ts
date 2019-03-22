@@ -123,10 +123,10 @@ export class ConnectionManager {
           .then(() => {
             return checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
           })
-          .then((udpEnabled) => {
-            console.log(`UDP support: ${udpEnabled}`);
+          .then((isUdpEnabled) => {
+            console.log(`UDP support: ${isUdpEnabled}`);
             return RoutingDaemon.create(config.host || '', isAutoConnect).then((routing) => {
-              fulfill(new ConnectionManager(routing, ssLocal, udpEnabled));
+              fulfill(new ConnectionManager(routing, ssLocal, isUdpEnabled));
             });
           })
           .catch((e) => {
@@ -151,7 +151,7 @@ export class ConnectionManager {
 
   private constructor(
       private readonly routing: RoutingDaemon, private readonly ssLocal: SsLocal,
-      private udpEnabled: boolean) {
+      private isUdpEnabled: boolean) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -185,7 +185,7 @@ export class ConnectionManager {
 
     // Finally, launch tun2socks. This may immediately fail but that's okay: the exit listener will
     // be invoked and the connection and all helpers (asynchronously) torn down.
-    this.tun2socks.start(udpEnabled);
+    this.tun2socks.start(isUdpEnabled);
   }
 
   private networkChanged(status: ConnectionStatus) {
@@ -193,8 +193,8 @@ export class ConnectionManager {
       // Re-test whether UDP is available and, if necessary, (silently) restart tun2socks.
       checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)
           .then(
-              (udpNowEnabled) => {
-                if (udpNowEnabled === this.udpEnabled) {
+              (isUdpNowEnabled) => {
+                if (isUdpNowEnabled === this.isUdpEnabled) {
                   console.log('no change in UDP availability');
                   if (this.reconnectedListener) {
                     this.reconnectedListener();
@@ -202,15 +202,15 @@ export class ConnectionManager {
                   return;
                 }
 
-                console.log(`UDP support change: ${this.udpEnabled} -> ${udpNowEnabled}`);
-                this.udpEnabled = udpNowEnabled;
+                console.log(`UDP support change: ${this.isUdpEnabled} -> ${isUdpNowEnabled}`);
+                this.isUdpEnabled = isUdpNowEnabled;
 
                 // Swap out the current listener, restart once the current process exits.
                 this.tun2socks.onExit = () => {
                   console.log('terminated tun2socks for UDP change');
 
                   this.tun2socks.onExit = this.tun2socksExitListener;
-                  this.tun2socks.start(this.udpEnabled);
+                  this.tun2socks.start(this.isUdpEnabled);
 
                   if (this.reconnectedListener) {
                     this.reconnectedListener();
@@ -244,10 +244,10 @@ export class ConnectionManager {
           .then(
               (udpNowEnabled) => {
                 console.log(`UDP support: ${udpNowEnabled}`);
-                this.udpEnabled = udpNowEnabled;
+                this.isUdpEnabled = udpNowEnabled;
 
                 this.tun2socks.onExit = this.tun2socksExitListener;
-                this.tun2socks.start(this.udpEnabled);
+                this.tun2socks.start(this.isUdpEnabled);
 
                 if (this.reconnectedListener) {
                   this.reconnectedListener();
@@ -363,7 +363,7 @@ class Tun2socks extends ChildProcessHelper {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
 
-  start(udpEnabled: boolean) {
+  start(isUdpEnabled: boolean) {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
@@ -381,7 +381,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
     args.push('--loglevel', 'error');
     args.push('--transparent-dns');
-    if (udpEnabled) {
+    if (isUdpEnabled) {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
