@@ -94,7 +94,7 @@ function testTapDevice() {
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
 export class ConnectionManager {
   // Fulfills once all three helpers have started successfully.
-  static async create(config: cordova.plugins.outline.ServerConfig, isAutoConnect: boolean) {
+  async start() {
     if (isWindows) {
       testTapDevice();
     }
@@ -102,12 +102,8 @@ export class ConnectionManager {
     // ss-local must be up and running before we can test whether UDP is available (and, if
     // isAutoConnect is true, that the supplied credentials are valid). So, create an instance now
     // and "re-use" it by passing it to the constructed object.
-    return new Promise<ConnectionManager>((fulfill, reject) => {
-      const ssLocal = new SsLocal(PROXY_PORT);
-      ssLocal.onExit = () => {
-        reject(new Error('ss-local exited during UDP check'));
-      };
-      ssLocal.start(config);
+    return new Promise<void>((fulfill, reject) => {
+      this.ssLocal.start(this.config);
 
       isServerReachable(
           PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
@@ -115,7 +111,7 @@ export class ConnectionManager {
           .then(() => {
             // Don't validate credentials on boot: if the key was revoked, we want the system to
             // stay "connected" so that traffic doesn't leak.
-            if (isAutoConnect) {
+            if (this.isAutoConnect) {
               return;
             }
             return validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
@@ -125,23 +121,27 @@ export class ConnectionManager {
           })
           .then((isUdpEnabled) => {
             console.log(`UDP support: ${isUdpEnabled}`);
-            return RoutingDaemon.create(config.host || '', isAutoConnect).then((routing) => {
-              fulfill(new ConnectionManager(routing, ssLocal, isUdpEnabled));
-            });
+            this.tun2socks.start(isUdpEnabled);
+            return this.routing.start(isUdpEnabled);
           })
+          .then(fulfill)
           .catch((e) => {
-            ssLocal.stop();
+            this.ssLocal.stop();
             reject(e);
           });
     });
   }
 
-  private tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
+  private readonly routing: RoutingDaemon;
+  private readonly ssLocal = new SsLocal(PROXY_PORT);
+  private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
   // us swap the listener in and out.
   private tun2socksExitListener?: () => void | undefined;
+
+  private isUdpEnabled = false;
 
   private readonly onAllHelpersStopped: Promise<void>;
 
@@ -149,9 +149,10 @@ export class ConnectionManager {
 
   private reconnectedListener?: () => void;
 
-  private constructor(
-      private readonly routing: RoutingDaemon, private readonly ssLocal: SsLocal,
-      private isUdpEnabled: boolean) {
+  constructor(
+      private config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
+    this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
+
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -182,10 +183,6 @@ export class ConnectionManager {
     if (isWindows) {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
     }
-
-    // Finally, launch tun2socks. This may immediately fail but that's okay: the exit listener will
-    // be invoked and the connection and all helpers (asynchronously) torn down.
-    this.tun2socks.start(isUdpEnabled);
   }
 
   private networkChanged(status: ConnectionStatus) {
@@ -260,7 +257,7 @@ export class ConnectionManager {
     });
   }
 
-  // Returns synchronously: use #onceStopped to be notified when all helper processes exit.
+  // Use #onceStopped to be notified when the connection terminates.
   stop() {
     powerMonitor.removeListener('suspend', this.suspendListener);
 
@@ -314,7 +311,6 @@ class ChildProcessHelper {
     const onExit = () => {
       if (this.process) {
         this.process.removeAllListeners();
-        this.process = undefined;
       }
       if (this.exitListener) {
         this.exitListener();
@@ -327,11 +323,17 @@ class ChildProcessHelper {
     this.process.on('exit', onExit.bind((this)));
   }
 
-  // Returns synchronously: use #onExit to be notified when the process exits.
+  // Use #onExit to be notified when the process exits.
   stop() {
-    if (this.process) {
-      this.process.kill();
+    if (!this.process) {
+      // Never started.
+      if (this.exitListener) {
+        this.exitListener();
+      }
+      return;
     }
+
+    this.process.kill();
   }
 
   set onExit(newListener: (() => void)|undefined) {

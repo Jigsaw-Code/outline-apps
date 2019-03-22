@@ -298,27 +298,26 @@ async function startVpn(
     throw new Error('already connected');
   }
 
-  return ConnectionManager.create(config, isAutoConnect).then((newConnection) => {
-    currentConnection = newConnection;
+  currentConnection = new ConnectionManager(config, isAutoConnect);
 
-    newConnection.onceStopped.then(() => {
-      console.log(`*** disconnected from ${id}`);
-      currentConnection = undefined;
-      sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
-    });
-
-    newConnection.onReconnecting = () => {
-      console.log(`*** reconnecting to ${id}`);
-      sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
-    };
-
-    newConnection.onReconnected = () => {
-      console.log(`*** reconnected to ${id}`);
-      sendConnectionStatus(ConnectionStatus.CONNECTED, id);
-    };
-
-    sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+  currentConnection.onceStopped.then(() => {
+    console.log(`*** disconnected from ${id}`);
+    currentConnection = undefined;
+    sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
   });
+
+  currentConnection.onReconnecting = () => {
+    console.log(`*** reconnecting to ${id}`);
+    sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
+  };
+
+  currentConnection.onReconnected = () => {
+    console.log(`*** reconnected to ${id}`);
+    sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+  };
+
+  await currentConnection.start();
+  sendConnectionStatus(ConnectionStatus.CONNECTED, id);
 }
 
 function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
