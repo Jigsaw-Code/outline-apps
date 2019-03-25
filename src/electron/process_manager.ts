@@ -108,6 +108,9 @@ export class ConnectionManager {
   // us swap the listener in and out.
   private tun2socksExitListener?: () => void | undefined;
 
+  // See #resumeListener.
+  private terminated = false;
+
   private isUdpEnabled = false;
 
   private readonly onAllHelpersStopped: Promise<void>;
@@ -137,12 +140,14 @@ export class ConnectionManager {
     });
     this.onAllHelpersStopped = Promise.all(exits).then(() => {
       console.log('all helpers have exited');
+      this.terminated = true;
     });
 
     // Handle network changes and, on Windows, suspend events.
     this.routing.onNetworkChange = this.networkChanged.bind(this);
     if (isWindows) {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
   }
 
@@ -192,19 +197,22 @@ export class ConnectionManager {
     this.tun2socks.onExit = () => {
       console.log('stopped tun2socks in preparation for suspend');
     };
+  }
 
-    powerMonitor.once('resume', async () => {
-      if (this.reconnectedListener) {
-        this.reconnectedListener();
-      }
+  private resumeListener() {
+    if (this.terminated) {
+      // NOTE: Cannot remove resume listeners - Electron bug?
+      console.error('resume event invoked but this connection is terminated - doing nothing');
+      return;
+    }
 
-      console.log('restarting tun2socks');
-      this.tun2socks.onExit = this.tun2socksExitListener;
-      this.tun2socks.start(this.isUdpEnabled);
+    console.log('restarting tun2socks after resume');
 
-      // Check if UDP support has changed; if so, silently restart.
-      this.retestUdp();
-    });
+    this.tun2socks.onExit = this.tun2socksExitListener;
+    this.tun2socks.start(this.isUdpEnabled);
+
+    // Check if UDP support has changed; if so, silently restart.
+    this.retestUdp();
   }
 
   private async retestUdp() {
@@ -235,6 +243,7 @@ export class ConnectionManager {
   // Use #onceStopped to be notified when the connection terminates.
   stop() {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
     try {
       this.routing.stop();
