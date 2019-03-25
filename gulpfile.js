@@ -83,6 +83,7 @@ function copyBabelPolyfill() {
 //
 // Useful Gulp/Browserify examples:
 //   https://github.com/gulpjs/gulp/tree/master/docs/recipes
+let firstRun = true;
 function browserifyAndBabelify() {
   let browserifyInstance =
       browserify({
@@ -97,11 +98,31 @@ function browserifyAndBabelify() {
             global: true,
             presets: ['env']
           });
+
   if (shouldWatch) {
     browserifyInstance = watch(browserifyInstance);
   }
+
+  browserifyInstance = browserifyInstance.bundle();
+
+  if (shouldWatch) {
+    // When using watchify, we need to detect and report errors.  Otherwise there will just be a silent freeze!
+    // (For example, if we require() a package that is not installed.)
+    browserifyInstance = browserifyInstance.on('error', function (e) {
+      if (firstRun) {
+        // If there is an error on the first run, the build process will not resume, even if the developer fixes the issue.
+        // So on the first run, we should always throw.
+        throw e;
+      } else {
+        // On later runs, we can just report the error, and give the developer a chance to fix the issue.
+        // The watcher will try to babelify and bundle again after a source file has been changed.
+        console.error('Error while bundling: ', e.stack);
+      }
+    });
+    // If we are not watching, then errors are automatically reported.
+  }
+
   return browserifyInstance
-      .bundle()
       // Transform the bundle() output stream into one regular Gulp plugins understand.
       .pipe(source('cordova_main.js'))
       .pipe(gulp.dest(WEBAPP_OUT));
@@ -120,6 +141,7 @@ function watch(browserifyInstance) {
             () => {
               propagateTheBundle();
               gutil.log('Rebuilt');
+              firstRun = false;
             })
         .on('error', console.error);
   });
