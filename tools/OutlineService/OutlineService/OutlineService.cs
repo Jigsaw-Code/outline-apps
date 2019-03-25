@@ -97,6 +97,7 @@ namespace OutlineService
             "240.0.0.0/4"
         };
         private const string CMD_NETSH = "netsh";
+        private const string CMD_ROUTE = "route";
 
         private const uint BUFFER_SIZE_BYTES = 1024;
 
@@ -500,7 +501,7 @@ namespace OutlineService
             {
                 try
                 {
-                    DeleteProxyRoute(proxyIp, gatewayInterfaceIndex);
+                    DeleteProxyRoute(proxyIp);
                     eventLog.WriteEntry($"deleted route to proxy");
                 }
                 catch (Exception e)
@@ -510,19 +511,16 @@ namespace OutlineService
                 this.proxyIp = null;
             }
 
-            if (gatewayIp != null)
+            try
             {
-                try
-                {
-                    RemoveReservedSubnetBypass(gatewayInterfaceIndex);
-                    eventLog.WriteEntry($"deleted LAN bypass routes");
-                }
-                catch (Exception e)
-                {
-                    eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
-                }
-                this.gatewayIp = null;
+                RemoveReservedSubnetBypass();
+                eventLog.WriteEntry($"deleted LAN bypass routes");
             }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
+            }
+            this.gatewayIp = null;
 
             try
             {
@@ -617,20 +615,23 @@ namespace OutlineService
 
         private void AddOrUpdateProxyRoute(string proxyIp, string gatewayIp, int gatewayInterfaceIndex)
         {
+            // "netsh interface ipv4 set route" does *not* work for us here
+            // because it can only be used to change a route's *metric*.
             try
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_ROUTE, $"change {proxyIp} {gatewayIp} if {gatewayInterfaceIndex}");
             }
             catch (Exception)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 set route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
             }
         }
 
-        private void DeleteProxyRoute(string proxyIp, int gatewayInterfaceIndex)
+        private void DeleteProxyRoute(string proxyIp)
         {
-            // It's unfortunate that netsh requires the interface (the route command does not).
-            RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface=\"{gatewayInterfaceIndex}\"");
+            // "route" doesn't need to know on which interface or through which
+            // gateway the route was created.
+            RunCommand(CMD_ROUTE, $"delete {proxyIp}");
         }
 
         // Route IPv4 traffic through the TAP device. Instead of deleting the
@@ -702,21 +703,21 @@ namespace OutlineService
             {
                 try
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_ROUTE, $"change {subnet} {gatewayIp} if {gatewayInterfaceIndex}");
                 }
                 catch (Exception)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
                 }
             }
         }
 
         // Removes reserved subnet routes created to bypass the VPN.
-        private void RemoveReservedSubnetBypass(int gatewayInterfaceIndex)
+        private void RemoveReservedSubnetBypass()
         {
             foreach (string subnet in IPV4_RESERVED_SUBNETS)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface=\"{gatewayInterfaceIndex}\"");
+                RunCommand(CMD_ROUTE, $"delete {subnet}");
             }
         }
 
@@ -757,7 +758,9 @@ namespace OutlineService
             p.BeginErrorReadLine();
             p.WaitForExit();
 
-            if (p.ExitCode != 0)
+            // "route" is weird and always exits with zero: we have to examine
+            // stderr to detect its errors.
+            if (p.ExitCode != 0 || stderr.ToString().Length > 0)
             {
                 // NOTE: Do *not* add args to this error message because it's piped
                 //       back to the client for inclusion in Sentry reports and
