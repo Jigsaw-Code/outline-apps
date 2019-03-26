@@ -21,7 +21,6 @@ import * as util from '../www/app/util';
 import * as errors from '../www/model/errors';
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
-const REACHABILITY_TEST_TIMEOUT_MS = 10000;
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
 
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
@@ -59,33 +58,35 @@ export function lookupIp(hostname: string): Promise<string> {
       DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
 }
 
-// Resolves with true iff a TCP connection can be established with the Shadowsocks server.
-//
-// This has the same function as ShadowsocksConnectivity.isServerReachable in
-// cordova-plugin-outline.
-export function isServerReachable(config: cordova.plugins.outline.ServerConfig) {
-  return lookupIp(config.host || '').then((ip) => {
-    return isServerReachableByIp(ip, config.port || 0);
-  });
-}
+// Resolves iff a (TCP) connection can be established with the specified destination within the
+// specified timeout (zero means "no timeout"), optionally retrying with a delay.
+export function isServerReachable(
+    host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0) {
+  let attempt = 0;
+  return new Promise((fulfill, reject) => {
+    const connect = () => {
+      attempt++;
 
-// As #isServerReachable but does not perform a DNS lookup.
-export function isServerReachableByIp(serverIp: string, serverPort: number) {
-  return util.timeoutPromise(
-      new Promise<void>((fulfill, reject) => {
-        const socket = new net.Socket();
-        socket
-            .connect(
-                {host: serverIp, port: serverPort},
-                () => {
-                  socket.end();
-                  fulfill();
-                })
-            .on('error', () => {
-              reject(new errors.ServerUnreachable());
-            });
-      }),
-      REACHABILITY_TEST_TIMEOUT_MS, 'Reachability check');
+      const socket = new net.Socket();
+      socket.once('error', () => {
+        if (attempt < maxAttempts) {
+          setTimeout(connect, retryIntervalMs);
+        } else {
+          reject(new errors.ServerUnreachable());
+        }
+      });
+
+      if (timeout > 0) {
+        socket.setTimeout(timeout);
+      }
+
+      socket.connect({host, port}, () => {
+        socket.end();
+        fulfill();
+      });
+    };
+    connect();
+  });
 }
 
 // Resolves with true iff a response can be received from a semi-randomly-chosen website through the

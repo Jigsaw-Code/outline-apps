@@ -13,131 +13,34 @@
 // limitations under the License.
 
 import {ChildProcess, execSync, spawn} from 'child_process';
-import * as os from 'os';
+import {powerMonitor} from 'electron';
+import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
 
-import {SerializableConnection} from './connection_store';
-import * as connectivity from './connectivity';
-import * as routing from './routing_service';
+import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
+import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
-// Errors raised by spawn contain these extra fields, at least on Windows.
-declare class SpawnError extends Error {
-  // e.g. ENOENT
-  code: string;
-}
+const isLinux = platform() === 'linux';
+const isWindows = platform() === 'win32';
 
-const delay = (time: number) => () => new Promise(resolve => setTimeout(() => resolve(), time));
-const WAIT_FOR_PROCESS_TO_START_MS = 2000;
+const PROXY_ADDRESS = '127.0.0.1';
+const PROXY_PORT = 1081;
 
-const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
-
-const routingService = new routing.RoutingService();
-
-// Three tools are required to launch the proxy on Windows:
-//  - ss-local.exe connects with the remote Shadowsocks server, exposing a SOCKS5 proxy
-//  - badvpn-tun2socks.exe connects the SOCKS5 proxy to a TAP-like network interface
-//  - OutlineService configures the system to route via a TAP-like network device, must be installed
-
-let ssLocal: ChildProcess|undefined;
-let tun2socks: ChildProcess|undefined;
-let activeConnection: SerializableConnection;
-
-const PROXY_IP = '127.0.0.1';
-const SS_LOCAL_PORT = 1081;
-
-const TUN2SOCKS_DEVICE_NAME = isWindows ? 'outline-tap0' : 'outline-tun0';
-// TODO: read these from the network device!
-const TUN2SOCKS_DEVICE_IP = '10.0.85.2';
+const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
+const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
-const TUN2SOCKS_DEVICE_NETWORK = '10.0.85.0';
+const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
-const SS_LOCAL_TIMEOUT_SECS =
-    2 ^ 31 - 1;  // 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow
-// This function is roughly the Electron counterpart of Android's VpnTunnelService.startShadowsocks.
-//
-// Fulfills iff:
-//  - the TAP device exists and is configured
-//  - the shadowsocks and tun2socks binaries were started
-//  - the system configured to route all traffic through the proxy
-//  - the connectivity checks pass, if not automatically connecting on startup (e.g. !isAutoConnect)
-//
-// Checks whether the remote server has enabled UDP forwarding.
-// Fulfills with a copy of `serverConfig` that includes the resolved hostname.
-export function startVpn(
-    serverConfig: cordova.plugins.outline.ServerConfig,
-    onConnectionStatusChange: (status: ConnectionStatus) => void,
-    isAutoConnect = false): Promise<cordova.plugins.outline.ServerConfig> {
-  // First, check that the TAP device exists and is configured.
-  try {
-    if (isWindows) {
-      testTapDevice();
-    }
-  } catch (e) {
-    return Promise.reject(new errors.SystemConfigurationException(e.message));
-  }
-  const onDisconnected = () => {
-    onConnectionStatusChange(ConnectionStatus.DISCONNECTED);
-    teardownVpn();
-  };
-  const connectionStatusChanged = (status: ConnectionStatus) => {
-    if (status === ConnectionStatus.CONNECTED) {
-      handleUdpSupportChange(onDisconnected).catch((e) => {
-        console.log('Failed to handle UDP support change');
-      });
-    }
-    onConnectionStatusChange(status);
-  };
-  const config = Object.assign({}, serverConfig);
-  let isUdpSupported = false;
-  return startLocalShadowsocksProxy(config, onDisconnected)
-      .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
-      .then(() => {
-        if (isAutoConnect) {
-          return;
-        }
-        // Only perform the connectivity checks when we're not automatically connecting on boot,
-        // since we may not have network connectivity. While we're at it, resolve the proxy server's
-        // IP so that it will be cached for use by auto-connect.
-        return connectivity.lookupIp(config.host || '')
-            .then((ip: string) => {
-              config.host = ip;
-              return connectivity.isServerReachableByIp(ip, config.port || 0);
-            })
-            .then(() => {
-              return connectivity.validateServerCredentials(PROXY_IP, SS_LOCAL_PORT);
-            });
-      })
-      .then(() => {
-        return connectivity.checkUdpForwardingEnabled(PROXY_IP, SS_LOCAL_PORT)
-            .then((isRemoteUdpForwardingEnabled) => {
-              isUdpSupported = isRemoteUdpForwardingEnabled;
-              console.log('UDP forwarding', isUdpSupported ? 'enabled' : 'disabled');
-            })
-            .catch((e) => {
-              console.warn('UDP forwarding check failed, assuming disabled.');
-            });
-      })
-      .then(() => {
-        return startTun2socks(isUdpSupported, onDisconnected);
-      })
-      .then(delay(isLinux ? WAIT_FOR_PROCESS_TO_START_MS : 0))
-      .then(() => {
-        return routingService.configureRouting(
-            TUN2SOCKS_VIRTUAL_ROUTER_IP, config.host || '', connectionStatusChanged, isAutoConnect);
-      })
-      .then(() => {
-        activeConnection = {id: '', config, isUdpSupported};
-        return config;
-      })
-      .catch((e) => {
-        stopProcesses();
-        throw e;
-      });
-}
+// ss-local will almost always start, and fast: short timeouts, fast retries.
+const SSLOCAL_CONNECTION_TIMEOUT = 10;
+const SSLOCAL_MAX_ATTEMPTS = 30;
+const SSLOCAL_RETRY_INTERVAL_MS = 100;
+
+// 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow.
+const SSLOCAL_TIMEOUT_SECS = 2 ^ 31 - 1;
 
 // Raises an error if:
 //  - the TAP device does not exist
@@ -145,6 +48,10 @@ export function startVpn(
 //
 // Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
 // installer should have failed, too.
+//
+// Only works on Windows!
+//
+// TODO: Probably should be moved to a new file, e.g. configuation.ts.
 function testTapDevice() {
   // Sample output:
   // =============
@@ -166,86 +73,283 @@ function testTapDevice() {
   const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
 
   // Find lines containing the TAP device name.
-  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_DEVICE_NAME) !== -1);
+  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
   if (tapLines.length < 1) {
-    throw new Error(`TAP device not found`);
+    throw new errors.SystemConfigurationException(`TAP device not found`);
   }
 
   // Within those lines, search for the expected IP.
-  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_DEVICE_IP) !== -1).length < 1) {
-    throw new Error(`TAP device has wrong IP`);
+  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
+    throw new errors.SystemConfigurationException(`TAP device has wrong IP`);
   }
 }
 
-function startLocalShadowsocksProxy(
-    serverConfig: cordova.plugins.outline.ServerConfig, onDisconnected: () => void) {
-  return new Promise((resolve, reject) => {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
-    const ssLocalArgs = ['-l', SS_LOCAL_PORT.toString()];
-    ssLocalArgs.push('-s', serverConfig.host || '');
-    ssLocalArgs.push('-p', '' + serverConfig.port);
-    ssLocalArgs.push('-k', serverConfig.password || '');
-    ssLocalArgs.push('-m', serverConfig.method || '');
-    ssLocalArgs.push('-t', SS_LOCAL_TIMEOUT_SECS.toString());
-    ssLocalArgs.push('-u');
+async function isSsLocalReachable() {
+  await isServerReachable(
+      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+      SSLOCAL_RETRY_INTERVAL_MS);
+}
 
-    // Note that if you run with -v then ss-local may output a lot of data to stderr which
-    // will cause the binary to fail:
-    //   https://nodejs.org/dist/latest-v10.x/docs/api/child_process.html#child_process_maxbuffer_and_unicode
-    ssLocal = spawn(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'), ssLocalArgs);
+// Establishes a full-system VPN with the help of Outline's routing daemon and child processes
+// ss-local and tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
+// anything about the others.
+//
+// In addition to the basic lifecycle of the three helper processes, this handles a few special
+// situations:
+//  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
+//  - silently restart tun2socks when the system is about to suspend (Windows only)
+export class ConnectionManager {
+  private readonly routing: RoutingDaemon;
+  private readonly ssLocal = new SsLocal(PROXY_PORT);
+  private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
 
-    if (ssLocal === undefined) {
-      reject(new errors.ShadowsocksStartFailure(`Unable to spawn ss-local`));
-    }
+  // Extracted out to an instance variable because in certain situations, notably a change in UDP
+  // support, we need to stop and restart tun2socks *without notifying the client* and this allows
+  // us swap the listener in and out.
+  private tun2socksExitListener?: () => void | undefined;
 
-    // Amazingly, there's no documented way to tell whether spawn has successfully launched a
-    // binary. This handler allows us to implicitly test that, by listening for ss-local's
-    // "listening on port xxx" startup output.
-    //
-    // AZ - In *nix world std*'s are buffered so we can't use this method
-    // added a delay after this for now. We need a better solution - maybe node-ps
-    if (isLinux) {
-      resolve();
-    } else {
-      ssLocal.stdout.once('data', (s) => {
-        resolve();
-      });
-    }
+  // See #resumeListener.
+  private terminated = false;
 
-    // In addition to being a sensible way to listen for launch failures, setting this handler
-    // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
-    // want to send that exception to Sentry* since it contains ss-local's arguments which
-    // encode an access key to the server.
-    ssLocal.on('error', (e: SpawnError) => {
-      reject(new errors.ShadowsocksStartFailure(`ss-local failed with code ${e.code}`));
+  private isUdpEnabled = false;
+
+  private readonly onAllHelpersStopped: Promise<void>;
+
+  private reconnectingListener?: () => void;
+
+  private reconnectedListener?: () => void;
+
+  constructor(
+      private config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
+    this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
+
+    // This trio of Promises, each tied to a helper process' exit, is key to the instance's
+    // lifecycle:
+    //  - once any helper fails or exits, stop them all
+    //  - once *all* helpers have stopped, we're done
+    const exits = [
+      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
+      new Promise<void>((fulfill) => {
+        this.tun2socksExitListener = fulfill;
+        this.tun2socks.onExit = this.tun2socksExitListener;
+      })
+    ];
+    Promise.race(exits).then(() => {
+      console.log('a helper has exited, disconnecting');
+      this.stop();
+    });
+    this.onAllHelpersStopped = Promise.all(exits).then(() => {
+      console.log('all helpers have exited');
+      this.terminated = true;
     });
 
-    ssLocal.on('exit', (code, signal) => {
-      // We assume any signal sent to ss-local was sent by us.
-      if (signal) {
-        console.info(`ss-local exited with signal ${signal}`);
-      } else {
-        console.info(`ss-local exited with code ${code}`);
+    // Handle network changes and, on Windows, suspend events.
+    this.routing.onNetworkChange = this.networkChanged.bind(this);
+    if (isWindows) {
+      powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind((this)));
+    }
+  }
+
+  // Fulfills once all three helpers have started successfully.
+  async start() {
+    if (isWindows) {
+      testTapDevice();
+    }
+
+    // ss-local must be up in order to test UDP support and validate credentials.
+    this.ssLocal.start(this.config);
+    await isSsLocalReachable();
+
+    // Don't validate credentials on boot: if the key was revoked, we want the system to stay
+    // "connected" so that traffic doesn't leak.
+    if (!this.isAutoConnect) {
+      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+    }
+
+    this.isUdpEnabled = await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
+    console.log(`UDP support: ${this.isUdpEnabled}`);
+    this.tun2socks.start(this.isUdpEnabled);
+
+    await this.routing.start();
+  }
+
+  private networkChanged(status: ConnectionStatus) {
+    if (status === ConnectionStatus.CONNECTED) {
+      if (this.reconnectedListener) {
+        this.reconnectedListener();
       }
-      onDisconnected();
-    });
-  });
-}
 
-// Checks whether UDP forwarding support has changed and restarts tun2socks if it has.
-async function handleUdpSupportChange(onDisconnected: () => void): Promise<void> {
-  const isUdpSupported =
-      await connectivity.checkUdpForwardingEnabled(PROXY_IP, SS_LOCAL_PORT).catch(e => false);
-  if (isUdpSupported !== activeConnection.isUdpSupported) {
-    console.info(`UDP support changed (${activeConnection.isUdpSupported} > ${isUdpSupported})`);
-    activeConnection.isUdpSupported = isUdpSupported;
-    await stopTun2socks();
-    await startTun2socks(activeConnection.isUdpSupported, onDisconnected);
+      // Test whether UDP availability has changed; since it won't change 99% of the time, do this
+      // *after* we've informed the client we've reconnected.
+      this.retestUdp();
+    } else if (status === ConnectionStatus.RECONNECTING) {
+      if (this.reconnectingListener) {
+        this.reconnectingListener();
+      }
+    } else {
+      console.error(`unknown network change status ${status} from routing daemon`);
+    }
+  }
+
+  private suspendListener() {
+    // Swap out the current listener, restart once the system resumes.
+    this.tun2socks.onExit = () => {
+      console.log('stopped tun2socks in preparation for suspend');
+    };
+  }
+
+  private resumeListener() {
+    if (this.terminated) {
+      // NOTE: Cannot remove resume listeners - Electron bug?
+      console.error('resume event invoked but this connection is terminated - doing nothing');
+      return;
+    }
+
+    console.log('restarting tun2socks after resume');
+
+    this.tun2socks.onExit = this.tun2socksExitListener;
+    this.tun2socks.start(this.isUdpEnabled);
+
+    // Check if UDP support has changed; if so, silently restart.
+    this.retestUdp();
+  }
+
+  private async retestUdp() {
+    try {
+      // Possibly over-cautious, though we have seen occasional failures immediately after network
+      // changes: ensure ss-local is reachable first.
+      await isSsLocalReachable();
+      if (this.isUdpEnabled === await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)) {
+        return;
+      }
+    } catch (e) {
+      console.error(`UDP test failed: ${e.message}`);
+      return;
+    }
+
+    this.isUdpEnabled = !this.isUdpEnabled;
+    console.log(`UDP support change: now ${this.isUdpEnabled}`);
+
+    // Swap out the current listener, restart once the current process exits.
+    this.tun2socks.onExit = () => {
+      console.log('restarting tun2socks');
+      this.tun2socks.onExit = this.tun2socksExitListener;
+      this.tun2socks.start(this.isUdpEnabled);
+    };
+    this.tun2socks.stop();
+  }
+
+  // Use #onceStopped to be notified when the connection terminates.
+  stop() {
+    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+
+    try {
+      this.routing.stop();
+    } catch (e) {
+      // This can happen for several reasons, e.g. the daemon may have stopped while we were
+      // connected.
+      console.error(`could not stop routing: ${e.message}`);
+    }
+
+    this.ssLocal.stop();
+    this.tun2socks.stop();
+  }
+
+  // Fulfills once all three helper processes have stopped.
+  //
+  // When this happens, *as many changes made to the system in order to establish the full-system
+  // VPN as possible* will have been reverted.
+  public get onceStopped() {
+    return this.onAllHelpersStopped;
+  }
+
+  // Sets an optional callback for when the routing daemon is attempting to re-connect.
+  public set onReconnecting(newListener: () => void|undefined) {
+    this.reconnectingListener = newListener;
+  }
+
+  // Sets an optional callback for when the routing daemon successfully reconnects.
+  public set onReconnected(newListener: () => void|undefined) {
+    this.reconnectedListener = newListener;
   }
 }
 
-function startTun2socks(isUdpSupported: boolean, onDisconnected: () => void): Promise<void> {
-  return new Promise((resolve, reject) => {
+// Simple "one shot" child process launcher.
+//
+// NOTE: Because there is no way in Node.js to tell whether a process launched successfully,
+//       #startInternal always succeeds; use #onExit to be notified when the process has exited
+//       (which may be immediately after calling #startInternal if, e.g. the binary cannot be
+//       found).
+class ChildProcessHelper {
+  private process?: ChildProcess;
+
+  private exitListener?: () => void;
+
+  constructor(private path: string) {}
+
+  protected launch(args: string[]) {
+    this.process = spawn(this.path, args);
+
+    const onExit = () => {
+      if (this.process) {
+        this.process.removeAllListeners();
+      }
+      if (this.exitListener) {
+        this.exitListener();
+      }
+    };
+
+    // We have to listen for both events: error means the process could not be launched and in that
+    // case exit will not be invoked.
+    this.process.on('error', onExit.bind((this)));
+    this.process.on('exit', onExit.bind((this)));
+  }
+
+  // Use #onExit to be notified when the process exits.
+  stop() {
+    if (!this.process) {
+      // Never started.
+      if (this.exitListener) {
+        this.exitListener();
+      }
+      return;
+    }
+
+    this.process.kill();
+  }
+
+  set onExit(newListener: (() => void)|undefined) {
+    this.exitListener = newListener;
+  }
+}
+
+class SsLocal extends ChildProcessHelper {
+  constructor(private readonly proxyPort: number) {
+    super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
+  }
+
+  start(config: cordova.plugins.outline.ServerConfig) {
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
+    const args = ['-l', this.proxyPort.toString()];
+    args.push('-s', config.host || '');
+    args.push('-p', '' + config.port);
+    args.push('-k', config.password || '');
+    args.push('-m', config.method || '');
+    args.push('-t', SSLOCAL_TIMEOUT_SECS.toString());
+    args.push('-u');
+
+    this.launch(args);
+  }
+}
+
+class Tun2socks extends ChildProcessHelper {
+  constructor(private proxyAddress: string, private proxyPort: number) {
+    super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
+  }
+
+  start(isUdpEnabled: boolean) {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
@@ -255,108 +359,19 @@ function startTun2socks(isUdpSupported: boolean, onDisconnected: () => void): Pr
     const args: string[] = [];
     args.push(
         '--tundev',
-        isWindows ? `tap0901:${TUN2SOCKS_DEVICE_NAME}:${TUN2SOCKS_DEVICE_IP}:${
-                        TUN2SOCKS_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}` :
-                    TUN2SOCKS_DEVICE_NAME);
+        isLinux ? TUN2SOCKS_TAP_DEVICE_NAME :
+                  `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+                      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push('--socks-server-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+    args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
     args.push('--loglevel', 'error');
     args.push('--transparent-dns');
-    // Enabling transparent DNS without UDP options causes tun2socks to use TCP for DNS resolution.
-    if (isUdpSupported) {
+    if (isUdpEnabled) {
       args.push('--socks5-udp');
-      args.push('--udp-relay-addr', `${PROXY_IP}:${SS_LOCAL_PORT}`);
+      args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
 
-    // TODO: Duplicate ss-local's error handling.
-    try {
-      tun2socks = spawn(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'), args);
-
-      // Ignore stdio if not consuming the process output (pass {stdio: 'igonore'} to spawn);
-      // otherwise the process execution is suspended when the unconsumed streams exceed the
-      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
-      tun2socks.stdout.on('data', (s) => {
-        console.error(`${s}`);
-        resolve();
-      });
-      tun2socks.on('exit', (code, signal) => {
-        if (signal) {
-          // tun2socks exits with SIGTERM when we stop it.
-          console.info(`tun2socks exited with signal ${signal}`);
-        } else {
-          console.info(`tun2socks exited with code ${code}`);
-          if (!isLinux && code === 1) {
-            // tun2socks exits with code 1 upon failure. When the machine sleeps, tun2socks exits
-            // due to a failure to read the tap device.
-            // Restart tun2socks with a timeout so the event kicks in when the device wakes up.
-            console.info('Restarting tun2socks...');
-            setTimeout(() => {
-              isUdpSupported = activeConnection.isUdpSupported || isUdpSupported;
-              startTun2socks(isUdpSupported, onDisconnected)
-                  .then(() => {
-                    resolve();
-                  })
-                  .catch((e) => {
-                    console.error('Failed to restart tun2socks');
-                    onDisconnected();
-                  });
-            }, 3000);
-            return;
-          }
-        }
-      });
-
-      // Ignore stdio if not consuming the process output (pass {stdio: 'ignore'} to spawn);
-      // otherwise the process execution is suspended when the unconsumed streams exceed the
-      // system limit (~200KB). See https://github.com/nodejs/node/issues/4236
-      tun2socks.stderr.on('data', (data) => {
-        console.error(`tun2socks stderr: ${data}`);
-      });
-
-      // In addition to being a sensible way to listen for launch failures, setting this handler
-      // prevents an "uncaught promise" exception from being raised and sent to Sentry. We *do not
-      // want to send that exception to Sentry* since it contains tun2socks's arguments which
-      // has sensitive information
-      tun2socks.on('error', (e: SpawnError) => {
-        reject(new errors.ShadowsocksStartFailure(`tun2socks failed with code ${e.code}`));
-      });
-
-      resolve();
-    } catch (e) {
-      // We haven't seen any failures related to tun2socks so use this error because it will make
-      // the UI point the user towards antivirus software, which seems the most likely culprit for
-      // tun2socks failing to launch.
-      reject(new errors.ShadowsocksStartFailure(`could not start tun2socks`));
-    }
-  });
-}
-
-function stopSsLocal() {
-  if (!ssLocal) {
-    return Promise.resolve();
+    this.launch(args);
   }
-  ssLocal.kill();
-  return Promise.resolve();
-}
-
-function stopTun2socks() {
-  if (!tun2socks) {
-    return Promise.resolve();
-  }
-  tun2socks.kill();
-  return Promise.resolve();
-}
-
-export function teardownVpn() {
-  return Promise.all([
-    routingService.resetRouting().catch((e) => {
-      console.error(`could not reset routing: ${e.message}`);
-    }),
-    stopProcesses()
-  ]);
-}
-
-function stopProcesses() {
-  return Promise.all([stopSsLocal(), stopTun2socks()]);
 }

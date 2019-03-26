@@ -97,6 +97,7 @@ namespace OutlineService
             "240.0.0.0/4"
         };
         private const string CMD_NETSH = "netsh";
+        private const string CMD_ROUTE = "route";
 
         private const uint BUFFER_SIZE_BYTES = 1024;
 
@@ -131,8 +132,11 @@ namespace OutlineService
 
         // https://docs.microsoft.com/en-us/windows/desktop/api/ipmib/ns-ipmib-_mib_ipforwardtable
         //
-        // NOTE: Because of the variable-length array, Marshal.PtrToStructure will *not* populate
-        //       the table field. See #GetSystemIpv4Gateway for how to traverse the table.
+        // NOTE: Because of the variable-length array, Marshal.PtrToStructure
+        //       will *not* populate the table field. Additionally, we have seen
+        //       crashes following suspend/resume while trying to marshal this
+        //       structure. See #GetSystemIpv4Gateway for more on this, as well
+        //       as for how to traverse the table.
         [StructLayout(LayoutKind.Sequential)]
         internal class MIB_IPFORWARDTABLE
         {
@@ -497,7 +501,7 @@ namespace OutlineService
             {
                 try
                 {
-                    DeleteProxyRoute(proxyIp, gatewayInterfaceIndex);
+                    DeleteProxyRoute(proxyIp);
                     eventLog.WriteEntry($"deleted route to proxy");
                 }
                 catch (Exception e)
@@ -507,19 +511,16 @@ namespace OutlineService
                 this.proxyIp = null;
             }
 
-            if (gatewayIp != null)
+            try
             {
-                try
-                {
-                    RemoveReservedSubnetBypass(gatewayInterfaceIndex);
-                    eventLog.WriteEntry($"deleted LAN bypass routes");
-                }
-                catch (Exception e)
-                {
-                    eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
-                }
-                this.gatewayIp = null;
+                RemoveReservedSubnetBypass();
+                eventLog.WriteEntry($"deleted LAN bypass routes");
             }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
+            }
+            this.gatewayIp = null;
 
             try
             {
@@ -614,20 +615,23 @@ namespace OutlineService
 
         private void AddOrUpdateProxyRoute(string proxyIp, string gatewayIp, int gatewayInterfaceIndex)
         {
+            // "netsh interface ipv4 set route" does *not* work for us here
+            // because it can only be used to change a route's *metric*.
             try
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_ROUTE, $"change {proxyIp} {gatewayIp} if {gatewayInterfaceIndex}");
             }
             catch (Exception)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 set route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
             }
         }
 
-        private void DeleteProxyRoute(string proxyIp, int gatewayInterfaceIndex)
+        private void DeleteProxyRoute(string proxyIp)
         {
-            // It's unfortunate that netsh requires the interface (the route command does not).
-            RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface=\"{gatewayInterfaceIndex}\"");
+            // "route" doesn't need to know on which interface or through which
+            // gateway the route was created.
+            RunCommand(CMD_ROUTE, $"delete {proxyIp}");
         }
 
         // Route IPv4 traffic through the TAP device. Instead of deleting the
@@ -699,21 +703,21 @@ namespace OutlineService
             {
                 try
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_ROUTE, $"change {subnet} {gatewayIp} if {gatewayInterfaceIndex}");
                 }
                 catch (Exception)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
                 }
             }
         }
 
         // Removes reserved subnet routes created to bypass the VPN.
-        private void RemoveReservedSubnetBypass(int gatewayInterfaceIndex)
+        private void RemoveReservedSubnetBypass()
         {
             foreach (string subnet in IPV4_RESERVED_SUBNETS)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface=\"{gatewayInterfaceIndex}\"");
+                RunCommand(CMD_ROUTE, $"delete {subnet}");
             }
         }
 
@@ -754,7 +758,9 @@ namespace OutlineService
             p.BeginErrorReadLine();
             p.WaitForExit();
 
-            if (p.ExitCode != 0)
+            // "route" is weird and always exits with zero: we have to examine
+            // stderr to detect its errors.
+            if (p.ExitCode != 0 || stderr.ToString().Length > 0)
             {
                 // NOTE: Do *not* add args to this error message because it's piped
                 //       back to the client for inclusion in Sentry reports and
@@ -811,11 +817,16 @@ namespace OutlineService
                 Marshal.FreeHGlobal(buffer);
                 throw new Exception("could not fetch routing table");
             }
-            MIB_IPFORWARDTABLE table = (MIB_IPFORWARDTABLE)Marshal.PtrToStructure(buffer, typeof(MIB_IPFORWARDTABLE));
 
+            // NOTE: We deliberately *do not marshal the entire
+            //       MIB_IPFORWARDTABLE* owing to unexplained crashes following
+            //       suspend/resume. Fortunately, since that structure is
+            //       logically just a DWORD followed by an array, this entails
+            //       little extra work.
+            var numEntries = Marshal.ReadInt32(buffer);
             MIB_IPFORWARDROW bestRow = null;
-            var rowPtr = buffer + Marshal.SizeOf(table.dwNumEntries);
-            for (int i = 0; i < table.dwNumEntries; i++)
+            var rowPtr = buffer + Marshal.SizeOf(numEntries);
+            for (int i = 0; i < numEntries; i++)
             {
                 MIB_IPFORWARDROW row = (MIB_IPFORWARDROW)Marshal.PtrToStructure(rowPtr, typeof(MIB_IPFORWARDROW));
 
@@ -861,8 +872,10 @@ namespace OutlineService
         //
         // Notes:
         //  - *This function must not throw*. If it does, the handler is unset.
-        //  - This function also updates the LAN bypass routes, which must route
-        //    through the gateway.
+        //  - This function also updates two further sets of routes: the LAN
+        //    bypass routes (which must route through the gateway) and the IPv4
+        //    redirect routes (which "fall back" to the system gateway once the
+        //    TAP device temporarily disappears due to tun2socks' exit).
         //  - The NetworkChange.NetworkAddressChanged callback is *extremely
         //    noisy*. In particular, it seems to be called twice for every
         //    change to the routing table. There does not seem to be any useful
@@ -899,6 +912,18 @@ namespace OutlineService
             }
 
             SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+
+            // Do this as soon as possible to minimise leaks.
+            try
+            {
+                AddIpv4Redirect();
+                eventLog.WriteEntry($"refreshed IPv4 redirect");
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
+                return;
+            }
 
             try
             {
