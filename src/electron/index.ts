@@ -173,10 +173,7 @@ function createTrayIconImage(imageName: string) {
 // window 'close' event to support minimizing to the system tray.
 async function quitApp() {
   isAppQuitting = true;
-  if (currentConnection) {
-    currentConnection.stop();
-    await currentConnection.onceStopped;
-  }
+  await stopVpn();
   app.quit();
 }
 
@@ -194,7 +191,8 @@ const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
 });
 
 if (isSecondInstance) {
-  quitApp();
+  console.log('another instance is running - exiting');
+  app.quit();
 }
 
 app.setAsDefaultProtocolClient('ss');
@@ -266,6 +264,7 @@ app.on('ready', () => {
         .catch((e) => {
           // No connection at shutdown, or failure - either way, no need to start.
           // TODO: Instead of quitting, how about creating the system tray icon?
+          console.log(`${Options.AUTOSTART} was passed but we were not connected at shutdown - exiting`);
           app.quit();
         });
   } else {
@@ -319,6 +318,20 @@ async function startVpn(
 
   await currentConnection.start();
   sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+}
+
+// Invoked by both the stop-proxying event and quit handler.
+async function stopVpn() {
+  if (!currentConnection) {
+    return;
+  }
+
+  connectionStore.clear().catch((e) => {
+    console.error('Failed to clear connection store.');
+  });
+
+  currentConnection.stop();
+  await currentConnection.onceStopped;
 }
 
 function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
@@ -381,18 +394,8 @@ promiseIpc.on(
       }
     });
 
-promiseIpc.on('stop-proxying', () => {
-  if (!currentConnection) {
-    return Promise.resolve();
-  }
-
-  connectionStore.clear().catch((e) => {
-    console.error('Failed to clear connection store.');
-  });
-
-  currentConnection.stop();
-  return currentConnection.onceStopped;
-});
+// Disconnects from the current server, if any.
+promiseIpc.on('stop-proxying', stopVpn);
 
 // This event fires whenever the app's window receives focus.
 app.on('browser-window-focus', () => {
