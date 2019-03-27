@@ -87,7 +87,10 @@ export class RoutingDaemon {
           const message: RoutingServiceResponse = JSON.parse(data.toString());
           if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
               message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
-            // TODO: concrete error
+            // NOTE: This will rarely occur because the connectivity tests
+            //       performed when the user clicks "CONNECT" should detect when
+            //       the system is offline and that, currently, is pretty much
+            //       the only time the routing service will fail.
             reject(new Error(message.errorMessage));
             newSocket.end();
             return;
@@ -105,7 +108,7 @@ export class RoutingDaemon {
 
       const initialErrorHandler = () => {
         if (!(isLinux && retry)) {
-          reject(new Error(`routing daemon is not running`));
+          reject(new errors.SystemConfigurationException(`routing daemon is not running`));
           return;
         }
 
