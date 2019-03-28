@@ -785,6 +785,7 @@ namespace OutlineService
         private void GetSystemIpv4Gateway(string proxyIp)
         {
             gatewayIp = null;
+            gatewayInterfaceIndex = -1;
 
             int tapInterfaceIndex;
             try
@@ -891,26 +892,36 @@ namespace OutlineService
                 return;
             }
 
+            var previousGatewayIp = gatewayIp;
+            var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
+
             try
             {
-                var previousGatewayIp = gatewayIp;
-                var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
                 GetSystemIpv4Gateway(proxyIp);
-                if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
-                {
-                    eventLog.WriteEntry($"network changed but gateway is the same - doing nothing");
-                    return;
-                }
-                eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
             }
             catch (Exception e)
             {
-                eventLog.WriteEntry($"network changed but cannot find a gateway: {e.Message}");
-                SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+                eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
+            }
+
+            // Only send on change, to prevent duplicate notifications (mostly
+            // harmless but can make debugging harder). Note how we send the
+            // RECONNECTED event before we know all the updates have succeeded:
+            // cheating, but it alerts the user sooner *and* if we were able to
+            // connect in the first place then it's extremely likely we'll be
+            // able to reconnect.
+            if (previousGatewayIp != gatewayIp || previousGatewayInterfaceIndex != gatewayInterfaceIndex)
+            {
+
+                SendConnectionStatusChange(gatewayIp == null ? ConnectionStatus.Reconnecting : ConnectionStatus.Connected);
+            }
+
+            if (gatewayIp == null)
+            {
                 return;
             }
 
-            SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+            eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
 
             // Do this as soon as possible to minimise leaks.
             try
@@ -951,8 +962,6 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not update LAN bypass routes: {e.Message}");
                 return;
             }
-
-            SendConnectionStatusChange(ConnectionStatus.Connected);
         }
 
         // Writes the connection status to the pipe, if it is connected. 
