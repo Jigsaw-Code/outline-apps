@@ -34,6 +34,10 @@ const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
 const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
+// OpenDNS and Dyn resolvers
+const DNS_RESOLVER_IP_PRIMARY = '208.67.222.222';
+const DNS_RESOLVER_IP_SECONDARY = '216.146.35.35';
+
 // ss-local will almost always start, and fast: short timeouts, fast retries.
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
@@ -76,11 +80,6 @@ function testTapDevice() {
   const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
   if (tapLines.length < 1) {
     throw new errors.SystemConfigurationException(`TAP device not found`);
-  }
-
-  // Within those lines, search for the expected IP.
-  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
-    throw new errors.SystemConfigurationException(`TAP device has wrong IP`);
   }
 }
 
@@ -346,30 +345,28 @@ class SsLocal extends ChildProcessHelper {
 
 class Tun2socks extends ChildProcessHelper {
   constructor(private proxyAddress: string, private proxyPort: number) {
-    super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
+    super(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
   }
 
   start(isUdpEnabled: boolean) {
-    // ./badvpn-tun2socks.exe \
-    //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
-    //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
-    //   --socks-server-addr 127.0.0.1:1081 \
-    //   --socks5-udp --udp-relay-addr 127.0.0.1:1081 \
-    //   --transparent-dns
+    // ./tun2socks \
+    //   -tunName "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
+    //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
+    //   -proxyServer 127.0.0.1:1080 -dnsFallback
     const args: string[] = [];
     args.push(
-        '--tundev',
-        isLinux ? TUN2SOCKS_TAP_DEVICE_NAME :
-                  `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-                      TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`);
-    args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
-    args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', 'error');
-    args.push('--transparent-dns');
-    if (isUdpEnabled) {
-      args.push('--socks5-udp');
-      args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
+        '-tunName',
+        isWindows ? `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
+                        TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}` :
+                    TUN2SOCKS_TAP_DEVICE_NAME);
+    args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
+    args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
+    args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+    args.push('-tunDns', `${DNS_RESOLVER_IP_PRIMARY},${DNS_RESOLVER_IP_SECONDARY}`);
+    args.push('-proxyServer', `${this.proxyAddress}:${this.proxyPort}`);
+    args.push('-loglevel', 'error');
+    if (!isUdpEnabled) {
+      args.push('-dnsFallback');
     }
 
     this.launch(args);
