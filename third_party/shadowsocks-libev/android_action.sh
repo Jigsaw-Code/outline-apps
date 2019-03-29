@@ -17,8 +17,7 @@
 # Builds libss-local.so, for Android, with the help of shadowsocks-android.
 
 # Architectures to update, as a space-separated list.
-# TODO: Pass this to ndk-build, to reduce compile time.
-readonly ARCH="armeabi-v7a x86"
+readonly ARCH="armeabi-v7a arm64-v8a x86 x86_64"
 
 # The shared library's filename.
 readonly SO=libss-local.so
@@ -47,10 +46,13 @@ rsync --delete -avu third_party/shadowsocks-libev/ $TEMP/mobile/src/main/jni/sha
 # shadowsocks-libev, build-ndk will throw an exception if these
 # files (one for each architecture specified in Application.mk)
 # don't exist.
-for arch in armeabi-v7a arm64-v8a x86; do
+for arch in $ARCH; do
   mkdir -p $TEMP/mobile/src/main/jni/overture/$arch
   touch $TEMP/mobile/src/main/jni/overture/$arch/liboverture.so
 done
+
+# Instruct ndk-build to compile for the specified architectures.
+echo "APP_ABI := $ARCH" > $TEMP/mobile/src/main/jni/Application.mk
 
 # Build!
 docker run --rm -ti -v $TEMP:$TEMP -w $TEMP $DOCKER_IMAGE_NAME ndk-build -C mobile/src/main/jni ss-local
