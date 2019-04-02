@@ -33,7 +33,6 @@
 		FC0FFD691FCCD45900EB0129 /* Shadowsocks_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */; };
 		FC1ED84E220B8D8F0086CC4C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; };
 		FC1ED84F220B8DA50086CC4C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; };
-		FC1ED850220B8DA50086CC4C /* Tun2socks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADE216D2A6E00F078A5 /* Subnet.swift */; };
 		FC28C298201BB4E9005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineConnection.swift */; };
 		FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C297201BB4E9005FD743 /* OutlineVpn.swift */; };
@@ -112,7 +111,6 @@
 			files = (
 				FC8C30E01FA78FA9004262BE /* Sentry.framework in Embed Frameworks */,
 				FC8C30F61FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
-				FC1ED850220B8DA50086CC4C /* Tun2socks.framework in Embed Frameworks */,
 				FC8C30F41FA7C2F4004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
 				3B0347761F2132D200C8EF1F /* CocoaAsyncSocket.framework in Embed Frameworks */,
 			);
@@ -625,8 +623,8 @@
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 4.2;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -666,8 +664,8 @@
 				PRODUCT_NAME = Outline;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 4.2;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
