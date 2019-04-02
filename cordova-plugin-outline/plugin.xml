@@ -101,7 +101,7 @@
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/ios/PacketProcessor_iOS.framework" custom="true" />
+    <framework src="apple/lib/ios/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/ios/Shadowsocks_iOS.framework" custom="true" />
     <framework src="apple/lib/ios/CocoaAsyncSocket.framework" custom="true" />
     <framework src="apple/lib/ios/Sentry.framework" custom="true" />
@@ -128,7 +128,7 @@
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/macos/PacketProcessor_macOS.framework" custom="true" />
+    <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/macos/Shadowsocks_macOS.framework" custom="true" />
     <framework src="apple/lib/macos/CocoaAsyncSocket.framework" custom="true" />
     <framework src="apple/lib/macos/Sentry.framework" custom="true" />

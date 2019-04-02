@@ -20,11 +20,7 @@
 #import "Shadowsocks.h"
 #import "ShadowsocksConnectivity.h"
 #include "VpnExtension-Swift.h"
-#if TARGET_OS_IPHONE
-#import <PacketProcessor_iOS/TunnelInterface.h>
-#else
-#import <PacketProcessor_macOS/TunnelInterface.h>
-#endif
+#import <Tun2Socks/Tun2socks.h>
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kActionStart = @"start";
@@ -42,11 +38,11 @@ NSString *const kMessageKeyOnDemand = @"is-on-demand";
 NSString *const kDefaultPathKey = @"defaultPath";
 static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
-@interface PacketTunnelProvider()
+@interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property (nonatomic) Shadowsocks *shadowsocks;
 @property(nonatomic) ShadowsocksConnectivity *ssConnectivity;
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
-@property (nonatomic) BOOL isTunnelConnected;
+@property(nonatomic) id<Tun2socksAppleTunnel> tunnel;
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
@@ -140,9 +136,15 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                         BOOL isUdpSupported =
                                             isOnDemand ? self.connectionStore.isUdpSupported
                                                        : errorCode == noError;
-                                        [self setupPacketTunnelFlow];
-                                        [TunnelInterface setIsUdpForwardingEnabled:isUdpSupported];
-                                        [self startTun2SocksWithPort:kShadowsocksLocalPort];
+
+                                        if (![self startTun2Socks:isUdpSupported]) {
+                                          [self execAppCallbackForAction:kActionStart
+                                                               errorCode:vpnStartFailure];
+                                          return completionHandler([NSError
+                                              errorWithDomain:NEVPNErrorDomain
+                                                         code:NEVPNErrorConnectionFailed
+                                                     userInfo:nil]);
+                                        }
                                         [self execAppCallbackForAction:kActionStart
                                                              errorCode:noError];
                                         // Listen for network changes.
@@ -173,27 +175,15 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
            completionHandler:(void (^)(void))completionHandler {
   DDLogInfo(@"Stopping tunnel");
-  [TunnelInterface stop];
   self.connectionStore.status = ConnectionStatusDisconnected;
-  self.isTunnelConnected = NO;
   [self removeObserver:self forKeyPath:kDefaultPathKey];
+  [self.tunnel disconnect];
   [self.shadowsocks stop:^(ErrorCode errorCode) {
     DDLogInfo(@"Shadowsocks stopped");
     [self cancelTunnelWithError:nil];
     [self execAppCallbackForAction:kActionStop errorCode:errorCode];
     completionHandler();
   }];
-}
-
-- (void)setupPacketTunnelFlow {
-  if (self.isTunnelConnected) {
-    return;
-  }
-  NSError *error = [TunnelInterface setupWithPacketTunnelFlow:self.packetFlow];
-  if (error) {
-    DDLogError(@"Failed to set up tunnel packet flow: %@", error);
-    [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
-  }
 }
 
 // Receives messages and callbacks from the app. The callback will be executed asynchronously,
@@ -368,18 +358,12 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   DDLogInfo(@"Network connectivity changed");
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
-    NSError *error = [TunnelInterface onNetworkConnectivityChange];
-    if (error != nil) {
-      DDLogError(@"Tunnel interface failed to handle a network connectivity change: %@", error);
-      return [self cancelTunnelWithError:error];
-    }
     // Check whether UDP support has changed with the network.
     ShadowsocksConnectivity *ssConnectivity =
         [[ShadowsocksConnectivity alloc] initWithPort:kShadowsocksLocalPort];
     [ssConnectivity isUdpForwardingEnabled:^(BOOL isUdpSupported) {
       DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
-      [TunnelInterface setIsUdpForwardingEnabled:isUdpSupported];
-      self.connectionStore.isUdpSupported = isUdpSupported;
+      [self setConectionUdpSupport:isUdpSupported];
     }];
     [self restartShadowsocks:false];
     [self connectTunnel:[self getTunnelNetworkSettings] completion:^(NSError * _Nullable error) {
@@ -534,6 +518,8 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                                          userInfo:nil]];
                                return;
                              }
+                             BOOL isUdpSupported = errorCode == noError;
+                             [self setConectionUdpSupport:isUdpSupported];
                              [weakSelf.connectionStore save:self.connection];
                            }];
     }];
@@ -554,24 +540,54 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 
 # pragma mark - tun2socks
 
-- (void)startTun2SocksWithPort:(int) port {
-  if (self.isTunnelConnected) {
-    [self execAppCallbackForAction:kActionStart errorCode:noError];
-    return;  // tun2socks already running
-  }
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onTun2SocksDone)
-                                               name:kTun2SocksStoppedNotification object:nil];
-  [TunnelInterface startTun2Socks:port];
-  self.isTunnelConnected = YES;
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   [TunnelInterface processPackets];
-                 });
+- (BOOL)close:(NSError *_Nullable *)error {
+  return YES;
 }
 
-- (void)onTun2SocksDone {
-  DDLogInfo(@"tun2socks done");
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+- (BOOL)write:(NSData *_Nullable)packet n:(long *)n error:(NSError *_Nullable *)error {
+  [self.packetFlow writePackets:@[ packet ] withProtocols:@[ @(AF_INET) ]];
+  return YES;
+}
+
+- (void)processInboundPackets {
+  __weak typeof(self) weakSelf = self;
+  __block long bytesWritten = 0;
+  [weakSelf.packetFlow readPacketsWithCompletionHandler:^(NSArray<NSData *> *_Nonnull packets,
+                                                          NSArray<NSNumber *> *_Nonnull protocols) {
+    for (NSData *packet in packets) {
+      [weakSelf.tunnel write:packet ret0_:&bytesWritten error:nil];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf processInboundPackets];
+    });
+  }];
+}
+
+- (BOOL)startTun2Socks:(BOOL)isUdpSupported {
+  if (self.tunnel != nil && self.tunnel.isConnected) {
+    [self execAppCallbackForAction:kActionStart errorCode:noError];
+    return YES;  // tun2socks already running
+  }
+  __weak PacketTunnelProvider *weakSelf = self;
+  NSError *err;
+  self.tunnel = Tun2socksConnectSocksTunnel(weakSelf, @"127.0.0.1", kShadowsocksLocalPort,
+                                            isUdpSupported, &err);
+  if (err != nil) {
+    DDLogError(@"Failed to start tun2socks: %@", err);
+    return NO;
+  }
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+                 dispatch_get_main_queue(), ^{
+                   [NSThread detachNewThreadSelector:@selector(processInboundPackets)
+                                            toTarget:self
+                                          withObject:nil];
+                 });
+  return YES;
+}
+
+- (void)setConectionUdpSupport:(BOOL)isUdpSupported {
+  [self.tunnel setUDPEnabled:isUdpSupported];
+  self.connectionStore.isUdpSupported = isUdpSupported;
 }
 
 # pragma mark - App IPC

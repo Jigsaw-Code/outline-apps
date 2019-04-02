@@ -22,7 +22,8 @@ module.exports = function(context) {
   child_process.execSync('cp -R third_party/CocoaAsyncSocket/ios/CocoaAsyncSocket.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/CocoaLumberjack/ios/CocoaLumberjack.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/CocoaLumberjack/ios/CocoaLumberjackSwift.framework plugins/cordova-plugin-outline/apple/lib/ios/');
-  child_process.execSync('cp -R third_party/Potatso/frameworks/ios/PacketProcessor_iOS.framework plugins/cordova-plugin-outline/apple/lib/ios/');
+  child_process.execSync(
+      'cp -R third_party/go-tun2socks/ios/Tun2socks.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/sentry-cocoa/ios/Sentry.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/shadowsocks-libev/apple/frameworks/ios/Shadowsocks_iOS.framework plugins/cordova-plugin-outline/apple/lib/ios/');
 }
