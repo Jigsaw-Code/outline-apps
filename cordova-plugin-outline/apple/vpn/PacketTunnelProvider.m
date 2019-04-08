@@ -147,12 +147,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                         }
                                         [self execAppCallbackForAction:kActionStart
                                                              errorCode:noError];
-                                        // Listen for network changes.
-                                        [self addObserver:self
-                                               forKeyPath:kDefaultPathKey
-                                                  options:NSKeyValueObservingOptionOld
-                                                  context:nil];
-
+                                        [self listenForNetworkChanges];
                                         [self.connectionStore save:connection];
                                         self.connectionStore.isUdpSupported = isUdpSupported;
                                         self.connectionStore.status = ConnectionStatusConnected;
@@ -176,7 +171,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
            completionHandler:(void (^)(void))completionHandler {
   DDLogInfo(@"Stopping tunnel");
   self.connectionStore.status = ConnectionStatusDisconnected;
-  [self removeObserver:self forKeyPath:kDefaultPathKey];
+  [self stopListeningForNetworkChanges];
   [self.tunnel disconnect];
   [self.shadowsocks stop:^(ErrorCode errorCode) {
     DDLogInfo(@"Shadowsocks stopped");
@@ -330,6 +325,24 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     [excludedIpv4Routes addObject:route];
   }
   return excludedIpv4Routes;
+}
+
+// Registers KVO for the `defaultPath` property to receive network connectivity changes.
+- (void)listenForNetworkChanges {
+  [self stopListeningForNetworkChanges];
+  [self addObserver:self
+         forKeyPath:kDefaultPathKey
+            options:NSKeyValueObservingOptionOld
+            context:nil];
+}
+
+// Unregisters KVO for `defaultPath`.
+- (void)stopListeningForNetworkChanges {
+  @try {
+    [self removeObserver:self forKeyPath:kDefaultPathKey];
+  } @catch (id exception) {
+    // Observer not registered, ignore.
+  }
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath
@@ -549,23 +562,40 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   return YES;
 }
 
-- (void)processInboundPackets {
+- (void)startProcessingPackets {
   __weak typeof(self) weakSelf = self;
-  __block long bytesWritten = 0;
   [weakSelf.packetFlow readPacketsWithCompletionHandler:^(NSArray<NSData *> *_Nonnull packets,
                                                           NSArray<NSNumber *> *_Nonnull protocols) {
+    [weakSelf processPackets:packets];
+  }];
+}
+
+// Writes packets from the VPN to the tunnel. Recurses after reading packets from the VPN.
+- (void)processPackets:(NSArray<NSData *> *)packets {
+  // Release allocated objects before recursing.
+  @autoreleasepool {
+    NSError *err;
+    long bytesWritten = 0;
     for (NSData *packet in packets) {
-      [weakSelf.tunnel write:packet ret0_:&bytesWritten error:nil];
+      if (!self.tunnel || !self.tunnel.isConnected) {
+        DDLogInfo(@"Packet processor stopping.");
+        return;
+      }
+      [self.tunnel write:packet ret0_:&bytesWritten error:&err];
+      if (err != nil) {
+        DDLogWarn(@"Failed to write packet to tunnel: %@", err);
+      }
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf processInboundPackets];
-    });
+  }
+  __weak typeof(self) weakSelf = self;
+  [weakSelf.packetFlow readPacketsWithCompletionHandler:^(NSArray<NSData *> *_Nonnull packets,
+                                                          NSArray<NSNumber *> *_Nonnull protocols) {
+    [weakSelf processPackets:packets];
   }];
 }
 
 - (BOOL)startTun2Socks:(BOOL)isUdpSupported {
   if (self.tunnel != nil && self.tunnel.isConnected) {
-    [self execAppCallbackForAction:kActionStart errorCode:noError];
     return YES;  // tun2socks already running
   }
   __weak PacketTunnelProvider *weakSelf = self;
@@ -576,12 +606,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     DDLogError(@"Failed to start tun2socks: %@", err);
     return NO;
   }
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   [NSThread detachNewThreadSelector:@selector(processInboundPackets)
-                                            toTarget:self
-                                          withObject:nil];
-                 });
+  [NSThread detachNewThreadSelector:@selector(startProcessingPackets) toTarget:self withObject:nil];
   return YES;
 }
 
