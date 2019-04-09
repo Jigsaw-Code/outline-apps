@@ -33,7 +33,7 @@
 AppleTunnel instance that should be used to input packets to the tunnel.
 
 `tunWriter` is used to output packets to the TUN (VPN).
-`host` is  IP address of the SOCKS proxy server.
+`host` is the IP address of the SOCKS proxy server.
 `port` is the port of the SOCKS proxy server.
 `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 
