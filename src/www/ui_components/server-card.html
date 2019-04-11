@@ -123,7 +123,7 @@
       <div class="card-header">
         <div id="serverInfo">
           <div id="serverName">[[serverName]]</div>
-          <div id="serverHost">[[serverHost]]</div>
+          <div id="serverHost">[[serverHost]]:[[serverPort]]</div>
         </div>
         <paper-menu-button horizontal-align="right" close-on-activate="true">
           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
@@ -160,6 +160,7 @@
         serverName: String,
         serverId: String,
         serverHost: String,
+        serverPort: Number,
         state: {
           type: String,
           value: 'DISCONNECTED'
