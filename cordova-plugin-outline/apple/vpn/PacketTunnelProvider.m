@@ -48,6 +48,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 @property (nonatomic) DDFileLogger *fileLogger;
 @property (nonatomic) OutlineConnection *connection;
 @property (nonatomic) OutlineConnectionStore *connectionStore;
+@property(nonatomic) dispatch_queue_t packetQueue;
 @end
 
 @implementation PacketTunnelProvider
@@ -75,6 +76,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     @"192" : @"192.168.20.1",
     @"169" : @"169.254.19.0"
   };
+
+  _packetQueue = dispatch_queue_create("org.outline.ios.packetqueue", DISPATCH_QUEUE_SERIAL);
 
   return self;
 }
@@ -300,17 +303,10 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
   ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
 
-  // Although we don't support proxying IPv6 traffic, we need to set IPv6 routes so that the DNS
-  // settings are respected on IPv6-only networks. Bind to a random unique local address (ULA).
-  NEIPv6Settings *ipv6Settings = [[NEIPv6Settings alloc] initWithAddresses:@[@"fd66:f83a:c650::1"]
-                                                      networkPrefixLengths:@[@120]];
-  ipv6Settings.includedRoutes = @[[NEIPv6Route defaultRoute]];
-
   // The remote address is not used for routing, but for display in Settings > VPN > Outline.
   NEPacketTunnelNetworkSettings *settings =
       [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
-  settings.IPv6Settings = ipv6Settings;
   // Configure with OpenDNS and Dyn DNS resolver addresses.
   settings.DNSSettings = [[NEDNSSettings alloc] initWithServers:@[@"208.67.222.222", @"216.146.35.35",
                                                                   @"208.67.220.220", @"216.146.36.36"]];
@@ -562,35 +558,18 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   return YES;
 }
 
-- (void)startProcessingPackets {
+// Writes packets from the VPN to the tunnel.
+- (void)processPackets {
   __weak typeof(self) weakSelf = self;
+  __block long bytesWritten = 0;
   [weakSelf.packetFlow readPacketsWithCompletionHandler:^(NSArray<NSData *> *_Nonnull packets,
                                                           NSArray<NSNumber *> *_Nonnull protocols) {
-    [weakSelf processPackets:packets];
-  }];
-}
-
-// Writes packets from the VPN to the tunnel. Recurses after reading packets from the VPN.
-- (void)processPackets:(NSArray<NSData *> *)packets {
-  // Release allocated objects before recursing.
-  @autoreleasepool {
-    NSError *err;
-    long bytesWritten = 0;
     for (NSData *packet in packets) {
-      if (!self.tunnel || !self.tunnel.isConnected) {
-        DDLogInfo(@"Packet processor stopping.");
-        return;
-      }
-      [self.tunnel write:packet ret0_:&bytesWritten error:&err];
-      if (err != nil) {
-        DDLogWarn(@"Failed to write packet to tunnel: %@", err);
-      }
+      [weakSelf.tunnel write:packet ret0_:&bytesWritten error:nil];
     }
-  }
-  __weak typeof(self) weakSelf = self;
-  [weakSelf.packetFlow readPacketsWithCompletionHandler:^(NSArray<NSData *> *_Nonnull packets,
-                                                          NSArray<NSNumber *> *_Nonnull protocols) {
-    [weakSelf processPackets:packets];
+    dispatch_async(weakSelf.packetQueue, ^{
+      [weakSelf processPackets];
+    });
   }];
 }
 
@@ -606,7 +585,9 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     DDLogError(@"Failed to start tun2socks: %@", err);
     return NO;
   }
-  [NSThread detachNewThreadSelector:@selector(startProcessingPackets) toTarget:self withObject:nil];
+  dispatch_async(self.packetQueue, ^{
+    [weakSelf processPackets];
+  });
   return YES;
 }
 
