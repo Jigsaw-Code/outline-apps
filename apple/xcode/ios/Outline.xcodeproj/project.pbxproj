@@ -32,7 +32,6 @@
 		F8EB0D7A90A642BD93C2F424 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = E8672BD859474DB9A8434AAC /* vpn */; };
 		FC0FFD691FCCD45900EB0129 /* Shadowsocks_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */; };
 		FC1ED84E220B8D8F0086CC4C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; };
-		FC1ED84F220B8DA50086CC4C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; };
 		FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADE216D2A6E00F078A5 /* Subnet.swift */; };
 		FC28C298201BB4E9005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineConnection.swift */; };
 		FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C297201BB4E9005FD743 /* OutlineVpn.swift */; };
@@ -189,7 +188,6 @@
 				FC8C30F51FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Frameworks */,
 				1CE7466BA73B4CCB838EBE21 /* libz.tbd in Frameworks */,
 				FC8C30F31FA7C2F4004262BE /* CocoaLumberjack.framework in Frameworks */,
-				FC1ED84F220B8DA50086CC4C /* Tun2socks.framework in Frameworks */,
 				FC0FFD691FCCD45900EB0129 /* Shadowsocks_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
