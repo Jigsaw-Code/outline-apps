@@ -50,7 +50,6 @@
 		FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */; };
 		FC7B59BB223C585F00828002 /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
 		FC7B59BC223C586800828002 /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
-		FC7B59BD223C586800828002 /* Tun2socks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7D56041F86969E00ABD5CA /* EventMonitor.swift */; };
 		FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; };
 		FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -97,7 +96,6 @@
 			files = (
 				FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */,
 				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
-				FC7B59BD223C586800828002 /* Tun2socks.framework in Embed Frameworks */,
 				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
 				FC5FF90F1F3E1CEE0032A745 /* CocoaAsyncSocket.framework in Embed Frameworks */,
 			);

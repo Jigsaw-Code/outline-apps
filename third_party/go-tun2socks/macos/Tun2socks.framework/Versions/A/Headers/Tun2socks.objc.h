@@ -33,7 +33,7 @@
 AppleTunnel instance that should be used to input packets to the tunnel.
 
 `tunWriter` is used to output packets to the TUN (VPN).
-`host` is  IP address of the SOCKS proxy server.
+`host` is the IP address of the SOCKS proxy server.
 `port` is the port of the SOCKS proxy server.
 `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 
@@ -46,7 +46,7 @@ FOUNDATION_EXPORT id<Tun2socksAppleTunnel> _Nullable Tun2socksConnectSocksTunnel
 @class Tun2socksTunWriter;
 
 /**
- * AppleTunnel embeds the tun2socks.Tunnel interface, so it gets exported by gobind.
+ * AppleTunnel embeds the tun2socks.Tunnel interface so it gets exported by gobind.
  */
 @interface Tun2socksAppleTunnel : NSObject <goSeqRefInterface, Tun2socksAppleTunnel> {
 }
@@ -59,6 +59,9 @@ FOUNDATION_EXPORT id<Tun2socksAppleTunnel> _Nullable Tun2socksConnectSocksTunnel
 - (BOOL)write:(NSData* _Nullable)data ret0_:(long*)ret0_ error:(NSError* _Nullable*)error;
 @end
 
+/**
+ * TunWriter is an interface that allows for outputting packets to the TUN (VPN).
+ */
 @interface Tun2socksTunWriter : NSObject <goSeqRefInterface, Tun2socksTunWriter> {
 }
 @property(strong, readonly) id _ref;
