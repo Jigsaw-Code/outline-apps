@@ -1,13 +1,13 @@
-import {OperationTimedOut} from '../model/errors';
-import {timeoutPromise} from './util';
+import { OperationTimedOut } from '../model/errors';
+import { timeoutPromise } from './util';
 
 describe('timeoutPromise', () => {
   it('Executes successful promise', () => {
-    timeoutPromise(Promise.resolve(1), 100, 'Test Promise').catch((err: OperationTimedOut) => {
+    timeoutPromise(Promise.resolve(1), 100, 'Test Promise').catch((err) => {
       fail(`Successful promise was timed out when it should have resolved`);
     });
     const promiseWithTime = new Promise((resolve, _) => {
-      setTimeout(() => {}, 50);
+      setTimeout(() => { }, 50);
       resolve(1);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise').catch((err) => {
@@ -22,7 +22,7 @@ describe('timeoutPromise', () => {
       }
     });
     const promiseWithTime = new Promise((resolve) => {
-      setTimeout(() => {}, 50);
+      setTimeout(() => { }, 50);
       resolve(1);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise').catch((err) => {
@@ -39,9 +39,9 @@ describe('timeoutPromise', () => {
       }, 2000);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise')
-        .then(() => {
-          fail(`Promise should have timed out but didn't`);
-        })
-        .catch();
+      .then(() => {
+        fail(`Promise should have timed out but didn't`);
+      })
+      .catch();
   });
 });

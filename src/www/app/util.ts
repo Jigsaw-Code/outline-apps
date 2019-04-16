@@ -17,8 +17,8 @@ import * as errors from '../model/errors';
 // Attempts to settle `promise`, but times it out after `ms` milliseconds.  A failed return type
 // could either be a timed-out Promise or a failed Promise.  Use an instanceof guard to
 // differentiate between the two.
-export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<void | T> {
-  let winner: Promise<void | T>;
+export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<void|T> {
+  let winner: Promise<void|T>;
   const timeout = new Promise<void>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
