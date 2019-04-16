@@ -5,20 +5,24 @@ const PROMISE_RESOLVED = 1;
 
 describe('timeoutPromise', () => {
   it('Executes successful promise', () => {
-    timeoutPromise(Promise.resolve(PROMISE_RESOLVED), 100, 'Test Promise').catch((err) => {
-      fail(`Successful promise was timed out when it should have resolved`);
-    }).then((value) => {
-      expect(value).toEqual(PROMISE_RESOLVED);
-    });
+    timeoutPromise(Promise.resolve(PROMISE_RESOLVED), 100, 'Test Promise')
+        .catch((err) => {
+          fail(`Successful promise was timed out when it should have resolved`);
+        })
+        .then((value) => {
+          expect(value).toEqual(PROMISE_RESOLVED);
+        });
     const promiseWithTime = new Promise((resolve, _) => {
       setTimeout(() => { }, 50);
       resolve(PROMISE_RESOLVED);
     });
-    timeoutPromise(promiseWithTime, 100, 'Test Promise').catch((err) => {
-      fail(`Successful timed promise was timed out when it should have resolved`);
-    }).then((value) => {
-      expect(value).toEqual(PROMISE_RESOLVED);
-    });
+    timeoutPromise(promiseWithTime, 100, 'Test Promise')
+        .catch((err) => {
+          fail(`Successful timed promise was timed out when it should have resolved`);
+        })
+        .then((value) => {
+          expect(value).toEqual(PROMISE_RESOLVED);
+        });
   });
 
   it('Executes failed promise', () => {
