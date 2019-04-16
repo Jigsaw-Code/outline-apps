@@ -17,13 +17,12 @@ import * as errors from '../model/errors';
 // Attempts to settle `promise`, but times it out after `ms` milliseconds.  A failed return type
 // could either be a timed-out Promise or a failed Promise.  Use an instanceof guard to
 // differentiate between the two.
-// tslint:disable-next-line:no-any
-export function timeoutPromise(promise: Promise<any>, ms: number, name = '') {
-  // tslint:disable-next-line:no-any
-  let winner: Promise<any>;
+export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<void | T> {
+  let winner: Promise<void | T>;
   const timeout = new Promise<void>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
+      // Failed promises are still truth-y
       if (winner) {
         console.log(`Promise "${name}" resolved before ${ms} ms.`);
         resolve();
