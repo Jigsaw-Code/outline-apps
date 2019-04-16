@@ -6,22 +6,24 @@ const PROMISE_RESOLVED = 1;
 describe('timeoutPromise', () => {
   it('Executes successful promise', () => {
     timeoutPromise(Promise.resolve(PROMISE_RESOLVED), 100, 'Test Promise')
-      .catch((err) => {
-        fail(`Successful promise was timed out when it should have resolved`);
-      })
-      .then((value) => {
-        expect(value).toEqual(PROMISE_RESOLVED);
-      });
+        .catch((err) => {
+          fail(`Successful promise was timed out when it should have resolved`);
+        })
+        .then((value) => {
+          expect(value).toEqual(PROMISE_RESOLVED);
+        });
     const promiseWithTime = new Promise((resolve, _) => {
-      setTimeout(() => { resolve(PROMISE_RESOLVED); }, 50);
+      setTimeout(() => {
+        resolve(PROMISE_RESOLVED);
+      }, 50);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise')
-      .catch((err) => {
-        fail(`Successful timed promise was timed out when it should have resolved`);
-      })
-      .then((value) => {
-        expect(value).toEqual(PROMISE_RESOLVED);
-      });
+        .catch((err) => {
+          fail(`Successful timed promise was timed out when it should have resolved`);
+        })
+        .then((value) => {
+          expect(value).toEqual(PROMISE_RESOLVED);
+        });
   });
 
   it('Executes failed promise', () => {
@@ -29,7 +31,9 @@ describe('timeoutPromise', () => {
       expect(err).not.toEqual(jasmine.any(OperationTimedOut));
     });
     const promiseWithTime = new Promise((resolve) => {
-      setTimeout(() => { resolve(PROMISE_RESOLVED); }, 50);
+      setTimeout(() => {
+        resolve(PROMISE_RESOLVED);
+      }, 50);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise').catch((err) => {
       expect(err).not.toEqual(jasmine.any(OperationTimedOut));
