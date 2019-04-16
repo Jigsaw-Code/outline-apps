@@ -1,69 +1,49 @@
-import timeoutPromise from './settings';
+import { OperationTimedOut } from '../model/errors';
+import { timeoutPromise } from './util';
 
-describe('Settings', () => {
-  it('sets and gets settings', () => {
-    const key = 'key';
-    const value = 'value';
-    const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
-    settings.set(key, value);
-    expect(settings.get(key)).toEqual(value);
+describe('timeoutPromise', () => {
+  it('Executes successful promise', () => {
+    timeoutPromise(Promise.resolve(1), 100, 'Test Promise')
+      .catch((err: OperationTimedOut) => {
+        fail(`Successful promise was timed out when it should have resolved`);
+      });
+    const promiseWithTime = new Promise((resolve, _) => {
+      setTimeout(() => { }, 50);
+      resolve(1);
+    });
+    timeoutPromise(promiseWithTime, 100, 'Test Promise')
+      .catch((err) => {
+        fail(`Successful timed promise was timed out when it should have resolved`);
+      });
   });
 
-  it('loads existing settings', () => {
-    const store = new Map([[Settings.STORAGE_KEY, '{"key1": "value1", "key2": "value2"}']]);
-    const settings = new Settings(new InMemoryStorage(store), FAKE_SETTINGS_KEYS);
-    expect(settings.get('key1')).toEqual('value1');
-    expect(settings.get('key2')).toEqual('value2');
+  it('Executes failed promise', () => {
+    timeoutPromise(Promise.reject('reason'), 100, 'Test Promise')
+      .catch((err) => {
+        if (err instanceof OperationTimedOut) {
+          fail(`Failed promise was timed out when it should have settled unsuccessfully`);
+        }
+      });
+    const promiseWithTime = new Promise((resolve) => {
+      setTimeout(() => { }, 50);
+      resolve(1);
+    });
+    timeoutPromise(promiseWithTime, 100, 'Test Promise')
+      .catch((err) => {
+        if (err instanceof OperationTimedOut) {
+          fail(`Failed timed promise was timed out when it should have settled unsuccessfully`);
+        }
+      });
   });
 
-  it('removes settings', () => {
-    const key = 'key';
-    const value = 'value';
-    const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
-    settings.set(key, value);
-    expect(settings.get(key)).toEqual(value);
-    settings.remove(key);
-    expect(settings.get(key)).toBeUndefined();
-  });
-
-  it('persists settings', () => {
-    const key = 'key';
-    const value = 'value';
-    const storage = new InMemoryStorage();
-    let settings = new Settings(storage, FAKE_SETTINGS_KEYS);
-    settings.set(key, value);
-    // Instantiate a new settings object to validate that settings have been persisted to storage.
-    settings = new Settings(storage);
-    expect(settings.get(key)).toEqual(value);
-  });
-
-  it('returns valid keys', () => {
-    const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
-    expect(settings.isValidSetting('key')).toBeTruthy();
-  });
-
-  it('returns invalid keys', () => {
-    const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
-    expect(settings.isValidSetting('invalidKey')).toBeFalsy();
-  });
-
-  it('is initialized with default valid keys', () => {
-    // Constructor uses SettingKeys as the default value for valid keys.
-    const settings = new Settings(new InMemoryStorage());
-    expect(settings.isValidSetting(SettingsKey.VPN_WARNING_DISMISSED)).toBeTruthy();
-  });
-
-  it('throws when setting an invalid key', () => {
-    const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
-    expect(() => {
-      settings.set('invalidSetting', 'value');
-    }).toThrowError();
-  });
-
-  it('throws when storage is corrupted', () => {
-    const storage = new InMemoryStorage(new Map([[Settings.STORAGE_KEY, '"malformed": "json"']]));
-    expect(() => {
-      const settings = new Settings(storage, FAKE_SETTINGS_KEYS);
-    }).toThrowError(SyntaxError);
+  it('Times out promise', () => {
+    const promiseWithTime = new Promise((resolve) => {
+      setTimeout(() => { resolve(1); }, 2000);
+    });
+    timeoutPromise(promiseWithTime, 100, 'Test Promise')
+      .then(() => {
+        fail(`Promise should have timed out but didn't`);
+      })
+      .catch();
   });
 });
