@@ -17,18 +17,14 @@ describe('timeoutPromise', () => {
 
   it('Executes failed promise', () => {
     timeoutPromise(Promise.reject('reason'), 100, 'Test Promise').catch((err) => {
-      if (err instanceof OperationTimedOut) {
-        fail(`Failed promise was timed out when it should have settled unsuccessfully`);
-      }
+      expect(err instanceof OperationTimedOut).toBe(false);
     });
     const promiseWithTime = new Promise((resolve) => {
       setTimeout(() => { }, 50);
       resolve(1);
     });
     timeoutPromise(promiseWithTime, 100, 'Test Promise').catch((err) => {
-      if (err instanceof OperationTimedOut) {
-        fail(`Failed timed promise was timed out when it should have settled unsuccessfully`);
-      }
+      expect(err instanceof OperationTimedOut).toBe(false);
     });
   });
 
@@ -42,6 +38,8 @@ describe('timeoutPromise', () => {
       .then(() => {
         fail(`Promise should have timed out but didn't`);
       })
-      .catch();
+      .catch((err) => {
+        expect(err instanceof OperationTimedOut).toBe(true);
+      });
   });
 });
