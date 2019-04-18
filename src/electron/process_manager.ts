@@ -352,7 +352,7 @@ class Tun2socks extends ChildProcessHelper {
     // ./tun2socks \
     //   -tunName "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
-    //   -proxyServer 127.0.0.1:1080 -dnsFallback
+    //   -proxyServer 127.0.0.1:1080 -disableDNSCache -dnsFallback
     const args: string[] = [];
     args.push(
         '-tunName',
@@ -365,6 +365,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('-tunDns', `${DNS_RESOLVER_IP_PRIMARY},${DNS_RESOLVER_IP_SECONDARY}`);
     args.push('-proxyServer', `${this.proxyAddress}:${this.proxyPort}`);
     args.push('-loglevel', 'error');
+    args.push('-disableDNSCache');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
     }
