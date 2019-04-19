@@ -1,6 +1,0 @@
-framework module PacketProcessor_macOS {
-  umbrella header "PacketProcessor_macOS.h"
-
-  export *
-  module * { export * }
-}
