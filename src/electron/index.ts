@@ -224,12 +224,15 @@ app.on('ready', () => {
       submenu: [{role: 'reload'}, {role: 'forcereload'}, {role: 'toggledevtools'}]
     }]));
   } else {
-    // TODO: Run this periodically, e.g. every 4-6 hours.
-    try {
-      autoUpdater.checkForUpdates();
-    } catch (e) {
-      console.error(`Failed to check for updates`, e);
-    }
+    // six hours
+    const time = 6 * 60 * 60 * 1000;
+    setInterval(() => {
+      try {
+        autoUpdater.checkForUpdatesAndNotify();
+      } catch (e) {
+        console.error(`Failed to check for updates`, e);
+      }
+    }, time);
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
