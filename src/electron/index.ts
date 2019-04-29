@@ -226,9 +226,8 @@ app.on('ready', () => {
   } else {
     checkForUpdates();
 
-    // six hours
-    const time = 6 * 60 * 60 * 1000;
-    setInterval(checkForUpdates, time);
+    // Check every six hours
+    setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
