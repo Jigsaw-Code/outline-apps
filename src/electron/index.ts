@@ -228,7 +228,7 @@ app.on('ready', () => {
     const time = 6 * 60 * 60 * 1000;
     setInterval(() => {
       try {
-        autoUpdater.checkForUpdatesAndNotify();
+        autoUpdater.checkForUpdates();
       } catch (e) {
         console.error(`Failed to check for updates`, e);
       }
