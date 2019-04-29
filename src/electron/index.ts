@@ -224,15 +224,11 @@ app.on('ready', () => {
       submenu: [{role: 'reload'}, {role: 'forcereload'}, {role: 'toggledevtools'}]
     }]));
   } else {
+    checkForUpdates();
+
     // six hours
     const time = 6 * 60 * 60 * 1000;
-    setInterval(() => {
-      try {
-        autoUpdater.checkForUpdates();
-      } catch (e) {
-        console.error(`Failed to check for updates`, e);
-      }
-    }, time);
+    setInterval(checkForUpdates, time);
   }
 
   // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
@@ -423,6 +419,14 @@ ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: str
   }
   createTrayIcon(ConnectionStatus.DISCONNECTED);
 });
+
+function checkForUpdates() {
+  try {
+    autoUpdater.checkForUpdates();
+  } catch (e) {
+    console.error(`Failed to check for updates`, e);
+  }
+}
 
 // Notify the UI of updates.
 autoUpdater.on('update-downloaded', (ev, info) => {
