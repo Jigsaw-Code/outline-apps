@@ -52,9 +52,9 @@ function createServerRepo(
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
-      repo.add({name: 'Fake Working Server', host: '127.0.0.1'});
-      repo.add({name: 'Fake Broken Server', host: '192.0.2.1'});
-      repo.add({name: 'Fake Unreachable Server', host: '10.0.0.24'});
+      repo.add({name: 'Fake Working Server', host: '127.0.0.1', port: 123});
+      repo.add({name: 'Fake Broken Server', host: '192.0.2.1', port: 123});
+      repo.add({name: 'Fake Unreachable Server', host: '10.0.0.24', port: 123});
     }
   }
   return repo;
