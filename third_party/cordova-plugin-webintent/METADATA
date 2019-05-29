@@ -1,0 +1,12 @@
+name: "cordova-plugin-webintent"
+description: "WebIntent Android Plugin for Cordova."
+
+third_party {
+  url {
+    type: GIT
+    value: "https://github.com/cordova-misc/cordova-webintent"
+  }
+  version: "1.1.0"
+  local_modifications: "Renamed the plugin for consistency."
+  last_upgrade_date { year: 2019 month: 5 day: 28 }
+}
