@@ -2338,8 +2338,9 @@ cordova-osx@~5.0.0:
     unorm "^1.4.1"
     xcode "^2.0.0"
 
-"cordova-plugin-clipboard@file:third_party/cordova-plugin-clipboard":
-  version "1.0.0"
+"cordova-plugin-clipboard@github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0":
+  version "2.0.0"
+  resolved "https://codeload.github.com/Jigsaw-Code/outline-cordova-plugin-clipboard/tar.gz/8cc5101b7a264122c71f7f3a3cb5744a8fad8498"
 
 cordova-plugin-device@^2.0.2:
   version "2.0.2"
@@ -2359,9 +2360,6 @@ cordova-plugin-statusbar@^2.2.3:
   resolved "https://registry.yarnpkg.com/cordova-plugin-statusbar/-/cordova-plugin-statusbar-2.4.2.tgz#fc1fbdc0d8d7033a7e8e1f1f7ff167ac9bd4faf6"
   integrity sha1-/B+9wNjXAzp+jh8ff/FnrJvU+vY=
 
-"cordova-plugin-webintent@file:third_party/cordova-plugin-webintent":
-  version "1.1.0"
-
 cordova-plugin-whitelist@^1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/cordova-plugin-whitelist/-/cordova-plugin-whitelist-1.3.3.tgz#b5e85ecdbbfe5aeded40a1bf4ee2372e67d96fb4"
@@ -2377,6 +2375,10 @@ cordova-serve@^3.0.0:
     express "^4.13.3"
     opn "^5.3.0"
     which "^1.3.0"
+
+"cordova-webintent@github:cordova-misc/cordova-webintent#v2.0.0":
+  version "2.0.0"
+  resolved "https://codeload.github.com/cordova-misc/cordova-webintent/tar.gz/6c045cece3e49e4dd061d56fc15569053e9a0c4a"
 
 cordova@~9.0.0:
   version "9.0.0"

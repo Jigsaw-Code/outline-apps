@@ -11,13 +11,13 @@
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.9",
     "auto-launch": "^5.0.5",
     "cordova-custom-config": "^5.1.0",
-    "cordova-plugin-clipboard": "file:third_party/cordova-plugin-clipboard",
+    "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-plugin-splashscreen": "^5.0.2",
     "cordova-plugin-statusbar": "^2.2.3",
-    "cordova-plugin-webintent": "file:third_party/cordova-plugin-webintent",
     "cordova-plugin-whitelist": "^1.3.3",
+    "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "electron-promise-ipc": "^1.0.0",
     "electron-updater": "3.2.3",
     "fs-extra": "^7.0.0",
@@ -75,14 +75,14 @@
   },
   "cordova": {
     "plugins": {
-      "cordova-plugin-clipboard": {},
       "cordova-custom-config": {},
       "cordova-plugin-device": {},
       "cordova-plugin-outline": {},
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-statusbar": {},
-      "cordova-plugin-webintent": {},
-      "cordova-plugin-whitelist": {}
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-clipboard": {},
+      "cordova-webintent": {}
     },
     "platforms": [
       "browser",
