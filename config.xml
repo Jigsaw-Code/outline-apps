@@ -61,8 +61,6 @@
                 <data android:scheme="https" android:host="s3.amazonaws.com" android:path="/outline-vpn/invite.html" />
             </intent-filter>
         </custom-config-file>
-
-        <hook type="after_platform_add" src="scripts/update_android_target_version.sh" />
     </platform>
 
     <!-- browser -->
@@ -123,15 +121,6 @@
         <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
     </platform>
 
-    <plugin name="com.borismus.webintent" spec="https://github.com/cordova-misc/cordova-webintent.git#v1.1.0" />
-    <plugin name="cordova-plugin-whitelist" spec="1" />
-    <plugin name="cordova-plugin-splashscreen" spec="~5.0.2" />
-    <plugin name="cordova-custom-config" spec="^5.0.2" />
-    <plugin name="cordova-plugin-outline" spec="./cordova-plugin-outline" />
-    <plugin name="cordova-plugin-device" spec="~1.1.6" />
-    <plugin name="cordova-plugin-statusbar" spec="~2.2.3" />
-    <plugin name="com.verso.cordova.clipboard" spec="https://github.com/Jigsaw-Code/outline-cordova-plugin-clipboard.git#f83bfc" />
-
     <!-- Sentry error reporting keys -->
     <sentry>
         <dev dsn="https://319145c481df41458bb6e84c1a99c9ff@sentry.io/159503" />
@@ -139,10 +128,4 @@
         <dev-native dsn="https://319145c481df41458bb6e84c1a99c9ff:73cc3261d25e44ac90221e7d9ad30b24@sentry.io/159503" />
         <release-native dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c:568f6c78f9f94f91afba4aba05756001@sentry.io/159502" />
     </sentry>
-
-    <engine name="android" spec="~7.1.4" />
-    <engine name="browser" spec="^4.1.0" />
-    <!-- Depend on these commits until the next release. -->
-    <engine name="ios" spec="https://github.com/apache/cordova-ios#7397337c" />
-    <engine name="osx" spec="https://github.com/apache/cordova-osx#7faf6aaa" />
 </widget>
