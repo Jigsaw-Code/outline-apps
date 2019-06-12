@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="cordova-plugin-outline" version="1.0.0">
+        id="cordova-plugin-outline" version="0.0.0">
   <name>Outline Cordova Plugin</name>
   <description>Native plugin for the Outline app</description>
   <license>Apache 2.0</license>
