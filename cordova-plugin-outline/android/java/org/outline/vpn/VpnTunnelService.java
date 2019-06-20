@@ -161,6 +161,8 @@ public class VpnTunnelService extends VpnService {
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
       stopForeground();
     }
+    activeConnectionId = connectionId;
+    activeServerConfig = config;
     try {
       // Do not perform connectivity checks when connecting on startup. We should avoid failing
       // the connection due to a network error, as network may not be ready.
@@ -174,8 +176,6 @@ public class VpnTunnelService extends VpnService {
       onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
       return;
     }
-    activeConnectionId = connectionId;
-    activeServerConfig = config;
 
     final boolean remoteUdpForwardingEnabled = isAutoStart
         ? connectionStore.isUdpSupported()
