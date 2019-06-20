@@ -26,4 +26,6 @@ module.exports = function(context) {
   });
   child_process.execSync(
       `cp third_party/go-tun2socks/android/tun2socks.aar plugins/cordova-plugin-outline/android/libs/`);
+  child_process.execSync(
+      `cp -R third_party/go-tun2socks/android/jni plugins/cordova-plugin-outline/android/libs/obj`);
 }

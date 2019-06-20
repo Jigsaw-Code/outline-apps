@@ -35,6 +35,7 @@ const source = require('vinyl-source-stream');
 
 const platform = gutil.env.platform || 'android';
 const isRelease = gutil.env.release;
+const isBeta = gutil.env.beta;
 
 //////////////////
 //////////////////
@@ -149,6 +150,22 @@ function cordovaPrepare() {
   return runCommand(`cordova prepare ${platform}`);
 }
 
+function cordovaConfigureBeta() {
+  if (platform !== 'android' || !isBeta) {
+    return Promise.resolve('Not configuring beta release');
+  }
+  require('./beta/configure_android_beta.js')();
+  return Promise.resolve();
+}
+
+function cordovaUploadSymbols() {
+  if (platform !== 'android' || !isBeta) {
+    return Promise.resolve('Not uploading beta crash symbols');
+  }
+  const uploadSymbolsCmd = 'pushd platforms/android && ./gradlew crashlyticsUploadSymbols';
+  return runCommand(isRelease ? `${uploadSymbolsCmd}Release` : `${uploadSymbolsCmd}Debug`);
+}
+
 function xcode() {
   return runCommand(
       (platform === 'ios' || platform === 'osx') ?
@@ -170,9 +187,9 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const cordovaBuild = gulp.series(cordovaPrepare, xcode, cordovaCompile);
+const cordovaBuild = gulp.series(cordovaPrepare, cordovaConfigureBeta, xcode, cordovaCompile);
 
-const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
+const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild, cordovaUploadSymbols);
 
 //////////////////
 //////////////////
@@ -186,8 +203,8 @@ const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
 // Writes a JSON file accessible to environment.ts containing environment variables.
 function writeEnvJson() {
   // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
-  return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
-      WEBAPP_OUT}/environment.json`);
+  return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} ${
+      isBeta ? '-b' : ''} > ${WEBAPP_OUT}/environment.json`);
 }
 
 exports.build = gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova);

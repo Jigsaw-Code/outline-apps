@@ -16,13 +16,15 @@
 
 TYPE=dev
 PLATFORM=
+BETA_BUILD=false
 
 # TODO: Remove -p dev once the Electron clients can function without an environment.json file (see
 #       src/electron/build_action.sh for more info).
 
 function usage () {
-  echo "$0 [-r] [-h]"
+  echo "$0 [-r] [-b] [-h]"
   echo "  -r: use prod Sentry keys"
+  echo "  -b: whether this is a beta release"
   echo "  -p: platform (android, ios, osx, browser, windows, linux, or dev)"
   echo "  -h: this help message"
   echo
@@ -31,9 +33,10 @@ function usage () {
   exit 1
 }
 
-while getopts rp:h? opt; do
+while getopts rbp:h? opt; do
   case $opt in
     r) TYPE=release ;;
+    b) BETA_BUILD=true ;;
     p) PLATFORM=$OPTARG ;;
     h) usage ;;
     *) usage ;;
@@ -98,6 +101,7 @@ cat << EOM
 {
   "APP_VERSION": "$APP_VERSION",
   "APP_BUILD_NUMBER": "$APP_BUILD_NUMBER",
+  "BETA_BUILD": $BETA_BUILD,
   "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].$TYPE[0].$.dsn)",
   "SENTRY_NATIVE_DSN": "$(pull_from_config_xml result.widget.sentry[0][\"$TYPE-native\"][0].$.dsn)"
 }
