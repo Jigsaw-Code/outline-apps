@@ -20,7 +20,8 @@ interface StorageSettings {
 export enum SettingsKey {
   VPN_WARNING_DISMISSED = 'vpn-warning-dismissed',
   AUTO_CONNECT_DIALOG_DISMISSED = 'auto-connect-dialog-dismissed',
-  PRIVACY_ACK = 'privacy-ack'
+  PRIVACY_ACK = 'privacy-ack',
+  BETA_ACK = 'beta-ack'
 }
 
 // Persistent storage for user settings that supports a limited set of keys.

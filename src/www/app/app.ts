@@ -225,6 +225,9 @@ export class App {
 
   private arePrivacyTermsAcked() {
     try {
+      if (this.environmentVars.BETA_BUILD) {
+        return this.settings.get(SettingsKey.BETA_ACK) === 'true';
+      }
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
     } catch (e) {
       console.error(`could not read privacy acknowledgement setting, assuming not acknowledged`);
@@ -234,13 +237,15 @@ export class App {
 
   private displayPrivacyView() {
     this.rootEl.$.serversView.hidden = true;
+    this.rootEl.$.privacyView.isBetaRelease = this.environmentVars.BETA_BUILD;
     this.rootEl.$.privacyView.hidden = false;
   }
 
   private ackPrivacyTerms() {
     this.rootEl.$.serversView.hidden = false;
     this.rootEl.$.privacyView.hidden = true;
-    this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
+    this.settings.set(
+        this.environmentVars.BETA_BUILD ? SettingsKey.BETA_ACK : SettingsKey.PRIVACY_ACK, 'true');
   }
 
   private handleClipboardText(text: string) {
