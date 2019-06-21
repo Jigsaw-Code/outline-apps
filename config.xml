@@ -60,6 +60,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="s3.amazonaws.com" android:path="/outline-vpn/invite.html" />
             </intent-filter>
+            <!-- Disable Firebase Analytics data collection for beta builds. -->
+            <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
+            <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+            <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
         </custom-config-file>
     </platform>
 
