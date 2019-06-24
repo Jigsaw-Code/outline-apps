@@ -30,11 +30,13 @@ cat > build/env.nsh << EOF
 !define SENTRY_DSN "https://sentry.io/api/159502/store/?sentry_version=7&sentry_key=6a1e6e7371a64db59f5ba6c34a77d78c"
 EOF
 
+# Set-up electron to only download new updates but never upload new ones
 electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p windows) \
-  --config.publish.provider=generic \
-  --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
+  --config.publish.provider=s3 \
+  --config.publish.bucket=outline-releases \
+  --config.publish.path=client \
   --config.win.certificateSubjectName='Jigsaw Operations LLC'
