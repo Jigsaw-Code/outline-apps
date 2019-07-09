@@ -18,12 +18,14 @@ const browserify = require('browserify');
 const babel = require('gulp-babel');
 const babel_preset_env = require('babel-preset-env');
 const child_process = require('child_process');
+const fs = require('fs');
 const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
 const gutil = require('gulp-util');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
+const watchify = require('watchify');
 
 //////////////////
 //////////////////
@@ -35,6 +37,7 @@ const source = require('vinyl-source-stream');
 
 const platform = gutil.env.platform || 'android';
 const isRelease = gutil.env.release;
+const shouldWatch = !!gutil.env.watch;
 
 //////////////////
 //////////////////
@@ -63,6 +66,13 @@ function runCommand(command) {
 
 const WEBAPP_OUT = 'www';
 
+const BUNDLE_PROPAGATION_TARGETS = [
+  'platforms/browser/www/cordova_main.js',
+  'platforms/android/www/cordova_main.js',
+  'platforms/ios/www/cordova_main.js',
+  'platforms/osx/www/cordova_main.js',
+];
+
 // Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
 function copyBabelPolyfill() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
@@ -73,17 +83,81 @@ function copyBabelPolyfill() {
 //
 // Useful Gulp/Browserify examples:
 //   https://github.com/gulpjs/gulp/tree/master/docs/recipes
+let firstRun = true;
 function browserifyAndBabelify() {
-  return browserify({entries: `${WEBAPP_OUT}/app/cordova_main.js`, debug: true})
-      .transform('babelify', {
-        // Transpile code in node_modules, too.
-        global: true,
-        presets: ['env']
-      })
-      .bundle()
+  let browserifyInstance =
+      browserify({
+            entries: `${WEBAPP_OUT}/app/cordova_main.js`,
+            debug: true,
+            // This enables caching, which makes it much faster on repeated runs (when watching)
+            cache: {},
+            packageCache: {}
+          })
+          .transform('babelify', {
+            // Transpile code in node_modules, too.
+            global: true,
+            presets: ['env']
+          });
+
+  if (shouldWatch) {
+    browserifyInstance = watch(browserifyInstance);
+  }
+
+  browserifyInstance = browserifyInstance.bundle();
+
+  if (shouldWatch) {
+    // When using watchify, we need to detect and report errors.  Otherwise there will just be a silent freeze!
+    // (For example, if we require() a package that is not installed.)
+    browserifyInstance = browserifyInstance.on('error', function (e) {
+      if (firstRun) {
+        // If there is an error on the first run, the build process will not resume, even if the developer fixes the issue.
+        // So on the first run, we should always throw.
+        throw e;
+      } else {
+        // On later runs, we can just report the error, and give the developer a chance to fix the issue.
+        // The watcher will try to babelify and bundle again after a source file has been changed.
+        console.error('Error while bundling: ', e.stack);
+      }
+    });
+    // If we are not watching, then errors are automatically reported.
+  }
+
+  return browserifyInstance
       // Transform the bundle() output stream into one regular Gulp plugins understand.
       .pipe(source('cordova_main.js'))
       .pipe(gulp.dest(WEBAPP_OUT));
+}
+
+function watch(browserifyInstance) {
+  const log = gutil.log.bind(gutil, 'Browserify:');
+  const watchified = watchify(browserifyInstance);
+  watchified.on('log', log);
+  watchified.on('update', function(deps) {
+    gutil.log(`The following dependencies were modified, rebuilding... ${deps}`);
+    watchified.bundle()
+        .pipe(source('cordova_main.js'))
+        .pipe(gulp.dest(WEBAPP_OUT))
+        .on('finish',
+            () => {
+              propagateTheBundle();
+              gutil.log('Rebuilt');
+              firstRun = false;
+            })
+        .on('error', console.error);
+  });
+  return browserifyInstance;
+}
+
+// If we rebuild the bundle, then push it into all the existing platforms, so it can be tested
+// easily
+function propagateTheBundle() {
+  const srcFile = `${WEBAPP_OUT}/cordova_main.js`;
+  for (const targetFile of BUNDLE_PROPAGATION_TARGETS) {
+    if (fs.existsSync(targetFile)) {
+      child_process.execSync(`cp "${srcFile}" "${targetFile}"`, {stdio: 'inherit'});
+      console.log(`Copied ${srcFile} -> ${targetFile}`);
+    }
+  }
 }
 
 // Transpiles to |src| to ES5, copying the output to |dest|.
@@ -174,6 +248,15 @@ const cordovaBuild = gulp.series(cordovaPrepare, xcode, cordovaCompile);
 
 const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
 
+function maybeRunCordova() {
+  if (shouldWatch) {
+    gutil.log('Running...');
+    return runCommand(`cordova run ${platform} --noprepare --nobuild`);
+  } else {
+    return Promise.resolve(true);
+  }
+}
+
 //////////////////
 //////////////////
 //
@@ -190,4 +273,5 @@ function writeEnvJson() {
       WEBAPP_OUT}/environment.json`);
 }
 
-exports.build = gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova);
+exports.build =
+    gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova, maybeRunCordova);

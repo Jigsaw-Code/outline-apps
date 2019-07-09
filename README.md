@@ -20,6 +20,15 @@ The latter command will open a browser instance running the app. Browser platfor
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](www/app).
 
+## Building the web app in watch mode
+
+If you would like to work on the TypeScript files and you want the bundle to update while you are working, you can run these two commands in two separate shells:
+
+    yarn tsc:watch
+    yarn gulp build --platform=browser --watch
+
+The first command will update the JavaScript files if any TypeScript file changes.  The second command will create a fresh `cordova_main.js` bundle after each change, and also copy that bundle into any existing platform folders.  (At present, the bundle is not rebuilt if HTML or CSS files change, only TS files.)
+
 ## Building the Android app
 
 Additional requirements for Android:
