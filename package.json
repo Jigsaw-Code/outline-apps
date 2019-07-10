@@ -25,7 +25,7 @@
     "raven-js": "^3.20.1",
     "socks": "^1.1.10",
     "sudo-prompt": "^8.2.0",
-    "uuid": "^3.1.0"
+    "uuidv4": "^4.0.0"
   },
   "devDependencies": {
     "@types/auto-launch": "^5.0.0",
@@ -35,7 +35,7 @@
     "@types/polymer": "^1.2.6",
     "@types/raven": "^2.1.2",
     "@types/semver": "^5.5.0",
-    "@types/uuid": "^3.4.0",
+    "@types/uuidv4": "^2.0.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
