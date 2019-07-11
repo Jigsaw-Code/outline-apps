@@ -72,7 +72,13 @@
       src="android/libs/arm64-v8a/libss-local.so"
       target-dir="app/src/main/jniLibs/arm64-v8a" />
     <source-file
+      src="android/libs/arm64-v8a/libtun2socks.so"
+      target-dir="app/src/main/jniLibs/arm64-v8a" />
+    <source-file
       src="android/libs/x86_64/libss-local.so"
+      target-dir="app/src/main/jniLibs/x86_64" />
+    <source-file
+      src="android/libs/x86_64/libtun2socks.so"
       target-dir="app/src/main/jniLibs/x86_64" />
     <source-file
       src="android/libs/armeabi-v7a/libss-local.so"
