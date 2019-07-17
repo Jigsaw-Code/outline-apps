@@ -20,19 +20,18 @@
 
 REPO=shadowsocks
 REV=master
-PLUGIN=true
 IMAGE=ss-build-mingw
 DIST=ss-libev-win-dist.tar.gz
 
 all: build
 
 build:
-	docker build --force-rm -t $(IMAGE) \
+	cd ../../ && docker build -t $(IMAGE) \
+	  -f docker/mingw/Dockerfile \
 	  --build-arg REV=$(REV) --build-arg REPO=$(REPO) \
 	  --build-arg REBUILD="$$(date +%Y-%m-%d-%H-%M-%S)" \
-	  --build-arg PLUGIN=$(PLUGIN) .
-  # Outline just needs ss-local.exe.
-	docker run --rm --entrypoint cat $(IMAGE) /ss-local.exe > ss-local.exe
+	  .
+	docker run --rm --entrypoint cat $(IMAGE) /bin.tgz > $(DIST)
 
 clean:
 	rm -f $(DIST)

@@ -1,3 +1,44 @@
+shadowsocks-libev (3.3.0-1) unstable; urgency=medium
+
+  * Enlarge the socket buffer size to 16KB.
+  * Fix the empty list bug in ss-manager.
+  * Fix the IPv6 address parser.
+
+ -- Max Lv <max.c.lv@gmail.com>  Sat, 08 Jun 2019 07:53:20 +0800
+
+shadowsocks-libev (3.2.5-1) unstable; urgency=medium
+
+  * Fix a bug of port parser.
+
+ -- Max Lv <max.c.lv@gmail.com>  Sat, 09 Mar 2019 18:54:36 +0800
+
+shadowsocks-libev (3.2.4-1) unstable; urgency=medium
+
+  * Fix a crash with MinGW.
+  * Refine SIP003 plugin interface.
+  * Remove connection timeout from all clients.
+
+ -- Max Lv <max.c.lv@gmail.com>  Tue, 26 Feb 2019 09:40:18 +0800
+
+shadowsocks-libev (3.2.3-1) unstable; urgency=medium
+
+  * Fix the alignment issue again.
+
+ -- Max Lv <max.c.lv@gmail.com>  Wed, 28 Nov 2018 00:27:40 -0800
+
+shadowsocks-libev (3.2.2-1) unstable; urgency=medium
+
+  * Fix a bug on 32-bit arch.
+
+ -- Max Lv <max.c.lv@gmail.com>  Mon, 26 Nov 2018 20:07:21 -0800
+
+shadowsocks-libev (3.2.1-1) unstable; urgency=medium
+
+  * Add TCP fast open support to ss-tunnel by @PantherJohn.
+  * Fix several security issues.
+
+ -- Max Lv <max.c.lv@gmail.com>  Wed, 07 Nov 2018 22:31:59 -0800
+
 shadowsocks-libev (3.2.0-1) unstable; urgency=medium
 
   * Add MinGW support by @linusyang.

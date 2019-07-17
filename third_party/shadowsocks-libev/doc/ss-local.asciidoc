@@ -93,7 +93,8 @@ That results the traffic go out through eth1, but not lo nor eth0.
 This option is useful to control traffic in multi-interface environment.
 
 -b <local_address>::
-Specify local address to bind.
+Specify the local address to use while this client is making outbound 
+connections to the server.
 
 -u::
 Enable UDP relay.

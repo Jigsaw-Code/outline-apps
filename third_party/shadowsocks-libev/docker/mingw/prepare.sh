@@ -35,31 +35,31 @@ PROJ_URL=https://github.com/${PROJ_SITE}/shadowsocks-libev.git
 
 # Libraries from project
 
-# For Outline, only *_SRC are needed (for deps.sh); dk_download is unused.
-
 ## libev for MinGW
-LIBEV_SRC=libev-mingw
+LIBEV_VER=mingw
+LIBEV_SRC=libev-${LIBEV_VER}
+LIBEV_URL=https://github.com/${PROJ_SITE}/libev/archive/${LIBEV_VER}.tar.gz
 
 # Public libraries
 
 ## mbedTLS
 MBEDTLS_VER=2.7.0
-MBEDTLS_SRC=mbedtls
+MBEDTLS_SRC=mbedtls-${MBEDTLS_VER}
 MBEDTLS_URL=https://tls.mbed.org/download/mbedtls-${MBEDTLS_VER}-apache.tgz
 
 ## Sodium
 SODIUM_VER=1.0.16
-SODIUM_SRC=sodium
+SODIUM_SRC=libsodium-${SODIUM_VER}
 SODIUM_URL=https://download.libsodium.org/libsodium/releases/${SODIUM_SRC}.tar.gz
 
 ## PCRE
 PCRE_VER=8.41
-PCRE_SRC=pcre
+PCRE_SRC=pcre-${PCRE_VER}
 PCRE_URL=https://ftp.pcre.org/pub/pcre/${PCRE_SRC}.tar.gz
 
 ## c-ares
 CARES_VER=1.14.0
-CARES_SRC=c-ares
+CARES_SRC=c-ares-${CARES_VER}
 CARES_URL=https://c-ares.haxx.se/download/${CARES_SRC}.tar.gz
 
 # Build steps

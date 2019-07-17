@@ -18,6 +18,9 @@ include(CheckCSourceCompiles)
 set(CONNECT_IN_PROGRESS "EINPROGRESS")
 set(CONNECT_IN_PROGRESS "EINPROGRESS" CACHE STRING "")
 
+if (CMAKE_SYSTEM_NAME STREQUAL Darwin)
+    set(CMAKE_REQUIRED_INCLUDES "/usr/local/include" "/usr/include")
+endif ()
 
 check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(ev.h HAVE_EV_H)

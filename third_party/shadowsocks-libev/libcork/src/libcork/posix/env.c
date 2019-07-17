@@ -17,6 +17,10 @@
 #include "libcork/helpers/errors.h"
 #include "libcork/helpers/mingw.h"
 
+#ifdef __CYGWIN__
+#include <cygwin/version.h>
+#endif
+
 #if defined(__APPLE__)
 /* Apple doesn't provide access to the "environ" variable from a shared library.
  * There's a workaround function to grab the environ pointer described at [1].
@@ -184,7 +188,7 @@ cork_env_set_vars(void *user_data, struct cork_hash_table_entry *entry)
     return CORK_HASH_TABLE_MAP_CONTINUE;
 }
 
-#if (defined(__APPLE__) || (defined(BSD) && (BSD >= 199103))) && !defined(__GNU__) || (defined(__CYGWIN__))
+#if (defined(__APPLE__) || (defined(BSD) && (BSD >= 199103))) && !defined(__GNU__) || (defined(__CYGWIN__) && CYGWIN_VERSION_API_MINOR < 326)
 /* A handful of platforms [1] don't provide clearenv(), so we must implement our
  * own version that clears the environ array directly.
  *

@@ -1,7 +1,7 @@
 /*
  * utils.c - Misc utilities
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -32,10 +32,13 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#else
+#include <malloc.h>
 #endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <sodium.h>
 
@@ -64,6 +67,7 @@ ERROR(const char *s)
     char *msg = strerror(errno);
     LOGE("%s: %s", s, msg);
 }
+
 #endif
 
 int use_tty = 1;
@@ -240,12 +244,16 @@ ss_malloc(size_t size)
 }
 
 void *
-ss_align(size_t size)
+ss_aligned_malloc(size_t size)
 {
     int err;
     void *tmp = NULL;
 #ifdef HAVE_POSIX_MEMALIGN
-    err = posix_memalign(&tmp, sizeof(void *), size);
+    /* ensure 16 byte alignment */
+    err = posix_memalign(&tmp, 16, size);
+#elif __MINGW32__
+    tmp = _aligned_malloc(size, 16);
+    err = tmp == NULL;
 #else
     err = -1;
 #endif
@@ -266,6 +274,12 @@ ss_realloc(void *ptr, size_t new_size)
         exit(EXIT_FAILURE);
     }
     return new;
+}
+
+int
+ss_is_ipv6addr(const char *addr)
+{
+    return strcmp(addr, ":") > 0;
 }
 
 void
@@ -380,6 +394,8 @@ usage()
 #ifdef MODULE_MANAGER
     printf(
         "       [--executable <path>]      Path to the executable of ss-server.\n");
+    printf(
+        "       [-D <path>]                Path to the working directory of ss-manager.\n");
 #endif
     printf(
         "       [--mtu <MTU>]              MTU of your network interface.\n");
@@ -449,10 +465,19 @@ daemonize(const char *path)
         exit(EXIT_FAILURE);
     }
 
-    /* Close out the standard file descriptors */
+    int dev_null = open("/dev/null", O_WRONLY);
+    if (dev_null) {
+        /* Redirect to null device  */
+        dup2(dev_null, STDOUT_FILENO);
+        dup2(dev_null, STDERR_FILENO);
+    } else {
+        /* Close the standard file descriptors */
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+
+    /* Close the standard file descriptors */
     close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
 #else
     LOGE("daemonize(): not implemented in MinGW port");
 #endif
@@ -493,7 +518,7 @@ get_default_conf(void)
 #ifndef __MINGW32__
     static char sysconf[] = "/etc/shadowsocks-libev/config.json";
     static char *userconf = NULL;
-    static int buf_size = 0;
+    static int buf_size   = 0;
     char *conf_home;
 
     conf_home = getenv("XDG_CONFIG_HOME");
@@ -506,14 +531,14 @@ get_default_conf(void)
             userconf = malloc(buf_size);
         }
         snprintf(userconf, buf_size, "%s%s", getenv("HOME"),
-            "/.config/shadowsocks-libev/config.json");
+                 "/.config/shadowsocks-libev/config.json");
     } else {
         if (buf_size == 0) {
             buf_size = 50 + strlen(conf_home);
             userconf = malloc(buf_size);
         }
         snprintf(userconf, buf_size, "%s%s", conf_home,
-            "/shadowsocks-libev/config.json");
+                 "/shadowsocks-libev/config.json");
     }
 
     // Check if the user-specific config exists.
