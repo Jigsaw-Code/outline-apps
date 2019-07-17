@@ -25,9 +25,11 @@ scripts/environment_json.sh -r -p linux > www/environment.json
 # Set-up electron to only download new updates but never upload new ones
 electron-builder \
   --linux \
+  # Disable publishing from Electron
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  # Set up where to fetch updates from
   --config.publish.provider=s3 \
   --config.publish.bucket=outline-releases \
   --config.publish.path=client
