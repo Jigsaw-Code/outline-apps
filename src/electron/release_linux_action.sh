@@ -22,14 +22,13 @@ yarn do src/electron/package_common
 
 scripts/environment_json.sh -r -p linux > www/environment.json
 
-# Set-up electron to only download new updates but never upload new ones
+# Publishing is disabled, updates are pulled from AWS We use the generic provider instead of the S3
+# provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
+# which can be DNS-blocked without taking down other buckets.
 electron-builder \
   --linux \
-  # Disable publishing from Electron
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=1.0.8 \
-  # Set up where to fetch updates from
-  --config.publish.provider=s3 \
-  --config.publish.bucket=outline-releases \
-  --config.publish.path=test
+  --config.publish.provider=generic \
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/test
