@@ -32,8 +32,18 @@ build_proj() {
     cpu="$(nproc --all)"
 
     cd "$SRC"
-    cd proj
-
+    if ! [ -d proj ]; then
+        git clone ${PROJ_URL} proj
+        cd proj
+        git checkout ${PROJ_REV}
+        git submodule update --init
+        ./autogen.sh
+    else
+        cd proj
+    fi
+    # Because Outline works with a mirror of the repo rather than a source archive
+    # downloaded from https://github.com/shadowsocks/shadowsocks-libev/releases, it
+    # must call autogen.sh before calling configure.
     ./autogen.sh
     ./configure --host=${host} --prefix=${prefix} \
       --disable-documentation \
@@ -45,7 +55,30 @@ build_proj() {
       CFLAGS="-DCARES_STATICLIB -DPCRE_STATIC"
     make clean
     make -j$cpu LDFLAGS="-all-static -L${dep}/lib"
-    make install
+    make install-strip
+
+    # Reference SIP003 plugin (Experimental)
+    [[ "${PLUGIN}" != "true" ]] && return 0
+
+    PLUGIN_URL=https://github.com/${PROJ_SITE}/simple-obfs.git
+    PLUGIN_REV=master
+
+    cd "$SRC"
+    if ! [ -d plugin ]; then
+        git clone ${PLUGIN_URL} plugin
+        cd plugin
+        git checkout ${PLUGIN_REV}
+        git submodule update --init
+        ./autogen.sh
+    else
+        cd plugin
+    fi
+    ./configure --host=${host} --prefix=${prefix} \
+      --disable-documentation \
+      --with-ev="$dep"
+    make clean
+    make -j$cpu LDFLAGS="-all-static -L${dep}/lib"
+    make install-strip
 }
 
 dk_build() {
@@ -55,15 +88,6 @@ dk_build() {
 }
 
 dk_package() {
-    rm -rf "$BASE/pack"
-    mkdir -p "$BASE/pack"
-    cd "$BASE/pack"
-    mkdir -p ss-libev-${PROJ_REV}
-    cd ss-libev-${PROJ_REV}
-    for bin in local server tunnel; do
-        cp ${DIST}/i686/bin/ss-${bin}.exe ss-${bin}-x86.exe
-        cp ${DIST}/x86_64/bin/ss-${bin}.exe ss-${bin}-x64.exe
-    done
-    cd ..
-    tar zcf /bin.tgz ss-libev-${PROJ_REV}
+    # Outline just needs ss-local.exe.
+    cp ${DIST}/i686/bin/ss-local.exe /
 }

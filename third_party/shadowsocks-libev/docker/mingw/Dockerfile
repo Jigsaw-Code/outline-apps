@@ -23,24 +23,23 @@ FROM debian:testing
 ARG REPO=shadowsocks
 ARG REV=master
 
-ADD docker/mingw/prepare.sh /
+ADD prepare.sh /
 
 RUN \
   /bin/bash -c "source /prepare.sh && dk_prepare" && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build
 
-RUN /bin/bash -c "source /prepare.sh && dk_download"
+# For Outline, there is no need to run dk_download: windows_action.sh
+# should have already copied across the relevant folders from third_party.
+ADD src /build/src
 
-ADD docker/mingw/deps.sh /
+ADD deps.sh /
 RUN /bin/bash -c "source /deps.sh && dk_deps"
 
-ADD docker/mingw/build.sh /
+ADD build.sh /
 
 ARG REBUILD=0
+ARG PLUGIN=true
 
-ADD . /build/src/proj
-
-RUN /bin/bash -c "source /build.sh && dk_build"
-
-RUN /bin/bash -c "source /build.sh && dk_package"
+RUN /bin/bash -c "source /build.sh && dk_build && dk_package"
