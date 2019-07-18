@@ -28,8 +28,8 @@ electron-builder \
   # Disable publishing from Electron
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  --config.extraMetadata.version=1.0.8 \
   # Set up where to fetch updates from
   --config.publish.provider=s3 \
   --config.publish.bucket=outline-releases \
-  --config.publish.path=client
+  --config.publish.path=test
