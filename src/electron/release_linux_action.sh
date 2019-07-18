@@ -27,6 +27,7 @@ scripts/environment_json.sh -r -p linux > www/environment.json
 # which can be DNS-blocked without taking down other buckets.
 electron-builder \
   --linux \
+  # Disable publishing from Electron
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \

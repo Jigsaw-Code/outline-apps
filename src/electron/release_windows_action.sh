@@ -35,6 +35,7 @@ EOF
 # which can be DNS-blocked without taking down other buckets.
 electron-builder \
   --win \
+  # Disable publishing from Electron
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p windows) \
