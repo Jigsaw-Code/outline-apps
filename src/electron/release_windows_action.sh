@@ -30,11 +30,14 @@ cat > build/env.nsh << EOF
 !define SENTRY_DSN "https://sentry.io/api/159502/store/?sentry_version=7&sentry_key=6a1e6e7371a64db59f5ba6c34a77d78c"
 EOF
 
+# Publishing is disabled, updates are pulled from AWS We use the generic provider instead of the S3
+# provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
+# which can be DNS-blocked without taking down other buckets.
 electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p windows) \
+  --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.publish.provider=generic \
-  --config.publish.url=https://raw.githubusercontent.com/Jigsaw-Code/outline-releases/master/client/ \
-  --config.win.certificateSubjectName='Jigsaw Operations LLC'
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/client
