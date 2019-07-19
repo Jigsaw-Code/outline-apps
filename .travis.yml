@@ -15,7 +15,7 @@
 language: node_js
 
 node_js:
-  - "10"
+  - "12"
 
 cache:
   yarn: true
@@ -28,7 +28,7 @@ before_install:
   # Cache OutineBot's credentials.
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" >> ~/.netrc
   # https://docs.travis-ci.com/user/languages/javascript-with-nodejs#travis-ci-supports-yarn
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.16.0
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 stages:
