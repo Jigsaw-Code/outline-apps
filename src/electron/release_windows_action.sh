@@ -30,9 +30,9 @@ cat > build/env.nsh << EOF
 !define SENTRY_DSN "https://sentry.io/api/159502/store/?sentry_version=7&sentry_key=6a1e6e7371a64db59f5ba6c34a77d78c"
 EOF
 
-# Publishing is disabled, updates are pulled from AWS We use the generic provider instead of the S3
+# Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
-# which can be DNS-blocked without taking down other buckets.
+# which can be blocked by DNS or SNI without taking down other buckets.
 electron-builder \
   --win \
   --publish never \

@@ -22,9 +22,9 @@ yarn do src/electron/package_common
 
 scripts/environment_json.sh -r -p linux > www/environment.json
 
-# Publishing is disabled, updates are pulled from AWS We use the generic provider instead of the S3
+# Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
-# which can be DNS-blocked without taking down other buckets.
+# which can be blocked by DNS or SNI without taking down other buckets.
 electron-builder \
   --linux \
   --publish never \
