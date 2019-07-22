@@ -84,14 +84,14 @@ export class RoutingDaemon {
         newSocket.removeListener('error', initialErrorHandler);
 
         newSocket.once('data', (data) => {
-          const message: RoutingServiceResponse = JSON.parse(data.toString());
-          if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
+          const message = this.parseRoutingServiceResponse(data);
+          if (!message || message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
               message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
             // NOTE: This will rarely occur because the connectivity tests
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
             //       the only time the routing service will fail.
-            reject(new Error(message.errorMessage));
+            reject(new Error(!!message ? message.errorMessage : 'empty routing service response'));
             newSocket.end();
             return;
           }
@@ -136,7 +136,10 @@ export class RoutingDaemon {
   }
 
   private dataHandler(data: Buffer) {
-    const message: RoutingServiceResponse = JSON.parse(data.toString());
+    const message = this.parseRoutingServiceResponse(data);
+    if (!message) {
+      return;
+    }
     switch (message.action) {
       case RoutingServiceAction.STATUS_CHANGED:
         if (this.networkChangeListener) {
@@ -152,6 +155,22 @@ export class RoutingDaemon {
       default:
         console.error(`unexpected message from background service: ${data.toString()}`);
     }
+  }
+
+  // Parses JSON `data` as a `RoutingServiceResponse`. Logs the error and returns undefined on
+  // failure.
+  private parseRoutingServiceResponse(data: Buffer) {
+    if (!data) {
+      console.error('received empty response from routing service');
+      return undefined;
+    }
+    let response: RoutingServiceResponse|undefined = undefined;
+    try {
+      response = JSON.parse(data.toString());
+    } catch (error) {
+      console.error(`failed to parse routing service response: ${data.toString()}`);
+    }
+    return response;
   }
 
   // Use #onceDisconnected to be notified when the connection terminates.
