@@ -82,6 +82,12 @@ export class RoutingDaemon {
     return new Promise<void>((fulfill, reject) => {
       const newSocket = this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
+        const cleanup = () => {
+          newSocket.removeAllListeners();
+          this.fulfillDisconnect();
+        };
+        newSocket.once('close', cleanup);
+        newSocket.once('error', cleanup);
 
         newSocket.once('data', (data) => {
           const message = this.parseRoutingServiceResponse(data);
@@ -107,7 +113,7 @@ export class RoutingDaemon {
       });
 
       const initialErrorHandler = () => {
-        if (!(isLinux && retry)) {
+        if (!retry) {
           reject(new errors.SystemConfigurationException(`routing daemon is not running`));
           return;
         }
@@ -125,13 +131,6 @@ export class RoutingDaemon {
         });
       };
       newSocket.once('error', initialErrorHandler);
-
-      const cleanup = () => {
-        newSocket.removeAllListeners();
-        this.fulfillDisconnect();
-      };
-      newSocket.once('close', cleanup);
-      newSocket.once('error', cleanup);
     });
   }
 
