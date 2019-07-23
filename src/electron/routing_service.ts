@@ -158,7 +158,7 @@ export class RoutingDaemon {
 
   // Parses JSON `data` as a `RoutingServiceResponse`. Logs the error and returns undefined on
   // failure.
-  private parseRoutingServiceResponse(data: Buffer) {
+  private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse|undefined {
     if (!data) {
       console.error('received empty response from routing service');
       return undefined;
