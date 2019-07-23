@@ -30,7 +30,7 @@ pushd $(dirname $0) > /dev/null
 ./configure --with-mbedtls=$MBEDTLS_DIR --with-pcre=$PCRE_DIR \
 	--with-sodium=$LIBSODIUM_DIR --with-cares=$CARES_DIR --with-ev=$LIBEV_DIR \
 	--prefix=$INSTALL_DIR --disable-documentation
-make install
+make install -j
 
 # Copy binary
 cp $INSTALL_DIR/bin/ss-local linux/

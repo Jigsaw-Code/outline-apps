@@ -30,7 +30,7 @@ mkdir -p $INSTALL_DIR
 pushd $BUILD_DIR > /dev/null
 
 ./configure --prefix="$INSTALL_DIR"
-make install
+make install -j
 
 popd > /dev/null
 mkdir -p lib include

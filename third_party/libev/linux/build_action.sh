@@ -31,7 +31,7 @@ pushd $BUILD_DIR > /dev/null
 
 ./autogen.sh
 ./configure --prefix="$INSTALL_DIR"
-make install
+make install -j
 
 popd > /dev/null
 mkdir -p lib include

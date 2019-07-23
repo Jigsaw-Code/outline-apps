@@ -30,7 +30,7 @@ mkdir -p $INSTALL_DIR
 pushd $BUILD_DIR > /dev/null
 
 cmake .
-make DESTDIR="$INSTALL_DIR" install
+make DESTDIR="$INSTALL_DIR" install -j
 
 popd > /dev/null
 mkdir -p lib include
