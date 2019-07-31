@@ -1,7 +1,7 @@
 /*
  * shadowsocks.h - Header files of library interfaces
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  * shadowsocks-libev is free software; you can redistribute it and/or modify
@@ -64,7 +64,7 @@ typedef struct {
 extern "C" {
 #endif
 
-typedef void (*ss_local_callback) (int socks_fd, int udp_fd, void *data);
+typedef void (*ss_local_callback)(int socks_fd, int udp_fd, void *data);
 
 /*
  * Create and start a shadowsocks local server.
