@@ -115,7 +115,11 @@
       <div id="footer-container">
         <div id="footer">
           <h3>[[localize('privacy-title')]]</h3>
-          <p class="faded">[[localize('privacy-text')]]</p>
+          <!-- TODO(alalama): localize -->
+          <p class="faded" hidden$="[[!isBetaRelease]]">
+            Thank you for trying out Outline Beta! Please submit feedback through the app if you experience crashes or bugs. Outline Beta uses Google's Firebase service to collect debugging information that can help us detect problems and improve Outline. If you do not want Outline to send this information through Firebase, please use the production version of the app.
+          </p>
+          <p class="faded" hidden$="[[isBetaRelease]]">[[localize('privacy-text')]]</p>
           <div id="button-container">
             <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">
               <paper-button class="faded">[[localize('learn-more')]]</paper-button>
@@ -134,6 +138,7 @@
       properties: {
         localize: Function,
         rootPath: String,
+        isBetaRelease: Boolean,
       },
       _privacyTermsAcked: function() {
         this.fire('PrivacyTermsAcked');

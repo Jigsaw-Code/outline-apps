@@ -35,6 +35,7 @@ const source = require('vinyl-source-stream');
 
 const platform = gutil.env.platform || 'android';
 const isRelease = gutil.env.release;
+const isBeta = gutil.env.beta;
 
 //////////////////
 //////////////////
@@ -149,6 +150,24 @@ function cordovaPrepare() {
   return runCommand(`cordova prepare ${platform}`);
 }
 
+function cordovaMaybeConfigureBeta() {
+  if (platform === 'android' && isBeta) {
+    require('./beta/configure_android_beta.js')();
+    return Promise.resolve();
+  }
+  return Promise.resolve('Not configuring beta release');
+}
+
+function cordovaMaybeUploadSymbols() {
+  if (platform === 'android' && isBeta) {
+    const buildPath = 'app/build/intermediates/transforms';
+    const uploadSymbolsCmd = `cd platforms/android && cp -R ${buildPath}/mergeJniLibs ${
+        buildPath}/stripDebugSymbol && ./gradlew crashlyticsUploadSymbols`;
+    return runCommand(isRelease ? `${uploadSymbolsCmd}Release` : `${uploadSymbolsCmd}Debug`);
+  }
+  return Promise.resolve('Not uploading beta crash symbols');
+}
+
 function xcode() {
   return runCommand(
       (platform === 'ios' || platform === 'osx') ?
@@ -170,9 +189,9 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const cordovaBuild = gulp.series(cordovaPrepare, xcode, cordovaCompile);
+const cordovaBuild = gulp.series(cordovaPrepare, cordovaMaybeConfigureBeta, xcode, cordovaCompile);
 
-const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
+const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild, cordovaMaybeUploadSymbols);
 
 //////////////////
 //////////////////
@@ -186,8 +205,8 @@ const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild);
 // Writes a JSON file accessible to environment.ts containing environment variables.
 function writeEnvJson() {
   // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
-  return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
-      WEBAPP_OUT}/environment.json`);
+  return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} ${
+      isBeta ? '-b' : ''} > ${WEBAPP_OUT}/environment.json`);
 }
 
 exports.build = gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova);

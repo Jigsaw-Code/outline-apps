@@ -25,7 +25,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
-import tun2socks.AndroidTunnel;
+import tun2socks.OutlineTunnel;
 import tun2socks.Tun2socks;
 
 /**
@@ -51,7 +51,7 @@ public class VpnTunnel {
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
-  private AndroidTunnel tunnel;
+  private OutlineTunnel tunnel;
 
   /**
    * Constructor.

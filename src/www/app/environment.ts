@@ -15,6 +15,7 @@
 export interface EnvironmentVariables {
   APP_VERSION: string;
   APP_BUILD_NUMBER: string;
+  BETA_BUILD: boolean;
   SENTRY_DSN: string;
   SENTRY_NATIVE_DSN: string;
 }
@@ -23,6 +24,7 @@ export interface EnvironmentVariables {
 const ENV_KEYS = {
   APP_VERSION: 'APP_VERSION',
   APP_BUILD_NUMBER: 'APP_BUILD_NUMBER',
+  BETA_BUILD: 'BETA_BUILD',
   SENTRY_DSN: 'SENTRY_DSN',
   SENTRY_NATIVE_DSN: 'SENTRY_NATIVE_DSN'
 };
