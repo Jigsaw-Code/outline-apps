@@ -150,22 +150,22 @@ function cordovaPrepare() {
   return runCommand(`cordova prepare ${platform}`);
 }
 
-function cordovaConfigureBeta() {
-  if (platform !== 'android' || !isBeta) {
-    return Promise.resolve('Not configuring beta release');
+function cordovaMaybeConfigureBeta() {
+  if (platform === 'android' && isBeta) {
+    require('./beta/configure_android_beta.js')();
+    return Promise.resolve();
   }
-  require('./beta/configure_android_beta.js')();
-  return Promise.resolve();
+  return Promise.resolve('Not configuring beta release');
 }
 
-function cordovaUploadSymbols() {
-  if (platform !== 'android' || !isBeta) {
-    return Promise.resolve('Not uploading beta crash symbols');
+function cordovaMaybeUploadSymbols() {
+  if (platform === 'android' && isBeta) {
+    const buildPath = 'app/build/intermediates/transforms';
+    const uploadSymbolsCmd = `cd platforms/android && cp -R ${buildPath}/mergeJniLibs ${
+        buildPath}/stripDebugSymbol && ./gradlew crashlyticsUploadSymbols`;
+    return runCommand(isRelease ? `${uploadSymbolsCmd}Release` : `${uploadSymbolsCmd}Debug`);
   }
-  const buildPath = 'app/build/intermediates/transforms';
-  const uploadSymbolsCmd = `cd platforms/android && cp -R ${buildPath}/mergeJniLibs ${
-      buildPath}/stripDebugSymbol && ./gradlew crashlyticsUploadSymbols`;
-  return runCommand(isRelease ? `${uploadSymbolsCmd}Release` : `${uploadSymbolsCmd}Debug`);
+  return Promise.resolve('Not uploading beta crash symbols');
 }
 
 function xcode() {
@@ -189,9 +189,9 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const cordovaBuild = gulp.series(cordovaPrepare, cordovaConfigureBeta, xcode, cordovaCompile);
+const cordovaBuild = gulp.series(cordovaPrepare, cordovaMaybeConfigureBeta, xcode, cordovaCompile);
 
-const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild, cordovaUploadSymbols);
+const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild, cordovaMaybeUploadSymbols);
 
 //////////////////
 //////////////////
