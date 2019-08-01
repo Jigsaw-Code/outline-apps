@@ -14,34 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Builds Shadowsocks_iOS.framework and Shadowsocks_macOS.framework based on the
-# version controlled binaries and headers in the following subdirectories of third_party:
-# libev, libshadowsocks-libev, libmbedtls, libsodium, libcares, and libpcre.
+# Builds iOS and macOS Shadowsocks frameworks from shadowsocks-libev source in this directory.
+# This script may be used as a routine update to Shadowsocks for Apple. To update shadowsocks-libev
+# dependencies, see apple/README.md.
 
-echo "Building Shadowsocks frameworks..."
-pushd $(dirname $0) > /dev/null
-
-APPLE_DIR=apple
-BUILD_DIR=`pwd`/$APPLE_DIR/build
-INSTALL_DIR=$APPLE_DIR/frameworks
-
-rm -rf $INSTALL_DIR
-mkdir -p  $BUILD_DIR $INSTALL_DIR/ios $INSTALL_DIR/macos
-pushd $APPLE_DIR/Shadowsocks > /dev/null
-
-# Build iOS framework
-xcodebuild -scheme Shadowsocks_iOS -derivedDataPath $BUILD_DIR build
-# Build macOS framework
-xcodebuild -scheme Shadowsocks_macOS -derivedDataPath $BUILD_DIR build
-
-popd > /dev/null
-
-# Install
-cp -R $BUILD_DIR/Build/Products/Debug/Shadowsocks_macOS.framework \
-      $INSTALL_DIR/macos/
-cp -R $BUILD_DIR/Build/Products/Debug-iphoneos/Shadowsocks_iOS.framework \
-      $INSTALL_DIR/ios/
-# Clean up
-rm -rf $BUILD_DIR
-popd > /dev/null
-echo "Installed Shadowsocks_[macOS|iOS].framework to $INSTALL_DIR."
+# Update libshadowsocks-libev.a shared library.
+yarn do third_party/shadowsocks-libev/apple/libshadowsocks-libev/build
+# Build the frameworks.
+yarn do third_party/shadowsocks-libev/apple/build

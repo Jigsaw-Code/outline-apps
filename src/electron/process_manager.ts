@@ -39,9 +39,6 @@ const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
-// 32-bit INT_MAX; using Number.MAX_SAFE_VALUE may overflow.
-const SSLOCAL_TIMEOUT_SECS = 2 ^ 31 - 1;
-
 // Raises an error if:
 //  - the TAP device does not exist
 //  - the TAP device does not have the expected IP/subnet
@@ -337,7 +334,6 @@ class SsLocal extends ChildProcessHelper {
     args.push('-p', '' + config.port);
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
-    args.push('-t', SSLOCAL_TIMEOUT_SECS.toString());
     args.push('-u');
 
     this.launch(args);

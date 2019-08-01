@@ -1,7 +1,7 @@
 /*
  * server.h - Define shadowsocks server's buffers and callbacks
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -39,6 +39,7 @@
 #include "crypto.h"
 #include "jconf.h"
 #include "resolv.h"
+#include "netutils.h"
 
 #include "common.h"
 
@@ -97,7 +98,7 @@ typedef struct server {
 
 typedef struct query {
     server_t *server;
-    char hostname[257];
+    char hostname[MAX_HOSTNAME_LEN];
 } query_t;
 
 typedef struct remote_ctx {

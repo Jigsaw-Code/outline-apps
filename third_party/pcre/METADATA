@@ -14,4 +14,5 @@ third_party {
   }
   version: "8.42"
   last_upgrade_date { year: 2018 month: 7 day: 13 }
+  local_modifications: "Added scripts to build static libraries for Apple and Linux."
 }

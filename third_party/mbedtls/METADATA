@@ -11,4 +11,5 @@ third_party {
   }
   version: "2.6.0 (Apache)"
   last_upgrade_date { year: 2017 month: 12 day: 8 }
+  local_modifications: "Added scripts to build static libraries for Apple and Linux."
 }
