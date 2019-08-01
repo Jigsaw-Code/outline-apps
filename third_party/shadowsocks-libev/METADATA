@@ -9,8 +9,8 @@ third_party {
     type: GIT
     value: "https://github.com/shadowsocks/shadowsocks-libev"
   }
-  version: "3.2.0"
-  last_upgrade_date { year: 2018 month: 7 day: 12 }
+  version: "3.3.0"
+  last_upgrade_date { year: 2019 month: 7 day: 17 }
   local_modifications:
     "Patched docker/mingw to build our mirrored sources."
 }

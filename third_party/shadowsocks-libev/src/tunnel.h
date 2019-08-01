@@ -1,7 +1,7 @@
 /*
  * tunnel.h - Define tunnel's buffers and callbacks
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -27,6 +27,10 @@
 #include <libev/ev.h>
 #else
 #include <ev.h>
+#endif
+
+#ifdef __MINGW32__
+#include "winsock.h"
 #endif
 
 #include "crypto.h"
@@ -72,10 +76,15 @@ typedef struct remote_ctx {
 
 typedef struct remote {
     int fd;
+#ifdef TCP_FASTOPEN_WINSOCK
+    OVERLAPPED olap;
+    int connect_ex_done;
+#endif
     buffer_t *buf;
     struct remote_ctx *recv_ctx;
     struct remote_ctx *send_ctx;
     struct server *server;
+    struct sockaddr *addr;
     uint32_t counter;
 } remote_t;
 
