@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Builds Shadowsocks_iOS.framework and Shadowsocks_macOS.framework based on the
+# version controlled binaries and headers in the following subdirectories of third_party:
+# libev, libshadowsocks-libev, libmbedtls, libsodium, libcares, and libpcre.
+
 echo "Building Shadowsocks frameworks..."
 
 SHADOWSOCKS_DIR=$ROOT_DIR/third_party/shadowsocks-libev/apple

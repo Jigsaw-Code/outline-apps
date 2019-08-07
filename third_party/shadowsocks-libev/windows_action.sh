@@ -20,7 +20,7 @@
 #
 # Requires Docker; tested on Linux.
 
-TMPDIR=$(mktemp -d)
+TMPDIR=$(mktemp -d /tmp/temp.XXXX)
 echo "building in $TMPDIR"
 
 mkdir $TMPDIR/src

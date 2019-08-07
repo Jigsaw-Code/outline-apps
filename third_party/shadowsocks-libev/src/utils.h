@@ -1,7 +1,7 @@
 /*
  * utils.h - Misc utilities
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -119,7 +119,6 @@ extern FILE *logfile;
     }                                                         \
     while (0)
 
-
 #else // not __MINGW32__
 
 #include <syslog.h>
@@ -228,14 +227,26 @@ int set_nofile(int nofile);
 #endif
 
 void *ss_malloc(size_t size);
-void *ss_align(size_t size);
+void *ss_aligned_malloc(size_t size);
 void *ss_realloc(void *ptr, size_t new_size);
 
-#define ss_free(ptr)     \
-    do {                 \
-        free(ptr);       \
-        ptr = NULL;      \
-    } while (0)
+#define ss_free(ptr) \
+{ \
+    free(ptr); \
+    ptr = NULL; \
+}
+
+#ifdef __MINGW32__
+#define ss_aligned_free(ptr) \
+{ \
+    _aligned_free(ptr); \
+    ptr = NULL; \
+}
+#else
+#define ss_aligned_free(ptr) ss_free(ptr)
+#endif
+
+int ss_is_ipv6addr(const char *addr);
 
 char *get_default_conf(void);
 

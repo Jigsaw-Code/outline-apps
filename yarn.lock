@@ -247,11 +247,10 @@
   resolved "https://registry.yarnpkg.com/@types/stack-trace/-/stack-trace-0.0.29.tgz#eb7a7c60098edb35630ed900742a5ecb20cfcb4d"
   integrity sha512-TgfOX+mGY/NyNxJLIbDWrO9DjGoVSW9+aB8H2yy1fy32jsvxijhmyJI9fDFgvz3YP4lvJaq9DzdR/M1bOgVc9g==
 
-"@types/uuid@^3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.0.tgz#91639516fbb892ed3737a2bdc1b030d02b4a09c1"
-  dependencies:
-    "@types/node" "*"
+"@types/uuidv4@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/uuidv4/-/uuidv4-2.0.0.tgz#9579daf4812281a40c93028012635eed08d7210d"
+  integrity sha512-qMAfgZE8tjisI2/4/rkGvtSYpuI+t/6Q+wa38X3v6RfeaqI1ZM6W6Aye93d1WNPT2SgeFeHVbO+7uEJmIVbiwA==
 
 "@types/vinyl-fs@0.0.28":
   version "0.0.28"
@@ -2348,7 +2347,7 @@ cordova-plugin-device@^2.0.2:
   integrity sha1-/Ajzci5n7ve2xnv8mag99q3Quro=
 
 "cordova-plugin-outline@file:cordova-plugin-outline":
-  version "1.0.0"
+  version "0.0.0"
 
 cordova-plugin-splashscreen@^5.0.2:
   version "5.0.2"
@@ -8740,18 +8739,25 @@ uuid@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
 
-uuid@^2.0.1:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
-
-uuid@^3.0.0, uuid@^3.3.2:
+uuid@3.3.2, uuid@^3.0.0, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
 
+uuid@^2.0.1:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
+
 uuid@^3.0.1, uuid@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
+
+uuidv4@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/uuidv4/-/uuidv4-4.0.0.tgz#ac4b05ecf0efa62dda532d55b7a8de8f726f8f7c"
+  integrity sha512-mG90kcW04v6frNmnLsnd7xqiKubIYgaQHxaHoBplAJpR95hgqkTDq8wpZQU5cN5w9gtKphqdsflHoEnXr2+ing==
+  dependencies:
+    uuid "3.3.2"
 
 v8flags@^3.0.1:
   version "3.1.2"

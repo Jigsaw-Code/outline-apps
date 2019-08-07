@@ -9,7 +9,7 @@ macOS 10.12 system with Xcode >=8.2 and Xcode command line tools installed.
 ### Directory structure
 We keep each static library in its own directory, which has the following structure - in this example libev:
 ```
-libev/
+third_party/libev/
 |__ build_libev.sh
 |__ build_action.sh  # Convenience script for building library through yarn
 |__ lib/libev.a  # FAT binary
@@ -24,7 +24,7 @@ yarn. Update the version number in the build_lib*.sh script. Anywhere in the pro
 
 ```bash
 LIBRARY=[libcares | libev | libpcre | libsodium | libmbedtls | libshadowsocks-libev]
-yarn do cordova-plugin-outline/apple/lib/Shadowsocks/$LIBRARY/build
+yarn do third_party/$LIBRARY/apple/build
 ```
 
 To rebuild the Shadowsocks frameworks, run:

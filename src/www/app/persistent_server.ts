@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {v4 as uuid4} from 'uuid';
+import * as uuidv4 from 'uuidv4';
 
 import {ServerAlreadyAdded} from '../model/errors';
 import * as events from '../model/events';
@@ -55,7 +55,7 @@ export class PersistentServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new ServerAlreadyAdded(alreadyAddedServer);
     }
-    const server = this.createServer(uuid4(), serverConfig, this.eventQueue);
+    const server = this.createServer(uuidv4(), serverConfig, this.eventQueue);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
