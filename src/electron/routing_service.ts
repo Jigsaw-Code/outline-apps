@@ -82,16 +82,22 @@ export class RoutingDaemon {
     return new Promise<void>((fulfill, reject) => {
       const newSocket = this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
+        const cleanup = () => {
+          newSocket.removeAllListeners();
+          this.fulfillDisconnect();
+        };
+        newSocket.once('close', cleanup);
+        newSocket.once('error', cleanup);
 
         newSocket.once('data', (data) => {
-          const message: RoutingServiceResponse = JSON.parse(data.toString());
-          if (message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
+          const message = this.parseRoutingServiceResponse(data);
+          if (!message || message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
               message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
             // NOTE: This will rarely occur because the connectivity tests
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
             //       the only time the routing service will fail.
-            reject(new Error(message.errorMessage));
+            reject(new Error(!!message ? message.errorMessage : 'empty routing service response'));
             newSocket.end();
             return;
           }
@@ -107,7 +113,7 @@ export class RoutingDaemon {
       });
 
       const initialErrorHandler = () => {
-        if (!(isLinux && retry)) {
+        if (!retry) {
           reject(new errors.SystemConfigurationException(`routing daemon is not running`));
           return;
         }
@@ -125,18 +131,14 @@ export class RoutingDaemon {
         });
       };
       newSocket.once('error', initialErrorHandler);
-
-      const cleanup = () => {
-        newSocket.removeAllListeners();
-        this.fulfillDisconnect();
-      };
-      newSocket.once('close', cleanup);
-      newSocket.once('error', cleanup);
     });
   }
 
   private dataHandler(data: Buffer) {
-    const message: RoutingServiceResponse = JSON.parse(data.toString());
+    const message = this.parseRoutingServiceResponse(data);
+    if (!message) {
+      return;
+    }
     switch (message.action) {
       case RoutingServiceAction.STATUS_CHANGED:
         if (this.networkChangeListener) {
@@ -152,6 +154,22 @@ export class RoutingDaemon {
       default:
         console.error(`unexpected message from background service: ${data.toString()}`);
     }
+  }
+
+  // Parses JSON `data` as a `RoutingServiceResponse`. Logs the error and returns undefined on
+  // failure.
+  private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse|undefined {
+    if (!data) {
+      console.error('received empty response from routing service');
+      return undefined;
+    }
+    let response: RoutingServiceResponse|undefined = undefined;
+    try {
+      response = JSON.parse(data.toString());
+    } catch (error) {
+      console.error(`failed to parse routing service response: ${data.toString()}`);
+    }
+    return response;
   }
 
   // Use #onceDisconnected to be notified when the connection terminates.

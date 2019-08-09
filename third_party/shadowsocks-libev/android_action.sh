@@ -23,7 +23,7 @@ readonly ARCH="armeabi-v7a arm64-v8a x86 x86_64"
 readonly SO=libss-local.so
 
 # Version of shadowsocks-android with which to compile.
-readonly SHADOWSOCKS_ANDROID_VERSION=4.3.3
+readonly SHADOWSOCKS_ANDROID_VERSION=4.7.4
 
 # Docker image with which to build the binary.
 # To rebuild:
@@ -40,25 +40,24 @@ git submodule update --init --recursive
 popd
 
 # Use our copy of shadowsocks-libev.
-rsync --delete -avu third_party/shadowsocks-libev/ $TEMP/mobile/src/main/jni/shadowsocks-libev/
+rsync --delete -avu third_party/shadowsocks-libev/ $TEMP/core/src/main/jni/shadowsocks-libev
 
-# Although overture is needed only by shadowsocks-android, not
-# shadowsocks-libev, build-ndk will throw an exception if these
-# files (one for each architecture specified in Application.mk)
-# don't exist.
-for arch in $ARCH; do
-  mkdir -p $TEMP/mobile/src/main/jni/overture/$arch
-  touch $TEMP/mobile/src/main/jni/overture/$arch/liboverture.so
-done
+# Customize the build to Outline's needs.
+cat << EOF >> $TEMP/core/src/main/jni/Application.mk
+APP_ABI                 := ${ARCH}
+APP_PLATFORM            := android-21
+APP_STL                 := c++_static
+NDK_TOOLCHAIN_VERSION   := clang
+EOF
 
 # Instruct ndk-build to compile for the specified architectures.
 echo "APP_ABI := $ARCH" > $TEMP/mobile/src/main/jni/Application.mk
 
 # Build!
-docker run --rm -ti -v $TEMP:$TEMP -w $TEMP $DOCKER_IMAGE_NAME ndk-build -C mobile/src/main/jni ss-local
+docker run --rm -ti -v $TEMP:$TEMP -w $TEMP $DOCKER_IMAGE_NAME ndk-build -C core/src/main/jni ss-local
 
 # Copy the new binaries into the repo.
 for arch in $ARCH; do
   mkdir -p third_party/shadowsocks-libev/android/libs/$arch
-  cp $TEMP/mobile/src/main/obj/local/$arch/$SO third_party/shadowsocks-libev/android/libs/$arch/
+  cp $TEMP/core/src/main/obj/local/$arch/$SO third_party/shadowsocks-libev/android/libs/$arch/
 done

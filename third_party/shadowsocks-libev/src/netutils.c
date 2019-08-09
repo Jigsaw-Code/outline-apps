@@ -1,7 +1,7 @@
 /*
  * netutils.c - Network utilities
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -53,10 +53,6 @@ extern int verbose;
 static const char valid_label_bytes[] =
     "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
 
-#if defined(MODULE_LOCAL)
-extern int keep_resolving;
-#endif
-
 int
 set_reuseport(int socket)
 {
@@ -81,7 +77,7 @@ setinterface(int socket_fd, const char *interface_name)
 {
     struct ifreq interface;
     memset(&interface, 0, sizeof(struct ifreq));
-    strncpy(interface.ifr_name, interface_name, IFNAMSIZ-1);
+    strncpy(interface.ifr_name, interface_name, IFNAMSIZ - 1);
     int res = setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, &interface,
                          sizeof(struct ifreq));
     return res;
@@ -90,29 +86,41 @@ setinterface(int socket_fd, const char *interface_name)
 #endif
 
 int
-bind_to_address(int socket_fd, const char *host)
+parse_local_addr(struct sockaddr_storage *storage_v4,
+                 struct sockaddr_storage *storage_v6,
+                 const char *host)
 {
-    static struct sockaddr_storage storage = {0};
-    if (storage.ss_family == AF_INET) {
-        return bind(socket_fd, (struct sockaddr *)&storage, sizeof(struct sockaddr_in));
-    }
-    else if (storage.ss_family == AF_INET6) {
-        return bind(socket_fd, (struct sockaddr *)&storage, sizeof(struct sockaddr_in6));
-    } else if (host != NULL) {
+    if (host != NULL) {
         struct cork_ip ip;
         if (cork_ip_init(&ip, host) != -1) {
             if (ip.version == 4) {
-                struct sockaddr_in *addr = (struct sockaddr_in *)&storage;
+                memset(storage_v4, 0, sizeof(struct sockaddr_storage));
+                struct sockaddr_in *addr = (struct sockaddr_in *)storage_v4;
                 inet_pton(AF_INET, host, &addr->sin_addr);
                 addr->sin_family = AF_INET;
-                return bind(socket_fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
+                LOGI("binding to outbound IPv4 addr: %s", host);
+                return 0;
             } else if (ip.version == 6) {
-                struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&storage;
+                memset(storage_v6, 0, sizeof(struct sockaddr_storage));
+                struct sockaddr_in6 *addr = (struct sockaddr_in6 *)storage_v6;
                 inet_pton(AF_INET6, host, &addr->sin6_addr);
                 addr->sin6_family = AF_INET6;
-                return bind(socket_fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in6));
+                LOGI("binding to outbound IPv6 addr: %s", host);
+                return 0;
             }
         }
+    }
+    return -1;
+}
+
+int
+bind_to_addr(struct sockaddr_storage *storage,
+             int socket_fd)
+{
+    if (storage->ss_family == AF_INET) {
+        return bind(socket_fd, (struct sockaddr *)storage, sizeof(struct sockaddr_in));
+    } else if (storage->ss_family == AF_INET6) {
+        return bind(socket_fd, (struct sockaddr *)storage, sizeof(struct sockaddr_in6));
     }
     return -1;
 }
@@ -141,6 +149,10 @@ get_sockaddr(char *host, char *port,
         }
         return 0;
     } else {
+#ifdef __ANDROID__
+        extern int vpn;
+        assert(!vpn);   // protecting DNS packets isn't supported yet
+#endif
         struct addrinfo hints;
         struct addrinfo *result, *rp;
 
@@ -148,21 +160,7 @@ get_sockaddr(char *host, char *port,
         hints.ai_family   = AF_UNSPEC;   /* Return IPv4 and IPv6 choices */
         hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
 
-        int err, i;
-
-        for (i = 1; i < 8; i++) {
-            err = getaddrinfo(host, port, &hints, &result);
-#if defined(MODULE_LOCAL)
-            if (!keep_resolving)
-                break;
-#endif
-            if ((!block || !err)) {
-                break;
-            } else {
-                sleep(pow(2, i));
-                LOGE("failed to resolve server name, wait %.0f seconds", pow(2, i));
-            }
-        }
+        int err = getaddrinfo(host, port, &hints, &result);
 
         if (err != 0) {
             LOGE("getaddrinfo: %s", gai_strerror(err));
@@ -296,5 +294,23 @@ validate_hostname(const char *hostname, const int hostname_len)
         label += label_len + 1;
     }
 
+    return 1;
+}
+
+int
+is_ipv6only(ss_addr_t *servers, size_t server_num, int ipv6first)
+{
+    int i;
+    for (i = 0; i < server_num; i++)
+    {
+        struct sockaddr_storage storage;
+        memset(&storage, 0, sizeof(struct sockaddr_storage));
+        if (get_sockaddr(servers[i].host, servers[i].port, &storage, 1, ipv6first) == -1) {
+            FATAL("failed to resolve the provided hostname");
+        }
+        if (storage.ss_family != AF_INET6) {
+            return 0;
+        }
+    }
     return 1;
 }

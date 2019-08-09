@@ -1,7 +1,7 @@
 /*
  * cache.h - Define the cache manager interface
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -52,7 +52,7 @@ struct cache_entry {
 struct cache {
     size_t max_entries;              /**<Amount of entries this cache object can hold */
     struct cache_entry *entries;     /**<Head pointer for uthash */
-    void (*free_cb) (void *key, void *element); /**<Callback function to free cache entries */
+    void (*free_cb)(void *key, void *element);  /**<Callback function to free cache entries */
 };
 
 int cache_create(struct cache **dst, const size_t capacity,
