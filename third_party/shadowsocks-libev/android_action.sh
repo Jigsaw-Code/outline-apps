@@ -50,9 +50,6 @@ APP_STL                 := c++_static
 NDK_TOOLCHAIN_VERSION   := clang
 EOF
 
-# Instruct ndk-build to compile for the specified architectures.
-echo "APP_ABI := $ARCH" > $TEMP/mobile/src/main/jni/Application.mk
-
 # Build!
 docker run --rm -ti -v $TEMP:$TEMP -w $TEMP $DOCKER_IMAGE_NAME ndk-build -C core/src/main/jni ss-local
 
