@@ -155,29 +155,28 @@ public class VpnTunnelService extends VpnService {
       throw new IllegalArgumentException("Must provide a connection ID and configuration.");
     }
     final boolean isRestart = activeConnectionId != null;
-    final boolean isNewConnection = !connectionId.equals(activeConnectionId);
-    OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
-    if (isNewConnection) {
+    if (isRestart) {
       // Broadcast the previous instance disconnect event before reassigning the connection ID.
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
       stopForeground();
-      try {
-        // Only (re)start Shadowsocks if this is a new connection.
-        // Do not perform connectivity checks when connecting on startup. We should avoid failing
-        // the connection due to a network error, as network may not be ready.
-        errorCode = startShadowsocks(config, !isAutoStart).get();
-        if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
-                || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
-          onVpnStartFailure(errorCode);
-          return;
-        }
-      } catch (Exception e) {
-        onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
-        return;
-      }
     }
     activeConnectionId = connectionId;
     activeServerConfig = config;
+
+    OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
+    try {
+      // Do not perform connectivity checks when connecting on startup. We should avoid failing
+      // the connection due to a network error, as network may not be ready.
+      errorCode = startShadowsocks(config, !isAutoStart).get();
+      if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
+              || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
+        onVpnStartFailure(errorCode);
+        return;
+      }
+    } catch (Exception e) {
+      onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
+      return;
+    }
 
     if (isRestart) {
       vpnTunnel.disconnectTunnel();
@@ -191,7 +190,7 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    final boolean remoteUdpForwardingEnabled = !isNewConnection || isAutoStart
+    final boolean remoteUdpForwardingEnabled = isAutoStart
         ? connectionStore.isUdpSupported()
         : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
