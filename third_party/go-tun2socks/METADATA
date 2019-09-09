@@ -11,8 +11,10 @@ third_party {
     value: "https://github.com/Jigsaw-Code/outline-go-tun2socks"
   }
   version: "1.1.0"
-  last_upgrade_date { year: 2019 month: 8 day: 7 }
+  last_upgrade_date { year: 2019 month: 9 day: 9 }
   local_modifications:
     "outline-go-tun2socks consumes go-tun2socks in order to build libraries "
     "and binaries for Outline platforms."
+    "Temporarily updated Cordova clients to a libraries built at commit "
+    "5d427b6c632480 until there is feature parity in Electron for a release."
 }

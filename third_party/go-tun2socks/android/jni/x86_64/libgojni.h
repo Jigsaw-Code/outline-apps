@@ -19,16 +19,6 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
-#line 7 "go_intramain.go"
-
-#include <stdlib.h>
-#include <stdint.h>
-#include "seq.h"
-#include "intra.h"
-
-
-#line 1 "cgo-generated-wrapper"
-
 #line 7 "go_main.go"
 
 #include <stdlib.h>
@@ -39,22 +29,22 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 
 #line 1 "cgo-generated-wrapper"
 
+#line 7 "go_shadowsocksmain.go"
+
+#include <stdlib.h>
+#include <stdint.h>
+#include "seq.h"
+#include "shadowsocks.h"
+
+
+#line 1 "cgo-generated-wrapper"
+
 #line 7 "go_tun2socksmain.go"
 
 #include <stdlib.h>
 #include <stdint.h>
 #include "seq.h"
 #include "tun2socks.h"
-
-
-#line 1 "cgo-generated-wrapper"
-
-#line 7 "go_tunnelmain.go"
-
-#include <stdlib.h>
-#include <stdint.h>
-#include "seq.h"
-#include "tunnel.h"
 
 
 #line 1 "cgo-generated-wrapper"
@@ -126,101 +116,19 @@ extern "C" {
 #endif
 
 
-extern void proxyintra_RetryStats_Bytes_Set(int32_t p0, int32_t p1);
-
-extern int32_t proxyintra_RetryStats_Bytes_Get(int32_t p0);
-
-extern void proxyintra_RetryStats_Chunks_Set(int32_t p0, int16_t p1);
-
-extern int16_t proxyintra_RetryStats_Chunks_Get(int32_t p0);
-
-extern void proxyintra_RetryStats_Split_Set(int32_t p0, int16_t p1);
-
-extern int16_t proxyintra_RetryStats_Split_Get(int32_t p0);
-
-extern void proxyintra_RetryStats_Timeout_Set(int32_t p0, char p1);
-
-extern char proxyintra_RetryStats_Timeout_Get(int32_t p0);
-
-extern int32_t new_intra_RetryStats();
-
-extern void proxyintra_TCPSocketSummary_DownloadBytes_Set(int32_t p0, int64_t p1);
-
-extern int64_t proxyintra_TCPSocketSummary_DownloadBytes_Get(int32_t p0);
-
-extern void proxyintra_TCPSocketSummary_UploadBytes_Set(int32_t p0, int64_t p1);
-
-extern int64_t proxyintra_TCPSocketSummary_UploadBytes_Get(int32_t p0);
-
-extern void proxyintra_TCPSocketSummary_Duration_Set(int32_t p0, int32_t p1);
-
-extern int32_t proxyintra_TCPSocketSummary_Duration_Get(int32_t p0);
-
-extern void proxyintra_TCPSocketSummary_ServerPort_Set(int32_t p0, int16_t p1);
-
-extern int16_t proxyintra_TCPSocketSummary_ServerPort_Get(int32_t p0);
-
-extern void proxyintra_TCPSocketSummary_Synack_Set(int32_t p0, int32_t p1);
-
-extern int32_t proxyintra_TCPSocketSummary_Synack_Get(int32_t p0);
-
-extern void proxyintra_TCPSocketSummary_Retry_Set(int32_t p0, int32_t p1);
-
-extern int32_t proxyintra_TCPSocketSummary_Retry_Get(int32_t p0);
-
-extern int32_t new_intra_TCPSocketSummary();
-
-extern void proxyintra_UDPSocketSummary_UploadBytes_Set(int32_t p0, int64_t p1);
-
-extern int64_t proxyintra_UDPSocketSummary_UploadBytes_Get(int32_t p0);
-
-extern void proxyintra_UDPSocketSummary_DownloadBytes_Set(int32_t p0, int64_t p1);
-
-extern int64_t proxyintra_UDPSocketSummary_DownloadBytes_Get(int32_t p0);
-
-extern void proxyintra_UDPSocketSummary_Duration_Set(int32_t p0, int32_t p1);
-
-extern int32_t proxyintra_UDPSocketSummary_Duration_Get(int32_t p0);
-
-extern int32_t new_intra_UDPSocketSummary();
-
-extern int32_t proxyintra_DuplexConn_CloseRead(int32_t p0);
-
-extern int32_t proxyintra_DuplexConn_CloseWrite(int32_t p0);
-
-/* Return type for proxyintra_DuplexConn_Read */
-struct proxyintra_DuplexConn_Read_return {
-	nint r0;
-	int32_t r1;
-};
-
-extern struct proxyintra_DuplexConn_Read_return proxyintra_DuplexConn_Read(int32_t p0, nbyteslice p1);
-
-/* Return type for proxyintra_DuplexConn_Write */
-struct proxyintra_DuplexConn_Write_return {
-	nint r0;
-	int32_t r1;
-};
-
-extern struct proxyintra_DuplexConn_Write_return proxyintra_DuplexConn_Write(int32_t p0, nbyteslice p1);
-
-extern void proxyintra_TCPListener_OnTCPSocketClosed(int32_t p0, int32_t p1);
-
-extern void proxyintra_UDPListener_OnUDPSocketClosed(int32_t p0, int32_t p1);
-
 extern nstring proxy_error_Error(int32_t p0);
 
-extern void proxytun2socks_IntraTunnel_Disconnect(int32_t p0);
-
-extern char proxytun2socks_IntraTunnel_IsConnected(int32_t p0);
-
-/* Return type for proxytun2socks_IntraTunnel_Write */
-struct proxytun2socks_IntraTunnel_Write_return {
+/* Return type for proxyshadowsocks__CheckConnectivity */
+struct proxyshadowsocks__CheckConnectivity_return {
 	nint r0;
 	int32_t r1;
 };
 
-extern struct proxytun2socks_IntraTunnel_Write_return proxytun2socks_IntraTunnel_Write(int32_t p0, nbyteslice p1);
+extern struct proxyshadowsocks__CheckConnectivity_return proxyshadowsocks__CheckConnectivity(nstring p0, nint p1, nstring p2, nstring p3);
+
+extern int32_t proxyshadowsocks__CheckServerReachable(nstring p0, nint p1);
+
+extern int32_t proxyshadowsocks__CheckUDPConnectivity(nstring p0, nint p1, nstring p2, nstring p3);
 
 extern void proxytun2socks_OutlineTunnel_Disconnect(int32_t p0);
 
@@ -236,14 +144,6 @@ struct proxytun2socks_OutlineTunnel_Write_return {
 
 extern struct proxytun2socks_OutlineTunnel_Write_return proxytun2socks_OutlineTunnel_Write(int32_t p0, nbyteslice p1);
 
-/* Return type for proxytun2socks__ConnectIntraTunnel */
-struct proxytun2socks__ConnectIntraTunnel_return {
-	int32_t r0;
-	int32_t r1;
-};
-
-extern struct proxytun2socks__ConnectIntraTunnel_return proxytun2socks__ConnectIntraTunnel(nint p0, nstring p1, nstring p2, nstring p3, int32_t p4);
-
 /* Return type for proxytun2socks__ConnectSocksTunnel */
 struct proxytun2socks__ConnectSocksTunnel_return {
 	int32_t r0;
@@ -251,36 +151,6 @@ struct proxytun2socks__ConnectSocksTunnel_return {
 };
 
 extern struct proxytun2socks__ConnectSocksTunnel_return proxytun2socks__ConnectSocksTunnel(nint p0, nstring p1, nint p2, char p3);
-
-extern void proxytunnel_IntraListener_OnTCPSocketClosed(int32_t p0, int32_t p1);
-
-extern void proxytunnel_IntraListener_OnUDPSocketClosed(int32_t p0, int32_t p1);
-
-extern void proxytunnel_OutlineTunnel_Disconnect(int32_t p0);
-
-extern char proxytunnel_OutlineTunnel_IsConnected(int32_t p0);
-
-extern void proxytunnel_OutlineTunnel_SetUDPEnabled(int32_t p0, char p1);
-
-/* Return type for proxytunnel_OutlineTunnel_Write */
-struct proxytunnel_OutlineTunnel_Write_return {
-	nint r0;
-	int32_t r1;
-};
-
-extern struct proxytunnel_OutlineTunnel_Write_return proxytunnel_OutlineTunnel_Write(int32_t p0, nbyteslice p1);
-
-extern void proxytunnel_Tunnel_Disconnect(int32_t p0);
-
-extern char proxytunnel_Tunnel_IsConnected(int32_t p0);
-
-/* Return type for proxytunnel_Tunnel_Write */
-struct proxytunnel_Tunnel_Write_return {
-	nint r0;
-	int32_t r1;
-};
-
-extern struct proxytunnel_Tunnel_Write_return proxytunnel_Tunnel_Write(int32_t p0, nbyteslice p1);
 
 // IncGoRef is called by foreign code to pin a Go object while its refnum is crossing
 // the language barrier
