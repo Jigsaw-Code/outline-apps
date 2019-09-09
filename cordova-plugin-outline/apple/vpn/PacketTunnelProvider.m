@@ -18,9 +18,8 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #import "Shadowsocks.h"
-#import "ShadowsocksConnectivity.h"
-#include "VpnExtension-Swift.h"
 #import <Tun2Socks/Tun2socks.h>
+#include "VpnExtension-Swift.h"
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kActionStart = @"start";
@@ -40,9 +39,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property (nonatomic) Shadowsocks *shadowsocks;
-@property(nonatomic) ShadowsocksConnectivity *ssConnectivity;
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
-@property(nonatomic) id<Tun2socksAppleTunnel> tunnel;
+@property(nonatomic) id<Tun2socksOutlineTunnel> tunnel;
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
@@ -245,18 +243,11 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
       completionHandler(nil);
       return;
     }
-    // We need to allocate an instance variable for the completion block to be retained. Otherwise,
-    // the completion block gets deallocated and system sends a nil response.
-    self.ssConnectivity = [[ShadowsocksConnectivity alloc] initWithPort:kShadowsocksLocalPort];
-    [self.ssConnectivity
-        isReachable:[self getNetworkIpAddress:(const char *)[host UTF8String]]
-               port:[port intValue]
-         completion:^(BOOL isReachable) {
-           ErrorCode errorCode = isReachable ? noError : serverUnreachable;
-           NSDictionary *response = @{kMessageKeyErrorCode : [NSNumber numberWithLong:errorCode]};
-           completionHandler(
-               [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
-         }];
+    NSError *error;
+    ShadowsocksCheckServerReachable(host, [port intValue], &error);
+    ErrorCode errorCode = error == nil ? noError : serverUnreachable;
+    NSDictionary *response = @{kMessageKeyErrorCode : [NSNumber numberWithLong:errorCode]};
+    completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   }
 }
 
@@ -368,12 +359,13 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
     // Check whether UDP support has changed with the network.
-    ShadowsocksConnectivity *ssConnectivity =
-        [[ShadowsocksConnectivity alloc] initWithPort:kShadowsocksLocalPort];
-    [ssConnectivity isUdpForwardingEnabled:^(BOOL isUdpSupported) {
-      DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
-      [self setConectionUdpSupport:isUdpSupported];
-    }];
+    NSError *error;
+    ShadowsocksCheckUDPConnectivity(self.hostNetworkAddress, [self.connection.port intValue],
+                                    self.connection.password, self.connection.method, &error);
+    BOOL isUdpSupported = error == nil;
+    DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
+    [self setConectionUdpSupport:isUdpSupported];
+
     [self restartShadowsocks:false];
     [self connectTunnel:[self getTunnelNetworkSettings] completion:^(NSError * _Nullable error) {
       if (error != nil) {

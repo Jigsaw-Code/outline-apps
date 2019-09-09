@@ -19,7 +19,6 @@ const child_process = require('child_process');
 module.exports = function(context) {
   console.log('Copying iOS third party frameworks');
   child_process.execSync('mkdir -p plugins/cordova-plugin-outline/apple/lib/ios');
-  child_process.execSync('cp -R third_party/CocoaAsyncSocket/ios/CocoaAsyncSocket.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/CocoaLumberjack/ios/CocoaLumberjack.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync('cp -R third_party/CocoaLumberjack/ios/CocoaLumberjackSwift.framework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync(
