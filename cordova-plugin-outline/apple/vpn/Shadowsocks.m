@@ -174,11 +174,11 @@ void *startShadowsocks(void *udata) {
   }
   long errorCode;
   NSError *error;
-  ShadowsocksCheckConnectivity(self.config[@"host"], [self.config[@"port"] intValue],
-                               self.config[@"password"], self.config[@"method"], &errorCode,
-                               &error);
+  BOOL success = ShadowsocksCheckConnectivity(self.config[@"host"], [self.config[@"port"] intValue],
+                                              self.config[@"password"], self.config[@"method"],
+                                              &errorCode, &error);
   DDLogInfo(@"Connectivity checks result: %ld", errorCode);
-  if (error != nil) {
+  if (!success) {
     DDLogError(@"Failed to perform connectivity checks: %@", error);
   }
   self.startCompletion(errorCode);

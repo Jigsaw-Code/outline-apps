@@ -292,16 +292,9 @@ public class VpnTunnelService extends VpnService {
       long errorCode = shadowsocks.Shadowsocks.checkConnectivity(serverConfig.getString("host"),
           serverConfig.getInt("port"), serverConfig.getString("password"),
           serverConfig.getString("method"));
-      LOG.info(String.format(Locale.ROOT, "Go connectivity check result:  %d", errorCode));
-      if (errorCode == OutlinePlugin.ErrorCode.NO_ERROR.value) {
-        return OutlinePlugin.ErrorCode.NO_ERROR;
-      } else if (errorCode == OutlinePlugin.ErrorCode.SERVER_UNREACHABLE.value) {
-        return OutlinePlugin.ErrorCode.SERVER_UNREACHABLE;
-      } else if (errorCode == OutlinePlugin.ErrorCode.INVALID_SERVER_CREDENTIALS.value) {
-        return OutlinePlugin.ErrorCode.INVALID_SERVER_CREDENTIALS;
-      } else if (errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED.value) {
-        return OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED;
-      }
+      OutlinePlugin.ErrorCode result = OutlinePlugin.ErrorCode.values()[(int) errorCode];
+      LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
+      return result;
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Connectivity checks failed", e);
     }
