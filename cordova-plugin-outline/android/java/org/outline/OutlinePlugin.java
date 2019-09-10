@@ -228,6 +228,8 @@ public class OutlinePlugin extends CordovaPlugin {
                       Shadowsocks.checkServerReachable(args.getString(1), args.getInt(2));
                       isReachable = true;
                     } catch (Exception e) {
+                      LOG.fine(
+                          String.format(Locale.ROOT, "Connection %s unreachable", connectionId));
                     }
                     PluginResult result = new PluginResult(PluginResult.Status.OK, isReachable);
                     sendPluginResult(connectionId, action, result, false);

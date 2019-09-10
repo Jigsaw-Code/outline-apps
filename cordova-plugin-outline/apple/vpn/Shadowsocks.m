@@ -180,7 +180,6 @@ void *startShadowsocks(void *udata) {
   DDLogInfo(@"Connectivity checks result: %ld", errorCode);
   if (error != nil) {
     DDLogError(@"Failed to perform connectivity checks: %@", error);
-    self.startCompletion(serverUnreachable);
   }
   self.startCompletion(errorCode);
 }
