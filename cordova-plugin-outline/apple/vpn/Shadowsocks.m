@@ -15,12 +15,12 @@
 #import "Shadowsocks.h"
 #include <limits.h>
 #include <pthread.h>
-#import "ShadowsocksConnectivity.h"
 #if TARGET_OS_IPHONE
 #import <Shadowsocks_iOS/shadowsocks.h>
 #else
 #import <Shadowsocks_macOS/shadowsocks.h>
 #endif
+#import <Tun2Socks/Tun2socks.h>
 
 @import CocoaLumberjack;
 
@@ -34,10 +34,7 @@ static char *const kShadowsocksLocalAddress = "127.0.0.1";
 @property (nonatomic) pthread_t ssLocalThreadId;
 @property (nonatomic, copy) void (^startCompletion)(ErrorCode);
 @property (nonatomic, copy) void (^stopCompletion)(ErrorCode);
-@property (nonatomic) dispatch_queue_t dispatchQueue;
-@property (nonatomic) dispatch_group_t dispatchGroup;
 @property(nonatomic) bool checkConnectivity;
-@property(nonatomic) ShadowsocksConnectivity *ssConnectivity;
 @end
 
 @implementation Shadowsocks
@@ -46,9 +43,6 @@ static char *const kShadowsocksLocalAddress = "127.0.0.1";
   self = [super init];
   if (self) {
     _config = config;
-    _dispatchQueue = dispatch_queue_create("Shadowsocks", DISPATCH_QUEUE_SERIAL);
-    _dispatchGroup = dispatch_group_create();
-    _ssConnectivity = [[ShadowsocksConnectivity alloc] initWithPort:kShadowsocksLocalPort];
   }
   return self;
 }
@@ -178,42 +172,16 @@ void *startShadowsocks(void *udata) {
     self.startCompletion(noError);
     return;
   }
-  __block BOOL isRemoteUdpForwardingEnabled = false;
-  __block BOOL serverCredentialsAreValid = false;
-  __block BOOL isServerReachable = false;
-
-  // Enter the group once for each check
-  dispatch_group_enter(self.dispatchGroup);
-  dispatch_group_enter(self.dispatchGroup);
-  dispatch_group_enter(self.dispatchGroup);
-
-  [self.ssConnectivity isUdpForwardingEnabled:^(BOOL enabled) {
-    isRemoteUdpForwardingEnabled = enabled;
-    dispatch_group_leave(self.dispatchGroup);
-  }];
-  [self.ssConnectivity isReachable:self.config[@"host"]
-                              port:[self.config[@"port"] intValue]
-                        completion:^(BOOL isReachable) {
-                          isServerReachable = isReachable;
-                          dispatch_group_leave(self.dispatchGroup);
-                        }];
-  [self.ssConnectivity checkServerCredentials:^(BOOL valid) {
-    serverCredentialsAreValid = valid;
-    dispatch_group_leave(self.dispatchGroup);
-  }];
-
-  dispatch_group_notify(self.dispatchGroup, self.dispatchQueue, ^{
-    DDLogInfo(@"Server connectivity checks done");
-    if (isRemoteUdpForwardingEnabled) {
-      self.startCompletion(noError);
-    } else if (serverCredentialsAreValid) {
-      self.startCompletion(udpRelayNotEnabled);
-    } else if (isServerReachable) {
-      self.startCompletion(invalidServerCredentials);
-    } else {
-      self.startCompletion(serverUnreachable);
-    }
-  });
+  long errorCode;
+  NSError *error;
+  BOOL success = ShadowsocksCheckConnectivity(self.config[@"host"], [self.config[@"port"] intValue],
+                                              self.config[@"password"], self.config[@"method"],
+                                              &errorCode, &error);
+  DDLogInfo(@"Connectivity checks result: %ld", errorCode);
+  if (!success) {
+    DDLogError(@"Failed to perform connectivity checks: %@", error);
+  }
+  self.startCompletion(errorCode);
 }
 
 @end

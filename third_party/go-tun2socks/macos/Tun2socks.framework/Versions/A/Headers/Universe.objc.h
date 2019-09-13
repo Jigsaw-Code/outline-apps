@@ -20,9 +20,9 @@
 
 @interface Universeerror : NSError <goSeqRefInterface, Universeerror> {
 }
-@property(strong, readonly) id _ref;
+@property(strong, readonly) _Nonnull id _ref;
 
-- (instancetype)initWithRef:(id)ref;
+- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
 - (NSString* _Nonnull)error;
 @end
 
