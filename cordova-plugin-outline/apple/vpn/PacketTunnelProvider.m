@@ -243,9 +243,10 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
       completionHandler(nil);
       return;
     }
-    NSError *error;
-    ShadowsocksCheckServerReachable(host, [port intValue], &error);
-    ErrorCode errorCode = error == nil ? noError : serverUnreachable;
+    ErrorCode errorCode = noError;
+    if (!ShadowsocksCheckServerReachable(host, [port intValue], nil)) {
+      errorCode = serverUnreachable;
+    }
     NSDictionary *response = @{kMessageKeyErrorCode : [NSNumber numberWithLong:errorCode]};
     completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   }
@@ -359,10 +360,9 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
     // Check whether UDP support has changed with the network.
-    NSError *error;
-    ShadowsocksCheckUDPConnectivity(self.hostNetworkAddress, [self.connection.port intValue],
-                                    self.connection.password, self.connection.method, &error);
-    BOOL isUdpSupported = error == nil;
+    BOOL isUdpSupported =
+        ShadowsocksCheckUDPConnectivity(self.hostNetworkAddress, [self.connection.port intValue],
+                                        self.connection.password, self.connection.method, nil);
     DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
     [self setConectionUdpSupport:isUdpSupported];
 

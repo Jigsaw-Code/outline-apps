@@ -27,9 +27,7 @@ class OutlineConnectivity: NSObject {
         DDLogError("Failed to retrieve the remote host IP address in the network");
         return completion(false)
       }
-      var error: NSError?
-      ShadowsocksCheckServerReachable(networkIp, Int(port), &error)
-      completion(error == nil)
+      completion(ShadowsocksCheckServerReachable(networkIp, Int(port), nil))
     }
   }
 
