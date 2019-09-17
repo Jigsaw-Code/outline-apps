@@ -37,11 +37,9 @@ public class VpnTunnel {
   private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
   private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
   private static final int VPN_INTERFACE_MTU = 1500;
-  // OpenDNS and Dyn IP addresses.
+  // OpenDNS, Cloudflare, and Quad9 DNS resolvers' IP addresses.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
-    "216.146.35.35", "216.146.36.36",
-    "208.67.222.222", "208.67.220.220"
-  };
+      "208.67.222.222", "208.67.220.220", "1.1.1.1", "9.9.9.9"};
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
 
   private final VpnTunnelService vpnService;
@@ -64,7 +62,7 @@ public class VpnTunnel {
 
   /**
    * Establishes a system-wide VPN that routes all device traffic to its TUN interface. Randomly
-   * selects between OpenDNS and Dyn resolvers to set the VPN's DNS resolvers.
+   * selects between OpenDNS, Cloudflare, and Quad9 resolvers to set the VPN's DNS resolvers.
    *
    * @return boolean indicating whether the VPN was successfully established.
    */
