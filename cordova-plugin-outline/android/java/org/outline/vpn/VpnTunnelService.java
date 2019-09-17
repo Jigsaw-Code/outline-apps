@@ -33,9 +33,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -43,7 +41,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.OutlinePlugin;
-import org.outline.shadowsocks.Shadowsocks;
 
 /**
  * Android background service responsible for managing VPN connections. Clients must bind to this
@@ -62,7 +59,6 @@ public class VpnTunnelService extends VpnService {
   private ThreadPoolExecutor executorService;
   private VpnTunnel vpnTunnel;
   private String activeConnectionId = null;
-  private JSONObject activeServerConfig = null;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnConnectionStore connectionStore;
   private Notification.Builder notificationBuilder;
@@ -162,7 +158,6 @@ public class VpnTunnelService extends VpnService {
       }
     }
     activeConnectionId = connectionId;
-    activeServerConfig = config;
 
     OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
     if (!isAutoStart) {
@@ -204,7 +199,7 @@ public class VpnTunnelService extends VpnService {
     }
 
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
-    startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
+    startForegroundWithNotification(config);
     storeActiveConnection(connectionId, config, remoteUdpForwardingEnabled);
   }
 
@@ -252,7 +247,6 @@ public class VpnTunnelService extends VpnService {
     stopVpnTunnel();
     stopForeground();
     activeConnectionId = null;
-    activeServerConfig = null;
     stopNetworkConnectivityMonitor();
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
   }
@@ -297,7 +291,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
-      startForegroundWithNotification(activeServerConfig, OutlinePlugin.ConnectionStatus.CONNECTED);
+      updateNotification(OutlinePlugin.ConnectionStatus.CONNECTED);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
@@ -324,8 +318,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
-      startForegroundWithNotification(
-          activeServerConfig, OutlinePlugin.ConnectionStatus.RECONNECTING);
+      updateNotification(OutlinePlugin.ConnectionStatus.RECONNECTING);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
@@ -413,7 +406,7 @@ public class VpnTunnelService extends VpnService {
       final JSONObject config = connection.getJSONObject(CONNECTION_CONFIG_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
-      startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.RECONNECTING);
+      startForegroundWithNotification(config);
       startConnection(connection.getString(CONNECTION_ID_KEY),
           connection.getJSONObject(CONNECTION_CONFIG_KEY), true);
     } catch (JSONException e) {
@@ -438,22 +431,36 @@ public class VpnTunnelService extends VpnService {
 
   // Foreground service & notifications
 
-  /* Starts the service in the foreground and  displays a persistent notification. */
-  private void startForegroundWithNotification(
-      final JSONObject serverConfig, OutlinePlugin.ConnectionStatus status) {
+  /* Starts the service in the foreground and displays a persistent notification. */
+  private void startForegroundWithNotification(final JSONObject serverConfig) {
     try {
       if (notificationBuilder == null) {
         // Cache the notification builder so we can update the existing notification - creating a
         // new notification has the side effect of resetting the connection timer.
         notificationBuilder = getNotificationBuilder(serverConfig);
       }
+      notificationBuilder.setContentText(getStringResource("connected_server_state"));
+      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
+    } catch (Exception e) {
+      LOG.warning("Unable to display persistent notification");
+    }
+  }
+
+  /* Updates the persistent notification to reflect the connection status. */
+  private void updateNotification(OutlinePlugin.ConnectionStatus status) {
+    try {
+      if (notificationBuilder == null) {
+        return; // No notification to update.
+      }
       final String statusStringResourceId = status == OutlinePlugin.ConnectionStatus.CONNECTED
           ? "connected_server_state"
           : "reconnecting_server_state";
       notificationBuilder.setContentText(getStringResource(statusStringResourceId));
-      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
+      NotificationManager notificationManager =
+          (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      notificationManager.notify(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
     } catch (Exception e) {
-      LOG.warning("Unable to display persistent notification");
+      LOG.warning("Failed to update persistent notification");
     }
   }
 
