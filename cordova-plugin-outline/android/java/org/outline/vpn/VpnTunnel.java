@@ -155,16 +155,15 @@ public class VpnTunnel {
   }
 
   /**
-   * Indicates to the tunnel that there has been a change in network connectivity.
+   * Instructs the tunnel to update whether UDP is supported after a network connectivity change.
    *
-   * @param isConnected whether the network is in a connected state.
    * @return boolean indicating whether UDP is supported.
    */
-  public synchronized boolean networkConnectivityChanged(boolean isConnected) {
+  public synchronized boolean updateUDPSupport() {
     if (!isTunnelConnected()) {
       return false;
     }
-    return tunnel.networkConnectivityChanged(isConnected);
+    return tunnel.updateUDPSupport();
   }
 
   private boolean isTunnelConnected() {

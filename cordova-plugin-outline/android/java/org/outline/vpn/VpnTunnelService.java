@@ -302,7 +302,7 @@ public class VpnTunnelService extends VpnService {
         // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
       }
-      boolean isUdpSupported = vpnTunnel.networkConnectivityChanged(true);
+      boolean isUdpSupported = vpnTunnel.updateUDPSupport();
       LOG.info(
           String.format("UDP support: %s -> %s", connectionStore.isUdpSupported(), isUdpSupported));
       connectionStore.setIsUdpSupported(isUdpSupported);
