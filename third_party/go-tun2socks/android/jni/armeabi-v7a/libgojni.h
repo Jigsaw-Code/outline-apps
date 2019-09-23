@@ -128,13 +128,11 @@ extern struct proxyshadowsocks__CheckConnectivity_return proxyshadowsocks__Check
 
 extern int32_t proxyshadowsocks__CheckServerReachable(nstring p0, nint p1);
 
-extern int32_t proxyshadowsocks__CheckUDPConnectivity(nstring p0, nint p1, nstring p2, nstring p3);
-
 extern void proxytun2socks_OutlineTunnel_Disconnect(int32_t p0);
 
 extern char proxytun2socks_OutlineTunnel_IsConnected(int32_t p0);
 
-extern void proxytun2socks_OutlineTunnel_SetUDPEnabled(int32_t p0, char p1);
+extern char proxytun2socks_OutlineTunnel_UpdateUDPSupport(int32_t p0);
 
 /* Return type for proxytun2socks_OutlineTunnel_Write */
 struct proxytun2socks_OutlineTunnel_Write_return {
@@ -144,13 +142,13 @@ struct proxytun2socks_OutlineTunnel_Write_return {
 
 extern struct proxytun2socks_OutlineTunnel_Write_return proxytun2socks_OutlineTunnel_Write(int32_t p0, nbyteslice p1);
 
-/* Return type for proxytun2socks__ConnectSocksTunnel */
-struct proxytun2socks__ConnectSocksTunnel_return {
+/* Return type for proxytun2socks__ConnectShadowsocksTunnel */
+struct proxytun2socks__ConnectShadowsocksTunnel_return {
 	int32_t r0;
 	int32_t r1;
 };
 
-extern struct proxytun2socks__ConnectSocksTunnel_return proxytun2socks__ConnectSocksTunnel(nint p0, nstring p1, nint p2, char p3);
+extern struct proxytun2socks__ConnectShadowsocksTunnel_return proxytun2socks__ConnectShadowsocksTunnel(nint p0, nstring p1, nint p2, nstring p3, nstring p4, char p5);
 
 // IncGoRef is called by foreign code to pin a Go object while its refnum is crossing
 // the language barrier
