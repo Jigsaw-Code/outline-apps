@@ -37,16 +37,10 @@ public class VpnTunnel {
   private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
   private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
   private static final int VPN_INTERFACE_MTU = 1500;
-  // OpenDNS and Dyn IP addresses.
+  // OpenDNS, Cloudflare, and Quad9 DNS resolvers' IP addresses.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
-    "216.146.35.35", "216.146.36.36",
-    "208.67.222.222", "208.67.220.220"
-  };
+      "208.67.222.222", "208.67.220.220", "1.1.1.1", "9.9.9.9"};
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
-  private static final int DNS_RESOLVER_PORT = 53;
-  private static final int TRANSPARENT_DNS_ENABLED = 1;
-  private static final int SOCKS5_UDP_ENABLED = 1;
-  private static final int SOCKS5_UDP_DISABLED = 0;
 
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
@@ -68,7 +62,7 @@ public class VpnTunnel {
 
   /**
    * Establishes a system-wide VPN that routes all device traffic to its TUN interface. Randomly
-   * selects between OpenDNS and Dyn resolvers to set the VPN's DNS resolvers.
+   * selects between OpenDNS, Cloudflare, and Quad9 resolvers to set the VPN's DNS resolvers.
    *
    * @return boolean indicating whether the VPN was successfully established.
    */
@@ -121,22 +115,22 @@ public class VpnTunnel {
   }
 
   /**
-   * Connects a tunnel between a SOCKS server and the VPN TUN interface, by using the tun2socks
-   * native library.
+   * Connects a tunnel between a Shadowsocks proxy server and the VPN TUN interface.
    *
-   * @param socksServerIp IP address of the SOCKS server.
-   * @param socksServerPort port of the SOCKS server.
-   * @param isUdpSupported whether the remote server supports UDP forwarding.
+   * @param host is  IP address of the SOCKS proxy server.
+   * @param port is the port of the SOCKS proxy server.
+   * @param password is the password of the Shadowsocks proxy.
+   * @param cipher is the encryption cipher used by the Shadowsocks proxy.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
    * @throws Exception when the tunnel fails to connect.
    */
-  public synchronized void connectTunnel(
-      final String socksServerIp, short socksServerPort, boolean isUdpSupported) throws Exception {
+  public synchronized void connectTunnel(final String host, int port, final String password,
+      final String cipher, boolean isUdpEnabled) throws Exception {
     LOG.info("Connecting the tunnel.");
-    if (socksServerIp == null || socksServerPort <= 0) {
-      throw new IllegalArgumentException("Must provide an IP address and port to a SOCKS server.");
+    if (host == null || port <= 0 || port > 65535 || password == null || cipher == null) {
+      throw new IllegalArgumentException("Must provide valid Shadowsocks proxy parameters.");
     }
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
@@ -146,8 +140,8 @@ public class VpnTunnel {
     }
 
     LOG.fine("Starting tun2socks...");
-    tunnel =
-        Tun2socks.connectSocksTunnel(tunFd.getFd(), socksServerIp, socksServerPort, isUdpSupported);
+    tunnel = Tun2socks.connectShadowsocksTunnel(
+        tunFd.getFd(), host, port, password, cipher, isUdpEnabled);
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */
@@ -157,18 +151,19 @@ public class VpnTunnel {
       return;
     }
     tunnel.disconnect();
+    tunnel = null;
   }
 
   /**
-   * Updates the tunnel's UDP forwarding capabilities.
+   * Instructs the tunnel to update whether UDP is supported after a network connectivity change.
    *
-   * @param isUdpSupported whether the remote server supports UDP forwarding.
+   * @return boolean indicating whether UDP is supported.
    */
-  public synchronized void setUdpSupport(boolean isUdpSupported) {
+  public synchronized boolean updateUDPSupport() {
     if (!isTunnelConnected()) {
-      return;
+      return false;
     }
-    tunnel.setUDPEnabled(isUdpSupported);
+    return tunnel.updateUDPSupport();
   }
 
   private boolean isTunnelConnected() {
