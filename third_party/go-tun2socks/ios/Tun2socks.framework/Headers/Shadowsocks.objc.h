@@ -25,12 +25,4 @@ Returns an error if the server is unreachable.
  */
 FOUNDATION_EXPORT BOOL ShadowsocksCheckServerReachable(NSString* _Nullable host, long port, NSError* _Nullable* _Nullable error);
 
-/**
- * CheckUDPConnectivity determines whether UDP forwarding is supported by a Shadowsocks proxy.
-Returns an error if the server does not support UDP.
-TODO: remove this once we support a Shadowsocks tunnel and deprecate the SOCKS interface,
-as we will be able to perform the UDP connectivity check directly from Go.
- */
-FOUNDATION_EXPORT BOOL ShadowsocksCheckUDPConnectivity(NSString* _Nullable host, long port, NSString* _Nullable password, NSString* _Nullable cipher, NSError* _Nullable* _Nullable error);
-
 #endif
