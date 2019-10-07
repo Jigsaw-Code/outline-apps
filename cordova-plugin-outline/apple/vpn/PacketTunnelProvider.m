@@ -291,9 +291,9 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   NEPacketTunnelNetworkSettings *settings =
       [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
   settings.IPv4Settings = ipv4Settings;
-  // Configure with OpenDNS and Dyn DNS resolver addresses.
-  settings.DNSSettings = [[NEDNSSettings alloc] initWithServers:@[@"208.67.222.222", @"216.146.35.35",
-                                                                  @"208.67.220.220", @"216.146.36.36"]];
+  // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
+  settings.DNSSettings = [[NEDNSSettings alloc]
+      initWithServers:@[ @"1.1.1.1", @"9.9.9.9", @"208.67.222.222", @"208.67.220.220" ]];
   return settings;
 }
 
