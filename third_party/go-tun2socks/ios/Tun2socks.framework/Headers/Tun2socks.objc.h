@@ -19,7 +19,7 @@
 @protocol Tun2socksOutlineTunnel <NSObject>
 - (void)disconnect;
 - (BOOL)isConnected;
-- (void)setUDPEnabled:(BOOL)isUDPEnabled;
+- (BOOL)updateUDPSupport;
 - (BOOL)write:(NSData* _Nullable)data ret0_:(long* _Nullable)ret0_ error:(NSError* _Nullable* _Nullable)error;
 @end
 
@@ -29,17 +29,19 @@
 @end
 
 /**
- * ConnectSocksTunnel reads packets from a TUN device and routes it to a SOCKS server. Returns an
-OutlineTunnel instance that should be used to input packets to the tunnel.
+ * ConnectShadowsocksTunnel reads packets from a TUN device and routes it to a Shadowsocks proxy server.
+Returns an OutlineTunnel instance that should be used to input packets to the tunnel.
 
 `tunWriter` is used to output packets to the TUN (VPN).
-`host` is the IP address of the SOCKS proxy server.
-`port` is the port of the SOCKS proxy server.
+`host` is  IP address of the Shadowsocks proxy server.
+`port` is the port of the Shadowsocks proxy server.
+`password` is the password of the Shadowsocks proxy.
+`cipher` is the encryption cipher the Shadowsocks proxy.
 `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 
 Sets an error if the tunnel fails to connect.
  */
-FOUNDATION_EXPORT id<Tun2socksOutlineTunnel> _Nullable Tun2socksConnectSocksTunnel(id<Tun2socksTunWriter> _Nullable tunWriter, NSString* _Nullable host, long port, BOOL isUDPEnabled, NSError* _Nullable* _Nullable error);
+FOUNDATION_EXPORT id<Tun2socksOutlineTunnel> _Nullable Tun2socksConnectShadowsocksTunnel(id<Tun2socksTunWriter> _Nullable tunWriter, NSString* _Nullable host, long port, NSString* _Nullable password, NSString* _Nullable cipher, BOOL isUDPEnabled, NSError* _Nullable* _Nullable error);
 
 @class Tun2socksOutlineTunnel;
 
@@ -55,7 +57,7 @@ FOUNDATION_EXPORT id<Tun2socksOutlineTunnel> _Nullable Tun2socksConnectSocksTunn
 - (nonnull instancetype)initWithRef:(_Nonnull id)ref;
 - (void)disconnect;
 - (BOOL)isConnected;
-- (void)setUDPEnabled:(BOOL)isUDPEnabled;
+- (BOOL)updateUDPSupport;
 - (BOOL)write:(NSData* _Nullable)data ret0_:(long* _Nullable)ret0_ error:(NSError* _Nullable* _Nullable)error;
 @end
 
