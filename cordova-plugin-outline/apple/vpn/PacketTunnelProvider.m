@@ -133,7 +133,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   }
 
   [self connectTunnel:[self getTunnelNetworkSettings]
-           completion:^(NSError *error) {
+           completion:^(NSError *_Nullable error) {
              if (error != nil) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnPermissionNotGranted];
                return completionHandler(error);
