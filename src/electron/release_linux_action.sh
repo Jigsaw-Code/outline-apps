@@ -31,4 +31,4 @@ electron-builder \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
   --config.publish.provider=generic \
-  --config.publish.url=https://s3.amazonaws.com/outline-releases/client
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux
