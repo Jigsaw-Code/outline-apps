@@ -18,30 +18,20 @@ import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
 
-import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
 import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
 
-const PROXY_ADDRESS = '127.0.0.1';
-const PROXY_PORT = 1081;
-
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
-const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
-// OpenDNS and Dyn resolvers
-const DNS_RESOLVER_IP_PRIMARY = '208.67.222.222';
-const DNS_RESOLVER_IP_SECONDARY = '216.146.35.35';
+// Cloudflare, Quad9, and OpenDNS resolvers.
+const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9', '208.67.222.222'];
 
-// ss-local will almost always start, and fast: short timeouts, fast retries.
-const SSLOCAL_CONNECTION_TIMEOUT = 10;
-const SSLOCAL_MAX_ATTEMPTS = 30;
-const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
 // Raises an error if:
 //  - the TAP device does not exist
@@ -80,14 +70,8 @@ function testTapDevice() {
   }
 }
 
-async function isSsLocalReachable() {
-  await isServerReachable(
-      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
-      SSLOCAL_RETRY_INTERVAL_MS);
-}
-
-// Establishes a full-system VPN with the help of Outline's routing daemon and child processes
-// ss-local and tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
+// Establishes a full-system VPN with the help of Outline's routing daemon and child process
+// tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
 // anything about the others.
 //
 // In addition to the basic lifecycle of the three helper processes, this handles a few special
@@ -96,8 +80,7 @@ async function isSsLocalReachable() {
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
 export class ConnectionManager {
   private readonly routing: RoutingDaemon;
-  private readonly ssLocal = new SsLocal(PROXY_PORT);
-  private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
+  private readonly tun2socks: Tun2socks;
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
@@ -107,8 +90,6 @@ export class ConnectionManager {
   // See #resumeListener.
   private terminated = false;
 
-  private isUdpEnabled = false;
-
   private readonly onAllHelpersStopped: Promise<void>;
 
   private reconnectingListener?: () => void;
@@ -116,15 +97,16 @@ export class ConnectionManager {
   private reconnectedListener?: () => void;
 
   constructor(
-      private config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
+    config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
+    this.tun2socks = new Tun2socks(config);
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
-    // This trio of Promises, each tied to a helper process' exit, is key to the instance's
+    // These Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
+      this.routing.onceDisconnected,
       new Promise<void>((fulfill) => {
         this.tun2socksExitListener = fulfill;
         this.tun2socks.onExit = this.tun2socksExitListener;
@@ -153,19 +135,9 @@ export class ConnectionManager {
       testTapDevice();
     }
 
-    // ss-local must be up in order to test UDP support and validate credentials.
-    this.ssLocal.start(this.config);
-    await isSsLocalReachable();
-
     // Don't validate credentials on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
-    if (!this.isAutoConnect) {
-      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
-    }
-
-    this.isUdpEnabled = await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
-    console.log(`UDP support: ${this.isUdpEnabled}`);
-    this.tun2socks.start(this.isUdpEnabled);
+    await this.tun2socks.start(!this.isAutoConnect);
 
     await this.routing.start();
   }
@@ -178,7 +150,7 @@ export class ConnectionManager {
 
       // Test whether UDP availability has changed; since it won't change 99% of the time, do this
       // *after* we've informed the client we've reconnected.
-      this.retestUdp();
+      this.restartTun2socks();
     } else if (status === ConnectionStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
@@ -205,33 +177,19 @@ export class ConnectionManager {
     console.log('restarting tun2socks after resume');
 
     this.tun2socks.onExit = this.tun2socksExitListener;
-    this.tun2socks.start(this.isUdpEnabled);
+    this.tun2socks.start(!this.isAutoConnect);
 
-    // Check if UDP support has changed; if so, silently restart.
-    this.retestUdp();
+    // Check if UDP support has changed.
+    this.restartTun2socks();
   }
 
-  private async retestUdp() {
-    try {
-      // Possibly over-cautious, though we have seen occasional failures immediately after network
-      // changes: ensure ss-local is reachable first.
-      await isSsLocalReachable();
-      if (this.isUdpEnabled === await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)) {
-        return;
-      }
-    } catch (e) {
-      console.error(`UDP test failed: ${e.message}`);
-      return;
-    }
-
-    this.isUdpEnabled = !this.isUdpEnabled;
-    console.log(`UDP support change: now ${this.isUdpEnabled}`);
-
+  private async restartTun2socks() {
     // Swap out the current listener, restart once the current process exits.
     this.tun2socks.onExit = () => {
       console.log('restarting tun2socks');
       this.tun2socks.onExit = this.tun2socksExitListener;
-      this.tun2socks.start(this.isUdpEnabled);
+      // Check connectivity to test whether UDP is supported in the new network.
+      this.tun2socks.start(true);
     };
     this.tun2socks.stop();
   }
@@ -249,7 +207,6 @@ export class ConnectionManager {
       console.error(`could not stop routing: ${e.message}`);
     }
 
-    this.ssLocal.stop();
     this.tun2socks.stop();
   }
 
@@ -281,19 +238,26 @@ export class ConnectionManager {
 class ChildProcessHelper {
   private process?: ChildProcess;
 
-  private exitListener?: () => void;
+  protected exitListener?: (code?: number, signal?: string) => void;
+  protected stdoutListener?: (data?: string | Buffer) => void;
 
   constructor(private path: string) {}
 
   protected launch(args: string[]) {
     this.process = spawn(this.path, args);
 
-    const onExit = () => {
+    const onExit = (code?: number, signal?: string) => {
       if (this.process) {
         this.process.removeAllListeners();
       }
       if (this.exitListener) {
-        this.exitListener();
+        this.exitListener(code, signal);
+      }
+    };
+
+    const onStdoutData = (data?: string | Buffer) => {
+      if (this.stdoutListener) {
+        this.stdoutListener(data);
       }
     };
 
@@ -301,6 +265,8 @@ class ChildProcessHelper {
     // case exit will not be invoked.
     this.process.on('error', onExit.bind((this)));
     this.process.on('exit', onExit.bind((this)));
+    this.process.stdout.on('data', onStdoutData.bind(this));
+    this.process.stderr.on('data', onStdoutData.bind(this));
   }
 
   // Use #onExit to be notified when the process exits.
@@ -319,53 +285,67 @@ class ChildProcessHelper {
   set onExit(newListener: (() => void)|undefined) {
     this.exitListener = newListener;
   }
-}
 
-class SsLocal extends ChildProcessHelper {
-  constructor(private readonly proxyPort: number) {
-    super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
-  }
-
-  start(config: cordova.plugins.outline.ServerConfig) {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
-    const args = ['-l', this.proxyPort.toString()];
-    args.push('-s', config.host || '');
-    args.push('-p', '' + config.port);
-    args.push('-k', config.password || '');
-    args.push('-m', config.method || '');
-    args.push('-u');
-
-    this.launch(args);
+  set onStdout(newListener: ((data?: string | Buffer) => void) | undefined) {
+    this.stdoutListener = newListener;
   }
 }
 
 class Tun2socks extends ChildProcessHelper {
-  constructor(private proxyAddress: string, private proxyPort: number) {
+  constructor(private config: cordova.plugins.outline.ServerConfig) {
     super(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
   }
 
-  start(isUdpEnabled: boolean) {
-    // ./tun2socks \
-    //   -tunName "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
+  async start(checkConnectivity: boolean) {
+    // ./tun2socks.exe \
+    //   -tunName outline-tap0" \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
-    //   -proxyServer 127.0.0.1:1080 -disableDNSCache -dnsFallback
+    //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
+    //   -proxyCipher chacha20-ietf-poly1035 -checkConnectivity
     const args: string[] = [];
-    args.push(
-        '-tunName',
-        isWindows ? `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${
-                        TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}` :
-                    TUN2SOCKS_TAP_DEVICE_NAME);
+    args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push('-tunDns', `${DNS_RESOLVER_IP_PRIMARY},${DNS_RESOLVER_IP_SECONDARY}`);
-    args.push('-proxyServer', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('-loglevel', 'error');
-    args.push('-disableDNSCache');
-    if (!isUdpEnabled) {
-      args.push('-dnsFallback');
+    args.push('-tunDNS', DNS_RESOLVERS.join(','));
+    args.push('-proxyHost', this.config.host || '');
+    args.push('-proxyPort', `${this.config.port}`);
+    args.push('-proxyPassword', this.config.password || '');
+    args.push('-proxyCipher', this.config.method || '');
+    args.push('-logLevel', 'info');
+    if (checkConnectivity) {
+      args.push('-checkConnectivity');
     }
-
     this.launch(args);
+
+    const exitListener = this.exitListener;
+
+    // Declare success if we see that tun2socks is running.
+    const running = new Promise(resolve => {
+      this.onStdout = (data?: string | Buffer) => {
+        if (data && data.toString().includes('tun2socks running')) {
+          this.onStdout = undefined;
+          this.onExit = exitListener;  // Restore previous exit listener
+          resolve();
+        }
+      };
+    });
+
+    // Wait for an early exit due to connectvity failures.
+    const earlyExit = new Promise((resolve, reject) => {
+      this.onExit = (code?: number, signal?: string) => {
+        console.log('tun2socks exited with code', code);
+        if (exitListener) {
+          exitListener();  // Execute previous exit listener
+        }
+        if (code === 0) {
+          resolve();
+        } else if (!!code) {
+          reject(errors.fromErrorCode(code));
+        }
+      };
+    });
+
+    return Promise.race([running, earlyExit]);
   }
 }
