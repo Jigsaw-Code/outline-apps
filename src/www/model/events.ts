@@ -14,15 +14,13 @@
 
 import {Server} from './server';
 
-export interface OutlineEvent {}
+export interface OutlineEvent {
+  server: Server;
+}
 
 export type OutlineEventListener = (event: OutlineEvent) => void;
 
 export class ServerAdded implements OutlineEvent {
-  constructor(public readonly server: Server) {}
-}
-
-export class ServerAlreadyAdded implements OutlineEvent {
   constructor(public readonly server: Server) {}
 }
 
@@ -38,10 +36,6 @@ export class ServerRenamed implements OutlineEvent {
   constructor(public readonly server: Server) {}
 }
 
-export class ServerUrlInvalid implements OutlineEvent {
-  constructor(public readonly serverUrl: string) {}
-}
-
 export class ServerConnected implements OutlineEvent {
   constructor(public readonly server: Server) {}
 }
@@ -55,9 +49,13 @@ export class ServerReconnecting implements OutlineEvent {
 }
 
 // Simple publisher-subscriber queue.
+interface PublicServerConstructible {
+  new(server: Server): OutlineEvent;
+  server?: Server;
+}
 export class EventQueue {
   private queuedEvents: OutlineEvent[] = [];
-  private listenersByEventType = new Map<OutlineEvent, OutlineEventListener[]>();
+  private listenersByEventType = new Map<PublicServerConstructible, OutlineEventListener[]>();
   private isStarted = false;
   private isPublishing = false;
 
@@ -67,7 +65,7 @@ export class EventQueue {
   }
 
   // Registers a listener for events of the type of the given constructor.
-  subscribe(eventType: OutlineEvent, listener: OutlineEventListener) {
+  subscribe(eventType: PublicServerConstructible, listener: OutlineEventListener) {
     let listeners = this.listenersByEventType.get(eventType);
     if (!listeners) {
       listeners = [];
@@ -101,7 +99,7 @@ export class EventQueue {
     this.isPublishing = true;
     while (this.queuedEvents.length > 0) {
       const event = this.queuedEvents.shift() as OutlineEvent;
-      const listeners = this.listenersByEventType.get(event.constructor);
+      const listeners = this.listenersByEventType.get(Object.getPrototypeOf(event).constructor);
       if (!listeners) {
         console.warn('Dropping event with no listeners:', event);
         continue;
