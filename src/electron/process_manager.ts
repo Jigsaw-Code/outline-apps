@@ -320,7 +320,7 @@ class Tun2socks extends ChildProcessHelper {
 
     const exitListener = this.exitListener;
 
-    // Declare success if we see that tun2socks is running.
+    // Declare success when tun2socks is running.
     const running = new Promise(resolve => {
       this.onStdout = (data?: string | Buffer) => {
         if (data && data.toString().includes('tun2socks running')) {
@@ -338,11 +338,7 @@ class Tun2socks extends ChildProcessHelper {
         if (exitListener) {
           exitListener();  // Execute previous exit listener
         }
-        if (code === 0) {
-          resolve();
-        } else if (!!code) {
-          reject(errors.fromErrorCode(code));
-        }
+        reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
       };
     });
 
