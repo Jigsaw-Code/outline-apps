@@ -20,6 +20,22 @@ The latter command will open a browser instance running the app. Browser platfor
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](www/app).
 
+## Running the Electron app
+
+On Linux and Windows, Outline runs on Electron.  Use
+
+    yarn do src/electron/run
+
+to run the app.  You may get an error that another electron process is running.  If that's the case, try
+
+    ps -aux | grep electron
+
+and
+
+    ps -aux | grep outline
+
+and `kill` any hanging processes you find.
+
 ## Building the Android app
 
 Additional requirements for Android:

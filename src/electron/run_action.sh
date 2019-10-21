@@ -16,5 +16,22 @@
 
 yarn do src/electron/build
 
+
+package_tail="$(tail -n +2 package.json)"
+cat > package.json <<EOM
+{
+  "version": "${APP_VERSION:-0.1.0}",
+${package_tail}
+EOM
+
+trap cleanup_package_json INT
+cleanup_package_json() {
+    sed -i '/"version"/d' package.json
+}
+
 export OUTLINE_DEBUG=true
 electron .
+
+# Runs if the app was closed with the Quit button instead
+# of SIGINT
+cleanup_package_json
