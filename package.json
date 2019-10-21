@@ -63,7 +63,7 @@
     "postcss-rtl": "^1.2.3",
     "posthtml-postcss": "^0.2.6",
     "tslint": "^5.12.0",
-    "typescript": "~3.1.0",
+    "typescript": "^3.6.4",
     "vinyl-source-stream": "^2.0.0",
     "xml2js": "^0.4.17"
   },
