@@ -60,8 +60,9 @@ export class EventQueue {
   }
 
   // Registers a listener for events of the type of the given constructor.
-  // tslint:disable-next-line: no-any
-  subscribe<T extends OutlineEvent>(eventConstructor: {new(...args: any[]): T}, listener: OutlineEventListener<T>) {
+  subscribe<T extends OutlineEvent>(
+      // tslint:disable-next-line: no-any
+      eventConstructor: {new(...args: any[]): T}, listener: OutlineEventListener<T>) {
     let listeners = this.listenersByEventType.get(eventConstructor.name);
     if (!listeners) {
       listeners = [];
