@@ -14,11 +14,9 @@
 
 import {Server} from './server';
 
-export interface OutlineEvent {
-  server: Server;
-}
+export interface OutlineEvent {}
 
-export type OutlineEventListener = (event: OutlineEvent) => void;
+export type OutlineEventListener<T extends OutlineEvent> = (event: T) => void;
 
 export class ServerAdded implements OutlineEvent {
   constructor(public readonly server: Server) {}
@@ -49,13 +47,10 @@ export class ServerReconnecting implements OutlineEvent {
 }
 
 // Simple publisher-subscriber queue.
-interface PublicServerConstructible {
-  new(server: Server): OutlineEvent;
-  server?: Server;
-}
 export class EventQueue {
   private queuedEvents: OutlineEvent[] = [];
-  private listenersByEventType = new Map<PublicServerConstructible, OutlineEventListener[]>();
+  // tslint:disable-next-line: no-any
+  private listenersByEventType = new Map<string, any[]>();
   private isStarted = false;
   private isPublishing = false;
 
@@ -65,11 +60,12 @@ export class EventQueue {
   }
 
   // Registers a listener for events of the type of the given constructor.
-  subscribe(eventType: PublicServerConstructible, listener: OutlineEventListener) {
-    let listeners = this.listenersByEventType.get(eventType);
+  // tslint:disable-next-line: no-any
+  subscribe<T extends OutlineEvent>(eventConstructor: {new(...args: any[]): T}, listener: OutlineEventListener<T>) {
+    let listeners = this.listenersByEventType.get(eventConstructor.name);
     if (!listeners) {
       listeners = [];
-      this.listenersByEventType.set(eventType, listeners);
+      this.listenersByEventType.set(eventConstructor.name, listeners);
     }
     listeners.push(listener);
   }
@@ -99,7 +95,7 @@ export class EventQueue {
     this.isPublishing = true;
     while (this.queuedEvents.length > 0) {
       const event = this.queuedEvents.shift() as OutlineEvent;
-      const listeners = this.listenersByEventType.get(Object.getPrototypeOf(event).constructor);
+      const listeners = this.listenersByEventType.get(event.constructor.name);
       if (!listeners) {
         console.warn('Dropping event with no listeners:', event);
         continue;
