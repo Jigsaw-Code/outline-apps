@@ -53,9 +53,7 @@
 		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
 		FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */; };
-		FCDE2FAF23270AC1006C5B2C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
 		FCDE2FB023270B8C006C5B2C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
-		FCDE2FB123270B8C006C5B2C /* Tun2socks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,7 +90,6 @@
 				FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */,
 				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
 				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
-				FCDE2FB123270B8C006C5B2C /* Tun2socks.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -196,14 +193,13 @@
 				FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */,
 				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Frameworks */,
 				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
-				FCDE2FB023270B8C006C5B2C /* Tun2socks.framework in Frameworks */,
 				70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */,
 				FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.framework in Frameworks */,
 				70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */,
 				70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */,
 				FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */,
 				FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */,
-				FCDE2FAF23270AC1006C5B2C /* Tun2socks.framework in Frameworks */,
+				FCDE2FB023270B8C006C5B2C /* Tun2socks.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
