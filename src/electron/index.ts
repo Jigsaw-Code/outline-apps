@@ -221,9 +221,8 @@ app.on('ready', () => {
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',
-      submenu: Menu.buildFromTemplate([
-        { role: 'reload' }, { role: 'forceReload' }, { role: 'toggleDevTools' }
-      ])
+      submenu: Menu.buildFromTemplate(
+          [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
     }]));
   } else {
     checkForUpdates();
