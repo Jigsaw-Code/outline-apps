@@ -179,7 +179,7 @@ async function quitApp() {
 }
 
 if (!app.requestSingleInstanceLock()) {
-  console.error('another instance is running - exiting');
+  console.log('another instance is running - exiting');
   app.quit();
 }
 
