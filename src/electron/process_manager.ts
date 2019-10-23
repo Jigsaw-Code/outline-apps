@@ -77,7 +77,7 @@ function testTapDevice() {
 // In addition to the basic lifecycle of the three helper processes, this handles a few special
 // situations:
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
-//  - silently restart tun2socks when the system is about to suspend (Windows only)
+//  - silently restart tun2socks when the system resumes after suspend (Windows only)
 export class ConnectionManager {
   private readonly routing: RoutingDaemon;
   private readonly tun2socks: Tun2socks;
@@ -85,7 +85,7 @@ export class ConnectionManager {
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
   // us swap the listener in and out.
-  private tun2socksExitListener?: () => void | undefined;
+  private tun2socksExitListener?: () => void;
 
   // See #resumeListener.
   private terminated = false;
@@ -109,7 +109,6 @@ export class ConnectionManager {
       this.routing.onceDisconnected,
       new Promise<void>((fulfill) => {
         this.tun2socksExitListener = fulfill;
-        this.tun2socks.onExit = this.tun2socksExitListener;
       })
     ];
     Promise.race(exits).then(() => {
@@ -137,20 +136,32 @@ export class ConnectionManager {
 
     // Don't validate credentials on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
-    await this.tun2socks.start(!this.isAutoConnect);
+    try {
+      await this.tun2socks.start(!this.isAutoConnect);
+    } catch (e) {
+      if (this.tun2socksExitListener) {
+        this.tun2socksExitListener();
+      }
+      throw e;
+    }
+    this.tun2socks.onExit = this.tun2socksExitListener;
 
     await this.routing.start();
   }
 
-  private networkChanged(status: ConnectionStatus) {
+  private async networkChanged(status: ConnectionStatus) {
     if (status === ConnectionStatus.CONNECTED) {
+      if (this.tun2socks.isRunning) {
+        // Test whether UDP availability has changed.
+        await this.restartTun2socks();
+      } else {
+        // Windows: the network was connected after the system resumed from suspend.
+        await this.tun2socks.start(true);
+      }
+
       if (this.reconnectedListener) {
         this.reconnectedListener();
       }
-
-      // Test whether UDP availability has changed; since it won't change 99% of the time, do this
-      // *after* we've informed the client we've reconnected.
-      this.restartTun2socks();
     } else if (status === ConnectionStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
@@ -161,9 +172,11 @@ export class ConnectionManager {
   }
 
   private suspendListener() {
+    console.log('suspend listener invoked');
+    // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
     // Swap out the current listener, restart once the system resumes.
     this.tun2socks.onExit = () => {
-      console.log('stopped tun2socks in preparation for suspend');
+      console.log('tun2socks stopped as a result of system suspend');
     };
   }
 
@@ -173,25 +186,21 @@ export class ConnectionManager {
       console.error('resume event invoked but this connection is terminated - doing nothing');
       return;
     }
-
-    console.log('restarting tun2socks after resume');
-
+    console.log('restoring tun2socks exit listener after resume');
     this.tun2socks.onExit = this.tun2socksExitListener;
-    this.tun2socks.start(!this.isAutoConnect);
-
-    // Check if UDP support has changed.
-    this.restartTun2socks();
   }
 
   private async restartTun2socks() {
     // Swap out the current listener, restart once the current process exits.
-    this.tun2socks.onExit = () => {
-      console.log('restarting tun2socks');
-      this.tun2socks.onExit = this.tun2socksExitListener;
-      // Check connectivity to test whether UDP is supported in the new network.
-      this.tun2socks.start(true);
-    };
-    this.tun2socks.stop();
+    return new Promise(resolve => {
+      this.tun2socks.onExit = async () => {
+        console.log('restarting tun2socks');
+        this.tun2socks.onExit = this.tun2socksExitListener;
+        await this.tun2socks.start(true);
+        resolve();
+      };
+      this.tun2socks.stop();
+    });
   }
 
   // Use #onceStopped to be notified when the connection terminates.
@@ -237,6 +246,7 @@ export class ConnectionManager {
 //       found).
 class ChildProcessHelper {
   private process?: ChildProcess;
+  private running = false;
 
   protected exitListener?: (code?: number, signal?: string) => void;
   protected stdoutListener?: (data?: string | Buffer) => void;
@@ -245,8 +255,10 @@ class ChildProcessHelper {
 
   protected launch(args: string[]) {
     this.process = spawn(this.path, args);
+    this.running = true;
 
     const onExit = (code?: number, signal?: string) => {
+      this.running = false;
       if (this.process) {
         this.process.removeAllListeners();
       }
@@ -282,12 +294,16 @@ class ChildProcessHelper {
     this.process.kill();
   }
 
-  set onExit(newListener: (() => void)|undefined) {
+  set onExit(newListener: (() => void) | undefined) {
     this.exitListener = newListener;
   }
 
   set onStdout(newListener: ((data?: string | Buffer) => void) | undefined) {
     this.stdoutListener = newListener;
+  }
+
+  get isRunning(): boolean {
+    return this.running;
   }
 }
 
@@ -298,10 +314,10 @@ class Tun2socks extends ChildProcessHelper {
 
   async start(checkConnectivity: boolean) {
     // ./tun2socks.exe \
-    //   -tunName outline-tap0" \
+    //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
     //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
-    //   -proxyCipher chacha20-ietf-poly1035 -checkConnectivity
+    //   -proxyCipher chacha20-ietf-poly1035 [-checkConnectivity]
     const args: string[] = [];
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
@@ -318,30 +334,22 @@ class Tun2socks extends ChildProcessHelper {
     }
     this.launch(args);
 
-    const exitListener = this.exitListener;
-
-    // Declare success when tun2socks is running.
-    const running = new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      // Declare success when tun2socks is running.
       this.onStdout = (data?: string | Buffer) => {
         if (data && data.toString().includes('tun2socks running')) {
           this.onStdout = undefined;
-          this.onExit = exitListener;  // Restore previous exit listener
           resolve();
         }
       };
-    });
 
-    // Wait for an early exit due to connectvity failures.
-    const earlyExit = new Promise((resolve, reject) => {
+      // Wait for an early exit due to connectvity failures.
       this.onExit = (code?: number, signal?: string) => {
         console.log('tun2socks exited with code', code);
-        if (exitListener) {
-          exitListener();  // Execute previous exit listener
-        }
+        // code === 0 should not happen unless invoked with `-version`;
+        // treat it like an unexpected error.
         reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
       };
     });
-
-    return Promise.race([running, earlyExit]);
   }
 }
