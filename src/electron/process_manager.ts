@@ -71,34 +71,28 @@ function testTapDevice() {
 }
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child process
-// tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
-// anything about the others.
+// tun2socks. Follows the Mediator pattern in that none of the "helpers" know anything about
+// the others.
 //
-// In addition to the basic lifecycle of the three helper processes, this handles a few special
-// situations:
-//  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
-//  - silently restart tun2socks when the system resumes after suspend (Windows only)
+// In addition to the basic lifecycle of the helper processes, this class restarts tun2socks
+// on network changes to perform connectivity checks.
 export class ConnectionManager {
   private readonly routing: RoutingDaemon;
   private readonly tun2socks: Tun2socks;
 
-  // Extracted out to an instance variable because in certain situations, notably a change in UDP
-  // support, we need to stop and restart tun2socks *without notifying the client* and this allows
-  // us swap the listener in and out.
-  private tun2socksExitListener?: () => void;
-
-  // See #resumeListener.
-  private terminated = false;
-
   private readonly onAllHelpersStopped: Promise<void>;
-
   private reconnectingListener?: () => void;
-
   private reconnectedListener?: () => void;
 
   constructor(
     config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
-    this.tun2socks = new Tun2socks(config);
+    let tun2socksExitListener: (() => void) | undefined;
+    const onTun2socksExit = () => {
+      if (tun2socksExitListener) {
+        tun2socksExitListener();
+      }
+    };
+    this.tun2socks = new Tun2socks(config, onTun2socksExit);
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
     // These Promises, each tied to a helper process' exit, is key to the instance's
@@ -108,7 +102,7 @@ export class ConnectionManager {
     const exits = [
       this.routing.onceDisconnected,
       new Promise<void>((fulfill) => {
-        this.tun2socksExitListener = fulfill;
+        tun2socksExitListener = fulfill;
       })
     ];
     Promise.race(exits).then(() => {
@@ -117,15 +111,10 @@ export class ConnectionManager {
     });
     this.onAllHelpersStopped = Promise.all(exits).then(() => {
       console.log('all helpers have exited');
-      this.terminated = true;
     });
 
     // Handle network changes and, on Windows, suspend events.
     this.routing.onNetworkChange = this.networkChanged.bind(this);
-    if (isWindows) {
-      powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
-    }
   }
 
   // Fulfills once all three helpers have started successfully.
@@ -136,28 +125,16 @@ export class ConnectionManager {
 
     // Don't validate credentials on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
-    try {
-      await this.tun2socks.start(!this.isAutoConnect);
-    } catch (e) {
-      if (this.tun2socksExitListener) {
-        this.tun2socksExitListener();
-      }
-      throw e;
-    }
-    this.tun2socks.onExit = this.tun2socksExitListener;
+    await this.tun2socks.start(!this.isAutoConnect);
 
     await this.routing.start();
   }
 
   private async networkChanged(status: ConnectionStatus) {
     if (status === ConnectionStatus.CONNECTED) {
-      if (this.tun2socks.isRunning) {
-        // Test whether UDP availability has changed.
-        await this.restartTun2socks();
-      } else {
-        // Windows: the network was connected after the system resumed from suspend.
-        await this.tun2socks.start(true);
-      }
+      // (Re)start tun2socks to check for changes in UDP connectivity.
+      // Windows: following a system suspend/resume, this will start tun2socks.
+      await this.tun2socks.start(true);
 
       if (this.reconnectedListener) {
         this.reconnectedListener();
@@ -171,43 +148,8 @@ export class ConnectionManager {
     }
   }
 
-  private suspendListener() {
-    console.log('suspend listener invoked');
-    // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
-    // Swap out the current listener, restart once the system resumes.
-    this.tun2socks.onExit = () => {
-      console.log('tun2socks stopped as a result of system suspend');
-    };
-  }
-
-  private resumeListener() {
-    if (this.terminated) {
-      // NOTE: Cannot remove resume listeners - Electron bug?
-      console.error('resume event invoked but this connection is terminated - doing nothing');
-      return;
-    }
-    console.log('restoring tun2socks exit listener after resume');
-    this.tun2socks.onExit = this.tun2socksExitListener;
-  }
-
-  private async restartTun2socks() {
-    // Swap out the current listener, restart once the current process exits.
-    return new Promise(resolve => {
-      this.tun2socks.onExit = async () => {
-        console.log('restarting tun2socks');
-        this.tun2socks.onExit = this.tun2socksExitListener;
-        await this.tun2socks.start(true);
-        resolve();
-      };
-      this.tun2socks.stop();
-    });
-  }
-
   // Use #onceStopped to be notified when the connection terminates.
   stop() {
-    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
-    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
-
     try {
       this.routing.stop();
     } catch (e) {
@@ -253,7 +195,7 @@ class ChildProcessHelper {
 
   constructor(private path: string) {}
 
-  protected launch(args: string[]) {
+  launch(args: string[]) {
     this.process = spawn(this.path, args);
     this.running = true;
 
@@ -307,12 +249,87 @@ class ChildProcessHelper {
   }
 }
 
-class Tun2socks extends ChildProcessHelper {
-  constructor(private config: cordova.plugins.outline.ServerConfig) {
-    super(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
+// Class to manage the lifecycle of tun2socks. Silently restarts the process when
+// the system resumes after suspend (Windows only).
+class Tun2socks {
+  private process: ChildProcessHelper;
+
+  constructor(private config: cordova.plugins.outline.ServerConfig,
+              private exitListener?: () => void) {
+    this.process = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
   }
 
   async start(checkConnectivity: boolean) {
+    if (this.process.isRunning) {
+      return this.restart(checkConnectivity);
+    }
+
+    this.process.launch(this.getProcessArgs(checkConnectivity));
+
+    return new Promise((resolve, reject) => {
+      // Declare success when tun2socks is running.
+      this.process.onStdout = (data?: string | Buffer) => {
+        if (data && data.toString().includes('tun2socks running')) {
+          this.process.onStdout = undefined;
+          this.process.onExit = this.exitListener;
+          if (isWindows) {
+            powerMonitor.on('suspend', this.suspendListener.bind(this));
+            powerMonitor.on('resume', this.resumeListener.bind((this)));
+          }
+          resolve();
+        }
+      };
+
+      // Wait for an early exit due to connectvity failures.
+      this.process.onExit = (code?: number, signal?: string) => {
+        console.log('tun2socks exited with code', code);
+        if (this.exitListener) {
+          this.exitListener();
+        }
+        // code === 0 should not happen unless invoked with `-version`;
+        // treat it like an unexpected error.
+        reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
+      };
+    });
+  }
+
+  stop() {
+    if (isWindows) {
+      powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+      powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+    }
+    this.process.stop();
+  }
+
+  private async restart(checkConnectivity: boolean) {
+    // Swap out the current listener, restart once the current process exits.
+    return new Promise(resolve => {
+      this.process.onExit = async () => {
+        console.log('restarting tun2socks');
+        await this.start(checkConnectivity);
+        resolve();
+      };
+      this.stop();
+    });
+  }
+
+  private suspendListener() {
+    console.log('system suspending');
+    // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+    // Swap out the current listener, restart once the system resumes.
+    this.process.onExit = () => {
+      console.log('tun2socks stopped as a result of system suspend');
+    };
+    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+  }
+
+  private resumeListener() {
+    console.log('restoring tun2socks exit listener after resume');
+    this.process.onExit = this.exitListener;
+    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+  }
+
+  private getProcessArgs(checkConnectivity: boolean): string[] {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
@@ -332,24 +349,6 @@ class Tun2socks extends ChildProcessHelper {
     if (checkConnectivity) {
       args.push('-checkConnectivity');
     }
-    this.launch(args);
-
-    return new Promise((resolve, reject) => {
-      // Declare success when tun2socks is running.
-      this.onStdout = (data?: string | Buffer) => {
-        if (data && data.toString().includes('tun2socks running')) {
-          this.onStdout = undefined;
-          resolve();
-        }
-      };
-
-      // Wait for an early exit due to connectvity failures.
-      this.onExit = (code?: number, signal?: string) => {
-        console.log('tun2socks exited with code', code);
-        // code === 0 should not happen unless invoked with `-version`;
-        // treat it like an unexpected error.
-        reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
-      };
-    });
+    return args;
   }
 }
