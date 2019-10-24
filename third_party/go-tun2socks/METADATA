@@ -16,5 +16,5 @@ third_party {
     "outline-go-tun2socks consumes go-tun2socks in order to build libraries "
     "and binaries for Outline platforms."
     "Updated Apple clients to libraries built at commit bd58355, Android at "
-    "b5f5801, Electron at d9bc9f8 until the next release."
+    "b5f5801, Windows at d9bc9f8, Linux at e9f6e02 until a unified release."
 }
