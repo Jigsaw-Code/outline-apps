@@ -86,13 +86,7 @@ export class ConnectionManager {
 
   constructor(
     config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
-    let tun2socksExitListener: (() => void) | undefined;
-    const onTun2socksExit = () => {
-      if (tun2socksExitListener) {
-        tun2socksExitListener();
-      }
-    };
-    this.tun2socks = new Tun2socks(config, onTun2socksExit);
+    this.tun2socks = new Tun2socks(config);
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
     // These Promises, each tied to a helper process' exit, is key to the instance's
@@ -101,9 +95,7 @@ export class ConnectionManager {
     //  - once *all* helpers have stopped, we're done
     const exits = [
       this.routing.onceDisconnected,
-      new Promise<void>((fulfill) => {
-        tun2socksExitListener = fulfill;
-      })
+      this.tun2socks.onceStopped
     ];
     Promise.race(exits).then(() => {
       console.log('a helper has exited, disconnecting');
@@ -190,7 +182,10 @@ class ChildProcessHelper {
   private process?: ChildProcess;
   private running = false;
 
-  private exitListener?: (code?: number, signal?: string) => void;
+  private resolveExit!: (code?: number) => void;
+  private exited = new Promise<number>(resolve => {
+    this.resolveExit = resolve;
+  });
   private stdErrListener?: (data?: string | Buffer) => void;
 
   constructor(private path: string) {}
@@ -204,9 +199,11 @@ class ChildProcessHelper {
       if (this.process) {
         this.process.removeAllListeners();
       }
-      if (this.exitListener) {
-        this.exitListener(code, signal);
-      }
+      this.resolveExit(code);
+      // Recreate the exit promise to support re-launching.
+      this.exited = new Promise<number>(F => {
+        this.resolveExit = F;
+      });
     };
 
     const onStdErr = (data?: string | Buffer) => {
@@ -226,17 +223,16 @@ class ChildProcessHelper {
   stop() {
     if (!this.process) {
       // Never started.
-      if (this.exitListener) {
-        this.exitListener();
-      }
+      this.resolveExit();
       return;
     }
 
     this.process.kill();
+    this.process = undefined;
   }
 
-  set onExit(newListener: (() => void) | undefined) {
-    this.exitListener = newListener;
+  get onExit(): Promise<number> {
+    return this.exited;
   }
 
   set onStderr(newListener: ((data?: string | Buffer) => void) | undefined) {
@@ -252,14 +248,23 @@ class ChildProcessHelper {
 class Tun2socks {
   private process: ChildProcessHelper;
 
-  constructor(private config: cordova.plugins.outline.ServerConfig,
-              private exitListener?: () => void) {
+  private notifyStop = true;
+  private resolveStop!: () => void;
+  private readonly stopped = new Promise<void>(resolve => {
+    this.resolveStop = resolve;
+  });
+
+  constructor(private config: cordova.plugins.outline.ServerConfig) {
     this.process = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
   }
 
+  // Starts the tun2socks process. Restarts the process if it is already running.
   async start(checkConnectivity: boolean) {
     if (this.process.isRunning) {
-      return this.restart(checkConnectivity);
+      // Restart once the current process exits without notifying the exit.
+      this.stop(false);
+      await this.process.onExit;
+      console.log('restarting tun2socks');
     }
 
     this.process.launch(this.getProcessArgs(checkConnectivity));
@@ -269,60 +274,48 @@ class Tun2socks {
       this.process.onStderr = (data?: string | Buffer) => {
         if (data && data.toString().includes('tun2socks running')) {
           this.process.onStderr = undefined;
-          this.process.onExit = this.exitListener;
+          this.notifyStop = true;
           if (isWindows) {
             powerMonitor.once('suspend', this.suspendListener);
-            powerMonitor.once('resume', this.resumeListener.bind((this)));
           }
           resolve();
         }
       };
 
-      // Wait for an early exit due to connectvity failures.
-      this.process.onExit = (code?: number, signal?: string) => {
+      this.process.onExit.then((code?: number) => {
         console.log('tun2socks exited with code', code);
-        if (this.exitListener) {
-          this.exitListener();
+        if (!this.notifyStop) {
+          return;
         }
+        this.resolveStop();
+        // On routine exit, this promise will have already been resolved.
+        // Reject on early exit due to connectvity failures.
         // code === 0 should not happen unless invoked with `-version`;
         // treat it like an unexpected error.
         reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
-      };
+      });
     });
   }
 
-  stop() {
+  // Stops the tun2socks process. Notifies the caller when the process has exited
+  // by resolving `onceStopped` if `notify` is true.
+  stop(notify=true) {
     if (isWindows) {
       powerMonitor.removeListener('suspend', this.suspendListener);
-      powerMonitor.removeListener('resume', this.resumeListener);
     }
+    this.notifyStop = notify;
     this.process.stop();
   }
 
-  private async restart(checkConnectivity: boolean) {
-    // Swap out the current listener, restart once the current process exits.
-    return new Promise(resolve => {
-      this.process.onExit = async () => {
-        console.log('restarting tun2socks');
-        await this.start(checkConnectivity);
-        resolve();
-      };
-      this.stop();
-    });
+  get onceStopped(): Promise<void> {
+    return this.stopped;
   }
 
   private suspendListener = () => {
     console.log('system suspending');
     // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
-    // Swap out the current listener, restart once the system resumes.
-    this.process.onExit = () => {
-      console.log('tun2socks stopped as a result of system suspend');
-    };
-  }
-
-  private resumeListener = () => {
-    console.log('restoring tun2socks exit listener after resume');
-    this.process.onExit = this.exitListener;
+    // Preemptively stop the process without notifying its exit.
+    this.stop(false);
   }
 
   private getProcessArgs(checkConnectivity: boolean): string[] {
