@@ -190,8 +190,8 @@ class ChildProcessHelper {
   private process?: ChildProcess;
   private running = false;
 
-  protected exitListener?: (code?: number, signal?: string) => void;
-  protected stdoutListener?: (data?: string | Buffer) => void;
+  private exitListener?: (code?: number, signal?: string) => void;
+  private stdErrListener?: (data?: string | Buffer) => void;
 
   constructor(private path: string) {}
 
@@ -209,9 +209,9 @@ class ChildProcessHelper {
       }
     };
 
-    const onStdoutData = (data?: string | Buffer) => {
-      if (this.stdoutListener) {
-        this.stdoutListener(data);
+    const onStdErr = (data?: string | Buffer) => {
+      if (this.stdErrListener) {
+        this.stdErrListener(data);
       }
     };
 
@@ -219,8 +219,7 @@ class ChildProcessHelper {
     // case exit will not be invoked.
     this.process.on('error', onExit.bind((this)));
     this.process.on('exit', onExit.bind((this)));
-    this.process.stdout.on('data', onStdoutData.bind(this));
-    this.process.stderr.on('data', onStdoutData.bind(this));
+    this.process.stderr.on('data', onStdErr.bind(this));
   }
 
   // Use #onExit to be notified when the process exits.
@@ -240,8 +239,8 @@ class ChildProcessHelper {
     this.exitListener = newListener;
   }
 
-  set onStdout(newListener: ((data?: string | Buffer) => void) | undefined) {
-    this.stdoutListener = newListener;
+  set onStderr(newListener: ((data?: string | Buffer) => void) | undefined) {
+    this.stdErrListener = newListener;
   }
 
   get isRunning(): boolean {
@@ -249,8 +248,7 @@ class ChildProcessHelper {
   }
 }
 
-// Class to manage the lifecycle of tun2socks. Silently restarts the process when
-// the system resumes after suspend (Windows only).
+// Class to manage the lifecycle of tun2socks.
 class Tun2socks {
   private process: ChildProcessHelper;
 
@@ -268,13 +266,13 @@ class Tun2socks {
 
     return new Promise((resolve, reject) => {
       // Declare success when tun2socks is running.
-      this.process.onStdout = (data?: string | Buffer) => {
+      this.process.onStderr = (data?: string | Buffer) => {
         if (data && data.toString().includes('tun2socks running')) {
-          this.process.onStdout = undefined;
+          this.process.onStderr = undefined;
           this.process.onExit = this.exitListener;
           if (isWindows) {
-            powerMonitor.on('suspend', this.suspendListener.bind(this));
-            powerMonitor.on('resume', this.resumeListener.bind((this)));
+            powerMonitor.once('suspend', this.suspendListener);
+            powerMonitor.once('resume', this.resumeListener.bind((this)));
           }
           resolve();
         }
@@ -295,8 +293,8 @@ class Tun2socks {
 
   stop() {
     if (isWindows) {
-      powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
-      powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+      powerMonitor.removeListener('suspend', this.suspendListener);
+      powerMonitor.removeListener('resume', this.resumeListener);
     }
     this.process.stop();
   }
@@ -313,20 +311,18 @@ class Tun2socks {
     });
   }
 
-  private suspendListener() {
+  private suspendListener = () => {
     console.log('system suspending');
     // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
     // Swap out the current listener, restart once the system resumes.
     this.process.onExit = () => {
       console.log('tun2socks stopped as a result of system suspend');
     };
-    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
   }
 
-  private resumeListener() {
+  private resumeListener = () => {
     console.log('restoring tun2socks exit listener after resume');
     this.process.onExit = this.exitListener;
-    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
   }
 
   private getProcessArgs(checkConnectivity: boolean): string[] {
