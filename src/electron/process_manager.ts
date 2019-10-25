@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, execSync, spawn} from 'child_process';
+import {execSync} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
 import * as errors from '../www/model/errors';
 
+import {ChildProcessHelper} from './child_process';
+import {ShadowsocksConnectivity} from './connectivity';
 import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 
@@ -75,7 +77,7 @@ function testTapDevice() {
 // the others.
 //
 // In addition to the basic lifecycle of the helper processes, this class restarts tun2socks
-// on network changes to perform connectivity checks.
+// on network changes if necessary.
 export class ConnectionManager {
   private readonly routing: RoutingDaemon;
   private readonly tun2socks: Tun2socks;
@@ -89,7 +91,7 @@ export class ConnectionManager {
     this.tun2socks = new Tun2socks(config);
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
-    // These Promises, each tied to a helper process' exit, is key to the instance's
+    // These Promises, each tied to a helper process' exit, are key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
@@ -105,28 +107,30 @@ export class ConnectionManager {
       console.log('all helpers have exited');
     });
 
-    // Handle network changes and, on Windows, suspend events.
     this.routing.onNetworkChange = this.networkChanged.bind(this);
   }
 
-  // Fulfills once all three helpers have started successfully.
+  // Fulfills once the VPN has started successfully.
   async start() {
     if (isWindows) {
       testTapDevice();
     }
 
-    // Don't validate credentials on boot: if the key was revoked, we want the system to stay
-    // "connected" so that traffic doesn't leak.
+    // Don't perform connectivity checks on boot: if the key was revoked, we want the system
+    // to stay "connected" so that traffic doesn't leak.
     await this.tun2socks.start(!this.isAutoConnect);
-
     await this.routing.start();
   }
 
   private async networkChanged(status: ConnectionStatus) {
     if (status === ConnectionStatus.CONNECTED) {
-      // (Re)start tun2socks to check for changes in UDP connectivity.
-      // Windows: following a system suspend/resume, this will start tun2socks.
-      await this.tun2socks.start(true);
+      // Notify tun2socks about the network change so it can restart if UDP connectivity has changed.
+      try {
+        await this.tun2socks.networkChanged();
+      } catch (e) {
+        // Don't tear down the VPN in case this is a transient network error.
+        console.error(`Connectivity checks failed: ${e}`);
+      }
 
       if (this.reconnectedListener) {
         this.reconnectedListener();
@@ -172,81 +176,10 @@ export class ConnectionManager {
   }
 }
 
-// Simple "one shot" child process launcher.
-//
-// NOTE: Because there is no way in Node.js to tell whether a process launched successfully,
-//       #startInternal always succeeds; use #onExit to be notified when the process has exited
-//       (which may be immediately after calling #startInternal if, e.g. the binary cannot be
-//       found).
-class ChildProcessHelper {
-  private process?: ChildProcess;
-  private running = false;
-
-  private resolveExit!: (code?: number) => void;
-  private exited = new Promise<number>(resolve => {
-    this.resolveExit = resolve;
-  });
-  private stdErrListener?: (data?: string | Buffer) => void;
-
-  constructor(private path: string) {}
-
-  launch(args: string[]) {
-    this.process = spawn(this.path, args);
-    this.running = true;
-
-    const onExit = (code?: number, signal?: string) => {
-      this.running = false;
-      if (this.process) {
-        this.process.removeAllListeners();
-      }
-      this.resolveExit(code);
-      // Recreate the exit promise to support re-launching.
-      this.exited = new Promise<number>(F => {
-        this.resolveExit = F;
-      });
-    };
-
-    const onStdErr = (data?: string | Buffer) => {
-      if (this.stdErrListener) {
-        this.stdErrListener(data);
-      }
-    };
-
-    // We have to listen for both events: error means the process could not be launched and in that
-    // case exit will not be invoked.
-    this.process.on('error', onExit.bind((this)));
-    this.process.on('exit', onExit.bind((this)));
-    this.process.stderr.on('data', onStdErr.bind(this));
-  }
-
-  // Use #onExit to be notified when the process exits.
-  stop() {
-    if (!this.process) {
-      // Never started.
-      this.resolveExit();
-      return;
-    }
-
-    this.process.kill();
-    this.process = undefined;
-  }
-
-  get onExit(): Promise<number> {
-    return this.exited;
-  }
-
-  set onStderr(newListener: ((data?: string | Buffer) => void) | undefined) {
-    this.stdErrListener = newListener;
-  }
-
-  get isRunning(): boolean {
-    return this.running;
-  }
-}
-
 // Class to manage the lifecycle of tun2socks.
 class Tun2socks {
   private process: ChildProcessHelper;
+  private isUdpEnabled = false;
 
   private notifyStop = true;
   private resolveStop!: () => void;
@@ -259,7 +192,17 @@ class Tun2socks {
   }
 
   // Starts the tun2socks process. Restarts the process if it is already running.
+  // Checks the server's connectivity when `checkConnectivity` is true, throwing on failure.
   async start(checkConnectivity: boolean) {
+    if (checkConnectivity) {
+      try {
+        this.isUdpEnabled = await this.checkConnectivity();
+      } catch (e) {
+        this.resolveStop();
+        throw e;
+      }
+    }
+
     if (this.process.isRunning) {
       // Restart once the current process exits without notifying the exit.
       this.stop(false);
@@ -267,7 +210,7 @@ class Tun2socks {
       console.log('restarting tun2socks');
     }
 
-    this.process.launch(this.getProcessArgs(checkConnectivity));
+    this.process.launch(this.getProcessArgs());
 
     return new Promise((resolve, reject) => {
       // Declare success when tun2socks is running.
@@ -277,21 +220,19 @@ class Tun2socks {
           this.notifyStop = true;
           if (isWindows) {
             powerMonitor.once('suspend', this.suspendListener);
+            powerMonitor.once('resume', this.resumeListener);
           }
           resolve();
         }
       };
 
+      // Reject on early exit. On routine exit, the promise will be already resolved.
       this.process.onExit.then((code?: number) => {
         console.log('tun2socks exited with code', code);
         if (!this.notifyStop) {
           return;
         }
         this.resolveStop();
-        // On routine exit, this promise will have already been resolved.
-        // Reject on early exit due to connectvity failures.
-        // code === 0 should not happen unless invoked with `-version`;
-        // treat it like an unexpected error.
         reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
       });
     });
@@ -302,6 +243,7 @@ class Tun2socks {
   stop(notify=true) {
     if (isWindows) {
       powerMonitor.removeListener('suspend', this.suspendListener);
+      powerMonitor.removeListener('resume', this.resumeListener);
     }
     this.notifyStop = notify;
     this.process.stop();
@@ -311,19 +253,39 @@ class Tun2socks {
     return this.stopped;
   }
 
+  // Notifes tun2socks that network connectivity changed. Checks whehter UDP support changed,
+  // restarting if it did.
+  async networkChanged() {
+    if (this.isUdpEnabled === await this.checkConnectivity()) {
+      return;
+    }
+    this.isUdpEnabled = !this.isUdpEnabled;
+    return this.start(false);
+  }
+
+  private async checkConnectivity() {
+    return (new ShadowsocksConnectivity(this.config)).onceResult;
+  }
+
   private suspendListener = () => {
     console.log('system suspending');
     // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
-    // Preemptively stop the process without notifying its exit.
-    this.stop(false);
+    // Don't notify this exit.
+    this.notifyStop = false;
   }
 
-  private getProcessArgs(checkConnectivity: boolean): string[] {
+  private resumeListener = () => {
+    console.log('system resuming');
+    // Windows: restart tun2socks after suspend; don't check connectivity.
+    this.start(false);
+  }
+
+  private getProcessArgs(): string[] {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
     //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
-    //   -proxyCipher chacha20-ietf-poly1035 [-checkConnectivity]
+    //   -proxyCipher chacha20-ietf-poly1035 [-dnsFallback]
     const args: string[] = [];
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
@@ -335,8 +297,8 @@ class Tun2socks {
     args.push('-proxyPassword', this.config.password || '');
     args.push('-proxyCipher', this.config.method || '');
     args.push('-logLevel', 'info');
-    if (checkConnectivity) {
-      args.push('-checkConnectivity');
+    if (!this.isUdpEnabled) {
+      args.push('-dnsFallback');
     }
     return args;
   }
