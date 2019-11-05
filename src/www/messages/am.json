@@ -1,448 +1,86 @@
 {
-  "close": {
-    "message": "ዝጋ",
-    "description": "The text for a button to close the current page or dialog."
-  },
-  "servers_page_title": {
-    "message": "አውትላይን ",
-    "description": "The title of the main page of the application, showing the application's title (Outline). Outline is the product name and can be found in the translation glossary."
-  },
-  "servers_menu_item": {
-    "message": "አገልጋዮች ",
-    "description": "The menu item text to navigate to the list of servers."
-  },
-  "feedback_page_title": {
-    "message": "ግብረ-መልስ አስገባ",
-    "description": "The menu item text and title of a page for a user to send feedback to the app’s developers."
-  },
-  "help_page_title": {
-    "message": "እርዳታ",
-    "description": "The menu item text to navigate to the help section of the app."
-  },
-  "about_page_title": {
-    "message": "ስለ",
-    "description": "The title of a page giving details about the app."
-  },
-  "licenses_page_title": {
-    "message": "ፍቃድ",
-    "description": "The menu item text to navigate to the page showing all the software licenses used in building the app."
-  },
-  "quit": {
-    "message": "ጨርስ",
-    "description": "The text for a button that quits (closes) the application."
-  },
-  "feedback_general": {
-    "message": "ጠቅላላ ግብረ-መልስ ",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is general feedback, not related to performance or connection issues."
-  },
-  "feedback_no_server": {
-    "message": "አገልጋይ የለውም ",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not having a server to connect."
-  },
-  "feedback_connection": {
-    "message": "አገልጋየ (ሰርቨሬ) ጋር ማገናኘት አልቻልኩም ",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to problems connecting to a server."
-  },
-  "feedback_cannot_add_server": {
-    "message": "አገልጋዩን (ሰርቨሩን) መጨመር አይችልም",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not being able to import a server into the application."
-  },
-  "feedback_performance": {
-    "message": "Outline (አውትላይን) ዝግተኛ ነው ",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for performance feedback, for example, the speed of connection."
-  },
-  "feedback_suggestion": {
-    "message": "አስተያየቶች ",
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for suggestions, for example, feature requests."
-  },
-  "feedback_input": {
-    "message": "ያንተ ግብረ-መልስ ",
-    "description": "The hint text for a textbox in which the user can type their feedback for the app developers."
-  },
-  "email_feedback_input": {
-    "message": "ኢሜይል አድራሻ (አማራጭ)",
-    "description": "The hint text for a textbox for the user's email address when sending feedback. The email address is not a required field in the form."
-  },
-  "feedback_language_disclaimer": {
-    "message": "እባክዎትን ልብ ይበሉ ቡድናችን በእንግሊዝኛ ለተሰጠ ግብረ-መልስ ብቻ ነው ምላሽ መስጠት የሚችለው፡፡",
-    "description": "Text displayed below a feedback form explaining that the support team can only respond to feedback in English."
-  },
-  "feedback_privacy": {
-    "message": "ግብረ-መልስህ ኢሜይል አድራሻህ (የገባ ከሆነ) እና ተጨማሪ መረጃዎች ወደ  $START_OF_LINK$Data Collection Policy$END_OF_LINK$ will be sent to the Outline ይላካሉ። እበኮዎትን በግብረ-መልሶ ላይ የግል መረጃዎን አታስገቡ፡፡ ",
-    "description": "Text appearing above a feedback form explaining the feedback process. Includes a link to the Data Collection Policy as marked by the start and end of link. Outline is the product name and can be found in the translation glossary.",
-    "placeholders": {
-      "END_OF_LINK": {
-        "content": "{privacyPolicyLinkClose}"
-      },
-      "START_OF_LINK": {
-        "content": "{privacyPolicyLinkOpen}"
-      }
-    }
-  },
-  "feedback_thanks": {
-    "message": "እንድናሻሽል ስለረዳሀን አናመሰግናለን፡፡ ሌሎች ሀሳቦች ከላችሁ ለመስማት ዝግጁ ነን፡።",
-    "description": "A message saying thank you after submitting user feedback."
-  },
-  "submit": {
-    "message": "አስገባ",
-    "description": "The text of a button to submit a form."
-  },
-  "submitting": {
-    "message": "በማስገባት ላይ ነው...",
-    "description": "Status text showing that a form is progress of being submitted."
-  },
-  "about_outline": {
-    "message": "አውትላይን ክፍት የሆነ ፐሮጀክት ሲሆን በ$JIGSAW$የተፈጠረና አላማውም ለዜና ተቛማትና ለጋዜጠኞች ደህንነቱ የጠበቀ የኢንተርኔት አገልግሎት ማቅረብ ነው፡፡ $NEW_LINE$$NEW_LINE$አውትላይን በ$SHADOWSOCKS$ድጋፍ የተደገበት ሲሆን አሁንም ገና እየጀመረ ያለና እርሶም ለኮዱ በ$GITHUB$ማበርከት ይችላሉ፡፡ እና በ$REDDIT$እና$MEDIUM$ከተከተላችሁን አዳዲስ ለውጦችና ማስፋፊያዎችና ፕላትፎርሞችን ማግኘት ትችላላችሁ፡፡ ",
-    "description": "The contents of the About page of the app. Outline is the product name and can be found in the translation glossary.",
-    "placeholders": {
-      "GITHUB": {
-        "content": "<a href={gitHubUrl}>GitHub</a>"
-      },
-      "JIGSAW": {
-        "content": "<a href={jigsawUrl}>Jigsaw</a>"
-      },
-      "MEDIUM": {
-        "content": "<a href={mediumUrl}>Medium</a>"
-      },
-      "NEW_LINE": {
-        "content": "<br>"
-      },
-      "REDDIT": {
-        "content": "<a href={redditUrl}>Reddit</a>"
-      },
-      "SHADOWSOCKS": {
-        "content": "<a href={shadowsocksUrl}>Shadowsocks</a>"
-      }
-    }
-  },
-  "learn_more": {
-    "message": "ተጨማሪ ለማወቅ",
-    "description": "A text button below a message about the application's data collection policies that takes the user to a webpage with more details and information."
-  },
-  "privacy": {
-    "message": "ግለኝነት ",
-    "description": "The text for a main menu item for the privacy policy and information."
-  },
-  "terms": {
-    "message": "ጊዜ",
-    "description": "The text for a main menu item that takes the user to the applications Terms of Service."
-  },
-  "version": {
-    "message": "ቅጂ$APP_VERSION$",
-    "description": "A line of text on the About page of the application showing the version of the application the user is using.",
-    "placeholders": {
-      "APP_VERSION": {
-        "content": "{appVersion}",
-        "example": "1.0.2"
-      }
-    }
-  },
-  "data_collection": {
-    "message": "የዳታ ስብስብ ",
-    "description": "The text for a main menu item that takes the user to a webpage explaining the application's data collection policies."
-  },
-  "connect_button_label": {
-    "message": "አገናኝ",
-    "description": "A text button on a particular server to connect to that server"
-  },
-  "disconnect_button_label": {
-    "message": "አታገናኝ(አቋርጥ)",
-    "description": "A text button on a particular server to disconnect from that server."
-  },
-  "undo_button_label": {
-    "message": "ቀልብስ",
-    "description": "A text button in a toast that appears after a server has been forgotten (no longer saved for use by the application)"
-  },
-  "connected_server_state": {
-    "message": "ተገናኝቷል",
-    "description": "A status message on a particular server that indicates the server is currently connected and in use."
-  },
-  "connecting_server_state": {
-    "message": "በማገናኘት ላይ...",
-    "description": "A status message on a particular server that indicates the application is currently trying to connect to the labeled server."
-  },
-  "disconnected_server_state": {
-    "message": "ተቋርጧል",
-    "description": "A status message on a particular server that indicates the server is not connected."
-  },
-  "disconnecting_server_state": {
-    "message": "በማቋረጥ ላይ....",
-    "description": "A status message on a particular server that indicates the application is in the process of disconnecting from the labeled server."
-  },
-  "reconnecting_server_state": {
-    "message": "ዳግም በማገናኘት ላይ...",
-    "description": "A status message on a particular that indicates the application is in the process of reestablishing a connection with the labeled server."
-  },
-  "unreachable_server_state": {
-    "message": "ማግኘት አልተቻለም",
-    "description": "A status message on a particular server that indicates the server cannot be connected at all."
-  },
-  "server_add": {
-    "message": "አገልጋይ ጨምር",
-    "description": "Text button for the user to add the access information another server to the application."
-  },
-  "server_add_instructions": {
-    "message": "ሰርቨር ለመጨመር አክሰስ ቁልፉን ኮፒ አድርገው ፔስት ያድርጉ ",
-    "description": "Instructions on the page explaining how to add a new server to the application's list of servers."
-  },
-  "server_access_key_detected": {
-    "message": "አክሰስ ቂልፉ ተለይቷል ",
-    "description": "A message indicating the application has detected a valid access key to be used to connect to a server."
-  },
-  "server_add_access_key": {
-    "message": "አክሰስ ቁልፉን ጨምር ",
-    "description": "The title of the form to add a new server to the application by using a special access key."
-  },
-  "server_add_ignore": {
-    "message": "እለፍ",
-    "description": "A text button to ignore the valid access key that the application detected."
-  },
-  "server_add_invalid": {
-    "message": "$START_LINE$ የማይሰራ የአገልግሎት ቁልፍ። $END_LINE$ትክክለኛ የአገልግሎት ቁልፍ ያስገቡ $SS_PROTOCOL$አገልጋይ ለመጨመር። ",
-    "description": "An error message that indicates the provided access key does not follow the correct format which should begin with ss://. The first part appears on a line by itself.",
-    "placeholders": {
-      "END_LINE": {
-        "content": "{closeLine}"
-      },
-      "START_LINE": {
-        "content": "{openLine}"
-      },
-      "SS_PROTOCOL": {
-        "content": "ss://",
-        "example": "ss://"
-      }
-    }
-  },
-  "server_default_name": {
-    "message": "ፕሮክሲ ሰርቨር",
-    "description": "This is the default name for an added server when the type or name is not specified by the access key."
-  },
-  "server_default_name_outline": {
-    "message": "አውትላይ አገልጋይ",
-    "description": "The default name for a server when adding a new server to the application. Outline is the product name and can be found in the translation glossary."
-  },
-  "server_detected": {
-    "message": "እባክዎን ይሄንን አገልጋይ ለመጨመር መፈለግዎን ያረጋግጡ",
-    "description": "A message to confirm that the user wants to add the given server as a new connection."
-  },
-  "server_access_key_label": {
-    "message": "$SS_PROTOCOL$ መድረሻ-ቁልፍ ",
-    "description": "This is the hint text in a textbox that gives a fake example access key (ss://access-key) so the user knows what to paste there.",
-    "placeholders": {
-      "SS_PROTOCOL": {
-        "content": "ss://",
-        "example": "ss://"
-      }
-    }
-  },
-  "server_create_your_own": {
-    "message": "የአገልግሎት ቁልፍ የለዎትም? $NEW_LINE$የራስዎን ይፈጠሩ $START_OF_LINK$በኛ ድረገፅ ላይ $END_OF_LINK$።",
-    "description": "A message shown at the bottom of the application when there have been no servers added yet.",
-    "placeholders": {
-      "END_OF_LINK": {
-        "content": "{closeLink}"
-      },
-      "NEW_LINE": {
-        "content": "<br>"
-      },
-      "START_OF_LINK": {
-        "content": "{openLink}"
-      }
-    }
-  },
-  "server_added": {
-    "message": "የተጨመረ አገልጋይ '1 $SERVER_NAME$\"!",
-    "description": "The success message shown in a toast after the user adds a particular server.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "server_connected": {
-    "message": "የተገናኘ $SERVER_NAME$",
-    "description": "The success message shown in a toast after requesting a connection to a particular server.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "server_disconnected": {
-    "message": "ከ                    የተለያየ $SERVER_NAME$",
-    "description": "The status message shown in a toast after disconnecting from a given server.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "server_forget": {
-    "message": "እርሳ",
-    "description": "The text of an option displayed in a server card's options menu to tell the application to no longer display the server."
-  },
-  "server_rename": {
-    "message": "ዳግም ሰይም",
-    "description": "The text of an option displayed in a server card's options menu to tell the application to display a different name for the server."
-  },
-  "server_rename_complete": {
-    "message": "ድጋሚ የተሰየመ አገልጋይ",
-    "description": "The success message after renaming a server in the application."
-  },
-  "server_forgotten": {
-    "message": "አገልጋዩን ይርሱት “$SERVER_NAME$”.",
-    "description": "The success text displayed in a toast message after clicking Forget on a server, meaning the application will no longer show it as an option.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "server_forgotten_undo": {
-    "message": "አገልጋይ $SERVER_NAME$ ተመልሷል።",
-    "description": "A message shown in a toast when the user clicks Forget for a server to remove it from the application but then clicks Undo to undo that action.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "server_add_zero_state_instructions": {
-    "message": "አገልጋይ ለመጨመር ክሊክ አርግ",
-    "description": "When the user has not yet added a server to the application, the main page shows this message."
-  },
-  "server_create_your_own_zero_state": {
-    "message": "አገልጋይ የለህም? $NEW_LINE$የራስዎን ይፍጠሩ በ $START_OF_LINK$እኛ ድረገፅ ላይ $END_OF_LINK$።",
-    "description": "When the user has not yet added a server to the application, the main page shows this message at the bottom.",
-    "placeholders": {
-      "END_OF_LINK": {
-        "content": "{closeLink}"
-      },
-      "NEW_LINE": {
-        "content": "<br>"
-      },
-      "START_OF_LINK": {
-        "content": "{openLink}"
-      }
-    }
-  },
-  "error_unexpected": {
-    "message": "ይቅርታ፤ የልተጠበቀ ብልሽት ተፈጥሯል። ማቆምና ድጋሚ መጀመር ልረዳ ይችላል። ድጋሚ ብልሽት ከተፈጠረ እባክዎን ግብረመልስ ይላኩ።",
-    "description": "An error message shown when the cause is not really known."
-  },
-  "error_timeout": {
-    "message": "ከተጠበቀው ጊዜ በላይ ጊዜ እየወሰደ ይመስላል። ማቆምና ድጋሚ ማስጀመር ልረዳ ይችላል። ችግሩ ካልተፈታ እባክዎ ግብረመልስ ይላኩ። ",
-    "description": "An error message shown when connections are taking too long."
-  },
-  "error_invalid_access_key": {
-    "message": "የማይሰራ የአገልግሎት ቁልፍ ነው። እባክዎን ድጋሚ ይሞክሩ፣ ወይም ለእርዳታ ግብረመልስ ያስገቡ።",
-    "description": "An error message that indicates the access key provided is not correct."
-  },
-  "error_server_incompatible": {
-    "message": "ይቅርታ፣ ይህ የአገልግሎት ቁልፍ አሁን ካለው አውት ላይን ጋር አብሮ የሚሄድ አይደለም።",
-    "description": "Error message shown when the provided access key isn't compatible the user's version of the application. Outline is the product name and can be found in the translation glossary."
-  },
-  "error_server_already_added": {
-    "message": "አግልጋይ $SERVER_NAME$ተጨምሯል።",
-    "description": "An error message shown when the user is attempting to add the same server twice.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
-  },
-  "error_feedback_submission": {
-    "message": "ይቅርታ፣ ግብረመልስዎ አልተላከም። እባክዎ ኢንተርኔትዎን መስራቱን ያረግግጡና ድጋሚ ይሞክሩ።",
-    "description": "An error message shown when the user is trying to send feedback to the application developers but it is failing."
-  },
-  "outline_plugin_error_vpn_permission_not_granted": {
-    "message": "ቪፒኤን ዎን ከአገልጋዩ ጋር ለማገናኘት አውትላይን ፍቃድዎት ያስፈልገዋል። እባክዎ ድጋሚ ይሞክሩ ወይም ለእርዳታ ግብረመልስ ያስገቡ።",
-    "description": "An error message shown when the application does not have the proper operating system permission to create a VPN connection. Outline is the product name and can be found in the translation glossary."
-  },
-  "outline_plugin_error_invalid_server_credentials": {
-    "message": "የአገልግሎት ቁልፎው የሚሰራ አይመስልም። ይህ ድጋሚ የሚፈጠር ከሆነ እባክዎ ለእርዳታ ግብረመልስ ይላኩ። ",
-    "description": "An error message when the user is trying to connect but has provided an invalid connection key."
-  },
-  "outline_plugin_error_udp_forwarding_not_enabled": {
-    "message": "አገልጋዩ የUDP ማስተላለፍ ያካተተ አይመስልም። ይህ ድጋሚ የሚፈጠር ከሆነ እባክዎ የአገልጋይ አስተዳዳሪውን አግኙ።",
-    "description": "An error message shown when the application tries to connect to a server that does not have the correct UDP forwarding configuration."
-  },
-  "outline_plugin_error_server_unreachable": {
-    "message": "ከአገልጋዩ ጋር ማገናኘት የቻልን አይመስልም። እባክዎ ከኢንተርኔት ጋር እንደተገናኙ ያረጋግጡና ድጋሚ ይሞክሩ። ",
-    "description": "An error message shown when the user tries to connect to a server that cannot be reached for some reason."
-  },
-  "outline_plugin_error_admin_permissions": {
-    "message": "አውትላይን እንዲሰራ የአስተዳዳሪነት ፍቃድ ያስፈልገዋል። የአስተዳዳሪነት ስልጣን ከሌሎት ዊንዶውስ ኮምፒውተሮን አጥፍተው ያስጀምሩና የሲስተም አስተዳዳሪውን ፍቃድ ይጠይቁ። ",
-    "description": "An error message when the application is not granted administrator permissions."
-  },
-  "outline_plugin_error_routing_tables": {
-    "message": "የራውቲንግ ሰንጠረዡን ማስተካከል አልተሳካልንም። የህ ድጋሚ የሚፈጠር ከሆነ እባክዎ አግኙን።",
-    "description": "An error message when the application is not able to configure the system for proxying. A button is shown alongside this message to submit feedback."
-  },
-  "outline_plugin_error_antivirus": {
-    "message": "የጫኑት የኮምፒውተር ፀረ ቫይረስ ሶፍትዌር ግንኙነት በተሳካ ሁኔታ እንዳናካሂድ እየከለከለን ይመስላል። ",
-    "description": "An error message when the application encounters antivirus software that prevents it from connecting."
-  },
-  "outline_plugin_error_unsupported_routing_table": {
-    "message":   "ሌላ ቪፒኤን እየሰራ ይመስላል። እባክዎ ግንኙነቱን አቋርጡና ድጋሚ ይሞክሩ። ",
-    "description": "An error message when the application fails to connect due to another active VPN."
-  },
-  "fix_this": {
-    "message": "አስተካክል። ",
-    "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article."
-  },
-  "tips": {
-    "message": "ጠቋሚ ምክር",
-    "description": "A text button in a dialog box to get helpful information about the topic."
-  },
-  "auto_connect_dialog_title": {
-    "message": "ሁሌም ጥንቃቄ የተጠበቀ ይሁን።",
-    "description": "The title of a message to the user that tells them Outline will keep connected unless explicitly told to disconnect. Outline is the product name and can be found in the translation glossary."
-  },
-  "auto_connect_dialog_detail": {
-    "message": "ከአውትላይን አገልጋይ ጋር እስካልተለያዩ ድረስ፣ ማሽኖን ድጋሚ ሲያስጀምሩ አውቶማቲካሊ ይገናኛል። ",
-    "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary."
-  },
-  "non_system_vpn_warning_title": {
-    "message": "የማሰሻውን ግንኙነት ያረጋግጡ።",
-    "description": "Title of a dialog that advises the user to check their internet browser's VPN connection."
-  },
-  "non_system_vpn_warning_detail": {
-    "message": "ብዙ ማሰሻዎች አውቶማቲካሊ ይገናኛሉ፣ አንዳንዶቹ አይገናኙም። ",
-    "description": "Further explanation message that the user needs to verify that their browser is connected through Outline. Outline is the product name and can be found in the translation glossary."
-  },
-  "get_help": {
-    "message": "እርዳታ አግኝ",
-    "description": "Text button in a dialog box to get an in-depth explanation of the topic being communicated."
-  },
-  "got_it": {
-    "message": "ገግኝቻለሁ",
-    "description": "Button text for the user to confirm they understand the message of a dialog box."
-  },
-  "save": {
-    "message": "አስቀምጥ",
-    "description": "The text on a button to save application settings."
-  },
-  "cancel": {
-    "message": "ሰርዝ",
-    "description": "The text on a button to cancel the current operation."
-  },
-  "update_downloaded": {
-    "message": "የተሻሻለ አውትላይን ወርዷል። አውትላይኖን ድጋሚ ስያስጀምሩ ይጫናል።",
-    "description": "A message shown to the user to notify them about a new downloaded version. Outline is the product name and can be found in the translation glossary."
-  },
-  "privacy_title": {
-    "message": "አውትላይን ግላዊ መረጃዎትን አየሰበስብም። ",
-    "description": "The title of a information page about user privacy. Outline is the product name and can be found in the translation glossary."
-  },
-  "privacy_text": {
-    "message": "ጥቂት ሙያዊ መረጃዎች ተልከዋል ግብረመልስ ልከው ከሆነ፣ የመተግበሪያ ብልሽት ካለ ወይም የአገልጋ አስተዳዳሪ የማይተዋግ አገልጋይ የዳታ መጠቀሚያ ሼር ካረገ። ",
-    "description": "An explanation on the privacy page about when information would be sent to the application developers."
-  }
+  "about-outline": "Outline (አውትላይን) ክፍት የሆነ ፐሮጀክት ሲሆን በ <a href={jigsawUrl}>Jigsaw</a> የተፈጠረና አላማውም ለዜና ተቛማትና ለጋዜጠኞች ደህንነቱ የጠበቀ የኢንተርኔት አገልግሎት ማቅረብ ነው፡፡ <br><br> Outline (አውትላይን) በ <a href={shadowsocksUrl}>Shadowsocks</a>ድጋፍ የተደገበት ሲሆን አሁንም ገና እየጀመረ ያለና እርሶም ለኮዱ በ <a href={gitHubUrl}>GitHub</a>ማበርከት ይችላሉ፡፡ እና በ <a href={redditUrl}>Reddit</a> እና <a href={mediumUrl}>Medium</a>ከተከተላችሁን አዳዲስ ለውጦችና ማስፋፊያዎችና ፕላትፎርሞችን ማግኘት ትችላላችሁ፡፡ ",
+  "about-page-title": "ስለ",
+  "auto-connect-dialog-detail": "ከ Outline (አውትላይን) አገልጋይ ጋር እስካልተለያዩ ድረስ፣ ማሽኖን ድጋሚ ሲያስጀምሩ አውቶማቲካሊ ይገናኛል። ",
+  "auto-connect-dialog-title": "ሁሌም ጥንቃቄ የተጠበቀ ይሁን።",
+  "cancel": "ሰርዝ",
+  "close": "ዝጋ",
+  "connect-button-label": "አገናኝ",
+  "connected-server-state": "ተገናኝቷል",
+  "connecting-server-state": "በማገናኘት ላይ...",
+  "data-collection": "የዳታ ስብስብ ",
+  "disconnect-button-label": "አታገናኝ (አቋርጥ)",
+  "disconnected-server-state": "ተቋርጧል",
+  "disconnecting-server-state": "በማቋረጥ ላይ...",
+  "email-feedback-input": "ኢሜይል አድራሻ (አማራጭ)",
+  "error-feedback-submission": "ይቅርታ፣ ግብረመልስዎ አልተላከም። እባክዎ ኢንተርኔትዎን መስራቱን ያረግግጡና ድጋሚ ይሞክሩ።",
+  "error-invalid-access-key": "የማይሰራ የአገልግሎት ቁልፍ ነው። እባክዎን ድጋሚ ይሞክሩ፣ ወይም ለእርዳታ ግብረመልስ ያስገቡ።",
+  "error-server-already-added": "አግልጋይ \"{serverName}\" ተጨምሯል።",
+  "error-server-incompatible": "ይቅርታ፣ ይህ የአገልግሎት ቁልፍ አሁን ካለው አውት ላይን ጋር አብሮ የሚሄድ አይደለም።",
+  "error-timeout": "ከተጠበቀው ጊዜ በላይ ጊዜ እየወሰደ ይመስላል። ማቆምና ድጋሚ ማስጀመር ልረዳ ይችላል። ችግሩ ካልተፈታ እባክዎ ግብረመልስ ይላኩ። ",
+  "error-unexpected": "ይቅርታ፤ የልተጠበቀ ብልሽት ተፈጥሯል። ማቆምና ድጋሚ መጀመር ልረዳ ይችላል። ድጋሚ ብልሽት ከተፈጠረ እባክዎን ግብረመልስ ይላኩ።",
+  "feedback-cannot-add-server": "አገልጋዩን (ሰርቨሩን) መጨመር አይችልም",
+  "feedback-connection": "አገልጋየ (ሰርቨሬ) ጋር ማገናኘት አልቻልኩም ",
+  "feedback-general": "ጠቅላላ ግብረ-መልስ ",
+  "feedback-input": "ያንተ ግብረ-መልስ ",
+  "feedback-language-disclaimer": "እባክዎትን ልብ ይበሉ ቡድናችን በእንግሊዝኛ ለተሰጠ ግብረ-መልስ ብቻ ነው ምላሽ መስጠት የሚችለው፡፡",
+  "feedback-no-server": "አገልጋይ የለውም ",
+  "feedback-page-title": "ግብረ-መልስ አስገባ",
+  "feedback-performance": "Outline (አውትላይን) ዝግተኛ ነው ",
+  "feedback-privacy": "ግብረ-መልስህ ኢሜይል አድራሻህ (የገባ ከሆነ) እና ተጨማሪ መረጃዎች ወደ {privacyPolicyLinkOpen} የመረጃ አሰባሰብ ፖሊሲ {privacyPolicyLinkClose} ውስጥ የተጠቀሰው ተጨማሪ መረጃ ወደ Outline (አውትላይን) ቡድን ይላካሉ። እበኮዎትን በግብረ-መልሶ ላይ የግል መረጃዎን አታስገቡ፡፡",
+  "feedback-suggestion": "አስተያየቶች ",
+  "feedback-thanks": "እንድናሻሽል ስለረዳሀን አናመሰግናለን፡፡ ሌሎች ሀሳቦች ከላችሁ ለመስማት ዝግጁ ነን፡።",
+  "fix-this": "አስተካክል። ",
+  "get-help": "እርዳታ አግኝ",
+  "got-it": "ገግኝቻለሁ",
+  "help-page-title": "እርዳታ",
+  "learn-more": "ተጨማሪ ለማወቅ",
+  "licenses-page-title": "ፍቃድ",
+  "non-system-vpn-warning-detail": "ብዙ ማሰሻዎች አውቶማቲካሊ ይገናኛሉ፣ አንዳንዶቹ አይገናኙም። ",
+  "non-system-vpn-warning-title": "የማሰሻውን ግንኙነት ያረጋግጡ።",
+  "outline-plugin-error-admin-permissions": "Outline (አውትላይን) እንዲሰራ የአስተዳዳሪነት ፍቃድ ያስፈልገዋል። የአስተዳዳሪነት ስልጣን ከሌሎት ዊንዶውስ ኮምፒውተሮን አጥፍተው ያስጀምሩና የሲስተም አስተዳዳሪውን ፍቃድ ይጠይቁ። ",
+  "outline-plugin-error-antivirus": "የጫኑት የኮምፒውተር ፀረ ቫይረስ ሶፍትዌር ግንኙነት በተሳካ ሁኔታ እንዳናካሂድ እየከለከለን ይመስላል። ",
+  "outline-plugin-error-invalid-server-credentials": "የአገልግሎት ቁልፎው የሚሰራ አይመስልም። ይህ ድጋሚ የሚፈጠር ከሆነ እባክዎ ለእርዳታ ግብረመልስ ይላኩ። ",
+  "outline-plugin-error-routing-tables": "የራውቲንግ ሰንጠረዡን ማስተካከል አልተሳካልንም። የህ ድጋሚ የሚፈጠር ከሆነ እባክዎ አግኙን።",
+  "outline-plugin-error-server-unreachable": "ከአገልጋዩ ጋር ማገናኘት የቻልን አይመስልም። እባክዎ ከኢንተርኔት ጋር እንደተገናኙ ያረጋግጡና ድጋሚ ይሞክሩ። ",
+  "outline-plugin-error-udp-forwarding-not-enabled": "አገልጋዩ የUDP ማስተላለፍ ያካተተ አይመስልም። ይህ ድጋሚ የሚፈጠር ከሆነ እባክዎ የአገልጋይ አስተዳዳሪውን አግኙ።",
+  "outline-plugin-error-unsupported-routing-table": "ሌላ ቪፒኤን እየሰራ ይመስላል። እባክዎ ግንኙነቱን አቋርጡና ድጋሚ ይሞክሩ። ",
+  "outline-plugin-error-vpn-permission-not-granted": "ቪፒኤን ዎን ከአገልጋዩ ጋር ለማገናኘት Outline (አውትላይን) ፍቃድዎት ያስፈልገዋል። እባክዎ ድጋሚ ይሞክሩ ወይም ለእርዳታ ግብረመልስ ያስገቡ።",
+  "privacy": "ግለኝነት ",
+  "privacy-text": "ጥቂት ሙያዊ መረጃዎች ተልከዋል ግብረመልስ ልከው ከሆነ፣ የመተግበሪያ ብልሽት ካለ ወይም የአገልጋ አስተዳዳሪ የማይተዋግ አገልጋይ የዳታ መጠቀሚያ ሼር ካረገ። ",
+  "privacy-title": "Outline (አውትላይን) ግላዊ መረጃዎትን አየሰበስብም። ",
+  "quit": "ጨርስ",
+  "reconnecting-server-state": "ዳግም በማገናኘት ላይ...",
+  "save": "አስቀምጥ",
+  "server-access-key-detected": "አክሰስ ቂልፉ ተለይቷል ",
+  "server-access-key-label": "ss:// መድረሻ-ቁልፍ ",
+  "server-add": "አገልጋይ ጨምር",
+  "server-add-access-key": "አክሰስ ቁልፉን ጨምር ",
+  "server-add-ignore": "እለፍ",
+  "server-add-instructions": "ሰርቨር ለመጨመር አክሰስ ቁልፉን ኮፒ አድርገው ፔስት ያድርጉ።",
+  "server-add-invalid": "{openLine} የማይሰራ የአገልግሎት ቁልፍ። {closeLine}ትክክለኛ የአገልግሎት ቁልፍ ያስገቡ (ss://) አገልጋይ ለመጨመር። ",
+  "server-add-zero-state-instructions": "አገልጋይ ለመጨመር ክሊክ አርግ",
+  "server-added": "የተጨመረ አገልጋይ \"{serverName}\"!",
+  "server-connected": "የተገናኘ \"{serverName}\"",
+  "server-create-your-own": "የአገልግሎት ቁልፍ የለዎትም? <br>የራስዎን ይፈጠሩ {openLink}በኛ ድረገፅ ላይ {closeLink}።",
+  "server-create-your-own-zero-state": "አገልጋይ የለህም? <br>የራስዎን ይፍጠሩ በ {openLink}እኛ ድረገፅ ላይ {closeLink}።",
+  "server-default-name": "ፕሮክሲ ሰርቨር",
+  "server-default-name-outline": "Outline (አውትላይን) አገልጋይ",
+  "server-detected": "እባክዎን ይሄንን አገልጋይ ለመጨመር መፈለግዎን ያረጋግጡ",
+  "server-disconnected": "ከ የተለያየ \"{serverName}\"",
+  "server-forget": "እርሳ",
+  "server-forgotten": "አገልጋዩን ይርሱት “{serverName}”.",
+  "server-forgotten-undo": "አገልጋይ \"{serverName}\" ተመልሷል።",
+  "server-rename": "ዳግም ሰይም",
+  "server-rename-complete": "ድጋሚ የተሰየመ አገልጋይ",
+  "servers-menu-item": "አገልጋዮች ",
+  "servers-page-title": "Outline (አውትላይን)",
+  "submit": "አስገባ",
+  "submitting": "በማስገባት ላይ ነው...",
+  "terms": "ጊዜ",
+  "tips": "ጠቋሚ ምክር",
+  "undo-button-label": "ቀልብስ",
+  "unreachable-server-state": "ማግኘት አልተቻለም",
+  "update-downloaded": "የተሻሻለ Outline (አውትላይን) ወርዷል። Outline (አውትላይን) ድጋሚ ስያስጀምሩ ይጫናል።",
+  "version": "ቅጂ {appVersion}"
 }
