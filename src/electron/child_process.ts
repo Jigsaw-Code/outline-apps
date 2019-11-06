@@ -14,11 +14,11 @@
 
 import { ChildProcess, spawn } from 'child_process';
 
-// Simple child process launcher.
+// Simple child process launcher. Launches the process on construction.
 //
-// NOTE: Because there is no way in Node.js to tell whether a process launched successfully,
-//       #startInternal always succeeds; use #onExit to be notified when the process has exited
-//       (which may be immediately after calling #startInternal if, e.g. the binary cannot be
+// NOTE: Because there is no way in Node.js to tell whether a process launched
+//       successfully, use #onExit to be notified when the process has exited
+//       (which may be immediately after construction if, e.g. the binary cannot be
 //       found).
 export class ChildProcessHelper {
   private process?: ChildProcess;
@@ -30,9 +30,11 @@ export class ChildProcessHelper {
   });
   private stdErrListener?: (data?: string | Buffer) => void;
 
-  constructor(private path: string) { }
+  constructor(private path: string, args: string[]) {
+    this.launch(args);
+  }
 
-  launch(args: string[]) {
+  private launch(args: string[]) {
     this.process = spawn(this.path, args);
     this.running = true;
 
@@ -62,16 +64,24 @@ export class ChildProcessHelper {
     this.process.stderr.on('data', onStdErr.bind(this));
   }
 
-  // Use #onExit to be notified when the process exits.
-  stop() {
+  // Stops the process, resolving when it has exited.
+  // Use #onExit to be notified when the process exits spontaneously.
+  async stop() {
     if (!this.process) {
-      // Never started.
-      this.resolveExit();
+      // Never started or already stopped.
       return;
     }
-
+    this.process.removeAllListeners();
+    const exit = new Promise(resolve => {
+      this.process!.once('exit', (code) => {
+        this.running = false;
+        this.process = undefined;
+        resolve(code);
+      });
+    });
     this.process.kill();
-    this.process = undefined;
+
+    return exit;
   }
 
   get onExit(): Promise<number> {

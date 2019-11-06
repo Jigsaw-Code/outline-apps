@@ -178,47 +178,45 @@ export class ConnectionManager {
 
 // Class to manage the lifecycle of tun2socks.
 class Tun2socks {
-  private process: ChildProcessHelper;
+  private process?: ChildProcessHelper;
   private isUdpEnabled = false;
 
-  private notifyStop = true;
   private resolveStop!: () => void;
   private readonly stopped = new Promise<void>(resolve => {
     this.resolveStop = resolve;
   });
 
-  constructor(private config: cordova.plugins.outline.ServerConfig) {
-    this.process = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
-  }
+  constructor(private config: cordova.plugins.outline.ServerConfig) {}
 
   // Starts the tun2socks process. Restarts the process if it is already running.
   // Checks the server's connectivity when `checkConnectivity` is true, throwing on failure.
   async start(checkConnectivity: boolean) {
     if (checkConnectivity) {
       try {
-        this.isUdpEnabled = await this.checkConnectivity();
+        await this.checkConnectivity();
+        console.log(`UDP support: ${this.isUdpEnabled}`);
       } catch (e) {
         this.resolveStop();
         throw e;
       }
     }
 
-    if (this.process.isRunning) {
-      // Restart once the current process exits without notifying the exit.
-      this.stop(false);
-      await this.process.onExit;
+    if (!!this.process && this.process.isRunning) {
+      // Restart once the current process exits. Stop the process without resolving `stopped`.
+      await this.process.stop();
       console.log('restarting tun2socks');
     }
 
-    this.process.launch(this.getProcessArgs());
+    this.process = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'),
+                                          this.getProcessArgs());
 
     return new Promise((resolve, reject) => {
       // Declare success when tun2socks is running.
-      this.process.onStderr = (data?: string | Buffer) => {
+      this.process!.onStderr = (data?: string | Buffer) => {
         if (data && data.toString().includes('tun2socks running')) {
-          this.process.onStderr = undefined;
-          this.notifyStop = true;
+          this.process!.onStderr = undefined;
           if (isWindows) {
+            powerMonitor.removeAllListeners();
             powerMonitor.once('suspend', this.suspendListener);
             powerMonitor.once('resume', this.resumeListener);
           }
@@ -226,12 +224,9 @@ class Tun2socks {
         }
       };
 
-      // Reject on early exit. On routine exit, the promise will be already resolved.
-      this.process.onExit.then((code?: number) => {
+      // Reject on early exit.
+      this.process!.onExit.then((code?: number) => {
         console.log('tun2socks exited with code', code);
-        if (!this.notifyStop) {
-          return;
-        }
         this.resolveStop();
         reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
       });
@@ -239,39 +234,50 @@ class Tun2socks {
   }
 
   // Stops the tun2socks process. Notifies the caller when the process has exited
-  // by resolving `onceStopped` if `notify` is true.
-  stop(notify=true) {
-    if (isWindows) {
-      powerMonitor.removeListener('suspend', this.suspendListener);
-      powerMonitor.removeListener('resume', this.resumeListener);
+  // by resolving `onceStopped`.
+  stop() {
+    if (!this.process) {
+      return;
     }
-    this.notifyStop = notify;
-    this.process.stop();
+    if (isWindows) {
+      powerMonitor.removeAllListeners();
+    }
+    this.process.stop().then(this.resolveStop);
   }
 
   get onceStopped(): Promise<void> {
     return this.stopped;
   }
 
-  // Notifes tun2socks that network connectivity changed. Checks whehter UDP support changed,
+  // Notifes tun2socks that network connectivity changed. Checks whether UDP support changed,
   // restarting if it did.
   async networkChanged() {
-    if (this.isUdpEnabled === await this.checkConnectivity()) {
+    const wasUdpEnabled = this.isUdpEnabled;
+    await this.checkConnectivity();
+    if (this.isUdpEnabled === wasUdpEnabled) {
       return;
     }
-    this.isUdpEnabled = !this.isUdpEnabled;
+    console.log(`UDP support changed: ${this.isUdpEnabled}`);
     return this.start(false);
   }
 
   private async checkConnectivity() {
-    return (new ShadowsocksConnectivity(this.config)).onceResult;
+    const ssConn = new ShadowsocksConnectivity(this.config);
+    const code = await ssConn.onceResult;
+    if (code !== errors.ErrorCode.NO_ERROR && code !== errors.ErrorCode.UDP_RELAY_NOT_ENABLED) {
+      // Treat the absence of a code as an unexpected error.
+      throw errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED);
+    }
+    this.isUdpEnabled = code === errors.ErrorCode.NO_ERROR;
   }
 
   private suspendListener = () => {
     console.log('system suspending');
     // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
-    // Don't notify this exit.
-    this.notifyStop = false;
+    // Preemptively stop tun2socks without resolving `stopped`.
+    if (this.process) {
+      this.process.stop();
+    }
   }
 
   private resumeListener = () => {

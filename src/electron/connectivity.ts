@@ -54,29 +54,17 @@ export class ShadowsocksConnectivity {
   private tun2socks: ChildProcessHelper;
 
   constructor(config: cordova.plugins.outline.ServerConfig) {
-    this.tun2socks = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'));
     const args: string[] = [];
     args.push('-proxyHost', config.host || '');
     args.push('-proxyPort', `${config.port}`);
     args.push('-proxyPassword', config.password || '');
     args.push('-proxyCipher', config.method || '');
     args.push('-checkConnectivity');
-    this.tun2socks.launch(args);
+    this.tun2socks = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'), args);
   }
 
-  // Returns a Promise that resolves if the connectivity checks succeed, indicating whehter
-  // UDP is supported. Rejects if the connectivity checks fail.
-  public get onceResult(): Promise<boolean> {
-    // NOTE: must return a Promise because getters cannot be async.
-    return new Promise(async (resolve, reject) => {
-      const code = await this.tun2socks.onExit;
-      if (code === errors.ErrorCode.NO_ERROR) {
-        return resolve(true);
-      } else if (code === errors.ErrorCode.UDP_RELAY_NOT_ENABLED) {
-        return resolve(false);
-      }
-      // Treat the absence of a code as an unexpected error.
-      reject(errors.fromErrorCode(code || errors.ErrorCode.UNEXPECTED));
-    });
+  // Returns the process return code once it exits.
+  public get onceResult(): Promise<number> {
+    return this.tun2socks.onExit;
   }
 }
