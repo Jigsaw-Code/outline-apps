@@ -21,7 +21,7 @@ import { ChildProcess, spawn } from 'child_process';
 //       (which may be immediately after construction if, e.g. the binary cannot be
 //       found).
 export class ChildProcessHelper {
-  private process?: ChildProcess;
+  private process: ChildProcess;
   private running = false;
 
   private resolveExit!: (code?: number) => void;
@@ -30,18 +30,14 @@ export class ChildProcessHelper {
   });
   private stdErrListener?: (data?: string | Buffer) => void;
 
-  constructor(private path: string, args: string[]) {
-    this.launch(args);
-  }
-
-  private launch(args: string[]) {
-    this.process = spawn(this.path, args);
+  constructor(path: string, args: string[]) {
+    this.process = spawn(path, args);
     this.running = true;
 
     const onExit = (code?: number, signal?: string) => {
       this.running = false;
       if (this.process) {
-      // Prevent registering duplicate listeners on re-launch.
+        // Prevent registering duplicate listeners on re-launch.
         this.process.removeAllListeners();
       }
       this.resolveExit(code);
@@ -67,21 +63,18 @@ export class ChildProcessHelper {
   // Stops the process, resolving when it has exited.
   // Use #onExit to be notified when the process exits spontaneously.
   async stop() {
-    if (!this.process) {
+    if (!this.running || this.process.killed) {
       // Never started or already stopped.
       return;
     }
-    this.process.removeAllListeners();
-    const exit = new Promise(resolve => {
-      this.process!.once('exit', (code) => {
+    return new Promise(resolve => {
+      this.process.removeAllListeners();
+      this.process.once('exit', (code) => {
         this.running = false;
-        this.process = undefined;
         resolve(code);
       });
+      this.process.kill();
     });
-    this.process.kill();
-
-    return exit;
   }
 
   get onExit(): Promise<number> {
