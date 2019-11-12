@@ -67,11 +67,15 @@ export class ChildProcessHelper {
       // Never started or already stopped.
       return;
     }
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       this.process.removeAllListeners();
       this.process.once('exit', (code) => {
         this.running = false;
         resolve(code);
+      });
+      this.process.once('error', (e) => {
+        console.error(`failed to send kill signal: ${e}`);
+        reject(e);
       });
       this.process.kill();
     });
