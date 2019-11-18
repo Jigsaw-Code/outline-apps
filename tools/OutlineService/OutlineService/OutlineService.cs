@@ -56,7 +56,7 @@ using Newtonsoft.Json;
  *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
  *  
  * View logs with this PowerShell query:
- * get-eventlog -logname Application -source OutlineService -newset 20 | format-table -property timegenerated,entrytype,message -autosize
+ * get-eventlog -logname Application -source OutlineService -newest 20 | format-table -property timegenerated,entrytype,message -autosize
  */
 namespace OutlineService
 {
@@ -404,26 +404,6 @@ namespace OutlineService
 
             try
             {
-                AddIpv4Redirect();
-                eventLog.WriteEntry($"redirected IPv4 traffic");
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not redirect IPv4 traffic: {e.Message}");
-            }
-
-            try
-            {
-                StopRoutingIpv6();
-                eventLog.WriteEntry($"blocked IPv6 traffic");
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not block IPv6 traffic: {e.Message}");
-            }
-
-            try
-            {
                 GetSystemIpv4Gateway(proxyIp);
 
                 eventLog.WriteEntry($"connecting via gateway at {gatewayIp} on interface {gatewayInterfaceIndex}");
@@ -438,6 +418,7 @@ namespace OutlineService
                 {
                     throw new Exception($"could not create route to proxy: {e.Message}");
                 }
+                this.proxyIp = proxyIp;
 
                 try
                 {
@@ -454,7 +435,25 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not reconnect during auto-connect: {e.Message}", EventLogEntryType.Warning);
             }
 
-            this.proxyIp = proxyIp;
+            try
+            {
+                StopRoutingIpv6();
+                eventLog.WriteEntry($"blocked IPv6 traffic");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not block IPv6 traffic: {e.Message}");
+            }
+
+            try
+            {
+                AddIpv4Redirect();
+                eventLog.WriteEntry($"redirected IPv4 traffic");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not redirect IPv4 traffic: {e.Message}");
+            }
         }
 
         // Undoes and removes as many as possible of the routes and other
@@ -525,7 +524,7 @@ namespace OutlineService
             {
                 StopSmartDnsBlock();
                 eventLog.WriteEntry($"stopped smartdnsblock");
-            }
+            } 
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to stop smartdnsblock: {e.Message}",
