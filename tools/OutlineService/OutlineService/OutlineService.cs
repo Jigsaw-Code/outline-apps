@@ -408,7 +408,7 @@ namespace OutlineService
 
                 eventLog.WriteEntry($"connecting via gateway at {gatewayIp} on interface {gatewayInterfaceIndex}");
 
-                // TODO: See the above TODO on handling these failures better during auto-connect.
+                // Set the proxy escape route first to prevent a routing loop when capturing all IPv4 traffic.
                 try
                 {
                     AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
@@ -487,6 +487,13 @@ namespace OutlineService
 
             try
             {
+                // This is only necessary when disconecting without network connectivity. 
+                StartRoutingIpv4();
+            }
+            catch (Exception) {}
+
+            try
+            {
                 StartRoutingIpv6();
                 eventLog.WriteEntry($"unblocked IPv6");
             }
@@ -524,7 +531,7 @@ namespace OutlineService
             {
                 StopSmartDnsBlock();
                 eventLog.WriteEntry($"stopped smartdnsblock");
-            } 
+            }
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to stop smartdnsblock: {e.Message}",
@@ -664,6 +671,29 @@ namespace OutlineService
             {
                 RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={TAP_DEVICE_NAME}");
             }
+        }
+
+        private void StartRoutingIpv4()
+        {
+            foreach (string subnet in IPV4_SUBNETS)
+            {
+                RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex}");
+            }
+        }
+
+        private void StopRoutingIpv4()
+        {
+            foreach (string subnet in IPV4_SUBNETS)
+            {
+                try
+                {
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet}  interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
+                }
+                catch (Exception)
+                {
+                    RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
+                }
+            } 
         }
 
         private void StartRoutingIpv6()
@@ -903,37 +933,36 @@ namespace OutlineService
                 eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
             }
 
-            // Only send on change, to prevent duplicate notifications (mostly
-            // harmless but can make debugging harder). Note how we send the
-            // RECONNECTED event before we know all the updates have succeeded:
-            // cheating, but it alerts the user sooner *and* if we were able to
-            // connect in the first place then it's extremely likely we'll be
-            // able to reconnect.
-            if (previousGatewayIp != gatewayIp || previousGatewayInterfaceIndex != gatewayInterfaceIndex)
+            if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
             {
-
-                SendConnectionStatusChange(gatewayIp == null ? ConnectionStatus.Reconnecting : ConnectionStatus.Connected);
+                // Only send on actual change, to prevent duplicate notifications (mostly
+                // harmless but can make debugging harder).
+                eventLog.WriteEntry($"network changed but gateway and interface stayed the same");
+                return; 
             }
-
-            if (gatewayIp == null)
+            else if (gatewayIp == null)
             {
+                SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+
+                // Stop capturing IPv4 traffic in order to prevent a routing loop in the TAP device.
+                // Redirect IPv4 traffic to the loopback interface instead to avoid leaking traffic when
+                // the network becomes available.
+                try
+                {
+                    StopRoutingIpv4();
+                    RemoveIpv4Redirect();
+                    eventLog.WriteEntry($"stopped routing IPv4 traffic");
+                }
+                catch (Exception e)
+                {
+                    eventLog.WriteEntry($"failed to stop routing IPv4: {e.Message}", EventLogEntryType.Error);
+                }
                 return;
             }
 
             eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
 
-            // Do this as soon as possible to minimise leaks.
-            try
-            {
-                AddIpv4Redirect();
-                eventLog.WriteEntry($"refreshed IPv4 redirect");
-            }
-            catch (Exception e)
-            {
-                eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
-                return;
-            }
-
+            // Add the proxy escape route before capturing IPv4 traffic to prevent a routing loop in the TAP device.
             try
             {
                 AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
@@ -944,6 +973,21 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not update route to proxy: {e.Message}");
                 return;
             }
+
+            try
+            {
+                AddIpv4Redirect();
+                StartRoutingIpv4();
+                eventLog.WriteEntry($"refreshed IPv4 redirect");
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
+                return;
+            }
+
+            // Send the status update now that the full-system VPN is connected.
+            SendConnectionStatusChange(ConnectionStatus.Connected);
 
             try
             {
