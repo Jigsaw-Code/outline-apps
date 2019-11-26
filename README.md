@@ -72,7 +72,7 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 Additional requirements for building on Windows:
 
-* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others)
+* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others).  It may be necessary to manually choose to install `rsync` in the Cygwin installer.
 
 To build for Windows, run:
 
