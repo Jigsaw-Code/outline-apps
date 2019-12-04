@@ -31,6 +31,60 @@ const (
   netConfigKeyPath = `SYSTEM\CurrentControlSet\Control\Network\{4D36E972-E325-11CE-BFC1-08002BE10318}`
 )
 
+// getAdapterNameAndInstallTimestamp returns the name and install timestamp of a network adapter with
+// registry location `adapterKeyPath`. Returns a non-nil error on failure, or if the adapter's
+// hardware component ID does not match `componentID`.
+func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name string, installTimestamp uint64, err error) {
+  adapterKey, err := registry.OpenKey(registry.LOCAL_MACHINE, adapterKeyPath, registry.READ)
+  if err != nil {
+    log.Println("Failed to open adapter key:", err)
+    return
+  }
+  defer adapterKey.Close()
+
+  adapterComponentID, _, err := adapterKey.GetStringValue("ComponentId")
+  if err != nil {
+    log.Println("Failed to read adapter component ID:", err)
+    return
+  }
+  log.Println("Found", adapterComponentID)
+  if adapterComponentID != componentID {
+    err = fmt.Errorf("Network adapter component ID does not match %v", componentID)
+    return
+  }
+
+  installTimestampBytes, _, err := adapterKey.GetBinaryValue("InstallTimeStamp")
+  if err != nil {
+    log.Println("Failed to read adapter install timestamp:", err)
+    return
+  }
+  // Although Windows is little endian, we have observed that network adapters' install timestamps
+  // are encoded as big endian in the registry.
+  installTimestamp = binary.BigEndian.Uint64(installTimestampBytes)
+  log.Println("\tInstall timestamp", installTimestamp)
+
+  netConfigID, _, err := adapterKey.GetStringValue("NetCfgInstanceId")
+  if err != nil {
+    log.Println("Failed to read network configuration ID:", err)
+    return
+  }
+  adapterConfigKeyPath := fmt.Sprintf("%s\\%s\\Connection", netConfigKeyPath, netConfigID)
+  adapterConfigKey, err := registry.OpenKey(registry.LOCAL_MACHINE, adapterConfigKeyPath, registry.READ)
+  if err != nil {
+    log.Println("Failed to open network configuration key:", err)
+    return
+  }
+  defer adapterConfigKey.Close()
+
+  name, _, err = adapterConfigKey.GetStringValue("Name")
+  if err != nil {
+    log.Println("Failed to read adapter name:", err)
+    return
+  }
+  log.Println("\tName", name)
+  return
+}
+
 // findNetworkAdapterName searches the Windows registry for the name of a network adapter with
 // `componentID`. Since there may be more than one network adapter with the same component ID,
 // selects the most recently installed device in the event of a conflict.
@@ -53,50 +107,11 @@ func findNetworkAdapterName(componentID string) (string, error) {
   var installTimestamp uint64
 
   for _, k := range adapterKeys {
-    adapterKey, err := registry.OpenKey(registry.LOCAL_MACHINE, netAdaptersKeyPath + "\\" + k, registry.READ)
+    adapterKeyPath := netAdaptersKeyPath + "\\" + k
+    adapterName, adapterInstallTimestamp, err := getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID)
     if err != nil {
       continue
     }
-    defer adapterKey.Close()
-
-    adapterComponentID, _, err := adapterKey.GetStringValue("ComponentId")
-    if err != nil {
-      continue
-    }
-    log.Println("Found", adapterComponentID)
-    if adapterComponentID != componentID {
-      continue
-    }
-
-    adapterInstallTimestampBytes, _, err := adapterKey.GetBinaryValue("InstallTimeStamp")
-    if err != nil {
-      log.Println("Failed to read adapter install timestamp:", err)
-      continue
-    }
-    // Although Windows is little endian, we have observed that network adapters' install timestamps
-    // are encoded as big endian in the registry.
-    adapterInstallTimestamp := binary.BigEndian.Uint64(adapterInstallTimestampBytes)
-    log.Println("\tInstall timestamp", adapterInstallTimestamp)
-
-    adapterNetConfigID, _, err := adapterKey.GetStringValue("NetCfgInstanceId")
-    if err != nil {
-      log.Println("Failed to read network configuration ID:", err)
-      continue
-    }
-    adapterConfigKeyPath := fmt.Sprintf("%s\\%s\\Connection", netConfigKeyPath, adapterNetConfigID)
-    adapterConfigKey, err := registry.OpenKey(registry.LOCAL_MACHINE, adapterConfigKeyPath, registry.READ)
-    if err != nil {
-      log.Println("Failed to open network configuration key:", err)
-      continue
-    }
-    defer adapterConfigKey.Close()
-
-    adapterName, _, err := adapterConfigKey.GetStringValue("Name")
-    if err != nil {
-      log.Println("Failed to read adapter name:", err)
-      continue
-    }
-    log.Println("\tName", adapterName)
 
     if adapterInstallTimestamp > installTimestamp {
       // Found a newer device.
@@ -110,7 +125,6 @@ func findNetworkAdapterName(componentID string) (string, error) {
   }
   return name, err
 }
-
 
 func main() {
   componentID := flag.String("componentid", "tap0901", "Hardware component ID of the network adapter")
