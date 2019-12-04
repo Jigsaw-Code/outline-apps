@@ -15,6 +15,7 @@
 package main
 
 import (
+  "encoding/binary"
   "flag"
   "fmt"
   "log"
@@ -67,11 +68,14 @@ func findNetworkAdapterName(componentID string) (string, error) {
       continue
     }
 
-    adapterInstallTimestamp, _, err := adapterKey.GetIntegerValue("NetworkInterfaceInstallTimestamp")
+    adapterInstallTimestampBytes, _, err := adapterKey.GetBinaryValue("InstallTimeStamp")
     if err != nil {
       log.Println("Failed to read adapter install timestamp:", err)
       continue
     }
+    // Although Windows is little endian, we have observed that network adapters' install timestamps
+    // are encoded as big endian in the registry.
+    adapterInstallTimestamp := binary.BigEndian.Uint64(adapterInstallTimestampBytes)
     log.Println("\tInstall timestamp", adapterInstallTimestamp)
 
     adapterNetConfigID, _, err := adapterKey.GetStringValue("NetCfgInstanceId")
