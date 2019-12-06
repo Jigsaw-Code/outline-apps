@@ -68,7 +68,7 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
     log.Println("Failed to read network configuration ID:", err)
     return
   }
-  adapterConfigKeyPath := fmt.Sprintf("%s\\%s\\Connection", netConfigKeyPath, netConfigID)
+  adapterConfigKeyPath := fmt.Sprintf(`%s\%s\Connection`, netConfigKeyPath, netConfigID)
   adapterConfigKey, err := registry.OpenKey(registry.LOCAL_MACHINE, adapterConfigKeyPath, registry.READ)
   if err != nil {
     log.Println("Failed to open network configuration key:", err)
@@ -92,7 +92,7 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
 func findNetworkAdapterName(componentID string) (string, error) {
   netAdaptersKey, err := registry.OpenKey(registry.LOCAL_MACHINE, netAdaptersKeyPath, registry.READ)
   if err != nil {
-    return "", fmt.Errorf("Failed to open the network adapter registry, %v", err)
+    return "", fmt.Errorf("Failed to open the network adapter registry, %w", err)
   }
   defer netAdaptersKey.Close()
 
@@ -107,7 +107,7 @@ func findNetworkAdapterName(componentID string) (string, error) {
   var installTimestamp uint64
 
   for _, k := range adapterKeys {
-    adapterKeyPath := netAdaptersKeyPath + "\\" + k
+    adapterKeyPath := fmt.Sprintf(`%s\%s`, netAdaptersKeyPath, k)
     adapterName, adapterInstallTimestamp, err := getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID)
     if err != nil {
       continue
@@ -127,7 +127,7 @@ func findNetworkAdapterName(componentID string) (string, error) {
 }
 
 func main() {
-  componentID := flag.String("componentid", "tap0901", "Hardware component ID of the network adapter")
+  componentID := flag.String("component-id", "tap0901", "Hardware component ID of the network adapter")
   flag.Parse()
 
   // Remove timestamps, output to stderr by default.

@@ -43,7 +43,7 @@ if %errorlevel% neq 0 (
 :: Find the name of the most recently installed TAP device in the registry and rename it.
 echo Searching for new TAP network device name...
 set TAP_NAME_FILE=%tmp%\outlineinstaller-tap-device-name.txt
-find_tap_name.exe --componentid %DEVICE_HWID% > %TAP_NAME_FILE%
+find_tap_name.exe --component-id %DEVICE_HWID% > %TAP_NAME_FILE%
 if %errorlevel% neq 0 (
   echo Could not find TAP device name. >&2
   exit /b 1
