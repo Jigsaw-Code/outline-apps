@@ -33,61 +33,26 @@ if %errorlevel% equ 0 (
   goto :configure
 )
 
-:: Add the device, recording the names of devices before and after to help
-:: us find the name of the new device.
-::
-:: Note:
-::  - While we could limit the search to devices having ServiceName=%DEVICE_HWID%,
-::    that will cause wmic to output just "no instances available" when there
-::    are no other TAP devices present, messing up the diff.
-::  - We do not use findstr, etc., to strip blank lines because those ancient tools
-::    typically don't understand/output non-Latin characters (wmic *does*, even on
-::    Windows 7).
-set BEFORE_DEVICES=%tmp%\outlineinstaller-tap-devices-before.txt
-set AFTER_DEVICES=%tmp%\outlineinstaller-tap-devices-after.txt
-
-echo Creating TAP network device...
-echo Storing current network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > "%BEFORE_DEVICES%"
-if %errorlevel% neq 0 (
-  echo Could not store network device list. >&2
-  exit /b 1
-)
-type "%BEFORE_DEVICES%"
-
 echo Creating TAP network device...
 tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
 if %errorlevel% neq 0 (
   echo Could not create TAP network device. >&2
   exit /b 1
 )
-echo Storing new network device list...
-wmic nic where "netconnectionid is not null" get netconnectionid > "%AFTER_DEVICES%"
+
+:: Find the name of the most recently installed TAP device in the registry and rename it.
+echo Searching for new TAP network device name...
+set TAP_NAME_FILE=%tmp%\outlineinstaller-tap-device-name.txt
+find_tap_name.exe --component-id %DEVICE_HWID% > %TAP_NAME_FILE%
 if %errorlevel% neq 0 (
-  echo Could not store network device list. >&2
+  echo Could not find TAP device name. >&2
   exit /b 1
 )
-type "%AFTER_DEVICES%"
-
-:: Find the name of the new device and rename it.
-::
-:: Obviously, this command is a beast; roughly what it does, in this order, is:
-::  - perform a diff on the *trimmed* (in case wmic uses different column widths) before and after
-::    text files
-::  - remove leading/trailing space and blank lines with trim()
-::  - store the result in NEW_DEVICE
-::  - print NEW_DEVICE, for debugging (though non-Latin characters may appear as ?)
-::  - invoke netsh
-::
-:: Running all this in one go helps reduce the need to deal with temporary
-:: files and the character encoding headaches that follow.
-::
-:: Note that we pipe input from /dev/null to prevent Powershell hanging forever
-:: waiting on EOF.
-echo Searching for new TAP network device name...
-powershell "(compare-object (cat \"%BEFORE_DEVICES%\" | foreach-object {$_.trim()}) (cat \"%AFTER_DEVICES%\" | foreach-object {$_.trim()}) | format-wide -autosize | out-string).trim() | set-variable NEW_DEVICE; write-host \"New TAP device name: ${NEW_DEVICE}\"; netsh interface set interface name = \"${NEW_DEVICE}\" newname = \"%DEVICE_NAME%\"" <nul
+set /p TAP_NAME=<%TAP_NAME_FILE%
+echo Found TAP device name: %TAP_NAME%
+netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
 if %errorlevel% neq 0 (
-  echo Could not find or rename new TAP network device. >&2
+  echo Could rename TAP device. >&2
   exit /b 1
 )
 
@@ -148,4 +113,4 @@ if %errorlevel% neq 0 (
   echo Could not configure TAP device secondary DNS. >&2
   exit /b 1
 )
-echo TAP network device added and configured successfully 
+echo TAP network device added and configured successfully
