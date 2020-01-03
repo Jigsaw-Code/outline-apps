@@ -18,7 +18,7 @@ Outline clients shares the same web app across all platforms. This code is locat
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
-UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](www/app).
+UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
 ## Building the Android app
 
