@@ -687,7 +687,7 @@ namespace OutlineService
             {
                 try
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet}  interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
                 }
                 catch (Exception)
                 {
