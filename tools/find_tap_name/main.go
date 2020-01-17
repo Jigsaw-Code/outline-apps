@@ -18,8 +18,11 @@ import (
   "encoding/binary"
   "flag"
   "fmt"
+  "io/ioutil"
   "log"
   "os"
+  "sort"
+  "strings"
 
   "golang.org/x/sys/windows/registry"
 )
@@ -30,6 +33,11 @@ const (
   // netConfigKeyPath is the registry location of the network adapters network configuration.
   netConfigKeyPath = `SYSTEM\CurrentControlSet\Control\Network\{4D36E972-E325-11CE-BFC1-08002BE10318}`
 )
+
+type networkAdapter struct {
+  name string
+  installTimestamp uint64
+}
 
 // getAdapterNameAndInstallTimestamp returns the name and install timestamp of a network adapter with
 // registry location `adapterKeyPath`. Returns a non-nil error on failure, or if the adapter's
@@ -47,7 +55,6 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
     log.Println("Failed to read adapter component ID:", err)
     return
   }
-  log.Println("Found", adapterComponentID)
   if adapterComponentID != componentID {
     err = fmt.Errorf("Network adapter component ID does not match %v", componentID)
     return
@@ -61,7 +68,6 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
   // Although Windows is little endian, we have observed that network adapters' install timestamps
   // are encoded as big endian in the registry.
   installTimestamp = binary.BigEndian.Uint64(installTimestampBytes)
-  log.Println("\tInstall timestamp", installTimestamp)
 
   netConfigID, _, err := adapterKey.GetStringValue("NetCfgInstanceId")
   if err != nil {
@@ -81,30 +87,24 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
     log.Println("Failed to read adapter name:", err)
     return
   }
-  log.Println("\tName", name)
   return
 }
 
-// findNetworkAdapterName searches the Windows registry for the name of a network adapter with
-// `componentID`. Since there may be more than one network adapter with the same component ID,
-// selects the most recently installed device in the event of a conflict.
-// Returns an empty string and an error if the device name cannot be found.
-func findNetworkAdapterName(componentID string) (string, error) {
+// findNetworkAdapterName searches the Windows registry for network adapter with `componentID`.
+// Returns an empty slice and an error if no network adapters are found.
+func findNetworkAdapters(componentID string, ignoredNames map[string]bool) ([]networkAdapter, error) {
+  netAdapters := make([]networkAdapter, 0)
   netAdaptersKey, err := registry.OpenKey(registry.LOCAL_MACHINE, netAdaptersKeyPath, registry.READ)
   if err != nil {
-    return "", fmt.Errorf("Failed to open the network adapter registry, %w", err)
+    return netAdapters, fmt.Errorf("Failed to open the network adapter registry, %w", err)
   }
   defer netAdaptersKey.Close()
 
   // List all network adapters.
   adapterKeys, err := netAdaptersKey.ReadSubKeyNames(-1)
   if err != nil {
-    return "", err
+    return netAdapters, err
   }
-
-  // Keep track of the most recently installed adapter name.
-  var name string
-  var installTimestamp uint64
 
   for _, k := range adapterKeys {
     adapterKeyPath := fmt.Sprintf(`%s\%s`, netAdaptersKeyPath, k)
@@ -112,32 +112,63 @@ func findNetworkAdapterName(componentID string) (string, error) {
     if err != nil {
       continue
     }
-
-    if adapterInstallTimestamp > installTimestamp {
-      // Found a newer device.
-      installTimestamp = adapterInstallTimestamp
-      name = adapterName
+    if _, ok := ignoredNames[adapterName]; ok {
+      continue
     }
+    netAdapters = append(netAdapters, networkAdapter{name: adapterName, installTimestamp: adapterInstallTimestamp})
   }
 
-  if name == "" {
-    err = fmt.Errorf("Could not find the network adapter with the specified component ID")
+  if len(netAdapters) == 0 {
+    err = fmt.Errorf("Could not find network adapters with the specified component ID")
   }
-  return name, err
+  return netAdapters, err
+}
+
+// readIgnoredNetworkAdapterNames reads a comma-separated list of network interface names at
+// `filename` and returns a map keyed by name.
+func readIgnoredNetworkAdapterNames(filename string) map[string]bool {
+  ignoredNames := make(map[string]bool)
+  if filename == "" {
+    return ignoredNames
+  }
+
+  names, err := ioutil.ReadFile(filename)
+  if err != nil {
+    log.Println("Failed to read ignored network adapters file:", err)
+    return ignoredNames
+  }
+
+  for _, name := range strings.Split(string(names), ",") {
+    if len(name) == 0 {
+      continue;
+    }
+    ignoredNames[name] = true
+  }
+  return ignoredNames
 }
 
 func main() {
   componentID := flag.String("component-id", "tap0901", "Hardware component ID of the network adapter")
+  ignoredNamesPath := flag.String("ignored-names", "", "Path to a comma-separated list of network adapter names to exclude from the search")
   flag.Parse()
 
   // Remove timestamps, output to stderr by default.
   log.SetFlags(0)
 
-  name, err := findNetworkAdapterName(*componentID)
+  ignoredNames := readIgnoredNetworkAdapterNames(*ignoredNamesPath)
+  log.Println("Ignoring:", ignoredNames)
+
+  netAdapters, err := findNetworkAdapters(*componentID, ignoredNames)
   if err != nil {
     log.Fatalf(err.Error())
   }
-  // Output the name to stdout.
+  // Sort the network adapters by most recent install timestamp.
+  sort.Slice(netAdapters, func(i, j int) bool {
+    return netAdapters[i].installTimestamp > netAdapters[j].installTimestamp
+  })
+  log.Println("Network adapters", netAdapters)
+
+  // Output the most recently installed adapter name to stdout.
   log.SetOutput(os.Stdout)
-  log.Print(name)
+  log.Print(netAdapters[0].name)
 }
