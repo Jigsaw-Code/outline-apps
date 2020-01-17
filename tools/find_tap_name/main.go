@@ -90,7 +90,7 @@ func getAdapterNameAndInstallTimestamp(adapterKeyPath, componentID string) (name
   return
 }
 
-// findNetworkAdapterName searches the Windows registry for network adapter with `componentID`.
+// findNetworkAdapters searches the Windows registry for network adapters with `componentID`.
 // Returns an empty slice and an error if no network adapters are found.
 func findNetworkAdapters(componentID string, ignoredNames map[string]bool) ([]networkAdapter, error) {
   netAdapters := make([]networkAdapter, 0)
