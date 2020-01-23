@@ -37,7 +37,7 @@ shift $((OPTIND-1))
 PLATFORM_DIR=platforms/$PLATFORM/
 if [ ! -d $PLATFORM_DIR ]; then
   # Generate the Xcode project through Cordova.
-  yarn gulp build --platform=$PLATFORM --release
+  yarn gulp setup --platform=$PLATFORM
 fi
 
 # Install the fastlane scripts and metadata.
