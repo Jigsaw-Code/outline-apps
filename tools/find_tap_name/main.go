@@ -20,7 +20,6 @@ import (
   "fmt"
   "io/ioutil"
   "log"
-  "os"
   "sort"
   "strings"
 
@@ -112,7 +111,7 @@ func findNetworkAdapters(componentID string, ignoredNames map[string]bool) ([]ne
     if err != nil {
       continue
     }
-    if _, ok := ignoredNames[adapterName]; ok {
+    if ignoredNames[adapterName] {
       continue
     }
     netAdapters = append(netAdapters, networkAdapter{name: adapterName, installTimestamp: adapterInstallTimestamp})
@@ -169,6 +168,5 @@ func main() {
   log.Println("Network adapters", netAdapters)
 
   // Output the most recently installed adapter name to stdout.
-  log.SetOutput(os.Stdout)
-  log.Print(netAdapters[0].name)
+  fmt.Print(netAdapters[0].name)
 }
