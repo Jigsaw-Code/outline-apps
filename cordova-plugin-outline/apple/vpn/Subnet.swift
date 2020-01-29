@@ -60,6 +60,16 @@ class Subnet: NSObject {
     return subnets
   }
 
+  static func buildSubnetsList(_ stringArray: NSArray) -> [Subnet] {
+    var subnets: [Subnet] = []
+    for cidrSubnet in stringArray {
+      if let subnet = self.parse(cidrSubnet as! NSString as String) {
+        subnets.append(subnet)
+      }
+    }
+    return subnets
+  }
+
   public var address: String
   public var prefix: UInt16
   public var mask: String

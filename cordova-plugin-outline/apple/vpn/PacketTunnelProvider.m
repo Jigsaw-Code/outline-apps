@@ -31,16 +31,22 @@ NSString *const kActionStart = @"start";
 NSString *const kActionRestart = @"restart";
 NSString *const kActionStop = @"stop";
 NSString *const kActionGetConnectionId = @"getConnectionId";
+NSString *const kActionSetIPWhitelist = @"setIPWhitelist";
+NSString *const kActionSetIPBlacklist = @"setIPBlacklist";
 NSString *const kActionIsReachable = @"isReachable";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyConnectionId = @"connectionId";
 NSString *const kMessageKeyConfig = @"config";
 NSString *const kMessageKeyErrorCode = @"errorCode";
+NSString *const kMessageKeyIPWhitelist = @"ipWhitelist";
+NSString *const kMessageKeyIPBlacklist = @"ipBlacklist";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
 NSString *const kMessageKeyOnDemand = @"is-on-demand";
 NSString *const kDefaultPathKey = @"defaultPath";
 static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
+static NSArray *ipWhitelist;
+static NSArray *ipBlacklist;
 
 @interface PacketTunnelProvider()
 @property (nonatomic) Shadowsocks *shadowsocks;
@@ -250,6 +256,16 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                                  options:kNilOptions error:nil];
     }
     completionHandler(response);
+  } else if ([kActionSetIPWhitelist isEqualToString:action]) {
+    DDLogInfo(@"[PacketTunnelProvider.m] receiving ipWhitelist");
+    NSArray *ipWhitelistIn = message[kMessageKeyIPWhitelist];
+    ipWhitelist = ipWhitelistIn;
+    completionHandler(nil);
+  } else if ([kActionSetIPBlacklist isEqualToString:action]) {
+    DDLogInfo(@"[PacketTunnelProvider.m] receiving ipBlacklist");
+    NSArray *ipBlacklistIn = message[kMessageKeyIPBlacklist];
+    ipBlacklist = ipBlacklistIn;
+    completionHandler(nil);
   } else if ([kActionIsReachable isEqualToString:action]) {
     NSString *host = message[kMessageKeyHost];
     NSNumber *port = message[kMessageKeyPort];
@@ -312,8 +328,14 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   NSString *vpnAddress = [self selectVpnAddress];
   NEIPv4Settings *ipv4Settings =
       [[NEIPv4Settings alloc] initWithAddresses:@[ vpnAddress ] subnetMasks:@[ @"255.255.255.0" ]];
+  // Original code:
+  //ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
+  //ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
+  // Our modifications:
+  // No matter what we set for includedRoutes, it seems to include every address which is not excluded!
+  // Therefore we include everything, but exclude addresses we don't want.
   ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
-  ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
+  ipv4Settings.excludedRoutes = [self getBlacklistedIpv4Routes];
 
   // Although we don't support proxying IPv6 traffic, we need to set IPv6 routes so that the DNS
   // settings are respected on IPv6-only networks. Bind to a random unique local address (ULA).
@@ -334,12 +356,35 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
 - (NSArray *)getExcludedIpv4Routes {
   NSMutableArray *excludedIpv4Routes = [[NSMutableArray alloc] init];
+  DDLogInfo(@"[PacketTunnelProvider.m] Getting excluded routes");
   for (Subnet *subnet in [Subnet getReservedSubnets]) {
-    NEIPv4Route *route =
-        [[NEIPv4Route alloc] initWithDestinationAddress:subnet.address subnetMask:subnet.mask];
-    [excludedIpv4Routes addObject:route];
+    [excludedIpv4Routes addObject:[self getRouteFromSubnet:subnet]];
   }
   return excludedIpv4Routes;
+}
+
+- (NSArray *)getWhitelistedIpv4Routes {
+  NSMutableArray *whitelistedRoutes = [[NSMutableArray alloc] init];
+  DDLogInfo(@"[PacketTunnelProvider.m] Getting whitelisted routes");
+  for (Subnet *subnet in [Subnet buildSubnetsList:ipWhitelist]) {
+    [whitelistedRoutes addObject:[self getRouteFromSubnet:subnet]];
+  }
+  return whitelistedRoutes;
+}
+
+- (NSArray *)getBlacklistedIpv4Routes {
+  NSMutableArray *blacklistedRoutes = [[NSMutableArray alloc] init];
+  DDLogInfo(@"[PacketTunnelProvider.m] Getting blacklisted routes");
+  for (Subnet *subnet in [Subnet buildSubnetsList:ipBlacklist]) {
+    [blacklistedRoutes addObject:[self getRouteFromSubnet:subnet]];
+  }
+  return blacklistedRoutes;
+}
+
+- (NEIPv4Route *)getRouteFromSubnet:(Subnet *)subnet {
+  NEIPv4Route *route =
+      [[NEIPv4Route alloc] initWithDestinationAddress:subnet.address subnetMask:subnet.mask];
+  return route;
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath

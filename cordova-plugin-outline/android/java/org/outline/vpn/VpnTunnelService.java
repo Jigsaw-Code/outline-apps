@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +70,7 @@ public class VpnTunnelService extends VpnService {
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnConnectionStore connectionStore;
   private Notification.Builder notificationBuilder;
+  private List<String> ipWhitelist = null;
 
   public class LocalBinder extends Binder {
     public VpnTunnelService getService() {
@@ -130,6 +132,10 @@ public class VpnTunnelService extends VpnService {
 
   // Connection API
 
+  public void setIPWhitelist(List<String> _ipWhitelist) {
+    ipWhitelist = _ipWhitelist;
+  }
+
   /**
    * Establishes a system-wide VPN connected to a remote Shadowsocks server. All device traffic is
    * routed as follows: |VPN TUN interface| <-> |tun2socks| <-> |local Shadowsocks server| <->
@@ -182,6 +188,7 @@ public class VpnTunnelService extends VpnService {
       vpnTunnel.disconnectTunnel();
     } else {
       // Only establish the VPN if this is not a connection restart.
+      vpnTunnel.setIPWhitelist(ipWhitelist);
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);

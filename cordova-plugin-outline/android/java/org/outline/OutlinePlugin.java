@@ -25,11 +25,13 @@ import android.net.VpnService;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +50,7 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // Actions supported by this plugin.
   public enum Action {
+    SET_IP_WHITELIST("setIPWhitelist"),
     START("start"),
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
@@ -129,13 +132,14 @@ public class OutlinePlugin extends CordovaPlugin {
   private static final int REQUEST_CODE_PREPARE_VPN = 100;
   private static final int RESULT_OK = -1; // Standard activity result: operation succeeded.
   private static final HashSet<String> CONNECTION_INSTANCE_ACTIONS =
-      new HashSet<String>(Arrays.asList(Action.START.value, Action.STOP.value,
+      new HashSet<String>(Arrays.asList(Action.SET_IP_WHITELIST.value, Action.START.value, Action.STOP.value,
           Action.IS_RUNNING.value, Action.ON_STATUS_CHANGE.value, Action.IS_REACHABLE.value));
 
   private VpnTunnelService vpnTunnelService = null;
   private String startRequestConnectionId = null;
   private JSONObject startRequestConfig = null;
   private Map<Pair<String, String>, CallbackContext> listeners = new ConcurrentHashMap();
+  private List<String> ipWhitelist = null;
 
   // Class to bind to VpnTunnelService.
   private ServiceConnection serviceConnection =
@@ -157,6 +161,7 @@ public class OutlinePlugin extends CordovaPlugin {
 
     Context context = getBaseContext();
     IntentFilter broadcastFilter = new IntentFilter();
+    broadcastFilter.addAction(Action.SET_IP_WHITELIST.value);
     broadcastFilter.addAction(Action.START.value);
     broadcastFilter.addAction(Action.STOP.value);
     broadcastFilter.addAction(Action.ON_STATUS_CHANGE.value);
@@ -214,7 +219,15 @@ public class OutlinePlugin extends CordovaPlugin {
               public void run() {
                 try {
                   // Connection instance actions
-                  if (Action.START.is(action)) {
+                  if (Action.SET_IP_WHITELIST.is(action)) {
+                    //LOG.debug("[OutlinePlugin.java] Received whitelist with length " + args.getJSONArray(1).length() + "");
+                    JSONArray jsonWhitelist = args.getJSONArray(1);
+                    ArrayList<String> _ipWhitelist = new ArrayList<String>();
+                    for (int i = 0; i < jsonWhitelist.length(); i++) {
+                      _ipWhitelist.add(jsonWhitelist.getString(i));
+                    }
+                    ipWhitelist = _ipWhitelist;
+                  } else if (Action.START.is(action)) {
                     // Set instance variables in case we need to start the VPN service from
                     // onActivityResult
                     startRequestConnectionId = connectionId;
@@ -307,6 +320,7 @@ public class OutlinePlugin extends CordovaPlugin {
       onVpnTunnelServiceNotBound(Action.START, startRequestConnectionId);
       return;
     }
+    vpnTunnelService.setIPWhitelist(ipWhitelist);
     vpnTunnelService.startConnection(startRequestConnectionId, startRequestConfig);
   }
 

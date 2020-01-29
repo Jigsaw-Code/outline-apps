@@ -21,6 +21,8 @@ import Sentry
 class OutlinePlugin: CDVPlugin {
 
   private enum Action {
+    static let setIPWhitelist = "setIPWhitelist"
+    static let setIPBlacklist = "setIPBlacklist"
     static let start = "start"
     static let stop = "stop"
     static let onStatusChange = "onStatusChange"
@@ -58,6 +60,24 @@ class OutlinePlugin: CDVPlugin {
           name: NSNotification.Name(rawValue: OutlinePlugin.kAppQuitNotification),
           object: nil)
     #endif
+  }
+
+  func setIPWhitelist(_ command: CDVInvokedUrlCommand) {
+    DDLogInfo("[OutlinePlugin.swift] Receiving ipWhitelist")
+    guard let ipWhitelist = command.argument(at: 1) as? [String] else {
+      return sendError("Missing ipWhitelist", callbackId: command.callbackId)
+    }
+    OutlineVpn.shared.setIPWhitelist(ipWhitelist)
+    self.sendSuccess(callbackId: command.callbackId)
+  }
+
+  func setIPBlacklist(_ command: CDVInvokedUrlCommand) {
+    DDLogInfo("[OutlinePlugin.swift] Receiving ipBlacklist")
+    guard let ipBlacklist = command.argument(at: 1) as? [String] else {
+      return sendError("Missing ipBlacklist", callbackId: command.callbackId)
+    }
+    OutlineVpn.shared.setIPBlacklist(ipBlacklist)
+    self.sendSuccess(callbackId: command.callbackId)
   }
 
   /**

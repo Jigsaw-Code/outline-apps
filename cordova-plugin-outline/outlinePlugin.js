@@ -97,6 +97,16 @@ Connection.prototype._exec = function(cmd, args, success, error) {
   exec(success, error, PLUGIN_NAME, cmd, [this.id_].concat(args));
 };
 
+// Not used on iOS
+Connection.prototype.setIPWhitelist = function(whitelist) {
+  return this._promiseExec('setIPWhitelist', [whitelist]);
+};
+
+// Only used on iOS
+Connection.prototype.setIPBlacklist = function(blacklist) {
+  return this._promiseExec('setIPBlacklist', [blacklist]);
+};
+
 Connection.prototype.start = function() {
   return this._promiseExec('start', [this.config]);
 };

@@ -31,6 +31,8 @@ class OutlineVpn: NSObject {
   private let connectivity: OutlineConnectivity
 
   private enum Action {
+    static let setIPWhitelist = "setIPWhitelist"
+    static let setIPBlacklist = "setIPBlacklist"
     static let start = "start"
     static let restart = "restart"
     static let stop = "stop"
@@ -43,6 +45,8 @@ class OutlineVpn: NSObject {
     static let connectionId = "connectionId"
     static let config = "config"
     static let errorCode = "errorCode"
+    static let ipWhitelist = "ipWhitelist"
+    static let ipBlacklist = "ipBlacklist"
     static let host = "host"
     static let port = "port"
     static let isOnDemand = "is-on-demand"
@@ -85,6 +89,34 @@ class OutlineVpn: NSObject {
   }
 
   // MARK: Interface
+
+  func setIPWhitelist(_ ipWhitelist: [String]) {
+    DDLogInfo("[OutlineVpn.swift] Receiving ipWhitelist")
+    // Pass the list to PacketTunnelProvider
+    let message = [MessageKey.action: Action.setIPWhitelist,
+                   MessageKey.ipWhitelist: ipWhitelist] as [String : Any]
+    sendVpnExtensionMessage(message) { response in
+      guard response == nil else {
+        DDLogInfo("[OutlineVpn.swift] Problem passing ipWhitelist: \(String(describing: response))")
+        return
+      }
+      DDLogInfo("[OutlineVpn.swift] Successfully passed ipWhitelist")
+    }
+  }
+
+  func setIPBlacklist(_ ipBlacklist: [String]) {
+    DDLogInfo("[OutlineVpn.swift] Receiving ipBlacklist")
+    // Pass the list to PacketTunnelProvider
+    let message = [MessageKey.action: Action.setIPBlacklist,
+                   MessageKey.ipBlacklist: ipBlacklist] as [String : Any]
+    sendVpnExtensionMessage(message) { response in
+      guard response == nil else {
+        DDLogInfo("[OutlineVpn.swift] Problem passing ipBlacklist: \(String(describing: response))")
+        return
+      }
+      DDLogInfo("[OutlineVpn.swift] Successfully passed ipBlacklist")
+    }
+  }
 
   // Starts a VPN connection as specified in the OutlineConnection object.
   func start(_ connection: OutlineConnection, _ completion: @escaping (Callback)) {

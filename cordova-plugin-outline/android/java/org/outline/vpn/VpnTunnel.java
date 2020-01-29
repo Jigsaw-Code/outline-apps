@@ -21,6 +21,7 @@ import android.os.ParcelFileDescriptor;
 import android.net.VpnService;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,7 @@ public class VpnTunnel {
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
   private Thread tun2socksThread = null;
+  private List<String> ipWhitelist = null;
 
   /**
    * Constructor.
@@ -65,6 +67,10 @@ public class VpnTunnel {
       throw new IllegalArgumentException("Must provide a VPN service instance");
     }
     this.vpnService = vpnService;
+  }
+
+  public void setIPWhitelist(List<String> _ipWhitelist) {
+    ipWhitelist = _ipWhitelist;
   }
 
   /**
@@ -93,8 +99,10 @@ public class VpnTunnel {
       }
       // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
       // retrieve the list of subnets that excludes those reserved for special use.
-      final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
+      //final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
+      final ArrayList<Subnet> reservedBypassSubnets = getIPWhitelistSubnets();
       for (Subnet subnet : reservedBypassSubnets) {
+        LOG.info("Adding whitelist route: " + subnet.address + "/" + subnet.prefix);
         builder.addRoute(subnet.address, subnet.prefix);
       }
       tunFd = builder.establish();
@@ -187,6 +195,20 @@ public class VpnTunnel {
     final String[] subnetStrings = vpnService.getResources().getStringArray(
         vpnService.getResourceId(PRIVATE_LAN_BYPASS_SUBNETS_ID, "array"));
     ArrayList<Subnet> subnets = new ArrayList<>(subnetStrings.length);
+    for (final String subnetString : subnetStrings) {
+      try {
+        subnets.add(Subnet.parse(subnetString));
+      } catch (Exception e) {
+        LOG.warning(String.format(Locale.ROOT, "Failed to parse subnet: %s", subnetString));
+      }
+    }
+    return subnets;
+  }
+
+  /* Returns a list of whitelisted IP ranges. */
+  private ArrayList<Subnet> getIPWhitelistSubnets() {
+    final List<String> subnetStrings = ipWhitelist;
+    ArrayList<Subnet> subnets = new ArrayList<>(subnetStrings.size());
     for (final String subnetString : subnetStrings) {
       try {
         subnets.add(Subnet.parse(subnetString));
