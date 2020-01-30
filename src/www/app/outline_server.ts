@@ -57,6 +57,14 @@ export class OutlineServer implements PersistentServer {
     return this.config.host;
   }
 
+  setIPWhitelist(whitelist: string[]): void {
+    this.connection.setIPWhitelist(whitelist);
+  }
+
+  setIPBlacklist(blacklist: string[]): void {
+    this.connection.setIPBlacklist(blacklist);
+  }
+
   connect(): Promise<void> {
     return this.connection.start().catch((e) => {
       // e originates in "native" code: either Cordova or Electron's main process.

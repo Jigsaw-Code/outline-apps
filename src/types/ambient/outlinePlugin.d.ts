@@ -55,6 +55,12 @@ declare namespace cordova.plugins.outline {
 
     readonly id: string;
 
+    // Use this for Android
+    setIPWhitelist(whitelist: string[]): void;
+
+    // Use this for iOS
+    setIPBlacklist(blacklist: string[]): void;
+
     // Starts the VPN service, and tunnels all the traffic to a local Shadowsocks
     // server as dictated by its configuration. If there is another running
     // instance, broadcasts a disconnect event and stops the running connection.

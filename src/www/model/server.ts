@@ -21,6 +21,12 @@ export interface Server {
   // The name of this server, as given by the user.
   name: string;
 
+  // Use this for Android
+  setIPWhitelist(whitelist: string[]): void;
+
+  // Use this for iOS
+  setIPBlacklist(blacklist: string[]): void;
+
   // Connects to the server, redirecting the device's traffic.
   connect(): Promise<void>;
 

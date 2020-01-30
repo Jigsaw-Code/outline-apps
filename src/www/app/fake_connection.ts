@@ -31,6 +31,10 @@ export class FakeOutlineConnection implements cordova.plugins.outline.Connection
     return !(this.config.name && this.config.name.toLowerCase().includes('unreachable'));
   }
 
+  setIPWhitelist(whitelist: string[]) {}
+
+  setIPBlacklist(blacklist: string[]) {}
+
   start(): Promise<void> {
     if (this.running) {
       return Promise.resolve();

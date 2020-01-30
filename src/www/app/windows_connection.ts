@@ -36,6 +36,14 @@ export class WindowsOutlineConnection implements cordova.plugins.outline.Connect
     });
   }
 
+  setIPWhitelist(whitelist: string[]) {
+    throw new Error('setIPWhitelist not yet implemented for Windows');
+  }
+
+  setIPBlacklist(whitelist: string[]) {
+    throw new Error('setIPBlacklist not yet implemented for Windows');
+  }
+
   start(): Promise<void> {
     if (this.running) {
       return Promise.resolve();
