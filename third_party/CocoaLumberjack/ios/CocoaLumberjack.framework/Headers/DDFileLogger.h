@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2018, Deusty, LLC
+// Copyright (c) 2010-2019, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -18,7 +18,7 @@
     #define DD_LEGACY_MACROS 0
 #endif
 
-#import "DDLog.h"
+#import <CocoaLumberjack/DDLog.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -340,14 +340,24 @@ extern unsigned long long const kDDDefaultLogFilesDiskQuota;
                        completionQueue:(dispatch_queue_t __nullable)dispatchQueue NS_DESIGNATED_INITIALIZER;
 
 /**
+ *  Deprecated. Use `willLogMessage:`
+ */
+- (void)willLogMessage __attribute__((deprecated("Use -willLogMessage:"))) NS_REQUIRES_SUPER;
+
+/**
+ *  Deprecated. Use `didLogMessage:`
+ */
+- (void)didLogMessage __attribute__((deprecated("Use -didLogMessage:"))) NS_REQUIRES_SUPER;
+
+/**
  *  Called when the logger is about to write message. Call super before your implementation.
  */
-- (void)willLogMessage NS_REQUIRES_SUPER;
+- (void)willLogMessage:(DDLogFileInfo *)logFileInfo NS_REQUIRES_SUPER;
 
 /**
  *  Called when the logger wrote message. Call super after your implementation.
  */
-- (void)didLogMessage NS_REQUIRES_SUPER;
+- (void)didLogMessage:(DDLogFileInfo *)logFileInfo NS_REQUIRES_SUPER;
 
 /**
  *  Writes all in-memory log data to the permanent storage. Call super before your implementation.
