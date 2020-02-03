@@ -53,6 +53,11 @@ ${StrRep}
   ${EndIf}
   SetOutPath -
   File "${PROJECT_DIR}\src\electron\add_tap_device.bat"
+  ${If} ${RunningX64}
+    File /r "${PROJECT_DIR}\tools\find_tap_name\bin\amd64\find_tap_name.exe"
+  ${Else}
+    File /r "${PROJECT_DIR}\tools\find_tap_name\bin\386\find_tap_name.exe"
+  ${EndIf}
 
   ; OutlineService files, stopping the service first in case it's still running.
   nsExec::Exec "net stop OutlineService"

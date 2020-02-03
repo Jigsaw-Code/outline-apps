@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2018, Deusty, LLC
+// Copyright (c) 2010-2019, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -15,6 +15,8 @@
 
 #ifndef SwiftLogLevel_h
 #define SwiftLogLevel_h
+
+#import <CocoaLumberjack/DDLog.h>
 
 #ifndef DD_LOG_LEVEL
 // #warning 'DD_LOG_LEVEL' is not defined. Using 'DDLogLevelAll' as default. Consider defining it yourself.

@@ -64,7 +64,8 @@ let currentConnection: ConnectionManager|undefined;
 
 function createWindow(connectionAtShutdown?: SerializableConnection) {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false});
+  mainWindow = new BrowserWindow(
+      {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
@@ -177,7 +178,12 @@ async function quitApp() {
   app.quit();
 }
 
-const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
+if (!app.requestSingleInstanceLock()) {
+  console.log('another instance is running - exiting');
+  app.quit();
+}
+
+app.on('second-instance', (event: Event, argv: string[]) => {
   interceptShadowsocksLink(argv);
 
   // Someone tried to run a second instance, we should focus our window.
@@ -189,11 +195,6 @@ const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
     mainWindow.focus();
   }
 });
-
-if (isSecondInstance) {
-  console.log('another instance is running - exiting');
-  app.quit();
-}
 
 app.setAsDefaultProtocolClient('ss');
 
@@ -221,7 +222,8 @@ app.on('ready', () => {
   if (debugMode) {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{
       label: 'Developer',
-      submenu: [{role: 'reload'}, {role: 'forcereload'}, {role: 'toggledevtools'}]
+      submenu: Menu.buildFromTemplate(
+          [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
     }]));
   } else {
     checkForUpdates();
