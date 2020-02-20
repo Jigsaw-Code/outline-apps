@@ -13,8 +13,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/paper-ripple/paper-ripple.html" />
 
 <dom-module id="server-connection-viz">
   <template>
@@ -25,7 +25,8 @@
         0% {
           transform: rotate(0deg);
         }
-        60%, 100% {
+        60%,
+        100% {
           transform: rotate(360deg);
         }
       }
@@ -33,7 +34,8 @@
         0% {
           transform: rotate(360deg);
         }
-        60%, 100% {
+        60%,
+        100% {
           transform: rotate(0deg);
         }
       }
@@ -56,7 +58,7 @@
       }
 
       .grey.DISCONNECTED {
-        opacity: 1.0;
+        opacity: 1;
       }
 
       .grey.CONNECTED {
@@ -67,64 +69,81 @@
         opacity: 0.8;
       }
 
-      .grey.ZERO_STATE, .green.ZERO_STATE, .green.DISCONNECTED,
-      .green.CONNECTING, .green.RECONNECTING, .green.DISCONNECTING {
+      .grey.ZERO_STATE,
+      .green.ZERO_STATE,
+      .green.DISCONNECTED,
+      .green.CONNECTING,
+      .green.RECONNECTING,
+      .green.DISCONNECTING {
         opacity: 0;
       }
 
       .green.CONNECTED {
-        opacity: 1.0;
+        opacity: 1;
       }
 
-      #sm.CONNECTING, #sm-grey.CONNECTING,
-      #sm.RECONNECTING, #sm-grey.RECONNECTING {
+      #sm.CONNECTING,
+      #sm-grey.CONNECTING,
+      #sm.RECONNECTING,
+      #sm-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out infinite;
       }
 
-      #md.CONNECTING, #md-grey.CONNECTING,
-      #md.RECONNECTING, #md-grey.RECONNECTING {
+      #md.CONNECTING,
+      #md-grey.CONNECTING,
+      #md.RECONNECTING,
+      #md-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 250ms infinite;
       }
 
-      #lg.CONNECTING, #lg-grey.CONNECTING,
-      #lg.RECONNECTING, #lg-grey.RECONNECTING {
+      #lg.CONNECTING,
+      #lg-grey.CONNECTING,
+      #lg.RECONNECTING,
+      #lg-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 500ms infinite;
       }
 
-      #sm.DISCONNECTING, #sm-grey.DISCONNECTING {
+      #sm.DISCONNECTING,
+      #sm-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out infinite;
       }
 
-      #md.DISCONNECTING, #md-grey.DISCONNECTING {
+      #md.DISCONNECTING,
+      #md-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 250ms infinite;
       }
 
-      #lg.DISCONNECTING, #lg-grey.DISCONNECTING {
+      #lg.DISCONNECTING,
+      #lg-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 500ms infinite;
       }
 
-      #sm, #sm-grey {
-        top:  60px;
+      #sm,
+      #sm-grey {
+        top: 60px;
         left: 60px;
         height: 40px;
-        width:  40px;
+        width: 40px;
         z-index: 300;
       }
 
-      #md, #md-grey {
-        top:  30px;
+      #md,
+      #md-grey {
+        top: 30px;
         left: 30px;
         height: 100px;
-        width:  100px;
+        width: 100px;
         transition-delay: 250ms;
         z-index: 200;
       }
 
-      #lg, #lg-grey, #lg-zero {
-        top:  0;
+      #lg,
+      #lg-grey,
+      #lg-zero {
+        top: 0;
         left: 0;
         height: 160px;
-        width:  160px;
+        width: 160px;
         transition-delay: 500ms;
         z-index: 100;
       }
@@ -142,64 +161,67 @@
       }
 
       #ripple {
-        color: #29353B;
+        color: #29353b;
         height: 160px;
         pointer-events: none;
         z-index: 400;
       }
 
-      @media(min-height: 600px) {
-        #sm, #sm-grey {
-          top:  72px;
+      @media (min-height: 600px) {
+        #sm,
+        #sm-grey {
+          top: 72px;
           left: 72px;
           height: 48px;
-          width:  48px;
+          width: 48px;
         }
 
-        #md, #md-grey {
-          top:  36px;
+        #md,
+        #md-grey {
+          top: 36px;
           left: 36px;
           height: 120px;
-          width:  120px;
+          width: 120px;
         }
 
-        #lg, #lg-grey, #lg-zero {
-          top:  0;
+        #lg,
+        #lg-grey,
+        #lg-zero {
+          top: 0;
           left: 0;
           height: 192px;
-          width:  192px;
+          width: 192px;
         }
       }
       /* rtl:end:ignore */
-
     </style>
     <div id="container">
       <paper-ripple id="ripple" noink="" center=""></paper-ripple>
-      <img id="sm-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}">
-      <img id="sm" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}">
-      <img id="md-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}">
-      <img id="md" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}">
-      <img id="lg-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}">
-      <img id="lg-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}">
-      <img id="lg" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}">
+      <img id="sm-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="sm" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="md-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="md" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="lg-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="lg-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
+      <img id="lg" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
     </div>
   </template>
   <script>
-    'use strict';
+    "use strict";
 
     Polymer({
-      is: 'server-connection-viz',
+      is: "server-connection-viz",
       properties: {
         rootPath: String,
         state: {
           type: String,
-          observer: '_onStateChanged'
+          observer: "_onStateChanged",
         },
         animationState: {
           type: String,
           notify: true,
-          value: 'ZERO_STATE'
-        }
+          value: "ZERO_STATE",
+        },
       },
       _onStateChanged: function _onStateChanged(newState) {
         this._updateAnimationState();
@@ -211,15 +233,14 @@
         if (this._isAnimating(this.state)) {
           this._animationStartMs = new Date().getTime();
         }
-        if (this.state === 'CONNECTED' || this.state === 'DISCONNECTED') {
+        if (this.state === "CONNECTED" || this.state === "DISCONNECTED") {
           if (this._isAnimating(this.animationState)) {
             var now = new Date().getTime();
             var elapsedAnimationMs = now - this._animationStartMs;
-            var remainingAnimationMs =
-                this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
+            var remainingAnimationMs = this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
             // Update the state only after the animation cycle has finished to avoid jumpiness.
             var _this = this;
-            this.async(function () {
+            this.async(function() {
               _this.animationState = _this.state;
             }, remainingAnimationMs);
             return;
@@ -234,16 +255,19 @@
           this._rippleInterval = null;
         }
         if (this._isAnimating(this.state)) {
-          this._rippleInterval = setInterval(function () {
-            this.$.ripple.initialOpacity = 0.1;
-            this.$.ripple.opacityDecayVelocity = 0.3;
-            this.$.ripple.simulatedRipple();
-          }.bind(this), 1500);
+          this._rippleInterval = setInterval(
+            function() {
+              this.$.ripple.initialOpacity = 0.1;
+              this.$.ripple.opacityDecayVelocity = 0.3;
+              this.$.ripple.simulatedRipple();
+            }.bind(this),
+            1500
+          );
         }
       },
       _isAnimating: function(state) {
-        return state === 'CONNECTING' || state === 'DISCONNECTING' || state === 'RECONNECTING';
-      }
+        return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
+      },
     });
   </script>
 </dom-module>

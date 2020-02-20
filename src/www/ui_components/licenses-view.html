@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
 
 <dom-module id="licenses-view">
   <template>
@@ -36,10 +36,10 @@
   </template>
 
   <script>
-    'use strict';
+    "use strict";
 
     Polymer({
-      is: 'licenses-view',
+      is: "licenses-view",
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
@@ -47,29 +47,32 @@
         rootPath: String,
       },
       _licensesLoaded: false,
-      ready: function () {
+      ready: function() {
         // This complexity is to avoid unconditionally loading the (huge) license
         // text at startup.
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        window.addEventListener('location-changed', function () {
-          if (this._licensesLoaded || appRoot.page !== 'licenses') {
-            return;
-          }
+        window.addEventListener(
+          "location-changed",
+          function() {
+            if (this._licensesLoaded || appRoot.page !== "licenses") {
+              return;
+            }
 
-          var xhr = new XMLHttpRequest();
-          xhr.onload = () => {
-            this.$.licensesText.innerText = xhr.responseText;
-            this._licensesLoaded = true;
-          };
-          xhr.onerror = () => {
-            console.error('could not load license.txt');
-          };
-          // This path works in both Cordova and Electron.
-          // Do *not* add a leading slash.
-          xhr.open('GET', 'ui_components/licenses/licenses.txt', true);
-          xhr.send();
-        }.bind(this));
-      }
+            var xhr = new XMLHttpRequest();
+            xhr.onload = () => {
+              this.$.licensesText.innerText = xhr.responseText;
+              this._licensesLoaded = true;
+            };
+            xhr.onerror = () => {
+              console.error("could not load license.txt");
+            };
+            // This path works in both Cordova and Electron.
+            // Do *not* add a leading slash.
+            xhr.open("GET", "ui_components/licenses/licenses.txt", true);
+            xhr.send();
+          }.bind(this)
+        );
+      },
     });
   </script>
 </dom-module>

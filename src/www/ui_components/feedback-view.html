@@ -13,25 +13,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="../bower_components/paper-card/paper-card.html" />
+<link rel="import" href="../bower_components/paper-input/paper-input.html" />
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html" />
 <!-- begin: dropdown menu dependencies -->
-<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html" />
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html" />
+<link rel="import" href="../bower_components/paper-item/paper-item.html" />
 <!-- Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it -->
 <!-- ref: https://github.com/PolymerElements/paper-dropdown-menu/#changes-in-20 -->
-<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html" />
 <!-- end: dropdown menu dependencies -->
 
 <dom-module id="feedback-view">
   <template>
     <style>
       :host {
-        background: #EFEFEF;
+        background: #efefef;
         text-align: center;
         width: 100%;
         padding: 0 8px;
@@ -45,7 +45,9 @@
         margin: 8px auto;
         max-width: 550px;
       }
-      paper-input, paper-textarea, paper-dropdown-menu {
+      paper-input,
+      paper-textarea,
+      paper-dropdown-menu {
         text-align: left;
         --paper-input-container-focus-color: #009688;
       }
@@ -62,7 +64,7 @@
         margin: 0;
       }
       .info {
-        font-weight:300;
+        font-weight: 300;
         font-size: 12px;
         color: #999;
         line-height: 125%;
@@ -82,12 +84,29 @@
           </paper-listbox>
         </paper-dropdown-menu>
 
-        <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" on-value-changed="_emailValueChanged"  onkeydown="this.invalid = false;"></paper-input>
-        <p class="info" hidden$=[[!shouldShowLanguageDisclaimer]]>[[localize('feedback-language-disclaimer')]]</p>
+        <paper-input
+          id="email"
+          type="email"
+          name="email"
+          label="[[localize('email-feedback-input')]]"
+          on-value-changed="_emailValueChanged"
+          onkeydown="this.invalid = false;"
+        ></paper-input>
+        <p class="info" hidden$="[[!shouldShowLanguageDisclaimer]]">[[localize('feedback-language-disclaimer')]]</p>
 
-        <paper-textarea id="feedback" name="feedback" label="[[localize('feedback-input')]]" rows="3" onkeydown="this.invalid = false;" required></paper-textarea>
+        <paper-textarea
+          id="feedback"
+          name="feedback"
+          label="[[localize('feedback-input')]]"
+          rows="3"
+          onkeydown="this.invalid = false;"
+          required
+        ></paper-textarea>
 
-        <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"></p>
+        <p
+          class="info"
+          inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"
+        ></p>
       </div>
       <div class="card-actions">
         <paper-button id="submitButton" disabled$="[[submitting]]">[[submitButtonLabel]]</paper-button>
@@ -95,16 +114,16 @@
     </paper-card>
   </template>
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'feedback-view',
+      is: "feedback-view",
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated
         localize: Function,
         category: {
           type: String,
-          value: 'general',
+          value: "general",
         },
         hasEnteredEmail: {
           type: Boolean,
@@ -112,65 +131,68 @@
         },
         shouldShowLanguageDisclaimer: {
           type: Boolean,
-          computed: '_computeShouldShowLanguageDisclaimer(hasEnteredEmail)',
+          computed: "_computeShouldShowLanguageDisclaimer(hasEnteredEmail)",
         },
         submitting: {
           type: Boolean,
-          value: false
+          value: false,
         },
         submitButtonLabel: {
           type: String,
-          computed: '_computeSubmitButtonLabel(submitting, localize)'
-        }
+          computed: "_computeSubmitButtonLabel(submitting, localize)",
+        },
       },
-      ready: function () {
+      ready: function() {
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        window.addEventListener('location-changed', function () {
-          if (appRoot.page !== 'feedback') return;
-          // Workaround: https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
-          if (!this.$.dropdownMenu.value) {
-            var tmp = this.$.categoryList.selected;
-            this.$.categoryList.selected = undefined;
-            this.$.categoryList.selected = tmp;
-          }
-        }.bind(this));
+        window.addEventListener(
+          "location-changed",
+          function() {
+            if (appRoot.page !== "feedback") return;
+            // Workaround: https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
+            if (!this.$.dropdownMenu.value) {
+              var tmp = this.$.categoryList.selected;
+              this.$.categoryList.selected = undefined;
+              this.$.categoryList.selected = tmp;
+            }
+          }.bind(this)
+        );
       },
       _emailValueChanged: function() {
         this.hasEnteredEmail = !!this.$.email.value;
       },
-      _computeSubmitButtonLabel: function (submitting, localize) {
+      _computeSubmitButtonLabel: function(submitting, localize) {
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this
         // again once localize has been defined at which point we will return the right value.
-        if (!localize) return '';
-        var label = submitting ? 'submitting' : 'submit';
+        if (!localize) return "";
+        var label = submitting ? "submitting" : "submit";
         return this.localize(label);
       },
       // Returns whether the window's locale is English (i.e. EN, en-US) and the user has
       // entered their email address.
-      _computeShouldShowLanguageDisclaimer: function (hasEnteredEmail) {
+      _computeShouldShowLanguageDisclaimer: function(hasEnteredEmail) {
         return !window.navigator.language.match(/^en/i) && hasEnteredEmail;
       },
-      getValidatedFormData: function () {
+      getValidatedFormData: function() {
         var inputs = [this.$.categoryList, this.$.feedback, this.$.email];
         for (var i = 0, input = inputs[i]; input; input = inputs[++i]) {
           if (input.validate && !input.validate()) {
             // The input.validate() call gives the input "invalid" styles if it's invalid,
             // so the user can see they have to fix it.
-            console.debug('input invalid:', input);
+            console.debug("input invalid:", input);
             return;
           }
         }
         return {
           category: this.category,
           feedback: this.$.feedback.value,
-          email: this.$.email.value
+          email: this.$.email.value,
         };
       },
-      resetForm: function () {
-        this.$.categoryList.category = 'general';
-        this.$.feedback.value = '';
-        this.$.email.value = '';
-      }
+      resetForm: function() {
+        this.$.categoryList.category = "general";
+        this.$.feedback.value = "";
+        this.$.email.value = "";
+      },
     });
   </script>
 </dom-module>
