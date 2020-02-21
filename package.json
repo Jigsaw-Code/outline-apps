@@ -62,6 +62,8 @@
     "polymer-build": "^2.1.1",
     "postcss-rtl": "^1.2.3",
     "posthtml-postcss": "^0.2.6",
+    "prettier": "^1.19.1",
+    "pretty-quick": "^2.0.1",
     "tslint": "^5.12.0",
     "typescript": "^3.6.4",
     "vinyl-source-stream": "^2.0.0",
@@ -70,7 +72,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format"
+      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format && yarn pretty-quick --staged"
     }
   },
   "cordova": {
@@ -90,5 +92,10 @@
       "osx",
       "android"
     ]
+  },
+  "prettier": {
+    "bracketSpacing": false,
+    "trailingComma": "es5",
+    "printWidth": 120
   }
 }

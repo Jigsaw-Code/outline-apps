@@ -13,24 +13,24 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel='import' href='../bower_components/paper-input/paper-input.html'>
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../bower_components/paper-styles/paper-styles-classes.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../bower_components/paper-card/paper-card.html" />
+<link rel="import" href="../bower_components/paper-input/paper-input.html" />
+<link rel="import" href="../bower_components/paper-item/paper-item.html" />
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html" />
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html" />
+<link rel="import" href="../bower_components/paper-styles/paper-styles-classes.html" />
 
-<link rel="import" href="server-connection-viz.html">
+<link rel="import" href="server-connection-viz.html" />
 
 <dom-module id="server-card">
   <template>
     <style>
       :host {
         display: block;
-        background: #EFEFEF;
+        background: #efefef;
         /*
           Ballpark figure chosen to be comfortably more than
           the combined height of the toolbar, button, and status.
@@ -84,7 +84,7 @@
       }
 
       #serverHost {
-        color: rgba(0,0,0,0.54);
+        color: rgba(0, 0, 0, 0.54);
         font-size: small;
       }
 
@@ -123,7 +123,6 @@
           padding: 20% 0;
         }
       }
-
     </style>
 
     <paper-card>
@@ -134,7 +133,12 @@
         </div>
         <paper-menu-button horizontal-align="right" close-on-activate="true">
           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-          <paper-listbox id="menu" slot="dropdown-content" on-iron-activate="_onMenuItemPressed" attr-for-selected="name">
+          <paper-listbox
+            id="menu"
+            slot="dropdown-content"
+            on-iron-activate="_onMenuItemPressed"
+            attr-for-selected="name"
+          >
             <paper-item name="rename">[[localize('server-rename')]]</paper-item>
             <paper-item name="forget">[[localize('server-forget')]]</paper-item>
           </paper-listbox>
@@ -142,23 +146,28 @@
       </div>
       <div class="card-content">
         <div>
-          <paper-button id="server-visualization-button" on-tap="_onConnectToggled"
-            disabled$="[[connectButtonDisabled]]" noink>
+          <paper-button
+            id="server-visualization-button"
+            on-tap="_onConnectToggled"
+            disabled$="[[connectButtonDisabled]]"
+            noink
+          >
             <server-connection-viz state="[[state]]" root-path="[[rootPath]]"></server-connection-viz>
           </paper-button>
         </div>
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
-        <paper-button id="connectButton" on-tap="_onConnectToggled"
-          disabled$="[[connectButtonDisabled]]">[[connectButtonLabel]]</paper-button>
+        <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
+          >[[connectButtonLabel]]</paper-button
+        >
       </div>
     </paper-card>
   </template>
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'server-card',
+      is: "server-card",
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
@@ -170,68 +179,74 @@
         serverPort: Number,
         state: {
           type: String,
-          value: 'DISCONNECTED'
+          value: "DISCONNECTED",
         },
         statusMessage: {
           type: String,
-          computed: '_computeStatusMessage(state, localize)'
+          computed: "_computeStatusMessage(state, localize)",
         },
         connectButtonLabel: {
           type: String,
-          computed: '_computeConnectButtonLabel(state, localize)'
+          computed: "_computeConnectButtonLabel(state, localize)",
         },
         connectButtonDisabled: {
           type: Boolean,
-          computed: '_computeConnectButtonDisabled(state)'
-        }
+          computed: "_computeConnectButtonDisabled(state)",
+        },
       },
       _onConnectToggled: function() {
-        var connect = this.state === 'DISCONNECTED';
-        var eventId = (connect ? 'C' : 'Disc') + 'onnectPressed';
+        var connect = this.state === "DISCONNECTED";
+        var eventId = (connect ? "C" : "Disc") + "onnectPressed";
         this.fire(eventId, {serverId: this.serverId});
       },
-      _computeStatusMessage: function (state, localize) {
+      _computeStatusMessage: function(state, localize) {
         // If localize hasn't been defined yet, just return '' for now - Polymer will call this
         // again once localize has been defined at which point we will return the right value.
-        if (!localize) return '';
-        return {
-          DISCONNECTED: this.localize('disconnected-server-state'),
-          CONNECTING: this.localize('connecting-server-state'),
-          CONNECTED: this.localize('connected-server-state'),
-          DISCONNECTING: this.localize('disconnecting-server-state'),
-          RECONNECTING: this.localize('reconnecting-server-state')
-        }[state] || this.localize('disconnected-server-state');
+        if (!localize) return "";
+        return (
+          {
+            DISCONNECTED: this.localize("disconnected-server-state"),
+            CONNECTING: this.localize("connecting-server-state"),
+            CONNECTED: this.localize("connected-server-state"),
+            DISCONNECTING: this.localize("disconnecting-server-state"),
+            RECONNECTING: this.localize("reconnecting-server-state"),
+          }[state] || this.localize("disconnected-server-state")
+        );
       },
-      _computeConnectButtonLabel: function (state, localize) {
-        if (!localize) return '';
-        return {
-          DISCONNECTED: this.localize('connect-button-label'),
-          CONNECTING: this.localize('disconnect-button-label'),
-          CONNECTED: this.localize('disconnect-button-label'),
-          DISCONNECTING: this.localize('connect-button-label'),
-          RECONNECTING: this.localize('disconnect-button-label')
-        }[state] || this.localize('connect-button-label');
+      _computeConnectButtonLabel: function(state, localize) {
+        if (!localize) return "";
+        return (
+          {
+            DISCONNECTED: this.localize("connect-button-label"),
+            CONNECTING: this.localize("disconnect-button-label"),
+            CONNECTED: this.localize("disconnect-button-label"),
+            DISCONNECTING: this.localize("connect-button-label"),
+            RECONNECTING: this.localize("disconnect-button-label"),
+          }[state] || this.localize("connect-button-label")
+        );
       },
-      _computeConnectButtonDisabled: function (state) {
-        return state === 'CONNECTING' || state === 'DISCONNECTING';
+      _computeConnectButtonDisabled: function(state) {
+        return state === "CONNECTING" || state === "DISCONNECTING";
       },
       _onMenuItemPressed: function(evt, detail) {
-        if (detail.selected === 'forget') {
+        if (detail.selected === "forget") {
           this._fireForgetRequest();
-        } else if (detail.selected === 'rename') {
+        } else if (detail.selected === "rename") {
           this._fireShowServerRename();
         }
         // This can leave the pressed paper-item in the selected state,
         // causing it to get selected styling (e.g. font-weight: bold),
         // so explicitly deselect it:
-        this.async(function () { this.$.menu.select(null); });
+        this.async(function() {
+          this.$.menu.select(null);
+        });
       },
-      _fireForgetRequest: function () {
-        this.fire('ForgetPressed', {serverId: this.serverId});
+      _fireForgetRequest: function() {
+        this.fire("ForgetPressed", {serverId: this.serverId});
       },
       _fireShowServerRename: function() {
-        this.fire('ShowServerRename', {serverName: this.serverName, serverId: this.serverId});
-      }
+        this.fire("ShowServerRename", {serverName: this.serverName, serverId: this.serverId});
+      },
     });
   </script>
 </dom-module>

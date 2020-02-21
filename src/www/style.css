@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
-  background: #EFEFEF;
+  background: #efefef;
   margin: 0;
   font-family: Roboto, sans-serif;
 }
 
 html {
   -webkit-touch-callout: none; /* Safari mobile */
-    -webkit-user-select: none; /* Safari */
-        -ms-user-select: none; /* IE/Edge */
-            user-select: none; /* Chrome */
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE/Edge */
+  user-select: none; /* Chrome */
 }

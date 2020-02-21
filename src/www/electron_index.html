@@ -16,22 +16,23 @@
 <!DOCTYPE html>
 <!-- Default LTR direction will be changed dynamically for RTL locales. -->
 <html dir="ltr">
-  <meta charset="UTF-8">
-  <title>Outline</title>
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="style.css">
-  <script src="bower_components/outline-i18n/index.js"></script>
-  <script src="bower_components/punycode/punycode.min.js"></script>
-  <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
-  <link rel="import" href="ui_components/app-root.html">
-  <script>
-    if (require('os').platform() === 'linux') {
-      document.title = 'Outline Beta';
-    }
-    require('./app/electron_main.js');
-  </script>
-</head>
-<body unresolved>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Outline</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="bower_components/outline-i18n/index.js"></script>
+    <script src="bower_components/punycode/punycode.min.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+    <link rel="import" href="ui_components/app-root.html" />
+    <script>
+      if (require("os").platform() === "linux") {
+        document.title = "Outline Beta";
+      }
+      require("./app/electron_main.js");
+    </script>
+  </head>
+  <body unresolved>
+    <app-root></app-root>
+  </body>
 </html>

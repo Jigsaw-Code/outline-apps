@@ -13,10 +13,10 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html" />
 
-<link rel="import" href="./server-card.html">
+<link rel="import" href="./server-card.html" />
 
 <dom-module id="server-list">
   <template>
@@ -30,7 +30,7 @@
       server-card {
         margin: 8px auto;
         max-width: 400px; /* better card spacing on pixel and iphone */
-        padding: 0 8px;  /* Necessary for smaller displays */
+        padding: 0 8px; /* Necessary for smaller displays */
       }
       @media (min-width: 600px) {
         server-card {
@@ -44,30 +44,36 @@
         item.host actually calls the getter in OutlineServer instead of accessing .host in ServerConfig.
         TODO get rid of the .host getter and force users of PersistentServer to all go through the config.
       -->
-      <server-card server-id="[[item.id]]" server-name="[[item.name]]" server-host="[[item.host]]" server-port="[[item.config.port]]" localize="[[localize]]"
-        root-path="[[rootPath]]"></server-card>
+      <server-card
+        server-id="[[item.id]]"
+        server-name="[[item.name]]"
+        server-host="[[item.host]]"
+        server-port="[[item.config.port]]"
+        localize="[[localize]]"
+        root-path="[[rootPath]]"
+      ></server-card>
     </template>
   </template>
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'server-list',
+      is: "server-list",
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
         localize: Function,
         rootPath: String,
-        servers: Array
+        servers: Array,
       },
-      getServerCard: function (serverId) {
-       var cards = this.shadowRoot.querySelectorAll('server-card');
-       for (var i = 0, card = cards[i]; card; card = cards[++i]) {
-         if (card.serverId === serverId) {
+      getServerCard: function(serverId) {
+        var cards = this.shadowRoot.querySelectorAll("server-card");
+        for (var i = 0, card = cards[i]; card; card = cards[++i]) {
+          if (card.serverId === serverId) {
             return card;
           }
         }
         throw new Error(`Card for server ${serverId} not found`);
-      }
+      },
     });
   </script>
 </dom-module>

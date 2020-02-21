@@ -16,27 +16,27 @@
 <!DOCTYPE html>
 <!-- Default LTR direction will be changed dynamically for RTL locales. -->
 <html dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <title>Outline</title>
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="style.css">
-  <!-- See https://github.com/webcomponents/custom-elements#es5-vs-es2015  -->
-  <script src="bower_components/webcomponentsjs/custom-elements-es5-adapter.js "></script>
-  <script src="babel-polyfill.min.js"></script>
-  <script src="bower_components/outline-i18n/index.js"></script>
-  <script src="bower_components/punycode/punycode.min.js"></script>
-  <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="cordova.js"></script>
-  <script src="cordova_main.js"></script>
-  <script>
-    window.Polymer = {
-      rootPath: location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1)
-    };
-  </script>
-  <link rel="import" href="ui_components/app-root.html">
-</head>
-<body unresolved>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Outline</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="style.css" />
+    <!-- See https://github.com/webcomponents/custom-elements#es5-vs-es2015  -->
+    <script src="bower_components/webcomponentsjs/custom-elements-es5-adapter.js "></script>
+    <script src="babel-polyfill.min.js"></script>
+    <script src="bower_components/outline-i18n/index.js"></script>
+    <script src="bower_components/punycode/punycode.min.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="cordova.js"></script>
+    <script src="cordova_main.js"></script>
+    <script>
+      window.Polymer = {
+        rootPath: location.pathname.substring(0, location.pathname.lastIndexOf("/") + 1),
+      };
+    </script>
+    <link rel="import" href="ui_components/app-root.html" />
+  </head>
+  <body unresolved>
+    <app-root></app-root>
+  </body>
 </html>

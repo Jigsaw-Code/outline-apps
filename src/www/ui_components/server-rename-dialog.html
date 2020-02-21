@@ -13,10 +13,10 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel='import' href='../bower_components/paper-input/paper-input.html'>
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html" />
+<link rel="import" href="../bower_components/paper-input/paper-input.html" />
 
 <dom-module id="server-rename-dialog">
   <template>
@@ -39,16 +39,16 @@
     </paper-dialog>
   </template>
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'server-rename-dialog',
+      is: "server-rename-dialog",
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
         localize: Function,
         rootPath: String,
         __serverName: String,
-        __serverId: String
+        __serverId: String,
       },
       open: function(serverName, serverId) {
         // Store the initial serverName so we can know if it changed, and
@@ -65,9 +65,9 @@
       _saveRename: function() {
         const newName = this.$.serverNameInput.value;
         if (newName !== this.__serverName) {
-          this.fire('RenameRequested', {serverId: this.__serverId, newName: newName});
+          this.fire("RenameRequested", {serverId: this.__serverId, newName: newName});
         }
-      }
+      },
     });
   </script>
 </dom-module>
