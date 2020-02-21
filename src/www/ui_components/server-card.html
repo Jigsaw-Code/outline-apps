@@ -40,6 +40,13 @@
         min-height: 300px;
       }
 
+      :focus {
+        /* Disable outline for focused elements; mainly affects the iOS WebView,
+         * where elements stay highlighted after user interaction.
+         */
+        outline: 0 !important;
+      }
+
       paper-card {
         width: 100%;
       }

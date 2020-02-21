@@ -27,11 +27,28 @@ set DEVICE_HWID=tap0901
 set PATH=%PATH%;%SystemRoot%\system32;%SystemRoot%\system32\wbem;%SystemRoot%\system32\WindowsPowerShell/v1.0
 
 :: Check whether the device already exists.
-netsh interface show interface name=%DEVICE_NAME% >nul
+netsh interface show interface name=%DEVICE_NAME%
 if %errorlevel% equ 0 (
   echo TAP network device already exists.
   goto :configure
 )
+
+echo Storing existing network interfaces...
+set NETWORK_INTERFACES_FILE=%tmp%\outlineinstaller-network-interfaces.txt
+:: This command retrieves the existing network interface names and formats it as
+:: a commma-separated string, so it can be passed to find_tap_name.exe:
+::  - removes empty lines with findstr
+::  - removes leading/trailing space with trim
+::  - joins the names without newlines (CLRF) with get-content and set-content
+::  - stores the result in NETWORK_INTERFACES_FILE
+::
+:: Note that we pipe input from /dev/null to prevent Powershell hanging forever
+:: waiting on EOF.
+powershell "wmic nic where 'netconnectionid is not null' get netconnectionid | findstr /r /v '^$' | foreach-object {$_.trim()} > '%NETWORK_INTERFACES_FILE%'; ((get-content '%NETWORK_INTERFACES_FILE%') -join ',') | set-content -nonewline '%NETWORK_INTERFACES_FILE%'" <nul
+if %errorlevel% neq 0 (
+  echo Could not store existing network interfaces. >&2
+)
+type "%NETWORK_INTERFACES_FILE%"
 
 echo Creating TAP network device...
 tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
@@ -43,16 +60,16 @@ if %errorlevel% neq 0 (
 :: Find the name of the most recently installed TAP device in the registry and rename it.
 echo Searching for new TAP network device name...
 set TAP_NAME_FILE=%tmp%\outlineinstaller-tap-device-name.txt
-find_tap_name.exe --component-id %DEVICE_HWID% > %TAP_NAME_FILE%
+find_tap_name.exe --component-id %DEVICE_HWID% --ignored-names "%NETWORK_INTERFACES_FILE%" > %TAP_NAME_FILE%
 if %errorlevel% neq 0 (
   echo Could not find TAP device name. >&2
   exit /b 1
 )
 set /p TAP_NAME=<%TAP_NAME_FILE%
-echo Found TAP device name: %TAP_NAME%
+echo Found TAP device name: "%TAP_NAME%"
 netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
 if %errorlevel% neq 0 (
-  echo Could rename TAP device. >&2
+  echo Could not rename TAP device. >&2
   exit /b 1
 )
 
