@@ -33,23 +33,6 @@ if %errorlevel% equ 0 (
   goto :configure
 )
 
-echo Storing existing network interfaces...
-set NETWORK_INTERFACES_FILE=%tmp%\outlineinstaller-network-interfaces.txt
-:: This command retrieves the existing network interface names and formats it as
-:: a commma-separated string, so it can be passed to find_tap_name.exe:
-::  - removes empty lines with findstr
-::  - removes leading/trailing space with trim
-::  - joins the names without newlines (CLRF) with get-content and set-content
-::  - stores the result in NETWORK_INTERFACES_FILE
-::
-:: Note that we pipe input from /dev/null to prevent Powershell hanging forever
-:: waiting on EOF.
-powershell "wmic nic where 'netconnectionid is not null' get netconnectionid | findstr /r /v '^$' | foreach-object {$_.trim()} > '%NETWORK_INTERFACES_FILE%'; ((get-content '%NETWORK_INTERFACES_FILE%') -join ',') | set-content -nonewline '%NETWORK_INTERFACES_FILE%'" <nul
-if %errorlevel% neq 0 (
-  echo Could not store existing network interfaces. >&2
-)
-type "%NETWORK_INTERFACES_FILE%"
-
 echo Creating TAP network device...
 tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
 if %errorlevel% neq 0 (
@@ -59,34 +42,26 @@ if %errorlevel% neq 0 (
 
 :: Find the name of the most recently installed TAP device in the registry and rename it.
 echo Searching for new TAP network device name...
-set TAP_NAME_FILE=%tmp%\outlineinstaller-tap-device-name.txt
-find_tap_name.exe --component-id %DEVICE_HWID% --ignored-names "%NETWORK_INTERFACES_FILE%" > %TAP_NAME_FILE%
+call find_tap_device_name.bat TAP_NAME
 if %errorlevel% neq 0 (
   echo Could not find TAP device name. >&2
   exit /b 1
 )
-set /p TAP_NAME=<%TAP_NAME_FILE%
 echo Found TAP device name: "%TAP_NAME%"
+
+:: We've occasionally seen delays before netsh will "see" the new device, at least for
+:: purposes of configuring IP and DNS ("netsh interface show interface name=xxx" does not
+:: seem to be affected).
+call :wait_for_device "%TAP_NAME%"
+
 netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
 if %errorlevel% neq 0 (
   echo Could not rename TAP device. >&2
   exit /b 1
 )
 
-:: We've occasionally seen delays before netsh will "see" the new device, at least for
-:: purposes of configuring IP and DNS ("netsh interface show interface name=xxx" does not
-:: seem to be affected).
-echo Testing that the new TAP network device is visible to netsh...
-netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
-if %errorlevel% equ 0 goto :configure
-
-:loop
-echo waiting...
-:: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
-:: "ERROR: Input redirection is not supported, exiting the process immediately."
-waitfor /t 10 thisisnotarealsignalname >nul 2>&1
-netsh interface ip show interfaces | find "%DEVICE_NAME%" >nul
-if %errorlevel% neq 0 goto :loop
+:: Wait for the new name to propagate to netsh.
+call :wait_for_device "%DEVICE_NAME%"
 
 :configure
 
@@ -131,3 +106,20 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 echo TAP network device added and configured successfully
+exit /b 0
+
+:: Waits up to a minute until a device is visible to netsh. Accepts the device name as a parameter.
+:: Exits with a non-zero code if the operation times out.
+:wait_for_device
+echo Testing that the network device "%~1" is visible to netsh...
+netsh interface ip show interfaces | find "%~1" >nul 2>&1
+if %errorlevel% equ 0 exit /b 0
+for /l %%n in (1, 1, 6) do (
+  echo Waiting... %%n
+  :: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
+  :: "ERROR: Input redirection is not supported, exiting the process immediately."
+  waitfor /t 10 thisisnotarealsignalname >nul 2>&1
+  netsh interface ip show interfaces | find "%~1" >nul 2>&1
+  if %errorlevel% equ 0 exit /b 0
+)
+exit /b 1
