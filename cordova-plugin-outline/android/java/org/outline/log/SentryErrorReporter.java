@@ -16,11 +16,15 @@ package org.outline.log;
 
 import android.content.Context;
 import android.util.Log;
-import io.sentry.event.Breadcrumb;
-import io.sentry.event.BreadcrumbBuilder;
-import io.sentry.event.Event;
-import io.sentry.event.EventBuilder;
-import io.sentry.Sentry;
+import io.sentry.android.core.SentryAndroid;
+import io.sentry.core.Breadcrumb;
+import io.sentry.core.Sentry;
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.protocol.Contexts;
+import io.sentry.core.protocol.Device;
+import io.sentry.core.protocol.Message;
+import io.sentry.core.protocol.OperatingSystem;
 import java.lang.IllegalStateException;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -36,16 +40,15 @@ class SentryErrorReporter {
    */
   private static class SentryMessage {
     private String msg;
-    private Breadcrumb.Level level;
-    SentryMessage(final String msg, Breadcrumb.Level level) {
+    private SentryLevel level;
+    SentryMessage(final String msg, SentryLevel level) {
       this.msg = msg;
       this.level = level;
     }
     public Breadcrumb toBreadcrumb() {
-      return new BreadcrumbBuilder()
-          .setMessage(msg)
-          .setLevel(level)
-          .build();
+      final Breadcrumb breadcrumb = new Breadcrumb(msg);
+      breadcrumb.setLevel(level);
+      return breadcrumb;
     }
   }
 
@@ -69,12 +72,24 @@ class SentryErrorReporter {
     if (isInitialized) {
       throw new IllegalStateException("Error reporting framework already initiated");
     }
-    Sentry.init(dsn, new DataSensitiveAndroidSentryClientFactory(context));
+    SentryAndroid.init(context, options -> {
+      options.setDsn(dsn);
+      options.setBeforeSend(((event, hint) -> {
+        try {
+          return removeSentryEventPii(event);
+        } catch (Exception e) {
+          Log.e(SentryErrorReporter.class.getName(), "Failed to remove PII from Sentry event.", e);
+        }
+        // Don't send the event if we weren't able to remove PII.
+        return null;
+      }));
+    });
+
     isInitialized = true;
 
     // Record all queued breadcrumbs.
     while (breadcrumbsQueue.size() > 0) {
-      Sentry.getContext().recordBreadcrumb(breadcrumbsQueue.remove().toBreadcrumb());
+      Sentry.addBreadcrumb(breadcrumbsQueue.remove().toBreadcrumb());
     }
   }
 
@@ -94,10 +109,12 @@ class SentryErrorReporter {
     // ID is not present, use a random UUID to disambiguate the report message so it doesn't get
     // clustered with other reports. Clustering retains the report data on the server side, whereas
     // inactivity results in its deletion after 90 days.
-    // Don't build the event so the event builder runs and adds platform data.
-    Sentry.capture(new EventBuilder()
-                       .withMessage(String.format(Locale.ROOT, "Android report (%s)", uuid))
-                       .withTag("user_event_id", uuid));
+    final SentryEvent event = new SentryEvent();
+    final Message message = new Message();
+    message.setMessage(String.format(Locale.ROOT, "Android report (%s)", uuid));
+    event.setMessage(message);
+    event.setTag("user_event_id", uuid);
+    Sentry.captureEvent(event);
   }
 
   /**
@@ -115,7 +132,7 @@ class SentryErrorReporter {
    * @param msg, string to log
    */
   public static void recordErrorMessage(final String msg) throws IllegalStateException {
-    recordMessage(msg, Breadcrumb.Level.ERROR);
+    recordMessage(msg, SentryLevel.ERROR);
   }
 
   /**
@@ -124,7 +141,7 @@ class SentryErrorReporter {
    * @param msg, string to log
    */
   public static void recordWarningMessage(final String msg) throws IllegalStateException {
-    recordMessage(msg, Breadcrumb.Level.WARNING);
+    recordMessage(msg, SentryLevel.WARNING);
   }
 
   /**
@@ -133,16 +150,46 @@ class SentryErrorReporter {
    * @param msg, string to log
    */
   public static void recordInfoMessage(final String msg) throws IllegalStateException {
-    recordMessage(msg, Breadcrumb.Level.INFO);
+    recordMessage(msg, SentryLevel.INFO);
   }
 
   // Record a log message to be sent with the next error report.
-  private static void recordMessage(final String msg, Breadcrumb.Level level) {
+  private static void recordMessage(final String msg, SentryLevel level) {
     if (!isInitialized) {
       breadcrumbsQueue.add(new SentryMessage(msg, level));
       return;
     }
-    Sentry.getContext().recordBreadcrumb(
-        new BreadcrumbBuilder().setMessage(msg).setLevel(level).build());
+    final Breadcrumb breadcrumb = new Breadcrumb(msg);
+    breadcrumb.setLevel(level);
+    Sentry.addBreadcrumb(breadcrumb);
+  }
+
+  // Removes personally identifiably information and unnecessary metadata from a Sentry event.
+  // Ensures that the Android device ID is not sent.
+  private static SentryEvent removeSentryEventPii(final SentryEvent event) {
+    final Contexts contexts = event.getContexts();
+    final Device device = contexts.getDevice();
+    device.setBootTime(null);
+    device.setCharging(null);
+    device.setExternalFreeStorage(null);
+    device.setExternalStorageSize(null);
+    device.setId(null);
+    device.setOrientation(null);
+    device.setScreenDensity(null);
+    device.setScreenDpi(null);
+    device.setScreenHeightPixels(null);
+    device.setScreenResolution(null);
+    device.setScreenWidthPixels(null);
+
+    final OperatingSystem os = contexts.getOperatingSystem();
+    os.setRooted(null);
+
+    contexts.setDevice(device);
+    contexts.setOperatingSystem(os);
+    event.setContexts(contexts);
+    event.setUser(null);
+    event.removeTag("os.rooted");
+    event.removeTag("user");
+    return event;
   }
 }
