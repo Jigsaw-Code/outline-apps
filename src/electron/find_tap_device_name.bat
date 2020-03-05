@@ -18,10 +18,12 @@
 :: Usage example: find_tap_name.bat TAP_NAME
 
 @echo off
+:: See https://ss64.com/nt/delayedexpansion.html
 setlocal enabledelayedexpansion
 
-set NET_ADAPTERS_KEY=HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}
-set NET_CONFIG_KEY=HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Network\{4D36E972-E325-11CE-BFC1-08002BE10318}
+set NET_ADAPTERS_CLASS_GUID={4D36E972-E325-11CE-BFC1-08002BE10318}
+set NET_ADAPTERS_KEY=HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\%NET_ADAPTERS_CLASS_GUID%
+set NET_CONFIG_KEY=HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Network\%NET_ADAPTERS_CLASS_GUID%
 set NET_ADAPTERS_FILE="%tmp%\netadapters.txt"
 
 :: Find all network adapters that match the "tap0901" component ID and store their registry path in a file.
@@ -35,10 +37,14 @@ if %errorlevel% neq 0 (
 set TIMESTAMP=0
 set NAME=
 for /f "tokens=*" %%K in ('type "%NET_ADAPTERS_FILE%"') do (
+  set ADAPTER_NAME=
+  set ADAPTER_NET_CONFIG_ID=
+  set ADAPTER_TIMESTAMP=
+
   :: Retrieve the adapter's network config ID.
   set ADAPTER_KEY=%%K
   for /f "tokens=3" %%I in ('reg query !ADAPTER_KEY! /v "NetCfgInstanceId"') do (
-    set NET_CONFIG_ID=%%I
+    set ADAPTER_NET_CONFIG_ID=%%I
   )
 
   :: Retrieve the adapter's install timestamp.
@@ -47,7 +53,7 @@ for /f "tokens=*" %%K in ('type "%NET_ADAPTERS_FILE%"') do (
   )
 
   :: Retrieve the adapter's name.
-  set ADAPTER_CONFIG_KEY=!NET_CONFIG_KEY!\!NET_CONFIG_ID!\Connection
+  set ADAPTER_CONFIG_KEY=!NET_CONFIG_KEY!\!ADAPTER_NET_CONFIG_ID!\Connection
   for /f "tokens=3*" %%N in ('reg query !ADAPTER_CONFIG_KEY! /v "Name"') do (
     :: If the name contains spaces our tokenization will store the rest of the name in %%O.
     if [%%O] == [] (
@@ -66,7 +72,11 @@ for /f "tokens=*" %%K in ('type "%NET_ADAPTERS_FILE%"') do (
         set TIMESTAMP=!ADAPTER_TIMESTAMP!
         set NAME=!ADAPTER_NAME!
       )
+    ) else (
+      echo Failed to retrieve name of adapter !ADAPTER_KEY! >&2
     )
+  ) else (
+    echo Failed to retrieve install timestamp of adapter !ADAPTER_KEY! >&2
   )
 )
 
