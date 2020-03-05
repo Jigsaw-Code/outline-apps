@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class SentryThread;
+@class SentryThread, SentryMechanism;
 
 NS_SWIFT_NAME(Exception)
 @interface SentryException : NSObject <SentrySerializable>
@@ -37,7 +37,7 @@ SENTRY_NO_INIT
 /**
  * Additional information about the exception
  */
-@property(nonatomic, strong) NSDictionary<NSString *, id> *_Nullable mechanism;
+@property(nonatomic, strong) SentryMechanism *_Nullable mechanism;
 
 /**
  * Can be set to define the module

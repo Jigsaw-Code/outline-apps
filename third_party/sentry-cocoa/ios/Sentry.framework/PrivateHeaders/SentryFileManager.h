@@ -24,7 +24,6 @@ SENTRY_NO_INIT
 - (_Nullable instancetype)initWithDsn:(SentryDsn *)dsn didFailWithError:(NSError **)error;
 
 - (NSString *)storeEvent:(SentryEvent *)event;
-- (NSString *)storeEvent:(SentryEvent *)event maxCount:(NSUInteger)maxCount;
 
 - (NSString *)storeBreadcrumb:(SentryBreadcrumb *)crumb;
 - (NSString *)storeBreadcrumb:(SentryBreadcrumb *)crumb maxCount:(NSUInteger)maxCount;
@@ -46,6 +45,9 @@ SENTRY_NO_INIT
 - (NSArray<NSString *> *)allFilesInFolder:(NSString *)path;
 
 - (NSString *)storeDictionary:(NSDictionary *)dictionary toPath:(NSString *)path;
+
+@property(nonatomic, assign) NSUInteger maxEvents;
+@property(nonatomic, assign) NSUInteger maxBreadcrumbs;
 
 @end
 
