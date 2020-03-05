@@ -51,7 +51,7 @@ echo Found TAP device name: "%TAP_NAME%"
 
 :: We've occasionally seen delays before netsh will "see" the new device, at least for
 :: purposes of configuring IP and DNS ("netsh interface show interface name=xxx" does not
-:: seem to be affected).
+:: seem to be affected). Attempt to rename even if waiting timed out.
 call :wait_for_device "%TAP_NAME%"
 
 netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
@@ -60,7 +60,7 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 
-:: Wait for the new name to propagate to netsh.
+:: Wait for the new name to propagate to netsh. Attempt to configure even if waiting timed out.
 call :wait_for_device "%DEVICE_NAME%"
 
 :configure

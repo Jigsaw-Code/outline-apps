@@ -34,26 +34,26 @@ if %errorlevel% neq 0 (
 
 set TIMESTAMP=0
 set NAME=
-for /f "tokens=*" %%k in ('type "%NET_ADAPTERS_FILE%"') do (
+for /f "tokens=*" %%K in ('type "%NET_ADAPTERS_FILE%"') do (
   :: Retrieve the adapter's network config ID.
-  set ADAPTER_KEY=%%k
-  for /f "tokens=3" %%i in ('reg query !ADAPTER_KEY! /v "NetCfgInstanceId"') do (
-    set NET_CONFIG_ID=%%i
+  set ADAPTER_KEY=%%K
+  for /f "tokens=3" %%I in ('reg query !ADAPTER_KEY! /v "NetCfgInstanceId"') do (
+    set NET_CONFIG_ID=%%I
   )
 
   :: Retrieve the adapter's install timestamp.
-  for /f "tokens=3" %%t in ('reg query !ADAPTER_KEY! /v "InstallTimeStamp"') do (
-    set ADAPTER_TIMESTAMP=%%t
+  for /f "tokens=3" %%T in ('reg query !ADAPTER_KEY! /v "InstallTimeStamp"') do (
+    set ADAPTER_TIMESTAMP=%%T
   )
 
   :: Retrieve the adapter's name.
   set ADAPTER_CONFIG_KEY=!NET_CONFIG_KEY!\!NET_CONFIG_ID!\Connection
-  for /f "tokens=3*" %%n in ('reg query !ADAPTER_CONFIG_KEY! /v "Name"') do (
-    :: If the name contains spaces our tokenization will store the rest of the name in %%o.
-    if [%%o] == [] (
-      set ADAPTER_NAME=%%n
+  for /f "tokens=3*" %%N in ('reg query !ADAPTER_CONFIG_KEY! /v "Name"') do (
+    :: If the name contains spaces our tokenization will store the rest of the name in %%O.
+    if [%%O] == [] (
+      set ADAPTER_NAME=%%N
     ) else (
-      set ADAPTER_NAME=%%n %%o
+      set ADAPTER_NAME=%%N %%O
     )
   )
 
