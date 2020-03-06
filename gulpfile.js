@@ -142,11 +142,11 @@ const transpileWebApp = gulp.series(
 // *certain things won't behave as you'd expect*, notably cordova-custom-config.
 function cordovaPlatformAdd() {
   // "platform add" fails if the platform has already been added.
-  return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
+  return runCommand(`test -d platforms/${platform} || yarn cordova platform add ${platform}`);
 }
 
 function cordovaPrepare() {
-  return runCommand(`cordova prepare ${platform}`);
+  return runCommand(`yarn cordova prepare ${platform}`);
 }
 
 function xcode() {
@@ -162,12 +162,12 @@ function cordovaCompile() {
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
   const compileArgs = platform === 'ios' ? '--device --buildFlag="-UseModernBuildSystem=0"' : '';
   const releaseArgs = isRelease ? platform === 'android' ?
-                                  `--release -- --keystore=${gutil.env.KEYSTORE} ` +
+                                  `--release --keystore=${gutil.env.KEYSTORE} ` +
               `--storePassword=${gutil.env.STOREPASS} --alias=${gutil.env.KEYALIAS} ` +
               `--password=${gutil.env.KEYPASS}` :
                                   '--release' :
                                   '';
-  return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
+  return runCommand(`yarn cordova compile ${platform} ${compileArgs} ${releaseArgs} ${platformArgs}`);
 }
 
 const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
