@@ -116,8 +116,8 @@ exit /b 0
 echo Testing that the network device "%~1" is visible to netsh...
 netsh interface ip show interfaces | find "%~1" >nul 2>&1
 if %errorlevel% equ 0 exit /b 0
-for /l %%n in (1, 1, 6) do (
-  echo Waiting... %%n
+for /l %%N (1, 1, 6) do (
+  echo Waiting... %%N
   :: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
   :: "ERROR: Input redirection is not supported, exiting the process immediately."
   waitfor /t 10 thisisnotarealsignalname >nul 2>&1
