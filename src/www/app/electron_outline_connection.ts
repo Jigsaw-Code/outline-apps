@@ -17,8 +17,7 @@ import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
 
-// TODO: Rename this class - it's also used on Linux.
-export class WindowsOutlineConnection implements cordova.plugins.outline.Connection {
+export class ElectronOutlineConnection implements cordova.plugins.outline.Connection {
   private statusChangeListener: ((status: ConnectionStatus) => void)|null = null;
 
   private running = false;
