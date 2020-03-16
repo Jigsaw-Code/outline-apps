@@ -17,7 +17,7 @@ import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
 
-export class OutlineConnection implements cordova.plugins.outline.Connection {
+export class ElectronOutlineConnection implements cordova.plugins.outline.Connection {
   private statusChangeListener: ((status: ConnectionStatus) => void)|null = null;
 
   private running = false;
