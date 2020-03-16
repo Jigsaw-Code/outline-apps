@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from "../model/errors";
+import * as errors from '../model/errors';
 
-export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ""): Promise<T> {
+export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<T> {
   let winner: Promise<T>;
   const timeout = new Promise<T>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
