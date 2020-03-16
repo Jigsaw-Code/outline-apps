@@ -14,11 +14,9 @@
 
 import * as errors from '../model/errors';
 
-// tslint:disable-next-line:no-any
-export function timeoutPromise(promise: Promise<any>, ms: number, name = '') {
-  // tslint:disable-next-line:no-any
-  let winner: Promise<any>;
-  const timeout = new Promise<void>((resolve, reject) => {
+export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<T> {
+  let winner: Promise<T>;
+  const timeout = new Promise<T>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
       if (winner) {
