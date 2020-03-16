@@ -72,7 +72,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format && yarn pretty-quick --staged"
+      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format && yarn pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {
