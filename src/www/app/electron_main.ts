@@ -23,11 +23,11 @@ import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineConnection} from './fake_connection';
 import {getLocalizationFunction, main} from './main';
+import {OutlineConnection} from './outline_connection';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater, UpdateListener, Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
-import {WindowsOutlineConnection} from './windows_connection';
 
 // Currently, proxying is only supported on Windows.
 const isWindows = os.platform() === 'win32';
@@ -93,7 +93,7 @@ main({
             eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
-          isOsSupported ? new WindowsOutlineConnection(config, serverId) :
+          isOsSupported ? new OutlineConnection(config, serverId) :
                           new FakeOutlineConnection(config, serverId),
           eventQueue);
     };
