@@ -229,15 +229,15 @@ function reloadAppOrBrowser(done) {
     platform === 'browser'
     && typeof watchReloadMacosBrowser === 'string'
   ) {
-    const appleScriptCommand = (
-      watchReloadMacosBrowser.includes('Safari') && (
-        'set URL of front document to (URL of front document)'
-      )
-      || (watchReloadMacosBrowser.includes('Chrom') || watchReloadMacosBrowser.includes('Edge')) && (
-        'reload active tab of window 1'
-      )
-      || null
-    )
+    const appleScriptCommand = (() => {
+      if (watchReloadMacosBrowser.includes('Safari')) {
+        return 'set URL of front document to (URL of front document)';
+      }
+      if (watchReloadMacosBrowser.includes('Chrom') || watchReloadMacosBrowser.includes('Edge')) {
+        return 'reload active tab of window 1';
+      }
+      return null;
+    })();
 
     if (typeof appleScriptCommand === 'string') {
       runCommand(`osascript -e 'tell app "${watchReloadMacosBrowser}" to ${appleScriptCommand}'`);
