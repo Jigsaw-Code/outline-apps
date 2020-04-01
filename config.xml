@@ -120,12 +120,4 @@
         <icon src="resources/icons/osx/icon-512.png" width="512" height="512" />
         <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
     </platform>
-
-    <!-- Sentry error reporting keys -->
-    <sentry>
-        <dev dsn="https://319145c481df41458bb6e84c1a99c9ff@sentry.io/159503" />
-        <release dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c@sentry.io/159502" />
-        <dev-native dsn="https://319145c481df41458bb6e84c1a99c9ff:73cc3261d25e44ac90221e7d9ad30b24@sentry.io/159503" />
-        <release-native dsn="https://6a1e6e7371a64db59f5ba6c34a77d78c:568f6c78f9f94f91afba4aba05756001@sentry.io/159502" />
-    </sentry>
 </widget>
