@@ -98,7 +98,6 @@ cat << EOM
 {
   "APP_VERSION": "$APP_VERSION",
   "APP_BUILD_NUMBER": "$APP_BUILD_NUMBER",
-  "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].$TYPE[0].$.dsn)",
-  "SENTRY_NATIVE_DSN": "$(pull_from_config_xml result.widget.sentry[0][\"$TYPE-native\"][0].$.dsn)"
+  "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].$TYPE[0].$.dsn)"
 }
 EOM

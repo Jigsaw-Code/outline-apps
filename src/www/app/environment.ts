@@ -16,15 +16,13 @@ export interface EnvironmentVariables {
   APP_VERSION: string;
   APP_BUILD_NUMBER: string;
   SENTRY_DSN: string;
-  SENTRY_NATIVE_DSN: string;
 }
 
 // Keep these in sync with the EnvironmentVariables interface above.
 const ENV_KEYS = {
   APP_VERSION: 'APP_VERSION',
   APP_BUILD_NUMBER: 'APP_BUILD_NUMBER',
-  SENTRY_DSN: 'SENTRY_DSN',
-  SENTRY_NATIVE_DSN: 'SENTRY_NATIVE_DSN'
+  SENTRY_DSN: 'SENTRY_DSN'
 };
 
 function validateEnvVars(json: {}) {

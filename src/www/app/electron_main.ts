@@ -29,7 +29,6 @@ import {OutlinePlatform} from './platform';
 import {AbstractUpdater, UpdateListener, Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
-// Currently, proxying is only supported on Windows.
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 const isOsSupported = isWindows || isLinux;

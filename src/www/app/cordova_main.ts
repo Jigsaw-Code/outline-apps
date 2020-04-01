@@ -45,9 +45,9 @@ class CordovaClipboard extends AbstractClipboard {
 
 // Adds reports from the (native) Cordova plugin.
 export class CordovaErrorReporter extends SentryErrorReporter {
-  constructor(appVersion: string, appBuildNumber: string, dsn: string, nativeDsn: string) {
+  constructor(appVersion: string, appBuildNumber: string, dsn: string) {
     super(appVersion, dsn, {'build.number': appBuildNumber});
-    cordova.plugins.outline.log.initialize(nativeDsn).catch(console.error);
+    cordova.plugins.outline.log.initialize(dsn).catch(console.error);
   }
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
@@ -94,9 +94,8 @@ class CordovaPlatform implements OutlinePlatform {
 
   getErrorReporter(env: EnvironmentVariables) {
     return this.hasDeviceSupport() ?
-        new CordovaErrorReporter(
-            env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN, env.SENTRY_NATIVE_DSN) :
-        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN, {});
+        new CordovaErrorReporter(env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN || '') :
+        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {});
   }
 
   getUpdater() {
