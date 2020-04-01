@@ -6,8 +6,11 @@
     "postinstall": "bower install || echo no bower needed",
     "do": "bash ./scripts/do_action.sh"
   },
+  "comments": {
+    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853"
+  },
   "dependencies": {
-    "@sentry/electron": "^0.17.1",
+    "@sentry/electron": "1.2.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.9",
     "auto-launch": "^5.0.5",
     "cordova-custom-config": "^5.1.0",
@@ -21,8 +24,6 @@
     "electron-promise-ipc": "^1.0.0",
     "electron-updater": "^4.1.2",
     "fs-extra": "^7.0.0",
-    "raven": "^2.2.1",
-    "raven-js": "^3.20.1",
     "socks": "^1.1.10",
     "sudo-prompt": "^8.2.0",
     "uuidv4": "^4.0.0"
@@ -33,7 +34,6 @@
     "@types/jasmine": "^2.8.6",
     "@types/node": "^8.0.53",
     "@types/polymer": "^1.2.6",
-    "@types/raven": "^2.1.2",
     "@types/semver": "^5.5.0",
     "@types/uuidv4": "^2.0.0",
     "babel-core": "^6.26.0",

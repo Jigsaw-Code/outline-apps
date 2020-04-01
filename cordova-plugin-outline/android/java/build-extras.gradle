@@ -1,4 +1,4 @@
 dependencies {
   implementation 'com.android.support:appcompat-v7:23.4.0'
-  implementation 'io.sentry:sentry-android:1.7.3'
+  implementation 'io.sentry:sentry-android:2.0.2'
 }

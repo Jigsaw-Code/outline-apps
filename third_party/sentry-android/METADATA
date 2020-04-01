@@ -1,6 +1,5 @@
 name: "sentry-android"
-description:
-    "Crash and error reporting framework. SDK for Java and other JVM languages."
+description: "Crash and error reporting framework. Sentry SDK for Android."
 
 third_party {
   url {
@@ -9,10 +8,8 @@ third_party {
   }
   url {
     type: GIT
-    value: "https://github.com/getsentry/sentry-java"
+    value: "https://github.com/getsentry/sentry-android/"
   }
-  version: "1.7.3'"
-  last_upgrade_date { year: 2018 month: 4 day: 27 }
-  local_modifications:
-    "Minimize the amount of personally identifiable data collected."
+  version: "2.0.2"
+  last_upgrade_date { year: 2020 month: 03 day: 04 }
 }

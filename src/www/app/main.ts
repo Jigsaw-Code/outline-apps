@@ -93,8 +93,7 @@ function onUnexpectedError(error: Error) {
   } else {
     // Something went terribly wrong (i.e. Polymer failed to initialize). Provide some messaging to
     // the user, even if we are not able to display it in a toast or localize it.
-    // TODO: provide an help email once we have a domain.
-    alert(`An unexpected error occurred.`);
+    alert(`An unexpected error occurred. Please contact support@getoutline.org for assistance.`);
   }
   console.error(error);
 }

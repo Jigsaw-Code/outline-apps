@@ -17,8 +17,7 @@
 const child_process = require('child_process');
 
 module.exports = function(context) {
-  console.log('Copying Android third party source code');
-  child_process.execSync('cp third_party/sentry-android/*.java plugins/cordova-plugin-outline/android/java/org/outline/log/');
+  console.log('Copying Android third party libraries...');
   ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'].forEach((arch) => {
     const destDir = `plugins/cordova-plugin-outline/android/libs/${arch}/`
     child_process.execSync(`mkdir -p ${destDir}`);

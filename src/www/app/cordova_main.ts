@@ -15,7 +15,7 @@
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 
-import * as Raven from 'raven-js';
+import * as sentry from '@sentry/browser';
 
 import {EventQueue} from '../model/events';
 
@@ -52,7 +52,7 @@ export class CordovaErrorReporter extends SentryErrorReporter {
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
     return super.report(userFeedback, feedbackCategory, userEmail).then(() => {
-      return cordova.plugins.outline.log.send(Raven.lastEventId());
+      return cordova.plugins.outline.log.send(sentry.lastEventId() || '');
     });
   }
 }
