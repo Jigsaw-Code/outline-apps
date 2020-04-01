@@ -18,21 +18,6 @@ export interface EnvironmentVariables {
   SENTRY_DSN: string;
 }
 
-// Keep these in sync with the EnvironmentVariables interface above.
-const ENV_KEYS = {
-  APP_VERSION: 'APP_VERSION',
-  APP_BUILD_NUMBER: 'APP_BUILD_NUMBER',
-  SENTRY_DSN: 'SENTRY_DSN'
-};
-
-function validateEnvVars(json: {}) {
-  for (const key in ENV_KEYS) {
-    if (!json.hasOwnProperty(key)) {
-      throw new Error(`Missing environment variable: ${key}`);
-    }
-  }
-}
-
 // According to http://caniuse.com/#feat=fetch fetch didn't hit iOS Safari
 // until v10.3 released 3/26/17, so use XMLHttpRequest instead.
 export const onceEnvVars: Promise<EnvironmentVariables> = new Promise((resolve, reject) => {
@@ -40,7 +25,6 @@ export const onceEnvVars: Promise<EnvironmentVariables> = new Promise((resolve, 
   xhr.onload = () => {
     try {
       const json = JSON.parse(xhr.responseText);
-      validateEnvVars(json);
       console.debug('Resolving with envVars:', json);
       resolve(json as EnvironmentVariables);
     } catch (err) {
