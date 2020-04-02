@@ -79,3 +79,13 @@ To build for Windows, run:
     yarn do src/electron/build
 
 Unlike the Android and Apple clients, the Windows build uses the Electron framework, rather than Cordova.
+
+## Error reporting
+
+To enable error reporting through [Sentry](https://sentry.io/) for local builds, run:
+``` bash
+export SENTRY_DSN=[Sentry development API key]
+[platform-specific build command]
+```
+
+Release builds on CI are configured with a production Sentry API key.
