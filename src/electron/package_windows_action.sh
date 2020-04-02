@@ -16,10 +16,15 @@
 
 yarn do src/electron/package_common
 
+if [[ -n ${SENTRY_DSN:-} ]]; then
+  # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN.
+  readonly SENTRY_URL="https://sentry.io/api/$(echo $SENTRY_DSN | awk -F/ '{print $4}')/store/?sentry_version=7&sentry_key=$(echo $SENTRY_DSN | awk -F/ '{print substr($3, 0, 32)}')"
+fi
+
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
 !define RELEASE "$(scripts/semantic_version.sh -p dev)"
-!define SENTRY_DSN "${SENTRY_DSN:-}"
+!define SENTRY_URL "${SENTRY_URL:-}"
 EOF
 
 electron-builder \

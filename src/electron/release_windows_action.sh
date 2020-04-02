@@ -23,10 +23,13 @@ yarn do src/electron/package_common
 
 scripts/environment_json.sh -r -p windows > www/environment.json
 
+# Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN.
+readonly SENTRY_URL="https://sentry.io/api/$(echo $SENTRY_DSN | awk -F/ '{print $4}')/store/?sentry_version=7&sentry_key=$(echo $SENTRY_DSN | awk -F/ '{print substr($3, 0, 32)}')"
+
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
 !define RELEASE "$(scripts/semantic_version.sh -p windows)"
-!define SENTRY_DSN "${SENTRY_DSN}"
+!define SENTRY_URL "${SENTRY_URL}"
 EOF
 
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
