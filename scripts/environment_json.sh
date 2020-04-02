@@ -101,7 +101,7 @@ case $PLATFORM in
   *) usage ;;
 esac
 
-if [[$TYPE == "release"]]; then
+if [[ "${TYPE}" == "release" ]]; then
   validate_env_vars
 fi
 
