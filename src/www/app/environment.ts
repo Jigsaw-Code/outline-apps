@@ -15,7 +15,7 @@
 export interface EnvironmentVariables {
   APP_VERSION: string;
   APP_BUILD_NUMBER: string;
-  SENTRY_DSN: string;
+  SENTRY_DSN: string|undefined;
 }
 
 // According to http://caniuse.com/#feat=fetch fetch didn't hit iOS Safari
