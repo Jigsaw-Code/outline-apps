@@ -23,7 +23,8 @@ yarn do src/electron/package_common
 
 scripts/environment_json.sh -r -p windows > www/environment.json
 
-# Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN.
+# Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
+# which has the following format: https://[API_KEY]@sentry.io/[PROJECT_ID].
 readonly SENTRY_URL="https://sentry.io/api/$(echo $SENTRY_DSN | awk -F/ '{print $4}')/store/?sentry_version=7&sentry_key=$(echo $SENTRY_DSN | awk -F/ '{print substr($3, 0, 32)}')"
 
 # TODO: Move env.sh to build/electron/.
