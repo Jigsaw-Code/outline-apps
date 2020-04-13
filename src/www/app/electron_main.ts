@@ -29,7 +29,6 @@ import {OutlinePlatform} from './platform';
 import {AbstractUpdater, UpdateListener, Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
-// Currently, proxying is only supported on Windows.
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 const isOsSupported = isWindows || isLinux;
@@ -107,7 +106,7 @@ main({
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
-    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN);
+    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '');
   },
   getUpdater: () => {
     return new ElectronUpdater();
