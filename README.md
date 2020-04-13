@@ -11,7 +11,7 @@ All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to o
 
 ## Building the web app
 
-Outline clients shares the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
+Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
     yarn gulp build --platform=browser
     yarn cordova run browser
