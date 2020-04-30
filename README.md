@@ -18,7 +18,7 @@ Outline clients shares the same web app across all platforms. This code is locat
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
-UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](www/app).
+UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
 ## Building the Android app
 
@@ -72,7 +72,7 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 Additional requirements for building on Windows:
 
-* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others)
+* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others).  It may be necessary to manually choose to install `rsync` in the Cygwin installer.
 
 To build for Windows, run:
 

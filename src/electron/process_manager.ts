@@ -34,7 +34,6 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 // Cloudflare, Quad9, and OpenDNS resolvers.
 const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9', '208.67.222.222'];
 
-
 // Raises an error if:
 //  - the TAP device does not exist
 //  - the TAP device does not have the expected IP/subnet

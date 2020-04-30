@@ -189,9 +189,8 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const cordovaBuild = gulp.series(cordovaPrepare, cordovaMaybeConfigureBeta, xcode, cordovaCompile);
-
-const packageWithCordova = gulp.series(cordovaPlatformAdd, cordovaBuild, cordovaMaybeUploadSymbols);
+const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
+const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 //////////////////
 //////////////////
@@ -209,4 +208,5 @@ function writeEnvJson() {
       isBeta ? '-b' : ''} > ${WEBAPP_OUT}/environment.json`);
 }
 
-exports.build = gulp.series(buildWebApp, transpileWebApp, writeEnvJson, packageWithCordova);
+exports.build = gulp.series(setupWebApp, setupCordova, cordovaCompile);
+exports.setup = gulp.series(setupWebApp, setupCordova);

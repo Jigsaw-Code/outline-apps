@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2018, Deusty, LLC
+// Copyright (c) 2010-2019, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -20,7 +20,7 @@
         if (!(condition)) {                                                           \
             NSString *description = [NSString stringWithFormat:frmt, ## __VA_ARGS__]; \
             DDLogError(@"%@", description);                                           \
-            NSAssert(NO, description);                                                \
+            NSAssert(NO, @"%@", description);                                         \
         }
 #define DDAssertCondition(condition) DDAssert(condition, @"Condition not satisfied: %s", #condition)
 
