@@ -18,6 +18,13 @@ setlocal
 set DEVICE_NAME=outline-tap0
 set DEVICE_HWID=tap0901
 
+:: Error codes for surfacing to the user and sentry.
+set ERROR_TAP_INSTALL=1
+set ERROR_TAP_FIND_NAME=2
+set ERROR_TAP_RENAME=3
+set ERROR_TAP_CONFIGURE_SUBNET=4
+set ERROR_TAP_CONFIGURE_DNS=5
+
 :: Because we've seen multiple failures due to commands (netsh, etc.) not being
 :: found, append some common directories to the PATH.
 ::
@@ -37,7 +44,7 @@ echo Creating TAP network device...
 tap-windows6\tapinstall install tap-windows6\OemVista.inf %DEVICE_HWID%
 if %errorlevel% neq 0 (
   echo Could not create TAP network device. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_INSTALL%
 )
 
 :: Find the name of the most recently installed TAP device in the registry and rename it.
@@ -45,7 +52,7 @@ echo Searching for new TAP network device name...
 call find_tap_device_name.bat TAP_NAME
 if %errorlevel% neq 0 (
   echo Could not find TAP device name. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_FIND_NAME%
 )
 echo Found TAP device name: "%TAP_NAME%"
 
@@ -58,7 +65,7 @@ call :wait_for_device "%TAP_NAME%"
 netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
 if %errorlevel% neq 0 (
   echo Could not rename TAP device. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_RENAME%
 )
 
 :: Wait for the new name to propagate to netsh.
@@ -87,7 +94,7 @@ echo Configuring TAP device subnet...
 netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0
 if %errorlevel% neq 0 (
   echo Could not set TAP network device subnet. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_CONFIGURE_SUBNET%
 )
 
 :: Windows has no system-wide DNS server; each network device can have its
@@ -99,13 +106,13 @@ echo Configuring primary DNS...
 netsh interface ip set dnsservers %DEVICE_NAME% static address=208.67.222.222
 if %errorlevel% neq 0 (
   echo Could not configure TAP device primary DNS. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_CONFIGURE_DNS%
 )
 echo Configuring secondary DNS...
 netsh interface ip add dnsservers %DEVICE_NAME% 216.146.35.35 index=2
 if %errorlevel% neq 0 (
   echo Could not configure TAP device secondary DNS. >&2
-  exit /b 1
+  exit /b %ERROR_TAP_CONFIGURE_DNS%
 )
 echo TAP network device added and configured successfully
 exit /b 0
