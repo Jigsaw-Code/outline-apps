@@ -30,7 +30,6 @@
 
     <!-- Android -->
     <platform name="android">
-        <preference name="orientation" value="portrait" />
         <preference name="SplashMaintainAspectRatio" value="true" />
 
         <icon density="ldpi" src="resources/icons/android/icon_mdpi.png" />
