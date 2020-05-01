@@ -13,7 +13,8 @@
 :: limitations under the License.
 
 @echo off
-setlocal
+:: See https://ss64.com/nt/delayedexpansion.html
+setlocal enabledelayedexpansion
 
 set DEVICE_NAME=outline-tap0
 set DEVICE_HWID=tap0901
@@ -62,10 +63,16 @@ echo Found TAP device name: "%TAP_NAME%"
 call :wait_for_device "%TAP_NAME%"
 
 :: Attempt to rename the device even if waiting timed out.
-netsh interface set interface name= "%TAP_NAME%" newname= "%DEVICE_NAME%"
+netsh interface set interface name="%TAP_NAME%" newname="%DEVICE_NAME%"
 if %errorlevel% neq 0 (
-  echo Could not rename TAP device. >&2
-  exit /b %ERROR_TAP_RENAME%
+  :: Try to rename the device through powershell in case netsh failed due to not being able to "see"
+  :: the device. Pipe input from /dev/null to prevent powershell from waiting forever on EOF.
+  powershell "Rename-NetAdapter -Name \"%TAP_NAME%\" -NewName \"%DEVICE_NAME%\"" <nul
+  :: Note that we use delayed variable expansion inside a control block to check errorlevel.
+  if !errorlevel! neq 0 (
+    echo Could not rename TAP device. >&2
+    exit /b %ERROR_TAP_RENAME%
+  )
 )
 
 :: Wait for the new name to propagate to netsh.
@@ -80,9 +87,11 @@ call :wait_for_device "%DEVICE_NAME%"
 :: already enabled:
 ::   This network connection does not exist.
 ::
-:: So, continue even if this command fails - and always include its output.
+:: So, continue even if this command fails, attempt to enable it through powershell -
+:: and always include its output.
 echo (Re-)enabling TAP network device...
 netsh interface set interface "%DEVICE_NAME%" admin=enabled
+powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\""
 
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
@@ -129,6 +138,6 @@ for /l %%N in (1, 1, 6) do (
   :: "ERROR: Input redirection is not supported, exiting the process immediately."
   waitfor /t 10 thisisnotarealsignalname >nul 2>&1
   netsh interface ip show interfaces | find "%~1" >nul 2>&1
-  if %errorlevel% equ 0 exit /b 0
+  if !errorlevel! equ 0 exit /b 0
 )
 exit /b 1
