@@ -177,6 +177,10 @@
     "message": "Unreachable",
     "description": "A status message on a particular server that indicates the server cannot be connected at all."
   },
+  "unsupported_cipher": {
+    "message": "Unsupported cipher",
+    "description": "An error message that indicates that the server is using an unsupported cipher."
+  },
   "server_add": {
     "message": "Add server",
     "description": "Text button for the user to add the access information another server to the application."
@@ -334,6 +338,10 @@
   "error_unexpected": {
     "message": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback.",
     "description": "An error message shown when the cause is not really known."
+  },
+  "error_unsupported_cipher": {
+    "message": "Sorry, the server you are trying to connect to uses an unsupported cipher. Non-AEAD ciphers are not supported.",
+    "description": "An error message shown when attempting to connect to a server with an unsupported cipher."
   },
   "error_timeout": {
     "message": "Something seems to be taking longer than expected. Quitting and restarting may help. If this happens again, please submit feedback.",

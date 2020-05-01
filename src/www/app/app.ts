@@ -168,6 +168,8 @@ export class App {
       messageParams = ['serverName', e.server.name];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
+    } else if (e instanceof errors.UnsupportedCipher) {
+      messageKey = 'error-unsupported-cipher';
     } else {
       messageKey = 'error-unexpected';
     }
