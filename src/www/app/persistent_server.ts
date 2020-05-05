@@ -14,7 +14,7 @@
 
 import * as uuidv4 from 'uuidv4';
 
-import {ServerAlreadyAdded, UnsupportedCipher} from "../model/errors";
+import {ServerAlreadyAdded, UnsupportedCipher} from '../model/errors';
 import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
 
@@ -33,7 +33,8 @@ export type PersistentServerFactory =
 export class PersistentServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
   private static readonly SERVERS_STORAGE_KEY = 'servers';
-  private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+  private static readonly SUPPORTED_CIPHERS =
+      ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
   private serverById!: Map<string, PersistentServer>;
   private lastForgottenServer: PersistentServer|null = null;
 
@@ -56,7 +57,8 @@ export class PersistentServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new ServerAlreadyAdded(alreadyAddedServer);
     }
-    if (serverConfig.method && !PersistentServerRepository.SUPPORTED_CIPHERS.includes(serverConfig.method)) {
+    if (serverConfig.method &&
+        !PersistentServerRepository.SUPPORTED_CIPHERS.includes(serverConfig.method)) {
       throw new UnsupportedCipher();
     }
     const server = this.createServer(uuidv4(), serverConfig, this.eventQueue);
