@@ -39,7 +39,8 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   configureSystemProxyFailure = 9,
   noAdminPermissions = 10,
   unsupportedRoutingTable = 11,
-  systemMisconfigured = 12
+  systemMisconfigured = 12,
+  unsupportedCipher = 13
 };
 
 @end

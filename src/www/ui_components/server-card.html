@@ -165,7 +165,7 @@
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
-        <div id="unsupportedCipherMessage" hidden="[[cipherSupported]]">[[localize('unsupported-cipher')]]</div>
+        <div id="unsupportedCipherMessage" hidden="[[isCipherSupported]]">[[localize('unsupported-cipher')]]</div>
         <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
           >[[connectButtonLabel]]</paper-button
         >
@@ -198,9 +198,9 @@
           type: String,
           computed: "_computeStatusMessage(state, localize)",
         },
-        cipherSupported: {
+        isCipherSupported: {
           type: Boolean,
-          computed: "_isCipherSupported(serverCipher)",
+          computed: "_computeIsCipherSupported(serverCipher)",
         },
         connectButtonLabel: {
           type: String,
@@ -208,7 +208,7 @@
         },
         connectButtonDisabled: {
           type: Boolean,
-          computed: "_computeConnectButtonDisabled(state, cipherSupported)",
+          computed: "_computeConnectButtonDisabled(state, isCipherSupported)",
         },
       },
       _onConnectToggled: function() {
@@ -242,10 +242,10 @@
           }[state] || this.localize("connect-button-label")
         );
       },
-      _computeConnectButtonDisabled: function(state, cipherSupported) {
-        return !cipherSupported || state === "CONNECTING" || state === "DISCONNECTING";
+      _computeConnectButtonDisabled: function(state, isCipherSupported) {
+        return !isCipherSupported || state === "CONNECTING" || state === "DISCONNECTING";
       },
-      _isCipherSupported: function(cipher) {
+      _computeIsCipherSupported: function(cipher) {
         return this.SUPPORTED_CIPHERS.includes(cipher);
       },
       _onMenuItemPressed: function(evt, detail) {
