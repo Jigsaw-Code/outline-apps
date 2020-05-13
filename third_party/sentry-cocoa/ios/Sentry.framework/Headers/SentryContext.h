@@ -36,6 +36,12 @@ NS_SWIFT_NAME(Context)
  */
 @property(nonatomic, strong) NSDictionary<NSString *, id> *_Nullable appContext;
 
+/**
+ * User set contexts should go here
+ */
+@property(nonatomic, strong) NSDictionary<NSString *, id> *_Nullable otherContexts;
+
+
 - (instancetype)init;
 + (instancetype)new NS_UNAVAILABLE;
 

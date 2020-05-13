@@ -1,5 +1,5 @@
 //
-//  SentryKSCrashReportConverter.h
+//  SentryCrashReportConverter.h
 //  Sentry
 //
 //  Created by Daniel Griesser on 10/05/2017.
@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SentryKSCrashReportConverter : NSObject
+@interface SentryCrashReportConverter : NSObject
 
 @property(nonatomic, strong) NSDictionary *userContext;
 

@@ -13,38 +13,37 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
 
-<link rel="import" href="../bower_components/app-route/app-location.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-route/app-location.html" />
+<link rel="import" href="../bower_components/app-route/app-route.html" />
 
-<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
-<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
-<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
-<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
-<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html" />
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html" />
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html" />
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html" />
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html" />
 
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html" />
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html" />
 
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
-<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html" />
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html" />
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html" />
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html" />
 
-<link rel="import" href="about-view.html">
-<link rel="import" href="add-server-view.html">
-<link rel="import" href="feedback-view.html">
-<link rel="import" href="licenses-view.html">
-<link rel="import" href="outline-icons.html">
-<link rel="import" href="privacy-view.html">
-<link rel="import" href="servers-view.html">
-<link rel="import" href="server-rename-dialog.html">
+<link rel="import" href="about-view.html" />
+<link rel="import" href="add-server-view.html" />
+<link rel="import" href="feedback-view.html" />
+<link rel="import" href="licenses-view.html" />
+<link rel="import" href="outline-icons.html" />
+<link rel="import" href="privacy-view.html" />
+<link rel="import" href="servers-view.html" />
+<link rel="import" href="server-rename-dialog.html" />
 
 <dom-module id="app-root">
-
   <template>
     <style>
       :host {
@@ -52,7 +51,7 @@
         --light-green: #2fbea5;
         --medium-green: #009688;
         --dark-green: #263238;
-        --light-gray: #ECECEC;
+        --light-gray: #ececec;
         --paper-dialog-button-color: var(--medium-green);
         --app-drawer-width: 280px;
         display: flex;
@@ -63,7 +62,8 @@
         height: 56px;
       }
 
-      app-header, app-toolbar {
+      app-header,
+      app-toolbar {
         position: fixed;
         top: 0;
         left: 0;
@@ -94,7 +94,8 @@
         --paper-icon-button-ink-color: #eff;
       }
 
-      #app-toolbar-left, #app-toolbar-right {
+      #app-toolbar-left,
+      #app-toolbar-right {
         flex: 1;
         min-width: 40px;
       }
@@ -131,7 +132,8 @@
       /* rtl:end:ignore */
 
       /* Manually reverse icons that require mirroring in RTL languages. */
-      :host(:dir(rtl)) #feedback-icon, :host(:dir(rtl)) #backBtn {
+      :host(:dir(rtl)) #feedback-icon,
+      :host(:dir(rtl)) #backBtn {
         transform: scaleX(-1);
       }
 
@@ -176,7 +178,7 @@
       }
 
       paper-item > :first-child {
-        color: rgba(0,0,0,0.54);
+        color: rgba(0, 0, 0, 0.54);
         font-size: 14px;
         text-decoration: none;
         width: 100%;
@@ -229,27 +231,53 @@
       <app-header slot="header" fixed>
         <app-toolbar>
           <div id="app-toolbar-left">
-            <paper-icon-button id="menuBtn" hidden$="[[shouldShowBackButton]]" icon="menu" on-tap="openDrawer"></paper-icon-button>
-            <paper-icon-button id="backBtn" hidden$="[[!shouldShowBackButton]]" icon="arrow-back" on-tap="_goBack"></paper-icon-button>
+            <paper-icon-button
+              id="menuBtn"
+              hidden$="[[shouldShowBackButton]]"
+              icon="menu"
+              on-tap="openDrawer"
+            ></paper-icon-button>
+            <paper-icon-button
+              id="backBtn"
+              hidden$="[[!shouldShowBackButton]]"
+              icon="arrow-back"
+              on-tap="_goBack"
+            ></paper-icon-button>
           </div>
           <div main-title class$="[[page]]">
-            <img src$="[[rootPath]]assets/outline-client-logo.svg" hidden$="[[!shouldShowAppLogo]]">
+            <img src$="[[rootPath]]assets/outline-client-logo.svg" hidden$="[[!shouldShowAppLogo]]" />
             <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
           </div>
           <div id="app-toolbar-right">
-            <paper-icon-button id="addBtn" icon="add" on-tap="promptAddServer" hidden$="[[!shouldShowAddButton]]"></paper-icon-button>
+            <paper-icon-button
+              id="addBtn"
+              icon="add"
+              on-tap="promptAddServer"
+              hidden$="[[!shouldShowAddButton]]"
+            ></paper-icon-button>
           </div>
         </app-toolbar>
       </app-header>
 
       <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-        <servers-view name="servers" id="serversView" servers="{{servers}}" root-path="[[rootPath]]" localize="[[localize]]"></servers-view>
+        <servers-view
+          name="servers"
+          id="serversView"
+          servers="{{servers}}"
+          root-path="[[rootPath]]"
+          localize="[[localize]]"
+        ></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
         <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]"></about-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
-        <licenses-view name="licenses" id="licensesView" dir="ltr" localize="[[localize]]" root-path="[[rootPath]]"></licenses-view>
+        <licenses-view
+          name="licenses"
+          id="licensesView"
+          dir="ltr"
+          localize="[[localize]]"
+          root-path="[[rootPath]]"
+        ></licenses-view>
       </iron-pages>
-
     </app-header-layout>
 
     <app-drawer slot="drawer" id="drawer" swipe-open transition-duration="350">
@@ -289,9 +317,9 @@
       -->
 
       <div id="logo-nav">
-        <img src$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo">
+        <img src$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo" />
       </div>
-      <hr class="nav-hr"></hr>
+      <hr class="nav-hr" />
       <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
         <paper-icon-item name="servers">
           <iron-icon icon="outline-icons:outline" slot="item-icon"></iron-icon>
@@ -310,7 +338,7 @@
           <iron-icon icon="help" slot="item-icon"></iron-icon>
           [[localize('help-page-title')]]
         </paper-icon-item>
-        <paper-icon-item name="quit" class="last-menu-item"  hidden$="[[!shouldShowQuitButton]]">
+        <paper-icon-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
           <iron-icon icon="cancel" slot="item-icon"></iron-icon>
           [[localize('quit')]]
         </paper-icon-item>
@@ -318,13 +346,17 @@
           <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
         </paper-item>
         <paper-item>
-           <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">[[localize('data-collection')]]</a>
+          <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection"
+            >[[localize('data-collection')]]</a
+          >
         </paper-item>
         <paper-item>
-           <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html">[[localize('terms')]]</a>
+          <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
+            >[[localize('terms')]]</a
+          >
         </paper-item>
         <paper-item name="licenses">
-           <span>[[localize('licenses-page-title')]]</span>
+          <span>[[localize('licenses-page-title')]]</span>
         </paper-item>
       </paper-listbox>
     </app-drawer>
@@ -340,26 +372,28 @@
     https://github.com/PolymerElements/paper-dialog/issues/152 and
     https://github.com/PolymerElements/app-layout/issues/295
     Once those are fixed we can consider moving this into server-card.html -->
-    <server-rename-dialog id="serverRenameDialog" root-path="[[rootPath]]" localize="[[localize]]"></server-rename-dialog>
+    <server-rename-dialog
+      id="serverRenameDialog"
+      root-path="[[rootPath]]"
+      localize="[[localize]]"
+    ></server-rename-dialog>
   </template>
   <script>
-    'use strict';
+    "use strict";
 
     // Workaround: https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
     Polymer.PaperMenuButton.prototype.properties.restoreFocusOnClose.value = false;
 
     Polymer({
-      is: 'app-root',
-      behaviors: [
-         Polymer.AppLocalizeBehavior
-      ],
-      ready: function () {
-        var url = this.rootPath + 'messages/' + this.language + '.json';
+      is: "app-root",
+      behaviors: [Polymer.AppLocalizeBehavior],
+      ready: function() {
+        var url = this.rootPath + "messages/" + this.language + ".json";
         this.loadResources(url, this.language);
         const languageProperties = this.LANGUAGES_AVAILABLE[this.language];
-        if (!!languageProperties && languageProperties.dir === 'rtl') {
-          document.documentElement.setAttribute('dir', 'rtl');
-          this.$.drawer.align = 'right';
+        if (!!languageProperties && languageProperties.dir === "rtl") {
+          document.documentElement.setAttribute("dir", "rtl");
+          this.$.drawer.align = "right";
         }
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
@@ -367,7 +401,7 @@
         // Monkeypatch the faulty Polymer.IronButtonStateImpl._detectKeyboardFocus implementation
         // with a no-op for the three buttons where the focus styles are incorrectly applied most
         // often / where it looks most noticeably broken.
-        function noop() {};
+        function noop() {}
         var buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
         for (var i = 0, button = buttons[i]; button; button = buttons[++i]) {
           button._detectKeyboardFocus = noop;
@@ -395,115 +429,118 @@
               composedPath.push(window);
             }
             return composedPath;
-          }
+          };
         }
 
-        if (window.hasOwnProperty('cordova')) {
+        if (window.hasOwnProperty("cordova")) {
           // Wait until Cordova is ready to access the device plugin. This listener will execute
           // synchronously if the 'deviceready' event has already fired.
-          document.addEventListener('deviceready', function() {
-            this.platform = device.platform;
-          }.bind(this));
+          document.addEventListener(
+            "deviceready",
+            function() {
+              this.platform = device.platform;
+            }.bind(this)
+          );
         } else {
           // If cordova is not defined, we're running in Electron.
-          this.platform = 'Electron';
+          this.platform = "Electron";
         }
       },
       properties: {
         DEFAULT_PAGE: {
           type: String,
           readonly: true,
-          value: 'servers'
+          value: "servers",
         },
         DEFAULT_LANGUAGE: {
           type: String,
           readonly: true,
-          value: 'en'
+          value: "en",
         },
         LANGUAGES_AVAILABLE: {
           type: Object,
           readonly: true,
           value: {
-            am: {id: 'am', dir: 'ltr'},
-            ar: {id: 'ar', dir: 'rtl'},
-            bg: {id: 'bg', dir: 'ltr'},
-            ca: {id: 'ca', dir: 'ltr'},
-            cs: {id: 'cs', dir: 'ltr'},
-            da: {id: 'da', dir: 'ltr'},
-            de: {id: 'de', dir: 'ltr'},
-            el: {id: 'el', dir: 'ltr'},
-            en: {id: 'en', dir: 'ltr'},
-            'es-419': {id: 'es-419', dir: 'ltr'},
-            fa: {id: 'fa', dir: 'rtl'},
-            fi: {id: 'fi', dir: 'ltr'},
-            fil: {id: 'fil', dir: 'ltr'},
-            fr: {id: 'fr', dir: 'ltr'},
-            he: {id: 'he', dir: 'rtl'},
-            hi: {id: 'hi', dir: 'ltr'},
-            hr: {id: 'hr', dir: 'ltr'},
-            hu: {id: 'hu', dir: 'ltr'},
-            id: {id: 'id', dir: 'ltr'},
-            it: {id: 'it', dir: 'ltr'},
-            ja: {id: 'ja', dir: 'ltr'},
-            ko: {id: 'ko', dir: 'ltr'},
-            km: {id: 'km', dir: 'ltr'},
-            lt: {id: 'lt', dir: 'ltr'},
-            lv: {id: 'lv', dir: 'ltr'},
-            nl: {id: 'nl', dir: 'ltr'},
-            no: {id: 'no', dir: 'ltr'},
-            pl: {id: 'pl', dir: 'ltr'},
-            'pt-BR': {id: 'pt-BR', dir: 'ltr'},
-            ro: {id: 'ro', dir: 'ltr'},
-            ru: {id: 'ru', dir: 'ltr'},
-            sk: {id: 'sk', dir: 'ltr'},
-            sl: {id: 'sl', dir: 'ltr'},
-            sr: {id: 'sr', dir: 'ltr'},
-            'sr-Latn': {id: 'sr-Latn', dir: 'ltr'},
-            sv: {id: 'sv', dir: 'ltr'},
-            th: {id: 'th', dir: 'ltr'},
-            tr: {id: 'tr', dir: 'ltr'},
-            uk: {id: 'uk', dir: 'ltr'},
-            ur: {id: 'ur', dir: 'rtl'},
-            vi: {id: 'vi', dir: 'ltr'},
-            zh: {id: 'zh', dir: 'ltr'},
-            'zh-CN': {id: 'zh-CN', dir: 'ltr'},
-            'zh-TW': {id: 'zh-TW', dir: 'ltr'},
-          }
+            am: {id: "am", dir: "ltr"},
+            ar: {id: "ar", dir: "rtl"},
+            bg: {id: "bg", dir: "ltr"},
+            ca: {id: "ca", dir: "ltr"},
+            cs: {id: "cs", dir: "ltr"},
+            da: {id: "da", dir: "ltr"},
+            de: {id: "de", dir: "ltr"},
+            el: {id: "el", dir: "ltr"},
+            en: {id: "en", dir: "ltr"},
+            "es-419": {id: "es-419", dir: "ltr"},
+            fa: {id: "fa", dir: "rtl"},
+            fi: {id: "fi", dir: "ltr"},
+            fil: {id: "fil", dir: "ltr"},
+            fr: {id: "fr", dir: "ltr"},
+            he: {id: "he", dir: "rtl"},
+            hi: {id: "hi", dir: "ltr"},
+            hr: {id: "hr", dir: "ltr"},
+            hu: {id: "hu", dir: "ltr"},
+            id: {id: "id", dir: "ltr"},
+            it: {id: "it", dir: "ltr"},
+            ja: {id: "ja", dir: "ltr"},
+            ko: {id: "ko", dir: "ltr"},
+            km: {id: "km", dir: "ltr"},
+            lt: {id: "lt", dir: "ltr"},
+            lv: {id: "lv", dir: "ltr"},
+            nl: {id: "nl", dir: "ltr"},
+            no: {id: "no", dir: "ltr"},
+            pl: {id: "pl", dir: "ltr"},
+            "pt-BR": {id: "pt-BR", dir: "ltr"},
+            ro: {id: "ro", dir: "ltr"},
+            ru: {id: "ru", dir: "ltr"},
+            sk: {id: "sk", dir: "ltr"},
+            sl: {id: "sl", dir: "ltr"},
+            sr: {id: "sr", dir: "ltr"},
+            "sr-Latn": {id: "sr-Latn", dir: "ltr"},
+            sv: {id: "sv", dir: "ltr"},
+            th: {id: "th", dir: "ltr"},
+            tr: {id: "tr", dir: "ltr"},
+            uk: {id: "uk", dir: "ltr"},
+            ur: {id: "ur", dir: "rtl"},
+            vi: {id: "vi", dir: "ltr"},
+            zh: {id: "zh", dir: "ltr"},
+            "zh-CN": {id: "zh-CN", dir: "ltr"},
+            "zh-TW": {id: "zh-TW", dir: "ltr"},
+          },
         },
         language: {
           type: String,
           readonly: true,
-          computed: '_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)'
+          computed: "_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)",
         },
         useKeyIfMissing: {
           type: Boolean,
-          value: true
+          value: true,
         },
         page: {
           type: String,
           readonly: true,
-          computed: '_computePage(routeData.page, DEFAULT_PAGE)'
+          computed: "_computePage(routeData.page, DEFAULT_PAGE)",
         },
         route: Object,
         routeData: Object,
         pageTitleKey: {
           type: String,
-          computed: '_computePageTitleKey(page)'
+          computed: "_computePageTitleKey(page)",
         },
         rootPath: {
           type: String,
-          value: Polymer.rootPath
+          value: Polymer.rootPath,
         },
         shouldShowBackButton: {
           type: Boolean,
-          computed: '_computeShouldShowBackButton(page, DEFAULT_PAGE)'
+          computed: "_computeShouldShowBackButton(page, DEFAULT_PAGE)",
         },
         shouldShowAddButton: {
           type: Boolean,
-          computed: '_computeShouldShowAddButton(page)'
+          computed: "_computeShouldShowAddButton(page)",
         },
         servers: {
-          type: Array
+          type: Array,
         },
         // Tells AppLocalizeBehavior to bubble its
         // app-localize-resources-loaded event, allowing us listen for it on
@@ -511,33 +548,33 @@
         // element.
         bubbleEvent: {
           type: Boolean,
-          value: true
+          value: true,
         },
         platform: {
           type: String,
-          readonly: true
+          readonly: true,
         },
         shouldShowQuitButton: {
           type: Boolean,
-          computed: '_computeShouldShowQuitButton(platform)',
-          value: false
+          computed: "_computeShouldShowQuitButton(platform)",
+          value: false,
         },
         shouldShowAppLogo: {
           type: Boolean,
-          computed: '_computeShouldShowAppLogo(page)'
+          computed: "_computeShouldShowAppLogo(page)",
         },
         toastUrl: {
-          type: String
-        }
+          type: String,
+        },
       },
-      openDrawer: function () {
-        this.$.drawer.style.opacity = '1';
+      openDrawer: function() {
+        this.$.drawer.style.opacity = "1";
         this.$.drawer.open();
       },
-      closeDrawer: function () {
+      closeDrawer: function() {
         this.$.drawer.close();
       },
-      showToast: function (text, duration, buttonText, buttonHandler, buttonUrl) {
+      showToast: function(text, duration, buttonText, buttonHandler, buttonUrl) {
         // If the toast is already open, first close it. We then always wait a
         // little before calling open in a this.async call. This ensures that:
         // 1. we are compliant with the material design spec
@@ -552,7 +589,7 @@
         if (this.$.toast.opened) {
           this.$.toast.close();
         }
-        this.async(function () {
+        this.async(function() {
           this.$.toast.text = text;
           this.$.toast.duration = duration || 3000;
 
@@ -576,37 +613,36 @@
           this.$.toast.open();
         }, 350);
       },
-      changePage: function (page) {
+      changePage: function(page) {
         if (this.page === page) {
-          console.debug('already on page', page);
+          console.debug("already on page", page);
           return;
         }
-        this.set('route.path', '/' + page);
+        this.set("route.path", "/" + page);
       },
-      _callToastHandler: function () {
+      _callToastHandler: function() {
         var toastButton = this.$.toastButton;
         var handler = toastButton._handler;
-        if (!handler) return console.error('No toast handler found');
+        if (!handler) return console.error("No toast handler found");
         // Close the toast and unbind the handler so there's no chance the
         // user can somehow trigger the same handler twice.
         this.$.toast.close();
         delete toastButton._handler;
         handler();
       },
-      promptAddServer: function () {
+      promptAddServer: function() {
         this.$.addServerView.openAddServerSheet();
       },
-      _computeLanguage: function (LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE) {
-        return OutlineI18n.getBestMatchingLanguage(
-          Object.keys(LANGUAGES_AVAILABLE)) || DEFAULT_LANGUAGE;
+      _computeLanguage: function(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE) {
+        return OutlineI18n.getBestMatchingLanguage(Object.keys(LANGUAGES_AVAILABLE)) || DEFAULT_LANGUAGE;
       },
-      _computePage: function (pageFromRoute, DEFAULT_PAGE) {
+      _computePage: function(pageFromRoute, DEFAULT_PAGE) {
         if (this.page && pageFromRoute === this.page) {
           return this.page;
-        } else if (pageFromRoute === 'help') {
+        } else if (pageFromRoute === "help") {
           this._openHelpPage(); // Fall-through to navigate to the default page.
-        } else if (pageFromRoute === 'quit') {
-          this.fire('QuitPressed');
+        } else if (pageFromRoute === "quit") {
+          this.fire("QuitPressed");
         } else if (pageFromRoute) {
           return pageFromRoute;
         }
@@ -616,36 +652,36 @@
         // to the default page onto the history stack. Without this, you'd have to press
         // Android's system back button twice instead of once to get out of the app after
         // opening it.
-        history.replaceState({}, '', '#/' + DEFAULT_PAGE);
+        history.replaceState({}, "", "#/" + DEFAULT_PAGE);
         this.setProperties({
-          'route.path': '/' + DEFAULT_PAGE,
-          'routeData.page': DEFAULT_PAGE
+          "route.path": "/" + DEFAULT_PAGE,
+          "routeData.page": DEFAULT_PAGE,
         });
         return DEFAULT_PAGE;
       },
-      _computePageTitleKey: function (page) {
-        return page + '-page-title';
+      _computePageTitleKey: function(page) {
+        return page + "-page-title";
       },
-      _computeShouldShowBackButton: function (page, DEFAULT_PAGE) {
+      _computeShouldShowBackButton: function(page, DEFAULT_PAGE) {
         return page !== DEFAULT_PAGE;
       },
-      _computeShouldShowAddButton: function (page) {
+      _computeShouldShowAddButton: function(page) {
         // Only show the add button if we're on the servers page.
-        return page === 'servers';
+        return page === "servers";
       },
-      _goBack: function () {
+      _goBack: function() {
         // If there is a navigation on the webview's history stack, pop it off to go back.
         if (history.length > 1) {
           history.back();
           // Must fire 'location-changed' so app-location notices and updates the route state.
-          window.dispatchEvent(new CustomEvent('location-changed'));
+          window.dispatchEvent(new CustomEvent("location-changed"));
         }
       },
-      _openHelpPage: function () {
+      _openHelpPage: function() {
         // Anchor tags compete with the app-drawer for click events on iOS. This results in links
         // not opening most of the time. We resort to opening the link programmatically for all
         // platforms.
-        if (this.platform === 'iOS') {
+        if (this.platform === "iOS") {
           window.open(this.$.helpAnchor.href);
         } else {
           // macOS does not respond to window.open and Windows opens a new browser window.
@@ -653,17 +689,17 @@
           this.$.helpAnchor.click();
         }
       },
-      _computeShouldShowQuitButton: function (platform) {
-        return platform === 'Mac OS X' || platform === 'Electron';
+      _computeShouldShowQuitButton: function(platform) {
+        return platform === "Mac OS X" || platform === "Electron";
       },
       _computeIsLastVisibleMenuItem: function(shouldShowQuitButton) {
-        return shouldShowQuitButton ? '' : 'last-menu-item';
+        return shouldShowQuitButton ? "" : "last-menu-item";
       },
       showServerRename: function(event) {
         this.$.serverRenameDialog.open(event.detail.serverName, event.detail.serverId);
       },
       _computeShouldShowAppLogo: function(page) {
-        return page === 'servers';
+        return page === "servers";
       },
     });
   </script>

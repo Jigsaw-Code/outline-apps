@@ -11,7 +11,7 @@ All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to o
 
 ## Building the web app
 
-Outline clients shares the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
+Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
     yarn gulp build --platform=browser
     yarn cordova run browser
@@ -79,3 +79,13 @@ To build for Windows, run:
     yarn do src/electron/build
 
 Unlike the Android and Apple clients, the Windows build uses the Electron framework, rather than Cordova.
+
+## Error reporting
+
+To enable error reporting through [Sentry](https://sentry.io/) for local builds, run:
+``` bash
+export SENTRY_DSN=[Sentry development API key]
+[platform-specific build command]
+```
+
+Release builds on CI are configured with a production Sentry API key.

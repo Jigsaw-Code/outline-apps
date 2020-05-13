@@ -13,16 +13,16 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="server-list.html">
-<link rel="import" href="server-connection-viz.html">
-<link rel="import" href="user-comms-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="server-list.html" />
+<link rel="import" href="server-connection-viz.html" />
+<link rel="import" href="user-comms-dialog.html" />
 
 <dom-module id="servers-view">
   <template>
     <style>
       :host {
-        margin: 0!important;
+        margin: 0 !important;
         width: 100%;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
@@ -31,7 +31,7 @@
         height: -webkit-calc(100vh - 64px);
         font-size: 14px;
         line-height: 20px;
-      };
+      }
       :host a {
         color: var(--medium-green);
         text-decoration: none;
@@ -41,7 +41,7 @@
         display: none !important;
       }
       .server-list-container {
-        background-color: #EFEFEF;
+        background-color: #efefef;
         width: 100%;
         height: 100%;
       }
@@ -61,18 +61,18 @@
       }
       .header {
         font-size: 20px;
-        color: rgba(0,0,0,0.87);
+        color: rgba(0, 0, 0, 0.87);
         line-height: 32px;
         margin-top: 34px;
       }
       .subtle {
-        color: rgba(0,0,0,0.54);
+        color: rgba(0, 0, 0, 0.54);
       }
       .footer {
         margin: 0;
         padding: 24px 0 16px 0;
         border-top-width: 1px;
-        border-top-color: rgba(0,0,0,0.08);
+        border-top-color: rgba(0, 0, 0, 0.08);
         border-top-style: solid;
       }
       paper-button {
@@ -91,33 +91,47 @@
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
         </div>
-        <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]">
-        </div>
+        <div
+          class="footer subtle"
+          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+        ></div>
       </div>
-      <user-comms-dialog id="autoConnectDialog" localize="[[localize]]" title-localization-key="auto-connect-dialog-title" detail-localization-key="auto-connect-dialog-detail" fire-event-on-hide="AutoConnectDialogDismissed"></user-comms-dialog>
-      <server-list id="serverList" hidden$="[[shouldShowZeroState]]" servers="{{servers}}" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
+      <user-comms-dialog
+        id="autoConnectDialog"
+        localize="[[localize]]"
+        title-localization-key="auto-connect-dialog-title"
+        detail-localization-key="auto-connect-dialog-detail"
+        fire-event-on-hide="AutoConnectDialogDismissed"
+      ></user-comms-dialog>
+      <server-list
+        id="serverList"
+        hidden$="[[shouldShowZeroState]]"
+        servers="{{servers}}"
+        localize="[[localize]]"
+        root-path="[[rootPath]]"
+      ></server-list>
     </div>
   </template>
 
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'servers-view',
+      is: "servers-view",
       properties: {
         localize: Function,
         rootPath: String,
         servers: Array,
         shouldShowZeroState: {
           type: Boolean,
-          computed: '_computeShouldShowZeroState(servers)'
-        }
+          computed: "_computeShouldShowZeroState(servers)",
+        },
       },
-      _computeShouldShowZeroState: function (servers) {
+      _computeShouldShowZeroState: function(servers) {
         return !!servers ? servers.length === 0 : false;
       },
       _requestPromptAddServer: function() {
-        this.fire('PromptAddServerRequested', {});
-      }
+        this.fire("PromptAddServerRequested", {});
+      },
     });
   </script>
 </dom-module>

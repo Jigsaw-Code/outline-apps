@@ -13,8 +13,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/paper-button/paper-button.html" />
 
 <dom-module id="privacy-view">
   <template>
@@ -102,7 +102,8 @@
           font-size: 28px;
           line-height: 40px;
         }
-        #footer p, #button-container {
+        #footer p,
+        #button-container {
           font-size: 22px;
           line-height: 30px;
         }
@@ -110,14 +111,17 @@
     </style>
     <div id="container">
       <div id="header">
-        <img id="privacy-lock" src$="[[rootPath]]assets/privacy-lock.png">
+        <img id="privacy-lock" src$="[[rootPath]]assets/privacy-lock.png" />
       </div>
       <div id="footer-container">
         <div id="footer">
           <h3>[[localize('privacy-title')]]</h3>
           <!-- TODO(alalama): localize -->
           <p class="faded" hidden$="[[!isBetaRelease]]">
-            Thank you for trying out Outline Beta! Please submit feedback through the app if you experience crashes or bugs. Outline Beta uses Google's Firebase service to collect debugging information that can help us detect problems and improve Outline. If you do not want Outline to send this information through Firebase, please use the production version of the app.
+            Thank you for trying out Outline Beta! Please submit feedback through the app if you experience crashes or
+            bugs. Outline Beta uses Google's Firebase service to collect debugging information that can help us detect
+            problems and improve Outline. If you do not want Outline to send this information through Firebase, please
+            use the production version of the app.
           </p>
           <p class="faded" hidden$="[[isBetaRelease]]">[[localize('privacy-text')]]</p>
           <div id="button-container">
@@ -132,17 +136,17 @@
   </template>
 
   <script>
-    'use strict';
+    "use strict";
     Polymer({
-      is: 'privacy-view',
+      is: "privacy-view",
       properties: {
         localize: Function,
         rootPath: String,
         isBetaRelease: Boolean,
       },
       _privacyTermsAcked: function() {
-        this.fire('PrivacyTermsAcked');
-      }
+        this.fire("PrivacyTermsAcked");
+      },
     });
   </script>
 </dom-module>

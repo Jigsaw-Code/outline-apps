@@ -12,23 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as Raven from 'raven-js';
+import * as sentry from '@sentry/browser';
 
 export interface OutlineErrorReporter {
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void>;
 }
 
 export class SentryErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, dsn: string, tags: {[id: string]: string;}) {
-    Raven.config(dsn, {release: appVersion, 'tags': tags}).install();
+  constructor(appVersion: string, dsn: string, private tags: {[id: string]: string;}) {
+    sentry.init({dsn, release: appVersion});
     this.setUpUnhandledRejectionListener();
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    Raven.setUserContext({email: userEmail || ''});
-    Raven.captureMessage(userFeedback, {tags: {category: feedbackCategory}});
-    Raven.setUserContext();  // Reset the user context, don't cache the email
-    return Promise.resolve();
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+    sentry.configureScope(scope => {
+      scope.setUser({email: userEmail || ''});
+      if (this.tags) {
+        scope.setTags(this.tags);
+      }
+      scope.setTag('category', feedbackCategory);
+    });
+    sentry.captureMessage(userFeedback);
+    sentry.configureScope(scope => {
+      scope.clear();  // Reset the user context, don't cache the email
+    });
   }
 
   private setUpUnhandledRejectionListener() {
@@ -38,7 +45,7 @@ export class SentryErrorReporter implements OutlineErrorReporter {
     window.addEventListener(unhandledRejection, (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       const msg = reason.stack ? reason.stack : reason;
-      Raven.captureBreadcrumb({message: msg, category: unhandledRejection});
+      sentry.addBreadcrumb({message: msg, category: unhandledRejection});
     });
   }
 }

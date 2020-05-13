@@ -77,6 +77,13 @@ function pull_from_osx_plist() {
   pull_from_plist "apple/xcode/osx/Outline/Outline-Info.plist" $1
 }
 
+function validate_env_vars() {
+  if [[ -z ${SENTRY_DSN:-} ]]; then
+    echo "SENTRY_DSN is undefined."
+    exit 1
+  fi
+}
+
 case $PLATFORM in
   android | browser)
     APP_VERSION=$(pull_from_config_xml 'result.widget.$["version"]')
@@ -97,12 +104,15 @@ case $PLATFORM in
   *) usage ;;
 esac
 
+if [[ "${TYPE}" == "release" ]]; then
+  validate_env_vars
+fi
+
 cat << EOM
 {
   "APP_VERSION": "$APP_VERSION",
   "APP_BUILD_NUMBER": "$APP_BUILD_NUMBER",
   "BETA_BUILD": $BETA_BUILD,
-  "SENTRY_DSN": "$(pull_from_config_xml result.widget.sentry[0].$TYPE[0].$.dsn)",
-  "SENTRY_NATIVE_DSN": "$(pull_from_config_xml result.widget.sentry[0][\"$TYPE-native\"][0].$.dsn)"
+  "SENTRY_DSN": "${SENTRY_DSN:-}"
 }
 EOM

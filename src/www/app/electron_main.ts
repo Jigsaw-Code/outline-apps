@@ -19,6 +19,7 @@ import * as os from 'os';
 import {EventQueue} from '../model/events';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import {ElectronOutlineConnection} from './electron_outline_connection';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineConnection} from './fake_connection';
@@ -27,9 +28,7 @@ import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater, UpdateListener, Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
-import {WindowsOutlineConnection} from './windows_connection';
 
-// Currently, proxying is only supported on Windows.
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 const isOsSupported = isWindows || isLinux;
@@ -93,7 +92,7 @@ main({
             eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
-          isOsSupported ? new WindowsOutlineConnection(config, serverId) :
+          isOsSupported ? new ElectronOutlineConnection(config, serverId) :
                           new FakeOutlineConnection(config, serverId),
           eventQueue);
     };
@@ -107,7 +106,7 @@ main({
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
-    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN);
+    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '');
   },
   getUpdater: () => {
     return new ElectronUpdater();

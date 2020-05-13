@@ -17,8 +17,7 @@
 const child_process = require('child_process');
 
 module.exports = function(context) {
-  console.log('Copying Android third party source code');
-  child_process.execSync('cp third_party/sentry-android/*.java plugins/cordova-plugin-outline/android/java/org/outline/log/');
+  console.log('Copying Android third party libraries...');
   child_process.execSync('mkdir -p plugins/cordova-plugin-outline/android/libs');
   child_process.execSync(
       `cp third_party/go-tun2socks/android/tun2socks.aar plugins/cordova-plugin-outline/android/libs/`);

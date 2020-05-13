@@ -48,6 +48,8 @@
             <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
           </intent-filter>
       </receiver>
+
+      <meta-data android:name="io.sentry.auto-init" android:value="false" />
     </config-file>
 
     <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
