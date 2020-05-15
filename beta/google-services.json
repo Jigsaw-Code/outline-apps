@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "644682816359",
+    "firebase_url": "https://outline-client.firebaseio.com",
+    "project_id": "outline-client",
+    "storage_bucket": "outline-client.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644682816359:android:d8be1e7412149bfb",
+        "android_client_info": {
+          "package_name": "org.outline.android.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644682816359-jog0tn0r1k6b472qe6uu69dq3ef3gsmk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4EotaT3DKDnukA8ea0Z1S-603goeYJEA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644682816359-jog0tn0r1k6b472qe6uu69dq3ef3gsmk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

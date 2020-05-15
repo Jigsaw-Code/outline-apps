@@ -15,6 +15,7 @@
 export interface EnvironmentVariables {
   APP_VERSION: string;
   APP_BUILD_NUMBER: string;
+  BETA_BUILD: boolean;
   SENTRY_DSN: string|undefined;
 }
 

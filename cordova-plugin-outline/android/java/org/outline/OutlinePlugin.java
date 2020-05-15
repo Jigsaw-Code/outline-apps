@@ -40,8 +40,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
-import org.outline.shadowsocks.ShadowsocksConnectivity;
 import org.outline.vpn.VpnTunnelService;
+import shadowsocks.Shadowsocks;
 
 public class OutlinePlugin extends CordovaPlugin {
   private static final Logger LOG = Logger.getLogger(OutlinePlugin.class.getName());
@@ -223,9 +223,14 @@ public class OutlinePlugin extends CordovaPlugin {
                   } else if (Action.STOP.is(action)) {
                     stopVpnConnection(connectionId);
                   } else if (Action.IS_REACHABLE.is(action)) {
-                    boolean isReachable =
-                        ShadowsocksConnectivity.isServerReachable(
-                            args.getString(1), args.getInt(2));
+                    boolean isReachable = false;
+                    try {
+                      Shadowsocks.checkServerReachable(args.getString(1), args.getInt(2));
+                      isReachable = true;
+                    } catch (Exception e) {
+                      LOG.fine(
+                          String.format(Locale.ROOT, "Connection %s unreachable", connectionId));
+                    }
                     PluginResult result = new PluginResult(PluginResult.Status.OK, isReachable);
                     sendPluginResult(connectionId, action, result, false);
                   } else if (Action.IS_RUNNING.is(action)) {

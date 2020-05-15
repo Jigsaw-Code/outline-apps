@@ -125,8 +125,9 @@ jobs:
         # Encrypted key alias. Stored in $KEY_ALIAS.
         - secure: "kUUN6t8txRUrLSbR9KMSbA0LT2juKjt0MA9Do8w/2uV6r33KrhRkSM2Of8+GApNGwm469ZVS5bYNQ/+y81YlleNGzbpTYl4Lr2Dw+x9L9U04sWRPN8R59bqWHvBQiL8UwzbYj8C5/plPJ+ojr9v92ppzWYQGjAozAWxA0YA7PHFfs4VoUMKYlF88djCHfgt6jlbYJVYLo+G+jtj7VyK1v6KhcXyYz2wn9JnO/Szhi152UdkqQUMpBvHEnfF+GdWn8o7nP3htF+S46tBu1pL0AKsxzsT7Bp0XLYtehzqsiset/eRpNdWGx2cl0Bl+7HBI2Aa1zbxJ5gU7lyp7NvURJRkNa3/h6VQyl7z8mo3Z7xG4teAcG/scT5hW+2ElXfC2bubRRQtokggNxh4TUI3b75P+/mP6B7AzzY6RTOWHOipu6+2LtHdcWQZpRi1ORzFw/1rVIRmMtGn6UMwD0XkA7ZGzq3SgKiw77HSOyWP800EPv7P7B0miEFhno4cmlYLnWQroaqY9Kv6ISqjcFMGksUU7tTflC/ZqiKYXI1ESFS0cI/FtaLprcz8BYWHUrfP8+/Ivqvgl/i9c4SuVVIaZ7bd4SnV+Qq6CNVjrOdLCMpy5AozOz8tNix4E1b0qv0jCZ/OKeFax8+A/udqN+XlKqx3FegGyf7rT7bNQ3tgK6Ec="
       script:
+        - BETA=$([[ $TRAVIS_TAG == *"beta"* ]] && echo '--beta')
         - openssl aes-256-cbc -K $encrypted_cb15c65d6aeb_key -iv $encrypted_cb15c65d6aeb_iv -in keystore.p12.enc -out keystore.p12 -d
-        - ./tools/build/build.sh yarn gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
+        - ./tools/build/build.sh yarn gulp build --platform=android $BETA --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
 
     - stage: ios
       os: osx

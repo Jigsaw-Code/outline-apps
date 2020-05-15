@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -34,9 +33,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -44,8 +41,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.OutlinePlugin;
-import org.outline.shadowsocks.Shadowsocks;
-import org.outline.shadowsocks.ShadowsocksConnectivity;
 
 /**
  * Android background service responsible for managing VPN connections. Clients must bind to this
@@ -63,9 +58,7 @@ public class VpnTunnelService extends VpnService {
   private final IBinder binder = new LocalBinder();
   private ThreadPoolExecutor executorService;
   private VpnTunnel vpnTunnel;
-  private Shadowsocks shadowsocks;
   private String activeConnectionId = null;
-  private JSONObject activeServerConfig = null;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnConnectionStore connectionStore;
   private Notification.Builder notificationBuilder;
@@ -80,7 +73,6 @@ public class VpnTunnelService extends VpnService {
   public void onCreate() {
     LOG.info("Creating VPN service.");
     vpnTunnel = new VpnTunnel(this);
-    shadowsocks = new Shadowsocks(this);
     executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     networkConnectivityMonitor = new NetworkConnectivityMonitor();
     connectionStore = new VpnConnectionStore(VpnTunnelService.this);
@@ -132,13 +124,12 @@ public class VpnTunnelService extends VpnService {
 
   /**
    * Establishes a system-wide VPN connected to a remote Shadowsocks server. All device traffic is
-   * routed as follows: |VPN TUN interface| <-> |tun2socks| <-> |local Shadowsocks server| <->
-   * |remote Shadowsocks server|.
+   * routed as follows: |VPN TUN interface| <-> |tun2socks| <-> |Shadowsocks server|.
    *
    * <p>This method can be called multiple times with different configurations. The VPN will not be
-   * teared down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code extra
-   * with the result of the operation, as defined in OutlinePlugin.ErrorCode. Displays a persistent
-   * notification for the duration of the connection.
+   * teared down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
+   * extra with the result of the operation, as defined in OutlinePlugin.ErrorCode. Displays a
+   * persistent notification for the duration of the connection.
    *
    * @param connectionId unique identifier for the connection.
    * @param config Shadowsocks configuration parameters.
@@ -159,28 +150,33 @@ public class VpnTunnelService extends VpnService {
       // Broadcast the previous instance disconnect event before reassigning the connection ID.
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
       stopForeground();
+      try {
+        // Disconnect the tunnel; do not tear down the VPN to avoid leaking traffic.
+        vpnTunnel.disconnectTunnel();
+      } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Failed to disconnect tunnel", e);
+      }
     }
     activeConnectionId = connectionId;
-    activeServerConfig = config;
 
     OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
-    try {
-      // Do not perform connectivity checks when connecting on startup. We should avoid failing
-      // the connection due to a network error, as network may not be ready.
-      errorCode = startShadowsocks(config, !isAutoStart).get();
-      if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
-              || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
-        onVpnStartFailure(errorCode);
+    if (!isAutoStart) {
+      try {
+        // Do not perform connectivity checks when connecting on startup. We should avoid failing
+        // the connection due to a network error, as network may not be ready.
+        errorCode = checkServerConnectivity(config);
+        if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
+                || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
+          onVpnStartFailure(errorCode);
+          return;
+        }
+      } catch (Exception e) {
+        onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
         return;
       }
-    } catch (Exception e) {
-      onVpnStartFailure(OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE);
-      return;
     }
 
-    if (isRestart) {
-      vpnTunnel.disconnectTunnel();
-    } else {
+    if (!isRestart) {
       // Only establish the VPN if this is not a connection restart.
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
@@ -194,14 +190,16 @@ public class VpnTunnelService extends VpnService {
         ? connectionStore.isUdpSupported()
         : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
-      vpnTunnel.connectTunnel(shadowsocks.getLocalServerAddress(), remoteUdpForwardingEnabled);
+      vpnTunnel.connectTunnel(config.getString("host"), config.getInt("port"),
+          config.getString("password"), config.getString("method"), remoteUdpForwardingEnabled);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
       return;
     }
+
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
-    startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.CONNECTED);
+    startForegroundWithNotification(config);
     storeActiveConnection(connectionId, config, remoteUdpForwardingEnabled);
   }
 
@@ -249,102 +247,30 @@ public class VpnTunnelService extends VpnService {
     stopVpnTunnel();
     stopForeground();
     activeConnectionId = null;
-    activeServerConfig = null;
     stopNetworkConnectivityMonitor();
     connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
   }
 
   /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
   private void stopVpnTunnel() {
-    shadowsocks.stop();
     vpnTunnel.disconnectTunnel();
     vpnTunnel.tearDownVpn();
   }
 
   // Shadowsocks
 
-  /* Starts a local Shadowsocks server and performs connectivity tests if
-   * |performConnectivityChecks| is true, to ensure compatibility. Returns a Future encapsulating an
-   * error code, as defined in OutlinePlugin.ErrorCode. */
-  private Future<OutlinePlugin.ErrorCode> startShadowsocks(
-      final JSONObject config, final boolean performConnectivityChecks) {
-    return executorService.submit(
-        new Callable<OutlinePlugin.ErrorCode>() {
-          public OutlinePlugin.ErrorCode call() {
-            try {
-              // No need to stop explicitly; shadowsocks.start will stop any running instances.
-              if (!shadowsocks.start(config)) {
-                LOG.severe("Failed to start Shadowsocks.");
-                return OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE;
-              }
-              if (performConnectivityChecks) {
-                return checkServerConnectivity(Shadowsocks.LOCAL_SERVER_ADDRESS,
-                    Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT), config.getString("host"),
-                    config.getInt("port"));
-              }
-              return OutlinePlugin.ErrorCode.NO_ERROR;
-            } catch (JSONException e) {
-              LOG.log(Level.SEVERE, "Failed to parse the Shadowsocks config", e);
-            }
-            return OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE;
-          }
-        });
-  }
-
-  /* Checks that the remote server is reachable, allows UDP forwarding, and the credentials are
-   * valid. Executes the three checks in parallel in order to minimize the user's wait time. */
-  private OutlinePlugin.ErrorCode checkServerConnectivity(
-      final String localServerAddress,
-      final int localServerPort,
-      final String remoteServerAddress,
-      final int remoteServerPort) {
-    final Callable<Boolean> udpForwardingCheck =
-        new Callable<Boolean>() {
-          public Boolean call() {
-            return ShadowsocksConnectivity.isUdpForwardingEnabled(
-                localServerAddress, localServerPort);
-          }
-        };
-    final Callable<Boolean> reachabilityCheck =
-        new Callable<Boolean>() {
-          public Boolean call() {
-            return ShadowsocksConnectivity.isServerReachable(remoteServerAddress, remoteServerPort);
-          }
-        };
-    final Callable<Boolean> credentialsValidationCheck =
-        new Callable<Boolean>() {
-          public Boolean call() {
-            return ShadowsocksConnectivity.validateServerCredentials(
-                localServerAddress, localServerPort);
-          }
-        };
+  private OutlinePlugin.ErrorCode checkServerConnectivity(final JSONObject serverConfig) {
     try {
-      Future<Boolean> udpCheckResult = executorService.submit(udpForwardingCheck);
-      Future<Boolean> reachabilityCheckResult = executorService.submit(reachabilityCheck);
-      Future<Boolean> credentialsCheckResult = executorService.submit(credentialsValidationCheck);
-      boolean isUdpForwardingEnabled = udpCheckResult.get();
-      if (isUdpForwardingEnabled) {
-        // The UDP forwarding check is a superset of the TCP checks. Don't wait for the other tests
-        // to complete; if they fail, assume it's due to intermittent network conditions and declare
-        // success anyway.
-        return OutlinePlugin.ErrorCode.NO_ERROR;
-      } else {
-        boolean isReachable = reachabilityCheckResult.get();
-        boolean credentialsAreValid = credentialsCheckResult.get();
-        LOG.info(String.format(Locale.ROOT,
-            "Server connectivity: UDP forwarding disabled, server %s, creds. %s",
-            isReachable ? "reachable" : "unreachable", credentialsAreValid ? "valid" : "invalid"));
-        if (credentialsAreValid) {
-          return OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED;
-        } else if (isReachable) {
-          return OutlinePlugin.ErrorCode.INVALID_SERVER_CREDENTIALS;
-        }
-      }
+      long errorCode = shadowsocks.Shadowsocks.checkConnectivity(serverConfig.getString("host"),
+          serverConfig.getInt("port"), serverConfig.getString("password"),
+          serverConfig.getString("method"));
+      OutlinePlugin.ErrorCode result = OutlinePlugin.ErrorCode.values()[(int) errorCode];
+      LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
+      return result;
     } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Failed to execute server connectivity tests", e);
+      LOG.log(Level.SEVERE, "Connectivity checks failed", e);
     }
-    // Be conservative in declaring UDP forwarding or credentials failure.
-    return OutlinePlugin.ErrorCode.SERVER_UNREACHABLE;
+    return OutlinePlugin.ErrorCode.UNEXPECTED;
   }
 
   // Connectivity
@@ -365,7 +291,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
-      startForegroundWithNotification(activeServerConfig, OutlinePlugin.ConnectionStatus.CONNECTED);
+      updateNotification(OutlinePlugin.ConnectionStatus.CONNECTED);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
@@ -376,16 +302,10 @@ public class VpnTunnelService extends VpnService {
         // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
       }
-
-      final boolean wasUdpSupported = connectionStore.isUdpSupported();
-      final boolean isUdpSupported = ShadowsocksConnectivity.isUdpForwardingEnabled(
-          Shadowsocks.LOCAL_SERVER_ADDRESS, Integer.parseInt(Shadowsocks.LOCAL_SERVER_PORT));
+      boolean isUdpSupported = vpnTunnel.updateUDPSupport();
+      LOG.info(
+          String.format("UDP support: %s -> %s", connectionStore.isUdpSupported(), isUdpSupported));
       connectionStore.setIsUdpSupported(isUdpSupported);
-      LOG.info(String.format("UDP support: %s -> %s", wasUdpSupported, isUdpSupported));
-      if (isUdpSupported != wasUdpSupported) {
-        // UDP forwarding support changed with the network; restart the connection.
-        startConnection(activeConnectionId, activeServerConfig);
-      }
     }
 
     @Override
@@ -398,8 +318,7 @@ public class VpnTunnelService extends VpnService {
         return;
       }
       broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
-      startForegroundWithNotification(
-          activeServerConfig, OutlinePlugin.ConnectionStatus.RECONNECTING);
+      updateNotification(OutlinePlugin.ConnectionStatus.RECONNECTING);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
@@ -446,8 +365,8 @@ public class VpnTunnelService extends VpnService {
   /* Broadcast VPN stop. */
   private void broadcastVpnStop() {
     Intent vpnStop = new Intent(OutlinePlugin.Action.STOP.value);
-    vpnStop.putExtra(OutlinePlugin.IntentExtra.ERROR_CODE.value,
-                     OutlinePlugin.ErrorCode.NO_ERROR.value);
+    vpnStop.putExtra(
+        OutlinePlugin.IntentExtra.ERROR_CODE.value, OutlinePlugin.ErrorCode.NO_ERROR.value);
     dispatchBroadcast(vpnStop);
   }
 
@@ -487,7 +406,7 @@ public class VpnTunnelService extends VpnService {
       final JSONObject config = connection.getJSONObject(CONNECTION_CONFIG_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
-      startForegroundWithNotification(config, OutlinePlugin.ConnectionStatus.RECONNECTING);
+      startForegroundWithNotification(config);
       startConnection(connection.getString(CONNECTION_ID_KEY),
           connection.getJSONObject(CONNECTION_CONFIG_KEY), true);
     } catch (JSONException e) {
@@ -512,22 +431,36 @@ public class VpnTunnelService extends VpnService {
 
   // Foreground service & notifications
 
-  /* Starts the service in the foreground and  displays a persistent notification. */
-  private void startForegroundWithNotification(
-      final JSONObject serverConfig, OutlinePlugin.ConnectionStatus status) {
+  /* Starts the service in the foreground and displays a persistent notification. */
+  private void startForegroundWithNotification(final JSONObject serverConfig) {
     try {
       if (notificationBuilder == null) {
         // Cache the notification builder so we can update the existing notification - creating a
         // new notification has the side effect of resetting the connection timer.
         notificationBuilder = getNotificationBuilder(serverConfig);
       }
+      notificationBuilder.setContentText(getStringResource("connected_server_state"));
+      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
+    } catch (Exception e) {
+      LOG.warning("Unable to display persistent notification");
+    }
+  }
+
+  /* Updates the persistent notification to reflect the connection status. */
+  private void updateNotification(OutlinePlugin.ConnectionStatus status) {
+    try {
+      if (notificationBuilder == null) {
+        return; // No notification to update.
+      }
       final String statusStringResourceId = status == OutlinePlugin.ConnectionStatus.CONNECTED
           ? "connected_server_state"
           : "reconnecting_server_state";
       notificationBuilder.setContentText(getStringResource(statusStringResourceId));
-      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
+      NotificationManager notificationManager =
+          (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      notificationManager.notify(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
     } catch (Exception e) {
-      LOG.warning("Unable to display persistent notification");
+      LOG.warning("Failed to update persistent notification");
     }
   }
 

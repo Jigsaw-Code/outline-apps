@@ -1,6 +1,0 @@
-framework module PacketProcessor_iOS {
-  umbrella header "PacketProcessor_iOS.h"
-
-  export *
-  module * { export * }
-}

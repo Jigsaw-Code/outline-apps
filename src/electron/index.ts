@@ -374,12 +374,6 @@ promiseIpc.on(
       console.log(`connecting to ${args.id}...`);
 
       try {
-        // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
-        // resolve it just once, upfront.
-        args.config.host = await connectivity.lookupIp(args.config.host || '');
-
-        await connectivity.isServerReachable(
-            args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
         await startVpn(args.config, args.id);
 
         console.log(`connected to ${args.id}`);
