@@ -165,7 +165,7 @@
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
-        <div id="unsupportedCipherMessage" hidden="[[isCipherSupported]]">[[localize('unsupported-cipher')]]</div>
+        <div id="unsupportedCipherMessage" hidden="[[!usesUnsupportedCipher]]">[[localize('unsupported-cipher')]]</div>
         <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
           >[[connectButtonLabel]]</paper-button
         >
@@ -177,10 +177,6 @@
     Polymer({
       is: "server-card",
       properties: {
-        SUPPORTED_CIPHERS: {
-          type: Array,
-          value: ["chacha20-ietf-poly1305", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm"],
-        },
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
         localize: Function,
@@ -189,7 +185,7 @@
         serverId: String,
         serverHost: String,
         serverPort: Number,
-        serverCipher: String,
+        usesUnsupportedCipher: Boolean,
         state: {
           type: String,
           value: "DISCONNECTED",
@@ -198,17 +194,13 @@
           type: String,
           computed: "_computeStatusMessage(state, localize)",
         },
-        isCipherSupported: {
-          type: Boolean,
-          computed: "_computeIsCipherSupported(serverCipher)",
-        },
         connectButtonLabel: {
           type: String,
           computed: "_computeConnectButtonLabel(state, localize)",
         },
         connectButtonDisabled: {
           type: Boolean,
-          computed: "_computeConnectButtonDisabled(state, isCipherSupported)",
+          computed: "_computeConnectButtonDisabled(state, usesUnsupportedCipher)",
         },
       },
       _onConnectToggled: function() {
@@ -242,11 +234,8 @@
           }[state] || this.localize("connect-button-label")
         );
       },
-      _computeConnectButtonDisabled: function(state, isCipherSupported) {
-        return !isCipherSupported || state === "CONNECTING" || state === "DISCONNECTING";
-      },
-      _computeIsCipherSupported: function(cipher) {
-        return this.SUPPORTED_CIPHERS.includes(cipher);
+      _computeConnectButtonDisabled: function(state, usesUnsupportedCipher) {
+        return !usesUnsupportedCipher || state === "CONNECTING" || state === "DISCONNECTING";
       },
       _onMenuItemPressed: function(evt, detail) {
         if (detail.selected === "forget") {

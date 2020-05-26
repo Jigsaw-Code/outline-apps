@@ -21,6 +21,9 @@ import {Server} from '../model/server';
 import {PersistentServer} from './persistent_server';
 
 export class OutlineServer implements PersistentServer {
+  private static readonly SUPPORTED_CIPHERS =
+    ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+
   constructor(
       public readonly id: string, public config: cordova.plugins.outline.ServerConfig,
       private connection: cordova.plugins.outline.Connection,
@@ -55,6 +58,11 @@ export class OutlineServer implements PersistentServer {
 
   get host() {
     return this.config.host;
+  }
+
+  get usesUnsupportedCipher() {
+    return this.config.method === undefined
+      || !OutlineServer.SUPPORTED_CIPHERS.includes(this.config.method);
   }
 
   connect(): Promise<void> {

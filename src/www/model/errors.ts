@@ -31,6 +31,12 @@ export class ServerAlreadyAdded extends OutlineError {
   }
 }
 
+export class ShadowsocksUnsupportedCipher extends OutlineError {
+  constructor(public readonly cipher: string) {
+    super();
+  }
+}
+
 export class ServerIncompatible extends OutlineError {
   constructor(message: string) {
     super(message);
@@ -86,7 +92,6 @@ export class ServerUnreachable extends RegularNativeError {}
 export class IllegalServerConfiguration extends RegularNativeError {}
 export class NoAdminPermissions extends RegularNativeError {}
 export class SystemConfigurationException extends RegularNativeError {}
-export class UnsupportedCipher extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
@@ -124,7 +129,6 @@ export const enum ErrorCode {
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
   SYSTEM_MISCONFIGURED = 12,
-  UNSUPPORTED_CIPHER = 13,
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -156,8 +160,6 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new UnsupportedRoutingTable();
     case ErrorCode.SYSTEM_MISCONFIGURED:
       return new SystemConfigurationException();
-    case ErrorCode.UNSUPPORTED_CIPHER:
-      return new UnsupportedCipher();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
@@ -190,8 +192,6 @@ export function toErrorCode(e: NativeError): ErrorCode {
     return ErrorCode.NO_ADMIN_PERMISSIONS;
   } else if (e instanceof SystemConfigurationException) {
     return ErrorCode.SYSTEM_MISCONFIGURED;
-  } else if (e instanceof UnsupportedCipher) {
-    return ErrorCode.UNSUPPORTED_CIPHER;
   }
   throw new Error(`unknown NativeError ${e.name}`);
 }
