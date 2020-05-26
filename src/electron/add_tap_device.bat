@@ -91,7 +91,7 @@ call :wait_for_device "%DEVICE_NAME%"
 :: and always include its output.
 echo (Re-)enabling TAP network device...
 netsh interface set interface "%DEVICE_NAME%" admin=enabled
-powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\""
+powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\"" <nul
 
 :: Give the device an IP address.
 :: 10.0.85.x is a guess which we hope will work for most users (Docker for
