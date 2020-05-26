@@ -128,7 +128,7 @@ export const enum ErrorCode {
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
-  SYSTEM_MISCONFIGURED = 12,
+  SYSTEM_MISCONFIGURED = 12
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
