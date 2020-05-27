@@ -87,10 +87,12 @@ call :wait_for_device "%DEVICE_NAME%"
 :: already enabled:
 ::   This network connection does not exist.
 ::
-:: So, continue even if this command fails, attempt to enable it through powershell -
-:: and always include its output.
+:: So, continue even if this command fails - and always include its output.
 echo (Re-)enabling TAP network device...
 netsh interface set interface "%DEVICE_NAME%" admin=enabled
+:: The powershell command is used to ensure the adapter is enabled if netsh fails and leaves it in
+:: a disabled state. While no such failure has yet been observed, this command would correct it and
+:: should behave idempotently otherwise.
 powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\"" <nul
 
 :: Give the device an IP address.
