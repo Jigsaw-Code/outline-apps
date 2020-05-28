@@ -104,8 +104,9 @@
       }
 
       .card-actions {
+        display: flex;
+        align-items: center;
         background-color: var(--paper-grey-50);
-        text-align: right;
         border-radius: 0 0 2px 2px;
       }
 
@@ -119,10 +120,9 @@
         background: transparent;
       }
 
-      #unsupportedCipherMessage {
-        float: left;
-        padding: 0.7em 0.57em;
+      #errorMessage {
         color: #f44336;
+        margin-right: auto;
       }
 
       @media (min-height: 600px) {
@@ -165,7 +165,7 @@
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
-        <div id="unsupportedCipherMessage" hidden="[[!usesUnsupportedCipher]]">[[localize('unsupported-cipher')]]</div>
+        <div id="errorMessage">[[localize(errorMessageKey)]]</div>
         <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
           >[[connectButtonLabel]]</paper-button
         >
@@ -185,7 +185,7 @@
         serverId: String,
         serverHost: String,
         serverPort: Number,
-        usesUnsupportedCipher: Boolean,
+        errorMessageKey: String,
         state: {
           type: String,
           value: "DISCONNECTED",
@@ -200,7 +200,7 @@
         },
         connectButtonDisabled: {
           type: Boolean,
-          computed: "_computeConnectButtonDisabled(state, usesUnsupportedCipher)",
+          computed: "_computeConnectButtonDisabled(state, errorMessage)",
         },
       },
       _onConnectToggled: function() {
@@ -234,8 +234,8 @@
           }[state] || this.localize("connect-button-label")
         );
       },
-      _computeConnectButtonDisabled: function(state, usesUnsupportedCipher) {
-        return !usesUnsupportedCipher || state === "CONNECTING" || state === "DISCONNECTING";
+      _computeConnectButtonDisabled: function(state, errorMessage) {
+        return errorMessage || state === "CONNECTING" || state === "DISCONNECTING";
       },
       _onMenuItemPressed: function(evt, detail) {
         if (detail.selected === "forget") {
