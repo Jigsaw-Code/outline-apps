@@ -19,7 +19,7 @@
   "error-server-incompatible": "Sorry, this access key is not compatible with this version of Outline.",
   "error-timeout": "Something seems to be taking longer than expected. Quitting and restarting may help. If this happens again, please submit feedback.",
   "error-unexpected": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback.",
-  "error-shadowsocks-unsupported-cipher": "The server you added uses cipher {cipher}, but Outline only supports AEAD ciphers. Please contact your server admin.",
+  "error-shadowsocks-unsupported-cipher": "The server you requested to add uses an unsafe cipher ({cipher}). Please contact your server admin.",
   "feedback-cannot-add-server": "Can't add a server",
   "feedback-connection": "Can't connect to my server",
   "feedback-general": "General feedback",
