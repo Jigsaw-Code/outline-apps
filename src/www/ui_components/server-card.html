@@ -165,7 +165,7 @@
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
-        <div id="errorMessage">[[localize(errorMessageKey)]]</div>
+        <div id="errorMessage">[[localize(errorMessage)]]</div>
         <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
           >[[connectButtonLabel]]</paper-button
         >
@@ -179,13 +179,14 @@
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
+        errorMessage: String,
+        disabled: Boolean,
         localize: Function,
         rootPath: String,
         serverName: String,
         serverId: String,
         serverHost: String,
         serverPort: Number,
-        errorMessageKey: String,
         state: {
           type: String,
           value: "DISCONNECTED",
@@ -200,7 +201,7 @@
         },
         connectButtonDisabled: {
           type: Boolean,
-          computed: "_computeConnectButtonDisabled(state, errorMessage)",
+          computed: "_computeConnectButtonDisabled(state)",
         },
       },
       _onConnectToggled: function() {
@@ -234,8 +235,8 @@
           }[state] || this.localize("connect-button-label")
         );
       },
-      _computeConnectButtonDisabled: function(state, errorMessage) {
-        return errorMessage || state === "CONNECTING" || state === "DISCONNECTING";
+      _computeConnectButtonDisabled: function(state) {
+        return this.disabled || state === "CONNECTING" || state === "DISCONNECTING";
       },
       _onMenuItemPressed: function(evt, detail) {
         if (detail.selected === "forget") {

@@ -62,11 +62,6 @@ export class OutlineServer implements PersistentServer {
     return this.config.host;
   }
 
-  get usesUnsupportedCipher() {
-    return this.config.method === undefined ||
-        !OutlineServer.SUPPORTED_CIPHERS.includes(this.config.method);
-  }
-
   connect(): Promise<void> {
     return this.connection.start().catch((e) => {
       // e originates in "native" code: either Cordova or Electron's main process.
@@ -91,5 +86,9 @@ export class OutlineServer implements PersistentServer {
 
   checkReachable(): Promise<boolean> {
     return this.connection.isReachable();
+  }
+
+  public static isServerCipherSupported(cipher?: string) {
+    return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }
 }
