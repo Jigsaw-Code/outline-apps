@@ -407,7 +407,9 @@ app.on('browser-window-focus', () => {
 // Error reporting.
 // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
 ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
-  sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
+  if (info.dsn) {
+    sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
+  }
   // To clearly identify app restarts in Sentry.
   console.info(`Outline is starting`);
 });

@@ -93,7 +93,7 @@ ${StrRep}
   submitsentryreport:
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try \
     running the installer again. If you still cannot install Outline, please get in \
-    touch with us and let us know that the TAP device could not be installed."
+    touch with us and let us know that the TAP device failed to install with error code $0."
 
   ; Submit a Sentry error event.
   ;
