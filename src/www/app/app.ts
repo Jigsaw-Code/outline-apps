@@ -168,6 +168,9 @@ export class App {
       messageParams = ['serverName', e.server.name];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
+    } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
+      messageKey = 'error-shadowsocks-unsupported-cipher';
+      messageParams = ['cipher', e.cipher];
     } else {
       messageKey = 'error-unexpected';
     }

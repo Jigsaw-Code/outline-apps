@@ -357,6 +357,16 @@
       }
     }
   },
+  "error_shadowsocks_unsupported_cipher": {
+    "message": "Shadowsocks Unsupported cipher",
+    "description": "The server you requested to add uses an unsafe cipher ($cipher$). Please contact your server admin.",
+    "placeholders": {
+      "SERVER_NAME": {
+        "content": "{cipher}",
+        "example": "aes-256-ctr"
+      }
+    }
+  },
   "error_feedback_submission": {
     "message": "Sorry, we were unable to submit your feedback. Please check that you are connected to the internet and try again.",
     "description": "An error message shown when the user is trying to send feedback to the application developers but it is failing."
