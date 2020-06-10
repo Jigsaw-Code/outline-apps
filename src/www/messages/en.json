@@ -19,6 +19,7 @@
   "error-server-incompatible": "Sorry, this access key is not compatible with this version of Outline.",
   "error-timeout": "Something seems to be taking longer than expected. Quitting and restarting may help. If this happens again, please submit feedback.",
   "error-unexpected": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback.",
+  "error-shadowsocks-unsupported-cipher": "The server you requested to add uses an unsafe cipher ({cipher}). Please contact your server admin.",
   "feedback-cannot-add-server": "Can't add a server",
   "feedback-connection": "Can't connect to my server",
   "feedback-general": "General feedback",
@@ -82,6 +83,7 @@
   "tips": "Tips",
   "undo-button-label": "Undo",
   "unreachable-server-state": "Unreachable",
+  "unsupported-cipher": "Unsupported cipher",
   "update-downloaded": "An updated version of Outline has been downloaded. It will be installed when you restart Outline.",
   "version": "Version {appVersion}"
 }

@@ -104,8 +104,9 @@
       }
 
       .card-actions {
+        display: flex;
+        align-items: center;
         background-color: var(--paper-grey-50);
-        text-align: right;
         border-radius: 0 0 2px 2px;
       }
 
@@ -118,6 +119,12 @@
         color: var(--disabled-text-color);
         background: transparent;
       }
+
+      #errorMessage {
+        color: #f44336;
+        margin-right: auto;
+      }
+
       @media (min-height: 600px) {
         .card-content {
           padding: 20% 0;
@@ -158,6 +165,7 @@
         <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
+        <div id="errorMessage">[[errorMessage]]</div>
         <paper-button id="connectButton" on-tap="_onConnectToggled" disabled$="[[connectButtonDisabled]]"
           >[[connectButtonLabel]]</paper-button
         >
@@ -171,6 +179,8 @@
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
+        errorMessage: String,
+        disabled: Boolean,
         localize: Function,
         rootPath: String,
         serverName: String,
@@ -226,7 +236,7 @@
         );
       },
       _computeConnectButtonDisabled: function(state) {
-        return state === "CONNECTING" || state === "DISCONNECTING";
+        return this.disabled || state === "CONNECTING" || state === "DISCONNECTING";
       },
       _onMenuItemPressed: function(evt, detail) {
         if (detail.selected === "forget") {
