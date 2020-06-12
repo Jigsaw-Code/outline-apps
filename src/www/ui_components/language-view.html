@@ -52,7 +52,7 @@
       <paper-listbox selected="{{language}}" attr-for-selected="value" on-selected-changed="_languageSelected">
         <template is="dom-repeat" items="{{localizedLanguages}}" as="lang">
           <paper-item class="language-item" value="{{lang.code}}">
-            <span class="language-name">[[lang.code]]</span>
+            <span class="language-name">[[lang.localizedName]]</span>
             <template is="dom-if" if="{{_shouldShowCheck(lang.code)}}">
               <iron-icon icon="check"></iron-icon>
             </template>
@@ -78,23 +78,23 @@
         },
         localizedLanguages: {
           type: Array,
-          computed: "_computeLocalizedLanguages(languageCodes)",
+          computed: "_computeLocalizedLanguages(languageCodes, localize)",
         },
       },
-      _computeLocalizedLanguages(languageCodes) {
+      _computeLocalizedLanguages(languageCodes, localize) {
         return languageCodes
           .map(code => {
             return {
               code,
-              localizedMessage: this.localize(`language-${code.toLowerCase()}`),
+              localizedName: localize(`language-${code.toLowerCase()}`),
             };
           })
-          .sort((a, b) => (a.localizedMessage > b.localizedMessage ? -1 : 1));
+          .sort((a, b) => (a.localizedName > b.localizedName ? -1 : 1));
       },
       _languageSelected(event) {
         this.fire("ChangeLanguage", {languageCode: event.detail.value});
 
-        // TODO: How to go back properly?
+        // TODO: How to properly go back to the main screen?
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
         appRoot.changePage("servers");
       },
