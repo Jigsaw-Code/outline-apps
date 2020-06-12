@@ -276,7 +276,7 @@
           id="aboutView"
           localize="[[localize]]"
           language="[[language]]"
-          languages="[[_languageMessages()]]"
+          language-codes="[[_languageCodes()]]"
         ></language-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
         <licenses-view
@@ -575,7 +575,6 @@
         },
       },
       setLanguage: function(languageCode) {
-        console.log(languageCode);
         const url = `${this.rootPath}messages/${languageCode}.json`;
         this.loadResources(url, languageCode);
 
@@ -722,10 +721,8 @@
       _computeShouldShowAppLogo: function(page) {
         return page === "servers";
       },
-      _languageMessages() {
-        return Object.keys(this.LANGUAGES_AVAILABLE).map(code => {
-          return {code, message: `language-${code.toLowerCase()}`};
-        });
+      _languageCodes() {
+        return Object.keys(this.LANGUAGES_AVAILABLE);
       },
     });
   </script>

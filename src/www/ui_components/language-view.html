@@ -43,8 +43,8 @@
 
     <div id="main">
       <paper-listbox selected="{{language}}" attr-for-selected="value" on-selected-changed="_languageSelected">
-        <template is="dom-repeat" items="{{languages}}" as="lang">
-          <paper-item class="language-item" value="{{lang.code}}">[[localize(lang.message)]]</paper-item>
+        <template is="dom-repeat" items="{{localizedLanguages}}" as="lang">
+          <paper-item class="language-item" value="{{lang.code}}">[[lang.localizedMessage]]</paper-item>
         </template>
       </paper-listbox>
     </div>
@@ -60,14 +60,29 @@
         // localize() calls within the template won't be updated.
         localize: Function,
         language: String,
-        languages: {
+        languageCodes: {
           type: Array,
           readonly: true,
         },
+        localizedLanguages: {
+          type: Array,
+          computed: "_computeLocalizedLanguages(languageCodes)",
+        },
+      },
+      _computeLocalizedLanguages(languageCodes) {
+        return languageCodes
+          .map(code => {
+            return {
+              code,
+              localizedMessage: this.localize(`language-${code.toLowerCase()}`),
+            };
+          })
+          .sort((a, b) => (a.localizedMessage > b.localizedMessage ? 1 : -1));
       },
       _languageSelected(event) {
         this.fire("ChangeLanguage", {languageCode: event.detail.value});
 
+        // TODO: How to go back properly?
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
         appRoot.changePage("servers");
       },
