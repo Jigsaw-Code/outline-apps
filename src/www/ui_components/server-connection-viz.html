@@ -120,32 +120,53 @@
 
       #sm,
       #sm-grey {
-        top: 60px;
-        left: 60px;
-        height: 40px;
-        width: 40px;
+        top: 16px;
+        left: 16px;
+        height: 16px;
+        width: 16px;
         z-index: 300;
       }
-
       #md,
       #md-grey {
-        top: 30px;
-        left: 30px;
-        height: 100px;
-        width: 100px;
+        top: 8px;
+        left: 8px;
+        height: 32px;
+        width: 32px;
         transition-delay: 250ms;
         z-index: 200;
       }
-
       #lg,
       #lg-grey,
       #lg-zero {
         top: 0;
         left: 0;
-        height: 160px;
-        width: 160px;
+        height: 48px;
+        width: 48px;
         transition-delay: 500ms;
         z-index: 100;
+      }
+
+      .expanded #sm,
+      .expanded #sm-grey {
+        top: 60px;
+        left: 60px;
+        height: 40px;
+        width: 40px;
+      }
+      .expanded #md,
+      .expanded #md-grey {
+        top: 30px;
+        left: 30px;
+        height: 100px;
+        width: 100px;
+      }
+      .expanded #lg,
+      .expanded #lg-grey,
+      .expanded #lg-zero {
+        top: 0;
+        left: 0;
+        height: 160px;
+        width: 160px;
       }
 
       #lg {
@@ -167,26 +188,49 @@
         z-index: 400;
       }
 
-      @media (min-height: 600px) {
+      @media (max-width: 360px) {
         #sm,
         #sm-grey {
+          top: 12px;
+          left: 12px;
+          height: 8px;
+          width: 8px;
+        }
+        #md,
+        #md-grey {
+          top: 8px;
+          left: 8px;
+          height: 16px;
+          width: 16px;
+        }
+        #lg,
+        #lg-grey,
+        #lg-zero {
+          top: 0;
+          left: 0;
+          height: 32px;
+          width: 32px;
+        }
+      }
+
+      @media (min-height: 600px) {
+        .expanded #sm,
+        .expanded #sm-grey {
           top: 72px;
           left: 72px;
           height: 48px;
           width: 48px;
         }
-
-        #md,
-        #md-grey {
+        .expanded #md,
+        .expanded #md-grey {
           top: 36px;
           left: 36px;
           height: 120px;
           width: 120px;
         }
-
-        #lg,
-        #lg-grey,
-        #lg-zero {
+        .expanded #lg,
+        .expanded #lg-grey,
+        .expanded #lg-zero {
           top: 0;
           left: 0;
           height: 192px;
@@ -195,7 +239,7 @@
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container">
+    <div id="container" class$="[[_computeExpandedClassName(expanded)]]">
       <paper-ripple id="ripple" noink="" center=""></paper-ripple>
       <img id="sm-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
       <img id="sm" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
@@ -221,6 +265,10 @@
           type: String,
           notify: true,
           value: "ZERO_STATE",
+        },
+        expanded: {
+          type: Boolean,
+          value: false,
         },
       },
       _onStateChanged: function _onStateChanged(newState) {
@@ -267,6 +315,9 @@
       },
       _isAnimating: function(state) {
         return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
+      },
+      _computeExpandedClassName: function(expanded) {
+        return expanded ? "expanded" : "";
       },
     });
   </script>

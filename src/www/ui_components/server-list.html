@@ -53,6 +53,7 @@
         disabled="[[item.errorMessageId]]"
         localize="[[localize]]"
         root-path="[[rootPath]]"
+        expanded="[[!hasMultipleServers]]"
       ></server-card>
     </template>
   </template>
@@ -66,6 +67,10 @@
         localize: Function,
         rootPath: String,
         servers: Array,
+        hasMultipleServers: {
+          type: Boolean,
+          computed: "_computeHasMultipleServers(servers)",
+        },
       },
       getServerCard: function(serverId) {
         var cards = this.shadowRoot.querySelectorAll("server-card");
@@ -75,6 +80,9 @@
           }
         }
         throw new Error(`Card for server ${serverId} not found`);
+      },
+      _computeHasMultipleServers: function(servers) {
+        return !!servers && servers.length > 1;
       },
     });
   </script>
