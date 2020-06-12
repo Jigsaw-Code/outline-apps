@@ -276,7 +276,7 @@
           id="aboutView"
           localize="[[localize]]"
           language="[[language]]"
-          languages-available="[[LANGUAGES_AVAILABLE]]"
+          languages="[[_languageMessages()]]"
         ></language-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
         <licenses-view
@@ -401,8 +401,7 @@
       is: "app-root",
       behaviors: [Polymer.AppLocalizeBehavior],
       ready: function() {
-        const language = this.LANGUAGES_AVAILABLE[this.language];
-        this.setLanguage(language.id, language.dir);
+        this.setLanguage(this.language);
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
         // https://github.com/PolymerElements/paper-behaviors/issues/80
@@ -575,13 +574,17 @@
           type: String,
         },
       },
-      setLanguage: function(language, direction) {
-        const url = `${this.rootPath}messages/${language}.json`;
-        this.loadResources(url, language);
+      setLanguage: function(languageCode) {
+        console.log(languageCode);
+        const url = `${this.rootPath}messages/${languageCode}.json`;
+        this.loadResources(url, languageCode);
+
+        const direction = this.LANGUAGES_AVAILABLE[languageCode].dir;
         document.documentElement.setAttribute("dir", direction);
         this.$.drawer.align = direction == "ltr" ? "left" : "right";
-        window.localStorage.setItem("overrideLanguage", language);
-        this.language = language;
+
+        window.localStorage.setItem("overrideLanguage", languageCode);
+        this.language = languageCode;
       },
       openDrawer: function() {
         this.$.drawer.style.opacity = "1";
@@ -718,6 +721,11 @@
       },
       _computeShouldShowAppLogo: function(page) {
         return page === "servers";
+      },
+      _languageMessages() {
+        return Object.keys(this.LANGUAGES_AVAILABLE).map(code => {
+          return {code, message: `language-${code.toLowerCase()}`};
+        });
       },
     });
   </script>

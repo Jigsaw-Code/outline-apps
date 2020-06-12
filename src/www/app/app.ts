@@ -248,7 +248,7 @@ export class App {
   }
 
   private changeLanguage(event: CustomEvent) {
-    this.rootEl.setLanguage(event.detail.code, event.detail.direction);
+    this.rootEl.setLanguage(event.detail.languageCode);
   }
 
   private handleClipboardText(text: string) {
