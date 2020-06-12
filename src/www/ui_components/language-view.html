@@ -14,6 +14,8 @@
   limitations under the License.
 -->
 <link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-if.html" />
 
 <dom-module id="language-view">
   <template>
@@ -38,13 +40,26 @@
       .language-item {
         border-bottom: 1px solid #e0e0e0;
         padding-left: 24px;
+        display: flex;
+      }
+      .language-name {
+        text-align: left;
+        flex-grow: 1;
+      }
+      .hidden {
+        visibility: hidden;
       }
     </style>
 
     <div id="main">
       <paper-listbox selected="{{language}}" attr-for-selected="value" on-selected-changed="_languageSelected">
         <template is="dom-repeat" items="{{localizedLanguages}}" as="lang">
-          <paper-item class="language-item" value="{{lang.code}}">[[lang.localizedMessage]]</paper-item>
+          <paper-item class="language-item" value="{{lang.code}}">
+            <span class="language-name">[[lang.code]]</span>
+            <template is="dom-if" if="{{_shouldShowCheck(lang.code)}}">
+              <iron-icon icon="check"></iron-icon>
+            </template>
+          </paper-item>
         </template>
       </paper-listbox>
     </div>
@@ -77,7 +92,7 @@
               localizedMessage: this.localize(`language-${code.toLowerCase()}`),
             };
           })
-          .sort((a, b) => (a.localizedMessage > b.localizedMessage ? 1 : -1));
+          .sort((a, b) => (a.localizedMessage > b.localizedMessage ? -1 : 1));
       },
       _languageSelected(event) {
         this.fire("ChangeLanguage", {languageCode: event.detail.value});
@@ -85,6 +100,9 @@
         // TODO: How to go back properly?
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
         appRoot.changePage("servers");
+      },
+      _shouldShowCheck(languageCode) {
+        return languageCode === this.language;
       },
     });
   </script>
