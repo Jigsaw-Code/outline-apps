@@ -402,7 +402,7 @@
       behaviors: [Polymer.AppLocalizeBehavior],
       ready: function() {
         const language = this.LANGUAGES_AVAILABLE[this.language];
-        this._setLanguage(language.id, language.dir);
+        this.setLanguage(language.id, language.dir);
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
         // https://github.com/PolymerElements/paper-behaviors/issues/80
@@ -575,7 +575,7 @@
           type: String,
         },
       },
-      _setLanguage: function(language, direction) {
+      setLanguage: function(language, direction) {
         const url = `${this.rootPath}messages/${language}.json`;
         this.loadResources(url, language);
         document.documentElement.setAttribute("dir", direction);

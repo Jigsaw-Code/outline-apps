@@ -74,9 +74,9 @@
       _languageSelected(event) {
         const code = event.detail.value;
         const direction = this.languagesAvailable[code].dir;
+        this.fire("ChangeLanguage", {code, direction});
 
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        appRoot._setLanguage(code, direction);
         appRoot.changePage("servers");
       },
     });
