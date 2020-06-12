@@ -14,6 +14,7 @@
   limitations under the License.
 -->
 <link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html" />
 
 <link rel="import" href="../bower_components/app-route/app-location.html" />
 <link rel="import" href="../bower_components/app-route/app-route.html" />
@@ -37,6 +38,7 @@
 <link rel="import" href="about-view.html" />
 <link rel="import" href="add-server-view.html" />
 <link rel="import" href="feedback-view.html" />
+<link rel="import" href="language-view.html" />
 <link rel="import" href="licenses-view.html" />
 <link rel="import" href="outline-icons.html" />
 <link rel="import" href="privacy-view.html" />
@@ -269,6 +271,13 @@
         ></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
         <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]"></about-view>
+        <language-view
+          name="language"
+          id="aboutView"
+          localize="[[localize]]"
+          language="[[language]]"
+          languages-available="[[LANGUAGES_AVAILABLE]]"
+        ></language-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
         <licenses-view
           name="licenses"
@@ -333,10 +342,14 @@
           <iron-icon icon="info" slot="item-icon"></iron-icon>
           [[localize('about-page-title')]]
         </paper-icon-item>
-        <paper-icon-item name="help" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+        <paper-icon-item name="help">
           <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden></a>
           <iron-icon icon="help" slot="item-icon"></iron-icon>
           [[localize('help-page-title')]]
+        </paper-icon-item>
+        <paper-icon-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+          <iron-icon icon="language" slot="item-icon"></iron-icon>
+          [[localize('change-language')]]
         </paper-icon-item>
         <paper-icon-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
           <iron-icon icon="cancel" slot="item-icon"></iron-icon>
@@ -388,13 +401,8 @@
       is: "app-root",
       behaviors: [Polymer.AppLocalizeBehavior],
       ready: function() {
-        var url = this.rootPath + "messages/" + this.language + ".json";
-        this.loadResources(url, this.language);
-        const languageProperties = this.LANGUAGES_AVAILABLE[this.language];
-        if (!!languageProperties && languageProperties.dir === "rtl") {
-          document.documentElement.setAttribute("dir", "rtl");
-          this.$.drawer.align = "right";
-        }
+        const language = this.LANGUAGES_AVAILABLE[this.language];
+        this._setLanguage(language.id, language.dir);
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
         // https://github.com/PolymerElements/paper-behaviors/issues/80
@@ -567,6 +575,14 @@
           type: String,
         },
       },
+      _setLanguage: function(language, direction) {
+        const url = `${this.rootPath}messages/${language}.json`;
+        this.loadResources(url, language);
+        document.documentElement.setAttribute("dir", direction);
+        this.$.drawer.align = direction == "ltr" ? "left" : "right";
+        window.localStorage.setItem("overrideLanguage", language);
+        this.language = language;
+      },
       openDrawer: function() {
         this.$.drawer.style.opacity = "1";
         this.$.drawer.open();
@@ -633,8 +649,10 @@
       promptAddServer: function() {
         this.$.addServerView.openAddServerSheet();
       },
-      _computeLanguage: function(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE) {
-        return OutlineI18n.getBestMatchingLanguage(Object.keys(LANGUAGES_AVAILABLE)) || DEFAULT_LANGUAGE;
+      _computeLanguage: function(availableLanguages, defaultLanguage) {
+        const overrideLanguage = window.localStorage.getItem("overrideLanguage");
+        const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
+        return overrideLanguage || bestMatchingLanguage || defaultLanguage;
       },
       _computePage: function(pageFromRoute, DEFAULT_PAGE) {
         if (this.page && pageFromRoute === this.page) {
