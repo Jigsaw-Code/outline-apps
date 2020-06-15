@@ -50,9 +50,9 @@
 
     <div id="main">
       <paper-listbox selected="{{language}}" attr-for-selected="value" on-selected-changed="_languageSelected">
-        <template is="dom-repeat" items="{{localizedLanguages}}" as="lang">
+        <template is="dom-repeat" items="{{localizedLanguages}}" as="lang" sort="_sortDisplayNameAscending">
           <paper-item class="language-item" value="{{lang.code}}">
-            <span class="language-name">[[lang.localizedName]]</span>
+            <span class="language-name">{{lang.displayName}}</span>
             <template is="dom-if" if="{{_shouldShowCheck(lang.code)}}">
               <iron-icon icon="check"></iron-icon>
             </template>
@@ -70,29 +70,42 @@
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
-        localize: Function,
-        language: String,
+        localize: {
+          type: Function,
+          readonly: true,
+        },
+        language: {
+          type: String,
+          notify: true,
+        },
+        // An array of language code strings (e.g. ['am', 'ar', 'en']).
         languageCodes: {
           type: Array,
           readonly: true,
         },
         localizedLanguages: {
           type: Array,
-          computed: "_computeLocalizedLanguages(languageCodes, localize)",
+          computed: "_computeLocalizedLanguages(language, languageCodes, localize)",
         },
       },
-      _computeLocalizedLanguages(languageCodes, localize) {
-        return languageCodes
-          .map(code => {
-            return {
-              code,
-              localizedName: localize(`language-${code.toLowerCase()}`),
-            };
-          })
-          .sort((a, b) => (a.localizedName > b.localizedName ? -1 : 1));
+      _computeLocalizedLanguages(language, languageCodes, localize) {
+        return languageCodes.map(lang => {
+          return {
+            code: lang,
+            displayName: localize(`language-${lang.toLowerCase()}`),
+          };
+        });
+      },
+      _localizedLanguageName(languageCode, localize) {
+        return localize(`language-${languageCode.toLowerCase()}`);
+      },
+      _sortDisplayNameAscending(languageA, languageB) {
+        return languageA.displayName > languageB.displayName ? 1 : -1;
       },
       _languageSelected(event) {
-        this.fire("ChangeLanguage", {languageCode: event.detail.value});
+        const languageCode = event.detail.value;
+        this.fire("ChangeLanguage", {languageCode});
+        this.language = languageCode;
 
         // TODO: How to properly go back to the main screen?
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
