@@ -441,17 +441,18 @@ export class App {
   private submitFeedback(event: CustomEvent) {
     const {feedback, category, email} = event.detail;
     this.rootEl.$.feedbackView.submitting = true;
-    this.errorReporter.report(feedback, category, email).then(
-      () => {
-        this.rootEl.$.feedbackView.submitting = false;
-        this.rootEl.$.feedbackView.resetForm();
-        this.changeToDefaultPage();
-        this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-      },
-      (err: {}) => {
-        this.rootEl.$.feedbackView.submitting = false;
-        this.showLocalizedError(new errors.FeedbackSubmissionError());
-      });
+    this.errorReporter.report(feedback, category, email)
+        .then(
+            () => {
+              this.rootEl.$.feedbackView.submitting = false;
+              this.rootEl.$.feedbackView.resetForm();
+              this.changeToDefaultPage();
+              this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
+            },
+            (err: {}) => {
+              this.rootEl.$.feedbackView.submitting = false;
+              this.showLocalizedError(new errors.FeedbackSubmissionError());
+            });
   }
 
   // EventQueue event handlers:
