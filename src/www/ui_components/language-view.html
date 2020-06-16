@@ -14,6 +14,7 @@
   limitations under the License.
 -->
 <link rel="import" href="../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../bower_components/polymer/lib/mixins/dir-mixin.html" />
 <link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html" />
 <link rel="import" href="../bower_components/polymer/lib/elements/dom-if.html" />
 
@@ -47,11 +48,11 @@
     </style>
 
     <div id="main">
-      <paper-listbox selected="{{language}}" attr-for-selected="value" on-selected-changed="_languageSelected">
+      <paper-listbox selected="{{selectedLanguage}}" attr-for-selected="value" on-selected-changed="_languageSelected">
         <template is="dom-repeat" items="{{languages}}" as="lang" sort="_sortLanguageNameAscending">
           <paper-item class="language-item" value="{{lang.id}}">
             <span class="language-name">{{lang.name}}</span>
-            <iron-icon icon="check" hidden$="{{_shouldHideCheck(language, lang.id)}}"></iron-icon>
+            <iron-icon icon="check" hidden$="{{_shouldHideCheck(selectedLanguage, lang.id)}}"></iron-icon>
           </paper-item>
         </template>
       </paper-listbox>
@@ -59,35 +60,53 @@
   </template>
 
   <script>
-    "use strict";
+    class OutlineLanguageView extends Polymer.DirMixin(Polymer.Element) {
+      static get is() {
+        return "language-view";
+      }
 
-    Polymer({
-      is: "language-view",
-      properties: {
-        language: {
-          type: String,
-        },
-        // An array of {id, name, dir} language objects.
-        languages: {
-          type: Array,
-          readonly: true,
-        },
-      },
+      static get properties() {
+        return {
+          selectedLanguage: {
+            type: String,
+          },
+          // An array of {id, name, dir} language objects.
+          languages: {
+            type: Array,
+            readonly: true,
+          },
+        };
+      }
+
       _sortLanguageNameAscending(a, b) {
         return a.name > b.name ? 1 : -1;
-      },
+      }
+
       _languageSelected(event) {
         const languageCode = event.detail.value;
-        this.fire("ChangeLanguage", {languageCode});
+        this.dispatchEvent(this._makePublicEvent("ChangeLanguageRequested", {languageCode: languageCode}));
         this.language = languageCode;
 
         // TODO: How to properly go back to the main screen?
         var appRoot = Polymer.dom(this).getOwnerRoot().host;
         appRoot.changePage("servers");
-      },
-      _shouldHideCheck(language, languageCode) {
-        return language !== languageCode;
-      },
-    });
+      }
+
+      _shouldHideCheck(selectedLanguage, languageCode) {
+        return selectedLanguage !== languageCode;
+      }
+
+      _makePublicEvent(eventName, detail) {
+        const params = {
+          bubbles: true,
+          composed: true,
+        };
+        if (detail !== undefined) {
+          params.detail = detail;
+        }
+        return new CustomEvent(eventName, params);
+      }
+    }
+    customElements.define(OutlineLanguageView.is, OutlineLanguageView);
   </script>
 </dom-module>

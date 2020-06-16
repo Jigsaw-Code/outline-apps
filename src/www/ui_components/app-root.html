@@ -580,7 +580,6 @@
         document.documentElement.setAttribute("dir", direction);
         this.$.drawer.align = direction == "ltr" ? "left" : "right";
 
-        window.localStorage.setItem("overrideLanguage", languageCode);
         this.language = languageCode;
       },
       openDrawer: function() {

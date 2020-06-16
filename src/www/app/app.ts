@@ -105,7 +105,7 @@ export class App {
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
-    this.rootEl.addEventListener('ChangeLanguage', this.changeLanguage.bind(this));
+    this.rootEl.addEventListener('ChangeLanguageRequested', this.changeLanguage.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
@@ -248,7 +248,9 @@ export class App {
   }
 
   private changeLanguage(event: CustomEvent) {
-    this.rootEl.setLanguage(event.detail.languageCode);
+    const languageCode = event.detail.languageCode;
+    window.localStorage.setItem("overrideLanguage", languageCode);
+    this.rootEl.setLanguage(languageCode);
   }
 
   private handleClipboardText(text: string) {
