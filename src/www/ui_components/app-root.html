@@ -694,6 +694,9 @@
           window.dispatchEvent(new CustomEvent("location-changed"));
         }
       },
+      _showDefaultPage() {
+        this.changePage(this.DEFAULT_PAGE);
+      },
       _openHelpPage: function() {
         // Anchor tags compete with the app-drawer for click events on iOS. This results in links
         // not opening most of the time. We resort to opening the link programmatically for all

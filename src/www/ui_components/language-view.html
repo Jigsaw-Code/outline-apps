@@ -79,12 +79,8 @@
       _languageSelected(event) {
         const languageCode = event.detail.value;
         const params = {bubbles: true, composed: true, detail: {languageCode}};
-        this.dispatchEvent(new CustomEvent("SetLanguageRequested", params));
         this.language = languageCode;
-
-        // TODO: How to properly go back to the main screen?
-        var appRoot = Polymer.dom(this).getOwnerRoot().host;
-        appRoot.changePage("servers");
+        this.dispatchEvent(new CustomEvent("SetLanguageRequested", params));
       }
 
       _shouldHideCheckmark(selectedLanguage, languageCode) {

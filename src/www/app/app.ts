@@ -251,6 +251,7 @@ export class App {
     const languageCode = event.detail.languageCode;
     window.localStorage.setItem('overrideLanguage', languageCode);
     this.rootEl.setLanguage(languageCode);
+    this.changeToDefaultPage();
   }
 
   private handleClipboardText(text: string) {
