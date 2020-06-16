@@ -103,7 +103,7 @@ export class App {
         'AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
     this.rootEl.addEventListener(
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
-    this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
+    this.rootEl.addEventListener('SubmitFeedbackRequested', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
@@ -439,24 +439,19 @@ export class App {
   }
 
   private submitFeedback(event: CustomEvent) {
-    const formData = this.feedbackViewEl.getValidatedFormData();
-    if (!formData) {
-      return;
-    }
-    const {feedback, category, email} = formData;
+    const {feedback, category, email} = event.detail;
     this.rootEl.$.feedbackView.submitting = true;
-    this.errorReporter.report(feedback, category, email)
-        .then(
-            () => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.rootEl.$.feedbackView.resetForm();
-              this.changeToDefaultPage();
-              this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-            },
-            (err: {}) => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.showLocalizedError(new errors.FeedbackSubmissionError());
-            });
+    this.errorReporter.report(feedback, category, email).then(
+      () => {
+        this.rootEl.$.feedbackView.submitting = false;
+        this.rootEl.$.feedbackView.resetForm();
+        this.changeToDefaultPage();
+        this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
+      },
+      (err: {}) => {
+        this.rootEl.$.feedbackView.submitting = false;
+        this.showLocalizedError(new errors.FeedbackSubmissionError());
+      });
   }
 
   // EventQueue event handlers:
