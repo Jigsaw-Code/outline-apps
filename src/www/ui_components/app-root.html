@@ -274,7 +274,7 @@
           name="language"
           id="aboutView"
           selected-language="[[language]]"
-          languages="[[_getLanguagesAvailableValues()]]"
+          languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"
         ></language-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
         <licenses-view
@@ -718,8 +718,10 @@
       _computeShouldShowAppLogo: function(page) {
         return page === "servers";
       },
-      _getLanguagesAvailableValues() {
-        return Object.values(this.LANGUAGES_AVAILABLE);
+      _getLanguagesAvailableValues(languagesAvailable) {
+        return Object.values(languagesAvailable).sort((a, b) => {
+          return a.name > b.name ? 1 : -1;
+        });
       },
     });
   </script>
