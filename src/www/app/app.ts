@@ -249,7 +249,7 @@ export class App {
 
   private changeLanguage(event: CustomEvent) {
     const languageCode = event.detail.languageCode;
-    window.localStorage.setItem("overrideLanguage", languageCode);
+    window.localStorage.setItem('overrideLanguage', languageCode);
     this.rootEl.setLanguage(languageCode);
   }
 
