@@ -82,81 +82,102 @@
         opacity: 1;
       }
 
-      #sm.CONNECTING,
-      #sm-grey.CONNECTING,
-      #sm.RECONNECTING,
-      #sm-grey.RECONNECTING {
+      #small.CONNECTING,
+      #small-grey.CONNECTING,
+      #small.RECONNECTING,
+      #small-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out infinite;
       }
 
-      #md.CONNECTING,
-      #md-grey.CONNECTING,
-      #md.RECONNECTING,
-      #md-grey.RECONNECTING {
+      #medium.CONNECTING,
+      #medium-grey.CONNECTING,
+      #medium.RECONNECTING,
+      #medium-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 250ms infinite;
       }
 
-      #lg.CONNECTING,
-      #lg-grey.CONNECTING,
-      #lg.RECONNECTING,
-      #lg-grey.RECONNECTING {
+      #large.CONNECTING,
+      #large-grey.CONNECTING,
+      #large.RECONNECTING,
+      #large-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 500ms infinite;
       }
 
-      #sm.DISCONNECTING,
-      #sm-grey.DISCONNECTING {
+      #small.DISCONNECTING,
+      #small-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out infinite;
       }
 
-      #md.DISCONNECTING,
-      #md-grey.DISCONNECTING {
+      #medium.DISCONNECTING,
+      #medium-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 250ms infinite;
       }
 
-      #lg.DISCONNECTING,
-      #lg-grey.DISCONNECTING {
+      #large.DISCONNECTING,
+      #large-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 500ms infinite;
       }
 
-      #sm,
-      #sm-grey {
-        top: 60px;
-        left: 60px;
-        height: 40px;
-        width: 40px;
+      #small,
+      #small-grey {
+        top: 16px;
+        left: 16px;
+        height: 16px;
+        width: 16px;
         z-index: 300;
       }
-
-      #md,
-      #md-grey {
-        top: 30px;
-        left: 30px;
-        height: 100px;
-        width: 100px;
+      #medium,
+      #medium-grey {
+        top: 8px;
+        left: 8px;
+        height: 32px;
+        width: 32px;
         transition-delay: 250ms;
         z-index: 200;
       }
-
-      #lg,
-      #lg-grey,
-      #lg-zero {
+      #large,
+      #large-grey,
+      #large-zero {
         top: 0;
         left: 0;
-        height: 160px;
-        width: 160px;
+        height: 48px;
+        width: 48px;
         transition-delay: 500ms;
         z-index: 100;
       }
 
-      #lg {
+      .expanded #small,
+      .expanded #small-grey {
+        top: 60px;
+        left: 60px;
+        height: 40px;
+        width: 40px;
+      }
+      .expanded #medium,
+      .expanded #medium-grey {
+        top: 30px;
+        left: 30px;
+        height: 100px;
+        width: 100px;
+      }
+      .expanded #large,
+      .expanded #large-grey,
+      .expanded #large-zero {
+        top: 0;
+        left: 0;
+        height: 160px;
+        width: 160px;
+      }
+
+      #large {
         position: relative;
       }
 
-      #lg-zero {
+      #large-zero {
         opacity: 0;
       }
 
-      #lg-zero.ZERO_STATE {
+      #large-zero.ZERO_STATE {
         opacity: 1;
       }
 
@@ -167,26 +188,49 @@
         z-index: 400;
       }
 
+      @media (max-width: 360px) {
+        #small,
+        #small-grey {
+          top: 12px;
+          left: 12px;
+          height: 8px;
+          width: 8px;
+        }
+        #medium,
+        #medium-grey {
+          top: 8px;
+          left: 8px;
+          height: 16px;
+          width: 16px;
+        }
+        #large,
+        #large-grey,
+        #large-zero {
+          top: 0;
+          left: 0;
+          height: 32px;
+          width: 32px;
+        }
+      }
+
       @media (min-height: 600px) {
-        #sm,
-        #sm-grey {
+        .expanded #small,
+        .expanded #small-grey {
           top: 72px;
           left: 72px;
           height: 48px;
           width: 48px;
         }
-
-        #md,
-        #md-grey {
+        .expanded #medium,
+        .expanded #medium-grey {
           top: 36px;
           left: 36px;
           height: 120px;
           width: 120px;
         }
-
-        #lg,
-        #lg-grey,
-        #lg-zero {
+        .expanded #large,
+        .expanded #large-grey,
+        .expanded #large-zero {
           top: 0;
           left: 0;
           height: 192px;
@@ -195,15 +239,15 @@
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container">
+    <div id="container" class$="[[_computeExpandedClassName(expanded)]]">
       <paper-ripple id="ripple" noink="" center=""></paper-ripple>
-      <img id="sm-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="sm" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="md-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="md" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="lg-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="lg-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
-      <img id="lg" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="small-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="small" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="medium-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="medium" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="large-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="large-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
+      <img id="large" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
     </div>
   </template>
   <script>
@@ -221,6 +265,10 @@
           type: String,
           notify: true,
           value: "ZERO_STATE",
+        },
+        expanded: {
+          type: Boolean,
+          value: false,
         },
       },
       _onStateChanged: function _onStateChanged(newState) {
@@ -267,6 +315,9 @@
       },
       _isAnimating: function(state) {
         return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
+      },
+      _computeExpandedClassName: function(expanded) {
+        return expanded ? "expanded" : "";
       },
     });
   </script>
