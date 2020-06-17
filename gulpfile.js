@@ -21,7 +21,7 @@ const child_process = require('child_process');
 const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
-const gutil = require('gulp-util');
+const minimist = require('minimist');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
 
@@ -32,9 +32,9 @@ const source = require('vinyl-source-stream');
 //
 //////////////////
 //////////////////
-
-const platform = gutil.env.platform || 'android';
-const isRelease = gutil.env.release;
+const args = minimist(process.argv, {boolean: true});
+const platform = args.platform || 'android';
+const isRelease = args.release;
 
 //////////////////
 //////////////////
@@ -161,13 +161,17 @@ function cordovaCompile() {
   // Use flag -UseModernBuildSystem=0 as a workaround for Xcode 10 compatibility until upgrading to
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
   const compileArgs = platform === 'ios' ? '--device --buildFlag="-UseModernBuildSystem=0"' : '';
-  const releaseArgs = isRelease ? platform === 'android' ?
-                                  `--release -- --keystore=${gutil.env.KEYSTORE} ` +
-              `--storePassword=${gutil.env.STOREPASS} --alias=${gutil.env.KEYALIAS} ` +
-              `--password=${gutil.env.KEYPASS}` :
-                                  '--release' :
-                                  '';
-  return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
+  const releaseArgs = [];
+  if (isRelease) {
+    releaseArgs.push('--release');
+    if (platform === 'android') {
+      releaseArgs.push(
+          '--', `--keystore=${args.KEYSTORE}`, `--storePassword=${args.STOREPASS}`,
+          `--alias=${args.KEYALIAS}`, `--password=${args.KEYPASS}`);
+    }
+  }
+  return runCommand(
+      `cordova compile ${platform} ${compileArgs} ${releaseArgs.join(' ')} -- ${platformArgs}`);
 }
 
 const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
