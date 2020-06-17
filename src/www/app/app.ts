@@ -439,6 +439,9 @@ export class App {
   }
 
   private submitFeedback(event: CustomEvent) {
+    if (!event.detail) {
+      return;
+    }
     const {feedback, category, email} = event.detail;
     this.rootEl.$.feedbackView.submitting = true;
     this.errorReporter.report(feedback, category, email)
