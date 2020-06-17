@@ -722,7 +722,8 @@
         return page === "servers";
       },
       _getLanguagesAvailableValues(languagesAvailable) {
-        return Object.values(languagesAvailable).sort((a, b) => {
+        const filteredLanguages = Object.values(languagesAvailable).filter(lang => lang.id !== "zh");
+        return filteredLanguages.sort((a, b) => {
           return a.name > b.name ? 1 : -1;
         });
       },
