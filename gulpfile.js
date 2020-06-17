@@ -21,7 +21,9 @@ const child_process = require('child_process');
 const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
+const log = require('fancy-log');
 const minimist = require('minimist');
+const os = require('os');
 const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
 
@@ -186,6 +188,17 @@ const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 //////////////////
 //////////////////
 
+function preFlightValidation(cb) {
+  log.info(os.platform());
+  if (os.platform() !== 'darwin' && platform === 'ios') {
+    log.error(
+        '\x1b[31m%s\x1b[0m',  // Red text
+        'Building the ios client requires xcodebuild and can only be done on MacOS');
+    process.exit(1);
+  }
+  cb();
+}
+
 // Writes a JSON file accessible to environment.ts containing environment variables.
 function writeEnvJson() {
   // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
@@ -193,5 +206,5 @@ function writeEnvJson() {
       WEBAPP_OUT}/environment.json`);
 }
 
-exports.build = gulp.series(setupWebApp, setupCordova, cordovaCompile);
-exports.setup = gulp.series(setupWebApp, setupCordova);
+exports.build = gulp.series(preFlightValidation, setupWebApp, setupCordova, cordovaCompile);
+exports.setup = gulp.series(preFlightValidation, setupWebApp, setupCordova);
