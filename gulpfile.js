@@ -188,7 +188,7 @@ const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 //////////////////
 //////////////////
 
-function preFlightValidation(cb) {
+function validateBuildEnvironment(cb) {
   log.info(os.platform());
   if (os.platform() !== 'darwin' && (platform === 'ios' || platform === 'macos')) {
     log.error(
@@ -206,5 +206,5 @@ function writeEnvJson() {
       WEBAPP_OUT}/environment.json`);
 }
 
-exports.build = gulp.series(preFlightValidation, setupWebApp, setupCordova, cordovaCompile);
-exports.setup = gulp.series(preFlightValidation, setupWebApp, setupCordova);
+exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
+exports.setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);
