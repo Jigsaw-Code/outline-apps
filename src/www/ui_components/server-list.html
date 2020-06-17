@@ -53,7 +53,7 @@
         disabled="[[item.errorMessageId]]"
         localize="[[localize]]"
         root-path="[[rootPath]]"
-        expanded="[[!hasMultipleServers]]"
+        expanded="[[hasSingleServer]]"
       ></server-card>
     </template>
   </template>
@@ -67,9 +67,9 @@
         localize: Function,
         rootPath: String,
         servers: Array,
-        hasMultipleServers: {
+        hasSingleServer: {
           type: Boolean,
-          computed: "_computeHasMultipleServers(servers)",
+          computed: "_computeHasSingleServer(servers)",
         },
       },
       getServerCard: function(serverId) {
@@ -81,8 +81,8 @@
         }
         throw new Error(`Card for server ${serverId} not found`);
       },
-      _computeHasMultipleServers: function(servers) {
-        return !!servers && servers.length > 1;
+      _computeHasSingleServer: function(servers) {
+        return !!servers && servers.length === 1;
       },
     });
   </script>
