@@ -190,7 +190,7 @@ const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 function preFlightValidation(cb) {
   log.info(os.platform());
-  if (os.platform() !== 'darwin' && platform === 'ios') {
+  if (os.platform() !== 'darwin' && (platform === 'ios' || platform === 'macos')) {
     log.error(
         '\x1b[31m%s\x1b[0m',  // Red text
         'Building the ios client requires xcodebuild and can only be done on MacOS');
