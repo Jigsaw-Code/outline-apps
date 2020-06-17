@@ -163,17 +163,15 @@ function cordovaCompile() {
   // Use flag -UseModernBuildSystem=0 as a workaround for Xcode 10 compatibility until upgrading to
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
   const compileArgs = platform === 'ios' ? '--device --buildFlag="-UseModernBuildSystem=0"' : '';
-  const releaseArgs = [];
+  let releaseArgs = '';
   if (isRelease) {
-    releaseArgs.push('--release');
+    releaseArgs = '--release';
     if (platform === 'android') {
-      releaseArgs.push(
-          '--', `--keystore=${args.KEYSTORE}`, `--storePassword=${args.STOREPASS}`,
-          `--alias=${args.KEYALIAS}`, `--password=${args.KEYPASS}`);
+      releaseArgs += ` -- --keystore=${args.KEYSTORE} --storePassword=${args.STOREPASS} --alias=${
+          args.KEYALIAS} --password=${args.KEYPASS}`;
     }
   }
-  return runCommand(
-      `cordova compile ${platform} ${compileArgs} ${releaseArgs.join(' ')} -- ${platformArgs}`);
+  return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
 const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
