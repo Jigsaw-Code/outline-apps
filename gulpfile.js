@@ -187,7 +187,6 @@ const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 //////////////////
 
 function validateBuildEnvironment(cb) {
-  log.info(os.platform());
   if (os.platform() !== 'darwin' && (platform === 'ios' || platform === 'macos')) {
     log.error(
         '\x1b[31m%s\x1b[0m',  // Red text
