@@ -30,14 +30,6 @@
     <style>
       :host {
         display: block;
-        background: #efefef;
-        /*
-          Ballpark figure chosen to be comfortably more than
-          the combined height of the toolbar, button, and status.
-          Really only relevant for testing since virtually no
-          real Android device will be this short.
-        */
-        min-height: 300px;
       }
 
       :focus {
@@ -49,6 +41,10 @@
 
       paper-card {
         width: 100%;
+      }
+
+      paper-menu-button {
+        color: #5f6368;
       }
 
       paper-item {
@@ -68,9 +64,13 @@
         padding: 10% 0;
       }
 
+      .card-header server-connection-viz {
+        padding: 16px 0 0 16px;
+      }
+
       #serverInfo {
         flex: 1;
-        padding: 16px 0 0 20px;
+        padding: 16px 0 0 16px;
         font-size: 20px;
         /* Make the IP address copyable */
         -webkit-user-select: text; /* Safari */
@@ -106,8 +106,13 @@
       .card-actions {
         display: flex;
         align-items: center;
-        background-color: var(--paper-grey-50);
         border-radius: 0 0 2px 2px;
+        border-top: none;
+      }
+
+      .expanded .card-actions {
+        background-color: var(--paper-grey-50);
+        border-top: 1px solid #e8e8e8;
       }
 
       #connectButton {
@@ -125,6 +130,15 @@
         margin-right: auto;
       }
 
+      @media (max-width: 360px) {
+        #serverInfo {
+          font-size: 18px;
+        }
+        #serverName {
+          line-height: 24px;
+        }
+      }
+
       @media (min-height: 600px) {
         .card-content {
           padding: 20% 0;
@@ -132,8 +146,13 @@
       }
     </style>
 
-    <paper-card>
+    <paper-card class$="[[_computeExpandedClassName(expanded)]]">
       <div class="card-header">
+        <server-connection-viz
+          state="[[state]]"
+          root-path="[[rootPath]]"
+          hidden$="[[expanded]]"
+        ></server-connection-viz>
         <div id="serverInfo">
           <div id="serverName">[[serverName]]</div>
           <div id="serverHost">[[serverHost]]:[[serverPort]]</div>
@@ -151,7 +170,7 @@
           </paper-listbox>
         </paper-menu-button>
       </div>
-      <div class="card-content">
+      <div class="card-content" hidden$="[[!expanded]]">
         <div>
           <paper-button
             id="server-visualization-button"
@@ -159,7 +178,7 @@
             disabled$="[[connectButtonDisabled]]"
             noink
           >
-            <server-connection-viz state="[[state]]" root-path="[[rootPath]]"></server-connection-viz>
+            <server-connection-viz state="[[state]]" root-path="[[rootPath]]" expanded></server-connection-viz>
           </paper-button>
         </div>
         <div class$="status-message [[state]]">[[statusMessage]]</div>
@@ -179,6 +198,7 @@
       properties: {
         // Need to declare localize function passed in from parent, or else
         // localize() calls within the template won't be updated.
+        expanded: {type: Boolean, value: false},
         errorMessage: String,
         disabled: Boolean,
         localize: Function,
@@ -237,6 +257,9 @@
       },
       _computeConnectButtonDisabled: function(state) {
         return this.disabled || state === "CONNECTING" || state === "DISCONNECTING";
+      },
+      _computeExpandedClassName: function(expanded) {
+        return expanded ? "expanded" : "";
       },
       _onMenuItemPressed: function(evt, detail) {
         if (detail.selected === "forget") {
