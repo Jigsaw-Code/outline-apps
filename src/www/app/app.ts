@@ -105,6 +105,7 @@ export class App {
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
+    this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
@@ -168,6 +169,9 @@ export class App {
       messageParams = ['serverName', e.server.name];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
+    } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
+      messageKey = 'error-shadowsocks-unsupported-cipher';
+      messageParams = ['cipher', e.cipher];
     } else {
       messageKey = 'error-unexpected';
     }
@@ -246,6 +250,13 @@ export class App {
     this.rootEl.$.privacyView.hidden = true;
     this.settings.set(
         this.environmentVars.BETA_BUILD ? SettingsKey.BETA_ACK : SettingsKey.PRIVACY_ACK, 'true');
+  }
+
+  private setAppLanguage(event: CustomEvent) {
+    const languageCode = event.detail.languageCode;
+    window.localStorage.setItem('overrideLanguage', languageCode);
+    this.rootEl.setLanguage(languageCode);
+    this.changeToDefaultPage();
   }
 
   private handleClipboardText(text: string) {
