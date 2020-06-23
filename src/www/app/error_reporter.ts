@@ -20,7 +20,9 @@ export interface OutlineErrorReporter {
 
 export class SentryErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, dsn: string, private tags: {[id: string]: string;}) {
-    sentry.init({dsn, release: appVersion});
+    if (dsn) {
+      sentry.init({dsn, release: appVersion});
+    }
     this.setUpUnhandledRejectionListener();
   }
 

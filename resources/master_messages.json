@@ -27,6 +27,10 @@
     "message": "Licenses",
     "description": "The menu item text to navigate to the page showing all the software licenses used in building the app."
   },
+  "change_language_page_title": {
+    "message": "Change Language",
+    "description": "The menu item text and title of a page for a user to set the app language."
+  },
   "quit": {
     "message": "Quit",
     "description": "The text for a button that quits (closes) the application."
@@ -354,6 +358,16 @@
       "SERVER_NAME": {
         "content": "{serverName}",
         "example": "My Outline Server"
+      }
+    }
+  },
+  "error_shadowsocks_unsupported_cipher": {
+    "message": "Shadowsocks Unsupported cipher",
+    "description": "The server you requested to add uses an unsafe cipher ($cipher$). Please contact your server admin.",
+    "placeholders": {
+      "SERVER_NAME": {
+        "content": "{cipher}",
+        "example": "aes-256-ctr"
       }
     }
   },
