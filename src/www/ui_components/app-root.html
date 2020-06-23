@@ -507,7 +507,6 @@
             uk: {id: "uk", name: "Українська", dir: "ltr"},
             ur: {id: "ur", name: "اردو", dir: "rtl"},
             vi: {id: "vi", name: "Việtnam", dir: "ltr"},
-            zh: {id: "zh", name: "简体中文", dir: "ltr"},
             "zh-CN": {id: "zh-CN", name: "简体中文", dir: "ltr"},
             "zh-TW": {id: "zh-TW", name: "繁體中文‬‬‪‬", dir: "ltr"},
           },
@@ -722,8 +721,7 @@
         return page === "servers";
       },
       _getLanguagesAvailableValues(languagesAvailable) {
-        const filteredLanguages = Object.values(languagesAvailable).filter(lang => lang.id !== "zh");
-        return filteredLanguages.sort((a, b) => {
+        return Object.values(languagesAvailable).sort((a, b) => {
           return a.name > b.name ? 1 : -1;
         });
       },
