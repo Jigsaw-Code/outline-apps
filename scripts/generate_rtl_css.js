@@ -13,7 +13,7 @@
 // limitations under the License.
 
 const gulp = require('gulp');
-const gutil = require('gulp-util');
+const log = require('fancy-log');
 const posthtml = require('gulp-posthtml');
 const posthtmlcss = require('posthtml-postcss');
 const rtl = require('postcss-rtl');
@@ -21,7 +21,7 @@ const replace = require('gulp-replace');
 
 // Generates inline CSS RTL mirroring rules for Polymer components.
 module.exports = function(src, dest) {
-  gutil.log('Generating RTL CSS');
+  log('Generating RTL CSS');
   const plugins = [rtl()];
   const options = {from: undefined, sync: true};
   const filterType = /\/css$/;

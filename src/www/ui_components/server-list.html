@@ -53,6 +53,7 @@
         disabled="[[item.errorMessageId]]"
         localize="[[localize]]"
         root-path="[[rootPath]]"
+        expanded="[[hasSingleServer]]"
       ></server-card>
     </template>
   </template>
@@ -66,6 +67,10 @@
         localize: Function,
         rootPath: String,
         servers: Array,
+        hasSingleServer: {
+          type: Boolean,
+          computed: "_computeHasSingleServer(servers)",
+        },
       },
       getServerCard: function(serverId) {
         var cards = this.shadowRoot.querySelectorAll("server-card");
@@ -75,6 +80,9 @@
           }
         }
         throw new Error(`Card for server ${serverId} not found`);
+      },
+      _computeHasSingleServer: function(servers) {
+        return !!servers && servers.length === 1;
       },
     });
   </script>
