@@ -37,6 +37,7 @@
 <link rel="import" href="about-view.html" />
 <link rel="import" href="add-server-view.html" />
 <link rel="import" href="feedback-view.html" />
+<link rel="import" href="language-view.html" />
 <link rel="import" href="licenses-view.html" />
 <link rel="import" href="outline-icons.html" />
 <link rel="import" href="privacy-view.html" />
@@ -269,6 +270,12 @@
         ></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
         <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]"></about-view>
+        <language-view
+          name="language"
+          id="aboutView"
+          selected-language="[[language]]"
+          languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"
+        ></language-view>
         <!-- Do not mirror licenses text, as it is not localized. -->
         <licenses-view
           name="licenses"
@@ -333,10 +340,14 @@
           <iron-icon icon="info" slot="item-icon"></iron-icon>
           [[localize('about-page-title')]]
         </paper-icon-item>
-        <paper-icon-item name="help" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+        <paper-icon-item name="help">
           <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden></a>
           <iron-icon icon="help" slot="item-icon"></iron-icon>
           [[localize('help-page-title')]]
+        </paper-icon-item>
+        <paper-icon-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+          <iron-icon icon="language" slot="item-icon"></iron-icon>
+          [[localize('change-language-page-title')]]
         </paper-icon-item>
         <paper-icon-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
           <iron-icon icon="cancel" slot="item-icon"></iron-icon>
@@ -388,13 +399,7 @@
       is: "app-root",
       behaviors: [Polymer.AppLocalizeBehavior],
       ready: function() {
-        var url = this.rootPath + "messages/" + this.language + ".json";
-        this.loadResources(url, this.language);
-        const languageProperties = this.LANGUAGES_AVAILABLE[this.language];
-        if (!!languageProperties && languageProperties.dir === "rtl") {
-          document.documentElement.setAttribute("dir", "rtl");
-          this.$.drawer.align = "right";
-        }
+        this.setLanguage(this.language);
 
         // Workaround for paper-behaviors' craptastic keyboard focus detection:
         // https://github.com/PolymerElements/paper-behaviors/issues/80
@@ -461,50 +466,49 @@
           type: Object,
           readonly: true,
           value: {
-            am: {id: "am", dir: "ltr"},
-            ar: {id: "ar", dir: "rtl"},
-            bg: {id: "bg", dir: "ltr"},
-            ca: {id: "ca", dir: "ltr"},
-            cs: {id: "cs", dir: "ltr"},
-            da: {id: "da", dir: "ltr"},
-            de: {id: "de", dir: "ltr"},
-            el: {id: "el", dir: "ltr"},
-            en: {id: "en", dir: "ltr"},
-            "es-419": {id: "es-419", dir: "ltr"},
-            fa: {id: "fa", dir: "rtl"},
-            fi: {id: "fi", dir: "ltr"},
-            fil: {id: "fil", dir: "ltr"},
-            fr: {id: "fr", dir: "ltr"},
-            he: {id: "he", dir: "rtl"},
-            hi: {id: "hi", dir: "ltr"},
-            hr: {id: "hr", dir: "ltr"},
-            hu: {id: "hu", dir: "ltr"},
-            id: {id: "id", dir: "ltr"},
-            it: {id: "it", dir: "ltr"},
-            ja: {id: "ja", dir: "ltr"},
-            ko: {id: "ko", dir: "ltr"},
-            km: {id: "km", dir: "ltr"},
-            lt: {id: "lt", dir: "ltr"},
-            lv: {id: "lv", dir: "ltr"},
-            nl: {id: "nl", dir: "ltr"},
-            no: {id: "no", dir: "ltr"},
-            pl: {id: "pl", dir: "ltr"},
-            "pt-BR": {id: "pt-BR", dir: "ltr"},
-            ro: {id: "ro", dir: "ltr"},
-            ru: {id: "ru", dir: "ltr"},
-            sk: {id: "sk", dir: "ltr"},
-            sl: {id: "sl", dir: "ltr"},
-            sr: {id: "sr", dir: "ltr"},
-            "sr-Latn": {id: "sr-Latn", dir: "ltr"},
-            sv: {id: "sv", dir: "ltr"},
-            th: {id: "th", dir: "ltr"},
-            tr: {id: "tr", dir: "ltr"},
-            uk: {id: "uk", dir: "ltr"},
-            ur: {id: "ur", dir: "rtl"},
-            vi: {id: "vi", dir: "ltr"},
-            zh: {id: "zh", dir: "ltr"},
-            "zh-CN": {id: "zh-CN", dir: "ltr"},
-            "zh-TW": {id: "zh-TW", dir: "ltr"},
+            am: {id: "am", name: "አማርኛ", dir: "ltr"},
+            ar: {id: "ar", name: "العربية", dir: "rtl"},
+            bg: {id: "bg", name: "Български", dir: "ltr"},
+            ca: {id: "ca", name: "Català", dir: "ltr"},
+            cs: {id: "cs", name: "Česky", dir: "ltr"},
+            da: {id: "da", name: "Dansk", dir: "ltr"},
+            de: {id: "de", name: "Deutsch", dir: "ltr"},
+            el: {id: "el", name: "Ελληνικά", dir: "ltr"},
+            en: {id: "en", name: "English", dir: "ltr"},
+            "es-419": {id: "es-419", name: "Español", dir: "ltr"},
+            fa: {id: "fa", name: "فارسی", dir: "rtl"},
+            fi: {id: "fi", name: "Suomi", dir: "ltr"},
+            fil: {id: "fil", name: "Wikang Filipino", dir: "ltr"},
+            fr: {id: "fr", name: "Français", dir: "ltr"},
+            he: {id: "he", name: "עברית", dir: "rtl"},
+            hi: {id: "hi", name: "हिन्दी", dir: "ltr"},
+            hr: {id: "hr", name: "Hrvatski", dir: "ltr"},
+            hu: {id: "hu", name: "Magyar", dir: "ltr"},
+            id: {id: "id", name: "Bahasa Indonesia", dir: "ltr"},
+            it: {id: "it", name: "Italiano", dir: "ltr"},
+            ja: {id: "ja", name: "日本語", dir: "ltr"},
+            km: {id: "km", name: "ភាសាខ្មែរ", dir: "ltr"},
+            ko: {id: "ko", name: "한국어", dir: "ltr"},
+            lt: {id: "lt", name: "Lietuvių", dir: "ltr"},
+            lv: {id: "lv", name: "Latviešu", dir: "ltr"},
+            nl: {id: "nl", name: "Nederlands", dir: "ltr"},
+            no: {id: "no", name: "Norsk (bokmål / riksmål)", dir: "ltr"},
+            pl: {id: "pl", name: "Polski", dir: "ltr"},
+            "pt-BR": {id: "pt-BR", name: "Português", dir: "ltr"},
+            ro: {id: "ro", name: "Română", dir: "ltr"},
+            ru: {id: "ru", name: "Русский", dir: "ltr"},
+            sk: {id: "sk", name: "Slovenčina", dir: "ltr"},
+            sl: {id: "sl", name: "Slovenščina", dir: "ltr"},
+            sr: {id: "sr", name: "Српски", dir: "ltr"},
+            "sr-Latn": {id: "sr-Latn", name: "Srpski", dir: "ltr"},
+            sv: {id: "sv", name: "Svenska", dir: "ltr"},
+            th: {id: "th", name: "ไทย", dir: "ltr"},
+            tr: {id: "tr", name: "Türkçe", dir: "ltr"},
+            uk: {id: "uk", name: "Українська", dir: "ltr"},
+            ur: {id: "ur", name: "اردو", dir: "rtl"},
+            vi: {id: "vi", name: "Việtnam", dir: "ltr"},
+            "zh-CN": {id: "zh-CN", name: "简体中文", dir: "ltr"},
+            "zh-TW": {id: "zh-TW", name: "繁體中文‬‬‪‬", dir: "ltr"},
           },
         },
         language: {
@@ -566,6 +570,16 @@
         toastUrl: {
           type: String,
         },
+      },
+      setLanguage: function(languageCode) {
+        const url = `${this.rootPath}messages/${languageCode}.json`;
+        this.loadResources(url, languageCode);
+
+        const direction = this.LANGUAGES_AVAILABLE[languageCode].dir;
+        document.documentElement.setAttribute("dir", direction);
+        this.$.drawer.align = direction == "ltr" ? "left" : "right";
+
+        this.language = languageCode;
       },
       openDrawer: function() {
         this.$.drawer.style.opacity = "1";
@@ -633,8 +647,10 @@
       promptAddServer: function() {
         this.$.addServerView.openAddServerSheet();
       },
-      _computeLanguage: function(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE) {
-        return OutlineI18n.getBestMatchingLanguage(Object.keys(LANGUAGES_AVAILABLE)) || DEFAULT_LANGUAGE;
+      _computeLanguage: function(availableLanguages, defaultLanguage) {
+        const overrideLanguage = window.localStorage.getItem("overrideLanguage");
+        const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
+        return overrideLanguage || bestMatchingLanguage || defaultLanguage;
       },
       _computePage: function(pageFromRoute, DEFAULT_PAGE) {
         if (this.page && pageFromRoute === this.page) {
@@ -677,6 +693,9 @@
           window.dispatchEvent(new CustomEvent("location-changed"));
         }
       },
+      _showDefaultPage() {
+        this.changePage(this.DEFAULT_PAGE);
+      },
       _openHelpPage: function() {
         // Anchor tags compete with the app-drawer for click events on iOS. This results in links
         // not opening most of the time. We resort to opening the link programmatically for all
@@ -700,6 +719,11 @@
       },
       _computeShouldShowAppLogo: function(page) {
         return page === "servers";
+      },
+      _getLanguagesAvailableValues(languagesAvailable) {
+        return Object.values(languagesAvailable).sort((a, b) => {
+          return a.name > b.name ? 1 : -1;
+        });
       },
     });
   </script>

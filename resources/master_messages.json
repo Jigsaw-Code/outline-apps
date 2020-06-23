@@ -27,6 +27,10 @@
     "message": "Licenses",
     "description": "The menu item text to navigate to the page showing all the software licenses used in building the app."
   },
+  "change_language_page_title": {
+    "message": "Change Language",
+    "description": "The menu item text and title of a page for a user to set the app language."
+  },
   "quit": {
     "message": "Quit",
     "description": "The text for a button that quits (closes) the application."
