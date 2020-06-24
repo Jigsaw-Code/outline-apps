@@ -105,6 +105,7 @@ export class App {
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
+    this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
@@ -244,6 +245,13 @@ export class App {
     this.rootEl.$.serversView.hidden = false;
     this.rootEl.$.privacyView.hidden = true;
     this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
+  }
+
+  private setAppLanguage(event: CustomEvent) {
+    const languageCode = event.detail.languageCode;
+    window.localStorage.setItem('overrideLanguage', languageCode);
+    this.rootEl.setLanguage(languageCode);
+    this.changeToDefaultPage();
   }
 
   private handleClipboardText(text: string) {
