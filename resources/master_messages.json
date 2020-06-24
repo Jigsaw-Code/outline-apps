@@ -407,6 +407,10 @@
     "message":   "It seems like another VPN is active. Please disconnect it and try again.",
     "description": "An error message when the application fails to connect due to another active VPN."
   },
+  "outline_plugin_error_system_configuration": {
+    "message": "Sorry, it looks like Outline is not properly installed. Please try installing it again. If that doesn't work, please submit feedback through the app.",
+    "description": "Error message shown when the application cannot connect because the installer could not configure the system or because changes have been made to the system which can only be corrected by running the installer again."
+  },
   "fix_this": {
     "message": "Fix this",
     "description": "A text button in a toast that appears when the application fails to connect due to an antivirus; links to a support article."
