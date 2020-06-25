@@ -363,9 +363,9 @@
   },
   "error_shadowsocks_unsupported_cipher": {
     "message": "Shadowsocks Unsupported cipher",
-    "description": "The server you requested to add uses an unsafe cipher ($cipher$). Please contact your server admin.",
+    "description": "The server you requested to add uses an unsafe cipher ($CIPHER$). Please contact your server admin.",
     "placeholders": {
-      "SERVER_NAME": {
+      "CIPHER": {
         "content": "{cipher}",
         "example": "aes-256-ctr"
       }
