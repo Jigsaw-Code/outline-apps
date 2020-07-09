@@ -21,13 +21,13 @@ PLATFORM=
 #       src/electron/build_action.sh for more info).
 
 function usage () {
-  echo "$0 [-r] [-h]"
-  echo "  -r: use prod Sentry keys"
-  echo "  -p: platform (android, ios, osx, browser, windows, linux, or dev)"
-  echo "  -h: this help message"
-  echo
-  echo "Examples:"
-  echo "  $0 -p android -r"
+  echo "$0 [-r] [-h]" 1>&2
+  echo "  -r: use prod Sentry keys" 1>&2
+  echo "  -p: platform (android, ios, osx, browser, windows, linux, or dev)" 1>&2
+  echo "  -h: this help message" 1>&2
+  echo 1>&2
+  echo "Examples:" 1>&2
+  echo "  $0 -p android -r" 1>&2
   exit 1
 }
 
@@ -76,7 +76,7 @@ function pull_from_osx_plist() {
 
 function validate_env_vars() {
   if [[ -z ${SENTRY_DSN:-} ]]; then
-    echo "SENTRY_DSN is undefined."
+    echo "SENTRY_DSN is undefined." 1>&2
     exit 1
   fi
 }
