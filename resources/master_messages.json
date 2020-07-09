@@ -363,9 +363,9 @@
   },
   "error_shadowsocks_unsupported_cipher": {
     "message": "Shadowsocks Unsupported cipher",
-    "description": "The server you requested to add uses an unsafe cipher ($cipher$). Please contact your server admin.",
+    "description": "The server you requested to add uses an unsafe cipher ($CIPHER$). Please contact your server admin.",
     "placeholders": {
-      "SERVER_NAME": {
+      "CIPHER": {
         "content": "{cipher}",
         "example": "aes-256-ctr"
       }
@@ -406,6 +406,10 @@
   "outline_plugin_error_unsupported_routing_table": {
     "message":   "It seems like another VPN is active. Please disconnect it and try again.",
     "description": "An error message when the application fails to connect due to another active VPN."
+  },
+  "outline_plugin_error_system_configuration": {
+    "message": "Sorry, it looks like Outline is not properly installed. Please try installing it again. If that doesn't work, please submit feedback through the app.",
+    "description": "Error message shown when the application cannot connect because the installer could not configure the system or because changes have been made to the system which can only be corrected by running the installer again."
   },
   "fix_this": {
     "message": "Fix this",
