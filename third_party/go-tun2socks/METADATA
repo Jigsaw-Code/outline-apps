@@ -10,11 +10,9 @@ third_party {
     type: GIT
     value: "https://github.com/Jigsaw-Code/outline-go-tun2socks"
   }
-  version: "1.1.0"
-  last_upgrade_date { year: 2019 month: 9 day: 9 }
+  version: "2.1.0"
+  last_upgrade_date { year: 2020 month: 7 day: 9 }
   local_modifications:
     "outline-go-tun2socks consumes go-tun2socks in order to build libraries "
     "and binaries for Outline platforms."
-    "Updated Apple clients to libraries built at commit bd58355, Android at "
-    "b5f5801, Windows and Linux at 073826e until a unified release."
 }
