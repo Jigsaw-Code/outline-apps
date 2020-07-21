@@ -12,6 +12,59 @@
 
 
 /**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksAuthenticationFailure;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksConfigureSystemProxyFailure;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksIllegalConfiguration;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksNoAdminPermissions;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksNoError;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksNoVPNPermissions;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksShadowsocksStartFailure;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksSystemMisconfigured;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksUDPConnectivity;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksUnexpected;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksUnreachable;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksUnsupportedRoutingTable;
+/**
+ * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
+ */
+FOUNDATION_EXPORT const int64_t ShadowsocksVpnStartFailure;
+
+/**
  * CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
 the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
 error code to return accounting for transient network failures.
