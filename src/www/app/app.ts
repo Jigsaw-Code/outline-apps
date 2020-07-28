@@ -70,7 +70,7 @@ export class App {
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
-    rootEl.$.aboutView.version = environmentVars.APP_VERSION;
+    rootEl.appVersion = environmentVars.APP_VERSION;
 
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
