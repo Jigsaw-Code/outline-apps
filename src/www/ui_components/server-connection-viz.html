@@ -14,7 +14,6 @@
   limitations under the License.
 -->
 <link rel="import" href="../bower_components/polymer/polymer-element.html" />
-<link rel="import" href="../bower_components/paper-ripple/paper-ripple.html" />
 
 <dom-module id="server-connection-viz">
   <template>
@@ -181,13 +180,6 @@
         opacity: 1;
       }
 
-      #ripple {
-        color: #29353b;
-        height: 160px;
-        pointer-events: none;
-        z-index: 400;
-      }
-
       @media (max-width: 360px) {
         #small,
         #small-grey {
@@ -240,7 +232,6 @@
       /* rtl:end:ignore */
     </style>
     <div id="container" class$="[[_computeExpandedClassName(expanded)]]">
-      <paper-ripple id="ripple" noink="" center=""></paper-ripple>
       <img id="small-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
       <img id="small" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
       <img id="medium-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
@@ -273,7 +264,6 @@
       },
       _onStateChanged: function _onStateChanged(newState) {
         this._updateAnimationState();
-        this._updateRippleEffect();
       },
       _ANIMATION_DURATION_MS: 1750, // Update CSS when modifying the animation duration.
       _animationStartMs: null,
@@ -295,23 +285,6 @@
           }
         }
         this.animationState = this.state;
-      },
-      _rippleInterval: null,
-      _updateRippleEffect: function() {
-        if (this._rippleInterval) {
-          clearInterval(this._rippleInterval);
-          this._rippleInterval = null;
-        }
-        if (this._isAnimating(this.state)) {
-          this._rippleInterval = setInterval(
-            function() {
-              this.$.ripple.initialOpacity = 0.1;
-              this.$.ripple.opacityDecayVelocity = 0.3;
-              this.$.ripple.simulatedRipple();
-            }.bind(this),
-            1500
-          );
-        }
       },
       _isAnimating: function(state) {
         return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
