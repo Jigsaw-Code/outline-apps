@@ -269,7 +269,13 @@
           localize="[[localize]]"
         ></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
-        <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]"></about-view>
+        <about-view
+          name="about"
+          id="aboutView"
+          localize="[[localize]]"
+          root-path="[[rootPath]]"
+          version="[[appVersion]]"
+        ></about-view>
         <language-view
           name="language"
           id="aboutView"
@@ -519,6 +525,10 @@
         useKeyIfMissing: {
           type: Boolean,
           value: true,
+        },
+        appVersion: {
+          type: String,
+          readonly: true,
         },
         page: {
           type: String,
