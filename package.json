@@ -9,6 +9,9 @@
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853"
   },
+  "build": {
+    "generateUpdatesFilesForAllChannels": true
+  },
   "dependencies": {
     "@sentry/electron": "1.2.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.0.9",
