@@ -267,7 +267,7 @@ export class App {
   }
 
   private updateDownloaded() {
-    this.rootEl.showToast(this.localize('update-downloaded'), 60000);
+    this.rootEl.showToast(this.localize('update-downloaded'), 5000);
   }
 
   private requestPromptAddServer() {
