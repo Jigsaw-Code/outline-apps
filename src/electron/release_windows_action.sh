@@ -45,10 +45,8 @@ fi
 TAG=$(scripts/tag.sh windows)
 if [[ $TAG =~ ^.*-beta$ ]]; then
   export CHANNEL="beta"
-  RELEASE_DIR="/beta"
 else
   export CHANNEL=""
-  RELEASE_DIR="/"
 fi
 
 yarn do src/electron/package_common
@@ -76,7 +74,8 @@ electron-builder \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p windows) \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
+  --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
-  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/windows$RELEASE_DIR
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/windows
 
 echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$CHANNEL.yml

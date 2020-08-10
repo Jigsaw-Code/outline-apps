@@ -46,7 +46,7 @@ if [[ $TAG =~ ^.*-beta$ ]]; then
   export CHANNEL="beta"
   RELEASE_DIR="/beta"
 else
-  export CHANNEL=""
+  export CHANNEL="latest"
   RELEASE_DIR="/"
 fi
 
@@ -62,6 +62,7 @@ electron-builder \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
   --config.publish.url=https://s3.amazonaws.com/outline-releases-experiments/client/linux$RELEASE_DIR
 
