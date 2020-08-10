@@ -25,7 +25,8 @@ function usage () {
   echo "  -h: this help message" 1>&2
   echo 1>&2
   echo "Examples:" 1>&2
-  echo "TRAVIS_TAG=linux-v1.2.3-beta  $0 -l 10" 1>&2
+  echo "Releases the beta of Windows version 1.2.3 to 10% of users listening on the beta channel" 1>&2
+  echo "TRAVIS_TAG=win-v1.2.3-beta  $0 -s 10" 1>&2
   exit 1
 }
 
