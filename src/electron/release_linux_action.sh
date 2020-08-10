@@ -62,6 +62,6 @@ electron-builder \
   --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
-  --config.publish.url=https://s3.amazonaws.com/outline-releases-experiments/client/linux
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux
 
 echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$CHANNEL-linux.yml
