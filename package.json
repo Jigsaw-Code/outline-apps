@@ -17,7 +17,7 @@
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-outline": "file:cordova-plugin-outline",
-    "cordova-plugin-splashscreen": "^5.0.2",
+    "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "cordova-plugin-whitelist": "^1.3.3",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
@@ -36,6 +36,7 @@
     "@types/polymer": "^1.2.6",
     "@types/semver": "^5.5.0",
     "@types/uuidv4": "^2.0.0",
+    "at-least-node": "^1.0.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -46,7 +47,7 @@
     "cordova": "~9.0.0",
     "cordova-android": "~8.0.0",
     "cordova-browser": "~6.0.0",
-    "cordova-ios": "~5.0.1",
+    "cordova-ios": "~6.1.0",
     "cordova-osx": "~5.0.0",
     "electron": "^7.0.0",
     "electron-builder": "^21.2.0",
@@ -89,9 +90,9 @@
     },
     "platforms": [
       "browser",
-      "ios",
       "osx",
-      "android"
+      "android",
+      "ios"
     ]
   },
   "prettier": {

@@ -58,6 +58,10 @@ class OutlinePlugin: CDVPlugin {
           name: NSNotification.Name(rawValue: OutlinePlugin.kAppQuitNotification),
           object: nil)
     #endif
+
+    #if os(iOS)
+      self.migrateLocalStorage()
+    #endif
   }
 
   /**
@@ -294,5 +298,60 @@ class OutlinePlugin: CDVPlugin {
       callbacks.removeValue(forKey: key)
     }
     return callbackId
+  }
+
+  // Migrates local storage files from UIWebView to WKWebView.
+  private func migrateLocalStorage() {
+    let appLibraryDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+
+    var uiWebViewLocalStorage: URL
+    if FileManager.default.fileExists(atPath: appLibraryDir.appendingPathComponent("WebKit/LocalStorage/file__0.localstorage").relativePath) {
+        uiWebViewLocalStorage = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
+    } else {
+        uiWebViewLocalStorage = appLibraryDir.appendingPathComponent("Caches")
+    }
+
+    // Local storage backing files have the following naming format: $scheme_$hostname_$port.localstorage
+    // With UIWebView, the app used the file:// scheme with no hostname and any port
+    uiWebViewLocalStorage = uiWebViewLocalStorage.appendingPathComponent("file__0.localstorage")
+
+    // With WKWebView, the app uses the app:// scheme with localhost as a hostname and any port.
+    let wkWebViewLocalStorage = appLibraryDir.appendingPathComponent("WebKit/WebsiteData/LocalStorage/app_localhost_0.localstorage")
+
+    // Only copy the local storage files if they don't exist for WKWebView
+    if FileManager.default.fileExists(atPath: wkWebViewLocalStorage.relativePath) {
+        DDLogInfo("Not migrating, local storage files present for WKWebView.")
+        return
+    }
+
+    DDLogInfo("Migrating UIWebView local storage to WKWebView")
+    var success = copy(from: uiWebViewLocalStorage.relativePath, to: wkWebViewLocalStorage.relativePath)
+    DDLogInfo("\t\(uiWebViewLocalStorage) => \(wkWebViewLocalStorage) => \(success)")
+    success = copy(from: "\(uiWebViewLocalStorage.relativePath)-shm", to: "\(wkWebViewLocalStorage.relativePath)-shm")
+    DDLogDebug("\tSHM => \(success)")
+    success = copy(from: "\(uiWebViewLocalStorage.relativePath)-wal", to: "\(wkWebViewLocalStorage.relativePath)-wal")
+    DDLogDebug("\tWAL => \(success)")
+  }
+
+  // Copies a file from |src| to |dest|. Returns whether the operation was successful.
+  func copy(from src: String, to dest: String) -> Bool {
+    let fileManager = FileManager.default
+    // Source file does not exist
+    if !fileManager.fileExists(atPath: src) {
+      return false
+    }
+    // Destination file exists
+    if fileManager.fileExists(atPath: dest) {
+      return false
+    }
+    // Create destination path and copy src to dst
+    let destDir = URL(fileURLWithPath: dest).deletingLastPathComponent().relativePath
+    do {
+      try fileManager.createDirectory(atPath: destDir, withIntermediateDirectories: true, attributes: nil)
+      try fileManager.copyItem(atPath: src, toPath: dest)
+    } catch {
+      return false
+    }
+    return true;
   }
 }

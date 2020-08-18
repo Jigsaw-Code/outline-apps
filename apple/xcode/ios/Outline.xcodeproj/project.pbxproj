@@ -26,9 +26,7 @@
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
 		7213383E07114591931284F8 /* OutlineConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119806AF98394D7D8749BB30 /* OutlineConnectivity.swift */; };
-		7AF6F909BF1449E38FCC2F12 /* CDVViewController+SplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 44EADBAA2F42429181801A98 /* CDVViewController+SplashScreen.m */; };
 		B1BB6490DBB84F82829D4174 /* CDVDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 38EC0895182E411AAF640B74 /* CDVDevice.m */; };
-		D71A04493B1E49B89DE406CD /* CDVSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 66674A6D590A4457AE8AB647 /* CDVSplashScreen.m */; };
 		F8EB0D7A90A642BD93C2F424 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = E8672BD859474DB9A8434AAC /* vpn */; };
 		FC0FFD691FCCD45900EB0129 /* Shadowsocks_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */; };
 		FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADE216D2A6E00F078A5 /* Subnet.swift */; };
@@ -139,7 +137,6 @@
 		3047A5101AB8059700498E2A /* build-release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "build-release.xcconfig"; path = "cordova/build-release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		3047A5111AB8059700498E2A /* build.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = build.xcconfig; path = cordova/build.xcconfig; sourceTree = SOURCE_ROOT; };
 		32CA4F630368D1EE00C91783 /* Outline-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Outline-Prefix.pch"; sourceTree = "<group>"; };
-		33588CE82BA54CFCBBD66585 /* CDVViewController+SplashScreen.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "CDVViewController+SplashScreen.h"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.h"; sourceTree = "<group>"; };
 		38EC0895182E411AAF640B74 /* CDVDevice.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVDevice.m; path = "cordova-plugin-device/CDVDevice.m"; sourceTree = "<group>"; };
 		39B1C9CCA30941A2B4D57349 /* CDVDevice.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVDevice.h; path = "cordova-plugin-device/CDVDevice.h"; sourceTree = "<group>"; };
 		3B0347431F212E6500C8EF1F /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Outline.entitlements; path = Outline/Outline.entitlements; sourceTree = "<group>"; };
@@ -149,8 +146,6 @@
 		3B03475B1F212F2D00C8EF1F /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = VpnExtension.entitlements; path = Outline/VpnExtension.entitlements; sourceTree = SOURCE_ROOT; };
 		3B03477A1F21337900C8EF1F /* Shadowsocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Shadowsocks.h; path = Outline/Resources/vpn/Shadowsocks.h; sourceTree = SOURCE_ROOT; };
 		3B03477B1F21337900C8EF1F /* Shadowsocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Shadowsocks.m; path = Outline/Resources/vpn/Shadowsocks.m; sourceTree = SOURCE_ROOT; };
-		44EADBAA2F42429181801A98 /* CDVViewController+SplashScreen.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = "CDVViewController+SplashScreen.m"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.m"; sourceTree = "<group>"; };
-		66674A6D590A4457AE8AB647 /* CDVSplashScreen.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVSplashScreen.m; path = "cordova-plugin-splashscreen/CDVSplashScreen.m"; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = Outline/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		73888F60E02C47D6B3663AA6 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaAsyncSocket.framework"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Outline-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Outline-Info.plist"; path = "Outline/Outline-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = SOURCE_ROOT; };
@@ -158,7 +153,6 @@
 		936C2951B7544BC8A20B6746 /* CDVClipboard.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVClipboard.h; path = "cordova-plugin-clipboard/CDVClipboard.h"; sourceTree = "<group>"; };
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
-		E556E10509604C79A9FF138D /* CDVSplashScreen.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVSplashScreen.h; path = "cordova-plugin-splashscreen/CDVSplashScreen.h"; sourceTree = "<group>"; };
 		E8672BD859474DB9A8434AAC /* vpn */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; path = vpn; sourceTree = "<group>"; };
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
@@ -320,10 +314,6 @@
 				FC28C295201BB4E9005FD743 /* OutlineConnection.swift */,
 				FC28C297201BB4E9005FD743 /* OutlineVpn.swift */,
 				FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */,
-				66674A6D590A4457AE8AB647 /* CDVSplashScreen.m */,
-				44EADBAA2F42429181801A98 /* CDVViewController+SplashScreen.m */,
-				E556E10509604C79A9FF138D /* CDVSplashScreen.h */,
-				33588CE82BA54CFCBBD66585 /* CDVViewController+SplashScreen.h */,
 				38EC0895182E411AAF640B74 /* CDVDevice.m */,
 				39B1C9CCA30941A2B4D57349 /* CDVDevice.h */,
 				0394302BA6114B2AB648D4FF /* CDVStatusBar.m */,
@@ -543,8 +533,6 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
-				D71A04493B1E49B89DE406CD /* CDVSplashScreen.m in Sources */,
-				7AF6F909BF1449E38FCC2F12 /* CDVViewController+SplashScreen.m in Sources */,
 				B1BB6490DBB84F82829D4174 /* CDVDevice.m in Sources */,
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
 				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
@@ -618,7 +606,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client;
@@ -659,7 +647,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client;
@@ -709,7 +697,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
@@ -754,7 +742,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
