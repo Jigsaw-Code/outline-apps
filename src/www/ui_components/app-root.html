@@ -418,31 +418,6 @@
           button._detectKeyboardFocus = noop;
         }
 
-        if (!Event.prototype.composedPath) {
-          // Polyfill for Safari 9.0. See https://dom.spec.whatwg.org/#dom-event-composedpath.
-          Event.prototype.composedPath = function() {
-            if (this.path) {
-              return this.path; // ShadowDOM v0 equivalent property.
-            }
-            var composedPath = [];
-            var target = this.target;
-            while (target) {
-              composedPath.push(target);
-              if (target.assignedSlot) {
-                target = target.assignedSlot;
-              } else if (target.nodeType === Node.DOCUMENT_FRAGMENT_NODE && target.host) {
-                target = target.host;
-              } else {
-                target = target.parentNode;
-              }
-            }
-            if (composedPath[composedPath.length - 1] === document) {
-              composedPath.push(window);
-            }
-            return composedPath;
-          };
-        }
-
         if (window.hasOwnProperty("cordova")) {
           // Wait until Cordova is ready to access the device plugin. This listener will execute
           // synchronously if the 'deviceready' event has already fired.
