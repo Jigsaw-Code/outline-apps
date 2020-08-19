@@ -325,31 +325,42 @@ class OutlinePlugin: CDVPlugin {
     }
 
     DDLogInfo("Migrating UIWebView local storage to WKWebView")
-    var success = copy(from: uiWebViewLocalStorage.relativePath, to: wkWebViewLocalStorage.relativePath)
-    DDLogInfo("\t\(uiWebViewLocalStorage) => \(wkWebViewLocalStorage) => \(success)")
-    success = copy(from: "\(uiWebViewLocalStorage.relativePath)-shm", to: "\(wkWebViewLocalStorage.relativePath)-shm")
-    DDLogDebug("\tSHM => \(success)")
-    success = copy(from: "\(uiWebViewLocalStorage.relativePath)-wal", to: "\(wkWebViewLocalStorage.relativePath)-wal")
-    DDLogDebug("\tWAL => \(success)")
+    if !copyAtomic(from: uiWebViewLocalStorage, to: wkWebViewLocalStorage) {
+      DDLogError("Failed to migrate local storage: \(uiWebViewLocalStorage) => \(wkWebViewLocalStorage)")
+      return
+    }
+    if !copyAtomic(from: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-shm"),
+                   to: URL.init(fileURLWithPath: "\(wkWebViewLocalStorage.relativePath)-shm")) {
+      DDLogWarn("Failed to migrate .localstorage-shm file")
+    }
+    if !copyAtomic(from: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-wal"),
+                   to: URL.init(fileURLWithPath: "\(wkWebViewLocalStorage.relativePath)-wal")) {
+      DDLogWarn("Failed to migrate .localstorage-wal file")
+    }
   }
 
-  // Copies a file from |src| to |dest|. Returns whether the operation was successful.
-  func copy(from src: String, to dest: String) -> Bool {
+  // Atomically copies a file from |src| to |dest|. Returns whether the operation was successful.
+  func copyAtomic(from src: URL, to dest: URL) -> Bool {
     let fileManager = FileManager.default
     // Source file does not exist
-    if !fileManager.fileExists(atPath: src) {
+    if !fileManager.fileExists(atPath: src.relativePath) {
+      DDLogError("Source file does not exist: \(src)")
       return false
     }
     // Destination file exists
-    if fileManager.fileExists(atPath: dest) {
+    if fileManager.fileExists(atPath: dest.relativePath) {
+      DDLogError("Destination file exists: \(dest)")
       return false
     }
-    // Create destination path and copy src to dst
-    let destDir = URL(fileURLWithPath: dest).deletingLastPathComponent().relativePath
+
+    // Create destination path and atomically write the contents of |src| to |dst|
+    let destDir = dest.deletingLastPathComponent()
     do {
-      try fileManager.createDirectory(atPath: destDir, withIntermediateDirectories: true, attributes: nil)
-      try fileManager.copyItem(atPath: src, toPath: dest)
+      let data = try Data.init(contentsOf: src)
+      try fileManager.createDirectory(at: destDir, withIntermediateDirectories: true)
+      try data.write(to: dest, options: .atomic)
     } catch {
+      DDLogError("Failed to atomically copy file")
       return false
     }
     return true;
