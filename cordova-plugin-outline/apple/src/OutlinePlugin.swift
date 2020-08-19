@@ -304,16 +304,16 @@ class OutlinePlugin: CDVPlugin {
   private func migrateLocalStorage() {
     let appLibraryDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
 
-    var uiWebViewLocalStorage: URL
+    var uiWebViewLocalStorageDir: URL
     if FileManager.default.fileExists(atPath: appLibraryDir.appendingPathComponent("WebKit/LocalStorage/file__0.localstorage").relativePath) {
-        uiWebViewLocalStorage = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
+        uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
     } else {
-        uiWebViewLocalStorage = appLibraryDir.appendingPathComponent("Caches")
+        uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
     }
 
     // Local storage backing files have the following naming format: $scheme_$hostname_$port.localstorage
     // With UIWebView, the app used the file:// scheme with no hostname and any port
-    uiWebViewLocalStorage = uiWebViewLocalStorage.appendingPathComponent("file__0.localstorage")
+    let uiWebViewLocalStorage = uiWebViewLocalStorageDir.appendingPathComponent("file__0.localstorage")
 
     // With WKWebView, the app uses the app:// scheme with localhost as a hostname and any port.
     let wkWebViewLocalStorage = appLibraryDir.appendingPathComponent("WebKit/WebsiteData/LocalStorage/app_localhost_0.localstorage")
