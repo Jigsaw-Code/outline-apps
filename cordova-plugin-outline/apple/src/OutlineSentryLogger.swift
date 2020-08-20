@@ -43,7 +43,7 @@ class OutlineSentryLogger: DDAbstractLogger {
     self.logsDirectory = containerUrl.appendingPathComponent("Logs").path
 
     DDLog.add(OutlineSentryLogger.sharedInstance)
-    DDLog.add(DDASLLogger.sharedInstance)
+    DDLog.add(DDOSLogger.sharedInstance)
     dynamicLogLevel = DDLogLevel.info
   }
 
