@@ -44,9 +44,9 @@ fi
 
 TAG=$(scripts/get_tag.sh linux)
 if [[ $TAG =~ ^.*-beta$ ]]; then
-  export CHANNEL="beta"
+  INFO_FILE_CHANNEL="beta"
 else
-  export CHANNEL="latest"
+  INFO_FILE_CHANNEL="latest"
 fi
 
 yarn do src/electron/package_common
@@ -65,4 +65,4 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux
 
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$CHANNEL-linux.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$INFO_FILE_CHANNEL-linux.yml
