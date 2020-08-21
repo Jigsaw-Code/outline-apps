@@ -23,7 +23,7 @@ if [[ -n $TRAVIS_TAG ]]; then
 elif [[ "$PLATFORM" != "dev" ]]; then
   TAG=$(git tag --points-at | grep ^$PLATFORM- | sort | tail -1)
   if [[ -z "$TAG" ]]; then
-    echo "no tag found for $PLATFORM, cannot compute semantic version" >&2
+    echo "No tag found for $PLATFORM" >&2
     exit 1
   fi
 fi
