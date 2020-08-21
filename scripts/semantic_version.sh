@@ -50,7 +50,7 @@ done
 shift $((OPTIND-1))
 
 # Search for a tag in the Travis environment and the current commit's tags.
-if ! TAG=$($(dirname $0)/tag.sh $PLATFORM); then
+if ! TAG=$($(dirname $0)/get_tag.sh $PLATFORM); then
   echo "Cannot compute semantic version" >&2
   exit 2
 fi

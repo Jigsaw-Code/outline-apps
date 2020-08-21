@@ -43,7 +43,7 @@ if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   exit 1
 fi
 
-TAG=$(scripts/tag.sh windows)
+TAG=$(scripts/get_tag.sh windows)
 if [[ $TAG =~ ^.*-beta$ ]]; then
   export CHANNEL="beta"
 else
