@@ -43,7 +43,7 @@
     "browserify": "^14.4.0",
     "clang-format": "^1.0.55",
     "cordova": "~10.0.0",
-    "cordova-android": "~8.0.0",
+    "cordova-android": "~9.0.0",
     "cordova-browser": "~6.0.0",
     "cordova-ios": "~6.1.0",
     "cordova-osx": "~6.0.0",

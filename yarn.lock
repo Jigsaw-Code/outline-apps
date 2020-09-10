@@ -585,7 +585,7 @@ ajv@^6.5.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-android-versions@^1.3.0:
+android-versions@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/android-versions/-/android-versions-1.5.0.tgz#7790bc74e0812aafd69fb1ad0cb4db4474a525d6"
   integrity sha512-/GWUAqa2OJNlDF5VGSe3SR1QMHEPXxx54Ur56r0qQC0H9FlBr7kyBF2SgVEhzFCPbrW4UcYgVuWrq/2Ty3QvXg==
@@ -2946,18 +2946,18 @@ copy-props@^2.0.1:
     each-props "^1.3.0"
     is-plain-object "^2.0.1"
 
-cordova-android@~8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-8.0.0.tgz#1fbe05a914731df619522b9385d4d1b183c36bdb"
-  integrity sha512-Ipv8HbVJpxEyYFSFLTEOaLRp0yxBtJVNbgSuDEB4naa34FzQaRWSNiiMcPJnO+x3hRXNt7pcwa46hARNzhn7+w==
+cordova-android@~9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-9.0.0.tgz#8b9285b8062286c41d6b6e910f143bdc266a934c"
+  integrity sha512-2ZEgApK4LPMYW0zh/mLAH3CabzCaKE0yxQTzA2wTf0Eo2HHTJnRtDCf9spGf3nPOkubyXS6+pvzz5QzNHpVTqQ==
   dependencies:
-    android-versions "^1.3.0"
-    cordova-common "^3.1.0"
-    elementtree "^0.1.7"
-    nopt "^4.0.1"
+    android-versions "^1.5.0"
+    cordova-common "^4.0.1"
+    execa "^4.0.2"
+    fs-extra "^9.0.1"
+    nopt "^4.0.3"
     properties-parser "^0.3.1"
-    q "^1.4.1"
-    shelljs "^0.5.3"
+    which "^2.0.2"
 
 cordova-app-hello-world@^5.0.0:
   version "5.0.0"
@@ -4207,7 +4207,7 @@ execa@^2.1.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-execa@^4.0.3:
+execa@^4.0.2, execa@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/execa/-/execa-4.0.3.tgz#0a34dabbad6d66100bd6f2c576c8669403f317f2"
   integrity sha512-WFDXGHckXPWZX19t1kCsXzOpqX9LWYNqn4C+HqZlk/V0imTkzJZqf87ZBhvpHaftERYknpk0fjSylnXVlVgI0A==
