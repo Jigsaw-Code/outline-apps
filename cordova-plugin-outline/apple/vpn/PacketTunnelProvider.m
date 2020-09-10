@@ -69,7 +69,15 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   id<DDLogFileManager> logFileManager = [[DDLogFileManagerDefault alloc]
                                          initWithLogsDirectory:logsDirectory];
   _fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
+#if TARGET_OS_IPHONE
   [DDLog addLogger:[DDOSLogger sharedInstance]];
+#else
+  if (@available(macOS 10.12, *)) {
+    [DDLog addLogger:[DDOSLogger sharedInstance]];
+  } else {
+    [DDLog addLogger:[DDASLLogger sharedInstance]];
+  }
+#endif
   [DDLog addLogger:_fileLogger];
 
   _connectionStore = [[OutlineConnectionStore alloc] initWithAppGroup:appGroup];
