@@ -38,21 +38,23 @@ ENV CI=true
 # trial and error, old pinball machine parts, and various
 # Dockerfiles lying around Github. Bitrise, in particular,
 # maintains images with many useful hints:
-#   https://github.com/bitrise-docker/android 
+#   https://github.com/bitrise-docker/android
 
-# Android SDK ("command line tools only"):
-#   https://developer.android.com/studio/index.html#downloads
-# This is version 26.1.1.
-RUN wget -O /tmp/android-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
-    mkdir /opt/android-sdk && \
-    unzip /tmp/android-tools.zip -d /opt/android-sdk && \
-    rm /tmp/android-tools.zip
-ENV PATH ${PATH}:/opt/android-sdk/tools/bin
-ENV ANDROID_HOME /opt/android-sdk
+# Download Android Command Line Tools:
+#   https://developer.android.com/studio/command-line
+# This is version 2.1.
+ENV ANDROID_SDK_ROOT /opt/android-sdk
+RUN cd /opt \
+    && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
+    && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && rm android-commandline-tools.zip
+
+ENV PATH ${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin
 
 # Android SDK Build Tools:
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
-ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
+ENV ANDROID_BUILD_TOOLS_VERSION 30.0.2
 RUN yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
