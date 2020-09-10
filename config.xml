@@ -23,8 +23,8 @@
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
-    <preference name="android-minSdkVersion" value="21" />
-    <preference name="android-targetSdkVersion" value="28" />
+    <preference name="android-minSdkVersion" value="22" />
+    <preference name="android-targetSdkVersion" value="29" />
     <preference name="AndroidLaunchMode" value="singleInstance" />
     <preference name="ShowSplashScreenSpinner" value="false" />
 
