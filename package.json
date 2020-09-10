@@ -7,7 +7,8 @@
     "do": "bash ./scripts/do_action.sh"
   },
   "comments": {
-    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853"
+    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
+    "codrova-osx@6.0.0": "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
     "@sentry/electron": "1.2.1",
@@ -45,7 +46,7 @@
     "cordova-android": "~8.0.0",
     "cordova-browser": "~6.0.0",
     "cordova-ios": "~6.1.0",
-    "cordova-osx": "~5.0.0",
+    "cordova-osx": "~6.0.0",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
@@ -66,6 +67,7 @@
     "posthtml-postcss": "^0.2.6",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
+    "simple-plist": "^1.1.0",
     "tslint": "^5.12.0",
     "typescript": "^3.6.4",
     "underscore": "^1.10.2",
@@ -91,9 +93,9 @@
     },
     "platforms": [
       "browser",
-      "osx",
       "android",
-      "ios"
+      "ios",
+      "osx"
     ]
   },
   "prettier": {
