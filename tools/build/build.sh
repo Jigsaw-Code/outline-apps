@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-readonly IMAGE_NAME="quay.io/outline/build-android:2020-09-10@sha256:c4922e575a41c6c02e89be243087e419c7a284b49e361b58e69f15d304fedd1a"
+readonly IMAGE_NAME="quay.io/outline/build-android:2020-09-14@sha256:432b3ad1d7bfb247e8bda82e2943cbe06f7d07b6585e3f3d22df5706fc6b9ba1"
 
 BUILD=false
 PUBLISH=false
