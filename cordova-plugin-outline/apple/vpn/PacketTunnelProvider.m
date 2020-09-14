@@ -69,7 +69,15 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   id<DDLogFileManager> logFileManager = [[DDLogFileManagerDefault alloc]
                                          initWithLogsDirectory:logsDirectory];
   _fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
-  [DDLog addLogger:[DDASLLogger sharedInstance]];
+#if TARGET_OS_IPHONE
+  [DDLog addLogger:[DDOSLogger sharedInstance]];
+#else
+  if (@available(macOS 10.12, *)) {
+    [DDLog addLogger:[DDOSLogger sharedInstance]];
+  } else {
+    [DDLog addLogger:[DDASLLogger sharedInstance]];
+  }
+#endif
   [DDLog addLogger:_fileLogger];
 
   _connectionStore = [[OutlineConnectionStore alloc] initWithAppGroup:appGroup];
@@ -580,7 +588,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 // app to indicate the operation success.
 // Callbacks are only executed once to prevent a bad access exception (EXC_BAD_ACCESS).
 - (void)execAppCallbackForAction:(NSString *)action errorCode:(ErrorCode)code {
-  NSNumber *errorCode = [NSNumber numberWithInt:code];
+  NSNumber *errorCode = [NSNumber numberWithInt:(int)code];
   if ([kActionStart isEqualToString:action] && self.startCompletion != nil) {
     self.startCompletion(errorCode);
     self.startCompletion = nil;
