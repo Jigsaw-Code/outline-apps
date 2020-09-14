@@ -58,6 +58,10 @@ class OutlinePlugin: CDVPlugin {
           name: NSNotification.Name(rawValue: OutlinePlugin.kAppQuitNotification),
           object: nil)
     #endif
+
+    #if os(iOS)
+      self.migrateLocalStorage()
+    #endif
   }
 
   /**
@@ -294,5 +298,68 @@ class OutlinePlugin: CDVPlugin {
       callbacks.removeValue(forKey: key)
     }
     return callbackId
+  }
+
+  // Migrates local storage files from UIWebView to WKWebView.
+  private func migrateLocalStorage() {
+    // Local storage backing files have the following naming format: $scheme_$hostname_$port.localstorage
+    // With UIWebView, the app used the file:// scheme with no hostname and any port.
+    let kUIWebViewLocalStorageFilename = "file__0.localstorage"
+    // With WKWebView, the app uses the app:// scheme with localhost as a hostname and any port.
+    let kWKWebViewLocalStorageFilename = "app_localhost_0.localstorage"
+
+    let fileManager = FileManager.default
+    let appLibraryDir = fileManager.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+
+    var uiWebViewLocalStorageDir: URL
+    if fileManager.fileExists(atPath: appLibraryDir.appendingPathComponent(
+        "WebKit/LocalStorage/\(kUIWebViewLocalStorageFilename)").relativePath) {
+      uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
+    } else {
+      uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
+    }
+    let uiWebViewLocalStorage = uiWebViewLocalStorageDir.appendingPathComponent(kUIWebViewLocalStorageFilename)
+    if !fileManager.fileExists(atPath: uiWebViewLocalStorage.relativePath) {
+      return DDLogInfo("Not migrating, UIWebView local storage files missing.")
+    }
+
+    let wkWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/WebsiteData/LocalStorage/")
+    let wkWebViewLocalStorage = wkWebViewLocalStorageDir.appendingPathComponent(kWKWebViewLocalStorageFilename)
+    // Only copy the local storage files if they don't exist for WKWebView.
+    if fileManager.fileExists(atPath: wkWebViewLocalStorage.relativePath) {
+      return DDLogInfo("Not migrating, WKWebView local storage files present.")
+    }
+    DDLogInfo("Migrating UIWebView local storage to WKWebView")
+
+    // Create the WKWebView local storage directory; this is safe if the directory already exists.
+    do {
+      try fileManager.createDirectory(at: wkWebViewLocalStorageDir, withIntermediateDirectories: true)
+    } catch {
+      return DDLogError("Failed to create WKWebView local storage directory")
+    }
+
+    // Create a tmp directory and copy onto it the local storage files.
+    guard let tmpDir = try? fileManager.url(for: .itemReplacementDirectory, in: .userDomainMask,
+                                            appropriateFor: wkWebViewLocalStorage, create: true) else {
+      return DDLogError("Failed to create tmp dir")
+    }
+    do {
+      try fileManager.copyItem(at: uiWebViewLocalStorage,
+                               to: tmpDir.appendingPathComponent(wkWebViewLocalStorage.lastPathComponent))
+      try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-shm"),
+                               to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-shm"))
+      try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-wal"),
+                               to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-wal"))
+    } catch {
+      return DDLogError("Local storage migration failed.")
+    }
+
+    // Atomically move the tmp directory to the WKWebView local storage directory.
+    guard let _ = try? fileManager.replaceItemAt(wkWebViewLocalStorageDir, withItemAt: tmpDir,
+                                                 backupItemName: nil, options: .usingNewMetadataOnly) else {
+      return DDLogError("Failed to copy tmp dir to WKWebView local storage dir")
+    }
+
+    DDLogInfo("Local storage migration succeeded")
   }
 }

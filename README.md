@@ -24,8 +24,8 @@ UI components are located in [src/www/ui_components](src/www/ui_components). The
 
 Additional requirements for Android:
 
-* Android Studio
-* Android SDK 28
+* Android Studio 4+
+* Android SDK 29
 
 To build for android, run:
 

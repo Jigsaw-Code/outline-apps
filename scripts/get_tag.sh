@@ -1,4 +1,6 @@
-# Copyright 2018 The Outline Authors
+#!/bin/bash -e
+
+# Copyright 2020 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source 'https://rubygems.org'
+# Searches for a tag in the environment or the current git branch
 
-gem 'fastlane', '~>2.156.1'
+PLATFORM=$1
+TAG=
+if [[ -n $TRAVIS_TAG ]]; then
+  TAG=$TRAVIS_TAG
+elif [[ "$PLATFORM" != "dev" ]]; then
+  TAG=$(git tag --points-at | grep ^$PLATFORM- | sort | tail -1)
+  if [[ -z "$TAG" ]]; then
+    echo "No tag found for $PLATFORM" >&2
+    exit 1
+  fi
+fi
+
+echo $TAG
