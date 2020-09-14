@@ -47,7 +47,7 @@ TAG=$(scripts/get_tag.sh windows)
 if [[ $TAG =~ ^.*-beta$ ]]; then
   INFO_FILE_CHANNEL="beta"
 else
-  INFO_FILE_CHANNEL=""
+  INFO_FILE_CHANNEL="latest"
 fi
 
 yarn do src/electron/package_common
