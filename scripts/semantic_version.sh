@@ -50,20 +50,14 @@ done
 shift $((OPTIND-1))
 
 # Search for a tag in the Travis environment and the current commit's tags.
-TAG=
-if [[ -n $TRAVIS_TAG ]]; then
-  TAG=$TRAVIS_TAG
-elif [[ "$PLATFORM" != "dev" ]]; then
-  TAG=$(git tag --points-at | grep ^$PLATFORM- | sort | tail -1)
-  if [[ -z "$TAG" ]]; then
-    echo "no tag found for $PLATFORM, cannot compute semantic version" >&2
-    exit 1
-  fi
+if ! TAG=$($(dirname $0)/get_tag.sh $PLATFORM); then
+  echo "Cannot compute semantic version" >&2
+  exit 2
 fi
 
 # Search for a semantic version in the tag, e.g. windows-v1.0.1 -> 1.0.1.
 if echo "$TAG" | grep -q '.*-v'; then
-  SEMVER=$(echo "$TAG" | sed 's/.*-//' | cut -dv -f2)
+  SEMVER=$(echo "$TAG" | sed 's/[^-]*-v//')
 fi
 
 if [[ -n "$SEMVER" ]]; then

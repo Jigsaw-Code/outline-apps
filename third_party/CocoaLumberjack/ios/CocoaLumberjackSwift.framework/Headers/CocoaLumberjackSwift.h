@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2019, Deusty, LLC
+// Copyright (c) 2010-2020, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -16,6 +16,5 @@
 // This header is mostly blank because all of the declarations are in Swift.
 // Still, this header may still be needed so Swift doesn't complain when importing CocoaLumberjackSwift.
 
-@import CocoaLumberjack;
-
+#import <CocoaLumberjack/CocoaLumberjack.h>
 #import <CocoaLumberjackSwift/SwiftLogLevel.h>
