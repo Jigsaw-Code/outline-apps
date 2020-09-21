@@ -57,4 +57,8 @@ ENV PATH ${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
 ENV ANDROID_BUILD_TOOLS_VERSION 30.0.2
-RUN yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+# NDK (side by side) version must be kept in sync with the default build tools NDK version.
+ENV NDK_VERSION 21.0.6113669
+RUN yes | sdkmanager \
+  "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+  "ndk;${NDK_VERSION}"
