@@ -95,7 +95,7 @@
   }];
 
   if ([self wasStartedByLauncherApp]) {
-    [OutlineVpn.shared startLastSuccessfulConnection:^(enum ErrorCode errorCode) {
+    [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
       if (errorCode != ErrorCodeNoError) {
         NSLog(@"Failed to auto-connect the VPN on startup.");
       }

@@ -30,10 +30,10 @@
 		F8EB0D7A90A642BD93C2F424 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = E8672BD859474DB9A8434AAC /* vpn */; };
 		FC0FFD691FCCD45900EB0129 /* Shadowsocks_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */; };
 		FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADE216D2A6E00F078A5 /* Subnet.swift */; };
-		FC28C298201BB4E9005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineConnection.swift */; };
+		FC28C298201BB4E9005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */; };
 		FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C297201BB4E9005FD743 /* OutlineVpn.swift */; };
-		FC28C29A201BB4F3005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineConnection.swift */; };
-		FC28C2B32022268B005FD743 /* OutlineConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B020222681005FD743 /* OutlineConnectionStore.swift */; };
+		FC28C29A201BB4F3005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */; };
+		FC28C2B32022268B005FD743 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B020222681005FD743 /* OutlineTunnelStore.swift */; };
 		FC28C2C3202913C4005FD743 /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; };
 		FC29A6A61FB522E1005E2599 /* Shadowsocks_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */; };
 		FC8C30DF1FA78FA9004262BE /* Sentry.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30DE1FA78FA9004262BE /* Sentry.framework */; };
@@ -159,9 +159,9 @@
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
 		FC1FCADE216D2A6E00F078A5 /* Subnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Subnet.swift; path = Outline/Resources/vpn/Subnet.swift; sourceTree = SOURCE_ROOT; };
-		FC28C295201BB4E9005FD743 /* OutlineConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineConnection.swift; path = "cordova-plugin-outline/OutlineConnection.swift"; sourceTree = "<group>"; };
+		FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnel.swift; path = "cordova-plugin-outline/OutlineTunnel.swift"; sourceTree = "<group>"; };
 		FC28C297201BB4E9005FD743 /* OutlineVpn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineVpn.swift; path = "cordova-plugin-outline/OutlineVpn.swift"; sourceTree = "<group>"; };
-		FC28C2B020222681005FD743 /* OutlineConnectionStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineConnectionStore.swift; path = Outline/Resources/vpn/OutlineConnectionStore.swift; sourceTree = SOURCE_ROOT; };
+		FC28C2B020222681005FD743 /* OutlineTunnelStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnelStore.swift; path = Outline/Resources/vpn/OutlineTunnelStore.swift; sourceTree = SOURCE_ROOT; };
 		FC29A6A41FB522E1005E2599 /* Shadowsocks_iOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shadowsocks_iOS.framework; path = "Outline/Plugins/cordova-plugin-outline/Shadowsocks_iOS.framework"; sourceTree = "<group>"; };
 		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
 		FC8C30DE1FA78FA9004262BE /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.framework"; sourceTree = "<group>"; };
@@ -311,7 +311,7 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				FC28C295201BB4E9005FD743 /* OutlineConnection.swift */,
+				FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */,
 				FC28C297201BB4E9005FD743 /* OutlineVpn.swift */,
 				FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */,
 				38EC0895182E411AAF640B74 /* CDVDevice.m */,
@@ -336,7 +336,7 @@
 				3B03477B1F21337900C8EF1F /* Shadowsocks.m */,
 				3B0347591F212F2D00C8EF1F /* PacketTunnelProvider.h */,
 				3B03475A1F212F2D00C8EF1F /* PacketTunnelProvider.m */,
-				FC28C2B020222681005FD743 /* OutlineConnectionStore.swift */,
+				FC28C2B020222681005FD743 /* OutlineTunnelStore.swift */,
 				FC1FCADE216D2A6E00F078A5 /* Subnet.swift */,
 				3B03475B1F212F2D00C8EF1F /* VpnExtension.entitlements */,
 			);
@@ -529,7 +529,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */,
-				FC28C298201BB4E9005FD743 /* OutlineConnection.swift in Sources */,
+				FC28C298201BB4E9005FD743 /* OutlineTunnel.swift in Sources */,
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
@@ -546,11 +546,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC28C29A201BB4F3005FD743 /* OutlineConnection.swift in Sources */,
+				FC28C29A201BB4F3005FD743 /* OutlineTunnel.swift in Sources */,
 				3B03475D1F212F2D00C8EF1F /* PacketTunnelProvider.m in Sources */,
 				FCABE26121AF5C78009B7C93 /* ShadowsocksConnectivity.m in Sources */,
 				FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */,
-				FC28C2B32022268B005FD743 /* OutlineConnectionStore.swift in Sources */,
+				FC28C2B32022268B005FD743 /* OutlineTunnelStore.swift in Sources */,
 				3B03477C1F21337900C8EF1F /* Shadowsocks.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
