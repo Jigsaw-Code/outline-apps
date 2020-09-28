@@ -28,22 +28,21 @@ export class OutlineServer implements PersistentServer {
 
   constructor(
       public readonly id: string, public config: cordova.plugins.outline.ServerConfig,
-      private connection: cordova.plugins.outline.Connection,
-      private eventQueue: events.EventQueue) {
-    this.connection.onStatusChange((status: ConnectionStatus) => {
+      private tunnel: cordova.plugins.outline.Tunnel, private eventQueue: events.EventQueue) {
+    this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
-        case ConnectionStatus.CONNECTED:
+        case TunnelStatus.CONNECTED:
           statusEvent = new events.ServerConnected(this);
           break;
-        case ConnectionStatus.DISCONNECTED:
+        case TunnelStatus.DISCONNECTED:
           statusEvent = new events.ServerDisconnected(this);
           break;
-        case ConnectionStatus.RECONNECTING:
+        case TunnelStatus.RECONNECTING:
           statusEvent = new events.ServerReconnecting(this);
           break;
         default:
-          console.warn(`Received unknown connection status ${status}`);
+          console.warn(`Received unknown tunnel status ${status}`);
           return;
       }
       eventQueue.enqueue(statusEvent);
@@ -63,7 +62,7 @@ export class OutlineServer implements PersistentServer {
   }
 
   connect(): Promise<void> {
-    return this.connection.start().catch((e) => {
+    return this.tunnel.start().catch((e) => {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
       if (e.errorCode) {
@@ -74,18 +73,18 @@ export class OutlineServer implements PersistentServer {
   }
 
   disconnect(): Promise<void> {
-    return this.connection.stop().catch((e) => {
+    return this.tunnel.stop().catch((e) => {
       // TODO: None of the plugins currently return an ErrorCode on disconnection.
       throw new errors.RegularNativeError();
     });
   }
 
   checkRunning(): Promise<boolean> {
-    return this.connection.isRunning();
+    return this.tunnel.isRunning();
   }
 
   checkReachable(): Promise<boolean> {
-    return this.connection.isReachable();
+    return this.tunnel.isReachable();
   }
 
   public static isServerCipherSupported(cipher?: string) {

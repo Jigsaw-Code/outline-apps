@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 //
 // Additionally, because this is a typings file, we must declare a *const* enum - regular enums are
 // backed, perhaps surprisingly, by a JavaScript object.
-declare const enum ConnectionStatus { CONNECTED, DISCONNECTED, RECONNECTING }
+declare const enum TunnelStatus { CONNECTED, DISCONNECTED, RECONNECTING }
 
 declare namespace cordova.plugins.outline {
   const log: {
@@ -36,7 +36,7 @@ declare namespace cordova.plugins.outline {
   // Quits the application. Only supported in macOS.
   function quitApplication(): void;
 
-  // TODO: Use ShadowsocksConfig library's `Config` interface instead?
+  // Represents a Shadowsocks server configuration.
   interface ServerConfig {
     method?: string;
     password?: string;
@@ -45,8 +45,8 @@ declare namespace cordova.plugins.outline {
     name?: string;
   }
 
-  // Represents a VPN connection to a remote server.
-  class Connection {
+  // Represents a VPN tunnel to a remote server.
+  class Tunnel {
     // Creates a new instance with |serverConfig|.
     // A sequential ID will be generated if |id| is absent.
     constructor(serverConfig: ServerConfig, id?: string);
@@ -57,22 +57,22 @@ declare namespace cordova.plugins.outline {
 
     // Starts the VPN service, and tunnels all the traffic to a local Shadowsocks
     // server as dictated by its configuration. If there is another running
-    // instance, broadcasts a disconnect event and stops the running connection.
-    // In such case, restarts tunneling while preserving the VPN connection.
+    // instance, broadcasts a disconnect event and stops the running tunnel.
+    // In such case, restarts tunneling while preserving the VPN tunnel.
     // Rejects with an OutlinePluginError.
     start(): Promise<void>;
 
-    // Stops the connection and VPN service.
+    // Stops the tunnel and VPN service.
     stop(): Promise<void>;
 
-    // Returns whether the connection instance is active.
+    // Returns whether the tunnel instance is active.
     isRunning(): Promise<boolean>;
 
-    // Returns whether the connection is reachable by attempting to establish
+    // Returns whether the proxy server is reachable by attempting to establish
     // a socket to the IP and port specified in |config|.
     isReachable(): Promise<boolean>;
 
-    // Sets a listener, to be called when the VPN connection status changes.
-    onStatusChange(listener: (status: ConnectionStatus) => void): void;
+    // Sets a listener, to be called when the VPN tunnel status changes.
+    onStatusChange(listener: (status: TunnelStatus) => void): void;
   }
 }

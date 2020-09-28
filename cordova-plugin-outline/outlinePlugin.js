@@ -65,13 +65,13 @@ function OutlinePluginError(errorCode) {
   this.errorCode = errorCode || ERROR_CODE.UNEXPECTED;
 }
 
-const ConnectionStatus = {
+const TunnelStatus = {
   CONNECTED: 0,
   DISCONNECTED: 1,
   RECONNECTING: 2
 }
 
-function Connection(config, id) {
+function Tunnel(config, id) {
   if (id) {
     this.id_ = id.toString();
   } else {
@@ -84,7 +84,7 @@ function Connection(config, id) {
   this.config = config;
 }
 
-Connection.prototype._promiseExec = function(cmd, args) {
+Tunnel.prototype._promiseExec = function(cmd, args) {
   return new Promise(function(resolve, reject) {
     const rejectWithError = function(errorCode) {
       reject(new OutlinePluginError(errorCode));
@@ -93,27 +93,27 @@ Connection.prototype._promiseExec = function(cmd, args) {
   }.bind(this));
 };
 
-Connection.prototype._exec = function(cmd, args, success, error) {
+Tunnel.prototype._exec = function(cmd, args, success, error) {
   exec(success, error, PLUGIN_NAME, cmd, [this.id_].concat(args));
 };
 
-Connection.prototype.start = function() {
+Tunnel.prototype.start = function() {
   return this._promiseExec('start', [this.config]);
 };
 
-Connection.prototype.stop = function() {
+Tunnel.prototype.stop = function() {
   return this._promiseExec('stop', []);
 };
 
-Connection.prototype.isRunning = function() {
+Tunnel.prototype.isRunning = function() {
   return this._promiseExec('isRunning', []);
 };
 
-Connection.prototype.isReachable = function() {
+Tunnel.prototype.isReachable = function() {
   return this._promiseExec('isReachable', [this.config.host, this.config.port]);
 };
 
-Connection.prototype.onStatusChange = function(listener) {
+Tunnel.prototype.onStatusChange = function(listener) {
   const onError = function(err) {
     console.warn('Failed to execute disconnect listener', err);
   };
@@ -121,8 +121,8 @@ Connection.prototype.onStatusChange = function(listener) {
 };
 
 module.exports = {
-  Connection: Connection,
-  ConnectionStatus: ConnectionStatus,
+  Tunnel: Tunnel,
+  TunnelStatus: TunnelStatus,
   log: log,
   quitApplication: quitApplication,
 };
