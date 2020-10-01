@@ -62,7 +62,7 @@ const enum Options {
 
 const REACHABILITY_TIMEOUT_MS = 10000;
 
-let currentConnection: TunnelManager|undefined;
+let currentTunnel: TunnelManager|undefined;
 
 function createWindow(tunnelAtShutdown?: SerializableTunnel) {
   // Create the browser window.
@@ -296,35 +296,35 @@ promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(
     config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
-  if (currentConnection) {
+  if (currentTunnel) {
     throw new Error('already connected');
   }
 
-  currentConnection = new TunnelManager(config, isAutoConnect);
+  currentTunnel = new TunnelManager(config, isAutoConnect);
 
-  currentConnection.onceStopped.then(() => {
+  currentTunnel.onceStopped.then(() => {
     console.log(`disconnected from ${id}`);
-    currentConnection = undefined;
+    currentTunnel = undefined;
     sendTunnelStatus(TunnelStatus.DISCONNECTED, id);
   });
 
-  currentConnection.onReconnecting = () => {
+  currentTunnel.onReconnecting = () => {
     console.log(`reconnecting to ${id}`);
     sendTunnelStatus(TunnelStatus.RECONNECTING, id);
   };
 
-  currentConnection.onReconnected = () => {
+  currentTunnel.onReconnected = () => {
     console.log(`reconnected to ${id}`);
     sendTunnelStatus(TunnelStatus.CONNECTED, id);
   };
 
-  await currentConnection.start();
+  await currentTunnel.start();
   sendTunnelStatus(TunnelStatus.CONNECTED, id);
 }
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
-  if (!currentConnection) {
+  if (!currentTunnel) {
     return;
   }
 
@@ -332,8 +332,8 @@ async function stopVpn() {
     console.error('Failed to clear tunnel store.');
   });
 
-  currentConnection.stop();
-  await currentConnection.onceStopped;
+  currentTunnel.stop();
+  await currentTunnel.onceStopped;
 }
 
 function sendTunnelStatus(status: TunnelStatus, tunnelId: string) {
@@ -367,10 +367,10 @@ promiseIpc.on(
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
-      if (currentConnection) {
+      if (currentTunnel) {
         console.log('disconnecting from current server...');
-        currentConnection.stop();
-        await currentConnection.onceStopped;
+        currentTunnel.stop();
+        await currentTunnel.onceStopped;
       }
 
       console.log(`connecting to ${args.id}...`);
@@ -388,7 +388,7 @@ promiseIpc.on(
 
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
         tunnelStore.save(args).catch((e) => {
-          console.error('Failed to store connection.');
+          console.error('Failed to store tunnel.');
         });
       } catch (e) {
         console.error(`could not connect: ${e.name} (${e.message})`);
