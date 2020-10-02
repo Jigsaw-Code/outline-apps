@@ -44,17 +44,17 @@ We use a custom framework dependency, PacketProcessor, that implements tun2socks
 This plugin supports Android, iOS, and macOS.
 
 ### Android
-This plugin targets Android devices running Lollipop (API 21), or higher.
+This plugin targets Android devices running Lollipop (API 22), or higher.
 
 ### Apple
-This plugin targets Apple devices running iOS 9.0+ and macOS/OS X 10.11.
+This plugin targets Apple devices running iOS 11.0+ and macOS/OS X 10.11.
 
 ## JavaScript API
 
 ```ts
 
 // Represents a Shadowsocks server configuration.
-interface ShadowsocksServerConfig {
+interface ServerConfig {
   method?: string;
   password?: string;
   host?: string;
@@ -74,8 +74,8 @@ declare namespace cordova.plugins.outline {
     send(uuid: string): Promise<void>;
   }
 
-  // Represents a VPN connection to a proxy through the plugin.
-  export class Connection {
+  // Represents a VPN tunnel to a proxy through the plugin.
+  export class Tunnel {
 
     // Creates a new instance with |serverConfig|.
     // A sequential ID will be generated if |id| is absent.
@@ -83,23 +83,23 @@ declare namespace cordova.plugins.outline {
 
     // Starts the VPN service, and tunnels all the traffic to a local Shadowsocks
     // server as dictated by its configuration. If there is another running
-    // instance, broadcasts a disconnect event and stops the running connection.
-    // In such case, restarts tunneling while preserving the VPN connection.
+    // instance, broadcasts a disconnect event and stops the active tunnel.
+    // In such case, the VPN is not torn down.
     start(): Promise<void>;
 
 
-    // Stops the connection and VPN service.
+    // Stops the tunnel and VPN service.
     stop(): Promise<void>;
 
-    // Returns whether the connection instance is active.
+    // Returns whether the tunnel instance is active.
     isRunning(): Promise<boolean>;
 
-    // Returns whether the connection is reachable by attempting to establish
+    // Returns whether the proxy server is reachable by attempting to establish
     // a socket to the IP and port specified in |config|.
     isReachable(): Promise<boolean>;
 
-    // Sets a listener, to be called when the VPN connection status changes.
-    onStatusChange(listener: (status: ConnectionStatus) => void): void;
+    // Sets a listener, to be called when the VPN tunnel status changes.
+    onStatusChange(listener: (status: TunnelStatus) => void): void;
   }
 }
 

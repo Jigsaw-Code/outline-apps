@@ -30,17 +30,17 @@
 		FC0799F72037543F00A1C822 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = FC0799E62037532900A1C822 /* OutlineLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC0799F82037545D00A1C822 /* ServiceManagement.framework */; };
 		FC0FFD701FCDBE4E00EB0129 /* Shadowsocks_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCAFD3131FBA52690057EE7F /* Shadowsocks_macOS.framework */; };
-		FC1F250F2049B0DB0012D758 /* OutlineConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */; };
-		FC1F25122049B1470012D758 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineConnection.swift */; };
+		FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
+		FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
 		FC1F25132049B2E40012D758 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
 		FC1F25142049B2E40012D758 /* CocoaLumberjack.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; };
 		FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADA216D289F00F078A5 /* Subnet.swift */; };
 		FC28C281201A93BF005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C280201A93BF005FD743 /* OutlineVpn.swift */; };
-		FC28C283201A93D0005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineConnection.swift */; };
-		FC28C284201A93D6005FD743 /* OutlineConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineConnection.swift */; };
-		FC28C2B720223167005FD743 /* OutlineConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */; };
+		FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
+		FC28C284201A93D6005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
+		FC28C2B720223167005FD743 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
 		FC5FF90D1F3E1CEE0032A745 /* PacketProcessor_macOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3679D25B96374CD5BE52C04F /* PacketProcessor_macOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FC5FF90F1F3E1CEE0032A745 /* CocoaAsyncSocket.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65F10DB2408748869386705A /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FC5FF93A1F3E1E5F0032A745 /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -179,8 +179,8 @@
 		FC0799F82037545D00A1C822 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		FC1FCADA216D289F00F078A5 /* Subnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Subnet.swift; path = Outline/Resources/vpn/Subnet.swift; sourceTree = SOURCE_ROOT; };
 		FC28C280201A93BF005FD743 /* OutlineVpn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineVpn.swift; path = "cordova-plugin-outline/OutlineVpn.swift"; sourceTree = "<group>"; };
-		FC28C282201A93D0005FD743 /* OutlineConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineConnection.swift; path = "cordova-plugin-outline/OutlineConnection.swift"; sourceTree = "<group>"; };
-		FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineConnectionStore.swift; path = Outline/Resources/vpn/OutlineConnectionStore.swift; sourceTree = SOURCE_ROOT; };
+		FC28C282201A93D0005FD743 /* OutlineTunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnel.swift; path = "cordova-plugin-outline/OutlineTunnel.swift"; sourceTree = "<group>"; };
+		FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnelStore.swift; path = Outline/Resources/vpn/OutlineTunnelStore.swift; sourceTree = SOURCE_ROOT; };
 		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
 		FC5FF9121F3E1D1B0032A745 /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Outline.entitlements; sourceTree = "<group>"; };
 		FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VpnExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -248,7 +248,7 @@
 		7069FBC31905A1F9000B48E1 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				FC28C282201A93D0005FD743 /* OutlineConnection.swift */,
+				FC28C282201A93D0005FD743 /* OutlineTunnel.swift */,
 				FC28C280201A93BF005FD743 /* OutlineVpn.swift */,
 				AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */,
 				FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */,
@@ -390,7 +390,7 @@
 			children = (
 				FCABE26421AF5CF1009B7C93 /* ShadowsocksConnectivity.h */,
 				FCABE26321AF5CF1009B7C93 /* ShadowsocksConnectivity.m */,
-				FC28C2B520223164005FD743 /* OutlineConnectionStore.swift */,
+				FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */,
 				FC5FF9491F3E1EF00032A745 /* PacketTunnelProvider.h */,
 				FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */,
 				FC5FF94B1F3E1EF00032A745 /* Shadowsocks.h */,
@@ -613,7 +613,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC28C283201A93D0005FD743 /* OutlineConnection.swift in Sources */,
+				FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */,
 				FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */,
 				70BD683318FFB02D00A1EFCF /* main.m in Sources */,
 				70BD686D18FFB0BF00A1EFCF /* AppDelegate.m in Sources */,
@@ -632,8 +632,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC1F25122049B1470012D758 /* OutlineConnection.swift in Sources */,
-				FC1F250F2049B0DB0012D758 /* OutlineConnectionStore.swift in Sources */,
+				FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */,
+				FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */,
 				FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -642,11 +642,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC28C284201A93D6005FD743 /* OutlineConnection.swift in Sources */,
+				FC28C284201A93D6005FD743 /* OutlineTunnel.swift in Sources */,
 				FC5FF94E1F3E1EF00032A745 /* PacketTunnelProvider.m in Sources */,
 				FCABE26521AF5CF1009B7C93 /* ShadowsocksConnectivity.m in Sources */,
 				FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */,
-				FC28C2B720223167005FD743 /* OutlineConnectionStore.swift in Sources */,
+				FC28C2B720223167005FD743 /* OutlineTunnelStore.swift in Sources */,
 				FC5FF94F1F3E1EF00032A745 /* Shadowsocks.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

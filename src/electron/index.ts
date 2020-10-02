@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+/// <reference path="../types/ambient/outlinePlugin.d.ts" />
 
 import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
@@ -25,12 +27,12 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
-import {ConnectionStore, SerializableConnection} from './connection_store';
-import {ConnectionManager} from './process_manager';
+import {TunnelStore, SerializableTunnel} from './tunnel_store';
+import {TunnelManager} from './process_manager';
 
-// Used for the auto-connect feature. There will be a connection in store
+// Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
-const connectionStore = new ConnectionStore(app.getPath('userData'));
+const tunnelStore = new TunnelStore(app.getPath('userData'));
 
 const isLinux = os.platform() === 'linux';
 
@@ -60,9 +62,9 @@ const enum Options {
 
 const REACHABILITY_TIMEOUT_MS = 10000;
 
-let currentConnection: ConnectionManager|undefined;
+let currentTunnel: TunnelManager|undefined;
 
-function createWindow(connectionAtShutdown?: SerializableConnection) {
+function createWindow(tunnelAtShutdown?: SerializableTunnel) {
   // Create the browser window.
   mainWindow = new BrowserWindow(
       {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
@@ -105,13 +107,13 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
     mainWindow!.webContents.send('localizationRequest', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
 
-    if (connectionAtShutdown) {
-      console.info(`was connected at shutdown, reconnecting to ${connectionAtShutdown.id}`);
-      sendConnectionStatus(ConnectionStatus.RECONNECTING, connectionAtShutdown.id);
-      startVpn(connectionAtShutdown.config, connectionAtShutdown.id, true)
+    if (tunnelAtShutdown) {
+      console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
+      sendTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
+      startVpn(tunnelAtShutdown.config, tunnelAtShutdown.id, true)
           .then(
               () => {
-                console.log(`reconnected to ${connectionAtShutdown.id}`);
+                console.log(`reconnected to ${tunnelAtShutdown.id}`);
               },
               (e) => {
                 console.error(`could not reconnect: ${e.name} (${e.message})`);
@@ -128,8 +130,8 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   });
 }
 
-function createTrayIcon(status: ConnectionStatus) {
-  const isConnected = status === ConnectionStatus.CONNECTED;
+function createTrayIcon(status: TunnelStatus) {
+  const isConnected = status === TunnelStatus.CONNECTED;
   const trayIconImage = isConnected ? trayIconImages.connected : trayIconImages.disconnected;
   if (tray) {
     tray.setImage(trayIconImage);
@@ -257,12 +259,12 @@ app.on('ready', () => {
 
   // TODO: --autostart is never set on Linux, what can we do?
   if (process.argv.includes(Options.AUTOSTART)) {
-    connectionStore.load()
-        .then((connection) => {
-          createWindow(connection);
+    tunnelStore.load()
+        .then((tunnel) => {
+          createWindow(tunnel);
         })
         .catch((e) => {
-          // No connection at shutdown, or failure - either way, no need to start.
+          // No tunnel at shutdown, or failure - either way, no need to start.
           // TODO: Instead of quitting, how about creating the system tray icon?
           console.log(`${Options.AUTOSTART} was passed but we were not connected at shutdown - exiting`);
           app.quit();
@@ -294,63 +296,63 @@ promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(
     config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
-  if (currentConnection) {
+  if (currentTunnel) {
     throw new Error('already connected');
   }
 
-  currentConnection = new ConnectionManager(config, isAutoConnect);
+  currentTunnel = new TunnelManager(config, isAutoConnect);
 
-  currentConnection.onceStopped.then(() => {
+  currentTunnel.onceStopped.then(() => {
     console.log(`disconnected from ${id}`);
-    currentConnection = undefined;
-    sendConnectionStatus(ConnectionStatus.DISCONNECTED, id);
+    currentTunnel = undefined;
+    sendTunnelStatus(TunnelStatus.DISCONNECTED, id);
   });
 
-  currentConnection.onReconnecting = () => {
+  currentTunnel.onReconnecting = () => {
     console.log(`reconnecting to ${id}`);
-    sendConnectionStatus(ConnectionStatus.RECONNECTING, id);
+    sendTunnelStatus(TunnelStatus.RECONNECTING, id);
   };
 
-  currentConnection.onReconnected = () => {
+  currentTunnel.onReconnected = () => {
     console.log(`reconnected to ${id}`);
-    sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+    sendTunnelStatus(TunnelStatus.CONNECTED, id);
   };
 
-  await currentConnection.start();
-  sendConnectionStatus(ConnectionStatus.CONNECTED, id);
+  await currentTunnel.start();
+  sendTunnelStatus(TunnelStatus.CONNECTED, id);
 }
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
-  if (!currentConnection) {
+  if (!currentTunnel) {
     return;
   }
 
-  connectionStore.clear().catch((e) => {
-    console.error('Failed to clear connection store.');
+  tunnelStore.clear().catch((e) => {
+    console.error('Failed to clear tunnel store.');
   });
 
-  currentConnection.stop();
-  await currentConnection.onceStopped;
+  currentTunnel.stop();
+  await currentTunnel.onceStopped;
 }
 
-function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
+function sendTunnelStatus(status: TunnelStatus, tunnelId: string) {
   let statusString;
   switch (status) {
-    case ConnectionStatus.CONNECTED:
+    case TunnelStatus.CONNECTED:
       statusString = 'connected';
       break;
-    case ConnectionStatus.DISCONNECTED:
+    case TunnelStatus.DISCONNECTED:
       statusString = 'disconnected';
       break;
-    case ConnectionStatus.RECONNECTING:
+    case TunnelStatus.RECONNECTING:
       statusString = 'reconnecting';
       break;
     default:
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
   }
-  const event = `proxy-${statusString}-${connectionId}`;
+  const event = `proxy-${statusString}-${tunnelId}`;
   if (mainWindow) {
     mainWindow.webContents.send(event);
   } else {
@@ -365,10 +367,10 @@ promiseIpc.on(
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
-      if (currentConnection) {
+      if (currentTunnel) {
         console.log('disconnecting from current server...');
-        currentConnection.stop();
-        await currentConnection.onceStopped;
+        currentTunnel.stop();
+        await currentTunnel.onceStopped;
       }
 
       console.log(`connecting to ${args.id}...`);
@@ -385,8 +387,8 @@ promiseIpc.on(
         console.log(`connected to ${args.id}`);
 
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-        connectionStore.save(args).catch((e) => {
-          console.error('Failed to store connection.');
+        tunnelStore.save(args).catch((e) => {
+          console.error('Failed to store tunnel.');
         });
       } catch (e) {
         console.error(`could not connect: ${e.name} (${e.message})`);
@@ -420,7 +422,7 @@ ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: str
   if (!!localizationResult) {
     localizedStrings = localizationResult;
   }
-  createTrayIcon(ConnectionStatus.DISCONNECTED);
+  createTrayIcon(TunnelStatus.DISCONNECTED);
 });
 
 function checkForUpdates() {

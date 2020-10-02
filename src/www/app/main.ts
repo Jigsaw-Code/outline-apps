@@ -47,8 +47,8 @@ function getRootEl() {
 
 function createServerRepo(
     eventQueue: EventQueue, storage: Storage, deviceSupport: boolean,
-    connectionType: PersistentServerFactory) {
-  const repo = new PersistentServerRepository(connectionType, eventQueue, storage);
+    serverFactory: PersistentServerFactory) {
+  const repo = new PersistentServerRepository(serverFactory, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {

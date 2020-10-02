@@ -18,7 +18,7 @@ import * as errors from '../model/errors';
 
 // Note that because this implementation does not emit disconnection events, "switching" between
 // servers in the server list will not work as expected.
-export class FakeOutlineConnection implements cordova.plugins.outline.Connection {
+export class FakeOutlineTunnel implements cordova.plugins.outline.Tunnel {
   private running = false;
 
   constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {}
@@ -64,7 +64,7 @@ export class FakeOutlineConnection implements cordova.plugins.outline.Connection
     return Promise.resolve(!this.playUnreachable());
   }
 
-  onStatusChange(listener: (status: ConnectionStatus) => void): void {
+  onStatusChange(listener: (status: TunnelStatus) => void): void {
     // NOOP
   }
 }

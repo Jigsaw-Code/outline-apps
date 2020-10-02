@@ -34,7 +34,7 @@ interface RoutingServiceResponse {
   action: RoutingServiceAction;  // Matches RoutingServiceRequest.action
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
-  connectionStatus: ConnectionStatus;
+  connectionStatus: TunnelStatus;
 }
 
 enum RoutingServiceAction {
@@ -72,7 +72,7 @@ export class RoutingDaemon {
     this.fulfillDisconnect = F;
   });
 
-  private networkChangeListener?: (status: ConnectionStatus) => void;
+  private networkChangeListener?: (status: TunnelStatus) => void;
 
   constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
 
@@ -188,7 +188,7 @@ export class RoutingDaemon {
     return this.disconnected;
   }
 
-  public set onNetworkChange(newListener: ((status: ConnectionStatus) => void)|undefined) {
+  public set onNetworkChange(newListener: ((status: TunnelStatus) => void)|undefined) {
     this.networkChangeListener = newListener;
   }
 }
