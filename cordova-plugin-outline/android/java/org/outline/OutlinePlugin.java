@@ -22,8 +22,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.VpnService;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Message;
+import android.os.Messenger;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +46,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
 import org.outline.shadowsocks.ShadowsocksConnectivity;
+import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 
 public class OutlinePlugin extends CordovaPlugin {
@@ -114,14 +120,16 @@ public class OutlinePlugin extends CordovaPlugin {
     }
   }
 
-  // Extra parameters for Intent broadcasting.
-  public enum IntentExtra {
-    TUNNEL_ID("tunnelIdExtra"),
-    PAYLOAD("payloadExtra"),
-    ERROR_CODE("errorCodeExtra");
+  // IPC message parameters.
+  public enum MessageData {
+    TUNNEL_ID("id"),
+    TUNNEL_CONFIG("config"),
+    ACTION("action"),
+    PAYLOAD("payload"),
+    ERROR_CODE("errorCode");
 
     public final String value;
-    IntentExtra(final String value) {
+    MessageData(final String value) {
       this.value = value;
     }
   }
@@ -129,27 +137,68 @@ public class OutlinePlugin extends CordovaPlugin {
   private static final int REQUEST_CODE_PREPARE_VPN = 100;
   private static final int RESULT_OK = -1; // Standard activity result: operation succeeded.
   private static final HashSet<String> TUNNEL_INSTANCE_ACTIONS =
-      new HashSet<String>(Arrays.asList(Action.START.value, Action.STOP.value,
-          Action.IS_RUNNING.value, Action.ON_STATUS_CHANGE.value, Action.IS_REACHABLE.value));
+      new HashSet<>(Arrays.asList(Action.START.value, Action.STOP.value, Action.IS_RUNNING.value,
+          Action.ON_STATUS_CHANGE.value, Action.IS_REACHABLE.value));
 
-  private VpnTunnelService vpnTunnelService = null;
+  final private Messenger vpnClientMessenger =
+      new Messenger(new VpnServiceMessageHandler(OutlinePlugin.this));
+  private Messenger vpnServiceMessenger;
   private String startRequestTunnelId = null;
   private JSONObject startRequestConfig = null;
   private Map<Pair<String, String>, CallbackContext> listeners = new ConcurrentHashMap();
 
-  // Class to bind to VpnTunnelService.
-  private ServiceConnection serviceConnection =
+  // Connection to the VPN service.
+  private ServiceConnection vpnServiceConnection =
       new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder binder) {
-          vpnTunnelService = ((VpnTunnelService.LocalBinder) binder).getService();
+          vpnServiceMessenger = new Messenger(binder);
+          LOG.info("VPN service connected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
-          vpnTunnelService = null;
+          vpnServiceMessenger = null;
+          LOG.warning("VPN service disconnected");
+          // Automatically reconnect the VPN if the service process crashed.
+          Context context = getBaseContext();
+          Intent reconnect = new Intent(context, VpnTunnelService.class);
+          reconnect.putExtra(VpnServiceStarter.AUTOSTART_EXTRA, true);
+          context.bindService(reconnect, vpnServiceConnection, Context.BIND_AUTO_CREATE);
         }
       };
+
+  // Handler to process messages from the VPN service.
+  private static class VpnServiceMessageHandler extends Handler {
+    private OutlinePlugin plugin;
+
+    VpnServiceMessageHandler(OutlinePlugin plugin) {
+      this.plugin = plugin;
+    }
+
+    @Override
+    public void handleMessage(@NonNull Message msg) {
+      final Bundle data = msg.getData();
+      final String action = data.getString(MessageData.ACTION.value);
+      final String tunnelId = data.getString(MessageData.TUNNEL_ID.value);
+      int errorCode = data.getInt(MessageData.ERROR_CODE.value, ErrorCode.UNEXPECTED.value);
+      LOG.fine(
+          String.format(Locale.ROOT, "Service message: %s, %s, %d", action, tunnelId, errorCode));
+
+      PluginResult result;
+      if (errorCode == ErrorCode.NO_ERROR.value) {
+        if (Action.IS_RUNNING.is(action)) {
+          boolean isRunning = data.getBoolean(MessageData.PAYLOAD.value, false);
+          result = new PluginResult(PluginResult.Status.OK, isRunning);
+        } else {
+          result = new PluginResult(PluginResult.Status.OK);
+        }
+      } else {
+        result = new PluginResult(PluginResult.Status.ERROR, errorCode);
+      }
+      plugin.sendPluginResult(tunnelId, action, result, false);
+    }
+  }
 
   @Override
   protected void pluginInitialize() {
@@ -157,21 +206,19 @@ public class OutlinePlugin extends CordovaPlugin {
 
     Context context = getBaseContext();
     IntentFilter broadcastFilter = new IntentFilter();
-    broadcastFilter.addAction(Action.START.value);
-    broadcastFilter.addAction(Action.STOP.value);
     broadcastFilter.addAction(Action.ON_STATUS_CHANGE.value);
-    LocalBroadcastManager.getInstance(context)
-        .registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter);
+    broadcastFilter.addCategory(context.getPackageName());
+    context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter);
 
-    context.bindService(
-        new Intent(context, VpnTunnelService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+    context.bindService(new Intent(context, VpnTunnelService.class), vpnServiceConnection,
+        Context.BIND_AUTO_CREATE);
   }
 
   @Override
   public void onDestroy() {
     Context context = getBaseContext();
-    LocalBroadcastManager.getInstance(context).unregisterReceiver(vpnTunnelBroadcastReceiver);
-    context.unbindService(serviceConnection);
+    context.unregisterReceiver(vpnTunnelBroadcastReceiver);
+    context.unbindService(vpnServiceConnection);
   }
 
   @Override
@@ -203,59 +250,49 @@ public class OutlinePlugin extends CordovaPlugin {
   // Executes an action asynchronously through the Cordova thread pool.
   protected void executeAsync(final String tunnelId, final String action, final JSONArray args,
       final CallbackContext callback) {
-    cordova
-        .getThreadPool()
-        .execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  // Tunnel instance actions
-                  if (Action.START.is(action)) {
-                    // Set instance variables in case we need to start the VPN service from
-                    // onActivityResult
-                    startRequestTunnelId = tunnelId;
-                    startRequestConfig = args.getJSONObject(1);
-                    prepareAndStartVpn();
-                  } else if (Action.STOP.is(action)) {
-                    stopVpnTunnel(tunnelId);
-                  } else if (Action.IS_REACHABLE.is(action)) {
-                    boolean isReachable =
-                        ShadowsocksConnectivity.isServerReachable(
-                            args.getString(1), args.getInt(2));
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, isReachable);
-                    sendPluginResult(tunnelId, action, result, false);
-                  } else if (Action.IS_RUNNING.is(action)) {
-                    PluginResult result =
-                        new PluginResult(PluginResult.Status.OK, isTunnelActive(tunnelId));
-                    sendPluginResult(tunnelId, action, result, false);
+    cordova.getThreadPool().execute(() -> {
+      try {
+        // Tunnel instance actions
+        if (Action.START.is(action)) {
+          // Set instance variables in case we need to start the VPN service from
+          // onActivityResult
+          startRequestTunnelId = tunnelId;
+          startRequestConfig = args.getJSONObject(1);
+          prepareAndStartVpn();
+        } else if (Action.STOP.is(action)) {
+          stopVpnTunnel(tunnelId);
+        } else if (Action.IS_RUNNING.is(action)) {
+          isTunnelActive(tunnelId);
+        } else if (Action.IS_REACHABLE.is(action)) {
+          boolean isReachable =
+              ShadowsocksConnectivity.isServerReachable(args.getString(1), args.getInt(2));
+          PluginResult result = new PluginResult(PluginResult.Status.OK, isReachable);
+          sendPluginResult(tunnelId, action, result, false);
 
-                    // Static actions
-                  } else if (Action.INIT_ERROR_REPORTING.is(action)) {
-                    final String apiKey = args.getString(0);
-                    OutlineLogger.initializeErrorReporting(getBaseContext(), apiKey);
-                    callback.success();
-                  } else if (Action.REPORT_EVENTS.is(action)) {
-                    final String uuid = args.getString(0);
-                    OutlineLogger.sendLogs(uuid);
-                    callback.success();
-                  } else {
-                    LOG.severe(
-                        String.format(Locale.ROOT, "Unexpected asynchronous action %s", action));
-                    callback.error(ErrorCode.UNEXPECTED.value);
-                  }
-                } catch (Exception e) {
-                  LOG.log(Level.SEVERE, "Unexpected error while executing action.", e);
-                  if (isTunnelInstanceAction(action)) {
-                    PluginResult pluginResult =
-                        new PluginResult(PluginResult.Status.ERROR, ErrorCode.UNEXPECTED.value);
-                    sendPluginResult(tunnelId, action, pluginResult, false);
-                  } else {
-                    callback.error(ErrorCode.UNEXPECTED.value);
-                  }
-                }
-              }
-            });
+          // Static actions
+        } else if (Action.INIT_ERROR_REPORTING.is(action)) {
+          final String apiKey = args.getString(0);
+          OutlineLogger.initializeErrorReporting(getBaseContext(), apiKey);
+          callback.success();
+        } else if (Action.REPORT_EVENTS.is(action)) {
+          final String uuid = args.getString(0);
+          OutlineLogger.sendLogs(uuid);
+          callback.success();
+        } else {
+          LOG.severe(String.format(Locale.ROOT, "Unexpected asynchronous action %s", action));
+          callback.error(ErrorCode.UNEXPECTED.value);
+        }
+      } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Unexpected error while executing action.", e);
+        if (isTunnelInstanceAction(action)) {
+          PluginResult pluginResult =
+              new PluginResult(PluginResult.Status.ERROR, ErrorCode.UNEXPECTED.value);
+          sendPluginResult(tunnelId, action, pluginResult, false);
+        } else {
+          callback.error(ErrorCode.UNEXPECTED.value);
+        }
+      }
+    });
   }
 
   private void prepareAndStartVpn() {
@@ -300,29 +337,44 @@ public class OutlinePlugin extends CordovaPlugin {
 
   private void startVpnTunnel() {
     LOG.info("Starting VPN Tunnel");
-    if (vpnTunnelService == null) {
-      onVpnTunnelServiceNotBound(Action.START, startRequestTunnelId);
-      return;
-    }
-    vpnTunnelService.startTunnel(startRequestTunnelId, startRequestConfig);
+    final Bundle data = new Bundle();
+    data.putString(MessageData.TUNNEL_CONFIG.value, startRequestConfig.toString());
+    sendVpnServiceMessage(Action.START, startRequestTunnelId, data);
   }
 
   private void stopVpnTunnel(final String tunnelId) {
     LOG.info("Stopping VPN tunnel.");
-    if (vpnTunnelService == null) {
-      onVpnTunnelServiceNotBound(Action.STOP, tunnelId);
-      return;
-    }
-    vpnTunnelService.stopTunnel(tunnelId);
+    sendVpnServiceMessage(Action.STOP, tunnelId, null);
   }
 
   // Returns whether the VPN service is running a particular tunnel instance.
-  private boolean isTunnelActive(final String tunnelId) {
-    if (vpnTunnelService == null) {
-      onVpnTunnelServiceNotBound(Action.IS_RUNNING, tunnelId);
-      return false;
+  private void isTunnelActive(final String tunnelId) {
+    sendVpnServiceMessage(Action.IS_RUNNING, tunnelId, null);
+  }
+
+  // Sends a message to the VPN service through its messenger
+  void sendVpnServiceMessage(final Action action, final String tunnelId, @Nullable Bundle args) {
+    if (vpnServiceMessenger == null) {
+      onVpnTunnelServiceNotBound(action, tunnelId);
+      return;
     }
-    return vpnTunnelService.isTunnelActive(tunnelId);
+    Bundle data = args == null ? new Bundle() : new Bundle(args);
+    data.putString(MessageData.ACTION.value, action.value);
+    data.putString(MessageData.TUNNEL_ID.value, tunnelId);
+
+    Message msg = Message.obtain();
+    msg.setData(data);
+    msg.replyTo = vpnClientMessenger;
+    try {
+      vpnServiceMessenger.send(msg);
+    } catch (Exception e) {
+      LOG.log(Level.SEVERE,
+          String.format(Locale.ROOT,
+              "Failed to send message to VPN service for action %s and tunnel ID %s", action,
+              tunnelId),
+          e);
+      onVpnTunnelServiceNotBound(action, tunnelId);
+    }
   }
 
   // Helpers
@@ -355,7 +407,7 @@ public class OutlinePlugin extends CordovaPlugin {
   private VpnTunnelBroadcastReceiver vpnTunnelBroadcastReceiver =
       new VpnTunnelBroadcastReceiver(OutlinePlugin.this);
 
-  private class VpnTunnelBroadcastReceiver extends BroadcastReceiver {
+  private static class VpnTunnelBroadcastReceiver extends BroadcastReceiver {
     private OutlinePlugin outlinePlugin;
 
     public VpnTunnelBroadcastReceiver(OutlinePlugin outlinePlugin) {
@@ -364,30 +416,21 @@ public class OutlinePlugin extends CordovaPlugin {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-      final String action = intent.getAction();
-      String tunnelId = intent.getStringExtra(IntentExtra.TUNNEL_ID.value);
-      int errorCode = intent.getIntExtra(IntentExtra.ERROR_CODE.value, ErrorCode.UNEXPECTED.value);
-      LOG.fine(
-          String.format(Locale.ROOT, "Service broadcast: %s, %s, %d", action, tunnelId, errorCode));
+      String tunnelId = intent.getStringExtra(MessageData.TUNNEL_ID.value);
+      int errorCode = intent.getIntExtra(MessageData.ERROR_CODE.value, ErrorCode.UNEXPECTED.value);
+      LOG.fine(String.format(
+          Locale.ROOT, "Service connectivity broadcast: %s, %d", tunnelId, errorCode));
 
-      PluginResult result;
-      boolean keepCallback = false;
+      PluginResult result = new PluginResult(PluginResult.Status.ERROR, errorCode);
       if (errorCode == ErrorCode.NO_ERROR.value) {
-        if (Action.ON_STATUS_CHANGE.is(action)) {
-          int status = intent.getIntExtra(IntentExtra.PAYLOAD.value, TunnelStatus.INVALID.value);
-          if (status == TunnelStatus.INVALID.value) {
-            LOG.warning("Failed to retrieve tunnel status.");
-            return;
-          }
-          result = new PluginResult(PluginResult.Status.OK, status);
-          keepCallback = true;
-        } else {
-          result = new PluginResult(PluginResult.Status.OK);
+        int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
+        if (status == TunnelStatus.INVALID.value) {
+          LOG.warning("Failed to retrieve tunnel status.");
+          return;
         }
-      } else {
-        result = new PluginResult(PluginResult.Status.ERROR, errorCode);
+        result = new PluginResult(PluginResult.Status.OK, status);
       }
-      outlinePlugin.sendPluginResult(tunnelId, action, result, keepCallback);
+      outlinePlugin.sendPluginResult(tunnelId, Action.ON_STATUS_CHANGE.value, result, true);
     }
   };
 
