@@ -36,8 +36,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.NonNull;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -61,6 +59,8 @@ public class VpnTunnelService extends VpnService {
   private static final int NOTIFICATION_SERVICE_ID = 1;
   private static final int NOTIFICATION_COLOR = 0x00BFA5;
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
+  private static final String TUNNEL_ID_KEY = "id";
+  private static final String TUNNEL_CONFIG_KEY = "config";
 
   private final Messenger messenger = new Messenger(new MessageHandler(VpnTunnelService.this));
   private ThreadPoolExecutor executorService;
@@ -501,12 +501,11 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
-      final JSONObject config = tunnel.getJSONObject(OutlinePlugin.MessageData.TUNNEL_CONFIG.value);
+      final JSONObject config = tunnel.getJSONObject(TUNNEL_ID_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
       startForegroundWithNotification(config, OutlinePlugin.TunnelStatus.RECONNECTING);
-      startTunnel(tunnel.getString(OutlinePlugin.MessageData.TUNNEL_ID.value),
-          tunnel.getJSONObject(OutlinePlugin.MessageData.TUNNEL_CONFIG.value), true);
+      startTunnel(tunnel.getString(TUNNEL_ID_KEY), tunnel.getJSONObject(TUNNEL_CONFIG_KEY), true);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON tunnel data", e);
     }
@@ -517,8 +516,7 @@ public class VpnTunnelService extends VpnService {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
-      tunnel.put(OutlinePlugin.MessageData.TUNNEL_ID.value, tunnelId)
-          .put(OutlinePlugin.MessageData.TUNNEL_CONFIG.value, config);
+      tunnel.put(TUNNEL_ID_KEY, tunnelId).put(TUNNEL_CONFIG_KEY, config);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);

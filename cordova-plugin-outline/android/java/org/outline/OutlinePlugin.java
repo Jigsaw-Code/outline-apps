@@ -122,8 +122,8 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // IPC message parameters.
   public enum MessageData {
-    TUNNEL_ID("id"),
-    TUNNEL_CONFIG("config"),
+    TUNNEL_ID("tunnelId"),
+    TUNNEL_CONFIG("tunnelConfig"),
     ACTION("action"),
     PAYLOAD("payload"),
     ERROR_CODE("errorCode");
@@ -416,20 +416,11 @@ public class OutlinePlugin extends CordovaPlugin {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-      String tunnelId = intent.getStringExtra(MessageData.TUNNEL_ID.value);
-      int errorCode = intent.getIntExtra(MessageData.ERROR_CODE.value, ErrorCode.UNEXPECTED.value);
-      LOG.fine(String.format(
-          Locale.ROOT, "Service connectivity broadcast: %s, %d", tunnelId, errorCode));
+      final String tunnelId = intent.getStringExtra(MessageData.TUNNEL_ID.value);
+      int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
+      LOG.fine(String.format(Locale.ROOT, "VPN connectivity changed: %s, %d", tunnelId, status));
 
-      PluginResult result = new PluginResult(PluginResult.Status.ERROR, errorCode);
-      if (errorCode == ErrorCode.NO_ERROR.value) {
-        int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
-        if (status == TunnelStatus.INVALID.value) {
-          LOG.warning("Failed to retrieve tunnel status.");
-          return;
-        }
-        result = new PluginResult(PluginResult.Status.OK, status);
-      }
+      PluginResult result = new PluginResult(PluginResult.Status.OK, status);
       outlinePlugin.sendPluginResult(tunnelId, Action.ON_STATUS_CHANGE.value, result, true);
     }
   };
