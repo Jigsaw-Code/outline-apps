@@ -45,6 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
+import org.outline.log.SentryErrorReporter;
 import org.outline.shadowsocks.ShadowsocksConnectivity;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
@@ -63,7 +64,7 @@ public class OutlinePlugin extends CordovaPlugin {
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
 
-    private final static Map<String, Action> actions = new HashMap<String, Action>();
+    private final static Map<String, Action> actions = new HashMap<>();
     static {
       for (Action action : Action.values()) {
         actions.put(action.value, action);
@@ -145,7 +146,7 @@ public class OutlinePlugin extends CordovaPlugin {
   private Messenger vpnServiceMessenger;
   private String startRequestTunnelId = null;
   private JSONObject startRequestConfig = null;
-  private Map<Pair<String, String>, CallbackContext> listeners = new ConcurrentHashMap();
+  private Map<Pair<String, String>, CallbackContext> listeners = new ConcurrentHashMap<>();
 
   // Connection to the VPN service.
   private ServiceConnection vpnServiceConnection =
@@ -202,8 +203,7 @@ public class OutlinePlugin extends CordovaPlugin {
 
   @Override
   protected void pluginInitialize() {
-    OutlineLogger.initializeLogging();
-
+    OutlineLogger.registerLogHandler(SentryErrorReporter.BREADCRUMB_LOG_HANDLER);
     Context context = getBaseContext();
     IntentFilter broadcastFilter = new IntentFilter();
     broadcastFilter.addAction(Action.ON_STATUS_CHANGE.value);
@@ -272,11 +272,11 @@ public class OutlinePlugin extends CordovaPlugin {
           // Static actions
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           final String apiKey = args.getString(0);
-          OutlineLogger.initializeErrorReporting(getBaseContext(), apiKey);
+          SentryErrorReporter.init(getBaseContext(), apiKey);
           callback.success();
         } else if (Action.REPORT_EVENTS.is(action)) {
           final String uuid = args.getString(0);
-          OutlineLogger.sendLogs(uuid);
+          SentryErrorReporter.send(uuid);
           callback.success();
         } else {
           LOG.severe(String.format(Locale.ROOT, "Unexpected asynchronous action %s", action));
