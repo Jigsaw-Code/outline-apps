@@ -35,7 +35,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.NonNull;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -46,6 +45,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.OutlinePlugin;
+import org.outline.log.SentryErrorReporter;
 import org.outline.shadowsocks.Shadowsocks;
 import org.outline.shadowsocks.ShadowsocksConnectivity;
 
@@ -95,6 +95,10 @@ public class VpnTunnelService extends VpnService {
       } else if (OutlinePlugin.Action.IS_RUNNING.is(action)) {
         responseData.putBoolean(
             OutlinePlugin.MessageData.PAYLOAD.value, vpnTunnelService.isTunnelActive(tunnelId));
+      } else if (OutlinePlugin.Action.INIT_ERROR_REPORTING.is(action)) {
+        final String apiKey =
+            data.getString(OutlinePlugin.MessageData.ERROR_REPORTING_API_KEY.value);
+        vpnTunnelService.initErrorReporting(apiKey);
       } else {
         LOG.warning("Unrecognized message action.");
         return;
@@ -135,6 +139,11 @@ public class VpnTunnelService extends VpnService {
     }
     if (intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false)) {
       startLastSuccessfulTunnel();
+    }
+    String errorReportingApiKey =
+        intent.getStringExtra(OutlinePlugin.MessageData.ERROR_REPORTING_API_KEY.value);
+    if (errorReportingApiKey != null) {
+      initErrorReporting(errorReportingApiKey);
     }
     return messenger.getBinder();
   }
@@ -501,7 +510,7 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
-      final JSONObject config = tunnel.getJSONObject(TUNNEL_ID_KEY);
+      final JSONObject config = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
       startForegroundWithNotification(config, OutlinePlugin.TunnelStatus.RECONNECTING);
@@ -523,6 +532,16 @@ public class VpnTunnelService extends VpnService {
     }
     tunnelStore.setTunnelStatus(OutlinePlugin.TunnelStatus.CONNECTED);
     tunnelStore.setIsUdpSupported(isUdpSupported);
+  }
+
+  // Error reporting
+
+  private void initErrorReporting(final String apiKey) {
+    try {
+      SentryErrorReporter.init(getApplicationContext(), apiKey);
+    } catch (Exception e) {
+      LOG.log(Level.SEVERE, "Failed to initialize Sentry", e);
+    }
   }
 
   // Foreground service & notifications

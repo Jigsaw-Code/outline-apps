@@ -127,6 +127,7 @@ public class OutlinePlugin extends CordovaPlugin {
     TUNNEL_CONFIG("tunnelConfig"),
     ACTION("action"),
     PAYLOAD("payload"),
+    ERROR_REPORTING_API_KEY("errorReportingApiKey"),
     ERROR_CODE("errorCode");
 
     public final String value;
@@ -144,6 +145,7 @@ public class OutlinePlugin extends CordovaPlugin {
   final private Messenger vpnClientMessenger =
       new Messenger(new VpnServiceMessageHandler(OutlinePlugin.this));
   private Messenger vpnServiceMessenger;
+  private String errorReportingApiKey;
   private String startRequestTunnelId = null;
   private JSONObject startRequestConfig = null;
   private Map<Pair<String, String>, CallbackContext> listeners = new ConcurrentHashMap<>();
@@ -165,6 +167,8 @@ public class OutlinePlugin extends CordovaPlugin {
           Context context = getBaseContext();
           Intent reconnect = new Intent(context, VpnTunnelService.class);
           reconnect.putExtra(VpnServiceStarter.AUTOSTART_EXTRA, true);
+          // Send the error reporting API key so the crash is reported.
+          reconnect.putExtra(MessageData.ERROR_REPORTING_API_KEY.value, errorReportingApiKey);
           context.bindService(reconnect, vpnServiceConnection, Context.BIND_AUTO_CREATE);
         }
       };
@@ -271,8 +275,9 @@ public class OutlinePlugin extends CordovaPlugin {
 
           // Static actions
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
-          final String apiKey = args.getString(0);
-          SentryErrorReporter.init(getBaseContext(), apiKey);
+          errorReportingApiKey = args.getString(0);
+          SentryErrorReporter.init(getBaseContext(), errorReportingApiKey);
+          initVpnErrorReporting(errorReportingApiKey);
           callback.success();
         } else if (Action.REPORT_EVENTS.is(action)) {
           final String uuid = args.getString(0);
@@ -352,15 +357,25 @@ public class OutlinePlugin extends CordovaPlugin {
     sendVpnServiceMessage(Action.IS_RUNNING, tunnelId, null);
   }
 
-  // Sends a message to the VPN service through its messenger
-  void sendVpnServiceMessage(final Action action, final String tunnelId, @Nullable Bundle args) {
+  // Initializes the error reporting framework on the VPN process.
+  private void initVpnErrorReporting(final String apiKey) {
+    Bundle data = new Bundle();
+    data.putString(MessageData.ERROR_REPORTING_API_KEY.value, apiKey);
+    sendVpnServiceMessage(Action.INIT_ERROR_REPORTING, null, data);
+  }
+
+  // Sends a message to the VPN service through its messenger. The VPN service must be bound.
+  void sendVpnServiceMessage(
+      final Action action, @Nullable final String tunnelId, @Nullable Bundle args) {
     if (vpnServiceMessenger == null) {
       onVpnTunnelServiceNotBound(action, tunnelId);
       return;
     }
     Bundle data = args == null ? new Bundle() : new Bundle(args);
     data.putString(MessageData.ACTION.value, action.value);
-    data.putString(MessageData.TUNNEL_ID.value, tunnelId);
+    if (tunnelId != null) {
+      data.putString(MessageData.TUNNEL_ID.value, tunnelId);
+    }
 
     Message msg = Message.obtain();
     msg.setData(data);
