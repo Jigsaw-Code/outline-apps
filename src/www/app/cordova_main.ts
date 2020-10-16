@@ -22,7 +22,7 @@ import {EventQueue} from '../model/events';
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeOutlineConnection} from './fake_connection';
+import {FakeOutlineTunnel} from './fake_connection';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
@@ -72,8 +72,8 @@ class CordovaPlatform implements OutlinePlatform {
             eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
-          this.hasDeviceSupport() ? new cordova.plugins.outline.Connection(config, serverId) :
-                                    new FakeOutlineConnection(config, serverId),
+          this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(config, serverId) :
+                                    new FakeOutlineTunnel(config, serverId),
           eventQueue);
     };
   }

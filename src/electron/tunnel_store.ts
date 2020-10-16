@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path="../types/ambient/outlinePlugin.d.ts" />
-
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Format to store a connection.
-export interface SerializableConnection {
+// Format to store a tunnel configuration.
+export interface SerializableTunnel {
   id: string;
   config: cordova.plugins.outline.ServerConfig;
   isUdpSupported?: boolean;
 }
 
-// Persistence layer for a single SerializableConnection.
-export class ConnectionStore {
+// Persistence layer for a single SerializableTunnel.
+export class TunnelStore {
   private storagePath: string;
 
   // Creates the store at `storagePath`.
@@ -33,16 +31,17 @@ export class ConnectionStore {
     if (!fs.existsSync(storagePath)) {
       fs.mkdirSync(storagePath);
     }
+    // TODO(alalama): rename key to 'tunnel_store' when performing a data migration.
     this.storagePath = path.join(storagePath, 'connection_store');
   }
 
-  // Persists the connection to the store. Rejects the promise on failure.
-  save(connection: SerializableConnection): Promise<void> {
-    if (!this.isConnectionValid(connection)) {
-      return Promise.reject(new Error('Cannot save invalid connection'));
+  // Persists the tunnel to the store. Rejects the promise on failure.
+  save(tunnel: SerializableTunnel): Promise<void> {
+    if (!this.isTunnelValid(tunnel)) {
+      return Promise.reject(new Error('Cannot save invalid tunnel'));
     }
     return new Promise((resolve, reject) => {
-      fs.writeFile(this.storagePath, JSON.stringify(connection), 'utf8', (error) => {
+      fs.writeFile(this.storagePath, JSON.stringify(tunnel), 'utf8', (error) => {
         if (error) {
           reject(error);
         } else {
@@ -52,25 +51,25 @@ export class ConnectionStore {
     });
   }
 
-  // Retrieves a connection from storage. Rejects the promise if there is none.
-  load(): Promise<SerializableConnection> {
+  // Retrieves a tunnel from storage. Rejects the promise if there is none.
+  load(): Promise<SerializableTunnel> {
     return new Promise((resolve, reject) => {
       fs.readFile(this.storagePath, 'utf8', (error, data) => {
         if (!data) {
           reject(error);
           return;
         }
-        const connection = JSON.parse(data);
-        if (this.isConnectionValid(connection)) {
-          resolve(connection);
+        const tunnel = JSON.parse(data);
+        if (this.isTunnelValid(tunnel)) {
+          resolve(tunnel);
         } else {
-          reject(new Error('Cannot load invalid connection'));
+          reject(new Error('Cannot load invalid tunnel'));
         }
       });
     });
   }
 
-  // Deletes the stored connection. Rejects the promise on failure.
+  // Deletes the stored tunnel. Rejects the promise on failure.
   clear(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(this.storagePath)) {
@@ -86,10 +85,10 @@ export class ConnectionStore {
     });
   }
 
-  // Returns whether `connection` and its configuration contain all the required fields.
-  private isConnectionValid(connection: SerializableConnection) {
-    const config = connection.config;
-    if (!config || !connection.id) {
+  // Returns whether `tunnel` and its configuration contain all the required fields.
+  private isTunnelValid(tunnel: SerializableTunnel) {
+    const config = tunnel.config;
+    if (!config || !tunnel.id) {
       return false;
     }
     return config.method && config.password && config.host && config.port && config.name;

@@ -14,10 +14,10 @@
 
 import Foundation
 
-// Serializable class to wrap a connection's configuration.
+// Serializable class to wrap a tunnel's configuration.
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
 @objcMembers
-class OutlineConnection: NSObject, Codable {
+class OutlineTunnel: NSObject, Codable {
   var id: String?
   var host: String?
   var port: String?
@@ -29,7 +29,7 @@ class OutlineConnection: NSObject, Codable {
   }
 
   @objc
-  enum ConnectionStatus: Int {
+  enum TunnelStatus: Int {
     case connected = 0
     case disconnected = 1
     case reconnecting = 2
@@ -50,8 +50,8 @@ class OutlineConnection: NSObject, Codable {
     return try? JSONEncoder().encode(self)
   }
 
-  static func decode(_ jsonData: Data) -> OutlineConnection? {
-    return try? JSONDecoder().decode(OutlineConnection.self, from: jsonData)
+  static func decode(_ jsonData: Data) -> OutlineTunnel? {
+    return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
   }
 
 }

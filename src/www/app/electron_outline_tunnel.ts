@@ -17,8 +17,8 @@ import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
 
-export class ElectronOutlineConnection implements cordova.plugins.outline.Connection {
-  private statusChangeListener: ((status: ConnectionStatus) => void)|null = null;
+export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
+  private statusChangeListener: ((status: TunnelStatus) => void)|null = null;
 
   private running = false;
 
@@ -27,11 +27,11 @@ export class ElectronOutlineConnection implements cordova.plugins.outline.Connec
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
-      this.handleStatusChange(ConnectionStatus.CONNECTED);
+      this.handleStatusChange(TunnelStatus.CONNECTED);
     });
 
     ipcRenderer.on(`proxy-reconnecting-${this.id}`, (e: Event) => {
-      this.handleStatusChange(ConnectionStatus.RECONNECTING);
+      this.handleStatusChange(TunnelStatus.RECONNECTING);
     });
   }
 
@@ -41,7 +41,7 @@ export class ElectronOutlineConnection implements cordova.plugins.outline.Connec
     }
 
     ipcRenderer.once(`proxy-disconnected-${this.id}`, (e: Event) => {
-      this.handleStatusChange(ConnectionStatus.DISCONNECTED);
+      this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
     return promiseIpc.send('start-proxying', {config: this.config, id: this.id})
@@ -75,12 +75,12 @@ export class ElectronOutlineConnection implements cordova.plugins.outline.Connec
     return promiseIpc.send('is-reachable', this.config);
   }
 
-  onStatusChange(listener: (status: ConnectionStatus) => void): void {
+  onStatusChange(listener: (status: TunnelStatus) => void): void {
     this.statusChangeListener = listener;
   }
 
-  private handleStatusChange(status: ConnectionStatus) {
-    this.running = status === ConnectionStatus.CONNECTED;
+  private handleStatusChange(status: TunnelStatus) {
+    this.running = status === TunnelStatus.CONNECTED;
     if (this.statusChangeListener) {
       this.statusChangeListener(status);
     } else {

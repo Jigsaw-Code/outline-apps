@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ async function isSsLocalReachable() {
 // situations:
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
-export class ConnectionManager {
+export class TunnelManager {
   private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(PROXY_PORT);
   private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
@@ -171,8 +171,8 @@ export class ConnectionManager {
     await this.routing.start();
   }
 
-  private networkChanged(status: ConnectionStatus) {
-    if (status === ConnectionStatus.CONNECTED) {
+  private networkChanged(status: TunnelStatus) {
+    if (status === TunnelStatus.CONNECTED) {
       if (this.reconnectedListener) {
         this.reconnectedListener();
       }
@@ -180,7 +180,7 @@ export class ConnectionManager {
       // Test whether UDP availability has changed; since it won't change 99% of the time, do this
       // *after* we've informed the client we've reconnected.
       this.retestUdp();
-    } else if (status === ConnectionStatus.RECONNECTING) {
+    } else if (status === TunnelStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
       }
@@ -199,7 +199,7 @@ export class ConnectionManager {
   private resumeListener() {
     if (this.terminated) {
       // NOTE: Cannot remove resume listeners - Electron bug?
-      console.error('resume event invoked but this connection is terminated - doing nothing');
+      console.error('resume event invoked but this tunnel is terminated - doing nothing');
       return;
     }
 
@@ -237,7 +237,7 @@ export class ConnectionManager {
     this.tun2socks.stop();
   }
 
-  // Use #onceStopped to be notified when the connection terminates.
+  // Use #onceStopped to be notified when the tunnel terminates.
   stop() {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
