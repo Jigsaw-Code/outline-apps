@@ -115,49 +115,39 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-
-extern nstring proxy_error_Error(int32_t p0);
+extern nstring proxy_error_Error(int32_t refnum);
 
 /* Return type for proxyshadowsocks__CheckConnectivity */
 struct proxyshadowsocks__CheckConnectivity_return {
 	nint r0;
 	int32_t r1;
 };
-
-extern struct proxyshadowsocks__CheckConnectivity_return proxyshadowsocks__CheckConnectivity(nstring p0, nint p1, nstring p2, nstring p3);
-
-extern int32_t proxyshadowsocks__CheckServerReachable(nstring p0, nint p1);
-
-extern void proxytun2socks_OutlineTunnel_Disconnect(int32_t p0);
-
-extern char proxytun2socks_OutlineTunnel_IsConnected(int32_t p0);
-
-extern char proxytun2socks_OutlineTunnel_UpdateUDPSupport(int32_t p0);
+extern struct proxyshadowsocks__CheckConnectivity_return proxyshadowsocks__CheckConnectivity(nstring param_host, nint param_port, nstring param_password, nstring param_cipher);
+extern int32_t proxyshadowsocks__CheckServerReachable(nstring param_host, nint param_port);
+extern void proxytun2socks_OutlineTunnel_Disconnect(int32_t refnum);
+extern char proxytun2socks_OutlineTunnel_IsConnected(int32_t refnum);
+extern char proxytun2socks_OutlineTunnel_UpdateUDPSupport(int32_t refnum);
 
 /* Return type for proxytun2socks_OutlineTunnel_Write */
 struct proxytun2socks_OutlineTunnel_Write_return {
 	nint r0;
 	int32_t r1;
 };
-
-extern struct proxytun2socks_OutlineTunnel_Write_return proxytun2socks_OutlineTunnel_Write(int32_t p0, nbyteslice p1);
+extern struct proxytun2socks_OutlineTunnel_Write_return proxytun2socks_OutlineTunnel_Write(int32_t refnum, nbyteslice param_data);
 
 /* Return type for proxytun2socks__ConnectShadowsocksTunnel */
 struct proxytun2socks__ConnectShadowsocksTunnel_return {
 	int32_t r0;
 	int32_t r1;
 };
-
-extern struct proxytun2socks__ConnectShadowsocksTunnel_return proxytun2socks__ConnectShadowsocksTunnel(nint p0, nstring p1, nint p2, nstring p3, nstring p4, char p5);
+extern struct proxytun2socks__ConnectShadowsocksTunnel_return proxytun2socks__ConnectShadowsocksTunnel(nint param_fd, nstring param_host, nint param_port, nstring param_password, nstring param_cipher, char param_isUDPEnabled);
 
 // IncGoRef is called by foreign code to pin a Go object while its refnum is crossing
 // the language barrier
-
-extern void IncGoRef(int32_t p0);
+extern void IncGoRef(int32_t refnum);
 
 // DestroyRef is called by Java to inform Go it is done with a reference.
-
-extern void DestroyRef(int32_t p0);
+extern void DestroyRef(int32_t refnum);
 
 #ifdef __cplusplus
 }
