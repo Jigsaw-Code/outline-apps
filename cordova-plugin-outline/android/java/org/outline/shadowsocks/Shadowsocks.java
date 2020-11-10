@@ -45,12 +45,12 @@ public class Shadowsocks {
       this.ssProcess = new ProcessBuilder(
         this.ssPath,
         "-s", serverConfig.host,
-        "-p", String.format(Locale.ROOT, "%d", serverConfig.port),
+        "-p", String.valueOf(serverConfig.port),
         "-k", serverConfig.password,
         "-b", LOCAL_SERVER_ADDRESS,
         "-l", LOCAL_SERVER_PORT,
         "-m", serverConfig.method,
-        "-t", String.format(Locale.ROOT, "%d", SS_LOCAL_TIMEOUT_SECS),
+        "-t", String.valueOf(SS_LOCAL_TIMEOUT_SECS),
         "-u"
         ).start();
       // Wait for the process to start and report whether it is running.

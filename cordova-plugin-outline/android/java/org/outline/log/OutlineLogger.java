@@ -63,7 +63,7 @@ public class OutlineLogger {
     // Retrieve the logs by filtering known VPN process tags at INFO level.
     final String LOGCAT_CMD =
         "logcat -d -s VpnTunnel:I VpnTunnelService:I VpnTunnelStore:I tun2socks:I";
-    ArrayList<String> logs = new ArrayList<>();
+    List<String> logs = new ArrayList<>();
     try {
       Process process = Runtime.getRuntime().exec(LOGCAT_CMD);
       BufferedReader bufferedReader =

@@ -39,6 +39,7 @@ import java.util.logging.LogRecord;
  * Wrapper class for the Sentry error reporting framework.
  */
 public class SentryErrorReporter {
+  // Limit the number of breadcrumbs to comply with Outline's data collection policy.
   private static final int MAX_BREADCRUMBS = 100;
   private static final String CATEGORY_VPN_PROCESS = "vpn";
 

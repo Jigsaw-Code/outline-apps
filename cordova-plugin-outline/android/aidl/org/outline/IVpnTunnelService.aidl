@@ -26,7 +26,7 @@ interface IVpnTunnelService {
    * `VPN TUN` <-> `tun2socks` <-> `local Shadowsocks server` <-> `remote Shadowsocks server`.
    *
    * This method can be called multiple times with different configurations. The VPN will not be
-   * teared down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
+   * torn down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
    * extra with the result of the operation, as defined in OutlinePlugin.ErrorCode. Displays a
    * persistent notification for the duration of the tunnel.
    *
