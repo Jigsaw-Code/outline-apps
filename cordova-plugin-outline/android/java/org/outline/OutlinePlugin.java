@@ -213,17 +213,18 @@ public class OutlinePlugin extends CordovaPlugin {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
           if (!prepareVpnService()) {
-            sendPluginResult(callback, ErrorCode.VPN_PERMISSION_NOT_GRANTED.value);
+            sendErrorCode(callback, ErrorCode.VPN_PERMISSION_NOT_GRANTED.value);
             return;
           }
           final String tunnelId = args.getString(0);
           final JSONObject config = args.getJSONObject(1);
           int errorCode = startVpnTunnel(tunnelId, config);
-          sendPluginResult(callback, errorCode);
+          sendErrorCode(callback, errorCode);
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
-          int errorCode = stopVpnTunnel(tunnelId);
-          sendPluginResult(callback, errorCode);
+          LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
+          int errorCode = vpnTunnelService.stopTunnel(tunnelId);
+          sendErrorCode(callback, errorCode);
         } else if (Action.IS_RUNNING.is(action)) {
           final String tunnelId = args.getString(0);
           boolean isActive = isTunnelActive(tunnelId);
@@ -249,7 +250,8 @@ public class OutlinePlugin extends CordovaPlugin {
               String.format(Locale.ROOT, "Unexpected action %s", action));
         }
       } catch (Exception e) {
-        LOG.log(Level.SEVERE, "Unexpected error while executing action.", e);
+        LOG.log(Level.SEVERE,
+            String.format(Locale.ROOT, "Unexpected error while executing action: %s", action), e);
         callback.error(ErrorCode.UNEXPECTED.value);
       }
     });
@@ -265,9 +267,10 @@ public class OutlinePlugin extends CordovaPlugin {
       return true;
     }
     LOG.info("Prepare VPN with activity");
-    cordova.startActivityForResult(OutlinePlugin.this, prepareVpnIntent, REQUEST_CODE_PREPARE_VPN);
+    cordova.startActivityForResult(this, prepareVpnIntent, REQUEST_CODE_PREPARE_VPN);
     vpnPreparedSignal = new CountDownLatch(1);
     try {
+      // Timeout after 30 seconds in case the intent fails to deliver or the prompt is not shown.
       vpnPreparedSignal.await(30L, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       LOG.warning("Timed out waiting to prepare VPN");
@@ -288,8 +291,8 @@ public class OutlinePlugin extends CordovaPlugin {
     vpnPreparedSignal.countDown();
   }
 
-  private int startVpnTunnel(final String tunnelId, final JSONObject config) {
-    LOG.info("Starting VPN Tunnel");
+  private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
+    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
     final TunnelConfig tunnelConfig = new TunnelConfig();
     tunnelConfig.id = tunnelId;
     tunnelConfig.proxy = new ShadowsocksConfig();
@@ -303,22 +306,7 @@ public class OutlinePlugin extends CordovaPlugin {
       LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION.value;
     }
-    try {
-      return vpnTunnelService.startTunnel(tunnelConfig);
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "VPN service not bound", e);
-      return ErrorCode.UNEXPECTED.value;
-    }
-  }
-
-  private int stopVpnTunnel(final String tunnelId) {
-    LOG.info("Stopping VPN tunnel.");
-    try {
-      return vpnTunnelService.stopTunnel(tunnelId);
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "VPN service not bound", e);
-      return ErrorCode.UNEXPECTED.value;
-    }
+    return vpnTunnelService.startTunnel(tunnelConfig);
   }
 
   // Returns whether the VPN service is running a particular tunnel instance.
@@ -375,11 +363,11 @@ public class OutlinePlugin extends CordovaPlugin {
     return this.cordova.getActivity().getApplicationContext();
   }
 
-  private void sendPluginResult(final CallbackContext callback, int errorCode) {
+  private void sendErrorCode(final CallbackContext callback, int errorCode) {
     if (errorCode == ErrorCode.NO_ERROR.value) {
       callback.success();
     } else {
-      callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, errorCode));
+      callback.error(errorCode);
     }
   }
 }
