@@ -43,7 +43,7 @@ import org.json.JSONObject;
 import org.outline.OutlinePlugin;
 
 /**
- * Android background service responsible for managing VPN connections. Clients must bind to this
+ * Android background service responsible for managing a VPN tunnel. Clients must bind to this
  * service in order to access its APIs.
  */
 public class VpnTunnelService extends VpnService {
@@ -52,15 +52,15 @@ public class VpnTunnelService extends VpnService {
   private static final int NOTIFICATION_SERVICE_ID = 1;
   private static final int NOTIFICATION_COLOR = 0x00BFA5;
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
-  private static final String CONNECTION_ID_KEY = "id";
-  private static final String CONNECTION_CONFIG_KEY = "config";
+  private static final String TUNNEL_ID_KEY = "id";
+  private static final String TUNNEL_CONFIG_KEY = "config";
 
   private final IBinder binder = new LocalBinder();
   private ThreadPoolExecutor executorService;
   private VpnTunnel vpnTunnel;
-  private String activeConnectionId = null;
+  private String activeTunnelId = null;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
-  private VpnConnectionStore connectionStore;
+  private VpnTunnelStore tunnelStore;
   private Notification.Builder notificationBuilder;
 
   public class LocalBinder extends Binder {
@@ -75,7 +75,7 @@ public class VpnTunnelService extends VpnService {
     vpnTunnel = new VpnTunnel(this);
     executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     networkConnectivityMonitor = new NetworkConnectivityMonitor();
-    connectionStore = new VpnConnectionStore(VpnTunnelService.this);
+    tunnelStore = new VpnTunnelStore(VpnTunnelService.this);
   }
 
   @Override
@@ -97,7 +97,7 @@ public class VpnTunnelService extends VpnService {
           intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
       boolean startedByAlwaysOn = VpnService.SERVICE_INTERFACE.equals(intent.getAction());
       if (startedByVpnStarter || startedByAlwaysOn) {
-        startLastSuccessfulConnectionOrExit();
+        startLastSuccessfulTunnelOrExit();
       }
     }
     return superOnStartReturnValue;
@@ -106,21 +106,21 @@ public class VpnTunnelService extends VpnService {
   @Override
   public void onRevoke() {
     LOG.info("VPN revoked.");
-    broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
-    tearDownActiveConnection();
+    broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.DISCONNECTED);
+    tearDownActiveTunnel();
   }
 
   @Override
   public void onDestroy() {
     LOG.info("Destroying VPN service.");
-    tearDownActiveConnection();
+    tearDownActiveTunnel();
   }
 
   public VpnService.Builder newBuilder() {
     return new VpnService.Builder();
   }
 
-  // Connection API
+  // Tunnel API
 
   /**
    * Establishes a system-wide VPN connected to a remote Shadowsocks server. All device traffic is
@@ -129,26 +129,25 @@ public class VpnTunnelService extends VpnService {
    * <p>This method can be called multiple times with different configurations. The VPN will not be
    * teared down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
    * extra with the result of the operation, as defined in OutlinePlugin.ErrorCode. Displays a
-   * persistent notification for the duration of the connection.
+   * persistent notification for the duration of the tunnel.
    *
-   * @param connectionId unique identifier for the connection.
+   * @param tunnelId unique identifier for the tunnel.
    * @param config Shadowsocks configuration parameters.
-   * @throws IllegalArgumentException if |connectionId| or |config| are missing.
+   * @throws IllegalArgumentException if |tunnelId| or |config| are missing.
    */
-  public void startConnection(final String connectionId, final JSONObject config) {
-    startConnection(connectionId, config, false);
+  public void startTunnel(final String tunnelId, final JSONObject config) {
+    startTunnel(tunnelId, config, false);
   }
 
-  private void startConnection(
-      final String connectionId, final JSONObject config, boolean isAutoStart) {
-    LOG.info(String.format(Locale.ROOT, "Starting connection %s.", connectionId));
-    if (connectionId == null || config == null) {
-      throw new IllegalArgumentException("Must provide a connection ID and configuration.");
+  private void startTunnel(final String tunnelId, final JSONObject config, boolean isAutoStart) {
+    LOG.info(String.format(Locale.ROOT, "Starting tunnel %s.", tunnelId));
+    if (tunnelId == null || config == null) {
+      throw new IllegalArgumentException("Must provide a tunnel ID and configuration.");
     }
-    final boolean isRestart = activeConnectionId != null;
+    final boolean isRestart = activeTunnelId != null;
     if (isRestart) {
-      // Broadcast the previous instance disconnect event before reassigning the connection ID.
-      broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.DISCONNECTED);
+      // Broadcast the previous instance disconnect event before reassigning the tunnel ID.
+      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.DISCONNECTED);
       stopForeground();
       try {
         // Disconnect the tunnel; do not tear down the VPN to avoid leaking traffic.
@@ -157,7 +156,7 @@ public class VpnTunnelService extends VpnService {
         LOG.log(Level.SEVERE, "Failed to disconnect tunnel", e);
       }
     }
-    activeConnectionId = connectionId;
+    activeTunnelId = tunnelId;
 
     OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
     if (!isAutoStart) {
@@ -177,7 +176,7 @@ public class VpnTunnelService extends VpnService {
     }
 
     if (!isRestart) {
-      // Only establish the VPN if this is not a connection restart.
+      // Only establish the VPN if this is not a tunnel restart.
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         onVpnStartFailure(OutlinePlugin.ErrorCode.VPN_START_FAILURE);
@@ -186,9 +185,8 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    final boolean remoteUdpForwardingEnabled = isAutoStart
-        ? connectionStore.isUdpSupported()
-        : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
+    final boolean remoteUdpForwardingEnabled =
+        isAutoStart ? tunnelStore.isUdpSupported() : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
       vpnTunnel.connectTunnel(config.getString("host"), config.getInt("port"),
           config.getString("password"), config.getString("method"), remoteUdpForwardingEnabled);
@@ -200,55 +198,55 @@ public class VpnTunnelService extends VpnService {
 
     broadcastVpnStart(OutlinePlugin.ErrorCode.NO_ERROR);
     startForegroundWithNotification(config);
-    storeActiveConnection(connectionId, config, remoteUdpForwardingEnabled);
+    storeActiveTunnel(tunnelId, config, remoteUdpForwardingEnabled);
   }
 
   /**
-   * Tears down a connection started by calling |startConnection|. Stops tun2socks, shadowsocks, and
+   * Tears down a tunnel started by calling |startTunnel|. Stops tun2socks, shadowsocks, and
    * the system-wide VPN.
    *
-   * @param connectionId unique identifier for the connection.
-   * @throws IllegalArgumentException if |connectionId| is missing.
-   * @throws IllegalStateException if the connection represented by |connectionId| is not active.
+   * @param tunnelId unique identifier for the tunnel.
+   * @throws IllegalArgumentException if |tunnelId| is missing.
+   * @throws IllegalStateException if the tunnel represented by |tunnelId| is not active.
    */
-  public void stopConnection(final String connectionId) {
-    if (connectionId == null) {
-      throw new IllegalArgumentException("Must provide a connection ID.");
-    } else if (!connectionId.equals(activeConnectionId)) {
+  public void stopTunnel(final String tunnelId) {
+    if (tunnelId == null) {
+      throw new IllegalArgumentException("Must provide a tunnel ID.");
+    } else if (!tunnelId.equals(activeTunnelId)) {
       throw new IllegalStateException(
-          String.format(Locale.ROOT, "Connection %s not active.", connectionId));
+          String.format(Locale.ROOT, "Tunnel %s not active.", tunnelId));
     }
     broadcastVpnStop();
-    tearDownActiveConnection();
+    tearDownActiveTunnel();
   }
 
   /**
-   * Determines whether a connection is active.
+   * Determines whether a tunnel is active.
    *
-   * @param connectionId unique identifier for the connection.
-   * @throws IllegalArgumentException if |connectionId| is missing.
-   * @return boolean indicating whether the connection is active.
+   * @param tunnelId unique identifier for the tunnel.
+   * @throws IllegalArgumentException if |tunnelId| is missing.
+   * @return boolean indicating whether the tunnel is active.
    */
-  public boolean isConnectionActive(final String connectionId) {
-    if (connectionId == null) {
-      throw new IllegalArgumentException("Must provide a connection ID.");
+  public boolean isTunnelActive(final String tunnelId) {
+    if (tunnelId == null) {
+      throw new IllegalArgumentException("Must provide a tunnel ID.");
     }
-    return connectionId.equals(activeConnectionId);
+    return tunnelId.equals(activeTunnelId);
   }
 
   /* Helper method to broadcast a VPN start the failure and reset the service state. */
   private void onVpnStartFailure(OutlinePlugin.ErrorCode errorCode) {
     broadcastVpnStart(errorCode);
-    tearDownActiveConnection();
+    tearDownActiveTunnel();
   }
 
-  /* Helper method to tear down an active connection. */
-  private void tearDownActiveConnection() {
+  /* Helper method to tear down an active tunnel. */
+  private void tearDownActiveTunnel() {
     stopVpnTunnel();
     stopForeground();
-    activeConnectionId = null;
+    activeTunnelId = null;
     stopNetworkConnectivityMonitor();
-    connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.DISCONNECTED);
+    tunnelStore.setTunnelStatus(OutlinePlugin.TunnelStatus.DISCONNECTED);
   }
 
   /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
@@ -290,8 +288,8 @@ public class VpnTunnelService extends VpnService {
       if (networkInfo == null || networkInfo.getState() != NetworkInfo.State.CONNECTED) {
         return;
       }
-      broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.CONNECTED);
-      updateNotification(OutlinePlugin.ConnectionStatus.CONNECTED);
+      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.CONNECTED);
+      updateNotification(OutlinePlugin.TunnelStatus.CONNECTED);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
@@ -304,8 +302,8 @@ public class VpnTunnelService extends VpnService {
       }
       boolean isUdpSupported = vpnTunnel.updateUDPSupport();
       LOG.info(
-          String.format("UDP support: %s -> %s", connectionStore.isUdpSupported(), isUdpSupported));
-      connectionStore.setIsUdpSupported(isUdpSupported);
+          String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
+      tunnelStore.setIsUdpSupported(isUdpSupported);
     }
 
     @Override
@@ -317,8 +315,8 @@ public class VpnTunnelService extends VpnService {
           && activeNetworkInfo.getState() == NetworkInfo.State.CONNECTED) {
         return;
       }
-      broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus.RECONNECTING);
-      updateNotification(OutlinePlugin.ConnectionStatus.RECONNECTING);
+      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.RECONNECTING);
+      updateNotification(OutlinePlugin.TunnelStatus.RECONNECTING);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
@@ -371,7 +369,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /* Broadcast change in the VPN connectivity. */
-  private void broadcastVpnConnectivityChange(OutlinePlugin.ConnectionStatus status) {
+  private void broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus status) {
     Intent statusChange = new Intent(OutlinePlugin.Action.ON_STATUS_CHANGE.value);
     statusChange.putExtra(OutlinePlugin.IntentExtra.PAYLOAD.value, status.value);
     statusChange.putExtra(
@@ -380,19 +378,19 @@ public class VpnTunnelService extends VpnService {
   }
 
   private void dispatchBroadcast(Intent broadcast) {
-    if (activeConnectionId != null) {
-      broadcast.putExtra(OutlinePlugin.IntentExtra.CONNECTION_ID.value, activeConnectionId);
+    if (activeTunnelId != null) {
+      broadcast.putExtra(OutlinePlugin.IntentExtra.TUNNEL_ID.value, activeTunnelId);
     }
     LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
   }
 
   // Autostart
 
-  private void startLastSuccessfulConnectionOrExit() {
-    LOG.info("Received an auto-connect request, loading last successful connection.");
-    JSONObject connection = connectionStore.load();
-    if (connection == null) {
-      LOG.info("Last successful connection not found. User not connected at shutdown/install.");
+  private void startLastSuccessfulTunnelOrExit() {
+    LOG.info("Received an auto-connect request, loading last successful tunnel.");
+    JSONObject tunnel = tunnelStore.load();
+    if (tunnel == null) {
+      LOG.info("Last successful tunnel not found. User not connected at shutdown/install.");
       stopSelf();
       return;
     }
@@ -403,30 +401,29 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
-      final JSONObject config = connection.getJSONObject(CONNECTION_CONFIG_KEY);
+      final JSONObject config = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
       startForegroundWithNotification(config);
-      startConnection(connection.getString(CONNECTION_ID_KEY),
-          connection.getJSONObject(CONNECTION_CONFIG_KEY), true);
+      startTunnel(tunnel.getString(TUNNEL_ID_KEY), tunnel.getJSONObject(TUNNEL_CONFIG_KEY), true);
     } catch (JSONException e) {
-      LOG.log(Level.SEVERE, "Failed to retrieve JSON connection data", e);
+      LOG.log(Level.SEVERE, "Failed to retrieve JSON tunnel data", e);
       stopSelf();
     }
   }
 
-  private void storeActiveConnection(
-      final String connectionId, final JSONObject config, boolean isUdpSupported) {
-    LOG.info("Storing active connection.");
-    JSONObject connection = new JSONObject();
+  private void storeActiveTunnel(
+      final String tunnelId, final JSONObject config, boolean isUdpSupported) {
+    LOG.info("Storing active tunnel.");
+    JSONObject tunnel = new JSONObject();
     try {
-      connection.put(CONNECTION_ID_KEY, connectionId).put(CONNECTION_CONFIG_KEY, config);
-      connectionStore.save(connection);
+      tunnel.put(TUNNEL_ID_KEY, tunnelId).put(TUNNEL_CONFIG_KEY, config);
+      tunnelStore.save(tunnel);
     } catch (JSONException e) {
-      LOG.log(Level.SEVERE, "Failed to store JSON connection data", e);
+      LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
     }
-    connectionStore.setConnectionStatus(OutlinePlugin.ConnectionStatus.CONNECTED);
-    connectionStore.setIsUdpSupported(isUdpSupported);
+    tunnelStore.setTunnelStatus(OutlinePlugin.TunnelStatus.CONNECTED);
+    tunnelStore.setIsUdpSupported(isUdpSupported);
   }
 
   // Foreground service & notifications
@@ -436,7 +433,7 @@ public class VpnTunnelService extends VpnService {
     try {
       if (notificationBuilder == null) {
         // Cache the notification builder so we can update the existing notification - creating a
-        // new notification has the side effect of resetting the connection timer.
+        // new notification has the side effect of resetting the tunnel timer.
         notificationBuilder = getNotificationBuilder(serverConfig);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
@@ -446,13 +443,13 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Updates the persistent notification to reflect the connection status. */
-  private void updateNotification(OutlinePlugin.ConnectionStatus status) {
+  /* Updates the persistent notification to reflect the tunnel status. */
+  private void updateNotification(OutlinePlugin.TunnelStatus status) {
     try {
       if (notificationBuilder == null) {
         return; // No notification to update.
       }
-      final String statusStringResourceId = status == OutlinePlugin.ConnectionStatus.CONNECTED
+      final String statusStringResourceId = status == OutlinePlugin.TunnelStatus.CONNECTED
           ? "connected_server_state"
           : "reconnecting_server_state";
       notificationBuilder.setContentText(getStringResource(statusStringResourceId));

@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ function testTapDevice() {
 //
 // In addition to the basic lifecycle of the helper processes, this class restarts tun2socks
 // on network changes if necessary.
-export class ConnectionManager {
+export class TunnelManager {
   private readonly routing: RoutingDaemon;
   private readonly tun2socks: Tun2socks;
 
@@ -121,8 +121,8 @@ export class ConnectionManager {
     await this.routing.start();
   }
 
-  private async networkChanged(status: ConnectionStatus) {
-    if (status === ConnectionStatus.CONNECTED) {
+  private async networkChanged(status: TunnelStatus) {
+    if (status === TunnelStatus.CONNECTED) {
       // Notify tun2socks about the network change so it can restart if UDP connectivity has changed.
       try {
         await this.tun2socks.networkChanged();
@@ -134,7 +134,7 @@ export class ConnectionManager {
       if (this.reconnectedListener) {
         this.reconnectedListener();
       }
-    } else if (status === ConnectionStatus.RECONNECTING) {
+    } else if (status === TunnelStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
       }
@@ -143,7 +143,7 @@ export class ConnectionManager {
     }
   }
 
-  // Use #onceStopped to be notified when the connection terminates.
+  // Use #onceStopped to be notified when the tunnel terminates.
   stop() {
     try {
       this.routing.stop();

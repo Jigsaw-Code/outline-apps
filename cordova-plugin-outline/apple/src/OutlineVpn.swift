@@ -16,7 +16,7 @@ import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
 
-// Manages the system's VPN connections through the VpnExtension process.
+// Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers
 class OutlineVpn: NSObject {
   static let shared = OutlineVpn()
@@ -25,7 +25,7 @@ class OutlineVpn: NSObject {
   typealias Callback = (ErrorCode) -> Void
   typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
 
-  public private(set) var activeConnectionId: String?
+  public private(set) var activeTunnelId: String?
   private var tunnelManager: NETunnelProviderManager?
   private var vpnStatusObserver: VpnStatusObserver?
   private let connectivity: OutlineConnectivity
@@ -34,13 +34,13 @@ class OutlineVpn: NSObject {
     static let start = "start"
     static let restart = "restart"
     static let stop = "stop"
-    static let getConnectionId = "getConnectionId"
+    static let getTunnelId = "getTunnelId"
     static let isReachable = "isReachable"
   }
 
   private enum MessageKey {
     static let action = "action"
-    static let connectionId = "connectionId"
+    static let tunnelId = "tunnelId"
     static let config = "config"
     static let errorCode = "errorCode"
     static let host = "host"
@@ -79,45 +79,45 @@ class OutlineVpn: NSObject {
       self.tunnelManager = manager!
       self.observeVpnStatusChange(self.tunnelManager!)
       if self.isVpnConnected() {
-        self.retrieveActiveConnectionId()
+        self.retrieveActiveTunnelId()
       }
     }
   }
 
   // MARK: Interface
 
-  // Starts a VPN connection as specified in the OutlineConnection object.
-  func start(_ connection: OutlineConnection, _ completion: @escaping (Callback)) {
-    guard let connectionId = connection.id else {
-      DDLogError("Missing connection ID")
+  // Starts a VPN tunnel as specified in the OutlineTunnel object.
+  func start(_ tunnel: OutlineTunnel, _ completion: @escaping (Callback)) {
+    guard let tunnelId = tunnel.id else {
+      DDLogError("Missing tunnel ID")
       return completion(ErrorCode.illegalServerConfiguration)
     }
-    if isActive(connectionId) {
+    if isActive(tunnelId) {
       return completion(ErrorCode.noError)
     } else if isVpnConnected() {
-      return restartVpn(connectionId, config: connection.config, completion: completion)
+      return restartVpn(tunnelId, config: tunnel.config, completion: completion)
     }
-    self.startVpn(connection, isAutoConnect: false, completion)
+    self.startVpn(tunnel, isAutoConnect: false, completion)
   }
 
-  // Starts the last successful VPN connection.
-  func startLastSuccessfulConnection(_ completion: @escaping (Callback)) {
-    // Explicitly pass an empty connection's configuration, so the VpnExtension process retrieves
+  // Starts the last successful VPN tunnel.
+  func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
+    // Explicitly pass an empty tunnel's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
-    self.startVpn(OutlineConnection(), isAutoConnect: true, completion)
+    self.startVpn(OutlineTunnel(), isAutoConnect: true, completion)
   }
 
-  // Tears down the VPN if the connection with id |connectionId| is active.
-  func stop(_ connectionId: String) {
-    if !isActive(connectionId) {
-      return DDLogWarn("Cannot stop VPN, connection ID \(connectionId)")
+  // Tears down the VPN if the tunnel with id |tunnelId| is active.
+  func stop(_ tunnelId: String) {
+    if !isActive(tunnelId) {
+      return DDLogWarn("Cannot stop VPN, tunnel ID \(tunnelId)")
     }
     stopVpn()
   }
 
-  // Determines whether |connection| is reachable via TCP.
-  func isReachable(_ connection: OutlineConnection, _ completion: @escaping Callback) {
-    guard let host = connection.host, connection.port != nil, let port = UInt16(connection.port!) else {
+  // Determines whether |tunnel| is reachable via TCP.
+  func isReachable(_ tunnel: OutlineTunnel, _ completion: @escaping Callback) {
+    guard let host = tunnel.host, tunnel.port != nil, let port = UInt16(tunnel.port!) else {
       return DDLogError("Missing host or port argument")
     }
     if isVpnConnected() {
@@ -146,32 +146,32 @@ class OutlineVpn: NSObject {
     vpnStatusObserver = observer
   }
 
-  // Returns whether |connectionId| is actively proxying through the VPN.
-  func isActive(_ connectionId: String?) -> Bool {
-    if self.activeConnectionId == nil {
+  // Returns whether |tunnelId| is actively proxying through the VPN.
+  func isActive(_ tunnelId: String?) -> Bool {
+    if self.activeTunnelId == nil {
       return false
     }
-    return self.activeConnectionId == connectionId && isVpnConnected()
+    return self.activeTunnelId == tunnelId && isVpnConnected()
   }
 
   // MARK: Helpers
 
   private func startVpn(
-      _ connection: OutlineConnection, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
-    let connectionId = connection.id
+      _ tunnel: OutlineTunnel, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
+    let tunnelId = tunnel.id
     setupVpn() { error in
       if error != nil {
         DDLogError("Failed to setup VPN: \(String(describing: error))")
         return completion(ErrorCode.vpnPermissionNotGranted);
       }
-      let message = [MessageKey.action: Action.start, MessageKey.connectionId: connectionId ?? ""];
+      let message = [MessageKey.action: Action.start, MessageKey.tunnelId: tunnelId ?? ""];
       self.sendVpnExtensionMessage(message) { response in
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
       var config: [String: String]? = nil
       if !isAutoConnect {
-        config = connection.config
-        config?[MessageKey.connectionId] = connectionId
+        config = tunnel.config
+        config?[MessageKey.tunnelId] = tunnelId
       } else {
         // macOS app was started by launcher.
         config = [MessageKey.isOnDemand: "true"];
@@ -190,16 +190,16 @@ class OutlineVpn: NSObject {
     let session: NETunnelProviderSession = tunnelManager?.connection as! NETunnelProviderSession
     session.stopTunnel()
     setConnectVpnOnDemand(false) // Disable on demand so the VPN does not connect automatically.
-    self.activeConnectionId = nil
+    self.activeTunnelId = nil
   }
 
   // Sends message to extension to restart the tunnel without tearing down the VPN.
-  private func restartVpn(_ connectionId: String, config: [String: String],
+  private func restartVpn(_ tunnelId: String, config: [String: String],
                           completion: @escaping(Callback)) {
-    if activeConnectionId != nil {
-      vpnStatusObserver?(.disconnected, activeConnectionId!)
+    if activeTunnelId != nil {
+      vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
-    let message = [MessageKey.action: Action.restart, MessageKey.connectionId: connectionId,
+    let message = [MessageKey.action: Action.restart, MessageKey.tunnelId: tunnelId,
                    MessageKey.config:config] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)
@@ -275,21 +275,21 @@ class OutlineVpn: NSObject {
     }
   }
 
-  // Retrieves the active connection ID from the VPN extension.
-  private func retrieveActiveConnectionId() {
+  // Retrieves the active tunnel ID from the VPN extension.
+  private func retrieveActiveTunnelId() {
     if tunnelManager == nil {
       return
     }
-    self.sendVpnExtensionMessage([MessageKey.action: Action.getConnectionId]) { response in
+    self.sendVpnExtensionMessage([MessageKey.action: Action.getTunnelId]) { response in
       guard response != nil else {
-        return DDLogError("Failed to retrieve the active connection ID")
+        return DDLogError("Failed to retrieve the active tunnel ID")
       }
-      guard let activeConnectionId = response?[MessageKey.connectionId] as? String else {
-        return DDLogError("Failed to retrieve the active connection ID")
+      guard let activeTunnelId = response?[MessageKey.tunnelId] as? String else {
+        return DDLogError("Failed to retrieve the active tunnel ID")
       }
-      DDLogInfo("Got active connection ID: \(activeConnectionId)")
-      self.activeConnectionId = activeConnectionId
-      self.vpnStatusObserver?(.connected, self.activeConnectionId!)
+      DDLogInfo("Got active tunnel ID: \(activeTunnelId)")
+      self.activeTunnelId = activeTunnelId
+      self.vpnStatusObserver?(.connected, self.activeTunnelId!)
     }
   }
 
@@ -311,19 +311,19 @@ class OutlineVpn: NSObject {
                                            name: .NEVPNStatusDidChange, object: manager.connection)
   }
 
-  // Receives NEVPNStatusDidChange notifications. Calls onConnectionStatusChange for the active
-  // connection.
+  // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
+  // tunnel.
   @objc func vpnStatusChanged() {
     if let vpnStatus = tunnelManager?.connection.status {
-      if let connectionId = activeConnectionId {
+      if let tunnelId = activeTunnelId {
         if (vpnStatus == .disconnected) {
-          activeConnectionId = nil
+          activeTunnelId = nil
         }
-        vpnStatusObserver?(vpnStatus, connectionId)
+        vpnStatusObserver?(vpnStatus, tunnelId)
       } else if vpnStatus == .connected {
         // The VPN was connected from the settings app while the UI was in the background.
-        // Retrieve the connection ID to update the UI.
-        retrieveActiveConnectionId()
+        // Retrieve the tunnel ID to update the UI.
+        retrieveActiveTunnelId()
       }
     }
   }
@@ -374,8 +374,8 @@ class OutlineVpn: NSObject {
     }
     let rawErrorCode = response[MessageKey.errorCode] as? Int ?? ErrorCode.undefined.rawValue
     if rawErrorCode == ErrorCode.noError.rawValue,
-       let connectionId = response[MessageKey.connectionId] as? String {
-      self.activeConnectionId = connectionId
+       let tunnelId = response[MessageKey.tunnelId] as? String {
+      self.activeTunnelId = tunnelId
       // Enable on demand to connect automatically on boot if the VPN was connected on shutdown
       self.setConnectVpnOnDemand(true)
     }

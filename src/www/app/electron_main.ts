@@ -19,10 +19,10 @@ import * as os from 'os';
 import {EventQueue} from '../model/events';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
-import {ElectronOutlineConnection} from './electron_outline_connection';
+import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {FakeOutlineConnection} from './fake_connection';
+import {FakeOutlineTunnel} from './fake_connection';
 import {getLocalizationFunction, main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
@@ -94,8 +94,8 @@ main({
             eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
-          isOsSupported ? new ElectronOutlineConnection(config, serverId) :
-                          new FakeOutlineConnection(config, serverId),
+          isOsSupported ? new ElectronOutlineTunnel(config, serverId) :
+                          new FakeOutlineTunnel(config, serverId),
           eventQueue);
     };
   },

@@ -23,10 +23,10 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kActionStart = @"start";
 NSString *const kActionRestart = @"restart";
 NSString *const kActionStop = @"stop";
-NSString *const kActionGetConnectionId = @"getConnectionId";
+NSString *const kActionGetTunnelId = @"getTunnelId";
 NSString *const kActionIsReachable = @"isReachable";
 NSString *const kMessageKeyAction = @"action";
-NSString *const kMessageKeyConnectionId = @"connectionId";
+NSString *const kMessageKeyTunnelId = @"tunnelId";
 NSString *const kMessageKeyConfig = @"config";
 NSString *const kMessageKeyErrorCode = @"errorCode";
 NSString *const kMessageKeyHost = @"host";
@@ -41,8 +41,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
-@property (nonatomic) OutlineConnection *connection;
-@property (nonatomic) OutlineConnectionStore *connectionStore;
+@property(nonatomic) OutlineTunnel *tunnelConfig;
+@property(nonatomic) OutlineTunnelStore *tunnelStore;
 @property(nonatomic) dispatch_queue_t packetQueue;
 @end
 
@@ -72,7 +72,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 #endif
   [DDLog addLogger:_fileLogger];
 
-  _connectionStore = [[OutlineConnectionStore alloc] initWithAppGroup:appGroup];
+  _tunnelStore = [[OutlineTunnelStore alloc] initWithAppGroup:appGroup];
   kVpnSubnetCandidates = @{
     @"10" : @"10.111.222.0",
     @"172" : @"172.16.9.1",
@@ -103,18 +103,19 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
         }];
     return;
   }
-  OutlineConnection *connection = [self retrieveConnection:options];
-  if (connection == nil) {
-    DDLogError(@"Failed to retrieve the connection.");
+  OutlineTunnel *tunnelConfig = [self retrieveTunnelConfig:options];
+  if (tunnelConfig == nil) {
+    DDLogError(@"Failed to retrieve the tunnel config.");
     completionHandler([NSError errorWithDomain:NEVPNErrorDomain
                                           code:NEVPNErrorConfigurationUnknown
                                       userInfo:nil]);
     return;
   }
-  self.connection = connection;
+  self.tunnelConfig = tunnelConfig;
 
   // Compute the IP address of the host in the active network.
-  self.hostNetworkAddress = [self getNetworkIpAddress:[self.connection.config[@"host"] UTF8String]];
+  self.hostNetworkAddress =
+      [self getNetworkIpAddress:[self.tunnelConfig.config[@"host"] UTF8String]];
   if (self.hostNetworkAddress == nil) {
     [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
     return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
@@ -122,7 +123,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                              userInfo:nil]);
   }
   bool isOnDemand = options[kMessageKeyOnDemand] != nil;
-  // Bypass connectivity checks for auto-connect. If the connection configuration is no longer
+  // Bypass connectivity checks for auto-connect. If the tunnel configuration is no longer
   // valid, the connectivity checks will fail. The system will keep calling this method due to
   // On Demand being enabled (the VPN process does not have permission to change it), rendering the
   // network unusable with no indication to the user. By bypassing the checks, the network would
@@ -130,8 +131,9 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   // culprit and can explicitly disconnect.
   long errorCode = noError;
   if (!isOnDemand) {
-    ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.connection.port intValue],
-                                 self.connection.password, self.connection.method, &errorCode, nil);
+    ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.tunnelConfig.port intValue],
+                                 self.tunnelConfig.password, self.tunnelConfig.method, &errorCode,
+                                 nil);
   }
   if (errorCode != noError && errorCode != udpRelayNotEnabled) {
     [self execAppCallbackForAction:kActionStart errorCode:errorCode];
@@ -147,7 +149,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                return completionHandler(error);
              }
              BOOL isUdpSupported =
-                 isOnDemand ? self.connectionStore.isUdpSupported : errorCode == noError;
+                 isOnDemand ? self.tunnelStore.isUdpSupported : errorCode == noError;
              if (![self startTun2Socks:isUdpSupported]) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
                return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
@@ -155,9 +157,9 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                                         userInfo:nil]);
              }
              [self listenForNetworkChanges];
-             [self.connectionStore save:connection];
-             self.connectionStore.isUdpSupported = isUdpSupported;
-             self.connectionStore.status = ConnectionStatusConnected;
+             [self.tunnelStore save:tunnelConfig];
+             self.tunnelStore.isUdpSupported = isUdpSupported;
+             self.tunnelStore.status = TunnelStatusConnected;
              [self execAppCallbackForAction:kActionStart errorCode:noError];
              completionHandler(nil);
            }];
@@ -166,7 +168,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
            completionHandler:(void (^)(void))completionHandler {
   DDLogInfo(@"Stopping tunnel");
-  self.connectionStore.status = ConnectionStatusDisconnected;
+  self.tunnelStore.status = TunnelStatusDisconnected;
   [self stopListeningForNetworkChanges];
   [self.tunnel disconnect];
   [self cancelTunnelWithError:nil];
@@ -196,29 +198,34 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     return completionHandler(nil);
   }
   DDLogInfo(@"Received app message: %@", action);
-  void (^callbackWrapper)(NSNumber *) = ^void (NSNumber *errorCode) {
-    NSString *connectionId;
-    if (self.connection != nil) {
-      connectionId = self.connection.id;
+  void (^callbackWrapper)(NSNumber *) = ^void(NSNumber *errorCode) {
+    NSString *tunnelId;
+    if (self.tunnelConfig != nil) {
+      tunnelId = self.tunnelConfig.id;
     }
-    NSDictionary *response = @{kMessageKeyAction: action, kMessageKeyErrorCode: errorCode,
-                               kMessageKeyConnectionId: connectionId};
+    NSDictionary *response = @{
+      kMessageKeyAction : action,
+      kMessageKeyErrorCode : errorCode,
+      kMessageKeyTunnelId : tunnelId
+    };
     completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   };
   if ([kActionStart isEqualToString:action] || [kActionRestart isEqualToString:action]) {
     self.startCompletion = callbackWrapper;
     if ([kActionRestart isEqualToString:action]) {
-      self.connection = [[OutlineConnection alloc] initWithId:message[kMessageKeyConnectionId]
-                                                       config:message[kMessageKeyConfig]];
+      self.tunnelConfig = [[OutlineTunnel alloc] initWithId:message[kMessageKeyTunnelId]
+                                                     config:message[kMessageKeyConfig]];
       [self reconnectTunnel:true];
     }
   } else if ([kActionStop isEqualToString:action]) {
     self.stopCompletion = callbackWrapper;
-  } else if ([kActionGetConnectionId isEqualToString:action]) {
+  } else if ([kActionGetTunnelId isEqualToString:action]) {
     NSData *response = nil;
-    if (self.connection != nil) {
-      response = [NSJSONSerialization dataWithJSONObject:@{kMessageKeyConnectionId: self.connection.id}
-                                                 options:kNilOptions error:nil];
+    if (self.tunnelConfig != nil) {
+      response =
+          [NSJSONSerialization dataWithJSONObject:@{kMessageKeyTunnelId : self.tunnelConfig.id}
+                                          options:kNilOptions
+                                            error:nil];
     }
     completionHandler(response);
   } else if ([kActionIsReachable isEqualToString:action]) {
@@ -237,22 +244,22 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   }
 }
 
-# pragma mark - Connection
+#pragma mark - Tunnel
 
-// Creates a OutlineConnection from options supplied in |config|, or retrieves the last working
-// connection from disk. Normally the app provides a connection configuration. However, when the VPN
+// Creates a OutlineTunnel from options supplied in |config|, or retrieves the last working
+// tunnel from disk. Normally the app provides a tunnel configuration. However, when the VPN
 // is started from settings or On Demand, the system launches this process without supplying a
-// configuration, so it is necessary to retrieve a previously persisted connection from disk.
+// configuration, so it is necessary to retrieve a previously persisted tunnel from disk.
 // To learn more about On Demand see: https://help.apple.com/deployment/ios/#/iord4804b742.
-- (OutlineConnection *)retrieveConnection:(NSDictionary *)config {
-  OutlineConnection *connection;
+- (OutlineTunnel *)retrieveTunnelConfig:(NSDictionary *)config {
+  OutlineTunnel *tunnelConfig;
   if (config != nil && !config[kMessageKeyOnDemand]) {
-    connection = [[OutlineConnection alloc] initWithId:config[kMessageKeyConnectionId] config:config];
-  } else if (self.connectionStore != nil) {
-    DDLogInfo(@"Retrieving connection from store.");
-    connection = [self.connectionStore load];
+    tunnelConfig = [[OutlineTunnel alloc] initWithId:config[kMessageKeyTunnelId] config:config];
+  } else if (self.tunnelStore != nil) {
+    DDLogInfo(@"Retrieving tunnelConfig from store.");
+    tunnelConfig = [self.tunnelStore load];
   }
-  return connection;
+  return tunnelConfig;
 }
 
 # pragma mark - Network
@@ -346,8 +353,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     DDLogInfo(@"Reconnecting tunnel.");
     // Check whether UDP support has changed with the network.
     BOOL isUdpSupported = [self.tunnel updateUDPSupport];
-    DDLogDebug(@"UDP support: %d -> %d", self.connectionStore.isUdpSupported, isUdpSupported);
-    self.connectionStore.isUdpSupported = isUdpSupported;
+    DDLogDebug(@"UDP support: %d -> %d", self.tunnelStore.isUdpSupported, isUdpSupported);
+    self.tunnelStore.isUdpSupported = isUdpSupported;
     [self reconnectTunnel:false];
   } else {
     DDLogInfo(@"Clearing tunnel settings.");
@@ -460,12 +467,12 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 
 // Restarts tun2socks if |configChanged| or the host's IP address has changed in the network.
 - (void)reconnectTunnel:(bool)configChanged {
-  if (!self.connection || !self.tunnel) {
-    DDLogError(@"Failed to reconnect tunnel, missing connection configuration.");
+  if (!self.tunnelConfig || !self.tunnel) {
+    DDLogError(@"Failed to reconnect tunnel, missing tunnel configuration.");
     [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
     return;
   }
-  const char *hostAddress = (const char *)[self.connection.config[@"host"] UTF8String];
+  const char *hostAddress = (const char *)[self.tunnelConfig.config[@"host"] UTF8String];
   NSString *activeHostNetworkAddress = [self getNetworkIpAddress:hostAddress];
   if (!activeHostNetworkAddress) {
     DDLogError(@"Failed to retrieve the remote host IP address in the network");
@@ -486,8 +493,9 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   DDLogInfo(@"Configuration or host IP address changed with the network. Reconnecting tunnel.");
   self.hostNetworkAddress = activeHostNetworkAddress;
   long errorCode = noError;
-  ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.connection.port intValue],
-                               self.connection.password, self.connection.method, &errorCode, nil);
+  ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.tunnelConfig.port intValue],
+                               self.tunnelConfig.password, self.tunnelConfig.method, &errorCode,
+                               nil);
   if (errorCode != noError && errorCode != udpRelayNotEnabled) {
     DDLogError(@"Connectivity checks failed. Tearing down VPN");
     [self execAppCallbackForAction:kActionStart errorCode:errorCode];
@@ -512,8 +520,8 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                [self cancelTunnelWithError:error];
                return;
              }
-             self.connectionStore.isUdpSupported = isUdpSupported;
-             [self.connectionStore save:self.connection];
+             self.tunnelStore.isUdpSupported = isUdpSupported;
+             [self.tunnelStore save:self.tunnelConfig];
              [self execAppCallbackForAction:kActionStart errorCode:noError];
            }];
 }
@@ -550,8 +558,8 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   __weak PacketTunnelProvider *weakSelf = self;
   NSError *err;
   self.tunnel = Tun2socksConnectShadowsocksTunnel(
-      weakSelf, self.hostNetworkAddress, [self.connection.port intValue], self.connection.password,
-      self.connection.method, isUdpSupported, &err);
+      weakSelf, self.hostNetworkAddress, [self.tunnelConfig.port intValue],
+      self.tunnelConfig.password, self.tunnelConfig.method, isUdpSupported, &err);
   if (err != nil) {
     DDLogError(@"Failed to start tun2socks: %@", err);
     return NO;
