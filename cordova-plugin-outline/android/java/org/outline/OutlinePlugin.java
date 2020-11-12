@@ -206,7 +206,7 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   // Executes an action asynchronously through the Cordova thread pool.
-  protected void executeAsync(
+  private void executeAsync(
       final String action, final JSONArray args, final CallbackContext callback) {
     cordova.getThreadPool().execute(() -> {
       try {
