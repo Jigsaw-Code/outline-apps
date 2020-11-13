@@ -17,12 +17,13 @@ package org.outline.log;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Queue;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogManager;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 /**
  * Static class to customize logging for Outline's needs through default Java logging facilities.
@@ -55,15 +56,18 @@ public class OutlineLogger {
   }
 
   /**
-   * Retrieves the VPN service process logs from logcat.
+   * Retrieves the most recent VPN service process logs from logcat and returns them in ascending
+   * order by timestamp.
    *
-   * @return a list with each VPN process log entry or an empty list on failure.
+   * @param maxNumLogs the maximum number of logs to return.
+   * @return a collection with each VPN process log entry or an empty collection on failure.
    */
-  public static List<String> getVpnProcessLogs() {
+  public static Collection<String> getVpnProcessLogs(int maxNumLogs) {
     // Retrieve the logs by filtering known VPN process tags at INFO level.
     final String LOGCAT_CMD =
         "logcat -d -s VpnTunnel:I VpnTunnelService:I VpnTunnelStore:I tun2socks:I";
-    List<String> logs = new ArrayList<>();
+    // Use an FIFO evicting queue to hold the most recent `maxNumLogs` logs.
+    Queue<String> logs = new CircularFifoQueue<>(maxNumLogs);
     try {
       Process process = Runtime.getRuntime().exec(LOGCAT_CMD);
       BufferedReader bufferedReader =

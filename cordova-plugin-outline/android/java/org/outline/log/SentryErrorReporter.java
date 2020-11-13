@@ -26,8 +26,8 @@ import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.OperatingSystem;
 import java.lang.IllegalStateException;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.UUID;
@@ -138,12 +138,11 @@ public class SentryErrorReporter {
   }
 
   private static void recordVpnProcessLogs() {
-    final List<String> vpnProcessLogs = OutlineLogger.getVpnProcessLogs();
     // Logs are sorted increasingly by timestamp.
     // Record at most MAX_BREADCRUMBS/2 breadcrumbs from VPN process logs.
-    int vpnProcessLogsStartIndex = Math.max(0, vpnProcessLogs.size() - MAX_BREADCRUMBS / 2);
-    for (int i = vpnProcessLogsStartIndex; i < vpnProcessLogs.size(); ++i) {
-      recordVpnProcessBreadcrumb(vpnProcessLogs.get(i));
+    final Collection<String> vpnProcessLogs = OutlineLogger.getVpnProcessLogs(MAX_BREADCRUMBS / 2);
+    for (String log : vpnProcessLogs) {
+      recordVpnProcessBreadcrumb(log);
     }
   }
 
