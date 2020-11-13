@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.cordova.CallbackContext;
@@ -130,11 +128,21 @@ public class OutlinePlugin extends CordovaPlugin {
     }
   }
 
+  // Encapsulates parameters to start the VPN asynchronously after requesting user permission.
+  private static class StartVpnRequest {
+    public final JSONArray args;
+    public final CallbackContext callback;
+    public StartVpnRequest(JSONArray args, CallbackContext callback) {
+      this.args = args;
+      this.callback = callback;
+    }
+  }
+
   private static final int REQUEST_CODE_PREPARE_VPN = 100;
 
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
-  private CountDownLatch vpnPreparedSignal;
+  private StartVpnRequest startVpnRequest;
   // Tunnel status change callback by tunnel ID.
   private Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
 
@@ -194,10 +202,23 @@ public class OutlinePlugin extends CordovaPlugin {
     LOG.fine(String.format(Locale.ROOT, "Received action: %s", action));
 
     if (Action.ON_STATUS_CHANGE.is(action)) {
-      // Store the callback ID so we can execute it asynchronously.
+      // Store the callback so we can execute it asynchronously.
       final String tunnelId = args.getString(0);
       tunnelStatusListeners.put(tunnelId, callbackContext);
       return true;
+    }
+
+    if (Action.START.is(action)) {
+      // Prepare the VPN before spawning a new thread. Fall through if it's already prepared.
+      try {
+        if (!prepareVpnService()) {
+          startVpnRequest = new StartVpnRequest(args, callbackContext);
+          return true;
+        }
+      } catch (ActivityNotFoundException e) {
+        callbackContext.error(ErrorCode.UNEXPECTED.value);
+        return true;
+      }
     }
 
     executeAsync(action, args, callbackContext);
@@ -211,14 +232,11 @@ public class OutlinePlugin extends CordovaPlugin {
       try {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
-          if (!prepareVpnService()) {
-            sendErrorCode(callback, ErrorCode.VPN_PERMISSION_NOT_GRANTED.value);
-            return;
-          }
           final String tunnelId = args.getString(0);
           final JSONObject config = args.getJSONObject(1);
           int errorCode = startVpnTunnel(tunnelId, config);
           sendErrorCode(callback, errorCode);
+          startVpnRequest = null;
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -256,9 +274,8 @@ public class OutlinePlugin extends CordovaPlugin {
     });
   }
 
-  // Requests user permission to connect the VPN. Returns true immediately if the VPN is prepared.
-  // Otherwise, blocks until the user has responded to a system prompt (up to 30 seconds) and
-  // returns whether the VPN is prepared.
+  // Requests user permission to connect the VPN. Returns true if permission was previously granted,
+  // and false if the OS prompt will be displayed.
   private boolean prepareVpnService() throws ActivityNotFoundException {
     LOG.fine("Preparing VPN.");
     Intent prepareVpnIntent = VpnService.prepare(getBaseContext());
@@ -267,15 +284,7 @@ public class OutlinePlugin extends CordovaPlugin {
     }
     LOG.info("Prepare VPN with activity");
     cordova.startActivityForResult(this, prepareVpnIntent, REQUEST_CODE_PREPARE_VPN);
-    vpnPreparedSignal = new CountDownLatch(1);
-    try {
-      // Timeout after 30 seconds in case the intent fails to deliver or the prompt is not shown.
-      vpnPreparedSignal.await(30L, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      LOG.warning("Timed out waiting to prepare VPN");
-      return false;
-    }
-    return VpnService.prepare(getBaseContext()) == null;
+    return false;
   }
 
   @Override
@@ -286,8 +295,10 @@ public class OutlinePlugin extends CordovaPlugin {
     }
     if (result != Activity.RESULT_OK) {
       LOG.warning("Failed to prepare VPN.");
+      sendErrorCode(startVpnRequest.callback, ErrorCode.VPN_PERMISSION_NOT_GRANTED.value);
+      return;
     }
-    vpnPreparedSignal.countDown();
+    executeAsync(Action.START.value, startVpnRequest.args, startVpnRequest.callback);
   }
 
   private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
