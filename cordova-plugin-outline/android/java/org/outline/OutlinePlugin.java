@@ -119,8 +119,7 @@ public class OutlinePlugin extends CordovaPlugin {
     TUNNEL_CONFIG("tunnelConfig"),
     ACTION("action"),
     PAYLOAD("payload"),
-    ERROR_REPORTING_API_KEY("errorReportingApiKey"),
-    ERROR_CODE("errorCode");
+    ERROR_REPORTING_API_KEY("errorReportingApiKey");
 
     public final String value;
     MessageData(final String value) {

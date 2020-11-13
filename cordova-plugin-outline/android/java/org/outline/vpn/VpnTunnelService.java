@@ -440,8 +440,6 @@ public class VpnTunnelService extends VpnService {
     Intent statusChange = new Intent(OutlinePlugin.Action.ON_STATUS_CHANGE.value);
     statusChange.addCategory(getPackageName());
     statusChange.putExtra(OutlinePlugin.MessageData.PAYLOAD.value, status.value);
-    statusChange.putExtra(
-        OutlinePlugin.MessageData.ERROR_CODE.value, OutlinePlugin.ErrorCode.NO_ERROR.value);
     statusChange.putExtra(OutlinePlugin.MessageData.TUNNEL_ID.value, tunnelConfig.id);
     sendBroadcast(statusChange);
   }
