@@ -30,7 +30,6 @@ import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -150,6 +149,36 @@ public class VpnTunnelService extends VpnService {
 
   public VpnService.Builder newBuilder() {
     return new VpnService.Builder();
+  }
+
+  /**
+   * Helper method to build a TunnelConfig from a JSON object.
+   *
+   * @param tunnelId unique identifier for the tunnel.
+   * @param config JSON object containing TunnelConfig values.
+   * @throws IllegalArgumentException if `tunnelId` or `config` are null.
+   * @throws JSONException if parsing `config` fails.
+   * @return populated TunnelConfig
+   */
+  public static TunnelConfig makeTunnelConfig(final String tunnelId, final JSONObject config)
+      throws Exception {
+    if (tunnelId == null || config == null) {
+      throw new IllegalArgumentException("Must provide a tunnel ID and JSON configuration");
+    }
+    final TunnelConfig tunnelConfig = new TunnelConfig();
+    tunnelConfig.id = tunnelId;
+    tunnelConfig.proxy = new ShadowsocksConfig();
+    tunnelConfig.proxy.host = config.getString("host");
+    tunnelConfig.proxy.port = config.getInt("port");
+    tunnelConfig.proxy.password = config.getString("password");
+    tunnelConfig.proxy.method = config.getString("method");
+    try {
+      // `name` is an optional property; don't throw if it fails to parse.
+      tunnelConfig.name = config.getString("name");
+    } catch (JSONException e) {
+      LOG.fine("Tunnel config missing name");
+    }
+    return tunnelConfig;
   }
 
   // Tunnel API
@@ -432,20 +461,14 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
-      final TunnelConfig config = new TunnelConfig();
-      config.id = tunnel.getString(TUNNEL_ID_KEY);
-      config.proxy = new ShadowsocksConfig();
-      final JSONObject proxyConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
-      config.proxy.host = proxyConfig.getString("host");
-      config.proxy.port = proxyConfig.getInt("port");
-      config.proxy.password = proxyConfig.getString("password");
-      config.proxy.method = proxyConfig.getString("method");
-
+      final String tunnelId = tunnel.getString(TUNNEL_ID_KEY);
+      final JSONObject jsonConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
+      final TunnelConfig config = makeTunnelConfig(tunnelId, jsonConfig);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
       startForegroundWithNotification(config, OutlinePlugin.TunnelStatus.RECONNECTING);
       startTunnel(config, true);
-    } catch (JSONException e) {
+    } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON tunnel data", e);
     }
   }

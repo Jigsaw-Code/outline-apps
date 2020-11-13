@@ -41,7 +41,6 @@ import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
 import org.outline.log.SentryErrorReporter;
 import org.outline.shadowsocks.ShadowsocksConnectivity;
-import org.outline.shadowsocks.ShadowsocksConfig;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 
@@ -293,16 +292,10 @@ public class OutlinePlugin extends CordovaPlugin {
 
   private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
-    final TunnelConfig tunnelConfig = new TunnelConfig();
-    tunnelConfig.id = tunnelId;
-    tunnelConfig.proxy = new ShadowsocksConfig();
+    final TunnelConfig tunnelConfig;
     try {
-      tunnelConfig.name = config.getString("name");
-      tunnelConfig.proxy.host = config.getString("host");
-      tunnelConfig.proxy.port = config.getInt("port");
-      tunnelConfig.proxy.password = config.getString("password");
-      tunnelConfig.proxy.method = config.getString("method");
-    } catch (JSONException e) {
+      tunnelConfig = VpnTunnelService.makeTunnelConfig(tunnelId, config);
+    } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION.value;
     }
