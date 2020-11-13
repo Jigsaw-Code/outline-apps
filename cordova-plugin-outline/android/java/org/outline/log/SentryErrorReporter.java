@@ -139,15 +139,11 @@ public class SentryErrorReporter {
 
   private static void recordVpnProcessLogs() {
     final List<String> vpnProcessLogs = OutlineLogger.getVpnProcessLogs();
-    int numBreadcrumbsRecorded = 0;
     // Logs are sorted increasingly by timestamp.
-    for (int i = vpnProcessLogs.size() - 1; i > 0; --i) {
-      if (numBreadcrumbsRecorded >= MAX_BREADCRUMBS / 2) {
-        // Send at most MAX_BREADCRUMBS/2 breadcrumbs from VPN process logs.
-        break;
-      }
+    // Record at most MAX_BREADCRUMBS/2 breadcrumbs from VPN process logs.
+    int vpnProcessLogsStartIndex = Math.max(0, vpnProcessLogs.size() - MAX_BREADCRUMBS / 2);
+    for (int i = vpnProcessLogsStartIndex; i < vpnProcessLogs.size(); ++i) {
       recordVpnProcessBreadcrumb(vpnProcessLogs.get(i));
-      numBreadcrumbsRecorded++;
     }
   }
 
