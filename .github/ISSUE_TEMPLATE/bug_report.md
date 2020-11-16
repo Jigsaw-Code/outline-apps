@@ -19,12 +19,9 @@ What behavior did you expect?
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Client (please complete the following information):**
- - Client App Version [e.g. iOS 1.4.0]
- - Your Operating System: [e.g. iOS 14.2]
-
-**Server (please complete the following information):**
- - Cloud Provider: [e.g. DigitalOcean, Google Cloud, Amazon AWS]
+**Client System (please complete the following information):**
+ - Outline Client Version [e.g. iOS 1.3.1]
+ - Your Operating System: [e.g. iOS 14.2, Windows 10]
 
 **Submit Feedback**
 Please submit feedback through the app and label it with this issue number.
