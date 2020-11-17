@@ -77,11 +77,10 @@ jobs:
 
     # https://www.electron.build/multi-platform-build
     - stage: package
-      env:
-        - DESC=windows
       sudo: required
       services: docker
       env:
+        - DESC=windows
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
       script:
