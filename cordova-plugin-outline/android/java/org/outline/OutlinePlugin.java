@@ -139,14 +139,19 @@ public class OutlinePlugin extends CordovaPlugin {
 
   private static final int REQUEST_CODE_PREPARE_VPN = 100;
 
+  // AIDL interface for VpnTunnelService, which is bound for the lifetime of this class.
+  // The VpnTunnelService runs in a sub process and is thread-safe.
+  // A race condition may occur when calling methods on this instance if the service unbinds.
+  // We catch any exceptions, which should generally be transient and recoverable, and report them
+  // to the WebView.
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
   private StartVpnRequest startVpnRequest;
   // Tunnel status change callback by tunnel ID.
-  private Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
+  private final Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
 
   // Connection to the VPN service.
-  private ServiceConnection vpnServiceConnection = new ServiceConnection() {
+  private final ServiceConnection vpnServiceConnection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName className, IBinder binder) {
       vpnTunnelService = IVpnTunnelService.Stub.asInterface(binder);
@@ -155,15 +160,14 @@ public class OutlinePlugin extends CordovaPlugin {
 
     @Override
     public void onServiceDisconnected(ComponentName className) {
-      vpnTunnelService = null;
       LOG.warning("VPN service disconnected");
       // Rebind the service so the VPN automatically reconnects if the service process crashed.
       Context context = getBaseContext();
-      Intent reconnect = new Intent(context, VpnTunnelService.class);
-      reconnect.putExtra(VpnServiceStarter.AUTOSTART_EXTRA, true);
+      Intent rebind = new Intent(context, VpnTunnelService.class);
+      rebind.putExtra(VpnServiceStarter.AUTOSTART_EXTRA, true);
       // Send the error reporting API key so the potential crash is reported.
-      reconnect.putExtra(MessageData.ERROR_REPORTING_API_KEY.value, errorReportingApiKey);
-      context.bindService(reconnect, vpnServiceConnection, Context.BIND_AUTO_CREATE);
+      rebind.putExtra(MessageData.ERROR_REPORTING_API_KEY.value, errorReportingApiKey);
+      context.bindService(rebind, vpnServiceConnection, Context.BIND_AUTO_CREATE);
     }
   };
 
@@ -235,7 +239,6 @@ public class OutlinePlugin extends CordovaPlugin {
           final JSONObject config = args.getJSONObject(1);
           int errorCode = startVpnTunnel(tunnelId, config);
           sendErrorCode(callback, errorCode);
-          startVpnRequest = null;
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -298,6 +301,7 @@ public class OutlinePlugin extends CordovaPlugin {
       return;
     }
     executeAsync(Action.START.value, startVpnRequest.args, startVpnRequest.callback);
+    startVpnRequest = null;
   }
 
   private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
