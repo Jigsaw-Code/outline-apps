@@ -17,6 +17,9 @@ language: node_js
 node_js:
   - "10"
 
+addons:
+  ssh_known_hosts: git.example.com
+
 cache:
   yarn: true
   directories:
