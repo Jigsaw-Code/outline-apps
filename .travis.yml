@@ -18,8 +18,7 @@ node_js:
   - "10"
 
 addons:
-  ssh_known_hosts: git.example.com
-
+  ssh_known_hosts: github.com
 cache:
   yarn: true
   directories:
