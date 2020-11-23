@@ -1,6 +1,4 @@
-#!/usr/bin/env node
-
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const child_process = require('child_process');
+package org.outline;
 
-module.exports = function(context) {
-  console.log('Copying Android third party libraries...');
-  child_process.execSync('mkdir -p plugins/cordova-plugin-outline/android/libs');
-  child_process.execSync(
-      `cp third_party/outline-go-tun2socks/android/tun2socks.aar plugins/cordova-plugin-outline/android/libs/`);
-  child_process.execSync(
-      `cp -R third_party/outline-go-tun2socks/android/jni plugins/cordova-plugin-outline/android/libs/obj`);
+import org.outline.shadowsocks.ShadowsocksConfig;
+
+parcelable TunnelConfig {
+  String id;
+  String name;
+  ShadowsocksConfig proxy;
 }
