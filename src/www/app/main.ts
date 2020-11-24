@@ -96,7 +96,6 @@ export function main(platform: OutlinePlatform) {
           },
           (e) => {
             onUnexpectedError(e);
-            throw e;
           });
 }
 

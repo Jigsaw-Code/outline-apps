@@ -499,7 +499,6 @@ export class App {
 
   private syncConnectivityStateToServerCards() {
     for (const server of this.serverRepo.getAll()) {
-      // TODO(alalama): should we wait? thread safety?
       this.syncServerConnectivityState(server);
     }
   }
