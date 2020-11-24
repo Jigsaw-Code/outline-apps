@@ -40,7 +40,6 @@ import org.outline.log.OutlineLogger;
 import org.outline.log.SentryErrorReporter;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
-import shadowsocks.Shadowsocks;
 
 public class OutlinePlugin extends CordovaPlugin {
   private static final Logger LOG = Logger.getLogger(OutlinePlugin.class.getName());
@@ -249,14 +248,8 @@ public class OutlinePlugin extends CordovaPlugin {
           boolean isActive = isTunnelActive(tunnelId);
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
         } else if (Action.IS_REACHABLE.is(action)) {
-          final String tunnelId = args.getString(0);
-          boolean isReachable = false;
-          try {
-            Shadowsocks.checkServerReachable(args.getString(1), args.getInt(2));
-            isReachable = true;
-          } catch (Exception e) {
-            LOG.fine(String.format(Locale.ROOT, "Server %s unreachable", tunnelId));
-          }
+          boolean isReachable =
+              this.vpnTunnelService.isTunnelReachable(args.getString(1), args.getInt(2));
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
 
           // Static actions

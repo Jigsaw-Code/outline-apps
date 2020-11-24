@@ -42,6 +42,7 @@ import org.outline.OutlinePlugin;
 import org.outline.TunnelConfig;
 import org.outline.log.SentryErrorReporter;
 import org.outline.shadowsocks.ShadowsocksConfig;
+import shadowsocks.Shadowsocks;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -77,6 +78,11 @@ public class VpnTunnelService extends VpnService {
     @Override
     public boolean isTunnelActive(String tunnelId) {
       return VpnTunnelService.this.isTunnelActive(tunnelId);
+    }
+
+    @Override
+    public boolean isTunnelReachable(String host, int port) {
+      return VpnTunnelService.this.isTunnelReachable(host, port);
     }
 
     @Override
@@ -257,6 +263,16 @@ public class VpnTunnelService extends VpnService {
       return false;
     }
     return tunnelConfig.id.equals(tunnelId);
+  }
+
+  private boolean isTunnelReachable(final String host, final int port) {
+    boolean isReachable = true;
+    try {
+      Shadowsocks.checkServerReachable(host, port);
+    } catch (Exception e) {
+      isReachable = false;
+    }
+    return isReachable;
   }
 
   /* Helper method to tear down an active tunnel. */

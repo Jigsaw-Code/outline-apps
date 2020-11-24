@@ -23,7 +23,7 @@ interface IVpnTunnelService {
   /**
    * Establishes a system-wide VPN connected to a remote Shadowsocks proxy server.
    * All device traffic is routed as follows:
-   *  |VPN TUN interface| <-> |tun2socks| <-> |Shadowsocks server|.
+   *  |VPN TUN interface| <-> |outline-go-tun2socks| <-> |Shadowsocks server|.
    *
    * This method can be called multiple times with different configurations. The VPN will not be
    * torn down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
@@ -52,6 +52,14 @@ interface IVpnTunnelService {
    * @return boolean indicating whether the tunnel is active.
    */
   boolean isTunnelActive(String tunnelId);
+
+  /**
+   * Determines whether a tunnel is reachable via TCP.
+   *
+   * @param host IP or hostname string.
+   * @return port TCP port number.
+   */
+  boolean isTunnelReachable(String host, int port);
 
   /**
    * Initializes the error reporting framework on the VPN service process.
