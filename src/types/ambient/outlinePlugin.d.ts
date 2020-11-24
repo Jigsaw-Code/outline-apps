@@ -45,7 +45,7 @@ declare namespace cordova.plugins.outline {
     name?: string;
   }
 
-  // Represents a VPN tunnel to a remote server.
+  // Represents a VPN tunnel to a proxy server.
   class Tunnel {
     // Creates a new instance with |serverConfig|.
     // A sequential ID will be generated if |id| is absent.
