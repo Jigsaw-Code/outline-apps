@@ -18,7 +18,7 @@
       "AppImage"
     ],
     "files": [
-      "third_party/go-tun2socks/linux",
+      "third_party/outline-go-tun2socks/linux",
       "tools/outline_proxy_controller/dist"
     ],
     "icon": "build/icons/png",
@@ -32,7 +32,7 @@
       }
     ],
     "files": [
-      "third_party/go-tun2socks/win32"
+      "third_party/outline-go-tun2socks/win32"
     ],
     "icon": "build/icons/win/icon.ico"
   },

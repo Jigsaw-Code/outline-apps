@@ -34,7 +34,8 @@
         android:name="org.outline.vpn.VpnTunnelService"
         android:exported="false"
         android:label="@string/app_name"
-        android:permission="android.permission.BIND_VPN_SERVICE">
+        android:permission="android.permission.BIND_VPN_SERVICE"
+        android:process=":vpn">
         <intent-filter>
           <action android:name="android.net.VpnService" />
         </intent-filter>
@@ -54,6 +55,7 @@
 
     <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
 
+    <source-file src="android/aidl" target-dir="app/src/main" />
     <source-file
       src="android/java/org/outline/OutlinePlugin.java"
       target-dir="app/src/main/java/org/outline" />

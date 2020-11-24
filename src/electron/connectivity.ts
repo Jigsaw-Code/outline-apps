@@ -60,7 +60,8 @@ export class ShadowsocksConnectivity {
     args.push('-proxyPassword', config.password || '');
     args.push('-proxyCipher', config.method || '');
     args.push('-checkConnectivity');
-    this.tun2socks = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'), args);
+    this.tun2socks =
+        new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'), args);
   }
 
   // Returns the process return code once it exits.
