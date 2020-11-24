@@ -249,7 +249,7 @@ public class OutlinePlugin extends CordovaPlugin {
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
         } else if (Action.IS_REACHABLE.is(action)) {
           boolean isReachable =
-              this.vpnTunnelService.isTunnelReachable(args.getString(1), args.getInt(2));
+              this.vpnTunnelService.isServerReachable(args.getString(1), args.getInt(2));
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
 
           // Static actions
@@ -317,14 +317,13 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // Returns whether the VPN service is running a particular tunnel instance.
   private boolean isTunnelActive(final String tunnelId) {
-    boolean isActive = false;
     try {
-      isActive = vpnTunnelService.isTunnelActive(tunnelId);
+      return vpnTunnelService.isTunnelActive(tunnelId);
     } catch (Exception e) {
       LOG.log(Level.SEVERE,
           String.format(Locale.ROOT, "Failed to determine if tunnel is active: %s", tunnelId), e);
     }
-    return isActive;
+    return false;
   }
 
   // Broadcasts

@@ -54,12 +54,12 @@ interface IVpnTunnelService {
   boolean isTunnelActive(String tunnelId);
 
   /**
-   * Determines whether a tunnel is reachable via TCP.
+   * Determines whether a server is reachable via TCP.
    *
    * @param host IP or hostname string.
    * @return port TCP port number.
    */
-  boolean isTunnelReachable(String host, int port);
+  boolean isServerReachable(String host, int port);
 
   /**
    * Initializes the error reporting framework on the VPN service process.

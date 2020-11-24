@@ -30,8 +30,6 @@ import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,14 +48,12 @@ import shadowsocks.Shadowsocks;
  */
 public class VpnTunnelService extends VpnService {
   private static final Logger LOG = Logger.getLogger(VpnTunnelService.class.getName());
-  private static final int THREAD_POOL_SIZE = 5;
   private static final int NOTIFICATION_SERVICE_ID = 1;
   private static final int NOTIFICATION_COLOR = 0x00BFA5;
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
 
-  private ThreadPoolExecutor executorService;
   private VpnTunnel vpnTunnel;
   private TunnelConfig tunnelConfig;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
@@ -81,8 +77,8 @@ public class VpnTunnelService extends VpnService {
     }
 
     @Override
-    public boolean isTunnelReachable(String host, int port) {
-      return VpnTunnelService.this.isTunnelReachable(host, port);
+    public boolean isServerReachable(String host, int port) {
+      return VpnTunnelService.this.isServerReachable(host, port);
     }
 
     @Override
@@ -95,7 +91,6 @@ public class VpnTunnelService extends VpnService {
   public void onCreate() {
     LOG.info("Creating VPN service.");
     vpnTunnel = new VpnTunnel(this);
-    executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     networkConnectivityMonitor = new NetworkConnectivityMonitor();
     tunnelStore = new VpnTunnelStore(VpnTunnelService.this);
   }
@@ -265,14 +260,13 @@ public class VpnTunnelService extends VpnService {
     return tunnelConfig.id.equals(tunnelId);
   }
 
-  private boolean isTunnelReachable(final String host, final int port) {
-    boolean isReachable = true;
+  private boolean isServerReachable(final String host, final int port) {
     try {
       Shadowsocks.checkServerReachable(host, port);
     } catch (Exception e) {
-      isReachable = false;
+      return false;
     }
-    return isReachable;
+    return true;
   }
 
   /* Helper method to tear down an active tunnel. */
