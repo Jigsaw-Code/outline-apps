@@ -51,16 +51,8 @@ export class CordovaErrorReporter extends SentryErrorReporter {
   }
 
   async report(userFeedback: string, feedbackCategory: string, userEmail?: string) {
-    try {
-      await super.report(userFeedback, feedbackCategory, userEmail);
-    } catch (e) {
-      console.error(`failed to submit webview error report: ${e}`);
-    }
-    try {
-      await cordova.plugins.outline.log.send(sentry.lastEventId() || '');
-    } catch (e) {
-      console.error(`failed to submit native error report: ${e}`);
-    }
+    await super.report(userFeedback, feedbackCategory, userEmail);
+    await cordova.plugins.outline.log.send(sentry.lastEventId() || '');
   }
 }
 
