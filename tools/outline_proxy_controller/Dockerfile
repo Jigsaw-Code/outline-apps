@@ -12,5 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:cosmic
-RUN apt update && apt dist-upgrade -y && apt install -y build-essential cmake libboost-all-dev
+FROM ubuntu:focal
+RUN apt update && apt dist-upgrade -y
+# Preempt interactive tzdata prompt
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get -y install tzdata
+RUN apt install -y build-essential cmake libboost-all-dev
