@@ -24,11 +24,11 @@ export class FakeOutlineTunnel implements cordova.plugins.outline.Tunnel {
   constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {}
 
   private playBroken() {
-    return this.config.name && this.config.name.toLowerCase().includes('broken');
+    return this.config.name?.toLowerCase().includes('broken');
   }
 
   private playUnreachable() {
-    return this.config.name && this.config.name.toLowerCase().includes('unreachable');
+    return this.config.name?.toLowerCase().includes('unreachable');
   }
 
   async start(): Promise<void> {
