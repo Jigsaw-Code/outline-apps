@@ -35,7 +35,7 @@ export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
     });
   }
 
-  start(): Promise<void> {
+  async start() {
     if (this.running) {
       return Promise.resolve();
     }
@@ -44,31 +44,33 @@ export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    return promiseIpc.send('start-proxying', {config: this.config, id: this.id})
-        .then(() => {
-          this.running = true;
-        })
-        .catch((e: errors.ErrorCode|Error) => {
-          if (typeof e === 'number') {
-            throw new errors.OutlinePluginError(e);
-          } else {
-            throw e;
-          }
-        });
+    try {
+      await promiseIpc.send('start-proxying', {config: this.config, id: this.id});
+      this.running = true;
+    } catch (e) {
+      if (typeof e === 'number') {
+        throw new errors.OutlinePluginError(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
-  stop(): Promise<void> {
+  async stop() {
     if (!this.running) {
-      return Promise.resolve();
+      return;
     }
 
-    return promiseIpc.send('stop-proxying').then(() => {
+    try {
+      await promiseIpc.send('stop-proxying');
       this.running = false;
-    });
+    } catch (e) {
+      console.error(`Failed to stop tunnel ${e}`);
+    }
   }
 
-  isRunning(): Promise<boolean> {
-    return Promise.resolve(this.running);
+  async isRunning(): Promise<boolean> {
+    return this.running;
   }
 
   isReachable(): Promise<boolean> {
