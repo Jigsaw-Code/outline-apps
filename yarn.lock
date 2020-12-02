@@ -9560,9 +9560,9 @@ syntax-error@^1.1.1:
     acorn-node "^1.2.0"
 
 systeminformation@^4.26.10:
-  version "4.26.10"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.26.10.tgz#2244e7529ca9e7b8ecd6941e19fe7df7e3da9146"
-  integrity sha512-bO4FIzrjESAfh4KHwkUJym3jvKtJ4oJ2PG0BBQGBmKa0pF2oanpkB7CF4ZsSX7vfp3+GKaLzioVwpV/3Tyk+lQ==
+  version "4.30.11"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.30.11.tgz#ad0515007190dfec6bef22bc8aa1cbad7623821d"
+  integrity sha512-dR2OJMvyBeF+VZ36851O7oQEUFdNtux3xFI+xAFbWg5J/mh5lQOBiceHTkYOyvGf++mMIKgpeAmYnKy+cyWIdw==
 
 table-layout@^0.3.0:
   version "0.3.0"
