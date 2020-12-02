@@ -65,7 +65,7 @@ export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
       await promiseIpc.send('stop-proxying');
       this.running = false;
     } catch (e) {
-      console.error(`Failed to stop tunnelL ${e}`);
+      console.error(`Failed to stop tunnel ${e}`);
     }
   }
 
