@@ -27,7 +27,7 @@ using boost::asio::local::stream_protocol;
 
 void session::start() {
   auto self(shared_from_this());
-  boost::asio::spawn(strand_, [this, self](boost::asio::yield_context yield) {
+  boost::asio::spawn(executor_, [this, self](boost::asio::yield_context yield) {
     try {
       std::ostringstream response;
       std::string clientCommand, buffer;
@@ -144,9 +144,8 @@ OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_con
   ::unlink(unix_socket_name.c_str());
   boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
     stream_protocol::acceptor acceptor(io_context, stream_protocol::endpoint(unix_socket_name));
-    auto result =
-        chmod(unix_socket_name.c_str(),
-              S_IRWXU | S_IROTH | S_IWOTH);  // enables all user to read from and write into socket
+    chmod(unix_socket_name.c_str(),
+          S_IRWXU | S_IROTH | S_IWOTH);  // enables all user to read from and write into socket
 
     for (;;) {
       boost::system::error_code ec;
