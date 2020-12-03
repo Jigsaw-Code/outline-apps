@@ -22,7 +22,7 @@ import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {FakeOutlineTunnel} from './fake_connection';
+import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';

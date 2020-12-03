@@ -24,44 +24,40 @@ export class FakeOutlineTunnel implements cordova.plugins.outline.Tunnel {
   constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {}
 
   private playBroken() {
-    return this.config.name && this.config.name.toLowerCase().includes('broken');
+    return this.config.name?.toLowerCase().includes('broken');
   }
 
   private playUnreachable() {
-    return !(this.config.name && this.config.name.toLowerCase().includes('unreachable'));
+    return this.config.name?.toLowerCase().includes('unreachable');
   }
 
-  start(): Promise<void> {
+  async start(): Promise<void> {
     if (this.running) {
-      return Promise.resolve();
+      return;
     }
 
-    if (!this.playUnreachable()) {
-      return Promise.reject(new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE));
+    if (this.playUnreachable()) {
+      throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
     } else if (this.playBroken()) {
-      return Promise.reject(
-          new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE));
-    } else {
-      this.running = true;
-      return Promise.resolve();
+      throw new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE);
     }
+
+    this.running = true;
   }
 
-  stop(): Promise<void> {
+  async stop(): Promise<void> {
     if (!this.running) {
-      return Promise.resolve();
+      return;
     }
-
     this.running = false;
-    return Promise.resolve();
   }
 
-  isRunning(): Promise<boolean> {
-    return Promise.resolve(this.running);
+  async isRunning(): Promise<boolean> {
+    return this.running;
   }
 
-  isReachable(): Promise<boolean> {
-    return Promise.resolve(!this.playUnreachable());
+  async isReachable(): Promise<boolean> {
+    return !this.playUnreachable();
   }
 
   onStatusChange(listener: (status: TunnelStatus) => void): void {
