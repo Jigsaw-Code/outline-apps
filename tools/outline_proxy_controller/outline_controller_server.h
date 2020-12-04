@@ -55,7 +55,7 @@ class session : public std::enable_shared_from_this<session> {
   session(stream_protocol::socket sock,
           std::shared_ptr<OutlineProxyController> outlineProxyController)
       : socket_(std::move(sock)),
-        strand_(socket_.get_io_context()),
+        executor_(socket_.get_executor()),
         outlineProxyController_(outlineProxyController) {}
   /**
    * callback from async_accept, starts a new session when
@@ -77,7 +77,7 @@ class session : public std::enable_shared_from_this<session> {
   std::tuple<int, std::string, std::string> runClientCommand(std::string clientCommand);
 
   stream_protocol::socket socket_;
-  boost::asio::io_context::strand strand_;
+  boost::asio::executor executor_;
   std::shared_ptr<OutlineProxyController> outlineProxyController_;
 };
 
