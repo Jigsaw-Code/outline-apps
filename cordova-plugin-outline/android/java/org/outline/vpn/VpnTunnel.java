@@ -38,11 +38,9 @@ public class VpnTunnel {
   private static final String VPN_INTERFACE_NETMASK = "255.255.255.0";
   private static final String VPN_IPV6_NULL = null;  // No IPv6 support.
   private static final int VPN_INTERFACE_MTU = 1500;
-  // OpenDNS and Dyn IP addresses.
+  // OpenDNS, Cloudflare, and Quad9 DNS resolvers' IP addresses.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
-    "216.146.35.35", "216.146.36.36",
-    "208.67.222.222", "208.67.220.220"
-  };
+      "208.67.222.222", "208.67.220.220", "1.1.1.1", "9.9.9.9"};
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
   private static final int DNS_RESOLVER_PORT = 53;
   private static final int TRANSPARENT_DNS_ENABLED = 1;
