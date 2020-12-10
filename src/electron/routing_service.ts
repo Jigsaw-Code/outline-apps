@@ -18,6 +18,7 @@ import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import {getServiceStartCommand} from './util';
 
 const SERVICE_NAME =

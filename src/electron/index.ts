@@ -25,6 +25,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
+import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {TunnelStatus} from '../www/app/tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {TunnelManager} from './process_manager';
