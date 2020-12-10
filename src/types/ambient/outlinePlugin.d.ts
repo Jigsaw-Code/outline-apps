@@ -14,7 +14,7 @@
 
 // Typings for cordova-plugin-outline
 
-declare type ITunnel = import('../../www/app/tunnel').Tunnel;
+declare type Tunnel = import('../../www/app/tunnel').Tunnel;
 declare type TunnelStatus = import('../../www/app/tunnel').TunnelStatus;
 declare type ShadowsocksConfig = import('../../www/model/shadowsocks').ShadowsocksConfig;
 
@@ -33,7 +33,7 @@ declare namespace cordova.plugins.outline {
   function quitApplication(): void;
 
   // Implements the Tunnel interface with native functionality.
-  class Tunnel implements ITunnel {
+  class Tunnel implements Tunnel {
     // Creates a new instance with `config`.
     // A sequential ID will be generated if `id` is absent.
     constructor(config: ShadowsocksConfig, id?: string);
