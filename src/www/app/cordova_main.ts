@@ -18,7 +18,7 @@
 import * as sentry from '@sentry/browser';
 
 import {EventQueue} from '../model/events';
-import {ShadowsocksConfig} from '../model/shadowsocks';
+import {ServerConfig} from '../model/server';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -68,7 +68,7 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getPersistentServerFactory() {
-    return (serverId: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
+    return (serverId: string, config: ServerConfig, eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
           this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(config, serverId) :
