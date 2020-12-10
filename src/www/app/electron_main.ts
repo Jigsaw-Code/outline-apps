@@ -90,8 +90,7 @@ main({
     return isOsSupported;
   },
   getPersistentServerFactory: () => {
-    return (serverId: string, config: cordova.plugins.outline.ServerConfig,
-            eventQueue: EventQueue) => {
+    return (serverId: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
           isOsSupported ? new ElectronOutlineTunnel(config, serverId) :

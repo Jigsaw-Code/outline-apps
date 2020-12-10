@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path="../types/ambient/outlinePlugin.d.ts" />
-
 import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
@@ -27,6 +25,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {TunnelManager} from './process_manager';
 
@@ -282,7 +281,7 @@ app.on('activate', () => {
   }
 });
 
-promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
+promiseIpc.on('is-reachable', (config: ShadowsocksConfig) => {
   return connectivity
       .isServerReachable(config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS)
       .then(() => {
@@ -294,8 +293,7 @@ promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => 
 });
 
 // Invoked by both the start-proxying event handler and auto-connect.
-async function startVpn(
-    config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
+async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = false) {
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -363,7 +361,7 @@ function sendTunnelStatus(status: TunnelStatus, tunnelId: string) {
 
 // Connects to the specified server, if that server is reachable and the credentials are valid.
 promiseIpc.on(
-    'start-proxying', async (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
+    'start-proxying', async (args: {config: ShadowsocksConfig, id: string}) => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
