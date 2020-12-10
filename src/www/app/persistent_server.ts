@@ -16,22 +16,21 @@ import * as uuidv4 from 'uuidv4';
 
 import {ServerAlreadyAdded, ShadowsocksUnsupportedCipher} from '../model/errors';
 import * as events from '../model/events';
-import {Server, ServerRepository} from '../model/server';
-import {ShadowsocksConfig} from '../model/shadowsocks';
+import {Server, ServerConfig, ServerRepository} from '../model/server';
 
 import {OutlineServer} from "./outline_server";
 
 
 export interface PersistentServer extends Server {
-  config: ShadowsocksConfig;
+  config: ServerConfig;
 }
 
 interface ConfigById {
-  [serverId: string]: ShadowsocksConfig;
+  [serverId: string]: ServerConfig;
 }
 
 export type PersistentServerFactory =
-    (id: string, config: ShadowsocksConfig, eventQueue: events.EventQueue) => PersistentServer;
+    (id: string, config: ServerConfig, eventQueue: events.EventQueue) => PersistentServer;
 
 // Maintains a persisted set of servers and liaises with the core.
 export class PersistentServerRepository implements ServerRepository {
@@ -54,7 +53,7 @@ export class PersistentServerRepository implements ServerRepository {
     return this.serverById.get(serverId);
   }
 
-  add(serverConfig: ShadowsocksConfig) {
+  add(serverConfig: ServerConfig) {
     const alreadyAddedServer = this.serverFromConfig(serverConfig);
     if (alreadyAddedServer) {
       throw new ServerAlreadyAdded(alreadyAddedServer);
@@ -105,11 +104,11 @@ export class PersistentServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  containsServer(config: ShadowsocksConfig): boolean {
+  containsServer(config: ServerConfig): boolean {
     return !!this.serverFromConfig(config);
   }
 
-  private serverFromConfig(config: ShadowsocksConfig): PersistentServer|undefined {
+  private serverFromConfig(config: ServerConfig): PersistentServer|undefined {
     for (const server of this.getAll()) {
       if (configsMatch(server.config, config)) {
         return server;
@@ -159,7 +158,7 @@ export class PersistentServerRepository implements ServerRepository {
   }
 }
 
-function configsMatch(left: ShadowsocksConfig, right: ShadowsocksConfig) {
+function configsMatch(left: ServerConfig, right: ServerConfig) {
   return left.host === right.host && left.port === right.port && left.method === right.method &&
       left.password === right.password;
 }

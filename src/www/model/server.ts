@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {ShadowsocksConfig} from './shadowsocks';
+
 // TODO: add guidelines for this file
 
 export interface Server {
@@ -38,10 +40,10 @@ export interface Server {
   checkReachable(): Promise<boolean>;
 }
 
+export type ServerConfig = ShadowsocksConfig;
+
 export interface ServerRepository {
-  // TODO: change object to cordova.plugins.uproyx.ServerConfig once we decouple the definition from
-  // cordova-plugin-outline
-  add(serverConfig: {}): void;
+  add(serverConfig: ServerConfig): void;
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];
