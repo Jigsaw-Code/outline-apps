@@ -20,7 +20,8 @@ export const enum TunnelStatus {
   RECONNECTING
 }
 
-// Represents a VPN tunnel to a Shadowsocks proxy server.
+// Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
+// functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
 export interface Tunnel {
   // Unique instance identifier.
   readonly id: string;
