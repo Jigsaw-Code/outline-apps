@@ -16,7 +16,9 @@ import {ChildProcess, execSync, spawn} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
+import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
 import {RoutingDaemon} from './routing_service';
@@ -116,8 +118,7 @@ export class TunnelManager {
 
   private reconnectedListener?: () => void;
 
-  constructor(
-      private config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
+  constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
@@ -327,7 +328,7 @@ class SsLocal extends ChildProcessHelper {
     super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
-  start(config: cordova.plugins.outline.ServerConfig) {
+  start(config: ShadowsocksConfig) {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');

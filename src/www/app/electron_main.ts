@@ -17,6 +17,7 @@ import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';
 
 import {EventQueue} from '../model/events';
+import {ServerConfig} from '../model/server';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
@@ -90,8 +91,7 @@ main({
     return isOsSupported;
   },
   getPersistentServerFactory: () => {
-    return (serverId: string, config: cordova.plugins.outline.ServerConfig,
-            eventQueue: EventQueue) => {
+    return (serverId: string, config: ServerConfig, eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
           isOsSupported ? new ElectronOutlineTunnel(config, serverId) :

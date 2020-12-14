@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
-
 import * as errors from '../model/errors';
+import {ShadowsocksConfig} from '../model/shadowsocks';
 
+import {Tunnel, TunnelStatus} from './tunnel';
+
+// Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
 // servers in the server list will not work as expected.
-export class FakeOutlineTunnel implements cordova.plugins.outline.Tunnel {
+export class FakeOutlineTunnel implements Tunnel {
   private running = false;
 
-  constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {}
+  constructor(public config: ShadowsocksConfig, public id: string) {}
 
   private playBroken() {
     return this.config.name?.toLowerCase().includes('broken');
