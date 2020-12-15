@@ -14,9 +14,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10
-          
+
       - name: Build
-        run: yarn gulp build --platform=osx
+        run: yarn && yarn gulp build --platform=osx
   
   build-electron:
     runs-on: ${{ matrix.os }}
@@ -33,4 +33,4 @@ jobs:
           node-version: 10
 
       - name: Build
-        run: yarn do src/electron/build
+        run: yarn && yarn do src/electron/build
