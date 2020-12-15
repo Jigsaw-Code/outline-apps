@@ -19,7 +19,7 @@ jobs:
     runs-on: macos-lastest
     steps:
       - name: Build
-      - run: yarn gulp build --platform=osx
+        run: yarn gulp build --platform=osx
   
   build-electron:
     needs: setup
@@ -29,5 +29,4 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Build
-      - run: yarn do src/electron/build
-      
+        run: yarn do src/electron/build
