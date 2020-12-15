@@ -3,7 +3,6 @@ name: Build and Test
 on: [push, pull_request]
 
 jobs:
-# TODO cache installed modules: https://github.com/actions/cache
   build-and-test:
     name: Build and Test Web App
     runs-on: ubuntu-latest
