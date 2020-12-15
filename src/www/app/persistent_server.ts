@@ -24,11 +24,11 @@ export interface PersistentServer extends Server {
   config: ServerConfig;
 }
 
-interface ConfigByIdV0 {
+export interface ConfigByIdV0 {
   [serverId: string]: ShadowsocksConfig;
 }
 
-interface ConfigById {
+export interface ConfigById {
   [serverId: string]: ServerConfig;
 }
 
@@ -38,15 +38,20 @@ export type PersistentServerFactory =
 // Maintains a persisted set of servers and liaises with the core.
 export class PersistentServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
-  private static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
-  private static readonly SERVERS_STORAGE_KEY = 'servers_v1';
+  public static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
+  public static readonly SERVERS_STORAGE_KEY = 'servers_v1';
   private serverById!: Map<string, PersistentServer>;
   private lastForgottenServer: PersistentServer|null = null;
 
   constructor(
       public readonly createServer: PersistentServerFactory, private eventQueue: events.EventQueue,
       private storage: Storage) {
-    this.migrateStorageV1();
+    try {
+      migrateServerConfigStorageToV1(this.storage);
+    } catch (e) {
+      console.error(`failed to migrate storage to V1: ${e}`);
+      return;
+    }
     this.loadServers();
   }
 
@@ -170,42 +175,34 @@ export class PersistentServerRepository implements ServerRepository {
       }
     }
   }
+}
 
-  // Performs a data schema migration from `ConfigByIdV0` to `ConfigById`.
-  // TODO(alalama): unit test
-  migrateStorageV1() {
-    if (this.storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY)) {
-      console.debug('Server storage already migrated to V1.');
-      return;
-    }
-    const serversJsonV0 = this.storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY_V0);
-    if (!serversJsonV0) {
-      console.debug('No V0 servers found in storage');
-      return;
-    }
-    let configByIdV0: ConfigByIdV0 = {};
-    try {
-      configByIdV0 = JSON.parse(serversJsonV0);
-    } catch (e) {
-      console.error('Failed to migrate server storage to V1', e);
-      return;
-    }
-    const configByIdV1: ConfigById = {};
-    for (const serverId in configByIdV0) {
-      if (!configByIdV0.hasOwnProperty(serverId)) {
-        continue;
-      }
-      const proxy = configByIdV0[serverId];
-      const name = proxy.name;
-      configByIdV1[serverId] = {proxy, name};
-    }
-    try {
-      const serversJsonV1 = JSON.stringify(configByIdV1);
-      this.storage.setItem(PersistentServerRepository.SERVERS_STORAGE_KEY, serversJsonV1);
-    } catch (e) {
-      console.error('Failed to migrate server storage to V1', e);
-    }
+// Performs a data schema migration from `ConfigByIdV0` to `ConfigById` on `storage`.
+export function migrateServerConfigStorageToV1(storage: Storage) {
+  if (storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY)) {
+    console.debug('server storage already migrated to V1');
+    return;
   }
+  const serversJsonV0 = storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY_V0);
+  if (!serversJsonV0) {
+    console.debug('no V0 servers found in storage');
+    return;
+  }
+
+  let configByIdV0: ConfigByIdV0 = {};
+  configByIdV0 = JSON.parse(serversJsonV0);
+  const configByIdV1: ConfigById = {};
+  for (const serverId in configByIdV0) {
+    if (!configByIdV0.hasOwnProperty(serverId)) {
+      continue;
+    }
+    const proxy = configByIdV0[serverId];
+    const name = proxy.name;
+    configByIdV1[serverId] = {proxy, name};
+  }
+
+  const serversJsonV1 = JSON.stringify(configByIdV1);
+  storage.setItem(PersistentServerRepository.SERVERS_STORAGE_KEY, serversJsonV1);
 }
 
 function configsMatch(left: ServerConfig, right: ServerConfig) {
