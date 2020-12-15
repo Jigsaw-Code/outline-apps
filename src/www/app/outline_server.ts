@@ -75,8 +75,12 @@ export class OutlineServer implements PersistentServer {
       if (this.config.source) {
         console.log(`fetching proxy config`);
         const response = await this.tunnel.fetchProxyConfig(this.config.source);
-        if (response.statusCode >= 400 || !response.proxies) {
-          throw new Error(`failed to fetch proxy config with status code ${response.statusCode}`);
+        if (response.statusCode >= 400) {
+          console.error(`failed to fetch proxy config with status code ${response.statusCode}`);
+          throw new errors.HttpError(response.statusCode);
+        } else if (!response.proxies || response.proxies.length === 0) {
+          console.error(`received empty proxy config list`);
+          throw new errors.UnsupportedServerConfiguration();
         }
         if (response.redirectUrl && isPermanentRedirect(response.statusCode)) {
           this.eventQueue.enqueue(

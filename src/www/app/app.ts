@@ -177,6 +177,8 @@ export class App {
     } else {
       messageKey = 'error-unexpected';
     }
+    // TODO(alalama): messages, l10n for UnsupportedServerConfiguration, TlsCertificateError,
+    // DomainResolutionError, HttpError
 
     const message =
         messageParams ? this.localize(messageKey, ...messageParams) : this.localize(messageKey);
@@ -314,15 +316,22 @@ export class App {
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard && accessKey in this.ignoredAccessKeys) {
-      return console.debug('Ignoring access key');
-    } else if (fromClipboard && addServerView.isAddingServer()) {
-      return console.debug('Already adding a server');
+    if (!accessKey) {
+      return console.warn('Attempted to add an empty access key');
+    }
+    if (fromClipboard) {
+      if (accessKey in this.ignoredAccessKeys) {
+        return console.debug('Ignoring access key');
+      } else if (addServerView.isAddingServer()) {
+        return console.debug('Already adding a server');
+      } else if (!accessKey.startsWith('ss://')) {
+        return console.debug('Ignoring non ss: URL from clipboard');
+      }
     }
 
     let serverConfig: ServerConfig;
     // TODO(alalama): support ssconf://?
-    if (accessKey.startsWith('https://')) {
+    if (accessKey.startsWith('https://') && new URL(accessKey)) {
       serverConfig = {source: {url: accessKey}};
       // TODO(alalama): refine name, l10n
       serverConfig.name = 'Dynamic Server';
