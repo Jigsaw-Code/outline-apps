@@ -3,11 +3,9 @@ name: Build and Test
 on: [push, pull_request]
 
 jobs:
-  setup:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+# TODO cache installed modules: https://github.com/actions/cache
+  build-mac:
+    runs-on: macos-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v1
@@ -16,21 +14,23 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10
-# TODO cache installed modules: https://github.com/actions/cache
-  
-  build-mac:
-    needs: setup
-    runs-on: macos-lastest
-    steps:
+          
       - name: Build
         run: yarn gulp build --platform=osx
   
   build-electron:
-    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v1
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
       - name: Build
         run: yarn do src/electron/build
