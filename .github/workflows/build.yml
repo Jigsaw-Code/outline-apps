@@ -4,8 +4,9 @@ on: [push, pull_request]
 
 jobs:
 # TODO cache installed modules: https://github.com/actions/cache
-  build-mac:
-    runs-on: macos-latest
+  build-webapp:
+    name: Build and Test Web App
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v1
@@ -16,13 +17,12 @@ jobs:
           node-version: 10
 
       - name: Build
-        run: yarn && yarn gulp build --platform=osx
+        run: yarn && yarn gulp build --platform=browser
   
   build-electron:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Build Electron App
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v1
