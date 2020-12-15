@@ -34,7 +34,6 @@ jobs:
 
       - name: Check yarn cache
         uses: actions/cache@v2
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -42,27 +41,8 @@ jobs:
             ${{ runner.os }}-yarn-
       
       - name: Install dependencies
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn --prefer-offline
 
       - name: ${{ matrix.step_name }}
         run: eval "${{ matrix.build_command }}"
-  
-  # build-electron:
-  #   name: Build Electron App
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v1
-
-  #     - name: Install Node.js, NPM and Yarn
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 10
-       
-  #     - name: Show Environment Info
-  #       run: yarn -v
-
-  #     - name: Build
-  #       run: yarn && yarn do src/electron/build
+        
