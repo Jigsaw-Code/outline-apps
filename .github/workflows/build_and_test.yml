@@ -16,6 +16,9 @@ jobs:
         with:
           node-version: 10
 
+      - name: Show Environment Info
+        run: yarn -v
+
       - name: Build
         run: yarn && yarn gulp build --platform=browser
   
@@ -31,6 +34,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10
+       
+      - name: Show Environment Info
+        run: yarn -v
 
       - name: Build
         run: yarn && yarn do src/electron/build
