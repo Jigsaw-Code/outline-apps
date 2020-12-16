@@ -6,14 +6,6 @@ jobs:
   build-and-test:
     name: Build and Test Web App
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - step_name: "Build and test web app"
-            build_command: "yarn gulp build --platform=browser && yarn do scripts/test"
-          - step_name: "Build Electron app"
-            build_command: "yarn do src/electron/build"
-
 
     steps:
       - name: Checkout repo
@@ -42,5 +34,11 @@ jobs:
       - name: Install dependencies
         run: yarn --prefer-offline
 
-      - name: ${{ matrix.step_name }}
-        run: eval "${{ matrix.build_command }}"
+      - name: Build web app
+        run: yarn gulp build --platform=browser
+      
+      - name: Test web app
+        run: yarn do scripts/test
+
+      - name: Build Electron app
+        run: yarn do src/electron/build
