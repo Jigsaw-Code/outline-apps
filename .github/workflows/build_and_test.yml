@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build-and-test:
-    name: Build and Test Web App
+    name: Build and Test Web and Electron Apps
     runs-on: ubuntu-latest
 
     steps:
