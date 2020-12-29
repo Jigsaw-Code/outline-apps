@@ -15,12 +15,9 @@
 'use strict';
 
 const browserify = require('browserify');
-const babel = require('gulp-babel');
-const babel_preset_env = require('babel-preset-env');
 const child_process = require('child_process');
 const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
-const gulpif = require('gulp-if');
 const log = require('fancy-log');
 const minimist = require('minimist');
 const os = require('os');
@@ -85,16 +82,6 @@ function browserifyAndBabelify() {
       // Transform the bundle() output stream into one regular Gulp plugins understand.
       .pipe(source('cordova_main.js'))
       .pipe(gulp.dest(WEBAPP_OUT));
-}
-
-// Transpiles to |src| to ES5, copying the output to |dest|.
-function transpile(src, dest) {
-  const sourcesHtmlSplitter = new polymer_build.HtmlSplitter();
-  return gulp.src(src)
-      .pipe(sourcesHtmlSplitter.split())
-      .pipe(gulpif(/\.js$/, babel({presets: [babel_preset_env.default()]})))
-      .pipe(sourcesHtmlSplitter.rejoin())
-      .pipe(gulp.dest(dest));
 }
 
 function rtlCss() {

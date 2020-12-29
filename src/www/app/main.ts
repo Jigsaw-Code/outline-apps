@@ -13,23 +13,6 @@
 // limitations under the License.
 import '../ui_components/app-root.js';
 
-import '@polymer/app-layout/app-drawer/app-drawer.js';
-import '@polymer/app-layout/app-header/app-header.js';
-import '@polymer/app-layout/app-header-layout/app-header-layout.js';
-import '@polymer/app-layout/app-toolbar/app-toolbar.js';
-import '@polymer/app-localize-behavior/app-localize-behavior.js';
-import '@polymer/app-route/app-location.js';
-import '@polymer/app-route/app-route.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
-import '@polymer/paper-toast/paper-toast.js';
-
 import * as url from 'url';
 
 import {EventQueue} from '../model/events';
