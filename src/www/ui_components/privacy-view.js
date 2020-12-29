@@ -129,7 +129,7 @@ Polymer({
     </div>
 `,
 
-  is: "privacy-view",
+  is: 'privacy-view',
 
   properties: {
     localize: Function,
@@ -137,6 +137,6 @@ Polymer({
   },
 
   _privacyTermsAcked: function() {
-    this.fire("PrivacyTermsAcked");
+    this.fire('PrivacyTermsAcked');
   }
 });

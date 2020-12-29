@@ -244,18 +244,18 @@ Polymer({
     </div>
 `,
 
-  is: "server-connection-viz",
+  is: 'server-connection-viz',
 
   properties: {
     rootPath: String,
     state: {
       type: String,
-      observer: "_onStateChanged",
+      observer: '_onStateChanged',
     },
     animationState: {
       type: String,
       notify: true,
-      value: "ZERO_STATE",
+      value: 'ZERO_STATE',
     },
     expanded: {
       type: Boolean,
@@ -276,11 +276,12 @@ Polymer({
     if (this._isAnimating(this.state)) {
       this._animationStartMs = new Date().getTime();
     }
-    if (this.state === "CONNECTED" || this.state === "DISCONNECTED") {
+    if (this.state === 'CONNECTED' || this.state === 'DISCONNECTED') {
       if (this._isAnimating(this.animationState)) {
         var now = new Date().getTime();
         var elapsedAnimationMs = now - this._animationStartMs;
-        var remainingAnimationMs = this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
+        var remainingAnimationMs =
+            this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
         // Update the state only after the animation cycle has finished to avoid jumpiness.
         var _this = this;
         this.async(function() {
@@ -293,10 +294,10 @@ Polymer({
   },
 
   _isAnimating: function(state) {
-    return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
+    return state === 'CONNECTING' || state === 'DISCONNECTING' || state === 'RECONNECTING';
   },
 
   _computeExpandedClassName: function(expanded) {
-    return expanded ? "expanded" : "";
+    return expanded ? 'expanded' : '';
   }
 });

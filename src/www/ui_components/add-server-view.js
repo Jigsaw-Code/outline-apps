@@ -186,24 +186,24 @@ Polymer({
     </paper-dialog>
 `,
 
-  is: "add-server-view",
+  is: 'add-server-view',
 
   properties: {
     localize: Function,
     serverConfig: Object,
     accessKey: {
       type: String,
-      observer: "_accessKeyChanged",
+      observer: '_accessKeyChanged',
     },
   },
 
   ready: function() {
-    this.$.serverDetectedSheet.addEventListener("opened-changed", this._openChanged.bind(this));
-    this.$.addServerSheet.addEventListener("opened-changed", this._openChanged.bind(this));
+    this.$.serverDetectedSheet.addEventListener('opened-changed', this._openChanged.bind(this));
+    this.$.addServerSheet.addEventListener('opened-changed', this._openChanged.bind(this));
     // Workaround for --paper-input-container-input-[focus|invalid] not getting applied.
     // See https://github.com/PolymerElements/paper-input/issues/546.
-    this.$.accessKeyInput.addEventListener("focused-changed", this._inputFocusChanged.bind(this));
-    this.$.accessKeyInput.addEventListener("invalid-changed", this._inputInvalidChanged.bind(this));
+    this.$.accessKeyInput.addEventListener('focused-changed', this._inputFocusChanged.bind(this));
+    this.$.accessKeyInput.addEventListener('invalid-changed', this._inputInvalidChanged.bind(this));
   },
 
   openAddServerSheet: function() {
@@ -213,7 +213,7 @@ Polymer({
 
   openAddServerConfirmationSheet: function(accessKey, serverConfig) {
     if (!accessKey || !serverConfig) {
-      throw new Error("Must provide an access key and a server configuration.");
+      throw new Error('Must provide an access key and a server configuration.');
     }
     serverConfig.accessKey = accessKey;
     this.serverConfig = serverConfig;
@@ -232,33 +232,29 @@ Polymer({
 
   _accessKeyChanged: function() {
     // Use debounce to detect when the user has stopped typing.
-    this.debounce(
-      "accessKeyChanged",
-      () => {
-        this._addServerFromInput();
-      },
-      750
-    );
+    this.debounce('accessKeyChanged', () => {
+      this._addServerFromInput();
+    }, 750);
   },
 
   _addServerFromInput: function() {
     var accessKeyInput = this.$.accessKeyInput;
-    if (!this.accessKey || this.accessKey === "") {
+    if (!this.accessKey || this.accessKey === '') {
       accessKeyInput.invalid = false;
       return;
     }
     if (accessKeyInput.validate()) {
-      this.fire("AddServerConfirmationRequested", {accessKey: this.accessKey});
+      this.fire('AddServerConfirmationRequested', {accessKey: this.accessKey});
     }
   },
 
   _addDetectedServer: function() {
-    this.fire("AddServerRequested", {serverConfig: this.serverConfig});
+    this.fire('AddServerRequested', {serverConfig: this.serverConfig});
     this.close();
   },
 
   _ignoreDetectedServer: function() {
-    this.fire("IgnoreServerRequested", {accessKey: this.serverConfig.accessKey});
+    this.fire('IgnoreServerRequested', {accessKey: this.serverConfig.accessKey});
     this.close();
   },
 
@@ -270,14 +266,14 @@ Polymer({
       // appears. Also disallow scrolling to prevent the dialog from sliding under the keyboard.
       // See https://github.com/PolymerElements/iron-overlay-behavior/issues/140.
       window.scrollTo(0, document.body.scrollHeight);
-      document.body.addEventListener("touchmove", this._disallowScroll, {passive: false});
+      document.body.addEventListener('touchmove', this._disallowScroll, {passive: false});
     } else {
       // Restore scrolling and reset the state.
-      document.body.removeEventListener("touchmove", this._disallowScroll, {passive: false});
-      if (dialog.id === "serverDetectedSheet") {
+      document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
+      if (dialog.id === 'serverDetectedSheet') {
         this.serverConfig = undefined;
-      } else if (dialog.id == "addServerSheet") {
-        this.accessKey = "";
+      } else if (dialog.id == 'addServerSheet') {
+        this.accessKey = '';
       }
     }
   },
@@ -285,16 +281,16 @@ Polymer({
   _inputFocusChanged: function(event) {
     var input = event.target;
     if (input.focused) {
-      this.$.accessKeyInput.label = "";
+      this.$.accessKeyInput.label = '';
     } else {
-      this.$.accessKeyInput.label = this.localize("server-access-key-label", "ssProtocol", "ss://");
+      this.$.accessKeyInput.label = this.localize('server-access-key-label', 'ssProtocol', 'ss://');
     }
-    input.toggleClass("input-focus", input.focused);
+    input.toggleClass('input-focus', input.focused);
   },
 
   _inputInvalidChanged: function(event) {
     var input = event.target;
-    input.toggleClass("input-invalid", input.invalid);
+    input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
       this.$.addServerFooter.hidden = true;
       this.$.invalidAccessKeyFooter.hidden = false;

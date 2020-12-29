@@ -14,10 +14,10 @@
   limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
+import './server-connection-viz.js';
+
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-
-import './server-connection-viz.js';
 
 Polymer({
   _template: html`
@@ -170,7 +170,7 @@ Polymer({
     </paper-card>
 `,
 
-  is: "server-card",
+  is: 'server-card',
 
   properties: {
     // Need to declare localize function passed in from parent, or else
@@ -186,68 +186,68 @@ Polymer({
     serverPort: Number,
     state: {
       type: String,
-      value: "DISCONNECTED",
+      value: 'DISCONNECTED',
     },
     statusMessage: {
       type: String,
-      computed: "_computeStatusMessage(state, localize)",
+      computed: '_computeStatusMessage(state, localize)',
     },
     connectButtonLabel: {
       type: String,
-      computed: "_computeConnectButtonLabel(state, localize)",
+      computed: '_computeConnectButtonLabel(state, localize)',
     },
     connectButtonDisabled: {
       type: Boolean,
-      computed: "_computeConnectButtonDisabled(state)",
+      computed: '_computeConnectButtonDisabled(state)',
     },
   },
 
   _onConnectToggled: function() {
-    var connect = this.state === "DISCONNECTED";
-    var eventId = (connect ? "C" : "Disc") + "onnectPressed";
+    var connect = this.state === 'DISCONNECTED';
+    var eventId = (connect ? 'C' : 'Disc') + 'onnectPressed';
     this.fire(eventId, {serverId: this.serverId});
   },
 
   _computeStatusMessage: function(state, localize) {
     // If localize hasn't been defined yet, just return '' for now - Polymer will call this
     // again once localize has been defined at which point we will return the right value.
-    if (!localize) return "";
+    if (!localize) return '';
     return (
-      {
-        DISCONNECTED: this.localize("disconnected-server-state"),
-        CONNECTING: this.localize("connecting-server-state"),
-        CONNECTED: this.localize("connected-server-state"),
-        DISCONNECTING: this.localize("disconnecting-server-state"),
-        RECONNECTING: this.localize("reconnecting-server-state"),
-      }[state] || this.localize("disconnected-server-state")
-    );
+        {
+          DISCONNECTED: this.localize('disconnected-server-state'),
+          CONNECTING: this.localize('connecting-server-state'),
+          CONNECTED: this.localize('connected-server-state'),
+          DISCONNECTING: this.localize('disconnecting-server-state'),
+          RECONNECTING: this.localize('reconnecting-server-state'),
+        }[state] ||
+        this.localize('disconnected-server-state'));
   },
 
   _computeConnectButtonLabel: function(state, localize) {
-    if (!localize) return "";
+    if (!localize) return '';
     return (
-      {
-        DISCONNECTED: this.localize("connect-button-label"),
-        CONNECTING: this.localize("disconnect-button-label"),
-        CONNECTED: this.localize("disconnect-button-label"),
-        DISCONNECTING: this.localize("connect-button-label"),
-        RECONNECTING: this.localize("disconnect-button-label"),
-      }[state] || this.localize("connect-button-label")
-    );
+        {
+          DISCONNECTED: this.localize('connect-button-label'),
+          CONNECTING: this.localize('disconnect-button-label'),
+          CONNECTED: this.localize('disconnect-button-label'),
+          DISCONNECTING: this.localize('connect-button-label'),
+          RECONNECTING: this.localize('disconnect-button-label'),
+        }[state] ||
+        this.localize('connect-button-label'));
   },
 
   _computeConnectButtonDisabled: function(state) {
-    return this.disabled || state === "CONNECTING" || state === "DISCONNECTING";
+    return this.disabled || state === 'CONNECTING' || state === 'DISCONNECTING';
   },
 
   _computeExpandedClassName: function(expanded) {
-    return expanded ? "expanded" : "";
+    return expanded ? 'expanded' : '';
   },
 
   _onMenuItemPressed: function(evt, detail) {
-    if (detail.selected === "forget") {
+    if (detail.selected === 'forget') {
       this._fireForgetRequest();
-    } else if (detail.selected === "rename") {
+    } else if (detail.selected === 'rename') {
       this._fireShowServerRename();
     }
     // This can leave the pressed paper-item in the selected state,
@@ -259,10 +259,10 @@ Polymer({
   },
 
   _fireForgetRequest: function() {
-    this.fire("ForgetPressed", {serverId: this.serverId});
+    this.fire('ForgetPressed', {serverId: this.serverId});
   },
 
   _fireShowServerRename: function() {
-    this.fire("ShowServerRename", {serverName: this.serverName, serverId: this.serverId});
+    this.fire('ShowServerRename', {serverName: this.serverName, serverId: this.serverId});
   }
 });

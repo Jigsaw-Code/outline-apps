@@ -15,9 +15,10 @@
 */
 import '@polymer/polymer/polymer-legacy.js';
 import {html, PolymerElement} from '@polymer/polymer';
-import { DirMixin } from '@polymer/polymer/lib/mixins/dir-mixin.js';
+import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
 
-class OutlineLanguageView extends DirMixin(PolymerElement) {
+class OutlineLanguageView extends DirMixin
+(PolymerElement) {
   static get template() {
     return html`
     <style>
@@ -61,7 +62,7 @@ class OutlineLanguageView extends DirMixin(PolymerElement) {
   }
 
   static get is() {
-    return "language-view";
+    return 'language-view';
   }
 
   static get properties() {
@@ -79,7 +80,7 @@ class OutlineLanguageView extends DirMixin(PolymerElement) {
     const languageCode = event.detail.value;
     const params = {bubbles: true, composed: true, detail: {languageCode}};
     this.language = languageCode;
-    this.dispatchEvent(new CustomEvent("SetLanguageRequested", params));
+    this.dispatchEvent(new CustomEvent('SetLanguageRequested', params));
   }
 
   _shouldHideCheckmark(selectedLanguage, languageCode) {

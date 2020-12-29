@@ -38,7 +38,7 @@ Polymer({
     </paper-dialog>
 `,
 
-  is: "server-rename-dialog",
+  is: 'server-rename-dialog',
 
   properties: {
     // Need to declare localize function passed in from parent, or else
@@ -65,7 +65,7 @@ Polymer({
   _saveRename: function() {
     const newName = this.$.serverNameInput.value;
     if (newName !== this.__serverName) {
-      this.fire("RenameRequested", {serverId: this.__serverId, newName: newName});
+      this.fire('RenameRequested', {serverId: this.__serverId, newName: newName});
     }
   }
 });

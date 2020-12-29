@@ -14,13 +14,13 @@
   limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
+import './server-list.js';
+import './server-connection-viz.js';
+import './user-comms-dialog.js';
+
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-import './server-list.js';
-
-import './server-connection-viz.js';
-import './user-comms-dialog.js';
 Polymer({
   _template: html`
     <style>
@@ -101,7 +101,7 @@ Polymer({
     </div>
 `,
 
-  is: "servers-view",
+  is: 'servers-view',
 
   properties: {
     localize: Function,
@@ -109,7 +109,7 @@ Polymer({
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,
-      computed: "_computeShouldShowZeroState(servers)",
+      computed: '_computeShouldShowZeroState(servers)',
     },
   },
 
@@ -118,6 +118,6 @@ Polymer({
   },
 
   _requestPromptAddServer: function() {
-    this.fire("PromptAddServerRequested", {});
+    this.fire('PromptAddServerRequested', {});
   }
 });

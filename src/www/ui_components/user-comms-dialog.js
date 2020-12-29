@@ -99,7 +99,7 @@ Polymer({
     </div>
 `,
 
-  is: "user-comms-dialog",
+  is: 'user-comms-dialog',
 
   properties: {
     // Need to declare localize function passed in from parent, or else
@@ -112,30 +112,30 @@ Polymer({
     // Optional localization key for the text displayed next to the icon.
     iconTextLocalizationKey: {
       type: String,
-      value: "tips",
+      value: 'tips',
     },
     // Optional URL for the left side link button. If empty, the link will not be displayed.
     linkUrl: String,
     // Optional text localization key for the left side button.
     linkTextLocalizationKey: {
       type: String,
-      value: "get-help",
+      value: 'get-help',
     },
     // Optional text localization key for the right side dismiss button.
     dismissButtonTextLocalizationKey: {
       type: String,
-      value: "got-it",
+      value: 'got-it',
     },
     // Optional event to fire when the dialog is dismissed.
     fireEventOnHide: String,
   },
 
   show: function() {
-    this.$.wrapper.classList.add("active");
+    this.$.wrapper.classList.add('active');
   },
 
   hide: function() {
-    this.$.wrapper.classList.remove("active");
+    this.$.wrapper.classList.remove('active');
   },
 
   _dismiss: function() {

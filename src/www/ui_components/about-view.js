@@ -111,7 +111,7 @@ Polymer({
     </div>
 `,
 
-  is: "about-view",
+  is: 'about-view',
 
   properties: {
     // Need to declare localize function passed in from parent, or else

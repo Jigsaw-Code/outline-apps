@@ -14,10 +14,10 @@
   limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
+import './server-card.js';
+
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-
-import './server-card.js';
 
 Polymer({
   _template: html`
@@ -49,7 +49,7 @@ Polymer({
     </template>
 `,
 
-  is: "server-list",
+  is: 'server-list',
 
   properties: {
     // Need to declare localize function passed in from parent, or else
@@ -59,12 +59,12 @@ Polymer({
     servers: Array,
     hasSingleServer: {
       type: Boolean,
-      computed: "_computeHasSingleServer(servers)",
+      computed: '_computeHasSingleServer(servers)',
     },
   },
 
   getServerCard: function(serverId) {
-    var cards = this.shadowRoot.querySelectorAll("server-card");
+    var cards = this.shadowRoot.querySelectorAll('server-card');
     for (var i = 0, card = cards[i]; card; card = cards[++i]) {
       if (card.serverId === serverId) {
         return card;

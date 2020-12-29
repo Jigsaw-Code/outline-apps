@@ -18,8 +18,9 @@
 /* ref: https://github.com/PolymerElements/paper-dropdown-menu/#changes-in-20 */
 /* end: dropdown menu dependencies */
 import '@polymer/polymer/polymer-legacy.js';
-import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js'
+
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js'
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
 Polymer({
@@ -92,7 +93,7 @@ Polymer({
     </paper-card>
 `,
 
-  is: "feedback-view",
+  is: 'feedback-view',
 
   properties: {
     // Need to declare localize function passed in from parent, or else
@@ -100,7 +101,7 @@ Polymer({
     localize: Function,
     category: {
       type: String,
-      value: "general",
+      value: 'general',
     },
     hasEnteredEmail: {
       type: Boolean,
@@ -108,7 +109,7 @@ Polymer({
     },
     shouldShowLanguageDisclaimer: {
       type: Boolean,
-      computed: "_computeShouldShowLanguageDisclaimer(hasEnteredEmail)",
+      computed: '_computeShouldShowLanguageDisclaimer(hasEnteredEmail)',
     },
     submitting: {
       type: Boolean,
@@ -116,24 +117,22 @@ Polymer({
     },
     submitButtonLabel: {
       type: String,
-      computed: "_computeSubmitButtonLabel(submitting, localize)",
+      computed: '_computeSubmitButtonLabel(submitting, localize)',
     },
   },
 
   ready: function() {
     var appRoot = dom(this).getOwnerRoot().host;
-    window.addEventListener(
-      "location-changed",
-      function() {
-        if (appRoot.page !== "feedback") return;
-        // Workaround: https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
-        if (!this.$.dropdownMenu.value) {
-          var tmp = this.$.categoryList.selected;
-          this.$.categoryList.selected = undefined;
-          this.$.categoryList.selected = tmp;
-        }
-      }.bind(this)
-    );
+    window.addEventListener('location-changed', function() {
+      if (appRoot.page !== 'feedback') return;
+      // Workaround:
+      // https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
+      if (!this.$.dropdownMenu.value) {
+        var tmp = this.$.categoryList.selected;
+        this.$.categoryList.selected = undefined;
+        this.$.categoryList.selected = tmp;
+      }
+    }.bind(this));
   },
 
   _emailValueChanged: function() {
@@ -143,8 +142,8 @@ Polymer({
   _computeSubmitButtonLabel: function(submitting, localize) {
     // If localize hasn't been defined yet, just return '' for now - Polymer will call this
     // again once localize has been defined at which point we will return the right value.
-    if (!localize) return "";
-    var label = submitting ? "submitting" : "submit";
+    if (!localize) return '';
+    var label = submitting ? 'submitting' : 'submit';
     return this.localize(label);
   },
 
@@ -160,7 +159,7 @@ Polymer({
       if (input.validate && !input.validate()) {
         // The input.validate() call gives the input "invalid" styles if it's invalid,
         // so the user can see they have to fix it.
-        console.debug("input invalid:", input);
+        console.debug('input invalid:', input);
         return;
       }
     }
@@ -172,8 +171,8 @@ Polymer({
   },
 
   resetForm: function() {
-    this.$.categoryList.category = "general";
-    this.$.feedback.value = "";
-    this.$.email.value = "";
+    this.$.categoryList.category = 'general';
+    this.$.feedback.value = '';
+    this.$.email.value = '';
   }
 });
