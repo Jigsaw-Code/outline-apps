@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2015",
     "removeComments": false,
-    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "Node",
     "module": "commonjs",
+    "sourceMap": true,
+    "allowJs": true,
     "typeRoots": [
       "../node_modules/@types",
       "./types/modules"

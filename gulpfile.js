@@ -24,7 +24,6 @@ const gulpif = require('gulp-if');
 const log = require('fancy-log');
 const minimist = require('minimist');
 const os = require('os');
-const polymer_build = require('polymer-build');
 const source = require('vinyl-source-stream');
 
 //////////////////
@@ -98,39 +97,13 @@ function transpile(src, dest) {
       .pipe(gulp.dest(dest));
 }
 
-// Note: This is currently done "in-place", i.e. the components are downloaded to `WEBAPP_OUT` and
-// transpiled there, but this seems to work just fine (idempodent).
-function transpileBowerComponents() {
-  // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
-  // polyfills, and minified files, which are generally already transpiled.
-  const bowerComponentsSrc = [
-    `${WEBAPP_OUT}/bower_components/**/*.html`, `${WEBAPP_OUT}/bower_components/**/*.js`,
-    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.js`,
-    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.html`,
-    `!${WEBAPP_OUT}/bower_components/**/*.min.js`
-  ];
-  const bowerComponentsDest = `${WEBAPP_OUT}/bower_components`;
-  return transpile(bowerComponentsSrc, bowerComponentsDest);
-}
-
-// Transpiling and generating RTL CSS happens sequentially, which means that the output of the first
-// step must be the source of the next; otherwise the last step will clobber the previous steps.
-// To avoid this, we transpile and generate RTL CSS in-place, with `WEBAPP_OUT` as input and output.
-function transpileUiComponents() {
-  return transpile([`${WEBAPP_OUT}/ui_components/*.html`], `${WEBAPP_OUT}/ui_components`);
-}
-
 function rtlCss() {
-  return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.html`, `${WEBAPP_OUT}/ui_components`)
+  return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.js`, `${WEBAPP_OUT}/ui_components`)
 }
 
 function buildWebApp() {
   return runCommand(`yarn do src/www/build`);
 }
-
-const transpileWebApp = gulp.series(
-    copyBabelPolyfill, browserifyAndBabelify, transpileBowerComponents, transpileUiComponents,
-    rtlCss);
 
 //////////////////
 //////////////////
@@ -174,9 +147,6 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
-const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
-
 //////////////////
 //////////////////
 //
@@ -202,6 +172,10 @@ function writeEnvJson() {
   return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} > ${
       WEBAPP_OUT}/environment.json`);
 }
+
+const transpileWebApp = gulp.series(copyBabelPolyfill, browserifyAndBabelify, rtlCss);
+const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
+const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
 exports.setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);

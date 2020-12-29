@@ -21,11 +21,12 @@
     <title>Outline</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="style.css" />
-    <script src="bower_components/outline-i18n/index.js"></script>
-    <script src="bower_components/punycode/punycode.min.js"></script>
-    <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
-    <link rel="import" href="ui_components/app-root.html" />
-    <script>
+    <!--    <script src="bower_components/outline-i18n/index.js"></script>-->
+    <!--    <script src="bower_components/punycode/punycode.min.js"></script>-->
+    <!--    <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>-->
+    <script type="module" src="./ui_components/app-root.js"></script>
+    <script type="module">
+      import "./ui_components/app-root.js";
       if (require("os").platform() === "linux") {
         document.title = "Outline Beta";
       }

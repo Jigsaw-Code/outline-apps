@@ -1,5 +1,5 @@
-<!--
-  Copyright 2018 The Outline Authors
+/*
+  Copyright 2020 The Outline Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+*/
+import '@polymer/polymer/polymer-legacy.js';
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-<dom-module id="server-connection-viz">
-  <template>
+Polymer({
+  _template: html`
     <style>
       /* Do not mirror animation for RTL languages */
       /* rtl:begin:ignore */
@@ -231,67 +233,70 @@
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container" class$="[[_computeExpandedClassName(expanded)]]">
-      <img id="small-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="small" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="medium-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="medium" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="large-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="large-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
-      <img id="large" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+    <div id="container" class\$="[[_computeExpandedClassName(expanded)]]">
+      <img id="small-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
+      <img id="small" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
+      <img id="medium-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
+      <img id="medium" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
+      <img id="large-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
+      <img id="large-zero" src\$="[[rootPath]]assets/disc_empty.png" class\$="{{state}}">
+      <img id="large" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
     </div>
-  </template>
-  <script>
-    "use strict";
+`,
 
-    Polymer({
-      is: "server-connection-viz",
-      properties: {
-        rootPath: String,
-        state: {
-          type: String,
-          observer: "_onStateChanged",
-        },
-        animationState: {
-          type: String,
-          notify: true,
-          value: "ZERO_STATE",
-        },
-        expanded: {
-          type: Boolean,
-          value: false,
-        },
-      },
-      _onStateChanged: function _onStateChanged(newState) {
-        this._updateAnimationState();
-      },
-      _ANIMATION_DURATION_MS: 1750, // Update CSS when modifying the animation duration.
-      _animationStartMs: null,
-      _updateAnimationState: function() {
-        if (this._isAnimating(this.state)) {
-          this._animationStartMs = new Date().getTime();
-        }
-        if (this.state === "CONNECTED" || this.state === "DISCONNECTED") {
-          if (this._isAnimating(this.animationState)) {
-            var now = new Date().getTime();
-            var elapsedAnimationMs = now - this._animationStartMs;
-            var remainingAnimationMs = this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
-            // Update the state only after the animation cycle has finished to avoid jumpiness.
-            var _this = this;
-            this.async(function() {
-              _this.animationState = _this.state;
-            }, remainingAnimationMs);
-            return;
-          }
-        }
-        this.animationState = this.state;
-      },
-      _isAnimating: function(state) {
-        return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
-      },
-      _computeExpandedClassName: function(expanded) {
-        return expanded ? "expanded" : "";
-      },
-    });
-  </script>
-</dom-module>
+  is: "server-connection-viz",
+
+  properties: {
+    rootPath: String,
+    state: {
+      type: String,
+      observer: "_onStateChanged",
+    },
+    animationState: {
+      type: String,
+      notify: true,
+      value: "ZERO_STATE",
+    },
+    expanded: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  _onStateChanged: function _onStateChanged(newState) {
+    this._updateAnimationState();
+  },
+
+  // Update CSS when modifying the animation duration.
+  _ANIMATION_DURATION_MS: 1750,
+
+  _animationStartMs: null,
+
+  _updateAnimationState: function() {
+    if (this._isAnimating(this.state)) {
+      this._animationStartMs = new Date().getTime();
+    }
+    if (this.state === "CONNECTED" || this.state === "DISCONNECTED") {
+      if (this._isAnimating(this.animationState)) {
+        var now = new Date().getTime();
+        var elapsedAnimationMs = now - this._animationStartMs;
+        var remainingAnimationMs = this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
+        // Update the state only after the animation cycle has finished to avoid jumpiness.
+        var _this = this;
+        this.async(function() {
+          _this.animationState = _this.state;
+        }, remainingAnimationMs);
+        return;
+      }
+    }
+    this.animationState = this.state;
+  },
+
+  _isAnimating: function(state) {
+    return state === "CONNECTING" || state === "DISCONNECTING" || state === "RECONNECTING";
+  },
+
+  _computeExpandedClassName: function(expanded) {
+    return expanded ? "expanded" : "";
+  }
+});

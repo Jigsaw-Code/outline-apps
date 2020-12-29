@@ -1,5 +1,5 @@
-<!--
-  Copyright 2018 The Outline Authors
+/*
+  Copyright 2020 The Outline Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,13 +12,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<link rel="import" href="../bower_components/polymer/polymer-element.html" />
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html" />
-<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+*/
+import '@polymer/polymer/polymer-legacy.js';
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-<dom-module id="user-comms-dialog">
-  <template>
+Polymer({
+  _template: html`
     <style>
       #wrapper {
         background: var(--dark-green);
@@ -90,64 +90,62 @@
         <div id="title" class="highlight">[[localize(titleLocalizationKey)]]</div>
         <div id="detail">[[localize(detailLocalizationKey)]]</div>
         <div id="buttons">
-          <a hidden$="[[_shouldHideLink()]]" href$="[[linkUrl]]">
+          <a hidden\$="[[_shouldHideLink()]]" href\$="[[linkUrl]]">
             <paper-button>[[localize(linkTextLocalizationKey)]]</paper-button>
           </a>
-          <paper-button class="highlight" on-tap="_dismiss"
-            >[[localize(dismissButtonTextLocalizationKey)]]</paper-button
-          >
+          <paper-button class="highlight" on-tap="_dismiss">[[localize(dismissButtonTextLocalizationKey)]]</paper-button>
         </div>
       </div>
     </div>
-  </template>
+`,
 
-  <script>
-    "use strict";
-    Polymer({
-      is: "user-comms-dialog",
-      properties: {
-        // Need to declare localize function passed in from parent, or else
-        // localize() calls within the template won't be updated.
-        localize: Function,
-        // Localization key for the dialog title. Required.
-        titleLocalizationKey: String,
-        // Localization key for the text detail. Required.
-        detailLocalizationKey: String,
-        // Optional localization key for the text displayed next to the icon.
-        iconTextLocalizationKey: {
-          type: String,
-          value: "tips",
-        },
-        // Optional URL for the left side link button. If empty, the link will not be displayed.
-        linkUrl: String,
-        // Optional text localization key for the left side button.
-        linkTextLocalizationKey: {
-          type: String,
-          value: "get-help",
-        },
-        // Optional text localization key for the right side dismiss button.
-        dismissButtonTextLocalizationKey: {
-          type: String,
-          value: "got-it",
-        },
-        // Optional event to fire when the dialog is dismissed.
-        fireEventOnHide: String,
-      },
-      show: function() {
-        this.$.wrapper.classList.add("active");
-      },
-      hide: function() {
-        this.$.wrapper.classList.remove("active");
-      },
-      _dismiss: function() {
-        this.hide();
-        if (!!this.fireEventOnHide) {
-          this.fire(this.fireEventOnHide);
-        }
-      },
-      _shouldHideLink: function() {
-        return !this.linkUrl;
-      },
-    });
-  </script>
-</dom-module>
+  is: "user-comms-dialog",
+
+  properties: {
+    // Need to declare localize function passed in from parent, or else
+    // localize() calls within the template won't be updated.
+    localize: Function,
+    // Localization key for the dialog title. Required.
+    titleLocalizationKey: String,
+    // Localization key for the text detail. Required.
+    detailLocalizationKey: String,
+    // Optional localization key for the text displayed next to the icon.
+    iconTextLocalizationKey: {
+      type: String,
+      value: "tips",
+    },
+    // Optional URL for the left side link button. If empty, the link will not be displayed.
+    linkUrl: String,
+    // Optional text localization key for the left side button.
+    linkTextLocalizationKey: {
+      type: String,
+      value: "get-help",
+    },
+    // Optional text localization key for the right side dismiss button.
+    dismissButtonTextLocalizationKey: {
+      type: String,
+      value: "got-it",
+    },
+    // Optional event to fire when the dialog is dismissed.
+    fireEventOnHide: String,
+  },
+
+  show: function() {
+    this.$.wrapper.classList.add("active");
+  },
+
+  hide: function() {
+    this.$.wrapper.classList.remove("active");
+  },
+
+  _dismiss: function() {
+    this.hide();
+    if (!!this.fireEventOnHide) {
+      this.fire(this.fireEventOnHide);
+    }
+  },
+
+  _shouldHideLink: function() {
+    return !this.linkUrl;
+  }
+});
