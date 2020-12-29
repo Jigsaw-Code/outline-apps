@@ -15,6 +15,8 @@
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 
+import '../ui_components/app-root.js';
+
 import * as sentry from '@sentry/browser';
 
 import {EventQueue} from '../model/events';
