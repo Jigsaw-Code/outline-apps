@@ -14,9 +14,10 @@
   limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
+
+import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
 
 class OutlineLanguageView extends DirMixin
 (PolymerElement) {

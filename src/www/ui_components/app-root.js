@@ -57,7 +57,8 @@ import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
 PaperMenuButton.prototype.properties.restoreFocusOnClose.value = false;
 
-export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElement) {
+export class AppRoot extends mixinBehaviors
+([AppLocalizeBehavior], PolymerElement) {
   static get template() {
     return html`
     <style>
@@ -609,7 +610,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   _computeLanguage(availableLanguages, defaultLanguage) {
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage =
-      OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
+        OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
   }
 

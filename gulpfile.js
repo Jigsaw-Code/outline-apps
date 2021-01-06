@@ -166,7 +166,8 @@ function writeEnvJson() {
 }
 
 const transpileWebApp = gulp.series(copyBabelPolyfill, browserifyAndBabelify, rtlCss);
-const setupWebApp = gulp.series(refreshWebAppDependencies, buildWebApp, transpileWebApp, writeEnvJson);
+const setupWebApp =
+    gulp.series(refreshWebAppDependencies, buildWebApp, transpileWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
