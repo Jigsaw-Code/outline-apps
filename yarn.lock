@@ -870,9 +870,9 @@
     "@types/node" "*"
 
 "@types/webcomponents.js@*":
-  version "0.6.34"
-  resolved "https://registry.yarnpkg.com/@types/webcomponents.js/-/webcomponents.js-0.6.34.tgz#6992a5268e4e05a65de12693945c376e0ed4c017"
-  integrity sha512-Stji5P0jwEoaxyueV8x0PGeiv+EOE7NiZIQ5+gatyysHpcpbuSafqJUU/TQGcwuSBIKwIQD7TVUxOCyQZrAVwQ==
+  version "0.6.35"
+  resolved "https://registry.yarnpkg.com/@types/webcomponents.js/-/webcomponents.js-0.6.35.tgz#d149c60697ac6e11bc3e96d1ca40aa201a283a56"
+  integrity sha512-plYT958eetZo/JSxz0R1d2oBokcncCa/mdXoTqYmwFTNRvs2iSAk8N8PW1SLj4LjDuVwQuk2GSIqj51b8Fe9Jg==
 
 "@types/winston@^2.2.0":
   version "2.4.4"

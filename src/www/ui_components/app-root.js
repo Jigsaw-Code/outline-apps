@@ -18,13 +18,13 @@ import '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-header/app-header.js';
 import '@polymer/app-layout/app-header-layout/app-header-layout.js';
-import '@polymer/app-localize-behavior/app-localize-behavior.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
+import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
@@ -41,20 +41,25 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
+import './server-connection-viz.js';
+import './server-list.js';
 import './servers-view.js';
 import './server-rename-dialog.js';
+import './user-comms-dialog.js';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
 PaperMenuButton.prototype.properties.restoreFocusOnClose.value = false;
 
-Polymer({
-  _template: html`
+export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElement) {
+  static get template() {
+    return html`
     <style>
       :host {
         --app-toolbar-height: 40px;
@@ -357,12 +362,142 @@ Polymer({
     https://github.com/PolymerElements/app-layout/issues/295
     Once those are fixed we can consider moving this into server-card.html -->
     <server-rename-dialog id="serverRenameDialog" root-path="[[rootPath]]" localize="[[localize]]"></server-rename-dialog>
-`,
+    `;
+  }
 
-  is: 'app-root',
-  behaviors: [AppLocalizeBehavior],
+  static get is() {
+    return 'app-root';
+  }
 
-  ready: function() {
+  static get properties() {
+    return {
+      DEFAULT_PAGE: {
+        type: String,
+        readonly: true,
+        value: 'servers',
+      },
+      DEFAULT_LANGUAGE: {
+        type: String,
+        readonly: true,
+        value: 'en',
+      },
+      LANGUAGES_AVAILABLE: {
+        type: Object,
+        readonly: true,
+        value: {
+          am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
+          ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
+          bg: {id: 'bg', name: 'Български', dir: 'ltr'},
+          ca: {id: 'ca', name: 'Català', dir: 'ltr'},
+          cs: {id: 'cs', name: 'Česky', dir: 'ltr'},
+          da: {id: 'da', name: 'Dansk', dir: 'ltr'},
+          de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
+          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
+          en: {id: 'en', name: 'English', dir: 'ltr'},
+          'es-419': {id: 'es-419', name: 'Español', dir: 'ltr'},
+          fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
+          fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
+          fil: {id: 'fil', name: 'Wikang Filipino', dir: 'ltr'},
+          fr: {id: 'fr', name: 'Français', dir: 'ltr'},
+          he: {id: 'he', name: 'עברית', dir: 'rtl'},
+          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
+          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
+          hu: {id: 'hu', name: 'Magyar', dir: 'ltr'},
+          id: {id: 'id', name: 'Bahasa Indonesia', dir: 'ltr'},
+          it: {id: 'it', name: 'Italiano', dir: 'ltr'},
+          ja: {id: 'ja', name: '日本語', dir: 'ltr'},
+          km: {id: 'km', name: 'ភាសាខ្មែរ', dir: 'ltr'},
+          ko: {id: 'ko', name: '한국어', dir: 'ltr'},
+          lt: {id: 'lt', name: 'Lietuvių', dir: 'ltr'},
+          lv: {id: 'lv', name: 'Latviešu', dir: 'ltr'},
+          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
+          no: {id: 'no', name: 'Norsk (bokmål / riksmål)', dir: 'ltr'},
+          pl: {id: 'pl', name: 'Polski', dir: 'ltr'},
+          'pt-BR': {id: 'pt-BR', name: 'Português', dir: 'ltr'},
+          ro: {id: 'ro', name: 'Română', dir: 'ltr'},
+          ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
+          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
+          sl: {id: 'sl', name: 'Slovenščina', dir: 'ltr'},
+          sr: {id: 'sr', name: 'Српски', dir: 'ltr'},
+          'sr-Latn': {id: 'sr-Latn', name: 'Srpski', dir: 'ltr'},
+          sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
+          th: {id: 'th', name: 'ไทย', dir: 'ltr'},
+          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
+          uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
+          ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
+          vi: {id: 'vi', name: 'Việtnam', dir: 'ltr'},
+          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
+          'zh-TW': {id: 'zh-TW', name: '繁體中文‬‬‪‬', dir: 'ltr'},
+        },
+      },
+      language: {
+        type: String,
+        readonly: true,
+        computed: '_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)',
+      },
+      useKeyIfMissing: {
+        type: Boolean,
+        value: true,
+      },
+      appVersion: {
+        type: String,
+        readonly: true,
+      },
+      page: {
+        type: String,
+        readonly: true,
+        computed: '_computePage(routeData.page, DEFAULT_PAGE)',
+      },
+      route: Object,
+      routeData: Object,
+      pageTitleKey: {
+        type: String,
+        computed: '_computePageTitleKey(page)',
+      },
+      rootPath: {
+        type: String,
+        value: location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1),
+      },
+      shouldShowBackButton: {
+        type: Boolean,
+        computed: '_computeShouldShowBackButton(page, DEFAULT_PAGE)',
+      },
+      shouldShowAddButton: {
+        type: Boolean,
+        computed: '_computeShouldShowAddButton(page)',
+      },
+      servers: {
+        type: Array,
+      },
+      // Tells AppLocalizeBehavior to bubble its
+      // app-localize-resources-loaded event, allowing us listen for it on
+      // document rather than the (potentially to-be-created) <app-root>
+      // element.
+      bubbleEvent: {
+        type: Boolean,
+        value: true,
+      },
+      platform: {
+        type: String,
+        readonly: true,
+      },
+      shouldShowQuitButton: {
+        type: Boolean,
+        computed: '_computeShouldShowQuitButton(platform)',
+        value: false,
+      },
+      shouldShowAppLogo: {
+        type: Boolean,
+        computed: '_computeShouldShowAppLogo(page)',
+      },
+      toastUrl: {
+        type: String,
+      },
+    };
+  }
+
+  ready() {
+    super.ready();
     this.setLanguage(this.language);
 
     // Workaround for paper-behaviors' craptastic keyboard focus detection:
@@ -386,134 +521,9 @@ Polymer({
       // If cordova is not defined, we're running in Electron.
       this.platform = 'Electron';
     }
-  },
+  }
 
-  properties: {
-    DEFAULT_PAGE: {
-      type: String,
-      readonly: true,
-      value: 'servers',
-    },
-    DEFAULT_LANGUAGE: {
-      type: String,
-      readonly: true,
-      value: 'en',
-    },
-    LANGUAGES_AVAILABLE: {
-      type: Object,
-      readonly: true,
-      value: {
-        am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
-        ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
-        bg: {id: 'bg', name: 'Български', dir: 'ltr'},
-        ca: {id: 'ca', name: 'Català', dir: 'ltr'},
-        cs: {id: 'cs', name: 'Česky', dir: 'ltr'},
-        da: {id: 'da', name: 'Dansk', dir: 'ltr'},
-        de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
-        el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
-        en: {id: 'en', name: 'English', dir: 'ltr'},
-        'es-419': {id: 'es-419', name: 'Español', dir: 'ltr'},
-        fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
-        fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
-        fil: {id: 'fil', name: 'Wikang Filipino', dir: 'ltr'},
-        fr: {id: 'fr', name: 'Français', dir: 'ltr'},
-        he: {id: 'he', name: 'עברית', dir: 'rtl'},
-        hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
-        hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
-        hu: {id: 'hu', name: 'Magyar', dir: 'ltr'},
-        id: {id: 'id', name: 'Bahasa Indonesia', dir: 'ltr'},
-        it: {id: 'it', name: 'Italiano', dir: 'ltr'},
-        ja: {id: 'ja', name: '日本語', dir: 'ltr'},
-        km: {id: 'km', name: 'ភាសាខ្មែរ', dir: 'ltr'},
-        ko: {id: 'ko', name: '한국어', dir: 'ltr'},
-        lt: {id: 'lt', name: 'Lietuvių', dir: 'ltr'},
-        lv: {id: 'lv', name: 'Latviešu', dir: 'ltr'},
-        nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
-        no: {id: 'no', name: 'Norsk (bokmål / riksmål)', dir: 'ltr'},
-        pl: {id: 'pl', name: 'Polski', dir: 'ltr'},
-        'pt-BR': {id: 'pt-BR', name: 'Português', dir: 'ltr'},
-        ro: {id: 'ro', name: 'Română', dir: 'ltr'},
-        ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
-        sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
-        sl: {id: 'sl', name: 'Slovenščina', dir: 'ltr'},
-        sr: {id: 'sr', name: 'Српски', dir: 'ltr'},
-        'sr-Latn': {id: 'sr-Latn', name: 'Srpski', dir: 'ltr'},
-        sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
-        th: {id: 'th', name: 'ไทย', dir: 'ltr'},
-        tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
-        uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
-        ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
-        vi: {id: 'vi', name: 'Việtnam', dir: 'ltr'},
-        'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
-        'zh-TW': {id: 'zh-TW', name: '繁體中文‬‬‪‬', dir: 'ltr'},
-      },
-    },
-    language: {
-      type: String,
-      readonly: true,
-      computed: '_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)',
-    },
-    useKeyIfMissing: {
-      type: Boolean,
-      value: true,
-    },
-    appVersion: {
-      type: String,
-      readonly: true,
-    },
-    page: {
-      type: String,
-      readonly: true,
-      computed: '_computePage(routeData.page, DEFAULT_PAGE)',
-    },
-    route: Object,
-    routeData: Object,
-    pageTitleKey: {
-      type: String,
-      computed: '_computePageTitleKey(page)',
-    },
-    rootPath: {
-      type: String,
-      value: location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1),
-    },
-    shouldShowBackButton: {
-      type: Boolean,
-      computed: '_computeShouldShowBackButton(page, DEFAULT_PAGE)',
-    },
-    shouldShowAddButton: {
-      type: Boolean,
-      computed: '_computeShouldShowAddButton(page)',
-    },
-    servers: {
-      type: Array,
-    },
-    // Tells AppLocalizeBehavior to bubble its
-    // app-localize-resources-loaded event, allowing us listen for it on
-    // document rather than the (potentially to-be-created) <app-root>
-    // element.
-    bubbleEvent: {
-      type: Boolean,
-      value: true,
-    },
-    platform: {
-      type: String,
-      readonly: true,
-    },
-    shouldShowQuitButton: {
-      type: Boolean,
-      computed: '_computeShouldShowQuitButton(platform)',
-      value: false,
-    },
-    shouldShowAppLogo: {
-      type: Boolean,
-      computed: '_computeShouldShowAppLogo(page)',
-    },
-    toastUrl: {
-      type: String,
-    },
-  },
-
-  setLanguage: function(languageCode) {
+  setLanguage(languageCode) {
     const url = `${this.rootPath}messages/${languageCode}.json`;
     this.loadResources(url, languageCode);
 
@@ -522,18 +532,18 @@ Polymer({
     this.$.drawer.align = direction == 'ltr' ? 'left' : 'right';
 
     this.language = languageCode;
-  },
+  }
 
-  openDrawer: function() {
+  openDrawer() {
     this.$.drawer.style.opacity = '1';
     this.$.drawer.open();
-  },
+  }
 
-  closeDrawer: function() {
+  closeDrawer() {
     this.$.drawer.close();
-  },
+  }
 
-  showToast: function(text, duration, buttonText, buttonHandler, buttonUrl) {
+  showToast(text, duration, buttonText, buttonHandler, buttonUrl) {
     // If the toast is already open, first close it. We then always wait a
     // little before calling open in a this.async call. This ensures that:
     // 1. we are compliant with the material design spec
@@ -571,17 +581,17 @@ Polymer({
       }
       this.$.toast.open();
     }, 350);
-  },
+  }
 
-  changePage: function(page) {
+  changePage(page) {
     if (this.page === page) {
       console.debug('already on page', page);
       return;
     }
     this.set('route.path', '/' + page);
-  },
+  }
 
-  _callToastHandler: function() {
+  _callToastHandler() {
     var toastButton = this.$.toastButton;
     var handler = toastButton._handler;
     if (!handler) return console.error('No toast handler found');
@@ -590,20 +600,20 @@ Polymer({
     this.$.toast.close();
     delete toastButton._handler;
     handler();
-  },
+  }
 
-  promptAddServer: function() {
+  promptAddServer() {
     this.$.addServerView.openAddServerSheet();
-  },
+  }
 
-  _computeLanguage: function(availableLanguages, defaultLanguage) {
+  _computeLanguage(availableLanguages, defaultLanguage) {
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage =
-        OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
+      OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
-  },
+  }
 
-  _computePage: function(pageFromRoute, DEFAULT_PAGE) {
+  _computePage(pageFromRoute, DEFAULT_PAGE) {
     if (this.page && pageFromRoute === this.page) {
       return this.page;
     } else if (pageFromRoute === 'help') {
@@ -625,35 +635,35 @@ Polymer({
       'routeData.page': DEFAULT_PAGE,
     });
     return DEFAULT_PAGE;
-  },
+  }
 
-  _computePageTitleKey: function(page) {
+  _computePageTitleKey(page) {
     return page + '-page-title';
-  },
+  }
 
-  _computeShouldShowBackButton: function(page, DEFAULT_PAGE) {
+  _computeShouldShowBackButton(page, DEFAULT_PAGE) {
     return page !== DEFAULT_PAGE;
-  },
+  }
 
-  _computeShouldShowAddButton: function(page) {
+  _computeShouldShowAddButton(page) {
     // Only show the add button if we're on the servers page.
     return page === 'servers';
-  },
+  }
 
-  _goBack: function() {
+  _goBack() {
     // If there is a navigation on the webview's history stack, pop it off to go back.
     if (history.length > 1) {
       history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
       window.dispatchEvent(new CustomEvent('location-changed'));
     }
-  },
+  }
 
   _showDefaultPage() {
     this.changePage(this.DEFAULT_PAGE);
-  },
+  }
 
-  _openHelpPage: function() {
+  _openHelpPage() {
     // Anchor tags compete with the app-drawer for click events on iOS. This results in links
     // not opening most of the time. We resort to opening the link programmatically for all
     // platforms.
@@ -664,27 +674,28 @@ Polymer({
       // Simulate a click on the help anchor.
       this.$.helpAnchor.click();
     }
-  },
+  }
 
-  _computeShouldShowQuitButton: function(platform) {
+  _computeShouldShowQuitButton(platform) {
     return platform === 'Mac OS X' || platform === 'Electron';
-  },
+  }
 
-  _computeIsLastVisibleMenuItem: function(shouldShowQuitButton) {
+  _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
     return shouldShowQuitButton ? '' : 'last-menu-item';
-  },
+  }
 
-  showServerRename: function(event) {
+  showServerRename(event) {
     this.$.serverRenameDialog.open(event.detail.serverName, event.detail.serverId);
-  },
+  }
 
-  _computeShouldShowAppLogo: function(page) {
+  _computeShouldShowAppLogo(page) {
     return page === 'servers';
-  },
+  }
 
   _getLanguagesAvailableValues(languagesAvailable) {
     return Object.values(languagesAvailable).sort((a, b) => {
       return a.name > b.name ? 1 : -1;
     });
   }
-});
+}
+customElements.define(AppRoot.is, AppRoot);

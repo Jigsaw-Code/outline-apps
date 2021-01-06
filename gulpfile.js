@@ -88,6 +88,11 @@ function rtlCss() {
   return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.js`, `${WEBAPP_OUT}/ui_components`)
 }
 
+// FIXME: Workaround to reinstall node modules that are being removed by `cordova platform add`.
+function refreshWebAppDependencies() {
+  return runCommand(`yarn install --check-files`);
+}
+
 function buildWebApp() {
   return runCommand(`yarn do src/www/build`);
 }
@@ -161,7 +166,7 @@ function writeEnvJson() {
 }
 
 const transpileWebApp = gulp.series(copyBabelPolyfill, browserifyAndBabelify, rtlCss);
-const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
+const setupWebApp = gulp.series(refreshWebAppDependencies, buildWebApp, transpileWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);

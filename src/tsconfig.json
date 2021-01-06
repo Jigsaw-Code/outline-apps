@@ -6,7 +6,6 @@
     "noImplicitThis": true,
     "moduleResolution": "Node",
     "module": "commonjs",
-    "sourceMap": true,
     "allowJs": true,
     "typeRoots": [
       "../node_modules/@types",
