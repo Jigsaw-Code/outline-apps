@@ -16,6 +16,8 @@
 import '@polymer/polymer/polymer-legacy.js';
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {afterNextRender} from '@polymer/polymer/lib/utils/render-status.js';
+
 
 Polymer({
   _template: html`
@@ -57,7 +59,7 @@ Polymer({
     this.$.serverNameInput.value = serverName;
     this.$.renameDialog.open();
     // Focus on serverNameInput, only after the dialog has been displayed.
-    Polymer.RenderStatus.afterNextRender(this, () => {
+    afterNextRender(this, () => {
       this.$.serverNameInput.focus();
     });
   },

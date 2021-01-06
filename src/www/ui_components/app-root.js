@@ -78,14 +78,6 @@ export class AppRoot extends mixinBehaviors
         height: 56px;
       }
 
-      app-header,
-      app-toolbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
-
       app-toolbar {
         height: var(--app-toolbar-height);
         color: #fff;
@@ -114,10 +106,6 @@ export class AppRoot extends mixinBehaviors
       #app-toolbar-right {
         flex: 1;
         min-width: 40px;
-      }
-
-      #app-toolbar-right {
-        margin-right: 16px;
       }
 
       iron-pages {
