@@ -61,10 +61,17 @@ function runCommand(command) {
 
 const WEBAPP_OUT = 'www';
 
-// Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
-function copyBabelPolyfill() {
+// Copies dependencies imported by [cordova/electron]_index.html.
+function copyIndexDependencies() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  return runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);
+  const webcomponentsEs5 = 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js';
+  const webcomponentsLoader = 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
+  const webanimations = 'node_modules/web-animations-js/web-animations-next-lite.min.js';
+
+  runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);
+  runCommand(`cp -v ${webcomponentsEs5} ${WEBAPP_OUT}/webcomponents-loader.js`);
+  runCommand(`cp -v ${webcomponentsLoader} ${WEBAPP_OUT}/custom-elements-es5-adapter.js`);
+  return runCommand(`cp -v ${webanimations} ${WEBAPP_OUT}/web-animations-next-lite.min.js`);
 }
 
 // Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
@@ -165,7 +172,7 @@ function writeEnvJson() {
       WEBAPP_OUT}/environment.json`);
 }
 
-const transpileWebApp = gulp.series(copyBabelPolyfill, rtlCss, browserifyAndBabelify);
+const transpileWebApp = gulp.series(copyIndexDependencies, rtlCss, browserifyAndBabelify);
 const setupWebApp =
     gulp.series(refreshWebAppDependencies, buildWebApp, transpileWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
