@@ -65,7 +65,8 @@ const WEBAPP_OUT = 'www';
 function copyIndexDependencies() {
   const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
   const webcomponentsEs5 = 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js';
-  const webcomponentsLoader = 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
+  const webcomponentsLoader =
+      'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
   const webanimations = 'node_modules/web-animations-js/web-animations-next-lite.min.js';
 
   runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);

@@ -59,12 +59,12 @@ Polymer({
       }
 
       .card-header server-connection-viz {
-        padding: 16px 16px 0 16px;
+        padding: 16px 0 0 16px;
       }
 
       #serverInfo {
         flex: 1;
-        padding: 16px 0 0 0px;
+        padding: 16px 0 0 16px;
         font-size: 20px;
         /* Make the IP address copyable */
         -webkit-user-select: text; /* Safari */
