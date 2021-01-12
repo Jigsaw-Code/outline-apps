@@ -32,7 +32,7 @@
     "@polymer/paper-toast": "^3.0.1",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "@sentry/electron": "1.2.1",
-    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#acdbe0367e887776a7c8137b844d7b03f1bc5ad5",
+    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#^v0.1.0",
     "auto-launch": "^5.0.5",
     "cordova-custom-config": "^5.1.0",
     "cordova-plugin-device": "^2.0.2",
