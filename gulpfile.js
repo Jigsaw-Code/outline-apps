@@ -63,16 +63,11 @@ const WEBAPP_OUT = 'www';
 
 // Copies dependencies imported by [cordova/electron]_index.html.
 function copyIndexDependencies() {
-  const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  const webcomponentsEs5 = 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js';
-  const webcomponentsLoader =
-      'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
-  const webanimations = 'node_modules/web-animations-js/web-animations-next-lite.min.js';
-
-  runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);
-  runCommand(`cp -v ${webcomponentsEs5} ${WEBAPP_OUT}/webcomponents-loader.js`);
-  runCommand(`cp -v ${webcomponentsLoader} ${WEBAPP_OUT}/custom-elements-es5-adapter.js`);
-  return runCommand(`cp -v ${webanimations} ${WEBAPP_OUT}/web-animations-next-lite.min.js`);
+  runCommand(`cp -v 'node_modules/babel-polyfill/dist/polyfill.min.js' ${WEBAPP_OUT}/babel-polyfill.min.js`);
+  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js' ${WEBAPP_OUT}/webcomponents-loader.js`);
+  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' ${WEBAPP_OUT}/custom-elements-es5-adapter.js`);
+  runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${WEBAPP_OUT}/web-animations-next-lite.min.js`);
+  return;
 }
 
 // Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
