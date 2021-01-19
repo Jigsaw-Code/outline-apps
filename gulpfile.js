@@ -63,10 +63,14 @@ const WEBAPP_OUT = 'www';
 
 // Copies dependencies imported by [cordova/electron]_index.html.
 function copyIndexDependencies() {
-  runCommand(`cp -v 'node_modules/babel-polyfill/dist/polyfill.min.js' ${WEBAPP_OUT}/babel-polyfill.min.js`);
-  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js' ${WEBAPP_OUT}/webcomponents-loader.js`);
-  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' ${WEBAPP_OUT}/custom-elements-es5-adapter.js`);
-  runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${WEBAPP_OUT}/web-animations-next-lite.min.js`);
+  runCommand(`cp -v 'node_modules/babel-polyfill/dist/polyfill.min.js' ${
+      WEBAPP_OUT}/babel-polyfill.min.js`);
+  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js' ${
+      WEBAPP_OUT}/webcomponents-loader.js`);
+  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' ${
+      WEBAPP_OUT}/custom-elements-es5-adapter.js`);
+  runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${
+      WEBAPP_OUT}/web-animations-next-lite.min.js`);
   return;
 }
 
