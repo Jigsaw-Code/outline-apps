@@ -66,11 +66,11 @@ module.exports = {
     // The IgnorePlugin prevents the compilation of the electron dependency.
     new webpack.IgnorePlugin(/^electron$/),
     new CopyPlugin(
-      [
-        {from: 'assets', to: 'assets'},
-        {from: 'messages', to: 'messages'},
-      ],
-      {context: __dirname}),
+        [
+          {from: 'assets', to: 'assets'},
+          {from: 'messages', to: 'messages'},
+        ],
+        {context: __dirname}),
     new HtmlWebpackPlugin({
       filename: 'electron_index.html',
       template: path.resolve(__dirname, './electron_index.html'),
