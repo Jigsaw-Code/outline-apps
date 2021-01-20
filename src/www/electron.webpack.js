@@ -22,7 +22,7 @@ const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_w
 
 module.exports = {
   entry: [
-    "@babel/polyfill",
+    '@babel/polyfill',
     require.resolve('@webcomponents/webcomponentsjs/webcomponents-loader.js'),
     path.resolve(__dirname, './style.css'),
     path.resolve(__dirname, './app/electron_main.ts'),

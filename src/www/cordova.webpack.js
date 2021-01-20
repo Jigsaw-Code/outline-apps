@@ -70,9 +70,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-    fallback: {
-      "url": require.resolve("url/")
-    },
+    fallback: {'url': require.resolve('url/')},
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -80,11 +78,11 @@ module.exports = {
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),
     new CopyPlugin(
-      [
-        {from: 'assets', to: 'assets'},
-        {from: 'messages', to: 'messages'},
-      ],
-      {context: __dirname}),
+        [
+          {from: 'assets', to: 'assets'},
+          {from: 'messages', to: 'messages'},
+        ],
+        {context: __dirname}),
     new HtmlWebpackPlugin({
       filename: 'cordova_index.html',
       template: path.resolve(__dirname, './cordova_index.html'),
