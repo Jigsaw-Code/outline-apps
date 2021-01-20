@@ -14,14 +14,11 @@
 
 'use strict';
 
-const browserify = require('browserify');
 const child_process = require('child_process');
-const generateRtlCss = require('./scripts/rtl_css_gulp.js');
 const gulp = require('gulp');
 const log = require('fancy-log');
 const minimist = require('minimist');
 const os = require('os');
-const source = require('vinyl-source-stream');
 
 //////////////////
 //////////////////
@@ -60,44 +57,6 @@ function runCommand(command) {
 //////////////////
 
 const WEBAPP_OUT = 'www';
-
-// Copies dependencies imported by [cordova/electron]_index.html.
-function copyIndexDependencies() {
-  runCommand(`cp -v 'node_modules/babel-polyfill/dist/polyfill.min.js' ${
-      WEBAPP_OUT}/babel-polyfill.min.js`);
-  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js' ${
-      WEBAPP_OUT}/webcomponents-loader.js`);
-  runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' ${
-      WEBAPP_OUT}/custom-elements-es5-adapter.js`);
-  return runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${
-      WEBAPP_OUT}/web-animations-next-lite.min.js`);
-}
-
-// Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
-//
-// Useful Gulp/Browserify examples:
-//   https://github.com/gulpjs/gulp/tree/master/docs/recipes
-function browserifyAndBabelify() {
-  return browserify({entries: `${WEBAPP_OUT}/app/cordova_main.js`, debug: true})
-      .transform('babelify', {
-        // Transpile code in node_modules, too.
-        global: true,
-        presets: ['env']
-      })
-      .bundle()
-      // Transform the bundle() output stream into one regular Gulp plugins understand.
-      .pipe(source('cordova_main.js'))
-      .pipe(gulp.dest(WEBAPP_OUT));
-}
-
-function rtlCss() {
-  return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.js`, `${WEBAPP_OUT}/ui_components`)
-}
-
-// FIXME: Workaround to reinstall node modules that are being removed by `cordova platform add`.
-function refreshWebAppDependencies() {
-  return runCommand(`yarn install --check-files`);
-}
 
 function buildWebApp() {
   return runCommand(`yarn do src/www/build_cordova`);
@@ -171,9 +130,7 @@ function writeEnvJson() {
       WEBAPP_OUT}/environment.json`);
 }
 
-const transpileWebApp = gulp.series(copyIndexDependencies, rtlCss, browserifyAndBabelify);
-const setupWebApp =
-    gulp.series(refreshWebAppDependencies, buildWebApp, transpileWebApp, writeEnvJson);
+const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);

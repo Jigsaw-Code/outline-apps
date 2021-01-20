@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+yarn install --check-files
 webpack --config=src/www/electron.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}
