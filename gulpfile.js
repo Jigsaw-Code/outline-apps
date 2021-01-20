@@ -16,7 +16,7 @@
 
 const browserify = require('browserify');
 const child_process = require('child_process');
-const generateRtlCss = require('./scripts/generate_rtl_css.js');
+const generateRtlCss = require('./scripts/rtl_css_gulp.js');
 const gulp = require('gulp');
 const log = require('fancy-log');
 const minimist = require('minimist');
@@ -69,7 +69,7 @@ function copyIndexDependencies() {
       WEBAPP_OUT}/webcomponents-loader.js`);
   runCommand(`cp -v 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' ${
       WEBAPP_OUT}/custom-elements-es5-adapter.js`);
-  runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${
+  return runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${
       WEBAPP_OUT}/web-animations-next-lite.min.js`);
   return;
 }
@@ -101,7 +101,7 @@ function refreshWebAppDependencies() {
 }
 
 function buildWebApp() {
-  return runCommand(`yarn do src/www/build`);
+  return runCommand(`yarn do src/www/build_cordova`);
 }
 
 //////////////////

@@ -20,18 +20,13 @@
     <meta charset="UTF-8" />
     <title>Outline</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="style.css" />
-    <script src="web-animations-next-lite.min.js"></script>
-    <script src="webcomponents-loader.js"></script>
-    <script src="./ui_components/app-root.js" />
+  </head>
+  <body unresolved>
     <script>
       if (require("os").platform() === "linux") {
         document.title = "Outline Beta";
       }
-      require("./app/electron_main.js");
     </script>
-  </head>
-  <body unresolved>
     <app-root></app-root>
   </body>
 </html>

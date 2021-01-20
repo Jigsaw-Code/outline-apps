@@ -17,8 +17,4 @@
 # Builds the TypeScript in this folder, placing a web app at /www (for Cordova).
 
 tsc -p src/www
-
-rsync -ac 'node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js' www/
-rsync -ac 'node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js' www/
-rsync -ac 'node_modules/web-animations-js/web-animations-next-lite.min.js' www/
 rsync -ac --exclude '*.ts' src/www/ www/
