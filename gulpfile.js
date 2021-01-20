@@ -71,7 +71,6 @@ function copyIndexDependencies() {
       WEBAPP_OUT}/custom-elements-es5-adapter.js`);
   return runCommand(`cp -v 'node_modules/web-animations-js/web-animations-next-lite.min.js' ${
       WEBAPP_OUT}/web-animations-next-lite.min.js`);
-  return;
 }
 
 // Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
