@@ -15,6 +15,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const webpack = require('webpack');
 
 const OUTPUT_BASE = path.resolve(__dirname, '../../www');
@@ -73,6 +74,12 @@ module.exports = {
     fallback: {'url': require.resolve('url/')},
   },
   plugins: [
+    new WebpackShellPluginNext({
+      onBuildStart:{
+        scripts: ['yarn install --check-files'],
+        blocking: true
+      },
+    }),
     new webpack.DefinePlugin({
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-readonly TEST_DIR="${ROOT_DIR}/www"
+readonly TEST_DIR="${ROOT_DIR}/build/test"
 rm -rf $TEST_DIR
 
 yarn install --check-files

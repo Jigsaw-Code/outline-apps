@@ -15,6 +15,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const webpack = require('webpack');
 
 const OUTPUT_BASE = path.resolve(__dirname, '../../www');
@@ -55,6 +56,12 @@ module.exports = {
   },
   resolve: {extensions: ['.tsx', '.ts', '.js']},
   plugins: [
+    new WebpackShellPluginNext({
+      onBuildStart:{
+        scripts: ['yarn install --check-files'],
+        blocking: true
+      },
+    }),
     new webpack.DefinePlugin({
       // Hack to protect against @sentry/electron not having process.type defined.
       'process.type': JSON.stringify('renderer'),
