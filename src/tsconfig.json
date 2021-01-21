@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2017",
     "removeComments": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
