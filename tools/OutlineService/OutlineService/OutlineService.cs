@@ -49,12 +49,12 @@ using Newtonsoft.Json;
  * Response
  *
  *  { statusCode: <int>, action: <string> errorMessage?: <string> }
- *  
+ *
  *  The service will send connection status updates if the pipe connection is kept
  *  open by the client. Such responses have the form:
- *  
+ *
  *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
- *  
+ *
  * View logs with this PowerShell query:
  * get-eventlog -logname Application -source OutlineService -newset 20 | format-table -property timegenerated,entrytype,message -autosize
  */
@@ -608,7 +608,7 @@ namespace OutlineService
             }
             catch (Exception e)
             {
-                throw new Exception($"could not kill smartdnsblock: {e.Message}");
+                throw new Exception($"could not stop smartdnsblock: {e.Message}");
             }
         }
 
@@ -964,7 +964,7 @@ namespace OutlineService
             }
         }
 
-        // Writes the connection status to the pipe, if it is connected. 
+        // Writes the connection status to the pipe, if it is connected.
         private void SendConnectionStatusChange(ConnectionStatus status)
         {
             if (pipe == null || !pipe.IsConnected)

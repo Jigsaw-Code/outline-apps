@@ -2,7 +2,7 @@
 
 ## UI Messages
 
-The master messages file is at `resources/master_messages.json`. It is encoded in the Chrome Apps JSON format. The translated files, consumed by the application's UI, live in `www/messages/<locale>.json`.
+The source of truth messages file is at `resources/original_messages.json`. It is encoded in the Chrome Apps JSON format. The translated files, consumed by the application's UI, live in `www/messages/<locale>.json`.
 
 ### Validation
 
