@@ -13,7 +13,7 @@ To run the project in XCode:
 * Click "Outline" in the left navigation bar:
   * Under "Signing" select "Jigsaw Operations LLC"
   * Click Register Device - needed the first time running the app on a new device.
-* Click Cmd+R to run
+* Press Cmd+R to run
 
 The main entry point for Apple specific code is `Outline/Plugins/OutlinePlugin.swift`
 
