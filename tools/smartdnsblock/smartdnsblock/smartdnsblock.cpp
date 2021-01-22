@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 
   // Create our filters:
   //  - The first blocks all UDP traffic bound for port 53.
-  //  - The second whitelists all traffic on the TAP device.
+  //  - The second allows all traffic on the TAP device.
   //
   // Crucially, the second has a higher weight.
   //
@@ -142,30 +142,30 @@ int main(int argc, char **argv) {
   }
   wcout << "port 53 blocked with filter " << filterId << endl;
 
-  // Whitelist all traffic on the TAP device.
-  FWPM_FILTER_CONDITION0 tapDeviceWhitelistCondition[1];
-  tapDeviceWhitelistCondition[0].fieldKey = FWPM_CONDITION_LOCAL_INTERFACE_INDEX;
-  tapDeviceWhitelistCondition[0].matchType = FWP_MATCH_EQUAL;
-  tapDeviceWhitelistCondition[0].conditionValue.type = FWP_UINT32;
-  tapDeviceWhitelistCondition[0].conditionValue.uint32 = interfaceIndex;
+  // Allow all traffic on the TAP device.
+  FWPM_FILTER_CONDITION0 tapDeviceAllowCondition[1];
+  tapDeviceAllowCondition[0].fieldKey = FWPM_CONDITION_LOCAL_INTERFACE_INDEX;
+  tapDeviceAllowCondition[0].matchType = FWP_MATCH_EQUAL;
+  tapDeviceAllowCondition[0].conditionValue.type = FWP_UINT32;
+  tapDeviceAllowCondition[0].conditionValue.uint32 = interfaceIndex;
 
-  FWPM_FILTER0 tapDeviceWhitelistFilter;
-  memset(&tapDeviceWhitelistFilter, 0, sizeof(tapDeviceWhitelistFilter));
-  tapDeviceWhitelistFilter.filterCondition = tapDeviceWhitelistCondition;
-  tapDeviceWhitelistFilter.numFilterConditions = 1;
-  tapDeviceWhitelistFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
-  tapDeviceWhitelistFilter.subLayerKey = sublayer.subLayerKey;
-  tapDeviceWhitelistFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
-  tapDeviceWhitelistFilter.action.type = FWP_ACTION_PERMIT;
-  tapDeviceWhitelistFilter.weight.type = FWP_UINT64;
-  tapDeviceWhitelistFilter.weight.uint64 = &HIGHER_FILTER_WEIGHT;
+  FWPM_FILTER0 tapDeviceAllowFilter;
+  memset(&tapDeviceAllowFilter, 0, sizeof(tapDeviceAllowFilter));
+  tapDeviceAllowFilter.filterCondition = tapDeviceAllowCondition;
+  tapDeviceAllowFilter.numFilterConditions = 1;
+  tapDeviceAllowFilter.displayData.name = (PWSTR)FILTER_PROVIDER_NAME;
+  tapDeviceAllowFilter.subLayerKey = sublayer.subLayerKey;
+  tapDeviceAllowFilter.layerKey = FWPM_LAYER_ALE_AUTH_CONNECT_V4;
+  tapDeviceAllowFilter.action.type = FWP_ACTION_PERMIT;
+  tapDeviceAllowFilter.weight.type = FWP_UINT64;
+  tapDeviceAllowFilter.weight.uint64 = &HIGHER_FILTER_WEIGHT;
 
-  result = FwpmFilterAdd0(engine, &tapDeviceWhitelistFilter, NULL, &filterId);
+  result = FwpmFilterAdd0(engine, &tapDeviceAllowFilter, NULL, &filterId);
   if (result != ERROR_SUCCESS) {
-    wcerr << "could not whitelist traffic on " << TAP_DEVICE_NAME << ": " << result << endl;
+    wcerr << "could not allow traffic on " << TAP_DEVICE_NAME << ": " << result << endl;
     return 1;
   }
-  wcout << "whitelisted traffic on " << TAP_DEVICE_NAME << " with filter " << filterId << endl;
+  wcout << "allowed traffic on " << TAP_DEVICE_NAME << " with filter " << filterId << endl;
 
   // Wait forever.
   system("pause");
