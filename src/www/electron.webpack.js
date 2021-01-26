@@ -41,9 +41,7 @@ module.exports = makeConfig({
     {
       test: /\.js$/,
       exclude: /node_modules/,
-      use: [
-        GENERATE_CSS_RTL_LOADER
-      ],
+      use: [GENERATE_CSS_RTL_LOADER],
     },
   ],
   extraPlugins: [

@@ -21,14 +21,11 @@ const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_w
 const BABEL_LOADER = {
   loader: 'babel-loader',
   options: {
-    presets: [
-      [
-        "@babel/preset-env",
-        {
-          "targets": "defaults",
-        }
-      ]
-    ]
+    presets: [[
+      '@babel/preset-env', {
+        'targets': 'defaults',
+      }
+    ]]
   },
 };
 
@@ -56,17 +53,12 @@ module.exports = makeConfig({
     {
       test: /\.js$/,
       exclude: /node_modules/,
-      use: [
-        BABEL_LOADER,
-        GENERATE_CSS_RTL_LOADER
-      ],
+      use: [BABEL_LOADER, GENERATE_CSS_RTL_LOADER],
     },
     {
       test: /\.m?js$/,
       include: /node_modules/,
-      use: [
-        BABEL_LOADER
-      ],
+      use: [BABEL_LOADER],
     },
   ],
   extraPlugins: [

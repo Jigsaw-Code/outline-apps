@@ -505,7 +505,7 @@ export class AppRoot extends mixinBehaviors
       // https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath#browser_compatibility
       Event.prototype.composedPath = function() {
         if (this.path) {
-          return this.path; // ShadowDOM v0 equivalent property.
+          return this.path;  // ShadowDOM v0 equivalent property.
         }
         var composedPath = [];
         var target = this.target;

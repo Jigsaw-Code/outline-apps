@@ -35,7 +35,7 @@ exports.makeConfig = (options) => {
         // We must tell Webpack what kind of ES-features (ES5 only) may be
         // used in the generated runtime-code.
         arrowFunction: false,
-        const: false,
+        const : false,
         destructuring: false,
         forOf: false,
       }
@@ -64,12 +64,13 @@ exports.makeConfig = (options) => {
       new WebpackShellPluginNext({
         onBuildStart: {scripts: ['yarn install --check-files'], blocking: true},
       }),
-      new CopyPlugin([
-        {from: 'assets', to: 'assets'},
-        {from: 'messages', to: 'messages'},
-        {from: 'ui_components/licenses/licenses.txt', to: 'ui_components/licenses'},
-      ], {context: __dirname
-      }),
+      new CopyPlugin(
+          [
+            {from: 'assets', to: 'assets'},
+            {from: 'messages', to: 'messages'},
+            {from: 'ui_components/licenses/licenses.txt', to: 'ui_components/licenses'},
+          ],
+          {context: __dirname}),
       ...options.extraPlugins,
     ],
   };
