@@ -59,7 +59,8 @@ function runCommand(command) {
 const WEBAPP_OUT = 'www';
 
 function buildWebApp() {
-  return runCommand(`yarn do src/www/build_cordova`);
+  const devMode = isRelease ? '' : 'export BUILD_ENV=development && ';
+  return runCommand(`${devMode} yarn do src/www/build_cordova`);
 }
 
 //////////////////
