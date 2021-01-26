@@ -47,7 +47,7 @@ export function unwrapInvite(s: string): string {
     }
   } catch (e) {
     // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // crazy things in the clipboard.
+    // unexpected things in the clipboard.
   }
   return s;
 }
