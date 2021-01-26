@@ -13,7 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-import '@polymer/polymer/polymer-legacy.js';
 
 import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';

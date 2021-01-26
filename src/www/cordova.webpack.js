@@ -13,86 +13,70 @@
 // limitations under the License.
 
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const webpack = require('webpack');
+const {makeConfig} = require('./base.webpack.js');
 
-const OUTPUT_BASE = path.resolve(__dirname, '../../www');
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
 const BABEL_LOADER = {
   loader: 'babel-loader',
   options: {
     presets: [
-      '@babel/preset-env',
-    ],
+      [
+        "@babel/preset-env",
+        {
+          "targets": "defaults",
+        }
+      ]
+    ]
   },
 };
 
-module.exports = {
-  entry: [
-    require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'),
-    require.resolve('@babel/polyfill/dist/polyfill.min.js'),
-    require.resolve('web-animations-js/web-animations-next-lite.min.js'),
-    require.resolve('@webcomponents/webcomponentsjs/webcomponents-loader.js'),
-    path.resolve(__dirname, './style.css'),
-    path.resolve(__dirname, './app/cordova_main.ts'),
-  ],
-  mode: 'production',
+module.exports = makeConfig({
+  main: path.resolve(__dirname, './app/cordova_main.ts'),
   target: 'web',
-  output: {path: OUTPUT_BASE, filename: 'main.js'},
-  module: {
-    rules: [
-      {
-        test: /\.ts(x)?$/,
-        exclude: /node_modules/,
-        use: [
-          BABEL_LOADER,
-          'ts-loader',
-          GENERATE_CSS_RTL_LOADER,
-        ],
-      },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: [
-          BABEL_LOADER,
-          GENERATE_CSS_RTL_LOADER,
-        ]
-      },
-      {
-        test: /\.css?$/,
-        use: [
-          'style-loader',
-          'css-loader',
-        ],
-      }
-    ]
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-    fallback: {'url': require.resolve('url/')},
-  },
-  plugins: [
-    new WebpackShellPluginNext({
-      onBuildStart:{
-        scripts: ['yarn install --check-files'],
-        blocking: true
-      },
-    }),
+  extraModuleRules: [
+    {
+      test: /\.ts(x)?$/,
+      exclude: /node_modules/,
+      use: [
+        BABEL_LOADER,
+        'ts-loader',
+        GENERATE_CSS_RTL_LOADER,
+      ],
+    },
+    {
+      test: /\.m?ts$/,
+      include: /node_modules/,
+      use: [
+        BABEL_LOADER,
+        'ts-loader',
+      ],
+    },
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,
+      use: [
+        BABEL_LOADER,
+        GENERATE_CSS_RTL_LOADER
+      ],
+    },
+    {
+      test: /\.m?js$/,
+      include: /node_modules/,
+      use: [
+        BABEL_LOADER
+      ],
+    },
+  ],
+  extraPlugins: [
     new webpack.DefinePlugin({
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),
-    new CopyPlugin(
-        [
-          {from: 'assets', to: 'assets'},
-          {from: 'messages', to: 'messages'},
-        ],
-        {context: __dirname}),
     new HtmlWebpackPlugin({
       filename: 'cordova_index.html',
       template: path.resolve(__dirname, './cordova_index.html'),
     }),
-  ],
-};
+  ]
+});

@@ -29,6 +29,8 @@ function generateRtlCss(css) {
 
 // This is a Webpack loader that searches for <style> blocks and edits the CSS to support RTL
 // in a Polymer element.
+//
+// NOTE: This RTL transformation break any sourcemaps that may exist on the file.
 module.exports = function loader(content, map, meta) {
   const callback = this.async();
   const styleRe = RegExp(/(<style[^>]*>)(\s*[^<\s](.*\n)*\s*)(<\/style>)/gm);

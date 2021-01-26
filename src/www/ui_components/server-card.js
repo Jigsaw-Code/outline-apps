@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-import '@polymer/polymer/polymer-legacy.js';
+
 import './server-connection-viz.js';
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';

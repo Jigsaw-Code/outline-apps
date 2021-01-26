@@ -17,7 +17,6 @@
 /* Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it */
 /* ref: https://github.com/PolymerElements/paper-dropdown-menu/#changes-in-20 */
 /* end: dropdown menu dependencies */
-import '@polymer/polymer/polymer-legacy.js';
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js'

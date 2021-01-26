@@ -13,55 +13,40 @@
 // limitations under the License.
 
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const webpack = require('webpack');
+const {makeConfig} = require('./base.webpack.js');
 
-const OUTPUT_BASE = path.resolve(__dirname, '../../www');
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
 
-module.exports = {
-  entry: [
-    require.resolve('@webcomponents/webcomponentsjs/webcomponents-loader.js'),
-    path.resolve(__dirname, './style.css'),
-    path.resolve(__dirname, './app/electron_main.ts'),
-  ],
-  mode: 'production',
+module.exports = makeConfig({
+  main: path.resolve(__dirname, './app/electron_main.ts'),
   target: 'electron-renderer',
-  output: {path: OUTPUT_BASE, filename: 'main.js'},
-  module: {
-    rules: [
-      {
-        test: /\.ts(x)?$/,
-        exclude: /node_modules/,
-        use: [
-          'ts-loader',
-          GENERATE_CSS_RTL_LOADER,
-        ],
-      },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: GENERATE_CSS_RTL_LOADER,
-      },
-      {
-        test: /\.css?$/,
-        use: [
-          'style-loader',
-          'css-loader',
-        ],
-      }
-    ]
-  },
-  resolve: {extensions: ['.tsx', '.ts', '.js']},
-  plugins: [
-    new WebpackShellPluginNext({
-      onBuildStart:{
-        scripts: ['yarn install --check-files'],
-        blocking: true
-      },
-    }),
+  extraModuleRules: [
+    {
+      test: /\.ts(x)?$/,
+      exclude: /node_modules/,
+      use: [
+        'ts-loader',
+        GENERATE_CSS_RTL_LOADER,
+      ],
+    },
+    {
+      test: /\.ts(x)?$/,
+      include: /node_modules/,
+      use: [
+        'ts-loader',
+      ],
+    },
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,
+      use: [
+        GENERATE_CSS_RTL_LOADER
+      ],
+    },
+  ],
+  extraPlugins: [
     new webpack.DefinePlugin({
       // Hack to protect against @sentry/electron not having process.type defined.
       'process.type': JSON.stringify('renderer'),
@@ -72,15 +57,9 @@ module.exports = {
     // in the browser. Webpack still tries to build it, but fails with missing APIs.
     // The IgnorePlugin prevents the compilation of the electron dependency.
     new webpack.IgnorePlugin(/^electron$/),
-    new CopyPlugin(
-        [
-          {from: 'assets', to: 'assets'},
-          {from: 'messages', to: 'messages'},
-        ],
-        {context: __dirname}),
     new HtmlWebpackPlugin({
       filename: 'electron_index.html',
       template: path.resolve(__dirname, './electron_index.html'),
     }),
   ],
-};
+});

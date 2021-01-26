@@ -13,6 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
+
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
@@ -445,10 +446,7 @@ export class AppRoot extends mixinBehaviors
         type: String,
         computed: '_computePageTitleKey(page)',
       },
-      rootPath: {
-        type: String,
-        value: location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1),
-      },
+      rootPath: String,
       shouldShowBackButton: {
         type: Boolean,
         computed: '_computeShouldShowBackButton(page, DEFAULT_PAGE)',
@@ -500,6 +498,32 @@ export class AppRoot extends mixinBehaviors
     var buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
     for (var i = 0, button = buttons[i]; button; button = buttons[++i]) {
       button._detectKeyboardFocus = noop;
+    }
+
+    if (!Event.prototype.composedPath) {
+      // Polyfill for composedPath. See https://dom.spec.whatwg.org/#dom-event-composedpath.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath#browser_compatibility
+      Event.prototype.composedPath = function() {
+        if (this.path) {
+          return this.path; // ShadowDOM v0 equivalent property.
+        }
+        var composedPath = [];
+        var target = this.target;
+        while (target) {
+          composedPath.push(target);
+          if (target.assignedSlot) {
+            target = target.assignedSlot;
+          } else if (target.nodeType === Node.DOCUMENT_FRAGMENT_NODE && target.host) {
+            target = target.host;
+          } else {
+            target = target.parentNode;
+          }
+        }
+        if (composedPath[composedPath.length - 1] === document) {
+          composedPath.push(window);
+        }
+        return composedPath;
+      };
     }
 
     if (window.hasOwnProperty('cordova')) {
