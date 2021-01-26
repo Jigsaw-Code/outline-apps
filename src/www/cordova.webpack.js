@@ -56,6 +56,7 @@ module.exports = makeConfig({
       use: [BABEL_LOADER, GENERATE_CSS_RTL_LOADER],
     },
     {
+      // Loads and transpiles dependencies (including .mjs ES modules)
       test: /\.m?js$/,
       include: /node_modules/,
       use: [BABEL_LOADER],

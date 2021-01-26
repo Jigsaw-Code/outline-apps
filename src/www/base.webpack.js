@@ -22,8 +22,8 @@ exports.makeConfig = (options) => {
   return {
     entry: [
       require.resolve('@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
+      require.resolve('web-animations-js/web-animations-next-lite.min.js'),
       path.resolve(__dirname, './style.css'),
-      // path.resolve(__dirname, './ui_components/licesnses/licenses.txt'),
       options.main,
     ],
     mode: 'production',
@@ -34,6 +34,7 @@ exports.makeConfig = (options) => {
       environment: {
         // We must tell Webpack what kind of ES-features (ES5 only) may be
         // used in the generated runtime-code.
+        // https://webpack.js.org/configuration/output/#outputenvironment
         arrowFunction: false,
         const : false,
         destructuring: false,
