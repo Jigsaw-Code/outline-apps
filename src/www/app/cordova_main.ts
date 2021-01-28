@@ -15,8 +15,9 @@
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 
-import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
 import '@babel/polyfill';
+import 'web-animations-js/web-animations-next-lite.min.js';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));

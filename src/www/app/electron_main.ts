@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'web-animations-js/web-animations-next-lite.min.js';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+
 import * as sentry from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';

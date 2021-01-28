@@ -20,6 +20,8 @@ The latter command will open a browser instance running the app. Browser platfor
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
+*Tip: Build with `(export BUILD_ENV=development; yarn gulp build --platform=browser)` to enable source maps.*
+
 ## Building the Android app
 
 Additional requirements for Android:

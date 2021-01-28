@@ -13,6 +13,7 @@
 // limitations under the License.
 
 const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const {makeConfig} = require('./base.webpack.js');
@@ -31,7 +32,7 @@ const BABEL_LOADER = {
 
 module.exports = makeConfig({
   main: path.resolve(__dirname, './app/cordova_main.ts'),
-  target: 'web',
+  target: ['web', 'es5'],
   extraModuleRules: [
     {
       test: /\.ts(x)?$/,
@@ -63,6 +64,11 @@ module.exports = makeConfig({
     },
   ],
   extraPlugins: [
+    new CopyPlugin(
+      [
+        {from: require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'), to: 'webcomponentsjs'},
+      ],
+      {context: __dirname}),
     new webpack.DefinePlugin({
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),

@@ -21,25 +21,15 @@ const OUTPUT_BASE = path.resolve(__dirname, '../../www');
 exports.makeConfig = (options) => {
   return {
     entry: [
-      require.resolve('@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
-      require.resolve('web-animations-js/web-animations-next-lite.min.js'),
       path.resolve(__dirname, './style.css'),
       options.main,
     ],
     mode: 'production',
+    devtool: 'inline-source-map',
     target: options.target,
     output: {
       path: OUTPUT_BASE,
       filename: 'main.js',
-      environment: {
-        // We must tell Webpack what kind of ES-features (ES5 only) may be
-        // used in the generated runtime-code.
-        // https://webpack.js.org/configuration/output/#outputenvironment
-        arrowFunction: false,
-        const : false,
-        destructuring: false,
-        forOf: false,
-      }
     },
     module: {
       rules: [
