@@ -14,10 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build_electron
-
-tsc -p src/electron
-
-# Environment variables.
-# TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+webpack --config=src/www/cordova.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}

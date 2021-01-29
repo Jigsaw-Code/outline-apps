@@ -14,7 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Builds the TypeScript in this folder, placing a web app at /www (for Cordova).
-
-tsc -p src/www
-rsync -ac --exclude '*.ts' src/www/ www/
+webpack --config=src/www/electron.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}

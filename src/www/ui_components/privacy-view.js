@@ -1,5 +1,5 @@
-<!--
-  Copyright 2018 The Outline Authors
+/*
+  Copyright 2020 The Outline Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,12 +12,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<link rel="import" href="../bower_components/polymer/polymer-element.html" />
-<link rel="import" href="../bower_components/paper-button/paper-button.html" />
+*/
 
-<dom-module id="privacy-view">
-  <template>
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+
+Polymer({
+  _template: html`
     <style>
       :host {
         background: #fff;
@@ -111,7 +112,7 @@
     </style>
     <div id="container">
       <div id="header">
-        <img id="privacy-lock" src$="[[rootPath]]assets/privacy-lock.png" />
+        <img id="privacy-lock" src\$="[[rootPath]]assets/privacy-lock.png">
       </div>
       <div id="footer-container">
         <div id="footer">
@@ -126,19 +127,16 @@
         </div>
       </div>
     </div>
-  </template>
+`,
 
-  <script>
-    "use strict";
-    Polymer({
-      is: "privacy-view",
-      properties: {
-        localize: Function,
-        rootPath: String,
-      },
-      _privacyTermsAcked: function() {
-        this.fire("PrivacyTermsAcked");
-      },
-    });
-  </script>
-</dom-module>
+  is: 'privacy-view',
+
+  properties: {
+    localize: Function,
+    rootPath: String,
+  },
+
+  _privacyTermsAcked: function() {
+    this.fire('PrivacyTermsAcked');
+  }
+});

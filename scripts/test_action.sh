@@ -14,5 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build
+readonly TEST_DIR="${ROOT_DIR}/build/test"
+rm -rf $TEST_DIR
+
+yarn install --check-files
+tsc -p $ROOT_DIR/src/www --outDir $TEST_DIR
 jasmine --config=$ROOT_DIR/jasmine.json

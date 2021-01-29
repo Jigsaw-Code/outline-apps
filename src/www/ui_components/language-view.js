@@ -1,5 +1,5 @@
-<!--
-  Copyright 2018 The Outline Authors
+/*
+  Copyright 2020 The Outline Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,14 +12,16 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<link rel="import" href="../bower_components/polymer/polymer-element.html" />
-<link rel="import" href="../bower_components/polymer/lib/mixins/dir-mixin.html" />
-<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html" />
-<link rel="import" href="../bower_components/polymer/lib/elements/dom-if.html" />
+*/
 
-<dom-module id="language-view">
-  <template>
+import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
+
+class OutlineLanguageView extends DirMixin
+(PolymerElement) {
+  static get template() {
+    return html`
     <style>
       :host {
         background: #fff;
@@ -52,41 +54,38 @@
         <template is="dom-repeat" items="{{languages}}" as="lang">
           <paper-item class="language-item" value="{{lang.id}}">
             <span class="language-name">{{lang.name}}</span>
-            <iron-icon icon="check" hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
+            <iron-icon icon="check" hidden\$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
           </paper-item>
         </template>
       </paper-listbox>
     </div>
-  </template>
+`;
+  }
 
-  <script>
-    class OutlineLanguageView extends Polymer.DirMixin(Polymer.Element) {
-      static get is() {
-        return "language-view";
-      }
+  static get is() {
+    return 'language-view';
+  }
 
-      static get properties() {
-        return {
-          selectedLanguage: String,
-          // An array of {id, name, dir} language objects.
-          languages: {
-            type: Array,
-            readonly: true,
-          },
-        };
-      }
+  static get properties() {
+    return {
+      selectedLanguage: String,
+      // An array of {id, name, dir} language objects.
+      languages: {
+        type: Array,
+        readonly: true,
+      },
+    };
+  }
 
-      _languageSelected(event) {
-        const languageCode = event.detail.value;
-        const params = {bubbles: true, composed: true, detail: {languageCode}};
-        this.language = languageCode;
-        this.dispatchEvent(new CustomEvent("SetLanguageRequested", params));
-      }
+  _languageSelected(event) {
+    const languageCode = event.detail.value;
+    const params = {bubbles: true, composed: true, detail: {languageCode}};
+    this.language = languageCode;
+    this.dispatchEvent(new CustomEvent('SetLanguageRequested', params));
+  }
 
-      _shouldHideCheckmark(selectedLanguage, languageCode) {
-        return selectedLanguage !== languageCode;
-      }
-    }
-    customElements.define(OutlineLanguageView.is, OutlineLanguageView);
-  </script>
-</dom-module>
+  _shouldHideCheckmark(selectedLanguage, languageCode) {
+    return selectedLanguage !== languageCode;
+  }
+}
+customElements.define(OutlineLanguageView.is, OutlineLanguageView);

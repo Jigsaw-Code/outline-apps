@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig/shadowsocks_config';
+import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../model/errors';
 import * as events from '../model/events';
