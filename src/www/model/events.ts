@@ -96,6 +96,10 @@ export class EventQueue {
     this.isPublishing = true;
     while (this.queuedEvents.length > 0) {
       const event = this.queuedEvents.shift() as OutlineEvent;
+      // The 'new' operator assigns a property to the new object that links to
+      // the constructor function's prototype object. Therefore, events created
+      // via the 'new' operator will have the event specific constructor, which
+      // is used to look up registered listeners.
       const listeners = this.listenersByEventType.get(event.constructor);
       if (!listeners) {
         console.warn('Dropping event with no listeners:', event);
