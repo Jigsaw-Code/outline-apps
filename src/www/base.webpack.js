@@ -14,6 +14,7 @@
 
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 
 const OUTPUT_BASE = path.resolve(__dirname, '../../www');
@@ -64,5 +65,17 @@ exports.makeConfig = (options) => {
           {context: __dirname}),
       ...options.extraPlugins,
     ],
+    optimization: {
+      minimizer: [
+        new TerserPlugin({
+          exclude: /node_modules/,
+          terserOptions: {
+            ecma: 'es5',
+            keep_classnames: true,
+            keep_fnames: true,
+          }
+        }),
+      ],
+    },
   };
 };
