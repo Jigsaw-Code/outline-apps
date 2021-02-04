@@ -89,7 +89,6 @@
     "pretty-quick": "^2.0.1",
     "simple-plist": "^1.1.0",
     "style-loader": "^2.0.0",
-    "terser-webpack-plugin": "^5.1.1",
     "ts-loader": "^8.0.14",
     "tslint": "^5.12.0",
     "typescript": "^3.9.7",
