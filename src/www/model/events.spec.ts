@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {EventQueue, ServerAdded, ServerConnected, ServerForgotten, ServerRenamed} from "./events";
+import {EventQueue, ServerAdded, ServerConnected, ServerForgotten, ServerRenamed} from './events';
 
 describe('EventQueue', () => {
   it('subscribe registers listeners to corresponding event', () => {
