@@ -12,20 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {EventQueue, ServerAdded, ServerConnected, ServerForgotten, ServerRenamed} from './events';
+import {
+  EventQueue,
+  ServerAdded,
+  ServerConnected,
+  ServerDisconnected,
+  ServerForgetUndone,
+  ServerForgotten,
+  ServerReconnecting,
+  ServerRenamed,
+} from "./events";
 
 describe('EventQueue', () => {
   it('subscribe registers listeners to corresponding event', () => {
     let serverAddedCount = 0;
     let serverForgottenCount = 0;
     let serverRenamedCount = 0;
+    let serverForgetUndoneCount = 0;
+    let serverConnectedCount = 0;
+    let serverDisconnectedCount = 0;
 
     const queue = new EventQueue();
     queue.subscribe(ServerAdded, () => serverAddedCount++);
     queue.subscribe(ServerForgotten, () => serverForgottenCount++);
-    queue.subscribe(ServerForgotten, () => serverForgottenCount++);
-    queue.subscribe(ServerForgotten, () => serverForgottenCount++);
     queue.subscribe(ServerRenamed, () => serverRenamedCount++);
+    queue.subscribe(ServerForgetUndone, () => serverForgetUndoneCount++);
+    queue.subscribe(ServerConnected, () => serverConnectedCount++);
+    queue.subscribe(ServerDisconnected, () => serverDisconnectedCount++);
+
+    // Subscribes additional listeners to certain events
+    queue.subscribe(ServerForgotten, () => serverForgottenCount++);
+    queue.subscribe(ServerForgotten, () => serverForgottenCount++);
     queue.startPublishing();
 
     // Enqueue event with single listener
@@ -33,18 +50,27 @@ describe('EventQueue', () => {
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(0);
     expect(serverRenamedCount).toEqual(0);
+    expect(serverForgetUndoneCount).toEqual(0);
+    expect(serverConnectedCount).toEqual(0);
+    expect(serverDisconnectedCount).toEqual(0);
 
     // Enqueue event with multiple listeners
     queue.enqueue(new ServerForgotten(null));
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(3);
     expect(serverRenamedCount).toEqual(0);
+    expect(serverForgetUndoneCount).toEqual(0);
+    expect(serverConnectedCount).toEqual(0);
+    expect(serverDisconnectedCount).toEqual(0);
 
     // Enqueue event with no listeners
-    queue.enqueue(new ServerConnected(null));
+    queue.enqueue(new ServerReconnecting(null));
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(3);
     expect(serverRenamedCount).toEqual(0);
+    expect(serverForgetUndoneCount).toEqual(0);
+    expect(serverConnectedCount).toEqual(0);
+    expect(serverDisconnectedCount).toEqual(0);
   });
   it('events are not published until startPublishing is called', () => {
     let serverAddedCount = 0;
