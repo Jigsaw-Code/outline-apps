@@ -14,6 +14,7 @@
 
 import {ChildProcess, execSync, spawn} from 'child_process';
 import {powerMonitor} from 'electron';
+import {basename} from 'path';
 import {platform} from 'os';
 import {env} from 'process';
 
@@ -299,6 +300,11 @@ class ChildProcessHelper {
         this.exitListener();
       }
     };
+
+    if (env.OUTLINE_DEBUG === 'true') {
+      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${basename(this.path)}]: ${data}`));
+      this.process.stderr.on('data', (data) => console.log(`[STDERR - ${basename(this.path)}]: ${data}`));
+    }
 
     // We have to listen for both events: error means the process could not be launched and in that
     // case exit will not be invoked.
