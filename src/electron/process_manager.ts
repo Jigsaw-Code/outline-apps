@@ -15,6 +15,7 @@
 import {ChildProcess, execSync, spawn} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
+import {env} from 'process';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
@@ -336,6 +337,9 @@ class SsLocal extends ChildProcessHelper {
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
+    if (env.OUTLINE_DEBUG === 'true') {
+      args.push('-v');
+    }
 
     this.launch(args);
   }
@@ -362,7 +366,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', 'error');
+    args.push('--loglevel', env.OUTLINE_DEBUG === 'true' ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');
