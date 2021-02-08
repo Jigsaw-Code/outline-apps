@@ -14,9 +14,9 @@
 
 import {ChildProcess, execSync, spawn} from 'child_process';
 import {powerMonitor} from 'electron';
-import {basename} from 'path';
 import {platform} from 'os';
-import {env} from 'process';
+import * as path from 'path';
+import * as process from 'process';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
@@ -301,9 +301,11 @@ class ChildProcessHelper {
       }
     };
 
-    if (env.OUTLINE_DEBUG === 'true') {
-      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${basename(this.path)}]: ${data}`));
-      this.process.stderr.on('data', (data) => console.log(`[STDERR - ${basename(this.path)}]: ${data}`));
+    if (process.env.OUTLINE_DEBUG === 'true') {
+      this.process.stdout.on(
+          'data', (data) => console.log(`[STDOUT - ${path.basename(this.path)}]: ${data}`));
+      this.process.stderr.on(
+          'data', (data) => console.log(`[STDERR - ${path.basename(this.path)}]: ${data}`));
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
@@ -343,7 +345,7 @@ class SsLocal extends ChildProcessHelper {
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
-    if (env.OUTLINE_DEBUG === 'true') {
+    if (process.env.OUTLINE_DEBUG === 'true') {
       args.push('-v');
     }
 
@@ -372,7 +374,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', env.OUTLINE_DEBUG === 'true' ? 'debug' : 'error');
+    args.push('--loglevel', process.env.OUTLINE_DEBUG === 'true' ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');

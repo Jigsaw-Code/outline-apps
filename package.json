@@ -1,7 +1,6 @@
 {
   "name": "outline-client",
   "productName": "Outline",
-  "version": "0.1.0-TODOBEFOREPUSHREMOVE",
   "scripts": {
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
     "do": "bash ./scripts/do_action.sh"
