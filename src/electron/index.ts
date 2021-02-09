@@ -300,6 +300,7 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
   }
 
   currentTunnel = new TunnelManager(config, isAutoConnect);
+  currentTunnel.setDebug(debugMode);
 
   currentTunnel.onceStopped.then(() => {
     console.log(`disconnected from ${id}`);

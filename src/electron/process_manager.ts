@@ -151,6 +151,11 @@ export class TunnelManager {
     }
   }
 
+  public setDebug(debug: boolean) {
+    this.ssLocal.setDebug(debug);
+    this.tun2socks.setDebug(debug);
+  }
+
   // Fulfills once all three helpers have started successfully.
   async start() {
     if (isWindows) {
@@ -284,13 +289,15 @@ export class TunnelManager {
 //       found).
 class ChildProcessHelper {
   private process?: ChildProcess;
+  protected isInDebugMode = false;
 
   private exitListener?: () => void;
 
-  constructor(private path: string) {}
+  protected constructor(private path: string) {}
 
   protected launch(args: string[]) {
     this.process = spawn(this.path, args);
+    const processName = path.basename(this.path);
 
     const onExit = () => {
       if (this.process) {
@@ -299,13 +306,15 @@ class ChildProcessHelper {
       if (this.exitListener) {
         this.exitListener();
       }
+
+      if (this.isInDebugMode) {
+        console.log(`[EXIT - ${processName}]: ${this.process.exitCode}`);
+      }
     };
 
-    if (process.env.OUTLINE_DEBUG === 'true') {
-      this.process.stdout.on(
-          'data', (data) => console.log(`[STDOUT - ${path.basename(this.path)}]: ${data}`));
-      this.process.stderr.on(
-          'data', (data) => console.log(`[STDERR - ${path.basename(this.path)}]: ${data}`));
+    if (this.isInDebugMode) {
+      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${processName}]: ${data}`));
+      this.process.stderr.on('data', (data) => console.log(`[STDERR - ${processName}]: ${data}`));
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
@@ -330,6 +339,10 @@ class ChildProcessHelper {
   set onExit(newListener: (() => void)|undefined) {
     this.exitListener = newListener;
   }
+
+  public setDebug(debug: boolean) {
+    this.isInDebugMode = debug;
+  }
 }
 
 class SsLocal extends ChildProcessHelper {
@@ -345,7 +358,7 @@ class SsLocal extends ChildProcessHelper {
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
-    if (process.env.OUTLINE_DEBUG === 'true') {
+    if (this.isInDebugMode) {
       args.push('-v');
     }
 
@@ -374,7 +387,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', process.env.OUTLINE_DEBUG === 'true' ? 'debug' : 'error');
+    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');
