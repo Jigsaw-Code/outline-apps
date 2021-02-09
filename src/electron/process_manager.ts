@@ -88,6 +88,7 @@ export class TunnelManager {
   private reconnectedListener?: () => void;
 
   constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
+    this.tun2socks = new Tun2socks(config);
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
     // These Promises, each tied to a helper process' exit, are key to the instance's
@@ -185,7 +186,7 @@ class Tun2socks {
     this.resolveStop = resolve;
   });
 
-  constructor(private config: cordova.plugins.outline.ServerConfig) {}
+  constructor(private config: ShadowsocksConfig) {}
 
   // Starts the tun2socks process. Restarts the process if it is already running.
   // Checks the server's connectivity when `checkConnectivity` is true, throwing on failure.
