@@ -15,10 +15,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {ShadowsocksConfig} from '../www/model/shadowsocks';
+
 // Format to store a tunnel configuration.
 export interface SerializableTunnel {
   id: string;
-  config: cordova.plugins.outline.ServerConfig;
+  config: ShadowsocksConfig;
   isUdpSupported?: boolean;
 }
 

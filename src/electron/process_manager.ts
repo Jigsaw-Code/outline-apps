@@ -16,7 +16,9 @@ import {execSync} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
+import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {ChildProcessHelper} from './child_process';
 import {ShadowsocksConnectivity} from './connectivity';
@@ -85,9 +87,7 @@ export class TunnelManager {
   private reconnectingListener?: () => void;
   private reconnectedListener?: () => void;
 
-  constructor(
-    config: cordova.plugins.outline.ServerConfig, private isAutoConnect: boolean) {
-    this.tun2socks = new Tun2socks(config);
+  constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
 
     // These Promises, each tied to a helper process' exit, are key to the instance's
@@ -206,8 +206,8 @@ class Tun2socks {
       console.log('restarting tun2socks');
     }
 
-    this.process = new ChildProcessHelper(pathToEmbeddedBinary('go-tun2socks', 'tun2socks'),
-                                          this.getProcessArgs());
+    this.process = new ChildProcessHelper(
+        pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'), this.getProcessArgs());
 
     return new Promise((resolve, reject) => {
       // Declare success when tun2socks is running.

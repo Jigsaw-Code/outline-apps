@@ -50,16 +50,6 @@ stages:
 # doing, we add a descriptive environment variable.
 jobs:
   include:
-    # Ideally, we would split this stage in some way, e.g. by component or by
-    # build/test commands, to make it clearer in the Travis UI exactly which
-    # command failed. However, since each stage incurs a significantly start-up
-    # cost, we combine test and build commands for all components into one fast
-    # stage.
-    - stage: build and unit test
-      script:
-        - yarn gulp build --platform=browser
-        - yarn do scripts/test
-
     - stage: tag
       script:
         - RELEASE_NAME=daily-$(date -I)
