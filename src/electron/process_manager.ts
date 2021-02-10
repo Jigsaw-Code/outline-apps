@@ -299,7 +299,7 @@ class ChildProcessHelper {
     this.process = spawn(this.path, args);
     const processName = path.basename(this.path);
 
-    const onExit = () => {
+    const onExit = (code: number, signal: string) => {
       if (this.process) {
         this.process.removeAllListeners();
       }
@@ -308,7 +308,13 @@ class ChildProcessHelper {
       }
 
       if (this.isInDebugMode) {
-        console.log(`[EXIT - ${processName}]: ${this.process.exitCode}`);
+        const prefix = `[EXIT - ${processName}]: `;
+        // Only ever one is non-null
+        if (code !== null) {
+          console.log(`${prefix}Exited with code ${code}`);
+        } else {
+          console.log(`${prefix}Killed by signal ${signal}`);
+        }
       }
     };
 
