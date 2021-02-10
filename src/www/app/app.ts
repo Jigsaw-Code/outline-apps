@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig/shadowsocks_config';
+import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../model/errors';
 import * as events from '../model/events';
@@ -47,7 +47,7 @@ export function unwrapInvite(s: string): string {
     }
   } catch (e) {
     // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // crazy things in the clipboard.
+    // unexpected things in the clipboard.
   }
   return s;
 }
@@ -190,14 +190,13 @@ export class App {
     }
   }
 
-  private pullClipboardText() {
-    this.clipboard.getContents().then(
-        (text: string) => {
-          this.handleClipboardText(text);
-        },
-        (e) => {
-          console.warn('cannot read clipboard, system may lack clipboard support');
-        });
+  private async pullClipboardText() {
+    try {
+      const text = await this.clipboard.getContents();
+      this.handleClipboardText(text);
+    } catch (e) {
+      console.warn('cannot read clipboard, system may lack clipboard support');
+    }
   }
 
   private showServerConnected(event: events.ServerConnected): void {
@@ -352,19 +351,21 @@ export class App {
     }
   }
 
-  private forgetServer(event: CustomEvent) {
+  private async forgetServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
       return this.showLocalizedError();
     }
-    const onceNotRunning = server.checkRunning().then((isRunning) => {
-      return isRunning ? this.disconnectServer(event) : Promise.resolve();
-    });
-    onceNotRunning.then(() => {
-      this.serverRepo.forget(serverId);
-    });
+    try {
+      if (await server.checkRunning()) {
+        await this.disconnectServer(event);
+      }
+    } catch (e) {
+      console.warn(`failed to disconnect from server to forget: ${e}`);
+    }
+    this.serverRepo.forget(serverId);
   }
 
   private renameServer(event: CustomEvent) {
@@ -373,7 +374,7 @@ export class App {
     this.serverRepo.rename(serverId, newName);
   }
 
-  private connectServer(event: CustomEvent): void {
+  private async connectServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     if (!serverId) {
       throw new Error(`connectServer event had no server ID`);
@@ -385,21 +386,20 @@ export class App {
     console.log(`connecting to server ${serverId}`);
 
     card.state = 'CONNECTING';
-    server.connect().then(
-        () => {
-          card.state = 'CONNECTED';
-          console.log(`connected to server ${serverId}`);
-          this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
-          this.maybeShowAutoConnectDialog();
-        },
-        (e) => {
-          card.state = 'DISCONNECTED';
-          this.showLocalizedError(e);
-          console.error(`could not connect to server ${serverId}: ${e.name}`);
-          if (!(e instanceof errors.RegularNativeError)) {
-            this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
-          }
-        });
+    try {
+      await server.connect();
+      card.state = 'CONNECTED';
+      console.log(`connected to server ${serverId}`);
+      this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
+      this.maybeShowAutoConnectDialog();
+    } catch (e) {
+      card.state = 'DISCONNECTED';
+      this.showLocalizedError(e);
+      console.error(`could not connect to server ${serverId}: ${e.name}`);
+      if (!(e instanceof errors.RegularNativeError)) {
+        this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
+      }
+    }
   }
 
   private maybeShowAutoConnectDialog() {
@@ -418,7 +418,7 @@ export class App {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
-  private disconnectServer(event: CustomEvent): void {
+  private async disconnectServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     if (!serverId) {
       throw new Error(`disconnectServer event had no server ID`);
@@ -430,38 +430,35 @@ export class App {
     console.log(`disconnecting from server ${serverId}`);
 
     card.state = 'DISCONNECTING';
-    server.disconnect().then(
-        () => {
-          card.state = 'DISCONNECTED';
-          console.log(`disconnected from server ${serverId}`);
-          this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
-        },
-        (e) => {
-          card.state = 'CONNECTED';
-          this.showLocalizedError(e);
-          console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
-        });
+    try {
+      await server.disconnect();
+      card.state = 'DISCONNECTED';
+      console.log(`disconnected from server ${serverId}`);
+      this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
+    } catch (e) {
+      card.state = 'CONNECTED';
+      this.showLocalizedError(e);
+      console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
+    }
   }
 
-  private submitFeedback(event: CustomEvent) {
+  private async submitFeedback(event: CustomEvent) {
     const formData = this.feedbackViewEl.getValidatedFormData();
     if (!formData) {
       return;
     }
     const {feedback, category, email} = formData;
     this.rootEl.$.feedbackView.submitting = true;
-    this.errorReporter.report(feedback, category, email)
-        .then(
-            () => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.rootEl.$.feedbackView.resetForm();
-              this.changeToDefaultPage();
-              this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-            },
-            (err: {}) => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.showLocalizedError(new errors.FeedbackSubmissionError());
-            });
+    try {
+      await this.errorReporter.report(feedback, category, email);
+      this.rootEl.$.feedbackView.submitting = false;
+      this.rootEl.$.feedbackView.resetForm();
+      this.changeToDefaultPage();
+      this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
+    } catch (e) {
+      this.rootEl.$.feedbackView.submitting = false;
+      this.showLocalizedError(new errors.FeedbackSubmissionError());
+    }
   }
 
   // EventQueue event handlers:
@@ -511,26 +508,24 @@ export class App {
     }
   }
 
-  private syncServerConnectivityState(server: Server) {
-    server.checkRunning()
-        .then((isRunning) => {
-          const card = this.serverListEl.getServerCard(server.id);
-          if (!isRunning) {
-            card.state = 'DISCONNECTED';
-            return;
-          }
-          server.checkReachable().then((isReachable) => {
-            if (isReachable) {
-              card.state = 'CONNECTED';
-            } else {
-              console.log(`Server ${server.id} reconnecting`);
-              card.state = 'RECONNECTING';
-            }
-          });
-        })
-        .catch((e) => {
-          console.error('Failed to sync server connectivity state', e);
-        });
+  private async syncServerConnectivityState(server: Server) {
+    try {
+      const isRunning = await server.checkRunning();
+      const card = this.serverListEl.getServerCard(server.id);
+      if (!isRunning) {
+        card.state = 'DISCONNECTED';
+        return;
+      }
+      const isReachable = await server.checkReachable();
+      if (isReachable) {
+        card.state = 'CONNECTED';
+      } else {
+        console.log(`Server ${server.id} reconnecting`);
+        card.state = 'RECONNECTING';
+      }
+    } catch (e) {
+      console.error('Failed to sync server connectivity state', e);
+    }
   }
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {

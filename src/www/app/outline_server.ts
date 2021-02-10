@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
-
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
+import {ShadowsocksConfig} from '../model/shadowsocks';
 
 import {PersistentServer} from './persistent_server';
+import {Tunnel, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements PersistentServer {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in outline-go-tun2socks.
@@ -27,8 +27,8 @@ export class OutlineServer implements PersistentServer {
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   constructor(
-      public readonly id: string, public config: cordova.plugins.outline.ServerConfig,
-      private tunnel: cordova.plugins.outline.Tunnel, private eventQueue: events.EventQueue) {
+      public readonly id: string, public config: ShadowsocksConfig, private tunnel: Tunnel,
+      private eventQueue: events.EventQueue) {
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -61,22 +61,26 @@ export class OutlineServer implements PersistentServer {
     return this.config.host;
   }
 
-  connect(): Promise<void> {
-    return this.tunnel.start().catch((e) => {
+  async connect() {
+    try {
+      await this.tunnel.start();
+    } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
       if (e.errorCode) {
         throw errors.fromErrorCode(e.errorCode);
       }
       throw e;
-    });
+    }
   }
 
-  disconnect(): Promise<void> {
-    return this.tunnel.stop().catch((e) => {
-      // TODO: None of the plugins currently return an ErrorCode on disconnection.
+  async disconnect() {
+    try {
+      await this.tunnel.stop();
+    } catch (e) {
+      // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
-    });
+    }
   }
 
   checkRunning(): Promise<boolean> {

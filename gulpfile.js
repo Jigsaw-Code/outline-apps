@@ -14,18 +14,11 @@
 
 'use strict';
 
-const browserify = require('browserify');
-const babel = require('gulp-babel');
-const babel_preset_env = require('babel-preset-env');
 const child_process = require('child_process');
-const generateRtlCss = require('./scripts/generate_rtl_css.js');
 const gulp = require('gulp');
-const gulpif = require('gulp-if');
 const log = require('fancy-log');
 const minimist = require('minimist');
 const os = require('os');
-const polymer_build = require('polymer-build');
-const source = require('vinyl-source-stream');
 
 //////////////////
 //////////////////
@@ -66,72 +59,9 @@ function runCommand(command) {
 
 const WEBAPP_OUT = 'www';
 
-// Copies Babel polyfill from node_modules, as it needs to be included by cordova_index.html.
-function copyBabelPolyfill() {
-  const babelPolyfill = 'node_modules/babel-polyfill/dist/polyfill.min.js';
-  return runCommand(`cp -v ${babelPolyfill} ${WEBAPP_OUT}/babel-polyfill.min.js`);
-}
-
-// Bundles code with the entry point www/app/cordova_main.js -> www/cordova_main.js.
-//
-// Useful Gulp/Browserify examples:
-//   https://github.com/gulpjs/gulp/tree/master/docs/recipes
-function browserifyAndBabelify() {
-  return browserify({entries: `${WEBAPP_OUT}/app/cordova_main.js`, debug: true})
-      .transform('babelify', {
-        // Transpile code in node_modules, too.
-        global: true,
-        presets: ['env']
-      })
-      .bundle()
-      // Transform the bundle() output stream into one regular Gulp plugins understand.
-      .pipe(source('cordova_main.js'))
-      .pipe(gulp.dest(WEBAPP_OUT));
-}
-
-// Transpiles to |src| to ES5, copying the output to |dest|.
-function transpile(src, dest) {
-  const sourcesHtmlSplitter = new polymer_build.HtmlSplitter();
-  return gulp.src(src)
-      .pipe(sourcesHtmlSplitter.split())
-      .pipe(gulpif(/\.js$/, babel({presets: [babel_preset_env.default()]})))
-      .pipe(sourcesHtmlSplitter.rejoin())
-      .pipe(gulp.dest(dest));
-}
-
-// Note: This is currently done "in-place", i.e. the components are downloaded to `WEBAPP_OUT` and
-// transpiled there, but this seems to work just fine (idempodent).
-function transpileBowerComponents() {
-  // Transpile bower_components with the exception of webcomponentsjs, which contains transpiled
-  // polyfills, and minified files, which are generally already transpiled.
-  const bowerComponentsSrc = [
-    `${WEBAPP_OUT}/bower_components/**/*.html`, `${WEBAPP_OUT}/bower_components/**/*.js`,
-    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.js`,
-    `!${WEBAPP_OUT}/bower_components/webcomponentsjs/**/*.html`,
-    `!${WEBAPP_OUT}/bower_components/**/*.min.js`
-  ];
-  const bowerComponentsDest = `${WEBAPP_OUT}/bower_components`;
-  return transpile(bowerComponentsSrc, bowerComponentsDest);
-}
-
-// Transpiling and generating RTL CSS happens sequentially, which means that the output of the first
-// step must be the source of the next; otherwise the last step will clobber the previous steps.
-// To avoid this, we transpile and generate RTL CSS in-place, with `WEBAPP_OUT` as input and output.
-function transpileUiComponents() {
-  return transpile([`${WEBAPP_OUT}/ui_components/*.html`], `${WEBAPP_OUT}/ui_components`);
-}
-
-function rtlCss() {
-  return generateRtlCss(`${WEBAPP_OUT}/ui_components/*.html`, `${WEBAPP_OUT}/ui_components`)
-}
-
 function buildWebApp() {
-  return runCommand(`yarn do src/www/build`);
+  return runCommand('yarn do src/www/build_cordova');
 }
-
-const transpileWebApp = gulp.series(
-    copyBabelPolyfill, browserifyAndBabelify, transpileBowerComponents, transpileUiComponents,
-    rtlCss);
 
 //////////////////
 //////////////////
@@ -193,9 +123,6 @@ function cordovaCompile() {
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
 
-const setupWebApp = gulp.series(buildWebApp, transpileWebApp, writeEnvJson);
-const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
-
 //////////////////
 //////////////////
 //
@@ -221,6 +148,9 @@ function writeEnvJson() {
   return runCommand(`bash scripts/environment_json.sh -p ${platform} ${isRelease ? '-r' : ''} ${
       isBeta ? '-b' : ''} > ${WEBAPP_OUT}/environment.json`);
 }
+
+const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
+const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
 exports.setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);

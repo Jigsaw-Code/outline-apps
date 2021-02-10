@@ -16,10 +16,10 @@ import * as uuidv4 from 'uuidv4';
 
 import {ServerAlreadyAdded, ShadowsocksUnsupportedCipher} from '../model/errors';
 import * as events from '../model/events';
-import {Server, ServerRepository} from '../model/server';
+import {Server, ServerConfig, ServerRepository} from '../model/server';
+
 import {OutlineServer} from './outline_server';
 
-type ServerConfig = cordova.plugins.outline.ServerConfig;
 
 export interface PersistentServer extends Server {
   config: ServerConfig;

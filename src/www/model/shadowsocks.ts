@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Typings for:
-// https://www.npmjs.com/package/fs-extra
-
-declare module 'fs-extra' {
-  // There are a few other options, see:
-  // https://github.com/jprichardson/node-fs-extra/blob/HEAD/docs/copy-sync.md
-  export function copySync(
-      src: string, dest: string, options: {overwrite?: boolean, errorOnExist?: boolean}): void;
+// Represents a Shadowsocks proxy server configuration.
+export interface ShadowsocksConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  name?: string;
 }

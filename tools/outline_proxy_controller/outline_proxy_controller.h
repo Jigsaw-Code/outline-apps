@@ -189,11 +189,12 @@ class OutlineProxyController {
   const std::string c_normal_traffic_priority_metric = "10";
   const std::string c_proxy_priority_metric = "5";
 
+  // TODO: Configure these values at runtime.
   std::string tunInterfaceName = "outline-tun0";
   std::string tunInterfaceIp = "10.0.85.1";
   std::string tunInterfaceRouterIp = "10.0.85.2";
   std::string outlineServerIP;
-  std::string outlineDNSServer = "216.146.35.35";
+  std::string outlineDNSServer = "9.9.9.9";
 
   std::string clientLocalIP;
   std::string routingGatewayIP;

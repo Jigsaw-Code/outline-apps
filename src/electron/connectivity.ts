@@ -14,6 +14,7 @@
 
 import * as net from 'net';
 import * as errors from '../www/model/errors';
+import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {ChildProcessHelper} from './child_process';
 import {pathToEmbeddedBinary} from './util';
@@ -53,7 +54,7 @@ export function isServerReachable(
 export class ShadowsocksConnectivity {
   private tun2socks: ChildProcessHelper;
 
-  constructor(config: cordova.plugins.outline.ServerConfig) {
+  constructor(config: ShadowsocksConfig) {
     const args: string[] = [];
     args.push('-proxyHost', config.host || '');
     args.push('-proxyPort', `${config.port}`);

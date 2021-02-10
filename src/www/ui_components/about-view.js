@@ -1,5 +1,5 @@
-<!--
-  Copyright 2018 The Outline Authors
+/*
+  Copyright 2020 The Outline Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<link rel="import" href="../bower_components/polymer/polymer-element.html" />
+*/
 
-<dom-module id="about-view">
-  <template>
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+
+Polymer({
+  _template: html`
     <style>
       :host {
         background: #fff;
@@ -98,32 +100,24 @@
     </style>
 
     <div id="main">
-      <img src$="[[rootPath]]assets/brand-logo.png" alt="logo" id="logo" />
+      <img src\$="[[rootPath]]assets/brand-logo.png" alt="logo" id="logo">
       <div id="version">[[localize('version', 'appVersion', version)]]</div>
-      <div
-        id="description"
-        inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"
-      ></div>
+      <div id="description" inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"></div>
       <div id="footer">
         <a href="https://jigsaw.google.com">
-          <img id="jigsaw-logo" src$="[[rootPath]]assets/jigsaw-logo.svg" />
+          <img id="jigsaw-logo" src\$="[[rootPath]]assets/jigsaw-logo.svg">
         </a>
       </div>
     </div>
-  </template>
+`,
 
-  <script>
-    "use strict";
+  is: 'about-view',
 
-    Polymer({
-      is: "about-view",
-      properties: {
-        // Need to declare localize function passed in from parent, or else
-        // localize() calls within the template won't be updated.
-        localize: Function,
-        rootPath: String,
-        version: String,
-      },
-    });
-  </script>
-</dom-module>
+  properties: {
+    // Need to declare localize function passed in from parent, or else
+    // localize() calls within the template won't be updated.
+    localize: Function,
+    rootPath: String,
+    version: String,
+  }
+});

@@ -15,14 +15,22 @@
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 
+import '@babel/polyfill';
+import 'web-animations-js/web-animations-next-lite.min.js';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+
+import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
+setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
+
 import * as sentry from '@sentry/browser';
 
 import {EventQueue} from '../model/events';
+import {ServerConfig} from '../model/server';
 
 import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeOutlineTunnel} from './fake_connection';
+import {FakeOutlineTunnel} from './fake_tunnel';
 import {main} from './main';
 import {OutlineServer} from './outline_server';
 import {OutlinePlatform} from './platform';
@@ -50,10 +58,9 @@ export class CordovaErrorReporter extends SentryErrorReporter {
     cordova.plugins.outline.log.initialize(dsn).catch(console.error);
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    return super.report(userFeedback, feedbackCategory, userEmail).then(() => {
-      return cordova.plugins.outline.log.send(sentry.lastEventId() || '');
-    });
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string) {
+    await super.report(userFeedback, feedbackCategory, userEmail);
+    await cordova.plugins.outline.log.send(sentry.lastEventId() || '');
   }
 }
 
@@ -68,8 +75,7 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getPersistentServerFactory() {
-    return (serverId: string, config: cordova.plugins.outline.ServerConfig,
-            eventQueue: EventQueue) => {
+    return (serverId: string, config: ServerConfig, eventQueue: EventQueue) => {
       return new OutlineServer(
           serverId, config,
           this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(config, serverId) :

@@ -16,6 +16,7 @@ import {createConnection, Socket} from 'net';
 import {platform} from 'os';
 import * as sudo from 'sudo-prompt';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
 import {getServiceStartCommand} from './util';

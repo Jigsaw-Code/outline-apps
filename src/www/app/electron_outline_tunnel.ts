@@ -16,14 +16,16 @@ import {ipcRenderer} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
+import {ShadowsocksConfig} from '../model/shadowsocks';
 
-export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
+import {Tunnel, TunnelStatus} from './tunnel';
+
+export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void)|null = null;
 
   private running = false;
 
-  constructor(public config: cordova.plugins.outline.ServerConfig, public id: string) {
-    const serverName = this.config.name || this.config.host || '';
+  constructor(public config: ShadowsocksConfig, public id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
@@ -35,7 +37,7 @@ export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
     });
   }
 
-  start(): Promise<void> {
+  async start() {
     if (this.running) {
       return Promise.resolve();
     }
@@ -44,31 +46,33 @@ export class ElectronOutlineTunnel implements cordova.plugins.outline.Tunnel {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    return promiseIpc.send('start-proxying', {config: this.config, id: this.id})
-        .then(() => {
-          this.running = true;
-        })
-        .catch((e: errors.ErrorCode|Error) => {
-          if (typeof e === 'number') {
-            throw new errors.OutlinePluginError(e);
-          } else {
-            throw e;
-          }
-        });
+    try {
+      await promiseIpc.send('start-proxying', {config: this.config, id: this.id});
+      this.running = true;
+    } catch (e) {
+      if (typeof e === 'number') {
+        throw new errors.OutlinePluginError(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
-  stop(): Promise<void> {
+  async stop() {
     if (!this.running) {
-      return Promise.resolve();
+      return;
     }
 
-    return promiseIpc.send('stop-proxying').then(() => {
+    try {
+      await promiseIpc.send('stop-proxying');
       this.running = false;
-    });
+    } catch (e) {
+      console.error(`Failed to stop tunnel ${e}`);
+    }
   }
 
-  isRunning(): Promise<boolean> {
-    return Promise.resolve(this.running);
+  async isRunning(): Promise<boolean> {
+    return this.running;
   }
 
   isReachable(): Promise<boolean> {
