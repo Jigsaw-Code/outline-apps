@@ -7,7 +7,9 @@ The client's user interface is implemented in [Polymer](https://www.polymer-proj
 
 ## Requirements for all builds
 
-All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to other per-platform requirements. After cloning this repo, you should run "yarn" to install all dependencies.
+All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to other per-platform requirements. After cloning this repo install all dependencies with the command.
+
+    yarn
 
 ## Building the web app
 
