@@ -78,7 +78,7 @@ class ElectronUpdater extends AbstractUpdater {
 class ElectronErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, privateDsn: string) {
     if (privateDsn) {
-      sentry.init({dsn: privateDsn, release: appVersion});
+      sentry.init({dsn: privateDsn, release: appVersion, appName: 'outline-client'});
     }
   }
 
