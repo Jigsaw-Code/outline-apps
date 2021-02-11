@@ -320,8 +320,8 @@ class ChildProcessHelper {
 
     if (this.isInDebugMode) {
       // Expose logs to the node output.  This also makes the logs available in Sentry.
-      this.process.stdout!.pipe(process.stdout);
-      this.process.stderr!.pipe(process.stderr);
+      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${processName}]: ${data}`));	      // Expose logs to the node output.  This also makes the logs available in Sentry.
+      this.process.stderr.on('data', (data) => console.error(`[STDERR - ${processName}]: ${data}`));
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
