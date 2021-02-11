@@ -76,6 +76,7 @@ function createWindow(tunnelAtShutdown?: SerializableTunnel) {
   const queryParams = new url.URLSearchParams();
   if (debugMode) {
     queryParams.set('debug', 'true');
+    queryParams.set('appName', app.getName());
   }
   webAppUrl.search = queryParams.toString();
 
