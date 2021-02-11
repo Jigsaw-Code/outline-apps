@@ -15,6 +15,8 @@
 import {ChildProcess, execSync, spawn} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
+import * as path from 'path';
+import * as process from 'process';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
@@ -147,6 +149,14 @@ export class TunnelManager {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
       powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
+  }
+
+  /**
+   * Turns on verbose logging for the managed processes.  Must be called before launching the processes
+   */
+  public enableDebugMode() {
+    this.ssLocal.enableDebugMode();
+    this.tun2socks.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
@@ -282,22 +292,44 @@ export class TunnelManager {
 //       found).
 class ChildProcessHelper {
   private process?: ChildProcess;
+  protected isInDebugMode = false;
 
   private exitListener?: () => void;
 
-  constructor(private path: string) {}
+  protected constructor(private path: string) {}
 
+  /**
+   * Starts the process with the given args. If enableDebug() has been called, then the process is started in verbose mode if supported.
+   * @param args The args for the process
+   */
   protected launch(args: string[]) {
     this.process = spawn(this.path, args);
+    const processName = path.basename(this.path);
 
-    const onExit = () => {
+    const onExit = (code: number, signal: string) => {
       if (this.process) {
         this.process.removeAllListeners();
       }
       if (this.exitListener) {
         this.exitListener();
       }
+
+      if (this.isInDebugMode) {
+        const prefix = `[EXIT - ${processName}]: `;
+        // Only ever one is non-null
+        if (code !== null) {
+          console.log(`${prefix}Exited with code ${code}`);
+        } else {
+          console.log(`${prefix}Killed by signal ${signal}`);
+        }
+      }
     };
+
+    if (this.isInDebugMode) {
+      // Expose logs to the node output.  This also makes the logs available in Sentry.
+      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${processName}]: ${data}`));
+      this.process.stderr.on('data', (data) => console.error(`[STDERR - ${processName}]: ${data}`));
+    }
 
     // We have to listen for both events: error means the process could not be launched and in that
     // case exit will not be invoked.
@@ -321,6 +353,13 @@ class ChildProcessHelper {
   set onExit(newListener: (() => void)|undefined) {
     this.exitListener = newListener;
   }
+
+  /**
+   * Enables verbose logging for the process.  Must be called before launch().
+   */
+  public enableDebugMode() {
+    this.isInDebugMode = true;
+  }
 }
 
 class SsLocal extends ChildProcessHelper {
@@ -336,6 +375,9 @@ class SsLocal extends ChildProcessHelper {
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
+    if (this.isInDebugMode) {
+      args.push('-v');
+    }
 
     this.launch(args);
   }
@@ -362,7 +404,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', 'error');
+    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');
