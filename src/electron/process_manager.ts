@@ -151,9 +151,12 @@ export class TunnelManager {
     }
   }
 
-  public setDebug(debug: boolean) {
-    this.ssLocal.setDebug(debug);
-    this.tun2socks.setDebug(debug);
+  /**
+   * Turns on verbose logging for the managed processes.  Must be called before launching the processes
+   */
+  public enableDebugMode() {
+    this.ssLocal.enableDebugMode();
+    this.tun2socks.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
@@ -295,6 +298,10 @@ class ChildProcessHelper {
 
   protected constructor(private path: string) {}
 
+  /**
+   * Starts the process with the given args. If enableDebug() has been called, then the process is started in verbose mode if supported.
+   * @param args The args for the process
+   */
   protected launch(args: string[]) {
     this.process = spawn(this.path, args);
     const processName = path.basename(this.path);
@@ -347,8 +354,11 @@ class ChildProcessHelper {
     this.exitListener = newListener;
   }
 
-  public setDebug(debug: boolean) {
-    this.isInDebugMode = debug;
+  /**
+   * Enables verbose logging for the process.  Must be called before launch().
+   */
+  public enableDebugMode() {
+    this.isInDebugMode = true;
   }
 }
 
