@@ -314,15 +314,7 @@ class ChildProcessHelper {
         this.exitListener();
       }
 
-      if (this.isInDebugMode) {
-        const prefix = `[EXIT - ${processName}]: `;
-        // Only ever one is non-null
-        if (code !== null) {
-          console.log(`${prefix}Exited with code ${code}`);
-        } else {
-          console.log(`${prefix}Killed by signal ${signal}`);
-        }
-      }
+      logExit(processName, code, signal);
     };
 
     if (this.isInDebugMode) {
@@ -412,5 +404,21 @@ class Tun2socks extends ChildProcessHelper {
     }
 
     this.launch(args);
+  }
+}
+
+function logExit(processName: string, exitCode?: number, signal?: string) {
+  const prefix = `[EXIT - ${processName}]: `;
+  const exitReason = exitCode ?? signal;
+  if (exitReason === exitCode) {
+    const log = exitCode === 0 ? console.log : console.error;
+    log(`${prefix}Exited with code ${exitCode}`);
+  } else if (exitReason === signal) {
+    const log = signal === 'SIGTERM' ? console.log : console.error;
+    log(`${prefix}Killed by signal ${signal}`);
+  } else {
+    // This should never happen.  It likely signals an internal error in Node, as it is supposed to
+    // always pass either an exit code or an exit signal to the exit handler.
+    console.error(`${prefix}Process exited for an unknown reason.`);
   }
 }
