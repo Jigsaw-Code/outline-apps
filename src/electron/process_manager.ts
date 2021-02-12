@@ -401,11 +401,7 @@ class Tun2socks extends ChildProcessHelper {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
-    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
-    if (this.isInDebugMode) {
-      // BReactor is extremely verbose
-      args.push('--channel-loglevel', 'BReactor', 'info');
-    }
+    args.push('--loglevel', this.isInDebugMode ? 'info' : 'error');
 
     this.launch(args);
   }
