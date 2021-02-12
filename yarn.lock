@@ -1703,9 +1703,9 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
-ShadowsocksConfig@Jigsaw-Code/outline-shadowsocksconfig#^v0.1.0:
-  version "0.0.9"
-  resolved "https://codeload.github.com/Jigsaw-Code/outline-shadowsocksconfig/tar.gz/acdbe0367e887776a7c8137b844d7b03f1bc5ad5"
+ShadowsocksConfig@Jigsaw-Code/outline-shadowsocksconfig#^v0.1.2:
+  version "0.1.2"
+  resolved "https://codeload.github.com/Jigsaw-Code/outline-shadowsocksconfig/tar.gz/e491bd06e98b1b9f3c4745e8eb66c503c490745d"
   dependencies:
     js-base64 "^3.5.2"
     punycode "^1.4.1"
