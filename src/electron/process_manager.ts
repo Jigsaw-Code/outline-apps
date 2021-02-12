@@ -314,15 +314,7 @@ class ChildProcessHelper {
         this.exitListener();
       }
 
-      if (this.isInDebugMode) {
-        const prefix = `[EXIT - ${processName}]: `;
-        // Only ever one is non-null
-        if (code !== null) {
-          console.log(`${prefix}Exited with code ${code}`);
-        } else {
-          console.log(`${prefix}Killed by signal ${signal}`);
-        }
-      }
+      logExit(processName, code, signal);
     };
 
     if (this.isInDebugMode) {
@@ -404,13 +396,28 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
+    args.push('--loglevel', this.isInDebugMode ? 'info' : 'error');
 
     this.launch(args);
+  }
+}
+
+function logExit(processName: string, exitCode?: number, signal?: string) {
+  const prefix = `[EXIT - ${processName}]: `;
+  if (exitCode !== null) {
+    const log = exitCode === 0 ? console.log : console.error;
+    log(`${prefix}Exited with code ${exitCode}`);
+  } else if (signal !== null) {
+    const log = signal === 'SIGTERM' ? console.log : console.error;
+    log(`${prefix}Killed by signal ${signal}`);
+  } else {
+    // This should never happen.  It likely signals an internal error in Node, as it is supposed to
+    // always pass either an exit code or an exit signal to the exit handler.
+    console.error(`${prefix}Process exited for an unknown reason.`);
   }
 }
