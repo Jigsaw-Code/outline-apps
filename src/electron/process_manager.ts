@@ -409,11 +409,10 @@ class Tun2socks extends ChildProcessHelper {
 
 function logExit(processName: string, exitCode?: number, signal?: string) {
   const prefix = `[EXIT - ${processName}]: `;
-  const exitReason = exitCode ?? signal;
-  if (exitReason === exitCode) {
+  if (exitCode !== null) {
     const log = exitCode === 0 ? console.log : console.error;
     log(`${prefix}Exited with code ${exitCode}`);
-  } else if (exitReason === signal) {
+  } else if (signal !== null) {
     const log = signal === 'SIGTERM' ? console.log : console.error;
     log(`${prefix}Killed by signal ${signal}`);
   } else {
