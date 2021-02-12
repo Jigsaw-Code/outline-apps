@@ -396,11 +396,15 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
-    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
     args.push('--transparent-dns');
     if (isUdpEnabled) {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
+    }
+    args.push('--loglevel', this.isInDebugMode ? 'debug' : 'error');
+    if (this.isInDebugMode) {
+      // BReactor is extremely verbose
+      args.push('--channel-loglevel', 'BReactor', 'info');
     }
 
     this.launch(args);
