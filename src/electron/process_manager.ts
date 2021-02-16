@@ -242,7 +242,7 @@ export class TunnelManager {
     try {
       await this.shadowsocks.checkConnectivity();
       this.tun2socks.isUdpEnabled = true;
-    } catch(e) {
+    } catch (e) {
       if (!(e instanceof errors.RemoteUdpForwardingDisabled)) {
         throw e;
       }
@@ -418,8 +418,8 @@ class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
 
   private isSsLocalReachable() {
     return isServerReachable(
-      SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
-      SSLOCAL_RETRY_INTERVAL_MS);
+        SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+        SSLOCAL_RETRY_INTERVAL_MS);
   }
 }
 
@@ -450,7 +450,7 @@ class GoShadowsocks implements ShadowsocksProcess {
 
   // Launches outline-go-tun2socks with the --checkConnectivity option.
   async checkConnectivity() {
-    return new Promise<void>((resolve, reject)=> {
+    return new Promise<void>((resolve, reject) => {
       this.tun2socks.onExit = (code: number) => {
         if (code !== errors.ErrorCode.NO_ERROR) {
           // Treat the absence of a code as an unexpected error.
@@ -539,7 +539,6 @@ class GoTun2socks extends ChildProcessHelper implements Tun2socksProcess {
     }
     this.launch(args);
   }
-
 }
 
 function logExit(processName: string, exitCode?: number, signal?: string) {
