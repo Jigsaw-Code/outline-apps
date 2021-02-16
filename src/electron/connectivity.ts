@@ -63,7 +63,7 @@ export function lookupIp(hostname: string): Promise<string> {
 export function isServerReachable(
     host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0) {
   let attempt = 0;
-  return new Promise((fulfill, reject) => {
+  return new Promise<void>((fulfill, reject) => {
     const connect = () => {
       attempt++;
 

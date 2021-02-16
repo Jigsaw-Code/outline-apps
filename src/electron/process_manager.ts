@@ -85,10 +85,19 @@ function testTapDevice() {
   }
 }
 
-async function isSsLocalReachable() {
-  await isServerReachable(
-      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
-      SSLOCAL_RETRY_INTERVAL_MS);
+interface Process {
+  start(): Promise<void>;
+  stop(): void;
+  onExit?: (() => void);
+  enableDebugMode(): void;
+}
+
+interface ShadowsocksProcess extends Process {
+  checkConnectivity(): Promise<void>;
+}
+
+interface Tun2socksProcess extends Process {
+  isUdpEnabled: boolean;
 }
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child processes
@@ -101,8 +110,8 @@ async function isSsLocalReachable() {
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
 export class TunnelManager {
   private readonly routing: RoutingDaemon;
-  private readonly ssLocal = new SsLocal(PROXY_PORT);
-  private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
+  private readonly shadowsocks: ShadowsocksProcess;
+  private readonly tun2socks: Tun2socksProcess;
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
@@ -122,13 +131,15 @@ export class TunnelManager {
 
   constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
+    this.shadowsocks = new SsLocal(config, PROXY_PORT);
+    this.tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
 
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
+      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.shadowsocks.onExit = fulfill),
       new Promise<void>((fulfill) => {
         this.tun2socksExitListener = fulfill;
         this.tun2socks.onExit = this.tun2socksExitListener;
@@ -155,7 +166,7 @@ export class TunnelManager {
    * Turns on verbose logging for the managed processes.  Must be called before launching the processes
    */
   public enableDebugMode() {
-    this.ssLocal.enableDebugMode();
+    this.shadowsocks.enableDebugMode();
     this.tun2socks.enableDebugMode();
   }
 
@@ -166,19 +177,16 @@ export class TunnelManager {
     }
 
     // ss-local must be up in order to test UDP support and validate credentials.
-    this.ssLocal.start(this.config);
-    await isSsLocalReachable();
+    await this.shadowsocks.start();
 
     // Don't validate credentials on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
+    // TODO(alalama): pass UDP support on auto-connect, currently we fallback to TCP by default.
     if (!this.isAutoConnect) {
-      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+      await this.checkConnectivity();
     }
 
-    this.isUdpEnabled = await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
-    console.log(`UDP support: ${this.isUdpEnabled}`);
-    this.tun2socks.start(this.isUdpEnabled);
-
+    await this.tun2socks.start();
     await this.routing.start();
   }
 
@@ -217,33 +225,44 @@ export class TunnelManager {
     console.log('restarting tun2socks after resume');
 
     this.tun2socks.onExit = this.tun2socksExitListener;
-    this.tun2socks.start(this.isUdpEnabled);
+    this.tun2socks.start();
 
     // Check if UDP support has changed; if so, silently restart.
     this.retestUdp();
   }
 
-  private async retestUdp() {
+
+  private async checkConnectivity() {
     try {
-      // Possibly over-cautious, though we have seen occasional failures immediately after network
-      // changes: ensure ss-local is reachable first.
-      await isSsLocalReachable();
-      if (this.isUdpEnabled === await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)) {
-        return;
+      await this.shadowsocks.checkConnectivity();
+      this.tun2socks.isUdpEnabled = true;
+    } catch(e) {
+      if (!(e instanceof errors.RemoteUdpForwardingDisabled)) {
+        throw e;
       }
+      this.tun2socks.isUdpEnabled = true;
+    }
+  }
+
+  private async retestUdp() {
+    const wasUdpEnabled = this.tun2socks.isUdpEnabled;
+    try {
+      this.checkConnectivity();
     } catch (e) {
       console.error(`UDP test failed: ${e.message}`);
       return;
     }
+    if (wasUdpEnabled === this.tun2socks.isUdpEnabled) {
+      return;
+    }
 
-    this.isUdpEnabled = !this.isUdpEnabled;
-    console.log(`UDP support change: now ${this.isUdpEnabled}`);
+    console.log(`UDP support change: now ${this.tun2socks.isUdpEnabled}`);
 
     // Swap out the current listener, restart once the current process exits.
     this.tun2socks.onExit = () => {
       console.log('restarting tun2socks');
       this.tun2socks.onExit = this.tun2socksExitListener;
-      this.tun2socks.start(this.isUdpEnabled);
+      this.tun2socks.start();
     };
     this.tun2socks.stop();
   }
@@ -261,7 +280,7 @@ export class TunnelManager {
       console.error(`could not stop routing: ${e.message}`);
     }
 
-    this.ssLocal.stop();
+    this.shadowsocks.stop();
     this.tun2socks.stop();
   }
 
@@ -349,38 +368,57 @@ class ChildProcessHelper {
   /**
    * Enables verbose logging for the process.  Must be called before launch().
    */
-  public enableDebugMode() {
+  enableDebugMode() {
     this.isInDebugMode = true;
   }
 }
 
-class SsLocal extends ChildProcessHelper {
-  constructor(private readonly proxyPort: number) {
+class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
+  constructor(readonly config: ShadowsocksConfig, private readonly proxyPort: number) {
     super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
-  start(config: ShadowsocksConfig) {
+  async start() {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
-    args.push('-s', config.host || '');
-    args.push('-p', '' + config.port);
-    args.push('-k', config.password || '');
-    args.push('-m', config.method || '');
+    args.push('-s', this.config.host || '');
+    args.push('-p', '' + this.config.port);
+    args.push('-k', this.config.password || '');
+    args.push('-m', this.config.method || '');
     args.push('-u');
     if (this.isInDebugMode) {
       args.push('-v');
     }
 
     this.launch(args);
+    return this.isSsLocalReachable();
+  }
+
+  async checkConnectivity() {
+    // Possibly over-cautious, though we have seen occasional failures immediately after network
+    // changes: ensure ss-local is reachable first.
+    await this.isSsLocalReachable();
+    try {
+      await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
+    } catch (e) {
+      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+    }
+  }
+
+  private isSsLocalReachable() {
+    return isServerReachable(
+      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+      SSLOCAL_RETRY_INTERVAL_MS);
   }
 }
 
-class Tun2socks extends ChildProcessHelper {
+class Tun2socks extends ChildProcessHelper implements Tun2socksProcess {
+  isUdpEnabled = false;
   constructor(private proxyAddress: string, private proxyPort: number) {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
 
-  start(isUdpEnabled: boolean) {
+  async start() {
     // ./badvpn-tun2socks.exe \
     //   --tundev "tap0901:outline-tap0:10.0.85.2:10.0.85.0:255.255.255.0" \
     //   --netif-ipaddr 10.0.85.1 --netif-netmask 255.255.255.0 \
@@ -397,7 +435,7 @@ class Tun2socks extends ChildProcessHelper {
     args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
     args.push('--transparent-dns');
-    if (isUdpEnabled) {
+    if (this.isUdpEnabled) {
       args.push('--socks5-udp');
       args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
