@@ -22,15 +22,14 @@ import * as os from 'os';
 import {EventQueue} from '../model/events';
 import {ServerConfig} from '../model/server';
 
-import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {OutlineServer} from './outline_server';
-import {OutlinePlatform} from './platform';
-import {AbstractUpdater, UpdateListener, Updater} from './updater';
+import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
 const isWindows = os.platform() === 'win32';
@@ -76,9 +75,9 @@ class ElectronUpdater extends AbstractUpdater {
 }
 
 class ElectronErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, privateDsn: string) {
+  constructor(appVersion: string, privateDsn: string, appName: string) {
     if (privateDsn) {
-      sentry.init({dsn: privateDsn, release: appVersion});
+      sentry.init({dsn: privateDsn, release: appVersion, appName});
     }
   }
 
@@ -111,7 +110,7 @@ main({
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
-    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '');
+    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', new URL(document.URL).searchParams.get('appName'));
   },
   getUpdater: () => {
     return new ElectronUpdater();
