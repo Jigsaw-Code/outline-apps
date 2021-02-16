@@ -407,10 +407,12 @@ class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
     // Possibly over-cautious, though we have seen occasional failures immediately after network
     // changes: ensure ss-local is reachable first.
     await this.isSsLocalReachable();
+    // TODO(alalama): parallelize.
     try {
       await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
-    } catch (e) {
+    } catch (udpErr) {
       await validateServerCredentials(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+      throw udpErr;
     }
   }
 
@@ -421,9 +423,9 @@ class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
   }
 }
 
-// Stub process to run connectivity checks through GoTun2socks.
-// Note that outline-go-tun2socks implements the Shadowsocks protocol, so running
-// a separate Shadowsocks process is not necessary.
+// GoTun2socks implements the Shadowsocks protocol, so running a separate
+// Shadowsocks process is not necessary.
+// Stub process lifecycle to run connectivity checks through GoTun2socks.
 class GoShadowsocks implements ShadowsocksProcess {
   private tun2socks: GoTun2socks;
   private exitListener?: () => void;
