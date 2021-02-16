@@ -83,8 +83,8 @@ export function main(platform: OutlinePlatform) {
           ([environmentVars]) => {
             console.debug('running main() function');
 
-            const queryParams = url.parse(document.URL, true).query;
-            const debugMode = queryParams.debug === 'true';
+            const queryParams = new URL(document.URL).searchParams;
+            const debugMode = queryParams.get('debug') === 'true';
 
             const eventQueue = new EventQueue();
             const serverRepo = createServerRepo(
