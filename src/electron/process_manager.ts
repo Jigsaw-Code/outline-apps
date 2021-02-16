@@ -29,9 +29,6 @@ import {pathToEmbeddedBinary} from './util';
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
 
-const PROXY_ADDRESS = '127.0.0.1';
-const PROXY_PORT = 1081;
-
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
@@ -41,7 +38,12 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 // ss-local will almost always start, and fast: short timeouts, fast retries.
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
+const SSLOCAL_PROXY_ADDRESS = '127.0.0.1';
+const SSLOCAL_PROXY_PORT = 1081;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
+
+// Cloudflare and Quad9 resolvers.
+const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 
 // Raises an error if:
 //  - the TAP device does not exist
@@ -88,11 +90,13 @@ function testTapDevice() {
 interface Process {
   start(): Promise<void>;
   stop(): void;
-  onExit?: (() => void);
+  onExit?: ((code: number) => void);
   enableDebugMode(): void;
 }
 
 interface ShadowsocksProcess extends Process {
+  // Checks whether the network and proxy support UDP forwarding and validates
+  // that the proxy credentials are valid. Throws an error if any of the checks fail.
   checkConnectivity(): Promise<void>;
 }
 
@@ -116,12 +120,10 @@ export class TunnelManager {
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
   // us swap the listener in and out.
-  private tun2socksExitListener?: () => void | undefined;
+  private tun2socksExitListener?: (code: number) => void | undefined;
 
   // See #resumeListener.
   private terminated = false;
-
-  private isUdpEnabled = false;
 
   private readonly onAllHelpersStopped: Promise<void>;
 
@@ -131,16 +133,20 @@ export class TunnelManager {
 
   constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
     this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
-    this.shadowsocks = new SsLocal(config, PROXY_PORT);
-    this.tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
+    this.shadowsocks = new SsLocal(config, SSLOCAL_PROXY_PORT);
+    this.tun2socks = new BadvpnTun2socks(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+    // TODO(alalama): switch based on a build flag.
+    // this.shadowsocks = new GoShadowsocks(config);
+    // this.tun2socks = new GoTun2socks(config);
 
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.shadowsocks.onExit = fulfill),
-      new Promise<void>((fulfill) => {
+      new Promise<number>((fulfill) => this.routing.onceDisconnected.then(fulfill.bind(null, 0))),
+      new Promise<number>((fulfill) => this.shadowsocks.onExit = fulfill),
+      new Promise<number>((fulfill) => {
         this.tun2socksExitListener = fulfill;
         this.tun2socks.onExit = this.tun2socksExitListener;
       })
@@ -313,7 +319,7 @@ class ChildProcessHelper {
   private process?: ChildProcess;
   protected isInDebugMode = false;
 
-  private exitListener?: () => void;
+  private exitListener?: (code: number) => void;
 
   protected constructor(private path: string) {}
 
@@ -330,7 +336,7 @@ class ChildProcessHelper {
         this.process.removeAllListeners();
       }
       if (this.exitListener) {
-        this.exitListener();
+        this.exitListener(code);
       }
 
       logExit(processName, code, signal);
@@ -353,7 +359,7 @@ class ChildProcessHelper {
     if (!this.process) {
       // Never started.
       if (this.exitListener) {
-        this.exitListener();
+        this.exitListener(null);
       }
       return;
     }
@@ -361,7 +367,7 @@ class ChildProcessHelper {
     this.process.kill();
   }
 
-  set onExit(newListener: (() => void)|undefined) {
+  set onExit(newListener: ((code: number) => void)|undefined) {
     this.exitListener = newListener;
   }
 
@@ -373,13 +379,16 @@ class ChildProcessHelper {
   }
 }
 
+// shadowsocks-libev client program. Starts a local SOCKS proxy that relays TCP/UDP
+// traffic to a Shadowsocks proxy server.
 class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
+  // Construct with the Shadowsocks proxy config and the local port to bind the SOCKS proxy.
   constructor(readonly config: ShadowsocksConfig, private readonly proxyPort: number) {
     super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
   async start() {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', this.config.host || '');
     args.push('-p', '' + this.config.port);
@@ -399,21 +408,69 @@ class SsLocal extends ChildProcessHelper implements ShadowsocksProcess {
     // changes: ensure ss-local is reachable first.
     await this.isSsLocalReachable();
     try {
-      await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
+      await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
     } catch (e) {
-      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+      await validateServerCredentials(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
     }
   }
 
   private isSsLocalReachable() {
     return isServerReachable(
-      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+      SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
       SSLOCAL_RETRY_INTERVAL_MS);
   }
 }
 
-class Tun2socks extends ChildProcessHelper implements Tun2socksProcess {
+// Stub process to run connectivity checks through GoTun2socks.
+// Note that outline-go-tun2socks implements the Shadowsocks protocol, so running
+// a separate Shadowsocks process is not necessary.
+class GoShadowsocks implements ShadowsocksProcess {
+  private tun2socks: GoTun2socks;
+  private exitListener?: () => void;
+
+  constructor(private config: ShadowsocksConfig) {
+    this.tun2socks = new GoTun2socks(config, true);
+  }
+
+  async start() {
+    // noop
+  }
+
+  async stop() {
+    if (this.exitListener) {
+      this.exitListener();
+    }
+  }
+
+  set onExit(listener: (() => void)|undefined) {
+    this.exitListener = listener;
+  }
+
+  // Launches outline-go-tun2socks with the --checkConnectivity option.
+  async checkConnectivity() {
+    return new Promise<void>((resolve, reject)=> {
+      this.tun2socks.onExit = (code: number) => {
+        if (code !== errors.ErrorCode.NO_ERROR) {
+          // Treat the absence of a code as an unexpected error.
+          reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
+        }
+        resolve();
+      };
+      this.tun2socks.start();
+    });
+  }
+
+  enableDebugMode() {
+    this.tun2socks.enableDebugMode();
+  }
+}
+
+// Badvpn tun2socks is a program that processes IP traffic from a TUN/TAP device
+// and relays it to a SOCKS proxy.
+class BadvpnTun2socks extends ChildProcessHelper implements Tun2socksProcess {
   isUdpEnabled = false;
+
+  // Construct with the SOCKS proxy address and port.
   constructor(private proxyAddress: string, private proxyPort: number) {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
@@ -443,6 +500,44 @@ class Tun2socks extends ChildProcessHelper implements Tun2socksProcess {
 
     this.launch(args);
   }
+}
+
+// outline-go-tun2socks is a Go program that processes IP traffic from a TUN/TAP device
+// and relays it to a Shadowsocks proxy server.
+class GoTun2socks extends ChildProcessHelper implements Tun2socksProcess {
+  isUdpEnabled = false;
+
+  // Construct with the Shadowsocks proxy server configuration.
+  constructor(private config: ShadowsocksConfig, private checkConnectivity = false) {
+    super(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
+  }
+
+  async start() {
+    // ./tun2socks.exe \
+    //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
+    //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
+    //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
+    //   -proxyCipher chacha20-ietf-poly1035 [-dnsFallback] [-checkConnectivity]
+    const args: string[] = [];
+    args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
+    args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
+    args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
+    args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+    args.push('-tunDNS', DNS_RESOLVERS.join(','));
+    args.push('-proxyHost', this.config.host || '');
+    args.push('-proxyPort', `${this.config.port}`);
+    args.push('-proxyPassword', this.config.password || '');
+    args.push('-proxyCipher', this.config.method || '');
+    args.push('-logLevel', this.isInDebugMode ? 'debug' : 'warn');
+    if (this.checkConnectivity) {
+      args.push('-checkConnectivity');
+    }
+    if (!this.isUdpEnabled) {
+      args.push('-dnsFallback');
+    }
+    this.launch(args);
+  }
+
 }
 
 function logExit(processName: string, exitCode?: number, signal?: string) {
