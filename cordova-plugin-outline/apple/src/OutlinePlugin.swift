@@ -162,6 +162,12 @@ class OutlinePlugin: CDVPlugin {
     SentrySDK.start { options in
       options.dsn = apiKey
       options.maxBreadcrumbs = OutlinePlugin.kMaxBreadcrumbs
+      options.beforeSend = { event in
+        // Remove user and device identifiers.
+        event.context?["app"]?["device_app_hash"] = ""
+        event.user?.userId = ""
+        return event
+      }
     }
     sendSuccess(true, callbackId: command.callbackId)
   }
