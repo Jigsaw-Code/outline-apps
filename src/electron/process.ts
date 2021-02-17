@@ -25,7 +25,7 @@ export class ChildProcessHelper {
   private process?: ChildProcess;
   protected isInDebugMode = false;
 
-  private exitListener?: () => void;
+  private exitListener?: (code?: number, signal?: string) => void;
 
   protected constructor(private path: string) {}
 
@@ -37,12 +37,12 @@ export class ChildProcessHelper {
     this.process = spawn(this.path, args);
     const processName = path.basename(this.path);
 
-    const onExit = (code: number, signal: string) => {
+    const onExit = (code?: number, signal?: string) => {
       if (this.process) {
         this.process.removeAllListeners();
       }
       if (this.exitListener) {
-        this.exitListener();
+        this.exitListener(code, signal);
       }
 
       logExit(processName, code, signal);
@@ -65,7 +65,7 @@ export class ChildProcessHelper {
     if (!this.process) {
       // Never started.
       if (this.exitListener) {
-        this.exitListener();
+        this.exitListener(null, null);
       }
       return;
     }
@@ -73,7 +73,7 @@ export class ChildProcessHelper {
     this.process.kill();
   }
 
-  set onExit(newListener: (() => void)|undefined) {
+  set onExit(newListener: ((code?: number, signal?: string) => void)|undefined) {
     this.exitListener = newListener;
   }
 

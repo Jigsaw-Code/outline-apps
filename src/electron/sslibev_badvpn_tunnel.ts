@@ -71,7 +71,7 @@ async function isSsLocalReachable() {
 export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(SSLOCAL_PROXY_PORT);
-  private readonly tun2socks = new Tun2socks(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+  private readonly tun2socks = new BadvpnTun2socks(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
@@ -96,13 +96,16 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
-    const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
-      new Promise<void>((fulfill) => {
-        this.tun2socksExitListener = fulfill;
-        this.tun2socks.onExit = this.tun2socksExitListener;
-      })
-    ];
+    const ssLocalExit = new Promise<void>((resolve) => {
+      this.ssLocal.onExit = (code?: number, signal?: string) => {
+        resolve();
+      };
+    });
+    const tun2socksExit = new Promise<void>((resolve) => {
+      this.tun2socksExitListener = resolve;
+      this.tun2socks.onExit = this.tun2socksExitListener;
+    });
+    const exits = [this.routing.onceDisconnected, ssLocalExit, tun2socksExit];
     Promise.race(exits).then(() => {
       console.log('a helper has exited, disconnecting');
       this.disconnect();
@@ -193,19 +196,21 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   }
 
   private async retestUdp() {
+    const wasUdpEnabled = this.isUdpEnabled;
     try {
       // Possibly over-cautious, though we have seen occasional failures immediately after network
       // changes: ensure ss-local is reachable first.
       await isSsLocalReachable();
-      if (this.isUdpEnabled === await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT)) {
-        return;
-      }
+      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
     } catch (e) {
       console.error(`UDP test failed: ${e.message}`);
       return;
     }
 
-    this.isUdpEnabled = !this.isUdpEnabled;
+    if (this.isUdpEnabled === wasUdpEnabled) {
+      return;
+    }
+
     console.log(`UDP support change: now ${this.isUdpEnabled}`);
 
     // Swap out the current listener, restart once the current process exits.
@@ -259,10 +264,10 @@ class SsLocal extends ChildProcessHelper {
   }
 
   start(config: ShadowsocksConfig) {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');
-    args.push('-p', '' + config.port);
+    args.push('-p', `${config.port}`);
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
@@ -274,7 +279,7 @@ class SsLocal extends ChildProcessHelper {
   }
 }
 
-class Tun2socks extends ChildProcessHelper {
+class BadvpnTun2socks extends ChildProcessHelper {
   constructor(private proxyAddress: string, private proxyPort: number) {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
