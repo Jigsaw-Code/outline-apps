@@ -28,7 +28,8 @@ import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {TunnelStatus} from '../www/app/tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
-import {TunnelManager} from './process_manager';
+import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
+import {VpnTunnel} from './vpn_tunnel';
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -60,7 +61,7 @@ const enum Options {
 
 const REACHABILITY_TIMEOUT_MS = 10000;
 
-let currentTunnel: TunnelManager|undefined;
+let currentTunnel: VpnTunnel|undefined;
 
 function createWindow() {
   // Create the browser window.
@@ -190,12 +191,12 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
     throw new Error('already connected');
   }
 
-  currentTunnel = new TunnelManager(config, isAutoConnect);
+  currentTunnel = new ShadowsocksLibevBadvpnTunnel(config, isAutoConnect);
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }
 
-  currentTunnel.onceStopped.then(() => {
+  currentTunnel.onceDisconnected.then(() => {
     console.log(`disconnected from ${id}`);
     currentTunnel = undefined;
     setUiTunnelStatus(TunnelStatus.DISCONNECTED, id);
@@ -211,7 +212,7 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
     setUiTunnelStatus(TunnelStatus.CONNECTED, id);
   };
 
-  await currentTunnel.start();
+  await currentTunnel.connect();
   setUiTunnelStatus(TunnelStatus.CONNECTED, id);
 }
 
@@ -225,8 +226,8 @@ async function stopVpn() {
     console.error('Failed to clear tunnel store.');
   });
 
-  currentTunnel.stop();
-  await currentTunnel.onceStopped;
+  currentTunnel.disconnect();
+  await currentTunnel.onceDisconnected;
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
@@ -384,8 +385,8 @@ function main() {
     //       this).
     if (currentTunnel) {
       console.log('disconnecting from current server...');
-      currentTunnel.stop();
-      await currentTunnel.onceStopped;
+      currentTunnel.disconnect();
+      await currentTunnel.onceDisconnected;
     }
 
     console.log(`connecting to ${args.id}...`);

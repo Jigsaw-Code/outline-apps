@@ -25,6 +25,7 @@ import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
 import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
+import {VpnTunnel} from './vpn_tunnel';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -99,7 +100,7 @@ async function isSsLocalReachable() {
 // situations:
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
-export class TunnelManager {
+export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(PROXY_PORT);
   private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
@@ -136,7 +137,7 @@ export class TunnelManager {
     ];
     Promise.race(exits).then(() => {
       console.log('a helper has exited, disconnecting');
-      this.stop();
+      this.disconnect();
     });
     this.onAllHelpersStopped = Promise.all(exits).then(() => {
       console.log('all helpers have exited');
@@ -154,13 +155,13 @@ export class TunnelManager {
   /**
    * Turns on verbose logging for the managed processes.  Must be called before launching the processes
    */
-  public enableDebugMode() {
+  enableDebugMode() {
     this.ssLocal.enableDebugMode();
     this.tun2socks.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
-  async start() {
+  async connect() {
     if (isWindows) {
       testTapDevice();
     }
@@ -248,8 +249,8 @@ export class TunnelManager {
     this.tun2socks.stop();
   }
 
-  // Use #onceStopped to be notified when the tunnel terminates.
-  stop() {
+  // Use #onceDisconnected to be notified when the tunnel terminates.
+  async disconnect() {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
@@ -269,17 +270,17 @@ export class TunnelManager {
   //
   // When this happens, *as many changes made to the system in order to establish the full-system
   // VPN as possible* will have been reverted.
-  public get onceStopped() {
+  get onceDisconnected() {
     return this.onAllHelpersStopped;
   }
 
   // Sets an optional callback for when the routing daemon is attempting to re-connect.
-  public set onReconnecting(newListener: () => void|undefined) {
+  onReconnecting(newListener: () => void|undefined) {
     this.reconnectingListener = newListener;
   }
 
   // Sets an optional callback for when the routing daemon successfully reconnects.
-  public set onReconnected(newListener: () => void|undefined) {
+  onReconnected(newListener: () => void|undefined) {
     this.reconnectedListener = newListener;
   }
 }
