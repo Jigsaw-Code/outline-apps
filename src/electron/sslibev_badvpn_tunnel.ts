@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {execSync} from 'child_process';
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import * as path from 'path';
@@ -25,6 +24,7 @@ import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
 import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';
+import {testTapDevice} from './tap';
 import {pathToEmbeddedBinary} from './util';
 import {VpnTunnel} from './vpn_tunnel';
 
@@ -44,48 +44,6 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
-
-// Raises an error if:
-//  - the TAP device does not exist
-//  - the TAP device does not have the expected IP/subnet
-//
-// Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
-// installer should have failed, too.
-//
-// Only works on Windows!
-//
-// TODO: Probably should be moved to a new file, e.g. configuation.ts.
-function testTapDevice() {
-  // Sample output:
-  // =============
-  // $ netsh interface ipv4 dump
-  // # ----------------------------------
-  // # IPv4 Configuration
-  // # ----------------------------------
-  // pushd interface ipv4
-  //
-  // reset
-  // set global icmpredirects=disabled
-  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled
-  // ignoredefaultroutes=disabled set interface interface="outline-tap0" forwarding=enabled
-  // advertise=enabled nud=enabled ignoredefaultroutes=disabled add address name="outline-tap0"
-  // address=10.0.85.2 mask=255.255.255.0
-  //
-  // popd
-  // # End of IPv4 configuration
-  const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
-
-  // Find lines containing the TAP device name.
-  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
-  if (tapLines.length < 1) {
-    throw new errors.SystemConfigurationException(`TAP device not found`);
-  }
-
-  // Within those lines, search for the expected IP.
-  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
-    throw new errors.SystemConfigurationException(`TAP device has wrong IP`);
-  }
-}
 
 async function isSsLocalReachable() {
   await isServerReachable(
@@ -164,7 +122,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   // Fulfills once all three helpers have started successfully.
   async connect() {
     if (isWindows) {
-      testTapDevice();
+      testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
     }
 
     // ss-local must be up in order to test UDP support and validate credentials.
