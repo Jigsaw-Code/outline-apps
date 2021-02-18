@@ -411,8 +411,10 @@ app.on('browser-window-focus', () => {
 
 // Error reporting.
 // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
+// Error reporting to Senty is disabled in debug mode
 ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
-  if (info.dsn) {
+  if (info.dsn && !debugMode) {
+    quitApp();
     sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
   }
   // To clearly identify app restarts in Sentry.
