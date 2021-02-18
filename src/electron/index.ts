@@ -211,15 +211,15 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
     setUiTunnelStatus(TunnelStatus.DISCONNECTED, id);
   });
 
-  currentTunnel.onReconnecting = () => {
+  currentTunnel.onReconnecting(() => {
     console.log(`reconnecting to ${id}`);
     setUiTunnelStatus(TunnelStatus.RECONNECTING, id);
-  };
+  });
 
-  currentTunnel.onReconnected = () => {
+  currentTunnel.onReconnected(() => {
     console.log(`reconnected to ${id}`);
     setUiTunnelStatus(TunnelStatus.CONNECTED, id);
-  };
+  });
 
   await currentTunnel.connect();
   setUiTunnelStatus(TunnelStatus.CONNECTED, id);
