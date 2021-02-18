@@ -26,14 +26,15 @@ export class ChildProcessHelper {
   protected isInDebugMode = false;
 
   private exitListener?: (code?: number, signal?: string) => void;
+  private stdErrListener?: (data?: string | Buffer) => void;
 
-  protected constructor(private path: string) {}
+  constructor(private path: string) {}
 
   /**
    * Starts the process with the given args. If enableDebug() has been called, then the process is started in verbose mode if supported.
    * @param args The args for the process
    */
-  protected launch(args: string[]) {
+  launch(args: string[]) {
     this.process = spawn(this.path, args);
     const processName = path.basename(this.path);
 
@@ -47,11 +48,20 @@ export class ChildProcessHelper {
 
       logExit(processName, code, signal);
     };
+    const onStdErr = (data?: string | Buffer) => {
+      if (this.isInDebugMode) {
+        console.error(`[STDERR - ${processName}]: ${data}`);
+      }
+      if (this.stdErrListener) {
+        this.stdErrListener(data);
+      }
+    };
+    this.process.stderr.on('data', onStdErr.bind(this));
+
 
     if (this.isInDebugMode) {
       // Expose logs to the node output.  This also makes the logs available in Sentry.
       this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${processName}]: ${data}`));
-      this.process.stderr.on('data', (data) => console.error(`[STDERR - ${processName}]: ${data}`));
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
@@ -77,11 +87,22 @@ export class ChildProcessHelper {
     this.exitListener = newListener;
   }
 
+  set onStdErr(listener: ((data?: string | Buffer) => void)|undefined) {
+    this.stdErrListener = listener;
+    if (!this.stdErrListener && !this.isDebugModeEnabled) {
+      this.process.stderr.removeAllListeners();
+    }
+  }
+
   /**
    * Enables verbose logging for the process.  Must be called before launch().
    */
-  public enableDebugMode() {
+  enableDebugMode() {
     this.isInDebugMode = true;
+  }
+
+  get isDebugModeEnabled() {
+    return this.isInDebugMode;
   }
 }
 
