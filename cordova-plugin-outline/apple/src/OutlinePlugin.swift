@@ -185,7 +185,7 @@ class OutlinePlugin: CDVPlugin {
     event.message = "\(OutlinePlugin.kPlatform) report (\(uuid))"
 
     // Remove device identifier. Note that we cannot use the beforeSerializeEvent callback,
-    // since the ID is only added after serialization.
+    // since contexts are only added after serialization when not present.
     let serializedEvent = event.serialize()
     var contexts = serializedEvent["contexts"] as? [String: [String: Any]]
     contexts?["app"]?["device_app_hash"] = ""
