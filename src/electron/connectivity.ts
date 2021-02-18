@@ -61,7 +61,7 @@ export function lookupIp(hostname: string): Promise<string> {
 // Resolves iff a (TCP) connection can be established with the specified destination within the
 // specified timeout (zero means "no timeout"), optionally retrying with a delay.
 export function isServerReachable(
-    host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0) {
+    host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0): Promise<void> {
   let attempt = 0;
   return new Promise((fulfill, reject) => {
     const connect = () => {

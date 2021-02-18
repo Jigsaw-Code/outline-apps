@@ -367,15 +367,14 @@ function main() {
     }
   });
 
-  promiseIpc.on('is-reachable', (config: ShadowsocksConfig) => {
-    return connectivity
-        .isServerReachable(config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS)
-        .then(() => {
-          return true;
-        })
-        .catch((e) => {
-          return false;
-        });
+  promiseIpc.on('is-reachable', async (config: ShadowsocksConfig) => {
+    try {
+      await connectivity.isServerReachable(
+          config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS);
+      return true;
+    } catch {
+      return false;
+    }
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
