@@ -42,6 +42,7 @@ let tray: Tray;
 let isAppQuitting = false;
 // Default to English strings in case we fail to retrieve them from the renderer process.
 let localizedStrings: {[key: string]: string} = {
+  'tray-open-window': 'Open',
   'connected-server-state': 'Connected',
   'disconnected-server-state': 'Disconnected',
   'quit': 'Quit'
@@ -62,9 +63,9 @@ const REACHABILITY_TIMEOUT_MS = 10000;
 
 let currentTunnel: TunnelManager|undefined;
 
-function createWindow() {
+function createWindow(): BrowserWindow {
   // Create the browser window.
-  mainWindow = new BrowserWindow(
+  const window = new BrowserWindow(
       {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
@@ -81,56 +82,39 @@ function createWindow() {
   const webAppUrlAsString = webAppUrl.toString();
 
   console.info(`loading web app from ${webAppUrlAsString}`);
-  mainWindow.loadURL(webAppUrlAsString);
-
-  // Emitted when the window is closed.
-  mainWindow.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
+  window.loadURL(webAppUrlAsString);
 
   const minimizeWindowToTray = (event: Event) => {
-    if (!mainWindow || isAppQuitting) {
+    if (!window || isAppQuitting) {
+      // Actually close the window if we are quitting.
       return;
     }
     event.preventDefault();  // Prevent the app from exiting on the 'close' event.
-    mainWindow.hide();
+    window.hide();
   };
-  mainWindow.on('close', minimizeWindowToTray);
+  window.on('close', minimizeWindowToTray);
 
   // TODO: is this the most appropriate event?
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow!.webContents.send('localizationRequest', Object.keys(localizedStrings));
+  window.webContents.on('did-finish-load', () => {
+    window.webContents.send('localizationRequest', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
   });
 
   // The client is a single page app - loading any other page means the
   // user clicked on one of the Privacy, Terms, etc., links. These should
   // open in the user's browser.
-  mainWindow.webContents.on('will-navigate', (event: Event, url: string) => {
+  window.webContents.on('will-navigate', (event: Event, url: string) => {
     shell.openExternal(url);
     event.preventDefault();
   });
+  return window;
 }
 
 function setupTray(): void {
   tray = new Tray(TRAY_ICON_IMAGES.disconnected);
-  // TODO(fortuna): Fix https://github.com/electron/electron/issues/14941 which happens because
-  // on Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
+  // On Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
   tray.on('click', () => {
-    if (!mainWindow) {
-      createWindow();
-      return;
-    }
-    if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
-      mainWindow.restore();
-      mainWindow.show();
-      mainWindow.focus();
-    } else {
-      mainWindow.hide();
-    }
+    mainWindow?.show();
   });
   tray.setToolTip('Outline');
   updateTray(TunnelStatus.DISCONNECTED);
@@ -142,11 +126,16 @@ function updateTray(status: TunnelStatus) {
   // Retrieve localized strings, falling back to the pre-populated English default.
   const statusString = isConnected ? localizedStrings['connected-server-state'] :
                                      localizedStrings['disconnected-server-state'];
-  const quitString = localizedStrings['quit'];
-  const menuTemplate = [
+  let menuTemplate = [
     {label: statusString, enabled: false}, {type: 'separator'} as MenuItemConstructorOptions,
-    {label: quitString, click: quitApp}
+    {label: localizedStrings['quit'], click: quitApp}
   ];
+  if (os.platform() === 'linux') {
+    // Because the click event is never fired on Linux, we need an explicit open option.
+    menuTemplate = [
+      {label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate
+    ];
+  }
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
@@ -302,7 +291,7 @@ function main() {
 
     setupTray();
 
-    // Set the app to launch at startup to connect automatically in case of a showdown while
+    // Set the app to launch at startup to connect automatically in case of a shutdown while
     // proxying.
     if (os.platform() === 'linux') {
       if (process.env.APPIMAGE) {
@@ -326,6 +315,7 @@ function main() {
       app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
     }
 
+    mainWindow = createWindow();
     // TODO: --autostart is never set on Linux, what can we do?
     if (process.argv.includes(Options.AUTOSTART)) {
       let tunnelAtShutdown: SerializableTunnel;
@@ -338,7 +328,6 @@ function main() {
             `${Options.AUTOSTART} was passed but we were not connected at shutdown - exiting`);
         app.quit();
       }
-      createWindow();
       console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
@@ -347,17 +336,13 @@ function main() {
       } catch (e) {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
       }
-    } else {
-      createWindow();
     }
   });
 
   app.on('activate', () => {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-      createWindow();
-    }
+    mainWindow?.show();
   });
 
   // This event fires whenever the app's window receives focus.
