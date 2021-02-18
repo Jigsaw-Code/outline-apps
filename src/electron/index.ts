@@ -100,7 +100,6 @@ function createWindow(tunnelAtShutdown?: SerializableTunnel) {
     event.preventDefault();  // Prevent the app from exiting on the 'close' event.
     mainWindow.hide();
   };
-  mainWindow.on('minimize', minimizeWindowToTray);
   mainWindow.on('close', minimizeWindowToTray);
 
   // TODO: is this the most appropriate event?
@@ -138,6 +137,8 @@ function createTrayIcon(status: TunnelStatus) {
     tray.setImage(trayIconImage);
   } else {
     tray = new Tray(trayIconImage);
+    // TODO(fortuna): Fix https://github.com/electron/electron/issues/14941 which happens because
+    // on Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
     tray.on('click', () => {
       if (!mainWindow) {
         createWindow();
