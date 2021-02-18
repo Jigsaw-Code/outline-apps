@@ -34,8 +34,6 @@ import {TunnelManager} from './process_manager';
 // if the user was connected at shutdown.
 const tunnelStore = new TunnelStore(app.getPath('userData'));
 
-const isLinux = os.platform() === 'linux';
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow|null;
@@ -307,7 +305,7 @@ function main() {
 
     // Set the app to launch at startup to connect automatically in case of a showdown while
     // proxying.
-    if (isLinux) {
+    if (os.platform() === 'linux') {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
