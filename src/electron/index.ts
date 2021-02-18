@@ -27,6 +27,7 @@ import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {TunnelStatus} from '../www/app/tunnel';
+import {GoVpnTunnel} from './go_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {VpnTunnel} from './vpn_tunnel';
@@ -49,6 +50,9 @@ let localizedStrings: {[key: string]: string} = {
 };
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
+// TODO(alalama): use a compile-time constant instead of an environment variable.
+//                migrate the electron app build to webpack and use DefinePlugin.
+const useGoNetworkStack = process.env.OUTLINE_GO_NETWORK_STACK === 'true';
 
 const TRAY_ICON_IMAGES = {
   connected: createTrayIconImage('connected.png'),
@@ -191,7 +195,12 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
     throw new Error('already connected');
   }
 
-  currentTunnel = new ShadowsocksLibevBadvpnTunnel(config, isAutoConnect);
+  if (useGoNetworkStack) {
+    console.log('Using Go network stack');
+    currentTunnel = new GoVpnTunnel(config, isAutoConnect);
+  } else {
+    currentTunnel = new ShadowsocksLibevBadvpnTunnel(config, isAutoConnect);
+  }
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }
