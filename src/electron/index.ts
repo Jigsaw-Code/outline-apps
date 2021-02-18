@@ -198,21 +198,21 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
   currentTunnel.onceStopped.then(() => {
     console.log(`disconnected from ${id}`);
     currentTunnel = undefined;
-    sendTunnelStatus(TunnelStatus.DISCONNECTED, id);
+    setUiTunnelStatus(TunnelStatus.DISCONNECTED, id);
   });
 
   currentTunnel.onReconnecting = () => {
     console.log(`reconnecting to ${id}`);
-    sendTunnelStatus(TunnelStatus.RECONNECTING, id);
+    setUiTunnelStatus(TunnelStatus.RECONNECTING, id);
   };
 
   currentTunnel.onReconnected = () => {
     console.log(`reconnected to ${id}`);
-    sendTunnelStatus(TunnelStatus.CONNECTED, id);
+    setUiTunnelStatus(TunnelStatus.CONNECTED, id);
   };
 
   await currentTunnel.start();
-  sendTunnelStatus(TunnelStatus.CONNECTED, id);
+  setUiTunnelStatus(TunnelStatus.CONNECTED, id);
 }
 
 // Invoked by both the stop-proxying event and quit handler.
@@ -229,7 +229,7 @@ async function stopVpn() {
   await currentTunnel.onceStopped;
 }
 
-function sendTunnelStatus(status: TunnelStatus, tunnelId: string) {
+function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
   let statusString;
   switch (status) {
     case TunnelStatus.CONNECTED:
@@ -253,7 +253,6 @@ function sendTunnelStatus(status: TunnelStatus, tunnelId: string) {
   }
   updateTray(status);
 }
-
 
 function checkForUpdates() {
   try {
@@ -341,7 +340,7 @@ function main() {
       }
       createWindow();
       console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
-      sendTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
+      setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
         await startVpn(tunnelAtShutdown.config, tunnelAtShutdown.id, true);
         console.log(`reconnected to ${tunnelAtShutdown.id}`);
@@ -358,6 +357,13 @@ function main() {
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) {
       createWindow();
+    }
+  });
+
+  // This event fires whenever the app's window receives focus.
+  app.on('browser-window-focus', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('push-clipboard');
     }
   });
 
@@ -408,13 +414,6 @@ function main() {
 
   // Disconnects from the current server, if any.
   promiseIpc.on('stop-proxying', stopVpn);
-
-  // This event fires whenever the app's window receives focus.
-  app.on('browser-window-focus', () => {
-    if (mainWindow) {
-      mainWindow.webContents.send('push-clipboard');
-    }
-  });
 
   // Error reporting.
   // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
