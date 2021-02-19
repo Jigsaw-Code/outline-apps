@@ -340,9 +340,7 @@ function main() {
 
   // This event fires whenever the app's window receives focus.
   app.on('browser-window-focus', () => {
-    if (mainWindow) {
-      mainWindow.webContents.send('push-clipboard');
-    }
+    mainWindow?.webContents.send('push-clipboard');
   });
 
   promiseIpc.on('is-reachable', async (config: ShadowsocksConfig) => {
@@ -414,9 +412,7 @@ function main() {
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', (ev, info) => {
-    if (mainWindow) {
-      mainWindow.webContents.send('update-downloaded');
-    }
+    mainWindow?.webContents.send('update-downloaded');
   });
 }
 
