@@ -16,7 +16,7 @@
 
 yarn do src/www/build_electron
 
-webpack --config=src/electron/electron_main.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}
+webpack --config=src/electron/electron_main.webpack.js "${BUILD_ENV:+--mode=${BUILD_ENV}}"
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
