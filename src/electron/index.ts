@@ -84,15 +84,22 @@ function createWindow(): BrowserWindow {
   console.info(`loading web app from ${webAppUrlAsString}`);
   window.loadURL(webAppUrlAsString);
 
-  const minimizeWindowToTray = (event: Event) => {
-    if (!window || isAppQuitting) {
+  window.on('close', (event: Event) => {
+    if (isAppQuitting) {
       // Actually close the window if we are quitting.
       return;
     }
-    event.preventDefault();  // Prevent the app from exiting on the 'close' event.
+    // Hide instead of close so we don't need to create a new one.
+    event.preventDefault();
     window.hide();
-  };
-  window.on('close', minimizeWindowToTray);
+  });
+  if (os.platform() === 'win32') {
+    // On Windows we hide the app from the taskbar.
+    window.on('minimize', (event: Event) => {
+      event.preventDefault();
+      window.hide();
+    });
+  }
 
   // TODO: is this the most appropriate event?
   window.webContents.on('did-finish-load', () => {
