@@ -41,6 +41,7 @@
   "licenses-page-title": "Licenses",
   "non-system-vpn-warning-detail": "Most browsers connect automatically with Outline, some do not.",
   "non-system-vpn-warning-title": "Verify your browser connection",
+  "tray-open-window": "Open",
   "outline-plugin-error-admin-permissions": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
   "outline-plugin-error-antivirus": "It seems like your antivirus software is preventing us from successfully connecting.",
   "outline-plugin-error-invalid-server-credentials": "It seems like your access key is not valid. If this happens again, please contact your server admin.",
