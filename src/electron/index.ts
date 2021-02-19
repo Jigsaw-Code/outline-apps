@@ -375,7 +375,7 @@ function main() {
     } catch {
       return false;
     }
-});
+  });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
   promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig, id: string}) => {
@@ -414,16 +414,15 @@ function main() {
   // Disconnects from the current server, if any.
   promiseIpc.on('stop-proxying', stopVpn);
 
-// Error reporting.
-// This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-// Error reporting to Senty is disabled in debug mode
-ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
-  if (info.dsn && !debugMode) {
-    sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
-  }
-  // To clearly identify app restarts in Sentry.
-  console.info(`Outline is starting`);
-});
+  // Error reporting.
+  // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
+  ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
+    if (info.dsn) {
+      sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
+    }
+    // To clearly identify app restarts in Sentry.
+    console.info(`Outline is starting`);
+  });
 
   ipcMain.on('quit-app', quitApp);
 
