@@ -86,7 +86,7 @@ function setupTray(): void {
   updateTray(TunnelStatus.DISCONNECTED);
 }
 
-function setupWindow(): BrowserWindow {
+function setupWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow(
       {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
@@ -137,7 +137,6 @@ function setupWindow(): BrowserWindow {
     shell.openExternal(url);
     event.preventDefault();
   });
-  return mainWindow;
 }
 
 function updateTray(status: TunnelStatus) {
