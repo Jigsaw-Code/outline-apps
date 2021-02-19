@@ -63,9 +63,32 @@ const REACHABILITY_TIMEOUT_MS = 10000;
 
 let currentTunnel: TunnelManager|undefined;
 
-function createWindow(): BrowserWindow {
+function setupMenu(): void {
+  if (debugMode) {
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{
+      label: 'Developer',
+      submenu: Menu.buildFromTemplate(
+          [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
+    }]));
+  } else {
+    // Hide standard menu.
+    Menu.setApplicationMenu(null);
+  }
+}
+
+function setupTray(): void {
+  tray = new Tray(TRAY_ICON_IMAGES.disconnected);
+  // On Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
+  tray.on('click', () => {
+    mainWindow?.show();
+  });
+  tray.setToolTip('Outline');
+  updateTray(TunnelStatus.DISCONNECTED);
+}
+
+function setupWindow(): BrowserWindow {
   // Create the browser window.
-  const window = new BrowserWindow(
+  mainWindow = new BrowserWindow(
       {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
@@ -82,49 +105,39 @@ function createWindow(): BrowserWindow {
   const webAppUrlAsString = webAppUrl.toString();
 
   console.info(`loading web app from ${webAppUrlAsString}`);
-  window.loadURL(webAppUrlAsString);
+  mainWindow.loadURL(webAppUrlAsString);
 
-  window.on('close', (event: Event) => {
+  mainWindow.on('close', (event: Event) => {
     if (isAppQuitting) {
       // Actually close the window if we are quitting.
       return;
     }
     // Hide instead of close so we don't need to create a new one.
     event.preventDefault();
-    window.hide();
+    mainWindow.hide();
   });
   if (os.platform() === 'win32') {
     // On Windows we hide the app from the taskbar.
-    window.on('minimize', (event: Event) => {
+    mainWindow.on('minimize', (event: Event) => {
       event.preventDefault();
-      window.hide();
+      mainWindow.hide();
     });
   }
 
   // TODO: is this the most appropriate event?
-  window.webContents.on('did-finish-load', () => {
-    window.webContents.send('localizationRequest', Object.keys(localizedStrings));
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('localizationRequest', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
   });
 
   // The client is a single page app - loading any other page means the
   // user clicked on one of the Privacy, Terms, etc., links. These should
   // open in the user's browser.
-  window.webContents.on('will-navigate', (event: Event, url: string) => {
+  mainWindow.webContents.on('will-navigate', (event: Event, url: string) => {
     shell.openExternal(url);
     event.preventDefault();
   });
-  return window;
-}
-
-function setupTray(): void {
-  tray = new Tray(TRAY_ICON_IMAGES.disconnected);
-  // On Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
-  tray.on('click', () => {
-    mainWindow?.show();
-  });
-  tray.setToolTip('Outline');
-  updateTray(TunnelStatus.DISCONNECTED);
+  return mainWindow;
 }
 
 function updateTray(status: TunnelStatus) {
@@ -177,6 +190,29 @@ function interceptShadowsocksLink(argv: string[]) {
         console.error('called with URL but mainWindow not open');
       }
     }
+  }
+}
+
+// Set the app to launch at startup to connect automatically in case of a shutdown while
+// proxying.
+async function enableAutoLaunch(): Promise<void> {
+  if (os.platform() === 'linux') {
+    if (process.env.APPIMAGE) {
+      const outlineAutoLauncher = new autoLaunch({
+        name: 'OutlineClient',
+        path: process.env.APPIMAGE,
+      });
+      try {
+        if (await outlineAutoLauncher.isEnabled()) {
+          return;
+        }
+        outlineAutoLauncher.enable();
+      } catch (err) {
+        console.error(`failed to add autolaunch entry for Outline ${err.message}`);
+      }
+    }
+  } else {
+    app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
   }
 }
 
@@ -270,44 +306,14 @@ function main() {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.on('ready', async () => {
-    if (debugMode) {
-      Menu.setApplicationMenu(Menu.buildFromTemplate([{
-        label: 'Developer',
-        submenu: Menu.buildFromTemplate(
-            [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
-      }]));
-    } else {
-      // Hide standard menu.
-      Menu.setApplicationMenu(null);
-    }
+    await enableAutoLaunch();
+    setupMenu();
     setupTray();
+    setupWindow();
 
-    // Set the app to launch at startup to connect automatically in case of a shutdown while
-    // proxying.
-    if (os.platform() === 'linux') {
-      if (process.env.APPIMAGE) {
-        const outlineAutoLauncher = new autoLaunch({
-          name: 'OutlineClient',
-          path: process.env.APPIMAGE,
-        });
-
-        outlineAutoLauncher.isEnabled()
-            .then((isEnabled: boolean) => {
-              if (isEnabled) {
-                return;
-              }
-              outlineAutoLauncher.enable();
-            })
-            .catch((err: Error) => {
-              console.error(`failed to add autolaunch entry for Outline ${err.message}`);
-            });
-      }
-    } else {
-      app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
-    }
-
-    mainWindow = createWindow();
     // TODO: --autostart is never set on Linux, what can we do?
+    // Consider always starting the VPN is tunnelStore is set.
+    // TODO(fortuna): Show the app start hidden on auto-start?
     if (process.argv.includes(Options.AUTOSTART)) {
       let tunnelAtShutdown: SerializableTunnel;
       try {
