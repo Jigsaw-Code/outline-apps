@@ -311,8 +311,8 @@ function main() {
     setupWindow();
 
     // TODO: --autostart is never set on Linux, what can we do?
-    // Consider always starting the VPN is tunnelStore is set.
-    // TODO(fortuna): Show the app start hidden on auto-start?
+    // Consider always starting the VPN if the tunnelStore is set.
+    // TODO(fortuna): Start the app with the window hidden on auto-start?
     if (process.argv.includes(Options.AUTOSTART)) {
       let tunnelAtShutdown: SerializableTunnel;
       try {
