@@ -191,7 +191,7 @@ class OutlinePlugin: CDVPlugin {
     contexts?["app"]?["device_app_hash"] = ""
     event.context = Context()
     // Setting the sanitized app context will prevent it from being added on serialization.
-    event.context?.appContext = contexts?["app"];
+    event.context?.appContext = contexts?["app"]
 
     OutlineSentryLogger.sharedInstance.addVpnExtensionLogsToSentry()
     Client.shared?.send(event: event) { (error) in
