@@ -276,13 +276,7 @@ function main() {
         submenu: Menu.buildFromTemplate(
             [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
       }]));
-    } else {
-      checkForUpdates();
-
-      // Check every six hours
-      setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
     }
-
     setupTray();
 
     // Set the app to launch at startup to connect automatically in case of a shutdown while
@@ -330,6 +324,12 @@ function main() {
       } catch (e) {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
       }
+    }
+
+    if (!debugMode) {
+      checkForUpdates();
+      // Check every six hours
+      setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
     }
   });
 
