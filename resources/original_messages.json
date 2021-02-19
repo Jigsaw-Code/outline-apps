@@ -462,5 +462,9 @@
   "privacy_text": {
     "message": "Some technical information is sent if you submit feedback, if there’s an app error or crash, or if your server administrator opts in to share anonymous server usage data.",
     "description": "An explanation on the privacy page about when information would be sent to the application developers."
+  },
+  "tray_open_window": {
+    "message": "Open",
+    "description": "Tray menu entry to show the application window."
   }
 }
