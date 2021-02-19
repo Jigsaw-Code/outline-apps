@@ -276,6 +276,9 @@ function main() {
         submenu: Menu.buildFromTemplate(
             [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
       }]));
+    } else {
+      // Hide standard menu.
+      Menu.setApplicationMenu(null);
     }
     setupTray();
 
