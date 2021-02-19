@@ -257,19 +257,6 @@ function main() {
     app.quit();
   }
 
-  app.on('second-instance', (event: Event, argv: string[]) => {
-    interceptShadowsocksLink(argv);
-
-    // Someone tried to run a second instance, we should focus our window.
-    if (mainWindow) {
-      if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
-        mainWindow.restore();
-        mainWindow.show();
-      }
-      mainWindow.focus();
-    }
-  });
-
   app.setAsDefaultProtocolClient('ss');
 
   // This method will be called when Electron has finished
@@ -337,6 +324,12 @@ function main() {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
       }
     }
+  });
+
+  app.on('second-instance', (event: Event, argv: string[]) => {
+    interceptShadowsocksLink(argv);
+    // Someone tried to run a second instance, we should focus our window.
+    mainWindow?.show();
   });
 
   app.on('activate', () => {
