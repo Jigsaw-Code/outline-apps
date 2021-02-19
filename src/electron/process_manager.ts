@@ -318,7 +318,8 @@ class ChildProcessHelper {
     };
 
     if (this.isInDebugMode) {
-      // Expose logs to the node output.  This also makes the logs available in Sentry.
+      // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
+      // send web traffic information to Sentry.
       this.process.stdout!.pipe(process.stdout);
       this.process.stderr!.pipe(process.stderr);
     }
