@@ -23,7 +23,6 @@ import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {RoutingDaemon} from './routing_service';
 import {ChildProcessHelper} from './process';
-import {testTapDevice} from './tap';
 import {pathToEmbeddedBinary} from './util';
 import {VpnTunnel} from './vpn_tunnel';
 
@@ -39,11 +38,16 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child process
-// outline-go-tun2socks. Follows the Mediator pattern in that none of the "helpers" know anything
-// about the others.
+// outline-go-tun2socks. The routing service modifies the routing table so that the TAP device
+// receives all device traffic. outline-go-tun2socks process TCP and UDP traffic from the TAP
+// device and relays it to a Shadowsocks proxy server.
+//
+// |TAP| <-> |outline-go-tun2socks| <-> |Shadowsocks proxy|
 //
 // In addition to the basic lifecycle of the helper processes, this class restarts tun2socks
 // on network changes if necessary.
+// Follows the Mediator pattern in that none of the "helpers" know anything
+// about the others.
 export class GoVpnTunnel implements VpnTunnel {
   private readonly routing: RoutingDaemon;
   private readonly tun2socks: GoTun2socks;
@@ -103,10 +107,6 @@ export class GoVpnTunnel implements VpnTunnel {
 
   // Fulfills once all three helpers have started successfully.
   async connect() {
-    if (isWindows) {
-      testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
-    }
-
     // Don't check connectivity on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
     if (!this.isAutoConnect) {

@@ -27,7 +27,7 @@ import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {TunnelStatus} from '../www/app/tunnel';
-import {GoVpnTunnel} from './go_tunnel';
+import {GoVpnTunnel} from './go_vpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {VpnTunnel} from './vpn_tunnel';

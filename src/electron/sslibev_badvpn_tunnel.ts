@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {execSync} from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
 import {powerMonitor} from 'electron';
@@ -28,7 +29,6 @@ import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {isServerReachable} from './connectivity';
 import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';
-import {testTapDevice} from './tap';
 import {pathToEmbeddedBinary} from './util';
 import {VpnTunnel} from './vpn_tunnel';
 
@@ -54,6 +54,46 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
+// Raises an error if:
+//  - the TAP device does not exist
+//  - the TAP device does not have the expected IP/subnet
+//
+// Note that this will *also* throw if netsh is not on the PATH. If that's the case then the
+// installer should have failed, too.
+//
+// Only works on Windows!
+function testTapDevice(tapDeviceName: string, tapDeviceIp: string) {
+  // Sample output:
+  // =============
+  // $ netsh interface ipv4 dump
+  // # ----------------------------------
+  // # IPv4 Configuration
+  // # ----------------------------------
+  // pushd interface ipv4
+  //
+  // reset
+  // set global icmpredirects=disabled
+  // set interface interface="Ethernet" forwarding=enabled advertise=enabled nud=enabled
+  // ignoredefaultroutes=disabled set interface interface="outline-tap0" forwarding=enabled
+  // advertise=enabled nud=enabled ignoredefaultroutes=disabled add address name="outline-tap0"
+  // address=10.0.85.2 mask=255.255.255.0
+  //
+  // popd
+  // # End of IPv4 configuration
+  const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
+
+  // Find lines containing the TAP device name.
+  const tapLines = lines.filter(s => s.indexOf(tapDeviceName) !== -1);
+  if (tapLines.length < 1) {
+    throw new errors.SystemConfigurationException(`TAP device not found`);
+  }
+
+  // Within those lines, search for the expected IP.
+  if (tapLines.filter(s => s.indexOf(tapDeviceIp) !== -1).length < 1) {
+    throw new errors.SystemConfigurationException(`TAP device has wrong IP`);
+  }
+}
+
 async function isSsLocalReachable() {
   await isServerReachable(
       SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
@@ -61,13 +101,20 @@ async function isSsLocalReachable() {
 }
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child processes
-// ss-local and tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
-// anything about the others.
+// ss-local and badvpn-tun2socks. ss-local listens on a local SOCKS server and forwards TCP and UDP
+// traffic through Shadowsocks. badvpn-tun2socks processes traffic from a TAP device and relays to
+// a SOCKS proxy. The routing service modifies the routing table so that the TAP device receives all
+// device traffic.
+//
+// |TAP| <-> |badvpn-tun2socks| <-> |ss-local| <-> |Shadowsocks proxy|
 //
 // In addition to the basic lifecycle of the three helper processes, this handles a few special
 // situations:
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
+//
+// Follows the Mediator pattern in that none of the three "helpers" know
+// anything about the others.
 export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(SSLOCAL_PROXY_PORT);
