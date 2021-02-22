@@ -21,7 +21,6 @@ import {ShadowsocksConfig} from '../www/model/shadowsocks';
 export interface SerializableTunnel {
   id: string;
   config: ShadowsocksConfig;
-  isUdpSupported?: boolean;
 }
 
 // Persistence layer for a single SerializableTunnel.

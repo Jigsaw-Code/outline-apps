@@ -194,24 +194,38 @@ function interceptShadowsocksLink(argv: string[]) {
 
 // Set the app to launch at startup to connect automatically in case of a shutdown while
 // proxying.
-async function enableAutoLaunch(): Promise<void> {
-  if (os.platform() === 'linux') {
-    if (process.env.APPIMAGE) {
+async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
+  try {
+    await tunnelStore.save(args);
+    if (os.platform() === 'linux') {
+      if (process.env.APPIMAGE) {
+        const outlineAutoLauncher = new autoLaunch({
+          name: 'OutlineClient',
+          path: process.env.APPIMAGE,
+        });
+        outlineAutoLauncher.enable();
+      }
+    } else {
+      app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
+    }
+  } catch (e) {
+    console.error(`Failed to set up auto-launch: ${e.message}`);
+  }
+}
+
+async function tearDownAutoLaunch() {
+  try {
+    if (os.platform() === 'linux') {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
-        path: process.env.APPIMAGE,
       });
-      try {
-        if (await outlineAutoLauncher.isEnabled()) {
-          return;
-        }
-        outlineAutoLauncher.enable();
-      } catch (err) {
-        console.error(`failed to add autolaunch entry for Outline ${err.message}`);
-      }
+      outlineAutoLauncher.disable();
+    } else {
+      app.setLoginItemSettings({openAtLogin: false});
     }
-  } else {
-    app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
+    await tunnelStore.clear();
+  } catch (e) {
+    console.error(`Failed to tear down auto-launch: ${e.message}`);
   }
 }
 
@@ -251,12 +265,8 @@ async function stopVpn() {
   if (!currentTunnel) {
     return;
   }
-
-  tunnelStore.clear().catch((e) => {
-    console.error('Failed to clear tunnel store.');
-  });
-
   currentTunnel.stop();
+  await tearDownAutoLaunch();
   await currentTunnel.onceStopped;
 }
 
@@ -305,25 +315,21 @@ function main() {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.on('ready', async () => {
-    await enableAutoLaunch();
     setupMenu();
     setupTray();
+    // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
 
-    // TODO: --autostart is never set on Linux, what can we do?
-    // Consider always starting the VPN if the tunnelStore is set.
-    // TODO(fortuna): Start the app with the window hidden on auto-start?
-    if (process.argv.includes(Options.AUTOSTART)) {
-      let tunnelAtShutdown: SerializableTunnel;
-      try {
-        tunnelAtShutdown = await tunnelStore.load();
-      } catch (e) {
-        // No tunnel at shutdown, or failure - either way, no need to start.
-        // TODO: Instead of quitting, how about creating the system tray icon?
-        console.log(
-            `${Options.AUTOSTART} was passed but we were not connected at shutdown - exiting`);
-        app.quit();
-      }
+    let tunnelAtShutdown: SerializableTunnel;
+    try {
+      tunnelAtShutdown = await tunnelStore.load();
+    } catch (e) {
+      // No tunnel at shutdown, or failure - either way, no need to start.
+      // TODO: Instead of quitting, how about creating the system tray icon?
+      console.warn(`Could not load active tunnel: `, e);
+      await tunnelStore.clear();
+    }
+    if (tunnelAtShutdown) {
       console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
@@ -388,10 +394,10 @@ function main() {
 
       await connectivity.isServerReachable(
           args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+
       await startVpn(args.config, args.id);
-
       console.log(`connected to ${args.id}`);
-
+      await setupAutoLaunch(args);
       // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
       tunnelStore.save(args).catch((e) => {
         console.error('Failed to store tunnel.');
