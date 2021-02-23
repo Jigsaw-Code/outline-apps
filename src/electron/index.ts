@@ -53,8 +53,9 @@ let localizedStrings: {[key: string]: string} = {
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-// Build-time constant defined by webpack and set to true when $GO_NETWORK_STACK is defined.
-declare const GO_NETWORK_STACK: boolean;
+// Build-time constant defined by webpack and set to the value of $NETWORK_STACK,
+// or 'libevbadvpn' by default.
+declare const NETWORK_STACK: string;
 
 const TRAY_ICON_IMAGES = {
   connected: createTrayIconImage('connected.png'),
@@ -240,7 +241,7 @@ async function tearDownAutoLaunch() {
 function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
   const routing = new RoutingDaemon(config.host || '', isAutoConnect);
   let tunnel: VpnTunnel;
-  if (GO_NETWORK_STACK) {
+  if (NETWORK_STACK === 'go') {
     console.log('Using Go network stack');
     tunnel = new GoVpnTunnel(routing, config);
   } else {

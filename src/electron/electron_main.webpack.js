@@ -39,7 +39,7 @@ module.exports = (env) => {
     },
     plugins: [
       new webpack.DefinePlugin({
-        GO_NETWORK_STACK: JSON.stringify(!!env.GO_NETWORK_STACK),
+        NETWORK_STACK: JSON.stringify(env.NETWORK_STACK),
       }),
     ],
     output: {
