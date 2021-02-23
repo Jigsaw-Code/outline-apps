@@ -242,9 +242,9 @@ function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): Vpn
   let tunnel: VpnTunnel;
   if (GO_NETWORK_STACK) {
     console.log('Using Go network stack');
-    tunnel = new GoVpnTunnel(routing, config, isAutoConnect);
+    tunnel = new GoVpnTunnel(routing, config);
   } else {
-    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config, isAutoConnect);
+    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config);
   }
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
 
@@ -278,7 +278,9 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
     setUiTunnelStatus(TunnelStatus.CONNECTED, id);
   });
 
-  await currentTunnel.connect();
+  // Don't check connectivity on boot: if the key was revoked or network connectivity is not ready,
+  // we want the system to stay "connected" so that traffic doesn't leak.
+  await currentTunnel.connect(!isAutoConnect);
   setUiTunnelStatus(TunnelStatus.CONNECTED, id);
 }
 

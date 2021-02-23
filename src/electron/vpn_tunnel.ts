@@ -14,9 +14,11 @@
 
 import {TunnelStatus} from '../www/app/tunnel';
 
+// Represents a VPN tunnel to a proxy server.
 export interface VpnTunnel {
   // Starts a system-wide VPN that tunnels IP traffic.
-  connect(): Promise<void>;
+  // checkProxyConnectivity indicates whether to check TCP and UDP connectivity to the proxy server.
+  connect(checkProxyConnectivity: boolean): Promise<void>;
 
   // Stops tunneling and tears down the VPN.
   disconnect(): Promise<void>;

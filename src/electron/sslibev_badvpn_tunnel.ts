@@ -135,8 +135,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig,
-              private isAutoConnect: boolean) {
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -170,7 +169,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   }
 
   // Fulfills once all three helpers have started successfully.
-  async connect() {
+  async connect(checkProxyConnectivity: boolean) {
     if (isWindows) {
       testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
 
@@ -183,9 +182,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     this.ssLocal.start(this.config);
     await isSsLocalReachable();
 
-    // Don't validate credentials on boot: if the key was revoked, we want the system to stay
-    // "connected" so that traffic doesn't leak.
-    if (!this.isAutoConnect) {
+    if (checkProxyConnectivity) {
       await validateServerCredentials(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     }
 

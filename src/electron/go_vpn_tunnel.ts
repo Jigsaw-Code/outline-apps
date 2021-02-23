@@ -67,8 +67,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig,
-              private isAutoConnect: boolean) {
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
     this.tun2socks = new GoTun2socks(config);
 
     // This pair of Promises, each tied to a helper process' exit, is key to the instance's
@@ -101,16 +100,14 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   // Fulfills once all three helpers have started successfully.
-  async connect() {
+  async connect(checkProxyConnectivity: boolean) {
     if (isWindows) {
       // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
       powerMonitor.on('suspend', this.suspendListener.bind(this));
       powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
 
-    // Don't check connectivity on boot: if the key was revoked, we want the system to stay
-    // "connected" so that traffic doesn't leak.
-    if (!this.isAutoConnect) {
+    if (checkProxyConnectivity) {
       this.isUdpEnabled = await checkConnectivity(this.config);
     }
     console.log(`UDP support: ${this.isUdpEnabled}`);
