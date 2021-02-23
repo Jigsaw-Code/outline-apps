@@ -184,9 +184,9 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
     if (checkProxyConnectivity) {
       await validateServerCredentials(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
+      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     }
 
-    this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     console.log(`UDP support: ${this.isUdpEnabled}`);
     this.tun2socks.start(this.isUdpEnabled);
 
