@@ -44,7 +44,7 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 // ss-local will almost always start, and fast: short timeouts, fast retries.
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
-const SSLOCAL_PROXY_ADDRESS = '127.0.0.1';
+const SSLOCAL_PROXY_HOST = '127.0.0.1';
 const SSLOCAL_PROXY_PORT = 1081;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
@@ -96,7 +96,7 @@ function testTapDevice(tapDeviceName: string, tapDeviceIp: string) {
 
 async function isSsLocalReachable() {
   await isServerReachable(
-      SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+      SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
       SSLOCAL_RETRY_INTERVAL_MS);
 }
 
@@ -116,9 +116,8 @@ async function isSsLocalReachable() {
 // Follows the Mediator pattern in that none of the three "helpers" know
 // anything about the others.
 export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
-  private readonly routing: RoutingDaemon;
   private readonly ssLocal = new SsLocal(SSLOCAL_PROXY_PORT);
-  private readonly tun2socks = new BadvpnTun2socks(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+  private readonly tun2socks = new BadvpnTun2socks(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
@@ -136,9 +135,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
-    this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
-
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig,
+              private isAutoConnect: boolean) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -161,13 +159,6 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
       console.log('all helpers have exited');
       this.terminated = true;
     });
-
-    // Handle network changes and, on Windows, suspend events.
-    this.routing.onNetworkChange = this.networkChanged.bind(this);
-    if (isWindows) {
-      powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
-    }
   }
 
   /**
@@ -182,6 +173,10 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   async connect() {
     if (isWindows) {
       testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
+
+      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+      powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
 
     // ss-local must be up in order to test UDP support and validate credentials.
@@ -191,17 +186,17 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     // Don't validate credentials on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
     if (!this.isAutoConnect) {
-      await validateServerCredentials(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+      await validateServerCredentials(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     }
 
-    this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+    this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     console.log(`UDP support: ${this.isUdpEnabled}`);
     this.tun2socks.start(this.isUdpEnabled);
 
     await this.routing.start();
   }
 
-  private networkChanged(status: TunnelStatus) {
+  networkChanged(status: TunnelStatus) {
     if (status === TunnelStatus.CONNECTED) {
       if (this.reconnectedListener) {
         this.reconnectedListener();
@@ -248,7 +243,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
       // Possibly over-cautious, though we have seen occasional failures immediately after network
       // changes: ensure ss-local is reachable first.
       await isSsLocalReachable();
-      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_ADDRESS, SSLOCAL_PROXY_PORT);
+      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     } catch (e) {
       console.error(`UDP test failed: ${e.message}`);
       return;

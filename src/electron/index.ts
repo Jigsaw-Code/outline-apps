@@ -28,8 +28,9 @@ import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
-import {TunnelStore, SerializableTunnel} from './tunnel_store';
+import {RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
+import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 
 // Used for the auto-connect feature. There will be a tunnel in store
@@ -234,18 +235,29 @@ async function tearDownAutoLaunch() {
   }
 }
 
+// Factory function to create a VPNTunnel instance backed by a network statck
+// specified at build time.
+function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
+  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
+  let tunnel: VpnTunnel;
+  if (GO_NETWORK_STACK) {
+    console.log('Using Go network stack');
+    tunnel = new GoVpnTunnel(routing, config, isAutoConnect);
+  } else {
+    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config, isAutoConnect);
+  }
+  routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
+
+  return tunnel;
+}
+
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = false) {
   if (currentTunnel) {
     throw new Error('already connected');
   }
 
-  if (GO_NETWORK_STACK) {
-    console.log('Using Go network stack');
-    currentTunnel = new GoVpnTunnel(config, isAutoConnect);
-  } else {
-    currentTunnel = new ShadowsocksLibevBadvpnTunnel(config, isAutoConnect);
-  }
+  currentTunnel = createVpnTunnel(config, isAutoConnect);
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }

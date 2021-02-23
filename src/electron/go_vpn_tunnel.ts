@@ -21,8 +21,8 @@ import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
-import {RoutingDaemon} from './routing_service';
 import {ChildProcessHelper} from './process';
+import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
 import {VpnTunnel} from './vpn_tunnel';
 
@@ -49,7 +49,6 @@ const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 // Follows the Mediator pattern in that none of the "helpers" know anything
 // about the others.
 export class GoVpnTunnel implements VpnTunnel {
-  private readonly routing: RoutingDaemon;
   private readonly tun2socks: GoTun2socks;
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
@@ -68,8 +67,8 @@ export class GoVpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
-    this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig,
+              private isAutoConnect: boolean) {
     this.tun2socks = new GoTun2socks(config);
 
     // This pair of Promises, each tied to a helper process' exit, is key to the instance's
@@ -94,10 +93,6 @@ export class GoVpnTunnel implements VpnTunnel {
 
     // Handle network changes and, on Windows, suspend events.
     this.routing.onNetworkChange = this.networkChanged.bind(this);
-    if (isWindows) {
-      powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
-    }
   }
 
   // Turns on verbose logging for the managed processes. Must be called before launching the processes
@@ -107,6 +102,12 @@ export class GoVpnTunnel implements VpnTunnel {
 
   // Fulfills once all three helpers have started successfully.
   async connect() {
+    if (isWindows) {
+      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+      powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind((this)));
+    }
+
     // Don't check connectivity on boot: if the key was revoked, we want the system to stay
     // "connected" so that traffic doesn't leak.
     if (!this.isAutoConnect) {
@@ -118,7 +119,7 @@ export class GoVpnTunnel implements VpnTunnel {
     await this.routing.start();
   }
 
-  private networkChanged(status: TunnelStatus) {
+  networkChanged(status: TunnelStatus) {
     if (status === TunnelStatus.CONNECTED) {
       if (this.reconnectedListener) {
         this.reconnectedListener();

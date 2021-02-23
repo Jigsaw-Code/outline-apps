@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {TunnelStatus} from '../www/app/tunnel';
+
 export interface VpnTunnel {
   // Starts a system-wide VPN that tunnels IP traffic.
   connect(): Promise<void>;
 
   // Stops tunneling and tears down the VPN.
   disconnect(): Promise<void>;
+
+  // Callback to notify the tunnel about a network connectivity change.
+  networkChanged(status: TunnelStatus): void;
 
   // Resolved once the tunnel is disconnected after `disconnect` is called,
   // or when the tunnel disconnects spontaneously.
