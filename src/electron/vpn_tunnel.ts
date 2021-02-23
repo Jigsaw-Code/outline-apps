@@ -26,6 +26,8 @@ export interface VpnTunnel {
   // Callback to notify the tunnel about a network connectivity change.
   networkChanged(status: TunnelStatus): void;
 
+  // TODO(alalama): expose on/once methods and use EventEmmitter.
+
   // Resolved once the tunnel is disconnected after `disconnect` is called,
   // or when the tunnel disconnects spontaneously.
   readonly onceDisconnected: Promise<void>;
