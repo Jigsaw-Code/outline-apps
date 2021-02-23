@@ -320,8 +320,8 @@ class ChildProcessHelper {
     if (this.isInDebugMode) {
       // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
       // send web traffic information to Sentry.
-      this.process.stdout!.pipe(process.stdout);
-      this.process.stderr!.pipe(process.stderr);
+      this.process.stdout.pipe(process.stdout);
+      this.process.stderr.pipe(process.stderr);
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
