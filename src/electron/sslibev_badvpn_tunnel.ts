@@ -16,8 +16,8 @@ import {execSync} from 'child_process';
 import * as dgram from 'dgram';
 import * as dns from 'dns';
 import {powerMonitor} from 'electron';
-import {platform} from 'os';
 import * as net from 'net';
+import {platform} from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as socks from 'socks';
@@ -161,7 +161,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   }
 
   /**
-   * Turns on verbose logging for the managed processes.  Must be called before launching the processes
+   * Turns on verbose logging for the managed processes.  Must be called before launching the
+   * processes
    */
   enableDebugMode() {
     this.ssLocal.enableDebugMode();
@@ -173,7 +174,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     if (isWindows) {
       testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
 
-      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
+      // closed.
       powerMonitor.on('suspend', this.suspendListener.bind(this));
       powerMonitor.on('resume', this.resumeListener.bind((this)));
     }

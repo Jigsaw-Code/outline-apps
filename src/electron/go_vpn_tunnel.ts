@@ -75,8 +75,7 @@ export class GoVpnTunnel implements VpnTunnel {
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const exits = [
-      this.routing.onceDisconnected,
-      new Promise<void>((fulfill) => {
+      this.routing.onceDisconnected, new Promise<void>((fulfill) => {
         this.tun2socksExitListener = fulfill;
         this.tun2socks.onExit = this.tun2socksExitListener;
       })
@@ -94,7 +93,8 @@ export class GoVpnTunnel implements VpnTunnel {
     this.routing.onNetworkChange = this.networkChanged.bind(this);
   }
 
-  // Turns on verbose logging for the managed processes. Must be called before launching the processes
+  // Turns on verbose logging for the managed processes. Must be called before launching the
+  // processes
   enableDebugMode() {
     this.tun2socks.enableDebugMode();
   }
@@ -102,7 +102,8 @@ export class GoVpnTunnel implements VpnTunnel {
   // Fulfills once all three helpers have started successfully.
   async connect(checkProxyConnectivity: boolean) {
     if (isWindows) {
-      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
+      // closed.
       powerMonitor.on('suspend', this.suspendListener.bind(this));
       powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
@@ -223,7 +224,8 @@ class GoTun2socks {
   private exitListener?: (code?: number, signal?: string) => void;
 
   constructor(private config: ShadowsocksConfig) {
-    this.process = new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
+    this.process =
+        new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
   }
 
   async start(isUdpEnabled: boolean) {
@@ -251,7 +253,7 @@ class GoTun2socks {
       this.process.onExit = (code?: number, signal?: string) => {
         reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
       };
-      this.process.onStdErr = (data?: string | Buffer) => {
+      this.process.onStdErr = (data?: string|Buffer) => {
         if (!data?.toString().includes('tun2socks running')) {
           return;
         }
@@ -274,7 +276,7 @@ class GoTun2socks {
   }
 
   set onExit(listener: ((code?: number, signal?: string) => void)|undefined) {
-      this.exitListener = listener;
+    this.exitListener = listener;
   }
 
   enableDebugMode() {
@@ -282,11 +284,10 @@ class GoTun2socks {
   }
 }
 
-// Leverages the outline-go-tun2socks binary to check connectivity to the server specified in `config`.
-// Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
-// and validates the proxy credentials.
-// Resolves with a boolean indicating whether UDP forwarding is supported.
-// Throws if the checks fail or if the process fails to start.
+// Leverages the outline-go-tun2socks binary to check connectivity to the server specified in
+// `config`. Checks whether proxy server is reachable, whether the network and proxy support UDP
+// forwarding and validates the proxy credentials. Resolves with a boolean indicating whether UDP
+// forwarding is supported. Throws if the checks fail or if the process fails to start.
 async function checkConnectivity(config: ShadowsocksConfig) {
   const args = [];
   args.push('-proxyHost', config.host || '');

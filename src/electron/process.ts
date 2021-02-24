@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as path from 'path';
 import {ChildProcess, spawn} from 'child_process';
+import * as path from 'path';
 
 // Simple "one shot" child process launcher.
 //
@@ -26,12 +26,13 @@ export class ChildProcessHelper {
   protected isInDebugMode = false;
 
   private exitListener?: (code?: number, signal?: string) => void;
-  private stdErrListener?: (data?: string | Buffer) => void;
+  private stdErrListener?: (data?: string|Buffer) => void;
 
   constructor(private path: string) {}
 
   /**
-   * Starts the process with the given args. If enableDebug() has been called, then the process is started in verbose mode if supported.
+   * Starts the process with the given args. If enableDebug() has been called, then the process is
+   * started in verbose mode if supported.
    * @param args The args for the process
    */
   launch(args: string[]) {
@@ -48,7 +49,7 @@ export class ChildProcessHelper {
 
       logExit(processName, code, signal);
     };
-    const onStdErr = (data?: string | Buffer) => {
+    const onStdErr = (data?: string|Buffer) => {
       if (this.isInDebugMode) {
         console.error(`[STDERR - ${processName}]: ${data}`);
       }
@@ -60,8 +61,10 @@ export class ChildProcessHelper {
 
 
     if (this.isInDebugMode) {
-      // Expose logs to the node output.  This also makes the logs available in Sentry.
-      this.process.stdout.on('data', (data) => console.log(`[STDOUT - ${processName}]: ${data}`));
+      // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
+      // send web traffic information to Sentry.
+      this.process.stdout.pipe(process.stdout);
+      this.process.stderr.pipe(process.stderr);
     }
 
     // We have to listen for both events: error means the process could not be launched and in that
@@ -87,7 +90,7 @@ export class ChildProcessHelper {
     this.exitListener = newListener;
   }
 
-  set onStdErr(listener: ((data?: string | Buffer) => void)|undefined) {
+  set onStdErr(listener: ((data?: string|Buffer) => void)|undefined) {
     this.stdErrListener = listener;
     if (!this.stdErrListener && !this.isDebugModeEnabled) {
       this.process.stderr.removeAllListeners();
