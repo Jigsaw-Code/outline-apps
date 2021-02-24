@@ -19,6 +19,7 @@
     ],
     "files": [
       "third_party/badvpn/linux",
+      "third_party/outline-go-tun2socks/linux",
       "third_party/shadowsocks-libev/linux",
       "tools/outline_proxy_controller/dist"
     ],
@@ -34,6 +35,7 @@
     ],
     "files": [
       "third_party/badvpn/win32",
+      "third_party/outline-go-tun2socks/win32",
       "third_party/shadowsocks-libev/win32"
     ],
     "icon": "build/icons/win/icon.ico"

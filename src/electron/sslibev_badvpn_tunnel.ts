@@ -12,25 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, execSync, spawn} from 'child_process';
+import {execSync} from 'child_process';
+import * as dgram from 'dgram';
+import * as dns from 'dns';
 import {powerMonitor} from 'electron';
+import * as net from 'net';
 import {platform} from 'os';
 import * as path from 'path';
 import * as process from 'process';
+import * as socks from 'socks';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
-import {checkUdpForwardingEnabled, isServerReachable, validateServerCredentials} from './connectivity';
+import {isServerReachable} from './connectivity';
+import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';
 import {pathToEmbeddedBinary} from './util';
+import {VpnTunnel} from './vpn_tunnel';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
-
-const PROXY_ADDRESS = '127.0.0.1';
-const PROXY_PORT = 1081;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
@@ -41,7 +44,15 @@ const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 // ss-local will almost always start, and fast: short timeouts, fast retries.
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
+const SSLOCAL_PROXY_HOST = '127.0.0.1';
+const SSLOCAL_PROXY_PORT = 1081;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
+
+const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
+const DNS_LOOKUP_TIMEOUT_MS = 10000;
+
+const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
+const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
 // Raises an error if:
 //  - the TAP device does not exist
@@ -51,9 +62,7 @@ const SSLOCAL_RETRY_INTERVAL_MS = 100;
 // installer should have failed, too.
 //
 // Only works on Windows!
-//
-// TODO: Probably should be moved to a new file, e.g. configuation.ts.
-function testTapDevice() {
+function testTapDevice(tapDeviceName: string, tapDeviceIp: string) {
   // Sample output:
   // =============
   // $ netsh interface ipv4 dump
@@ -74,35 +83,41 @@ function testTapDevice() {
   const lines = execSync(`netsh interface ipv4 dump`).toString().split('\n');
 
   // Find lines containing the TAP device name.
-  const tapLines = lines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_NAME) !== -1);
+  const tapLines = lines.filter(s => s.indexOf(tapDeviceName) !== -1);
   if (tapLines.length < 1) {
     throw new errors.SystemConfigurationException(`TAP device not found`);
   }
 
   // Within those lines, search for the expected IP.
-  if (tapLines.filter(s => s.indexOf(TUN2SOCKS_TAP_DEVICE_IP) !== -1).length < 1) {
+  if (tapLines.filter(s => s.indexOf(tapDeviceIp) !== -1).length < 1) {
     throw new errors.SystemConfigurationException(`TAP device has wrong IP`);
   }
 }
 
 async function isSsLocalReachable() {
   await isServerReachable(
-      PROXY_ADDRESS, PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
+      SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT, SSLOCAL_CONNECTION_TIMEOUT, SSLOCAL_MAX_ATTEMPTS,
       SSLOCAL_RETRY_INTERVAL_MS);
 }
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child processes
-// ss-local and tun2socks. Follows the Mediator pattern in that none of the three "helpers" know
-// anything about the others.
+// ss-local and badvpn-tun2socks. ss-local listens on a local SOCKS server and forwards TCP and UDP
+// traffic through Shadowsocks. badvpn-tun2socks processes traffic from a TAP device and relays to
+// a SOCKS proxy. The routing service modifies the routing table so that the TAP device receives all
+// device traffic.
+//
+// |TAP| <-> |badvpn-tun2socks| <-> |ss-local| <-> |Shadowsocks proxy|
 //
 // In addition to the basic lifecycle of the three helper processes, this handles a few special
 // situations:
 //  - repeat the UDP test when the network changes and restart tun2socks if the result has changed
 //  - silently restart tun2socks when the system is about to suspend (Windows only)
-export class TunnelManager {
-  private readonly routing: RoutingDaemon;
-  private readonly ssLocal = new SsLocal(PROXY_PORT);
-  private readonly tun2socks = new Tun2socks(PROXY_ADDRESS, PROXY_PORT);
+//
+// Follows the Mediator pattern in that none of the three "helpers" know
+// anything about the others.
+export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
+  private readonly ssLocal = new SsLocal(SSLOCAL_PROXY_PORT);
+  private readonly tun2socks = new BadvpnTun2socks(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
 
   // Extracted out to an instance variable because in certain situations, notably a change in UDP
   // support, we need to stop and restart tun2socks *without notifying the client* and this allows
@@ -120,69 +135,67 @@ export class TunnelManager {
 
   private reconnectedListener?: () => void;
 
-  constructor(private config: ShadowsocksConfig, private isAutoConnect: boolean) {
-    this.routing = new RoutingDaemon(config.host || '', isAutoConnect);
-
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
-    const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => this.ssLocal.onExit = fulfill),
-      new Promise<void>((fulfill) => {
-        this.tun2socksExitListener = fulfill;
-        this.tun2socks.onExit = this.tun2socksExitListener;
-      })
-    ];
+    const ssLocalExit = new Promise<void>((resolve) => {
+      this.ssLocal.onExit = (code?: number, signal?: string) => {
+        resolve();
+      };
+    });
+    const tun2socksExit = new Promise<void>((resolve) => {
+      this.tun2socksExitListener = resolve;
+      this.tun2socks.onExit = this.tun2socksExitListener;
+    });
+    const exits = [this.routing.onceDisconnected, ssLocalExit, tun2socksExit];
     Promise.race(exits).then(() => {
       console.log('a helper has exited, disconnecting');
-      this.stop();
+      this.disconnect();
     });
     this.onAllHelpersStopped = Promise.all(exits).then(() => {
       console.log('all helpers have exited');
       this.terminated = true;
     });
-
-    // Handle network changes and, on Windows, suspend events.
-    this.routing.onNetworkChange = this.networkChanged.bind(this);
-    if (isWindows) {
-      powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
-    }
   }
 
   /**
-   * Turns on verbose logging for the managed processes.  Must be called before launching the processes
+   * Turns on verbose logging for the managed processes.  Must be called before launching the
+   * processes
    */
-  public enableDebugMode() {
+  enableDebugMode() {
     this.ssLocal.enableDebugMode();
     this.tun2socks.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
-  async start() {
+  async connect(checkProxyConnectivity: boolean) {
     if (isWindows) {
-      testTapDevice();
+      testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
+
+      // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
+      // closed.
+      powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
 
     // ss-local must be up in order to test UDP support and validate credentials.
     this.ssLocal.start(this.config);
     await isSsLocalReachable();
 
-    // Don't validate credentials on boot: if the key was revoked, we want the system to stay
-    // "connected" so that traffic doesn't leak.
-    if (!this.isAutoConnect) {
-      await validateServerCredentials(PROXY_ADDRESS, PROXY_PORT);
+    if (checkProxyConnectivity) {
+      await validateServerCredentials(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
+      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     }
 
-    this.isUdpEnabled = await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT);
     console.log(`UDP support: ${this.isUdpEnabled}`);
     this.tun2socks.start(this.isUdpEnabled);
 
     await this.routing.start();
   }
 
-  private networkChanged(status: TunnelStatus) {
+  networkChanged(status: TunnelStatus) {
     if (status === TunnelStatus.CONNECTED) {
       if (this.reconnectedListener) {
         this.reconnectedListener();
@@ -224,19 +237,21 @@ export class TunnelManager {
   }
 
   private async retestUdp() {
+    const wasUdpEnabled = this.isUdpEnabled;
     try {
       // Possibly over-cautious, though we have seen occasional failures immediately after network
       // changes: ensure ss-local is reachable first.
       await isSsLocalReachable();
-      if (this.isUdpEnabled === await checkUdpForwardingEnabled(PROXY_ADDRESS, PROXY_PORT)) {
-        return;
-      }
+      this.isUdpEnabled = await checkUdpForwardingEnabled(SSLOCAL_PROXY_HOST, SSLOCAL_PROXY_PORT);
     } catch (e) {
       console.error(`UDP test failed: ${e.message}`);
       return;
     }
 
-    this.isUdpEnabled = !this.isUdpEnabled;
+    if (this.isUdpEnabled === wasUdpEnabled) {
+      return;
+    }
+
     console.log(`UDP support change: now ${this.isUdpEnabled}`);
 
     // Swap out the current listener, restart once the current process exits.
@@ -248,8 +263,8 @@ export class TunnelManager {
     this.tun2socks.stop();
   }
 
-  // Use #onceStopped to be notified when the tunnel terminates.
-  stop() {
+  // Use #onceDisconnected to be notified when the tunnel terminates.
+  async disconnect() {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
@@ -269,89 +284,18 @@ export class TunnelManager {
   //
   // When this happens, *as many changes made to the system in order to establish the full-system
   // VPN as possible* will have been reverted.
-  public get onceStopped() {
+  get onceDisconnected() {
     return this.onAllHelpersStopped;
   }
 
   // Sets an optional callback for when the routing daemon is attempting to re-connect.
-  public set onReconnecting(newListener: () => void|undefined) {
+  onReconnecting(newListener: () => void|undefined) {
     this.reconnectingListener = newListener;
   }
 
   // Sets an optional callback for when the routing daemon successfully reconnects.
-  public set onReconnected(newListener: () => void|undefined) {
+  onReconnected(newListener: () => void|undefined) {
     this.reconnectedListener = newListener;
-  }
-}
-
-// Simple "one shot" child process launcher.
-//
-// NOTE: Because there is no way in Node.js to tell whether a process launched successfully,
-//       #startInternal always succeeds; use #onExit to be notified when the process has exited
-//       (which may be immediately after calling #startInternal if, e.g. the binary cannot be
-//       found).
-class ChildProcessHelper {
-  private process?: ChildProcess;
-  protected isInDebugMode = false;
-
-  private exitListener?: () => void;
-
-  protected constructor(private path: string) {}
-
-  /**
-   * Starts the process with the given args. If enableDebug() has been called, then the process is started in verbose mode if supported.
-   * @param args The args for the process
-   */
-  protected launch(args: string[]) {
-    this.process = spawn(this.path, args);
-    const processName = path.basename(this.path);
-
-    const onExit = (code: number, signal: string) => {
-      if (this.process) {
-        this.process.removeAllListeners();
-      }
-      if (this.exitListener) {
-        this.exitListener();
-      }
-
-      logExit(processName, code, signal);
-    };
-
-    if (this.isInDebugMode) {
-      // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
-      // send web traffic information to Sentry.
-      this.process.stdout.pipe(process.stdout);
-      this.process.stderr.pipe(process.stderr);
-    }
-
-    // We have to listen for both events: error means the process could not be launched and in that
-    // case exit will not be invoked.
-    this.process.on('error', onExit.bind((this)));
-    this.process.on('exit', onExit.bind((this)));
-  }
-
-  // Use #onExit to be notified when the process exits.
-  stop() {
-    if (!this.process) {
-      // Never started.
-      if (this.exitListener) {
-        this.exitListener();
-      }
-      return;
-    }
-
-    this.process.kill();
-  }
-
-  set onExit(newListener: (() => void)|undefined) {
-    this.exitListener = newListener;
-  }
-
-  /**
-   * Enables verbose logging for the process.  Must be called before launch().
-   */
-  public enableDebugMode() {
-    this.isInDebugMode = true;
   }
 }
 
@@ -361,10 +305,10 @@ class SsLocal extends ChildProcessHelper {
   }
 
   start(config: ShadowsocksConfig) {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m aes-128-cfb -l 1081 -u
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');
-    args.push('-p', '' + config.port);
+    args.push('-p', `${config.port}`);
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
@@ -376,7 +320,7 @@ class SsLocal extends ChildProcessHelper {
   }
 }
 
-class Tun2socks extends ChildProcessHelper {
+class BadvpnTun2socks extends ChildProcessHelper {
   constructor(private proxyAddress: string, private proxyPort: number) {
     super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
@@ -408,17 +352,119 @@ class Tun2socks extends ChildProcessHelper {
   }
 }
 
-function logExit(processName: string, exitCode?: number, signal?: string) {
-  const prefix = `[EXIT - ${processName}]: `;
-  if (exitCode !== null) {
-    const log = exitCode === 0 ? console.log : console.error;
-    log(`${prefix}Exited with code ${exitCode}`);
-  } else if (signal !== null) {
-    const log = signal === 'SIGTERM' ? console.log : console.error;
-    log(`${prefix}Killed by signal ${signal}`);
-  } else {
-    // This should never happen.  It likely signals an internal error in Node, as it is supposed to
-    // always pass either an exit code or an exit signal to the exit handler.
-    console.error(`${prefix}Process exited for an unknown reason.`);
-  }
+// Resolves with true iff a response can be received from a semi-randomly-chosen website through the
+// Shadowsocks proxy.
+//
+// This has the same function as ShadowsocksConnectivity.validateServerCredentials in
+// cordova-plugin-outline.
+function validateServerCredentials(proxyAddress: string, proxyIp: number) {
+  return new Promise<void>((fulfill, reject) => {
+    const testDomain =
+        CREDENTIALS_TEST_DOMAINS[Math.floor(Math.random() * CREDENTIALS_TEST_DOMAINS.length)];
+    socks.createConnection(
+        {
+          proxy: {ipaddress: proxyAddress, port: proxyIp, type: 5},
+          target: {host: testDomain, port: 80}
+        },
+        (e, socket) => {
+          if (e) {
+            reject(new errors.InvalidServerCredentials(
+                `could not connect to remote test website: ${e.message}`));
+            return;
+          }
+
+          socket.write(`HEAD / HTTP/1.1\r\nHost: ${testDomain}\r\n\r\n`);
+
+          socket.on('data', (data) => {
+            if (data.toString().startsWith('HTTP/1.1')) {
+              socket.end();
+              fulfill();
+            } else {
+              socket.end();
+              reject(new errors.InvalidServerCredentials(
+                  `unexpected response from remote test website`));
+            }
+          });
+
+          socket.on('close', () => {
+            reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
+          });
+
+          // Sockets must be resumed before any data will come in, as they are paused right before
+          // this callback is fired.
+          socket.resume();
+        });
+  });
+}
+
+// DNS request to google.com.
+const DNS_REQUEST = Buffer.from([
+  0, 0,                             // [0-1]   query ID
+  1, 0,                             // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+  0, 1,                             // [4-5]   QDCOUNT (number of queries)
+  0, 0,                             // [6-7]   ANCOUNT (number of answers)
+  0, 0,                             // [8-9]   NSCOUNT (number of name server records)
+  0, 0,                             // [10-11] ARCOUNT (number of additional records)
+  6, 103, 111, 111, 103, 108, 101,  // google
+  3, 99,  111, 109,                 // com
+  0,                                // null terminator of FQDN (root TLD)
+  0, 1,                             // QTYPE, set to A
+  0, 1                              // QCLASS, set to 1 = IN (Internet)
+]);
+
+// Verifies that the remote server has enabled UDP forwarding by sending a DNS request through it.
+function checkUdpForwardingEnabled(proxyAddress: string, proxyIp: number): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    socks.createConnection(
+        {
+          proxy: {ipaddress: proxyAddress, port: proxyIp, type: 5, command: 'associate'},
+          target: {host: '0.0.0.0', port: 0},  // Specify the actual target once we get a response.
+        },
+        (err, socket, info) => {
+          if (err) {
+            reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
+            return;
+          }
+          const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, DNS_REQUEST);
+          const udpSocket = dgram.createSocket('udp4');
+
+          udpSocket.on('error', (e) => {
+            reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
+          });
+
+          udpSocket.on('message', (msg, info) => {
+            stopUdp();
+            resolve(true);
+          });
+
+          // Retry sending the query every second.
+          // TODO: logging here is a bit verbose
+          const intervalId = setInterval(() => {
+            try {
+              udpSocket.send(packet, info.port, info.host, (err) => {
+                if (err) {
+                  console.error(`Failed to send data through UDP: ${err}`);
+                }
+              });
+            } catch (e) {
+              console.error(`Failed to send data through UDP ${e}`);
+            }
+          }, UDP_FORWARDING_TEST_RETRY_INTERVAL_MS);
+
+          const stopUdp = () => {
+            try {
+              clearInterval(intervalId);
+              udpSocket.close();
+            } catch (e) {
+              // Ignore; there may be multiple calls to this function.
+            }
+          };
+
+          // Give up after the timeout elapses.
+          setTimeout(() => {
+            stopUdp();
+            resolve(false);
+          }, UDP_FORWARDING_TEST_TIMEOUT_MS);
+        });
+  });
 }
