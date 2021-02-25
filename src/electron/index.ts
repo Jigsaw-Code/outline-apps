@@ -107,8 +107,8 @@ function setupWindow(): void {
   const queryParams = new url.URLSearchParams();
   if (debugMode) {
     queryParams.set('debug', 'true');
-    queryParams.set('appName', app.getName());
   }
+  queryParams.set('appName', app.getName());
   webAppUrl.search = queryParams.toString();
 
   const webAppUrlAsString = webAppUrl.toString();
