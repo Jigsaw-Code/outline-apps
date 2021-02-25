@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as sentry from '@sentry/electron';
+// Directly import @sentry/electron main process code.
+// See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
+import * as sentry from '@sentry/electron/dist/main';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';

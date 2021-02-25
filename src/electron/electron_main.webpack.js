@@ -17,30 +17,34 @@ const webpack = require('webpack');
 
 module.exports = (env) => {
   return {
-    entry: './src/electron/index.ts', target: 'electron-main',
-        node: {__dirname: false, __filename: false}, mode: 'production',
-        devtool: 'inline-source-map', module: {
-          rules:
-              [
-                {
-                  test: /\.tsx?$/,
-                  use: 'ts-loader',
-                  exclude: /node_modules/,
-                },
-              ],
+    entry: './src/electron/index.ts',
+    target: 'electron-main',
+    node: {
+      __dirname: false,
+      __filename: false
+    },
+    mode: 'production',
+    devtool: 'inline-source-map',
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
         },
-        resolve: {
-          extensions: ['.tsx', '.ts', '.js'],
-        },
-        plugins:
-            [
-              new webpack.DefinePlugin({
-                NETWORK_STACK: JSON.stringify(env.NETWORK_STACK),
-              }),
-            ],
-        output: {
-          filename: 'index.js',
-          path: path.resolve(__dirname, '../../build/electron/electron'),
-        },
+      ],
+    },
+    resolve: {
+      extensions: [ '.tsx', '.ts', '.js' ],
+    },
+    plugins: [
+      new webpack.DefinePlugin({
+        NETWORK_STACK: JSON.stringify(env.NETWORK_STACK),
+      }),
+    ],
+    output: {
+      filename: 'index.js',
+      path: path.resolve(__dirname, '../../build/electron/electron'),
+    },
   }
 };
