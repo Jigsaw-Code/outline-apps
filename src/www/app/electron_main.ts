@@ -110,7 +110,8 @@ main({
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
-    return new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', new URL(document.URL).searchParams.get('appName'));
+    return new ElectronErrorReporter(
+        env.APP_VERSION, env.SENTRY_DSN || '', new URL(document.URL).searchParams.get('appName') || 'Outline Client');
   },
   getUpdater: () => {
     return new ElectronUpdater();
