@@ -186,15 +186,19 @@ export class GoVpnTunnel implements VpnTunnel {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
+    // A clean shutdown requires stopping tun2socks before the routing is
+    // reset.  However, this call to stop() is asynchronous, so shutdown
+    // may occur out of order.  This may print an error message to the logs
+    // but is otherwise harmless.
+    this.tun2socks.stop();
+
     try {
-      this.routing.stop();
+      await this.routing.stop();
     } catch (e) {
       // This can happen for several reasons, e.g. the daemon may have stopped while we were
       // connected.
       console.error(`could not stop routing: ${e.message}`);
     }
-
-    this.tun2socks.stop();
   }
 
   // Fulfills once all three helper processes have stopped.

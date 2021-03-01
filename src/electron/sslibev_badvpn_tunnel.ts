@@ -268,16 +268,20 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
+    // This is the clean shutdown order, but to minimize delay, we don't
+    // wait for each shutdown step to complete.  They may therefore complete
+    // out of order.  This will cause tun2socks to print error messages in
+    // the console, but is otherwise harmless.
+    this.tun2socks.stop();
+    this.ssLocal.stop();
+
     try {
-      this.routing.stop();
+      await this.routing.stop();
     } catch (e) {
       // This can happen for several reasons, e.g. the daemon may have stopped while we were
       // connected.
       console.error(`could not stop routing: ${e.message}`);
     }
-
-    this.ssLocal.stop();
-    this.tun2socks.stop();
   }
 
   // Fulfills once all three helper processes have stopped.
