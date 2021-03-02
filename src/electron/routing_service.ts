@@ -67,6 +67,8 @@ enum RoutingServiceStatusCode {
 export class RoutingDaemon {
   private socket: Socket|undefined;
 
+  private stopping: boolean = false;
+
   private fulfillDisconnect!: () => void;
 
   private disconnected = new Promise<void>((F) => {
@@ -173,16 +175,38 @@ export class RoutingDaemon {
     return response;
   }
 
+  private async writeReset() {
+    return new Promise<void>((resolve, reject) => {
+      const written = this.socket.write(JSON.stringify(
+        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      if (!written) {
+        reject(new Error("Write failed"));
+      }
+    });
+  }
+
+  // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
-  stop() {
+  async stop() {
     if (!this.socket) {
       // Never started.
       this.fulfillDisconnect();
       return;
     }
+    if (this.stopping) {
+      // Already stopped.
+      return;
+    }
+    this.stopping = true;
 
-    this.socket.write(JSON.stringify(
-        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest));
+    return this.writeReset();
   }
 
   public get onceDisconnected() {
