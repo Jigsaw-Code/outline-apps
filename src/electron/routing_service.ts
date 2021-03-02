@@ -192,6 +192,8 @@ export class RoutingDaemon {
     });
   }
 
+  // stop() resolves when the stop command has been sent.
+  // Use #onceDisconnected to be notified when the connection terminates.
   async stop() {
     if (!this.socket) {
       // Never started.
@@ -204,8 +206,7 @@ export class RoutingDaemon {
     }
     this.stopping = true;
 
-    await this.writeReset();
-    await this.onceDisconnected;
+    return this.writeReset();
   }
 
   public get onceDisconnected() {
