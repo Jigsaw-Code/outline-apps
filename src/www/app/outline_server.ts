@@ -17,9 +17,8 @@ import * as uuidv4 from 'uuidv4';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
-import {ShadowsocksConfig} from '../model/shadowsocks';
 
-import {accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './config';
+import {accessKeyToShadowsocksConfig, ShadowsocksConfig, shadowsocksConfigToAccessKey} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {

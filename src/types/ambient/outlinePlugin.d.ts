@@ -16,7 +16,7 @@
 
 declare type Tunnel = import('../../www/app/tunnel').Tunnel;
 declare type TunnelStatus = import('../../www/app/tunnel').TunnelStatus;
-declare type ShadowsocksConfig = import('../../www/model/shadowsocks').ShadowsocksConfig;
+declare type ShadowsocksConfig = import('../../www/app/config').ShadowsocksConfig;
 
 declare namespace cordova.plugins.outline {
   const log: {

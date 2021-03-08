@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import * as errors from '../model/errors';
-import {ShadowsocksConfig} from '../model/shadowsocks';
 
+import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 // Fake Tunnel implementation for demoing and testing.

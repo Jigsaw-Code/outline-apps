@@ -15,7 +15,15 @@
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../model/errors';
-import {ShadowsocksConfig} from '../model/shadowsocks';
+
+// Represents a Shadowsocks proxy server configuration.
+export interface ShadowsocksConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  name?: string;
+}
 
 // Parses an access key string into a ShadowsocksConfig object.
 export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConfig {

@@ -17,9 +17,9 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import {promisify} from 'util';
 
+import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
-import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';

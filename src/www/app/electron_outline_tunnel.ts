@@ -16,8 +16,8 @@ import {ipcRenderer} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
-import {ShadowsocksConfig} from '../model/shadowsocks';
 
+import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
