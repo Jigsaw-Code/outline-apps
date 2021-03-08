@@ -28,11 +28,17 @@ export class OutlineServer implements Server {
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   private config: ShadowsocksConfig;
+  // The message identifier corresponding to the server error state.
+  // Must match one of the localized app message.
+  readonly errorMessageId?: string;
 
   constructor(
       public readonly id: string, public readonly accessKey: string, public name: string,
       private tunnel: Tunnel, private eventQueue: events.EventQueue) {
     this.config = accessKeyToShadowsocksConfig(accessKey);
+    if (!OutlineServer.isServerCipherSupported(this.config.method)) {
+      this.errorMessageId = 'unsupported-cipher';
+    }
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
