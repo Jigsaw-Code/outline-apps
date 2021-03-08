@@ -14,34 +14,50 @@
 
 import * as uuidv4 from 'uuidv4';
 
-import {ServerAlreadyAdded, ShadowsocksUnsupportedCipher} from '../model/errors';
+import {ServerAlreadyAdded} from '../model/errors';
 import * as events from '../model/events';
-import {Server, ServerConfig, ServerRepository} from '../model/server';
+import {ServerRepository} from '../model/server';
+import {ShadowsocksConfig} from '../model/shadowsocks';
 
-import {OutlineServer} from "./outline_server";
+import {shadowsocksConfigToAccessKey} from './config';
+import {OutlineServer} from './outline_server';
 
-
-export interface PersistentServer extends Server {
-  config: ServerConfig;
+// Persistence format for an Outline Server.
+interface OutlineServerJson {
+  // Shadowsocks access key encoding proxy configuration parameters.
+  readonly accessKey: string;
+  // User-given name.
+  readonly name: string;
 }
 
-interface ConfigById {
-  [serverId: string]: ServerConfig;
+export interface ConfigByIdV0 {
+  [serverId: string]: ShadowsocksConfig;
 }
 
-export type PersistentServerFactory =
-    (id: string, config: ServerConfig, eventQueue: events.EventQueue) => PersistentServer;
+export interface ConfigById {
+  [serverId: string]: OutlineServerJson;
+}
+
+export type OutlineServerFactory =
+    (id: string, accessKey: string, name: string, eventQueue: events.EventQueue) => OutlineServer;
 
 // Maintains a persisted set of servers and liaises with the core.
-export class PersistentServerRepository implements ServerRepository {
+export class OutlineServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
-  private static readonly SERVERS_STORAGE_KEY = 'servers';
-  private serverById!: Map<string, PersistentServer>;
-  private lastForgottenServer: PersistentServer|null = null;
+  public static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
+  public static readonly SERVERS_STORAGE_KEY = 'servers_v1';
+  private serverById!: Map<string, OutlineServer>;
+  private lastForgottenServer: OutlineServer|null = null;
 
   constructor(
-      public readonly createServer: PersistentServerFactory, private eventQueue: events.EventQueue,
+      public readonly createServer: OutlineServerFactory, private eventQueue: events.EventQueue,
       private storage: Storage) {
+    try {
+      migrateServerStorageToV1(this.storage);
+    } catch (e) {
+      console.error(`failed to migrate storage to V1: ${e}`);
+      return;
+    }
     this.loadServers();
   }
 
@@ -53,15 +69,12 @@ export class PersistentServerRepository implements ServerRepository {
     return this.serverById.get(serverId);
   }
 
-  add(serverConfig: ServerConfig) {
-    const alreadyAddedServer = this.serverFromConfig(serverConfig);
+  add(accessKey: string, serverName: string) {
+    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
     if (alreadyAddedServer) {
       throw new ServerAlreadyAdded(alreadyAddedServer);
     }
-    if (!OutlineServer.isServerCipherSupported(serverConfig.method)) {
-      throw new ShadowsocksUnsupportedCipher(serverConfig.method || 'unknown');
-    }
-    const server = this.createServer(uuidv4(), serverConfig, this.eventQueue);
+    const server = this.createServer(uuidv4(), accessKey, serverName, this.eventQueue);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -104,32 +117,32 @@ export class PersistentServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  containsServer(config: ServerConfig): boolean {
-    return !!this.serverFromConfig(config);
+  containsServer(accessKey: string): boolean {
+    return !!this.serverFromAccessKey(accessKey);
   }
 
-  private serverFromConfig(config: ServerConfig): PersistentServer|undefined {
-    for (const server of this.getAll()) {
-      if (configsMatch(server.config, config)) {
+  private serverFromAccessKey(accessKey: string): OutlineServer|undefined {
+    for (const server of this.serverById.values()) {
+      if (accessKeysMatch(accessKey, server.accessKey)) {
         return server;
       }
     }
+    return undefined;
   }
 
   private storeServers() {
     const configById: ConfigById = {};
-    for (const server of this.serverById.values()) {
-      configById[server.id] = server.config;
+    for (const [serverId, server] of this.serverById) {
+      configById[serverId] = {accessKey: server.accessKey, name: server.name};
     }
     const json = JSON.stringify(configById);
-    this.storage.setItem(PersistentServerRepository.SERVERS_STORAGE_KEY, json);
+    this.storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, json);
   }
 
-  // Loads servers from storage,
-  // raising an error if there is any problem loading.
+  // Loads servers from storage, raising an error if there is any problem loading.
   private loadServers() {
-    this.serverById = new Map<string, PersistentServer>();
-    const serversJson = this.storage.getItem(PersistentServerRepository.SERVERS_STORAGE_KEY);
+    this.serverById = new Map<string, OutlineServer>();
+    const serversJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
     if (!serversJson) {
       console.debug(`no servers found in storage`);
       return;
@@ -142,12 +155,10 @@ export class PersistentServerRepository implements ServerRepository {
     }
     for (const serverId in configById) {
       if (configById.hasOwnProperty(serverId)) {
-        const config = configById[serverId];
+        const serverJson = configById[serverId];
         try {
-          const server = this.createServer(serverId, config, this.eventQueue);
-          if (!OutlineServer.isServerCipherSupported(server.config.method)) {
-            server.errorMessageId = 'unsupported-cipher';
-          }
+          const server =
+              this.createServer(serverId, serverJson.accessKey, serverJson.name, this.eventQueue);
           this.serverById.set(serverId, server);
         } catch (e) {
           // Don't propagate so other stored servers can be created.
@@ -158,7 +169,43 @@ export class PersistentServerRepository implements ServerRepository {
   }
 }
 
-function configsMatch(left: ServerConfig, right: ServerConfig) {
-  return left.host === right.host && left.port === right.port && left.method === right.method &&
-      left.password === right.password;
+function accessKeysMatch(a: string, b: string): boolean {
+  const removeFragment = (accessKey: string) => {
+    const fragmentIndex = accessKey.indexOf('#');
+    if (fragmentIndex === -1) {
+      return accessKey;
+    }
+    return accessKey.substring(0, fragmentIndex);
+  };
+  return removeFragment(a) === removeFragment(b);
+}
+
+
+// Performs a data schema migration from `ConfigByIdV0` to `ConfigById` on `storage`.
+export function migrateServerStorageToV1(storage: Storage) {
+  if (storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
+    console.debug('server storage already migrated to V1');
+    return;
+  }
+  const serversJsonV0 = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY_V0);
+  if (!serversJsonV0) {
+    console.debug('no V0 servers found in storage');
+    return;
+  }
+
+  let configByIdV0: ConfigByIdV0 = {};
+  configByIdV0 = JSON.parse(serversJsonV0);
+  const configByIdV1: ConfigById = {};
+  for (const serverId in configByIdV0) {
+    if (!configByIdV0.hasOwnProperty(serverId)) {
+      continue;
+    }
+    const config: ShadowsocksConfig = configByIdV0[serverId];
+    const name = config.name;
+    const accessKey = shadowsocksConfigToAccessKey(config);
+    configByIdV1[serverId] = {accessKey, name};
+  }
+
+  const serversJsonV1 = JSON.stringify(configByIdV1);
+  storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, serversJsonV1);
 }

@@ -34,21 +34,17 @@ declare namespace cordova.plugins.outline {
 
   // Implements the Tunnel interface with native functionality.
   class Tunnel implements Tunnel {
-    // Creates a new instance with `config`.
-    // A sequential ID will be generated if `id` is absent.
-    constructor(config: ShadowsocksConfig, id?: string);
-
-    config: ShadowsocksConfig;
+    constructor(id: string);
 
     readonly id: string;
 
-    start(): Promise<void>;
+    start(config: ShadowsocksConfig): Promise<void>;
 
     stop(): Promise<void>;
 
     isRunning(): Promise<boolean>;
 
-    isReachable(): Promise<boolean>;
+    isReachable(config: ShadowsocksConfig): Promise<boolean>;
 
     onStatusChange(listener: (status: TunnelStatus) => void): void;
   }

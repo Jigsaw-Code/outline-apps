@@ -21,7 +21,8 @@ import {Server} from '../model/server';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {PersistentServer, PersistentServerRepository} from './persistent_server';
+import {OutlineServer} from './outline_server';
+import {OutlineServerRepository} from './persistent_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -59,7 +60,7 @@ export class App {
   private ignoredAccessKeys: {[accessKey: string]: boolean;} = {};
 
   constructor(
-      private eventQueue: events.EventQueue, private serverRepo: PersistentServerRepository,
+      private eventQueue: events.EventQueue, private serverRepo: OutlineServerRepository,
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
@@ -281,7 +282,7 @@ export class App {
 
   private requestAddServer(event: CustomEvent) {
     try {
-      this.serverRepo.add(event.detail.serverConfig);
+      this.serverRepo.add(event.detail.accessKey, event.detail.serverName);
     } catch (err) {
       this.changeToDefaultPage();
       this.showLocalizedError(err);
@@ -319,21 +320,17 @@ export class App {
     if (shadowsocksConfig.host.isIPv6) {
       throw new errors.ServerIncompatible('Only IPv4 addresses are currently supported');
     }
-    const name = shadowsocksConfig.extra.outline ?
+    if (!OutlineServer.isServerCipherSupported(shadowsocksConfig.method.data)) {
+      throw new errors.ShadowsocksUnsupportedCipher(shadowsocksConfig.method.data || 'unknown');
+    }
+
+    const name = shadowsocksConfig.extra?.outline ?
         this.localize('server-default-name-outline') :
-        shadowsocksConfig.tag.data ? shadowsocksConfig.tag.data :
-                                     this.localize('server-default-name');
-    const serverConfig = {
-      host: shadowsocksConfig.host.data,
-      port: shadowsocksConfig.port.data,
-      method: shadowsocksConfig.method.data,
-      password: shadowsocksConfig.password.data,
-      name,
-    };
-    if (!this.serverRepo.containsServer(serverConfig)) {
+        shadowsocksConfig.tag?.data ?? this.localize('server-default-name');
+    if (!this.serverRepo.containsServer(accessKey)) {
       // Only prompt the user to add new servers.
       try {
-        addServerView.openAddServerConfirmationSheet(accessKey, serverConfig);
+        addServerView.openAddServerConfirmationSheet(accessKey, name);
       } catch (err) {
         console.error('Failed to open add sever confirmation sheet:', err.message);
         if (!fromClipboard) this.showLocalizedError();
@@ -342,7 +339,7 @@ export class App {
       // Display error message if this is not a clipboard add.
       addServerView.close();
       this.showLocalizedError(new errors.ServerAlreadyAdded(
-          this.serverRepo.createServer('', serverConfig, this.eventQueue)));
+          this.serverRepo.createServer('', name, accessKey, this.eventQueue)));
     }
   }
 
@@ -544,7 +541,7 @@ export class App {
   }
 
   // Returns the server having serverId, throws if the server cannot be found.
-  private getServerByServerId(serverId: string): PersistentServer {
+  private getServerByServerId(serverId: string): OutlineServer {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       throw new Error(`could not find server with ID ${serverId}`);

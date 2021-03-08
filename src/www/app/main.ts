@@ -14,13 +14,12 @@
 
 import '../ui_components/app-root.js';
 
-import * as url from 'url';
-
 import {EventQueue} from '../model/events';
 
 import {App} from './app';
+import {shadowsocksConfigToAccessKey} from './config';
 import {onceEnvVars} from './environment';
-import {PersistentServerFactory, PersistentServerRepository} from './persistent_server';
+import {OutlineServerFactory, OutlineServerRepository} from './persistent_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 
@@ -33,7 +32,7 @@ document.addEventListener('WebComponentsReady', () => {
 
 // Used to delay loading the app until (translation) resources have been loaded. This can happen a
 // little later than WebComponentsReady.
-const oncePolymerIsReady = new Promise((resolve) => {
+const oncePolymerIsReady = new Promise<void>((resolve) => {
   document.addEventListener('app-localize-resources-loaded', () => {
     console.debug('received app-localize-resources-loaded event');
     resolve();
@@ -49,29 +48,23 @@ function getRootEl() {
 
 function createServerRepo(
     eventQueue: EventQueue, storage: Storage, deviceSupport: boolean,
-    serverFactory: PersistentServerFactory) {
-  const repo = new PersistentServerRepository(serverFactory, eventQueue, storage);
+    serverFactory: OutlineServerFactory) {
+  const repo = new OutlineServerRepository(serverFactory, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
-      repo.add({
-        name: 'Fake Working Server',
-        host: '127.0.0.1',
-        port: 123,
-        method: 'chacha20-ietf-poly1305'
-      });
-      repo.add({
-        name: 'Fake Broken Server',
-        host: '192.0.2.1',
-        port: 123,
-        method: 'chacha20-ietf-poly1305'
-      });
-      repo.add({
-        name: 'Fake Unreachable Server',
-        host: '10.0.0.24',
-        port: 123,
-        method: 'chacha20-ietf-poly1305'
-      });
+      repo.add(
+          shadowsocksConfigToAccessKey(
+              {host: '127.0.0.1', port: 123, method: 'chacha20-ietf-poly1305'}),
+          'Fake Working Server');
+      repo.add(
+          shadowsocksConfigToAccessKey(
+              {host: '192.0.2.1', port: 123, method: 'chacha20-ietf-poly1305'}),
+          'Fake Broken Server');
+      repo.add(
+          shadowsocksConfigToAccessKey(
+              {host: '10.0.0.24', port: 123, method: 'chacha20-ietf-poly1305'}),
+          'Fake Unreachable Server');
     }
   }
   return repo;
@@ -89,7 +82,7 @@ export function main(platform: OutlinePlatform) {
             const eventQueue = new EventQueue();
             const serverRepo = createServerRepo(
                 eventQueue, window.localStorage, platform.hasDeviceSupport(),
-                platform.getPersistentServerFactory());
+                platform.getServerFactory());
             const settings = new Settings();
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),

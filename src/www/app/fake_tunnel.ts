@@ -23,17 +23,17 @@ import {Tunnel, TunnelStatus} from './tunnel';
 export class FakeOutlineTunnel implements Tunnel {
   private running = false;
 
-  constructor(public config: ShadowsocksConfig, public id: string) {}
+  constructor(public readonly id: string, public readonly name: string) {}
 
   private playBroken() {
-    return this.config.name?.toLowerCase().includes('broken');
+    return this.name?.toLowerCase().includes('broken');
   }
 
   private playUnreachable() {
-    return this.config.name?.toLowerCase().includes('unreachable');
+    return this.name?.toLowerCase().includes('unreachable');
   }
 
-  async start(): Promise<void> {
+  async start(config: ShadowsocksConfig): Promise<void> {
     if (this.running) {
       return;
     }
@@ -58,7 +58,7 @@ export class FakeOutlineTunnel implements Tunnel {
     return this.running;
   }
 
-  async isReachable(): Promise<boolean> {
+  async isReachable(config: ShadowsocksConfig): Promise<boolean> {
     return !this.playUnreachable();
   }
 

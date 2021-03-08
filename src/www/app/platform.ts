@@ -15,12 +15,12 @@
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {PersistentServerFactory} from './persistent_server';
+import {OutlineServerFactory} from './persistent_server';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
 // Provides platform-specific dependencies.
-// TODO: Remove one of hasDeviceSupport and getPersistentServerFactory; they're almost the same
+// TODO: Remove one of hasDeviceSupport and getServerFactory; they're almost the same
 //       thing and currently hasDeviceSupport is only used to populate the server list when running
 //       in demo mode.
 export interface OutlinePlatform {
@@ -28,7 +28,7 @@ export interface OutlinePlatform {
   // assume it's running in demo mode, e.g. Electron on macOS.
   hasDeviceSupport(): boolean;
 
-  getPersistentServerFactory(): PersistentServerFactory;
+  getServerFactory(): OutlineServerFactory;
 
   getUrlInterceptor(): UrlInterceptor|undefined;
 

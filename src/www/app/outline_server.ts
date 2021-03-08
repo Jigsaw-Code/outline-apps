@@ -17,18 +17,21 @@ import * as events from '../model/events';
 import {Server} from '../model/server';
 import {ShadowsocksConfig} from '../model/shadowsocks';
 
-import {PersistentServer} from './persistent_server';
+import {accessKeyToShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
-export class OutlineServer implements PersistentServer {
+export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
   private static readonly SUPPORTED_CIPHERS =
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
+  private config: ShadowsocksConfig;
+
   constructor(
-      public readonly id: string, public config: ShadowsocksConfig, private tunnel: Tunnel,
-      private eventQueue: events.EventQueue) {
+      public readonly id: string, public readonly accessKey: string, public name: string,
+      private tunnel: Tunnel, private eventQueue: events.EventQueue) {
+    this.config = accessKeyToShadowsocksConfig(accessKey);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -49,21 +52,14 @@ export class OutlineServer implements PersistentServer {
     });
   }
 
-  get name() {
-    return this.config.name || this.config.host || '';
-  }
-
-  set name(newName: string) {
-    this.config.name = newName;
-  }
-
   get host() {
-    return this.config.host;
+    return `${this.config.host}:${this.config.port}`;
   }
 
   async connect() {
     try {
-      await this.tunnel.start();
+      this.config.name = this.name;
+      await this.tunnel.start(this.config);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -77,6 +73,7 @@ export class OutlineServer implements PersistentServer {
   async disconnect() {
     try {
       await this.tunnel.stop();
+      delete this.config;
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
@@ -88,10 +85,10 @@ export class OutlineServer implements PersistentServer {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.tunnel.isReachable();
+    return this.tunnel.isReachable(this.config);
   }
 
-  public static isServerCipherSupported(cipher?: string) {
+  static isServerCipherSupported(cipher?: string) {
     return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }
 }

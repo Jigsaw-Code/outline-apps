@@ -25,9 +25,8 @@ setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 
 import * as sentry from '@sentry/browser';
 
 import {EventQueue} from '../model/events';
-import {ServerConfig} from '../model/server';
 
-import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
@@ -74,12 +73,12 @@ class CordovaPlatform implements OutlinePlatform {
     return !CordovaPlatform.isBrowser();
   }
 
-  getPersistentServerFactory() {
-    return (serverId: string, config: ServerConfig, eventQueue: EventQueue) => {
+  getServerFactory() {
+    return (serverId: string, accessKey: string, serverName: string, eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, config,
-          this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(config, serverId) :
-                                    new FakeOutlineTunnel(config, serverId),
+          serverId, accessKey, serverName,
+          this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(serverId) :
+                                    new FakeOutlineTunnel(serverId, serverName),
           eventQueue);
     };
   }

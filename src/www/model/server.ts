@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksConfig} from './shadowsocks';
-
 // TODO: add guidelines for this file
 
 export interface Server {
   // A unique id that identifies this Server.
-  id: string;
+  readonly id: string;
 
   // The name of this server, as given by the user.
   name: string;
@@ -40,10 +38,8 @@ export interface Server {
   checkReachable(): Promise<boolean>;
 }
 
-export type ServerConfig = ShadowsocksConfig;
-
 export interface ServerRepository {
-  add(serverConfig: ServerConfig): void;
+  add(accessKey: string, serverName: string): void;
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];
