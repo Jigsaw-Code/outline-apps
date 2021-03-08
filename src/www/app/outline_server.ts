@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2021 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -251,7 +251,6 @@ function accessKeysMatch(a: string, b: string): boolean {
   };
   return removeFragment(a) === removeFragment(b);
 }
-
 
 // Performs a data schema migration from `ConfigByIdV0` to `ConfigById` on `storage`.
 export function migrateServerStorageToV1(storage: Storage) {

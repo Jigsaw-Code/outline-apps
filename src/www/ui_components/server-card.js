@@ -66,7 +66,6 @@ Polymer({
         flex: 1;
         padding: 16px 0 0 16px;
         font-size: 20px;
-        max-width: 66%;
         /* Make the sever name and host copyable */
         -webkit-user-select: text; /* Safari */
         -ms-user-select: text; /* IE/Edge */
