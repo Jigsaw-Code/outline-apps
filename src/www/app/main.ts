@@ -19,7 +19,7 @@ import {EventQueue} from '../model/events';
 import {App} from './app';
 import {shadowsocksConfigToAccessKey} from './config';
 import {onceEnvVars} from './environment';
-import {OutlineServerFactory, OutlineServerRepository} from './persistent_server';
+import {OutlineServerFactory, OutlineServerRepository} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 

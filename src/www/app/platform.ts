@@ -15,7 +15,7 @@
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {OutlineServerFactory} from './persistent_server';
+import {OutlineServerFactory} from './outline_server';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
