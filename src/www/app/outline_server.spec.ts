@@ -14,8 +14,8 @@
 
 import {InMemoryStorage} from '../infrastructure/memory_storage';
 
-import {ShadowsocksConfig, shadowsocksConfigToAccessKey} from './config';
-import {ConfigById, ConfigByIdV0, migrateServerStorageToV1, OutlineServerRepository} from './outline_server';
+import {ShadowsocksConfig} from './config';
+import {ConfigById, ConfigByIdV0, migrateServerStorageToV1, OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
 
 // TODO(alalama): unit tests for OutlineServer and OutlineServerRepository.
 

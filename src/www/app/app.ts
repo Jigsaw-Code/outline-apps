@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
-
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
@@ -303,42 +301,27 @@ export class App {
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard && accessKey in this.ignoredAccessKeys) {
-      return console.debug('Ignoring access key');
-    } else if (fromClipboard && addServerView.isAddingServer()) {
-      return console.debug('Already adding a server');
-    }
-    // Expect SHADOWSOCKS_URI.parse to throw on invalid access key; propagate any exception.
-    let shadowsocksConfig = null;
-    try {
-      shadowsocksConfig = SHADOWSOCKS_URI.parse(accessKey);
-    } catch (error) {
-      const message = !!error.message ? error.message : 'Failed to parse access key';
-      throw new errors.ServerUrlInvalid(message);
-    }
-    if (shadowsocksConfig.host.isIPv6) {
-      throw new errors.ServerIncompatible('Only IPv4 addresses are currently supported');
-    }
-    if (!OutlineServer.isServerCipherSupported(shadowsocksConfig.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(shadowsocksConfig.method.data || 'unknown');
-    }
-
-    const name = shadowsocksConfig.extra?.outline ?
-        this.localize('server-default-name-outline') :
-        shadowsocksConfig.tag?.data ?? this.localize('server-default-name');
-    const alreadyAddedServer = this.serverRepo.containsServer(accessKey);
-    if (!alreadyAddedServer) {
-      // Only prompt the user to add new servers.
-      try {
-        addServerView.openAddServerConfirmationSheet(accessKey, name);
-      } catch (err) {
-        console.error('Failed to open add sever confirmation sheet:', err.message);
-        if (!fromClipboard) this.showLocalizedError();
+    if (fromClipboard) {
+      if (accessKey in this.ignoredAccessKeys) {
+        return console.debug('Ignoring access key');
+      } else if (fromClipboard && addServerView.isAddingServer()) {
+        return console.debug('Already adding a server');
       }
-    } else if (!fromClipboard) {
-      // Display error message if this is not a clipboard add.
+    }
+    try {
+      const name = this.serverRepo.validateAccessKey(
+          accessKey, this.localize('server-default-name-outline'),
+          this.localize('server-default-name'));
+      addServerView.openAddServerConfirmationSheet(accessKey, name);
+    } catch (e) {
       addServerView.close();
-      this.showLocalizedError(new errors.ServerAlreadyAdded(alreadyAddedServer));
+      if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
+        // Display error message and don't propagate error if this is not a clipboard add.
+        this.showLocalizedError(e);
+        return;
+      }
+      // Propagate access key validation error.
+      throw e;
     }
   }
 
