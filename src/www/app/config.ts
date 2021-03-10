@@ -34,7 +34,6 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
-      name: config.tag?.data,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
@@ -43,5 +42,11 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
 export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
-  return SIP002_URI.stringify(makeConfig(config));
+  // Exclude the name and only encode proxying parameters.
+  return SIP002_URI.stringify(makeConfig({
+    host: config.host,
+    port: config.port,
+    method: config.method,
+    password: config.password,
+  }));
 }

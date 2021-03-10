@@ -326,7 +326,8 @@ export class App {
     const name = shadowsocksConfig.extra?.outline ?
         this.localize('server-default-name-outline') :
         shadowsocksConfig.tag?.data ?? this.localize('server-default-name');
-    if (!this.serverRepo.containsServer(accessKey)) {
+    const alreadyAddedServer = this.serverRepo.containsServer(accessKey);
+    if (!alreadyAddedServer) {
       // Only prompt the user to add new servers.
       try {
         addServerView.openAddServerConfirmationSheet(accessKey, name);
@@ -337,8 +338,7 @@ export class App {
     } else if (!fromClipboard) {
       // Display error message if this is not a clipboard add.
       addServerView.close();
-      this.showLocalizedError(new errors.ServerAlreadyAdded(
-          this.serverRepo.createServer('', name, accessKey, this.eventQueue)));
+      this.showLocalizedError(new errors.ServerAlreadyAdded(alreadyAddedServer));
     }
   }
 

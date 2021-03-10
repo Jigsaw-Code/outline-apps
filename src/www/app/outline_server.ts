@@ -27,18 +27,11 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS =
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
-  private config: ShadowsocksConfig;
-  // The message identifier corresponding to the server error state.
-  // Must match one of the localized app message.
-  readonly errorMessageId?: string;
+  errorMessageId?: string;
 
   constructor(
-      public readonly id: string, public readonly accessKey: string, public name: string,
+      public readonly id: string, public name: string, private readonly config: ShadowsocksConfig,
       private tunnel: Tunnel, private eventQueue: events.EventQueue) {
-    this.config = accessKeyToShadowsocksConfig(accessKey);
-    if (!OutlineServer.isServerCipherSupported(this.config.method)) {
-      this.errorMessageId = 'unsupported-cipher';
-    }
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -57,6 +50,10 @@ export class OutlineServer implements Server {
       }
       eventQueue.enqueue(statusEvent);
     });
+  }
+
+  get accessKey() {
+    return shadowsocksConfigToAccessKey(this.config);
   }
 
   get address() {
@@ -80,7 +77,6 @@ export class OutlineServer implements Server {
   async disconnect() {
     try {
       await this.tunnel.stop();
-      delete this.config;
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
@@ -117,7 +113,8 @@ export interface ConfigById {
 }
 
 export type OutlineServerFactory =
-    (id: string, accessKey: string, name: string, eventQueue: events.EventQueue) => OutlineServer;
+    (id: string, name: string, config: ShadowsocksConfig, eventQueue: events.EventQueue) =>
+        OutlineServer;
 
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
@@ -152,7 +149,8 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    const server = this.createServer(uuidv4(), accessKey, serverName, this.eventQueue);
+    const config = accessKeyToShadowsocksConfig(accessKey);
+    const server = this.createServer(uuidv4(), serverName, config, this.eventQueue);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -195,8 +193,8 @@ export class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  containsServer(accessKey: string): boolean {
-    return !!this.serverFromAccessKey(accessKey);
+  containsServer(accessKey: string): Server {
+    return this.serverFromAccessKey(accessKey);
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer|undefined {
@@ -235,8 +233,11 @@ export class OutlineServerRepository implements ServerRepository {
       if (configById.hasOwnProperty(serverId)) {
         const serverJson = configById[serverId];
         try {
-          const server =
-              this.createServer(serverId, serverJson.accessKey, serverJson.name, this.eventQueue);
+          const config = accessKeyToShadowsocksConfig(serverJson.accessKey);
+          const server = this.createServer(serverId, serverJson.name, config, this.eventQueue);
+          if (!OutlineServer.isServerCipherSupported(config.method)) {
+            server.errorMessageId = 'unsupported-cipher';
+          }
           this.serverById.set(serverId, server);
         } catch (e) {
           // Don't propagate so other stored servers can be created.
@@ -247,15 +248,17 @@ export class OutlineServerRepository implements ServerRepository {
   }
 }
 
+// Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
-  const removeFragment = (accessKey: string) => {
-    const fragmentIndex = accessKey.indexOf('#');
-    if (fragmentIndex === -1) {
-      return accessKey;
-    }
-    return accessKey.substring(0, fragmentIndex);
-  };
-  return removeFragment(a) === removeFragment(b);
+  try {
+    const l = accessKeyToShadowsocksConfig(a);
+    const r = accessKeyToShadowsocksConfig(b);
+    return l.host === r.host && l.port === r.port && l.password === r.password &&
+        l.method === r.method;
+  } catch (e) {
+    console.error(`failed to parse access key for comparison`);
+  }
+  return false;
 }
 
 // Performs a data schema migration from `ConfigByIdV0` to `ConfigById` on `storage`.

@@ -22,6 +22,7 @@ import * as os from 'os';
 import {EventQueue} from '../model/events';
 
 import {AbstractClipboard} from './clipboard';
+import {ShadowsocksConfig} from './config';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
@@ -92,9 +93,10 @@ main({
     return isOsSupported;
   },
   getServerFactory: () => {
-    return (serverId: string, accessKey: string, serverName: string, eventQueue: EventQueue) => {
+    return (serverId: string, serverName: string, config: ShadowsocksConfig,
+            eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, accessKey, serverName,
+          serverId, serverName, config,
           isOsSupported ? new ElectronOutlineTunnel(serverId) :
                           new FakeOutlineTunnel(serverId, serverName),
           eventQueue);

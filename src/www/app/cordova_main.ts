@@ -27,6 +27,7 @@ import * as sentry from '@sentry/browser';
 import {EventQueue} from '../model/events';
 
 import {AbstractClipboard} from './clipboard';
+import {ShadowsocksConfig} from './config';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
@@ -74,9 +75,10 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getServerFactory() {
-    return (serverId: string, accessKey: string, serverName: string, eventQueue: EventQueue) => {
+    return (serverId: string, serverName: string, config: ShadowsocksConfig,
+            eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, accessKey, serverName,
+          serverId, serverName, config,
           this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(serverId) :
                                     new FakeOutlineTunnel(serverId, serverName),
           eventQueue);
