@@ -210,9 +210,9 @@ Polymer({
   },
 
   openAddServerConfirmationSheet: function(accessKey, serverName) {
+    this.$.addServerSheet.close();
     this.accessKey = accessKey;
     this.serverName = serverName;
-    this.$.addServerSheet.close();
     this.$.serverDetectedSheet.open();
   },
 
@@ -263,8 +263,10 @@ Polymer({
       window.scrollTo(0, document.body.scrollHeight);
       document.body.addEventListener('touchmove', this._disallowScroll, {passive: false});
     } else {
-      // Restore scrolling.
+      // Restore scrolling and reset state.
       document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
+      this.accessKey = '';
+      this.serverName = '';
     }
   },
 
