@@ -59,7 +59,7 @@ export class OutlineServer implements Server {
     });
   }
 
-  get host() {
+  get address() {
     return `${this.config.host}:${this.config.port}`;
   }
 

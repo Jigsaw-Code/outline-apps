@@ -41,7 +41,7 @@ Polymer({
       }
     </style>
     <template is="dom-repeat" items="[[servers]]">
-      <server-card server-id="[[item.id]]" server-name="[[item.name]]" server-host="[[item.host]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
+      <server-card server-id="[[item.id]]" server-name="[[item.name]]" server-address="[[item.address]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
     </template>
 `,
 
