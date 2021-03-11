@@ -47,9 +47,8 @@ function getRootEl() {
 }
 
 function createServerRepo(
-    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean,
-    tunnelFactory: TunnelFactory) {
-  const repo = new OutlineServerRepository(tunnelFactory, eventQueue, storage);
+    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean, net: NativeNetworking) {
+  const repo = new OutlineServerRepository(net, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
@@ -82,7 +81,7 @@ export function main(platform: OutlinePlatform) {
             const eventQueue = new EventQueue();
             const serverRepo = createServerRepo(
                 eventQueue, window.localStorage, platform.hasDeviceSupport(),
-                platform.getTunnelFactory());
+                platform.getNativeNetworking());
             const settings = new Settings();
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),

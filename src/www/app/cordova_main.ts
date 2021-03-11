@@ -27,8 +27,8 @@ import * as sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeOutlineTunnel} from './fake_tunnel';
 import {main} from './main';
+import {FakeNativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
@@ -60,6 +60,16 @@ export class CordovaErrorReporter extends SentryErrorReporter {
   }
 }
 
+class CordovaNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return cordova.plugins.outline.net.isServerReachable(hostname, port);
+  }
+
+  newVpnTunnel(id: string) {
+    return new cordova.plugins.outline.Tunnel(id);
+  }
+}
+
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
   private static isBrowser() {
@@ -70,11 +80,8 @@ class CordovaPlatform implements OutlinePlatform {
     return !CordovaPlatform.isBrowser();
   }
 
-  getTunnelFactory() {
-    return (id: string) => {
-      return this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(id) :
-                                       new FakeOutlineTunnel(id);
-    };
+  getNativeNetworking() {
+    return this.hasDeviceSupport() ? new CordovaNativeNetworking() : new FakeNativeNetworking();
   }
 
   getUrlInterceptor() {

@@ -40,10 +40,6 @@ export interface Tunnel {
   // Returns whether the tunnel instance is active.
   isRunning(): Promise<boolean>;
 
-  // Returns whether the proxy server is reachable by attempting to open a TCP socket
-  // to the IP and port specified in `config`.
-  isReachable(config: ShadowsocksConfig): Promise<boolean>;
-
   // Sets a listener, to be called when the tunnel status changes.
   onStatusChange(listener: (status: TunnelStatus) => void): void;
 }

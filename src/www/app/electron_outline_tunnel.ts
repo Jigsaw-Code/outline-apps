@@ -75,10 +75,6 @@ export class ElectronOutlineTunnel implements Tunnel {
     return this.running;
   }
 
-  isReachable(config: ShadowsocksConfig): Promise<boolean> {
-    return promiseIpc.send('is-reachable', config);
-  }
-
   onStatusChange(listener: (status: TunnelStatus) => void): void {
     this.statusChangeListener = listener;
   }

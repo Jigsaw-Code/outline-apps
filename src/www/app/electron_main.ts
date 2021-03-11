@@ -17,8 +17,8 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as sentry from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
+import * as promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
-
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
@@ -26,6 +26,7 @@ import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
+import {FakeNativeNetworking, NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -85,14 +86,22 @@ class ElectronErrorReporter implements OutlineErrorReporter {
   }
 }
 
+class ElectronNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return promiseIpc.send('is-server-reachable', {hostname, port});
+  }
+
+  newVpnTunnel(id: string): Tunnel {
+    return new ElectronOutlineTunnel(id);
+  }
+}
+
 main({
   hasDeviceSupport: () => {
     return isOsSupported;
   },
-  getTunnelFactory: () => {
-    return (serverId: string) => {
-      return isOsSupported ? new ElectronOutlineTunnel(serverId) : new FakeOutlineTunnel(serverId);
-    };
+  getNativeNetworking: () => {
+    return isOsSupported ? new FakeNativeNetworking() : new ElectronNativeNetworking();
   },
   getUrlInterceptor: () => {
     return interceptor;

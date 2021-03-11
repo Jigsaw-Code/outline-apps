@@ -17,6 +17,7 @@
 declare type Tunnel = import('../../www/app/tunnel').Tunnel;
 declare type TunnelStatus = import('../../www/app/tunnel').TunnelStatus;
 declare type ShadowsocksConfig = import('../../www/app/config').ShadowsocksConfig;
+declare type NativeNetworking = import('../../www/app/net').NativeNetworking;
 
 declare namespace cordova.plugins.outline {
   const log: {
@@ -27,6 +28,10 @@ declare namespace cordova.plugins.outline {
     // framework.
     // Associates the report to the provided unique identifier.
     send(uuid: string): Promise<void>;
+  };
+
+  const net: {
+    isServerReachable(hostname: string, port: number): Promise<boolean>;
   };
 
   // Quits the application. Only supported in macOS.
@@ -43,8 +48,6 @@ declare namespace cordova.plugins.outline {
     stop(): Promise<void>;
 
     isRunning(): Promise<boolean>;
-
-    isReachable(config: ShadowsocksConfig): Promise<boolean>;
 
     onStatusChange(listener: (status: TunnelStatus) => void): void;
   }

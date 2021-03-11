@@ -29,10 +29,12 @@ export class OutlineServer implements Server {
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
+  private tunnel: Tunnel;
 
   constructor(
       public readonly id: string, public name: string, private readonly config: ShadowsocksConfig,
-      private tunnel: Tunnel, private eventQueue: events.EventQueue) {
+      private net: NativeNetworking, private eventQueue: events.EventQueue) {
+    this.tunnel = this.net.newVpnTunnel(id);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -89,7 +91,7 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.tunnel.isReachable(this.config);
+    return this.net.isServerReachable(this.config.host, this.config.port);
   }
 
   static isServerCipherSupported(cipher?: string) {
@@ -122,7 +124,7 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer|null = null;
 
   constructor(
-      public readonly createTunnel: TunnelFactory, private eventQueue: events.EventQueue,
+      public readonly net: NativeNetworking, private eventQueue: events.EventQueue,
       private storage: Storage) {
     try {
       migrateServerStorageToV1(this.storage);
@@ -150,8 +152,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   private createServer(serverId: string, serverName: string, accessKey: string) {
     const config = accessKeyToShadowsocksConfig(accessKey);
-    const tunnel = this.createTunnel(serverId);
-    const server = new OutlineServer(serverId, serverName, config, tunnel, this.eventQueue);
+    const server = new OutlineServer(serverId, serverName, config, this.net, this.eventQueue);
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {

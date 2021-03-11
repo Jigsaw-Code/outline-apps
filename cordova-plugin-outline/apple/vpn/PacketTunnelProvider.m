@@ -24,7 +24,7 @@ NSString *const kActionStart = @"start";
 NSString *const kActionRestart = @"restart";
 NSString *const kActionStop = @"stop";
 NSString *const kActionGetTunnelId = @"getTunnelId";
-NSString *const kActionIsReachable = @"isReachable";
+NSString *const kActionIsServerReachable = @"isServerReachable";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyTunnelId = @"tunnelId";
 NSString *const kMessageKeyConfig = @"config";
@@ -228,7 +228,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                             error:nil];
     }
     completionHandler(response);
-  } else if ([kActionIsReachable isEqualToString:action]) {
+  } else if ([kActionIsServerReachable isEqualToString:action]) {
     NSString *host = message[kMessageKeyHost];
     NSNumber *port = message[kMessageKeyPort];
     if (!host || !port) {

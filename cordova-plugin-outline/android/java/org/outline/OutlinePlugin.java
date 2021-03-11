@@ -51,7 +51,7 @@ public class OutlinePlugin extends CordovaPlugin {
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
-    IS_REACHABLE("isReachable"),
+    IS_REACHABLE("isServerReachable"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -248,12 +248,12 @@ public class OutlinePlugin extends CordovaPlugin {
           final String tunnelId = args.getString(0);
           boolean isActive = isTunnelActive(tunnelId);
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
-        } else if (Action.IS_REACHABLE.is(action)) {
-          boolean isReachable =
-              ShadowsocksConnectivity.isServerReachable(args.getString(1), args.getInt(2));
-          callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
 
           // Static actions
+        } else if (Action.IS_REACHABLE.is(action)) {
+          boolean isReachable =
+              ShadowsocksConnectivity.isServerReachable(args.getString(0), args.getInt(1));
+          callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
           // Treat failures to initialize error reporting as unexpected by propagating exceptions.
