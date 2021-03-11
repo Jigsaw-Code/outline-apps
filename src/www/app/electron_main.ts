@@ -19,16 +19,13 @@ import * as sentry from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';
 
-import {EventQueue} from '../model/events';
 
 import {AbstractClipboard} from './clipboard';
-import {ShadowsocksConfig} from './config';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
-import {OutlineServer} from './outline_server';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -92,14 +89,9 @@ main({
   hasDeviceSupport: () => {
     return isOsSupported;
   },
-  getServerFactory: () => {
-    return (serverId: string, serverName: string, config: ShadowsocksConfig,
-            eventQueue: EventQueue) => {
-      return new OutlineServer(
-          serverId, serverName, config,
-          isOsSupported ? new ElectronOutlineTunnel(serverId) :
-                          new FakeOutlineTunnel(serverId, serverName),
-          eventQueue);
+  getTunnelFactory: () => {
+    return (serverId: string) => {
+      return isOsSupported ? new ElectronOutlineTunnel(serverId) : new FakeOutlineTunnel(serverId);
     };
   },
   getUrlInterceptor: () => {
