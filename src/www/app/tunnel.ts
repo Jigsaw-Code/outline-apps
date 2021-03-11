@@ -20,8 +20,6 @@ export const enum TunnelStatus {
   RECONNECTING
 }
 
-export type TunnelFactory = (id: string) => Tunnel;
-
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
 // functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
 export interface Tunnel {

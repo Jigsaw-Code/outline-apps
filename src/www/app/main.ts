@@ -21,7 +21,6 @@ import {onceEnvVars} from './environment';
 import {OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {TunnelFactory} from './tunnel';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;

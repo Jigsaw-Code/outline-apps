@@ -20,7 +20,7 @@ import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
 
 import {ShadowsocksConfig} from './config';
-import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
+import {Tunnel, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
