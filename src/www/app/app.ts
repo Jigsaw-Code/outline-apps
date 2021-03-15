@@ -524,7 +524,7 @@ export class App {
   }
 
   // Returns the server's name, if present, or a default server name.
-  private getServerName(server: Server) {
+  private getServerName(server: Server): string {
     if (server.name) {
       return server.name;
     }
@@ -534,7 +534,7 @@ export class App {
   }
 
   // Returns the server having serverId, throws if the server cannot be found.
-  private getServerByServerId(serverId: string): OutlineServer {
+  private getServerByServerId(serverId: string): Server {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       throw new Error(`could not find server with ID ${serverId}`);

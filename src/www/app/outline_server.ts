@@ -57,7 +57,7 @@ export class OutlineServer implements Server {
     return this.config.name;
   }
 
-  set name(newName) {
+  set name(newName: string) {
     this.config.name = newName;
   }
 
