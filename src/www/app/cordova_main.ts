@@ -75,12 +75,11 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getServerFactory() {
-    return (serverId: string, serverName: string, config: ShadowsocksConfig,
-            eventQueue: EventQueue) => {
+    return (serverId: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, serverName, config,
+          serverId, config,
           this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(serverId) :
-                                    new FakeOutlineTunnel(serverId, serverName),
+                                    new FakeOutlineTunnel(serverId),
           eventQueue);
     };
   }

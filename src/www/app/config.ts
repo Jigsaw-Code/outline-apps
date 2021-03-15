@@ -19,4 +19,5 @@ export interface ShadowsocksConfig {
   password?: string;
   method?: string;
   name?: string;
+  extra?: {[key: string]: string};
 }
