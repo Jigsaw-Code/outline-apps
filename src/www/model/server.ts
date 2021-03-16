@@ -39,7 +39,7 @@ export interface Server {
 }
 
 export interface ServerRepository {
-  add(accessKey: string, serverName: string): void;
+  add(accessKey: string): void;
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];

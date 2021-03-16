@@ -41,7 +41,7 @@ Polymer({
       }
     </style>
     <template is="dom-repeat" items="[[servers]]">
-      <server-card server-id="[[item.id]]" server-name="[[item.name]]" server-address="[[item.address]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
+      <server-card server-id="[[item.id]]" server-name="[[_computeServerName(item.name, item.isOutlineServer)]]" server-address="[[item.address]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
     </template>
 `,
 
@@ -71,5 +71,13 @@ Polymer({
 
   _computeHasSingleServer: function(servers) {
     return !!servers && servers.length === 1;
+  },
+
+  _computeServerName: function(serverName, isOutlineServer) {
+    if (serverName) {
+      return serverName;
+    }
+    return isOutlineServer ? this.localize('server-default-name-outline') :
+                             this.localize('server-default-name');
   }
 });

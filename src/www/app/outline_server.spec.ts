@@ -15,7 +15,7 @@
 import {InMemoryStorage} from '../infrastructure/memory_storage';
 
 import {ShadowsocksConfig} from './config';
-import {ConfigById, ConfigByIdV0, migrateServerStorageToV1, OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
+import {AccessKeyById, ConfigById, migrateServerStorageToV1, OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
 
 // TODO(alalama): unit tests for OutlineServer and OutlineServerRepository.
 
@@ -35,52 +35,47 @@ describe('migrateServerStorageToV1', () => {
       method: 'chacha20-ietf-poly1305',
       name: 'fake server 1'
     };
-    const configByIdV0: ConfigByIdV0 = {'server-0': config0, 'server-1': config1};
-    const configByIdV0Json = JSON.stringify(configByIdV0);
+    const configById: ConfigById = {'server-0': config0, 'server-1': config1};
+    const configByIdJson = JSON.stringify(configById);
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, configByIdV0Json]]));
+        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, configByIdJson]]));
 
     migrateServerStorageToV1(storage);
 
-    const configByIdV1Json = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
-    expect(configByIdV1Json).toBeDefined();
-    const configByIdV1: ConfigById = JSON.parse(configByIdV1Json || '');
-    expect(configByIdV1['server-0'].accessKey).toEqual(shadowsocksConfigToAccessKey(config0));
-    expect(configByIdV1['server-0'].name).toEqual(config0.name);
-    expect(configByIdV1['server-1'].accessKey).toEqual(shadowsocksConfigToAccessKey(config1));
-    expect(configByIdV1['server-1'].name).toEqual(config1.name);
+    const accessKeyByIdJson = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
+    expect(accessKeyByIdJson).toBeDefined();
+    const accessKeyById: AccessKeyById = JSON.parse(accessKeyByIdJson || '');
+    expect(accessKeyById['server-0']).toEqual(shadowsocksConfigToAccessKey(config0));
+    expect(accessKeyById['server-1']).toEqual(shadowsocksConfigToAccessKey(config1));
   });
 
   it('loads migrated V1 servers', () => {
-    const serverJson0 = {
-      accessKey: shadowsocksConfigToAccessKey({
-        host: '127.0.0.1',
-        port: 1080,
-        password: 'test',
-        method: 'chacha20-ietf-poly1305',
-      }),
-      name: 'fake server 0',
-    };
-    const serverJson1 = {
-      accessKey: shadowsocksConfigToAccessKey({
-        host: '127.0.0.1',
-        port: 1089,
-        password: 'test',
-        method: 'chacha20-ietf-poly1305',
-      }),
-      name: 'fake server 1',
-    };
+    const accessKey0 = shadowsocksConfigToAccessKey({
+      host: '127.0.0.1',
+      port: 1080,
+      password: 'test',
+      method: 'chacha20-ietf-poly1305',
+      name: 'fake server',
+    });
+    const accessKey1 = shadowsocksConfigToAccessKey({
+      host: '127.0.0.1',
+      port: 1089,
+      password: 'test',
+      method: 'chacha20-ietf-poly1305',
+      name: 'fake outline server',
+      extra: {outline: '1'},
+    });
 
-    const configByIdV1: ConfigById = {'server-0': serverJson0, 'server-1': serverJson1};
-    const configByIdV0Json = JSON.stringify(configByIdV1);
+    const accessKeyById: AccessKeyById = {'server-0': accessKey0, 'server-1': accessKey1};
+    const accessKeyByIdJson = JSON.stringify(accessKeyById);
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY, configByIdV0Json]]));
+        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY, accessKeyByIdJson]]));
 
     migrateServerStorageToV1(storage);
 
-    const configByIdV1Json = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
-    expect(configByIdV1Json).toBeDefined();
-    const configByIdV1Storage: ConfigById = JSON.parse(configByIdV1Json || '');
-    expect(configByIdV1Storage).toEqual(configByIdV1);
+    const accessKeyByIdStorageJson = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
+    expect(accessKeyByIdStorageJson).toBeDefined();
+    const accessKeyByIdStorage: AccessKeyById = JSON.parse(accessKeyByIdStorageJson || '');
+    expect(accessKeyByIdStorage).toEqual(accessKeyById);
   });
 });

@@ -25,11 +25,11 @@ export class FakeOutlineTunnel implements Tunnel {
 
   constructor(public readonly id: string) {}
 
-  private playBroken(name: string) {
+  private playBroken(name?: string) {
     return name?.toLowerCase().includes('broken');
   }
 
-  private playUnreachable(name: string) {
+  private playUnreachable(name?: string) {
     return name?.toLowerCase().includes('unreachable');
   }
 

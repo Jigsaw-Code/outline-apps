@@ -164,7 +164,7 @@ export class App {
       messageKey = 'outline-plugin-error-unsupported-routing-table';
     } else if (e instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
-      messageParams = ['serverName', e.server.name];
+      messageParams = ['serverName', this.getServerName(e.server)];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
     } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
@@ -279,7 +279,7 @@ export class App {
 
   private requestAddServer(event: CustomEvent) {
     try {
-      this.serverRepo.add(event.detail.accessKey, event.detail.serverName);
+      this.serverRepo.add(event.detail.accessKey);
     } catch (err) {
       this.changeToDefaultPage();
       this.showLocalizedError(err);
@@ -309,10 +309,8 @@ export class App {
       }
     }
     try {
-      const name = this.serverRepo.validateAccessKey(
-          accessKey, this.localize('server-default-name-outline'),
-          this.localize('server-default-name'));
-      addServerView.openAddServerConfirmationSheet(accessKey, name);
+      this.serverRepo.validateAccessKey(accessKey);
+      addServerView.openAddServerConfirmationSheet(accessKey);
     } catch (e) {
       addServerView.close();
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
@@ -364,7 +362,8 @@ export class App {
       await server.connect();
       card.state = 'CONNECTED';
       console.log(`connected to server ${serverId}`);
-      this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
+      this.rootEl.showToast(
+          this.localize('server-connected', 'serverName', this.getServerName(server)));
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       card.state = 'DISCONNECTED';
@@ -408,7 +407,8 @@ export class App {
       await server.disconnect();
       card.state = 'DISCONNECTED';
       console.log(`disconnected from server ${serverId}`);
-      this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
+      this.rootEl.showToast(
+          this.localize('server-disconnected', 'serverName', this.getServerName(server)));
     } catch (e) {
       card.state = 'CONNECTED';
       this.showLocalizedError(e);
@@ -443,7 +443,7 @@ export class App {
     this.syncServersToUI();
     this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
-    this.rootEl.showToast(this.localize('server-added', 'serverName', server.name));
+    this.rootEl.showToast(this.localize('server-added', 'serverName', this.getServerName(server)));
   }
 
   private showServerForgotten(event: events.ServerForgotten) {
@@ -451,7 +451,7 @@ export class App {
     console.debug('Server forgotten');
     this.syncServersToUI();
     this.rootEl.showToast(
-        this.localize('server-forgotten', 'serverName', server.name), 10000,
+        this.localize('server-forgotten', 'serverName', this.getServerName(server)), 10000,
         this.localize('undo-button-label'), () => {
           this.serverRepo.undoForget(server.id);
         });
@@ -460,7 +460,8 @@ export class App {
   private showServerForgetUndone(event: events.ServerForgetUndone) {
     this.syncServersToUI();
     const server = event.server;
-    this.rootEl.showToast(this.localize('server-forgotten-undo', 'serverName', server.name));
+    this.rootEl.showToast(
+        this.localize('server-forgotten-undo', 'serverName', this.getServerName(server)));
   }
 
   private showServerRenamed(event: events.ServerForgotten) {
@@ -522,8 +523,18 @@ export class App {
     this.rootEl.changePage(this.rootEl.DEFAULT_PAGE);
   }
 
+  // Returns the server's name, if present, or a default server name.
+  private getServerName(server: Server): string {
+    if (server.name) {
+      return server.name;
+    }
+    return (server as OutlineServer).isOutlineServer ?
+        this.localize('server-default-name-outline') :
+        this.localize('server-default-name');
+  }
+
   // Returns the server having serverId, throws if the server cannot be found.
-  private getServerByServerId(serverId: string): OutlineServer {
+  private getServerByServerId(serverId: string): Server {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       throw new Error(`could not find server with ID ${serverId}`);

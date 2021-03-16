@@ -188,7 +188,6 @@ Polymer({
 
   properties: {
     localize: Function,
-    serverName: String,
     accessKey: {
       type: String,
       observer: '_accessKeyChanged',
@@ -209,10 +208,9 @@ Polymer({
     this.$.addServerSheet.open();
   },
 
-  openAddServerConfirmationSheet: function(accessKey, serverName) {
+  openAddServerConfirmationSheet: function(accessKey) {
     this.$.addServerSheet.close();
     this.accessKey = accessKey;
-    this.serverName = serverName;
     this.$.serverDetectedSheet.open();
   },
 
@@ -244,7 +242,7 @@ Polymer({
   },
 
   _addDetectedServer: function() {
-    this.fire('AddServerRequested', {accessKey: this.accessKey, serverName: this.serverName});
+    this.fire('AddServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
@@ -266,7 +264,6 @@ Polymer({
       // Restore scrolling and reset state.
       document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
       this.accessKey = '';
-      this.serverName = '';
     }
   },
 
