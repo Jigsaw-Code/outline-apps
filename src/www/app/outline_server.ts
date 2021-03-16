@@ -75,7 +75,6 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      this.config.name = this.name;
       await this.tunnel.start(this.config);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
