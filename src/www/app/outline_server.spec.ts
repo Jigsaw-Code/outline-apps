@@ -13,69 +13,83 @@
 // limitations under the License.
 
 import {InMemoryStorage} from '../infrastructure/memory_storage';
+import {EventQueue} from '../model/events';
 
 import {ShadowsocksConfig} from './config';
-import {AccessKeyById, ConfigById, migrateServerStorageToV1, OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
+import {FakeOutlineTunnel} from './fake_tunnel';
+import {OutlineServer, OutlineServerFactory, OutlineServerRepository, ServersStorageV0, ServersStorageV1, shadowsocksConfigToAccessKey} from './outline_server';
 
 // TODO(alalama): unit tests for OutlineServer and OutlineServerRepository.
 
-describe('migrateServerStorageToV1', () => {
-  it('migrates storage to V1', () => {
-    const config0: ShadowsocksConfig = {
-      host: '127.0.0.1',
-      port: 1080,
-      password: 'test',
-      method: 'chacha20-ietf-poly1305',
-      name: 'fake server 0'
-    };
-    const config1: ShadowsocksConfig = {
-      host: '127.0.0.1',
-      port: 1089,
-      password: 'test',
-      method: 'chacha20-ietf-poly1305',
-      name: 'fake server 1'
-    };
-    const configById: ConfigById = {'server-0': config0, 'server-1': config1};
-    const configByIdJson = JSON.stringify(configById);
+describe('OutlineServerRepository', () => {
+  const CONFIG_0: ShadowsocksConfig = {
+    host: '127.0.0.1',
+    port: 1080,
+    password: 'test',
+    method: 'chacha20-ietf-poly1305',
+    name: 'fake server 0'
+  };
+
+  const CONFIG_1: ShadowsocksConfig = {
+    host: '10.0.0.1',
+    port: 1089,
+    password: 'test',
+    method: 'chacha20-ietf-poly1305',
+    name: 'fake server 1'
+  };
+
+  it('loads V0 servers', () => {
+    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, configByIdJson]]));
-
-    migrateServerStorageToV1(storage);
-
-    const accessKeyByIdJson = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
-    expect(accessKeyByIdJson).toBeDefined();
-    const accessKeyById: AccessKeyById = JSON.parse(accessKeyByIdJson || '');
-    expect(accessKeyById['server-0']).toEqual(shadowsocksConfigToAccessKey(config0));
-    expect(accessKeyById['server-1']).toEqual(shadowsocksConfigToAccessKey(config1));
+        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]]));
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
+    const server0 = repo.getById('server-0');
+    expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
+    expect(server0?.name).toEqual(CONFIG_0.name);
+    const server1 = repo.getById('server-1');
+    expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
+    expect(server1?.name).toEqual(CONFIG_1.name);
   });
 
-  it('loads migrated V1 servers', () => {
-    const accessKey0 = shadowsocksConfigToAccessKey({
-      host: '127.0.0.1',
-      port: 1080,
-      password: 'test',
-      method: 'chacha20-ietf-poly1305',
-      name: 'fake server',
-    });
-    const accessKey1 = shadowsocksConfigToAccessKey({
-      host: '127.0.0.1',
-      port: 1089,
-      password: 'test',
-      method: 'chacha20-ietf-poly1305',
-      name: 'fake outline server',
-      extra: {outline: '1'},
-    });
+  it('loads V1 servers', () => {
+    // Store V0 servers with different ids.
+    const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0, 'v0-server-1': CONFIG_1};
+    const storageV1: ServersStorageV1 = [
+      {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
+      {id: 'server-1', name: 'fake server 1', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)}
+    ];
+    const storage = new InMemoryStorage(new Map([
+      [OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)],
+      [OutlineServerRepository.SERVERS_STORAGE_KEY, JSON.stringify(storageV1)]
+    ]));
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
+    const server0 = repo.getById('server-0');
+    expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
+    expect(server0?.name).toEqual(CONFIG_0.name);
+    const server1 = repo.getById('server-1');
+    expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
+    expect(server1?.name).toEqual(CONFIG_1.name);
+  });
 
-    const accessKeyById: AccessKeyById = {'server-0': accessKey0, 'server-1': accessKey1};
-    const accessKeyByIdJson = JSON.stringify(accessKeyById);
+  it('stores V1 servers', () => {
+    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY, accessKeyByIdJson]]));
+        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]]));
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
+    // Trigger storage change.
+    repo.forget('server-1');
+    repo.undoForget('server-1');
 
-    migrateServerStorageToV1(storage);
-
-    const accessKeyByIdStorageJson = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
-    expect(accessKeyByIdStorageJson).toBeDefined();
-    const accessKeyByIdStorage: AccessKeyById = JSON.parse(accessKeyByIdStorageJson || '');
-    expect(accessKeyByIdStorage).toEqual(accessKeyById);
+    const serversJson = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    expect(serversJson).toEqual([
+      {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
+      {id: 'server-1', name: 'fake server 1', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)},
+    ]);
   });
 });
+
+function getFakeServerFactory(): OutlineServerFactory {
+  return (id: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
+    return new OutlineServer(id, config, new FakeOutlineTunnel(id), eventQueue);
+  };
+}

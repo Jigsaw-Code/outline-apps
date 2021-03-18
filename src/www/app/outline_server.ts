@@ -1,4 +1,4 @@
-// Copyright 2020 The Outline Authors
+// Copyright 2018 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,13 +109,17 @@ export class OutlineServer implements Server {
 }
 
 // DEPRECATED: V0 server persistence format.
-export interface ConfigById {
+export interface ServersStorageV0 {
   [serverId: string]: ShadowsocksConfig;
 }
 
 // V1 server persistence format.
-export interface AccessKeyById {
-  [serverId: string]: string;
+export type ServersStorageV1 = OutlineServerJson[];
+
+interface OutlineServerJson {
+  readonly id: string;
+  readonly accessKey: string;
+  readonly name: string;
 }
 
 export type OutlineServerFactory =
@@ -132,12 +136,6 @@ export class OutlineServerRepository implements ServerRepository {
   constructor(
       public readonly createServer: OutlineServerFactory, private eventQueue: events.EventQueue,
       private storage: Storage) {
-    try {
-      migrateServerStorageToV1(this.storage);
-    } catch (e) {
-      console.error(`failed to migrate storage to V1: ${e}`);
-      return;
-    }
     this.loadServers();
   }
 
@@ -223,44 +221,87 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private storeServers() {
-    const configByAccessKey: AccessKeyById = {};
-    for (const [serverId, server] of this.serverById) {
-      configByAccessKey[serverId] = server.accessKey;
+    const servers: ServersStorageV1 = [];
+    for (const server of this.serverById.values()) {
+      servers.push({
+        id: server.id,
+        accessKey: server.accessKey,
+        name: server.name,
+      });
     }
-    const json = JSON.stringify(configByAccessKey);
+    const json = JSON.stringify(servers);
     this.storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, json);
   }
 
   // Loads servers from storage, raising an error if there is any problem loading.
   private loadServers() {
-    this.serverById = new Map<string, OutlineServer>();
-    const serversJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
-    if (!serversJson) {
-      console.debug(`no servers found in storage`);
+    if (this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
+      console.debug('server storage migrated to V1');
+      this.loadServersV1();
       return;
     }
-    let configByAccessKey: AccessKeyById = {};
-    try {
-      configByAccessKey = JSON.parse(serversJson);
-    } catch (e) {
-      throw new Error(`could not parse saved servers: ${e.message}`);
+    this.loadServersV0();
+  }
+
+  private loadServersV0() {
+    this.serverById = new Map<string, OutlineServer>();
+    const serversJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY_V0);
+    if (!serversJson) {
+      console.debug(`no V0 servers found in storage`);
+      return;
     }
-    for (const serverId in configByAccessKey) {
-      if (configByAccessKey.hasOwnProperty(serverId)) {
-        const accessKey = configByAccessKey[serverId];
+    let configById: ServersStorageV0 = {};
+    try {
+      configById = JSON.parse(serversJson);
+    } catch (e) {
+      throw new Error(`could not parse saved V0 servers: ${e.message}`);
+    }
+    for (const serverId in configById) {
+      if (configById.hasOwnProperty(serverId)) {
+        const config = configById[serverId];
         try {
-          const config = accessKeyToShadowsocksConfig(accessKey);
-          const server = this.createServer(serverId, config, this.eventQueue);
-          if (!OutlineServer.isServerCipherSupported(config.method)) {
-            server.errorMessageId = 'unsupported-cipher';
-          }
-          this.serverById.set(serverId, server);
+          this.loadServer(serverId, config);
         } catch (e) {
           // Don't propagate so other stored servers can be created.
           console.error(e);
         }
       }
     }
+  }
+
+  private loadServersV1() {
+    this.serverById = new Map<string, OutlineServer>();
+    const serversStorageJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
+    if (!serversStorageJson) {
+      console.debug(`no servers found in storage`);
+      return;
+    }
+    let serversJson: ServersStorageV1 = [];
+    try {
+      serversJson = JSON.parse(serversStorageJson);
+    } catch (e) {
+      throw new Error(`could not parse saved servers: ${e.message}`);
+    }
+    for (const serverJson of serversJson) {
+      try {
+        const config = accessKeyToShadowsocksConfig(serverJson.accessKey);
+        if (serverJson.name) {
+          config.name = serverJson.name;
+        }
+        this.loadServer(serverJson.id, config);
+      } catch (e) {
+        // Don't propagate so other stored servers can be created.
+        console.error(e);
+      }
+    }
+  }
+
+  private loadServer(serverId: string, config: ShadowsocksConfig) {
+    const server = this.createServer(serverId, config, this.eventQueue);
+    if (!OutlineServer.isServerCipherSupported(config.method)) {
+      server.errorMessageId = 'unsupported-cipher';
+    }
+    this.serverById.set(serverId, server);
   }
 }
 
@@ -309,32 +350,4 @@ function accessKeysMatch(a: string, b: string): boolean {
     console.error(`failed to parse access key for comparison`);
   }
   return false;
-}
-
-// Performs a data schema migration from `ConfigById` to `AccessKeyById` on `storage`.
-export function migrateServerStorageToV1(storage: Storage) {
-  if (storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
-    console.debug('server storage already migrated to V1');
-    return;
-  }
-  const serversJsonV0 = storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY_V0);
-  if (!serversJsonV0) {
-    console.debug('no V0 servers found in storage');
-    return;
-  }
-
-  let configById: ConfigById = {};
-  configById = JSON.parse(serversJsonV0);
-  const configByAccessKey: AccessKeyById = {};
-  for (const serverId in configById) {
-    if (!configById.hasOwnProperty(serverId)) {
-      continue;
-    }
-    const config: ShadowsocksConfig = configById[serverId];
-    const accessKey = shadowsocksConfigToAccessKey(config);
-    configByAccessKey[serverId] = accessKey;
-  }
-
-  const serversJsonV1 = JSON.stringify(configByAccessKey);
-  storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, serversJsonV1);
 }
