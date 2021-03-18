@@ -56,7 +56,7 @@ describe('OutlineServerRepository', () => {
     const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0, 'v0-server-1': CONFIG_1};
     const storageV1: ServersStorageV1 = [
       {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
-      {id: 'server-1', name: 'fake server 1', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)}
+      {id: 'server-1', name: 'renamed server', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)}
     ];
     const storage = new InMemoryStorage(new Map([
       [OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)],
@@ -68,7 +68,7 @@ describe('OutlineServerRepository', () => {
     expect(server0?.name).toEqual(CONFIG_0.name);
     const server1 = repo.getById('server-1');
     expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
-    expect(server1?.name).toEqual(CONFIG_1.name);
+    expect(server1?.name).toEqual('renamed server');
   });
 
   it('stores V1 servers', () => {
@@ -81,15 +81,21 @@ describe('OutlineServerRepository', () => {
     repo.undoForget('server-1');
 
     const serversJson = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
-    expect(serversJson).toEqual([
-      {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
-      {id: 'server-1', name: 'fake server 1', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)},
-    ]);
+    expect(serversJson).toContain({
+      id: 'server-0',
+      name: 'fake server 0',
+      accessKey: shadowsocksConfigToAccessKey(CONFIG_0)
+    });
+    expect(serversJson).toContain({
+      id: 'server-1',
+      name: 'fake server 1',
+      accessKey: shadowsocksConfigToAccessKey(CONFIG_1)
+    });
   });
 });
 
 function getFakeServerFactory(): OutlineServerFactory {
-  return (id: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
-    return new OutlineServer(id, config, new FakeOutlineTunnel(id), eventQueue);
+  return (id: string, accessKey: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
+    return new OutlineServer(id, accessKey, config, new FakeOutlineTunnel(id), eventQueue);
   };
 }

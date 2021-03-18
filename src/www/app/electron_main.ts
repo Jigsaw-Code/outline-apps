@@ -93,9 +93,10 @@ main({
     return isOsSupported;
   },
   getServerFactory: () => {
-    return (serverId: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
+    return (serverId: string, accessKey: string, config: ShadowsocksConfig,
+            eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, config,
+          serverId, accessKey, config,
           isOsSupported ? new ElectronOutlineTunnel(serverId) : new FakeOutlineTunnel(serverId),
           eventQueue);
     };

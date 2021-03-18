@@ -31,8 +31,9 @@ export class OutlineServer implements Server {
   errorMessageId?: string;
 
   constructor(
-      public readonly id: string, private readonly config: ShadowsocksConfig,
-      private tunnel: Tunnel, private eventQueue: events.EventQueue) {
+      public readonly id: string, public readonly accessKey: string,
+      private readonly config: ShadowsocksConfig, private tunnel: Tunnel,
+      private eventQueue: events.EventQueue) {
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -61,16 +62,12 @@ export class OutlineServer implements Server {
     this.config.name = newName;
   }
 
-  get accessKey() {
-    return shadowsocksConfigToAccessKey(this.config);
-  }
-
   get address() {
     return `${this.config.host}:${this.config.port}`;
   }
 
   get isOutlineServer() {
-    return !!this.config.extra?.outline;
+    return this.accessKey.includes('outline=1');
   }
 
   async connect() {
@@ -123,7 +120,8 @@ interface OutlineServerJson {
 }
 
 export type OutlineServerFactory =
-    (id: string, config: ShadowsocksConfig, eventQueue: events.EventQueue) => OutlineServer;
+    (id: string, accessKey: string, config: ShadowsocksConfig, eventQueue: events.EventQueue) =>
+        OutlineServer;
 
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
@@ -149,7 +147,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   add(accessKey: string) {
     const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), config, this.eventQueue);
+    const server = this.createServer(uuidv4(), accessKey, config, this.eventQueue);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -260,7 +258,7 @@ export class OutlineServerRepository implements ServerRepository {
       if (configById.hasOwnProperty(serverId)) {
         const config = configById[serverId];
         try {
-          this.loadServer(serverId, config);
+          this.loadServer(serverId, shadowsocksConfigToAccessKey(config), config);
         } catch (e) {
           // Don't propagate so other stored servers can be created.
           console.error(e);
@@ -288,7 +286,7 @@ export class OutlineServerRepository implements ServerRepository {
         if (serverJson.name) {
           config.name = serverJson.name;
         }
-        this.loadServer(serverJson.id, config);
+        this.loadServer(serverJson.id, serverJson.accessKey, config);
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);
@@ -296,8 +294,8 @@ export class OutlineServerRepository implements ServerRepository {
     }
   }
 
-  private loadServer(serverId: string, config: ShadowsocksConfig) {
-    const server = this.createServer(serverId, config, this.eventQueue);
+  private loadServer(serverId: string, accessKey: string, config: ShadowsocksConfig) {
+    const server = this.createServer(serverId, accessKey, config, this.eventQueue);
     if (!OutlineServer.isServerCipherSupported(config.method)) {
       server.errorMessageId = 'unsupported-cipher';
     }
@@ -315,7 +313,6 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
       method: config.method.data,
       password: config.password.data,
       name: config.tag.data,
-      extra: config.extra,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
@@ -324,19 +321,13 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
 export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
-  // tslint:disable-next-line:no-any
-  const input: {[key: string]: any} = {
+  return SIP002_URI.stringify(makeConfig({
     host: config.host,
     port: config.port,
     method: config.method,
     password: config.password,
     tag: config.name,
-  };
-  // Outline servers encode a query parameter `outline=1`, preserve it for naming.
-  if (config.extra?.outline) {
-    input.outline = config.extra.outline;
-  }
-  return SIP002_URI.stringify(makeConfig(input));
+  }));
 }
 
 // Compares access keys proxying parameters.
