@@ -164,7 +164,7 @@ export class App {
       messageKey = 'outline-plugin-error-unsupported-routing-table';
     } else if (e instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
-      messageParams = ['serverName', this.getServerName(e.server)];
+      messageParams = ['serverName', this.getServerDisplayName(e.server)];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
     } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
@@ -363,7 +363,7 @@ export class App {
       card.state = 'CONNECTED';
       console.log(`connected to server ${serverId}`);
       this.rootEl.showToast(
-          this.localize('server-connected', 'serverName', this.getServerName(server)));
+          this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       card.state = 'DISCONNECTED';
@@ -408,7 +408,7 @@ export class App {
       card.state = 'DISCONNECTED';
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(
-          this.localize('server-disconnected', 'serverName', this.getServerName(server)));
+          this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
       card.state = 'CONNECTED';
       this.showLocalizedError(e);
@@ -443,7 +443,8 @@ export class App {
     this.syncServersToUI();
     this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
-    this.rootEl.showToast(this.localize('server-added', 'serverName', this.getServerName(server)));
+    this.rootEl.showToast(
+        this.localize('server-added', 'serverName', this.getServerDisplayName(server)));
   }
 
   private showServerForgotten(event: events.ServerForgotten) {
@@ -451,7 +452,7 @@ export class App {
     console.debug('Server forgotten');
     this.syncServersToUI();
     this.rootEl.showToast(
-        this.localize('server-forgotten', 'serverName', this.getServerName(server)), 10000,
+        this.localize('server-forgotten', 'serverName', this.getServerDisplayName(server)), 10000,
         this.localize('undo-button-label'), () => {
           this.serverRepo.undoForget(server.id);
         });
@@ -461,7 +462,7 @@ export class App {
     this.syncServersToUI();
     const server = event.server;
     this.rootEl.showToast(
-        this.localize('server-forgotten-undo', 'serverName', this.getServerName(server)));
+        this.localize('server-forgotten-undo', 'serverName', this.getServerDisplayName(server)));
   }
 
   private showServerRenamed(event: events.ServerForgotten) {
@@ -524,7 +525,7 @@ export class App {
   }
 
   // Returns the server's name, if present, or a default server name.
-  private getServerName(server: Server): string {
+  private getServerDisplayName(server: Server): string {
     if (server.name) {
       return server.name;
     }
