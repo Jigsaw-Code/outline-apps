@@ -29,11 +29,12 @@ export class OutlineServer implements Server {
       ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
+  private config: ShadowsocksConfig;
 
   constructor(
-      public readonly id: string, public readonly accessKey: string,
-      private readonly config: ShadowsocksConfig, private tunnel: Tunnel,
-      private eventQueue: events.EventQueue) {
+      public readonly id: string, public readonly accessKey: string, private _name: string,
+      private tunnel: Tunnel, private eventQueue: events.EventQueue) {
+    this.config = accessKeyToShadowsocksConfig(accessKey);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -55,10 +56,11 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    return this.config.name;
+    return this._name;
   }
 
   set name(newName: string) {
+    this._name = newName;
     this.config.name = newName;
   }
 
@@ -120,8 +122,7 @@ interface OutlineServerJson {
 }
 
 export type OutlineServerFactory =
-    (id: string, accessKey: string, config: ShadowsocksConfig, eventQueue: events.EventQueue) =>
-        OutlineServer;
+    (id: string, accessKey: string, name: string, eventQueue: events.EventQueue) => OutlineServer;
 
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
@@ -147,7 +148,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   add(accessKey: string) {
     const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, config, this.eventQueue);
+    const server = this.createServer(uuidv4(), accessKey, config.name, this.eventQueue);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -254,15 +255,14 @@ export class OutlineServerRepository implements ServerRepository {
     } catch (e) {
       throw new Error(`could not parse saved V0 servers: ${e.message}`);
     }
-    for (const serverId in configById) {
-      if (configById.hasOwnProperty(serverId)) {
-        const config = configById[serverId];
-        try {
-          this.loadServer(serverId, shadowsocksConfigToAccessKey(config), config);
-        } catch (e) {
-          // Don't propagate so other stored servers can be created.
-          console.error(e);
-        }
+    for (const serverId of Object.keys(configById)) {
+      const config = configById[serverId];
+      try {
+        this.loadServer(
+            {id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
+      } catch (e) {
+        // Don't propagate so other stored servers can be created.
+        console.error(e);
       }
     }
   }
@@ -282,11 +282,7 @@ export class OutlineServerRepository implements ServerRepository {
     }
     for (const serverJson of serversJson) {
       try {
-        const config = accessKeyToShadowsocksConfig(serverJson.accessKey);
-        if (serverJson.name) {
-          config.name = serverJson.name;
-        }
-        this.loadServer(serverJson.id, serverJson.accessKey, config);
+        this.loadServer(serverJson);
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);
@@ -294,12 +290,14 @@ export class OutlineServerRepository implements ServerRepository {
     }
   }
 
-  private loadServer(serverId: string, accessKey: string, config: ShadowsocksConfig) {
-    const server = this.createServer(serverId, accessKey, config, this.eventQueue);
+  private loadServer(serverJson: OutlineServerJson) {
+    const server =
+        this.createServer(serverJson.id, serverJson.accessKey, serverJson.name, this.eventQueue);
+    const config = accessKeyToShadowsocksConfig(serverJson.accessKey);
     if (!OutlineServer.isServerCipherSupported(config.method)) {
       server.errorMessageId = 'unsupported-cipher';
     }
-    this.serverById.set(serverId, server);
+    this.serverById.set(serverJson.id, server);
   }
 }
 

@@ -95,7 +95,7 @@ describe('OutlineServerRepository', () => {
 });
 
 function getFakeServerFactory(): OutlineServerFactory {
-  return (id: string, accessKey: string, config: ShadowsocksConfig, eventQueue: EventQueue) => {
-    return new OutlineServer(id, accessKey, config, new FakeOutlineTunnel(id), eventQueue);
+  return (id: string, accessKey: string, name: string, eventQueue: EventQueue) => {
+    return new OutlineServer(id, accessKey, name, new FakeOutlineTunnel(id), eventQueue);
   };
 }
