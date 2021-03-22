@@ -101,7 +101,7 @@ main({
     return isOsSupported;
   },
   getNativeNetworking: () => {
-    return isOsSupported ? new FakeNativeNetworking() : new ElectronNativeNetworking();
+    return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
   },
   getUrlInterceptor: () => {
     return interceptor;
