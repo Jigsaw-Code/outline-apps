@@ -132,7 +132,7 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer|null = null;
 
   constructor(
-      public readonly net: NativeNetworking, private eventQueue: events.EventQueue,
+      private readonly net: NativeNetworking, private eventQueue: events.EventQueue,
       private storage: Storage) {
     this.loadServers();
   }
