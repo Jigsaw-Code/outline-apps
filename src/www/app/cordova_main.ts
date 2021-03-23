@@ -28,7 +28,7 @@ import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {main} from './main';
-import {FakeNativeNetworking} from './net';
+import {FakeNativeNetworking, NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';

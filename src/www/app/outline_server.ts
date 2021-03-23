@@ -20,6 +20,7 @@ import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
 
 import {ShadowsocksConfig} from './config';
+import {NativeNetworking} from './net';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {

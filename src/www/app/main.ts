@@ -18,6 +18,7 @@ import {EventQueue} from '../model/events';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
+import {NativeNetworking} from './net';
 import {OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
