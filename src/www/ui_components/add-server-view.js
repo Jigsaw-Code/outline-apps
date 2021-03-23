@@ -102,8 +102,6 @@ Polymer({
           opacity: 1;
         }
         --paper-input-container-input: {
-          max-width: 8em;
-          text-overflow: ellipsis;
           opacity: 1;
           filter: brightness(0.8);
           /* Do not flip the access key. */
@@ -174,7 +172,7 @@ Polymer({
           [[localize('server-detected')]]
         </div>
         <div class="shadow vertical-margin">
-          <paper-input value="[[serverConfig.accessKey]]" no-label-float="" disabled="">
+          <paper-input value="[[accessKey]]" no-label-float="" disabled="">
             <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
           </paper-input>
         </div>
@@ -190,7 +188,6 @@ Polymer({
 
   properties: {
     localize: Function,
-    serverConfig: Object,
     accessKey: {
       type: String,
       observer: '_accessKeyChanged',
@@ -211,13 +208,9 @@ Polymer({
     this.$.addServerSheet.open();
   },
 
-  openAddServerConfirmationSheet: function(accessKey, serverConfig) {
-    if (!accessKey || !serverConfig) {
-      throw new Error('Must provide an access key and a server configuration.');
-    }
-    serverConfig.accessKey = accessKey;
-    this.serverConfig = serverConfig;
+  openAddServerConfirmationSheet: function(accessKey) {
     this.$.addServerSheet.close();
+    this.accessKey = accessKey;
     this.$.serverDetectedSheet.open();
   },
 
@@ -249,12 +242,12 @@ Polymer({
   },
 
   _addDetectedServer: function() {
-    this.fire('AddServerRequested', {serverConfig: this.serverConfig});
+    this.fire('AddServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
   _ignoreDetectedServer: function() {
-    this.fire('IgnoreServerRequested', {accessKey: this.serverConfig.accessKey});
+    this.fire('IgnoreServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
@@ -268,13 +261,9 @@ Polymer({
       window.scrollTo(0, document.body.scrollHeight);
       document.body.addEventListener('touchmove', this._disallowScroll, {passive: false});
     } else {
-      // Restore scrolling and reset the state.
+      // Restore scrolling and reset state.
       document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
-      if (dialog.id === 'serverDetectedSheet') {
-        this.serverConfig = undefined;
-      } else if (dialog.id == 'addServerSheet') {
-        this.accessKey = '';
-      }
+      this.accessKey = '';
     }
   },
 

@@ -16,8 +16,8 @@ import {ipcRenderer} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 
 import * as errors from '../model/errors';
-import {ShadowsocksConfig} from '../model/shadowsocks';
 
+import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
@@ -25,7 +25,7 @@ export class ElectronOutlineTunnel implements Tunnel {
 
   private running = false;
 
-  constructor(public config: ShadowsocksConfig, public id: string) {
+  constructor(public readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
@@ -37,7 +37,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
   }
 
-  async start() {
+  async start(config: ShadowsocksConfig) {
     if (this.running) {
       return Promise.resolve();
     }
@@ -47,7 +47,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
 
     try {
-      await promiseIpc.send('start-proxying', {config: this.config, id: this.id});
+      await promiseIpc.send('start-proxying', {config, id: this.id});
       this.running = true;
     } catch (e) {
       if (typeof e === 'number') {
@@ -75,8 +75,8 @@ export class ElectronOutlineTunnel implements Tunnel {
     return this.running;
   }
 
-  isReachable(): Promise<boolean> {
-    return promiseIpc.send('is-reachable', this.config);
+  isReachable(config: ShadowsocksConfig): Promise<boolean> {
+    return promiseIpc.send('is-reachable', config);
   }
 
   onStatusChange(listener: (status: TunnelStatus) => void): void {

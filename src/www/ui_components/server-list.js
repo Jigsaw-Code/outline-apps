@@ -41,11 +41,7 @@ Polymer({
       }
     </style>
     <template is="dom-repeat" items="[[servers]]">
-      <!--
-        item.host actually calls the getter in OutlineServer instead of accessing .host in ServerConfig.
-        TODO get rid of the .host getter and force users of PersistentServer to all go through the config.
-      -->
-      <server-card server-id="[[item.id]]" server-name="[[item.name]]" server-host="[[item.host]]" server-port="[[item.config.port]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
+      <server-card server-id="[[item.id]]" server-name="[[_computeServerName(item.name, item.isOutlineServer)]]" server-address="[[item.address]]" error-message="[[localize(item.errorMessageId)]]" disabled="[[item.errorMessageId]]" localize="[[localize]]" root-path="[[rootPath]]" expanded="[[hasSingleServer]]"></server-card>
     </template>
 `,
 
@@ -75,5 +71,13 @@ Polymer({
 
   _computeHasSingleServer: function(servers) {
     return !!servers && servers.length === 1;
+  },
+
+  _computeServerName: function(serverName, isOutlineServer) {
+    if (serverName) {
+      return serverName;
+    }
+    return isOutlineServer ? this.localize('server-default-name-outline') :
+                             this.localize('server-default-name');
   }
 });

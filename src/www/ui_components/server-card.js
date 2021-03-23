@@ -66,7 +66,7 @@ Polymer({
         flex: 1;
         padding: 16px 0 0 16px;
         font-size: 20px;
-        /* Make the IP address copyable */
+        /* Make the sever name and address copyable */
         -webkit-user-select: text; /* Safari */
         -ms-user-select: text; /* IE/Edge */
         user-select: text; /* Chrome */
@@ -77,9 +77,11 @@ Polymer({
         word-break: break-word;
       }
 
-      #serverHost {
+      #serverAddress {
         color: rgba(0, 0, 0, 0.54);
         font-size: small;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #server-visualization-button {
@@ -145,7 +147,7 @@ Polymer({
         <server-connection-viz state="[[state]]" root-path="[[rootPath]]" hidden\$="[[expanded]]"></server-connection-viz>
         <div id="serverInfo">
           <div id="serverName">[[serverName]]</div>
-          <div id="serverHost">[[serverHost]]:[[serverPort]]</div>
+          <div id="serverAddress">[[serverAddress]]</div>
         </div>
         <paper-menu-button horizontal-align="right" close-on-activate="true">
           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
@@ -182,8 +184,7 @@ Polymer({
     rootPath: String,
     serverName: String,
     serverId: String,
-    serverHost: String,
-    serverPort: Number,
+    serverAddress: String,
     state: {
       type: String,
       value: 'DISCONNECTED',

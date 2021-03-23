@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksConfig} from '../../www/model/shadowsocks';
+import {ShadowsocksConfig} from './config';
 
 export const enum TunnelStatus {
   CONNECTED,
@@ -26,14 +26,11 @@ export interface Tunnel {
   // Unique instance identifier.
   readonly id: string;
 
-  // Shadowsocks proxy configuration.
-  config: ShadowsocksConfig;
-
   // Connects a VPN, routing all device traffic to a Shadowsocks server as dictated by `config`.
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(): Promise<void>;
+  start(config: ShadowsocksConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(): Promise<void>;
@@ -43,7 +40,7 @@ export interface Tunnel {
 
   // Returns whether the proxy server is reachable by attempting to open a TCP socket
   // to the IP and port specified in `config`.
-  isReachable(): Promise<boolean>;
+  isReachable(config: ShadowsocksConfig): Promise<boolean>;
 
   // Sets a listener, to be called when the tunnel status changes.
   onStatusChange(listener: (status: TunnelStatus) => void): void;

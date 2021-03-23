@@ -67,7 +67,7 @@ enum RoutingServiceStatusCode {
 export class RoutingDaemon {
   private socket: Socket|undefined;
 
-  private stopping: boolean = false;
+  private stopping = false;
 
   private fulfillDisconnect!: () => void;
 

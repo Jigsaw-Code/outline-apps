@@ -22,9 +22,9 @@ import * as path from 'path';
 import * as process from 'process';
 import * as socks from 'socks';
 
+import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
-import {ShadowsocksConfig} from '../www/model/shadowsocks';
 
 import {isServerReachable} from './connectivity';
 import {ChildProcessHelper} from './process';

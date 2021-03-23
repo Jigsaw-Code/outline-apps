@@ -20,9 +20,9 @@ import {clipboard, ipcRenderer} from 'electron';
 import * as os from 'os';
 
 import {EventQueue} from '../model/events';
-import {ServerConfig} from '../model/server';
 
 import {AbstractClipboard} from './clipboard';
+import {ShadowsocksConfig} from './config';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
@@ -92,12 +92,11 @@ main({
   hasDeviceSupport: () => {
     return isOsSupported;
   },
-  getPersistentServerFactory: () => {
-    return (serverId: string, config: ServerConfig, eventQueue: EventQueue) => {
+  getServerFactory: () => {
+    return (serverId: string, accessKey: string, name: string, eventQueue: EventQueue) => {
       return new OutlineServer(
-          serverId, config,
-          isOsSupported ? new ElectronOutlineTunnel(config, serverId) :
-                          new FakeOutlineTunnel(config, serverId),
+          serverId, accessKey, name,
+          isOsSupported ? new ElectronOutlineTunnel(serverId) : new FakeOutlineTunnel(serverId),
           eventQueue);
     };
   },
