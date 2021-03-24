@@ -13,13 +13,13 @@
 // limitations under the License.
 
 import {InMemoryStorage} from '../infrastructure/memory_storage';
-import {EventQueue} from '../model/events';
+import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../model/events';
 
 import {ShadowsocksConfig} from './config';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {OutlineServer, OutlineServerFactory, OutlineServerRepository, ServersStorageV0, ServersStorageV1, shadowsocksConfigToAccessKey} from './outline_server';
 
-// TODO(alalama): unit tests for OutlineServer and OutlineServerRepository.
+// TODO(alalama): unit tests for OutlineServer.
 
 describe('OutlineServerRepository', () => {
   const CONFIG_0: ShadowsocksConfig = {
@@ -91,6 +91,200 @@ describe('OutlineServerRepository', () => {
       name: 'fake server 1',
       accessKey: shadowsocksConfigToAccessKey(CONFIG_1)
     });
+  });
+
+  it('add stores servers', () => {
+    const storage = new InMemoryStorage();
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
+    const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
+    const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
+    repo.add(accessKey0);
+    repo.add(accessKey1);
+    const servers: ServersStorageV1 =
+        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    expect(servers.length).toEqual(2);
+    expect(servers[0].accessKey).toEqual(accessKey0);
+    expect(servers[0].name).toEqual(CONFIG_0.name);
+    expect(servers[1].accessKey).toEqual(accessKey1);
+    expect(servers[1].name).toEqual(CONFIG_1.name);
+  });
+
+  it('add emits ServerAdded event', async () => {
+    const eventQueue = new EventQueue();
+    const repo =
+        new OutlineServerRepository(getFakeServerFactory(), eventQueue, new InMemoryStorage());
+    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    repo.add(accessKey);
+    await new Promise<void>(resolve => {
+      eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
+        const server = event.server as OutlineServer;
+        expect(server.accessKey).toEqual(accessKey);
+        expect(server.name).toEqual(CONFIG_0.name);
+        resolve();
+      });
+      eventQueue.startPublishing();
+    });
+  });
+
+  it('add throws on invalid access keys', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    expect(() => repo.add('ss://invalid')).toThrow();
+    expect(() => repo.add('')).toThrow();
+  });
+
+  it('getAll returns added servers', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    expect(repo.getAll()).toEqual([]);
+    const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
+    const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
+    repo.add(accessKey0);
+    repo.add(accessKey1);
+    const servers = repo.getAll();
+    expect(servers.length).toEqual(2);
+    const accessKeys = servers.map(s => s.accessKey);
+    expect(accessKeys).toContain(accessKey0);
+    expect(accessKeys).toContain(accessKey1);
+    const serverNames = servers.map(s => s.name);
+    expect(serverNames).toContain(CONFIG_0.name);
+    expect(serverNames).toContain(CONFIG_1.name);
+  });
+
+  it('getById retrieves added servers', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    repo.add(accessKey);
+    const serverId = repo.getAll()[0].id;
+    const server = repo.getById(serverId);
+    expect(server.id).toEqual(serverId);
+    expect(server.accessKey).toEqual(accessKey);
+    expect(server.name).toEqual(CONFIG_0.name);
+  });
+
+  it('getById returns undefined for nonexistent servers', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    expect(repo.getById('server-does-not-exist')).toBeUndefined();
+    expect(repo.getById('')).toBeUndefined();
+  });
+
+  it('renames servers', () => {
+    const NEW_SERVER_NAME = 'new server name';
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    const server = repo.getAll()[0];
+    repo.rename(server.id, NEW_SERVER_NAME);
+    expect(server.name).toEqual(NEW_SERVER_NAME);
+  });
+
+  it('rename emits ServerRenamed event', async () => {
+    const NEW_SERVER_NAME = 'new server name';
+    const eventQueue = new EventQueue();
+    eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
+    const repo =
+        new OutlineServerRepository(getFakeServerFactory(), eventQueue, new InMemoryStorage());
+    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    repo.add(accessKey);
+    const server = repo.getAll()[0];
+    repo.rename(server.id, NEW_SERVER_NAME);
+
+    await new Promise<void>(resolve => {
+      eventQueue.subscribe(ServerRenamed, (event: ServerRenamed) => {
+        expect(event.server.name).toEqual(NEW_SERVER_NAME);
+        resolve();
+      });
+      eventQueue.startPublishing();
+    });
+  });
+
+  it('forgets servers', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    const forgottenServerId = repo.getAll()[0].id;
+    repo.forget(forgottenServerId);
+    expect(repo.getById(forgottenServerId)).toBeUndefined();
+    expect(repo.getAll().length).toEqual(1);
+  });
+
+  it('forget emits ServerForgotten events', async () => {
+    const eventQueue = new EventQueue();
+    eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
+    const repo =
+        new OutlineServerRepository(getFakeServerFactory(), eventQueue, new InMemoryStorage());
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    const forgottenServerId = repo.getAll()[0].id;
+    repo.forget(forgottenServerId);
+    await new Promise<void>(resolve => {
+      eventQueue.subscribe(ServerForgotten, (event: ServerForgotten) => {
+        expect(event.server.id).toEqual(forgottenServerId);
+        resolve();
+      });
+      eventQueue.startPublishing();
+    });
+  });
+
+  it('undoes forgetting servers', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    const forgottenServerId = repo.getAll()[0].id;
+    repo.forget(forgottenServerId);
+    repo.undoForget(forgottenServerId);
+    const forgottenServer = repo.getById(forgottenServerId);
+    expect(forgottenServer.id).toEqual(forgottenServerId);
+    expect(repo.getAll().length).toEqual(2);
+  });
+
+  it('undoForget emits ServerForgetUndone events', async () => {
+    const eventQueue = new EventQueue();
+    // Silence dropped event warnings.
+    eventQueue.subscribe(ServerAdded, () => {});
+    eventQueue.subscribe(ServerForgotten, () => {});
+    const repo =
+        new OutlineServerRepository(getFakeServerFactory(), eventQueue, new InMemoryStorage());
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    const forgottenServerId = repo.getAll()[0].id;
+    repo.forget(forgottenServerId);
+    repo.undoForget(forgottenServerId);
+    await new Promise<void>(resolve => {
+      eventQueue.subscribe(ServerForgetUndone, (event: ServerForgetUndone) => {
+        expect(event.server.id).toEqual(forgottenServerId);
+        resolve();
+      });
+      eventQueue.startPublishing();
+    });
+  });
+
+  it('validates access keys', () => {
+    const repo = new OutlineServerRepository(
+        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    // Invalid access keys.
+    expect(() => repo.validateAccessKey('')).toThrow();
+    expect(() => repo.validateAccessKey('ss://invalid')).toThrow();
+    // IPv6 host.
+    expect(() => repo.validateAccessKey(shadowsocksConfigToAccessKey({
+      host: '0:0:0:0:0:0:0:1',
+      port: 443,
+      password: 'test',
+      method: 'chacha20-ietf-poly1305'
+    }))).toThrow();
+    // Unsupported ciphers.
+    expect(
+        () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
+            {host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})))
+        .toThrow();
+    expect(
+        () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
+            {host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})))
+        .toThrow();
   });
 });
 
