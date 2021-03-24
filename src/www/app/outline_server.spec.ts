@@ -172,12 +172,16 @@ describe('OutlineServerRepository', () => {
 
   it('renames servers', () => {
     const NEW_SERVER_NAME = 'new server name';
-    const repo = new OutlineServerRepository(
-        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    const storage = new InMemoryStorage();
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
+    const serversStorage: ServersStorageV1 =
+        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serverNames = serversStorage.map(s => s.name);
+    expect(serverNames).toContain(NEW_SERVER_NAME);
   });
 
   it('rename emits ServerRenamed event', async () => {
@@ -201,14 +205,20 @@ describe('OutlineServerRepository', () => {
   });
 
   it('forgets servers', () => {
-    const repo = new OutlineServerRepository(
-        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    const storage = new InMemoryStorage();
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     expect(repo.getById(forgottenServerId)).toBeUndefined();
-    expect(repo.getAll().length).toEqual(1);
+    const serverIds = repo.getAll().map(s => s.id);
+    expect(serverIds.length).toEqual(1);
+    expect(serverIds).not.toContain(forgottenServerId);
+    const serversStorage: ServersStorageV1 =
+        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serverIdsStorage = serversStorage.map(s => s.id);
+    expect(serverIdsStorage).not.toContain(forgottenServerId);
   });
 
   it('forget emits ServerForgotten events', async () => {
@@ -230,8 +240,8 @@ describe('OutlineServerRepository', () => {
   });
 
   it('undoes forgetting servers', () => {
-    const repo = new OutlineServerRepository(
-        getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
+    const storage = new InMemoryStorage();
+    const repo = new OutlineServerRepository(getFakeServerFactory(), new EventQueue(), storage);
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
@@ -239,7 +249,13 @@ describe('OutlineServerRepository', () => {
     repo.undoForget(forgottenServerId);
     const forgottenServer = repo.getById(forgottenServerId);
     expect(forgottenServer.id).toEqual(forgottenServerId);
-    expect(repo.getAll().length).toEqual(2);
+    const serverIds = repo.getAll().map(s => s.id);
+    expect(serverIds.length).toEqual(2);
+    expect(serverIds).toContain(forgottenServerId);
+    const serversStorage: ServersStorageV1 =
+        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serverIdsStorage = serversStorage.map(s => s.id);
+    expect(serverIdsStorage).toContain(forgottenServerId);
   });
 
   it('undoForget emits ServerForgetUndone events', async () => {
