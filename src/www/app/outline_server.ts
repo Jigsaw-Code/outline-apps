@@ -148,7 +148,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   add(accessKey: string) {
     const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer({id: uuidv4(), accessKey, name: config.name});
+    const server = this.createServer(uuidv4(), accessKey, config.name);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -291,15 +291,14 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private loadServer(serverJson: OutlineServerJson) {
-    const server = this.createServer(serverJson);
+    const server = this.createServer(serverJson.id, serverJson.accessKey, serverJson.name);
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(serverJson: OutlineServerJson) {
-    const server = new OutlineServer(
-        serverJson.id, serverJson.accessKey, serverJson.name, this.net, this.eventQueue);
+  private createServer(id: string, accessKey: string, name: string): OutlineServer {
+    const server = new OutlineServer(id, accessKey, name, this.net, this.eventQueue);
     try {
-      this.validateAccessKey(serverJson.accessKey);
+      this.validateAccessKey(accessKey);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.
