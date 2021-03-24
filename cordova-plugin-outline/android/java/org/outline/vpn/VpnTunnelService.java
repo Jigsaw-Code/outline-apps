@@ -382,6 +382,10 @@ public class VpnTunnelService extends VpnService {
 
   /* Broadcast change in the VPN connectivity. */
   private void broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus status) {
+    if (tunnelConfig == null) {
+      LOG.warning("Tunnel disconnected, not sending VPN connectivity broadcast");
+      return;
+    }
     Intent statusChange = new Intent(OutlinePlugin.Action.ON_STATUS_CHANGE.value);
     statusChange.addCategory(getPackageName());
     statusChange.putExtra(OutlinePlugin.MessageData.PAYLOAD.value, status.value);
