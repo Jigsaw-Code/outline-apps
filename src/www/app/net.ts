@@ -19,9 +19,6 @@ import {Tunnel} from './tunnel';
 export interface NativeNetworking {
   // Returns whether a server is reachable via TCP at address `${hostname}:${port}`.
   isServerReachable(hostname: string, port: number): Promise<boolean>;
-
-  // Constructs a new Tunnel object.
-  newVpnTunnel(id: string): Tunnel;
 }
 
 export class FakeNativeNetworking implements NativeNetworking {

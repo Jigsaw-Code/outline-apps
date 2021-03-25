@@ -21,7 +21,7 @@ import {Server, ServerRepository} from '../model/server';
 
 import {ShadowsocksConfig} from './config';
 import {NativeNetworking} from './net';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
@@ -31,13 +31,12 @@ export class OutlineServer implements Server {
 
   errorMessageId?: string;
   private config: ShadowsocksConfig;
-  private tunnel: Tunnel;
 
   constructor(
       public readonly id: string, public readonly accessKey: string, private _name: string,
-      private net: NativeNetworking, private eventQueue: events.EventQueue) {
+      private tunnel: Tunnel, private net: NativeNetworking,
+      private eventQueue: events.EventQueue) {
     this.config = accessKeyToShadowsocksConfig(accessKey);
-    this.tunnel = net.newVpnTunnel(id);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -133,8 +132,8 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer|null = null;
 
   constructor(
-      private readonly net: NativeNetworking, private eventQueue: events.EventQueue,
-      private storage: Storage) {
+      private readonly net: NativeNetworking, private readonly createTunnel: TunnelFactory,
+      private eventQueue: events.EventQueue, private storage: Storage) {
     this.loadServers();
   }
 
@@ -296,7 +295,8 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
-    const server = new OutlineServer(id, accessKey, name, this.net, this.eventQueue);
+    const server =
+        new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {

@@ -16,6 +16,7 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {NativeNetworking} from './net';
+import {TunnelFactory} from './tunnel';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -29,6 +30,8 @@ export interface OutlinePlatform {
   hasDeviceSupport(): boolean;
 
   getNativeNetworking(): NativeNetworking;
+
+  getTunnelFactory(): TunnelFactory;
 
   getUrlInterceptor(): UrlInterceptor|undefined;
 

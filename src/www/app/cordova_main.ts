@@ -64,10 +64,6 @@ class CordovaNativeNetworking implements NativeNetworking {
   async isServerReachable(hostname: string, port: number) {
     return cordova.plugins.outline.net.isServerReachable(hostname, port);
   }
-
-  newVpnTunnel(id: string) {
-    return new cordova.plugins.outline.Tunnel(id);
-  }
 }
 
 // This class should only be instantiated after Cordova fires the deviceready event.
@@ -82,6 +78,12 @@ class CordovaPlatform implements OutlinePlatform {
 
   getNativeNetworking() {
     return this.hasDeviceSupport() ? new CordovaNativeNetworking() : new FakeNativeNetworking();
+  }
+
+  getTunnelFactory() {
+    return (id: string) => {
+      return new cordova.plugins.outline.Tunnel(id);
+    };
   }
 
   getUrlInterceptor() {

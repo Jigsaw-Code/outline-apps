@@ -89,10 +89,6 @@ class ElectronNativeNetworking implements NativeNetworking {
   async isServerReachable(hostname: string, port: number) {
     return promiseIpc.send('is-server-reachable', {hostname, port});
   }
-
-  newVpnTunnel(id: string): Tunnel {
-    return new ElectronOutlineTunnel(id);
-  }
 }
 
 main({
@@ -101,6 +97,11 @@ main({
   },
   getNativeNetworking: () => {
     return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
+  },
+  getTunnelFactory: () => {
+    return (id: string) => {
+      return new ElectronOutlineTunnel(id);
+    };
   },
   getUrlInterceptor: () => {
     return interceptor;

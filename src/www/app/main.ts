@@ -22,6 +22,7 @@ import {NativeNetworking} from './net';
 import {OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
+import {TunnelFactory} from './tunnel';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;
@@ -47,8 +48,9 @@ function getRootEl() {
 }
 
 function createServerRepo(
-    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean, net: NativeNetworking) {
-  const repo = new OutlineServerRepository(net, eventQueue, storage);
+    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean, net: NativeNetworking,
+    createTunnel: TunnelFactory) {
+  const repo = new OutlineServerRepository(net, createTunnel, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
@@ -87,7 +89,7 @@ export function main(platform: OutlinePlatform) {
             const eventQueue = new EventQueue();
             const serverRepo = createServerRepo(
                 eventQueue, window.localStorage, platform.hasDeviceSupport(),
-                platform.getNativeNetworking());
+                platform.getNativeNetworking(), platform.getTunnelFactory());
             const settings = new Settings();
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
