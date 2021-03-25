@@ -110,21 +110,21 @@ describe('OutlineServerRepository', () => {
     expect(servers[1].name).toEqual(CONFIG_1.name);
   });
 
-  it('add emits ServerAdded event', async () => {
+  it('add emits ServerAdded event', () => {
     const eventQueue = new EventQueue();
     const repo =
         new OutlineServerRepository(getFakeServerFactory(), eventQueue, new InMemoryStorage());
     const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
-    await new Promise<void>(resolve => {
-      eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
-        const server = event.server as OutlineServer;
-        expect(server.accessKey).toEqual(accessKey);
-        expect(server.name).toEqual(CONFIG_0.name);
-        resolve();
-      });
-      eventQueue.startPublishing();
+    let didEmitServerAddedEvent = false;
+    eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
+      const server = event.server as OutlineServer;
+      expect(server.accessKey).toEqual(accessKey);
+      expect(server.name).toEqual(CONFIG_0.name);
+      didEmitServerAddedEvent = true;
     });
+    eventQueue.startPublishing();
+    expect(didEmitServerAddedEvent).toBeTruthy();
   });
 
   it('add throws on invalid access keys', () => {
@@ -185,7 +185,7 @@ describe('OutlineServerRepository', () => {
     expect(serverNames).toContain(NEW_SERVER_NAME);
   });
 
-  it('rename emits ServerRenamed event', async () => {
+  it('rename emits ServerRenamed event', () => {
     const NEW_SERVER_NAME = 'new server name';
     const eventQueue = new EventQueue();
     eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
@@ -195,14 +195,13 @@ describe('OutlineServerRepository', () => {
     repo.add(accessKey);
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
-
-    await new Promise<void>(resolve => {
-      eventQueue.subscribe(ServerRenamed, (event: ServerRenamed) => {
-        expect(event.server.name).toEqual(NEW_SERVER_NAME);
-        resolve();
-      });
-      eventQueue.startPublishing();
+    let didEmitServerRenamedEvent = false;
+    eventQueue.subscribe(ServerRenamed, (event: ServerRenamed) => {
+      expect(event.server.name).toEqual(NEW_SERVER_NAME);
+      didEmitServerRenamedEvent = true;
     });
+    eventQueue.startPublishing();
+    expect(didEmitServerRenamedEvent).toBeTruthy();
   });
 
   it('forgets servers', () => {
@@ -222,7 +221,7 @@ describe('OutlineServerRepository', () => {
     expect(serverIdsStorage).not.toContain(forgottenServerId);
   });
 
-  it('forget emits ServerForgotten events', async () => {
+  it('forget emits ServerForgotten events', () => {
     const eventQueue = new EventQueue();
     eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
     const repo =
@@ -231,13 +230,13 @@ describe('OutlineServerRepository', () => {
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
-    await new Promise<void>(resolve => {
-      eventQueue.subscribe(ServerForgotten, (event: ServerForgotten) => {
-        expect(event.server.id).toEqual(forgottenServerId);
-        resolve();
-      });
-      eventQueue.startPublishing();
+    let didEmitServerForgottenEvent = false;
+    eventQueue.subscribe(ServerForgotten, (event: ServerForgotten) => {
+      expect(event.server.id).toEqual(forgottenServerId);
+      didEmitServerForgottenEvent = true;
     });
+    eventQueue.startPublishing();
+    expect(didEmitServerForgottenEvent).toBeTruthy();
   });
 
   it('undoes forgetting servers', () => {
@@ -259,7 +258,7 @@ describe('OutlineServerRepository', () => {
     expect(serverIdsStorage).toContain(forgottenServerId);
   });
 
-  it('undoForget emits ServerForgetUndone events', async () => {
+  it('undoForget emits ServerForgetUndone events', () => {
     const eventQueue = new EventQueue();
     // Silence dropped event warnings.
     eventQueue.subscribe(ServerAdded, () => {});
@@ -271,13 +270,13 @@ describe('OutlineServerRepository', () => {
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
-    await new Promise<void>(resolve => {
-      eventQueue.subscribe(ServerForgetUndone, (event: ServerForgetUndone) => {
-        expect(event.server.id).toEqual(forgottenServerId);
-        resolve();
-      });
-      eventQueue.startPublishing();
+    let didEmitServerForgetUndoneEvent = false;
+    eventQueue.subscribe(ServerForgetUndone, (event: ServerForgetUndone) => {
+      expect(event.server.id).toEqual(forgottenServerId);
+      didEmitServerForgetUndoneEvent = true;
     });
+    eventQueue.startPublishing();
+    expect(didEmitServerForgetUndoneEvent).toBeTruthy();
   });
 
   it('validates access keys', () => {
