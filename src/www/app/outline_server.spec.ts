@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {InMemoryStorage} from '../infrastructure/memory_storage';
+import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../model/events';
 
 import {ShadowsocksConfig} from './config';
@@ -129,8 +130,8 @@ describe('OutlineServerRepository', () => {
   it('add throws on invalid access keys', () => {
     const repo = new OutlineServerRepository(
         getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
-    expect(() => repo.add('ss://invalid')).toThrow();
-    expect(() => repo.add('')).toThrow();
+    expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
   });
 
   it('getAll returns added servers', () => {
@@ -283,24 +284,24 @@ describe('OutlineServerRepository', () => {
     const repo = new OutlineServerRepository(
         getFakeServerFactory(), new EventQueue(), new InMemoryStorage());
     // Invalid access keys.
-    expect(() => repo.validateAccessKey('')).toThrow();
-    expect(() => repo.validateAccessKey('ss://invalid')).toThrow();
+    expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);
     // IPv6 host.
     expect(() => repo.validateAccessKey(shadowsocksConfigToAccessKey({
-      host: '0:0:0:0:0:0:0:1',
+      host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
       port: 443,
       password: 'test',
       method: 'chacha20-ietf-poly1305'
-    }))).toThrow();
+    }))).toThrowError(ServerIncompatible);
     // Unsupported ciphers.
     expect(
         () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
             {host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})))
-        .toThrow();
+        .toThrowError(ShadowsocksUnsupportedCipher);
     expect(
         () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
             {host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})))
-        .toThrow();
+        .toThrowError(ShadowsocksUnsupportedCipher);
   });
 });
 
