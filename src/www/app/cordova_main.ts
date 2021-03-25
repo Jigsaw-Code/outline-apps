@@ -33,6 +33,7 @@ import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
+import {FakeOutlineTunnel} from './fake_tunnel';
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -83,7 +84,8 @@ class CordovaPlatform implements OutlinePlatform {
 
   getTunnelFactory() {
     return (id: string) => {
-      return new cordova.plugins.outline.Tunnel(id);
+      return this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(id) :
+                                       new FakeOutlineTunnel(id);
     };
   }
 

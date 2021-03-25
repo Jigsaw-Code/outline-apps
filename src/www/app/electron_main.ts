@@ -25,6 +25,7 @@ import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {FakeNativeNetworking} from './fake_net';
+import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
@@ -101,7 +102,7 @@ main({
   },
   getTunnelFactory: () => {
     return (id: string) => {
-      return new ElectronOutlineTunnel(id);
+      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
     };
   },
   getUrlInterceptor: () => {
