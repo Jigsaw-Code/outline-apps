@@ -24,8 +24,9 @@ import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
+import {FakeNativeNetworking} from './fake_net';
 import {getLocalizationFunction, main} from './main';
-import {FakeNativeNetworking, NativeNetworking} from './net';
+import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 

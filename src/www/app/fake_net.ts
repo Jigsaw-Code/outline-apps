@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Exposes native networking capabilities to the web app.
-export interface NativeNetworking {
-  // Returns whether a server is reachable via TCP at address `${hostname}:${port}`.
-  isServerReachable(hostname: string, port: number): Promise<boolean>;
+import {NativeNetworking} from './net';
+
+export class FakeNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return !hostname.includes('unreachable');
+  }
 }

@@ -17,8 +17,8 @@ import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../model/events';
 
 import {ShadowsocksConfig} from './config';
+import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
-import {FakeNativeNetworking} from './net';
 import {OutlineServer, OutlineServerRepository, ServersStorageV0, ServersStorageV1, shadowsocksConfigToAccessKey} from './outline_server';
 
 // TODO(alalama): unit tests for OutlineServer.
