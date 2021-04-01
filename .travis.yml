@@ -118,6 +118,7 @@ jobs:
         - BETA=$([[ $TRAVIS_TAG == *"beta"* ]] && echo '--beta' || echo '')
         - openssl aes-256-cbc -K $encrypted_cb15c65d6aeb_key -iv $encrypted_cb15c65d6aeb_iv -in keystore.p12.enc -out keystore.p12 -d
         - ./tools/build/build.sh yarn gulp build --platform=android $BETA --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
+        - ls -R platforms/android/app/build/intermediates/merged_native_libs
 
     - stage: ios
       os: osx
@@ -136,7 +137,6 @@ deploy:
   file_glob: true
   file:
     - platforms/android/app/build/outputs/apk/**/*.apk
-    - platforms/android/app/build/intermediates/merged_native_libs/**/libgojni.so
     - platforms/ios/Outline.ipa
     - build/dist/*.*
   skip_cleanup: true
