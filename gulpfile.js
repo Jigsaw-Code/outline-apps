@@ -104,10 +104,11 @@ async function cordovaPrepareAndroidNativeSymbols() {
   if (platform !== 'android') {
     return;
   }
-  const nativeLibsPath = 'platforms/android/app/build/intermediates/merged_native_libs/release/out/lib';
+  const nativeLibsPath =
+      'platforms/android/app/build/intermediates/merged_native_libs/release/out/lib';
   for (const arch of ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']) {
     const libPath = `${nativeLibsPath}/${arch}`;
-    await runCommand(`mv ${libPath}/libgojni.so ${libPath}/libgojni-${arch}.so`);
+    await runCommand(`mv ${libPath}/libgojni.so ${libPath}/${arch}-libgojni.so`);
   }
 }
 
@@ -163,5 +164,7 @@ function writeEnvJson() {
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
-exports.build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile, cordovaPrepareAndroidNativeSymbols);
+exports.build = gulp.series(
+    validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile,
+    cordovaPrepareAndroidNativeSymbols);
 exports.setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);
