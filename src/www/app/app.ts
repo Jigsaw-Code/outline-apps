@@ -443,7 +443,8 @@ export class App {
     this.syncServersToUI();
     this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
-    this.rootEl.showToast(this.localize('server-added', 'serverName', this.getServerDisplayName(server)));
+    this.rootEl.showToast(
+        this.localize('server-added', 'serverName', this.getServerDisplayName(server)));
   }
 
   private showServerForgotten(event: events.ServerForgotten) {

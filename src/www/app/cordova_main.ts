@@ -24,18 +24,16 @@ setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 
 
 import * as sentry from '@sentry/browser';
 
-import {EventQueue} from '../model/events';
-
 import {AbstractClipboard} from './clipboard';
-import {ShadowsocksConfig} from './config';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeOutlineTunnel} from './fake_tunnel';
+import {FakeNativeNetworking} from './fake_net';
 import {main} from './main';
-import {OutlineServer} from './outline_server';
+import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
+import {FakeOutlineTunnel} from './fake_tunnel';
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -64,6 +62,12 @@ export class CordovaErrorReporter extends SentryErrorReporter {
   }
 }
 
+class CordovaNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return cordova.plugins.outline.net.isServerReachable(hostname, port);
+  }
+}
+
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
   private static isBrowser() {
@@ -74,13 +78,14 @@ class CordovaPlatform implements OutlinePlatform {
     return !CordovaPlatform.isBrowser();
   }
 
-  getServerFactory() {
-    return (serverId: string, accessKey: string, name: string, eventQueue: EventQueue) => {
-      return new OutlineServer(
-          serverId, accessKey, name,
-          this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(serverId) :
-                                    new FakeOutlineTunnel(serverId),
-          eventQueue);
+  getNativeNetworking() {
+    return this.hasDeviceSupport() ? new CordovaNativeNetworking() : new FakeNativeNetworking();
+  }
+
+  getTunnelFactory() {
+    return (id: string) => {
+      return this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(id) :
+                                       new FakeOutlineTunnel(id);
     };
   }
 

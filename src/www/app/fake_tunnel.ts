@@ -58,10 +58,6 @@ export class FakeOutlineTunnel implements Tunnel {
     return this.running;
   }
 
-  async isReachable(config: ShadowsocksConfig): Promise<boolean> {
-    return !this.playUnreachable(config.name);
-  }
-
   onStatusChange(listener: (status: TunnelStatus) => void): void {
     // NOOP
   }

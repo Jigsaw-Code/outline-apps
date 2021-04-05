@@ -33,6 +33,17 @@ const log = {
   }
 };
 
+const net = {
+  isServerReachable: function(hostname, port) {
+    return new Promise(function(resolve, reject) {
+      const rejectWithError = function(errorCode) {
+        reject(new OutlinePluginError(errorCode));
+      };
+      exec(resolve, rejectWithError, PLUGIN_NAME, 'isServerReachable', [hostname, port]);
+    });
+  }
+};
+
 function quitApplication() {
   exec(function() {}, function() {}, PLUGIN_NAME, 'quitApplication', []);
 }
@@ -104,13 +115,6 @@ Tunnel.prototype.isRunning = function() {
   return this._promiseExec('isRunning', []);
 };
 
-Tunnel.prototype.isReachable = function(config) {
-  if (!config) {
-    return new Promise.reject(new OutlinePluginError(ERROR_CODE.ILLEGAL_SERVER_CONFIGURATION));
-  }
-  return this._promiseExec('isReachable', [config.host, config.port]);
-};
-
 Tunnel.prototype.onStatusChange = function(listener) {
   const onError = function(err) {
     console.warn('failed to execute status change listener', err);
@@ -122,5 +126,6 @@ module.exports = {
   Tunnel: Tunnel,
   TunnelStatus: TunnelStatus,
   log: log,
+  net: net,
   quitApplication: quitApplication,
 };

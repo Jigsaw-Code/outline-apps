@@ -17,18 +17,17 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as sentry from '@sentry/electron';
 import {clipboard, ipcRenderer} from 'electron';
+import * as promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
 
-import {EventQueue} from '../model/events';
-
 import {AbstractClipboard} from './clipboard';
-import {ShadowsocksConfig} from './config';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
+import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
-import {OutlineServer} from './outline_server';
+import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -88,16 +87,22 @@ class ElectronErrorReporter implements OutlineErrorReporter {
   }
 }
 
+class ElectronNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return promiseIpc.send('is-server-reachable', {hostname, port});
+  }
+}
+
 main({
   hasDeviceSupport: () => {
     return isOsSupported;
   },
-  getServerFactory: () => {
-    return (serverId: string, accessKey: string, name: string, eventQueue: EventQueue) => {
-      return new OutlineServer(
-          serverId, accessKey, name,
-          isOsSupported ? new ElectronOutlineTunnel(serverId) : new FakeOutlineTunnel(serverId),
-          eventQueue);
+  getNativeNetworking: () => {
+    return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
+  },
+  getTunnelFactory: () => {
+    return (id: string) => {
+      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
     };
   },
   getUrlInterceptor: () => {

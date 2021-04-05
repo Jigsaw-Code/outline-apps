@@ -35,7 +35,7 @@ class OutlineVpn: NSObject {
     static let restart = "restart"
     static let stop = "stop"
     static let getTunnelId = "getTunnelId"
-    static let isReachable = "isReachable"
+    static let isServerReachable = "isServerReachable"
   }
 
   private enum MessageKey {
@@ -115,17 +115,14 @@ class OutlineVpn: NSObject {
     stopVpn()
   }
 
-  // Determines whether |tunnel| is reachable via TCP.
-  func isReachable(_ tunnel: OutlineTunnel, _ completion: @escaping Callback) {
-    guard let host = tunnel.host, tunnel.port != nil, let port = UInt16(tunnel.port!) else {
-      return DDLogError("Missing host or port argument")
-    }
+  // Determines whether a server is reachable via TCP.
+  func isServerReachable(host: String, port: UInt16, _ completion: @escaping Callback) {
     if isVpnConnected() {
       // All the device's traffic, including the Outline app, go through the VpnExtension process.
       // Performing a reachability test, opening a TCP socket to a host/port, will succeed
       // unconditionally as the request will not leave the device. Send a message to the
       // VpnExtension process to perform the reachability test.
-      let message = [MessageKey.action: Action.isReachable, MessageKey.host: host,
+      let message = [MessageKey.action: Action.isServerReachable, MessageKey.host: host,
                      MessageKey.port: port] as [String : Any]
       sendVpnExtensionMessage(message) { response in
         guard response != nil else {

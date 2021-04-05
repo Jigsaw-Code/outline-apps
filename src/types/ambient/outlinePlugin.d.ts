@@ -29,6 +29,10 @@ declare namespace cordova.plugins.outline {
     send(uuid: string): Promise<void>;
   };
 
+  const net: {
+    isServerReachable(hostname: string, port: number): Promise<boolean>;
+  };
+
   // Quits the application. Only supported in macOS.
   function quitApplication(): void;
 
@@ -43,8 +47,6 @@ declare namespace cordova.plugins.outline {
     stop(): Promise<void>;
 
     isRunning(): Promise<boolean>;
-
-    isReachable(config: ShadowsocksConfig): Promise<boolean>;
 
     onStatusChange(listener: (status: TunnelStatus) => void): void;
   }

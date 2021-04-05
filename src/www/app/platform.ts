@@ -15,7 +15,8 @@
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {OutlineServerFactory} from './outline_server';
+import {NativeNetworking} from './net';
+import {TunnelFactory} from './tunnel';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -28,7 +29,9 @@ export interface OutlinePlatform {
   // assume it's running in demo mode, e.g. Electron on macOS.
   hasDeviceSupport(): boolean;
 
-  getServerFactory(): OutlineServerFactory;
+  getNativeNetworking(): NativeNetworking;
+
+  getTunnelFactory(): TunnelFactory;
 
   getUrlInterceptor(): UrlInterceptor|undefined;
 

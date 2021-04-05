@@ -20,7 +20,8 @@ import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
 
 import {ShadowsocksConfig} from './config';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {NativeNetworking} from './net';
+import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
@@ -33,7 +34,8 @@ export class OutlineServer implements Server {
 
   constructor(
       public readonly id: string, public readonly accessKey: string, private _name: string,
-      private tunnel: Tunnel, private eventQueue: events.EventQueue) {
+      private tunnel: Tunnel, private net: NativeNetworking,
+      private eventQueue: events.EventQueue) {
     this.config = accessKeyToShadowsocksConfig(accessKey);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
@@ -99,7 +101,7 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.tunnel.isReachable(this.config);
+    return this.net.isServerReachable(this.config.host, this.config.port);
   }
 
   static isServerCipherSupported(cipher?: string) {
@@ -121,9 +123,6 @@ interface OutlineServerJson {
   readonly name: string;
 }
 
-export type OutlineServerFactory =
-    (id: string, accessKey: string, name: string, eventQueue: events.EventQueue) => OutlineServer;
-
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
@@ -133,8 +132,8 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer|null = null;
 
   constructor(
-      public readonly createServer: OutlineServerFactory, private eventQueue: events.EventQueue,
-      private storage: Storage) {
+      private readonly net: NativeNetworking, private readonly createTunnel: TunnelFactory,
+      private eventQueue: events.EventQueue, private storage: Storage) {
     this.loadServers();
   }
 
@@ -148,7 +147,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   add(accessKey: string) {
     const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, config.name, this.eventQueue);
+    const server = this.createServer(uuidv4(), accessKey, config.name);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -291,13 +290,24 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private loadServer(serverJson: OutlineServerJson) {
-    const server =
-        this.createServer(serverJson.id, serverJson.accessKey, serverJson.name, this.eventQueue);
-    const config = accessKeyToShadowsocksConfig(serverJson.accessKey);
-    if (!OutlineServer.isServerCipherSupported(config.method)) {
-      server.errorMessageId = 'unsupported-cipher';
-    }
+    const server = this.createServer(serverJson.id, serverJson.accessKey, serverJson.name);
     this.serverById.set(serverJson.id, server);
+  }
+
+  private createServer(id: string, accessKey: string, name: string): OutlineServer {
+    const server =
+        new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
+    try {
+      this.validateAccessKey(accessKey);
+    } catch (e) {
+      if (e instanceof errors.ShadowsocksUnsupportedCipher) {
+        // Don't throw for backward-compatibility.
+        server.errorMessageId = 'unsupported-cipher';
+      } else {
+        throw e;
+      }
+    }
+    return server;
   }
 }
 

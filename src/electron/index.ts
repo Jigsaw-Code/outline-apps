@@ -392,10 +392,10 @@ function main() {
     mainWindow?.webContents.send('push-clipboard');
   });
 
-  promiseIpc.on('is-reachable', async (config: ShadowsocksConfig) => {
+  promiseIpc.on('is-server-reachable', async (args: {hostname: string, port: number}) => {
     try {
       await connectivity.isServerReachable(
-          config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS);
+          args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
       return true;
     } catch {
       return false;

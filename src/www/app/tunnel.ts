@@ -20,6 +20,8 @@ export const enum TunnelStatus {
   RECONNECTING
 }
 
+export type TunnelFactory = (id: string) => Tunnel;
+
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
 // functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
 export interface Tunnel {
@@ -37,10 +39,6 @@ export interface Tunnel {
 
   // Returns whether the tunnel instance is active.
   isRunning(): Promise<boolean>;
-
-  // Returns whether the proxy server is reachable by attempting to open a TCP socket
-  // to the IP and port specified in `config`.
-  isReachable(config: ShadowsocksConfig): Promise<boolean>;
 
   // Sets a listener, to be called when the tunnel status changes.
   onStatusChange(listener: (status: TunnelStatus) => void): void;
