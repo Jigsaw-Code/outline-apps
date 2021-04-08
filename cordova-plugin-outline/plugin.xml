@@ -71,6 +71,9 @@
     <source-file
       src="android/java/org/outline/log"
       target-dir="app/src/main/java/org/outline" />
+    <source-file
+      src="android/java/org/outline/net"
+      target-dir="app/src/main/java/org/outline" />
 
     <source-file
       src="android/libs/arm64-v8a/libss-local.so"
