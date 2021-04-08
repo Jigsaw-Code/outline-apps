@@ -31,8 +31,8 @@ export interface HttpsRequest {
   readonly url: string;
   // HTTP method to use in the request. Falsy values default to 'GET'.
   readonly method?: string;
-  // SHA-256 certificate hash to pin as a trusted TLS certificate.
-  readonly certFingerprint?: string;
+  // HEX encoded SHA-256 certificate hash to pin as a trusted TLS certificate.
+  readonly hexSha256CertFingerprint?: string;
 }
 
 export interface HttpsResponse {
