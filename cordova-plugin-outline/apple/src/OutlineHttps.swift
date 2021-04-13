@@ -36,8 +36,8 @@ private let operationQueue: OperationQueue = {
 private let kTimeoutSeconds: TimeInterval = 30
 
 /**
- * Retrieves data over HTTPs. When `request.certificateFingerprint` is set , validates the server TLS certificate by
- * comparing its fingerprint to the trusted certificate fingerprint.
+ * Retrieves data over HTTPs. When `request.certificateFingerprint` is set, validates the server TLS
+ * certificate by comparing its fingerprint to the trusted certificate fingerprint.
  *
  * - Parameter request: HTTP request to send.
  * - Parameter completion: block called when the request is done.
