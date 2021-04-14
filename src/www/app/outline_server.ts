@@ -346,7 +346,7 @@ function accessKeysMatch(a: string, b: string): boolean {
     return l.host === r.host && l.port === r.port && l.password === r.password &&
         l.method === r.method;
   } catch (e) {
-    console.error(`failed to parse access key for comparison`);
+    console.debug(`failed to parse access key for comparison`);
   }
   return false;
 }
