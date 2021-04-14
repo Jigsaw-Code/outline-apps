@@ -23,7 +23,7 @@ import * as os from 'os';
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from './error_reporter';
+import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
 import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
@@ -76,7 +76,12 @@ class ElectronUpdater extends AbstractUpdater {
 class ElectronErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, privateDsn: string, appName: string) {
     if (privateDsn) {
-      sentry.init({dsn: privateDsn, release: appVersion, appName});
+      sentry.init({
+        dsn: privateDsn,
+        release: appVersion,
+        appName,
+        integrations: getSentryBrowserIntegrations
+      });
     }
   }
 

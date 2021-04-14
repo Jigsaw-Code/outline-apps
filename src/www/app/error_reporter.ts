@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as sentry from '@sentry/browser';
+import {Integration as SentryIntegration} from '@sentry/types';
 
 export interface OutlineErrorReporter {
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void>;
@@ -21,12 +22,14 @@ export interface OutlineErrorReporter {
 export class SentryErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, dsn: string, private tags: {[id: string]: string;}) {
     if (dsn) {
-      sentry.init({dsn, release: appVersion});
+      sentry.init({dsn, release: appVersion, integrations: getSentryBrowserIntegrations});
     }
     this.setUpUnhandledRejectionListener();
   }
 
   async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+    sentry.captureEvent(
+        {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
     sentry.configureScope(scope => {
       scope.setUser({email: userEmail || ''});
       if (this.tags) {
@@ -50,4 +53,24 @@ export class SentryErrorReporter implements OutlineErrorReporter {
       sentry.addBreadcrumb({message: msg, category: unhandledRejection});
     });
   }
+}
+
+// Returns a list of Sentry browser integrations that maintains the default integrations,
+// but replaces the Breadcrumbs integration with a custom one that only collects console statements.
+// See https://docs.sentry.io/platforms/javascript/configuration/integrations/default/
+export function getSentryBrowserIntegrations(defaultIntegrations: SentryIntegration[]):
+    SentryIntegration[] {
+  const integrations = defaultIntegrations.filter(integration => {
+    return integration.name !== 'Breadcrumbs';
+  });
+  const breadcrumbsIntegration = new sentry.Integrations.Breadcrumbs({
+    console: true,
+    dom: false,
+    fetch: false,
+    history: false,
+    sentry: false,
+    xhr: false,
+  });
+  integrations.push(breadcrumbsIntegration);
+  return integrations;
 }
