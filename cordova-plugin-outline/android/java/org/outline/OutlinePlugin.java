@@ -95,7 +95,12 @@ public class OutlinePlugin extends CordovaPlugin {
     CONFIGURE_SYSTEM_PROXY_FAILURE(9),
     NO_ADMIN_PERMISSIONS(10),
     UNSUPPORTED_ROUTING_TABLE(11),
-    SYSTEM_MISCONFIGURED(12);
+    SYSTEM_MISCONFIGURED(12),
+    INVALID_HTTPS_URL(13),
+    DOMAIN_RESOLUTION_ERRROR(14),
+    CERTIFICATE_VALIDATION_ERROR(15),
+    CONNECTION_ERROR(16),
+    CONNECTION_TIMEOUT(17);
 
     public final int value;
     ErrorCode(int value) {
@@ -262,9 +267,21 @@ public class OutlinePlugin extends CordovaPlugin {
             Https.Response response = Https.fetch(request);
             callback.success(Https.responseToJsonObject(response));
           } catch (Exception e) {
-            // TODO(alalama): send error code based on exception type.
             LOG.log(Level.SEVERE, "failed to fetch HTTPS", e);
-            callback.error(ErrorCode.UNEXPECTED.value);
+            ErrorCode errorCode = ErrorCode.UNEXPECTED;
+            if (e instanceof java.net.MalformedURLException
+                || e instanceof java.net.ProtocolException) {
+              errorCode = ErrorCode.INVALID_HTTPS_URL;
+            } else if (e instanceof java.net.UnknownHostException) {
+              errorCode = ErrorCode.DOMAIN_RESOLUTION_ERRROR;
+            } else if (e instanceof java.net.ConnectException || e instanceof java.io.IOException) {
+              errorCode = ErrorCode.CONNECTION_ERROR;
+            } else if (e instanceof javax.net.ssl.SSLHandshakeException) {
+              errorCode = ErrorCode.CERTIFICATE_VALIDATION_ERROR;
+            } else if (e instanceof java.net.SocketTimeoutException) {
+              errorCode = ErrorCode.CONNECTION_TIMEOUT;
+            }
+            callback.error(errorCode.value);
           }
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);

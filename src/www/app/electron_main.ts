@@ -20,6 +20,7 @@ import {clipboard, ipcRenderer} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
 
+import * as errors from '../model/errors';
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
@@ -89,7 +90,15 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 
 class ElectronNativeNetworking implements NativeNetworking {
   async fetchHttps(req: HttpsRequest): Promise<HttpsResponse> {
-    return promiseIpc.send('fetch-https', {req});
+    try {
+      return await promiseIpc.send('fetch-https', {req});
+    } catch (e) {
+      if (typeof e === 'number') {
+        throw errors.fromErrorCode(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
   async isServerReachable(hostname: string, port: number) {

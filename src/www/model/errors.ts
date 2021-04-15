@@ -92,6 +92,11 @@ export class ServerUnreachable extends RegularNativeError {}
 export class IllegalServerConfiguration extends RegularNativeError {}
 export class NoAdminPermissions extends RegularNativeError {}
 export class SystemConfigurationException extends RegularNativeError {}
+export class InvalidHttpsUrlError extends RegularNativeError {}
+export class DomainResolutionError extends RegularNativeError {}
+export class CertificateValidationError extends RegularNativeError {}
+export class ConnectionError extends RegularNativeError {}
+export class ConnectionTimeout extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
@@ -128,7 +133,12 @@ export const enum ErrorCode {
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
-  SYSTEM_MISCONFIGURED = 12
+  SYSTEM_MISCONFIGURED = 12,
+  INVALID_HTTPS_URL = 13,
+  DOMAIN_RESOLUTION_ERRROR = 14,
+  CERTIFICATE_VALIDATION_ERROR = 15,
+  CONNECTION_ERROR = 16,
+  CONNECTION_TIMEOUT = 17,
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -160,6 +170,16 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new UnsupportedRoutingTable();
     case ErrorCode.SYSTEM_MISCONFIGURED:
       return new SystemConfigurationException();
+    case ErrorCode.INVALID_HTTPS_URL:
+      return new InvalidHttpsUrlError();
+    case ErrorCode.DOMAIN_RESOLUTION_ERRROR:
+      return new DomainResolutionError();
+    case ErrorCode.CERTIFICATE_VALIDATION_ERROR:
+      return new CertificateValidationError();
+    case ErrorCode.CONNECTION_ERROR:
+      return new ConnectionError();
+    case ErrorCode.CONNECTION_TIMEOUT:
+      return new ConnectionTimeout();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
@@ -192,6 +212,16 @@ export function toErrorCode(e: NativeError): ErrorCode {
     return ErrorCode.NO_ADMIN_PERMISSIONS;
   } else if (e instanceof SystemConfigurationException) {
     return ErrorCode.SYSTEM_MISCONFIGURED;
+  } else if (e instanceof InvalidHttpsUrlError) {
+    return ErrorCode.INVALID_HTTPS_URL;
+  } else if (e instanceof DomainResolutionError) {
+    return ErrorCode.DOMAIN_RESOLUTION_ERRROR;
+  } else if (e instanceof CertificateValidationError) {
+    return ErrorCode.CERTIFICATE_VALIDATION_ERROR;
+  } else if (e instanceof ConnectionError) {
+    return ErrorCode.CONNECTION_ERROR;
+  } else if (e instanceof ConnectionTimeout) {
+    return ErrorCode.CONNECTION_TIMEOUT;
   }
   throw new Error(`unknown NativeError ${e.name}`);
 }

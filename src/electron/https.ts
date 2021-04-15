@@ -17,6 +17,7 @@ import * as https from 'https';
 import * as tls from 'tls';
 
 import {HttpsRequest, HttpsResponse} from '../www/app/net';
+import * as errors from '../www/model/errors';
 
 const HTTPS_TIMEOUT_MS = 30 * 1000;
 
@@ -26,12 +27,22 @@ const HTTPS_TIMEOUT_MS = 30 * 1000;
  *
  * @param {HttpsRequest} request - HTTP request to send.
  * @returns {Promise<HtttpResponse>} - server HTTP response.
+ * @throws {InvalidHttpsUrlError} - if `req.url` is not a valid HTTPs URL.
+ * @throws {DomainResolutionError} - if the request host cannot be resolved.
+ * @throws {CertificateValidationError} - if server certificate cannot be validated.
+ * @throws {ConnectionTimeout} - if the connection times out.
+ * @throws {ConnectionError} - if there are errors during the connection.
+ * @throws {UnexpectedPluginError} - for other error condidtions.
  */
 export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> {
-  // TODO(alalama): wrap thrown errors with OutlineError subclasses.
-  const url = new URL(request.url);
+  let url: URL;
+  try {
+    url = new URL(request.url);
+  } catch (e) {
+    throw new errors.InvalidHttpsUrlError('failed to parse request URL');
+  }
   if (url.protocol !== 'https:') {
-    throw new Error('protocol must be https');
+    throw new errors.InvalidHttpsUrlError('protocol must be https');
   }
   const validateServerCertificate = !!request.hexSha256CertFingerprint;
   const agentOptions = {
@@ -43,30 +54,37 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
   };
   const agent = new https.Agent(agentOptions);
   const options = {method: request.method || 'GET', agent};
-  let res: http.IncomingMessage;
-  try {
-    res = await new Promise(async (resolve, reject) => {
-      const req = https.request(url, options, resolve);
-      req.on('error', reject);
-      req.on('timeout', () => {
-        req.emit('error', new Error('connection timeout'));
-        req.destroy();
-      });
-      if (!validateServerCertificate) {
-        return req.end();
-      }
-      // Validate server certificate against the trusted certificate fingerprint.
-      const cert = await getServerCertifcate(req);
-      const hexSha256CertFingerprint = cert.fingerprint256.replace(/:/g, '');
-      if (request.hexSha256CertFingerprint !== hexSha256CertFingerprint) {
-        req.emit('error', new Error('failed to validate server TLS certificate'));
+  const res: http.IncomingMessage = await new Promise(async (resolve, reject) => {
+    const req = https.request(url, options, resolve);
+    req.on('error', (err) => {
+      reject(getOutlineError(err));
+    });
+    req.on('timeout', () => {
+      req.emit('error', new errors.ConnectionTimeout());
+      req.destroy();
+    });
+    const tlsSocket = await getTlsSocket(req);
+    if (!validateServerCertificate) {
+      if (!tlsSocket.authorized) {
+        req.emit(
+            'error',
+            new errors.CertificateValidationError('failed to validate server certificate'));
         return req.destroy();
       }
-      req.end();
-    });
-  } catch (e) {
-    throw e;
-  }
+      return req.end();
+    }
+    // Validate server certificate against the trusted certificate fingerprint.
+    const cert = tlsSocket.getPeerCertificate();
+    const hexSha256CertFingerprint = cert.fingerprint256.replace(/:/g, '');
+    if (request.hexSha256CertFingerprint !== hexSha256CertFingerprint) {
+      req.emit(
+          'error',
+          new errors.CertificateValidationError(
+              'server certificate fingerprint does not match trusted fingerprint'));
+      return req.destroy();
+    }
+    req.end();
+  });
 
   const statusCode = res.statusCode;
   if (statusCode >= 400) {
@@ -75,30 +93,47 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
     return {statusCode, redirectUrl: res.headers.location};
   }
 
-  let data: string;
-  try {
-    data = await readResponseData(res);
-  } catch (e) {
-    throw e;
-  }
+  const data = await readResponseData(res);
   return {statusCode, data};
 }
 
-function getServerCertifcate(req: http.ClientRequest): Promise<tls.PeerCertificate> {
-  return new Promise<tls.PeerCertificate>(resolve => {
+function getTlsSocket(req: http.ClientRequest): Promise<tls.TLSSocket> {
+  return new Promise<tls.TLSSocket>(resolve => {
     req.on('socket', socket => {
       socket.on('secureConnect', () => {
-        resolve((socket as tls.TLSSocket).getPeerCertificate());
+        resolve(socket as tls.TLSSocket);
       });
     });
   });
 }
 
 function readResponseData(res: http.IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     let data = '';
     res.on('data', chunk => data += chunk);
-    res.on('error', err => reject(err));
     res.on('end', () => resolve(data));
   });
+}
+
+function getOutlineError(e: Error): errors.OutlineError {
+  if (e instanceof errors.OutlineError) {
+    return e;
+  }
+  if (isNodeError(e)) {
+    if (e.code === 'ENOTFOUND') {
+      return new errors.DomainResolutionError('failed to resolve hostname');
+    } else if (e.code === 'ECONNREFUSED') {
+      return new errors.ConnectionError('connection refused');
+    } else if (e.code === 'ECONNRESET') {
+      return new errors.ConnectionError('connection reset');
+    } else if (e.code === 'ETIMEDOUT') {
+      return new errors.ConnectionTimeout();
+    }
+    return new errors.ConnectionError(`connection failed with code ${e.code}`);
+  }
+  return new errors.UnexpectedPluginError();
+}
+
+function isNodeError(err: Error): err is NodeJS.ErrnoException {
+  return !!(err as NodeJS.ErrnoException).code;
 }
