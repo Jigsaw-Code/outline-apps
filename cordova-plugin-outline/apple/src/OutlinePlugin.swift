@@ -237,14 +237,23 @@ class OutlinePlugin: CDVPlugin {
     }
     event.message = "\(OutlinePlugin.kPlatform) report (\(uuid))"
 
-    // Remove device identifier. Note that we cannot use the beforeSerializeEvent callback,
-    // since contexts are only added after serialization when not present.
+    // Remove device identifier, timezone, and memory stats. Note that we cannot use the
+    // beforeSerializeEvent callback, since contexts are only added after serialization
+    // if not present.
     let serializedEvent = event.serialize()
-    var contexts = serializedEvent["contexts"] as? [String: [String: Any]]
-    contexts?["app"]?["device_app_hash"] = ""
+    let contexts = serializedEvent["contexts"] as? [String: [String: Any]]
+    var appContext = contexts?["app"]
+    appContext?["device_app_hash"] = ""
+    var deviceContext = contexts?["device"]
+    deviceContext?["timezone"] = ""
+    deviceContext?["memory_size"] = ""
+    deviceContext?["free_memory"] = ""
+    deviceContext?["usable_memory"] = ""
+    deviceContext?["storage_size"] = ""
     event.context = Context()
-    // Setting the sanitized app context will prevent it from being added on serialization.
-    event.context?.appContext = contexts?["app"]
+    // Setting the sanitized contexts will prevent them from being added on serialization.
+    event.context?.appContext = appContext
+    event.context?.deviceContext = deviceContext
 
     OutlineSentryLogger.sharedInstance.addVpnExtensionLogsToSentry()
     Client.shared?.send(event: event) { (error) in
