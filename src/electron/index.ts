@@ -404,12 +404,7 @@ function main() {
   });
 
   promiseIpc.on('fetch-https', async (args: {req: HttpsRequest}) => {
-    try {
-      return await fetchHttps(args.req);
-    } catch (e) {
-      console.error(`failed to fetch https: ${e.name} (${e.message})`);
-      throw errors.toErrorCode(e);
-    }
+    return fetchHttps(args.req);
   });
 
   promiseIpc.on('is-server-reachable', async (args: {hostname: string, port: number}) => {

@@ -146,35 +146,16 @@ class OutlinePlugin: CDVPlugin {
 
   func fetchHttps(_ command: CDVInvokedUrlCommand) {
     DDLogInfo("fetchHttps")
-    guard let requestDict = command.argument(at: 0) as? [String: Any?],
-          let request = dictToHttpsRequest(dict: requestDict) else {
+    guard let requestDict = command.argument(at: 0) as? [String: Any?], let request = dictToHttpsRequest(dict: requestDict) else {
       return sendError("Missing HTTPs request", callbackId: command.callbackId)
     }
     HttpsFetch(request: request) { (response, error) in
       guard error == nil else {
-        var errorCode: OutlineVpn.ErrorCode = .unexpected
-        switch error! {
-        case URLError.badURL:
-          errorCode = .invalidHttpsUrl
-        case URLError.dnsLookupFailed, URLError.cannotFindHost:
-          errorCode = .domainResolutionError
-        case URLError.serverCertificateUntrusted, URLError.serverCertificateNotYetValid,
-             URLError.serverCertificateHasUnknownRoot, URLError.serverCertificateHasBadDate,
-             URLError.secureConnectionFailed:
-          errorCode = .certifiateValidationError
-        case URLError.timedOut:
-          errorCode = .connectionTimeout
-        case is URLError:
-          errorCode = .connectionError
-        default:
-          break
-        }
-        return self.sendError("Failed to fetch HTTPs with code \((error! as NSError).code)",
-                              callbackId: command.callbackId, errorCode: errorCode)
+        // TODO(alalama): send error code based on error type
+        return self.sendError("Failed to fetch HTTPS", callbackId: command.callbackId)
       }
       guard response != nil else {
-        return self.sendError("Failed to read HTTPs response", callbackId: command.callbackId,
-                              errorCode: .connectionError)
+        return self.sendError("Failed to read HTTPs response", callbackId: command.callbackId)
       }
       let responseDict = self.httpsResponseToDict(response: response!) as [AnyHashable : Any]
       let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: responseDict)
@@ -331,7 +312,7 @@ class OutlinePlugin: CDVPlugin {
   }
 
   private func sendError(_ message: String, callbackId: String,
-                         errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.unexpected,
+                         errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.undefined,
                          keepCallback: Bool = false) {
     DDLogError(message)
     let result = CDVPluginResult(status: CDVCommandStatus_ERROR,

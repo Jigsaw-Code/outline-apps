@@ -41,7 +41,6 @@ private let kTimeoutSeconds: TimeInterval = 30
  *
  * - Parameter request: HTTP request to send.
  * - Parameter completion: block called when the request is done.
- * - Throws URLError
  */
 func HttpsFetch(request: HttpsRequest, completion: @escaping(HttpsResponse?, Error?) -> Void) {
   guard let url = URL(string: request.url), url.scheme == "https" else {
