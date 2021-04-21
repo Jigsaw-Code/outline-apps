@@ -153,16 +153,15 @@ public class Https {
       return new Response(statusCode, null, conn.getHeaderField("Location"));
     }
 
-    BufferedReader streamReader =
-        new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-    StringBuilder responseStrBuilder = new StringBuilder();
-    String inputStr;
-    while ((inputStr = streamReader.readLine()) != null) {
-      responseStrBuilder.append(inputStr);
+    try (BufferedReader streamReader = new BufferedReader(
+             new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+      StringBuilder responseStrBuilder = new StringBuilder();
+      String inputStr;
+      while ((inputStr = streamReader.readLine()) != null) {
+        responseStrBuilder.append(inputStr);
+      }
+      return new Response(statusCode, responseStrBuilder.toString(), null);
     }
-    streamReader.close();
-
-    return new Response(statusCode, responseStrBuilder.toString(), null);
   }
 
   /**
