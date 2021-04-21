@@ -77,8 +77,8 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
     return {statusCode, redirectUrl: res.headers.location};
   }
 
-  const data = await readResponseData(res);
-  return {statusCode, data};
+  const body = await readResponseData(res);
+  return {statusCode, body};
 }
 
 function getTlsSocket(req: http.ClientRequest): Promise<tls.TLSSocket> {

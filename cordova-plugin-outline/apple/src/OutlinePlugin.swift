@@ -180,8 +180,8 @@ class OutlinePlugin: CDVPlugin {
     var dict = [String: Any?]()
     dict["statusCode"] = response?.statusCode
     dict["redirectUrl"] = response?.redirectUrl
-    if let data = response?.data {
-      dict["data"] = String(data: data, encoding: .utf8)
+    if let body = response?.body {
+      dict["body"] = String(data: body, encoding: .utf8)
     }
     return dict
   }

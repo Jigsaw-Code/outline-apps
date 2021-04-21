@@ -22,7 +22,7 @@ struct HttpsRequest {
 
 struct HttpsResponse {
   let statusCode: UInt
-  let data: Data?
+  let body: Data?
   let redirectUrl: String?
 }
 
@@ -64,7 +64,7 @@ func HttpsFetch(request: HttpsRequest, completion: @escaping(HttpsResponse?, Err
     }
     let redirectUrl = httpResponse.allHeaderFields["Location"] as? String
     let response = HttpsResponse(
-      statusCode: UInt(httpResponse.statusCode), data: data, redirectUrl: redirectUrl)
+      statusCode: UInt(httpResponse.statusCode), body: data, redirectUrl: redirectUrl)
     completion(response, nil)
   }
   task.resume()

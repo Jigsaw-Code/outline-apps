@@ -54,12 +54,12 @@ public class Https {
 
   public static class Response {
     public final int statusCode;
-    @Nullable public final String data;
+    @Nullable public final String body;
     @Nullable public final String redirectUrl;
 
-    public Response(int statusCode, @Nullable String data, @Nullable String redirectUrl) {
+    public Response(int statusCode, @Nullable String body, @Nullable String redirectUrl) {
       this.statusCode = statusCode;
-      this.data = data;
+      this.body = body;
       this.redirectUrl = redirectUrl;
     }
   }
@@ -199,8 +199,8 @@ public class Https {
     JSONObject jsonResponse = new JSONObject();
     jsonResponse.put("statusCode", response.statusCode);
     // JSONObject does not support null values, check optionals before putting.
-    if (response.data != null) {
-      jsonResponse.put("data", response.data);
+    if (response.body != null) {
+      jsonResponse.put("body", response.body);
     }
     if (response.redirectUrl != null) {
       jsonResponse.put("redirectUrl", response.redirectUrl);

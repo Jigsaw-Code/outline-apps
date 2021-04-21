@@ -38,8 +38,8 @@ export interface HttpsRequest {
 export interface HttpsResponse {
   // HTTP status code.
   readonly statusCode: number;
-  // Data read from the request URL.
-  readonly data?: string;
+  // Data read from the response body.
+  readonly body?: string;
   // HTTP 'Location' header. Set when the response is a redirect.
   readonly redirectUrl?: string;
 }
