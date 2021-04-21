@@ -93,10 +93,10 @@ function getTlsSocket(req: http.ClientRequest): Promise<tls.TLSSocket> {
 
 function readResponseData(res: http.IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
-    let data = '';
-    res.on('data', chunk => data += chunk);
+    const data: string[] = [];
+    res.on('data', chunk => data.push(chunk));
     res.on('error', err => reject(err));
-    res.on('end', () => resolve(data));
+    res.on('end', () => resolve(data.join()));
   });
 }
 
