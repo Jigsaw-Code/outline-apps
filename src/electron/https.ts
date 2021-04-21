@@ -28,7 +28,6 @@ const HTTPS_TIMEOUT_MS = 30 * 1000;
  * @returns {Promise<HtttpResponse>} - server HTTP response.
  */
 export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> {
-  // TODO(alalama): wrap thrown errors with OutlineError subclasses.
   const url = new URL(request.url);
   if (url.protocol !== 'https:') {
     throw new Error('protocol must be https');
@@ -39,34 +38,37 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
     rejectUnauthorized: !validateServerCertificate,
     // Don't cache TLS sessions so we can validate the server certificate on each request.
     maxCachedSessions: 0,
-    timeout: HTTPS_TIMEOUT_MS,
   };
   const agent = new https.Agent(agentOptions);
-  const options = {method: request.method || 'GET', agent};
-  let res: http.IncomingMessage;
-  try {
-    res = await new Promise(async (resolve, reject) => {
-      const req = https.request(url, options, resolve);
-      req.on('error', reject);
-      req.on('timeout', () => {
-        req.emit('error', new Error('connection timeout'));
-        req.destroy();
-      });
-      if (!validateServerCertificate) {
-        return req.end();
-      }
-      // Validate server certificate against the trusted certificate fingerprint.
-      const cert = await getServerCertifcate(req);
-      const hexSha256CertFingerprint = cert.fingerprint256.replace(/:/g, '');
-      if (request.hexSha256CertFingerprint !== hexSha256CertFingerprint) {
-        req.emit('error', new Error('failed to validate server TLS certificate'));
+  const options = {agent, method: request.method || 'GET', timeout: HTTPS_TIMEOUT_MS};
+  const res: http.IncomingMessage = await new Promise(async (resolve, reject) => {
+    const req = https.request(url, options, resolve);
+    req.on('error', (e) => {
+      // Send the system error code ('ECONNREFUSED', 'ETIMEDOUT') or the error message we emitted.
+      reject(new Error(isNodeError(e) ? e.code : e.message));
+    });
+    req.on('timeout', () => {
+      req.emit('error', new Error('connection timeout'));
+      req.destroy();
+    });
+    const tlsSocket = await getTlsSocket(req);
+    if (!validateServerCertificate) {
+      if (!tlsSocket.authorized) {
+        req.emit('error', new Error('failed to validate server certificate'));
         return req.destroy();
       }
-      req.end();
-    });
-  } catch (e) {
-    throw e;
-  }
+      return req.end();
+    }
+    // Validate server certificate against the trusted certificate fingerprint.
+    const cert = tlsSocket.getPeerCertificate();
+    const hexSha256CertFingerprint = cert.fingerprint256.replace(/:/g, '');
+    if (request.hexSha256CertFingerprint !== hexSha256CertFingerprint) {
+      req.emit(
+          'error', new Error('server certificate fingerprint does not match trusted fingerprint'));
+      return req.destroy();
+    }
+    req.end();
+  });
 
   const statusCode = res.statusCode;
   if (statusCode >= 400) {
@@ -75,20 +77,15 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
     return {statusCode, redirectUrl: res.headers.location};
   }
 
-  let data: string;
-  try {
-    data = await readResponseData(res);
-  } catch (e) {
-    throw e;
-  }
+  const data = await readResponseData(res);
   return {statusCode, data};
 }
 
-function getServerCertifcate(req: http.ClientRequest): Promise<tls.PeerCertificate> {
-  return new Promise<tls.PeerCertificate>(resolve => {
+function getTlsSocket(req: http.ClientRequest): Promise<tls.TLSSocket> {
+  return new Promise<tls.TLSSocket>(resolve => {
     req.on('socket', socket => {
       socket.on('secureConnect', () => {
-        resolve((socket as tls.TLSSocket).getPeerCertificate());
+        resolve(socket as tls.TLSSocket);
       });
     });
   });
@@ -101,4 +98,8 @@ function readResponseData(res: http.IncomingMessage): Promise<string> {
     res.on('error', err => reject(err));
     res.on('end', () => resolve(data));
   });
+}
+
+function isNodeError(e: Error): e is NodeJS.ErrnoException {
+  return !!(e as NodeJS.ErrnoException).code;
 }

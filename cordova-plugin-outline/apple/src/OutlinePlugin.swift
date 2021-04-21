@@ -146,18 +146,19 @@ class OutlinePlugin: CDVPlugin {
 
   func fetchHttps(_ command: CDVInvokedUrlCommand) {
     DDLogInfo("fetchHttps")
-    guard let requestDict = command.argument(at: 0) as? [String: Any?], let request = dictToHttpsRequest(dict: requestDict) else {
+    guard let requestDict = command.argument(at: 0) as? [String: Any?],
+          let request = dictToHttpsRequest(dict: requestDict) else {
       return sendError("Missing HTTPs request", callbackId: command.callbackId)
     }
     HttpsFetch(request: request) { (response, error) in
       guard error == nil else {
-        // TODO(alalama): send error code based on error type
-        return self.sendError("Failed to fetch HTTPS", callbackId: command.callbackId)
+        let nsError = error! as NSError
+        let errorMessage = "\(nsError.domain) \(nsError.code)"
+        DDLogError("Failed to fetch HTTPs: \(errorMessage)")
+        let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: errorMessage)
+        return self.send(pluginResult: result, callbackId: command.callbackId, keepCallback: false)
       }
-      guard response != nil else {
-        return self.sendError("Failed to read HTTPs response", callbackId: command.callbackId)
-      }
-      let responseDict = self.httpsResponseToDict(response: response!) as [AnyHashable : Any]
+      let responseDict = self.httpsResponseToDict(response: response) as [AnyHashable : Any]
       let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: responseDict)
       self.send(pluginResult: result, callbackId: command.callbackId, keepCallback: false)
     }
@@ -175,11 +176,11 @@ class OutlinePlugin: CDVPlugin {
     return HttpsRequest(url: url, method: method, certFingerprint: certFingerprint)
   }
 
-  private func httpsResponseToDict(response: HttpsResponse) -> [String: Any?] {
+  private func httpsResponseToDict(response: HttpsResponse?) -> [String: Any?] {
     var dict = [String: Any?]()
-    dict["statusCode"] = response.statusCode
-    dict["redirectUrl"] = response.redirectUrl
-    if let data = response.data {
+    dict["statusCode"] = response?.statusCode
+    dict["redirectUrl"] = response?.redirectUrl
+    if let data = response?.data {
       dict["data"] = String(data: data, encoding: .utf8)
     }
     return dict
@@ -312,7 +313,7 @@ class OutlinePlugin: CDVPlugin {
   }
 
   private func sendError(_ message: String, callbackId: String,
-                         errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.undefined,
+                         errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.unexpected,
                          keepCallback: Bool = false) {
     DDLogError(message)
     let result = CDVPluginResult(status: CDVCommandStatus_ERROR,

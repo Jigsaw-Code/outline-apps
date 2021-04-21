@@ -45,8 +45,8 @@ const net = {
 
   fetchHttps: function(req) {
     return new Promise(function(resolve, reject) {
-      const rejectWithError = function(errorCode) {
-        reject(new OutlinePluginError(errorCode));
+      const rejectWithError = function(errorMessage) {
+        reject(new Error(errorMessage));
       };
       exec(resolve, rejectWithError, PLUGIN_NAME, 'fetchHttps', [req]);
     });

@@ -64,7 +64,7 @@ export class CordovaErrorReporter extends SentryErrorReporter {
 
 class CordovaNativeNetworking implements NativeNetworking {
   async fetchHttps(req: HttpsRequest): Promise<HttpsResponse> {
-    return cordova.plugins.outline.net.fetchHttps(req);
+    return await cordova.plugins.outline.net.fetchHttps(req);
   }
 
   async isServerReachable(hostname: string, port: number) {

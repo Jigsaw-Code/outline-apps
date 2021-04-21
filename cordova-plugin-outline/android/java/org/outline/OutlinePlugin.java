@@ -262,9 +262,8 @@ public class OutlinePlugin extends CordovaPlugin {
             Https.Response response = Https.fetch(request);
             callback.success(Https.responseToJsonObject(response));
           } catch (Exception e) {
-            // TODO(alalama): send error code based on exception type.
-            LOG.log(Level.SEVERE, "failed to fetch HTTPS", e);
-            callback.error(ErrorCode.UNEXPECTED.value);
+            LOG.log(Level.WARNING, "failed to fetch HTTPS", e);
+            callback.error(e.getClass().getSimpleName());
           }
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
