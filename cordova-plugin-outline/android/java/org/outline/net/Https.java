@@ -181,7 +181,8 @@ public class Https {
     }
     byte[] certFingerprint = null;
     try {
-      String hexSha256CertFingerprint = jsonRequest.getString("hexSha256CertFingerprint");
+      String hexSha256CertFingerprint =
+          jsonRequest.getString("hexSha256CertFingerprint").replaceAll(":", "");
       certFingerprint = new BigInteger(hexSha256CertFingerprint, 16).toByteArray();
     } catch (JSONException e) {
       // Don't throw, certificate fingerprint is optional.

@@ -61,8 +61,8 @@ export async function fetchHttps(request: HttpsRequest): Promise<HttpsResponse> 
     }
     // Validate server certificate against the trusted certificate fingerprint.
     const cert = tlsSocket.getPeerCertificate();
-    const hexSha256CertFingerprint = cert.fingerprint256.replace(/:/g, '');
-    if (request.hexSha256CertFingerprint !== hexSha256CertFingerprint) {
+    // cert.fingerprint256 is an upper-case colon-delimited HEX-encoded SHA256 string.
+    if (request.hexSha256CertFingerprint !== cert.fingerprint256) {
       req.emit(
           'error', new Error('server certificate fingerprint does not match trusted fingerprint'));
       return req.destroy();

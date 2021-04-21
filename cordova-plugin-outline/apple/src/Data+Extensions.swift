@@ -18,10 +18,11 @@ extension Data {
   /**
    * Creates data with the contents of a hex-encoded string.
    *
-   * - Parameter hex: the hex-encoded string. Does not support leading "0x" syntax.
+   * - Parameter hex: the hex-encoded string, optionally colon-delimited
    * - Returns: a Data instance or nil if decoding fails.
    */
   init?(hex: String) {
+    let hex = hex.replacingOccurrences(of: ":", with: "")
     if hex.count < 2 || hex.count % 2 != 0 {
       return nil
     }
