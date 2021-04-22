@@ -13,7 +13,7 @@
   "disconnect-button-label": "Ngắt kết nối",
   "disconnected-server-state": "Đã ngắt kết nối",
   "disconnecting-server-state": "Đang ngắt kết nối...",
-  "email-feedback-input": "Địa chỉ email (tùy chọn)",
+  "email-feedback-input": "Địa chỉ email (không bắt buộc)",
   "error-feedback-submission": "Rất tiếc, chúng tôi không thể gửi phản hồi của bạn. Vui lòng kiểm tra để đảm bảo rằng bạn có kết nối Internet rồi thử lại.",
   "error-invalid-access-key": "Khóa truy cập không hợp lệ. Vui lòng thử lại hoặc gửi phản hồi để nhận trợ giúp.",
   "error-server-already-added": "Đã thêm máy chủ “{serverName}”.",
