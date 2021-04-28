@@ -1,23 +1,21 @@
 # cordova-plugin-outline
 
-Cordova plugin that implements a system-wide VPN to proxy device traffic over [Shadowsocks](https://shadowsocks.org/).
+Cordova plugin that implements a system-wide VPN to tunnel device traffic over [Shadowsocks](https://shadowsocks.org/).
 
 ## Supported Platforms
 
-This plugin supports Android, iOS, and macOS. Browser is supported for UI development/demo mode.
+This plugin supports Android, iOS, and macOS.
 
 ### Android
 This plugin targets Android devices running Lollipop (API 22), or higher.
 
 ### Apple
-This plugin targets Apple devices running iOS 11.0+ and macOS/OS X 10.11.
+This plugin targets Apple devices running iOS 11.0+ and macOS/OS X 10.11+.
 
 
 ## tun2socks
 
-We rely on [outline-go-tun2socks](https://github.com/Jigsaw-Code/outline-go-tun2socks) to assemble IP traffic and implement the Shadowsocks protocol: it receives all of the device’s traffic through the VPN network interface (TUN) and forwards it to a [Shadowsocks proxy server](https://github.com/Jigsaw-Code/outline-ss-server).
-
-outline-go-tun2socks is consumed by native platforms as a library.
+Native platforms consume [outline-go-tun2socks](https://github.com/Jigsaw-Code/outline-go-tun2socks) as a library to assemble IP traffic and implement the Shadowsocks protocol: it receives all of the device’s traffic through the VPN network interface (TUN) and forwards it to a [Shadowsocks proxy server](https://github.com/Jigsaw-Code/outline-ss-server).
 
 
 ## JavaScript API
