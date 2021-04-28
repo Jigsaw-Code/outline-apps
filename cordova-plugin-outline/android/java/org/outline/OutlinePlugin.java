@@ -38,7 +38,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
 import org.outline.log.SentryErrorReporter;
-import org.outline.shadowsocks.ShadowsocksConnectivity;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 
@@ -252,7 +251,7 @@ public class OutlinePlugin extends CordovaPlugin {
           // Static actions
         } else if (Action.IS_REACHABLE.is(action)) {
           boolean isReachable =
-              ShadowsocksConnectivity.isServerReachable(args.getString(0), args.getInt(1));
+              this.vpnTunnelService.isServerReachable(args.getString(0), args.getInt(1));
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
@@ -318,14 +317,13 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // Returns whether the VPN service is running a particular tunnel instance.
   private boolean isTunnelActive(final String tunnelId) {
-    boolean isActive = false;
     try {
-      isActive = vpnTunnelService.isTunnelActive(tunnelId);
+      return vpnTunnelService.isTunnelActive(tunnelId);
     } catch (Exception e) {
       LOG.log(Level.SEVERE,
           String.format(Locale.ROOT, "Failed to determine if tunnel is active: %s", tunnelId), e);
     }
-    return isActive;
+    return false;
   }
 
   // Broadcasts
