@@ -41,6 +41,8 @@ import java.util.logging.LogRecord;
 public class SentryErrorReporter {
   // Limit the number of breadcrumbs to comply with Outline's data collection policy.
   private static final int MAX_BREADCRUMBS = 100;
+  // Reduce the number of VPN service process Sentry error reports by setting a sampling rate.
+  private static final double VPN_PROCESS_ERROR_REPORTING_SAMPLE_RATE = 0.75;
   private static final String CATEGORY_VPN_PROCESS = "vpn";
 
   // Disallow instantiation in favor of a purely static class.
@@ -92,9 +94,11 @@ public class SentryErrorReporter {
    * @param dsn Sentry API Key
    */
   public static void init(Context context, final String dsn) {
+    double sampleRate = isVpnServiceContext(context) ? VPN_PROCESS_ERROR_REPORTING_SAMPLE_RATE : 1;
     SentryAndroid.init(context, options -> {
       options.setDsn(dsn);
       options.setMaxBreadcrumbs(MAX_BREADCRUMBS);
+      options.setSampleRate(sampleRate);
       options.setBeforeSend(((event, hint) -> {
         try {
           return removeSentryEventPii(event);
@@ -110,6 +114,15 @@ public class SentryErrorReporter {
     while (breadcrumbsQueue.size() > 0) {
       Sentry.addBreadcrumb(breadcrumbsQueue.remove());
     }
+  }
+
+  private static boolean isVpnServiceContext(Context context) {
+    try {
+      return context.getClass().getName().contains("vpn");
+    } catch (Exception e) {
+      Log.w(SentryErrorReporter.class.getName(), "Failed to determine running context");
+    }
+    return false;
   }
 
   /**
