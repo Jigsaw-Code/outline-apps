@@ -442,7 +442,7 @@ public class VpnTunnelService extends VpnService {
 
   private void initErrorReporting(final String apiKey) {
     try {
-      SentryErrorReporter.init(getApplicationContext(), apiKey);
+      SentryErrorReporter.init(this, apiKey);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to initialize Sentry", e);
     }
