@@ -58,8 +58,7 @@ int main(int argc, char **argv) {
       wcerr << "could not fetch network device list: " << result << endl;
       free(adaptersAddresses);
       adaptersAddresses = NULL;
-    }
-    else {
+    } else {
       wcout << "fetch network device list success!";
     }
   } while ((result == ERROR_BUFFER_OVERFLOW) && (count++ < MAX_TRIES));
