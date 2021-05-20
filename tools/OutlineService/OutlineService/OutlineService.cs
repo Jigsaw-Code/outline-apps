@@ -447,7 +447,7 @@ namespace OutlineService
 
             try
             {
-                AddIpv4Redirect();
+                AddIpv4TapRedirect();
                 eventLog.WriteEntry($"redirected IPv4 traffic");
             }
             catch (Exception e)
@@ -477,7 +477,7 @@ namespace OutlineService
         {
             try
             {
-                RemoveIpv4Redirect();
+                RemoveIpv4TapRedirect();
                 eventLog.WriteEntry($"removed IPv4 redirect");
             }
             catch (Exception e)
@@ -650,7 +650,7 @@ namespace OutlineService
         //
         // TODO: If these routes exist on a gateway that's not our TAP device,
         //       it might be a good signal that OpenVPN is active?
-        private void AddIpv4Redirect()
+        private void AddIpv4TapRedirect()
         {
             foreach (string subnet in IPV4_SUBNETS)
             {
@@ -665,7 +665,7 @@ namespace OutlineService
             }
         }
 
-        private void RemoveIpv4Redirect()
+        private void RemoveIpv4TapRedirect()
         {
             foreach (string subnet in IPV4_SUBNETS)
             {
@@ -950,7 +950,7 @@ namespace OutlineService
                 try
                 {
                     StopRoutingIpv4();
-                    RemoveIpv4Redirect();
+                    RemoveIpv4TapRedirect();
                     eventLog.WriteEntry($"stopped routing IPv4 traffic");
                 }
                 catch (Exception e)
@@ -976,7 +976,7 @@ namespace OutlineService
 
             try
             {
-                AddIpv4Redirect();
+                AddIpv4TapRedirect();
                 StartRoutingIpv4();
                 eventLog.WriteEntry($"refreshed IPv4 redirect");
             }
