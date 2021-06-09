@@ -136,10 +136,12 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   private suspendListener() {
-    // Swap out the current listener, restart once the system resumes.
+    // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
+    // Preemptively stop tun2socks without notifying its exit.
     this.tun2socks.onExit = () => {
       console.log('stopped tun2socks in preparation for suspend');
     };
+    this.tun2socks.stop();
   }
 
   private resumeListener() {
@@ -226,6 +228,7 @@ export class GoVpnTunnel implements VpnTunnel {
 class GoTun2socks {
   private process: ChildProcessHelper;
   private exitListener?: (code?: number, signal?: string) => void;
+  private isRunning = false;
 
   constructor(private config: ShadowsocksConfig) {
     this.process =
@@ -253,7 +256,7 @@ class GoTun2socks {
       args.push('-dnsFallback');
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       this.process.onExit = (code?: number, signal?: string) => {
         reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
       };
@@ -262,8 +265,15 @@ class GoTun2socks {
           return;
         }
         console.debug('tun2socks started');
-        this.process.onExit = (code?: number, signal?: string) => {
+        this.isRunning = true;
+        this.process.onExit = async (code?: number, signal?: string) => {
           console.debug('tun2socks stopped');
+          if (this.isRunning) {
+            // The process crashed, restart it without notifying its exit.
+            console.warn(`tun2socks crashed, restarting...`);
+            await this.start(isUdpEnabled);
+            return;
+          }
           if (this.exitListener) {
             this.exitListener();
           }
@@ -277,6 +287,7 @@ class GoTun2socks {
 
   stop() {
     this.process.stop();
+    this.isRunning = false;
   }
 
   set onExit(listener: ((code?: number, signal?: string) => void)|undefined) {
