@@ -136,7 +136,6 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   private suspendListener() {
-    // Windows: when the system suspends, tun2socks terminates due to the TAP device getting closed.
     // Preemptively stop tun2socks without notifying its exit.
     this.tun2socks.onExit = () => {
       console.log('stopped tun2socks in preparation for suspend');
@@ -265,15 +264,15 @@ class GoTun2socks {
           return;
         }
         console.debug('tun2socks started');
-        this.isRunning = true;
         this.process.onExit = async (code?: number, signal?: string) => {
-          console.debug('tun2socks stopped');
           if (this.isRunning) {
-            // The process crashed, restart it without notifying its exit.
-            console.warn(`tun2socks crashed, restarting...`);
+            // The process exited unexpectedly, restart it without notifying its exit.
+            console.warn(
+              `tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
             await this.start(isUdpEnabled);
             return;
           }
+          console.debug('tun2socks stopped');
           if (this.exitListener) {
             this.exitListener();
           }
@@ -282,6 +281,7 @@ class GoTun2socks {
         resolve();
       };
       this.process.launch(args);
+      this.isRunning = true;
     });
   }
 
