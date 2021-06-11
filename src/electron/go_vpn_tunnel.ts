@@ -45,16 +45,11 @@ const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 // |TAP| <-> |outline-go-tun2socks| <-> |Shadowsocks proxy|
 //
 // In addition to the basic lifecycle of the helper processes, this class restarts tun2socks
-// on network changes if necessary.
+// on unexpected failures and network changes if necessary.
 // Follows the Mediator pattern in that none of the "helpers" know anything
 // about the others.
 export class GoVpnTunnel implements VpnTunnel {
   private readonly tun2socks: GoTun2socks;
-
-  // Extracted out to an instance variable because in certain situations, notably a change in UDP
-  // support, we need to stop and restart tun2socks *without notifying the client* and this allows
-  // us swap the listener in and out.
-  private tun2socksExitListener?: () => void | undefined;
 
   // See #resumeListener.
   private terminated = false;
@@ -62,6 +57,7 @@ export class GoVpnTunnel implements VpnTunnel {
   private isUdpEnabled = false;
 
   private readonly onAllHelpersStopped: Promise<void>;
+  private resolveAllHelpersStopped: () => void;
 
   private reconnectingListener?: () => void;
 
@@ -70,23 +66,12 @@ export class GoVpnTunnel implements VpnTunnel {
   constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
     this.tun2socks = new GoTun2socks(config);
 
-    // This pair of Promises, each tied to a helper process' exit, is key to the instance's
+    // This promise, tied to both helper process' exits, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
-    const exits = [
-      this.routing.onceDisconnected, new Promise<void>((fulfill) => {
-        this.tun2socksExitListener = fulfill;
-        this.tun2socks.onExit = this.tun2socksExitListener;
-      })
-    ];
-    Promise.race(exits).then(() => {
-      console.log('a helper has exited, disconnecting');
-      this.disconnect();
-    });
-    this.onAllHelpersStopped = Promise.all(exits).then(() => {
-      console.log('all helpers have exited');
-      this.terminated = true;
+    this.onAllHelpersStopped = new Promise((resolve) => {
+      this.resolveAllHelpersStopped = resolve;
     });
 
     // Handle network changes and, on Windows, suspend events.
@@ -107,6 +92,11 @@ export class GoVpnTunnel implements VpnTunnel {
       powerMonitor.on('suspend', this.suspendListener.bind(this));
       powerMonitor.on('resume', this.resumeListener.bind((this)));
     }
+
+    // Disconnect the tunnel if the routing service disconnects unexpectedly.
+    this.routing.onceDisconnected.then(async () => {
+      await this.disconnect();
+    });
 
     if (checkProxyConnectivity) {
       this.isUdpEnabled = await checkConnectivity(this.config);
@@ -135,12 +125,10 @@ export class GoVpnTunnel implements VpnTunnel {
     }
   }
 
-  private suspendListener() {
-    // Preemptively stop tun2socks without notifying its exit.
-    this.tun2socks.onExit = () => {
-      console.log('stopped tun2socks in preparation for suspend');
-    };
-    this.tun2socks.stop();
+  private async suspendListener() {
+    // Preemptively stop tun2socks to avoid a silent restart that will fail.
+    await this.tun2socks.stop();
+    console.log('stopped tun2socks in preparation for suspend');
   }
 
   private resumeListener() {
@@ -151,8 +139,6 @@ export class GoVpnTunnel implements VpnTunnel {
     }
 
     console.log('restarting tun2socks after resume');
-
-    this.tun2socks.onExit = this.tun2socksExitListener;
     this.tun2socks.start(this.isUdpEnabled);
 
     // Check if UDP support has changed; if so, silently restart.
@@ -173,25 +159,27 @@ export class GoVpnTunnel implements VpnTunnel {
 
     console.log(`UDP support change: now ${this.isUdpEnabled}`);
 
-    // Swap out the current listener, restart once the current process exits.
-    this.tun2socks.onExit = () => {
-      console.log('restarting tun2socks');
-      this.tun2socks.onExit = this.tun2socksExitListener;
-      this.tun2socks.start(this.isUdpEnabled);
-    };
-    this.tun2socks.stop();
+    // Restart tun2socks.
+    await this.tun2socks.stop();
+    await this.tun2socks.start(this.isUdpEnabled);
   }
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
-    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
-    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+    if (this.terminated) {
+      return;
+    }
 
-    // A clean shutdown requires stopping tun2socks before the routing is
-    // reset.  However, this call to stop() is asynchronous, so shutdown
-    // may occur out of order.  This may print an error message to the logs
-    // but is otherwise harmless.
-    this.tun2socks.stop();
+    if (isWindows) {
+      powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+      powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+    }
+
+    try {
+      await this.tun2socks.stop();
+    } catch (e) {
+      console.error(`could not stop tun2socks: ${e.message}`);
+    }
 
     try {
       await this.routing.stop();
@@ -200,9 +188,11 @@ export class GoVpnTunnel implements VpnTunnel {
       // connected.
       console.error(`could not stop routing: ${e.message}`);
     }
+    this.resolveAllHelpersStopped();
+    this.terminated = true;
   }
 
-  // Fulfills once all three helper processes have stopped.
+  // Fulfills once all helper processes have stopped.
   //
   // When this happens, *as many changes made to the system in order to establish the full-system
   // VPN as possible* will have been reverted.
@@ -226,8 +216,6 @@ export class GoVpnTunnel implements VpnTunnel {
 // and relays it to a Shadowsocks proxy server.
 class GoTun2socks {
   private process: ChildProcessHelper;
-  private exitListener?: (code?: number, signal?: string) => void;
-  private isRunning = false;
 
   constructor(private config: ShadowsocksConfig) {
     this.process =
@@ -265,33 +253,26 @@ class GoTun2socks {
         }
         console.debug('tun2socks started');
         this.process.onExit = async (code?: number, signal?: string) => {
-          if (this.isRunning) {
-            // The process exited unexpectedly, restart it without notifying its exit.
-            console.warn(
-              `tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
-            await this.start(isUdpEnabled);
-            return;
-          }
-          console.debug('tun2socks stopped');
-          if (this.exitListener) {
-            this.exitListener();
-          }
+           // The process exited unexpectedly, restart it.
+          console.warn(
+            `tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
+          await this.start(isUdpEnabled);
         };
         this.process.onStdErr = null;
         resolve();
       };
       this.process.launch(args);
-      this.isRunning = true;
     });
   }
 
-  stop() {
-    this.process.stop();
-    this.isRunning = false;
-  }
-
-  set onExit(listener: ((code?: number, signal?: string) => void)|undefined) {
-    this.exitListener = listener;
+  async stop() {
+    return new Promise<void>((resolve) => {
+      this.process.onExit = (code?: number, signal?: string) => {
+        console.debug('tun2socks stopped');
+        resolve();
+      };
+      this.process.stop();
+    });
   }
 
   enableDebugMode() {
