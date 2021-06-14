@@ -52,7 +52,7 @@ export class GoVpnTunnel implements VpnTunnel {
   private readonly tun2socks: GoTun2socks;
 
   // See #resumeListener.
-  private terminated = false;
+  private disconnected = false;
 
   private isUdpEnabled = false;
 
@@ -102,7 +102,7 @@ export class GoVpnTunnel implements VpnTunnel {
       this.isUdpEnabled = await checkConnectivity(this.config);
     }
     console.log(`UDP support: ${this.isUdpEnabled}`);
-    this.tun2socks.start(this.isUdpEnabled);
+    await this.tun2socks.start(this.isUdpEnabled);
 
     await this.routing.start();
   }
@@ -115,7 +115,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
       // Test whether UDP availability has changed; since it won't change 99% of the time, do this
       // *after* we've informed the client we've reconnected.
-      this.retestUdp();
+      this.updateUdpSupport();
     } else if (status === TunnelStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
@@ -132,7 +132,7 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   private resumeListener() {
-    if (this.terminated) {
+    if (this.disconnected) {
       // NOTE: Cannot remove resume listeners - Electron bug?
       console.error('resume event invoked but this tunnel is terminated - doing nothing');
       return;
@@ -142,10 +142,10 @@ export class GoVpnTunnel implements VpnTunnel {
     this.tun2socks.start(this.isUdpEnabled);
 
     // Check if UDP support has changed; if so, silently restart.
-    this.retestUdp();
+    this.updateUdpSupport();
   }
 
-  private async retestUdp() {
+  private async updateUdpSupport() {
     const wasUdpEnabled = this.isUdpEnabled;
     try {
       this.isUdpEnabled = await checkConnectivity(this.config);
@@ -166,7 +166,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
-    if (this.terminated) {
+    if (this.disconnected) {
       return;
     }
 
@@ -189,7 +189,7 @@ export class GoVpnTunnel implements VpnTunnel {
       console.error(`could not stop routing: ${e.message}`);
     }
     this.resolveAllHelpersStopped();
-    this.terminated = true;
+    this.disconnected = true;
   }
 
   // Fulfills once all helper processes have stopped.
@@ -268,7 +268,7 @@ class GoTun2socks {
   async stop() {
     return new Promise<void>((resolve) => {
       this.process.onExit = (code?: number, signal?: string) => {
-        console.debug('tun2socks stopped');
+        console.log(`tun2socks stopped with signal: ${signal}, code: ${code}.`);
         resolve();
       };
       this.process.stop();
