@@ -83,7 +83,7 @@ jobs:
     - stage: package
       os: osx
       language: objective-c
-      osx_image: xcode12.2
+      osx_image: xcode12.5
       env:
         - DESC=macos
       script:
@@ -93,7 +93,7 @@ jobs:
     - stage: package
       os: osx
       language: objective-c
-      osx_image: xcode12.2
+      osx_image: xcode12.5
       env:
         - DESC=ios
       script:
@@ -121,7 +121,7 @@ jobs:
     - stage: ios
       os: osx
       language: objective-c
-      osx_image: xcode12.2
+      osx_image: xcode12.5
       script:
         - yarn && yarn do apple/scripts/ios_release_remote
 
