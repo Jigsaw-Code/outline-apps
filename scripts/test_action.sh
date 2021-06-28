@@ -15,8 +15,8 @@
 # limitations under the License.
 
 readonly TEST_DIR="${ROOT_DIR}/build/test"
-rm -rf $TEST_DIR
+rm -rf "$TEST_DIR"
 
 yarn install --check-files
-tsc -p $ROOT_DIR/src/www --outDir $TEST_DIR
-jasmine --config=$ROOT_DIR/jasmine.json
+tsc -p "$ROOT_DIR/src/www" --outDir "$TEST_DIR"
+jasmine "--config=$ROOT_DIR/jasmine.json"
