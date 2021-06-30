@@ -14,6 +14,7 @@
 
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 
 const OUTPUT_BASE = path.resolve(__dirname, '../../www');
@@ -46,6 +47,14 @@ exports.makeConfig = (options) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       fallback: {'url': require.resolve('url/')},
+    },
+    optimization: {
+      minimizer: [new TerserPlugin({
+        terserOptions: {
+          keep_classnames: true,
+          keep_fnames: true,
+        }
+      })],
     },
     plugins: [
       // This is a workaround to address a Cordova build issue. The command
