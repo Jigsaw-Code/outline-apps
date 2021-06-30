@@ -1,6 +1,11 @@
 name: Build and Test
 
-on: push
+# See https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   build-and-test:
