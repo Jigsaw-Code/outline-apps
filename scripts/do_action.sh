@@ -16,14 +16,14 @@
 
 set -eux
 
-export ROOT_DIR=${ROOT_DIR:-$(git rev-parse --show-toplevel)}
-export BUILD_DIR=${BUILD_DIR:-$ROOT_DIR/build}
+export ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel)}"
+export BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
 
 function do_action() {
   local action=$1
   echo "[Running $action]"
   shift
-  $ROOT_DIR/${action}_action.sh "$@"
+  "$ROOT_DIR/${action}_action.sh" "$@"
   echo "[Done $action]"
 }
 export -f do_action
