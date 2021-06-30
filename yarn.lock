@@ -3235,9 +3235,9 @@ cordova-osx@~6.0.0:
     unorm "^1.4.1"
     xcode "^3.0.1"
 
-"cordova-plugin-clipboard@github:Jigsaw-Code/cordova-plugin-clipboard#v2.0.0":
+"cordova-plugin-clipboard@github:Jigsaw-Code/cordova-plugin-clipboard#v2.0.1":
   version "2.0.0"
-  resolved "https://codeload.github.com/Jigsaw-Code/cordova-plugin-clipboard/tar.gz/8cc5101b7a264122c71f7f3a3cb5744a8fad8498"
+  resolved "https://codeload.github.com/Jigsaw-Code/cordova-plugin-clipboard/tar.gz/20f94479a63eec24931f1fa7fe511b5a1dfcbad8"
 
 cordova-plugin-device@^2.0.2:
   version "2.0.3"
