@@ -301,9 +301,9 @@
 			children = (
 				FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */,
 				FC5FF9121F3E1D1B0032A745 /* Outline.entitlements */,
+				70BD682D18FFB02D00A1EFCF /* Supporting Files */,
 				707060AE18FFC05700755D46 /* MainViewController.xib */,
 				70BD683E18FFB02D00A1EFCF /* Images.xcassets */,
-				70BD682D18FFB02D00A1EFCF /* Supporting Files */,
 			);
 			path = Outline;
 			sourceTree = "<group>";
@@ -688,6 +688,7 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = arm64; /* Remove once framework dependencies support Apple Silicon */
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -747,6 +748,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = arm64; /* Remove once framework dependencies support Apple Silicon */
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
