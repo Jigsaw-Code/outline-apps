@@ -694,7 +694,7 @@ export class AppRoot extends mixinBehaviors
   }
 
   _computeShouldShowQuitButton(platform) {
-    return platform === 'Electron';
+    return platform === 'macOS' || platform === 'Electron';
   }
 
   _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
