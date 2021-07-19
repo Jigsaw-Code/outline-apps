@@ -7,22 +7,22 @@ The client's user interface is implemented in [Polymer](https://www.polymer-proj
 
 ## Requirements for all builds
 
-All builds require [yarn](https://yarnpkg.com/en/docs/install), in addition to other per-platform requirements. After cloning this repo install all dependencies with the command.
+All builds require [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), in addition to other per-platform requirements. After cloning this repo install all dependencies with the command.
 
-    yarn
+    npm ci
 
 ## Building the web app
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    yarn gulp build --platform=browser
-    yarn cordova run browser
+    npx gulp build --platform=browser
+    npx cordova run browser
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
-*Tip: Build with `(export BUILD_ENV=development; yarn gulp build --platform=browser)` to enable source maps.*
+*Tip: Build with `(export BUILD_ENV=development; npx gulp build --platform=browser)` to enable source maps.*
 
 ## Building the Android app
 
@@ -33,15 +33,15 @@ Additional requirements for Android:
 
 To build for android, run:
 
-    yarn gulp build --platform=android
+    npx gulp build --platform=android
 
 To rebuild after modifying platform dependent files, run:
 
-    yarn cordova platform rm android && yarn gulp build --platform=android
+    npx cordova platform rm android && npx gulp build --platform=android
 
 If this gives you unexpected Cordova errors, run:
 
-    yarn run clean && yarn && yarn gulp build --platform=android
+    npm run clean && npm ci && npx gulp build --platform=android
 
 Cordova will generate a new Android project in the platforms/android directory.  Install the built apk by  platforms/android/build/outputs/apk/android-armv7-debug.apk
 
@@ -51,8 +51,8 @@ To learn more about developing for Android, see [docs/android-development](docs/
 
 A Docker image with all pre-requisites for Android builds is included.  To build:
 
-* Install dependencies with `./tools/build/build.sh yarn`
-* Then build with `./tools/build/build.sh yarn gulp build --platform=android`
+* Install dependencies with `./tools/build/build.sh npm ci`
+* Then build with `./tools/build/build.sh npx gulp build --platform=android`
 
 ## Apple (macOS and iOS)
 
@@ -60,15 +60,25 @@ Additional requirements for Apple:
 
 * An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
 * XCode 11+ ([download](https://developer.apple.com/xcode/))
-* XCode command line tools
+* XCode command line tools: `xcode-select --install`
+
+To open the macOS project on XCode:
+```
+open ./platforms/ios/Outline.xcodeproj
+```
+
+To open the iOS project on XCode:
+```
+open ./platforms/osx/Outline.xcodeproj
+```
 
 To build for macOS (OS X), run:
 
-    yarn run clean && yarn && yarn gulp build --platform=osx
+    npx gulp build --platform=osx
 
 To build for iOS, run:
 
-    yarn run clean && yarn && yarn gulp build --platform=ios
+    npx gulp build --platform=ios
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
 
@@ -85,15 +95,15 @@ Additional requirements for building on Windows:
 
 To build the Electron clients, run:
 
-    yarn do src/electron/build
+    npm run do src/electron/build
 
 To run the Electron clients, run:
 
-    yarn do src/electron/run
+    npm run do src/electron/run
 
 To package the Electron clients into an installer executable, run:
 
-    yarn do src/electron/package_[linux|windows]
+    npm run do src/electron/package_[linux|windows]
 
 
 ## Error reporting

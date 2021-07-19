@@ -38,7 +38,7 @@
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "cordova-plugin-whitelist": "^1.3.3",
-    "electron-promise-ipc": "^1.0.0",
+    "electron-promise-ipc": "^2.2.4",
     "electron-updater": "^4.1.2",
     "fs-extra": "^7.0.0",
     "punycode": "^2.1.1",
@@ -101,7 +101,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "yarn tslint --fix 'src/**/*.ts' && yarn git-clang-format && yarn pretty-quick --staged --pattern '**/*.html'"
+      "pre-commit": "npx tslint --fix 'src/**/*.ts' && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {

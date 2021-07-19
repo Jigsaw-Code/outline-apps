@@ -12,7 +12,7 @@ A clear and concise description of what the issue is. If possible, paste the out
 
 **Environment**
  - OS: [e.g. iOS]
- - Yarn version
+ - NPM version (`npm --version`)
  - Node.js version
 
 **Additional context**

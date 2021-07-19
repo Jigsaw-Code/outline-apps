@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/electron/package_common
+npm run do src/electron/package_common
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,

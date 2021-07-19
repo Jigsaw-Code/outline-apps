@@ -21,11 +21,9 @@ FROM debian:9
 #  - Several of Outline's build scripts require rsync.
 RUN apt update && apt dist-upgrade -y && apt install -y wget unzip openjdk-8-jdk-headless gradle git gnupg rsync && apt clean
 
-# Node.js and Yarn.
+# Node.js and NPM.
 RUN wget -qO- https://deb.nodesource.com/setup_10.x | bash -
-RUN wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt update && apt install -y nodejs yarn && apt clean
+RUN apt update && apt install -y nodejs && apt clean
 
 # https://stackoverflow.com/questions/25672924/run-bower-from-root-user-its-possible-how
 RUN echo '{"allow_root": true}' > /root/.bowerrc

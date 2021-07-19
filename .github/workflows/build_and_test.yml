@@ -16,34 +16,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v1
 
-      - name: Install Node.js, NPM and Yarn
+      - name: Install Node.js and NPM
         uses: actions/setup-node@v1
         with:
           node-version: 10
+          cache: npm
 
       - name: Show Environment Info
-        run: yarn -v
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Check yarn cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        run: npm -v
       
       - name: Install dependencies
-        run: yarn --prefer-offline
+        run: npm ci
 
       - name: Build web app
-        run: yarn gulp build --platform=browser
+        run: npx gulp build --platform=browser
       
       - name: Test web app
-        run: yarn do scripts/test
+        run: npm run do scripts/test
 
       - name: Build Electron app
-        run: yarn do src/electron/build
+        run: npm run do src/electron/build
