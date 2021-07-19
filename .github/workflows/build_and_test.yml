@@ -19,7 +19,7 @@ jobs:
       - name: Install Node.js and NPM
         uses: actions/setup-node@v2.2.0
         with:
-          node-version: 10
+          node-version: 12
           cache: npm
 
       - name: Show Environment Info
