@@ -59,7 +59,7 @@ function runCommand(command) {
 const WEBAPP_OUT = 'www';
 
 function buildWebApp() {
-  return runCommand('yarn do src/www/build_cordova');
+  return runCommand('npm run do src/www/build_cordova');
 }
 
 //////////////////

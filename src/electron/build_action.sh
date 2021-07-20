@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build_electron
+npm run do src/www/build_electron
 
 webpack --config=src/electron/electron_main.webpack.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \

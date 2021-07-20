@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/electron/package_common
+npm run do src/electron/package_common
 
 electron-builder \
   --linux \

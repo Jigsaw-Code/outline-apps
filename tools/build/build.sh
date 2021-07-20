@@ -28,8 +28,8 @@ function usage() {
 Usage: $0 commands
 
 Examples:
-  $0 yarn run clean
-  $0 yarn install
+  $0 npm run clean
+  $0 npm ci
   $0 build
 EOM
 exit 1

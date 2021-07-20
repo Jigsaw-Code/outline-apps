@@ -57,13 +57,6 @@ exports.makeConfig = (options) => {
       })],
     },
     plugins: [
-      // This is a workaround to address a Cordova build issue. The command
-      // `cordova platform add` modifies the `node_modules` directory, removing
-      // packages that are needed to build the app. We reinstall any missing
-      // packages so that they are present during the build.
-      new WebpackShellPluginNext({
-        onBuildStart: {scripts: ['yarn install --check-files'], blocking: true},
-      }),
       new CopyPlugin(
           [
             {from: 'assets', to: 'assets'},
