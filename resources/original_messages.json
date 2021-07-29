@@ -96,7 +96,7 @@
     "description": "Status text showing that a form is progress of being submitted."
   },
   "about_outline": {
-    "message": "Outline is a product by $JIGSAW$ that lets anyone create, run, and share access to their own VPN. Outline is designed to be resistant to blocking. Visit $GETOUTLINE$ to learn how to get started.$NEWLINE$$NEWLINE$Outline is powered by $SHADOWSOCKS$. Outline is open source. You can contribute to the code on $GITHUB$ and join the conversation on $REDDIT$.",
+    "message": "Outline is a product by $JIGSAW$ that lets anyone create, run, and share access to their own VPN. Outline is designed to be resistant to blocking. Visit $GETOUTLINE$ to learn how to get started.$NEWLINE$$NEWLINE$Outline is open source software powered by $SHADOWSOCKS$. You can contribute to the code on $GITHUB$ and join the conversation on $REDDIT$.",
     "description": "The contents of the About page of the app. Outline is the product name and can be found in the translation glossary.",
     "placeholders": {
       "GITHUB": {
