@@ -102,7 +102,7 @@ Polymer({
     <div id="main">
       <img src\$="[[rootPath]]assets/brand-logo.png" alt="logo" id="logo">
       <div id="version">[[localize('version', 'appVersion', version)]]</div>
-      <div id="description" inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"></div>
+      <div id="description" inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'outlineUrl', 'https://getoutline.org', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn')]]"></div>
       <div id="footer">
         <a href="https://jigsaw.google.com">
           <img id="jigsaw-logo" src\$="[[rootPath]]assets/jigsaw-logo.svg">

@@ -23,7 +23,7 @@ import codecs
 import json
 import os
 
-ORIGINAL_MESSAGES_FILE = "resources/master_messages.json"
+ORIGINAL_MESSAGES_FILE = "resources/original_messages.json"
 SOURCE_FOLDER = "src/www/messages/"
 ENGLISH_LOCALE = "en"
 # Message keys that are not expected to be translated, i.e. a key for 'Outline'.
