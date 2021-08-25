@@ -64,12 +64,12 @@ Additional requirements for Apple:
 
 To open the macOS project on XCode:
 ```
-open ./platforms/ios/Outline.xcodeproj
+open ./platforms/osx/Outline.xcodeproj
 ```
 
 To open the iOS project on XCode:
 ```
-open ./platforms/osx/Outline.xcodeproj
+open ./platforms/ios/Outline.xcodeproj
 ```
 
 To build for macOS (OS X), run:
