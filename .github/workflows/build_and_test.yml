@@ -48,10 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: ls
-      run: |
-        ls
-        ls /workspace
-        ls /github
-        ls /github/workspace   
+      run: ls $GITHUB_ACTION_PATH
     container: electronuserland/builder:wine
 
