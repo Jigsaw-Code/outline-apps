@@ -69,8 +69,10 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386 
           wget -nc https://dl.winehq.org/wine-builds/winehq.key
-          apt update && apt install sudo && sudo apt-key add winehq.key
+          sudo apt-key add winehq.key
+          echo A
           sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
+          echo B
           sudo apt update && sudo apt install --install-recommends winehq-stable
       - name: Build Windows Client
         run: npm run do src/electron/package_windows
