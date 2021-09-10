@@ -50,11 +50,11 @@ jobs:
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
-        
+
       - name: Install Node.js
         uses: actions/setup-node@v2.2.0
         with:
-          node-version: 12
+          node-version: 14
           cache: npm
 
       - name: Upgrade NPM
