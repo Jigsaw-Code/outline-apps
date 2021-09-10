@@ -46,8 +46,74 @@ jobs:
   build-and-test-windows:
     name: Build and Test Web and Electron Apps on Windows
     runs-on: ubuntu-latest
-    steps:
-    - name: ls
-      run: ls $GITHUB_ACTION_PATH
     container: electronuserland/builder:wine
+    steps:
+     - name : checkout
+      uses : "actions/checkout@v1"
+    - name : machine echo env
+      env : { CONTENT : "${{ toJson(env) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo secrets
+      env : { CONTENT : "${{ toJson(secrets) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo github
+      env : { CONTENT : "${{ toJson(github) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo runner
+      env : { CONTENT : "${{ toJson(runner) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo job
+      env : { CONTENT : "${{ toJson(job) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo strategy
+      env : { CONTENT : "${{ toJson(strategy) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo matrix
+      env : { CONTENT : "${{ toJson(matrix) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo steps
+      env : { CONTENT : "${{ toJson(steps) }}" }
+      run : "echo $CONTENT"
+    - name : machine echo $GITHUB_ACTOR
+      run : "echo $GITHUB_ACTOR"
+    - name : machine echo $GITHUB_EVENT_NAME
+      run : "echo $GITHUB_EVENT_NAME"
+    - name : machine echo $GITHUB_ACTIONS
+      run : "echo $GITHUB_ACTIONS"
+    - name : machine echo $GITHUB_WORKFLOW
+      run : "echo $GITHUB_WORKFLOW"
+    - name : machine echo $GITHUB_ACTION
+      run : "echo $GITHUB_ACTION"
+    - name : machine echo $GITHUB_REPOSITORY
+      run : "echo $GITHUB_REPOSITORY"
+    - name : machine echo $GITHUB_BASE_REF
+      run : "echo $GITHUB_BASE_REF"
+    - name : machine echo $GITHUB_HEAD_REF
+      run : "echo $GITHUB_HEAD_REF"
+    - name : machine echo $GITHUB_REF
+      run : "echo $GITHUB_REF"
+    - name : machine echo $GITHUB_SHA
+      run : "echo $GITHUB_SHA"
+    - name : machine echo $GITHUB_EVENT_PATH
+      run : "echo $GITHUB_EVENT_PATH"
+    - name : machine echo $GITHUB_WORKSPACE
+      run : "echo $GITHUB_WORKSPACE"
+    - name : machine echo $HOME
+      run : "echo $HOME"
+    - name : container ls $GITHUB_EVENT_PATH
+      with : { entrypoint : "/bin/sh" , args : '-c "ls -la $GITHUB_EVENT_PATH"' }
+      uses : "docker://electronuserland/builder:wine"
+    - name : container ls $GITHUB_WORKSPACE
+      with : { entrypoint : "/bin/sh" , args : '-c "ls -la $GITHUB_WORKSPACE"' }
+      uses : "docker://electronuserland/builder:wine"
+    - name : container ls $HOME
+      with : { entrypoint : "/bin/sh" , args : '-c "ls -la $HOME"' }
+      uses : "docker://electronuserland/builder:wine"
+    - name : machine ls $GITHUB_EVENT_PATH
+      run : "ls -la $GITHUB_EVENT_PATH"
+    - name : machine ls $GITHUB_WORKSPACE
+      run : "ls -la $GITHUB_WORKSPACE"
+    - name : machine ls $HOME
+      working-directory : "."
+      run : "ls -la $HOME"
 
