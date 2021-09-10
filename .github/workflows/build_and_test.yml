@@ -45,6 +45,7 @@ jobs:
   #       run: npm run do src/electron/build
   build-and-test-windows:
     name: Build and Test Web and Electron Apps on Windows
+    runs-on: ubuntu-latest
     steps:
     - name: ls
       run: |
@@ -53,4 +54,4 @@ jobs:
         ls /github
         ls /github/workspace   
     container: electronuserland/builder:wine
-    
+
