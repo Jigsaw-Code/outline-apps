@@ -65,11 +65,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Try Docker run
-        run: docker run electronuserland/builder:wine -v $GITHUB_WORKSPACE:/github/workspace /bin/bash -c "ls **"
-      # - name : build Windows Client
-      #   with : { 
-      #     entrypoint : "/bin/bash" , 
-      #     args : '-c "cd $GITHUB_WORKSPACE && apt update && apt install -y rsync && npm run do src/electron/package_windows"' }
-      #   uses : "docker://electronuserland/builder:wine"
+      - name: Install Wine
+        run: |
+          sudo dpkg --add-architecture i386 
+          wget -nc https://dl.winehq.org/wine-builds/winehq.key
+          apt update && apt install sudo && sudo apt-key add winehq.key
+          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
+          sudo apt update && sudo apt install --install-recommends winehq-stable
+      - name: Build Windows Client
+        run: npm run do src/electron/package_windows
 
