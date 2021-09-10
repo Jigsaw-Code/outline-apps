@@ -64,7 +64,7 @@ jobs:
         run: npm -v
 
       - name: Fix access bug
-        run: sudo chown -R 1001:121 "/github/home/.npm"
+        run: apt install sudo && sudo chown -R 1001:121 "/github/home/.npm"
       
       - name: Install dependencies
         run: npm ci
