@@ -62,6 +62,9 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
+
+      - name: Fix access bug
+        run: sudo chown -R 1001:121 "/github/home/.npm"
       
       - name: Install dependencies
         run: npm ci
