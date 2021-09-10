@@ -55,7 +55,7 @@ jobs:
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 14
-          cache: npm
+          # cache: npm
 
       - name: Upgrade NPM
         run: npm install -g npm@7
@@ -71,6 +71,6 @@ jobs:
       - name : build Windows Client
         with : { 
           entrypoint : "/bin/bash" , 
-          args : '-c "cd $GITHUB_WORKSPACE && apt install -y rsync && npm run do src/electron/package_windows"' }
+          args : '-c "cd $GITHUB_WORKSPACE && apt update && apt install -y rsync && npm run do src/electron/package_windows"' }
         uses : "docker://electronuserland/builder:wine"
 
