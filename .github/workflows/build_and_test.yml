@@ -8,44 +8,44 @@ on:
   pull_request:
 
 jobs:
-  # build-and-test-unixy:
-  #   name: Build and Test Web and Electron Apps on Linnux and MacOS
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest]
-  #     fail-fast: false
+  build-and-test-unixy:
+    name: Build and Test Web and Electron Apps on Linux and MacOS
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
 
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v2.3.4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2.3.4
 
-  #     - name: Install Node.js
-  #       uses: actions/setup-node@v2.2.0
-  #       with:
-  #         node-version: 12
-  #         cache: npm
+      - name: Install Node.js
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 14
+          cache: npm
 
-  #     - name: Upgrade NPM
-  #       run: npm install -g npm@7
+      - name: Upgrade NPM
+        run: npm install -g npm@7
 
-  #     - name: Show Environment Info
-  #       run: npm -v
+      - name: Show Environment Info
+        run: npm -v
       
-  #     - name: Install dependencies
-  #       run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-  #     - name: Build web app
-  #       run: npx gulp build --platform=browser
+      - name: Build web app
+        run: npx gulp build --platform=browser
       
-  #     - name: Test web app
-  #       run: npm run do scripts/test
+      - name: Test web app
+        run: npm run do scripts/test
 
-  #     - name: Build Electron app
-  #       run: npm run do src/electron/build
+      - name: Build Electron app
+        run: npm run do src/electron/build
   build-and-test-windows:
     name: Build and Test Web and Electron Apps on Windows
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 14
-          # cache: npm
+          cache: npm
 
       - name: Upgrade NPM
         run: npm install -g npm@7
@@ -70,9 +70,8 @@ jobs:
           sudo dpkg --add-architecture i386 
           wget -nc https://dl.winehq.org/wine-builds/winehq.key
           sudo apt-key add winehq.key
-          echo A
-          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
-          echo B
+          # This APT repo is specific to ubuntu 20.04. See https://wiki.winehq.org/Ubuntu when updating Ubuntu versions
+          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main' 
           sudo apt update && sudo apt install --install-recommends winehq-stable
       - name: Build Windows Client
         run: npm run do src/electron/package_windows
