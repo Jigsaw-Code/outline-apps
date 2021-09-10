@@ -50,6 +50,9 @@ jobs:
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
-      - name : Build Windows Client
-        with : { entrypoint : "/bin/sh" , args : '-c "ls -la $GITHUB_EVENT_PATH"' }
+      - name : build Windows Client
+        with : { 
+          entrypoint : "/bin/bash" , 
+          args : '-c "cd $GITHUB_WORKSPACE && apt update && apt install -y rsync && npm run do src/electron/package_windows"' }
+        uses : "docker://electronuserland/builder:wine"
 
