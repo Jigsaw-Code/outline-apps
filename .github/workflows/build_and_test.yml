@@ -50,6 +50,21 @@ jobs:
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
+        
+      - name: Install Node.js
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 12
+          cache: npm
+
+      - name: Upgrade NPM
+        run: npm install -g npm@7
+
+      - name: Show Environment Info
+        run: npm -v
+      
+      - name: Install dependencies
+        run: npm ci
       - name : build Windows Client
         with : { 
           entrypoint : "/bin/bash" , 
