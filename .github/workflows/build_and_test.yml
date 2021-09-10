@@ -8,38 +8,49 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
-    name: Build and Test Web and Electron Apps
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-      fail-fast: false
+  # build-and-test-unixy:
+  #   name: Build and Test Web and Electron Apps on Linnux and MacOS
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest]
+  #     fail-fast: false
 
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v2.3.4
+
+  #     - name: Install Node.js
+  #       uses: actions/setup-node@v2.2.0
+  #       with:
+  #         node-version: 12
+  #         cache: npm
+
+  #     - name: Upgrade NPM
+  #       run: npm install -g npm@7
+
+  #     - name: Show Environment Info
+  #       run: npm -v
+      
+  #     - name: Install dependencies
+  #       run: npm ci
+
+  #     - name: Build web app
+  #       run: npx gulp build --platform=browser
+      
+  #     - name: Test web app
+  #       run: npm run do scripts/test
+
+  #     - name: Build Electron app
+  #       run: npm run do src/electron/build
+  build-and-test-windows:
+    name: Build and Test Web and Electron Apps on Windows
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2.3.4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 12
-          cache: npm
-
-      - name: Upgrade NPM
-        run: npm install -g npm@7
-
-      - name: Show Environment Info
-        run: npm -v
-      
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web app
-        run: npx gulp build --platform=browser
-      
-      - name: Test web app
-        run: npm run do scripts/test
-
-      - name: Build Electron app
-        run: npm run do src/electron/build
+    - name: ls
+      run: |
+        ls
+        ls /workspace
+        ls /github
+        ls /github/workspace   
+    container: electronuserland/builder:wine
+    
