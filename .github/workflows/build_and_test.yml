@@ -46,7 +46,6 @@ jobs:
   build-and-test-windows:
     name: Build and Test Web and Electron Apps on Windows
     runs-on: ubuntu-latest
-    container: electronuserland/builder:wine
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
@@ -62,15 +61,15 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
-
-      - name: Fix access bug
-        run: apt update && apt install sudo && sudo chown -R 1001:121 "/github/home/.npm"
       
       - name: Install dependencies
-        run: npm cache clean --force && npm ci
-      - name : build Windows Client
-        with : { 
-          entrypoint : "/bin/bash" , 
-          args : '-c "cd $GITHUB_WORKSPACE && apt update && apt install -y rsync && npm run do src/electron/package_windows"' }
-        uses : "docker://electronuserland/builder:wine"
+        run: npm ci
+
+      - name: Try Docker run
+        run: docker run electronuserland/builder:wine -v $GITHUB_WORKSPACE:/github/workspace /bin/bash -c "ls **"
+      # - name : build Windows Client
+      #   with : { 
+      #     entrypoint : "/bin/bash" , 
+      #     args : '-c "cd $GITHUB_WORKSPACE && apt update && apt install -y rsync && npm run do src/electron/package_windows"' }
+      #   uses : "docker://electronuserland/builder:wine"
 
