@@ -97,6 +97,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Use older Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_11.7.app
+
       - name: Build MacOS Client
         run: npx gulp build --platform=osx
 
