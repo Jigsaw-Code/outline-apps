@@ -8,13 +8,9 @@ on:
   pull_request:
 
 jobs:
-  build-and-test-unixy:
-    name: Build and Test Web and Electron Apps on Linux and MacOS
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-      fail-fast: false
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout repo
@@ -42,9 +38,11 @@ jobs:
         run: npm run do scripts/test
 
       - name: Build Electron app
-        run: npm run do src/electron/build
-  build-and-test-windows:
-    name: Build and Test Web and Electron Apps on Windows
+        run: npm run do src/electron/package_linux
+        
+  windows:
+    name: Windows (Wine)
+    # When updating Ubuntu versions, you will need to update the Wine APT commands.  See below.
     runs-on: ubuntu-20.04
     steps:
       - name : checkout
@@ -72,7 +70,35 @@ jobs:
           sudo apt-key add winehq.key
           # This APT repo is specific to ubuntu 20.04. See https://wiki.winehq.org/Ubuntu when updating Ubuntu versions
           sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main' 
-          sudo apt update && sudo apt install --install-recommends winehq-stable
+          sudo apt update && sudo apt install --install-recommends winehq-stable\
+
       - name: Build Windows Client
         run: npm run do src/electron/package_windows
 
+  mac:
+    name: Apple
+    runs-on: macos-10.15
+    steps:
+      - name : checkout
+        uses : "actions/checkout@v1"
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 14
+          cache: npm
+
+      - name: Upgrade NPM
+        run: npm install -g npm@7
+
+      - name: Show Environment Info
+        run: npm -v
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build MacOS Client
+        run: npx gulp build --platform=osx
+
+      - name: Build iOS Client
+        run: npx gulp build --platform=ios
