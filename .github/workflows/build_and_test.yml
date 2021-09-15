@@ -104,7 +104,6 @@ jobs:
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
-        if: ${{ false }} # See https://github.com/apache/cordova-osx/issues/104
 
       - name: Build iOS Client
         run: npx gulp build --platform=ios
