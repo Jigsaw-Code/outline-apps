@@ -97,5 +97,40 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build OSX Client
+        run: npx gulp build --platform=osx
+        if: ${{ false }} # See https://github.com/apache/cordova-osx/issues/104
+
       - name: Build iOS Client
         run: npx gulp build --platform=ios
+  
+  android:
+    name: Android
+    run-on: ubuntu-20.04
+    steps:
+      - name : checkout
+        uses : "actions/checkout@v1"
+
+      - name: Set up Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 14
+          cache: npm
+
+      - name: Upgrade NPM
+        run: npm install -g npm@7
+
+      - name: Show Environment Info
+        run: npm -v
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Android Client
+        run: npx gulp build --platform=android
+     
