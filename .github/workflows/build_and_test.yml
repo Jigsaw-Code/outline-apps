@@ -27,19 +27,19 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
-      
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build web app
         run: npx gulp build --platform=browser
-      
+
       - name: Test web app
         run: npm run do scripts/test
 
       - name: Build Electron app
         run: npm run do src/electron/package_linux
-        
+
   windows:
     name: Windows (Wine)
     # When updating Ubuntu versions, you will need to update the Wine APT commands.  See below.
@@ -59,17 +59,17 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
-      
+
       - name: Install dependencies
         run: npm ci
 
       - name: Install Wine
         run: |
-          sudo dpkg --add-architecture i386 
+          sudo dpkg --add-architecture i386
           wget -nc https://dl.winehq.org/wine-builds/winehq.key
           sudo apt-key add winehq.key
           # This APT repo is specific to ubuntu 20.04. See https://wiki.winehq.org/Ubuntu when updating Ubuntu versions
-          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main' 
+          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
           sudo apt update && sudo apt install --install-recommends winehq-stable\
 
       - name: Build Windows Client
@@ -93,9 +93,14 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
-      
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Print Build Settings
+        run: |
+          cd apple/xcode/osx
+          xcodebuild -project Outline.xcodeproj -showBuildSettings
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
@@ -103,10 +108,10 @@ jobs:
 
       - name: Build iOS Client
         run: npx gulp build --platform=ios
-  
+
   android:
     name: Android
-    run-on: ubuntu-20.04
+    runs-on: ubuntu-20.04
     steps:
       - name : checkout
         uses : "actions/checkout@v1"
@@ -127,10 +132,9 @@ jobs:
 
       - name: Show Environment Info
         run: npm -v
-      
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build Android Client
         run: npx gulp build --platform=android
-     
