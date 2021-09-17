@@ -97,10 +97,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set XCode settings
+        run: sudo xcode-select -switch /Applications/Xcode_11.7.app
+
+
       - name: Print Build Settings
         run: |
           cd apple/xcode/osx
           xcodebuild -project Outline.xcodeproj -showBuildSettings
+
+
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
