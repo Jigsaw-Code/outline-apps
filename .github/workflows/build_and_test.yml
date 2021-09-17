@@ -103,10 +103,10 @@ jobs:
           xcodebuild -project Outline.xcodeproj -showBuildSettings
 
       - name: Build OSX Client
-        run: npx gulp build --platform=osx
+        run: npm run do apple/scripts/ios_package_remote
 
       - name: Build iOS Client
-        run: npx gulp build --platform=ios
+        run: npm run do apple/scripts/ios_package_remote
 
   android:
     name: Android

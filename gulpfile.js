@@ -74,7 +74,8 @@ function buildWebApp() {
 // *certain things won't behave as you'd expect*, notably cordova-custom-config.
 function cordovaPlatformAdd() {
   // "platform add" fails if the platform has already been added.
-  return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
+  const platformUseForkForOsx = platform === 'osx' ? 'https://github.com/Jigsaw-Code/cordova-osx.git#test' : platform;
+  return runCommand(`test -d platforms/${platform} || cordova platform add ${platformUseForkForOsx}`);
 }
 
 function cordovaPrepare() {

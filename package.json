@@ -68,7 +68,7 @@
     "cordova-android": "~9.0.0",
     "cordova-browser": "~6.0.0",
     "cordova-ios": "~6.1.0",
-    "cordova-osx": "~6.0.0",
+    "cordova-osx": "github:Jigsaw-Code/cordova-osx#test",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
