@@ -53,7 +53,7 @@ A Docker image with all pre-requisites for Android builds is included.  To build
 
 * Install dependencies with `./tools/build/build.sh npm ci`
 * Then build with `./tools/build/build.sh npx gulp build --platform=android`
-
+  
 ## Apple (macOS and iOS)
 
 Additional requirements for Apple:
@@ -62,23 +62,26 @@ Additional requirements for Apple:
 * XCode 11+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools: `xcode-select --install`
 
-To open the macOS project on XCode:
-```
-open ./platforms/ios/Outline.xcodeproj
-```
 
-To open the iOS project on XCode:
+To open the macOS project on XCode:
 ```
 open ./platforms/osx/Outline.xcodeproj
 ```
 
-To build for macOS (OS X), run:
+To open the iOS project on XCode:
+```
+open ./platforms/ios/Outline.xcodeproj
+```
 
-    npx gulp build --platform=osx
+To build for macOS (OS X), run:
+```
+npx gulp build --platform=osx
+```
 
 To build for iOS, run:
-
-    npx gulp build --platform=ios
+```
+npx gulp build --platform=ios
+```
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
 
