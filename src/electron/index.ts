@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as sentry from '@sentry/electron';
+// Directly import @sentry/electron main process code.
+// See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
+import * as sentry from '@sentry/electron/dist/main';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
@@ -25,23 +27,27 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
-import {ConnectionStore, SerializableConnection} from './connection_store';
-import * as process_manager from './process_manager';
+import {ShadowsocksConfig} from '../www/app/config';
+import {TunnelStatus} from '../www/app/tunnel';
+import {GoVpnTunnel} from './go_vpn_tunnel';
+import {RoutingDaemon} from './routing_service';
+import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
+import {TunnelStore, SerializableTunnel} from './tunnel_store';
+import {VpnTunnel} from './vpn_tunnel';
 
-// Used for the auto-connect feature. There will be a connection in store
+// Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
-const connectionStore = new ConnectionStore(app.getPath('userData'));
-
-const isLinux = os.platform() === 'linux';
+const tunnelStore = new TunnelStore(app.getPath('userData'));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow|null;
-
 let tray: Tray;
+
 let isAppQuitting = false;
 // Default to English strings in case we fail to retrieve them from the renderer process.
 let localizedStrings: {[key: string]: string} = {
+  'tray-open-window': 'Open',
   'connected-server-state': 'Connected',
   'disconnected-server-state': 'Disconnected',
   'quit': 'Quit'
@@ -49,7 +55,11 @@ let localizedStrings: {[key: string]: string} = {
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const trayIconImages = {
+// Build-time constant defined by webpack and set to the value of $NETWORK_STACK,
+// or 'libevbadvpn' by default.
+declare const NETWORK_STACK: string;
+
+const TRAY_ICON_IMAGES = {
   connected: createTrayIconImage('connected.png'),
   disconnected: createTrayIconImage('disconnected.png')
 };
@@ -58,9 +68,37 @@ const enum Options {
   AUTOSTART = '--autostart'
 }
 
-function createWindow(connectionAtShutdown?: SerializableConnection) {
+const REACHABILITY_TIMEOUT_MS = 10000;
+
+let currentTunnel: VpnTunnel|undefined;
+
+function setupMenu(): void {
+  if (debugMode) {
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{
+      label: 'Developer',
+      submenu: Menu.buildFromTemplate(
+          [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
+    }]));
+  } else {
+    // Hide standard menu.
+    Menu.setApplicationMenu(null);
+  }
+}
+
+function setupTray(): void {
+  tray = new Tray(TRAY_ICON_IMAGES.disconnected);
+  // On Linux, the click event is never fired: https://github.com/electron/electron/issues/14941
+  tray.on('click', () => {
+    mainWindow?.show();
+  });
+  tray.setToolTip('Outline');
+  updateTray(TunnelStatus.DISCONNECTED);
+}
+
+function setupWindow(): void {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 360, height: 640, resizable: false});
+  mainWindow = new BrowserWindow(
+      {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
@@ -70,6 +108,7 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   if (debugMode) {
     queryParams.set('debug', 'true');
   }
+  queryParams.set('appName', app.getName());
   webAppUrl.search = queryParams.toString();
 
   const webAppUrlAsString = webAppUrl.toString();
@@ -77,35 +116,27 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   console.info(`loading web app from ${webAppUrlAsString}`);
   mainWindow.loadURL(webAppUrlAsString);
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
-
-  const minimizeWindowToTray = (event: Event) => {
-    if (!mainWindow || isAppQuitting) {
+  mainWindow.on('close', (event: Event) => {
+    if (isAppQuitting) {
+      // Actually close the window if we are quitting.
       return;
     }
-    event.preventDefault();  // Prevent the app from exiting on the 'close' event.
+    // Hide instead of close so we don't need to create a new one.
+    event.preventDefault();
     mainWindow.hide();
-  };
-  mainWindow.on('minimize', minimizeWindowToTray);
-  mainWindow.on('close', minimizeWindowToTray);
+  });
+  if (os.platform() === 'win32') {
+    // On Windows we hide the app from the taskbar.
+    mainWindow.on('minimize', (event: Event) => {
+      event.preventDefault();
+      mainWindow.hide();
+    });
+  }
 
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow!.webContents.send('localizationRequest', Object.keys(localizedStrings));
+    mainWindow.webContents.send('localizationRequest', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
-    if (connectionAtShutdown) {
-      const serverId = connectionAtShutdown.id;
-      console.info(`Automatically starting connection ${serverId}`);
-      sendConnectionStatus(ConnectionStatus.RECONNECTING, serverId);
-      // TODO: Handle errors, report.
-      startVpn(connectionAtShutdown.config, serverId, true);
-    }
   });
 
   // The client is a single page app - loading any other page means the
@@ -117,36 +148,22 @@ function createWindow(connectionAtShutdown?: SerializableConnection) {
   });
 }
 
-function createTrayIcon(status: ConnectionStatus) {
-  const isConnected = status === ConnectionStatus.CONNECTED;
-  const trayIconImage = isConnected ? trayIconImages.connected : trayIconImages.disconnected;
-  if (tray) {
-    tray.setImage(trayIconImage);
-  } else {
-    tray = new Tray(trayIconImage);
-    tray.on('click', () => {
-      if (!mainWindow) {
-        createWindow();
-        return;
-      }
-      if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
-        mainWindow.restore();
-        mainWindow.show();
-        mainWindow.focus();
-      } else {
-        mainWindow.hide();
-      }
-    });
-    tray.setToolTip('Outline');
-  }
+function updateTray(status: TunnelStatus) {
+  const isConnected = status === TunnelStatus.CONNECTED;
+  tray.setImage(isConnected ? TRAY_ICON_IMAGES.connected : TRAY_ICON_IMAGES.disconnected);
   // Retrieve localized strings, falling back to the pre-populated English default.
   const statusString = isConnected ? localizedStrings['connected-server-state'] :
                                      localizedStrings['disconnected-server-state'];
-  const quitString = localizedStrings['quit'];
-  const menuTemplate = [
+  let menuTemplate = [
     {label: statusString, enabled: false}, {type: 'separator'} as MenuItemConstructorOptions,
-    {label: quitString, click: quitApp}
+    {label: localizedStrings['quit'], click: quitApp}
   ];
+  if (os.platform() === 'linux') {
+    // Because the click event is never fired on Linux, we need an explicit open option.
+    menuTemplate = [
+      {label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate
+    ];
+  }
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
@@ -161,29 +178,11 @@ function createTrayIconImage(imageName: string) {
 
 // Signals that the app is quitting and quits the app. This is necessary because we override the
 // window 'close' event to support minimizing to the system tray.
-function quitApp() {
+async function quitApp() {
   isAppQuitting = true;
+  await stopVpn();
   app.quit();
 }
-
-const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
-  interceptShadowsocksLink(argv);
-
-  // Someone tried to run a second instance, we should focus our window.
-  if (mainWindow) {
-    if (mainWindow.isMinimized() || !mainWindow.isVisible()) {
-      mainWindow.restore();
-      mainWindow.show();
-    }
-    mainWindow.focus();
-  }
-});
-
-if (isSecondInstance) {
-  quitApp();
-}
-
-app.setAsDefaultProtocolClient('ss');
 
 function interceptShadowsocksLink(argv: string[]) {
   if (argv.length > 1) {
@@ -202,179 +201,268 @@ function interceptShadowsocksLink(argv: string[]) {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', () => {
-  if (debugMode) {
-    Menu.setApplicationMenu(Menu.buildFromTemplate([{
-      label: 'Developer',
-      submenu: [{role: 'reload'}, {role: 'forcereload'}, {role: 'toggledevtools'}]
-    }]));
-  } else {
-    // TODO: Run this periodically, e.g. every 4-6 hours.
-    try {
-      autoUpdater.checkForUpdates();
-    } catch (e) {
-      console.error(`Failed to check for updates`, e);
-    }
-  }
-
-  // Set the app to launch at startup to connect automatically in case of a showdown while proxying.
-  if (isLinux) {
-    if (process.env.APPIMAGE) {
-      const outlineAutoLauncher = new autoLaunch({
-        name: 'OutlineClient',
-        path: process.env.APPIMAGE,
-      });
-
-      outlineAutoLauncher.isEnabled()
-          .then((isEnabled: boolean) => {
-            if (isEnabled) {
-              return;
-            }
-            outlineAutoLauncher.enable();
-          })
-          .catch((err: Error) => {
-            console.error(`failed to add autolaunch entry for Outline ${err.message}`);
-          });
-    }
-  } else {
-    app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
-  }
-
-  // TODO: --autostart is never set on Linux, what can we do?
-  if (process.argv.includes(Options.AUTOSTART)) {
-    connectionStore.load()
-        .then((connection) => {
-          createWindow(connection);
-        })
-        .catch((e) => {
-          // No connection at shutdown, or failure - either way, no need to start.
-          // TODO: Instead of quitting, how about creating the system tray icon?
-          app.quit();
+// Set the app to launch at startup to connect automatically in case of a shutdown while
+// proxying.
+async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
+  try {
+    await tunnelStore.save(args);
+    if (os.platform() === 'linux') {
+      if (process.env.APPIMAGE) {
+        const outlineAutoLauncher = new autoLaunch({
+          name: 'OutlineClient',
+          path: process.env.APPIMAGE,
         });
-  } else {
-    createWindow();
+        outlineAutoLauncher.enable();
+      }
+    } else {
+      app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
+    }
+  } catch (e) {
+    console.error(`Failed to set up auto-launch: ${e.message}`);
   }
-});
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
-
-app.on('quit', () => {
-  process_manager.teardownVpn().catch((e) => {
-    console.error(`could not tear down proxy on exit`, e);
-  });
-});
-
-promiseIpc.on('is-reachable', (config: cordova.plugins.outline.ServerConfig) => {
-  return connectivity.isServerReachable(config)
-      .then(() => {
-        return true;
-      })
-      .catch((e) => {
-        return false;
-      });
-});
-
-function startVpn(config: cordova.plugins.outline.ServerConfig, id: string, isAutoConnect = false) {
-  return process_manager.teardownVpn()
-      .catch((e) => {
-        console.error(`error tearing down the VPN`, e);
-      })
-      .then(() => {
-        return process_manager
-            .startVpn(
-                config,
-                (status: ConnectionStatus) => {
-                  createTrayIcon(status);
-                  sendConnectionStatus(status, id);
-                  if (status === ConnectionStatus.DISCONNECTED) {
-                    connectionStore.clear().catch((err) => {
-                      console.error('Failed to clear connection store.');
-                    });
-                  }
-                },
-                isAutoConnect)
-            .then((newConfig) => {
-              connectionStore.save({config: newConfig, id}).catch((err) => {
-                console.error('Failed to store connection.');
-              });
-              sendConnectionStatus(ConnectionStatus.CONNECTED, id);
-              createTrayIcon(ConnectionStatus.CONNECTED);
-            });
-      });
 }
 
-function sendConnectionStatus(status: ConnectionStatus, connectionId: string) {
+async function tearDownAutoLaunch() {
+  try {
+    if (os.platform() === 'linux') {
+      const outlineAutoLauncher = new autoLaunch({
+        name: 'OutlineClient',
+      });
+      outlineAutoLauncher.disable();
+    } else {
+      app.setLoginItemSettings({openAtLogin: false});
+    }
+    await tunnelStore.clear();
+  } catch (e) {
+    console.error(`Failed to tear down auto-launch: ${e.message}`);
+  }
+}
+
+// Factory function to create a VPNTunnel instance backed by a network statck
+// specified at build time.
+function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
+  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
+  let tunnel: VpnTunnel;
+  if (NETWORK_STACK === 'go') {
+    console.log('Using Go network stack');
+    tunnel = new GoVpnTunnel(routing, config);
+  } else {
+    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config);
+  }
+  routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
+
+  return tunnel;
+}
+
+// Invoked by both the start-proxying event handler and auto-connect.
+async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = false) {
+  if (currentTunnel) {
+    throw new Error('already connected');
+  }
+
+  currentTunnel = createVpnTunnel(config, isAutoConnect);
+  if (debugMode) {
+    currentTunnel.enableDebugMode();
+  }
+
+  currentTunnel.onceDisconnected.then(() => {
+    console.log(`disconnected from ${id}`);
+    currentTunnel = undefined;
+    setUiTunnelStatus(TunnelStatus.DISCONNECTED, id);
+  });
+
+  currentTunnel.onReconnecting(() => {
+    console.log(`reconnecting to ${id}`);
+    setUiTunnelStatus(TunnelStatus.RECONNECTING, id);
+  });
+
+  currentTunnel.onReconnected(() => {
+    console.log(`reconnected to ${id}`);
+    setUiTunnelStatus(TunnelStatus.CONNECTED, id);
+  });
+
+  // Don't check connectivity on boot: if the key was revoked or network connectivity is not ready,
+  // we want the system to stay "connected" so that traffic doesn't leak.
+  await currentTunnel.connect(!isAutoConnect);
+  setUiTunnelStatus(TunnelStatus.CONNECTED, id);
+}
+
+// Invoked by both the stop-proxying event and quit handler.
+async function stopVpn() {
+  if (!currentTunnel) {
+    return;
+  }
+
+  currentTunnel.disconnect();
+  await tearDownAutoLaunch();
+  await currentTunnel.onceDisconnected;
+}
+
+function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
   let statusString;
   switch (status) {
-    case ConnectionStatus.CONNECTED:
+    case TunnelStatus.CONNECTED:
       statusString = 'connected';
       break;
-    case ConnectionStatus.DISCONNECTED:
+    case TunnelStatus.DISCONNECTED:
       statusString = 'disconnected';
       break;
-    case ConnectionStatus.RECONNECTING:
+    case TunnelStatus.RECONNECTING:
       statusString = 'reconnecting';
       break;
     default:
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
   }
-  const event = `proxy-${statusString}-${connectionId}`;
+  const event = `proxy-${statusString}-${tunnelId}`;
   if (mainWindow) {
     mainWindow.webContents.send(event);
   } else {
     console.warn(`received ${event} event but no mainWindow to notify`);
   }
+  updateTray(status);
 }
 
-promiseIpc.on(
-    'start-proxying', (args: {config: cordova.plugins.outline.ServerConfig, id: string}) => {
-      return startVpn(args.config, args.id).catch((e) => {
-        console.error(`could not connect: ${e.name} (${e.message})`);
-        throw errors.toErrorCode(e);
+function checkForUpdates() {
+  try {
+    autoUpdater.checkForUpdates();
+  } catch (e) {
+    console.error(`Failed to check for updates`, e);
+  }
+}
+
+function main() {
+  if (!app.requestSingleInstanceLock()) {
+    console.log('another instance is running - exiting');
+    app.quit();
+  }
+
+  app.setAsDefaultProtocolClient('ss');
+
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.on('ready', async () => {
+    setupMenu();
+    setupTray();
+    // TODO(fortuna): Start the app with the window hidden on auto-start?
+    setupWindow();
+
+    let tunnelAtShutdown: SerializableTunnel;
+    try {
+      tunnelAtShutdown = await tunnelStore.load();
+    } catch (e) {
+      // No tunnel at shutdown, or failure - either way, no need to start.
+      // TODO: Instead of quitting, how about creating the system tray icon?
+      console.warn(`Could not load active tunnel: `, e);
+      await tunnelStore.clear();
+    }
+    if (tunnelAtShutdown) {
+      console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
+      setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
+      try {
+        await startVpn(tunnelAtShutdown.config, tunnelAtShutdown.id, true);
+        console.log(`reconnected to ${tunnelAtShutdown.id}`);
+      } catch (e) {
+        console.error(`could not reconnect: ${e.name} (${e.message})`);
+      }
+    }
+
+    if (!debugMode) {
+      checkForUpdates();
+      // Check every six hours
+      setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
+    }
+  });
+
+  app.on('second-instance', (event: Event, argv: string[]) => {
+    interceptShadowsocksLink(argv);
+    // Someone tried to run a second instance, we should focus our window.
+    mainWindow?.show();
+  });
+
+  app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    mainWindow?.show();
+  });
+
+  // This event fires whenever the app's window receives focus.
+  app.on('browser-window-focus', () => {
+    mainWindow?.webContents.send('push-clipboard');
+  });
+
+  promiseIpc.on('is-server-reachable', async (args: {hostname: string, port: number}) => {
+    try {
+      await connectivity.isServerReachable(
+          args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  // Connects to the specified server, if that server is reachable and the credentials are valid.
+  promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig, id: string}) => {
+    // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
+    //       being faster, this would help prevent traffic leaks - the Cordova clients already do
+    //       this).
+    if (currentTunnel) {
+      console.log('disconnecting from current server...');
+      currentTunnel.disconnect();
+      await currentTunnel.onceDisconnected;
+    }
+
+    console.log(`connecting to ${args.id}...`);
+
+    try {
+      // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
+      // resolve it just once, upfront.
+      args.config.host = await connectivity.lookupIp(args.config.host || '');
+
+      await connectivity.isServerReachable(
+          args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+
+      await startVpn(args.config, args.id);
+      console.log(`connected to ${args.id}`);
+      await setupAutoLaunch(args);
+      // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
+      tunnelStore.save(args).catch((e) => {
+        console.error('Failed to store tunnel.');
       });
-    });
+    } catch (e) {
+      console.error(`could not connect: ${e.name} (${e.message})`);
+      throw errors.toErrorCode(e);
+    }
+  });
 
-promiseIpc.on('stop-proxying', () => {
-  return process_manager.teardownVpn();
-});
+  // Disconnects from the current server, if any.
+  promiseIpc.on('stop-proxying', stopVpn);
 
-// This event fires whenever the app's window receives focus.
-app.on('browser-window-focus', () => {
-  if (mainWindow) {
-    mainWindow.webContents.send('push-clipboard');
-  }
-});
+  // Error reporting.
+  // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
+  ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
+    if (info.dsn) {
+      sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
+    }
+    // To clearly identify app restarts in Sentry.
+    console.info(`Outline is starting`);
+  });
 
-// Error reporting.
-// This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
-  sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
-  // To clearly identify app restarts in Sentry.
-  console.info(`Outline is starting`);
-});
+  ipcMain.on('quit-app', quitApp);
 
-ipcMain.on('quit-app', quitApp);
+  ipcMain.on(
+      'localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
+        if (!!localizationResult) {
+          localizedStrings = localizationResult;
+        }
+        updateTray(TunnelStatus.DISCONNECTED);
+      });
 
-ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
-  if (!!localizationResult) {
-    localizedStrings = localizationResult;
-  }
-  createTrayIcon(ConnectionStatus.DISCONNECTED);
-});
+  // Notify the UI of updates.
+  autoUpdater.on('update-downloaded', (ev, info) => {
+    mainWindow?.webContents.send('update-downloaded');
+  });
+}
 
-// Notify the UI of updates.
-autoUpdater.on('update-downloaded', (ev, info) => {
-  if (mainWindow) {
-    mainWindow.webContents.send('update-downloaded');
-  }
-});
+main();

@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2018, Deusty, LLC
+// Copyright (c) 2010-2021, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -13,7 +13,7 @@
 //   to endorse or promote products derived from this software without specific
 //   prior written permission of Deusty, LLC.
 
-#import "CocoaLumberjack.h"
+#import <CocoaLumberjack/DDFileLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Will assert if used outside logger's queue.
 - (void)lt_logData:(NSData *)data;
 
-- (NSData *)lt_dataForMessage:(DDLogMessage *)message;
+- (nullable NSData *)lt_dataForMessage:(DDLogMessage *)message;
 
 @end
 

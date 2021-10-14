@@ -18,8 +18,6 @@ import android.content.Context;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 // Manages the life cycle and configuration of ss-local, the Shadowsocks client library.
 public class Shadowsocks {
@@ -40,19 +38,19 @@ public class Shadowsocks {
   }
 
   // Launches ss-local as a separate process with the provided configuration.
-  public synchronized boolean start(JSONObject serverConfig) throws JSONException {
+  public synchronized boolean start(ShadowsocksConfig serverConfig) {
     LOG.info("starting ss-local");
     try {
       this.stopShadowsocksProcess(); // Try to stop in case there is a previous instance running.
       this.ssProcess = new ProcessBuilder(
         this.ssPath,
-        "-s", serverConfig.getString("host"),
-        "-p", serverConfig.getString("port"),
-        "-k", serverConfig.getString("password"),
+        "-s", serverConfig.host,
+        "-p", String.valueOf(serverConfig.port),
+        "-k", serverConfig.password,
         "-b", LOCAL_SERVER_ADDRESS,
         "-l", LOCAL_SERVER_PORT,
-        "-m", serverConfig.getString("method"),
-        "-t", String.format(Locale.ROOT, "%d", SS_LOCAL_TIMEOUT_SECS),
+        "-m", serverConfig.method,
+        "-t", String.valueOf(SS_LOCAL_TIMEOUT_SECS),
         "-u"
         ).start();
       // Wait for the process to start and report whether it is running.

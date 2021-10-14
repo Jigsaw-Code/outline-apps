@@ -40,6 +40,11 @@ SENTRY_NO_INIT
 @property(nonatomic, strong) NSDate *timestamp;
 
 /**
+ * NSDate of when the event started, mostly useful if event type transaction
+ */
+@property(nonatomic, strong) NSDate *_Nullable startTimestamp;
+
+/**
  * SentrySeverity of the event
  */
 @property(nonatomic) enum SentrySeverity level;
@@ -73,6 +78,17 @@ SENTRY_NO_INIT
  * The environment used for this event
  */
 @property(nonatomic, copy) NSString *_Nullable environment;
+
+/**
+ * The current transaction (state) on the crash
+ */
+@property(nonatomic, copy) NSString *_Nullable transaction;
+
+
+/**
+ * The type of the event, null, default or transaction
+ */
+@property(nonatomic, copy) NSString *_Nullable type;
 
 /**
  * Arbitrary key:value (string:string ) data that will be shown with the event
@@ -149,11 +165,25 @@ SENTRY_NO_INIT
 @property(nonatomic, strong) NSDictionary *infoDict;
 
 /**
+ * JSON baggage, that will only be filled if initWithJSON is called.
+ */
+@property(nonatomic, strong) NSData *json;
+
+/**
  * Init an SentryEvent will set all needed fields by default
  * @param level SentrySeverity
  * @return SentryEvent
  */
 - (instancetype)initWithLevel:(enum SentrySeverity)level;
+
+/**
+ * Init an SentryEvent with a JSON blob that completly bypasses all other attributes in the event.
+ * Instead only the JSON will be sent, this is used in react-native for example where we consider the event
+ * from JS as the source of truth.
+ * @param json NSData
+ * @return SentryEvent
+ */
+- (instancetype)initWithJSON:(NSData *)json;
 
 @end
 

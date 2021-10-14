@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig/shadowsocks_config';
-
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
@@ -21,7 +19,7 @@ import {Server} from '../model/server';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {PersistentServer, PersistentServerRepository} from './persistent_server';
+import {OutlineServer, OutlineServerRepository} from './outline_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -47,7 +45,7 @@ export function unwrapInvite(s: string): string {
     }
   } catch (e) {
     // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // crazy things in the clipboard.
+    // unexpected things in the clipboard.
   }
   return s;
 }
@@ -59,7 +57,7 @@ export class App {
   private ignoredAccessKeys: {[accessKey: string]: boolean;} = {};
 
   constructor(
-      private eventQueue: events.EventQueue, private serverRepo: PersistentServerRepository,
+      private eventQueue: events.EventQueue, private serverRepo: OutlineServerRepository,
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
@@ -70,7 +68,7 @@ export class App {
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
-    rootEl.$.aboutView.version = environmentVars.APP_VERSION;
+    rootEl.appVersion = environmentVars.APP_VERSION;
 
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
@@ -105,6 +103,7 @@ export class App {
         'ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
+    this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
@@ -165,9 +164,12 @@ export class App {
       messageKey = 'outline-plugin-error-unsupported-routing-table';
     } else if (e instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
-      messageParams = ['serverName', e.server.name];
+      messageParams = ['serverName', this.getServerDisplayName(e.server)];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
+    } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
+      messageKey = 'error-shadowsocks-unsupported-cipher';
+      messageParams = ['cipher', e.cipher];
     } else {
       messageKey = 'error-unexpected';
     }
@@ -186,14 +188,13 @@ export class App {
     }
   }
 
-  private pullClipboardText() {
-    this.clipboard.getContents().then(
-        (text: string) => {
-          this.handleClipboardText(text);
-        },
-        (e) => {
-          console.warn('cannot read clipboard, system may lack clipboard support');
-        });
+  private async pullClipboardText() {
+    try {
+      const text = await this.clipboard.getContents();
+      this.handleClipboardText(text);
+    } catch (e) {
+      console.warn('cannot read clipboard, system may lack clipboard support');
+    }
   }
 
   private showServerConnected(event: events.ServerConnected): void {
@@ -243,6 +244,13 @@ export class App {
     this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
   }
 
+  private setAppLanguage(event: CustomEvent) {
+    const languageCode = event.detail.languageCode;
+    window.localStorage.setItem('overrideLanguage', languageCode);
+    this.rootEl.setLanguage(languageCode);
+    this.changeToDefaultPage();
+  }
+
   private handleClipboardText(text: string) {
     // Shorten, sanitise.
     // Note that we always check the text, even if the contents are same as last time, because we
@@ -271,7 +279,7 @@ export class App {
 
   private requestAddServer(event: CustomEvent) {
     try {
-      this.serverRepo.add(event.detail.serverConfig);
+      this.serverRepo.add(event.detail.accessKey);
     } catch (err) {
       this.changeToDefaultPage();
       this.showLocalizedError(err);
@@ -293,62 +301,43 @@ export class App {
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard && accessKey in this.ignoredAccessKeys) {
-      return console.debug('Ignoring access key');
-    } else if (fromClipboard && addServerView.isAddingServer()) {
-      return console.debug('Already adding a server');
-    }
-    // Expect SHADOWSOCKS_URI.parse to throw on invalid access key; propagate any exception.
-    let shadowsocksConfig = null;
-    try {
-      shadowsocksConfig = SHADOWSOCKS_URI.parse(accessKey);
-    } catch (error) {
-      const message = !!error.message ? error.message : 'Failed to parse access key';
-      throw new errors.ServerUrlInvalid(message);
-    }
-    if (shadowsocksConfig.host.isIPv6) {
-      throw new errors.ServerIncompatible('Only IPv4 addresses are currently supported');
-    }
-    const name = shadowsocksConfig.extra.outline ?
-        this.localize('server-default-name-outline') :
-        shadowsocksConfig.tag.data ? shadowsocksConfig.tag.data :
-                                     this.localize('server-default-name');
-    const serverConfig = {
-      host: shadowsocksConfig.host.data,
-      port: shadowsocksConfig.port.data,
-      method: shadowsocksConfig.method.data,
-      password: shadowsocksConfig.password.data,
-      name,
-    };
-    if (!this.serverRepo.containsServer(serverConfig)) {
-      // Only prompt the user to add new servers.
-      try {
-        addServerView.openAddServerConfirmationSheet(accessKey, serverConfig);
-      } catch (err) {
-        console.error('Failed to open add sever confirmation sheet:', err.message);
-        if (!fromClipboard) this.showLocalizedError();
+    if (fromClipboard) {
+      if (accessKey in this.ignoredAccessKeys) {
+        return console.debug('Ignoring access key');
+      } else if (fromClipboard && addServerView.isAddingServer()) {
+        return console.debug('Already adding a server');
       }
-    } else if (!fromClipboard) {
-      // Display error message if this is not a clipboard add.
+    }
+    try {
+      this.serverRepo.validateAccessKey(accessKey);
+      addServerView.openAddServerConfirmationSheet(accessKey);
+    } catch (e) {
       addServerView.close();
-      this.showLocalizedError(new errors.ServerAlreadyAdded(
-          this.serverRepo.createServer('', serverConfig, this.eventQueue)));
+      if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
+        // Display error message and don't propagate error if this is not a clipboard add.
+        this.showLocalizedError(e);
+        return;
+      }
+      // Propagate access key validation error.
+      throw e;
     }
   }
 
-  private forgetServer(event: CustomEvent) {
+  private async forgetServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
       return this.showLocalizedError();
     }
-    const onceNotRunning = server.checkRunning().then((isRunning) => {
-      return isRunning ? this.disconnectServer(event) : Promise.resolve();
-    });
-    onceNotRunning.then(() => {
-      this.serverRepo.forget(serverId);
-    });
+    try {
+      if (await server.checkRunning()) {
+        await this.disconnectServer(event);
+      }
+    } catch (e) {
+      console.warn(`failed to disconnect from server to forget: ${e}`);
+    }
+    this.serverRepo.forget(serverId);
   }
 
   private renameServer(event: CustomEvent) {
@@ -357,7 +346,7 @@ export class App {
     this.serverRepo.rename(serverId, newName);
   }
 
-  private connectServer(event: CustomEvent): void {
+  private async connectServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     if (!serverId) {
       throw new Error(`connectServer event had no server ID`);
@@ -369,21 +358,21 @@ export class App {
     console.log(`connecting to server ${serverId}`);
 
     card.state = 'CONNECTING';
-    server.connect().then(
-        () => {
-          card.state = 'CONNECTED';
-          console.log(`connected to server ${serverId}`);
-          this.rootEl.showToast(this.localize('server-connected', 'serverName', server.name));
-          this.maybeShowAutoConnectDialog();
-        },
-        (e) => {
-          card.state = 'DISCONNECTED';
-          this.showLocalizedError(e);
-          console.error(`could not connect to server ${serverId}: ${e.name}`);
-          if (!(e instanceof errors.RegularNativeError)) {
-            this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
-          }
-        });
+    try {
+      await server.connect();
+      card.state = 'CONNECTED';
+      console.log(`connected to server ${serverId}`);
+      this.rootEl.showToast(
+          this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
+      this.maybeShowAutoConnectDialog();
+    } catch (e) {
+      card.state = 'DISCONNECTED';
+      this.showLocalizedError(e);
+      console.error(`could not connect to server ${serverId}: ${e.name}`);
+      if (!(e instanceof errors.RegularNativeError)) {
+        this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
+      }
+    }
   }
 
   private maybeShowAutoConnectDialog() {
@@ -402,7 +391,7 @@ export class App {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
   }
 
-  private disconnectServer(event: CustomEvent): void {
+  private async disconnectServer(event: CustomEvent) {
     const serverId = event.detail.serverId;
     if (!serverId) {
       throw new Error(`disconnectServer event had no server ID`);
@@ -414,38 +403,36 @@ export class App {
     console.log(`disconnecting from server ${serverId}`);
 
     card.state = 'DISCONNECTING';
-    server.disconnect().then(
-        () => {
-          card.state = 'DISCONNECTED';
-          console.log(`disconnected from server ${serverId}`);
-          this.rootEl.showToast(this.localize('server-disconnected', 'serverName', server.name));
-        },
-        (e) => {
-          card.state = 'CONNECTED';
-          this.showLocalizedError(e);
-          console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
-        });
+    try {
+      await server.disconnect();
+      card.state = 'DISCONNECTED';
+      console.log(`disconnected from server ${serverId}`);
+      this.rootEl.showToast(
+          this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
+    } catch (e) {
+      card.state = 'CONNECTED';
+      this.showLocalizedError(e);
+      console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
+    }
   }
 
-  private submitFeedback(event: CustomEvent) {
+  private async submitFeedback(event: CustomEvent) {
     const formData = this.feedbackViewEl.getValidatedFormData();
     if (!formData) {
       return;
     }
     const {feedback, category, email} = formData;
     this.rootEl.$.feedbackView.submitting = true;
-    this.errorReporter.report(feedback, category, email)
-        .then(
-            () => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.rootEl.$.feedbackView.resetForm();
-              this.changeToDefaultPage();
-              this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-            },
-            (err: {}) => {
-              this.rootEl.$.feedbackView.submitting = false;
-              this.showLocalizedError(new errors.FeedbackSubmissionError());
-            });
+    try {
+      await this.errorReporter.report(feedback, category, email);
+      this.rootEl.$.feedbackView.submitting = false;
+      this.rootEl.$.feedbackView.resetForm();
+      this.changeToDefaultPage();
+      this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
+    } catch (e) {
+      this.rootEl.$.feedbackView.submitting = false;
+      this.showLocalizedError(new errors.FeedbackSubmissionError());
+    }
   }
 
   // EventQueue event handlers:
@@ -456,7 +443,8 @@ export class App {
     this.syncServersToUI();
     this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
-    this.rootEl.showToast(this.localize('server-added', 'serverName', server.name));
+    this.rootEl.showToast(
+        this.localize('server-added', 'serverName', this.getServerDisplayName(server)));
   }
 
   private showServerForgotten(event: events.ServerForgotten) {
@@ -464,7 +452,7 @@ export class App {
     console.debug('Server forgotten');
     this.syncServersToUI();
     this.rootEl.showToast(
-        this.localize('server-forgotten', 'serverName', server.name), 10000,
+        this.localize('server-forgotten', 'serverName', this.getServerDisplayName(server)), 10000,
         this.localize('undo-button-label'), () => {
           this.serverRepo.undoForget(server.id);
         });
@@ -473,7 +461,8 @@ export class App {
   private showServerForgetUndone(event: events.ServerForgetUndone) {
     this.syncServersToUI();
     const server = event.server;
-    this.rootEl.showToast(this.localize('server-forgotten-undo', 'serverName', server.name));
+    this.rootEl.showToast(
+        this.localize('server-forgotten-undo', 'serverName', this.getServerDisplayName(server)));
   }
 
   private showServerRenamed(event: events.ServerForgotten) {
@@ -495,26 +484,24 @@ export class App {
     }
   }
 
-  private syncServerConnectivityState(server: Server) {
-    server.checkRunning()
-        .then((isRunning) => {
-          const card = this.serverListEl.getServerCard(server.id);
-          if (!isRunning) {
-            card.state = 'DISCONNECTED';
-            return;
-          }
-          server.checkReachable().then((isReachable) => {
-            if (isReachable) {
-              card.state = 'CONNECTED';
-            } else {
-              console.log(`Server ${server.id} reconnecting`);
-              card.state = 'RECONNECTING';
-            }
-          });
-        })
-        .catch((e) => {
-          console.error('Failed to sync server connectivity state', e);
-        });
+  private async syncServerConnectivityState(server: Server) {
+    try {
+      const isRunning = await server.checkRunning();
+      const card = this.serverListEl.getServerCard(server.id);
+      if (!isRunning) {
+        card.state = 'DISCONNECTED';
+        return;
+      }
+      const isReachable = await server.checkReachable();
+      if (isReachable) {
+        card.state = 'CONNECTED';
+      } else {
+        console.log(`Server ${server.id} reconnecting`);
+        card.state = 'RECONNECTING';
+      }
+    } catch (e) {
+      console.error('Failed to sync server connectivity state', e);
+    }
   }
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
@@ -537,8 +524,18 @@ export class App {
     this.rootEl.changePage(this.rootEl.DEFAULT_PAGE);
   }
 
+  // Returns the server's name, if present, or a default server name.
+  private getServerDisplayName(server: Server): string {
+    if (server.name) {
+      return server.name;
+    }
+    return (server as OutlineServer).isOutlineServer ?
+        this.localize('server-default-name-outline') :
+        this.localize('server-default-name');
+  }
+
   // Returns the server having serverId, throws if the server cannot be found.
-  private getServerByServerId(serverId: string): PersistentServer {
+  private getServerByServerId(serverId: string): Server {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       throw new Error(`could not find server with ID ${serverId}`);

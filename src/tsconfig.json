@@ -2,8 +2,11 @@
   "compilerOptions": {
     "target": "es2017",
     "removeComments": false,
-    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "Node",
     "module": "commonjs",
+    "allowJs": true,
     "typeRoots": [
       "../node_modules/@types",
       "./types/modules"

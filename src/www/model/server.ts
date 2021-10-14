@@ -16,10 +16,14 @@
 
 export interface Server {
   // A unique id that identifies this Server.
-  id: string;
+  readonly id: string;
 
   // The name of this server, as given by the user.
   name: string;
+
+  // The message identifier corresponding to the server error state. This identifier
+  // must match one of the localized app message.
+  errorMessageId?: string;
 
   // Connects to the server, redirecting the device's traffic.
   connect(): Promise<void>;
@@ -35,9 +39,7 @@ export interface Server {
 }
 
 export interface ServerRepository {
-  // TODO: change object to cordova.plugins.uproyx.ServerConfig once we decouple the definition from
-  // cordova-plugin-outline
-  add(serverConfig: {}): void;
+  add(accessKey: string): void;
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];

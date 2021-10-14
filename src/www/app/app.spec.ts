@@ -16,7 +16,6 @@ import {unwrapInvite} from './app';
 
 describe('unwrapInvite', () => {
   it('ignores empty string', () => {
-    const s = 'i am not a shadowsocks link';
     expect(unwrapInvite('')).toEqual('');
   });
 

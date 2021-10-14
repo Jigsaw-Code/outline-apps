@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-yarn do src/www/build
+npm run do src/www/build_electron
 
-tsc -p src/electron
+webpack --config=src/electron/electron_main.webpack.js \
+    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
+    ${BUILD_ENV:+--mode="${BUILD_ENV}"}
 
 # Environment variables.
 # TODO: make non-packaged builds work without this

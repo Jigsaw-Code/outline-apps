@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Releases the Outline iOS client on Travis. Expects to be invoked through `yarn do`.
+# Releases the Outline iOS client on Travis. Expects to be invoked through `npm run do`.
 ./apple/scripts/install_fastlane.sh -p ios
 pushd platforms/ios
 bundle exec fastlane ios release

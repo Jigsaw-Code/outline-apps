@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="cordova-plugin-outline" version="1.0.0">
+        id="cordova-plugin-outline" version="0.0.0">
   <name>Outline Cordova Plugin</name>
   <description>Native plugin for the Outline app</description>
   <license>Apache 2.0</license>
@@ -34,7 +34,8 @@
         android:name="org.outline.vpn.VpnTunnelService"
         android:exported="false"
         android:label="@string/app_name"
-        android:permission="android.permission.BIND_VPN_SERVICE">
+        android:permission="android.permission.BIND_VPN_SERVICE"
+        android:process=":vpn">
         <intent-filter>
           <action android:name="android.net.VpnService" />
         </intent-filter>
@@ -48,10 +49,13 @@
             <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
           </intent-filter>
       </receiver>
+
+      <meta-data android:name="io.sentry.auto-init" android:value="false" />
     </config-file>
 
     <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
 
+    <source-file src="android/aidl" target-dir="app/src/main" />
     <source-file
       src="android/java/org/outline/OutlinePlugin.java"
       target-dir="app/src/main/java/org/outline" />
@@ -59,27 +63,15 @@
       src="android/java/org/outline/vpn"
       target-dir="app/src/main/java/org/outline" />
     <source-file
-      src="android/java/org/outline/shadowsocks"
-      target-dir="app/src/main/java/org/outline" />
-    <source-file
-      src="android/java/org/outline/tun2socks"
-      target-dir="app/src/main/java/org/outline" />
-    <source-file
       src="android/java/org/outline/log"
       target-dir="app/src/main/java/org/outline" />
-
     <source-file
-      src="android/libs/armeabi-v7a/libss-local.so"
-      target-dir="app/src/main/jniLibs/armeabi-v7a" />
+      src="android/libs/tun2socks.aar"
+      target-dir="app/src/main/libs" />
+    <!-- These are JNI libraries with debug symbols required for crash reporting tools. -->
     <source-file
-      src="android/libs/armeabi-v7a/libtun2socks.so"
-      target-dir="app/src/main/jniLibs/armeabi-v7a" />
-    <source-file
-      src="android/libs/x86/libss-local.so"
-      target-dir="app/src/main/jniLibs/x86" />
-    <source-file
-      src="android/libs/x86/libtun2socks.so"
-      target-dir="app/src/main/jniLibs/x86" />
+      src="android/libs/obj"
+      target-dir="app/" />
 
     <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
     <resource-file src="android/resources/bypass_subnets.xml" target="res/values/bypass_subnets.xml" />
@@ -103,13 +95,11 @@
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
-    <source-file src="apple/src/OutlineConnection.swift" />
+    <source-file src="apple/src/OutlineTunnel.swift" />
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/ios/PacketProcessor_iOS.framework" custom="true" />
-    <framework src="apple/lib/ios/Shadowsocks_iOS.framework" custom="true" />
-    <framework src="apple/lib/ios/CocoaAsyncSocket.framework" custom="true" />
+    <framework src="apple/lib/ios/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/ios/Sentry.framework" custom="true" />
     <framework src="apple/lib/ios/CocoaLumberjack.framework" custom="true" />
     <framework src="apple/lib/ios/CocoaLumberjackSwift.framework" custom="true" />
@@ -129,14 +119,12 @@
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
-    <source-file src="apple/src/OutlineConnection.swift" />
+    <source-file src="apple/src/OutlineTunnel.swift" />
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/macos/PacketProcessor_macOS.framework" custom="true" />
-    <framework src="apple/lib/macos/Shadowsocks_macOS.framework" custom="true" />
-    <framework src="apple/lib/macos/CocoaAsyncSocket.framework" custom="true" />
+    <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/macos/Sentry.framework" custom="true" />
     <framework src="apple/lib/macos/CocoaLumberjack.framework" custom="true" />
     <framework src="apple/lib/macos/CocoaLumberjackSwift.framework" custom="true" />

@@ -33,13 +33,23 @@ const log = {
   }
 };
 
+const net = {
+  isServerReachable: function(hostname, port) {
+    return new Promise(function(resolve, reject) {
+      const rejectWithError = function(errorCode) {
+        reject(new OutlinePluginError(errorCode));
+      };
+      exec(resolve, rejectWithError, PLUGIN_NAME, 'isServerReachable', [hostname, port]);
+    });
+  }
+};
+
 function quitApplication() {
   exec(function() {}, function() {}, PLUGIN_NAME, 'quitApplication', []);
 }
 
-var globalId = 100;  // Internal, incremental ID.
-
 // This must be kept in sync with:
+//  - cordova-plugin-outline/android/java/org/outline/OutlinePlugin.java#ErrorCode
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
 //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
 //  - www/model/errors.ts
@@ -65,64 +75,57 @@ function OutlinePluginError(errorCode) {
   this.errorCode = errorCode || ERROR_CODE.UNEXPECTED;
 }
 
-const ConnectionStatus = {
+// This must be kept in sync with the TypeScript definition:
+//   www/app/tunnel.ts
+const TunnelStatus = {
   CONNECTED: 0,
   DISCONNECTED: 1,
   RECONNECTING: 2
 }
 
-function Connection(config, id) {
-  if (id) {
-    this.id_ = id.toString();
-  } else {
-    this.id_ = (globalId++).toString();
-  }
-
-  if (!config) {
-    throw new Error('Server configuration is required');
-  }
-  this.config = config;
+function Tunnel(id) {
+  this.id = id;
 }
 
-Connection.prototype._promiseExec = function(cmd, args) {
+Tunnel.prototype._promiseExec = function(cmd, args) {
   return new Promise(function(resolve, reject) {
     const rejectWithError = function(errorCode) {
       reject(new OutlinePluginError(errorCode));
     };
-    exec(resolve, rejectWithError, PLUGIN_NAME, cmd, [this.id_].concat(args));
+    exec(resolve, rejectWithError, PLUGIN_NAME, cmd, [this.id].concat(args));
   }.bind(this));
 };
 
-Connection.prototype._exec = function(cmd, args, success, error) {
-  exec(success, error, PLUGIN_NAME, cmd, [this.id_].concat(args));
+Tunnel.prototype._exec = function(cmd, args, success, error) {
+  exec(success, error, PLUGIN_NAME, cmd, [this.id].concat(args));
 };
 
-Connection.prototype.start = function() {
-  return this._promiseExec('start', [this.config]);
+Tunnel.prototype.start = function(config) {
+  if (!config) {
+    throw new OutlinePluginError(ERROR_CODE.ILLEGAL_SERVER_CONFIGURATION);
+  }
+  return this._promiseExec('start', [config]);
 };
 
-Connection.prototype.stop = function() {
+Tunnel.prototype.stop = function() {
   return this._promiseExec('stop', []);
 };
 
-Connection.prototype.isRunning = function() {
+Tunnel.prototype.isRunning = function() {
   return this._promiseExec('isRunning', []);
 };
 
-Connection.prototype.isReachable = function() {
-  return this._promiseExec('isReachable', [this.config.host, this.config.port]);
-};
-
-Connection.prototype.onStatusChange = function(listener) {
+Tunnel.prototype.onStatusChange = function(listener) {
   const onError = function(err) {
-    console.warn('Failed to execute disconnect listener', err);
+    console.warn('failed to execute status change listener', err);
   };
   this._exec('onStatusChange', [], listener, onError);
 };
 
 module.exports = {
-  Connection: Connection,
-  ConnectionStatus: ConnectionStatus,
+  Tunnel: Tunnel,
+  TunnelStatus: TunnelStatus,
   log: log,
+  net: net,
   quitApplication: quitApplication,
 };

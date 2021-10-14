@@ -1,7 +1,7 @@
 /*
  * jconf.c - Parse the JSON format config file
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  * shadowsocks-libev is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "netutils.h"
 #include "utils.h"
 #include "jconf.h"
 #include "json.h"
@@ -67,9 +68,10 @@ parse_addr(const char *str_in, ss_addr_t *addr)
     if (str_in == NULL)
         return;
 
-    int ipv6 = 0, ret = -1, n = 0;
+    int ipv6 = 0, ret = -1, n = 0, len;
     char *pch;
     char *str = strdup(str_in);
+    len = strlen(str_in);
 
     struct cork_ip ip;
     if (cork_ip_init(&ip, str) != -1) {
@@ -84,6 +86,7 @@ parse_addr(const char *str_in, ss_addr_t *addr)
         ret = pch - str;
         pch = strchr(pch + 1, ':');
     }
+
     if (n > 1) {
         ipv6 = 1;
         if (str[ret - 1] != ']') {
@@ -104,7 +107,12 @@ parse_addr(const char *str_in, ss_addr_t *addr)
         } else {
             addr->host = ss_strndup(str, ret);
         }
-        addr->port = strdup(str + ret + 1);
+        if (ret < len - 1)
+        {
+            addr->port = strdup(str + ret + 1);
+        } else {
+            addr->port = NULL;
+        }
     }
 
     free(str);
@@ -211,8 +219,7 @@ read_jconf(const char *file)
                         conf.remote_num = j + 1;
                     }
                 } else if (value->type == json_string) {
-                    conf.remote_addr[0].host = to_string(value);
-                    conf.remote_addr[0].port = NULL;
+                    parse_addr(to_string(value), conf.remote_addr);
                     conf.remote_num          = 1;
                 }
             } else if (strcmp(name, "port_password") == 0) {
@@ -234,6 +241,10 @@ read_jconf(const char *file)
                 conf.remote_port = to_string(value);
             } else if (strcmp(name, "local_address") == 0) {
                 conf.local_addr = to_string(value);
+            } else if (strcmp(name, "local_ipv4_address") == 0) {
+                conf.local_addr_v4 = to_string(value);
+            } else if (strcmp(name, "local_ipv6_address") == 0) {
+                conf.local_addr_v6 = to_string(value);
             } else if (strcmp(name, "local_port") == 0) {
                 conf.local_port = to_string(value);
             } else if (strcmp(name, "password") == 0) {
@@ -328,6 +339,10 @@ read_jconf(const char *file)
                     value, json_boolean,
                     "invalid config file: option 'no_delay' must be a boolean");
                 conf.no_delay = value->u.boolean;
+            } else if (strcmp(name, "workdir") == 0) {
+                conf.workdir = to_string(value);
+            } else if (strcmp(name, "acl") == 0) {
+                conf.acl = to_string(value);
             }
         }
     } else {

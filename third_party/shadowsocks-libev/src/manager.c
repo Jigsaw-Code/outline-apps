@@ -1,7 +1,7 @@
 /*
  * server.c - Provide shadowsocks service
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -58,8 +58,8 @@
 
 #include "json.h"
 #include "utils.h"
-#include "manager.h"
 #include "netutils.h"
+#include "manager.h"
 
 #ifndef BUF_SIZE
 #define BUF_SIZE 65535
@@ -211,6 +211,11 @@ construct_command_line(struct manager_ctx *manager, struct server *server)
     if (manager->nameservers) {
         int len = strlen(cmd);
         snprintf(cmd + len, BUF_SIZE - len, " -d \"%s\"", manager->nameservers);
+    }
+    if (manager->workdir)
+    {
+        int len = strlen(cmd);
+        snprintf(cmd + len, BUF_SIZE - len, " -D \"%s\"", manager->workdir);
     }
     for (i = 0; i < manager->host_num; i++) {
         int len = strlen(cmd);
@@ -668,7 +673,7 @@ manager_recv_cb(EV_P_ ev_io *w, int revents)
         }
 
         size_t pos = strlen(buf);
-        strcpy(buf + pos - 1, "\n]"); // Remove trailing ","
+        strcpy(buf + max(pos - 1, 1), "\n]"); // Remove trailing ","
         pos = strlen(buf);
         if (sendto(manager->fd, buf, pos, 0, (struct sockaddr *)&claddr, len)
             != pos) {
@@ -856,6 +861,7 @@ main(int argc, char **argv)
     char *manager_address = NULL;
     char *plugin          = NULL;
     char *plugin_opts     = NULL;
+    char *workdir         = NULL;
 
     int fast_open  = 0;
     int no_delay   = 0;
@@ -888,6 +894,7 @@ main(int argc, char **argv)
         { "plugin",          required_argument, NULL, GETOPT_VAL_PLUGIN      },
         { "plugin-opts",     required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
         { "password",        required_argument, NULL, GETOPT_VAL_PASSWORD    },
+        { "workdir",         required_argument, NULL, GETOPT_VAL_WORKDIR     },
         { "help",            no_argument,       NULL, GETOPT_VAL_HELP        },
         { NULL,                              0, NULL,                      0 }
     };
@@ -896,7 +903,7 @@ main(int argc, char **argv)
 
     USE_TTY();
 
-    while ((c = getopt_long(argc, argv, "f:s:l:k:t:m:c:i:d:a:n:6huUvA",
+    while ((c = getopt_long(argc, argv, "f:s:l:k:t:m:c:i:d:a:n:D:6huUvA",
                             long_options, NULL)) != -1)
         switch (c) {
         case GETOPT_VAL_REUSE_PORT:
@@ -965,6 +972,10 @@ main(int argc, char **argv)
             break;
         case '6':
             ipv6first = 1;
+            break;
+        case GETOPT_VAL_WORKDIR:
+        case 'D':
+            workdir = optarg;
             break;
         case 'v':
             verbose = 1;
@@ -1038,6 +1049,13 @@ main(int argc, char **argv)
         }
         if (ipv6first == 0) {
             ipv6first = conf->ipv6_first;
+        }
+        if (workdir == NULL)
+        {
+            workdir = conf->workdir;
+        }
+        if (acl == NULL) {
+            acl = conf->acl;
         }
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
@@ -1119,6 +1137,7 @@ main(int argc, char **argv)
     manager.plugin          = plugin;
     manager.plugin_opts     = plugin_opts;
     manager.ipv6first       = ipv6first;
+    manager.workdir         = workdir;
 #ifdef HAVE_SETRLIMIT
     manager.nofile = nofile;
 #endif
@@ -1126,15 +1145,35 @@ main(int argc, char **argv)
     // initialize ev loop
     struct ev_loop *loop = EV_DEFAULT;
 
+#ifndef __MINGW32__
+    // setuid
+    if (user != NULL && !run_as(user)) {
+        FATAL("failed to switch user");
+    }
+
     if (geteuid() == 0) {
         LOGI("running from root user");
     }
+#endif
 
     struct passwd *pw   = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
-    working_dir_size = strlen(homedir) + 15;
-    working_dir      = ss_malloc(working_dir_size);
-    snprintf(working_dir, working_dir_size, "%s/.shadowsocks", homedir);
+
+    if (workdir == NULL || strlen(workdir) == 0) {
+        workdir = pw->pw_dir;
+        // If home dir is still not defined or set to nologin/nonexistent, fall back to /tmp
+        if (strstr(workdir, "nologin") || strstr(workdir, "nonexistent") || workdir == NULL || strlen(workdir) == 0) {
+            workdir = "/tmp";
+        }
+
+        working_dir_size = strlen(workdir) + 15;
+        working_dir = ss_malloc(working_dir_size);
+        snprintf(working_dir, working_dir_size, "%s/.shadowsocks", workdir);
+    } else {
+        working_dir_size = strlen(workdir) + 2;
+        working_dir = ss_malloc(working_dir_size);
+        snprintf(working_dir, working_dir_size, "%s", workdir);
+    }
+    LOGI("working directory points to %s", working_dir);
 
     int err = mkdir(working_dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (err != 0 && errno != EEXIST) {

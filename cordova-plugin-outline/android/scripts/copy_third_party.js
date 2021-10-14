@@ -17,9 +17,10 @@
 const child_process = require('child_process');
 
 module.exports = function(context) {
-  console.log('Copying Android third party source code');
-  child_process.execSync('cp third_party/sentry-android/*.java plugins/cordova-plugin-outline/android/java/org/outline/log/');
-  ['armeabi-v7a', 'x86'].forEach((arch) => {
-      child_process.execSync(`cp third_party/shadowsocks-libev/android/libs/${arch}/*.so plugins/cordova-plugin-outline/android/libs/${arch}/`);
-  });
+  console.log('Copying Android third party libraries...');
+  child_process.execSync('mkdir -p plugins/cordova-plugin-outline/android/libs');
+  child_process.execSync(
+      `cp third_party/outline-go-tun2socks/android/tun2socks.aar plugins/cordova-plugin-outline/android/libs/`);
+  child_process.execSync(
+      `cp -R third_party/outline-go-tun2socks/android/jni plugins/cordova-plugin-outline/android/libs/obj`);
 }

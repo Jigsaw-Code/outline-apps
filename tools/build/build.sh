@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-readonly IMAGE_NAME="quay.io/outline/build-android:2019-02-01@sha256:83e3e5fa46926f1c4f87a59c185f5e17b3c870887931cd6358d81a357330fff3"
+readonly IMAGE_NAME="quay.io/outline/build-android:2020-09-14@sha256:432b3ad1d7bfb247e8bda82e2943cbe06f7d07b6585e3f3d22df5706fc6b9ba1"
+
 BUILD=false
 PUBLISH=false
 
@@ -27,8 +28,8 @@ function usage() {
 Usage: $0 commands
 
 Examples:
-  $0 yarn run clean
-  $0 yarn install
+  $0 npm run clean
+  $0 npm ci
   $0 build
 EOM
 exit 1
@@ -50,7 +51,7 @@ if (( $# > 0 )); then
   readonly GIT_ROOT=$(git rev-parse --show-toplevel)
   # Rather than a working directory of something like "/worker", mirror
   # the path on the host so that symlink tricks work as expected.
-  docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" $IMAGE_NAME "$@"
+  docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" -e SENTRY_DSN=${SENTRY_DSN:-} $IMAGE_NAME "$@"
   # GNU stat uses -c for format, which BSD stat does not accept; it uses -f instead
   stat -c 2>&1 | grep -q illegal && STATFLAG="f" || STATFLAG="c"
   # TODO: Don't spin up a second container just to chown.

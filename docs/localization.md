@@ -2,7 +2,7 @@
 
 ## UI Messages
 
-The master messages file is at `resources/master_messages.json`. It is encoded in the Chrome Apps JSON format. The translated files, consumed by the application's UI, live in `www/messages/<locale>.json`.
+The source of truth messages file is at `resources/original_messages.json`. It is encoded in the Chrome Apps JSON format. The translated files, consumed by the application's UI, live in `www/messages/<locale>.json`.
 
 ### Validation
 
@@ -21,7 +21,7 @@ Native Android strings are located at `cordova-plugin-outline/android/resources/
 To import new strings, update the keys in `scripts/l10n/import_native_android_strings.py` and run:
 
 ```
-yarn do scripts/l10n/import_native_android_strings
+npm run do scripts/l10n/import_native_android_strings
 ```
 
 ### Windows

@@ -53,6 +53,7 @@ ${StrRep}
   ${EndIf}
   SetOutPath -
   File "${PROJECT_DIR}\src\electron\add_tap_device.bat"
+  File "${PROJECT_DIR}\src\electron\find_tap_device_name.bat"
 
   ; OutlineService files, stopping the service first in case it's still running.
   nsExec::Exec "net stop OutlineService"
@@ -92,7 +93,7 @@ ${StrRep}
   submitsentryreport:
   MessageBox MB_OK "Sorry, we could not configure your system to connect to Outline. Please try \
     running the installer again. If you still cannot install Outline, please get in \
-    touch with us and let us know that the TAP device could not be installed."
+    touch with us and let us know that the TAP device failed to install with error code $0."
 
   ; Submit a Sentry error event.
   ;
@@ -111,7 +112,7 @@ ${StrRep}
   ;    string that Sentry will like *and* can fit on one line, e.g.
   ;    "device not found\ncommand failed"; fortunately, StrFunc.nsh's StrNSISToIO does precisely
   ;    this.
-  ;  - RELEASE and SENTRY_DSN are defined in env.nsh which is generated at build time by
+  ;  - RELEASE and SENTRY_URL are defined in env.nsh which is generated at build time by
   ;    {package,release}_action.sh.
 
   ; TODO: Remove this once we figure out why/if breadcrumbs are being truncated.
@@ -138,7 +139,7 @@ ${StrRep}
     "breadcrumbs":[\
       {"timestamp":1, "message":"$FAILURE_MESSAGE"}\
     ]\
-  }' /TOSTACK ${SENTRY_DSN} /END
+  }' /TOSTACK ${SENTRY_URL} /END
 
   Quit
 

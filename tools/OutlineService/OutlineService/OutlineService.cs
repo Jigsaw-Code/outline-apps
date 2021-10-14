@@ -49,14 +49,14 @@ using Newtonsoft.Json;
  * Response
  *
  *  { statusCode: <int>, action: <string> errorMessage?: <string> }
- *  
+ *
  *  The service will send connection status updates if the pipe connection is kept
  *  open by the client. Such responses have the form:
- *  
+ *
  *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
- *  
+ *
  * View logs with this PowerShell query:
- * get-eventlog -logname Application -source OutlineService -newset 20 | format-table -property timegenerated,entrytype,message -autosize
+ * get-eventlog -logname Application -source OutlineService -newest 20 | format-table -property timegenerated,entrytype,message -autosize
  */
 namespace OutlineService
 {
@@ -81,7 +81,6 @@ namespace OutlineService
             "0.0.0.0/8",
             "10.0.0.0/8",
             "100.64.0.0/10",
-            "127.0.0.0/8",
             "169.254.0.0/16",
             "172.16.0.0/12",
             "192.0.0.0/24",
@@ -97,6 +96,7 @@ namespace OutlineService
             "240.0.0.0/4"
         };
         private const string CMD_NETSH = "netsh";
+        private const string CMD_ROUTE = "route";
 
         private const uint BUFFER_SIZE_BYTES = 1024;
 
@@ -131,8 +131,11 @@ namespace OutlineService
 
         // https://docs.microsoft.com/en-us/windows/desktop/api/ipmib/ns-ipmib-_mib_ipforwardtable
         //
-        // NOTE: Because of the variable-length array, Marshal.PtrToStructure will *not* populate
-        //       the table field. See #GetSystemIpv4Gateway for how to traverse the table.
+        // NOTE: Because of the variable-length array, Marshal.PtrToStructure
+        //       will *not* populate the table field. Additionally, we have seen
+        //       crashes following suspend/resume while trying to marshal this
+        //       structure. See #GetSystemIpv4Gateway for more on this, as well
+        //       as for how to traverse the table.
         [StructLayout(LayoutKind.Sequential)]
         internal class MIB_IPFORWARDTABLE
         {
@@ -401,31 +404,11 @@ namespace OutlineService
 
             try
             {
-                AddIpv4Redirect();
-                eventLog.WriteEntry($"redirected IPv4 traffic");
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not redirect IPv4 traffic: {e.Message}");
-            }
-
-            try
-            {
-                StopRoutingIpv6();
-                eventLog.WriteEntry($"blocked IPv6 traffic");
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"could not block IPv6 traffic: {e.Message}");
-            }
-
-            try
-            {
                 GetSystemIpv4Gateway(proxyIp);
 
                 eventLog.WriteEntry($"connecting via gateway at {gatewayIp} on interface {gatewayInterfaceIndex}");
 
-                // TODO: See the above TODO on handling these failures better during auto-connect.
+                // Set the proxy escape route first to prevent a routing loop when capturing all IPv4 traffic.
                 try
                 {
                     AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
@@ -435,6 +418,7 @@ namespace OutlineService
                 {
                     throw new Exception($"could not create route to proxy: {e.Message}");
                 }
+                this.proxyIp = proxyIp;
 
                 try
                 {
@@ -451,7 +435,25 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not reconnect during auto-connect: {e.Message}", EventLogEntryType.Warning);
             }
 
-            this.proxyIp = proxyIp;
+            try
+            {
+                StopRoutingIpv6();
+                eventLog.WriteEntry($"blocked IPv6 traffic");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not block IPv6 traffic: {e.Message}");
+            }
+
+            try
+            {
+                AddIpv4TapRedirect();
+                eventLog.WriteEntry($"redirected IPv4 traffic");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"could not redirect IPv4 traffic: {e.Message}");
+            }
         }
 
         // Undoes and removes as many as possible of the routes and other
@@ -475,13 +477,20 @@ namespace OutlineService
         {
             try
             {
-                RemoveIpv4Redirect();
+                RemoveIpv4TapRedirect();
                 eventLog.WriteEntry($"removed IPv4 redirect");
             }
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to remove IPv4 redirect: {e.Message}", EventLogEntryType.Error);
             }
+
+            try
+            {
+                // This is only necessary when disconecting without network connectivity. 
+                StartRoutingIpv4();
+            }
+            catch (Exception) {}
 
             try
             {
@@ -497,7 +506,7 @@ namespace OutlineService
             {
                 try
                 {
-                    DeleteProxyRoute(proxyIp, gatewayInterfaceIndex);
+                    DeleteProxyRoute(proxyIp);
                     eventLog.WriteEntry($"deleted route to proxy");
                 }
                 catch (Exception e)
@@ -507,25 +516,22 @@ namespace OutlineService
                 this.proxyIp = null;
             }
 
-            if (gatewayIp != null)
+            try
             {
-                try
-                {
-                    RemoveReservedSubnetBypass(gatewayInterfaceIndex);
-                    eventLog.WriteEntry($"deleted LAN bypass routes");
-                }
-                catch (Exception e)
-                {
-                    eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
-                }
-                this.gatewayIp = null;
+                RemoveReservedSubnetBypass();
+                eventLog.WriteEntry($"deleted LAN bypass routes");
             }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"failed to delete LAN bypass routes: {e.Message}", EventLogEntryType.Error);
+            }
+            this.gatewayIp = null;
 
             try
             {
                 StopSmartDnsBlock();
                 eventLog.WriteEntry($"stopped smartdnsblock");
-            }
+            } 
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to stop smartdnsblock: {e.Message}",
@@ -608,26 +614,29 @@ namespace OutlineService
             }
             catch (Exception e)
             {
-                throw new Exception($"could not kill smartdnsblock: {e.Message}");
+                throw new Exception($"could not stop smartdnsblock: {e.Message}");
             }
         }
 
         private void AddOrUpdateProxyRoute(string proxyIp, string gatewayIp, int gatewayInterfaceIndex)
         {
+            // "netsh interface ipv4 set route" does *not* work for us here
+            // because it can only be used to change a route's *metric*.
             try
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_ROUTE, $"change {proxyIp} {gatewayIp} if {gatewayInterfaceIndex}");
             }
             catch (Exception)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 set route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
             }
         }
 
-        private void DeleteProxyRoute(string proxyIp, int gatewayInterfaceIndex)
+        private void DeleteProxyRoute(string proxyIp)
         {
-            // It's unfortunate that netsh requires the interface (the route command does not).
-            RunCommand(CMD_NETSH, $"interface ipv4 delete route {proxyIp}/32 interface=\"{gatewayInterfaceIndex}\"");
+            // "route" doesn't need to know on which interface or through which
+            // gateway the route was created.
+            RunCommand(CMD_ROUTE, $"delete {proxyIp}");
         }
 
         // Route IPv4 traffic through the TAP device. Instead of deleting the
@@ -641,7 +650,7 @@ namespace OutlineService
         //
         // TODO: If these routes exist on a gateway that's not our TAP device,
         //       it might be a good signal that OpenVPN is active?
-        private void AddIpv4Redirect()
+        private void AddIpv4TapRedirect()
         {
             foreach (string subnet in IPV4_SUBNETS)
             {
@@ -656,12 +665,35 @@ namespace OutlineService
             }
         }
 
-        private void RemoveIpv4Redirect()
+        private void RemoveIpv4TapRedirect()
         {
             foreach (string subnet in IPV4_SUBNETS)
             {
                 RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={TAP_DEVICE_NAME}");
             }
+        }
+
+        private void StartRoutingIpv4()
+        {
+            foreach (string subnet in IPV4_SUBNETS)
+            {
+                RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex}");
+            }
+        }
+
+        private void StopRoutingIpv4()
+        {
+            foreach (string subnet in IPV4_SUBNETS)
+            {
+                try
+                {
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
+                }
+                catch (Exception)
+                {
+                    RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
+                }
+            } 
         }
 
         private void StartRoutingIpv6()
@@ -699,21 +731,21 @@ namespace OutlineService
             {
                 try
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_ROUTE, $"change {subnet} {gatewayIp} if {gatewayInterfaceIndex}");
                 }
                 catch (Exception)
                 {
-                    RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
+                    RunCommand(CMD_NETSH, $"interface ipv4 add route {subnet} nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
                 }
             }
         }
 
         // Removes reserved subnet routes created to bypass the VPN.
-        private void RemoveReservedSubnetBypass(int gatewayInterfaceIndex)
+        private void RemoveReservedSubnetBypass()
         {
             foreach (string subnet in IPV4_RESERVED_SUBNETS)
             {
-                RunCommand(CMD_NETSH, $"interface ipv4 delete route {subnet} interface=\"{gatewayInterfaceIndex}\"");
+                RunCommand(CMD_ROUTE, $"delete {subnet}");
             }
         }
 
@@ -754,7 +786,9 @@ namespace OutlineService
             p.BeginErrorReadLine();
             p.WaitForExit();
 
-            if (p.ExitCode != 0)
+            // "route" is weird and always exits with zero: we have to examine
+            // stderr to detect its errors.
+            if (p.ExitCode != 0 || stderr.ToString().Length > 0)
             {
                 // NOTE: Do *not* add args to this error message because it's piped
                 //       back to the client for inclusion in Sentry reports and
@@ -780,6 +814,7 @@ namespace OutlineService
         private void GetSystemIpv4Gateway(string proxyIp)
         {
             gatewayIp = null;
+            gatewayInterfaceIndex = -1;
 
             int tapInterfaceIndex;
             try
@@ -811,11 +846,16 @@ namespace OutlineService
                 Marshal.FreeHGlobal(buffer);
                 throw new Exception("could not fetch routing table");
             }
-            MIB_IPFORWARDTABLE table = (MIB_IPFORWARDTABLE)Marshal.PtrToStructure(buffer, typeof(MIB_IPFORWARDTABLE));
 
+            // NOTE: We deliberately *do not marshal the entire
+            //       MIB_IPFORWARDTABLE* owing to unexplained crashes following
+            //       suspend/resume. Fortunately, since that structure is
+            //       logically just a DWORD followed by an array, this entails
+            //       little extra work.
+            var numEntries = Marshal.ReadInt32(buffer);
             MIB_IPFORWARDROW bestRow = null;
-            var rowPtr = buffer + Marshal.SizeOf(table.dwNumEntries);
-            for (int i = 0; i < table.dwNumEntries; i++)
+            var rowPtr = buffer + Marshal.SizeOf(numEntries);
+            for (int i = 0; i < numEntries; i++)
             {
                 MIB_IPFORWARDROW row = (MIB_IPFORWARDROW)Marshal.PtrToStructure(rowPtr, typeof(MIB_IPFORWARDROW));
 
@@ -861,8 +901,10 @@ namespace OutlineService
         //
         // Notes:
         //  - *This function must not throw*. If it does, the handler is unset.
-        //  - This function also updates the LAN bypass routes, which must route
-        //    through the gateway.
+        //  - This function also updates two further sets of routes: the LAN
+        //    bypass routes (which must route through the gateway) and the IPv4
+        //    redirect routes (which "fall back" to the system gateway once the
+        //    TAP device temporarily disappears due to tun2socks' exit).
         //  - The NetworkChange.NetworkAddressChanged callback is *extremely
         //    noisy*. In particular, it seems to be called twice for every
         //    change to the routing table. There does not seem to be any useful
@@ -879,27 +921,48 @@ namespace OutlineService
                 return;
             }
 
+            var previousGatewayIp = gatewayIp;
+            var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
+
             try
             {
-                var previousGatewayIp = gatewayIp;
-                var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
                 GetSystemIpv4Gateway(proxyIp);
-                if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
-                {
-                    eventLog.WriteEntry($"network changed but gateway is the same - doing nothing");
-                    return;
-                }
-                eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
             }
             catch (Exception e)
             {
-                eventLog.WriteEntry($"network changed but cannot find a gateway: {e.Message}");
+                eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
+            }
+
+            if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
+            {
+                // Only send on actual change, to prevent duplicate notifications (mostly
+                // harmless but can make debugging harder).
+                eventLog.WriteEntry($"network changed but gateway and interface stayed the same");
+                return; 
+            }
+            else if (gatewayIp == null)
+            {
                 SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+
+                // Stop capturing IPv4 traffic in order to prevent a routing loop in the TAP device.
+                // Redirect IPv4 traffic to the loopback interface instead to avoid leaking traffic when
+                // the network becomes available.
+                try
+                {
+                    StopRoutingIpv4();
+                    RemoveIpv4TapRedirect();
+                    eventLog.WriteEntry($"stopped routing IPv4 traffic");
+                }
+                catch (Exception e)
+                {
+                    eventLog.WriteEntry($"failed to stop routing IPv4: {e.Message}", EventLogEntryType.Error);
+                }
                 return;
             }
 
-            SendConnectionStatusChange(ConnectionStatus.Reconnecting);
+            eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
 
+            // Add the proxy escape route before capturing IPv4 traffic to prevent a routing loop in the TAP device.
             try
             {
                 AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
@@ -910,6 +973,21 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not update route to proxy: {e.Message}");
                 return;
             }
+
+            try
+            {
+                AddIpv4TapRedirect();
+                StartRoutingIpv4();
+                eventLog.WriteEntry($"refreshed IPv4 redirect");
+            }
+            catch (Exception e)
+            {
+                eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
+                return;
+            }
+
+            // Send the status update now that the full-system VPN is connected.
+            SendConnectionStatusChange(ConnectionStatus.Connected);
 
             try
             {
@@ -927,11 +1005,9 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not update LAN bypass routes: {e.Message}");
                 return;
             }
-
-            SendConnectionStatusChange(ConnectionStatus.Connected);
         }
 
-        // Writes the connection status to the pipe, if it is connected. 
+        // Writes the connection status to the pipe, if it is connected.
         private void SendConnectionStatusChange(ConnectionStatus status)
         {
             if (pipe == null || !pipe.IsConnected)

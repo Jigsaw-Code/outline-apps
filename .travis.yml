@@ -15,10 +15,9 @@
 language: node_js
 
 node_js:
-  - "10"
+  - 12
 
 cache:
-  yarn: true
   directories:
     - $HOME/.cache/bower
     - $HOME/.cache/electron
@@ -27,9 +26,8 @@ cache:
 before_install:
   # Cache OutineBot's credentials.
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" >> ~/.netrc
-  # https://docs.travis-ci.com/user/languages/javascript-with-nodejs#travis-ci-supports-yarn
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
-  - export PATH="$HOME/.yarn/bin:$PATH"
+  # https://docs.travis-ci.com/user/languages/javascript-with-nodejs/#using-npm
+  - npm install -g npm@7.20
 
 stages:
   - name: build and unit test
@@ -50,16 +48,6 @@ stages:
 # doing, we add a descriptive environment variable.
 jobs:
   include:
-    # Ideally, we would split this stage in some way, e.g. by component or by
-    # build/test commands, to make it clearer in the Travis UI exactly which
-    # command failed. However, since each stage incurs a significantly start-up
-    # cost, we combine test and build commands for all components into one fast
-    # stage.
-    - stage: build and unit test
-      script:
-        - yarn gulp build --platform=browser
-        - yarn do scripts/test
-
     - stage: tag
       script:
         - RELEASE_NAME=daily-$(date -I)
@@ -70,7 +58,7 @@ jobs:
         - DESC=android
       sudo: required
       services: docker
-      script: ./tools/build/build.sh yarn gulp build --platform=android
+      script: ./tools/build/build.sh npx gulp build --platform=android
 
     # https://www.electron.build/multi-platform-build
     - stage: package
@@ -88,31 +76,31 @@ jobs:
             -v ~/.cache/electron:/root/.cache/electron
             -v ~/.cache/electron-builder:/root/.cache/electron-builder
             electronuserland/builder:wine
-            /bin/bash -c "apt update && apt install -y rsync && yarn do src/electron/package_windows" || travis_terminate $?
+            /bin/bash -c "apt update && apt install -y rsync && npm run do src/electron/package_windows" || travis_terminate $?
 
     - stage: package
       os: osx
       language: objective-c
-      osx_image: xcode10.1
+      osx_image: xcode12.5
       env:
         - DESC=macos
       script:
         # This stage does not produce a binary because we cannot sign or provision the application on CI yet.
-        - yarn && yarn gulp build --platform=osx
+        - npm ci && npx gulp build --platform=osx
 
     - stage: package
       os: osx
       language: objective-c
-      osx_image: xcode10.1
+      osx_image: xcode12.5
       env:
         - DESC=ios
       script:
-        - yarn && yarn do apple/scripts/ios_package_remote
+        - npm ci && npm run do apple/scripts/ios_package_remote
 
     - stage: package
       env:
         - DESC=linux
-      script: yarn do src/electron/package_linux
+      script: npm ci do src/electron/package_linux
 
     - stage: android
       sudo: required
@@ -126,17 +114,17 @@ jobs:
         - secure: "kUUN6t8txRUrLSbR9KMSbA0LT2juKjt0MA9Do8w/2uV6r33KrhRkSM2Of8+GApNGwm469ZVS5bYNQ/+y81YlleNGzbpTYl4Lr2Dw+x9L9U04sWRPN8R59bqWHvBQiL8UwzbYj8C5/plPJ+ojr9v92ppzWYQGjAozAWxA0YA7PHFfs4VoUMKYlF88djCHfgt6jlbYJVYLo+G+jtj7VyK1v6KhcXyYz2wn9JnO/Szhi152UdkqQUMpBvHEnfF+GdWn8o7nP3htF+S46tBu1pL0AKsxzsT7Bp0XLYtehzqsiset/eRpNdWGx2cl0Bl+7HBI2Aa1zbxJ5gU7lyp7NvURJRkNa3/h6VQyl7z8mo3Z7xG4teAcG/scT5hW+2ElXfC2bubRRQtokggNxh4TUI3b75P+/mP6B7AzzY6RTOWHOipu6+2LtHdcWQZpRi1ORzFw/1rVIRmMtGn6UMwD0XkA7ZGzq3SgKiw77HSOyWP800EPv7P7B0miEFhno4cmlYLnWQroaqY9Kv6ISqjcFMGksUU7tTflC/ZqiKYXI1ESFS0cI/FtaLprcz8BYWHUrfP8+/Ivqvgl/i9c4SuVVIaZ7bd4SnV+Qq6CNVjrOdLCMpy5AozOz8tNix4E1b0qv0jCZ/OKeFax8+A/udqN+XlKqx3FegGyf7rT7bNQ3tgK6Ec="
       script:
         - openssl aes-256-cbc -K $encrypted_cb15c65d6aeb_key -iv $encrypted_cb15c65d6aeb_iv -in keystore.p12.enc -out keystore.p12 -d
-        - ./tools/build/build.sh yarn gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
+        - ./tools/build/build.sh npx gulp build --platform=android --release --KEYSTORE=keystore.p12 --KEYALIAS=$KEY_ALIAS --STOREPASS=$KEY_STORE_PASSWORD --KEYPASS=$KEY_PASSWORD
 
     - stage: ios
       os: osx
       language: objective-c
-      osx_image: xcode10.1
+      osx_image: xcode12.5
       script:
-        - yarn && yarn do apple/scripts/ios_release_remote
+        - npm ci && npm run do apple/scripts/ios_release_remote
 
     - stage: linux
-      script: yarn do src/electron/release_linux
+      script: npm run do src/electron/release_linux
 
 deploy:
   provider: releases

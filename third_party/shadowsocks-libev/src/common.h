@@ -1,7 +1,7 @@
 /*
  * common.h - Provide global definitions
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  * shadowsocks-libev is free software; you can redistribute it and/or modify
@@ -51,10 +51,10 @@ int send_traffic_stat(uint64_t tx, uint64_t rx);
 #define STAGE_ERROR     -1  /* Error detected                   */
 #define STAGE_INIT       0  /* Initial stage                    */
 #define STAGE_HANDSHAKE  1  /* Handshake with client            */
-#define STAGE_PARSE      2  /* Parse the SOCKS5 header          */
 #define STAGE_SNI        3  /* Parse HTTP/SNI header            */
 #define STAGE_RESOLVE    4  /* Resolve the hostname             */
 #define STAGE_STREAM     5  /* Stream between client and server */
+#define STAGE_STOP       6  /* Server stop to response          */
 
 /* Vals for long options */
 enum {
@@ -70,7 +70,8 @@ enum {
     GETOPT_VAL_PASSWORD,
     GETOPT_VAL_KEY,
     GETOPT_VAL_MANAGER_ADDRESS,
-    GETOPT_VAL_EXECUTABLE
+    GETOPT_VAL_EXECUTABLE,
+    GETOPT_VAL_WORKDIR,
 };
 
 #endif // _COMMON_H

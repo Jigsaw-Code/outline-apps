@@ -32,13 +32,13 @@ function get_native_android_locale() {
 }
 
 TRANSLATIONS_DIR="$ROOT_DIR/www/messages"
-for TRANSLATION_FILE in $TRANSLATIONS_DIR/*; do
+for TRANSLATION_FILE in "$TRANSLATIONS_DIR/*"; do
   LANG=`basename $TRANSLATION_FILE .json`
   echo "Importing ${LANG}"
   LANG=$(get_native_android_locale $LANG)
 
   NATIVE_DIR="cordova-plugin-outline/android/resources/strings/values-$LANG"
   OUTPUT_FILE="$NATIVE_DIR/strings.xml"
-  python $ROOT_DIR/scripts/l10n/import_native_android_strings.py $TRANSLATION_FILE $OUTPUT_FILE
+  python "$ROOT_DIR/scripts/l10n/import_native_android_strings.py" $TRANSLATION_FILE $OUTPUT_FILE
 done
 

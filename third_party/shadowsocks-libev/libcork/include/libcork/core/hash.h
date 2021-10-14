@@ -17,6 +17,9 @@
 #include <libcork/core/types.h>
 #include <libcork/core/u128.h>
 
+/* Needed for memcpy */
+#include <string.h>
+#include <stdlib.h>
 
 #ifndef CORK_HASH_ATTRIBUTES
 #define CORK_HASH_ATTRIBUTES  CORK_ATTR_UNUSED static inline
@@ -41,6 +44,24 @@ typedef struct {
 
 #define CORK_ROTL32(a,b) (((a) << ((b) & 0x1f)) | ((a) >> (32 - ((b) & 0x1f))))
 #define CORK_ROTL64(a,b) (((a) << ((b) & 0x3f)) | ((a) >> (64 - ((b) & 0x3f))))
+
+CORK_ATTR_UNUSED
+static inline
+uint32_t cork_getblock32(const uint32_t *p, int i)
+{
+    uint32_t u;
+    memcpy(&u, p + i, sizeof(u));
+    return u;
+}
+
+CORK_ATTR_UNUSED
+static inline
+uint64_t cork_getblock64(const uint64_t *p, int i)
+{
+    uint64_t u;
+    memcpy(&u, p + i, sizeof(u));
+    return u;
+}
 
 CORK_ATTR_UNUSED
 static inline
@@ -74,7 +95,7 @@ cork_stable_hash_buffer(cork_hash seed, const void *src, size_t len)
 
     /* This is exactly the same as cork_murmur_hash_x86_32, but with a byte swap
      * to make sure that we always process the uint32s little-endian. */
-    const unsigned int  nblocks = len / 4;
+    const unsigned int  nblocks = (unsigned int)(len / 4);
     const cork_aliased_uint32_t  *blocks = (const cork_aliased_uint32_t *) src;
     const cork_aliased_uint32_t  *end = blocks + nblocks;
     const cork_aliased_uint32_t  *curr;
@@ -87,7 +108,7 @@ cork_stable_hash_buffer(cork_hash seed, const void *src, size_t len)
 
     /* body */
     for (curr = blocks; curr != end; curr++) {
-        uint32_t  k1 = CORK_UINT32_HOST_TO_LITTLE(*curr);
+        uint32_t  k1 = CORK_UINT32_HOST_TO_LITTLE(cork_getblock32((const uint32_t *) curr, 0));
 
         k1 *= c1;
         k1 = CORK_ROTL32(k1,15);
@@ -129,7 +150,7 @@ do { \
     \
     /* body */ \
     for (curr = blocks; curr != end; curr++) { \
-        uint32_t  k1 = *curr; \
+        uint32_t  k1 = cork_getblock32((const uint32_t *) curr, 0); \
         \
         k1 *= c1; \
         k1 = CORK_ROTL32(k1,15); \
@@ -181,10 +202,10 @@ do { \
     \
     /* body */ \
     for (curr = blocks; curr != end; curr += 4) { \
-        uint32_t  k1 = curr[0]; \
-        uint32_t  k2 = curr[1]; \
-        uint32_t  k3 = curr[2]; \
-        uint32_t  k4 = curr[3]; \
+        uint32_t  k1 = cork_getblock32((const uint32_t *) curr, 0); \
+        uint32_t  k2 = cork_getblock32((const uint32_t *) curr, 1); \
+        uint32_t  k3 = cork_getblock32((const uint32_t *) curr, 2); \
+        uint32_t  k4 = cork_getblock32((const uint32_t *) curr, 3); \
         \
         k1 *= c1; k1  = CORK_ROTL32(k1,15); k1 *= c2; h1 ^= k1; \
         h1 = CORK_ROTL32(h1,19); h1 += h2; h1 = h1*5+0x561ccd1b; \
@@ -264,8 +285,8 @@ do { \
     \
     /* body */ \
     for (curr = blocks; curr != end; curr += 2) { \
-        uint64_t  k1 = curr[0]; \
-        uint64_t  k2 = curr[1]; \
+        uint64_t  k1 = cork_getblock64((const uint64_t *) curr, 0); \
+        uint64_t  k2 = cork_getblock64((const uint64_t *) curr, 1); \
     \
         k1 *= c1; k1  = CORK_ROTL64(k1,31); k1 *= c2; h1 ^= k1; \
         h1 = CORK_ROTL64(h1,27); h1 += h2; h1 = h1*5+0x52dce729; \
@@ -321,11 +342,22 @@ cork_hash_buffer(cork_hash seed, const void *src, size_t len)
 #if CORK_SIZEOF_POINTER == 8
     cork_big_hash  big_seed = {cork_u128_from_32(seed, seed, seed, seed)};
     cork_big_hash  hash;
-    cork_murmur_hash_x64_128(big_seed, src, len, &hash);
+    cork_murmur_hash_x64_128(big_seed, src, (unsigned int)len, &hash);
     return cork_u128_be32(hash.u128, 0);
 #else
     cork_hash  hash = 0;
-    cork_murmur_hash_x86_32(seed, src, len, &hash);
+#ifdef __ANDROID__
+    // Enforce 16-byte alignment for murmur hash function
+    void *tmp;
+    int err = posix_memalign(&tmp, 16, len);
+    if (err == 0) {
+        memcpy(tmp, src, len);
+        cork_murmur_hash_x86_32(seed, tmp, (unsigned int)len, &hash);
+        free(tmp);
+    }
+#else
+    cork_murmur_hash_x86_32(seed, src, (unsigned int)len, &hash);
+#endif
     return hash;
 #endif
 }
@@ -337,9 +369,9 @@ cork_big_hash_buffer(cork_big_hash seed, const void *src, size_t len)
 {
     cork_big_hash  result;
 #if CORK_SIZEOF_POINTER == 8
-    cork_murmur_hash_x64_128(seed, src, len, &result);
+    cork_murmur_hash_x64_128(seed, src, (unsigned int)len, &result);
 #else
-    cork_murmur_hash_x86_128(seed, src, len, &result);
+    cork_murmur_hash_x86_128(seed, src, (unsigned int)len, &result);
 #endif
     return result;
 }
