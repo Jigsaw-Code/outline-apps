@@ -78,7 +78,7 @@
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-webintent": "cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
-    "electron": "^11.2.0",
+    "electron": "^11.5.0",
     "electron-builder": "^22.9.1",
     "electron-icon-maker": "^0.0.4",
     "fancy-log": "^1.3.3",
