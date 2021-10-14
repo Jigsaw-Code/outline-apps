@@ -116,5 +116,8 @@ To enable error reporting through [Sentry](https://sentry.io/) for local builds,
 export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
 ```
-
 Release builds on CI are configured with a production Sentry API key.
+
+## Support
+
+For support and to contact us, see: https://support.getoutline.org.  
