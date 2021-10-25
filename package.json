@@ -51,8 +51,8 @@
     "web-animations-js": "^2.3.1"
   },
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
