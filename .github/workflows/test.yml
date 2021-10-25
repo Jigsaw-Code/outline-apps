@@ -76,7 +76,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
       fail-fast: false
     steps:
       - name: Checkout
