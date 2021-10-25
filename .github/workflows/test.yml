@@ -70,7 +70,7 @@ jobs:
         run: npm run do scripts/test
 
   electron:
-    name: Electron ${{ runner.os }}
+    name: Electron
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
