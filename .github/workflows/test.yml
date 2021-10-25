@@ -43,6 +43,7 @@ jobs:
   web-app:
     name: Web App
     runs-on: ${{ matrix.os }}
+    needs: setup
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -72,6 +73,7 @@ jobs:
   electron:
     name: Electron
     runs-on: ${{ matrix.os }}
+    needs: setup
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
