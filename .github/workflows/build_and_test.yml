@@ -1,0 +1,35 @@
+name: Build and Test
+
+# See https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Build and Test Web and Electron Apps
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npx gulp build --platform=browser
+      
+      - name: Test web app
+        run: npm run do scripts/test
+
+      - name: Build Electron app
+        run: npm run do src/electron/build
