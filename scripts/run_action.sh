@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,7 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Releases the Outline macOS client locally. Expects to be invoked through `npm run do`.
-./apple/scripts/install_fastlane.sh -p osx
-pushd platforms/osx
-bundle exec fastlane osx release local:true
+set -eux
+
+export ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel)}"
+export BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
+
+function run_action() {
+  local action=$1
+  echo "[Running $action]"
+  shift
+  "$ROOT_DIR/${action}.action.sh" "$@"
+  echo "[Done $action]"
+}
+export -f run_action
+
+run_action "$@"

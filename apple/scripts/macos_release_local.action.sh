@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run do src/electron/build
-
-# Icons.
-electron-icon-maker --input=resources/electron/icon.png --output=build
+# Releases the Outline macOS client locally. Expects to be invoked through `npm run action`.
+./apple/scripts/install_fastlane.sh -p osx
+pushd platforms/osx
+bundle exec fastlane osx release local:true
