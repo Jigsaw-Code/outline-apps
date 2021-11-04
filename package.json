@@ -5,7 +5,7 @@
     "action": "bash ./scripts/run_action.sh",
     "action:list": "find . -name '*.action.sh' | sed -E 's:./(.*).action.sh:\\1:' | grep -v 'scripts/run_action'",
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
-    "lint:ts": "tslint --fix 'src/**/*.ts'"
+    "lint:ts": "tslint 'src/**/*.ts'"
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
@@ -110,7 +110,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint:ts && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
+      "pre-commit": "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {
