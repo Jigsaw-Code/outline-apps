@@ -16,41 +16,46 @@
 
 set -eu
 
-export ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel)}"
-export BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
-export RUN_ACTION_INDENT=''
+readonly ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel)}"
+readonly BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
+
+export ROOT_DIR
+export BUILD_DIR
+
+export run_action_indent=''
 
 function run_action() {
-  local -r ACTION="${1:-""}"
   local -r STYLE_BOLD_WHITE='\033[1;37m'
   local -r STYLE_BOLD_GREEN='\033[1;32m'
   local -r STYLE_BOLD_RED='\033[1;31m'
   local -r STYLE_RESET='\033[0m'
-  local -r OLD_INDENT="${RUN_ACTION_INDENT}"
 
-  RUN_ACTION_INDENT="=> ${RUN_ACTION_INDENT}"
+  local -r action="${1:-""}"
+  local -r old_indent="${run_action_indent}"
 
-  if [[ "${ACTION}" == "" ]]; then
+  run_action_indent="=> ${run_action_indent}"
+
+  if [[ -z "${action}" ]]; then
     echo -e "Please provide an action to run. ${STYLE_BOLD_WHITE}List of valid actions:${STYLE_RESET}\n"
-    find . -name '*.action.sh' | sed -E 's:./(.*).action.sh:\1:'
+    find . -name '*.action.sh' | sed -E 's:./(.*)\.action\.sh:\1:'
     exit 0
   fi
 
-  echo -e "${OLD_INDENT}${STYLE_BOLD_WHITE}[Running ${ACTION}]${STYLE_RESET}"
+  echo -e "${old_indent}${STYLE_BOLD_WHITE}[Running ${action}]${STYLE_RESET}"
   shift
 
-  "${ROOT_DIR}/${ACTION}.action.sh" "$@"
+  "${ROOT_DIR}/${action}.action.sh" "$@"
 
-  local -ir STATUS="$?"
-  if [[ "${STATUS}" == "0" ]]; then
-    echo -e "${OLD_INDENT}${STYLE_BOLD_GREEN}[${ACTION}: Finished]${STYLE_RESET}"
+  local -ir status="$?"
+  if (( status == 0 )); then
+    echo -e "${old_indent}${STYLE_BOLD_GREEN}[${action}: Finished]${STYLE_RESET}"
   else
-    echo -e "${OLD_INDENT}${STYLE_BOLD_RED}[${ACTION}: Failed]${STYLE_RESET}"
+    echo -e "${old_indent}${STYLE_BOLD_RED}[${action}: Failed]${STYLE_RESET}"
   fi
 
-  RUN_ACTION_INDENT="${OLD_INDENT}"
+  run_action_indent="${old_indent}"
 
-  return "${STATUS}"
+  return "${status}"
 }
 
 export -f run_action
