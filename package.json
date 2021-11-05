@@ -3,7 +3,8 @@
   "productName": "Outline",
   "scripts": {
     "action": "bash ./scripts/run_action.sh",
-    "action:list": "find . -name '*.action.sh' | sed -E 's:./(.*).action.sh:\\1:' | grep -v 'scripts/run_action'",
+    "action:help": "npm run action",
+    "action:list": "npm run action",
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
     "lint:ts": "tslint 'src/**/*.ts'"
   },
