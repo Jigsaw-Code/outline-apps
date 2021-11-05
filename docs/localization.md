@@ -21,7 +21,7 @@ Native Android strings are located at `cordova-plugin-outline/android/resources/
 To import new strings, update the keys in `scripts/l10n/import_native_android_strings.py` and run:
 
 ```
-npm run do scripts/l10n/import_native_android_strings
+npm run action scripts/l10n/import_native_android_strings
 ```
 
 ### Windows

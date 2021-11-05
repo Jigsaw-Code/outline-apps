@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,12 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run do src/www/build_electron
-
-webpack --config=src/electron/electron_main.webpack.js \
-    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
-    ${BUILD_ENV:+--mode="${BUILD_ENV}"}
-
-# Environment variables.
-# TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+# Releases the Outline iOS client on Travis. Expects to be invoked through `npm run action`.
+./apple/scripts/install_fastlane.sh -p ios
+pushd platforms/ios
+bundle exec fastlane ios release

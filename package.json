@@ -2,9 +2,12 @@
   "name": "outline-client",
   "productName": "Outline",
   "scripts": {
+    "action": "bash ./scripts/run_action.sh",
+    "action:help": "npm run action",
+    "action:list": "npm run action",
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
-    "do": "bash ./scripts/do_action.sh",
-    "actions": "find . -name '*_action.sh' | sed -E 's:./src/(.*)_action.sh:\\1:' | grep -v 'scripts/do_action'"
+    "lint": "npm run lint:ts",
+    "lint:ts": "tslint 'src/**/*.ts'"
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
@@ -51,8 +54,8 @@
     "web-animations-js": "^2.3.1"
   },
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=7.0.0"
+    "node": "^16.13.0",
+    "npm": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -109,7 +112,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "npx tslint --fix 'src/**/*.ts' && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
+      "pre-commit": "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {
