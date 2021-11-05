@@ -19,14 +19,8 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2.2.0
         with:
-          node-version: 12
+          node-version: 16
           cache: npm
-
-      - name: Upgrade NPM
-        run: npm install -g npm@7
-
-      - name: Show Environment Info
-        run: npm -v
       
       - name: Install dependencies
         run: npm ci
@@ -35,7 +29,7 @@ jobs:
         run: npx gulp build --platform=browser
       
       - name: Test web app
-        run: npm run do scripts/test
+        run: npm run action scripts/test
 
       - name: Build Electron app
-        run: npm run do src/electron/build
+        run: npm run action src/electron/build

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,18 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eux
+npm run action src/electron/build
 
-export ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel)}"
-export BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
-
-function do_action() {
-  local action=$1
-  echo "[Running $action]"
-  shift
-  "$ROOT_DIR/${action}_action.sh" "$@"
-  echo "[Done $action]"
-}
-export -f do_action
-
-do_action "$@"
+# Icons.
+electron-icon-maker --input=resources/electron/icon.png --output=build

@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run do src/electron/build
-
-export OUTLINE_DEBUG=true
-electron .
+# Releases the Outline iOS client locally. Expects to be invoked through `npm run action`.
+./apple/scripts/install_fastlane.sh -p ios
+pushd platforms/ios
+bundle exec fastlane ios release local:true

@@ -27,7 +27,7 @@ What does this script do?:
 ## Build
 
 ```bash
-npm run do tools/build/build
+npm run action tools/build/build
 ```
 
 ## Tag
