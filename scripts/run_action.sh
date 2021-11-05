@@ -37,7 +37,7 @@ function run_action() {
 
   if [[ -z "${action}" ]]; then
     echo -e "Please provide an action to run. ${STYLE_BOLD_WHITE}List of valid actions:${STYLE_RESET}\n"
-    find . -name '*.action.sh' | sed -E 's:./(.*)\.action\.sh:\1:'
+    find . -name '*.action.sh' | sed -E 's:\./(.*)\.action\.sh:\1:'
     exit 0
   fi
 

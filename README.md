@@ -7,7 +7,7 @@ The client's user interface is implemented in [Polymer](https://www.polymer-proj
 
 ## Requirements for all builds
 
-All builds require the latest TLS of [Node](https://nodejs.org/), in addition to other per-platform requirements. 
+All builds require [Node](https://nodejs.org/) 16, in addition to other per-platform requirements. 
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
