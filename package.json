@@ -6,6 +6,7 @@
     "action:help": "npm run action",
     "action:list": "npm run action",
     "clean": "rm -rf build www node_modules platforms/* plugins/*",
+    "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'"
   },
   "comments": {
