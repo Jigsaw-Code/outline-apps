@@ -2,13 +2,13 @@
 
 ## Requirements
 
-* `yarn`
+* `npm ci`
 * `https://github.com/Jigsaw-Code/bower-disclaimer`
 
 ## Steps
 
 * `cd` to the root of your clone of this repo.
-* Ensure `bower_components` and `node_modules` are up to date by running `yarn`.
+* Ensure `node_modules` is up to date by running `npm ci`.
 * `yarn licenses generate-disclaimer --prod > /tmp/yarn`
 * `cd www`
 * `node <path to your bower-disclaimer repo root>/build > /tmp/bower`

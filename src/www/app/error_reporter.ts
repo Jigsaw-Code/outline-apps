@@ -12,23 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as Raven from 'raven-js';
+import * as sentry from '@sentry/browser';
+import {Integration as SentryIntegration} from '@sentry/types';
 
 export interface OutlineErrorReporter {
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void>;
 }
 
 export class SentryErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, dsn: string, tags: {[id: string]: string;}) {
-    Raven.config(dsn, {release: appVersion, 'tags': tags}).install();
+  constructor(appVersion: string, dsn: string, private tags: {[id: string]: string;}) {
+    if (dsn) {
+      sentry.init({dsn, release: appVersion, integrations: getSentryBrowserIntegrations});
+    }
     this.setUpUnhandledRejectionListener();
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    Raven.setUserContext({email: userEmail || ''});
-    Raven.captureMessage(userFeedback, {tags: {category: feedbackCategory}});
-    Raven.setUserContext();  // Reset the user context, don't cache the email
-    return Promise.resolve();
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+    sentry.captureEvent(
+        {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+    sentry.configureScope(scope => {
+      scope.setUser({email: userEmail || ''});
+      if (this.tags) {
+        scope.setTags(this.tags);
+      }
+      scope.setTag('category', feedbackCategory);
+    });
+    sentry.captureMessage(userFeedback);
+    sentry.configureScope(scope => {
+      scope.clear();  // Reset the user context, don't cache the email
+    });
   }
 
   private setUpUnhandledRejectionListener() {
@@ -38,7 +50,27 @@ export class SentryErrorReporter implements OutlineErrorReporter {
     window.addEventListener(unhandledRejection, (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       const msg = reason.stack ? reason.stack : reason;
-      Raven.captureBreadcrumb({message: msg, category: unhandledRejection});
+      sentry.addBreadcrumb({message: msg, category: unhandledRejection});
     });
   }
+}
+
+// Returns a list of Sentry browser integrations that maintains the default integrations,
+// but replaces the Breadcrumbs integration with a custom one that only collects console statements.
+// See https://docs.sentry.io/platforms/javascript/configuration/integrations/default/
+export function getSentryBrowserIntegrations(defaultIntegrations: SentryIntegration[]):
+    SentryIntegration[] {
+  const integrations = defaultIntegrations.filter(integration => {
+    return integration.name !== 'Breadcrumbs';
+  });
+  const breadcrumbsIntegration = new sentry.Integrations.Breadcrumbs({
+    console: true,
+    dom: false,
+    fetch: false,
+    history: false,
+    sentry: false,
+    xhr: false,
+  });
+  integrations.push(breadcrumbsIntegration);
+  return integrations;
 }

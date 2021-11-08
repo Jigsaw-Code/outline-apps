@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2020 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
 
 // Typings for cordova-plugin-outline
 
-// This enum doesn't logically belong in this file - ideally, it would live in "regular" code (most
-// likely somewhere in model). However, since we need to reference it from a typings file, it must
-// be defined in a typings file.
-//
-// Additionally, because this is a typings file, we must declare a *const* enum - regular enums are
-// backed, perhaps surprisingly, by a JavaScript object.
-declare const enum ConnectionStatus { CONNECTED, DISCONNECTED, RECONNECTING }
+declare type Tunnel = import('../../www/app/tunnel').Tunnel;
+declare type TunnelStatus = import('../../www/app/tunnel').TunnelStatus;
+declare type ShadowsocksConfig = import('../../www/app/config').ShadowsocksConfig;
 
 declare namespace cordova.plugins.outline {
   const log: {
@@ -33,46 +29,25 @@ declare namespace cordova.plugins.outline {
     send(uuid: string): Promise<void>;
   };
 
+  const net: {
+    isServerReachable(hostname: string, port: number): Promise<boolean>;
+  };
+
   // Quits the application. Only supported in macOS.
   function quitApplication(): void;
 
-  // TODO: Use ShadowsocksConfig library's `Config` interface instead?
-  interface ServerConfig {
-    method?: string;
-    password?: string;
-    host?: string;
-    port?: number;
-    name?: string;
-  }
-
-  // Represents a VPN connection to a remote server.
-  class Connection {
-    // Creates a new instance with |serverConfig|.
-    // A sequential ID will be generated if |id| is absent.
-    constructor(serverConfig: ServerConfig, id?: string);
-
-    config: ServerConfig;
+  // Implements the Tunnel interface with native functionality.
+  class Tunnel implements Tunnel {
+    constructor(id: string);
 
     readonly id: string;
 
-    // Starts the VPN service, and tunnels all the traffic to a local Shadowsocks
-    // server as dictated by its configuration. If there is another running
-    // instance, broadcasts a disconnect event and stops the running connection.
-    // In such case, restarts tunneling while preserving the VPN connection.
-    // Rejects with an OutlinePluginError.
-    start(): Promise<void>;
+    start(config: ShadowsocksConfig): Promise<void>;
 
-    // Stops the connection and VPN service.
     stop(): Promise<void>;
 
-    // Returns whether the connection instance is active.
     isRunning(): Promise<boolean>;
 
-    // Returns whether the connection is reachable by attempting to establish
-    // a socket to the IP and port specified in |config|.
-    isReachable(): Promise<boolean>;
-
-    // Sets a listener, to be called when the VPN connection status changes.
-    onStatusChange(listener: (status: ConnectionStatus) => void): void;
+    onStatusChange(listener: (status: TunnelStatus) => void): void;
   }
 }

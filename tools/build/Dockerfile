@@ -21,11 +21,9 @@ FROM debian:9
 #  - Several of Outline's build scripts require rsync.
 RUN apt update && apt dist-upgrade -y && apt install -y wget unzip openjdk-8-jdk-headless gradle git gnupg rsync && apt clean
 
-# Node.js and Yarn.
+# Node.js and NPM.
 RUN wget -qO- https://deb.nodesource.com/setup_10.x | bash -
-RUN wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt update && apt install -y nodejs yarn && apt clean
+RUN apt update && apt install -y nodejs && apt clean
 
 # https://stackoverflow.com/questions/25672924/run-bower-from-root-user-its-possible-how
 RUN echo '{"allow_root": true}' > /root/.bowerrc
@@ -38,21 +36,27 @@ ENV CI=true
 # trial and error, old pinball machine parts, and various
 # Dockerfiles lying around Github. Bitrise, in particular,
 # maintains images with many useful hints:
-#   https://github.com/bitrise-docker/android 
+#   https://github.com/bitrise-docker/android
 
-# Android SDK ("command line tools only"):
-#   https://developer.android.com/studio/index.html#downloads
-# This is version 26.1.1.
-RUN wget -O /tmp/android-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
-    mkdir /opt/android-sdk && \
-    unzip /tmp/android-tools.zip -d /opt/android-sdk && \
-    rm /tmp/android-tools.zip
-ENV PATH ${PATH}:/opt/android-sdk/tools/bin
-ENV ANDROID_HOME /opt/android-sdk
+# Download Android Command Line Tools:
+#   https://developer.android.com/studio/command-line
+# This is version 2.1.
+ENV ANDROID_SDK_ROOT /opt/android-sdk
+RUN cd /opt \
+    && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
+    && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && rm android-commandline-tools.zip
+
+ENV PATH ${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin
 
 # Android SDK Build Tools:
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
-ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
-RUN yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+ENV ANDROID_BUILD_TOOLS_VERSION 30.0.2
+# NDK (side by side) version must be kept in sync with the default build tools NDK version.
+ENV NDK_VERSION 21.0.6113669
+RUN yes | sdkmanager \
+  "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+  "ndk;${NDK_VERSION}"

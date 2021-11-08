@@ -16,13 +16,9 @@ import {Server} from './server';
 
 export interface OutlineEvent {}
 
-export type OutlineEventListener = (event: OutlineEvent) => void;
+export type OutlineEventListener<T extends OutlineEvent> = (event: T) => void;
 
 export class ServerAdded implements OutlineEvent {
-  constructor(public readonly server: Server) {}
-}
-
-export class ServerAlreadyAdded implements OutlineEvent {
   constructor(public readonly server: Server) {}
 }
 
@@ -36,10 +32,6 @@ export class ServerForgetUndone implements OutlineEvent {
 
 export class ServerRenamed implements OutlineEvent {
   constructor(public readonly server: Server) {}
-}
-
-export class ServerUrlInvalid implements OutlineEvent {
-  constructor(public readonly serverUrl: string) {}
 }
 
 export class ServerConnected implements OutlineEvent {
@@ -57,7 +49,8 @@ export class ServerReconnecting implements OutlineEvent {
 // Simple publisher-subscriber queue.
 export class EventQueue {
   private queuedEvents: OutlineEvent[] = [];
-  private listenersByEventType = new Map<OutlineEvent, OutlineEventListener[]>();
+  // tslint:disable-next-line: no-any
+  private listenersByEventType = new Map<Function, any[]>();
   private isStarted = false;
   private isPublishing = false;
 
@@ -67,11 +60,13 @@ export class EventQueue {
   }
 
   // Registers a listener for events of the type of the given constructor.
-  subscribe(eventType: OutlineEvent, listener: OutlineEventListener) {
-    let listeners = this.listenersByEventType.get(eventType);
+  subscribe<T extends OutlineEvent>(
+      // tslint:disable-next-line: no-any
+      eventConstructor: {new(...args: any[]): T}, listener: OutlineEventListener<T>): void {
+    let listeners = this.listenersByEventType.get(eventConstructor);
     if (!listeners) {
       listeners = [];
-      this.listenersByEventType.set(eventType, listeners);
+      this.listenersByEventType.set(eventConstructor, listeners);
     }
     listeners.push(listener);
   }
@@ -101,6 +96,10 @@ export class EventQueue {
     this.isPublishing = true;
     while (this.queuedEvents.length > 0) {
       const event = this.queuedEvents.shift() as OutlineEvent;
+      // The 'new' operator assigns a property to the new object that links to
+      // the constructor function's prototype object. Therefore, events created
+      // via the 'new' operator will have the event specific constructor, which
+      // is used to look up registered listeners.
       const listeners = this.listenersByEventType.get(event.constructor);
       if (!listeners) {
         console.warn('Dropping event with no listeners:', event);

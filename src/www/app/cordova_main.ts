@@ -15,19 +15,25 @@
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 
-import * as Raven from 'raven-js';
+import '@babel/polyfill';
+import 'web-animations-js/web-animations-next-lite.min.js';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import {EventQueue} from '../model/events';
+import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
+setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
 
-import {AbstractClipboard, Clipboard, ClipboardListener} from './clipboard';
+import * as sentry from '@sentry/browser';
+
+import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeOutlineConnection} from './fake_connection';
+import {FakeNativeNetworking} from './fake_net';
 import {main} from './main';
-import {OutlineServer} from './outline_server';
+import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
+import {FakeOutlineTunnel} from './fake_tunnel';
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -45,15 +51,20 @@ class CordovaClipboard extends AbstractClipboard {
 
 // Adds reports from the (native) Cordova plugin.
 export class CordovaErrorReporter extends SentryErrorReporter {
-  constructor(appVersion: string, appBuildNumber: string, dsn: string, nativeDsn: string) {
+  constructor(appVersion: string, appBuildNumber: string, dsn: string) {
     super(appVersion, dsn, {'build.number': appBuildNumber});
-    cordova.plugins.outline.log.initialize(nativeDsn).catch(console.error);
+    cordova.plugins.outline.log.initialize(dsn).catch(console.error);
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    return super.report(userFeedback, feedbackCategory, userEmail).then(() => {
-      return cordova.plugins.outline.log.send(Raven.lastEventId());
-    });
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string) {
+    await super.report(userFeedback, feedbackCategory, userEmail);
+    await cordova.plugins.outline.log.send(sentry.lastEventId() || '');
+  }
+}
+
+class CordovaNativeNetworking implements NativeNetworking {
+  async isServerReachable(hostname: string, port: number) {
+    return cordova.plugins.outline.net.isServerReachable(hostname, port);
   }
 }
 
@@ -67,14 +78,14 @@ class CordovaPlatform implements OutlinePlatform {
     return !CordovaPlatform.isBrowser();
   }
 
-  getPersistentServerFactory() {
-    return (serverId: string, config: cordova.plugins.outline.ServerConfig,
-            eventQueue: EventQueue) => {
-      return new OutlineServer(
-          serverId, config,
-          this.hasDeviceSupport() ? new cordova.plugins.outline.Connection(config, serverId) :
-                                    new FakeOutlineConnection(config, serverId),
-          eventQueue);
+  getNativeNetworking() {
+    return this.hasDeviceSupport() ? new CordovaNativeNetworking() : new FakeNativeNetworking();
+  }
+
+  getTunnelFactory() {
+    return (id: string) => {
+      return this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(id) :
+                                       new FakeOutlineTunnel(id);
     };
   }
 
@@ -94,9 +105,8 @@ class CordovaPlatform implements OutlinePlatform {
 
   getErrorReporter(env: EnvironmentVariables) {
     return this.hasDeviceSupport() ?
-        new CordovaErrorReporter(
-            env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN, env.SENTRY_NATIVE_DSN) :
-        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN, {});
+        new CordovaErrorReporter(env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN || '') :
+        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {});
   }
 
   getUpdater() {

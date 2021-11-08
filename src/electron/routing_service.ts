@@ -18,6 +18,7 @@ import * as sudo from 'sudo-prompt';
 
 import * as errors from '../www/model/errors';
 
+import {TunnelStatus} from '../www/app/tunnel';
 import {getServiceStartCommand} from './util';
 
 const SERVICE_NAME =
@@ -34,7 +35,7 @@ interface RoutingServiceResponse {
   action: RoutingServiceAction;  // Matches RoutingServiceRequest.action
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
-  connectionStatus: ConnectionStatus;
+  connectionStatus: TunnelStatus;
 }
 
 enum RoutingServiceAction {
@@ -66,13 +67,15 @@ enum RoutingServiceStatusCode {
 export class RoutingDaemon {
   private socket: Socket|undefined;
 
+  private stopping = false;
+
   private fulfillDisconnect!: () => void;
 
   private disconnected = new Promise<void>((F) => {
     this.fulfillDisconnect = F;
   });
 
-  private networkChangeListener?: (status: ConnectionStatus) => void;
+  private networkChangeListener?: (status: TunnelStatus) => void;
 
   constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
 
@@ -172,23 +175,45 @@ export class RoutingDaemon {
     return response;
   }
 
+  private async writeReset() {
+    return new Promise<void>((resolve, reject) => {
+      const written = this.socket.write(JSON.stringify(
+        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      if (!written) {
+        reject(new Error("Write failed"));
+      }
+    });
+  }
+
+  // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
-  stop() {
+  async stop() {
     if (!this.socket) {
       // Never started.
       this.fulfillDisconnect();
       return;
     }
+    if (this.stopping) {
+      // Already stopped.
+      return;
+    }
+    this.stopping = true;
 
-    this.socket.write(JSON.stringify(
-        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest));
+    return this.writeReset();
   }
 
   public get onceDisconnected() {
     return this.disconnected;
   }
 
-  public set onNetworkChange(newListener: ((status: ConnectionStatus) => void)|undefined) {
+  public set onNetworkChange(newListener: ((status: TunnelStatus) => void)|undefined) {
     this.networkChangeListener = newListener;
   }
 }

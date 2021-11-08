@@ -1,6 +1,6 @@
 // Software License Agreement (BSD License)
 //
-// Copyright (c) 2010-2018, Deusty, LLC
+// Copyright (c) 2010-2021, Deusty, LLC
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms,
@@ -20,7 +20,9 @@
     #define DD_LEGACY_MACROS 0
 #endif
 
-#import "DDLog.h"
+#import <CocoaLumberjack/DDLog.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * This formatter can be used to chain different formatters together.
@@ -31,7 +33,7 @@
 /**
  *  Array of chained formatters
  */
-@property (readonly) NSArray<id<DDLogFormatter>> *formatters;
+@property (nonatomic, readonly) NSArray<id<DDLogFormatter>> *formatters;
 
 /**
  *  Add a new formatter
@@ -54,3 +56,5 @@
 - (BOOL)isFormattingWithFormatter:(id<DDLogFormatter>)formatter;
 
 @end
+
+NS_ASSUME_NONNULL_END

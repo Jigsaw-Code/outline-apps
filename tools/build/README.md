@@ -11,8 +11,8 @@ Then, prefix your commands with: `./tools/build/build.sh`
 
 So, to install dependencies and build:
 ```bash
-./tools/build/build.sh yarn
-./tools/build/build.sh yarn build
+./tools/build/build.sh npm ci
+./tools/build/build.sh npm run build
 ```
 
 What does this script do?:
@@ -27,7 +27,7 @@ What does this script do?:
 ## Build
 
 ```bash
-yarn do tools/build/build
+npm run action tools/build/build
 ```
 
 ## Tag
