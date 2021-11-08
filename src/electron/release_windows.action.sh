@@ -50,7 +50,7 @@ else
   INFO_FILE_CHANNEL="latest"
 fi
 
-npm run do src/electron/package_common
+npm run action src/electron/package_common
 
 scripts/environment_json.sh -r -p windows > www/environment.json
 

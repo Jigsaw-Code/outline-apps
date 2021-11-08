@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 #
 # Copyright 2018 The Outline Authors
 #
@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Releases the Outline macOS client locally. Expects to be invoked through `npm run do`.
-./apple/scripts/install_fastlane.sh -p osx
-pushd platforms/osx
-bundle exec fastlane osx release local:true
+npm run action src/www/build_electron
+
+webpack --config=src/electron/electron_main.webpack.js \
+    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
+    ${BUILD_ENV:+--mode="${BUILD_ENV}"}
+
+# Environment variables.
+# TODO: make non-packaged builds work without this
+scripts/environment_json.sh -p dev > www/environment.json

@@ -7,9 +7,14 @@ The client's user interface is implemented in [Polymer](https://www.polymer-proj
 
 ## Requirements for all builds
 
-All builds require [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), in addition to other per-platform requirements. After cloning this repo install all dependencies with the command.
+All builds require [Node](https://nodejs.org/) 16, in addition to other per-platform requirements. 
 
-    npm ci
+> 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
+
+After cloning this repo, install all node dependencies:
+```sh
+npm install
+```
 
 ## Building the web app
 
@@ -53,7 +58,7 @@ A Docker image with all pre-requisites for Android builds is included.  To build
 
 * Install dependencies with `./tools/build/build.sh npm ci`
 * Then build with `./tools/build/build.sh npx gulp build --platform=android`
-
+  
 ## Apple (macOS and iOS)
 
 Additional requirements for Apple:
@@ -62,23 +67,26 @@ Additional requirements for Apple:
 * XCode 11+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools: `xcode-select --install`
 
-To open the macOS project on XCode:
-```
-open ./platforms/ios/Outline.xcodeproj
-```
 
-To open the iOS project on XCode:
+To open the macOS project on XCode:
 ```
 open ./platforms/osx/Outline.xcodeproj
 ```
 
-To build for macOS (OS X), run:
+To open the iOS project on XCode:
+```
+open ./platforms/ios/Outline.xcodeproj
+```
 
-    npx gulp build --platform=osx
+To build for macOS (OS X), run:
+```
+npx gulp build --platform=osx
+```
 
 To build for iOS, run:
-
-    npx gulp build --platform=ios
+```
+npx gulp build --platform=ios
+```
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
 
@@ -95,15 +103,15 @@ Additional requirements for building on Windows:
 
 To build the Electron clients, run:
 
-    npm run do src/electron/build
+    npm run action src/electron/build
 
 To run the Electron clients, run:
 
-    npm run do src/electron/run
+    npm run action src/electron/start
 
 To package the Electron clients into an installer executable, run:
 
-    npm run do src/electron/package_[linux|windows]
+    npm run action src/electron/package_[linux|windows]
 
 
 ## Error reporting
@@ -113,5 +121,8 @@ To enable error reporting through [Sentry](https://sentry.io/) for local builds,
 export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
 ```
-
 Release builds on CI are configured with a production Sentry API key.
+
+## Support
+
+For support and to contact us, see: https://support.getoutline.org.  
