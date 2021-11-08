@@ -8,28 +8,110 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
-    name: Build and Test Web and Electron Apps
-    runs-on: ubuntu-latest
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install Node.js
+      - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 16
           cache: npm
       
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: Build web app
+      - name: Build Web App
         run: npx gulp build --platform=browser
-      
-      - name: Test web app
+
+      - name: Test Web App
         run: npm run action scripts/test
 
-      - name: Build Electron app
-        run: npm run action src/electron/build
+      - name: Build Electron App
+        run: npm run action src/electron/package_linux
+
+  windows:
+    name: Windows (Wine)
+    # When updating Ubuntu versions, you will need to update the Wine APT commands.  See below.
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Wine
+        run: |
+          sudo dpkg --add-architecture i386
+          wget -nc https://dl.winehq.org/wine-builds/winehq.key
+          sudo apt-key add winehq.key
+          # This APT repo is specific to ubuntu 20.04. See https://wiki.winehq.org/Ubuntu when updating Ubuntu versions
+          sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
+          sudo apt update && sudo apt install --install-recommends winehq-stable\
+      - name: Build Windows Client
+        run: npm run action src/electron/package_windows
+
+  mac:
+    name: Apple
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Set XCode Settings
+        run: sudo xcode-select -switch /Applications/Xcode_11.7.app
+
+      - name: Print Build Settings
+        run: |
+          cd apple/xcode/osx
+          xcodebuild -project Outline.xcodeproj -showBuildSettings
+      
+      - name: Build OSX Client
+        run: npx gulp build --platform=osx
+
+      - name: Build iOS Client
+        run: npm run action apple/scripts/ios_package_remote
+
+  android:
+    name: Android
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Android Client
+        run: npx gulp build --platform=android
