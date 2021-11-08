@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "target": "es2017",
     "removeComments": false,
     "noImplicitAny": true,
