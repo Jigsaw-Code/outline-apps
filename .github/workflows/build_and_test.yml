@@ -36,8 +36,7 @@ jobs:
 
   windows:
     name: Windows
-    # When updating Ubuntu versions, you will need to update the Wine APT commands.  See below.
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -51,14 +50,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # - name: Install Wine
-      #   run: |
-      #     sudo dpkg --add-architecture i386
-      #     wget -nc https://dl.winehq.org/wine-builds/winehq.key
-      #     sudo apt-key add winehq.key
-      #     # This APT repo is specific to ubuntu 20.04. See https://wiki.winehq.org/Ubuntu when updating Ubuntu versions
-      #     sudo add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
-      #     sudo apt update && sudo apt install --install-recommends winehq-stable\
       - name: Build Windows Client
         run: npm run action src/electron/package_windows
 
