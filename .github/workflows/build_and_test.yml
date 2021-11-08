@@ -101,8 +101,5 @@ jobs:
           node-version: 16
           cache: npm
 
-      - name: Install Dependencies
-        run: ./tools/build/build.sh npm ci
-
       - name: Build Android Client
-        run: ./tools/build/build.sh npx gulp build --platform=android
+        run: ./tools/build/build.sh npm ci && npx gulp build --platform=android
