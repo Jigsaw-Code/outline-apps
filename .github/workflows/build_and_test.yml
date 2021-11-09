@@ -70,7 +70,7 @@ jobs:
         run: npm ci
 
       - name: Set XCode Settings
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+        run: sudo xcode-select -switch /Applications/Xcode_12.4.app
 
       - name: Print Build Settings
         run: |
