@@ -54,7 +54,7 @@ module.exports = makeConfig({
     // @sentry/electron depends on electron code, even though it's never activated
     // in the browser. Webpack still tries to build it, but fails with missing APIs.
     // The IgnorePlugin prevents the compilation of the electron dependency.
-    new webpack.IgnorePlugin(/^electron$/),
+    new webpack.IgnorePlugin({resourceRegExp: /^electron$/}),
     new HtmlWebpackPlugin({
       filename: 'electron_index.html',
       template: path.resolve(__dirname, './electron_index.html'),
