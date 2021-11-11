@@ -55,7 +55,7 @@ jobs:
 
   mac:
     name: Apple
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
