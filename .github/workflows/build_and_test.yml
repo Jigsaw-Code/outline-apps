@@ -75,7 +75,7 @@ jobs:
       - name: Build OSX Client
         run: npx gulp build --platform=osx
 
-  mac:
+  ios:
     name: iOS
     runs-on: macos-11
     steps:
