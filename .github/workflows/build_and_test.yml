@@ -114,7 +114,7 @@ jobs:
         run: npm ci
 
       - name: Setup Android
-        run: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v2
 
       - name: Set Android SDK Version
         run: sdkmanager "platform;android-29"
