@@ -69,7 +69,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Set XCode Settings
+      - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_12.5.app
 
       - name: Build OSX Client
@@ -94,13 +94,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Install Java
-        uses: actions/setup-java@v1.4.3
-        with:
-          java-version: 1.8
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+      - name: Set Android SDK Version
+        run: sdkmanager "platform;android-29"
 
       - name: Build Android Client
         run: npx gulp build --platform=android
