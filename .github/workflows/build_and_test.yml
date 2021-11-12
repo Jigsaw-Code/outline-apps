@@ -72,11 +72,6 @@ jobs:
       - name: Set XCode Settings
         run: sudo xcode-select -switch /Applications/Xcode_12.5.app
 
-      - name: Print Build Settings
-        run: |
-          cd apple/xcode/osx
-          xcodebuild -project Outline.xcodeproj -showBuildSettings
-      
       - name: Build OSX Client
         run: npx gulp build --platform=osx
 
@@ -90,16 +85,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install Java
-        uses: actions/setup-java@v1.4.3
-        with:
-          java-version: 1.8
-
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 16
           cache: npm
 
+      - name: Install Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v2
+
       - name: Build Android Client
-        run: ./tools/build/build.sh npm ci && npx gulp build --platform=android
+        run: npx gulp build --platform=android
