@@ -54,7 +54,7 @@ jobs:
         run: npm run action src/electron/package_windows
 
   mac:
-    name: Apple
+    name: MacOS
     runs-on: macos-11
     steps:
       - name: Checkout
@@ -74,6 +74,25 @@ jobs:
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
+
+  mac:
+    name: iOS
+    runs-on: macos-11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_12.5.app
 
       - name: Build iOS Client
         run: npm run action apple/scripts/ios_package_remote
