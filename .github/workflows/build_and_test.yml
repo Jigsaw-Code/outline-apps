@@ -122,7 +122,9 @@ jobs:
         uses: android-actions/setup-android@v2
 
       - name: Set Android SDK Version
-        run: sdkmanager "build-tools;30.0.0" "platforms;android-29"
+        run: |
+          sdkmanager "platforms;android-29"
+          mklink %ANDROID_HOME%\build-tools\31.0.0\dx.bat %ANDROID_HOME%\build-tools\31.0.0\d8.bat && mklink %ANDROID_HOME%\build-tools\31.0.0\lib\dx.jar %ANDROID_HOME%\build-tools\31.0.0\lib\d8.jar
 
       - name: Build Android Client
         run: npx gulp build --platform=android
