@@ -91,6 +91,9 @@ jobs:
           node-version: 16
           cache: npm
 
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Install Java
         uses: actions/setup-java@v1.4.3
         with:
