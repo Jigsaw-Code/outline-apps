@@ -124,7 +124,9 @@ jobs:
       - name: Set Android SDK Version
         run: |
           sdkmanager "platforms;android-29"
-          mklink %ANDROID_HOME%\build-tools\31.0.0\dx.bat %ANDROID_HOME%\build-tools\31.0.0\d8.bat && mklink %ANDROID_HOME%\build-tools\31.0.0\lib\dx.jar %ANDROID_HOME%\build-tools\31.0.0\lib\d8.jar
+          cd $ANDROID_HOME/build-tools/31.0.0
+          ln -s d8 dx
+          ln -s lib/d8.jar lib/dx.jar
 
       - name: Build Android Client
         run: npx gulp build --platform=android
