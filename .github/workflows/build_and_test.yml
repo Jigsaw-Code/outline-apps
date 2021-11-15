@@ -124,9 +124,7 @@ jobs:
         uses: android-actions/setup-android@v2
 
       - name: Set Android SDK Version
-        run: |
-          sdkmanager "platforms;android-29"
-          sdkmanager --uninstall "build-tools;31.0.0"
+        run: sdkmanager "build-tools;30.0.2" "platforms;android-29"
 
       - name: Build Android Client
         run: npx gulp build --platform=android
