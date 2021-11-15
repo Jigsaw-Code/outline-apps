@@ -123,10 +123,12 @@ jobs:
       - name: Setup Android
         uses: android-actions/setup-android@v2
 
-      - name: Set Android SDK Version
-        run: |
-          sdkmanager "build-tools;30.0.2" "platforms;android-29"
-          export ANDROID_BUILD_TOOLS_VERSION=30.0.2
+      # - name: Set Android SDK Version
+      #   run: |
+      #     sdkmanager "build-tools;30.0.2" "platforms;android-29"
 
       - name: Build Android Client
         run: npx gulp build --platform=android
+        env:
+          ANDROID_BUILD_TOOLS_VERSION: 30.0.2
+          NDK_VERSION: 21.0.6113669
