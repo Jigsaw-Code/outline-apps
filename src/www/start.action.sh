@@ -17,5 +17,6 @@
 set -eu
 
 webpack-dev-server \
+    --mode=development \
     --config=src/www/cordova.webpack.js \
     --open /cordova_index.html
