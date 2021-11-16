@@ -16,7 +16,12 @@
 
 set -eu
 
-webpack-dev-server \
+npm run action src/www/build_cordova
+scripts/environment_json.sh -p dev > www/environment.json
+cordova prepare browser
+
+webpack serve \
     --mode=development \
+    --static=platforms/browser/www \
     --config=src/www/cordova.webpack.js \
     --open /cordova_index.html
