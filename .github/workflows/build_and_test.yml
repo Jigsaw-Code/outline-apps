@@ -105,6 +105,7 @@ jobs:
     env:
       ANDROID_BUILD_TOOLS_VERSION: 30.0.2
       NDK_VERSION: 21.0.6113669
+      ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -124,10 +125,20 @@ jobs:
           java-version: 1.8
 
       - name: Setup Android
-        uses: android-actions/setup-android@v2
+        run: |
+          cd /opt \
+            && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
+            && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
+            && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
+            && rm android-commandline-tools.zip
 
       - name: Set Android SDK Version
-        run: sdkmanager "build-tools;30.0.2"
+        env:
+          PATH: ${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin
+        run: |
+          yes | sdkmanager \
+            "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+            "ndk;${NDK_VERSION}"
 
       - name: Build Android Client
         run: npx gulp build --platform=android
