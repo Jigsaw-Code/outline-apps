@@ -132,10 +132,6 @@ jobs:
             && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
             && rm android-commandline-tools.zip
           PATH="${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin"
-
-      - name: Set Android SDK Version
-        env:
-        run: |
           yes | sdkmanager \
             "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
             "ndk;${NDK_VERSION}"
