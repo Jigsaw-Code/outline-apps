@@ -14,11 +14,10 @@
   limitations under the License.
 */
 
-import './server-card.js';
-
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 import {Server} from '../model/server';
+import {ServerCard} from './server_card';
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
@@ -33,6 +32,20 @@ export class ServerList extends PolymerElement {
   @computed('servers')
   get hasSingleServer() {
     return this.servers.length === 1;
+  }
+
+  get serverCards() {
+    return Array.from(this.shadowRoot.querySelectorAll('server-card')) as ServerCard[];
+  }
+
+  getServerCard(serverId: string): ServerCard {
+    for (const card of this.serverCards) {
+      if (card.serverId === serverId) {
+        return card;
+      }
+    }
+
+    throw new Error(`Card for server ${serverId} not found`);
   }
 
   static template = html`
