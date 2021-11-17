@@ -36,7 +36,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-
 import 'outline-i18n/index.js';
 import './about-view.js';
 import './add-server-view.js';

@@ -16,7 +16,9 @@
 
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
+
 import {Server} from '../model/server';
+
 import {ServerCard} from './server_card';
 
 @customElement('server-list')

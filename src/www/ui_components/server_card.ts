@@ -16,8 +16,8 @@
 
 import './server-connection-viz.js';
 
-import { html, PolymerElement } from '@polymer/polymer';
-import { computed, customElement, property } from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 
 export enum ServerCardState {
   CONNECTING,
@@ -29,20 +29,20 @@ export enum ServerCardState {
 
 @customElement('server-card')
 export class ServerCard extends PolymerElement {
-  @property({ type: Boolean }) disabled: boolean;
-  @property({ type: String }) errorMessage: string;
-  @property({ type: Boolean }) expanded: boolean;
-  @property({ type: String }) rootPath: string;
-  @property({ type: String }) serverAddress: string;
-  @property({ type: String }) serverId: string;
-  @property({ type: String }) serverName: string;
-  @property({ type: Number }) state: ServerCardState;
+  @property({type: Boolean}) disabled: boolean;
+  @property({type: String}) errorMessage: string;
+  @property({type: Boolean}) expanded: boolean;
+  @property({type: String}) rootPath: string;
+  @property({type: String}) serverAddress: string;
+  @property({type: String}) serverId: string;
+  @property({type: String}) serverName: string;
+  @property({type: Number}) state: ServerCardState;
 
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
 
   // @polymer/decorators doesn't support Function constructors...
-  @property({ type: Object }) localize: (unlocalizedText: string) => string;
+  @property({type: Object}) localize: (unlocalizedText: string) => string;
 
   @computed('state', 'localize')
   get statusMessage() {
@@ -82,10 +82,8 @@ export class ServerCard extends PolymerElement {
   @computed('state')
   get connectButtonDisabled() {
     return (
-      this.disabled ||
-      this.state === ServerCardState.CONNECTING ||
-      this.state === ServerCardState.DISCONNECTING
-    );
+        this.disabled || this.state === ServerCardState.CONNECTING ||
+        this.state === ServerCardState.DISCONNECTING);
   }
 
   @computed('expanded')
@@ -285,12 +283,11 @@ export class ServerCard extends PolymerElement {
   `;
 
   protected onConnectToggled() {
-    this.state === ServerCardState.DISCONNECTED
-      ? this.fireConnectPressed()
-      : this.fireDisconnectPressed();
+    this.state === ServerCardState.DISCONNECTED ? this.fireConnectPressed() :
+                                                  this.fireDisconnectPressed();
   }
 
-  protected onMenuItemPressed({ detail: { selected } }: CustomEvent) {
+  protected onMenuItemPressed({detail: {selected}}: CustomEvent) {
     if (selected === 'forget') {
       this.fireForgetRequest();
     } else if (selected === 'rename') {
@@ -304,34 +301,26 @@ export class ServerCard extends PolymerElement {
   }
 
   private fireConnectPressed() {
-    const { serverId } = this;
+    const {serverId} = this;
 
-    this.dispatchEvent(
-      new CustomEvent('ConnectPressed', { detail: { serverId } })
-    );
+    this.dispatchEvent(new CustomEvent('ConnectPressed', {detail: {serverId}}));
   }
 
-  private fireDisconnectPressed() { 
-    const { serverId } = this;
+  private fireDisconnectPressed() {
+    const {serverId} = this;
 
-    this.dispatchEvent(
-      new CustomEvent('DisconnectPressed', { detail: { serverId } })
-    );
+    this.dispatchEvent(new CustomEvent('DisconnectPressed', {detail: {serverId}}));
   }
 
-  private fireForgetRequest() { 
-    const { serverId } = this;
+  private fireForgetRequest() {
+    const {serverId} = this;
 
-    this.dispatchEvent(
-      new CustomEvent('ForgetPressed', { detail: { serverId } })
-    );
+    this.dispatchEvent(new CustomEvent('ForgetPressed', {detail: {serverId}}));
   }
 
   private fireShowServerRename() {
-    const { serverName, serverId } = this;
+    const {serverName, serverId} = this;
 
-    this.dispatchEvent(
-      new CustomEvent('ShowServerRename', { detail: { serverName, serverId } })
-    );
+    this.dispatchEvent(new CustomEvent('ShowServerRename', {detail: {serverName, serverId}}));
   }
 }
