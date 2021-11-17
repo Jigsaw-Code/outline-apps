@@ -6,27 +6,6 @@ import {ServerCardState} from './server_card';
 
 @customElement('server-connection-viz') export class ServerConnectionViz extends LegacyElementMixin
 (PolymerElement) {
-  @property({type: String}) rootPath: string;
-  @property({type: Boolean}) expanded: boolean;
-
-  @property({type: String, observer: 'updateAnimationState'}) serverCardState: ServerCardState;
-  @property({type: String}) animationState: ServerCardState;
-
-  @computed('serverCardState')
-  get shouldAnimate() {
-    return this.isAnimationState(this.serverCardState);
-  }
-
-  @computed('animationState')
-  get isAnimating() {
-    return this.isAnimationState(this.animationState);
-  }
-
-  @computed('expanded')
-  get expandedClassName() {
-    return this.expanded ? 'expanded' : '';
-  }
-
   static ANIMATION_DURATION_MS = 1750;
 
   static template = html`
@@ -257,7 +236,28 @@ import {ServerCardState} from './server_card';
 
   animationStartMS: number;
 
-  protected updateAnimationState() {
+  @property({type: String}) rootPath: string;
+  @property({type: Boolean}) expanded: boolean;
+
+  @property({type: String, observer: 'syncAnimationState'}) serverCardState: ServerCardState;
+  @property({type: String}) animationState: ServerCardState;
+
+  @computed('serverCardState')
+  get shouldAnimate() {
+    return this.isAnimationState(this.serverCardState);
+  }
+
+  @computed('animationState')
+  get isAnimating() {
+    return this.isAnimationState(this.animationState);
+  }
+
+  @computed('expanded')
+  get expandedClassName() {
+    return this.expanded ? 'expanded' : '';
+  }
+
+  protected syncAnimationState() {
     if (this.shouldAnimate) {
       return this.startAnimation();
     }

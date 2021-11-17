@@ -23,6 +23,43 @@ import {ServerCard} from './server_card';
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
+  static template = html`
+  <style>
+    :host {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: 100%;
+    }
+
+    server-card {
+      margin: 8px auto;
+      max-width: 400px; /* better card spacing on pixel and iphone */
+      padding: 0 8px; /* necessary for smaller displays */
+    }
+
+    @media (min-width: 600px) {
+      server-card {
+        margin: 24px auto;
+        max-width: 550px;
+      }
+    }
+  </style>
+
+  <template is="dom-repeat" items="[[servers]]">
+    <server-card 
+      disabled="[[item.errorMessageId]]" 
+      error-message="[[localize(item.errorMessageId)]]" 
+      expanded="[[hasSingleServer]]"
+      localize="[[localize]]" 
+      root-path="[[rootPath]]" 
+      server-address="[[item.address]]" 
+      server-id="[[item.id]]" 
+      server-name="[[resolveServerName(item.name, item.isOutlineServer)]]" 
+    ></server-card>
+  </template>
+`;
+
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
 
@@ -49,43 +86,6 @@ export class ServerList extends PolymerElement {
 
     throw new Error(`Card for server ${serverId} not found`);
   }
-
-  static template = html`
-    <style>
-      :host {
-        display: block;
-        margin: 0 auto;
-        width: 100%;
-        height: 100%;
-      }
-
-      server-card {
-        margin: 8px auto;
-        max-width: 400px; /* better card spacing on pixel and iphone */
-        padding: 0 8px; /* necessary for smaller displays */
-      }
-
-      @media (min-width: 600px) {
-        server-card {
-          margin: 24px auto;
-          max-width: 550px;
-        }
-      }
-    </style>
-
-    <template is="dom-repeat" items="[[servers]]">
-      <server-card 
-        disabled="[[item.errorMessageId]]" 
-        error-message="[[localize(item.errorMessageId)]]" 
-        expanded="[[hasSingleServer]]"
-        localize="[[localize]]" 
-        root-path="[[rootPath]]" 
-        server-address="[[item.address]]" 
-        server-id="[[item.id]]" 
-        server-name="[[resolveServerName(item.name, item.isOutlineServer)]]" 
-      ></server-card>
-    </template>
-  `;
 
   protected resolveServerName(serverName: string, isOutlineServer: boolean): string {
     if (serverName.length) {

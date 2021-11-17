@@ -28,75 +28,6 @@ export enum ServerCardState {
 
 @customElement('server-card') export class ServerCard extends LegacyElementMixin
 (PolymerElement) {
-  @property({type: Boolean}) disabled: boolean;
-  @property({type: String}) errorMessage: string;
-  @property({type: Boolean}) expanded: boolean;
-  @property({type: String}) rootPath: string;
-  @property({type: String}) serverAddress: string;
-  @property({type: String}) serverId: string;
-  @property({type: String}) serverName: string;
-  @property({type: String}) state: ServerCardState;
-
-  // Need to declare localize function passed in from parent, or else
-  // localize() calls within the template won't be updated.
-
-  // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: (unlocalizedText: string) => string;
-
-  @computed('state', 'localize')
-  get statusMessage() {
-    if (!this.localize) return '';
-
-    switch (this.state) {
-      case ServerCardState.CONNECTING:
-        return this.localize('connecting-server-state');
-      case ServerCardState.CONNECTED:
-        return this.localize('connected-server-state');
-      case ServerCardState.RECONNECTING:
-        return this.localize('reconnecting-server-state');
-      case ServerCardState.DISCONNECTING:
-        return this.localize('disconnecting-server-state');
-      case ServerCardState.DISCONNECTED:
-      default:
-        return this.localize('disconnected-server-state');
-    }
-  }
-
-  @computed('state', 'localize')
-  get connectButtonLabel() {
-    if (!this.localize) return '';
-
-    switch (this.state) {
-      case ServerCardState.CONNECTING:
-      case ServerCardState.CONNECTED:
-      case ServerCardState.RECONNECTING:
-        return this.localize('disconnect-button-label');
-      case ServerCardState.DISCONNECTING:
-      case ServerCardState.DISCONNECTED:
-      default:
-        return this.localize('connect-button-label');
-    }
-  }
-
-  @computed('state')
-  get connectButtonDisabled() {
-    return (
-        this.disabled || this.state === ServerCardState.CONNECTING ||
-        this.state === ServerCardState.DISCONNECTING);
-  }
-
-  @computed('expanded')
-  get expandedClassName() {
-    return this.expanded ? 'expanded' : '';
-  }
-
-  constructor() {
-    super();
-
-    this.expanded = false;
-    this.state = ServerCardState.DISCONNECTED;
-  }
-
   static template = html`
     <style>
       :host {
@@ -105,8 +36,8 @@ export enum ServerCardState {
 
       :focus {
         /* Disable outline for focused elements; mainly affects the iOS WebView,
-         * where elements stay highlighted after user interaction.
-         */
+        * where elements stay highlighted after user interaction.
+        */
         outline: 0 !important;
       }
 
@@ -280,6 +211,68 @@ export enum ServerCardState {
       </div>
     </paper-card>
   `;
+
+  @property({type: Boolean}) disabled: boolean;
+  @property({type: String}) errorMessage: string;
+  @property({type: Boolean}) expanded = false;
+  @property({type: String}) rootPath: string;
+  @property({type: String}) serverAddress: string;
+  @property({type: String}) serverId: string;
+  @property({type: String}) serverName: string;
+  @property({type: String}) state: ServerCardState = ServerCardState.DISCONNECTED;
+
+  // Need to declare localize function passed in from parent, or else
+  // localize() calls within the template won't be updated.
+
+  // @polymer/decorators doesn't support Function constructors...
+  @property({type: Object}) localize: (unlocalizedText: string) => string;
+
+  @computed('state', 'localize')
+  get statusMessage() {
+    if (!this.localize) return '';
+
+    switch (this.state) {
+      case ServerCardState.CONNECTING:
+        return this.localize('connecting-server-state');
+      case ServerCardState.CONNECTED:
+        return this.localize('connected-server-state');
+      case ServerCardState.RECONNECTING:
+        return this.localize('reconnecting-server-state');
+      case ServerCardState.DISCONNECTING:
+        return this.localize('disconnecting-server-state');
+      case ServerCardState.DISCONNECTED:
+      default:
+        return this.localize('disconnected-server-state');
+    }
+  }
+
+  @computed('state', 'localize')
+  get connectButtonLabel() {
+    if (!this.localize) return '';
+
+    switch (this.state) {
+      case ServerCardState.CONNECTING:
+      case ServerCardState.CONNECTED:
+      case ServerCardState.RECONNECTING:
+        return this.localize('disconnect-button-label');
+      case ServerCardState.DISCONNECTING:
+      case ServerCardState.DISCONNECTED:
+      default:
+        return this.localize('connect-button-label');
+    }
+  }
+
+  @computed('state')
+  get connectButtonDisabled() {
+    return (
+        this.disabled || this.state === ServerCardState.CONNECTING ||
+        this.state === ServerCardState.DISCONNECTING);
+  }
+
+  @computed('expanded')
+  get expandedClassName() {
+    return this.expanded ? 'expanded' : '';
+  }
 
   protected onConnectToggled() {
     this.state === ServerCardState.DISCONNECTED ? this.fireConnectPressed() :
