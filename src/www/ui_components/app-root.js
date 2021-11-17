@@ -44,7 +44,7 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
-import './server-connection-viz.js';
+import './server_connection_viz.ts';
 import './server_list.ts';
 import './server_card.ts';
 import './servers-view.js';

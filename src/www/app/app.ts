@@ -15,6 +15,7 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
+import {ServerCardState} from '../ui_components/server_card';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -206,7 +207,7 @@ export class App {
   private showServerDisconnected(event: events.ServerDisconnected): void {
     console.debug(`server ${event.server.id} disconnected`);
     try {
-      this.serverListEl.getServerCard(event.server.id).state = 'DISCONNECTED';
+      this.serverListEl.getServerCard(event.server.id).state = ServerCardState.DISCONNECTED;
     } catch (e) {
       console.warn('server card not found after disconnection event, assuming forgotten');
     }
@@ -366,7 +367,7 @@ export class App {
           this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
       this.maybeShowAutoConnectDialog();
     } catch (e) {
-      card.state = 'DISCONNECTED';
+      card.state = ServerCardState.DISCONNECTED;
       this.showLocalizedError(e);
       console.error(`could not connect to server ${serverId}: ${e.name}`);
       if (!(e instanceof errors.RegularNativeError)) {
@@ -405,7 +406,7 @@ export class App {
     card.state = 'DISCONNECTING';
     try {
       await server.disconnect();
-      card.state = 'DISCONNECTED';
+      card.state = ServerCardState.DISCONNECTED;
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(
           this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
@@ -489,7 +490,7 @@ export class App {
       const isRunning = await server.checkRunning();
       const card = this.serverListEl.getServerCard(server.id);
       if (!isRunning) {
-        card.state = 'DISCONNECTED';
+        card.state = ServerCardState.DISCONNECTED;
         return;
       }
       const isReachable = await server.checkReachable();

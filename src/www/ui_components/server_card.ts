@@ -14,21 +14,20 @@
   limitations under the License.
 */
 
-import './server-connection-viz.js';
-
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
 export enum ServerCardState {
-  CONNECTING,
-  CONNECTED,
-  RECONNECTING,
-  DISCONNECTING,
-  DISCONNECTED
+  CONNECTING = 'CONNECTING',
+  CONNECTED = 'CONNECTED',
+  RECONNECTING = 'RECONNECTING',
+  DISCONNECTING = 'DISCONNECTING',
+  DISCONNECTED = 'DISCONNECTED'
 }
 
-@customElement('server-card')
-export class ServerCard extends PolymerElement {
+@customElement('server-card') export class ServerCard extends LegacyElementMixin
+(PolymerElement) {
   @property({type: Boolean}) disabled: boolean;
   @property({type: String}) errorMessage: string;
   @property({type: Boolean}) expanded: boolean;
@@ -36,7 +35,7 @@ export class ServerCard extends PolymerElement {
   @property({type: String}) serverAddress: string;
   @property({type: String}) serverId: string;
   @property({type: String}) serverName: string;
-  @property({type: Number}) state: ServerCardState;
+  @property({type: String}) state: ServerCardState;
 
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
@@ -223,7 +222,7 @@ export class ServerCard extends PolymerElement {
     <paper-card class\$="[[expandedClassName]]">
       <div class="card-header">
         <server-connection-viz 
-          state="[[state]]"
+          server-card-state="[[state]]"
           root-path="[[rootPath]]"
           hidden\$="[[expanded]]"
         ></server-connection-viz>
@@ -259,7 +258,7 @@ export class ServerCard extends PolymerElement {
             noink=""
           >
             <server-connection-viz 
-              state="[[state]]"
+              server-card-state="[[state]]"
               root-path="[[rootPath]]"
               expanded=""
             ></server-connection-viz>
@@ -297,30 +296,24 @@ export class ServerCard extends PolymerElement {
     // This can leave the pressed paper-item in the selected state,
     // causing it to get selected styling (e.g. font-weight: bold),
     // so explicitly deselect it:
-    setTimeout(() => (this.$.menu as HTMLElement).blur());
+    this.async(() => (this.$.menu as HTMLInputElement).select());
   }
 
   private fireConnectPressed() {
-    const {serverId} = this;
-
-    this.dispatchEvent(new CustomEvent('ConnectPressed', {detail: {serverId}}));
+    this.fire('ConnectPressed', {serverId: this.serverId});
   }
 
   private fireDisconnectPressed() {
-    const {serverId} = this;
-
-    this.dispatchEvent(new CustomEvent('DisconnectPressed', {detail: {serverId}}));
+    this.fire('DisconnectPressed', {serverId: this.serverId});
   }
 
   private fireForgetRequest() {
-    const {serverId} = this;
-
-    this.dispatchEvent(new CustomEvent('ForgetPressed', {detail: {serverId}}));
+    this.fire('ForgetPressed', {serverId: this.serverId});
   }
 
   private fireShowServerRename() {
     const {serverName, serverId} = this;
 
-    this.dispatchEvent(new CustomEvent('ShowServerRename', {detail: {serverName, serverId}}));
+    this.fire('ShowServerRename', {serverName, serverId});
   }
 }

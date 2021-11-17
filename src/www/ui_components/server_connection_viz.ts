@@ -1,24 +1,35 @@
-/*
-  Copyright 2020 The Outline Authors
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+import {ServerCardState} from './server_card';
 
-       http://www.apache.org/licenses/LICENSE-2.0
+@customElement('server-connection-viz') export class ServerConnectionViz extends LegacyElementMixin
+(PolymerElement) {
+  @property({type: String}) rootPath: string;
+  @property({type: Boolean}) expanded: boolean;
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-*/
+  @property({type: String, observer: 'updateAnimationState'}) serverCardState: ServerCardState;
+  @property({type: String}) animationState: ServerCardState;
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+  @computed('serverCardState')
+  get shouldAnimate() {
+    return this.isAnimationState(this.serverCardState);
+  }
 
-Polymer({
-  _template: html`
+  @computed('animationState')
+  get isAnimating() {
+    return this.isAnimationState(this.animationState);
+  }
+
+  @computed('expanded')
+  get expandedClassName() {
+    return this.expanded ? 'expanded' : '';
+  }
+
+  static ANIMATION_DURATION_MS = 1750;
+
+  static template = html`
     <style>
       /* Do not mirror animation for RTL languages */
       /* rtl:begin:ignore */
@@ -233,71 +244,47 @@ Polymer({
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container" class\$="[[_computeExpandedClassName(expanded)]]">
+    <div id="container" class\$="[[expandedClassName]]">
       <img id="small-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
       <img id="small" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
       <img id="medium-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
       <img id="medium" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
       <img id="large-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
-      <img id="large-zero" src\$="[[rootPath]]assets/disc_empty.png" class\$="{{state}}">
+      <img id="large-zero" src\$="[[rootPath]]assets/disc_empty.png" class\$="{{serverCardState}}">
       <img id="large" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
     </div>
-`,
+  `;
 
-  is: 'server-connection-viz',
+  animationStartMS: number;
 
-  properties: {
-    rootPath: String,
-    state: {
-      type: String,
-      observer: '_onStateChanged',
-    },
-    animationState: {
-      type: String,
-      notify: true,
-      value: 'ZERO_STATE',
-    },
-    expanded: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  _onStateChanged: function _onStateChanged(newState) {
-    this._updateAnimationState();
-  },
-
-  // Update CSS when modifying the animation duration.
-  _ANIMATION_DURATION_MS: 1750,
-
-  _animationStartMs: null,
-
-  _updateAnimationState: function() {
-    if (this._isAnimating(this.state)) {
-      this._animationStartMs = new Date().getTime();
+  protected updateAnimationState() {
+    if (this.shouldAnimate) {
+      return this.startAnimation();
     }
-    if (this.state === 'CONNECTED' || this.state === 'DISCONNECTED') {
-      if (this._isAnimating(this.animationState)) {
-        var now = new Date().getTime();
-        var elapsedAnimationMs = now - this._animationStartMs;
-        var remainingAnimationMs =
-            this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
-        // Update the state only after the animation cycle has finished to avoid jumpiness.
-        var _this = this;
-        this.async(function() {
-          _this.animationState = _this.state;
-        }, remainingAnimationMs);
-        return;
-      }
+
+    if (!this.shouldAnimate && this.isAnimating) {
+      return this.stopAnimation();
     }
-    this.animationState = this.state;
-  },
 
-  _isAnimating: function(state) {
-    return state === 'CONNECTING' || state === 'DISCONNECTING' || state === 'RECONNECTING';
-  },
-
-  _computeExpandedClassName: function(expanded) {
-    return expanded ? 'expanded' : '';
+    this.animationState = this.serverCardState;
   }
-});
+
+  private startAnimation() {
+    this.animationStartMS = Date.now();
+  }
+
+  private stopAnimation() {
+    const elapsedAnimationMS = Date.now() - this.animationStartMS;
+    const remainingAnimationMS =
+        (ServerConnectionViz.ANIMATION_DURATION_MS -
+         (elapsedAnimationMS % ServerConnectionViz.ANIMATION_DURATION_MS));
+
+    this.async(() => this.animationState = this.serverCardState, remainingAnimationMS);
+  }
+
+  private isAnimationState(state: ServerCardState): boolean {
+    return [
+      ServerCardState.CONNECTING, ServerCardState.DISCONNECTING, ServerCardState.RECONNECTING
+    ].includes(state);
+  }
+}
