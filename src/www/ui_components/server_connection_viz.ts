@@ -21,6 +21,7 @@ import {ServerCardState} from './server_card';
           transform: rotate(360deg);
         }
       }
+
       @keyframes rotate-backward-with-pause {
         0% {
           transform: rotate(360deg);
@@ -60,8 +61,8 @@ import {ServerCardState} from './server_card';
         opacity: 0.8;
       }
 
-      .grey.ZERO_STATE,
-      .green.ZERO_STATE,
+      .grey.INITIAL,
+      .green.INITIAL,
       .green.DISCONNECTED,
       .green.CONNECTING,
       .green.RECONNECTING,
@@ -117,6 +118,7 @@ import {ServerCardState} from './server_card';
         width: 16px;
         z-index: 300;
       }
+
       #medium,
       #medium-grey {
         top: 8px;
@@ -126,6 +128,7 @@ import {ServerCardState} from './server_card';
         transition-delay: 250ms;
         z-index: 200;
       }
+
       #large,
       #large-grey,
       #large-zero {
@@ -144,6 +147,7 @@ import {ServerCardState} from './server_card';
         height: 40px;
         width: 40px;
       }
+
       .expanded #medium,
       .expanded #medium-grey {
         top: 30px;
@@ -151,6 +155,7 @@ import {ServerCardState} from './server_card';
         height: 100px;
         width: 100px;
       }
+
       .expanded #large,
       .expanded #large-grey,
       .expanded #large-zero {
@@ -168,7 +173,7 @@ import {ServerCardState} from './server_card';
         opacity: 0;
       }
 
-      #large-zero.ZERO_STATE {
+      #large-zero.INITIAL {
         opacity: 1;
       }
 
@@ -180,6 +185,7 @@ import {ServerCardState} from './server_card';
           height: 8px;
           width: 8px;
         }
+
         #medium,
         #medium-grey {
           top: 8px;
@@ -187,6 +193,7 @@ import {ServerCardState} from './server_card';
           height: 16px;
           width: 16px;
         }
+
         #large,
         #large-grey,
         #large-zero {
@@ -205,6 +212,7 @@ import {ServerCardState} from './server_card';
           height: 48px;
           width: 48px;
         }
+
         .expanded #medium,
         .expanded #medium-grey {
           top: 36px;
@@ -212,6 +220,7 @@ import {ServerCardState} from './server_card';
           height: 120px;
           width: 120px;
         }
+
         .expanded #large,
         .expanded #large-grey,
         .expanded #large-zero {
@@ -223,6 +232,7 @@ import {ServerCardState} from './server_card';
       }
       /* rtl:end:ignore */
     </style>
+
     <div id="container" class\$="[[expandedClassName]]">
       <img id="small-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
       <img id="small" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
@@ -240,7 +250,12 @@ import {ServerCardState} from './server_card';
   @property({type: Boolean}) expanded: boolean;
 
   @property({type: String, observer: 'syncAnimationState'}) serverCardState: ServerCardState;
-  @property({type: String}) animationState: ServerCardState;
+  @property({type: String}) animationState: ServerCardState = ServerCardState.INITIAL;
+
+  @computed('expanded')
+  get expandedClassName() {
+    return this.expanded ? 'expanded' : '';
+  }
 
   @computed('serverCardState')
   get shouldAnimate() {
@@ -250,11 +265,6 @@ import {ServerCardState} from './server_card';
   @computed('animationState')
   get isAnimating() {
     return this.isAnimationState(this.animationState);
-  }
-
-  @computed('expanded')
-  get expandedClassName() {
-    return this.expanded ? 'expanded' : '';
   }
 
   protected syncAnimationState() {
@@ -271,6 +281,8 @@ import {ServerCardState} from './server_card';
 
   private startAnimation() {
     this.animationStartMS = Date.now();
+
+    this.animationState = this.serverCardState;
   }
 
   private stopAnimation() {

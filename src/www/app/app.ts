@@ -201,7 +201,7 @@ export class App {
   private showServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.server.id} connected`);
     const card = this.serverListEl.getServerCard(event.server.id);
-    card.state = 'CONNECTED';
+    card.state = ServerCardState.CONNECTED;
   }
 
   private showServerDisconnected(event: events.ServerDisconnected): void {
@@ -216,7 +216,7 @@ export class App {
   private showServerReconnecting(event: events.ServerReconnecting): void {
     console.debug(`server ${event.server.id} reconnecting`);
     const card = this.serverListEl.getServerCard(event.server.id);
-    card.state = 'RECONNECTING';
+    card.state = ServerCardState.RECONNECTING;
   }
 
   private displayZeroStateUi() {
@@ -358,10 +358,11 @@ export class App {
 
     console.log(`connecting to server ${serverId}`);
 
-    card.state = 'CONNECTING';
+    card.state = ServerCardState.CONNECTING;
     try {
       await server.connect();
-      card.state = 'CONNECTED';
+      await new Promise(r => setTimeout(r, 2000));
+      card.state = ServerCardState.CONNECTED;
       console.log(`connected to server ${serverId}`);
       this.rootEl.showToast(
           this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
@@ -403,7 +404,7 @@ export class App {
 
     console.log(`disconnecting from server ${serverId}`);
 
-    card.state = 'DISCONNECTING';
+    card.state = ServerCardState.DISCONNECTING;
     try {
       await server.disconnect();
       card.state = ServerCardState.DISCONNECTED;
@@ -411,7 +412,7 @@ export class App {
       this.rootEl.showToast(
           this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
-      card.state = 'CONNECTED';
+      card.state = ServerCardState.CONNECTED;
       this.showLocalizedError(e);
       console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
     }
@@ -495,10 +496,10 @@ export class App {
       }
       const isReachable = await server.checkReachable();
       if (isReachable) {
-        card.state = 'CONNECTED';
+        card.state = ServerCardState.CONNECTED;
       } else {
         console.log(`Server ${server.id} reconnecting`);
-        card.state = 'RECONNECTING';
+        card.state = ServerCardState.RECONNECTING;
       }
     } catch (e) {
       console.error('Failed to sync server connectivity state', e);

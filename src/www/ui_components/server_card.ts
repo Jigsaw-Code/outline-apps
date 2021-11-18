@@ -19,6 +19,7 @@ import {html, PolymerElement} from '@polymer/polymer';
 import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
 export enum ServerCardState {
+  INITIAL = 'INITIAL',
   CONNECTING = 'CONNECTING',
   CONNECTED = 'CONNECTED',
   RECONNECTING = 'RECONNECTING',
