@@ -5,16 +5,13 @@
     "action": "bash ./scripts/run_action.sh",
     "action:help": "npm run action",
     "action:list": "npm run action",
-    "clean": "rm -rf build node_modules www/* platforms/* plugins/*",
+    "clean": "rm -rf build www node_modules platforms/* plugins/*",
     "lint": "npm run lint:ts",
-    "lint:ts": "tslint 'src/**/*.ts'",
-    "reset": "npm run clean && npm ci"
+    "lint:ts": "tslint 'src/**/*.ts'"
   },
   "comments": {
-    "sentry":
-        "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
-    "codrova-osx@6.0.0":
-        "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
+    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
+    "codrova-osx@6.0.0": "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
     "@polymer/app-layout": "^3.1.0",
@@ -55,8 +52,7 @@
     "sudo-prompt": "^8.2.0",
     "url": "^0.11.0",
     "uuidv4": "^4.0.0",
-    "web-animations-js": "^2.3.1",
-    "webpack-dev-server": "^4.5.0"
+    "web-animations-js": "^2.3.1"
   },
   "engines": {
     "node": "^16.13.0",
@@ -104,7 +100,7 @@
     "style-loader": "^2.0.0",
     "ts-loader": "^8.0.14",
     "tslint": "^5.12.0",
-    "typescript": "^4.5.2",
+    "typescript": "^3.9.7",
     "underscore": "^1.10.2",
     "webpack": "^5.16.0",
     "webpack-cli": "^4.4.0",
@@ -117,8 +113,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit":
-          "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
+      "pre-commit": "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {

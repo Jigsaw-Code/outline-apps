@@ -21,7 +21,7 @@ export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): P
       clearTimeout(timeoutId);
       if (winner) {
         console.log(`Promise "${name}" resolved before ${ms} ms.`);
-        resolve(null);
+        resolve();
       } else {
         console.log(`Promise "${name}" timed out after ${ms} ms.`);
         reject(new errors.OperationTimedOut(ms, name));
