@@ -11,17 +11,11 @@
   limitations under the License.
 */
 
-import './server-card.js';
-
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 
 import {Server} from '../model/server';
-
-interface ServerCard extends Element {
-  serverId: string;
-  serverName: string;
-}
+import {ServerCard} from './server_card';
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
@@ -57,8 +51,9 @@ export class ServerList extends PolymerElement {
           localize="[[localize]]" 
           root-path="[[rootPath]]" 
           server-address="[[item.address]]" 
-          server-id="[[item.id]]" 
-          server-name="[[resolveServerName(item.name, item.isOutlineServer)]]" 
+          server-id="[[item.id]]"
+          server-name="[[item.name]]" 
+          is-outline-server="[[item.isOutlineServer]]"
         ></server-card>
       </template>
     `;
@@ -89,13 +84,5 @@ export class ServerList extends PolymerElement {
     }
 
     throw new Error(`Card for server ${serverId} not found`);
-  }
-
-  protected resolveServerName(serverName: string, isOutlineServer: boolean): string {
-    if (serverName.length) {
-      return serverName;
-    }
-
-    return this.localize(isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
   }
 }
