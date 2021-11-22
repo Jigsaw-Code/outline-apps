@@ -52,8 +52,7 @@
     "sudo-prompt": "^8.2.0",
     "url": "^0.11.0",
     "uuidv4": "^4.0.0",
-    "web-animations-js": "^2.3.1",
-    "webpack-dev-server": "^4.5.0"
+    "web-animations-js": "^2.3.1"
   },
   "engines": {
     "node": "^16.13.0",
@@ -105,6 +104,7 @@
     "underscore": "^1.10.2",
     "webpack": "^5.16.0",
     "webpack-cli": "^4.4.0",
+    "webpack-dev-server": "^4.5.0",
     "webpack-shell-plugin-next": "^2.1.1",
     "xml2js": "^0.4.17"
   },
