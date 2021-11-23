@@ -1,11 +1,13 @@
-name: Build and Test
+name: Build
 
-# See https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 on:
   push:
     branches:
       - master
   pull_request:
+    types:
+      - opened
+      - synchronize
 
 jobs:
   linux:
@@ -25,14 +27,14 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Build Web App
-        run: npx gulp build --platform=browser
-
-      - name: Test Web App
-        run: npm run action scripts/test
-
-      - name: Build Electron App
+      - name: Build Linux Client
         run: npm run action src/electron/package_linux
+      
+      - name: Upload Linux Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-linux-client
+          path: build/dist/Outline-Client.AppImage
 
   windows:
     name: Windows
@@ -52,6 +54,12 @@ jobs:
 
       - name: Build Windows Client
         run: npm run action src/electron/package_windows
+
+      - name: Upload Windows Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-windows-client
+          path: build/dist/Outline-Client.exe
 
   mac:
     name: MacOS
@@ -74,6 +82,12 @@ jobs:
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
+
+      - name: Upload OSX Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-osx-client
+          path: platforms/osx/build/Outline.app
 
   # TODO: setup fastlane for iOS
   
@@ -127,3 +141,9 @@ jobs:
 
       - name: Build Android Client
         run: npx gulp build --platform=android
+
+      - name: Upload Android Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-android-client
+          path: platforms/android/app/build/outputs/apk

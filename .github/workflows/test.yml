@@ -1,0 +1,31 @@
+name: Test
+
+on: 
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npx gulp build --platform=browser
+
+      - name: Test Web App
+        run: npm run action scripts/test
