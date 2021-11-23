@@ -103,8 +103,6 @@ jobs:
     name: Android
     runs-on: ubuntu-20.04
     env:
-      ANDROID_BUILD_TOOLS_VERSION: 30.0.2
-      NDK_VERSION: 21.0.6113669
       ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
       - name: Checkout
@@ -125,16 +123,7 @@ jobs:
           java-version: 1.8
 
       - name: Setup Android
-        run: |
-          cd /opt \
-            && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
-            && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
-            && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
-            && rm android-commandline-tools.zip
-          PATH="${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin"
-          yes | sdkmanager \
-            "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-            "ndk;${NDK_VERSION}"
+        run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
         run: npx gulp build --platform=android
