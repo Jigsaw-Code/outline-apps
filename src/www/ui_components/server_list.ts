@@ -18,7 +18,6 @@ import {html, PolymerElement} from '@polymer/polymer';
 
 import {Server} from '../model/server';
 
-// TODO (daniellacosse): Migrate server-card.js to TS and export the type from there
 interface ServerCard extends Element {
   serverId: string;
   serverName: string;
@@ -26,48 +25,50 @@ interface ServerCard extends Element {
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
-  static template = html`
-  <style>
-    :host {
-      display: block;
-      margin: 0 auto;
-      width: 100%;
-      height: 100%;
-    }
+  static get template() {
+    return html`
+      <style>
+        :host {
+          display: block;
+          margin: 0 auto;
+          width: 100%;
+          height: 100%;
+        }
 
-    server-card {
-      margin: 8px auto;
-      max-width: 400px; /* better card spacing on pixel and iphone */
-      padding: 0 8px; /* necessary for smaller displays */
-    }
+        server-card {
+          margin: 8px auto;
+          max-width: 400px; /* better card spacing on pixel and iphone */
+          padding: 0 8px; /* necessary for smaller displays */
+        }
 
-    @media (min-width: 600px) {
-      server-card {
-        margin: 24px auto;
-        max-width: 550px;
-      }
-    }
-  </style>
+        @media (min-width: 600px) {
+          server-card {
+            margin: 24px auto;
+            max-width: 550px;
+          }
+        }
+      </style>
 
-  <template is="dom-repeat" items="[[servers]]">
-    <server-card 
-      disabled="[[item.errorMessageId]]" 
-      error-message="[[localize(item.errorMessageId)]]" 
-      expanded="[[hasSingleServer]]"
-      localize="[[localize]]" 
-      root-path="[[rootPath]]" 
-      server-address="[[item.address]]" 
-      server-id="[[item.id]]" 
-      server-name="[[resolveServerName(item.name, item.isOutlineServer)]]" 
-    ></server-card>
-  </template>
-`;
+      <template is="dom-repeat" items="[[servers]]">
+        <server-card 
+          disabled="[[item.errorMessageId]]" 
+          error-message="[[localize(item.errorMessageId)]]" 
+          expanded="[[hasSingleServer]]"
+          localize="[[localize]]" 
+          root-path="[[rootPath]]" 
+          server-address="[[item.address]]" 
+          server-id="[[item.id]]" 
+          server-name="[[resolveServerName(item.name, item.isOutlineServer)]]" 
+        ></server-card>
+      </template>
+    `;
+  }
 
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
 
   // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: (unlocalizedText: string) => string;
+  @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) rootPath: string;
   @property({type: Array}) servers: Server[] = [];
 
