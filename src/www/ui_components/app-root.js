@@ -121,6 +121,11 @@ export class AppRoot extends mixinBehaviors
         padding: 0;
       }
 
+      #nav-scrollable-container {
+        height: 100%;
+        overflow-y: auto;
+      }
+
       /* rtl:begin:ignore */
       #drawer-nav paper-icon-item {
         cursor: pointer;
@@ -298,49 +303,51 @@ export class AppRoot extends mixinBehaviors
         <poop-with-flies-dot-gif/>
       -->
 
-      <div id="logo-nav">
-        <img src\$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo">
+      <div id="nav-scrollable-container">
+        <div id="logo-nav">
+          <img src\$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo">
+        </div>
+        <hr class="nav-hr">
+        <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
+          <paper-icon-item name="servers">
+            <iron-icon icon="outline-icons:outline" slot="item-icon"></iron-icon>
+            <span class="item-label">[[localize('servers-menu-item')]]</span>
+          </paper-icon-item>
+          <paper-icon-item name="feedback">
+            <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
+            [[localize('feedback-page-title')]]
+          </paper-icon-item>
+          <paper-icon-item name="about">
+            <iron-icon icon="info" slot="item-icon"></iron-icon>
+            [[localize('about-page-title')]]
+          </paper-icon-item>
+          <paper-icon-item name="help">
+            <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden=""></a>
+            <iron-icon icon="help" slot="item-icon"></iron-icon>
+            [[localize('help-page-title')]]
+          </paper-icon-item>
+          <paper-icon-item name="language" class\$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+            <iron-icon icon="language" slot="item-icon"></iron-icon>
+            [[localize('change-language-page-title')]]
+          </paper-icon-item>
+          <paper-icon-item name="quit" class="last-menu-item" hidden\$="[[!shouldShowQuitButton]]">
+            <iron-icon icon="cancel" slot="item-icon"></iron-icon>
+            [[localize('quit')]]
+          </paper-icon-item>
+          <paper-item class="border-top">
+            <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
+          </paper-item>
+          <paper-item>
+            <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">[[localize('data-collection')]]</a>
+          </paper-item>
+          <paper-item>
+            <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html">[[localize('terms')]]</a>
+          </paper-item>
+          <paper-item name="licenses">
+            <span>[[localize('licenses-page-title')]]</span>
+          </paper-item>
+        </paper-listbox>
       </div>
-      <hr class="nav-hr">
-      <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
-        <paper-icon-item name="servers">
-          <iron-icon icon="outline-icons:outline" slot="item-icon"></iron-icon>
-          <span class="item-label">[[localize('servers-menu-item')]]</span>
-        </paper-icon-item>
-        <paper-icon-item name="feedback">
-          <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
-          [[localize('feedback-page-title')]]
-        </paper-icon-item>
-        <paper-icon-item name="about">
-          <iron-icon icon="info" slot="item-icon"></iron-icon>
-          [[localize('about-page-title')]]
-        </paper-icon-item>
-        <paper-icon-item name="help">
-          <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden=""></a>
-          <iron-icon icon="help" slot="item-icon"></iron-icon>
-          [[localize('help-page-title')]]
-        </paper-icon-item>
-        <paper-icon-item name="language" class\$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
-          <iron-icon icon="language" slot="item-icon"></iron-icon>
-          [[localize('change-language-page-title')]]
-        </paper-icon-item>
-        <paper-icon-item name="quit" class="last-menu-item" hidden\$="[[!shouldShowQuitButton]]">
-          <iron-icon icon="cancel" slot="item-icon"></iron-icon>
-          [[localize('quit')]]
-        </paper-icon-item>
-        <paper-item class="border-top">
-          <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
-        </paper-item>
-        <paper-item>
-          <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">[[localize('data-collection')]]</a>
-        </paper-item>
-        <paper-item>
-          <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html">[[localize('terms')]]</a>
-        </paper-item>
-        <paper-item name="licenses">
-          <span>[[localize('licenses-page-title')]]</span>
-        </paper-item>
-      </paper-listbox>
     </app-drawer>
 
     <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
