@@ -8,28 +8,133 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
-    name: Build and Test Web and Electron Apps
-    runs-on: ubuntu-latest
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install Node.js
+      - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 16
           cache: npm
       
-      - name: Install dependencies
+      - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Build web app
+      - name: Build Web App
         run: npx gulp build --platform=browser
-      
-      - name: Test web app
+
+      - name: Test Web App
         run: npm run action scripts/test
 
-      - name: Build Electron app
-        run: npm run action src/electron/build
+      - name: Build Electron App
+        run: npm run action src/electron/package_linux
+
+  windows:
+    name: Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Windows Client
+        run: npm run action src/electron/package_windows
+
+  mac:
+    name: MacOS
+    runs-on: macos-11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_12.5.app
+
+      - name: Build OSX Client
+        run: npx gulp build --platform=osx
+
+  # TODO: setup fastlane for iOS
+  
+  # ios:
+  #   name: iOS
+  #   runs-on: macos-11
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2.3.4
+
+  #     - name: Install Node
+  #       uses: actions/setup-node@v2.2.0
+  #       with:
+  #         node-version: 16
+  #         cache: npm
+
+  #     - name: Install NPM Dependencies
+  #       run: npm ci
+
+  #     - name: Set XCode Version
+  #       run: sudo xcode-select -switch /Applications/Xcode_12.5.app
+
+  #     - name: Build iOS Client
+  #       run: npm run action apple/scripts/ios_package_remote
+
+  android:
+    name: Android
+    runs-on: ubuntu-20.04
+    env:
+      ANDROID_BUILD_TOOLS_VERSION: 30.0.2
+      NDK_VERSION: 21.0.6113669
+      ANDROID_SDK_ROOT: /opt/android-sdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Install Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Setup Android
+        run: |
+          cd /opt \
+            && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
+            && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
+            && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
+            && rm android-commandline-tools.zip
+          PATH="${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin"
+          yes | sdkmanager \
+            "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+            "ndk;${NDK_VERSION}"
+
+      - name: Build Android Client
+        run: npx gulp build --platform=android
