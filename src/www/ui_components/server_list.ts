@@ -77,8 +77,8 @@ export class ServerList extends PolymerElement {
     return this.servers.length === 1;
   }
 
-  get serverCards(): ServerCard[] {
-    return Array.from(this.shadowRoot.querySelectorAll('server-card')) as ServerCard[];
+  private get serverCards(): Iterable<ServerCard> {
+    return this.shadowRoot.querySelectorAll<ServerCard>('server-card'));
   }
 
   getServerCard(serverId: string): ServerCard {
