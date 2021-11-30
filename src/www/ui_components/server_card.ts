@@ -200,7 +200,7 @@ enum ServerCardState {
   // localize() calls within the template won't be updated.
 
   // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: (unlocalizedText: string) => string;
+  @property({type: Object}) localize: (messageId: string) => string;
 
   @computed('serverId', 'isOutlineServer', 'localize')
   get localizedServerName() {
