@@ -13,8 +13,10 @@
 
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
+import Sortable from 'sortablejs';
 
 import {Server} from '../model/server';
+
 import {ServerCard} from './server_card';
 
 @customElement('server-list')
@@ -33,6 +35,11 @@ export class ServerList extends PolymerElement {
           margin: 8px auto;
           max-width: 400px; /* better card spacing on pixel and iphone */
           padding: 0 8px; /* necessary for smaller displays */
+          transition: box-shadow 150ms ease;
+        }
+
+        server-card.sortable-ghost {
+          opacity: 0.3;
         }
 
         @media (min-width: 600px) {
@@ -43,19 +50,21 @@ export class ServerList extends PolymerElement {
         }
       </style>
 
-      <template is="dom-repeat" items="[[servers]]">
-        <server-card 
-          disabled="[[item.errorMessageId]]" 
-          error-message="[[localize(item.errorMessageId)]]" 
-          expanded="[[hasSingleServer]]"
-          localize="[[localize]]" 
-          root-path="[[rootPath]]" 
-          server-address="[[item.address]]" 
-          server-id="[[item.id]]"
-          server-name="[[item.name]]" 
-          is-outline-server="[[item.isOutlineServer]]"
-        ></server-card>
-      </template>
+      <div id="sortableContainer">
+        <template is="dom-repeat" items="[[servers]]">
+          <server-card
+            disabled="[[item.errorMessageId]]" 
+            error-message="[[localize(item.errorMessageId)]]" 
+            expanded="[[hasSingleServer]]"
+            localize="[[localize]]" 
+            root-path="[[rootPath]]" 
+            server-address="[[item.address]]" 
+            server-id="[[item.id]]"
+            server-name="[[item.name]]" 
+            is-outline-server="[[item.isOutlineServer]]"
+          ></server-card>
+        </template>
+      </div>
     `;
   }
 
@@ -67,13 +76,28 @@ export class ServerList extends PolymerElement {
   @property({type: String}) rootPath: string;
   @property({type: Array}) servers: Server[] = [];
 
+  // TODO: handling magic numbers?
+  @property({type: Number}) sortableDelayMS = 1000;
+  @property({type: Number}) sortableAnimationDurationMS = 150;
+
   @computed('servers')
   get hasSingleServer() {
     return this.servers.length === 1;
   }
 
-  private get serverCards(): Iterable<ServerCard> {
-    return this.shadowRoot.querySelectorAll<ServerCard>('server-card');
+  @computed('servers', 'sortableDelayMS', 'sortableAnimationDurationMS')
+  get sortable(): Sortable {
+    if (!this.servers.length || this.hasSingleServer) return null;
+
+    return new Sortable(this.sortableContainer, {
+      draggable: 'server-card',
+      delay: this.sortableDelayMS,
+      delayOnTouchOnly: true,
+      animation: this.sortableAnimationDurationMS,
+
+      // TODO: update the config on change
+      onUpdate: console.debug,
+    });
   }
 
   getServerCard(serverId: string): ServerCard {
@@ -84,5 +108,13 @@ export class ServerList extends PolymerElement {
     }
 
     throw new Error(`Card for server ${serverId} not found`);
+  }
+
+  private get sortableContainer(): HTMLElement {
+    return this.shadowRoot.querySelectorAll<HTMLElement>('#sortableContainer')[0];
+  }
+
+  private get serverCards(): Iterable<ServerCard> {
+    return this.shadowRoot.querySelectorAll<ServerCard>('server-card');
   }
 }

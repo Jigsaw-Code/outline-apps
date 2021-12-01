@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
-import * as uuidv4 from 'uuidv4';
+import uuidv4 from 'uuidv4';
 
 import * as errors from '../model/errors';
 import * as events from '../model/events';

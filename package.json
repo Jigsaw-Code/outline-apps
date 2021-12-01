@@ -11,8 +11,10 @@
     "reset": "npm run clean && npm ci"
   },
   "comments": {
-    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
-    "codrova-osx@6.0.0": "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
+    "sentry":
+        "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
+    "codrova-osx@6.0.0":
+        "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
     "@polymer/app-layout": "^3.1.0",
@@ -50,6 +52,7 @@
     "punycode": "^2.1.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
     "socks": "^1.1.10",
+    "sortablejs": "^1.14.0",
     "sudo-prompt": "^8.2.0",
     "url": "^0.11.0",
     "uuidv4": "^4.0.0",
@@ -69,6 +72,7 @@
     "@types/node": "^14.14.7",
     "@types/polymer": "^1.2.9",
     "@types/semver": "^5.5.0",
+    "@types/sortablejs": "^1.10.7",
     "@types/uuidv4": "^2.0.0",
     "at-least-node": "^1.0.0",
     "babel-loader": "^8.2.2",
@@ -115,7 +119,8 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
+      "pre-commit":
+          "npm run lint:ts -- --fix && npx git-clang-format && npx pretty-quick --staged --pattern '**/*.html'"
     }
   },
   "cordova": {
