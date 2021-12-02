@@ -1,0 +1,12 @@
+/ @Jigsaw-Code/outline-owners
+
+/docs/       @Jigsaw-Code/outline-strings-owners
+/resources/  @Jigsaw-Code/outline-strings-owners
+*.json       @Jigsaw-Code/outline-strings-owners
+*.md         @Jigsaw-Code/outline-strings-owners
+*.png        @Jigsaw-Code/outline-strings-owners
+*.svg        @Jigsaw-Code/outline-strings-owners
+
+/cordova-plugin-outline/  @Jigsaw-Code/outline-networking-owners
+/third_party/             @Jigsaw-Code/outline-networking-owners
+/tools/                   @Jigsaw-Code/outline-networking-owners
