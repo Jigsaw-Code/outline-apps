@@ -47,6 +47,7 @@ import './outline-icons.js';
 import './privacy-view.js';
 import './server-connection-viz.js';
 import './server_list.ts';
+import './server_card.ts';
 import './servers-view.js';
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
