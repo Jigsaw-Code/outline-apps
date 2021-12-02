@@ -35,11 +35,15 @@ export class ServerList extends PolymerElement {
           margin: 8px auto;
           max-width: 400px; /* better card spacing on pixel and iphone */
           padding: 0 8px; /* necessary for smaller displays */
-          transition: box-shadow 150ms ease;
+          transition: transform 150ms ease;
         }
 
         server-card.sortable-ghost {
           opacity: 0.3;
+        }
+
+        server-card.sortable-chosen {
+          transform: scale(1.04);
         }
 
         @media (min-width: 600px) {
@@ -77,7 +81,7 @@ export class ServerList extends PolymerElement {
   @property({type: Array}) servers: Server[] = [];
 
   // TODO: handling magic numbers?
-  @property({type: Number}) sortableDelayMS = 1000;
+  @property({type: Number}) sortableDelayMS = 350;
   @property({type: Number}) sortableAnimationDurationMS = 150;
 
   @computed('servers')
@@ -91,8 +95,8 @@ export class ServerList extends PolymerElement {
 
     return new Sortable(this.sortableContainer, {
       draggable: 'server-card',
-      delay: this.sortableDelayMS,
-      delayOnTouchOnly: true,
+      // delay: this.sortableDelayMS,
+      // delayOnTouchOnly: true,
       animation: this.sortableAnimationDurationMS,
 
       // TODO: update the config on change
