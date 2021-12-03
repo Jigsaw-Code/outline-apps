@@ -256,7 +256,8 @@ export enum ServerConnectionState {
     return this.isAnimationState(this.animationState);
   }
 
-  protected syncAnimationState() {
+  // @ts-ignore
+  private syncAnimationState() {
     if (this.shouldAnimate) {
       return this.startAnimation();
     }
