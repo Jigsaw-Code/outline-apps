@@ -312,9 +312,9 @@ export class App {
       this.serverRepo.validateAccessKey(accessKey);
       addServerView.openAddServerConfirmationSheet(accessKey);
     } catch (e) {
-      addServerView.close();
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
+        addServerView.close();
         this.showLocalizedError(e);
         return;
       }
