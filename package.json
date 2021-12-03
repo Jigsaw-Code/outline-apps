@@ -5,7 +5,7 @@
     "action": "bash ./scripts/run_action.sh",
     "action:help": "npm run action",
     "action:list": "npm run action",
-    "clean": "rm -rf build node_modules www/* platforms/* plugins/*",
+    "clean": "rm -rf build node_modules www platforms plugins",
     "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
