@@ -36,6 +36,8 @@ Additional requirements for Android:
 * Android Studio 4+
 * Android SDK 29
 
+> 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
+
 To build for android, run:
 
     npx gulp build --platform=android
