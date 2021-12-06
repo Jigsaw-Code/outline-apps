@@ -1,5 +1,5 @@
 {
-  "about-outline": "Az Outline a <a href={jigsawUrl}>Jigsaw</a> egy nyílt forráskódú projektje, amely segítségével az újságok és a sajtó munkatársai biztonságosan férhetnek hozzá az internethez.<br><br> A még korai fázisában lévő Outline szolgáltatást a <a href={shadowsocksUrl}>Shadowsocks</a> üzemelteti. A kóddal kapcsolatban itt segíthet: <a href={gitHubUrl}>GitHub</a>, ha pedig meg szeretné kapni a más platformokra való megjelenésről és új funkciókról szóló híreinket, kövessen minket a következőkön: <a href={redditUrl}>Reddit</a> és <a href={mediumUrl}>Medium</a>.",
+  "about-outline": "Az Outline a <a href={jigsawUrl}>Jigsaw</a> terméke, segítségével bárki létrehozhatja és működtetheti saját VPN-jét, és megoszthatja másokkal a hozzáférést. Az Outline a kialakításának köszönhetően rezisztens a letiltással szemben. Az első lépésekről itt tájékozódhat: <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Az Outline nyílt forráskódú szoftver, amely a <a href={shadowsocksUrl}>Shadowsocks</a> alapjaira épül. A <a href={gitHubUrl}>GitHub</a> webhelyen Ön is részt vehet a programkód megírásában, a <a href={redditUrl}>Reddit</a> webhelyen pedig bekapcsolódhat a beszélgetésbe.",
   "about-page-title": "Névjegy",
   "auto-connect-dialog-detail": "Ha nem szünteti meg az Outline-szerverrel létrehozott kapcsolatot, az Outline automatikusan csatlakozni fog az eszköz következő újraindításakor.",
   "auto-connect-dialog-title": "Figyeljen a biztonságra",
@@ -82,6 +82,7 @@
   "submitting": "Küldés...",
   "terms": "Feltételek",
   "tips": "Tippek",
+  "tray-open-window": "Megnyitás",
   "undo-button-label": "Visszavonás",
   "unreachable-server-state": "Nem érhető el",
   "update-downloaded": "Letöltöttük az Outline egy újabb verzióját. Az Outline újraindításakor telepítjük.",

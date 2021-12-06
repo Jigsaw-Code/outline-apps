@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline je projekt typu open source, ktorý vytvorila spoločnosť <a href={jigsawUrl}>Jigsaw</a> na poskytovanie bezpečnejšieho prístupu na internet pre spravodajské agentúry a novinárov.<br><br> Outline používa technológiu služby <a href={shadowsocksUrl}>Shadowsocks</a> a zatiaľ ide o službu v rannom štádiu vývoja. Kód môžete rozšíriť v službe <a href={gitHubUrl}>GitHub</a>. Sledovať nás môžete v službách <a href={redditUrl}>Reddit</a> a <a href={mediumUrl}>Medium</a>, kde sa dozviete, keď budeme expandovať na ďalšie platformy a pridáme nové funkcie.",
+  "about-outline": "Outline je služba od spoločnosti <a href={jigsawUrl}>Jigsaw</a>, ktorá umožňuje vytvoriť a prevádzkovať vlastnú sieť VPN, ako aj zdieľať k nej prístup. Je navrhnutá tak, aby bola odolná proti blokovaniu. Ak vás zaujíma, ako začať, prejdite na <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline je open source softvér, ktorý používa protokol <a href={shadowsocksUrl}>Shadowsocks</a>. K jeho kódu môžete prispieť na webe <a href={gitHubUrl}>GitHub</a>. Do diskusie o ňom sa môžete zapojiť na webe <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "O aplikácii",
   "auto-connect-dialog-detail": "Kým sa neodpojíte zo servera služby Outline, Outline vás automaticky pripojí, keď najbližšie reštartujete svoje zariadenie.",
   "auto-connect-dialog-title": "Získajte nepretržitú ochranu",
@@ -82,6 +82,7 @@
   "submitting": "Odosiela sa…",
   "terms": "Zmluvné podmienky",
   "tips": "Tipy",
+  "tray-open-window": "Otvoriť",
   "undo-button-label": "Späť",
   "unreachable-server-state": "Mimo dosahu",
   "update-downloaded": "Bola stiahnutá aktualizovaná verzia služby Outline. Nainštaluje sa, keď Outline reštartujete.",

@@ -1,5 +1,5 @@
 {
-  "about-outline": "Ang Outline ay isang open source na proyektong ginawa ng <a href={jigsawUrl}>Jigsaw</a> para magbigay ng mas ligtas na paraan para ma-access ng mga organisasyon ng balita at mga mamamahayag ang internet.<br><br> Pinapagana ng <a href={shadowsocksUrl}>Shadowsocks</a> ang Outline at isang produktong kakasimula pa lang din. Maaari kang mag-ambag sa code sa <a href={gitHubUrl}>GitHub</a>, at i-follow kami sa <a href={redditUrl}>Reddit</a> at <a href={mediumUrl}>Medium</a> para malaman kapag lumawak kami sa mas maraming platform at nagdagdag ng mga bagong feature.",
+  "about-outline": "Ang Outline ay isang produkto ng <a href={jigsawUrl}>Jigsaw</a> na nagbibigay-daan sa kahit sino na gumawa, magpatakbo, at magbahagi ng access sa sarili nilang VPN. Idinisenyo ang Outline para maging mahirap i-block. Bisitahin ang <a href={outlineUrl}>getoutline.org</a> para malaman kung paano magsimula.$NEWLINE$$NEWLINE$Ang Outline ay isang open source na software na pinapagana ng <a href={shadowsocksUrl}>Shadowsocks</a>. Puwede kang mag-ambag sa code sa <a href={gitHubUrl}>GitHub</a> at sumali sa pag-uusap sa <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Tungkol dito",
   "auto-connect-dialog-detail": "Maliban na lang kung didiskonekta ka mula sa server ng iyong Outline, awtomatikong kokonekta ang Outline sa susunod na i-restart mo ang iyong device.",
   "auto-connect-dialog-title": "Manatiling protektado, palagi",
@@ -82,6 +82,7 @@
   "submitting": "Isinusumite...",
   "terms": "Mga Tuntunin",
   "tips": "Mga Tip",
+  "tray-open-window": "Buksan",
   "undo-button-label": "I-undo",
   "unreachable-server-state": "Hindi maikonekta",
   "update-downloaded": "Na-download ang in-update na bersyon ng Outline. Ii-install ito kapag ni-restart mo ang Outline.",

@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline je open-sourceový projekt od společnosti <a href={jigsawUrl}>Jigsaw</a>, který si klade za cíl poskytnout novinářům a zpravodajským organizacím bezpečný přístup k internetu.<br><br> Outline je postaven na technologiích <a href={shadowsocksUrl}>Shadowsocks</a> a je stále v raných fázích vývoje. Kód můžete rozšiřovat na <a href={gitHubUrl}>GitHub</a>u, a pokud se chcete dozvědět, když přidáme nové funkce nebo podporu dalších platforem, sledujte nás ve službách <a href={redditUrl}>Reddit</a> a <a href={mediumUrl}>Medium</a>.",
+  "about-outline": "Outline je produkt společnosti <a href={jigsawUrl}>Jigsaw</a>, který umožňuje komukoli vytvořit a provozovat vlastní síť VPN a nabídnout k ní přístup ostatním. Outline je koncipovaný tak, aby odolal blokování. Začít vám pomohou informace na stránce <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline je opensourcový software založený na protokolu <a href={shadowsocksUrl}>Shadowsocks</a>. Můžete se zapojit do tvorby kódu na platformě <a href={gitHubUrl}>GitHub</a> nebo do debaty v síti <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "O aplikaci",
   "auto-connect-dialog-detail": "Pokud se od svého serveru aplikace Outline neodpojíte, Outline se automaticky připojí, až zařízení příště restartujete.",
   "auto-connect-dialog-title": "Zůstaňte vždy chránění",
@@ -82,6 +82,7 @@
   "submitting": "Odesílání...",
   "terms": "Podmínky",
   "tips": "Tipy",
+  "tray-open-window": "Otevřít",
   "undo-button-label": "Vrátit zpět",
   "unreachable-server-state": "Nedostupný",
   "update-downloaded": "Byla stažena aktualizovaná verze aplikace Outline. Bude nainstalována, až aplikaci restartujete.",

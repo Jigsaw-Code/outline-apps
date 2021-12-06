@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline คือโครงการโอเพนซอร์สที่ <a href={jigsawUrl}>Jigsaw</a> สร้างขึ้นเพื่อให้สำนักข่าวและนักข่าวเข้าถึงอินเทอร์เน็ตได้อย่างปลอดภัย<br><br> Outline ขับเคลื่อนโดย <a href={shadowsocksUrl}>Shadowsocks</a> และยังเป็นผลิตภัณฑ์ที่พัฒนาในระยะเริ่มต้น คุณมีส่วนร่วมในการเขียนโค้ดได้ใน <a href={gitHubUrl}>GitHub</a> และติดตามเราได้ที่ <a href={redditUrl}>Reddit</a> และ <a href={mediumUrl}>Medium</a> เพื่อรับข่าวสารเมื่อเราขยายบริการไปยังแพลตฟอร์มอื่นๆ และเพิ่มฟีเจอร์ใหม่ๆ",
+  "about-outline": "Outline เป็นผลิตภัณฑ์ของ <a href={jigsawUrl}>Jigsaw</a> ที่ช่วยให้ทุกคนสร้าง ใช้ และแชร์สิทธิ์เข้าถึง VPN ของตัวเองได้ Outline ได้รับการออกแบบมาเพื่อป้องกันการบล็อก ไปที่ <a href={outlineUrl}>getoutline.org</a> เพื่อดูวิธีเริ่มต้นใช้งาน started.$NEWLINE$$NEWLINE$Outline เป็นซอฟต์แวร์โอเพนซอร์สที่ขับเคลื่อนโดย <a href={shadowsocksUrl}>Shadowsocks</a> คุณจะเข้ามามีส่วนร่วมกับโค้ดได้ที่ <a href={gitHubUrl}>GitHub</a> และร่วมการสนทนาได้ใน <a href={redditUrl}>Reddit</a>",
   "about-page-title": "ข้อมูล",
   "auto-connect-dialog-detail": "Outline จะเชื่อมต่อกับเซิร์ฟเวอร์โดยอัตโนมัติเมื่อคุณรีสตาร์ทอุปกรณ์ในครั้งถัดไป นอกเสียจากว่าคุณจะยกเลิกการเชื่อมต่อจากเซิร์ฟเวอร์ Outline",
   "auto-connect-dialog-title": "ปลอดภัยทุกเวลา",
@@ -82,6 +82,7 @@
   "submitting": "กำลังส่ง...",
   "terms": "ข้อกำหนด",
   "tips": "เคล็ดลับ",
+  "tray-open-window": "เปิด",
   "undo-button-label": "เลิกทำ",
   "unreachable-server-state": "เข้าถึงไม่ได้",
   "update-downloaded": "ดาวน์โหลด Outline เวอร์ชันอัปเดตแล้ว ระบบจะติดตั้งเวอร์ชันดังกล่าวเมื่อคุณรีสตาร์ท Outline",

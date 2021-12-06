@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline este un proiect open source creat de <a href={jigsawUrl}>Jigsaw</a> pentru a oferi organizațiilor de știri și jurnaliștilor o modalitate mai sigură de accesare a internetului.<br><br> Outline este un produs <a href={shadowsocksUrl}>Shadowsocks</a> și se află încă în fază incipientă. Puteți să contribuiți la codificare în <a href={gitHubUrl}>GitHub</a> și să ne urmăriți pe <a href={redditUrl}>Reddit</a> și <a href={mediumUrl}>Medium</a> pentru a afla când ne extindem pe mai multe platforme și adăugăm funcții noi.",
+  "about-outline": "Outline este un produs <a href={jigsawUrl}>Jigsaw</a> prin care oricine poate să creeze, să ruleze și să permită accesul la propria rețea VPN. Outline este un produs conceput să reziste la tentativele de blocare. Accesați <a href={outlineUrl}>getoutline.org</a> ca să aflați cum să începeți.$NEWLINE$$NEWLINE$Outline este un software open source oferit de <a href={shadowsocksUrl}>Shadowsocks</a>. Puteți să contribuiți la activitatea de codificare în <a href={gitHubUrl}>GitHub</a> și să participați la conversații pe <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Despre",
   "auto-connect-dialog-detail": "Dacă nu vă deconectați de la serverul Outline, aplicația Outline se va conecta automat când reporniți dispozitivul.",
   "auto-connect-dialog-title": "Beneficiați mereu de protecție",
@@ -82,6 +82,7 @@
   "submitting": "Se trimite…",
   "terms": "Termeni",
   "tips": "Sfaturi",
+  "tray-open-window": "Deschideți",
   "undo-button-label": "Anulați",
   "unreachable-server-state": "Nu poate fi contactat",
   "update-downloaded": "A fost descărcată o versiune actualizată a produsului Outline. Aceasta va fi instalată când reporniți Outline.",
