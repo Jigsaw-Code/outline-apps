@@ -1,12 +1,9 @@
 /*
-  Copyright 2020 The Outline Authors
-
+  Copyright 2021 The Outline Authors
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +11,24 @@
   limitations under the License.
 */
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
-Polymer({
-  _template: html`
+export enum ServerConnectionState {
+  INITIAL = 'INITIAL',
+  CONNECTING = 'CONNECTING',
+  CONNECTED = 'CONNECTED',
+  RECONNECTING = 'RECONNECTING',
+  DISCONNECTING = 'DISCONNECTING',
+  DISCONNECTED = 'DISCONNECTED'
+}
+
+@customElement('server-connection-viz') export class ServerConnectionViz extends LegacyElementMixin
+(PolymerElement) {
+  static ANIMATION_DURATION_MS = 1750;
+
+  static template = html`
     <style>
       /* Do not mirror animation for RTL languages */
       /* rtl:begin:ignore */
@@ -40,85 +50,70 @@ Polymer({
           transform: rotate(0deg);
         }
       }
-
       :host {
         margin: 0 auto;
       }
-
       #container {
         border-radius: 80px;
         margin: 0 auto;
         position: relative;
       }
-
       img {
         position: absolute;
         display: inline-block;
         transition-timing-function: ease-out;
         transition-duration: 1s;
       }
-
       .grey.DISCONNECTED {
         opacity: 1;
       }
-
       .grey.CONNECTED {
         opacity: 0;
       }
-
       .grey.DISCONNECTING {
         opacity: 0.8;
       }
-
-      .grey.ZERO_STATE,
-      .green.ZERO_STATE,
+      .grey.INITIAL,
+      .green.INITIAL,
       .green.DISCONNECTED,
       .green.CONNECTING,
       .green.RECONNECTING,
       .green.DISCONNECTING {
         opacity: 0;
       }
-
       .green.CONNECTED {
         opacity: 1;
       }
-
       #small.CONNECTING,
       #small-grey.CONNECTING,
       #small.RECONNECTING,
       #small-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out infinite;
       }
-
       #medium.CONNECTING,
       #medium-grey.CONNECTING,
       #medium.RECONNECTING,
       #medium-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 250ms infinite;
       }
-
       #large.CONNECTING,
       #large-grey.CONNECTING,
       #large.RECONNECTING,
       #large-grey.RECONNECTING {
         animation: rotate-with-pause 1.75s ease-out 500ms infinite;
       }
-
       #small.DISCONNECTING,
       #small-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out infinite;
       }
-
       #medium.DISCONNECTING,
       #medium-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 250ms infinite;
       }
-
       #large.DISCONNECTING,
       #large-grey.DISCONNECTING {
         animation: rotate-backward-with-pause 1.75s ease-out 500ms infinite;
       }
-
       #small,
       #small-grey {
         top: 16px;
@@ -146,7 +141,6 @@ Polymer({
         transition-delay: 500ms;
         z-index: 100;
       }
-
       .expanded #small,
       .expanded #small-grey {
         top: 60px;
@@ -169,19 +163,15 @@ Polymer({
         height: 160px;
         width: 160px;
       }
-
       #large {
         position: relative;
       }
-
       #large-zero {
         opacity: 0;
       }
-
-      #large-zero.ZERO_STATE {
+      #large-zero.INITIAL {
         opacity: 1;
       }
-
       @media (max-width: 360px) {
         #small,
         #small-grey {
@@ -206,7 +196,6 @@ Polymer({
           width: 32px;
         }
       }
-
       @media (min-height: 600px) {
         .expanded #small,
         .expanded #small-grey {
@@ -233,7 +222,7 @@ Polymer({
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container" class\$="[[_computeExpandedClassName(expanded)]]">
+    <div id="container" class\$="[[expandedClassName]]">
       <img id="small-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
       <img id="small" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
       <img id="medium-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
@@ -242,62 +231,62 @@ Polymer({
       <img id="large-zero" src\$="[[rootPath]]assets/disc_empty.png" class\$="{{state}}">
       <img id="large" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
     </div>
-`,
+  `;
 
-  is: 'server-connection-viz',
+  animationStartMS: number;
 
-  properties: {
-    rootPath: String,
-    state: {
-      type: String,
-      observer: '_onStateChanged',
-    },
-    animationState: {
-      type: String,
-      notify: true,
-      value: 'ZERO_STATE',
-    },
-    expanded: {
-      type: Boolean,
-      value: false,
-    },
-  },
+  @property({type: String}) rootPath: string;
+  @property({type: Boolean}) expanded: boolean;
 
-  _onStateChanged: function _onStateChanged(newState) {
-    this._updateAnimationState();
-  },
+  @property({type: String, observer: 'syncAnimationState'}) state: ServerConnectionState;
+  @property({type: String}) animationState: ServerConnectionState = ServerConnectionState.INITIAL;
 
-  // Update CSS when modifying the animation duration.
-  _ANIMATION_DURATION_MS: 1750,
-
-  _animationStartMs: null,
-
-  _updateAnimationState: function() {
-    if (this._isAnimating(this.state)) {
-      this._animationStartMs = new Date().getTime();
-    }
-    if (this.state === 'CONNECTED' || this.state === 'DISCONNECTED') {
-      if (this._isAnimating(this.animationState)) {
-        var now = new Date().getTime();
-        var elapsedAnimationMs = now - this._animationStartMs;
-        var remainingAnimationMs =
-            this._ANIMATION_DURATION_MS - (elapsedAnimationMs % this._ANIMATION_DURATION_MS);
-        // Update the state only after the animation cycle has finished to avoid jumpiness.
-        var _this = this;
-        this.async(function() {
-          _this.animationState = _this.state;
-        }, remainingAnimationMs);
-        return;
-      }
-    }
-    this.animationState = this.state;
-  },
-
-  _isAnimating: function(state) {
-    return state === 'CONNECTING' || state === 'DISCONNECTING' || state === 'RECONNECTING';
-  },
-
-  _computeExpandedClassName: function(expanded) {
-    return expanded ? 'expanded' : '';
+  @computed('expanded')
+  get expandedClassName() {
+    return this.expanded ? 'expanded' : '';
   }
-});
+
+  @computed('state')
+  get shouldAnimate() {
+    return this.isAnimationState(this.state);
+  }
+
+  @computed('animationState')
+  get isAnimating() {
+    return this.isAnimationState(this.animationState);
+  }
+
+  // @ts-ignore
+  private syncAnimationState() {
+    if (this.shouldAnimate) {
+      return this.startAnimation();
+    }
+
+    if (!this.shouldAnimate && this.isAnimating) {
+      return this.stopAnimation();
+    }
+
+    this.animationState = this.state;
+  }
+
+  private startAnimation() {
+    this.animationStartMS = Date.now();
+
+    this.animationState = this.state;
+  }
+
+  private stopAnimation() {
+    const elapsedAnimationMS = Date.now() - this.animationStartMS;
+    const remainingAnimationMS =
+        (ServerConnectionViz.ANIMATION_DURATION_MS -
+         (elapsedAnimationMS % ServerConnectionViz.ANIMATION_DURATION_MS));
+
+    this.async(() => this.animationState = this.state, remainingAnimationMS);
+  }
+
+  private isAnimationState(state: ServerConnectionState): boolean {
+    return [
+      ServerConnectionState.CONNECTING, ServerConnectionState.DISCONNECTING, ServerConnectionState.RECONNECTING
+    ].includes(state);
+  }
+}
