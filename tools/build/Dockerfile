@@ -31,32 +31,6 @@ RUN echo '{"allow_root": true}' > /root/.bowerrc
 # https://cordova.apache.org/docs/en/latest/reference/cordova-cli/#cordova-telemetry-command
 ENV CI=true
 
-# Since the command-line Android development tools are poorly
-# documented, these steps are cobbled together from lots of
-# trial and error, old pinball machine parts, and various
-# Dockerfiles lying around Github. Bitrise, in particular,
-# maintains images with many useful hints:
-#   https://github.com/bitrise-docker/android
+COPY ./setup_linux_android.sh ./setup_linux_android.sh
 
-# Download Android Command Line Tools:
-#   https://developer.android.com/studio/command-line
-# This is version 2.1.
-ENV ANDROID_SDK_ROOT /opt/android-sdk
-RUN cd /opt \
-    && wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O android-commandline-tools.zip \
-    && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
-    && unzip -q android-commandline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
-    && rm android-commandline-tools.zip
-
-ENV PATH ${PATH}:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin
-
-# Android SDK Build Tools:
-#   https://developer.android.com/studio/releases/build-tools.html
-# To find the latest version's label:
-#   sdkmanager --list|grep build-tools
-ENV ANDROID_BUILD_TOOLS_VERSION 30.0.2
-# NDK (side by side) version must be kept in sync with the default build tools NDK version.
-ENV NDK_VERSION 21.0.6113669
-RUN yes | sdkmanager \
-  "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-  "ndk;${NDK_VERSION}"
+RUN bash ./setup_linux_android.sh
