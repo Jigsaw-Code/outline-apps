@@ -106,9 +106,6 @@ jobs:
       - name: Set Environment
         run: echo "MATCH_GIT_BASIC_AUTHORIZATION=$(echo -n OutlineBot:${{ secrets.OUTLINE_CREDENTIALS_TOKEN }} | base64)" >> $GITHUB_ENV
 
-      - name: Test Env
-        run: echo $MATCH_GIT_BASIC_AUTHORIZATION
-
       - name: Build iOS Client
         run: npm run action apple/scripts/ios_package_remote
 
