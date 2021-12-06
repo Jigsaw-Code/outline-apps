@@ -1,9 +1,6 @@
-name: Build
+name: Build and Test
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     types:
       - opened
@@ -26,6 +23,12 @@ jobs:
       
       - name: Install NPM Dependencies
         run: npm ci
+
+      - name: Build Web App
+        run: npx gulp build --platform=browser
+
+      - name: Test Web App
+        run: npm run action scripts/test
 
       - name: Build Linux Client
         run: npm run action src/electron/package_linux
