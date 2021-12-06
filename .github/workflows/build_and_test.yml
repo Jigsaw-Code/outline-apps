@@ -103,7 +103,7 @@ jobs:
 
       - name: Build iOS Client
         run: |
-          MATCH_GIT_BASIC_AUTHORIZATION="$(OutlineBot:${{ secrets.OUTLINE_CREDENTIALS_TOKEN }} | base64)"
+          MATCH_GIT_BASIC_AUTHORIZATION="$(echo -n OutlineBot:${{ secrets.OUTLINE_CREDENTIALS_TOKEN }} | base64)"
           npm run action apple/scripts/ios_package_remote
 
   android:
