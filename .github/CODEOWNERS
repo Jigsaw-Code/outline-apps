@@ -10,4 +10,7 @@
 /cordova-plugin-outline/  @Jigsaw-Code/outline-networking-owners
 /third_party/             @Jigsaw-Code/outline-networking-owners
 /tools/                   @Jigsaw-Code/outline-networking-owners
+
+# Ensure that if any JSON files are added to the model directory, they are
+# still subject to full owners approval.
 /src/www/model/           @Jigsaw-Code/outline-owners
