@@ -36,7 +36,7 @@ jobs:
       - name: Upload Linux Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-linux-client
+          name: unsigned-Outline-Client.AppImage
           path: build/dist/Outline-Client.AppImage
 
   windows:
@@ -61,7 +61,7 @@ jobs:
       - name: Upload Windows Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-windows-client
+          name: unsigned-Outline-Client.exe
           path: build/dist/Outline-Client.exe
 
   mac:
@@ -89,7 +89,7 @@ jobs:
       - name: Upload OSX Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-osx-client
+          name: unsigned-Outline.app
           path: platforms/osx/build/Outline.app
 
   # TODO: setup fastlane for iOS
@@ -148,5 +148,5 @@ jobs:
       - name: Upload Android Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-android-client
+          name: unsigned-apk
           path: platforms/android/app/build/outputs/apk
