@@ -101,10 +101,11 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_12.5.app
 
+      - name: Set Environment
+        run: echo "MATCH_GIT_BASIC_AUTHORIZATION='$(echo -n OutlineBot:${{ secrets.OUTLINE_CREDENTIALS_TOKEN }} | base64)'" >> $GITHUB_ENV
+
       - name: Build iOS Client
-        run: |
-          MATCH_GIT_BASIC_AUTHORIZATION="$(echo -n OutlineBot:${{ secrets.OUTLINE_CREDENTIALS_TOKEN }} | base64)"
-          npm run action apple/scripts/ios_package_remote
+        run: npm run action apple/scripts/ios_package_remote
 
   android:
     name: Android
