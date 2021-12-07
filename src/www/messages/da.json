@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline er et open source-projekt, der er oprettet af <a href={jigsawUrl}>Jigsaw</a>, for at gøre det nemmere for nyhedsorganisationer og journalister at få adgang til internettet.<br><br> Outline leveres af <a href={shadowsocksUrl}>Shadowsocks</a> og er stadig på et tidligt stadie i udviklingsprocessen. Du kan bidrage til koden på <a href={gitHubUrl}>GitHub</a> og følge os på <a href={redditUrl}>Reddit</a> og <a href={mediumUrl}>Medium</a> for at høre, hvornår vi udvider til andre platforme og tilføjer nye funktioner.",
+  "about-outline": "Outline er et produkt fra <a href={jigsawUrl}>Jigsaw</a>, der gør det muligt for alle at oprette, køre og dele adgangen til deres eget VPN. Outline er udviklet til at være modstandsdygtigt over for blokeringer. Gå til <a href={outlineUrl}>getoutline.org</a> for at se, hvordan du kommer i gang.$NEWLINE$$NEWLINE$Outline er open source-software, der leveres af <a href={shadowsocksUrl}>Shadowsocks</a>. Du kan bidrage til koden på <a href={gitHubUrl}>GitHub</a> og deltage i samtalen på <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Om",
   "auto-connect-dialog-detail": "Medmindre du afbryder forbindelsen til din Outline-server, opretter Outline automatisk forbindelse, næste gang du genstarter din enhed.",
   "auto-connect-dialog-title": "Konstant beskyttelse",
@@ -82,6 +82,7 @@
   "submitting": "Sender...",
   "terms": "Vilkår",
   "tips": "Tips",
+  "tray-open-window": "Åbn",
   "undo-button-label": "Fortryd",
   "unreachable-server-state": "Ikke tilgængelig",
   "update-downloaded": "En opdateret version af Outline blev downloadet. Den installeres, når du genstarter Outline.",

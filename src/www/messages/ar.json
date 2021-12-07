@@ -1,5 +1,5 @@
 {
-  "about-outline": "تطبيق Outline هو أحد مشروعات البرامج مفتوحة المصدر التي تم إنشاؤها بواسطة <a href={jigsawUrl}>Jigsaw</a> حتى تتمكّن المؤسسات الإخبارية والصحفيون من الاتصال بالإنترنت بطريقة أكثر أمانًا.<br><br> يتمتع تطبيق Outline بدعم من مشروع <a href={shadowsocksUrl}>Shadowsocks</a> وهو ما زال منتجًا في طور النشوء. يمكنك المساهمة في عملية الترميز على موقع <a href={gitHubUrl}>GitHub</a> ومتابعتنا على <a href={redditUrl}>Reddit</a> و<a href={mediumUrl}>Medium</a> لمعرفة آخر أخبارنا المتعلّقة بإتاحته على المزيد من الأنظمة الأساسية أو إضافة ميزات جديدة.",
+  "about-outline": "Outline عبارة عن منتج مقدَّم من <a href={jigsawUrl}>Jigsaw</a> يتيح لأي مستخدم إنشاء صلاحية الوصول إلى شبكته الافتراضية الخاصة (VPN) وإدارتها ومشاركتها. تم تصميم Outline ليكون مقاومًا للحظر. يمكنك زيارة <a href={outlineUrl}>getoutline.org</a> to للتعرّف على طريقة البدء.$NEWLINE$$NEWLINE$Outline برنامج مفتوح المصدر مقدَّم من <a href={shadowsocksUrl}>Shadowsocks</a>. يمكنك المساهمة في التعليمات البرمجية على <a href={gitHubUrl}>GitHub</a> والانضمام إلى المحادثة على <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "لمحة",
   "auto-connect-dialog-detail": "سيتم الاتصال بتطبيق Outline تلقائيًا عندما تُعيد تشغيل جهازك في المرة المقبلة ما لم تقطع اتصالك بخادم Outline.",
   "auto-connect-dialog-title": "تمتّع بالحماية دائمًا",
@@ -82,6 +82,7 @@
   "submitting": "جارٍ الإرسال...",
   "terms": "البنود",
   "tips": "نصائح",
+  "tray-open-window": "فتح",
   "undo-button-label": "تراجع",
   "unreachable-server-state": "لا يمكن الوصول إليه",
   "update-downloaded": "تم تنزيل إصدار محدَّث من تطبيق Outline وسيتم تثبيته عند إعادة فتح تطبيق Outline.",

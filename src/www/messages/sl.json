@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline je odprtokodni projekt, ki je bil ustvarjen v inkubatorju <a href={jigsawUrl}>Jigsaw</a> in katerega cilj je novičarskim organizacijam in novinarjem zagotoviti varnejši način dostopa do interneta.<br><br> Outline uporablja tehnologijo <a href={shadowsocksUrl}>Shadowsocks</a> in je šele v zgodnji fazi razvoja izdelka. Če želite sodelovati pri razvoju kode, lahko to storite prek platforme <a href={gitHubUrl}>GitHub</a>. Če vas zanima, kdaj se bomo razširili na več platform in dodali nove funkcije, nas spremljajte na spletnih mestih <a href={redditUrl}>Reddit</a> in <a href={mediumUrl}>Medium</a>.",
+  "about-outline": "Outline je izdelek podjetja <a href={jigsawUrl}>Jigsaw</a>, ki vsem omogoča, da ustvarijo in vzpostavijo svoje omrežje VPN ter delijo dostop do njega z drugimi. Programska oprema Outline je zasnovana tako, da se izogiba blokiranju. Navodila za začetek uporabe so na voljo na spletnem mestu <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline je odprtokodna programska oprema, ki uporablja tehnologijo <a href={shadowsocksUrl}>Shadowsocks</a>. H kodi lahko prispevate v platformi <a href={gitHubUrl}>GitHub</a>, pogovoru pa se lahko pridružite na spletnem mestu <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Vizitka",
   "auto-connect-dialog-detail": "Aplikacija Outline se bo po vnovičnem zagonu samodejno povezala s strežnikom Outline, razen če prekinete povezavo z njim.",
   "auto-connect-dialog-title": "Nikoli ne izklopite varovanja",
@@ -82,6 +82,7 @@
   "submitting": "Pošiljanje …",
   "terms": "Pogoji",
   "tips": "Nasveti",
+  "tray-open-window": "Odpri",
   "undo-button-label": "Razveljavi",
   "unreachable-server-state": "Nedosegljivo",
   "update-downloaded": "Posodobljena različica aplikacije Outline je prenesena. Nameščena bo ob vnovičnem zagonu aplikacije Outline.",

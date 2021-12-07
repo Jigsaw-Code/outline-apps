@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline یک پروژه منبع آزاد است که توسط <a href={jigsawUrl}>Jigsaw</a> ایجاد شده است تا سازمان‌های خبری و خبرنگاران بتوانند دسترسی ایمن‌تری به اینترنت داشته باشند.<br><br>Outline توسط <a href={shadowsocksUrl}>Shadowsocks</a> ارائه می‌شود و محصولی است که همچنان در ابتدای راه است. در <a href={gitHubUrl}>GitHub</a> می‌توانید درزمینه کد همکاری داشته باشید، ما را در <a href={redditUrl}>Reddit</a> و <a href={mediumUrl}>Medium</a> دنبال کنید تا در صورت حضور گسترده‌تر در پلتفورم‌های بیشتر و افزودن ویژگی‌های جدید مطلع شوید.",
+  "about-outline": "Outline محصولی از <a href={jigsawUrl}>Jigsaw</a> است که به همه امکان می‌دهد VPN خودشان را ایجاد کنند، اجرا کنند، و دسترسی به آن را به‌اشتراک بگذارند. Outline برای مقاومت در برابر مسدود شدن طراحی شده است. برای مطلع شدن از نحوه شروع به کار به <a href={outlineUrl}>getoutline.org</a> مراجعه کنید.$NEWLINE$$NEWLINE$‏Outline نرم‌افزار متن‌بازی است که <a href={shadowsocksUrl}>Shadowsocks</a> آن را ارائه می‌کند. می‌توانید در <a href={gitHubUrl}>GitHub</a> در رابطه با کد همکاری کنید و در <a href={redditUrl}>Reddit</a> به مکالمه بپیوندید.",
   "about-page-title": "درباره",
   "auto-connect-dialog-detail": "اگر اتصالتان را از سرور Outline قطع نکنید، دفعه بعد که دستگاه را بازراه‌اندازی می‌کنید Outline به‌صورت خودکار وصل می‌شود.",
   "auto-connect-dialog-title": "همیشه محافظت شود",
@@ -82,6 +82,7 @@
   "submitting": "درحال ارسال...",
   "terms": "شرایط",
   "tips": "نکته‌ها",
+  "tray-open-window": "باز کردن",
   "undo-button-label": "واگرد",
   "unreachable-server-state": "غیرقابل‌دسترسی",
   "update-downloaded": "نسخه به‌روزرسانی‌شده Outline بارگیری شده است. وقتی Outline را بازراه‌اندازی کردید نصب خواهد شد.",

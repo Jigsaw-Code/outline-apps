@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline は、報道機関やジャーナリストに安全なインターネット アクセスの手段を提供するために、<a href={jigsawUrl}>Jigsaw</a> によって作成されたオープンソースのプロジェクトです。<br><br>Outline は <a href={shadowsocksUrl}>Shadowsocks</a> を利用しており、現在はまだ初期段階のサービスです。<a href={gitHubUrl}>GitHub</a> でコードを投稿できます。また、<a href={redditUrl}>Reddit</a> や <a href={mediumUrl}>Medium</a> でフォローしていただくと、対象プラットフォームの拡大や新機能の追加などのお知らせをご覧いただけます。",
+  "about-outline": "Outline は、組織が自ら VPN を構築、運用して、アクセスを共有できるようにする <a href={jigsawUrl}>Jigsaw</a> のサービスで、ブロック機能を回避できる設計となっています。使い方については、<a href={outlineUrl}>getoutline.org</a> をご覧ください。$NEWLINE$$NEWLINE$Outline は <a href={shadowsocksUrl}>Shadowsocks</a> のオープンソース ソフトウェアです。コードを寄稿するには <a href={gitHubUrl}>GitHub</a>、ディスカッションに参加するには <a href={redditUrl}>Reddit</a> にアクセスしてください。",
   "about-page-title": "概要",
   "auto-connect-dialog-detail": "Outline サーバーとの接続を切断しない限り、次回デバイスを再起動したときに自動的に接続されます。",
   "auto-connect-dialog-title": "常に安全を確保",
@@ -82,6 +82,7 @@
   "submitting": "送信しています...",
   "terms": "利用規約",
   "tips": "ヒント",
+  "tray-open-window": "開く",
   "undo-button-label": "元に戻す",
   "unreachable-server-state": "接続できません",
   "update-downloaded": "最新バージョンの Outline をダウンロードしました。Outline を再起動するとインストールされます。",
