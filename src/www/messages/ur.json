@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline ایک اوپن سورس پروجیکٹ ہے جو <a href={jigsawUrl}>Jigsaw</a> کی جانب سے خبر رساں اداروں اور صحافیوں کو انٹرنیٹ پر محفوظ رسائی دینے کیلئے بنایا گیا ہے۔<br><br> Outline کو <a href={shadowsocksUrl}>Shadowsocks</a> کی جانب سے طاقت مہیا کی جاتی ہے اور ابھی یہ اپنی تکمیل کے ابتدائی مراحل میں ہے۔ آپ <a href={gitHubUrl}>GitHub</a> پر کوڈ میں تعاون کر سکتے ہیں، اور یہ جاننے کیلئے کہ ہم کب مزید پلیٹ فارمز شامل کریں گے اور نئی خصوصیات شامل کریں گے، <a href={redditUrl}>Reddit</a> اور <a href={mediumUrl}>Medium</a> پر ہماری پیروی بھی کر سکتے ہیں۔",
+  "about-outline": "Outline <a href={jigsawUrl}>Jigsaw</a> کا پروڈکٹ ہے جو ہر کسی کو اپنا خود کا VPN تخلیق کرنے، چلانے اور اس تک رسائی کا اشتراک کرنے کی اجازت دیتا ہے۔ Outline کو مسدودگی مزاحم بنایا گیا ہے۔ شروع کرنے کا طریقہ جاننے کے لیے <a href={outlineUrl}>getoutline.org</a> ملاحظہ کریں۔$NEWLINE$$NEWLINE$Outline <a href={shadowsocksUrl}>Shadowsocks</a> کے ذریعے تقویت یافتہ اوپن سورس سافٹ ویئر ہے۔ آپ <a href={gitHubUrl}>GitHub</a> پر کوڈ میں تعاون کر سکتے ہیں اور <a href={redditUrl}>Reddit</a> پر بات چیت میں شامل ہو سکتے ہیں۔",
   "about-page-title": "تفصیل",
   "auto-connect-dialog-detail": "جب تک آپ اپنے Outline سرور سے غیر منسلک نہیں ہو جاتے، تو Outline اگلی بار آلے کے دوبارہ شروع ہونے پر خودبخود منسلک ہو جائے گی۔",
   "auto-connect-dialog-title": "ہمیشہ محفوظ رہیں",
@@ -82,6 +82,7 @@
   "submitting": "جمع ہو رہا ہے…",
   "terms": "شرائط",
   "tips": "ٹپس",
+  "tray-open-window": "کھولیں",
   "undo-button-label": "کالعدم کریں",
   "unreachable-server-state": "ناقابل رسائی",
   "update-downloaded": "Outline کا اپ ڈیٹ کردہ ورژن ڈاؤن لوڈ ہو گیا ہے۔ جب آپ Outline کو دوبارہ شروع کریں گے تو یہ انسٹال ہو جائے گا۔",

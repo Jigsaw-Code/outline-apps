@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline – це проект із відкритим кодом, створений командою <a href={jigsawUrl}>Jigsaw</a>, щоб надати службам новин і журналістам безпечніший доступ до Інтернету.<br><br> Outline працює на платформі <a href={shadowsocksUrl}>Shadowsocks</a> та зараз перебуває на ранній стадії розробки. Ви можете долучитися до створення коду у веб-сервісі <a href={gitHubUrl}>GitHub</a>, а також підписатися на наші оновлення в <a href={redditUrl}>Reddit</a> і <a href={mediumUrl}>Medium</a>, щоб отримувати інформацію про розширення переліку підтримуваних платформ і нові функції.",
+  "about-outline": "Outline – це продукт, створений командою <a href={jigsawUrl}>Jigsaw</a>, що дає змогу створювати й запускати власний сервер VPN і надавати доступ до нього. Outline забезпечує надійний захист від блокування. Відвідайте сторінку <a href={outlineUrl}>getoutline.org</a>, щоб дізнатися більше про початок роботи.$NEWLINE$$NEWLINE$Outline – це програмне забезпечення з відкритим кодом на основі <a href={shadowsocksUrl}>Shadowsocks</a>. Ви можете стати розробником коду в <a href={gitHubUrl}>GitHub</a> і приєднатися до обговорення в <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Про додаток",
   "auto-connect-dialog-detail": "Якщо ви не відключитеся від сервера Outline, додаток Outline автоматично підключиться до нього після перезавантаження пристрою.",
   "auto-connect-dialog-title": "Працюйте в захищеному середовищі",
@@ -82,6 +82,7 @@
   "submitting": "Надсилання…",
   "terms": "Умови",
   "tips": "Поради",
+  "tray-open-window": "Відкрити",
   "undo-button-label": "Відмінити",
   "unreachable-server-state": "Недоступний",
   "update-downloaded": "Завантажено оновлену версію Outline. Щоб установити її, перезапустіть додаток.",

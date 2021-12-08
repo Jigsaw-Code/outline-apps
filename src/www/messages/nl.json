@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline is een opensource-project van <a href={jigsawUrl}>Jigsaw</a> waarmee nieuwsorganisaties en journalisten veiliger toegang hebben tot internet.<br><br> Outline wordt aangeboden door <a href={shadowsocksUrl}>Shadowsocks</a> en bevindt zich nog in een vroege fase. Je kunt bijdragen aan de code op <a href={gitHubUrl}>GitHub</a> en ons volgen op <a href={redditUrl}>Reddit</a> en <a href={mediumUrl}>Medium</a> voor meer informatie over wanneer we meer platforms en functies toevoegen.",
+  "about-outline": "Outline is een product van <a href={jigsawUrl}>Jigsaw</a> waarmee iedereen een eigen VPN kan maken, kan beheren en anderen er toegang toe kan geven. Outline is zo gemaakt dat het moeilijk te blokkeren is. Ga naar <a href={outlineUrl}>getoutline.org</a> om aan de slag te gaan.$NEWLINE$$NEWLINE$Outline is opensource-software mogelijk gemaakt door <a href={shadowsocksUrl}>Shadowsocks</a>. Je kunt bijdragen aan de code via <a href={gitHubUrl}>GitHub</a> en deelnemen aan de discussie op <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Over",
   "auto-connect-dialog-detail": "Outline maakt automatisch verbinding de volgende keer dat je je apparaat opnieuw opstart, tenzij je de verbinding met de Outline-server verbreekt.",
   "auto-connect-dialog-title": "Blijf altijd veilig",
@@ -82,6 +82,7 @@
   "submitting": "Verzenden...",
   "terms": "Voorwaarden",
   "tips": "Tips",
+  "tray-open-window": "Openen",
   "undo-button-label": "Ongedaan maken",
   "unreachable-server-state": "Niet bereikbaar",
   "update-downloaded": "Er is een geüpdatete versie van Outline gedownload. Deze wordt geïnstalleerd wanneer je Outline opnieuw start.",

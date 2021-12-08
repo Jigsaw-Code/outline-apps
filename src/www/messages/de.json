@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline ist ein Open-Source-Projekt von <a href={jigsawUrl}>Jigsaw</a>, das Nachrichtenagenturen und Journalisten mithilfe des Proxys <a href={shadowsocksUrl}>Shadowsocks</a> einen sichereren Zugriff auf das Internet ermöglicht. <br><br>Da es sich noch in einem frühen Stadium befindet, können Sie über <a href={gitHubUrl}>GitHub</a> am Code mitarbeiten. Außerdem haben Sie die Möglichkeit, uns über <a href={redditUrl}>Reddit</a> und <a href={mediumUrl}>Medium</a> zu folgen, um über neue Funktionen und die Verfügbarkeit auf weiteren Plattformen auf dem Laufenden zu bleiben.",
+  "about-outline": "Mit Outline von <a href={jigsawUrl}>Jigsaw</a> kann jeder ganz einfach ein eigenes virtuelles privates Netzwerk (VPN) erstellen, betreiben und den Zugriff darauf ermöglichen. Outline wurde entwickelt, um Internetsperren zu umgehen. Informationen zum Einstieg finden Sie unter <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline ist eine Open-Source-Software von <a href={shadowsocksUrl}>Shadowsocks</a>. Auf <a href={gitHubUrl}>GitHub</a> können Sie zum Code beitragen und auf <a href={redditUrl}>Reddit</a> Teil der Community werden.",
   "about-page-title": "Informationen zu Outline",
   "auto-connect-dialog-detail": "Wenn Sie die Verbindung zum Outline-Server nicht manuell trennen, wird sie bei jedem Neustart des Geräts automatisch hergestellt.",
   "auto-connect-dialog-title": "Immer geschützt",
@@ -82,6 +82,7 @@
   "submitting": "Wird eingereicht…",
   "terms": "Nutzungsbedingungen",
   "tips": "Tipps",
+  "tray-open-window": "Öffnen",
   "undo-button-label": "Rückgängig machen",
   "unreachable-server-state": "Nicht erreichbar",
   "update-downloaded": "Eine neuere Version von Outline wurde heruntergeladen. Sie wird beim nächsten Neustart der Anwendung installiert.",

@@ -1,5 +1,5 @@
 {
-  "about-outline": "Lietojumprogramma Outline ir atklātā pirmkoda projekts, ko izveidoja <a href={jigsawUrl}>Jigsaw</a>, lai ziņu aģentūras un žurnālisti varētu piekļūt internetam drošākā veidā.<br><br> Lietojumprogrammas Outline darbību nodrošina <a href={shadowsocksUrl}>Shadowsocks</a>, un šī produkta izstrāde joprojām ir agrīnā posmā. Varat papildināt kodu vietnē <a href={gitHubUrl}>GitHub</a>, kā arī sekot mums vietnēs <a href={redditUrl}>Reddit</a> un <a href={mediumUrl}>Medium</a>, lai uzzinātu, kad tiek pievienotas papildu platformas un jaunas funkcijas.",
+  "about-outline": "Programmatūra Outline ir struktūrvienības <a href={jigsawUrl}>Jigsaw</a> produkts, kas ikvienam lietotājam dod iespēju izveidot un darbināt savu VPN un kopīgot piekļuvi tam. Programmatūra Outline ir izstrādāta tā, lai to būtu grūti bloķēt. Lai uzzinātu, kā sākt darbu, apmeklējiet vietni <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline ir atvērtā pirmkoda programmatūra, kuras darbību nodrošina <a href={shadowsocksUrl}>Shadowsocks</a>. Varat piedalīties koda izstrādē vietnē <a href={gitHubUrl}>GitHub</a> un pievienoties sarunai vietnē <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Par",
   "auto-connect-dialog-detail": "Ja nepārtrauksiet savienojumu ar savu Outline serveri, lietojumprogramma Outline automātiski izveidos savienojumu, kad nākamreiz restartēsiet savu ierīci.",
   "auto-connect-dialog-title": "Nepārtraukta aizsardzība",
@@ -82,6 +82,7 @@
   "submitting": "Notiek iesniegšana...",
   "terms": "Noteikumi",
   "tips": "Padomi",
+  "tray-open-window": "Atvērt",
   "undo-button-label": "Atsaukt",
   "unreachable-server-state": "Nav sasniedzams",
   "update-downloaded": "Tika lejupielādēta atjaunināta lietojumprogrammas Outline versija. Tā tiks instalēta, kad restartēsiet lietojumprogrammu Outline.",
