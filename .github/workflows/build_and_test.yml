@@ -86,6 +86,9 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 10
     environment: Test
+    env:
+      MATCH_PASSWORD: ${{ secret.MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secret.MATCH_GIT_BASIC_AUTHORIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
