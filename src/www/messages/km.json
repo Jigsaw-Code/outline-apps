@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline គឺជាគម្រោងកូដចំហមួយ ដែលបង្កើតឡើងដោយ <a href={jigsawUrl}>Jigsaw</a> ដើម្បីផ្ដល់​វិធីដែល​កាន់តែ​មានសុវត្ថិភាពដល់​ស្ថាប័នព័ត៌មាន និង​អ្នកកាសែត​ក្នុងការចូលប្រើ​អ៊ីនធឺណិត។<br><br> Outline ត្រូវបាន​ដំណើរការដោយ <a href={shadowsocksUrl}>Shadowsocks</a> និងស្ថិតក្នុងដំណាក់កាល​ដំបូងនៅឡើយ។ អ្នកអាច​រួមចំណែក​ដល់កូដនេះនៅលើ <a href={gitHubUrl}>GitHub</a> និងតាមដានយើងនៅលើ <a href={redditUrl}>Reddit</a> និង <a href={mediumUrl}>Medium</a> ដើម្បីដឹងនៅពេល​យើង​ពង្រីកទៅ​ប្រព័ន្ធ​ច្រើនទៀត និងបញ្ចូល​មុខងារថ្មីៗ។",
+  "about-outline": "Outline គឺ​ជា​ផលិតផល​របស់ <a href={jigsawUrl}>Jigsaw</a> ដែល​អនុញ្ញាត​ឱ្យ​គ្រប់​គ្នា​បង្កើត ដំណើរការ និង​ចែក​រំលែក​សិទ្ធិ​ចូល​ប្រើប្រាស់ VPN ផ្ទាល់​ខ្លួន។ Outline ត្រូវ​បាន​រចនា​ឡើង​ឱ្យ​ធន់​នឹង​ការទប់ស្កាត់។ សូម​ចូល​ទៅ​កាន់ <a href={outlineUrl}>getoutline.org</a> ដើម្បី​ស្វែងយល់​អំពី​របៀប​ចាប់ផ្ដើម។$NEWLINE$$NEWLINE$Outline គឺ​ជា​កម្មវិធី​កូដ​ចំហ​ដែល​ដំណើរការ​ដោយ <a href={shadowsocksUrl}>Shadowsocks</a>។ អ្នក​អាច​ចូលរួម​ចំណែក​ដល់​កូដ​នៅ​លើ <a href={gitHubUrl}>GitHub</a> និង​ចូលរួម​ការសន្ទនា​នៅ​លើ <a href={redditUrl}>Reddit</a>។",
   "about-page-title": "អំពី",
   "auto-connect-dialog-detail": "ដរាបណាអ្នកមិនបានផ្ដាច់ពីម៉ាស៊ីនមេ Outline​​ របស់អ្នកនោះទេ Outlineនឹងធ្វើការតភ្ជាប់ដោយស្វ័យប្រវត្តិនៅពេលដែលអ្នកចាប់ផ្ដើមដំណើរការឩបករណ៍បស់អ្នកលើកក្រោយ។",
   "auto-connect-dialog-title": "រក្សាការពារជានិច្ច",
@@ -82,6 +82,7 @@
   "submitting": "កំពុងដំណើរការបញ្ជូនសំណើរ",
   "terms": "លក្ខខណ្ឌ",
   "tips": "គន្លឺះ",
+  "tray-open-window": "បើក",
   "undo-button-label": "លែងធ្វើវិញ",
   "unreachable-server-state": "មិនអាចទាក់ទងបាន",
   "update-downloaded": "ជំនាន់ថ្មីរបស់ Outline​ ត្រូវបានទាញយក។ វានឹងធ្វើការដំឡើងដោយស្វ័យប្រវត្តិនៅពេលដែលចាប់ផ្តើមដំណើរការ Outline ឡើងវិញ។",

@@ -1,5 +1,5 @@
 {
-  "about-outline": "אפליקציית Outline היא פרויקט בקוד פתוח שנוצר על ידי <a href={jigsawUrl}>Jigsaw</a> כדי להעניק לגופי תקשורת ועיתונאים גישה מאובטחת יותר לאינטרנט.<br><br> Outline מופעלת על ידי <a href={shadowsocksUrl}>Shadowsocks</a> ועדיין נמצאת בשלבי פיתוח מוקדמים. אפשר לתרום לקוד ב-<a href={gitHubUrl}>GitHub</a> ולעקוב אחרינו ב-<a href={redditUrl}>Reddit</a> וב-<a href={mediumUrl}>Medium</a> כדי להיות עם יד על הדופק ולשמוע כשנוספות תכונות חדשות וכשהאפליקציה מתרחבת לפלטפורמות נוספות.",
+  "about-outline": "Outline היא תוכנה של <a href={jigsawUrl}>Jigsaw</a> שמאפשרת לכל אחד ליצור ולהפעיל שרת VPN משלו ולשתף את הגישה אליו. Outline עמידה בפני חסימות. איך מתחילים? הכל מוסבר כאן: <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$‏Outline היא תוכנה בקוד פתוח שמופעלת על ידי <a href={shadowsocksUrl}>Shadowsocks</a>. אפשר לתרום לקוד ב-<a href={gitHubUrl}>GitHub</a> ולהצטרף לשיחה ב-<a href={redditUrl}>Reddit</a>.",
   "about-page-title": "מידע כללי",
   "auto-connect-dialog-detail": "אפליקציית Outline מתחברת אוטומטית אחרי שהמכשיר מופעל מחדש, אלא אם מתנתקים מהשרת של Outline.",
   "auto-connect-dialog-title": "אבטחה שוטפת, תמיד",
@@ -82,6 +82,7 @@
   "submitting": "השליחה מתבצעת...",
   "terms": "תנאים",
   "tips": "טיפים",
+  "tray-open-window": "פתיחה",
   "undo-button-label": "ביטול",
   "unreachable-server-state": "לא ניתן להתחבר",
   "update-downloaded": "הורדה גרסה חדשה של Outline. היא תותקן כשאפליקציית Outline תופעל מחדש.",

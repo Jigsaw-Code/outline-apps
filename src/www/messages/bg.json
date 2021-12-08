@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline е проект с отворен код, създаден от <a href={jigsawUrl}>Jigsaw</a>, за да предостави по-безопасен начин за достъп до интернет на новинарските организации и журналистите.<br><br> Outline се предоставя от <a href={shadowsocksUrl}>Shadowsocks</a> и все още е продукт в ранен стадий на разработка. Можете да допринесете към кода на <a href={gitHubUrl}>GitHub</a> и да ни следите в(ъв) <a href={redditUrl}>Reddit</a> и <a href={mediumUrl}>Medium</a>, за да научите, когато се разширим към още платформи и добавим нови функции.",
+  "about-outline": "Outline е продукт на <a href={jigsawUrl}>Jigsaw</a>, който дава възможност на всеки да създаде и поддържа собствена VPN и да предоставя достъп до нея. Outline е софтуер, проектиран да бъде устойчив срещу блокиране. Посетете <a href={outlineUrl}>getoutline.org</a>, за да научите как да започнете.$NEWLINE$$NEWLINE$Outline е софтуер с отворен код, който се предоставя от <a href={shadowsocksUrl}>Shadowsocks</a>. Можете да допринесете към кода на <a href={gitHubUrl}>GitHub</a> и да се присъедините към разговора в <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Информация",
   "auto-connect-dialog-detail": "Освен ако не прекратите връзката си със сървъра на Outline, Outline ще се свърже автоматично следващия път, когато рестартирате устройството си.",
   "auto-connect-dialog-title": "Останете винаги защитени",
@@ -82,6 +82,7 @@
   "submitting": "Изпраща се...",
   "terms": "Условия",
   "tips": "Съвети",
+  "tray-open-window": "Отваряне",
   "undo-button-label": "Отмяна",
   "unreachable-server-state": "Няма достъп",
   "update-downloaded": "Изтеглена бе актуализирана версия на Outline. Тя ще бъде инсталирана, когато рестартирате Outline.",

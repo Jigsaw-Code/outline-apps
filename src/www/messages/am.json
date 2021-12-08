@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline በ <a href={jigsawUrl}>Jigsaw</a> የተዘጋጀ ክፍት ምንጭ ፕሮጀክት ሲሆን ለዜና አቅራቢ ድርጅቶችና ጋዜጠኞች ደኅንነቱ የተጠበቀ የኢንተርኔት አጠቃቀምን እንዲያገኙ ታልሞ የተዘጋጀ ነው፡፡ <br><br> Outline (አውትላይን) በ <a href={shadowsocksUrl}>Shadowsocks</a> የተደገፈ አዲስ ምርት ነው፡፡ በ <a href={gitHubUrl}>GitHub</a> ላይ ለፕሮግራሙ አስተዋፅዖ ማድረግ ይችላሉ፡፡ በተጨማሪም <a href={redditUrl}>Reddit</a> እና <a href={mediumUrl}>Medium</a> ላይ ሊከታተሉን እና መድረካችንን እና አገልግሎቶቻችንን ስናሳድግ መስማት ይችላሉ።",
+  "about-outline": "Outline በ<a href={jigsawUrl}>Jigsaw</a> የተዘጋጀ ማንኛውም ሰው የራሱን VPN እንዲፈጥር፣ እንዲያሄድ እና መዳረሻ እንዲያጋራ የሚያስችል ምርት ነው። Outline እገዳን የሚቋቋም ሆኖ የተነደፈ ነው። እንዴት መጀመር እንደሚቻል ለመረዳት <a href={outlineUrl}>getoutline.org</a>ን ይጎብኙ።$NEWLINE$$NEWLINE$Outline በ<a href={shadowsocksUrl}>Shadowsocks</a> የተጎላበተ ክፍት ምንጭ ሶፍትዌር ነው። <a href={gitHubUrl}>GitHub</a> ላይ ለኮዱ አስተዋጽዖ ማበርከት እና ውይይቱን <a href={redditUrl}>Reddit</a> ላይ መቀላቀል ይችላሉ።",
   "about-page-title": "ስለ",
   "auto-connect-dialog-detail": "ከ Outline (አውትላይን) አገልጋይ ጋር እስካልተለያዩ ድረስ፣ ማሽኖን ድጋሚ ሲያስጀምሩ አውቶማቲካሊ ይገናኛል። ",
   "auto-connect-dialog-title": "ሁሌም ጥንቃቄ የተጠበቀ ይሁን።",
@@ -82,6 +82,7 @@
   "submitting": "በማስገባት ላይ ነው...",
   "terms": "ውሎች",
   "tips": "ጠቋሚ ምክር",
+  "tray-open-window": "ክፈት",
   "undo-button-label": "ቀልብስ",
   "unreachable-server-state": "ማግኘት አልተቻለም",
   "update-downloaded": "የተሻሻለ Outline (አውትላይን) ወርዷል። Outline (አውትላይን) ድጋሚ ስያስጀምሩ ይጫናል።",
