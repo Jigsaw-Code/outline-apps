@@ -1,0 +1,80 @@
+name: Linux Prerelease
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: "Version to release"
+        required: true
+
+jobs:
+  create_prerelease_commit:
+    steps:
+      # TODO: validation utility
+        # is the version number valid semver?
+        # is it greater than the latest linux-* tag
+
+      # TODO: run any linux-specific version changes in code (before or after build)
+      # TODO: commit, tag, and push to master
+
+  build:
+    name: Build Linux
+    needs: create_prerelease_commit
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        ref: ${{ jobs.create_prerelease_commit.outputs.tag }}
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Linux Client
+        run: npm run action src/electron/package_linux
+      
+      - name: Upload Linux Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-linux-client
+          path: build/dist/Outline-Client.AppImage
+          if-no-files-found: error
+
+  create_prerelease:
+    name: Create Prerelease
+    needs: build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Create Prerelease
+        uses: actions/create-release@v1
+        id: create_prerelease
+        with:
+          tag_name: ${{ jobs.create_prerelease_commit.outputs.tag }}
+          release_name: Linux Version
+          prerelease: true
+      
+      - name: Download Linux Build Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: unsigned-linux-artifact
+
+      - name: Upload Prerelease Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
+          asset_path: # TODO
+          asset_name: # TODO
+          asset_content_type: application/zip
+
