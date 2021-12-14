@@ -4,77 +4,58 @@ on:
   workflow_dispatch:
     inputs:
       version_number:
-        description: "Version to release"
+        description: "Version of Linux Client to Prerelease"
         required: true
 
 jobs:
-  create_prerelease_commit:
-    steps:
-      # TODO: validation utility
-        # is the version number valid semver?
-        # is it greater than the latest linux-* tag
-
-      # TODO: run any linux-specific version changes in code (before or after build)
-      # TODO: commit, tag, and push to master
-
-  build:
-    name: Build Linux
-    needs: create_prerelease_commit
+  create_prerelease:
+    name: Create Linux Prerelease
     runs-on: ubuntu-20.04
     timeout-minutes: 10
+    env:
+      PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
+      PRERELEASE_TAG: linux-v${{ github.event.inputs.version_number }}
 
     steps:
+      - name: Validate Input
+        run: |
+          [[ $PRERELEASE_VERSION =~ /^[0-9]+\.[0-9]+\.[0-9]+$/ ]] || exit 1
+
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        ref: ${{ jobs.create_prerelease_commit.outputs.tag }}
+
+      - name: Validate Version
+        run: |
+          LATEST_TAG=$(git tag -l "linux-v*" | tail -n1)
+          [[ $(sort -V $LATEST_TAG $PRERELEASE_TAG | tail -n1) == $PRERELEASE_TAG ]] || exit 1
+
+      - name: Tag Prerelease
+        run: git tag -a $PRERELEASE_TAG && git push origin $PRERELEASE_TAG
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 16
-          cache: npm
-      
+
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Build Linux Client
-        run: npm run action src/electron/package_linux
-      
-      - name: Upload Linux Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: unsigned-linux-client
-          path: build/dist/Outline-Client.AppImage
-          if-no-files-found: error
-
-  create_prerelease:
-    name: Create Prerelease
-    needs: build
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
+      - name: Build Production Linux Client
+        run: npm run action src/electron/release_linux
 
       - name: Create Prerelease
         uses: actions/create-release@v1
         id: create_prerelease
         with:
-          tag_name: ${{ jobs.create_prerelease_commit.outputs.tag }}
-          release_name: Linux Version
+          tag_name: ${{ env.PRERELEASE_TAG }}
+          release_name: Linux Client v${{ env.PRERELEASE_VERSION }}
           prerelease: true
-      
-      - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: unsigned-linux-artifact
 
       - name: Upload Prerelease Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
+          asset_content_type: application/zip
           asset_path: # TODO
           asset_name: # TODO
-          asset_content_type: application/zip
 

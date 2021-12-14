@@ -1,4 +1,4 @@
-name: Build and Test
+name: Development
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
