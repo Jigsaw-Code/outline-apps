@@ -18,8 +18,8 @@
 
 PLATFORM=$1
 TAG=
-if [[ -n $TRAVIS_TAG ]]; then
-  TAG=$TRAVIS_TAG
+if [[ -n $CI_TAG ]]; then
+  TAG=$CI_TAG
 elif [[ "$PLATFORM" != "dev" ]]; then
   TAG=$(git tag --points-at | grep ^$PLATFORM- | sort | tail -1)
   if [[ -z "$TAG" ]]; then

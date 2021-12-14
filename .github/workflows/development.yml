@@ -99,7 +99,7 @@ jobs:
     name: iOS
     runs-on: macos-11
     timeout-minutes: 10
-    environment: Test
+    environment: iOS Development
     env:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}

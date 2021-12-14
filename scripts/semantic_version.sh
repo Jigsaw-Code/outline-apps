@@ -17,11 +17,11 @@
 # Outputs a semantic version for the app, intended for use by the Electron clients.
 #
 # The script looks in a few places for the version, in this order:
-#  - The TRAVIS_TAG environment variable trumps all: if present, the version contained here will be
+#  - The CI_TAG environment variable trumps all: if present, the version contained here will be
 #    used. It may be a "release" build, e.g. the semantic version for the release tagged
 #    "linux-v1.0.0" is 1.0.0, or a pre-release build, e.g. the semantic version for the release
 #    tagged "daily-2018-12-01" is "0.0.0-daily-2018-12-01".
-#  - As an alternative to TRAVIS_TAG, tags associated with the current git will be searched. This is
+#  - As an alternative to CI_TAG, tags associated with the current git will be searched. This is
 #    primarily intended for Windows release builds, which cannot be performed on Travis. For this to
 #    work, you must specify the -p switch which helps disambiguate commits with multiple release
 #    tags.

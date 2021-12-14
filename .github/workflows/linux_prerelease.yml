@@ -15,22 +15,28 @@ jobs:
     env:
       PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
       PRERELEASE_TAG: linux-v${{ github.event.inputs.version_number }}
+      CI_TAG: linux-v${{ github.event.inputs.version_number }}
 
     steps:
       - name: Validate Input
         run: |
-          [[ $PRERELEASE_VERSION =~ /^[0-9]+\.[0-9]+\.[0-9]+$/ ]] || exit 1
+          [[ "${PRERELEASE_VERSION}" =~ /^[0-9]+\.[0-9]+\.[0-9]+$/ ]] || exit 1
 
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
       - name: Validate Version
         run: |
-          LATEST_TAG=$(git tag -l "linux-v*" | tail -n1)
-          [[ $(sort -V $LATEST_TAG $PRERELEASE_TAG | tail -n1) == $PRERELEASE_TAG ]] || exit 1
+          MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
+
+          # confirm given tag version is greater than the most recent
+          [[ $MOST_RECENT_TAG == $PRERELEASE_TAG ]] && exit 1
+          [[ "$(sort -V $MOST_RECENT_TAG $PRERELEASE_TAG | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
 
       - name: Tag Prerelease
-        run: git tag -a $PRERELEASE_TAG && git push origin $PRERELEASE_TAG
+        run: |
+          git tag -a "${PRERELEASE_TAG}"
+          git push origin "${PRERELEASE_TAG}"
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0

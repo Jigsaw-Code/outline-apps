@@ -25,7 +25,7 @@ function usage () {
   echo 1>&2
   echo "Examples:" 1>&2
   echo "Releases the beta of Linux version 1.2.3 to 10% of users listening on the beta channel" 1>&2
-  echo "TRAVIS_TAG=linux-v1.2.3-beta  $0 -s 10" 1>&2
+  echo "CI_TAG=linux-v1.2.3-beta  $0 -s 10" 1>&2
   exit 1
 }
 
