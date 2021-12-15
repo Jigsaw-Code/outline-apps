@@ -95,7 +95,11 @@ jobs:
       - name: Build OSX Client
         run: npx gulp build --platform=osx
 
-      # TODO: upload artifact
+      - name: Upload OSX Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-osx-client
+          path: platforms/osx/build/Outline.app
 
   ios:
     name: iOS
