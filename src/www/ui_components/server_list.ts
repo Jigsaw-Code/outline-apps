@@ -93,14 +93,13 @@ export class ServerList extends PolymerElement {
   get sortable(): Sortable {
     if (!this.servers.length || this.hasSingleServer) return null;
 
-    return new Sortable(this.sortableContainer, {
-      draggable: 'server-card',
-      // delay: this.sortableDelayMS,
-      // delayOnTouchOnly: true,
+    return Sortable.create(this.$.sortableContainer as HTMLElement, {
+      delay: this.sortableDelayMS,
+      delayOnTouchOnly: true,
       animation: this.sortableAnimationDurationMS,
 
       // TODO: update the config on change
-      onUpdate: console.debug,
+      onEnd: event => console.debug(event),
     });
   }
 
@@ -112,10 +111,6 @@ export class ServerList extends PolymerElement {
     }
 
     throw new Error(`Card for server ${serverId} not found`);
-  }
-
-  private get sortableContainer(): HTMLElement {
-    return this.shadowRoot.querySelectorAll<HTMLElement>('#sortableContainer')[0];
   }
 
   private get serverCards(): Iterable<ServerCard> {
