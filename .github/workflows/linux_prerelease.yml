@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Validate Input
         run: |
-          [[ "${PRERELEASE_VERSION}" =~ /^[0-9]+\.[0-9]+\.[0-9]+$/ ]] || exit 1
+          [[ "${PRERELEASE_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
 
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -32,8 +32,8 @@ jobs:
           MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
 
           # confirm given tag version is greater than the most recent
-          [[ $MOST_RECENT_TAG == $PRERELEASE_TAG ]] && exit 1
-          [[ "$(sort -V $MOST_RECENT_TAG $PRERELEASE_TAG | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
+          [[ "${MOST_RECENT_TAG}" == "${PRERELEASE_TAG}" ]] && exit 1
+          [[ "$(echo "${MOST_RECENT_TAG}\n${PRERELEASE_TAG}" | sort -V | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
