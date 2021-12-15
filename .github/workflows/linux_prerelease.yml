@@ -12,11 +12,13 @@ jobs:
     name: Create Linux Prerelease
     runs-on: ubuntu-20.04
     timeout-minutes: 10
+    environment: Linux Production
     env:
       PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
       PRERELEASE_TAG: linux-v${{ github.event.inputs.version_number }}
       CI_TAG: linux-v${{ github.event.inputs.version_number }}
-
+      RELEASE_BRANCH: linux-client-v${{ github.event.inputs.version_number }}
+      RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
     steps:
       - name: Validate Input
         run: |
@@ -33,11 +35,6 @@ jobs:
           [[ $MOST_RECENT_TAG == $PRERELEASE_TAG ]] && exit 1
           [[ "$(sort -V $MOST_RECENT_TAG $PRERELEASE_TAG | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
 
-      - name: Tag Prerelease
-        run: |
-          git tag -a "${PRERELEASE_TAG}"
-          git push origin "${PRERELEASE_TAG}"
-
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
@@ -48,20 +45,65 @@ jobs:
 
       - name: Build Production Linux Client
         run: npm run action src/electron/release_linux
+      
+      - name: Tag Prerelease
+        run: |
+          git tag -a "${PRERELEASE_TAG}"
+          git push origin "${PRERELEASE_TAG}"
 
+      - name: Checkout Releases Repository
+        uses: actions/checkout@v2.3.4
+        with:
+          repository: ${{ env.RELEASES_REPOSITORY }}
+          path: outline-releases
+      
+      # we need to create this ahead of time so we can reference the
+      # branch URL in the prerelease body
+      - name: Create Release Branch
+        run: |
+          cd outline-releases
+          git checkout -b "${{ env.RELEASE_BRANCH }}"
+          git push origin "${{ env.RELEASE_BRANCH }}"
+
+      - name: Create Release Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: outline-releases
+          base: master
+          title: "Linux Client v${{ env.PRERELEASE_VERSION }}"
+          # TODO: turn this back on when release workflow is working
+          # body: |
+          #   Note: merging this will promote ${{ github.events.repo }}/${{ env.PRERELEASE_VERSION }}
+          branch: "${{ env.RELEASE_BRANCH }}"
+      
       - name: Create Prerelease
         uses: actions/create-release@v1
         id: create_prerelease
         with:
           tag_name: ${{ env.PRERELEASE_TAG }}
-          release_name: Linux Client v${{ env.PRERELEASE_VERSION }}
+          release_name: "[PRERELEASE] Linux Client v${{ env.PRERELEASE_VERSION }}"
+          body: |
+            Pull Request (Pending): ${{ steps.release_pull_request.pull-request-url }}
           prerelease: true
 
-      - name: Upload Prerelease Asset
+      - name: Upload Prerelease Asset - Linux Binary
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
           asset_content_type: application/zip
-          asset_path: # TODO
-          asset_name: # TODO
+          asset_path: build/dist/Outline-Client.AppImage
+          asset_name: Outline-Client.AppImage
+      
+      - name: Upload Prerelease Asset - Linux Config
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
+          asset_content_type: application/zip
+          asset_path: build/dist/latest-linux.yml
+          asset_name: latest-linux.yml
+
+      - name: Finalize Release Pull Request
+        run: |
+          cd outline-releases
+          ./release_linux_client.sh ${{ env.PRERELEASE_TAG }}
 
