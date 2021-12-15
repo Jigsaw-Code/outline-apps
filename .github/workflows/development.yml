@@ -101,7 +101,7 @@ jobs:
     name: iOS
     runs-on: macos-11
     timeout-minutes: 10
-    environment: iOS Development
+    environment: Development / iOS
     env:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
@@ -130,7 +130,7 @@ jobs:
     name: Android
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    environment: Android Development
+    environment: Development / Android
     env:
       ANDROID_SDK_ROOT: ${{ secrets.ANDROID_SDK_ROOT }}
     steps:
