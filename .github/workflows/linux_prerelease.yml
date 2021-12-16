@@ -11,14 +11,15 @@ jobs:
   create_prerelease:
     name: Create Linux Prerelease
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment: Production / Linux
     env:
       PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
       PRERELEASE_TAG: linux-v${{ github.event.inputs.version_number }}
       CI_TAG: linux-v${{ github.event.inputs.version_number }}
       RELEASE_BRANCH: linux-client-v${{ github.event.inputs.version_number }}
-      RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Validate Input
         run: |
@@ -27,13 +28,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Validate Version
-        run: |
-          MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
+      # TODO: deal with this later
+      # - name: Validate Version
+      #   run: |
+      #     MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
 
-          # confirm given tag version is greater than the most recent
-          [[ "${MOST_RECENT_TAG}" == "${PRERELEASE_TAG}" ]] && exit 1
-          [[ "$(echo "${MOST_RECENT_TAG}\n${PRERELEASE_TAG}" | sort -V | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
+      #     # confirm given tag version is greater than the most recent
+      #     [[ "${MOST_RECENT_TAG}" == "${PRERELEASE_TAG}" ]] && exit 1
+      #     [[ "$(echo "${MOST_RECENT_TAG}\n${PRERELEASE_TAG}" | sort -V | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -43,67 +45,49 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Tag Prerelease
+        run: |
+          git config --global user.name "OutlineBot"
+          git config --global user.email "bot@getoutline.org" # TODO
+          git tag "${PRERELEASE_TAG}"
+
       - name: Build Production Linux Client
         run: npm run action src/electron/release_linux
       
-      - name: Tag Prerelease
-        run: |
-          git tag -a "${PRERELEASE_TAG}"
-          git push origin "${PRERELEASE_TAG}"
+      - name: Push Prerelease Tag
+        run: git push origin "${PRERELEASE_TAG}"
+
+      - name: Create Prerelease
+        uses: softprops/action-gh-release@v1
+        id: prerelease
+        with:
+          name: "Linux Client v${{ env.PRERELEASE_VERSION }}"
+          tag_name: ${{ env.PRERELEASE_TAG }}
+          prerelease: true
+          files: |
+            build/dist/Outline-Client.AppImage
+            build/dist/latest-linux.yml
 
       - name: Checkout Releases Repository
         uses: actions/checkout@v2.3.4
         with:
-          repository: ${{ env.RELEASES_REPOSITORY }}
+          repository: ${{ secrets.RELEASES_REPOSITORY }}
           path: outline-releases
+          token: ${{ secrets.ACCESS_TOKEN }}
       
-      # we need to create this ahead of time so we can reference the
-      # branch URL in the prerelease body
       - name: Create Release Branch
         run: |
           cd outline-releases
-          git checkout -b "${{ env.RELEASE_BRANCH }}"
-          git push origin "${{ env.RELEASE_BRANCH }}"
+          ./release_linux_client.sh ${{ env.PRERELEASE_TAG }}
 
       - name: Create Release Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
           path: outline-releases
-          base: master
+          base: mastersoftprops/action-gh-release@v1
+
           title: "Linux Client v${{ env.PRERELEASE_VERSION }}"
-          # TODO: turn this back on when release workflow is working
+          # TODO: add this in once final step is created
           # body: |
-          #   Note: merging this will promote ${{ github.events.repo }}/${{ env.PRERELEASE_VERSION }}
+          #   Note: merging this will promote ${{ steps.create_prerelease.outputs.url }}
           branch: "${{ env.RELEASE_BRANCH }}"
-      
-      - name: Create Prerelease
-        uses: actions/create-release@v1
-        id: create_prerelease
-        with:
-          tag_name: ${{ env.PRERELEASE_TAG }}
-          release_name: "[PRERELEASE] Linux Client v${{ env.PRERELEASE_VERSION }}"
-          body: |
-            Pull Request (Pending): ${{ steps.release_pull_request.pull-request-url }}
-          prerelease: true
-
-      - name: Upload Prerelease Asset - Linux Binary
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
-          asset_content_type: application/zip
-          asset_path: build/dist/Outline-Client.AppImage
-          asset_name: Outline-Client.AppImage
-      
-      - name: Upload Prerelease Asset - Linux Config
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_prerelease.outputs.upload_url }}
-          asset_content_type: application/zip
-          asset_path: build/dist/latest-linux.yml
-          asset_name: latest-linux.yml
-
-      - name: Finalize Release Pull Request
-        run: |
-          cd outline-releases
-          ./release_linux_client.sh ${{ env.PRERELEASE_TAG }}
-
