@@ -19,7 +19,7 @@ jobs:
       CI_TAG: linux-v${{ github.event.inputs.version_number }}
       RELEASE_BRANCH: linux-client-v${{ github.event.inputs.version_number }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     steps:
       - name: Validate Input
         run: |
@@ -28,14 +28,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      # TODO: deal with this later
-      # - name: Validate Version
-      #   run: |
-      #     MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
+      - name: Validate Version
+        run: |
+          MOST_RECENT_TAG="$(git tag -l "linux-v*" | tail -n1)"
 
-      #     # confirm given tag version is greater than the most recent
-      #     [[ "${MOST_RECENT_TAG}" == "${PRERELEASE_TAG}" ]] && exit 1
-      #     [[ "$(echo "${MOST_RECENT_TAG}\n${PRERELEASE_TAG}" | sort -V | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
+          # confirm given tag version is greater than the most recent
+          [[ "${MOST_RECENT_TAG}" == "${PRERELEASE_TAG}" ]] && exit 1
+          [[ "$(echo -e "${MOST_RECENT_TAG}\n${PRERELEASE_TAG}" | sort -V | tail -n1)" == "${PRERELEASE_TAG}" ]] || exit 1
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -67,27 +66,3 @@ jobs:
           files: |
             build/dist/Outline-Client.AppImage
             build/dist/latest-linux.yml
-
-      - name: Checkout Releases Repository
-        uses: actions/checkout@v2.3.4
-        with:
-          repository: ${{ secrets.RELEASES_REPOSITORY }}
-          path: outline-releases
-          token: ${{ secrets.ACCESS_TOKEN }}
-      
-      - name: Create Release Branch
-        run: |
-          cd outline-releases
-          ./release_linux_client.sh ${{ env.PRERELEASE_TAG }}
-
-      - name: Create Release Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          path: outline-releases
-          base: mastersoftprops/action-gh-release@v1
-
-          title: "Linux Client v${{ env.PRERELEASE_VERSION }}"
-          # TODO: add this in once final step is created
-          # body: |
-          #   Note: merging this will promote ${{ steps.create_prerelease.outputs.url }}
-          branch: "${{ env.RELEASE_BRANCH }}"
