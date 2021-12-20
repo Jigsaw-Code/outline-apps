@@ -17,7 +17,6 @@ jobs:
       PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
       PRERELEASE_TAG: linux-v${{ github.event.inputs.version_number }}
       CI_TAG: linux-v${{ github.event.inputs.version_number }}
-      RELEASE_BRANCH: linux-client-v${{ github.event.inputs.version_number }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     steps:
