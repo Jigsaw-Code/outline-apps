@@ -1,3 +1,14 @@
+# The following workflow is run during the development PR process and is required to pass in order for a developer
+# to merge code into the main branch. Currently checks:
+
+# - Web app unit tests
+# - Development builds for
+  # - windows
+  # - linux
+  # - macos
+  # - iOS
+  # - android
+
 name: Development
 
 concurrency:
