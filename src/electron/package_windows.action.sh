@@ -26,12 +26,14 @@ fi
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.sh -p dev)"
+!define RELEASE "$(scripts/semantic_version.action.sh -p dev)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
+
+# TODO: VERSION
 
 electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p dev)
+  --config.extraMetadata.version=$(scripts/semantic_version.sh VERSION windows development)

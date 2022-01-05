@@ -16,8 +16,10 @@
 
 npm run action src/electron/package_common
 
+# TODO: VERSION
+
 electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p dev)
+  --config.extraMetadata.version=$(scripts/semantic_version.sh VERSION linux development)

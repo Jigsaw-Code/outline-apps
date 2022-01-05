@@ -81,6 +81,8 @@ function validate_env_vars() {
   fi
 }
 
+# TODO: VERSION, ENVIRONMENT
+
 case $PLATFORM in
   android | browser)
     APP_VERSION=$(pull_from_config_xml 'result.widget.$["version"]')
@@ -95,7 +97,7 @@ case $PLATFORM in
     APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
     ;;
   windows | linux | dev)
-    APP_VERSION=$($(dirname $0)/semantic_version.sh -p $PLATFORM)
+    APP_VERSION=$($(dirname $0)/semantic_version.sh $VERSION $PLATFORM $ENVIRONMENT)
     APP_BUILD_NUMBER="NA"
     ;;
   *) usage ;;

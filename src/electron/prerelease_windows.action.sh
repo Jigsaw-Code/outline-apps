@@ -16,16 +16,18 @@
 
 # Same as package, except:
 #  - prod Sentry keys are used
+#  - the binary is signed (you'll need the hardware token, its password, and a real Windows box)
 #  - auto-updates are configured
 
 function usage () {
-  echo "$0 [-s stagingPercentage]" 1>&2
+  echo "$0 [version] [-s stagingPercentage]" 1>&2
+  echo "  -v: Version of the prerelease" 1>&2
   echo "  -s: The staged rollout percentage for this release.  Must be in the interval (0, 100].  Defaults to 100" 1>&2
   echo "  -h: this help message" 1>&2
   echo 1>&2
   echo "Examples:" 1>&2
-  echo "Releases the beta of Linux version 1.2.3 to 10% of users listening on the beta channel" 1>&2
-  echo "CI_TAG=linux-v1.2.3-beta  $0 -s 10" 1>&2
+  echo "Pushes a release candidate of Windows version 1.2.3 to 10% of users listening on the beta channel" 1>&2
+  echo "  $0 1.2.3 -s 10" 1>&2
   exit 1
 }
 
@@ -42,27 +44,33 @@ if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   exit 1
 fi
 
-TAG=$(scripts/get_tag.sh linux)
-if [[ $TAG =~ ^.*-beta$ ]]; then
-  INFO_FILE_CHANNEL="beta"
-else
-  INFO_FILE_CHANNEL="latest"
-fi
-
 npm run action src/electron/package_common
 
-scripts/environment_json.sh -r -p linux > www/environment.json
+scripts/environment_json.sh -r -p windows > www/environment.json
+
+# Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
+# which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
+readonly API_KEY=$(echo $SENTRY_DSN | awk -F/ '{print substr($3, 0, 32)}')
+readonly PROJECT_ID=$(echo $SENTRY_DSN | awk -F/ '{print $4}')
+readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&sentry_key=$API_KEY"
+
+# TODO: Move env.sh to build/electron/.
+cat > build/env.nsh << EOF
+!define RELEASE "$(scripts/semantic_version.sh -p windows)"
+!define SENTRY_URL "${SENTRY_URL}"
+EOF
 
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
 # which can be blocked by DNS or SNI without taking down other buckets.
 electron-builder \
-  --linux \
+  --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  --config.extraMetadata.version=$(scripts/semantic_version.sh -v "${VERSION}" -p windows -e prerelease) \
+  --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
-  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux
+  --config.publish.url=https://s3.amazonaws.com/outline-releases/client/windows
 
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$INFO_FILE_CHANNEL-linux.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta.yml
