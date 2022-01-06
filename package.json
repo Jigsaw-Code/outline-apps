@@ -99,7 +99,6 @@
     "html-webpack-plugin": "^5.1.0",
     "husky": "^1.3.1",
     "jasmine": "^3.0.0",
-    "lit-html": "^2.1.1",
     "minimist": "^1.2.5",
     "outline-i18n": "Jigsaw-Code/outline-i18n#v0.0.7",
     "postcss": "^7.0.29",
