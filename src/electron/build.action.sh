@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+VERSION=$1
+
 npm run action src/www/build_electron
 
 webpack --config=src/electron/electron_main.webpack.js \
@@ -22,4 +24,4 @@ webpack --config=src/electron/electron_main.webpack.js \
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+scripts/environment_json.sh -p dev $VERSION > www/environment.json

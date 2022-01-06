@@ -17,7 +17,7 @@
 # Outputs a semantic version for the app, intended for the given platform and environment.
 
 function usage () {
-  echo "$0 [version] [platform] [environment]" 1>&2
+  echo "$0 version platform environment" 1>&2
   echo "  version: the new version of the application" 1>&2
   echo "  platform: (android, ios, osx, browser, windows, linux, or dev)" 1>&2
   echo "  environment: the environment you're deploying to (development, prerelease, production)" 1>&2
@@ -40,7 +40,7 @@ SEMVER_PRERELEASE=
 if [[ "${ENVIRONMENT}" == "development" ]]; then
   SEMVER_METADATA="+${PLATFORM}.$(git log --pretty=format:'%h' -n 1)"
 elif [[ "${ENVIRONMENT}" == "prerelease" ]]; then
-  SEMVER_PRERELEASE="-rc$(get tag -l "${SEMVER_BODY}-rc*${SEMVER_METADATA}" | wc -l | xargs)"
+  SEMVER_PRERELEASE="-rc$(git tag -l "${SEMVER_VERSION}-rc*${SEMVER_METADATA}" | wc -l | xargs)"
 fi
 
 echo "${SEMVER_VERSION}${SEMVER_PRERELEASE}${SEMVER_METADATA}"

@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run action src/electron/package_common
+VERSION=$1
+
+npm run action src/electron/package_common $VERSION
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
@@ -26,14 +28,12 @@ fi
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.action.sh -p dev)"
+!define RELEASE "$(scripts/semantic_version.sh $VERSION windows development)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
-
-# TODO: VERSION
 
 electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh VERSION windows development)
+  --config.extraMetadata.version=$(scripts/semantic_version.sh $VERSION windows development)

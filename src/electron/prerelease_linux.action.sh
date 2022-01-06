@@ -19,7 +19,7 @@
 #  - auto-updates are configured
 
 function usage () {
-  echo "$0 [version] [-s stagingPercentage]" 1>&2
+  echo "$0 [-s stagingPercentage] version" 1>&2
   echo "  version: Version of the prerelease" 1>&2
   echo "  -s: The staged rollout percentage for this release.  Must be in the interval (0, 100].  Defaults to 100" 1>&2
   echo "  -h: this help message" 1>&2
@@ -37,15 +37,18 @@ while getopts s:? opt; do
     *) usage ;;
   esac
 done
+shift $((OPTIND-1))
+
+VERSION=$1
 
 if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   echo "Staging percentage must be greater than 0 and no more than 100"
   exit 1
 fi
 
-npm run action src/electron/package_common
+npm run action src/electron/package_common $VERSION
 
-scripts/environment_json.sh -r -p linux > www/environment.json
+scripts/environment_json.sh -r -p linux $VERSION > www/environment.json
 
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)

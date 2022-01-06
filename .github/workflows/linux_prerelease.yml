@@ -12,18 +12,18 @@ jobs:
     name: Create Linux Prerelease
     runs-on: ubuntu-20.04
     timeout-minutes: 15
-    environment: Production / Linux
+    environment: Prerelease / Linux
     env:
-      PRERELEASE_VERSION: ${{ github.event.inputs.version_number }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
 
       - name: Create Release Candidate Tag
-        id: tags
-        run: echo ::set-output name=prelease::"$(npm run action scripts/semantic_version linux "${{ env.PRELEASE_VERSION }})" prerelease)"
+        run: echo "PRERELEASE_TAG=$(bash ./scripts/semantic_version.sh ${{ github.event.inputs.version_number }} linux prerelease)" >> $GITHUB_ENV
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -37,21 +37,21 @@ jobs:
         run: |
           git config --global user.name "OutlineBot"
           git config --global user.email "bot@getoutline.org" # TODO
-          git tag ${{ steps.tags.outputs.prerelease }}
+          git tag ${{ env.PRERELEASE_TAG }}
 
       - name: Build Release Candidate Linux Client
-        run: npm run action src/electron/prerelease_linux ${{ steps.tags.outputs.prerelease }}
+        run: npm run action src/electron/prerelease_linux ${{ github.event.inputs.version_number }}
       
       - name: Push Release Candidate Tag
-        run: git push origin ${{ steps.tags.outputs.prerelease }}
+        run: git push origin ${{ env.PRERELEASE_TAG }}
 
       - name: Create Prerelease
         uses: softprops/action-gh-release@v1
         id: prerelease
         with:
-          name: "Linux Client v${{ env.PRERELEASE_VERSION }}"
-          tag_name: ${{ steps.tags.outputs.prerelease }}
+          name: "Linux Client v${{ github.event.inputs.version_number }}"
+          tag_name: ${{ env.PRERELEASE_TAG }}
           prerelease: true
           files: |
             build/dist/Outline-Client.AppImage
-            build/dist/latest-linux.yml
+            build/dist/beta-linux.yml

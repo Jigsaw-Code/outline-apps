@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run action src/electron/build
+VERSION=$1
+
+npm run action src/electron/build $VERSION
 
 # Icons.
 electron-icon-maker --input=resources/electron/icon.png --output=build

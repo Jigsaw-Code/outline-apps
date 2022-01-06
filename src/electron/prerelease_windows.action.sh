@@ -20,14 +20,14 @@
 #  - auto-updates are configured
 
 function usage () {
-  echo "$0 [version] [-s stagingPercentage]" 1>&2
-  echo "  -v: Version of the prerelease" 1>&2
+  echo "$0 [-s stagingPercentage] version" 1>&2
+  echo "  version: the version of hte application to release"
   echo "  -s: The staged rollout percentage for this release.  Must be in the interval (0, 100].  Defaults to 100" 1>&2
   echo "  -h: this help message" 1>&2
   echo 1>&2
   echo "Examples:" 1>&2
-  echo "Pushes a release candidate of Windows version 1.2.3 to 10% of users listening on the beta channel" 1>&2
-  echo "  $0 1.2.3 -s 10" 1>&2
+  echo "Releases the beta of Windows version 1.2.3 to 10% of users listening on the beta channel" 1>&2
+  echo "TRAVIS_TAG=win-v1.2.3-beta  $0 -s 10" 1>&2
   exit 1
 }
 
@@ -38,15 +38,18 @@ while getopts s:? opt; do
     *) usage ;;
   esac
 done
+shift $((OPTIND-1))
+
+VERSION=$1
 
 if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   echo "Staging percentage must be greater than 0 and no more than 100"
   exit 1
 fi
 
-npm run action src/electron/package_common
+npm run action src/electron/package_common $VERSION
 
-scripts/environment_json.sh -r -p windows > www/environment.json
+scripts/environment_json.sh -r -p windows $VERSION > www/environment.json
 
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
@@ -56,7 +59,7 @@ readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&s
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.sh -p windows)"
+!define RELEASE "$(scripts/semantic_version.sh $VERSION windows prerelease)"
 !define SENTRY_URL "${SENTRY_URL}"
 EOF
 
@@ -67,7 +70,7 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -v "${VERSION}" -p windows -e prerelease) \
+  --config.extraMetadata.version=$(scripts/semantic_version.sh "${VERSION}" windows prerelease) \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
