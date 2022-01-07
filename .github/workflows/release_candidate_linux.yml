@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       version_number:
-        description: "Version of Linux Client to create Release Candidate for"
+        description: "Release Candidate Version"
         required: true
 
 jobs:
   create_release_candidiate:
-    name: Linux Release Candidate - ${{ github.event.inputs.version_number }}
+    name: "[${{ github.event.inputs.version_number }}] Linux Release Candidate"
     runs-on: ubuntu-20.04
     timeout-minutes: 15
     environment: Release Candidate / Linux
@@ -40,7 +40,7 @@ jobs:
           git tag ${{ env.SEMVER_RC_TAG }}
 
       - name: Build Linux Release Candidate
-        run: npm run action src/electron/linux_release_candidate ${{ github.event.inputs.version_number }}
+        run: npm run action src/electron/release_candidate_linux ${{ github.event.inputs.version_number }}
       
       - name: Push Release Candidate Tag
         run: git push origin ${{ env.SEMVER_RC_TAG }}
