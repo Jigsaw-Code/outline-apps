@@ -40,7 +40,7 @@ jobs:
           git tag ${{ env.SEMVER_RC_TAG }}
 
       - name: Build Linux Release Candidate
-        run: npm run action src/electron/release_candidate_linux ${{ github.event.inputs.version_number }}
+        run: npm run action src/electron/release_candidate_linux ${{ env.SEMVER_RC_TAG }}
       
       - name: Push Release Candidate Tag
         run: git push origin ${{ env.SEMVER_RC_TAG }}
