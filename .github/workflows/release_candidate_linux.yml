@@ -1,0 +1,55 @@
+name: Linux Release Candidate
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: "Version of Linux Client to create Release Candidate for"
+        required: true
+
+jobs:
+  create_release_candidiate:
+    name: Linux Release Candidate - ${{ github.event.inputs.version_number }}
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+    environment: Release Candidate / Linux
+    env:
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+
+      - name: Create Release Candidate Tag
+        run: echo "SEMVER_RC_TAG=$(bash ./scripts/semantic_version.sh ${{ github.event.inputs.version_number }} linux prerelease)" >> $GITHUB_ENV
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Tag Release Candidate
+        run: |
+          git config --global user.name "OutlineBot"
+          git config --global user.email "firehook-team-admin@google.com"
+          git tag ${{ env.SEMVER_RC_TAG }}
+
+      - name: Build Linux Release Candidate
+        run: npm run action src/electron/linux_release_candidate ${{ github.event.inputs.version_number }}
+      
+      - name: Push Release Candidate Tag
+        run: git push origin ${{ env.SEMVER_RC_TAG }}
+
+      - name: Upload Linux Release Candidate
+        uses: actions/upload-artifact@v2
+        with:
+          name: unsigned-${{ env.SEMVER_RC_TAG }}
+          path: |
+            build/dist/Outline-Client.AppImage
+            build/dist/linux-beta.yml
+          if-no-files-found: error

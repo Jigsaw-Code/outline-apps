@@ -20,8 +20,8 @@
 #  - auto-updates are configured
 
 function usage () {
-  echo "$0 [-s stagingPercentage] version" 1>&2
-  echo "  version: the version of hte application to release"
+  echo "$0 [-s stagingPercentage] semver" 1>&2
+  echo "  semver: Semantic version of the release candidate" 1>&2
   echo "  -s: The staged rollout percentage for this release.  Must be in the interval (0, 100].  Defaults to 100" 1>&2
   echo "  -h: this help message" 1>&2
   echo 1>&2
@@ -40,16 +40,16 @@ while getopts s:? opt; do
 done
 shift $((OPTIND-1))
 
-VERSION=$1
+SEMVER=$1
 
 if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   echo "Staging percentage must be greater than 0 and no more than 100"
   exit 1
 fi
 
-npm run action src/electron/package_common $VERSION
+npm run action src/electron/package_common $SEMVER
 
-scripts/environment_json.sh -r -p windows $VERSION > www/environment.json
+scripts/environment_json.sh -r -p windows $SEMVER > www/environment.json
 
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
@@ -59,7 +59,7 @@ readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&s
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.sh $VERSION windows prerelease)"
+!define RELEASE "${SEMVER}"
 !define SENTRY_URL "${SENTRY_URL}"
 EOF
 
@@ -70,7 +70,7 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh "${VERSION}" windows prerelease) \
+  --config.extraMetadata.version=${SEMVER} \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \

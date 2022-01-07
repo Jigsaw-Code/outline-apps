@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION=${1:-0.0.0}
+SEMVER=${1:-0.0.0}
 
-npm run action src/electron/package_common $VERSION
+npm run action src/electron/package_common $SEMVER
 
 electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh $VERSION linux development)
+  --config.extraMetadata.version=${SEMVER}

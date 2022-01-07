@@ -21,8 +21,8 @@ PLATFORM=
 #       src/electron/build_action.sh for more info).
 
 function usage () {
-  echo "$0 [-r] [-h] version" 1>&2
-  echo "  version: app version"
+  echo "$0 [-r] [-h] semver" 1>&2
+  echo "  semver: semantic app version"
   echo "  -r: use prod Sentry keys" 1>&2
   echo "  -p: platform (android, ios, osx, browser, windows, linux, or dev)" 1>&2
   echo "  -h: this help message" 1>&2
@@ -42,7 +42,7 @@ while getopts rp:h? opt; do
 done
 shift $((OPTIND-1))
 
-VERSION=$1
+SEMVER=$1
 
 function pull_from_config_xml() {
   cat << EOM | node
@@ -98,7 +98,7 @@ case $PLATFORM in
     APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
     ;;
   windows | linux | dev)
-    APP_VERSION="${VERSION}"
+    APP_VERSION="${SEMVER}"
     APP_BUILD_NUMBER="NA"
     ;;
   *) usage ;;
