@@ -192,7 +192,7 @@ import {ServerConnectionState} from './server_connection_viz';
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
 
-  @computed('serverId', 'isOutlineServer', 'localize')
+  @computed('serverName', 'isOutlineServer', 'localize')
   get localizedServerName() {
     if (this.serverName.length) {
       return this.serverName;
