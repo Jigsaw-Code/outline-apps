@@ -1,0 +1,99 @@
+name: Production
+
+on: release
+  types: 
+    - released
+
+jobs:
+  parse-tag:
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      metadata: ${{ steps.metadata.outputs.metadata }}
+    steps:
+      - run: |
+          echo "SEMVER_RC_VERSION=${${{ env.GITHUB_REF }}%%-*}" >> $GITHUB_ENV
+          echo "SEMVER_RC_METADATA=${${{ env.GITHUB_REF }}#*+}" >> $GITHUB_ENV
+      - id: version
+        run: echo "::set-output name=version::${{ env.SEMVER_RC_VERSION }}"
+      - id: metadata
+        run: echo "::set-output name=metadata::${{ env.SEMVER_RC_METADATA }}"
+  linux:
+    needs: parse-tag
+    if: ${{ needs.parse-tag.outputs.metadata }} == "linux"
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    environment: Production / Linux
+    needs: parse-tag
+    env:
+      GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
+    steps:
+    - name: Download Release Candidate
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: release_candidate_linux.yml
+        commit: ${{ env.GITHUB_SHA }}
+
+    # TODO: sign release candidate?
+
+    - name: Attach Binary to Release
+      uses: actions/upload-release-asset@v1.0.1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./build/dist/Outline-Client.AppImage
+        asset_name: Outline-Client.AppImage
+        asset_content_type: application/x-appimage
+
+    - name: Attach Manifest to Release
+      uses: actions/upload-release-asset@v1.0.1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./build/dist/linux-beta.AppImage
+        asset_name: linux-latest.AppImage
+        asset_content_type: application/x-yaml
+
+    - name: Checkout Releases Repository
+      uses: actions/checkout@v2.3.4
+      with:
+        repository: ${{ env.RELEASES_REPOSITORY }}
+        token: ${{ env.GITHUB_TOKEN }}
+        path: outline-releases
+
+    - name: Commit to Releases Repository
+      run: |
+        cd outline-releases
+        ./release_linux_client.sh ${{ env.GITHUB_REF }}
+
+  # windows: 
+  #   needs: parse-tag
+  #   if: ${{ needs.parse-tag.outputs.metadata }} == "windows"
+  #   runs-on: windows-2019
+  #   timeout-minutes: 10
+  #   environment: Production / Windows
+  #   env:
+  #     GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  #   steps: TODO
+
+  # android: 
+  #   needs: parse-tag
+  #   if: ${{ needs.parse-tag.outputs.metadata }} == "android"
+  #   runs-on: ubuntu-20.04
+  #   timeout-minutes: 10
+  #   environment: Production / Android
+  #   steps: TODO
+
+  # mac: 
+  #   needs: parse-tag
+  #   if: ${{ needs.parse-tag.outputs.metadata }} == "osx"
+  #   runs-on: macos-11
+  #   timeout-minutes: 10
+  #   environment: Production / MacOS
+  #   steps: TODO
+
+  # ios: 
+  #   needs: parse-tag
+  #   if: ${{ needs.parse-tag.outputs.metadata }} == "ios"
+  #   runs-on: macos-11
+  #   timeout-minutes: 10
+  #   environment: Production / iOS
+  #   steps: TODO
