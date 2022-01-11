@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_number:
-        description: "Release Candidate Version"
+        description: "Release Candidate Version (example 2.4.15)"
         required: true
 
 jobs:
@@ -22,9 +22,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Release Candidate Tag
-        run: echo "SEMVER_RC_TAG=$(bash ./scripts/semantic_version.sh ${{ github.event.inputs.version_number }} linux prerelease)" >> $GITHUB_ENV
-
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
@@ -33,10 +30,13 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Create Release Candidate Tag
+        run: echo "SEMVER_RC_TAG=$(bash ./scripts/semantic_version.sh ${{ github.event.inputs.version_number }} linux prerelease)" >> $GITHUB_ENV
+
       - name: Tag Release Candidate
         run: |
           git config --global user.name "OutlineBot"
-          git config --global user.email "firehook-team-admin@google.com"
+          git config --global user.email "outlinebot@users.noreply.github.com"
           git tag ${{ env.SEMVER_RC_TAG }}
 
       - name: Build Linux Release Candidate

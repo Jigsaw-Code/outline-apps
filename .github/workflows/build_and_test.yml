@@ -1,15 +1,4 @@
-# The following workflow is run during the development PR process and is required to pass in order for a developer
-# to merge code into the main branch. Currently checks:
-
-# - Web app unit tests
-# - Development builds for
-  # - windows
-  # - linux
-  # - macos
-  # - iOS
-  # - android
-
-name: Development
+name: Build and Test
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
@@ -117,7 +106,6 @@ jobs:
     name: iOS
     runs-on: macos-11
     timeout-minutes: 10
-    environment: Development / iOS
     env:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
@@ -138,19 +126,16 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_12.5.app
 
       - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote
+        run: npx gulp build --platform=ios
 
-      - name: Debug iOS build
-        run: ls -R platforms/ios
       # TODO: upload artifact
 
   android:
     name: Android
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    environment: Development / Android
     env:
-      ANDROID_SDK_ROOT: ${{ secrets.ANDROID_SDK_ROOT }}
+      ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
