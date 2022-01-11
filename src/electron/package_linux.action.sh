@@ -20,4 +20,4 @@ electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p dev)
+  --config.extraMetadata.version=$(node scripts/get_version.mjs linux)

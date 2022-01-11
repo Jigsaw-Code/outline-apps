@@ -41,69 +41,13 @@ while getopts rp:h? opt; do
 done
 shift $((OPTIND-1))
 
-function pull_from_config_xml() {
-  cat << EOM | node
-const fs = require('fs');
-const xml2js = require('xml2js');
-const s = fs.readFileSync('config.xml');
-xml2js.parseString(s, function(err, result) {
-  console.log($1);
-});
-EOM
-}
-
-function pull_from_plist() {
-  cat << EOM | node
-const fs = require('fs');
-const xml2js = require('xml2js');
-const s = fs.readFileSync('$1');
-xml2js.parseString(s, function(err, result) {
-  const dict = result['plist']['dict'][0];
-  const keys = dict['key'];
-  const values = dict['string'];
-  console.log(values[keys.indexOf('$2')]);
-});
-EOM
-}
-
-function pull_from_ios_plist() {
-  pull_from_plist "apple/xcode/ios/Outline/Outline-Info.plist" $1
-}
-
-function pull_from_osx_plist() {
-  pull_from_plist "apple/xcode/osx/Outline/Outline-Info.plist" $1
-}
-
-function validate_env_vars() {
-  if [[ -z ${SENTRY_DSN:-} ]]; then
-    echo "SENTRY_DSN is undefined." 1>&2
-    exit 1
-  fi
-}
-
-case $PLATFORM in
-  android | browser)
-    APP_VERSION=$(pull_from_config_xml 'result.widget.$["version"]')
-    APP_BUILD_NUMBER=$(pull_from_config_xml 'result.widget.$["android-versionCode"]')
-    ;;
-  ios)
-    APP_VERSION=$(pull_from_ios_plist CFBundleShortVersionString)
-    APP_BUILD_NUMBER=$(pull_from_ios_plist CFBundleVersion)
-    ;;
-  osx)
-    APP_VERSION=$(pull_from_osx_plist CFBundleShortVersionString)
-    APP_BUILD_NUMBER=$(pull_from_osx_plist CFBundleVersion)
-    ;;
-  windows | linux | dev)
-    APP_VERSION=$($(dirname $0)/semantic_version.sh -p $PLATFORM)
-    APP_BUILD_NUMBER="NA"
-    ;;
-  *) usage ;;
-esac
-
-if [[ "${TYPE}" == "release" ]]; then
-  validate_env_vars
+if [[ "${TYPE}" == "release" && -z ${SENTRY_DSN:-} ]]; then
+  echo "SENTRY_DSN is undefined." 1>&2
+  exit 1
 fi
+
+APP_VERSION=$(node $(dirname $0)/get_version.mjs -p $PLATFORM)
+APP_BUILD_NUMBER=$(node $(dirname $0)/get_build_number.mjs -p $PLATFORM)
 
 cat << EOM
 {

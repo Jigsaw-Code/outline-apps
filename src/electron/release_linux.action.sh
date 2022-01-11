@@ -60,7 +60,7 @@ electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p linux) \
+  --config.extraMetadata.version=$(node scripts/get_version.mjs linux) \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
   --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux

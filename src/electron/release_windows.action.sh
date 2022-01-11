@@ -62,7 +62,7 @@ readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&s
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.sh -p windows)"
+!define RELEASE "$(node scripts/get_version.mjs windows)"
 !define SENTRY_URL "${SENTRY_URL}"
 EOF
 
@@ -73,7 +73,7 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p windows) \
+  --config.extraMetadata.version=$(node scripts/get_version.mjs windows) \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \
