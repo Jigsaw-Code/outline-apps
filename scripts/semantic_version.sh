@@ -16,6 +16,9 @@
 
 # Outputs a semantic version for the app, intended for the given platform and environment.
 
+# In development, for the inputs 1.2.2 android development, the resulting tag would be 1.2.2+android.eg34og
+# In prerelease, the resulting tag would be 1.2.2-rc0+android, where rc0 refers to 
+
 function usage () {
   echo "$0 version platform environment" 1>&2
   echo "  version: the new version of the application" 1>&2
@@ -34,12 +37,13 @@ ENVIRONMENT=$3
 [[ ! $SEMVER_VERSION || ! $PLATFORM || ! $ENVIRONMENT ]] && usage
 [[ "${SEMVER_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2
 
-SEMVER_METADATA="+${PLATFORM}"
+SEMVER_METADATA=
 SEMVER_PRERELEASE=
 
 if [[ "${ENVIRONMENT}" == "development" ]]; then
   SEMVER_METADATA="+${PLATFORM}.$(git log --pretty=format:'%h' -n 1)"
 elif [[ "${ENVIRONMENT}" == "prerelease" ]]; then
+  SEMVER_METADATA="+${PLATFORM}"
   SEMVER_PRERELEASE="-rc$(git tag -l "${SEMVER_VERSION}-rc*${SEMVER_METADATA}" | wc -l | xargs)"
 fi
 
