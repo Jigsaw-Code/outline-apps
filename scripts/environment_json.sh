@@ -46,8 +46,8 @@ if [[ "${TYPE}" == "release" && -z ${SENTRY_DSN:-} ]]; then
   exit 1
 fi
 
-APP_VERSION=$(node $(dirname $0)/get_version.mjs -p $PLATFORM)
-APP_BUILD_NUMBER=$(node $(dirname $0)/get_build_number.mjs -p $PLATFORM)
+APP_VERSION="$(node "$(dirname "$0")/get_version.mjs" -p "$PLATFORM")"
+APP_BUILD_NUMBER="$(node "$(dirname "$0")/get_build_number.mjs" -p "$PLATFORM")"
 
 cat << EOM
 {
