@@ -15,15 +15,6 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 
-async function main () {
-  const platform = process.argv[2];
-
-  console.log(await getBuildNumber(platform));
-}
-
-main();
-
-// lib
 async function getBuildNumber(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
@@ -47,6 +38,16 @@ async function getBuildNumber(platform) {
     case "windows":
     case "linux":
     default:
-      return "NA";
+      return;
   }
 }
+
+async function main () {
+  const platform = process.argv[2];
+
+  const result = await getBuildNumber(platform);
+
+  result && console.log(result);
+}
+
+await main();

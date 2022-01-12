@@ -14,15 +14,6 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 
-async function main () {
-  const platform = process.argv[2];
-
-  console.log(await getVersion(platform));
-}
-
-main();
-
-// lib
 async function getVersion(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
@@ -50,3 +41,11 @@ async function getVersion(platform) {
       return "1.4.0";
   }  
 }
+
+async function main () {
+  const platform = process.argv[2];
+
+  console.log(await getVersion(platform));
+}
+
+await main();
