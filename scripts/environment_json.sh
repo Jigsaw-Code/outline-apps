@@ -31,6 +31,12 @@ function usage () {
   exit 1
 }
 
+function join () {
+  local IFS="$1"
+  shift
+  echo "$*"
+}
+
 while getopts rp:h? opt; do
   case $opt in
     r) TYPE=release ;;
@@ -52,15 +58,15 @@ APP_BUILD_NUMBER="$(node "$(dirname "$0")/get_build_number.mjs" "${PLATFORM}")"
 environment=()
 
 if [[ ! -z ${SENTRY_DSN:-} ]]; then
-  environment+=("\"SENTRY_DSN\": ${SENTRY_DSN}")
+  environment+=("\"SENTRY_DSN\": \"${SENTRY_DSN}\"")
 fi
 
 if [[ ! -z ${APP_VERSION:-} ]]; then
-  environment+=("\"APP_VERSION\": ${APP_VERSION}")
+  environment+=("\"APP_VERSION\": \"${APP_VERSION}\"")
 fi
 
 if [[ ! -z ${APP_BUILD_NUMBER:-} ]]; then
-  environment+=("\"APP_BUILD_NUMBER\": ${APP_BUILD_NUMBER}")
+  environment+=("\"APP_BUILD_NUMBER\": \"${APP_BUILD_NUMBER}\"")
 fi
 
-echo "{$(join , "${environment[@]}")}"
+echo "{$(join , ${environment[@]})}"
