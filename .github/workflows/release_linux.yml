@@ -50,10 +50,11 @@ jobs:
     
     - name: Push to Releases Repository
       run: |
-        mv build/dist/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
-        mv build/dist/linux-beta.yml outline-releases/client/stable/linux-latest.yml
+        cp build/dist/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
+        cp build/dist/linux-latest.yml outline-releases/client/stable/linux-latest.yml
         RELEASE_VERSION="$(node scripts/get_version.mjs linux)""
         cd outline-releases
         git add client/stable/Outline-Client.AppImage client/stable/linux-latest.yml
         git commit -m "release linux client ${RELEASE_VERSION}"
+        git tag "linux-${RELEASE_VERSION}"
         git push origin master

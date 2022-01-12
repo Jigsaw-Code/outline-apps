@@ -32,7 +32,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: linux-${{ env.GITHUB_REF }}
-          path: |
-            build/dist/Outline-Client.AppImage
-            build/dist/linux-beta.yml
+          path: build/dist
           if-no-files-found: error
