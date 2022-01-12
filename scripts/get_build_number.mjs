@@ -15,6 +15,13 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 
+/*
+  Inputs:
+  => platform: the platform to get the build number for
+
+  Outputs:
+  => the build number for the given platform. Does nothing if not applicable.
+*/
 async function getBuildNumber(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));

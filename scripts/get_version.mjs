@@ -14,6 +14,13 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 
+/*
+  Inputs:
+  => platform: the platform to get the current version for
+
+  Outputs:
+  => the MAJOR.MINOR.PATCH formatted version number for the given platform
+*/
 async function getVersion(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
@@ -37,8 +44,9 @@ async function getVersion(platform) {
     case "windows":
       return "1.7.0";
     case "linux":
-    default:
       return "1.4.0";
+    default:
+      throw new Error("get_version must be provided a platform argument");
   }  
 }
 

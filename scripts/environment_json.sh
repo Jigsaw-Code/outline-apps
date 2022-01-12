@@ -46,13 +46,21 @@ if [[ "${TYPE}" == "release" && -z ${SENTRY_DSN:-} ]]; then
   exit 1
 fi
 
-APP_VERSION="$(node "$(dirname "$0")/get_version.mjs" -p "$PLATFORM")"
-APP_BUILD_NUMBER="$(node "$(dirname "$0")/get_build_number.mjs" -p "$PLATFORM")"
+APP_VERSION="$(node "$(dirname "$0")/get_version.mjs" "${PLATFORM}")"
+APP_BUILD_NUMBER="$(node "$(dirname "$0")/get_build_number.mjs" "${PLATFORM}")"
 
-cat << EOM
-{
-  "APP_VERSION": "$APP_VERSION",
-  "APP_BUILD_NUMBER": "$APP_BUILD_NUMBER",
-  "SENTRY_DSN": "${SENTRY_DSN:-}"
-}
-EOM
+environment=()
+
+if [[ ! -z ${SENTRY_DSN:-} ]]; then
+  environment+=("\"SENTRY_DSN\": ${SENTRY_DSN}")
+fi
+
+if [[ ! -z ${APP_VERSION:-} ]]; then
+  environment+=("\"APP_VERSION\": ${APP_VERSION}")
+fi
+
+if [[ ! -z ${APP_BUILD_NUMBER:-} ]]; then
+  environment+=("\"APP_BUILD_NUMBER\": ${APP_BUILD_NUMBER}")
+fi
+
+echo "{$(join , "${environment[@]}")}"
