@@ -6,7 +6,6 @@ switch (platform) {
   case "android":
   case "browser":
     const { widget } = await parseFile("config.xml");
-
     console.log(widget.$["android-versionCode"]);
     break;
   case "ios":
