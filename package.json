@@ -75,7 +75,7 @@
     "clang-format": "^1.0.55",
     "copy-webpack-plugin": "^5.1.1",
     "cordova": "~10.0.0",
-    "cordova-android": "~9.0.0",
+    "cordova-android": "^10.1.1",
     "cordova-browser": "~6.0.0",
     "cordova-ios": "~6.1.0",
     "cordova-osx": "github:Jigsaw-Code/cordova-osx",
