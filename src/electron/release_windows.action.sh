@@ -52,7 +52,7 @@ fi
 
 npm run action src/electron/package_common
 
-scripts/environment_json.sh -r -p windows > www/environment.json
+node scripts/environment_json.mjs windows release > www/environment.json
 
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].

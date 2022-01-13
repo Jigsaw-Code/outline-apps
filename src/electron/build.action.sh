@@ -22,4 +22,4 @@ webpack --config=src/electron/electron_main.webpack.js \
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+node scripts/environment_json.mjs > www/environment.json

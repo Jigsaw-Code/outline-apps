@@ -27,18 +27,14 @@ async function getVersion(platform) {
   switch (platform) {
     case "android":
     case "browser":
-      const { widget } = await parseFile("config.xml");
+      const {widget} = await parseFile("config.xml");
       return widget.$.version;
     case "ios":
     case "osx":
-      const { 
-        plist: { 
-          dict: 
-            [{ 
-              key: plistKeys, 
-              string: plistValues 
-          }] 
-        } 
+      const {
+        plist: {
+          dict: [{key: plistKeys, string: plistValues}],
+        },
       } = await parseFile(`apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf("CFBundleShortVersionString")];
     case "windows":
@@ -49,10 +45,10 @@ async function getVersion(platform) {
       return "0.0.0-dev";
     default:
       throw new Error("get_version must be provided a platform argument");
-  }  
+  }
 }
 
-async function main () {
+async function main() {
   const platform = process.argv[2];
 
   console.log(await getVersion(platform));

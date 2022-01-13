@@ -28,18 +28,14 @@ async function getBuildNumber(platform) {
   switch (platform) {
     case "android":
     case "browser":
-      const { widget } = await parseFile("config.xml");
+      const {widget} = await parseFile("config.xml");
       return widget.$["android-versionCode"];
     case "ios":
     case "osx":
       const {
         plist: {
-          dict:
-            [{
-              key: plistKeys,
-              string: plistValues
-          }]
-        }
+          dict: [{key: plistKeys, string: plistValues}],
+        },
       } = await parseFile(`apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf("CFBundleVersion")];
     case "windows":
@@ -49,7 +45,7 @@ async function getBuildNumber(platform) {
   }
 }
 
-async function main () {
+async function main() {
   const platform = process.argv[2];
 
   const result = await getBuildNumber(platform);
