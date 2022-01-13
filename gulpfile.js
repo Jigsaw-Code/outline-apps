@@ -126,7 +126,7 @@ function validateBuildEnvironment(cb) {
 // Writes a JSON file accessible to environment.ts containing environment variables.
 function writeEnvJson() {
   // bash for Windows' (Cygwin's) benefit (sh can *not* run this script, at least on Alpine).
-  return runCommand(`bash node scripts/environment_json.mjs ${platform} ${isRelease ? 'release' : ''} > ${
+  return runCommand(`node scripts/environment_json.mjs ${platform} ${isRelease ? 'release' : ''} > ${
       WEBAPP_OUT}/environment.json`);
 }
 
