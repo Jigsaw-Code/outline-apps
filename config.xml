@@ -46,6 +46,8 @@
         <splash density="xxhdpi" src="resources/splashscreen/android/splashscreen_xxhdpi.png" />
         <splash density="xxxhdpi" src="resources/splashscreen/android/splashscreen_xxxhdpi.png" />
 
+        <preference name="AndroidInsecureFileModeEnabled" value="true" />
+
         <custom-config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
