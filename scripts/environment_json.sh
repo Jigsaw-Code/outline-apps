@@ -48,7 +48,7 @@ done
 shift $((OPTIND-1))
 
 if [[ "${TYPE}" == "release" && -z ${SENTRY_DSN:-} ]]; then
-  echo "SENTRY_DSN is undefined." 1>&2
+  echo "Release builds require SENTRY_DSN, but it is not defined." 1>&2
   exit 1
 fi
 
