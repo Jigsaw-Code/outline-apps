@@ -14,7 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run action src/electron/build
+PLATFORM="${1:-}"
+RELEASE="${2:-}"
+
+npm run action src/electron/build "${PLATFORM}" "${RELEASE}"
 
 # Icons.
 electron-icon-maker --input=resources/electron/icon.png --output=build

@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+PLATFORM="${1:-}"
+RELEASE="${2:-}"
+
 npm run action src/www/build_electron
 
 webpack --config=src/electron/electron_main.webpack.js \
@@ -22,4 +25,4 @@ webpack --config=src/electron/electron_main.webpack.js \
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs > www/environment.json
+node scripts/environment_json.mjs "${PLATFORM}" "${RELEASE}" > www/environment.json

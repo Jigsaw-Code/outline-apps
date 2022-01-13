@@ -50,9 +50,7 @@ else
   INFO_FILE_CHANNEL="latest"
 fi
 
-npm run action src/electron/package_common
-
-node scripts/environment_json.mjs windows release > www/environment.json
+npm run action src/electron/package_common windows release
 
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].

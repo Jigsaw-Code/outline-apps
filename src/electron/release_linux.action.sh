@@ -49,9 +49,7 @@ else
   INFO_FILE_CHANNEL="latest"
 fi
 
-npm run action src/electron/package_common
-
-node scripts/environment_json.mjs linux release > www/environment.json
+npm run action src/electron/package_common linux release
 
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
