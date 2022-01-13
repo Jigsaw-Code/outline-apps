@@ -31,7 +31,7 @@ function main() {
 
   const result = {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION: execSync(`node ./scripts/get_version.mjs ${platform}`, {encoding: "utf-8"}).trim() || "0.0.0-dev",
+    APP_VERSION: platform ? execSync(`node ./scripts/get_version.mjs ${platform}`, {encoding: "utf-8"}).trim() : "0.0.0-dev",
     APP_BUILD_NUMBER:
       execSync(`node ./scripts/get_build_number.mjs ${platform}`, {encoding: "utf-8"}).trim() || undefined,
   };
