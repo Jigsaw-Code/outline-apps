@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {execSync} from "child_process";
+import {getVersion} from "./get_version.mjs";
+import {getBuildNumber} from "./get_build_number.mjs";
+import url from "url";
 
 /*
   Inputs:
@@ -22,21 +24,25 @@ import {execSync} from "child_process";
   Outputs:
   => the environment.json contents
 */
-function main() {
-  const [platform, release] = process.argv.slice(2);
-
+export async function environmentJson(platform, release) {
   if (release && !process.env.SENTRY_DSN) {
     throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
   }
 
-  const result = {
+  return {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION: platform ? execSync(`node ./scripts/get_version.mjs ${platform}`, {encoding: "utf-8"}).trim() : "0.0.0-dev",
-    APP_BUILD_NUMBER:
-      execSync(`node ./scripts/get_build_number.mjs ${platform}`, {encoding: "utf-8"}).trim() || undefined,
+    APP_VERSION: platform ? await getVersion(platform) : "0.0.0-dev",
+    APP_BUILD_NUMBER: await getBuildNumber(platform)
   };
-
-  console.log(JSON.stringify(result));
 }
 
-main();
+async function main() {
+  const [platform, release] = process.argv.slice(2);
+
+  console.log(JSON.stringify(await environmentJson(platform, release)));
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  main();
+}
+

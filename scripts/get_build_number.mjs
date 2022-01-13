@@ -14,6 +14,7 @@
 
 import xml2js from "xml2js";
 import fs from "fs/promises";
+import url from "url";
 
 /*
   Inputs:
@@ -22,7 +23,7 @@ import fs from "fs/promises";
   Outputs:
   => the build number for the given platform. Does nothing if not applicable.
 */
-async function getBuildNumber(platform) {
+export async function getBuildNumber(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
@@ -53,4 +54,6 @@ async function main() {
   result && console.log(result);
 }
 
-await main();
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main();
+}

@@ -11,8 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 import xml2js from "xml2js";
 import fs from "fs/promises";
+import url from "url";
 
 /*
   Inputs:
@@ -21,7 +23,7 @@ import fs from "fs/promises";
   Outputs:
   => the MAJOR.MINOR.PATCH formatted version number for the given platform
 */
-async function getVersion(platform) {
+export async function getVersion(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
@@ -41,8 +43,6 @@ async function getVersion(platform) {
       return "1.7.0";
     case "linux":
       return "1.4.0";
-    case "dev":
-      return "0.0.0-dev";
     default:
       throw new Error("get_version must be provided a platform argument");
   }
@@ -54,4 +54,6 @@ async function main() {
   console.log(await getVersion(platform));
 }
 
-await main();
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main();
+}
