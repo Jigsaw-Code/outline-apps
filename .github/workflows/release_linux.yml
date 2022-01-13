@@ -55,6 +55,6 @@ jobs:
         RELEASE_VERSION="$(node scripts/get_version.mjs linux)""
         cd outline-releases
         git add client/stable/Outline-Client.AppImage client/stable/linux-latest.yml
-        git commit -m "release linux client ${RELEASE_VERSION}"
+        git commit -m "Release linux client ${RELEASE_VERSION}"
         git tag "linux-${RELEASE_VERSION}"
         git push origin master
