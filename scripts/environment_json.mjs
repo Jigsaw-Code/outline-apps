@@ -29,9 +29,19 @@ export async function environmentJson(platform, release) {
     throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
   }
 
+  let APP_VERSION;
+
+  try {
+    APP_VERSION = await getVersion(platform);
+  } catch (error) {
+    if (!release) {
+      APP_VERSION = "0.0.0-dev";
+    }
+  }
+
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION: platform ? await getVersion(platform) : "0.0.0-dev",
+    APP_VERSION,
     APP_BUILD_NUMBER: await getBuildNumber(platform)
   };
 }
