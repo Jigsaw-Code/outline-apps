@@ -14,6 +14,7 @@
 
 /// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
+/// <reference types='cordova'/>
 
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
@@ -29,11 +30,15 @@ import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {FakeNativeNetworking} from './fake_net';
 import {main} from './main';
+import * as errors from '../model/errors';
 import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
+
+const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
+
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -64,7 +69,13 @@ export class CordovaErrorReporter extends SentryErrorReporter {
 
 class CordovaNativeNetworking implements NativeNetworking {
   async isServerReachable(hostname: string, port: number) {
-    return cordova.plugins.outline.net.isServerReachable(hostname, port);
+    return new Promise<boolean>((resolve, reject) => {
+      const rejectWithError = (errorCode: number) => {
+        reject(errors.fromErrorCode(errorCode));
+      };
+      cordova.exec(
+          resolve, rejectWithError, OUTLINE_PLUGIN_NAME, 'isServerReachable', [hostname, port]);
+    });
   }
 }
 

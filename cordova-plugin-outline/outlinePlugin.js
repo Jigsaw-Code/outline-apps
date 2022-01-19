@@ -33,17 +33,6 @@ const log = {
   }
 };
 
-const net = {
-  isServerReachable: function(hostname, port) {
-    return new Promise(function(resolve, reject) {
-      const rejectWithError = function(errorCode) {
-        reject(new OutlinePluginError(errorCode));
-      };
-      exec(resolve, rejectWithError, PLUGIN_NAME, 'isServerReachable', [hostname, port]);
-    });
-  }
-};
-
 function quitApplication() {
   exec(function() {}, function() {}, PLUGIN_NAME, 'quitApplication', []);
 }
@@ -126,6 +115,5 @@ module.exports = {
   Tunnel: Tunnel,
   TunnelStatus: TunnelStatus,
   log: log,
-  net: net,
   quitApplication: quitApplication,
 };

@@ -18,36 +18,35 @@ declare type Tunnel = import('../../www/app/tunnel').Tunnel;
 declare type TunnelStatus = import('../../www/app/tunnel').TunnelStatus;
 declare type ShadowsocksConfig = import('../../www/app/config').ShadowsocksConfig;
 
-declare namespace cordova.plugins.outline {
-  const log: {
-    // Initializes the error reporting framework with the supplied credentials.
-    initialize(apiKey: string): Promise<void>;
+interface CordovaPlugins {
+  outline: {
+    log: {
+      // Initializes the error reporting framework with the supplied credentials.
+      initialize(apiKey: string): Promise<void>;
 
-    // Sends previously captured logs and events to the error reporting
-    // framework.
-    // Associates the report to the provided unique identifier.
-    send(uuid: string): Promise<void>;
+      // Sends previously captured logs and events to the error reporting
+      // framework.
+      // Associates the report to the provided unique identifier.
+      send(uuid: string): Promise<void>;
+    };
+    // Quits the application. Only supported in macOS.
+    quitApplication(): () => void;
+
+    // Implements the Tunnel interface with native functionality.
+    Tunnel: OutlineTunnel
   };
+}
 
-  const net: {
-    isServerReachable(hostname: string, port: number): Promise<boolean>;
-  };
+interface OutlineTunnel extends Tunnel {
+  new(id: string): OutlineTunnel;
 
-  // Quits the application. Only supported in macOS.
-  function quitApplication(): void;
+  readonly id: string;
 
-  // Implements the Tunnel interface with native functionality.
-  class Tunnel implements Tunnel {
-    constructor(id: string);
+  start(config: ShadowsocksConfig): Promise<void>;
 
-    readonly id: string;
+  stop(): Promise<void>;
 
-    start(config: ShadowsocksConfig): Promise<void>;
+  isRunning(): Promise<boolean>;
 
-    stop(): Promise<void>;
-
-    isRunning(): Promise<boolean>;
-
-    onStatusChange(listener: (status: TunnelStatus) => void): void;
-  }
+  onStatusChange(listener: (status: TunnelStatus) => void): void;
 }
