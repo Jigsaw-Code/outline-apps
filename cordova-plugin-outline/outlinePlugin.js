@@ -33,10 +33,6 @@ const log = {
   }
 };
 
-function quitApplication() {
-  exec(function() {}, function() {}, PLUGIN_NAME, 'quitApplication', []);
-}
-
 // This must be kept in sync with:
 //  - cordova-plugin-outline/android/java/org/outline/OutlinePlugin.java#ErrorCode
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
@@ -115,5 +111,4 @@ module.exports = {
   Tunnel: Tunnel,
   TunnelStatus: TunnelStatus,
   log: log,
-  quitApplication: quitApplication,
 };

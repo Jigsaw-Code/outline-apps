@@ -126,7 +126,7 @@ class CordovaPlatform implements OutlinePlatform {
 
   quitApplication() {
     // Only used in macOS because menu bar apps provide no alternative way of quitting.
-    cordova.plugins.outline.quitApplication();
+    cordova.exec(() => {}, () => {}, OUTLINE_PLUGIN_NAME, 'quitApplication', []);
   }
 }
 

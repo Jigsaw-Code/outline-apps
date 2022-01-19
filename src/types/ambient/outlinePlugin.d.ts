@@ -29,8 +29,6 @@ interface CordovaPlugins {
       // Associates the report to the provided unique identifier.
       send(uuid: string): Promise<void>;
     };
-    // Quits the application. Only supported in macOS.
-    quitApplication(): () => void;
 
     // Implements the Tunnel interface with native functionality.
     Tunnel: OutlineTunnel
