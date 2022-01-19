@@ -116,7 +116,7 @@ class CordovaTunnel implements Tunnel {
     const onError = (err: unknown) => {
       console.warn('failed to execute status change listener', err);
     };
-    // Can't use `pluginExec` because the pluging needs to call the listener multiple times.
+    // Can't use `pluginExec` because Cordova needs to call the listener multiple times.
     cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
   }
 }
