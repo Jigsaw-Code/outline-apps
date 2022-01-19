@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/outlinePlugin.d.ts'/>
 /// <reference path='../../types/ambient/webintents.d.ts'/>
 /// <reference types='cordova'/>
 
@@ -33,9 +32,11 @@ import {main} from './main';
 import * as errors from '../model/errors';
 import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
+import {Tunnel, TunnelStatus} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
+import {ShadowsocksConfig} from './config';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
@@ -54,38 +55,69 @@ class CordovaClipboard extends AbstractClipboard {
   }
 }
 
+// Helper function to call the Outline Cordova plugin.
+function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, cmd, args);
+  });
+}
+
+async function pluginExecWithErrorCode<T>(cmd: string, ...args: unknown[]): Promise<T> {
+  try {
+    return await pluginExec<T>(cmd, ...args);
+  } catch (errorCode) {
+    throw errors.fromErrorCode(errorCode);
+  }
+}
+
 // Adds reports from the (native) Cordova plugin.
 class CordovaErrorReporter extends SentryErrorReporter {
   constructor(appVersion: string, appBuildNumber: string, dsn: string) {
     super(appVersion, dsn, {'build.number': appBuildNumber});
+    // Initializes the error reporting framework with the supplied credentials.
     // TODO(fortuna): This is an Promise that is not waited for and can cause a race condition.
     // We should fix it with an async factory function for the Reporter.
-    new Promise<void>((resolve, reject) => {
-      // Initializes the error reporting framework with the supplied credentials.
-      cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, 'initializeErrorReporting', [dsn]);
-    }).catch(console.error);
+    pluginExec<void>('initializeErrorReporting', dsn).catch(console.error);
   }
 
-  async report(userFeedback: string, feedbackCategory: string, userEmail?: string) {
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
     await super.report(userFeedback, feedbackCategory, userEmail);
-    await new Promise((resolve, reject) => {
-      // Sends previously captured logs and events to the error reporting framework.
-      // Associates the report to the provided unique identifier.
-      cordova.exec(
-          resolve, reject, OUTLINE_PLUGIN_NAME, 'reportEvents', [sentry.lastEventId() || '']);
-    });
+    // Sends previously captured logs and events to the error reporting framework.
+    // Associates the report to the provided unique identifier.
+    await pluginExec<void>('reportEvents', sentry.lastEventId() || '');
   }
 }
 
 class CordovaNativeNetworking implements NativeNetworking {
   async isServerReachable(hostname: string, port: number) {
-    return new Promise<boolean>((resolve, reject) => {
-      const rejectWithError = (errorCode: number) => {
-        reject(errors.fromErrorCode(errorCode));
-      };
-      cordova.exec(
-          resolve, rejectWithError, OUTLINE_PLUGIN_NAME, 'isServerReachable', [hostname, port]);
-    });
+    return await pluginExecWithErrorCode<boolean>('isServerReachable', hostname, port);
+  }
+}
+
+class CordovaTunnel implements Tunnel {
+  constructor(public id: string) {}
+
+  start(config: ShadowsocksConfig) {
+    if (!config) {
+      throw new errors.IllegalServerConfiguration();
+    }
+    return pluginExecWithErrorCode<void>('start', this.id, config);
+  }
+
+  stop() {
+    return pluginExecWithErrorCode<void>('stop', this.id);
+  }
+
+  isRunning() {
+    return pluginExecWithErrorCode<boolean>('isRunning', this.id);
+  }
+
+  onStatusChange(listener: (status: TunnelStatus) => void): void {
+    const onError = (err: unknown) => {
+      console.warn('failed to execute status change listener', err);
+    };
+    // Can't use `pluginExec` because the pluging needs to call the listener multiple times.
+    cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
   }
 }
 
@@ -105,8 +137,7 @@ class CordovaPlatform implements OutlinePlatform {
 
   getTunnelFactory() {
     return (id: string) => {
-      return this.hasDeviceSupport() ? new cordova.plugins.outline.Tunnel(id) :
-                                       new FakeOutlineTunnel(id);
+      return this.hasDeviceSupport() ? new CordovaTunnel(id) : new FakeOutlineTunnel(id);
     };
   }
 
