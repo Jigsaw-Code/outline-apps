@@ -55,15 +55,25 @@ class CordovaClipboard extends AbstractClipboard {
 }
 
 // Adds reports from the (native) Cordova plugin.
-export class CordovaErrorReporter extends SentryErrorReporter {
+class CordovaErrorReporter extends SentryErrorReporter {
   constructor(appVersion: string, appBuildNumber: string, dsn: string) {
     super(appVersion, dsn, {'build.number': appBuildNumber});
-    cordova.plugins.outline.log.initialize(dsn).catch(console.error);
+    // TODO(fortuna): This is an Promise that is not waited for and can cause a race condition.
+    // We should fix it with an async factory function for the Reporter.
+    new Promise<void>((resolve, reject) => {
+      // Initializes the error reporting framework with the supplied credentials.
+      cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, 'initializeErrorReporting', [dsn]);
+    }).catch(console.error);
   }
 
   async report(userFeedback: string, feedbackCategory: string, userEmail?: string) {
     await super.report(userFeedback, feedbackCategory, userEmail);
-    await cordova.plugins.outline.log.send(sentry.lastEventId() || '');
+    await new Promise((resolve, reject) => {
+      // Sends previously captured logs and events to the error reporting framework.
+      // Associates the report to the provided unique identifier.
+      cordova.exec(
+          resolve, reject, OUTLINE_PLUGIN_NAME, 'reportEvents', [sentry.lastEventId() || '']);
+    });
   }
 }
 

@@ -20,16 +20,6 @@ declare type ShadowsocksConfig = import('../../www/app/config').ShadowsocksConfi
 
 interface CordovaPlugins {
   outline: {
-    log: {
-      // Initializes the error reporting framework with the supplied credentials.
-      initialize(apiKey: string): Promise<void>;
-
-      // Sends previously captured logs and events to the error reporting
-      // framework.
-      // Associates the report to the provided unique identifier.
-      send(uuid: string): Promise<void>;
-    };
-
     // Implements the Tunnel interface with native functionality.
     Tunnel: OutlineTunnel
   };
