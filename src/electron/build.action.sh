@@ -13,7 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+PLATFORM=
+BUILD_MODE=
 for i in "$@"; do
     case $i in
     --platform=*)
@@ -29,20 +30,21 @@ for i in "$@"; do
         exit 1
         ;;
     *) ;;
-
     esac
 done
 
-npm run action src/www/build_electron "$@"
+npm run action src/www/build_electron -- \
+    --platform="${PLATFORM}" \
+    --buildMode="${BUILD_MODE}"
 
 WEBPACK_MODE=
 case BUILD_MODE in
-debug)
-    WEBPACK_MODE=development
-    ;;
-release)
-    WEBPACK_MODE=production
-    ;;
+    debug)
+        WEBPACK_MODE=development
+        ;;
+    release)
+        WEBPACK_MODE=production
+        ;;
 esac
 
 webpack \
@@ -52,4 +54,6 @@ webpack \
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs "$@" > www/environment.json
+node scripts/environment_json.mjs \
+    --platform="${PLATFORM}" \
+    --buildMode="${BUILD_MODE}" > www/environment.json

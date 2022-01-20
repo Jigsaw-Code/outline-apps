@@ -16,7 +16,7 @@
 
 set -eu
 
-npm run action src/www/build_cordova --buildMode=debug
+npm run action src/www/build_cordova -- --buildMode=debug
 cordova prepare browser
 
 webpack serve \

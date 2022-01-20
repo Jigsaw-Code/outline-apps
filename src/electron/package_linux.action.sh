@@ -13,25 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-BUILD_MODE=debug
-
+PLATFORM=
+BUILD_MODE=
 for i in "$@"; do
-  case $i in
-  --buildMode=*)
-    BUILD_MODE="${i#*=}"
-    shift # past argument=value
-    ;;
-  -* | --*)
-    echo "Unknown option: $i"
-    exit 1
-    ;;
-  *) ;;
-
-  esac
+    case $i in
+    --platform=*)
+        PLATFORM="${i#*=}"
+        shift
+        ;;
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
 done
 
-npm run action src/electron/package_common \
+npm run action src/electron/package_common -- \
   --platform=linux \
   --buildMode="${BUILD_MODE}"
 

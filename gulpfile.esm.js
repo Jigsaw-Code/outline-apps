@@ -28,7 +28,8 @@ import {environmentJson} from "./scripts/environment_json.mjs";
 //
 //////////////////
 //////////////////
-const {platform, buildMode, KEYSTORE, STOREPASS, KEYALIAS, KEYPASS} = minimist(process.argv, {boolean: true});
+const {platform, buildMode, KEYSTORE, STOREPASS, KEYALIAS, KEYPASS} =
+    minimist(process.argv, {boolean: true});
 
 //////////////////
 //////////////////
@@ -55,7 +56,8 @@ function runCommand(command) {
 //////////////////
 //////////////////
 function buildWebApp() {
-  return runCommand(`npm run action src/www/build_cordova --platform=${platform} --buildMode=${buildMode}`);
+  return runCommand(
+      `npm run action src/www/build_cordova --platform=${platform} --buildMode=${buildMode}`);
 }
 
 //////////////////
@@ -91,9 +93,9 @@ function cordovaCompile() {
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
   const compileArgs = platform === "ios" ? '--device --buildFlag="-UseModernBuildSystem=0"' : "";
   let releaseArgs = "";
-  if (buildMode === "release" && platform === "android") {
+  if (buildMode === 'release' && platform === 'android') {
     releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${KEYALIAS} --password=${KEYPASS}`;
-  } else if (buildMode === "release") {
+  } else if (buildMode === 'release') {
     releaseArgs = "--release";
   }
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
@@ -121,7 +123,8 @@ function validateBuildEnvironment(cb) {
 
 // Writes a JSON file accessible to environment.ts containing environment variables.
 async function writeEnvJson() {
-  return await fs.writeFile("www/environment.json", JSON.stringify(await environmentJson(platform, buildMode)));
+  return await fs.writeFile(
+      'www/environment.json', JSON.stringify(await environmentJson(platform, buildMode)));
 }
 
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);

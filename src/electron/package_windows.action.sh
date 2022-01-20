@@ -13,25 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 BUILD_MODE=debug
-
 for i in "$@"; do
-  case $i in
-  --buildMode=*)
-    BUILD_MODE="${i#*=}"
-    shift
-    ;;
-  -* | --*)
-    echo "Unknown option: ${i}"
-    exit 1
-    ;;
-  *) ;;
-
-  esac
+    case $i in
+    --platform=*)
+        echo "package_windows is for the windows platform. ignoring."
+        shift
+        ;;
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
 done
 
-npm run action src/electron/package_common \
+npm run action src/electron/package_common -- \
   --platform=windows \
   --buildMode="${BUILD_MODE}"
 
