@@ -14,16 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FLAVOR=${1:-}
+for i in "$@"; do
+  case $i in
+  --buildMode=*)
+    BUILD_MODE="${i#*=}"
+    shift # past argument=value
+    ;;
+  -* | --*)
+    echo "Unknown option: $i"
+    exit 1
+    ;;
+  *) ;;
+  esac
+done
 
-MODE=
-case FLAVOR in
+WEBPACK_MODE=
+case BUILD_MODE in
     debug)
-    MODE=development
-    ;;
+        WEBPACK_MODE=development
+        ;;
     release)
-    MODE=production
-    ;;
+        WEBPACK_MODE=production
+        ;;
 esac
 
-webpack --config=src/www/electron.webpack.js ${MODE:+--mode=${MODE}}
+webpack --config=src/www/electron.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}

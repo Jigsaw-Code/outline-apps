@@ -20,45 +20,35 @@ import minimist from "minimist";
 /*
   Inputs:
   => platform: the platform to generate the environment.json for
-  => flavor: the flavor of binary to build, i.e. debug or release
+  => buildMode: the buildMode of binary to build, i.e. debug or release
 
   Outputs:
   => the environment.json contents
 */
-export async function environmentJson(platform, flavor) {
+export async function environmentJson(platform, buildMode) {
   if (!platform) {
     throw new Error("environmentJson requires a platform argument");
   }
 
-  if (!flavor) {
-    throw new Error("environmentJson requires a flavor argument");
+  if (!(buildMode === "debug" || buildMode === "release")) {
+    throw new Error("environmentJson requires a buildMode argument of either 'debug' or 'release'");
   }
 
-  if (flavor === "release" && !process.env.SENTRY_DSN) {
+  if (buildMode === "release" && !process.env.SENTRY_DSN) {
     throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
-  }
-
-  let APP_VERSION;
-
-  if (flavor === "debug") {
-    APP_VERSION = "0.0.0-debug";
-  } else if (flavor === "release") {
-    APP_VERSION = await getVersion(platform);
-  } else {
-    throw new Error(`${flavor} must be one of: 'debug', 'release'`);
   }
 
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION,
+    APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" && "-debug"}`,
     APP_BUILD_NUMBER: await getBuildNumber(platform)
   };
 }
 
 async function main() {
-  const { platform, flavor } = minimist(process.argv);
+  const { platform, buildMode } = minimist(process.argv);
 
-  console.log(JSON.stringify(await environmentJson(platform, flavor)));
+  console.log(JSON.stringify(await environmentJson(platform, buildMode)));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

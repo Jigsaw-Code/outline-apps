@@ -14,9 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FLAVOR="${1:-debug}"
+BUILD_MODE=debug
 
-npm run action src/electron/package_common windows "${FLAVOR}"
+for i in "$@"; do
+  case $i in
+  --buildMode=*)
+    BUILD_MODE="${i#*=}"
+    shift
+    ;;
+  -* | --*)
+    echo "Unknown option: ${i}"
+    exit 1
+    ;;
+  *) ;;
+
+  esac
+done
+
+npm run action src/electron/package_common \
+  --platform=windows \
+  --buildMode="${BUILD_MODE}"
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
@@ -27,8 +44,8 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
 fi
 
 # TODO: Move env.sh to build/electron/.
-cat > build/env.nsh << EOF
-!define RELEASE "$(node scripts/get_version.mjs windows)"
+cat >build/env.nsh <<EOF
+!define RELEASE "$(node scripts/get_version.mjs --platform=windows)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
 
@@ -36,4 +53,4 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(node scripts/get_version.mjs windows)
+  --config.extraMetadata.version=$(node scripts/get_version.mjs --platform=windows)

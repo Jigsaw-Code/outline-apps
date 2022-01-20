@@ -50,7 +50,9 @@ else
   INFO_FILE_CHANNEL="latest"
 fi
 
-npm run action src/electron/package_common windows release
+npm run action src/electron/package_common \
+  --platform=windows \
+  --buildMode=release
 
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
@@ -60,7 +62,7 @@ readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&s
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF
-!define RELEASE "$(node scripts/get_version.mjs windows)"
+!define RELEASE "$(node scripts/get_version.mjs --platform=windows)"
 !define SENTRY_URL "${SENTRY_URL}"
 EOF
 
@@ -71,7 +73,7 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(node scripts/get_version.mjs windows) \
+  --config.extraMetadata.version=$(node scripts/get_version.mjs --platform=windows) \
   --config.win.certificateSubjectName='Jigsaw Operations LLC' \
   --config.generateUpdatesFilesForAllChannels=true \
   --config.publish.provider=generic \

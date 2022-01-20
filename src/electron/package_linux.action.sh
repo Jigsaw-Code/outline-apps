@@ -14,12 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FLAVOR="${1:-debug}"
+BUILD_MODE=debug
 
-npm run action src/electron/package_common linux "${FLAVOR}"
+for i in "$@"; do
+  case $i in
+  --buildMode=*)
+    BUILD_MODE="${i#*=}"
+    shift # past argument=value
+    ;;
+  -* | --*)
+    echo "Unknown option: $i"
+    exit 1
+    ;;
+  *) ;;
+
+  esac
+done
+
+npm run action src/electron/package_common \
+  --platform=linux \
+  --buildMode="${BUILD_MODE}"
 
 electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(node scripts/get_version.mjs linux)
+  --config.extraMetadata.version=$(node scripts/get_version.mjs --platform=linux)

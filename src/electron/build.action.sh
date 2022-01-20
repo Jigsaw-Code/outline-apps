@@ -14,29 +14,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PLATFORM="${1:-}"
-FLAVOR="${2:-}"
+for i in "$@"; do
+    case $i in
+    --platform=*)
+        PLATFORM="${i#*=}"
+        shift
+        ;;
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
 
-# TODO: delegate flavor to development/production
+    esac
+done
 
-npm run action src/www/build_electron "${FLAVOR}"
+npm run action src/www/build_electron "$@"
 
-MODE=
-case FLAVOR in
-    debug)
-    MODE=development
+WEBPACK_MODE=
+case BUILD_MODE in
+debug)
+    WEBPACK_MODE=development
     ;;
-    release)
-    MODE=production
+release)
+    WEBPACK_MODE=production
     ;;
 esac
 
-webpack --config=src/electron/electron_main.webpack.js \
+webpack \
+    --config=src/electron/electron_main.webpack.js \
     --env NETWORK_STACK="${NETWORK_STACK:-go}" \
-    ${MODE:+--mode="${MODE}"}
+    ${WEBPACK_MODE:+--mode="${WEBPACK_MODE}"}
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs \
-    --platform="${PLATFORM}" \
-    --flavor="${FLAVOR}" > www/environment.json
+node scripts/environment_json.mjs "$@" > www/environment.json
