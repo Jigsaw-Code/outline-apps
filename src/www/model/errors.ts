@@ -63,9 +63,6 @@ export class FeedbackSubmissionError extends OutlineError {
 
 // Error thrown by "native" code.
 //
-// Must be kept in sync with its Cordova doppelganger:
-//   cordova-plugin-outline/outlinePlugin.js
-//
 // TODO: Rename this class, "plugin" is a poor name since the Electron apps do not have plugins.
 export class OutlinePluginError extends OutlineError {
   constructor(public readonly errorCode: ErrorCode) {
@@ -109,7 +106,6 @@ export class VpnStartFailure extends RedFlagNativeError {}
 // This must be kept in sync with:
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
 //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
-//  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
 //  - cordova-plugin-outline/android/java/org/outline/OutlinePlugin.java#ErrorCode
 //
 // TODO: Is it safe to re-use values here, i.e. is native node rebuilt in step with the TypeScript?
