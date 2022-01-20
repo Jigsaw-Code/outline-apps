@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import child_process from "child_process";
-import gulp from "gulp";
-import log from "fancy-log";
-import minimist from "minimist";
-import os from "os";
-import fs from "fs/promises";
+import child_process from 'child_process';
+import log from 'fancy-log';
+import fs from 'fs/promises';
+import gulp from 'gulp';
+import minimist from 'minimist';
+import os from 'os';
 
-import {environmentJson} from "./scripts/environment_json.mjs";
+import {environmentJson} from './scripts/environment_json.mjs';
 
 //////////////////
 //////////////////
@@ -28,7 +28,8 @@ import {environmentJson} from "./scripts/environment_json.mjs";
 //
 //////////////////
 //////////////////
-const {platform, flavor, KEYSTORE, STOREPASS, KEYALIAS, KEYPASS} = minimist(process.argv, {boolean: true});
+const {platform, flavor, KEYSTORE, STOREPASS, KEYALIAS, KEYPASS} =
+    minimist(process.argv, {boolean: true});
 
 //////////////////
 //////////////////
@@ -55,7 +56,8 @@ function runCommand(command) {
 //////////////////
 //////////////////
 function buildWebApp() {
-  return runCommand(`npm run action src/www/build_cordova --platform=${platform} --flavor=${flavor}`);
+  return runCommand(
+      `npm run action src/www/build_cordova --platform=${platform} --flavor=${flavor}`);
 }
 
 //////////////////
@@ -79,22 +81,22 @@ function cordovaPrepare() {
 
 function xcode() {
   return runCommand(
-    platform === "ios" || platform === "osx"
-      ? `rsync -avc apple/xcode/${platform}/ platforms/${platform}/`
-      : "echo not running on apple, skipping xcode rsync"
-  );
+      platform === 'ios' || platform === 'osx' ?
+          `rsync -avc apple/xcode/${platform}/ platforms/${platform}/` :
+          'echo not running on apple, skipping xcode rsync');
 }
 
 function cordovaCompile() {
-  const platformArgs = platform === "android" ? "--gradleArg=-PcdvBuildMultipleApks=true" : "";
+  const platformArgs = platform === 'android' ? '--gradleArg=-PcdvBuildMultipleApks=true' : '';
   // Use flag -UseModernBuildSystem=0 as a workaround for Xcode 10 compatibility until upgrading to
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
-  const compileArgs = platform === "ios" ? '--device --buildFlag="-UseModernBuildSystem=0"' : "";
-  let releaseArgs = "";
-  if (flavor === "release" && platform === "android") {
-    releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${KEYALIAS} --password=${KEYPASS}`;
-  } else if (flavor === "release") {
-    releaseArgs = "--release";
+  const compileArgs = platform === 'ios' ? '--device --buildFlag="-UseModernBuildSystem=0"' : '';
+  let releaseArgs = '';
+  if (flavor === 'release' && platform === 'android') {
+    releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${
+        KEYALIAS} --password=${KEYPASS}`;
+  } else if (flavor === 'release') {
+    releaseArgs = '--release';
   }
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
@@ -109,11 +111,10 @@ function cordovaCompile() {
 //////////////////
 
 function validateBuildEnvironment(cb) {
-  if (os.platform() !== "darwin" && (platform === "ios" || platform === "macos")) {
+  if (os.platform() !== 'darwin' && (platform === 'ios' || platform === 'macos')) {
     log.error(
-      "\x1b[31m%s\x1b[0m", // Red text
-      "Building the ios client requires xcodebuild and can only be done on MacOS"
-    );
+        '\x1b[31m%s\x1b[0m',  // Red text
+        'Building the ios client requires xcodebuild and can only be done on MacOS');
     process.exit(1);
   }
   cb();
@@ -121,14 +122,12 @@ function validateBuildEnvironment(cb) {
 
 // Writes a JSON file accessible to environment.ts containing environment variables.
 async function writeEnvJson() {
-  return await fs.writeFile(
-    'www/environment.json',
-    await environmentJson(platform, flavor)
-  );
+  return await fs.writeFile('www/environment.json', await environmentJson(platform, flavor));
 }
 
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
 const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
-export const build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
+export const build =
+    gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
 export const setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);
