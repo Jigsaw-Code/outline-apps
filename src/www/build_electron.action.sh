@@ -32,5 +32,5 @@ for i in "$@"; do
     esac
 done
 
-WEBPACK_MODE="$(node scripts/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})"
+WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 webpack --config=src/www/electron.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
