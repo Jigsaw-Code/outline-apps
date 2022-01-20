@@ -26,18 +26,29 @@ exit 1
 }
 
 PLATFORM=ios
-while getopts :p:h? opt; do
-  case $opt in
-    p) PLATFORM=$OPTARG ;;
-    *) usage ;;
-  esac
+BUILD_MODE=
+for i in "$@"; do
+    case $i in
+    --platform=*)
+        PLATFORM="${i#*=}"
+        shift
+        ;;
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        usage
+        exit 1
+        ;;
+    *) ;;
+    esac
 done
-shift $((OPTIND-1))
 
 PLATFORM_DIR=platforms/$PLATFORM/
 if [ ! -d $PLATFORM_DIR ]; then
   # Generate the Xcode project through Cordova.
-  npx gulp setup --platform=$PLATFORM
+  npx gulp setup --platform=$PLATFORM --buildMode=$BUILD_MODE
 fi
 
 # Install the fastlane scripts and metadata.

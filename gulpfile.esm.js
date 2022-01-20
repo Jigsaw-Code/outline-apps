@@ -91,7 +91,7 @@ function cordovaCompile() {
   const platformArgs = platform === "android" ? "--gradleArg=-PcdvBuildMultipleApks=true" : "";
   // Use flag -UseModernBuildSystem=0 as a workaround for Xcode 10 compatibility until upgrading to
   // cordova-ios@5.0.0. See https://github.com/apache/cordova-ios/issues/404.
-  const compileArgs = platform === "ios" ? '--device' : "";
+  const compileArgs = platform === 'ios' ? '--device' : '';
   let releaseArgs = "";
   if (buildMode === 'release' && platform === 'android') {
     releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${KEYALIAS} --password=${KEYPASS}`;
