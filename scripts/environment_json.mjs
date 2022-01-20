@@ -34,7 +34,7 @@ export async function environmentJson(platform, flavor) {
     throw new Error("environmentJson requires a flavor argument");
   }
 
-  if (release && !process.env.SENTRY_DSN) {
+  if (flavor === "release" && !process.env.SENTRY_DSN) {
     throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
   }
 
