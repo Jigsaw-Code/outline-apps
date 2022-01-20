@@ -538,16 +538,8 @@ export class AppRoot extends mixinBehaviors
       };
     }
 
-    if (window.hasOwnProperty('cordova')) {
-      // Wait until Cordova is ready to access the device plugin. This listener will execute
-      // synchronously if the 'deviceready' event has already fired.
-      document.addEventListener('deviceready', function() {
-        this.platform = device.platform;
-      }.bind(this));
-    } else {
-      // If cordova is not defined, we're running in Electron.
-      this.platform = 'Electron';
-    }
+    // If cordova is not defined, we're running in Electron.
+    this.platform = cordova?.platformId ?? 'Electron';
   }
 
   setLanguage(languageCode) {
@@ -694,7 +686,7 @@ export class AppRoot extends mixinBehaviors
     // Anchor tags compete with the app-drawer for click events on iOS. This results in links
     // not opening most of the time. We resort to opening the link programmatically for all
     // platforms.
-    if (this.platform === 'iOS') {
+    if (this.platform === 'ios') {
       window.open(this.$.helpAnchor.href);
     } else {
       // macOS does not respond to window.open and Windows opens a new browser window.
@@ -704,7 +696,7 @@ export class AppRoot extends mixinBehaviors
   }
 
   _computeShouldShowQuitButton(platform) {
-    return platform === 'macOS' || platform === 'Electron';
+    return platform === 'osx' || platform === 'Electron';
   }
 
   _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
