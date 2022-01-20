@@ -15,28 +15,37 @@
 import {getVersion} from "./get_version.mjs";
 import {getBuildNumber} from "./get_build_number.mjs";
 import url from "url";
+import minimist from "minimist";
 
 /*
   Inputs:
   => platform: the platform to generate the environment.json for
-  => release: whether or not this is a releasable binary
+  => flavor: the flavor of binary to build, i.e. debug or release
 
   Outputs:
   => the environment.json contents
 */
-export async function environmentJson(platform, release) {
+export async function environmentJson(platform, flavor) {
+  if (!platform) {
+    throw new Error("environmentJson requires a platform argument");
+  }
+
+  if (!flavor) {
+    throw new Error("environmentJson requires a flavor argument");
+  }
+
   if (release && !process.env.SENTRY_DSN) {
     throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
   }
 
   let APP_VERSION;
 
-  try {
+  if (flavor === "debug") {
+    APP_VERSION = "0.0.0-debug";
+  } else if (flavor === "release") {
     APP_VERSION = await getVersion(platform);
-  } catch (error) {
-    if (!release) {
-      APP_VERSION = "0.0.0-dev";
-    }
+  } else {
+    throw new Error(`${flavor} must be one of: 'debug', 'release'`);
   }
 
   return {
@@ -47,9 +56,9 @@ export async function environmentJson(platform, release) {
 }
 
 async function main() {
-  const [platform, release] = process.argv.slice(2);
+  const { platform, flavor } = minimist(process.argv);
 
-  console.log(JSON.stringify(await environmentJson(platform, release)));
+  console.log(JSON.stringify(await environmentJson(platform, flavor)));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

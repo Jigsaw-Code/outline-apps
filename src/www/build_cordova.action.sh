@@ -14,4 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-webpack --config=src/www/cordova.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}
+FLAVOR=${1:-}
+
+MODE=
+case FLAVOR in
+    debug)
+    MODE=development
+    ;;
+    release)
+    MODE=production
+    ;;
+esac
+
+webpack --config=src/www/cordova.webpack.js ${MODE:+--mode=${MODE}}

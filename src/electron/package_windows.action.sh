@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-npm run action src/electron/package_common
+FLAVOR="${1:-debug}"
+
+npm run action src/electron/package_common windows "${FLAVOR}"
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,

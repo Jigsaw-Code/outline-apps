@@ -15,9 +15,9 @@
 # limitations under the License.
 
 PLATFORM="${1:-}"
-RELEASE="${2:-}"
+FLAVOR="${2:-}"
 
-npm run action src/electron/build "${PLATFORM}" "${RELEASE}"
+npm run action src/electron/build "${PLATFORM}" "${FLAVOR}"
 
 # Icons.
 electron-icon-maker --input=resources/electron/icon.png --output=build

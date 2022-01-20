@@ -16,8 +16,7 @@
 
 set -eu
 
-npm run action src/www/build_cordova
-node scripts/environment_json.mjs > www/environment.json
+npm run action src/www/build_cordova debug
 cordova prepare browser
 
 webpack serve \

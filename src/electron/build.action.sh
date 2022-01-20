@@ -15,14 +15,28 @@
 # limitations under the License.
 
 PLATFORM="${1:-}"
-RELEASE="${2:-}"
+FLAVOR="${2:-}"
 
-npm run action src/www/build_electron
+# TODO: delegate flavor to development/production
+
+npm run action src/www/build_electron "${FLAVOR}"
+
+MODE=
+case FLAVOR in
+    debug)
+    MODE=development
+    ;;
+    release)
+    MODE=production
+    ;;
+esac
 
 webpack --config=src/electron/electron_main.webpack.js \
     --env NETWORK_STACK="${NETWORK_STACK:-go}" \
-    ${BUILD_ENV:+--mode="${BUILD_ENV}"}
+    ${MODE:+--mode="${MODE}"}
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs "${PLATFORM}" "${RELEASE}" > www/environment.json
+node scripts/environment_json.mjs \
+    --platform="${PLATFORM}" \
+    --flavor="${FLAVOR}" > www/environment.json
