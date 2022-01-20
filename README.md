@@ -66,16 +66,16 @@ A Docker image with all pre-requisites for Android builds is included.  To build
 Additional requirements for Apple:
 
 * An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
-* XCode 11+ ([download](https://developer.apple.com/xcode/))
+* XCode 13+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools: `xcode-select --install`
 
 
-To open the macOS project on XCode:
+To open the macOS project on XCode (need to build first):
 ```
 open ./platforms/osx/Outline.xcodeproj
 ```
 
-To open the iOS project on XCode:
+To open the iOS project on XCode (need to build first):
 ```
 open ./platforms/ios/Outline.xcodeproj
 ```
