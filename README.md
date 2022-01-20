@@ -12,6 +12,7 @@ All builds require [Node](https://nodejs.org/) 16, in addition to other per-plat
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
 After cloning this repo, install all node dependencies:
+
 ```sh
 npm install
 ```
@@ -66,32 +67,26 @@ A Docker image with all pre-requisites for Android builds is included.  To build
 Additional requirements for Apple:
 
 * An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
-* XCode 11+ ([download](https://developer.apple.com/xcode/))
+* XCode 13+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools: `xcode-select --install`
 
-
-To open the macOS project on XCode:
-```
-open ./platforms/osx/Outline.xcodeproj
-```
-
-To open the iOS project on XCode:
-```
-open ./platforms/ios/Outline.xcodeproj
-```
-
 To build for macOS (OS X), run:
-```
-npx gulp build --platform=osx
-```
+
+    npx gulp build --platform=osx
 
 To build for iOS, run:
-```
-npx gulp build --platform=ios
-```
+
+    npx gulp build --platform=ios
+
+To open the macOS project on XCode:
+
+    open ./platforms/osx/Outline.xcodeproj
+
+To open the iOS project on XCode:
+
+    open ./platforms/ios/Outline.xcodeproj
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
-
 
 ## Electron
 
@@ -119,6 +114,7 @@ To package the Electron clients into an installer executable, run:
 ## Error reporting
 
 To enable error reporting through [Sentry](https://sentry.io/) for local builds, run:
+
 ``` bash
 export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
