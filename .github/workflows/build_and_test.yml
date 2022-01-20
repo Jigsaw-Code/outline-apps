@@ -90,7 +90,7 @@ jobs:
         run: npm ci
 
       - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_12.5.app
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
         run: npx gulp build --platform=osx
@@ -117,7 +117,7 @@ jobs:
         run: npm ci
 
       - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_12.5.app
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build iOS Client
         run: npm run action apple/scripts/ios_package_remote
