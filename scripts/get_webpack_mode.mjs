@@ -29,7 +29,7 @@ export function getWebpackBuildMode(buildMode) {
     case "release":
       return "production";
     default:
-      throw new Error("get_webpack_build_mode requires a buildMode argument of debug or release");
+      throw new Error("get_webpack_mode requires a buildMode argument of debug or release");
   }
 }
 
