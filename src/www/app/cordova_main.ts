@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/webintents.d.ts'/>
 /// <reference types='cordova'/>
+/// <reference path='../../types/ambient/webintents.d.ts'/>
 
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
@@ -124,7 +124,7 @@ class CordovaTunnel implements Tunnel {
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
   private static isBrowser() {
-    return device.platform === 'browser';
+    return cordova.platformId === 'browser';
   }
 
   hasDeviceSupport() {
@@ -142,9 +142,9 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getUrlInterceptor() {
-    if (device.platform === 'iOS' || device.platform === 'Mac OS X') {
+    if (cordova.platformId === 'ios' || cordova.platformId === 'osx') {
       return new interceptors.AppleUrlInterceptor(appleLaunchUrl);
-    } else if (device.platform === 'Android') {
+    } else if (cordova.platformId === 'android') {
       return new interceptors.AndroidUrlInterceptor();
     }
     console.warn('no intent interceptor available');
