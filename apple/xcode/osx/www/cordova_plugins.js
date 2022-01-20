@@ -9,14 +9,6 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
       ]
     },
     {
-      "id": "cordova-plugin-outline.OutlinePlugin",
-      "file": "plugins/cordova-plugin-outline/outlinePlugin.js",
-      "pluginId": "cordova-plugin-outline",
-      "clobbers": [
-        "cordova.plugins.outline"
-      ]
-    },
-    {
       "id": "cordova-plugin-clipboard.Clipboard",
       "file": "plugins/cordova-plugin-clipboard/www/clipboard.js",
       "pluginId": "cordova-plugin-clipboard",
