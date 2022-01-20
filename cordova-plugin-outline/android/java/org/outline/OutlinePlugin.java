@@ -78,7 +78,7 @@ public class OutlinePlugin extends CordovaPlugin {
     }
   }
 
-  // Plugin error codes. Keep in sync with outlinePlugin.js.
+  // Plugin error codes. Keep in sync with www/model/errors.ts.
   public enum ErrorCode {
     NO_ERROR(0),
     UNEXPECTED(1),
