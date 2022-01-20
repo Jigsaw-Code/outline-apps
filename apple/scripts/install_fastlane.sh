@@ -17,10 +17,11 @@
 function usage() {
   cat <<-EOM
 Installs fastlane, build scripts, and metadata into an Apple platform directory
-Usage: $(basename $0) -p [platform]
+Usage: $(basename $0) --platform=[platform] --buildMode=[buildMode]
 Options:
-  -p  Platform to release [ios|osx]. Default: ios
-  -h  Display this message and exit
+  --platform  Platform to release [ios|osx]. Default: ios
+  --buildMode  Mode to build [debug|release].
+  ?  Display this message and exit
 EOM
 exit 1
 }
