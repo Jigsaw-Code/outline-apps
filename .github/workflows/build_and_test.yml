@@ -120,7 +120,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote
+        run: npx gulp build --platform=ios --buildMode=debug
 
   android:
     name: Android

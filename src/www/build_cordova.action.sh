@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-PLATFORM=
 BUILD_MODE=
 for i in "$@"; do
     case $i in
@@ -33,14 +32,5 @@ for i in "$@"; do
     esac
 done
 
-WEBPACK_MODE=
-case BUILD_MODE in
-    debug)
-        WEBPACK_MODE=development
-        ;;
-    release)
-        WEBPACK_MODE=production
-        ;;
-esac
-
+WEBPACK_MODE="$(node scripts/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})"
 webpack --config=src/www/cordova.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}

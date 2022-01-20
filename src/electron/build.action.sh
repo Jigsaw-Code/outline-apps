@@ -37,15 +37,7 @@ npm run action src/www/build_electron -- \
     --platform="${PLATFORM}" \
     --buildMode="${BUILD_MODE}"
 
-WEBPACK_MODE=
-case BUILD_MODE in
-    debug)
-        WEBPACK_MODE=development
-        ;;
-    release)
-        WEBPACK_MODE=production
-        ;;
-esac
+WEBPACK_MODE=$(node scripts/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})
 
 webpack \
     --config=src/electron/electron_main.webpack.js \
