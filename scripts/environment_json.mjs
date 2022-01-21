@@ -40,7 +40,7 @@ export async function environmentJson(platform, buildMode) {
 
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" && "-debug"}`,
+    APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" ? "-debug" : ""}`,
     APP_BUILD_NUMBER: await getBuildNumber(platform)
   };
 }
