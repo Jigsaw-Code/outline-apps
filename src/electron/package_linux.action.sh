@@ -16,10 +16,6 @@
 BUILD_MODE=debug
 for i in "$@"; do
     case $i in
-    --platform=*)
-        echo "package_linux is for the linux platform. ignoring."
-        shift
-        ;;
     --buildMode=*)
         BUILD_MODE="${i#*=}"
         shift
