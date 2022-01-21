@@ -33,7 +33,7 @@ for i in "$@"; do
     esac
 done
 
-npm run action src/electron/build -- --platform="${PLATFORM}" --buildMode="${BUILD_MODE}"
+npm run action src/electron/build -- "$@"
 
 export OUTLINE_DEBUG=true
 electron .
