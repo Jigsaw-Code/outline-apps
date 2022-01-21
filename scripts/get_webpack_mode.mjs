@@ -34,7 +34,7 @@ export function getWebpackBuildMode(buildMode) {
 }
 
 function main() {
-  const { _: [buildMode] } = minimist(process.argv);
+  const { buildMode } = minimist(process.argv);
 
   const result = getWebpackBuildMode(buildMode);
 
