@@ -50,8 +50,8 @@ export async function getVersion(platform) {
 }
 
 async function main() {
-  const { platform } = minimist(process.argv);
-
+  const { _: [platform] } = minimist(process.argv);
+  
   console.log(await getVersion(platform));
 }
 

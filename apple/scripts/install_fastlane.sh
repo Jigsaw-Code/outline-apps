@@ -17,9 +17,9 @@
 function usage() {
   cat <<-EOM
 Installs fastlane, build scripts, and metadata into an Apple platform directory
-Usage: $(basename $0) --platform=[platform] --buildMode=[buildMode]
+Usage: $(basename $0) platform --buildMode=[buildMode]
 Options:
-  --platform  Platform to release [ios|osx]. Default: ios
+  platform  Platform to release [ios|osx]. Default: ios
   --buildMode  Mode to build [debug|release].
   ?  Display this message and exit
 EOM
@@ -30,10 +30,6 @@ PLATFORM=ios
 BUILD_MODE=
 for i in "$@"; do
     case $i in
-    --platform=*)
-        PLATFORM="${i#*=}"
-        shift
-        ;;
     --buildMode=*)
         BUILD_MODE="${i#*=}"
         shift
@@ -49,7 +45,7 @@ done
 PLATFORM_DIR=platforms/$PLATFORM/
 if [ ! -d $PLATFORM_DIR ]; then
   # Generate the Xcode project through Cordova.
-  npx gulp setup --platform=$PLATFORM --buildMode=$BUILD_MODE
+  npx gulp setup $PLATFORM --buildMode=$BUILD_MODE
 fi
 
 # Install the fastlane scripts and metadata.

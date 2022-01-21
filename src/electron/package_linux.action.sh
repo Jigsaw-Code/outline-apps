@@ -16,10 +16,6 @@
 BUILD_MODE=debug
 for i in "$@"; do
     case $i in
-    --buildMode=*)
-        BUILD_MODE="${i#*=}"
-        shift
-        ;;
     -* | --*)
         echo "Unknown option: ${i}"
         exit 1
@@ -28,12 +24,10 @@ for i in "$@"; do
     esac
 done
 
-npm run action src/electron/package_common -- \
-  --platform=linux \
-  --buildMode="${BUILD_MODE}"
+npm run action src/electron/package_common -- linux --buildMode="${BUILD_MODE}"
 
 electron-builder \
   --linux \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(node scripts/get_version.mjs --platform=linux)
+  --config.extraMetadata.version=$(node scripts/get_version.mjs linux)

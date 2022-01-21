@@ -13,14 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-PLATFORM=
-BUILD_MODE=
+PLATFORM=$1
+BUILD_MODE=debug
 for i in "$@"; do
     case $i in
-    --platform=*)
-        PLATFORM="${i#*=}"
-        shift
-        ;;
     --buildMode=*)
         BUILD_MODE="${i#*=}"
         shift
@@ -34,7 +30,6 @@ for i in "$@"; do
 done
 
 npm run action src/www/build_electron -- \
-    --platform="${PLATFORM}" \
     --buildMode="${BUILD_MODE}"
 
 WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
@@ -46,6 +41,5 @@ webpack \
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs \
-    --platform="${PLATFORM}" \
+node scripts/environment_json.mjs "${PLATFORM}" \
     --buildMode="${BUILD_MODE}" > www/environment.json

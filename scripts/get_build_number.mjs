@@ -48,7 +48,7 @@ export async function getBuildNumber(platform) {
 }
 
 async function main() {
-  const { platform } = minimist(process.argv);
+  const { _: [platform] } = minimist(process.argv);
 
   const result = await getBuildNumber(platform);
 

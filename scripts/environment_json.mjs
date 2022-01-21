@@ -46,7 +46,7 @@ export async function environmentJson(platform, buildMode) {
 }
 
 async function main() {
-  const { platform, buildMode } = minimist(process.argv);
+  const { _: [platform], buildMode } = minimist(process.argv);
 
   console.log(JSON.stringify(await environmentJson(platform, buildMode)));
 }

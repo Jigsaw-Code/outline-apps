@@ -28,8 +28,14 @@ import {environmentJson} from "./scripts/environment_json.mjs";
 //
 //////////////////
 //////////////////
-const {platform, buildMode, KEYSTORE, STOREPASS, KEYALIAS, KEYPASS} =
-    minimist(process.argv, {boolean: true});
+const {
+  _: [platform],
+  buildMode,
+  KEYSTORE,
+  STOREPASS,
+  KEYALIAS,
+  KEYPASS,
+} = minimist(process.argv, {boolean: true});
 
 //////////////////
 //////////////////
@@ -56,8 +62,7 @@ function runCommand(command) {
 //////////////////
 //////////////////
 function buildWebApp() {
-  return runCommand(
-      `npm run action src/www/build_cordova -- --buildMode=${buildMode}`);
+  return runCommand(`npm run action src/www/build_cordova -- --buildMode=${buildMode}`);
 }
 
 //////////////////
@@ -88,12 +93,12 @@ function xcode() {
 }
 
 function cordovaCompile() {
-  const platformArgs = platform === 'android' ? '--gradleArg=-PcdvBuildMultipleApks=true' : '';
-  const compileArgs = platform === 'ios' ? '--device --buildFlag="-allowProvisioningUpdates"' : '';
-  let releaseArgs = '';
-  if (buildMode === 'release' && platform === 'android') {
+  const platformArgs = platform === "android" ? "--gradleArg=-PcdvBuildMultipleApks=true" : "";
+  const compileArgs = platform === "ios" ? "--device" : "";
+  let releaseArgs = "";
+  if (buildMode === "release" && platform === "android") {
     releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${KEYALIAS} --password=${KEYPASS}`;
-  } else if (buildMode === 'release') {
+  } else if (buildMode === "release") {
     releaseArgs = "--release";
   }
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
@@ -121,8 +126,7 @@ function validateBuildEnvironment(cb) {
 
 // Writes a JSON file accessible to environment.ts containing environment variables.
 async function writeEnvJson() {
-  return await fs.writeFile(
-      'www/environment.json', JSON.stringify(await environmentJson(platform, buildMode)));
+  return await fs.writeFile("www/environment.json", JSON.stringify(await environmentJson(platform, buildMode)));
 }
 
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
