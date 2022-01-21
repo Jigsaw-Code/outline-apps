@@ -21,14 +21,14 @@ npm install
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    npx gulp build browser
+    npm run action gulp -- build browser
     npx cordova run browser
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
-*Tip: Build with `(export BUILD_ENV=development; npx gulp build browser)` to enable source maps.*
+*Tip: Build with `(export BUILD_ENV=development; npm run action gulp -- build browser)` to enable source maps.*
 
 ## Building the Android app
 
@@ -41,15 +41,15 @@ Additional requirements for Android:
 
 To build for android, run:
 
-    npx gulp build android
+    npm run action gulp -- build android
 
 To rebuild after modifying platform dependent files, run:
 
-    npx cordova platform rm android && npx gulp build android
+    npx cordova platform rm android && npm run action gulp -- build android
 
 If this gives you unexpected Cordova errors, run:
 
-    npm run clean && npm ci && npx gulp build android
+    npm run clean && npm ci && npm run action gulp -- build android
 
 Cordova will generate a new Android project in the platforms/android directory.  Install the built apk by  platforms/android/build/outputs/apk/android-armv7-debug.apk
 
@@ -60,7 +60,7 @@ To learn more about developing for Android, see [docs/android-development](docs/
 A Docker image with all pre-requisites for Android builds is included.  To build:
 
 * Install dependencies with `./tools/build/build.sh npm ci`
-* Then build with `./tools/build/build.sh npx gulp build android`
+* Then build with `./tools/build/build.sh npm run action gulp -- build android`
   
 ## Apple (macOS and iOS)
 
@@ -72,11 +72,11 @@ Additional requirements for Apple:
 
 To build for macOS (OS X), run:
 
-    npx gulp build osx
+    npm run action gulp -- build osx
 
 To build for iOS, run:
 
-    npx gulp build ios
+    npm run action gulp -- build ios
 
 To open the macOS project on XCode:
 

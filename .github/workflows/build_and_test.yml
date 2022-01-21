@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        run: npx gulp build browser
+        run: npx run action gulp -- build browser
 
       - name: Test Web App
         run: npm run action scripts/test
@@ -93,7 +93,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
-        run: npx gulp build osx
+        run: npx run action gulp -- build osx
 
   ios:
     name: iOS
@@ -150,7 +150,7 @@ jobs:
         run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npx gulp build android
+        run: npx run action gulp -- build android
 
       - name: Upload Android Client
         uses: actions/upload-artifact@v2

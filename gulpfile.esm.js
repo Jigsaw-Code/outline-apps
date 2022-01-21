@@ -29,7 +29,7 @@ import {environmentJson} from "./scripts/environment_json.mjs";
 //////////////////
 //////////////////
 const {
-  _: [platform],
+  platform,
   buildMode,
   KEYSTORE,
   STOREPASS,
