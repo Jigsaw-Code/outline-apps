@@ -16,10 +16,6 @@
 BUILD_MODE=
 for i in "$@"; do
     case $i in
-    --platform=*)
-        PLATFORM="${i#*=}"
-        shift
-        ;;
     --buildMode=*)
         BUILD_MODE="${i#*=}"
         shift

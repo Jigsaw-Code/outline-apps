@@ -13,26 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-PLATFORM=
-BUILD_MODE=
-for i in "$@"; do
-    case $i in
-    --platform=*)
-        PLATFORM="${i#*=}"
-        shift
-        ;;
-    --buildMode=*)
-        BUILD_MODE="${i#*=}"
-        shift
-        ;;
-    -* | --*)
-        echo "Unknown option: ${i}"
-        exit 1
-        ;;
-    *) ;;
-    esac
-done
-
 npm run action src/electron/build -- "$@"
 
 export OUTLINE_DEBUG=true
