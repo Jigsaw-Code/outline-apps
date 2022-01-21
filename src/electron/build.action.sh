@@ -17,7 +17,7 @@
 npm run action src/www/build_electron
 
 webpack --config=src/electron/electron_main.webpack.js \
-    --env NETWORK_STACK="${NETWORK_STACK:-go}" \
+    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
     ${BUILD_ENV:+--mode="${BUILD_ENV}"}
 
 # Environment variables.
