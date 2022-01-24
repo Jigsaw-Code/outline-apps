@@ -16,7 +16,6 @@
 BUILD_MODE=debug
 for i in "$@"; do
     case $i in
-        case $i in
         --buildMode=*)
             BUILD_MODE="${i#*=}"
             shift
