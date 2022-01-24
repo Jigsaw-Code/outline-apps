@@ -13,5 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+BUILD_MODE=debug
+for i in "$@"; do
+    case $i in
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
+done
 
-webpack --config=src/www/electron.webpack.js ${BUILD_ENV:+--mode=${BUILD_ENV}}
+WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
+webpack --config=src/www/electron.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
