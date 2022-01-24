@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# -- DEPRECATED: FOR REFERENCE ONLY --
+# Due to recent security issues with travis, we are in the process
+# of migrating to github actions: https://github.com/features/actions.
+
 language: node_js
 
 node_js:

@@ -15,6 +15,6 @@
 # limitations under the License.
 
 # Releases the Outline macOS client locally. Expects to be invoked through `npm run action`.
-./apple/scripts/install_fastlane.sh -p osx
+./apple/scripts/install_fastlane.sh osx --buildMode=release
 pushd platforms/osx
 bundle exec fastlane osx release local:true
