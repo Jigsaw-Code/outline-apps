@@ -13,13 +13,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+PLATFORM=$1
+BUILD_MODE=debug
+for i in "$@"; do
+    case $i in
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
+done
 
-npm run action src/www/build_electron
+npm run action src/www/build_electron -- \
+    --buildMode="${BUILD_MODE}"
 
-webpack --config=src/electron/electron_main.webpack.js \
+WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
+
+webpack \
+    --config=src/electron/electron_main.webpack.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
-    ${BUILD_ENV:+--mode="${BUILD_ENV}"}
+    ${WEBPACK_MODE:+--mode="${WEBPACK_MODE}"}
 
 # Environment variables.
 # TODO: make non-packaged builds work without this
-scripts/environment_json.sh -p dev > www/environment.json
+node scripts/environment_json.mjs "${PLATFORM}" \
+    --buildMode="${BUILD_MODE}" > www/environment.json

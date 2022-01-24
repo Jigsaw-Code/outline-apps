@@ -1,3 +1,5 @@
 /*
 !src/
+!scripts/*.mjs
+!gulpfile.esm.js
 **/*.json

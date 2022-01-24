@@ -15,6 +15,6 @@
 # limitations under the License.
 
 # Releases the Outline iOS client on Travis. Expects to be invoked through `npm run action`.
-./apple/scripts/install_fastlane.sh -p ios
+./apple/scripts/install_fastlane.sh ios --buildMode=release
 pushd platforms/ios
 bundle exec fastlane ios release

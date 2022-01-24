@@ -13,8 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+BUILD_MODE=debug
+for i in "$@"; do
+    case $i in
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
+done
 
-npm run action src/electron/package_common
+npm run action src/electron/package_common -- windows --buildMode="${BUILD_MODE}"
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
@@ -25,8 +39,8 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
 fi
 
 # TODO: Move env.sh to build/electron/.
-cat > build/env.nsh << EOF
-!define RELEASE "$(scripts/semantic_version.sh -p dev)"
+cat >build/env.nsh <<EOF
+!define RELEASE "$(node scripts/get_version.mjs windows)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
 
@@ -34,4 +48,4 @@ electron-builder \
   --win \
   --publish never \
   --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(scripts/semantic_version.sh -p dev)
+  --config.extraMetadata.version=$(node scripts/get_version.mjs windows)
