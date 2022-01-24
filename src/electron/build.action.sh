@@ -36,7 +36,7 @@ WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 
 webpack \
     --config=src/electron/electron_main.webpack.js \
-    --env NETWORK_STACK="${NETWORK_STACK:-go}" \
+    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
     ${WEBPACK_MODE:+--mode="${WEBPACK_MODE}"}
 
 # Environment variables.
