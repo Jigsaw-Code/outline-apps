@@ -12,7 +12,6 @@ jobs:
     env:
       RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-      # STORE_LOGIN: ${{ secrets.SNAP_STORE_LOGIN }} 
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.4
@@ -39,7 +38,7 @@ jobs:
       with:
         workflow: build_release_candidates.yml
         commit: ${{ github.event.inputs.commit_sha }}
-        name: release-linux-${{ github.event.inputs.commit_sha }}
+        name: client-linux-release-${{ github.event.inputs.commit_sha }}
 
     - name: Checkout Releases Repository
       uses: actions/checkout@v2.3.4
