@@ -42,20 +42,12 @@ if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   exit 1
 fi
 
-TAG=$(scripts/get_tag.sh linux)
-if [[ $TAG =~ ^.*-beta$ ]]; then
-  INFO_FILE_CHANNEL="beta"
-else
-  INFO_FILE_CHANNEL="latest"
-fi
-
-npm run action src/electron/package_common linux --buildMode=release
+npm run action src/electron/build_common -- linux --buildMode=release
 
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
 # which can be blocked by DNS or SNI without taking down other buckets.
-electron-builder \
-  --linux snap \
+electron-builder --linux \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(node scripts/get_version.mjs linux) \
@@ -63,4 +55,5 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://s3.amazonaws.com/outline-releases/client/linux
 
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$INFO_FILE_CHANNEL-linux.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta-linux.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/latest-linux.yml

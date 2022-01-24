@@ -28,8 +28,6 @@ for i in "$@"; do
     esac
 done
 
-npm run action src/electron/package_common -- windows --buildMode="${BUILD_MODE}"
-
 if [[ -n ${SENTRY_DSN:-} ]]; then
   # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
   # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
@@ -37,6 +35,8 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
   readonly PROJECT_ID=$(echo $SENTRY_DSN | awk -F/ '{print $4}')
   readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&sentry_key=$API_KEY"
 fi
+
+npm run action src/electron/build_common -- windows --buildMode="${BUILD_MODE}"
 
 # TODO: Move env.sh to build/electron/.
 cat > build/env.nsh << EOF

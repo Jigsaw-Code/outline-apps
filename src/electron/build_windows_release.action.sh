@@ -43,16 +43,6 @@ if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
   exit 1
 fi
 
-TAG=$(scripts/get_tag.sh windows)
-if [[ $TAG =~ ^.*-beta$ ]]; then
-  INFO_FILE_CHANNEL="beta"
-else
-  INFO_FILE_CHANNEL="latest"
-fi
-
-npm run action src/electron/package_common windows \
-  --buildMode=release
-
 # Build the Sentry URL for the installer by parsing the API key and project ID from $SENTRY_DSN,
 # which has the following format: https://[32_CHAR_API_KEY]@sentry.io/[PROJECT_ID].
 readonly API_KEY=$(echo $SENTRY_DSN | awk -F/ '{print substr($3, 0, 32)}')
@@ -65,11 +55,12 @@ cat > build/env.nsh << EOF
 !define SENTRY_URL "${SENTRY_URL}"
 EOF
 
+npm run action src/electron/build_common -- windows --buildMode=release
+
 # Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
 # which can be blocked by DNS or SNI without taking down other buckets.
-electron-builder \
-  --win \
+electron-builder --win \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(node scripts/get_version.mjs windows) \
@@ -78,4 +69,5 @@ electron-builder \
   --config.publish.provider=generic \
   --config.publish.url=https://s3.amazonaws.com/outline-releases/client/windows
 
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/$INFO_FILE_CHANNEL.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/latest.yml

@@ -1,5 +1,9 @@
 name: Build Release Candidates
 
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -7,12 +11,11 @@ on:
 
 jobs:
   linux:
-    name: Linux Release Candidate
+    name: Build Linux Release Candidate
     runs-on: ubuntu-20.04
     timeout-minutes: 15
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      INFO_FILE_CHANNEL: beta
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -26,11 +29,11 @@ jobs:
         run: npm ci
 
       - name: Build Linux Release Candidate
-        run: npm run action src/electron/release_linux
+        run: npm run action src/electron/build_linux_release
 
       - name: Upload Linux Release Candidate
         uses: actions/upload-artifact@v2
         with:
-          name: release-linux-${{ env.GITHUB_REF }}
+          name: release-linux-${{ github.sha }}
           path: build/dist
           if-no-files-found: error

@@ -1,10 +1,10 @@
-name: Release Linux
+name: Publish Linux Release Candidate
 
 on: 
   workflow_dispatch:
     inputs:
-      commit_hash:
-        description: "Release Candidate Commit (example: 5a3ae3)"
+      commit_sha:
+        description: "SHA of commit to publish (example: 2ac8bd4a915a7c8a3e3a63081d72da33baa9ea7e)"
         required: true
 
 jobs:
@@ -12,12 +12,12 @@ jobs:
     env:
       RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-      STORE_LOGIN: ${{ secrets.SNAP_STORE_LOGIN }} 
+      # STORE_LOGIN: ${{ secrets.SNAP_STORE_LOGIN }} 
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.4
       with: 
-        commit: ${{ github.event.inputs.commit_hash }}
+        commit: ${{ github.event.inputs.commit_sha }}
 
     - name: Install Node
       uses: actions/setup-node@v2.2.0
@@ -38,8 +38,8 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build_release_candidates.yml
-        commit: ${{ github.event.inputs.commit_hash }}
-        name: release-linux-${{ github.event.inputs.commit_hash }}
+        commit: ${{ github.event.inputs.commit_sha }}
+        name: release-linux-${{ github.event.inputs.commit_sha }}
 
     - name: Checkout Releases Repository
       uses: actions/checkout@v2.3.4
@@ -58,10 +58,13 @@ jobs:
         git commit -m "Release linux client ${RELEASE_VERSION}"
         git tag "linux-${RELEASE_VERSION}"
         git push origin master
+
+    # TODO(daniellacosse): S3 bucket?
     
-    - name: Publish to Snap store    
-      uses: snapcore/action-publish@v1
-      with:
-        store_login: ${{ secrets.STORE_LOGIN }}
-        snap: build/dist/Outline-Client.AppImage
-        release: edge
+    # TODO(daniellacosse): snap store
+    # - name: Publish to Snap store    
+    #   uses: snapcore/action-publish@v1
+    #   with:
+    #     store_login: ${{ secrets.STORE_LOGIN }}
+    #     snap: build/dist/Outline-Client.AppImage
+    #     release: edge

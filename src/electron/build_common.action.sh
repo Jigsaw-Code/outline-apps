@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,9 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+PLATFORM=$1
 BUILD_MODE=debug
 for i in "$@"; do
     case $i in
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
     -* | --*)
         echo "Unknown option: ${i}"
         exit 1
@@ -24,10 +29,19 @@ for i in "$@"; do
     esac
 done
 
-npm run action src/electron/package_common -- linux --buildMode="${BUILD_MODE}"
+npm run action src/www/build_electron -- \
+    --buildMode="${BUILD_MODE}"
 
-electron-builder \
-  --linux \
-  --publish never \
-  --config src/electron/electron-builder.json \
-  --config.extraMetadata.version=$(node scripts/get_version.mjs linux)
+WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
+
+webpack \
+    --config=src/electron/electron_main.webpack.js \
+    --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
+    ${WEBPACK_MODE:+--mode="${WEBPACK_MODE}"}
+
+# Environment variables.
+# TODO: make non-packaged builds work without this
+node scripts/environment_json.mjs "${PLATFORM}" \
+    --buildMode="${BUILD_MODE}" > www/environment.json
+
+electron-icon-maker --input=resources/electron/icon.png --output=build

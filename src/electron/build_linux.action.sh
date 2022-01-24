@@ -13,8 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+BUILD_MODE=debug
+for i in "$@"; do
+    case $i in
+        case $i in
+        --buildMode=*)
+            BUILD_MODE="${i#*=}"
+            shift
+            ;;
+        -* | --*)
+            echo "Unknown option: ${i}"
+            exit 1
+            ;;
+        *) ;;
+    esac
+done
 
-npm run action src/electron/build -- "$@"
+npm run action src/electron/build_common -- linux --buildMode="${BUILD_MODE}"
 
-# Icons.
-electron-icon-maker --input=resources/electron/icon.png --output=build
+electron-builder \
+  --linux \
+  --publish never \
+  --config src/electron/electron-builder.json \
+  --config.extraMetadata.version=$(node scripts/get_version.mjs linux)
