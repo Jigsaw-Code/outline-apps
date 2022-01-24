@@ -55,7 +55,7 @@ npm run action src/electron/package_common linux --buildMode=release
 # provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
 # which can be blocked by DNS or SNI without taking down other buckets.
 electron-builder \
-  --linux \
+  --linux snap \
   --publish never \
   --config src/electron/electron-builder.json \
   --config.extraMetadata.version=$(node scripts/get_version.mjs linux) \

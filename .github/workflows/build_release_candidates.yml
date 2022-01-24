@@ -31,6 +31,6 @@ jobs:
       - name: Upload Linux Release Candidate
         uses: actions/upload-artifact@v2
         with:
-          name: linux-${{ env.GITHUB_REF }}
+          name: release-linux-${{ env.GITHUB_REF }}
           path: build/dist
           if-no-files-found: error
