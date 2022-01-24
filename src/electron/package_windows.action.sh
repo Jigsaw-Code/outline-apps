@@ -39,7 +39,7 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
 fi
 
 # TODO: Move env.sh to build/electron/.
-cat >build/env.nsh <<EOF
+cat > build/env.nsh << EOF
 !define RELEASE "$(node scripts/get_version.mjs windows)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
