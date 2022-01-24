@@ -13,8 +13,8 @@
 # limitations under the License.
 
 # -- DEPRECATED: FOR REFERENCE ONLY --
-# due to recent security issues with travis, we are in the process
-# of migrating to github actions: https://github.com/features/actions
+# Due to recent security issues with travis, we are in the process
+# of migrating to github actions: https://github.com/features/actions.
 
 language: node_js
 
