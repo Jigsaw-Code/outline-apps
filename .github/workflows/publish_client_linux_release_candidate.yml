@@ -19,8 +19,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.4
-      with: 
-        commit: ${{ github.event.inputs.commit_sha }}
 
     - name: Install Node
       uses: actions/setup-node@v2.2.0
@@ -59,7 +57,7 @@ jobs:
         cp client_linux_release/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
         cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
         cd outline-releases
-        git checkout origin/master
+        git checkout master
         git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
         git commit -m "Release linux client ${RELEASE_VERSION}"
         git tag "linux-${RELEASE_VERSION}"
