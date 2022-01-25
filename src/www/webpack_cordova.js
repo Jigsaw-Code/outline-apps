@@ -16,7 +16,7 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const {makeConfig} = require('./base.webpack.js');
+const {makeConfig} = require('./webpack_base.js');
 
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
 const BABEL_LOADER = {

@@ -29,17 +29,11 @@ for i in "$@"; do
     esac
 done
 
-npm run action src/www/build_electron -- \
-    --buildMode="${BUILD_MODE}"
+run_action src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 
 WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 
 webpack \
-    --config=src/electron/electron_main.webpack.js \
+    --config=src/electron/webpack_electron_main.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
     ${WEBPACK_MODE:+--mode="${WEBPACK_MODE}"}
-
-# Environment variables.
-# TODO: make non-packaged builds work without this
-node scripts/environment_json.mjs "${PLATFORM}" \
-    --buildMode="${BUILD_MODE}" > www/environment.json
