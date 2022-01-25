@@ -85,7 +85,7 @@ Polymer({
       <div class="flex-column-container" hidden\$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-viz state="ZERO_STATE" root-path="[[rootPath]]" expanded=""></server-connection-viz>
+            <server-connection-viz state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
