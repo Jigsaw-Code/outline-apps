@@ -17,6 +17,7 @@ import '../ui_components/app-root.js';
 import {EventQueue} from '../model/events';
 
 import {App} from './app';
+import * as clipboard from './clipboard';
 import {onceEnvVars} from './environment';
 import {NativeNetworking} from './net';
 import {OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_server';
@@ -93,7 +94,7 @@ export function main(platform: OutlinePlatform) {
             const settings = new Settings();
             const app = new App(
                 eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
-                platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
+                clipboard.getClipboard(), platform.getErrorReporter(environmentVars), settings,
                 environmentVars, platform.getUpdater(), platform.quitApplication);
           },
           (e) => {

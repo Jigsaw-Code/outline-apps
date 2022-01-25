@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/outline.d.ts'/>
+/// <reference path='../../types/ambient/clipboard.d.ts'/>
 
-import {Clipboard} from './clipboard_common';
-import {CordovaClipboard} from './clipboard_cordova';
-import {ElectronClipboard} from './clipboard_electron';
+import {AbstractClipboard} from './clipboard_common';
 
-export function getClipboard(): Clipboard {
-  if (outline.WEB_PLATFORM === 'cordova') {
-    return new CordovaClipboard();
-  } else if (outline.WEB_PLATFORM === 'electron') {
-    return new ElectronClipboard();
-  } else {
-    throw new Error('getClipboard() not implemented for platform');
+// Pushes a clipboard event whenever the app is brought to the foreground.
+export class CordovaClipboard extends AbstractClipboard {
+  constructor() {
+    super();
+    document.addEventListener('resume', this.emitEvent.bind(this));
+  }
+
+  getContents() {
+    return new Promise<string>((resolve, reject) => {
+      cordova.plugins.clipboard.paste(resolve, reject);
+    });
   }
 }

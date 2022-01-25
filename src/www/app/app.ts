@@ -16,7 +16,7 @@ import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
 
-import {Clipboard} from './clipboard';
+import {Clipboard} from './clipboard_common';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServer, OutlineServerRepository} from './outline_server';

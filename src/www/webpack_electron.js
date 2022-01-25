@@ -46,6 +46,7 @@ module.exports = makeConfig({
   ],
   extraPlugins: [
     new webpack.DefinePlugin({
+      'outline.WEB_PLATFORM': 'cordova',
       // Hack to protect against @sentry/electron not having process.type defined.
       'process.type': JSON.stringify('renderer'),
       // Statically link the Roboto font, rather than link to fonts.googleapis.com

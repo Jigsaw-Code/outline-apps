@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {NativeNetworking} from './net';
@@ -34,8 +33,6 @@ export interface OutlinePlatform {
   getTunnelFactory(): TunnelFactory;
 
   getUrlInterceptor(): UrlInterceptor|undefined;
-
-  getClipboard(): Clipboard;
 
   getErrorReporter(environment: EnvironmentVariables): OutlineErrorReporter;
 

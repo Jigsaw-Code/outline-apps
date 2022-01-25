@@ -49,6 +49,7 @@ exports.makeConfig = (options) => {
       fallback: {'url': require.resolve('url/')},
     },
     optimization: {
+      usedExports: true,
       minimizer: [new TerserPlugin({
         terserOptions: {
           keep_classnames: true,
