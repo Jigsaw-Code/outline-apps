@@ -16,11 +16,11 @@
 
 set -eu
 
-npm run action src/www/build_cordova -- --buildMode=debug
+run_action src/www/build browser --buildMode=debug
 cordova prepare browser
 
 webpack serve \
     --mode=development \
     --static=platforms/browser/www \
-    --config=src/www/cordova.webpack.js \
-    --open /cordova_index.html
+    --config=src/www/webpack_cordova.js \
+    --open /index_cordova.html

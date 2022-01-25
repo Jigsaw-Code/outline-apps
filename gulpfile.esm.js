@@ -62,7 +62,7 @@ function runCommand(command) {
 //////////////////
 //////////////////
 function buildWebApp() {
-  return runCommand(`npm run action src/www/build_cordova -- --buildMode=${buildMode}`);
+  return runCommand(`npm run action src/www/build "${platform}" -- --buildMode=${buildMode}`);
 }
 
 //////////////////
