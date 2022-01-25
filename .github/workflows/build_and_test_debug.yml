@@ -41,7 +41,7 @@ jobs:
       - name: Upload Linux Client
         uses: actions/upload-artifact@v2
         with:
-          name: client-linux-debug
+          name: client_linux_debug
           path: build/dist/Outline-Client.AppImage
           if-no-files-found: error
 
@@ -68,7 +68,7 @@ jobs:
       - name: Upload Windows Client
         uses: actions/upload-artifact@v2
         with:
-          name: client-installer-windows-debug
+          name: client_installer_windows_debug
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
 
@@ -155,6 +155,6 @@ jobs:
       - name: Upload Android Client
         uses: actions/upload-artifact@v2
         with:
-          name: client-android-debug
+          name: client_android_debug
           path: platforms/android/app/build/outputs/apk
           if-no-files-found: error

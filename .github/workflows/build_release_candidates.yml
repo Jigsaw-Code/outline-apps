@@ -34,6 +34,6 @@ jobs:
       - name: Upload Linux Release Candidate
         uses: actions/upload-artifact@v2
         with:
-          name: client-linux-release-${{ github.sha }}
+          name: client_linux_release_${{ github.sha }}
           path: build/dist
           if-no-files-found: error

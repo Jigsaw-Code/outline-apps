@@ -8,10 +8,14 @@ on:
         required: true
 
 jobs:
-  release: 
+  release:
+    name: Publish Linux Release Candidate
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
     env:
       RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
       GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      # STORE_LOGIN: ${{ secrets.SNAP_STORE_LOGIN }} 
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.4
@@ -32,13 +36,15 @@ jobs:
         git config --global user.email "outlinebot@users.noreply.github.com"
 
         git tag "linux-$(node scripts/get_version.mjs linux)"
+        git push origin "linux-$(node scripts/get_version.mjs linux)"
 
     - name: Download Release Candidate
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build_release_candidates.yml
         commit: ${{ github.event.inputs.commit_sha }}
-        name: client-linux-release-${{ github.event.inputs.commit_sha }}
+        name: client_linux_release_${{ github.event.inputs.commit_sha }}
+        path: client_linux_release
 
     - name: Checkout Releases Repository
       uses: actions/checkout@v2.3.4
@@ -49,13 +55,15 @@ jobs:
     
     - name: Push to Releases Repository
       run: |
-        cp build/dist/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
-        cp build/dist/linux-latest.yml outline-releases/client/stable/linux-latest.yml
         RELEASE_VERSION="$(node scripts/get_version.mjs linux)"
+        cp client_linux_release/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
+        cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
         cd outline-releases
-        git add client/stable/Outline-Client.AppImage client/stable/linux-latest.yml
+        git checkout origin master
+        git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
         git commit -m "Release linux client ${RELEASE_VERSION}"
         git tag "linux-${RELEASE_VERSION}"
+        git push origin "linux-${RELEASE_VERSION}"
         git push origin master
 
     # TODO(daniellacosse): S3 bucket?
