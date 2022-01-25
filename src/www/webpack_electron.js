@@ -57,8 +57,8 @@ module.exports = makeConfig({
     new webpack.IgnorePlugin(
         {resourceRegExp: /^electron$/, contextRegExp: /@sentry\/electron/}),
     new HtmlWebpackPlugin({
-      filename: 'electron_index.html',
-      template: path.resolve(__dirname, './electron_index.html'),
+      filename: 'index_electron.html',
+      template: path.resolve(__dirname, './index_electron.html'),
     }),
   ],
 });

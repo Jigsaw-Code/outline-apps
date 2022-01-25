@@ -17,7 +17,7 @@
     <description>
         Internet without borders (powered by Shadowsocks)
     </description>
-    <content src="cordova_index.html" />
+    <content src="index_cordova.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

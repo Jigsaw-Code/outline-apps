@@ -70,8 +70,8 @@ module.exports = makeConfig({
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),
     new HtmlWebpackPlugin({
-      filename: 'cordova_index.html',
-      template: path.resolve(__dirname, './cordova_index.html'),
+      filename: 'index_cordova.html',
+      template: path.resolve(__dirname, './index_cordova.html'),
     }),
   ]
 });

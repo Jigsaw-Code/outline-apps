@@ -100,7 +100,7 @@ function setupWindow(): void {
   mainWindow = new BrowserWindow(
       {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
 
-  const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'electron_index.html');
+  const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'index_electron.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.

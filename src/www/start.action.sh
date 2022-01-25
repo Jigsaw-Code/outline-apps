@@ -23,4 +23,4 @@ webpack serve \
     --mode=development \
     --static=platforms/browser/www \
     --config=src/www/webpack_cordova.js \
-    --open /cordova_index.html
+    --open /index_cordova.html
