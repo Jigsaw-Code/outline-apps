@@ -13,65 +13,52 @@
 // limitations under the License.
 
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const {makeConfig} = require('./base.webpack.js');
+const {makeConfig} = require('./webpack_base.js');
 
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
-const BABEL_LOADER = {
-  loader: 'babel-loader',
-  options: {
-    presets: ['@babel/preset-env']
-  },
-};
 
 module.exports = makeConfig({
-  main: path.resolve(__dirname, './app/cordova_main.ts'),
-  target: ['web', 'es5'],
+  main: path.resolve(__dirname, './app/electron_main.ts'),
+  target: 'electron-renderer',
   extraModuleRules: [
     {
       test: /\.ts(x)?$/,
       exclude: /node_modules/,
       use: [
-        BABEL_LOADER,
         'ts-loader',
         GENERATE_CSS_RTL_LOADER,
       ],
     },
     {
-      test: /\.m?ts$/,
+      test: /\.ts(x)?$/,
       include: /node_modules/,
       use: [
-        BABEL_LOADER,
         'ts-loader',
       ],
     },
     {
       test: /\.js$/,
       exclude: /node_modules/,
-      use: [BABEL_LOADER, GENERATE_CSS_RTL_LOADER],
-    },
-    {
-      // Loads and transpiles dependencies (including .mjs ES modules)
-      test: /\.m?js$/,
-      include: /node_modules/,
-      use: [BABEL_LOADER],
+      use: [GENERATE_CSS_RTL_LOADER],
     },
   ],
   extraPlugins: [
-    new CopyPlugin(
-      [
-        {from: require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'), to: 'webcomponentsjs'},
-      ],
-      {context: __dirname}),
     new webpack.DefinePlugin({
+      // Hack to protect against @sentry/electron not having process.type defined.
+      'process.type': JSON.stringify('renderer'),
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),
+    // @sentry/electron depends on electron code, even though it's never activated
+    // in the browser. Webpack still tries to build it, but fails with missing APIs.
+    // The IgnorePlugin prevents the compilation of the electron dependency.
+    new webpack.IgnorePlugin(
+        {resourceRegExp: /^electron$/, contextRegExp: /@sentry\/electron/}),
     new HtmlWebpackPlugin({
-      filename: 'cordova_index.html',
-      template: path.resolve(__dirname, './cordova_index.html'),
+      filename: 'index_electron.html',
+      template: path.resolve(__dirname, './index_electron.html'),
     }),
-  ]
+  ],
 });
