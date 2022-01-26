@@ -53,7 +53,7 @@ If this gives you unexpected Cordova errors, run:
 
     npm run clean && npm ci && npm run action gulp -- build android
 
-Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk`
+Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
 
 To learn more about developing for Android, see [docs/android-development](docs/android-development.md).
 
