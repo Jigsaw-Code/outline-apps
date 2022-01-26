@@ -36,7 +36,7 @@ export class AbstractClipboard implements Clipboard {
     this.listener = listener;
   }
 
-  emitEvent() {
+  protected emitEvent() {
     if (this.listener) {
       this.getContents().then(this.listener);
     }
