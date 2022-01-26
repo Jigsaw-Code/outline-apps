@@ -61,7 +61,7 @@ electron-icon-maker --input=resources/electron/icon.png --output=build
 if [[ "${PLATFORM}" == "windows" ]]; then
 cat > build/env.nsh << EOF
 !define RELEASE "$(node scripts/get_version.mjs windows)"
-!define SENTRY_URL "${SENTRY_URL}"
+!define SENTRY_URL "${SENTRY_URL:-}"
 EOF
 fi
 
