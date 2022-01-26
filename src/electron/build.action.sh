@@ -70,5 +70,5 @@ electron-builder $(node scripts/get_electron_build_flags.mjs ${PLATFORM} --build
 MANIFEST_POSTFIX=
 [[ "${PLATFORM}" == "linux" ]] && MANIFEST_POSTFIX="-linux"
 
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta${MANIFEST_PREFIX}.yml
-echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/latest${MANIFEST_PREFIX}.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta${MANIFEST_POSTFIX}.yml
+echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/latest${MANIFEST_POSTFIX}.yml
