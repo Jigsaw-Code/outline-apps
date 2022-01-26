@@ -29,7 +29,7 @@ jobs:
         run: npm ci
 
       - name: Build Linux Release Candidate
-        run: npm run action src/electron/build_linux_release
+        run: npm run action src/electron/build linux -- --buildMode=release
 
       - name: Upload Linux Release Candidate
         uses: actions/upload-artifact@v2

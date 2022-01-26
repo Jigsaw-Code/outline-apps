@@ -16,35 +16,35 @@ import url from "url";
 import { getVersion } from "./get_version.mjs";
 
 export async function getElectronBuildFlags(platform, buildMode) {
-  let buildFlags = [
-    "--publish never",
-    "--config src/electron/electron-builder.json",
-    `--config.extraMetadata.version=${await getVersion(platform)}`
-  ];
+  let buildFlags = {
+    publish: "never",
+    config: "src/electron/electron-builder.json",
+    "config.extraMetadata.version": await getVersion(platform)
+    };
 
   if (platform === "linux") {
-    buildFlags = ["--linux", ...buildFlags];
+    buildFlags.linux = null;
   } else if (platform === "win") {
-    buildFlags = ["--win", ...buildFlags];
+    buildFlags.win = null;
   }
 
   if (buildMode === "release") {
     // Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
     // provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
     // which can be blocked by DNS or SNI without taking down other buckets.
-    buildFlags = [
-      ...buildFlags, 
-      "--config.generateUpdatesFilesForAllChannels=true",
-      "--config.publish.provider=generic",
-      `--config.publish.url=https://s3.amazonaws.com/outline-releases/client/${platform}`
-    ];
+    buildFlags = {
+      ...buildFlags,
+      "config.generateUpdatesFilesForAllChannels": "true",
+      "config.publish.provider": "generic",
+      "config.publish.url": `https://s3.amazonaws.com/outline-releases/client/${platform}`
+    };
   }
 
   if (buildMode === "release" && platform === "win") {
-    buildFlags.push("--config.win.certificateSubjectName='Jigsaw Operations LLC'");
+    buildFlags["config.win.certificateSubjectName"] = "'Jigsaw Operations LLC'";
   }
 
-  return buildFlags.join(" ");
+  return buildFlags;
 }
 
 async function main() {
@@ -52,7 +52,17 @@ async function main() {
   
   const platform = _[2];
 
-  console.log(await getElectronBuildFlags(platform, buildMode));
+  console.log(
+    Object.entries(await getElectronBuildFlags(platform, buildMode)).map(
+      ([key, value]) => {
+        if (value === null) {
+          return `--${key}`;
+        }
+
+        return `--${key}=${value}`;
+      }
+    ).join(" ")
+  );
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
