@@ -53,7 +53,6 @@ export function unwrapInvite(s: string): string {
 }
 
 export class App {
-  private serverCards: ServerCardModel[];
   private feedbackViewEl: polymer.Base;
   private localize: (...args: string[]) => string;
   private ignoredAccessKeys: {[accessKey: string]: boolean;} = {};
@@ -63,7 +62,7 @@ export class App {
       private rootEl: polymer.Base, private debugMode: boolean,
       urlInterceptor: UrlInterceptor|undefined, private clipboard: Clipboard,
       private errorReporter: OutlineErrorReporter, private settings: Settings,
-      private environmentVars: EnvironmentVariables, private updater: Updater,
+      environmentVars: EnvironmentVariables, private updater: Updater,
       private quitApplication: () => void, document = window.document) {
     this.feedbackViewEl = rootEl.$.feedbackView;
 
