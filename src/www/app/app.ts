@@ -106,13 +106,13 @@ export class App {
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
     // Register handlers for events published to our event queue.
-    this.eventQueue.subscribe(events.ServerAdded, this.showServerAdded.bind(this));
-    this.eventQueue.subscribe(events.ServerForgotten, this.showServerForgotten.bind(this));
-    this.eventQueue.subscribe(events.ServerRenamed, this.showServerRenamed.bind(this));
-    this.eventQueue.subscribe(events.ServerForgetUndone, this.showServerForgetUndone.bind(this));
-    this.eventQueue.subscribe(events.ServerConnected, this.showServerConnected.bind(this));
-    this.eventQueue.subscribe(events.ServerDisconnected, this.showServerDisconnected.bind(this));
-    this.eventQueue.subscribe(events.ServerReconnecting, this.showServerReconnecting.bind(this));
+    this.eventQueue.subscribe(events.ServerAdded, this.onServerAdded.bind(this));
+    this.eventQueue.subscribe(events.ServerForgotten, this.onServerForgotten.bind(this));
+    this.eventQueue.subscribe(events.ServerRenamed, this.onServerRenamed.bind(this));
+    this.eventQueue.subscribe(events.ServerForgetUndone, this.onServerForgetUndone.bind(this));
+    this.eventQueue.subscribe(events.ServerConnected, this.onServerConnected.bind(this));
+    this.eventQueue.subscribe(events.ServerDisconnected, this.onServerDisconnected.bind(this));
+    this.eventQueue.subscribe(events.ServerReconnecting, this.onServerReconnecting.bind(this));
 
     this.eventQueue.startPublishing();
 
@@ -197,12 +197,12 @@ export class App {
     }
   }
 
-  private showServerConnected(event: events.ServerConnected): void {
+  private onServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.server.id} connected`);
     this.updateServerCard(event.server.id, {state: ServerConnectionState.CONNECTED});
   }
 
-  private showServerDisconnected(event: events.ServerDisconnected): void {
+  private onServerDisconnected(event: events.ServerDisconnected): void {
     console.debug(`server ${event.server.id} disconnected`);
     try {
       this.updateServerCard(event.server.id, {state: ServerConnectionState.DISCONNECTED});
@@ -211,7 +211,7 @@ export class App {
     }
   }
 
-  private showServerReconnecting(event: events.ServerReconnecting): void {
+  private onServerReconnecting(event: events.ServerReconnecting): void {
     console.debug(`server ${event.server.id} reconnecting`);
     this.updateServerCard(event.server.id, {state: ServerConnectionState.RECONNECTING});
   }
@@ -431,17 +431,16 @@ export class App {
 
   // EventQueue event handlers:
 
-  private showServerAdded(event: events.ServerAdded) {
+  private onServerAdded(event: events.ServerAdded) {
     const server = event.server;
     console.debug('Server added');
     this.syncServersToUI();
-    this.syncServerConnectivityState(server);
     this.changeToDefaultPage();
     this.rootEl.showToast(
         this.localize('server-added', 'serverName', this.getServerDisplayName(server)));
   }
 
-  private showServerForgotten(event: events.ServerForgotten) {
+  private onServerForgotten(event: events.ServerForgotten) {
     const server = event.server;
     console.debug('Server forgotten');
     this.syncServersToUI();
@@ -452,14 +451,14 @@ export class App {
         });
   }
 
-  private showServerForgetUndone(event: events.ServerForgetUndone) {
+  private onServerForgetUndone(event: events.ServerForgetUndone) {
     this.syncServersToUI();
     const server = event.server;
     this.rootEl.showToast(
         this.localize('server-forgotten-undo', 'serverName', this.getServerDisplayName(server)));
   }
 
-  private showServerRenamed(event: events.ServerForgotten) {
+  private onServerRenamed(event: events.ServerForgotten) {
     const server = event.server;
     console.debug('Server renamed');
     this.updateServerCard(server.id, {name: server.name});
