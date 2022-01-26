@@ -15,6 +15,8 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
+import {ServerConnectionState} from '../ui_components/server_connection_viz';
+import {ServerCardModel} from '../ui_components/server_list';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -51,7 +53,7 @@ export function unwrapInvite(s: string): string {
 }
 
 export class App {
-  private serverListEl: polymer.Base;
+  private serverCards: ServerCardModel[];
   private feedbackViewEl: polymer.Base;
   private localize: (...args: string[]) => string;
   private ignoredAccessKeys: {[accessKey: string]: boolean;} = {};
@@ -63,7 +65,6 @@ export class App {
       private errorReporter: OutlineErrorReporter, private settings: Settings,
       private environmentVars: EnvironmentVariables, private updater: Updater,
       private quitApplication: () => void, document = window.document) {
-    this.serverListEl = rootEl.$.serversView.$.serverList;
     this.feedbackViewEl = rootEl.$.feedbackView;
 
     this.syncServersToUI();
@@ -199,14 +200,13 @@ export class App {
 
   private showServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.server.id} connected`);
-    const card = this.serverListEl.getServerCard(event.server.id);
-    card.state = 'CONNECTED';
+    this.updateUiServer(event.server.id, {state: ServerConnectionState.CONNECTED});
   }
 
   private showServerDisconnected(event: events.ServerDisconnected): void {
     console.debug(`server ${event.server.id} disconnected`);
     try {
-      this.serverListEl.getServerCard(event.server.id).state = 'DISCONNECTED';
+      this.updateUiServer(event.server.id, {state: ServerConnectionState.DISCONNECTED});
     } catch (e) {
       console.warn('server card not found after disconnection event, assuming forgotten');
     }
@@ -214,8 +214,7 @@ export class App {
 
   private showServerReconnecting(event: events.ServerReconnecting): void {
     console.debug(`server ${event.server.id} reconnecting`);
-    const card = this.serverListEl.getServerCard(event.server.id);
-    card.state = 'RECONNECTING';
+    this.updateUiServer(event.server.id, {state: ServerConnectionState.RECONNECTING});
   }
 
   private displayZeroStateUi() {
@@ -353,20 +352,18 @@ export class App {
     }
 
     const server = this.getServerByServerId(serverId);
-    const card = this.getCardByServerId(serverId);
-
     console.log(`connecting to server ${serverId}`);
 
-    card.state = 'CONNECTING';
+    this.updateUiServer(serverId, {state: ServerConnectionState.CONNECTING});
     try {
       await server.connect();
-      card.state = 'CONNECTED';
+      this.updateUiServer(serverId, {state: ServerConnectionState.CONNECTED});
       console.log(`connected to server ${serverId}`);
       this.rootEl.showToast(
           this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
       this.maybeShowAutoConnectDialog();
     } catch (e) {
-      card.state = 'DISCONNECTED';
+      this.updateUiServer(serverId, {state: ServerConnectionState.DISCONNECTED});
       this.showLocalizedError(e);
       console.error(`could not connect to server ${serverId}: ${e.name}`);
       if (!(e instanceof errors.RegularNativeError)) {
@@ -398,19 +395,17 @@ export class App {
     }
 
     const server = this.getServerByServerId(serverId);
-    const card = this.getCardByServerId(serverId);
-
     console.log(`disconnecting from server ${serverId}`);
 
-    card.state = 'DISCONNECTING';
+    this.updateUiServer(serverId, {state: ServerConnectionState.DISCONNECTING});
     try {
       await server.disconnect();
-      card.state = 'DISCONNECTED';
+      this.updateUiServer(serverId, {state: ServerConnectionState.DISCONNECTED});
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(
           this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
-      card.state = 'CONNECTED';
+      this.updateUiServer(serverId, {state: ServerConnectionState.CONNECTED});
       this.showLocalizedError(e);
       console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
     }
@@ -468,14 +463,26 @@ export class App {
   private showServerRenamed(event: events.ServerForgotten) {
     const server = event.server;
     console.debug('Server renamed');
-    this.serverListEl.getServerCard(server.id).serverName = server.name;
+    this.updateUiServer(server.id, {name: server.name});
     this.rootEl.showToast(this.localize('server-rename-complete'));
   }
 
   // Helpers:
 
+  private makeUiServer(server: Server): ServerCardModel {
+    return {
+      disabled: false,
+      errorMessageId: server.errorMessageId,
+      isOutlineServer: server.isOutlineServer,
+      name: server.name,
+      address: server.address,
+      id: server.id,
+      state: ServerConnectionState.DISCONNECTED,
+    };
+  }
+
   private syncServersToUI() {
-    this.rootEl.servers = this.serverRepo.getAll();
+    this.rootEl.servers = this.serverRepo.getAll().map(this.makeUiServer);
   }
 
   private syncConnectivityStateToServerCards() {
@@ -487,17 +494,16 @@ export class App {
   private async syncServerConnectivityState(server: Server) {
     try {
       const isRunning = await server.checkRunning();
-      const card = this.serverListEl.getServerCard(server.id);
       if (!isRunning) {
-        card.state = 'DISCONNECTED';
+        this.updateUiServer(server.id, {state: ServerConnectionState.DISCONNECTED});
         return;
       }
       const isReachable = await server.checkReachable();
       if (isReachable) {
-        card.state = 'CONNECTED';
+        this.updateUiServer(server.id, {state: ServerConnectionState.CONNECTED});
       } else {
         console.log(`Server ${server.id} reconnecting`);
-        card.state = 'RECONNECTING';
+        this.updateUiServer(server.id, {state: ServerConnectionState.RECONNECTING});
       }
     } catch (e) {
       console.error('Failed to sync server connectivity state', e);
@@ -543,10 +549,16 @@ export class App {
     return server;
   }
 
-  // Returns the card associated with serverId, throws if no such card exists.
-  // See server-list.html.
-  private getCardByServerId(serverId: string) {
-    return this.serverListEl.getServerCard(serverId);
+  private updateUiServer(id: string, properties: object) {
+    // We have to create a new list so the property change is observed.
+    this.rootEl.servers = this.rootEl.servers.map((uiServer: ServerCardModel) => {
+      if (uiServer.id === id) {
+        // Create a new object so the change is reflected in the server_card view.
+        return {...uiServer, ...properties} as ServerCardModel;
+      } else {
+        return uiServer;
+      }
+    });
   }
 
   private showLocalizedErrorInDefaultPage(err: Error) {

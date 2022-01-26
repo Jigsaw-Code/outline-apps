@@ -259,7 +259,7 @@ export class AppRoot extends mixinBehaviors
       </app-header>
 
       <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-        <servers-view name="servers" id="serversView" servers="{{servers}}" root-path="[[rootPath]]" localize="[[localize]]"></servers-view>
+        <servers-view name="servers" id="serversView" servers="[[servers]]" root-path="[[rootPath]]" localize="[[localize]]"></servers-view>
         <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
         <about-view name="about" id="aboutView" localize="[[localize]]" root-path="[[rootPath]]" version="[[appVersion]]"></about-view>
         <language-view name="language" id="aboutView" selected-language="[[language]]" languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"></language-view>
