@@ -32,10 +32,13 @@ done
 WEBPACK_CONFIG=
 case "${PLATFORM}" in
   windows|linux)
-    WEBPACK_CONFIG="src/www/webpack_electron.js"
+    WEBPACK_CONFIG="src/www/webpack_electron.mjs"
     ;;
   ios|osx|android|browser)
-    WEBPACK_CONFIG="src/www/webpack_cordova.js"
+    WEBPACK_CONFIG="src/www/webpack_cordova.mjs"
+    ;;
+  test)
+    WEBPACK_CONFIG="src/www/webpack_test.mjs"
     ;;
   *)
     echo "Invalid platform [${PLATFORM}]"

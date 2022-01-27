@@ -11,11 +11,10 @@ on:
       - synchronize
 
 jobs:
-  linux:
-    name: Linux
+  browser:
+    name: Browser
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -35,6 +34,24 @@ jobs:
       - name: Test Web App
         run: npm run action src/www/test
 
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    needs: browser
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
       - name: Build Linux Client
         run: npm run action src/electron/package_linux
       
@@ -49,6 +66,7 @@ jobs:
     name: Windows
     runs-on: windows-2019
     timeout-minutes: 10
+    needs: browser
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -76,6 +94,7 @@ jobs:
     name: MacOS
     runs-on: macos-11
     timeout-minutes: 10
+    needs: browser
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -100,6 +119,7 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 10
     environment: Test
+    needs: browser
     env:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
@@ -126,6 +146,7 @@ jobs:
     name: Android
     runs-on: ubuntu-20.04
     timeout-minutes: 10
+    needs: browser
     env:
       ANDROID_SDK_ROOT: /opt/android-sdk
     steps:

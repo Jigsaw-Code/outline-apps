@@ -16,5 +16,5 @@
 readonly TEST_DIR="${ROOT_DIR}/build/test"
 rm -rf "$TEST_DIR"
 
-webpack --config=$ROOT_DIR/src/www/webpack_test.js
+run_action src/www/build test
 jasmine "--config=$ROOT_DIR/src/www/jasmine.json"

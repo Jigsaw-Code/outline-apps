@@ -1,6 +1,6 @@
 {
   "spec_files": [
-    "**/*.spec.ts"
+    "build/test/main.spec.js"
   ],
   "helpers": [],
   "stopSpecOnExpectationFailure": false,
