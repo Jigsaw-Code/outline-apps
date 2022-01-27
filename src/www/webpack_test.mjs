@@ -16,8 +16,6 @@ import {baseConfig, __dirname} from "./webpack_base.mjs";
 import {merge} from "webpack-merge";
 import glob from "glob";
 
-console.log(glob.sync("./src/www/**/*.spec.ts"));
-
 export default merge(baseConfig, {
   entry: glob.sync("./src/www/**/*.spec.ts"),
   target: "node",
