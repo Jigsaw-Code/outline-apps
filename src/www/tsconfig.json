@@ -1,7 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../www"
+    "outDir": "../../www",
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts"
