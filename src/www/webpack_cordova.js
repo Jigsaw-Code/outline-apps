@@ -66,6 +66,7 @@ module.exports = makeConfig({
       ],
       {context: __dirname}),
     new webpack.DefinePlugin({
+      'outline.WEB_PLATFORM': 'cordova',
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),

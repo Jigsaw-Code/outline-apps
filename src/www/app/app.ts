@@ -18,7 +18,7 @@ import {Server} from '../model/server';
 import {ServerConnectionState} from '../ui_components/server_connection_viz';
 import {ServerCardModel} from '../ui_components/server_list';
 
-import {Clipboard} from './clipboard';
+import {Clipboard} from './clipboard_common';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServer, OutlineServerRepository} from './outline_server';

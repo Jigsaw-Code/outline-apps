@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/outline.d.ts'/>
-
-import {Clipboard} from './clipboard_common';
-import {CordovaClipboard} from './clipboard_cordova';
-import {ElectronClipboard} from './clipboard_electron';
-
-export function getClipboard(): Clipboard {
-  if (outline.WEB_PLATFORM === 'cordova') {
-    return new CordovaClipboard();
-  } else if (outline.WEB_PLATFORM === 'electron') {
-    return new ElectronClipboard();
-  } else {
-    throw new Error('getClipboard() not implemented for platform');
-  }
+declare module outline {
+  const WEB_PLATFORM: 'cordova'|'electron';
 }

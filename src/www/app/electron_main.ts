@@ -16,11 +16,10 @@ import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as sentry from '@sentry/electron';
-import {clipboard, ipcRenderer} from 'electron';
+import {ipcRenderer} from 'electron';
 import * as promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
 
-import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
 import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
@@ -53,18 +52,6 @@ ipcRenderer.on('localizationRequest', (e: Event, localizationKeys: string[]) => 
   }
   ipcRenderer.send('localizationResponse', localizationResult);
 });
-
-// Pushes a clipboard event whenever the app window receives focus.
-class ElectronClipboard extends AbstractClipboard {
-  constructor() {
-    super();
-    ipcRenderer.on('push-clipboard', this.emitEvent.bind(this));
-  }
-
-  getContents() {
-    return Promise.resolve(clipboard.readText());
-  }
-}
 
 class ElectronUpdater extends AbstractUpdater {
   constructor() {
@@ -112,9 +99,6 @@ main({
   },
   getUrlInterceptor: () => {
     return interceptor;
-  },
-  getClipboard: () => {
-    return new ElectronClipboard();
   },
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.

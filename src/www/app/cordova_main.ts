@@ -24,7 +24,6 @@ setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 
 
 import * as sentry from '@sentry/browser';
 
-import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
 import {FakeNativeNetworking} from './fake_net';
@@ -39,21 +38,6 @@ import {FakeOutlineTunnel} from './fake_tunnel';
 import {ShadowsocksConfig} from './config';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
-
-
-// Pushes a clipboard event whenever the app is brought to the foreground.
-class CordovaClipboard extends AbstractClipboard {
-  constructor() {
-    super();
-    document.addEventListener('resume', this.emitEvent.bind(this));
-  }
-
-  getContents() {
-    return new Promise<string>((resolve, reject) => {
-      cordova.plugins.clipboard.paste(resolve, reject);
-    });
-  }
-}
 
 // Helper function to call the Outline Cordova plugin.
 function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
@@ -149,10 +133,6 @@ class CordovaPlatform implements OutlinePlatform {
     }
     console.warn('no intent interceptor available');
     return new interceptors.UrlInterceptor();
-  }
-
-  getClipboard() {
-    return new CordovaClipboard();
   }
 
   getErrorReporter(env: EnvironmentVariables) {

@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/outline.d.ts'/>
+import {clipboard, ipcRenderer} from 'electron';
 
-import {Clipboard} from './clipboard_common';
-import {CordovaClipboard} from './clipboard_cordova';
-import {ElectronClipboard} from './clipboard_electron';
+import {AbstractClipboard} from './clipboard_common';
 
-export function getClipboard(): Clipboard {
-  if (outline.WEB_PLATFORM === 'cordova') {
-    return new CordovaClipboard();
-  } else if (outline.WEB_PLATFORM === 'electron') {
-    return new ElectronClipboard();
-  } else {
-    throw new Error('getClipboard() not implemented for platform');
+// Pushes a clipboard event whenever the app window receives focus.
+export class ElectronClipboard extends AbstractClipboard {
+  constructor() {
+    super();
+    ipcRenderer.on('push-clipboard', this.emitEvent.bind(this));
+  }
+
+  getContents() {
+    return Promise.resolve(clipboard.readText());
   }
 }
