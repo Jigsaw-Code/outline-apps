@@ -93,7 +93,7 @@ Polymer({
         <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"></div>
       </div>
       <user-comms-dialog id="autoConnectDialog" localize="[[localize]]" title-localization-key="auto-connect-dialog-title" detail-localization-key="auto-connect-dialog-detail" fire-event-on-hide="AutoConnectDialogDismissed"></user-comms-dialog>
-      <server-list id="serverList" hidden\$="[[shouldShowZeroState]]" servers="{{servers}}" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
+      <server-list id="serverList" hidden\$="[[shouldShowZeroState]]" servers="[[servers]]" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
     </div>
 `,
 
