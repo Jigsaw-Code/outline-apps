@@ -44,7 +44,7 @@ export async function getElectronBuildFlags(platform, buildMode) {
     buildFlags.push("--config.win.certificateSubjectName='Jigsaw Operations LLC'");
   }
 
-  return buildFlags.join(" ");
+  return buildFlags;
 }
 
 async function main() {
@@ -52,7 +52,7 @@ async function main() {
   
   const platform = _[2];
 
-  console.log(await getElectronBuildFlags(platform, buildMode));
+  console.log((await getElectronBuildFlags(platform, buildMode)).join(" "));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
