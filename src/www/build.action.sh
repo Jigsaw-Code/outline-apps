@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eux
+
 PLATFORM=$1
 BUILD_MODE=debug
 for i in "$@"; do
@@ -32,10 +34,10 @@ done
 WEBPACK_CONFIG=
 case "${PLATFORM}" in
   windows|linux)
-    WEBPACK_CONFIG="src/www/webpack_electron.js"
+    WEBPACK_CONFIG="src/www/webpack_electron.mjs"
     ;;
   ios|osx|android|browser)
-    WEBPACK_CONFIG="src/www/webpack_cordova.js"
+    WEBPACK_CONFIG="src/www/webpack_cordova.mjs"
     ;;
   *)
     echo "Invalid platform [${PLATFORM}]"

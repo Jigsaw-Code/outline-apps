@@ -21,7 +21,7 @@ npm install
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    npm run action gulp -- build browser
+    npm run action gulp build browser
     npx cordova run browser
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
@@ -34,24 +34,26 @@ UI components are located in [src/www/ui_components](src/www/ui_components). The
 
 Additional requirements for Android:
 
-* Android Studio 4+
-* Android SDK 29
+* [Android Studio 2020.3.1+](https://developer.android.com/studio)
+* [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
+* Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+* [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
 
 To build for android, run:
 
-    npm run action gulp -- build android
+    npm run action gulp build android
 
 To rebuild after modifying platform dependent files, run:
 
-    npx cordova platform rm android && npm run action gulp -- build android
+    npx cordova platform rm android && npm run action gulp build android
 
 If this gives you unexpected Cordova errors, run:
 
-    npm run clean && npm ci && npm run action gulp -- build android
+    npm run clean && npm ci && npm run action gulp build android
 
-Cordova will generate a new Android project in the platforms/android directory.  Install the built apk by  platforms/android/build/outputs/apk/android-armv7-debug.apk
+Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
 
 To learn more about developing for Android, see [docs/android-development](docs/android-development.md).
 
@@ -72,11 +74,11 @@ Additional requirements for Apple:
 
 To build for macOS (OS X), run:
 
-    npm run action gulp -- build osx
+    npm run action gulp build osx
 
 To build for iOS, run:
 
-    npm run action gulp -- build ios
+    npm run action gulp build ios
 
 To open the macOS project on XCode:
 
@@ -100,11 +102,11 @@ Additional requirements for building on Windows:
 
 To build the Electron clients, run:
 
-    npm run action src/electron/build -- windows
+    npm run action src/electron/build windows
 
 To run the Electron clients, run:
 
-    npm run action src/electron/start -- windows
+    npm run action src/electron/start windows
 
 To package the Electron clients into an installer executable, run:
 
