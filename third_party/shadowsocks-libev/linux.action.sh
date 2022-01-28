@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash
 #
 # Copyright 2019 The Outline Authors
 #
@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eux
 
 THIRD_PARTY_DIR="$ROOT_DIR/third_party"
 LIBEV_DIR="$THIRD_PARTY_DIR/libev/linux"
