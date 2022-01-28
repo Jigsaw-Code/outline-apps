@@ -36,12 +36,12 @@ jobs:
         run: npm run action scripts/test
 
       - name: Build Linux Client
-        run: npm run action src/electron/package_linux
+        run: npm run action src/electron/build linux
       
       - name: Upload Linux Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-linux-client
+          name: client_linux_debug
           path: build/dist/Outline-Client.AppImage
           if-no-files-found: error
 
@@ -63,12 +63,12 @@ jobs:
         run: npm ci
 
       - name: Build Windows Client
-        run: npm run action src/electron/package_windows
+        run: npm run action src/electron/build windows
 
       - name: Upload Windows Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-windows-client
+          name: client_installer_windows_debug
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
 
@@ -155,6 +155,6 @@ jobs:
       - name: Upload Android Client
         uses: actions/upload-artifact@v2
         with:
-          name: unsigned-android-client
+          name: client_android_debug
           path: platforms/android/app/build/outputs/apk
           if-no-files-found: error
