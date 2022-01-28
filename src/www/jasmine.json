@@ -1,8 +1,0 @@
-{
-  "spec_files": [
-    "build/test/main.spec.js"
-  ],
-  "helpers": [],
-  "stopSpecOnExpectationFailure": false,
-  "random": false
-}

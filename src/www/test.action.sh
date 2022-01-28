@@ -15,8 +15,4 @@
 # limitations under the License.
 set -eu
 
-readonly TEST_DIR="${ROOT_DIR}/build/test"
-rm -rf "$TEST_DIR"
-
-webpack "--config=$ROOT_DIR/src/www/webpack_test.mjs" --mode=development
-jasmine "--config=$ROOT_DIR/src/www/jasmine.json"
+karma start "${ROOT_DIR}/src/www/karma.conf.js"

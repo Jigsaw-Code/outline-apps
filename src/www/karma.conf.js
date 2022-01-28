@@ -1,4 +1,4 @@
-// Copyright 2020 The Outline Authors
+// Copyright 2022 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,17 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {baseConfig, __dirname} from "./webpack_base.mjs";
-import {merge} from "webpack-merge";
+process.env.CHROMIUM_BIN = require("puppeteer").executablePath();
 
-export default merge(baseConfig, {
-  module: {
-    rules: [
-      {
-        test: /\.m?ts$/,
-        exclude: /node_modules/,
-        use: ["ts-loader"]
-      }
-    ]
-  }
-});
+module.exports = async function(config) {
+  const testConfig = await import("./webpack_test.mjs");
+
+  config.set({
+    browsers: ["ChromiumHeadless"],
+    colors: true,
+    files: ["**/*.spec.ts"],
+    frameworks: ["webpack", "jasmine"],
+    preprocessors: {
+      "**/*.spec.ts": ["webpack"],
+    },
+    reporters: ["progress"],
+    singleRun: true,
+    webpack: testConfig.default,
+  });
+};
