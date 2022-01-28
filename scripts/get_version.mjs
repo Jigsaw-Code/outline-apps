@@ -44,8 +44,6 @@ export async function getVersion(platform) {
       return "1.7.0";
     case "linux":
       return "1.4.0";
-    case "test":
-      return "0.0.0";
     default:
       throw new Error("get_version must be provided a platform argument");
   }

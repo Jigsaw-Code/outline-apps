@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,8 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
+
 readonly TEST_DIR="${ROOT_DIR}/build/test"
 rm -rf "$TEST_DIR"
 
-run_action src/www/build test
+webpack "--config=$ROOT_DIR/src/www/webpack_test.mjs" --mode=development
 jasmine "--config=$ROOT_DIR/src/www/jasmine.json"

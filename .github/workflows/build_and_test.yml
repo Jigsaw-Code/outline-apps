@@ -11,8 +11,8 @@ on:
       - synchronize
 
 jobs:
-  browser:
-    name: Browser
+  web-test:
+    name: Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
@@ -34,11 +34,11 @@ jobs:
       - name: Test Web App
         run: npm run action src/www/test
 
-  linux:
-    name: Linux
+  linux-debug-build:
+    name: Linux Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: browser
+    needs: web-test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -62,11 +62,11 @@ jobs:
           path: build/dist/Outline-Client.AppImage
           if-no-files-found: error
 
-  windows:
-    name: Windows
+  windows-debug-build:
+    name: Windows Debug Build
     runs-on: windows-2019
     timeout-minutes: 10
-    needs: browser
+    needs: web-test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -90,11 +90,11 @@ jobs:
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
 
-  mac:
-    name: MacOS
+  mac-debug-build:
+    name: MacOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    needs: browser
+    needs: web-test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -114,12 +114,12 @@ jobs:
       - name: Build OSX Client
         run: npm run action gulp build osx
 
-  ios:
-    name: iOS
+  ios-debug-build:
+    name: iOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
     environment: Test
-    needs: browser
+    needs: web-test
     env:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
@@ -142,11 +142,11 @@ jobs:
       - name: Build iOS Client
         run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
 
-  android:
-    name: Android
+  android-debug-build:
+    name: Android Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: browser
+    needs: web-test
     env:
       ANDROID_SDK_ROOT: /opt/android-sdk
     steps:

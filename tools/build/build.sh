@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
 
 readonly IMAGE_NAME="quay.io/outline/build-android:2020-09-14@sha256:432b3ad1d7bfb247e8bda82e2943cbe06f7d07b6585e3f3d22df5706fc6b9ba1"
 

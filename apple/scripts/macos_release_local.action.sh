@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
 
 # Releases the Outline macOS client locally. Expects to be invoked through `npm run action`.
 ./apple/scripts/install_fastlane.sh osx --buildMode=release
