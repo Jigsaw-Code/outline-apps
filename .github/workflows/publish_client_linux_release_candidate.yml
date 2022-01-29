@@ -1,0 +1,75 @@
+name: Publish Client Linux Release Candidate
+
+on: 
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "SHA of commit to publish (example: 2ac8bd4a915a7c8a3e3a63081d72da33baa9ea7e)"
+        required: true
+
+jobs:
+  release:
+    name: Publish Client Linux Release Candidate
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+    env:
+      RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
+      GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      # STORE_LOGIN: ${{ secrets.SNAP_STORE_LOGIN }} 
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.3.4
+
+    - name: Install Node
+      uses: actions/setup-node@v2.2.0
+      with:
+        node-version: 16
+
+    - name: Install NPM Dependencies
+      run: npm ci
+
+    - name: Tag Release Commit
+      run: |
+        git config --global user.name "OutlineBot"
+        git config --global user.email "outlinebot@users.noreply.github.com"
+
+        git tag "linux-$(node scripts/get_version.mjs linux)"
+        git push origin "linux-$(node scripts/get_version.mjs linux)"
+
+    - name: Download Release Candidate
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: build_release_candidates.yml
+        commit: ${{ github.event.inputs.commit_sha }}
+        name: client_linux_release_${{ github.event.inputs.commit_sha }}
+        path: client_linux_release
+
+    - name: Checkout Releases Repository
+      uses: actions/checkout@v2.3.4
+      with:
+        repository: ${{ env.RELEASES_REPOSITORY }}
+        token: ${{ env.GITHUB_TOKEN }}
+        path: outline-releases
+    
+    - name: Push to Releases Repository
+      run: |
+        RELEASE_VERSION="$(node scripts/get_version.mjs linux)"
+        cp client_linux_release/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
+        cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
+        cd outline-releases
+        git checkout master
+        git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
+        git commit -m "Release linux client ${RELEASE_VERSION}"
+        git tag "linux-${RELEASE_VERSION}"
+        git push origin "linux-${RELEASE_VERSION}"
+        git push origin master
+
+    # TODO(daniellacosse): S3 bucket?
+    
+    # TODO(daniellacosse): snap store
+    # - name: Publish to Snap store    
+    #   uses: snapcore/action-publish@v1
+    #   with:
+    #     store_login: ${{ secrets.STORE_LOGIN }}
+    #     snap: build/dist/Outline-Client.AppImage
+    #     release: edge
