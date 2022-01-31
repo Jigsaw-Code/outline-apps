@@ -86,8 +86,6 @@
       </feature>
     </config-file>
 
-    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_ios.js" />
-
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
@@ -95,13 +93,13 @@
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/ios/Tun2socks.framework" custom="true" />
-    <framework src="apple/lib/ios/Sentry.framework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjack.framework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjackSwift.framework" custom="true" />
+    <framework src="third_party/outline-go-tun2socks/ios/Tun2socks.framework" custom="true" />
+    <framework src="third_party/sentry-cocoa/ios/Sentry.framework" custom="true" />
+    <framework src="third_party/CocoaLumberjack/ios/CocoaLumberjack.framework" custom="true" />
+    <framework src="third_party/CocoaLumberjack/ios/CocoaLumberjackSwift.framework" custom="true" />
   </platform>
 
-   <!-- macOS -->
+  <!-- macOS -->
   <platform name="osx">
     <config-file target="config.xml" parent="/*">
       <feature name="OutlinePlugin">
