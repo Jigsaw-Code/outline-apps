@@ -110,8 +110,6 @@
       </feature>
     </config-file>
 
-    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_macos.js" />
-
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
@@ -120,9 +118,9 @@
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
 
-    <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
-    <framework src="apple/lib/macos/Sentry.framework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjack.framework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjackSwift.framework" custom="true" />
+    <framework src="third_party/outline-go-tun2socks/macos/Tun2socks.framework" custom="true" />
+    <framework src="third_party/sentry-cocoa/macos/Sentry.framework" custom="true" />
+    <framework src="third_party/CocoaLumberjack/macos/CocoaLumberjack.framework" custom="true" />
+    <framework src="third_party/CocoaLumberjack/macos/CocoaLumberjackSwift.framework" custom="true" />
   </platform>
 </plugin>
