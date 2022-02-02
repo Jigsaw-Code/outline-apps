@@ -21,5 +21,5 @@ cordova prepare browser
 webpack serve \
     --mode=development \
     --static=platforms/browser/www \
-    --config=src/www/webpack_cordova.js \
+    --config=src/www/webpack_cordova.mjs \
     --open /index_cordova.html
