@@ -9,8 +9,7 @@
     "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "storybook": "web-dev-server"
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
@@ -64,12 +63,6 @@
     "@babel/core": "^7.12.10",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
-    "@storybook/addon-actions": "^6.4.9",
-    "@storybook/addon-essentials": "^6.4.9",
-    "@storybook/addon-links": "^6.4.9",
-    "@storybook/builder-webpack5": "^6.4.9",
-    "@storybook/manager-webpack5": "^6.4.9",
-    "@storybook/web-components": "^6.4.9",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^2.8.6",
@@ -77,6 +70,9 @@
     "@types/polymer": "^1.2.9",
     "@types/semver": "^5.5.0",
     "@types/uuidv4": "^2.0.0",
+    "@web/dev-server": "^0.1.29",
+    "@web/dev-server-esbuild": "^0.2.16",
+    "@web/dev-server-storybook": "^0.4.2",
     "at-least-node": "^1.0.0",
     "babel-loader": "^8.2.2",
     "clang-format": "^1.0.55",
