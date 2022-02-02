@@ -14,8 +14,18 @@
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 
-import {Server} from '../model/server';
 import {ServerCard} from './server_card';
+import {ServerConnectionState} from './server_connection_viz';
+
+export interface ServerCardModel {
+  disabled: boolean;
+  errorMessageId: string;
+  isOutlineServer: boolean;
+  address: string;
+  id: string;
+  name: string;
+  state: ServerConnectionState;
+}
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
@@ -54,6 +64,7 @@ export class ServerList extends PolymerElement {
           server-id="[[item.id]]"
           server-name="[[item.name]]" 
           is-outline-server="[[item.isOutlineServer]]"
+          state="[[item.state]]"
         ></server-card>
       </template>
     `;
@@ -65,24 +76,10 @@ export class ServerList extends PolymerElement {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) rootPath: string;
-  @property({type: Array}) servers: Server[] = [];
+  @property({type: Array}) servers: ServerCardModel[] = [];
 
   @computed('servers')
   get hasSingleServer() {
     return this.servers.length === 1;
-  }
-
-  private get serverCards(): Iterable<ServerCard> {
-    return this.shadowRoot.querySelectorAll<ServerCard>('server-card');
-  }
-
-  getServerCard(serverId: string): ServerCard {
-    for (const card of this.serverCards) {
-      if (card.serverId === serverId) {
-        return card;
-      }
-    }
-
-    throw new Error(`Card for server ${serverId} not found`);
   }
 }

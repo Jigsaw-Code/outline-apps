@@ -50,7 +50,6 @@ class OutlineVpn: NSObject {
 
   // This must be kept in sync with:
   //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
-  //  - cordova-plugin-outline/outlinePlugin.js#ERROR_CODE
   //  - www/model/errors.ts
   @objc
   public enum ErrorCode: Int {

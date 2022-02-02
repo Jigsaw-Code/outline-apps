@@ -12,6 +12,7 @@ All builds require [Node](https://nodejs.org/) 16, in addition to other per-plat
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
 After cloning this repo, install all node dependencies:
+
 ```sh
 npm install
 ```
@@ -20,37 +21,39 @@ npm install
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    npx gulp build --platform=browser
+    npm run action gulp build browser
     npx cordova run browser
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
 UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
 
-*Tip: Build with `(export BUILD_ENV=development; npx gulp build --platform=browser)` to enable source maps.*
+*Tip: Build with `(export BUILD_ENV=development; npm run action gulp -- build browser)` to enable source maps.*
 
 ## Building the Android app
 
 Additional requirements for Android:
 
-* Android Studio 4+
-* Android SDK 29
+* [Android Studio 2020.3.1+](https://developer.android.com/studio)
+* [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
+* Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+* [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
 
 To build for android, run:
 
-    npx gulp build --platform=android
+    npm run action gulp build android
 
 To rebuild after modifying platform dependent files, run:
 
-    npx cordova platform rm android && npx gulp build --platform=android
+    npx cordova platform rm android && npm run action gulp build android
 
 If this gives you unexpected Cordova errors, run:
 
-    npm run clean && npm ci && npx gulp build --platform=android
+    npm run clean && npm ci && npm run action gulp build android
 
-Cordova will generate a new Android project in the platforms/android directory.  Install the built apk by  platforms/android/build/outputs/apk/android-armv7-debug.apk
+Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
 
 To learn more about developing for Android, see [docs/android-development](docs/android-development.md).
 
@@ -59,39 +62,33 @@ To learn more about developing for Android, see [docs/android-development](docs/
 A Docker image with all pre-requisites for Android builds is included.  To build:
 
 * Install dependencies with `./tools/build/build.sh npm ci`
-* Then build with `./tools/build/build.sh npx gulp build --platform=android`
+* Then build with `./tools/build/build.sh npm run action gulp -- build android`
   
 ## Apple (macOS and iOS)
 
 Additional requirements for Apple:
 
 * An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
-* XCode 11+ ([download](https://developer.apple.com/xcode/))
+* XCode 13+ ([download](https://developer.apple.com/xcode/))
 * XCode command line tools: `xcode-select --install`
 
-
-To open the macOS project on XCode:
-```
-open ./platforms/osx/Outline.xcodeproj
-```
-
-To open the iOS project on XCode:
-```
-open ./platforms/ios/Outline.xcodeproj
-```
-
 To build for macOS (OS X), run:
-```
-npx gulp build --platform=osx
-```
+
+    npm run action gulp build osx
 
 To build for iOS, run:
-```
-npx gulp build --platform=ios
-```
+
+    npm run action gulp build ios
+
+To open the macOS project on XCode:
+
+    open ./platforms/osx/Outline.xcodeproj
+
+To open the iOS project on XCode:
+
+    open ./platforms/ios/Outline.xcodeproj
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
-
 
 ## Electron
 
@@ -101,15 +98,15 @@ Unlike the Android and Apple clients, the Windows and Linux clients use the Elec
 
 Additional requirements for building on Windows:
 
-* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others).  It may be necessary to manually choose to install `rsync` in the Cygwin installer.
+* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
 
 To build the Electron clients, run:
 
-    npm run action src/electron/build
+    npm run action src/electron/build windows
 
 To run the Electron clients, run:
 
-    npm run action src/electron/start
+    npm run action src/electron/start windows
 
 To package the Electron clients into an installer executable, run:
 
@@ -119,6 +116,7 @@ To package the Electron clients into an installer executable, run:
 ## Error reporting
 
 To enable error reporting through [Sentry](https://sentry.io/) for local builds, run:
+
 ``` bash
 export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
