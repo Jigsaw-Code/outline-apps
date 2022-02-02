@@ -6,7 +6,6 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "Node",
-    "useDefineForClassFields": false,
     "module": "commonjs",
     "allowJs": true,
     "typeRoots": [
