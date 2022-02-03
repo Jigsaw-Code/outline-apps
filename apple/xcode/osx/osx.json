@@ -26,7 +26,6 @@
     }
   },
   "installed_plugins": {
-    "cordova-custom-config": {},
     "cordova-plugin-outline": {},
     "cordova-plugin-clipboard": {},
     "cordova-webintent": {}
@@ -51,7 +50,6 @@
     }
   ],
   "plugin_metadata": {
-    "cordova-custom-config": "5.1.0",
     "cordova-plugin-outline": "0.0.0",
     "cordova-plugin-clipboard": "2.0.0",
     "cordova-webintent": "2.0.0"

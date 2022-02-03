@@ -39,7 +39,6 @@
     "@sentry/electron": "1.2.1",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
-    "cordova-custom-config": "^5.1.0",
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-promise-ipc": "^2.2.4",
@@ -124,7 +123,6 @@
   },
   "cordova": {
     "plugins": {
-      "cordova-custom-config": {},
       "cordova-plugin-outline": {},
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-statusbar": {},

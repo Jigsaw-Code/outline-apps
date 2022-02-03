@@ -48,7 +48,7 @@
 
         <preference name="AndroidInsecureFileModeEnabled" value="true" />
 
-        <custom-config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
+        <config-file parent="./application/activity/[@android:name='MainActivity']" target="AndroidManifest.xml">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -61,7 +61,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="s3.amazonaws.com" android:path="/outline-vpn/invite.html" />
             </intent-filter>
-        </custom-config-file>
+        </config-file>
     </platform>
 
     <!-- browser -->
