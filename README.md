@@ -94,23 +94,21 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
-### Windows
-
 Additional requirements for building on Windows:
 
 * [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
 
-To build the Electron clients, run:
+To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
-    npm run action src/electron/build windows
+```sh
+npm run action src/electron/build [windows|linux]
+```
 
 To run the Electron clients, run:
 
-    npm run action src/electron/start windows
-
-To package the Electron clients into an installer executable, run:
-
-    npm run action src/electron/package_[linux|windows]
+```sh
+npm run action src/electron/start [windows|linux]
+```
 
 
 ## Error reporting
