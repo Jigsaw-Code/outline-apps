@@ -74,7 +74,7 @@ function buildWebApp() {
 //////////////////
 
 // "platform add" is weird: although "cordova build" will succeed without having run it first,
-// *certain things won't behave as you'd expect*, notably cordova-custom-config.
+// *certain things won't behave as you'd expect*.
 function cordovaPlatformAdd() {
   // "platform add" fails if the platform has already been added.
   return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
