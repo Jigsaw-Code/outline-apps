@@ -8,8 +8,7 @@
     "clean": "rm -rf build node_modules www platforms plugins",
     "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'",
-    "reset": "npm run clean && npm ci",
-    "storybook": "web-dev-server"
+    "reset": "npm run clean && npm ci"
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
