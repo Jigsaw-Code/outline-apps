@@ -10,6 +10,8 @@ on:
       - master
 
 jobs:
+  windows:
+    uses: ./.github/workflows/build_windows_release_candidate.yml
   linux:
     name: Build Linux Release Candidate
     runs-on: ubuntu-20.04
