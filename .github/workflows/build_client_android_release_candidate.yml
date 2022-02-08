@@ -1,6 +1,16 @@
 name: Build Client Android Release Candidate
 
-on: [workflow_dispatch, workflow_call]
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      SENTRY_DSN:
+        required: true
+      # ANDROID_KEY_STORE_PASSWORD:
+      #   required: true
+      # ANDROID_KEY_STORE_CONTENTS:
+      #   required: true
+
 
 jobs:
   build_client_android_release_candidate:

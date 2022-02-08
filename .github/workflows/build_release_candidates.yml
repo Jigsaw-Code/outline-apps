@@ -12,5 +12,11 @@ on:
 jobs:
   linux:
     uses: ./.github/workflows/build_client_linux_release_candidate.yml
+    secrets:
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   android:
     uses: ./.github/workflows/build_client_android_release_candidate.yml
+    secrets:
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      # ANDROID_KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+      # ANDROID_KEY_STORE_CONTENTS: ${{ secrets.ANDROID_KEY_STORE_CONTENTS }}
