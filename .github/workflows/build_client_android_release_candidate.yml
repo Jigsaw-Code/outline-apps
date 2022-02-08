@@ -6,11 +6,6 @@ on:
     secrets:
       SENTRY_DSN:
         required: true
-      ANDROID_KEY_STORE_PASSWORD:
-        required: true
-      ANDROID_KEY_STORE_CONTENTS:
-        required: true
-
 
 jobs:
   build_client_android_release_candidate:
