@@ -11,6 +11,6 @@ on:
 
 jobs:
   linux:
-    uses: .github/workflows/build_client_linux_release_candidate.yml
+    uses: ./.github/workflows/build_client_linux_release_candidate.yml
   android:
-    uses: .github/workflows/build_client_android_release_candidate.yml
+    uses: ./.github/workflows/build_client_android_release_candidate.yml
