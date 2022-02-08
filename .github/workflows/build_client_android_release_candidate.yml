@@ -1,0 +1,66 @@
+name: Build Client Android Release Candidate
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      SENTRY_DSN:
+        required: true
+
+jobs:
+  build_client_android_release_candidate:
+    name: Build Client Android Release Candidate
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+    environment: Client Android Release
+    env:
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      ANDROID_KEY_STORE_PASSWORD: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+      ANDROID_KEY_STORE_CONTENTS: ${{ secrets.ANDROID_KEY_STORE_CONTENTS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Install Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Setup Android
+        run: bash ./tools/build/setup_linux_android.sh
+
+      - name: Build Android Release Candidate
+        run: |
+          echo "$ANDROID_KEY_STORE_CONTENTS" | base64 --decode > keystore.p12
+
+          npm run action gulp build android -- --buildMode=release
+
+          wget \
+            -q https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-1.8.2.jar \
+            -O bundletool.jar
+
+          java -jar bundletool.jar build-apks \
+            --bundle=platforms/android/app/build/outputs/bundle/release/app-release.aab \
+            --output=Outline.apk \
+            --mode=universal \
+            --ks=keystore.p12 \
+            "--ks-pass=pass:$ANDROID_KEY_STORE_PASSWORD" \
+            --ks-key-alias=privatekey \
+            "--key-pass=pass:$ANDROID_KEY_STORE_PASSWORD"
+
+      - name: Upload Android Release Candidate
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_android_release_${{ github.sha }}
+          path: |
+            Outline.apk
+            platforms/android/app/build/outputs/bundle
+          if-no-files-found: error
