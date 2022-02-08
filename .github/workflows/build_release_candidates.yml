@@ -55,7 +55,7 @@ jobs:
 
           java -jar bundletool.jar build-apks \
             --bundle=platforms/android/app/build/outputs/bundle/release/app-release.aab \
-            --output=Outline.apk \
+            --output=Outline.apks \
             --mode=universal \
             --ks=keystore.p12 \
             "--ks-pass=pass:$ANDROID_KEY_STORE_PASSWORD" \
@@ -67,7 +67,7 @@ jobs:
         with:
           name: client_android_release_${{ github.sha }}
           path: |
-            Outline.apk
+            Outline.apks
             platforms/android/app/build/outputs/bundle
           if-no-files-found: error
 
