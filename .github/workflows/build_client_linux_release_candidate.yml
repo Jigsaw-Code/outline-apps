@@ -1,11 +1,6 @@
 name: Build Client Linux Release Candidate
 
-on:
-  workflow_dispatch:
-  workflow_call:
-    secrets:
-      SENTRY_DSN:
-        required: true
+on: [workflow_dispatch, workflow_call]
 
 jobs:
   build_client_linux_release_candidate:
