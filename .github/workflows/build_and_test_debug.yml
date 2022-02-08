@@ -121,8 +121,9 @@ jobs:
     environment: Test
     needs: web-test
     env:
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+      # TODO(daniellacosse): turn this into a deploy key, if possible
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.IOS_MATCH_GIT_BASIC_AUTHORIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
