@@ -79,7 +79,7 @@ jobs:
           java -jar bundletool.jar build-apks \
             --bundle=platforms/android/app/build/outputs/bundle/release/app-release.aab \
             --output=Outline.apk \
-            --mode=universal
+            --mode=universal \
             --ks=keystore.p12 \
             "--ks-pass=pass:$ANDROID_KEY_STORE_PASSWORD" \
             --ks-key-alias=privatekey \
