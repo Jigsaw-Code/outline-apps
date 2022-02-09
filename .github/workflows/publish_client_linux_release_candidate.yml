@@ -53,6 +53,8 @@ jobs:
           RELEASE_VERSION="$(node scripts/get_version.mjs linux)"
           RELEASE_TAG="linux-${RELEASE_VERSION}"
 
+          [ "$(git tag -l "$RELEASE_TAG")" != "" ] && exit 1
+
           cp client_linux_release/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
           cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
 
