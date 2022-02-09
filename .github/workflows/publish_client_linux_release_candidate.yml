@@ -12,6 +12,7 @@ jobs:
     name: Publish Client Linux Release Candidate
     runs-on: ubuntu-20.04
     timeout-minutes: 15
+    environment: Releases Repository
     env:
       RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
       RELEASES_DEPLOY_KEY: ${{ secrets.RELEASES_DEPLOY_KEY }}
@@ -29,14 +30,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Tag Release Commit
-        run: |
-          git config --global user.name "OutlineBot"
-          git config --global user.email "outlinebot@users.noreply.github.com"
-
-          git tag "linux-$(node scripts/get_version.mjs linux)"
-          git push origin "linux-$(node scripts/get_version.mjs linux)"
-
       - name: Download Release Candidate
         uses: dawidd6/action-download-artifact@575b1e4167df67acf7e692af784566618b23c71e
         with:
@@ -52,19 +45,28 @@ jobs:
           ssh-key: ${{ env.RELEASES_DEPLOY_KEY }}
           path: outline-releases
 
-      - name: Push to Releases Repository
+      - name: Push Tags and Release Commits
         run: |
+          git config --global user.name "OutlineBot"
+          git config --global user.email "outlinebot@users.noreply.github.com"
+
           RELEASE_VERSION="$(node scripts/get_version.mjs linux)"
+          RELEASE_TAG="linux-${RELEASE_VERSION}"
+
           cp client_linux_release/Outline-Client.AppImage outline-releases/client/stable/Outline-Client.AppImage
           cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
+
           cd outline-releases
           git checkout master
-          git pull
           git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
-          git commit -m "Release linux client ${RELEASE_VERSION}"
-          git tag "linux-${RELEASE_VERSION}"
-          git push origin "linux-${RELEASE_VERSION}"
+          git commit -m "Release linux client v${RELEASE_VERSION}"
+          git tag "$RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
           git push origin master
+
+          cd ..
+          git tag "$RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
     # TODO(daniellacosse): S3 bucket?
     # TODO(daniellacosse): snap store
     # - name: Publish to Snap store
