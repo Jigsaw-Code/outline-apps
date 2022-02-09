@@ -45,21 +45,11 @@ jobs:
           name: client_linux_release_${{ env.RELEASE_COMMIT_SHA }}
           path: client_linux_release
 
-      - name: Setup SSH agent
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          ssh-agent -a /tmp/ssh_agent.sock > /dev/null
-
-          echo "$RELEASES_DEPLOY_KEY" > key
-
-          ssh-add key
-
       - name: Checkout Releases Repository
         uses: actions/checkout@v2.3.4
         with:
           repository: ${{ env.RELEASES_REPOSITORY }}
-          token: ${{ env.RELEASES_DEPLOY_KEY }}
+          ssh-key: ${{ env.RELEASES_DEPLOY_KEY }}
           path: outline-releases
 
       - name: Push to Releases Repository

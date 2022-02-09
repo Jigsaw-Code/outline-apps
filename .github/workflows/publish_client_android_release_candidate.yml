@@ -43,25 +43,14 @@ jobs:
           git tag "android-$(node scripts/get_version.mjs android)"
           git push origin "android-$(node scripts/get_version.mjs android)"
 
-      # - name: Setup SSH agent
-      #   env:
-      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      #   run: |
-      #     ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-      #     ssh-add - <<< "$RELEASES_DEPLOY_KEY"
-
       - name: Checkout Releases Repository
         uses: actions/checkout@v2.3.4
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         with:
           repository: ${{ env.RELEASES_REPOSITORY }}
           ssh-key: ${{ env.RELEASES_DEPLOY_KEY }}
           path: outline-releases
 
       - name: Push to Releases Repository
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           RELEASE_VERSION="$(node scripts/get_version.mjs android)"
           cp client_android_release/Outline.apk outline-releases/client/Outline.apk
