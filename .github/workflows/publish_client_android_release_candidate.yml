@@ -12,6 +12,7 @@ jobs:
     name: Publish Client Android Release Candidate
     runs-on: ubuntu-20.04
     timeout-minutes: 15
+    environment: Releases Repository
     env:
       RELEASES_REPOSITORY: ${{ secrets.RELEASES_REPOSITORY }}
       RELEASES_DEPLOY_KEY: ${{ secrets.RELEASES_DEPLOY_KEY }}
