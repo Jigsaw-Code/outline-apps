@@ -43,7 +43,7 @@ export async function getVersion(platform) {
     case "windows":
       return "1.7.0";
     case "linux":
-      return "1.7.0";
+      return "1.7.1";
     default:
       throw new Error("get_version must be provided a platform argument");
   }

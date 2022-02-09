@@ -56,6 +56,7 @@ jobs:
           cp client_android_release/Outline.apk outline-releases/client/Outline.apk
           cd outline-releases
           git checkout master
+          git pull
           git add client/Outline.apk
           git commit -m "Release android client ${RELEASE_VERSION}"
           git tag "android-${RELEASE_VERSION}"

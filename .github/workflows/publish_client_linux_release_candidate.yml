@@ -59,6 +59,7 @@ jobs:
           cp client_linux_release/latest-linux.yml outline-releases/client/stable/latest-linux.yml
           cd outline-releases
           git checkout master
+          git pull
           git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
           git commit -m "Release linux client ${RELEASE_VERSION}"
           git tag "linux-${RELEASE_VERSION}"
