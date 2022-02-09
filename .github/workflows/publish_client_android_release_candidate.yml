@@ -57,9 +57,9 @@ jobs:
           git checkout master
           git add client/Outline.apk
           git commit -m "Release android client v${RELEASE_VERSION}"
+          git push origin master
           git tag "$RELEASE_TAG"
           git push origin "$RELEASE_TAG"
-          git push origin master
 
           cd ..
           git tag "$RELEASE_TAG"

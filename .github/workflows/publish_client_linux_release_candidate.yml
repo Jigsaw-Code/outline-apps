@@ -60,9 +60,9 @@ jobs:
           git checkout master
           git add client/stable/Outline-Client.AppImage client/stable/latest-linux.yml
           git commit -m "Release linux client v${RELEASE_VERSION}"
+          git push origin master
           git tag "$RELEASE_TAG"
           git push origin "$RELEASE_TAG"
-          git push origin master
 
           cd ..
           git tag "$RELEASE_TAG"
