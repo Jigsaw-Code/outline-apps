@@ -62,12 +62,16 @@ jobs:
             --ks-key-alias=privatekey \
             "--key-pass=pass:$ANDROID_KEY_STORE_PASSWORD"
 
+          cp Outline.apks Outline.zip
+          unzip Outline.zip
+          cp Outline/universal.apk Outline.apk
+
       - name: Upload Android Release Candidate
         uses: actions/upload-artifact@v2
         with:
           name: client_android_release_${{ github.sha }}
           path: |
-            Outline.apks
+            Outline.apk
             platforms/android/app/build/outputs/bundle
           if-no-files-found: error
 
