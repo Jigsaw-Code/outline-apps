@@ -62,9 +62,8 @@ jobs:
             --ks-key-alias=privatekey \
             "--key-pass=pass:$ANDROID_KEY_STORE_PASSWORD"
 
-          cp Outline.apks Outline.zip
-          unzip Outline.zip
-          cp Outline/universal.apk Outline.apk
+          unzip Outline.apks
+          cp universal.apk Outline.apk
 
       - name: Upload Android Release Candidate
         uses: actions/upload-artifact@v2
