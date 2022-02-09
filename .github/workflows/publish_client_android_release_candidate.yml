@@ -28,13 +28,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Tag Release Commit
-        run: |
-          git config --global user.name "OutlineBot"
-          git config --global user.email "outlinebot@users.noreply.github.com"
-          git tag "android-$(node scripts/get_version.mjs android)"
-          git push origin "android-$(node scripts/get_version.mjs android)"
-
       - name: Download Release Candidate
         uses: dawidd6/action-download-artifact@575b1e4167df67acf7e692af784566618b23c71e
         with:
@@ -43,12 +36,19 @@ jobs:
           name: client_android_release_${{ env.RELEASE_COMMIT_SHA }}
           path: client_android_release
 
-      - name: Setup SSH agent
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      - name: Tag Release Commit
         run: |
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add - <<< "$RELEASES_DEPLOY_KEY"
+          git config --global user.name "OutlineBot"
+          git config --global user.email "outlinebot@users.noreply.github.com"
+          git tag "android-$(node scripts/get_version.mjs android)"
+          git push origin "android-$(node scripts/get_version.mjs android)"
+
+      # - name: Setup SSH agent
+      #   env:
+      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      #   run: |
+      #     ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+      #     ssh-add - <<< "$RELEASES_DEPLOY_KEY"
 
       - name: Checkout Releases Repository
         uses: actions/checkout@v2.3.4
@@ -56,6 +56,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         with:
           repository: ${{ env.RELEASES_REPOSITORY }}
+          ssh-key: ${{ env.RELEASES_DEPLOY_KEY }}
           path: outline-releases
 
       - name: Push to Releases Repository
