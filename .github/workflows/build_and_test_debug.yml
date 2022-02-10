@@ -112,17 +112,24 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
-        run: npm run action gulp build osx
+        run: |
+          npm run action apple/build osx
+          unzip Outline.app.dSYM.zip
+
+      - name: Upload OSX Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_osx_debug
+          path: |
+            platform/osx/Outline.app
+            platforms/osx/Outline.app.dSYM
+          if-no-files-found: error
 
   ios-debug-build:
     name: iOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    environment: Test
     needs: web-test
-    env:
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -140,7 +147,18 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
+        run: |
+          npm run action apple/build ios
+          unzip Outline.app.dSYM.zip
+
+      - name: Upload iOS Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_ios_debug
+          path: |
+            platforms/ios/Outline.ipa
+            platforms/ios/Outline.app.dSYM
+          if-no-files-found: error
 
   android-debug-build:
     name: Android Debug Build

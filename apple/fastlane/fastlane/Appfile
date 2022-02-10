@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apple_id "outline-app-manager@google.com" # Apple developer account email address
-itc_team_id "118880544" # iTunes Connect Team ID
-team_id "QT8Z3Q9V3A" # Developer Portal Team ID
+apple_id ENV["APPLE_ID"]
+itc_team_id ENV["APPLE_ITUNES_CONNECT_ID"]
+team_id ENV["APPLE_DEV_PORTAL_TEAM_ID"]
 
 for_platform :ios do
   app_identifier "org.outline.ios.client"
 end
 
-for_platform :osx do
+for_platform :mac do
   app_identifier "org.outline.macos.client"
 end

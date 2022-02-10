@@ -24,29 +24,29 @@ Options:
   --buildMode  Mode to build [debug|release].
   ?  Display this message and exit
 EOM
-exit 1
+  exit 1
 }
 
-PLATFORM=ios
+PLATFORM=$1
 BUILD_MODE=
 for i in "$@"; do
-    case $i in
-    --buildMode=*)
-        BUILD_MODE="${i#*=}"
-        shift
-        ;;
-    -* | --*)
-        usage
-        exit 1
-        ;;
-    *) ;;
-    esac
+  case $i in
+  --buildMode=*)
+    BUILD_MODE="${i#*=}"
+    shift
+    ;;
+  -* | --*)
+    usage
+    exit 1
+    ;;
+  *) ;;
+  esac
 done
 
 PLATFORM_DIR=platforms/$PLATFORM/
 if [ ! -d $PLATFORM_DIR ]; then
   # Generate the Xcode project through Cordova.
-  npm run action gulp -- setup $PLATFORM --buildMode=$BUILD_MODE
+  npm run action gulp setup $PLATFORM -- --buildMode=$BUILD_MODE
 fi
 
 # Install the fastlane scripts and metadata.

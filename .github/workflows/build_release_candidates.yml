@@ -10,6 +10,52 @@ on:
       - master
 
 jobs:
+  apple:
+    name: Build Apple Release Candidates
+    runs-on: macos-11
+    timeout-minutes: 15
+    environment: Client Apple Release
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ITUNES_CONNECT_ID: ${{ secrets.APPLE_ITUNES_CONNECT_ID }}
+      APPLE_DEV_PORTAL_TEAM_ID: ${{ secrets.APPLE_DEV_PORTAL_TEAM_ID }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      FASTLANE_DEPLOY_KEY: ${{ secrets.FASTLANE_DEPLOY_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build Apple Clients
+        run: |
+          npm run action apple/build ios -- --buildMode=release
+          npm run action apple/build osx -- --buildMode=release
+
+      - name: Upload iOS Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_ios_release_${{ github.sha }}
+          path: platforms/ios/Outline.ipa
+          if-no-files-found: error
+
+      - name: Upload OSX Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_osx_release_${{ github.sha }}
+          path: platforms/ios/Outline.ipa
+          if-no-files-found: error
+
   linux:
     name: Build Linux Release Candidate
     runs-on: ubuntu-20.04

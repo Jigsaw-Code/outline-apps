@@ -15,7 +15,27 @@
 # limitations under the License.
 set -eu
 
-# Releases the Outline iOS client locally. Expects to be invoked through `npm run action`.
-./apple/scripts/install_fastlane.sh ios --buildMode=release
-pushd platforms/ios
-bundle exec fastlane ios release local:true
+PLATFORM=$1
+BUILD_MODE=debug
+for i in "$@"; do
+  case $i in
+  --buildMode=*)
+    BUILD_MODE="${i#*=}"
+    shift
+    ;;
+  -* | --*)
+    usage
+    exit 1
+    ;;
+  *) ;;
+  esac
+done
+
+./apple/scripts/install_fastlane.sh "${PLATFORM}" --buildMode="${BUILD_MODE}"
+pushd "platforms/${PLATFORM}"
+
+if [[ "${PLATFORM}" == "osx" ]]; then
+  bundle exec fastlane mac "${BUILD_MODE}"
+else
+  bundle exec fastlane "${PLATFORM}" "${BUILD_MODE}"
+fi
