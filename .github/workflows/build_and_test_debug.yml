@@ -121,7 +121,7 @@ jobs:
         with:
           name: client_osx_debug
           path: |
-            platform/osx/Outline.app
+            platforms/osx/Outline.app
             platforms/osx/Outline.app.dSYM
           if-no-files-found: error
 
