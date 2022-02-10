@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: client_osx_release_${{ github.sha }}
-          path: platforms/ios/Outline.ipa
+          path: platforms/osx/Outline.app
           if-no-files-found: error
 
   linux:
