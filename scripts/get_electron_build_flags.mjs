@@ -24,7 +24,7 @@ export async function getElectronBuildFlags(platform, buildMode) {
 
   if (platform === "linux") {
     buildFlags = ["--linux", ...buildFlags];
-  } else if (platform === "win") {
+  } else if (platform === "windows") {
     buildFlags = ["--win", ...buildFlags];
   }
 
@@ -40,7 +40,7 @@ export async function getElectronBuildFlags(platform, buildMode) {
     ];
   }
 
-  if (buildMode === "release" && platform === "win") {
+  if (buildMode === "release" && platform === "windows") {
     buildFlags.push("--config.win.certificateSubjectName='Jigsaw Operations LLC'");
   }
 
