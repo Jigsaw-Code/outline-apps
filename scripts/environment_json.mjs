@@ -27,15 +27,23 @@ import minimist from "minimist";
 */
 export async function environmentJson(platform, buildMode) {
   if (!platform) {
-    throw new Error("environmentJson requires a platform argument");
+    throw new TypeError("environmentJson requires a platform argument");
   }
 
   if (!(buildMode === "debug" || buildMode === "release")) {
-    throw new Error("environmentJson requires a buildMode argument of either 'debug' or 'release'");
+    throw new TypeError("environmentJson requires a buildMode argument of either 'debug' or 'release'");
   }
 
-  if (buildMode === "release" && !process.env.SENTRY_DSN) {
-    throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
+  if (buildMode === "release") {
+    if (!process.env.SENTRY_DSN) {
+      throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
+    }
+    
+    try {
+      new URL(process.env.SENTRY_DSN);
+    } catch (e) {
+      throw new TypeError(`The SENTRY_DSN ${process.env.SENTRY_DSN} is not a valid URL!`);
+    }
   }
 
   return {
