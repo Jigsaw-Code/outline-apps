@@ -117,7 +117,7 @@ jobs:
   ios-debug-build:
     name: iOS Debug Build
     runs-on: macos-11
-    timeout-minutes: 10
+    timeout-minutes: 12
     environment: Client iOS Debug
     needs: web-test
     env:
