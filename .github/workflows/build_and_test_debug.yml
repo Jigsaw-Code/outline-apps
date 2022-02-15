@@ -118,7 +118,7 @@ jobs:
     name: iOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    environment: Client iOS Debug 
+    environment: Client iOS Debug
     needs: web-test
     env:
       MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
