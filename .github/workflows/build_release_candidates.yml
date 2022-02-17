@@ -10,6 +10,10 @@ on:
       - master
 
 jobs:
+  windows:
+    uses: ./.github/workflows/build_windows_release_candidate.yml
+    secrets:
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   linux:
     name: Build Client Linux Release Candidate
     runs-on: ubuntu-20.04
