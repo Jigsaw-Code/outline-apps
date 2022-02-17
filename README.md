@@ -121,6 +121,19 @@ export SENTRY_DSN=[Sentry development API key]
 ```
 Release builds on CI are configured with a production Sentry API key.
 
+
+## CI Environment Variables
+
+For your CI to run smoothly, you'll need the following in your ENV:
+
+- `SENTRY_DSN` - [url required](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) to enable sentry integration. Same across all platforms.
+- `RELEASES_REPOSITORY` - the username and repository name of the repository you're pushing releases to. In our case, `Jigsaw-Code/outline-releases`
+- `RELEASES_DEPLOY_KEY` - an ssh secret key for the matching releases repository public deploy key - [how to set this up](https://docs.github.com/en/developers/overview/managing-deploy-keys#setup-2)
+- `ANDROID_KEY_STORE_CONTENTS` - the base64'd contents of your [android keystore.jkr](https://developer.android.com/training/articles/keystore) file
+- `ANDROID_KEY_STORE_PASSWORD` - the password required to unlock your android keystore. We assume your key and keystore password are the same.
+- `IOS_MATCH_GIT_BASIC_AUTHORIZATION` - the base64'd username and access token necessary to access your fastlane iOS credentials [match repository](https://docs.fastlane.tools/actions/match/)
+- `IOS_MATCH_PASSWORD` - the password needed to open your match repository
+
 ## Support
 
 For support and to contact us, see: https://support.getoutline.org.  

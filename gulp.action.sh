@@ -30,4 +30,6 @@ for i in "$@"; do
     esac
 done
 
-npx gulp "${TASK}" --platform="${PLATFORM}" --buildMode="${BUILD_MODE}"
+npx gulp "${TASK}" \
+    --platform="${PLATFORM}" \
+    --buildMode="${BUILD_MODE}"
