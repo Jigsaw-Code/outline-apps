@@ -1,4 +1,4 @@
-name: Publish Client Android Release Candidate
+name: Publish Client Android
 
 on:
   workflow_dispatch:
