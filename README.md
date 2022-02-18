@@ -31,7 +31,11 @@ As this interface is uniform, if you like you can alias `npm run action` to `out
 alias outline="npm run action" >> ~/.zshrc
 ```
 
-Now you have a basic CLI for working in outline!
+Now you have a basic CLI for working in outline! To see all the possible commands you can run, just do
+
+```sh
+outline
+```
 
 ## Building the web app
 
@@ -40,7 +44,7 @@ Outline clients share the same web app across all platforms. This code is locate
 ```sh
 npm run action src/www/start
 
-# or
+# or, if you set up the above alias;
 
 outline src/www/start
 ```
