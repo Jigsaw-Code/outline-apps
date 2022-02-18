@@ -15,23 +15,4 @@
 # limitations under the License.
 set -eu
 
-TASK=$1
-PLATFORM=$2
-BUILD_MODE=debug
-for i in "$@"; do
-    case $i in
-    --buildMode=*)
-        BUILD_MODE="${i#*=}"
-        shift
-        ;;
-    -* | --*)
-        echo "Unknown option: ${i}"
-        exit 1
-        ;;
-    *) ;;
-    esac
-done
-
-npx gulp "${TASK}" \
-    --platform="${PLATFORM}" \
-    --buildMode="${BUILD_MODE}"
+rm -rf build node_modules www platforms plugins

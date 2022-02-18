@@ -29,26 +29,26 @@ function usage() {
 Usage: $0 commands
 
 Examples:
-  $0 npm run clean
+  $0 npm run action clean
   $0 npm ci
   $0 build
 EOM
-exit 1
+  exit 1
 }
 
 while getopts h? opt; do
   case $opt in
-    *) usage ;;
+  *) usage ;;
   esac
 done
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
-if ! which docker > /dev/null; then
+if ! which docker >/dev/null; then
   error "You must install docker first. See https://docs.docker.com/engine/installation/"
   exit 1
 fi
 
-if (( $# > 0 )); then
+if (($# > 0)); then
   readonly GIT_ROOT=$(git rev-parse --show-toplevel)
   # Rather than a working directory of something like "/worker", mirror
   # the path on the host so that symlink tricks work as expected.

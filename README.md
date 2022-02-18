@@ -17,18 +17,38 @@ After cloning this repo, install all node dependencies:
 npm install
 ```
 
+## Actions
+
+Everything you can do in the outline repository is excapsulated in an `*.action.sh` script. To run one of these actions, simply call `npm run action` with the path to the action script - like so:
+
+```sh
+npm run action 
+```
+
+As this interface is uniform, if you like you can alias `npm run action` to `outline` in your shell - 
+
+```sh
+alias outline="npm run action" >> ~/.zshrc
+```
+
+Now you have a basic CLI for working in outline!
+
 ## Building the web app
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
-    npm run action gulp build browser
-    npx cordova run browser
+```sh
+npm run action src/www/start
 
-The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
+# or
 
-UI components are located in [src/www/ui_components](src/www/ui_components). The app logic is located in [src/www/app](src/www/app).
+outline src/www/start
+```
 
-*Tip: Build with `(export BUILD_ENV=development; npm run action gulp -- build browser)` to enable source maps.*
+This will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
+
+UI components are located in [src/www/ui_components](src/www/ui_components). 
+The app logic is located in [src/www/app](src/www/app).
 
 ## Building the Android app
 
@@ -43,15 +63,16 @@ Additional requirements for Android:
 
 To build for android, run:
 
-    npm run action gulp build android
+```sh
+outline gulp build android
+```
 
 To rebuild after modifying platform dependent files, run:
 
-    npx cordova platform rm android && npm run action gulp build android
-
-If this gives you unexpected Cordova errors, run:
-
-    npm run clean && npm ci && npm run action gulp build android
+```sh    
+outline reset 
+outline gulp build android
+```
 
 Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
 
@@ -62,7 +83,7 @@ To learn more about developing for Android, see [docs/android-development](docs/
 A Docker image with all pre-requisites for Android builds is included.  To build:
 
 * Install dependencies with `./tools/build/build.sh npm ci`
-* Then build with `./tools/build/build.sh npm run action gulp -- build android`
+* Then build with `./tools/build/build.sh outline gulp -- build android`
   
 ## Apple (macOS and iOS)
 
@@ -74,19 +95,27 @@ Additional requirements for Apple:
 
 To build for macOS (OS X), run:
 
-    npm run action gulp build osx
+```sh
+outline gulp build osx
+```
 
 To build for iOS, run:
 
-    npm run action gulp build ios
+```sh
+outline gulp build ios
+```
 
 To open the macOS project on XCode:
 
-    open ./platforms/osx/Outline.xcodeproj
+```sh
+open ./platforms/osx/Outline.xcodeproj
+```
 
 To open the iOS project on XCode:
 
-    open ./platforms/ios/Outline.xcodeproj
+```sh
+open ./platforms/ios/Outline.xcodeproj
+```
 
 To learn more about developing for Apple, see [docs/apple-development](docs/apple-development.md)
 
@@ -101,13 +130,13 @@ Additional requirements for building on Windows:
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
 ```sh
-npm run action src/electron/build [windows|linux]
+outline src/electron/build [windows|linux]
 ```
 
 To run the Electron clients, run:
 
 ```sh
-npm run action src/electron/start [windows|linux]
+outline src/electron/start [windows|linux]
 ```
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2018 The Outline Authors
+# Copyright 2022 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,5 @@
 # limitations under the License.
 set -eu
 
-TASK=$1
-PLATFORM=$2
-BUILD_MODE=debug
-for i in "$@"; do
-    case $i in
-    --buildMode=*)
-        BUILD_MODE="${i#*=}"
-        shift
-        ;;
-    -* | --*)
-        echo "Unknown option: ${i}"
-        exit 1
-        ;;
-    *) ;;
-    esac
-done
-
-npx gulp "${TASK}" \
-    --platform="${PLATFORM}" \
-    --buildMode="${BUILD_MODE}"
+npm run action clean
+npm ci
