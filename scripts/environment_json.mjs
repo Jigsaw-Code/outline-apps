@@ -39,6 +39,10 @@ export async function environmentJson(platform, buildMode) {
       throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
     }
     
+    /*
+      the SENTRY_DSN follows a stardard URL format: 
+      https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
+    */
     try {
       new URL(process.env.SENTRY_DSN);
     } catch (e) {
