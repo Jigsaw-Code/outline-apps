@@ -5,7 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - synchronize
@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -44,8 +42,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -74,8 +70,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -104,8 +98,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -122,36 +114,6 @@ jobs:
       - name: Build OSX Client
         run: npm run action gulp build osx
 
-  ios-debug-build:
-    name: iOS Debug Build
-    runs-on: macos-11
-    timeout-minutes: 10
-    environment: Test
-    needs: web-test
-    env:
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Install Node
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 16
-          cache: npm
-
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
-
-      - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
-
   android-debug-build:
     name: Android Debug Build
     runs-on: ubuntu-20.04
@@ -162,8 +124,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0

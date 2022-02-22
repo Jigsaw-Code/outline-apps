@@ -1,0 +1,51 @@
+# github secrets are withheld by default on pull_request triggers
+# to avoid attackers from making PR attacks
+
+# however, to test the iOS build, we need these secrets and 
+# are currently protecting them by using a deployment environment
+# that requires a maintainer to approve the job run.
+# thus, we can safely use `pull_request_target` to expose the secrets.
+
+# NOTE: EVERY JOB IN THIS FILE must be protected by a deployment environment as well. 
+
+name: UNSAFE! Build and Test
+
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  ios-debug-build:
+    name: iOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 10
+    environment: Client iOS Debug
+    env:
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build iOS Client
+        run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
