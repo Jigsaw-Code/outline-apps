@@ -85,6 +85,9 @@ public class VpnTunnel {
             vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
         builder.setUnderlyingNetworks(new Network[] {activeNetwork});
       }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        builder.setMetered(false);
+      }
       // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
       // retrieve the list of subnets that excludes those reserved for special use.
       final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
