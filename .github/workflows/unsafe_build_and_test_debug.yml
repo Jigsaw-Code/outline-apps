@@ -27,8 +27,8 @@ jobs:
     timeout-minutes: 10
     environment: Client iOS Debug
     env:
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.IOS_MATCH_GIT_BASIC_AUTHORIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
