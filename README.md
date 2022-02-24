@@ -110,6 +110,12 @@ To run the Electron clients, run:
 npm run action src/electron/start [windows|linux]
 ```
 
+### Windows Release
+
+To build the release version of Windows installer, you need the following additional requirements:
+
+* [Java 8+ Runtime](https://www.java.com/en/download/). This is required for the cross-platform Windows executable signing tool [Jsign](https://ebourg.github.io/jsign/). If you don't need to sign the executables, feel free to skip this.
+
 
 ## Error reporting
 
