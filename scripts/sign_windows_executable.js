@@ -143,7 +143,7 @@ async function electronBuilderEntryPoint(configuration) {
  * The entry point when calling this script from cli.
  */
 async function cliEntryPoint() {
-  const { target, algorithm, ...options } = minimist(process.argv);
+  const {target, algorithm, ...options} = minimist(process.argv);
   await signWindowsExecutable(target, algorithm, options);
 }
 
