@@ -38,7 +38,8 @@
       "third_party/outline-go-tun2socks/win32",
       "third_party/shadowsocks-libev/win32"
     ],
-    "icon": "build/icons/win/icon.ico"
+    "icon": "build/icons/win/icon.ico",
+    "sign": "src/scripts/sign_windows_executable.js"
   },
   "nsis": {
     "perMachine": true,
