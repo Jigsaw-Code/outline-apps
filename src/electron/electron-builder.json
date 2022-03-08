@@ -39,7 +39,7 @@
       "third_party/shadowsocks-libev/win32"
     ],
     "icon": "build/icons/win/icon.ico",
-    "sign": "src/scripts/sign_windows_executable.js"
+    "sign": "scripts/sign_windows_executable.js"
   },
   "nsis": {
     "perMachine": true,

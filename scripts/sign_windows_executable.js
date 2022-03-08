@@ -51,6 +51,8 @@ function getOptionValue(options, argName, envName, required) {
 
 function appendPfxJsignArgs(args, options) {
   // self-signed development certificate
+  args.push('--storetype', 'PKCS12');
+
   const pfxCert = getOptionValue(options, 'pfx',
     'WINDOWS_SIGNING_PFX_CERT', true);
   args.push('--keystore', pfxCert);
@@ -58,6 +60,8 @@ function appendPfxJsignArgs(args, options) {
 
 function appendDigicertUsbJsignArgs(args, options) {
   // extended validation certificate stored in USB drive
+  args.push('--storetype', 'PKCS11');
+
   const subject = getOptionValue(options, 'subject',
     'WINDOWS_SIGNING_EV_CERT_SUBJECT', false);
   if (subject) {
@@ -84,7 +88,7 @@ function appendDigicertUsbJsignArgs(args, options) {
  */
 async function signWindowsExecutable(exeFile, algorithm, options) {
   const type = getOptionValue(options, 'certtype',
-    'WINDOWS_SIGNING_CERT_TYPE', true);
+    'WINDOWS_SIGNING_CERT_TYPE', false);
   if (!type || type == 'none') {
     console.info(`skip signing "${exeFile}"`);
     return;
@@ -123,6 +127,7 @@ async function signWindowsExecutable(exeFile, algorithm, options) {
     console.info(`successfully signed "${exeFile}"`);
   } else {
     console.error(`jsign exited with error code ${exitCode}`);
+    throw new Error(`failed to sign "${exeFile}"`);
   }
 }
 
@@ -135,7 +140,6 @@ async function signWindowsExecutable(exeFile, algorithm, options) {
  * @param {Object} configuration.options a duplication of electron-builder.json
  */
 async function electronBuilderEntryPoint(configuration) {
-  console.info(configuration);
   await signWindowsExecutable(configuration.path, configuration.hash, null);
 }
 
