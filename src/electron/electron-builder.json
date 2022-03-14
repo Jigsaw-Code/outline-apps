@@ -39,7 +39,7 @@
       "third_party/shadowsocks-libev/win32"
     ],
     "icon": "build/icons/win/icon.ico",
-    "sign": "scripts/sign_windows_executable.js"
+    "sign": "src/electron/windows/electron_builder_signing_plugin.cjs"
   },
   "nsis": {
     "perMachine": true,
