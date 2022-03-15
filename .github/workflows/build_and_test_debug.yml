@@ -125,20 +125,12 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Install Apple Development Certificate
-        env:
-          APPLE_BUILD_CERTIFICATE: ${{ secrets.APPLE_BUILD_CERTIFICATE }}
-          APPLE_BUILD_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_BUILD_CERTIFICATE_PASSWORD }}
-          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
         run: |
           # create variables
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PROVISIONING_PROFILE_PATH=$RUNNER_TEMP/build_pp.provisionprofile
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          # import certificate and provisioning profile from secrets
-          echo -n "$APPLE_BUILD_CERTIFICATE" | base64 --decode --output $CERTIFICATE_PATH
-          echo -n "$APPLE_PROVISIONING_PROFILE" | base64 --decode --output $PROVISIONING_PROFILE_PATH
+          CERTIFICATE_PATH=apple/certificates/development.cer
+          PROVISIONING_PROFILE_PATH=apple/certificates/mac.provisionprofile
+          KEYCHAIN_PASSWORD=test
+          KEYCHAIN_PATH=ci.keychain-db
 
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -146,7 +138,7 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$APPLE_BUILD_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
           # apply provisioning profile
