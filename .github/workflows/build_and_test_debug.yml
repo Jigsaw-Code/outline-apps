@@ -125,21 +125,13 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Install Apple Development Certificate
+        env: 
+          CERTIFICATE_PATH: apple/certificates/development.cer
+          PROVISIONING_PROFILE_PATH: apple/certificates/mac.provisionprofile
+          KEYCHAIN_PATH: /Library/Keychains/System.keychain
         run: |
-          # create variables
-          CERTIFICATE_PATH=apple/certificates/development.cer
-          PROVISIONING_PROFILE_PATH=apple/certificates/mac.provisionprofile
-          KEYCHAIN_PASSWORD=test
-          KEYCHAIN_PATH=ci.keychain-db
-
-          # create temporary keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-
           # import certificate to keychain
-          security import $CERTIFICATE_PATH -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          security add-certificates -k $KEYCHAIN_PATH $CERTIFICATE_PATH 
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
