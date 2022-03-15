@@ -208,5 +208,9 @@ async function main() {
 //   WINDOWS_SIGNING_PFX_CERT        <=> --pfx
 //   WINDOWS_SIGNING_EV_CERT_SUBJECT <=> --subject
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  try {
+    await main();
+  } catch (err) {
+    console.error(err);
+  }
 }
