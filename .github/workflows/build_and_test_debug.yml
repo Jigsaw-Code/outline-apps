@@ -128,9 +128,13 @@ jobs:
         env: 
           CERTIFICATE_PATH: apple/certificates/development.cer
           PROVISIONING_PROFILE_PATH: apple/certificates/mac.provisionprofile
-          KEYCHAIN_PATH: /Library/Keychains/System.keychain
+          KEYCHAIN_PATH: temp.keychain
+          KEYCHAIN_PASSWORD: temp
         run: |
-          # import certificate to keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
           security add-certificates -k $KEYCHAIN_PATH $CERTIFICATE_PATH 
 
           # apply provisioning profile
