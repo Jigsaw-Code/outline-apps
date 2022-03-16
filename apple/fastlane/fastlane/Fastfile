@@ -56,11 +56,13 @@ platform :ios do
 end
 
 platform :mac do
-  lane :debug do |options|
-    build_outline
+  lane :build_debug do |options|
+    setup_ci if ENV['CI']
+    match(type: 'development')
+    build_app
   end
 
-  lane :release do |options|
+  lane :build_release do |options|
     # TODO: signing?
 
     package(local: options[:local])
