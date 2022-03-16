@@ -70,6 +70,6 @@ end
 def build_outline
   build_app(
     scheme: "Outline",
-    export_xcargs: "-allowProvisioningUpdates"
+    xcargs: "-allowProvisioningUpdates"
   )
 end
