@@ -122,7 +122,7 @@ jobs:
       - name: Build OSX Client
         run: |
           npm run action gulp build osx
-          unzip Outline.app.dSYM.zip
+          unzip platforms/osx/Outline.app.dSYM.zip
 
       - name: Upload OSX Client
         uses: actions/upload-artifact@v2
@@ -136,7 +136,7 @@ jobs:
       - name: Build iOS Client
         run: |
           npm run action gulp build ios
-          unzip Outline.app.dSYM.zip
+          unzip platforms/ios/Outline.app.dSYM.zip
 
       - name: Upload iOS Client
         uses: actions/upload-artifact@v2
