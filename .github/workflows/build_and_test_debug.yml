@@ -9,10 +9,6 @@ on:
     types:
       - opened
       - synchronize
-  pull_request_target:
-    types:
-      - opened
-      - synchronize
 
 jobs:
   web-test:
@@ -124,22 +120,23 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
-      - name: Install Apple Development Certificate
-        env: 
-          CERTIFICATE_PATH: apple/certificates/mac_development.cer
-          PROVISIONING_PROFILE_PATH: apple/certificates/mac.provisionprofile
-          KEYCHAIN_PATH: temp.keychain
-          KEYCHAIN_PASSWORD: temp
-        run: |
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      # - name: Install Apple Development Certificate
+      #   env: 
+      #     CERTIFICATE_PATH: apple/certificates/mac_development.cer
+      #     PROVISIONING_PROFILE_PATH: apple/certificates/mac.provisionprofile
+      #     PROVISIONING_PROFILE_SPECIFIER: 
+      #     KEYCHAIN_PATH: temp.keychain
+      #     KEYCHAIN_PASSWORD: temp
+      #   run: |
+      #     security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      #     security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+      #     security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          security add-certificates -k $KEYCHAIN_PATH $CERTIFICATE_PATH 
+      #     security add-certificates -k $KEYCHAIN_PATH $CERTIFICATE_PATH 
 
-          # apply provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PROVISIONING_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+      #     # apply provisioning profile
+      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+      #     cp $PROVISIONING_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: Build OSX Client
         run: |
@@ -155,72 +152,72 @@ jobs:
             platforms/osx/Outline.app.dSYM
           if-no-files-found: error
 
-  ios-debug-build:
-    name: iOS Debug Build
-    runs-on: macos-11
-    timeout-minutes: 10
-    environment: Client iOS Debug
-    needs: web-test
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+  # ios-debug-build:
+  #   name: iOS Debug Build
+  #   runs-on: macos-11
+  #   timeout-minutes: 10
+  #   environment: Client iOS Debug
+  #   needs: web-test
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2.3.4
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install Node
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 16
-          cache: npm
+  #     - name: Install Node
+  #       uses: actions/setup-node@v2.2.0
+  #       with:
+  #         node-version: 16
+  #         cache: npm
 
-      - name: Install NPM Dependencies
-        run: npm ci
+  #     - name: Install NPM Dependencies
+  #       run: npm ci
 
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+  #     - name: Set XCode Version
+  #       run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
-      - name: Install Apple Development Certificate
-        env:
-          APPLE_BUILD_CERTIFICATE: ${{ secrets.APPLE_BUILD_CERTIFICATE }}
-          APPLE_BUILD_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_APPLE_BUILD_CERTIFICATE_PASSWORD }}
-          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_APPLE_PROVISIONING_PROFILE }}
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
-        run: |
-          # create variables
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PROVISIONING_PROFILE_PATH=$RUNNER_TEMP/build_pp.mobileprovision
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+  #     - name: Install Apple Development Certificate
+  #       env:
+  #         APPLE_BUILD_CERTIFICATE: ${{ secrets.APPLE_BUILD_CERTIFICATE }}
+  #         APPLE_BUILD_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_APPLE_BUILD_CERTIFICATE_PASSWORD }}
+  #         APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_APPLE_PROVISIONING_PROFILE }}
+  #         CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
+  #       run: |
+  #         # create variables
+  #         CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+  #         PROVISIONING_PROFILE_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+  #         KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # import certificate and provisioning profile from secrets
-          echo -n "$APPLE_BUILD_CERTIFICATE" | base64 --decode --output $CERTIFICATE_PATH
-          echo -n "$APPLE_PROVISIONING_PROFILE" | base64 --decode --output $PROVISIONING_PROFILE_PATH
+  #         # import certificate and provisioning profile from secrets
+  #         echo -n "$APPLE_BUILD_CERTIFICATE" | base64 --decode --output $CERTIFICATE_PATH
+  #         echo -n "$APPLE_PROVISIONING_PROFILE" | base64 --decode --output $PROVISIONING_PROFILE_PATH
 
-          # create temporary keychain
-          security create-keychain -p "$CI_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$CI_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+  #         # create temporary keychain
+  #         security create-keychain -p "$CI_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+  #         security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+  #         security unlock-keychain -p "$CI_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$APPLE_BUILD_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+  #         # import certificate to keychain
+  #         security import $CERTIFICATE_PATH -P "$APPLE_BUILD_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+  #         security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # apply provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PROVISIONING_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+  #         # apply provisioning profile
+  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+  #         cp $PROVISIONING_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: Build iOS Client
-        run: |
-          npm run action apple/build ios
-          unzip Outline.app.dSYM.zip
+  #     - name: Build iOS Client
+  #       run: |
+  #         npm run action apple/build ios
+  #         unzip Outline.app.dSYM.zip
 
-      - name: Upload iOS Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_ios_debug
-          path: |
-            platforms/ios/Outline.ipa
-            platforms/ios/Outline.app.dSYM
-          if-no-files-found: error
+  #     - name: Upload iOS Client
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: client_ios_debug
+  #         path: |
+  #           platforms/ios/Outline.ipa
+  #           platforms/ios/Outline.app.dSYM
+  #         if-no-files-found: error
 
   android-debug-build:
     name: Android Debug Build
