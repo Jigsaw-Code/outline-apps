@@ -126,7 +126,7 @@ jobs:
 
       - name: Install Apple Development Certificate
         env: 
-          CERTIFICATE_PATH: apple/certificates/development.cer
+          CERTIFICATE_PATH: apple/certificates/mac_development.cer
           PROVISIONING_PROFILE_PATH: apple/certificates/mac.provisionprofile
           KEYCHAIN_PATH: temp.keychain
           KEYCHAIN_PASSWORD: temp
