@@ -120,9 +120,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
-        run: |
-          npm run action gulp build osx
-          unzip platforms/osx/Outline.app.dSYM.zip
+        run: npm run action gulp build osx
 
       - name: Upload OSX Client
         uses: actions/upload-artifact@v2
@@ -130,13 +128,11 @@ jobs:
           name: client_osx_debug
           path: |
             platforms/osx/Outline.app
-            platforms/osx/Outline.app.dSYM
+            platforms/osx/Outline.app.dSYM.zip
           if-no-files-found: error
 
       - name: Build iOS Client
-        run: |
-          npm run action gulp build ios
-          unzip platforms/ios/Outline.app.dSYM.zip
+        run: npm run action gulp build ios
 
       - name: Upload iOS Client
         uses: actions/upload-artifact@v2
@@ -144,7 +140,7 @@ jobs:
           name: client_ios_debug
           path: |
             platforms/ios/Outline.ipa
-            platforms/ios/Outline.app.dSYM
+            platforms/ios/Outline.app.dSYM.zip
           if-no-files-found: error
 
   android-debug-build:
