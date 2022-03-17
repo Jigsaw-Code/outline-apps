@@ -94,23 +94,27 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
-### Windows
-
 Additional requirements for building on Windows:
 
 * [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
 
-To build the Electron clients, run:
+To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
-    npm run action src/electron/build windows
+```sh
+npm run action src/electron/build [windows|linux]
+```
 
 To run the Electron clients, run:
 
-    npm run action src/electron/start windows
+```sh
+npm run action src/electron/start [windows|linux]
+```
 
-To package the Electron clients into an installer executable, run:
+### Windows Release
 
-    npm run action src/electron/package_[linux|windows]
+To build the release version of Windows installer, you need the following additional requirements:
+
+* [Java 8+ Runtime](https://www.java.com/en/download/). This is required for the cross-platform Windows executable signing tool [Jsign](https://ebourg.github.io/jsign/). If you don't need to sign the executables, feel free to skip this.
 
 
 ## Error reporting
@@ -122,6 +126,19 @@ export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
 ```
 Release builds on CI are configured with a production Sentry API key.
+
+
+## CI Environment Variables
+
+For your CI to run smoothly, you'll need the following in your ENV:
+
+- `SENTRY_DSN` - [url required](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) to enable sentry integration. Same across all platforms.
+- `RELEASES_REPOSITORY` - the username and repository name of the repository you're pushing releases to. In our case, `Jigsaw-Code/outline-releases`
+- `RELEASES_DEPLOY_KEY` - an ssh secret key for the matching releases repository public deploy key - [how to set this up](https://docs.github.com/en/developers/overview/managing-deploy-keys#setup-2)
+- `ANDROID_KEY_STORE_CONTENTS` - the base64'd contents of your [android keystore.jkr](https://developer.android.com/training/articles/keystore) file
+- `ANDROID_KEY_STORE_PASSWORD` - the password required to unlock your android keystore. We assume your key and keystore password are the same.
+- `IOS_MATCH_GIT_BASIC_AUTHORIZATION` - the base64'd username and access token necessary to access your fastlane iOS credentials [match repository](https://docs.fastlane.tools/actions/match/)
+- `IOS_MATCH_PASSWORD` - the password needed to open your match repository
 
 ## Support
 
