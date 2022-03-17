@@ -120,7 +120,11 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
-        run: npm run action gulp build osx
+        run: |
+          npm run action gulp build osx
+          ls .
+          ls platforms
+          ls platforms/osx
 
       - name: Upload OSX Client
         uses: actions/upload-artifact@v2
