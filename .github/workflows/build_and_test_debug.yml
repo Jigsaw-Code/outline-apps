@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -44,8 +42,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -74,8 +70,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -101,11 +95,11 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 10
     needs: web-test
+    # TODO(daniellacosse): change to "Client Apple Debug"
+    environment: Client iOS Debug
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -119,11 +113,10 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
-      - name: Build OSX Client
-        run: npm run action gulp build osx
-
-      - name: Build iOS Client
-        run: npm run action gulp build ios
+      - name: Build Apple Clients
+        run: |
+          npm run action apple/build ios
+          npm run action apple/build osx
 
   android-debug-build:
     name: Android Debug Build
@@ -135,8 +128,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
