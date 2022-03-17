@@ -41,7 +41,7 @@ export async function getElectronBuildFlags(platform, buildMode) {
   }
 
   if (buildMode === "release" && platform === "windows") {
-    buildFlags.push("--config.win.certificateSubjectName='Jigsaw Operations LLC'");
+    buildFlags.push('--config.win.certificateSubjectName="Jigsaw Operations LLC"');
   }
 
   return buildFlags;
