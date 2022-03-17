@@ -120,32 +120,10 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build OSX Client
-        run: |
-          npm run action gulp build osx
-          ls .
-          ls platforms
-          ls platforms/osx
-
-      - name: Upload OSX Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_osx_debug
-          path: |
-            platforms/osx/Outline.app
-            platforms/osx/Outline.app.dSYM.zip
-          if-no-files-found: error
+        run: npm run action gulp build osx
 
       - name: Build iOS Client
         run: npm run action gulp build ios
-
-      - name: Upload iOS Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_ios_debug
-          path: |
-            platforms/ios/Outline.ipa
-            platforms/ios/Outline.app.dSYM.zip
-          if-no-files-found: error
 
   android-debug-build:
     name: Android Debug Build
