@@ -13,8 +13,8 @@
 # limitations under the License.
 
 # Configure the Outline iOS client environment for building on Travis
-def configure_travis_environment
-  setup_travis
+def configure_ci_environment
+  setup_ci
   # Retrieve signing credentials and provisioning profiles.
   match(type: "appstore", readonly: true,
         app_identifier: ["org.outline.ios.client", "org.outline.ios.client.VpnExtension"])
@@ -43,7 +43,7 @@ def configure_environment(local)
   if local then
     configure_local_environment
   else
-    configure_travis_environment
+    configure_ci_environment
   end
 end
 

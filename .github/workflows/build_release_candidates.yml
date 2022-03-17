@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 15
     environment: Client Apple Release
     env:
-      APPLE_CREDENTIALS_DEPLOY_KEY: ${{ secrets.APPLE_CREDENTIALS_DEPLOY_KEY }}
+      # APPLE_CREDENTIALS_DEPLOY_KEY: ${{ secrets.APPLE_CREDENTIALS_DEPLOY_KEY }}
       APPLE_CREDENTIALS_REPOSITORY: ${{ secrets.APPLE_CREDENTIALS_REPOSITORY }}
       APPLE_DEV_PORTAL_TEAM_ID: ${{ secrets.APPLE_DEV_PORTAL_TEAM_ID }}
       APPLE_ID: ${{ secrets.APPLE_ID }}

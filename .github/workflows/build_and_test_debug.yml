@@ -95,8 +95,15 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 10
     needs: web-test
-    # TODO(daniellacosse): change to "Client Apple Debug"
-    environment: Client iOS Debug
+    environment: Client Apple Debug
+    env:
+      # APPLE_CREDENTIALS_DEPLOY_KEY: ${{ secrets.APPLE_CREDENTIALS_DEPLOY_KEY }}
+      APPLE_CREDENTIALS_REPOSITORY: ${{ secrets.APPLE_CREDENTIALS_REPOSITORY }}
+      APPLE_DEV_PORTAL_TEAM_ID: ${{ secrets.APPLE_DEV_PORTAL_TEAM_ID }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ITUNES_CONNECT_ID: ${{ secrets.APPLE_ITUNES_CONNECT_ID }}
+      MATCH_PASSWORD: ${{ secrets.APPLE_MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.APPLE_MATCH_GIT_BASIC_AUTHORIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
