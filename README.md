@@ -1,5 +1,5 @@
 # Outline Client
-[![Build Status](https://travis-ci.org/Jigsaw-Code/outline-client.svg?branch=master)](https://travis-ci.org/Jigsaw-Code/outline-client)
+[![Build Release Candidates](https://github.com/Jigsaw-Code/outline-client/actions/workflows/build_release_candidates.yml/badge.svg)](https://github.com/Jigsaw-Code/outline-client/actions/workflows/build_release_candidates.yml)
 
 The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS.  The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
@@ -128,17 +128,30 @@ export SENTRY_DSN=[Sentry development API key]
 Release builds on CI are configured with a production Sentry API key.
 
 
-## CI Environment Variables
+## Github Action Secrets
 
-For your CI to run smoothly, you'll need the following in your ENV:
+For your Github Actions to run smoothly, you'll need the following [Github Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) and [Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) set up:
 
-- `SENTRY_DSN` - [url required](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) to enable sentry integration. Same across all platforms.
-- `RELEASES_REPOSITORY` - the username and repository name of the repository you're pushing releases to. In our case, `Jigsaw-Code/outline-releases`
-- `RELEASES_DEPLOY_KEY` - an ssh secret key for the matching releases repository public deploy key - [how to set this up](https://docs.github.com/en/developers/overview/managing-deploy-keys#setup-2)
+### Repository-level Secrets
+- `SENTRY_DSN` - [dsn required](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) to enable sentry integration. Same across all platforms.
+
+### `Client Apple` Environment
+
+- `APPLE_CREDENTIALS_REPOSITORY_URL` - the url to the git repository containing your apple certificates and provisioning profiles, managed by [Match](https://docs.fastlane.tools/actions/match/)
+- `APPLE_MATCH_GIT_BASIC_AUTHORIZATION` - the base64'd username and access token necessary to access that credentials repository
+- `APPLE_MATCH_PASSWORD` - your Match password
+
+- `APPLE_DEV_PORTAL_EMAIL_ADDRESS` - email address that your [Apple Developer Portal](https://developer.apple.com/) Account is under
+- `APPLE_DEV_PORTAL_TEAM_ID` - ID of your Apple Developer Portal Account
+- `APPLE_ITUNES_CONNECT_ID` - ID of your iTunes Connect Team Account
+
+### `Client Android Release` Environment
 - `ANDROID_KEY_STORE_CONTENTS` - the base64'd contents of your [android keystore.jkr](https://developer.android.com/training/articles/keystore) file
 - `ANDROID_KEY_STORE_PASSWORD` - the password required to unlock your android keystore. We assume your key and keystore password are the same.
-- `IOS_MATCH_GIT_BASIC_AUTHORIZATION` - the base64'd username and access token necessary to access your fastlane iOS credentials [match repository](https://docs.fastlane.tools/actions/match/)
-- `IOS_MATCH_PASSWORD` - the password needed to open your match repository
+
+### `Releases Repository` Environment
+- `RELEASES_REPOSITORY` - the username and repository name of the repository you're pushing releases to. In our case, `Jigsaw-Code/outline-releases`
+- `RELEASES_DEPLOY_KEY` - an ssh secret key for the matching releases repository public deploy key - [how to set this up](https://docs.github.com/en/developers/overview/managing-deploy-keys#setup-2)
 
 ## Support
 

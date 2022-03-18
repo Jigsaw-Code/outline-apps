@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apple_id ENV["APPLE_ID"]
+apple_id ENV["APPLE_DEV_PORTAL_EMAIL_ADDRESS"]
 itc_team_id ENV["APPLE_ITUNES_CONNECT_ID"]
 team_id ENV["APPLE_DEV_PORTAL_TEAM_ID"]
 
