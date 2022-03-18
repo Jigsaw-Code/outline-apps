@@ -95,7 +95,7 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 10
     needs: web-test
-    environment: Client Apple Debug
+    environment: Client Apple
     env:
       # APPLE_CREDENTIALS_DEPLOY_KEY: ${{ secrets.APPLE_CREDENTIALS_DEPLOY_KEY }}
       APPLE_CREDENTIALS_REPOSITORY: ${{ secrets.APPLE_CREDENTIALS_REPOSITORY }}

@@ -12,70 +12,105 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Configure the Outline iOS client environment for building on Travis
-def configure_ci_environment
+platform :ios do
+  desc "Build a Develompent-signed iOS client"
+  lane :build_debug do |options|
+    configure_environment(:ios, :debug)
+    build_outline
+  end
+
+  desc "Build a Appstore-signed iOS client"
+  lane :build_release do |options|
+    configure_environment(:ios, :release)
+    build_outline
+  end
+end
+
+platform :mac do
+  desc "Build a Develompent-signed MacOS client"
+  lane :build_debug do |options|
+    configure_environment(:mac, :debug)
+    build_outline
+  end
+
+  desc "Build a Appstore-signed MacOS client"
+  lane :build_release do |options|
+    configure_environment(:mac, :release)
+    build_outline
+  end
+end
+
+# Configures code signing and provisioning in the xcode project.
+def configure_environment(platform, buildMode)
+  if !ENV["CI"] then
+    return configure_automatic_code_signing(platform, buildMode)
+  end
+
   setup_ci
-  # Retrieve signing credentials and provisioning profiles.
-  match(type: "appstore", readonly: true,
-        app_identifier: ["org.outline.ios.client", "org.outline.ios.client.VpnExtension"])
+  get_signing_credentials_and_provisioning_profiles(platform, buildMode)
 
   xcodeproj = "Outline.xcodeproj"
+  case buildMode
+  when :debug
+    build_configuration = "Development"
+  when :release
+    build_configuration = "Release"
+  else
+    build_configuration = "Development"
+  end
+
   disable_automatic_code_signing(path: xcodeproj)
   update_project_provisioning(
-      xcodeproj: xcodeproj,
-      profile: ENV["sigh_org.outline.ios.client_appstore_profile-path"],
-      target_filter: ".*Outline.*",
-      build_configuration: "Release")
+    xcodeproj: xcodeproj,
+    profile: ENV["sigh_org.outline.#{platform}.client_appstore_profile-path"],
+    target_filter: ".*Outline.*",
+    build_configuration: build_configuration
+  )
   update_project_provisioning(
-      xcodeproj: xcodeproj,
-      profile: ENV["sigh_org.outline.ios.client.VpnExtension_appstore_profile-path"],
-      target_filter: ".*VpnExtension.*",
-      build_configuration: "Release")
+    xcodeproj: xcodeproj,
+    profile: ENV["sigh_org.outline.#{platform}.client.VpnExtension_appstore_profile-path"],
+    target_filter: ".*VpnExtension.*",
+    build_configuration: build_configuration
+  )
 end
 
-def configure_local_environment
-  automatic_code_signing(use_automatic_signing: true, team_id: "QT8Z3Q9V3A",
-                         code_sign_identity: "iPhone Developer")
-end
-
-# Configures code signing and provisioning in the xcode project for local or Travis environments.
-def configure_environment(local)
-  if local then
-    configure_local_environment
+def configure_automatic_code_signing(platform, buildMode)
+  case platform
+  when :ios
+    title_case = "iOS"
+  when :mac
+    title_case = "MacOS"
   else
-    configure_ci_environment
+    title_case = platform
   end
+
+  automatic_code_signing(
+    use_automatic_signing: true,
+    team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
+    code_sign_identity: "#{title_case} Developer"
+  )
+end
+
+def get_signing_credentials_and_provisioning_profiles(platform, buildMode)
+  case buildMode
+  when :debug
+    certificate_type = "development"
+  when :release
+    certificate_type = "appstore"
+  else
+    certificate_type = "development"
+  end
+
+  match(
+    type: certificate_type,
+    readonly: true,
+    app_identifier: [
+      "org.outline.#{platform}.client",
+      "org.outline.#{platform}.client.VpnExtension"
+    ]
+  )
 end
 
 def build_outline
   build_app(scheme: "Outline", export_xcargs: "-allowProvisioningUpdates")
-end
-
-platform :ios do
-  desc "Build the Outline iOS client for release"
-  lane :build do |options|
-    configure_environment(options[:local])
-    build_outline
-  end
-
-  desc "Upload a release build of the Outline iOS client to the App Store"
-  lane :publish do |options|
-    package(local: options[:local])
-    upload_to_app_store(skip_metadata: true, skip_screenshots: true)
-  end
-end
-
-platform :osx do
-  # TODO(alalama): Lanes only work locally. Add Travis support.
-  desc "Build the Outline macOS client for release"
-  lane :build do
-    build_outline
-  end
-
-  desc "Upload a release build of the Outline macOS client to the Mac App Store"
-  lane :publish do
-    package
-    upload_to_app_store(skip_metadata: true, skip_screenshots: true,
-                        platform: "osx", app_version: get_version_number)
-  end
 end

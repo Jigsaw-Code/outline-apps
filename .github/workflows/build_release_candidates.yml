@@ -14,7 +14,7 @@ jobs:
     name: Build Apple Release Candidates
     runs-on: macos-11
     timeout-minutes: 15
-    environment: Client Apple Release
+    environment: Client Apple
     env:
       # APPLE_CREDENTIALS_DEPLOY_KEY: ${{ secrets.APPLE_CREDENTIALS_DEPLOY_KEY }}
       APPLE_CREDENTIALS_REPOSITORY: ${{ secrets.APPLE_CREDENTIALS_REPOSITORY }}
@@ -22,6 +22,7 @@ jobs:
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_ITUNES_CONNECT_ID: ${{ secrets.APPLE_ITUNES_CONNECT_ID }}
       MATCH_PASSWORD: ${{ secrets.APPLE_MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.APPLE_MATCH_GIT_BASIC_AUTHORIZATION }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
       - name: Checkout

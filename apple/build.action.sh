@@ -35,7 +35,7 @@ done
 pushd "platforms/${PLATFORM}"
 
 if [[ "${PLATFORM}" == "osx" ]]; then
-  bundle exec fastlane mac build
+  bundle exec fastlane mac "build_${BUILD_MODE}"
 else
-  bundle exec fastlane "${PLATFORM}" build
+  bundle exec fastlane "${PLATFORM}" "build_${BUILD_MODE}"
 fi
