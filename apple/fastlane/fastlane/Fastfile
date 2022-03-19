@@ -103,6 +103,7 @@ def get_signing_credentials_and_provisioning_profiles(platform, buildMode)
 
   match(
     type: certificate_type,
+    readonly: false,
     app_identifier: [
       "org.outline.#{platform}.client",
       "org.outline.#{platform}.client.VpnExtension"
