@@ -6,8 +6,8 @@
     "action:help": "npm run action",
     "action:list": "npm run action",
     "clean": "rm -rf build node_modules www platforms plugins",
-    "format": "pretty-quick --staged --pattern \"**/*.{cjs,html,js,json,md,ts}\"",
-    "format:all": "prettier --write \"**/*.{cjs,html,js,json,md,ts}\"",  
+    "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
+    "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",  
     "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
