@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline – <a href={jigsawUrl}>Jigsaw</a> әзірлеген ашық кодты бағдарлама жобасы. Ол ақпараттық агенттіктер мен журналистердің интернетті қауіпсіз пайдалануына мүмкіндік береді.<br><br> Outline <a href={shadowsocksUrl}>Shadowsocks</a> технологиясын пайдаланады және ол әлі де әзірлеудің бастапқы кезеңінде. <a href={gitHubUrl}>GitHub</a> сайтында кодқа үлес қоса аласыз, сонымен қатар <a href={redditUrl}>Reddit</a> және <a href={mediumUrl}>Medium</a> желілеріне жазылып, қосымша платформалар және жаңа функциялар қосылғаны туралы хабардар болыңыз.",
+  "about-outline": "Outline – кез келген пайдаланушының жеке VPN желісін жасауына, оны іске қосуына және пайдалану рұқсатын бөлісуіне мүмкіндік беретін, <a href={jigsawUrl}>Jigsaw</a> әзірлеген өнім. Outline бөгеуге төзімді етіп әзірленген. Жұмыста бастау әдісін білу үшін <a href={outlineUrl}>getoutline.org</a> бетіне өтіңіз.$NEWLINE$$NEWLINE$Outline – <a href={shadowsocksUrl}>Shadowsocks</a> протоколын пайдаланатын ашық кодты бағдарлама. <a href={gitHubUrl}>GitHub</a> платформасында кодқа үлес қосып, <a href={redditUrl}>Reddit</a> сайтында талқылай аласыз.",
   "about-page-title": "Ақпарат",
   "auto-connect-dialog-detail": "Outline серверінен ажыратпасаңыз, келесіде құрылғыны қайта қосқанда, Outline автоматты түрде байланыс орнатады.",
   "auto-connect-dialog-title": "Үздіксіз қорғау, әрқашан",
@@ -82,6 +82,7 @@
   "submitting": "Жіберілуде...",
   "terms": "Шарттар",
   "tips": "Кеңестер",
+  "tray-open-window": "Ашу",
   "undo-button-label": "Қайтару",
   "unreachable-server-state": "Қолжетімсіз",
   "update-downloaded": "Outline-ның жаңартылған нұсқасы жүктеп алынды. Аталған нұсқа Outline-ды қайта қосқан кезде орнатылады.",

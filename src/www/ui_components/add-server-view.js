@@ -148,7 +148,7 @@ Polymer({
       }
     </style>
 
-    <paper-dialog id="addServerSheet" with-backdrop="">
+    <paper-dialog id="addServerSheet" with-backdrop>
       <div class="vertical-margin">
         <div class="title">[[localize('server-add-access-key')]]</div>
         <div class="faded">[[localize('server-add-instructions')]]</div>
@@ -165,7 +165,7 @@ Polymer({
     <!-- no-cancel-on-outside-click prevents the dialog appearing for only
          an instant when the user clicks on some other part of the window.
          This is a real problem on desktop. -->
-    <paper-dialog id="serverDetectedSheet" with-backdrop="" no-cancel-on-outside-click="">
+    <paper-dialog id="serverDetectedSheet" with-backdrop no-cancel-on-outside-click>
       <div class="vertical-margin">
         <div class="title">[[localize('server-access-key-detected')]]</div>
         <div class="faded">

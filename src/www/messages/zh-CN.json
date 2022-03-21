@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline 是由 <a href={jigsawUrl}>Jigsaw</a> 创立的开放源代码项目，旨在为新闻机构和记者提供更安全的互联网访问方式。<br><br> Outline 由 <a href={shadowsocksUrl}>Shadowsocks</a> 提供支持，目前仍处于产品的初级阶段。您可以在 <a href={gitHubUrl}>GitHub</a> 上参与代码编写，还可以通过 <a href={redditUrl}>Reddit</a> 和 <a href={mediumUrl}>Medium</a> 关注我们，及时掌握我们扩展平台范围和添加新功能的最新动态。",
+  "about-outline": "Outline 是一款由 <a href={jigsawUrl}>Jigsaw</a> 开发的产品，可以供任何人创建和运行自己的专属 VPN 并分享其访问权限，同时能够有效防止网络封锁。请访问 <a href={outlineUrl}>getoutline.org</a> 了解入门方法。$NEWLINE$$NEWLINE$Outline 是由 <a href={shadowsocksUrl}>Shadowsocks</a> 提供支持的开源软件。您可以在 <a href={gitHubUrl}>GitHub</a> 上参与代码编写，也可以在 <a href={redditUrl}>Reddit</a> 上加入话题讨论。",
   "about-page-title": "关于",
   "auto-connect-dialog-detail": "如果不断开与 Outline 服务器的连接，则下次重启设备时，Outline 会自动连接。",
   "auto-connect-dialog-title": "时刻获享安全防护",
@@ -82,6 +82,7 @@
   "submitting": "正在提交…",
   "terms": "条款",
   "tips": "提示",
+  "tray-open-window": "打开",
   "undo-button-label": "撤消",
   "unreachable-server-state": "无法连接",
   "update-downloaded": "已下载 Outline 的更新版本。系统会在您重启 Outline 时安装此版本。",

@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 #
 # Copyright 2018 The Outline Authors
 #
@@ -13,8 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
 
 # Packages the Outline iOS client on Travis. Expects to be invoked through `npm run action`.
-./apple/scripts/install_fastlane.sh -p ios
+BUILD_MODE=release
+for i in "$@"; do
+    case $i in
+    --buildMode=*)
+        BUILD_MODE="${i#*=}"
+        shift
+        ;;
+    -* | --*)
+        echo "Unknown option: ${i}"
+        exit 1
+        ;;
+    *) ;;
+    esac
+done
+
+./apple/scripts/install_fastlane.sh ios --buildMode="${BUILD_MODE}"
 pushd platforms/ios
 bundle exec fastlane ios package

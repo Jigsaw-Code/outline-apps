@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline, haber kuruluşlarının ve gazetecilerin internete erişmesi için daha güvenli bir yol sunmak amacıyla <a href={jigsawUrl}>Jigsaw</a> tarafından oluşturulan bir açık kaynak projesidir.<br><br> Outline, <a href={shadowsocksUrl}>Shadowsocks</a> tarafından desteklenmektedir ve hâlâ geliştirme aşamasında olan bir üründür. <a href={gitHubUrl}>GitHub</a> sitesindeki koda katkıda bulunabilir, uygulama daha fazla platformda kullanıma sunulduğunda ve yeni özellikler eklendiğinde haberdar olmak için bizi <a href={redditUrl}>Reddit</a> ve <a href={mediumUrl}>Medium</a> üzerinden takip edebilirsiniz.",
+  "about-outline": "<a href={jigsawUrl}>Jigsaw</a> tarafından sunulan Outline, herkesin kendi VPN'ini oluşturmasına, çalıştırmasına ve VPN'lerine erişim paylaşmasına olanak tanıyan bir üründür. Outline, engellemelere karşı dirençli olacak şekilde tasarlanmıştır. Nasıl kullanmaya başlayacağınızı öğrenmek için <a href={outlineUrl}>getoutline.org</a> sitesini ziyaret edin.$NEWLINE$$NEWLINE$Outline, <a href={shadowsocksUrl}>Shadowsocks</a> tarafından desteklenen açık kaynak yazılımdır. <a href={gitHubUrl}>GitHub</a> sitesinde koda katkıda bulunabilir ve <a href={redditUrl}>Reddit</a> üzerinde görüşmeye katılabilirsiniz.",
   "about-page-title": "Hakkında",
   "auto-connect-dialog-detail": "Outline sunucunuzla olan bağlantıyı kesmediğiniz sürece, cihazınızı yeniden başlattığınız bir sonraki sefer Outline otomatik olarak bağlanacaktır.",
   "auto-connect-dialog-title": "Daima güvende kalın",
@@ -82,6 +82,7 @@
   "submitting": "Gönderiliyor...",
   "terms": "Şartlar",
   "tips": "İpuçları",
+  "tray-open-window": "Aç",
   "undo-button-label": "Geri al",
   "unreachable-server-state": "Ulaşılamıyor",
   "update-downloaded": "Outline'ın güncel bir sürümü indirildi. Outline'ı yeniden başlattığınızda güncel sürüm yüklenecek.",

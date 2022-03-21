@@ -13,15 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -eu
 
-npm run action src/www/build_cordova
-scripts/environment_json.sh -p dev > www/environment.json
+run_action src/www/build browser --buildMode=debug
 cordova prepare browser
 
 webpack serve \
     --mode=development \
     --static=platforms/browser/www \
-    --config=src/www/cordova.webpack.js \
-    --open /cordova_index.html
+    --config=src/www/webpack_cordova.js \
+    --open /index_cordova.html

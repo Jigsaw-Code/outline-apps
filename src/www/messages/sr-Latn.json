@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline je projekat otvorenog koda koji je napravio <a href={jigsawUrl}>Jigsaw</a> da bi novinskim agencijama i novinarima omogućio da bezbednije pristupaju internetu.<br><br> Outline koristi tehnologiju <a href={shadowsocksUrl}>Shadowsocks</a> i još uvek je u ranim fazama razvoja. Možete da date svoj doprinos kodu na <a href={gitHubUrl}>GitHub</a>-u i da nas pratite na <a href={redditUrl}>Reddit</a>-u i <a href={mediumUrl}>Medium</a>-u da biste čuli kada se proširimo na još platformi i dodamo nove funkcije.",
+  "about-outline": "Outline je proizvod kompanije <a href={jigsawUrl}>Jigsaw</a> koji omogućava svakom da pravi, koristi i deli pristup svom VPN-u. Outline je osmišljen tako da bude otporan na blokiranje. Posetite <a href={outlineUrl}>getoutline.org</a> da biste saznali kako da započnete.$NEWLINE$$NEWLINE$Outline je softver otvorenog kôda kojeg omogućava protokol <a href={shadowsocksUrl}>Shadowsocks</a>. Možete da doprinesete kôdu na <a href={gitHubUrl}>GitHub</a>-u i da se pridružite diskusiji na <a href={redditUrl}>Reddit</a>-u.",
   "about-page-title": "Osnovni podaci",
   "auto-connect-dialog-detail": "Ako ne prekinete vezu sa Outline serverom, Outline će se automatski povezati kada sledeći put restartujete uređaj.",
   "auto-connect-dialog-title": "Budite uvek zaštićeni",
@@ -82,6 +82,7 @@
   "submitting": "Šalje se...",
   "terms": "Uslovi",
   "tips": "Saveti",
+  "tray-open-window": "Otvori",
   "undo-button-label": "Opozovi",
   "unreachable-server-state": "Nedostupan",
   "update-downloaded": "Preuzeta je ažurirana verzija Outline-a. Instaliraće se kada restartujete Outline.",

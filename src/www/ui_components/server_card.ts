@@ -11,21 +11,11 @@
   limitations under the License.
 */
 
-import './server-connection-viz.js';
-
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
-enum ServerCardState {
-  INITIAL = 'ZERO_STATE',
-  CONNECTING = 'CONNECTING',
-  CONNECTED = 'CONNECTED',
-  RECONNECTING = 'RECONNECTING',
-  DISCONNECTING = 'DISCONNECTING',
-  DISCONNECTED = 'DISCONNECTED'
-}
-
+import {ServerConnectionState} from './server_connection_viz';
 @customElement('server-card') export class ServerCard extends LegacyElementMixin
 (PolymerElement) {
   static template = html`
@@ -194,7 +184,7 @@ enum ServerCardState {
   @property({type: String}) serverAddress: string;
   @property({type: String}) serverId: string;
   @property({type: String}) serverName: string;
-  @property({type: String}) state: ServerCardState = ServerCardState.DISCONNECTED;
+  @property({type: String}) state: ServerConnectionState = ServerConnectionState.DISCONNECTED;
 
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
@@ -202,7 +192,7 @@ enum ServerCardState {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
 
-  @computed('serverId', 'isOutlineServer', 'localize')
+  @computed('serverName', 'isOutlineServer', 'localize')
   get localizedServerName() {
     if (this.serverName.length) {
       return this.serverName;
@@ -216,15 +206,15 @@ enum ServerCardState {
     if (!this.localize) return '';
 
     switch (this.state) {
-      case ServerCardState.CONNECTING:
+      case ServerConnectionState.CONNECTING:
         return this.localize('connecting-server-state');
-      case ServerCardState.CONNECTED:
+      case ServerConnectionState.CONNECTED:
         return this.localize('connected-server-state');
-      case ServerCardState.RECONNECTING:
+      case ServerConnectionState.RECONNECTING:
         return this.localize('reconnecting-server-state');
-      case ServerCardState.DISCONNECTING:
+      case ServerConnectionState.DISCONNECTING:
         return this.localize('disconnecting-server-state');
-      case ServerCardState.DISCONNECTED:
+      case ServerConnectionState.DISCONNECTED:
       default:
         return this.localize('disconnected-server-state');
     }
@@ -235,12 +225,12 @@ enum ServerCardState {
     if (!this.localize) return '';
 
     switch (this.state) {
-      case ServerCardState.CONNECTING:
-      case ServerCardState.CONNECTED:
-      case ServerCardState.RECONNECTING:
+      case ServerConnectionState.CONNECTING:
+      case ServerConnectionState.CONNECTED:
+      case ServerConnectionState.RECONNECTING:
         return this.localize('disconnect-button-label');
-      case ServerCardState.DISCONNECTING:
-      case ServerCardState.DISCONNECTED:
+      case ServerConnectionState.DISCONNECTING:
+      case ServerConnectionState.DISCONNECTED:
       default:
         return this.localize('connect-button-label');
     }
@@ -249,8 +239,8 @@ enum ServerCardState {
   @computed('state')
   get connectButtonDisabled() {
     return (
-        this.disabled || this.state === ServerCardState.CONNECTING ||
-        this.state === ServerCardState.DISCONNECTING);
+        this.disabled || this.state === ServerConnectionState.CONNECTING ||
+        this.state === ServerConnectionState.DISCONNECTING);
   }
 
   @computed('expanded')
@@ -261,8 +251,8 @@ enum ServerCardState {
   protected onConnectToggled() {
     const {serverId} = this;
 
-    this.state === ServerCardState.DISCONNECTED ? this.fire('ConnectPressed', {serverId}) :
-                                                  this.fire('DisconnectPressed', {serverId});
+    this.state === ServerConnectionState.DISCONNECTED ? this.fire('ConnectPressed', {serverId}) :
+                                                        this.fire('DisconnectPressed', {serverId});
   }
 
   protected onMenuItemPressed({detail: {selected}}: CustomEvent) {

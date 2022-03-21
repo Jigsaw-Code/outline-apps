@@ -1,0 +1,182 @@
+name: Build and Test
+
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  web-test:
+    name: Web Test
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npm run action gulp build browser
+
+      - name: Test Web App
+        run: npm run action src/www/test
+
+  linux-debug-build:
+    name: Linux Debug Build
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    needs: web-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Linux Client
+        run: npm run action src/electron/build linux
+      
+      - name: Upload Linux Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_linux_debug
+          path: build/dist/Outline-Client.AppImage
+          if-no-files-found: error
+
+  windows-debug-build:
+    name: Windows Debug Build
+    runs-on: windows-2019
+    timeout-minutes: 10
+    needs: web-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Windows Client
+        run: npm run action src/electron/build windows
+
+      - name: Upload Windows Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_installer_windows_debug
+          path: build/dist/Outline-Client.exe
+          if-no-files-found: error
+
+  mac-debug-build:
+    name: MacOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 10
+    needs: web-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build OSX Client
+        run: npm run action gulp build osx
+
+  ios-debug-build:
+    name: iOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 12
+    environment: Client iOS Debug
+    needs: web-test
+    env:
+      MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+      # TODO(daniellacosse): turn this into a deploy key, if possible
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.IOS_MATCH_GIT_BASIC_AUTHORIZATION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build iOS Client
+        run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
+
+  android-debug-build:
+    name: Android Debug Build
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    needs: web-test
+    env:
+      ANDROID_SDK_ROOT: /opt/android-sdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Install Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Setup Android
+        run: bash ./tools/build/setup_linux_android.sh
+
+      - name: Build Android Client
+        run: npm run action gulp build android
+
+      - name: Upload Android Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_android_debug
+          path: platforms/android/app/build/outputs/apk
+          if-no-files-found: error

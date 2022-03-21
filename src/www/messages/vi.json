@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline là một dự án nguồn mở do <a href={jigsawUrl}>Jigsaw</a> tạo ra nhằm mang đến một phương thức truy cập Internet an toàn hơn cho các cơ quan báo chí và nhà báo.<br><br> Outline chạy trên nền tảng <a href={shadowsocksUrl}>Shadowsocks</a> và vẫn là một sản phẩm ở giai đoạn đầu. Bạn có thể đóng góp mã trên <a href={gitHubUrl}>GitHub</a> và theo dõi chúng tôi trên <a href={redditUrl}>Reddit</a> và <a href={mediumUrl}>Medium</a> để nhận tin tức khi chúng tôi mở rộng ra nhiều nền tảng khác và thêm các tính năng mới.",
+  "about-outline": "Outline là sản phẩm của <a href={jigsawUrl}>Jigsaw</a>, giúp mọi người có thể tạo, chạy và chia sẻ quyền truy cập vào VPN (mạng riêng ảo) của riêng họ. Outline có thiết kế để tránh bị chặn. Hãy truy cập <a href={outlineUrl}>getoutline.org</a> để tìm hiểu cách bắt đầu.$NEWLINE$$NEWLINE$Outline là phần mềm nguồn mở do <a href={shadowsocksUrl}>Shadowsocks</a> cung cấp. Bạn có thể đóng góp vào mã trên <a href={gitHubUrl}>GitHub</a> và tham gia cuộc trò chuyện trên <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Giới thiệu",
   "auto-connect-dialog-detail": "Trừ khi bạn ngắt kết nối khỏi máy chủ Outline, Outline sẽ tự động kết nối vào lần tiếp theo khi bạn khởi động lại thiết bị.",
   "auto-connect-dialog-title": "Luôn được bảo vệ",
@@ -82,6 +82,7 @@
   "submitting": "Đang gửi...",
   "terms": "Điều khoản",
   "tips": "Mẹo",
+  "tray-open-window": "Mở",
   "undo-button-label": "Hoàn tác",
   "unreachable-server-state": "Không thể kết nối",
   "update-downloaded": "Đã tải phiên bản cập nhật của Outline xuống. Hệ thống sẽ cài đặt phiên bản này khi bạn khởi động lại Outline.",

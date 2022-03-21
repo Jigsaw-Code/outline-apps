@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline adalah proyek open source yang dibuat oleh <a href={jigsawUrl}>Jigsaw</a> untuk menyediakan cara yang lebih aman bagi organisasi dan jurnalis berita dalam mengakses internet.<br><br> Outline menggunakan teknologi <a href={shadowsocksUrl}>Shadowsocks</a> dan masih dalam produk tahap awal. Anda dapat membantu di bidang coding di <a href={gitHubUrl}>GitHub</a>, serta mengikuti kami di <a href={redditUrl}>Reddit</a> dan <a href={mediumUrl}>Medium</a> untuk mendapatkan pemberitahuan ketika kami melakukan perkembangan ke lebih banyak platform dan menambahkan fitur baru.",
+  "about-outline": "Outline adalah produk <a href={jigsawUrl}>Jigsaw</a> yang memungkinkan siapa pun membuat, menjalankan, dan berbagi akses ke VPN-nya sendiri. Outline dirancang agar tahan terhadap pemblokiran. Kunjungi <a href={outlineUrl}>getoutline.org</a> untuk mempelajari cara mulai menggunakan produk ini.$NEWLINE$$NEWLINE$Outline adalah software open source yang didukung oleh <a href={shadowsocksUrl}>Shadowsocks</a>. Anda dapat berkontribusi dalam bidang coding di <a href={gitHubUrl}>GitHub</a> dan bergabung dalam percakapan di <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Tentang",
   "auto-connect-dialog-detail": "Outline akan otomatis terhubung saat Anda memulai ulang perangkat hingga Anda memutuskan sambungan dari server Outline.",
   "auto-connect-dialog-title": "Perlindungan sepanjang waktu",
@@ -82,6 +82,7 @@
   "submitting": "Mengirimkan...",
   "terms": "Persyaratan",
   "tips": "Tips",
+  "tray-open-window": "Buka",
   "undo-button-label": "Urungkan",
   "unreachable-server-state": "Tidak dapat dijangkau",
   "update-downloaded": "Versi Outline paling update telah didownload. Versi ini akan diinstal saat Anda memulai ulang Outline.",

@@ -1,5 +1,5 @@
 {
-  "about-outline": "„Outline“ yra atvirojo šaltinio projektas, kurį sukūrė „<a href={jigsawUrl}>Jigsaw</a>“, kad naujienų organizacijos ir žurnalistai galėtų saugiau pasiekti internetą.<br><br> „Outline“ teikiama naudojant „<a href={shadowsocksUrl}>Shadowsocks</a>“ ir ji vis dar yra ankstyvosios stadijos produktas. Jūs galite bendradarbiauti kurdami kodą sistemoje „<a href={gitHubUrl}>GitHub</a>“ ir stebėti mus sistemose „<a href={redditUrl}>Reddit</a>“ bei „<a href={mediumUrl}>Medium</a>“, kad galėtumėte sužinoti, kada bus palaikoma daugiau platformų ir pridėta naujų funkcijų.",
+  "about-outline": "„Outline“ yra „<a href={jigsawUrl}>Jigsaw</a>“ produktas, kurį naudodami žmonės gali sukurti bei paleisti savo VPN ir bendrinti prieigą prie jo. „Outline“ sukurta taip, kad jos nebūtų galima užblokuoti. Apsilankykite adresu <a href={outlineUrl}>getoutline.org</a> ir sužinokite daugiau, kaip pradėti.$NEWLINE$$NEWLINE$„Outline“ atvirojo šaltinio programinė įranga, kuri teikiama naudojant „<a href={shadowsocksUrl}>Shadowsocks</a>“ protokolą. Jūs galite bendradarbiauti kurdami kodą sistemoje „<a href={gitHubUrl}>GitHub</a>“ ir prisijungti prie pokalbio sistemoje „<a href={redditUrl}>Reddit</a>“.",
   "about-page-title": "Apie",
   "auto-connect-dialog-detail": "Jei neatsijungsite nuo „Outline“ serverio, „Outline“ automatiškai prisijungs, kai kitą kartą paleisite įrenginį iš naujo.",
   "auto-connect-dialog-title": "Visada būkite apsaugoti",
@@ -82,6 +82,7 @@
   "submitting": "Pateikiama...",
   "terms": "Sąlygos",
   "tips": "Patarimai",
+  "tray-open-window": "Atidaryti",
   "undo-button-label": "Anuliuoti",
   "unreachable-server-state": "Nepasiekiamas",
   "update-downloaded": "Atsisiųsta atnaujintos versijos „Outline“. Ji bus įdiegta, kai paleisite „Outline“ iš naujo.",

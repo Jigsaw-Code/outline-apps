@@ -8,10 +8,6 @@
     <engine name="cordova-android" version=">=4.0.0-dev" />
   </engines>
 
-  <js-module src="outlinePlugin.js" name="OutlinePlugin">
-    <clobbers target="cordova.plugins.outline" />
-  </js-module>
-
   <!-- Android -->
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">

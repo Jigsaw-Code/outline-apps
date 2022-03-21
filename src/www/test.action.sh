@@ -13,9 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
 
-readonly TEST_DIR="${ROOT_DIR}/build/test"
-rm -rf "$TEST_DIR"
-
-tsc -p "$ROOT_DIR/src/www" --outDir "$TEST_DIR"
-jasmine "--config=$ROOT_DIR/jasmine.json"
+karma start "${ROOT_DIR}/src/www/karma.conf.js"

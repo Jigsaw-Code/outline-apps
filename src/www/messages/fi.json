@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline on avoimen lähdekoodin projekti, jonka <a href={jigsawUrl}>Jigsaw</a> on luonut tarjotakseen uutisorganisaatioille ja toimittajille entistä turvallisemman pääsyn internetiin.<br><br> Outlinen tarjoaa <a href={shadowsocksUrl}>Shadowsocks</a>, ja se on vielä alkuvaiheessa. Voit osallistua koodin parantamiseen <a href={gitHubUrl}>GitHub</a>-sivustolla. Seuraa meitä <a href={redditUrl}>Reddit</a>- ja <a href={mediumUrl}>Medium</a>-sivustoilla, niin saat tietää, kun laajennamme muihin käyttöympäristöihin ja lisäämme uusia ominaisuuksia.",
+  "about-outline": "Outline on <a href={jigsawUrl}>Jigsaw</a>-tuote, jonka avulla kuka tahansa voi luoda oman VPN:n, ylläpitää sitä sekä jakaa pääsyn siihen. Outline on suunniteltu vaikeaksi estää. Lue lisää käytön aloittamisesta: <a href={outlineUrl}>getoutline.org</a>.$NEWLINE$$NEWLINE$Outline on avoimen lähdekoodin ohjelmisto, joka toimii <a href={shadowsocksUrl}>Shadowsocks</a>in avulla. Voit osallistua koodin parantamiseen <a href={gitHubUrl}>GitHub</a>issa ja keskusteluun <a href={redditUrl}>Reddit</a>issä.",
   "about-page-title": "Tietoja",
   "auto-connect-dialog-detail": "Jos et katkaise yhteyttä Outline-palvelimeen, Outline yhdistää automaattisesti uudelleen, kun käynnistät laitteen seuraavan kerran.",
   "auto-connect-dialog-title": "Pysy aina suojattuna",
@@ -82,6 +82,7 @@
   "submitting": "Lähetetään…",
   "terms": "Ehdot",
   "tips": "Vinkkejä",
+  "tray-open-window": "Avaa",
   "undo-button-label": "Kumoa",
   "unreachable-server-state": "Ei yhteyttä",
   "update-downloaded": "Päivitetty versio Outlinesta on ladattu. Se asennetaan, kun käynnistät Outlinen uudelleen.",
