@@ -11,12 +11,12 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from '@polymer/decorators';
-import {html, PolymerElement} from '@polymer/polymer';
-import Sortable from 'sortablejs';
+import {computed, customElement, property} from "@polymer/decorators";
+import {html, PolymerElement} from "@polymer/polymer";
+import Sortable from "sortablejs";
 
-import {ServerCard} from './server_card';
-import {ServerConnectionState} from './server_connection_viz';
+import {ServerCard} from "./server_card";
+import {ServerConnectionState} from "./server_connection_viz";
 
 export interface ServerCardModel {
   disabled: boolean;
@@ -28,7 +28,7 @@ export interface ServerCardModel {
   state: ServerConnectionState;
 }
 
-@customElement('server-list')
+@customElement("server-list")
 export class ServerList extends PolymerElement {
   static get template() {
     return html`
@@ -66,14 +66,20 @@ export class ServerList extends PolymerElement {
       <div id="sortableContainer">
         <template is="dom-repeat" items="[[servers]]">
           <server-card
-            disabled="[[item.errorMessageId]]" 
-            error-message="[[localize(item.errorMessageId)]]" 
+            disabled="[[item.errorMessageId]]"
+            error-message="[[localize(item.errorMessageId)]]"
             expanded="[[hasSingleServer]]"
-            localize="[[localize]]" 
-            root-path="[[rootPath]]" 
-            server-address="[[item.address]]" 
+            localize="[[localize]]"
+            root-path="[[rootPath]]"
+            server-address="[[item.address]]"
             server-id="[[item.id]]"
-            server-name="[[item.name]]" 
+            localized-server-name="[[localizeServerName(item.name, item.isOutlineServer)]]"
+            localized-server-rename="[[localize('server-rename')]"
+            localized-server-forget="[[localize('server-forget')]"
+            localized-status-message="[[localizeStatusMessage(item.state)]]"
+            localized-connect-button-label="[[localizeConnectButtonLabel(item.state)]]"
+            connect-button-disabled="[[computeConnectButtonDisabled(item.errorMessageId, item.state)]]"
+            expanded-class-name="[[computeExpandedClassName(hasSingleServer)]]"
             is-outline-server="[[item.isOutlineServer]]"
             state="[[item.state]]"
           ></server-card>
@@ -94,12 +100,12 @@ export class ServerList extends PolymerElement {
   @property({type: Number}) sortableDelayMS = 350;
   @property({type: Number}) sortableAnimationDurationMS = 150;
 
-  @computed('servers')
+  @computed("servers")
   get hasSingleServer() {
     return this.servers.length === 1;
   }
 
-  @computed('servers', 'sortableDelayMS', 'sortableAnimationDurationMS')
+  @computed("servers", "sortableDelayMS", "sortableAnimationDurationMS")
   get sortable(): Sortable {
     if (!this.servers.length || this.hasSingleServer) return null;
 
@@ -109,7 +115,56 @@ export class ServerList extends PolymerElement {
       animation: this.sortableAnimationDurationMS,
 
       // TODO: update the config on change
-      onEnd: event => console.debug(event),
+      onEnd: event => console.debug("onEnd", event),
     });
+  }
+
+  localizeServerName(serverName: string, isOutlineServer: boolean): string {
+    if (serverName.length) {
+      return serverName;
+    }
+
+    return this.localize(isOutlineServer ? "server-default-name-outline" : "server-default-name");
+  }
+
+  localizeStatusMessage(state: ServerConnectionState): string {
+    if (!this.localize) return "";
+
+    switch (state) {
+      case ServerConnectionState.CONNECTING:
+        return this.localize("connecting-server-state");
+      case ServerConnectionState.CONNECTED:
+        return this.localize("connected-server-state");
+      case ServerConnectionState.RECONNECTING:
+        return this.localize("reconnecting-server-state");
+      case ServerConnectionState.DISCONNECTING:
+        return this.localize("disconnecting-server-state");
+      case ServerConnectionState.DISCONNECTED:
+      default:
+        return this.localize("disconnected-server-state");
+    }
+  }
+
+  localizeConnectButtonLabel(state: ServerConnectionState): string {
+    if (!this.localize) return "";
+
+    switch (state) {
+      case ServerConnectionState.CONNECTING:
+      case ServerConnectionState.CONNECTED:
+      case ServerConnectionState.RECONNECTING:
+        return this.localize("disconnect-button-label");
+      case ServerConnectionState.DISCONNECTING:
+      case ServerConnectionState.DISCONNECTED:
+      default:
+        return this.localize("connect-button-label");
+    }
+  }
+
+  computeConnectButtonDisabled(disabled: boolean, state: ServerConnectionState): boolean {
+    return disabled || state === ServerConnectionState.CONNECTING || state === ServerConnectionState.DISCONNECTING;
+  }
+
+  computeExpandedClassName(expanded: boolean): string {
+    return expanded ? "expanded" : "";
   }
 }

@@ -11,13 +11,13 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from '@polymer/decorators';
-import {html, PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {customElement, property} from "@polymer/decorators";
+import {html, PolymerElement} from "@polymer/polymer";
+import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 
-import {ServerConnectionState} from './server_connection_viz';
-@customElement('server-card') export class ServerCard extends LegacyElementMixin
-(PolymerElement) {
+import {ServerConnectionState} from "./server_connection_viz";
+@customElement("server-card")
+export class ServerCard extends LegacyElementMixin(PolymerElement) {
   static template = html`
     <style>
       :host {
@@ -119,57 +119,46 @@ import {ServerConnectionState} from './server_connection_viz';
         }
       }
     </style>
-    <paper-card class\$="[[expandedClassName]]">
+    <paper-card class$="[[expandedClassName]]">
       <div class="card-header">
-        <server-connection-viz 
+        <server-connection-viz
           state="[[state]]"
           root-path="[[rootPath]]"
-          hidden\$="[[expanded]]"
+          hidden$="[[expanded]]"
         ></server-connection-viz>
         <div id="serverInfo">
           <div id="serverName">[[localizedServerName]]</div>
           <div id="serverAddress">[[serverAddress]]</div>
         </div>
         <paper-menu-button horizontal-align="right" close-on-activate="true">
-          <paper-icon-button 
-            icon="icons:more-vert"
-            slot="dropdown-trigger"
-          ></paper-icon-button>
-          <paper-listbox 
+          <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+          <paper-listbox
             id="menu"
             slot="dropdown-content"
             on-iron-activate="onMenuItemPressed"
             attr-for-selected="name"
           >
-            <paper-item name="rename">[[localize('server-rename')]]</paper-item>
-            <paper-item name="forget">[[localize('server-forget')]]</paper-item>
+            <paper-item name="rename">[[localizedServerRename]]</paper-item>
+            <paper-item name="forget">[[localizedServerForget]]</paper-item>
           </paper-listbox>
         </paper-menu-button>
       </div>
-      <div class="card-content" hidden\$="[[!expanded]]">
+      <div class="card-content" hidden$="[[!expanded]]">
         <div>
-          <paper-button 
+          <paper-button
             id="server-visualization-button"
             on-tap="onConnectToggled"
-            disabled\$="[[connectButtonDisabled]]"
+            disabled$="[[connectButtonDisabled]]"
             noink=""
           >
-            <server-connection-viz 
-              state="[[state]]"
-              root-path="[[rootPath]]"
-              expanded=""
-            ></server-connection-viz>
+            <server-connection-viz state="[[state]]" root-path="[[rootPath]]" expanded=""></server-connection-viz>
           </paper-button>
         </div>
-        <div class\$="status-message [[state]]">[[statusMessage]]</div>
+        <div class$="status-message [[state]]">[[statusMessage]]</div>
       </div>
       <div class="card-actions">
         <div id="errorMessage">[[errorMessage]]</div>
-        <paper-button
-          id="connectButton"
-          on-tap="onConnectToggled"
-          disabled\$="[[connectButtonDisabled]]"
-        >
+        <paper-button id="connectButton" on-tap="onConnectToggled" disabled$="[[connectButtonDisabled]]">
           [[connectButtonLabel]]
         </paper-button>
       </div>
@@ -182,86 +171,35 @@ import {ServerConnectionState} from './server_connection_viz';
   @property({type: Boolean}) isOutlineServer = true;
   @property({type: String}) rootPath: string;
   @property({type: String}) serverAddress: string;
-  @property({type: String}) serverId: string;
   @property({type: String}) serverName: string;
+  @property({type: String}) serverId: string;
+
+  @property({type: String}) localizedServerName: string;
+  @property({type: String}) localizedStatusMessage: string;
+  @property({type: String}) localizedConnectButtonLabel: string;
+  @property({type: String}) localizedServerRename: string;
+  @property({type: String}) localizedServerForget: string;
+
+  @property({type: Boolean}) connectButtonDisabled: boolean;
+  @property({type: String}) expandedClassName: string;
+
   @property({type: String}) state: ServerConnectionState = ServerConnectionState.DISCONNECTED;
-
-  // Need to declare localize function passed in from parent, or else
-  // localize() calls within the template won't be updated.
-
-  // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: (messageId: string) => string;
-
-  @computed('serverName', 'isOutlineServer', 'localize')
-  get localizedServerName() {
-    if (this.serverName.length) {
-      return this.serverName;
-    }
-
-    return this.localize(this.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
-  }
-
-  @computed('state', 'localize')
-  get statusMessage() {
-    if (!this.localize) return '';
-
-    switch (this.state) {
-      case ServerConnectionState.CONNECTING:
-        return this.localize('connecting-server-state');
-      case ServerConnectionState.CONNECTED:
-        return this.localize('connected-server-state');
-      case ServerConnectionState.RECONNECTING:
-        return this.localize('reconnecting-server-state');
-      case ServerConnectionState.DISCONNECTING:
-        return this.localize('disconnecting-server-state');
-      case ServerConnectionState.DISCONNECTED:
-      default:
-        return this.localize('disconnected-server-state');
-    }
-  }
-
-  @computed('state', 'localize')
-  get connectButtonLabel() {
-    if (!this.localize) return '';
-
-    switch (this.state) {
-      case ServerConnectionState.CONNECTING:
-      case ServerConnectionState.CONNECTED:
-      case ServerConnectionState.RECONNECTING:
-        return this.localize('disconnect-button-label');
-      case ServerConnectionState.DISCONNECTING:
-      case ServerConnectionState.DISCONNECTED:
-      default:
-        return this.localize('connect-button-label');
-    }
-  }
-
-  @computed('state')
-  get connectButtonDisabled() {
-    return (
-        this.disabled || this.state === ServerConnectionState.CONNECTING ||
-        this.state === ServerConnectionState.DISCONNECTING);
-  }
-
-  @computed('expanded')
-  get expandedClassName() {
-    return this.expanded ? 'expanded' : '';
-  }
 
   protected onConnectToggled() {
     const {serverId} = this;
 
-    this.state === ServerConnectionState.DISCONNECTED ? this.fire('ConnectPressed', {serverId}) :
-                                                        this.fire('DisconnectPressed', {serverId});
+    this.state === ServerConnectionState.DISCONNECTED
+      ? this.fire("ConnectPressed", {serverId})
+      : this.fire("DisconnectPressed", {serverId});
   }
 
   protected onMenuItemPressed({detail: {selected}}: CustomEvent) {
     const {serverName, serverId} = this;
 
-    if (selected === 'forget') {
-      this.fire('ForgetPressed', {serverId});
-    } else if (selected === 'rename') {
-      this.fire('ShowServerRename', {serverName, serverId});
+    if (selected === "forget") {
+      this.fire("ForgetPressed", {serverId});
+    } else if (selected === "rename") {
+      this.fire("ShowServerRename", {serverName, serverId});
     }
 
     // This can leave the pressed paper-item in the selected state,
