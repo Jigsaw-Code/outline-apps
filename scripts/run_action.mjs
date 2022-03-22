@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {path, chalk, argv} from "zx/globals";
 import url from "url";
 
 const resolveActionPath = async actionPath => {
@@ -19,16 +20,16 @@ const resolveActionPath = async actionPath => {
 
   if (!actionPath) return result;
 
-  const currentDirectory = (await $`pwd`).toString().trim();
-  const roots = [currentDirectory, `${currentDirectory}/src`];
+  const currentDirectory = process.cwd();
+  const rootsQueue = [currentDirectory, `${currentDirectory}/src`];
 
-  while (roots.length && !result) {
-    const root = roots.shift();
+  while (rootsQueue.length && !result) {
+    const root = rootsQueue.shift();
     const pathCandidate = path.resolve(root, actionPath);
-    const extensions = ["sh", "mjs"];
+    const extensionsQueue = ["sh", "mjs"];
 
-    while (extensions.length && !result) {
-      const extension = extensions.shift();
+    while (extensionsQueue.length && !result) {
+      const extension = extensionsQueue.shift();
 
       if (await fs.pathExists(`${pathCandidate}.action.${extension}`)) {
         result = `${pathCandidate}.action.${extension}`;
@@ -39,12 +40,7 @@ const resolveActionPath = async actionPath => {
   return result;
 };
 
-/**
- *
- * @param {*} actionPath
- * @returns
- */
-export async function runAction(actionPath) {
+export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
     console.info("Please provide an action to run.");
@@ -56,18 +52,18 @@ export async function runAction(actionPath) {
 
   try {
     if (resolvedPath.endsWith("mjs")) {
-      const module = await import(resolvedPath);
+      const {main} = await import(resolvedPath);
 
-      await module.main();
+      await main(...parameters);
     } else {
-      await $`bash ${resolvedPath} ${argv._.slice(2)}`;
+      await $`bash ${resolvedPath} ${parameters}`;
     }
   } catch (error) {
     console.error(error);
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
-    return $`exit 1`;
+    throw new Error("ActionFailed");
   }
 
   console.groupEnd();
@@ -78,11 +74,7 @@ export async function runAction(actionPath) {
 }
 
 async function main() {
-  const {
-    _: [thisPath, actionPath],
-  } = argv;
-
-  return runAction(actionPath);
+  return runAction(...argv._.slice(1));
 }
 
 if (import.meta.url === url.pathToFileURL(argv._[0]).href) {
