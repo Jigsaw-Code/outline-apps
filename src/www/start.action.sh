@@ -15,7 +15,7 @@
 # limitations under the License.
 set -eu
 
-run_action src/www/build browser --buildMode=debug
+npm run action src/www/build browser --buildMode=debug
 cordova prepare browser
 
 webpack serve \

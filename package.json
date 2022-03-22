@@ -2,12 +2,12 @@
   "name": "outline-client",
   "productName": "Outline",
   "scripts": {
-    "action": "bash ./scripts/run_action.sh",
-    "action:help": "npm run action",
-    "action:list": "npm run action",
+    "action": "zx ./scripts/run_action.mjs",
+    "action:help": "npm run action list",
+    "action:list": "npm run action list",
     "clean": "rm -rf build node_modules www platforms plugins",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",  
+    "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint": "npm run lint:ts",
     "lint:ts": "tslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
@@ -52,7 +52,8 @@
     "sudo-prompt": "^8.2.0",
     "url": "^0.11.0",
     "uuidv4": "^4.0.0",
-    "web-animations-js": "^2.3.1"
+    "web-animations-js": "^2.3.1",
+    "zx": "^6.0.7"
   },
   "engines": {
     "node": "^16.13.0",
