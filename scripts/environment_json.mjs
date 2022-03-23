@@ -27,26 +27,38 @@ import minimist from "minimist";
 */
 export async function environmentJson(platform, buildMode) {
   if (!platform) {
-    throw new Error("environmentJson requires a platform argument");
+    throw new TypeError("environmentJson requires a platform argument");
   }
 
   if (!(buildMode === "debug" || buildMode === "release")) {
-    throw new Error("environmentJson requires a buildMode argument of either 'debug' or 'release'");
+    throw new TypeError("environmentJson requires a buildMode argument of either 'debug' or 'release'");
   }
 
-  if (buildMode === "release" && !process.env.SENTRY_DSN) {
-    throw new Error("Release builds require SENTRY_DSN, but it is not defined.");
+  if (buildMode === "release") {
+    if (!process.env.SENTRY_DSN) {
+      throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
+    }
+
+    /*
+      the SENTRY_DSN follows a stardard URL format: 
+      https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
+    */
+    try {
+      new URL(process.env.SENTRY_DSN);
+    } catch (e) {
+      throw new TypeError(`The SENTRY_DSN ${process.env.SENTRY_DSN} is not a valid URL!`);
+    }
   }
 
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
     APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" ? "-debug" : ""}`,
-    APP_BUILD_NUMBER: await getBuildNumber(platform)
+    APP_BUILD_NUMBER: await getBuildNumber(platform),
   };
 }
 
 async function main() {
-  const { _, buildMode } = minimist(process.argv);
+  const {_, buildMode} = minimist(process.argv);
 
   const platform = _[2];
 
@@ -58,4 +70,3 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     return main();
   })();
 }
-

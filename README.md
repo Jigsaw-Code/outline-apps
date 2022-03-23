@@ -1,13 +1,14 @@
 # Outline Client
+
 [![Build Status](https://travis-ci.org/Jigsaw-Code/outline-client.svg?branch=master)](https://travis-ci.org/Jigsaw-Code/outline-client)
 
-The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS.  The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
+The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS. The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
-The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0.  Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
+The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
 
 ## Requirements for all builds
 
-All builds require [Node](https://nodejs.org/) 16, in addition to other per-platform requirements. 
+All builds require [Node](https://nodejs.org/) 16, in addition to other per-platform requirements.
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
@@ -37,10 +38,10 @@ npm run action src/www/ui_components/storybook
 
 Additional requirements for Android:
 
-* [Android Studio 2020.3.1+](https://developer.android.com/studio)
-* [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
-* Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
-* [Gradle 7.3+](https://gradle.org/install/)
+- [Android Studio 2020.3.1+](https://developer.android.com/studio)
+- [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
+- Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+- [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
 
@@ -62,18 +63,18 @@ To learn more about developing for Android, see [docs/android-development](docs/
 
 ### Building for Android with Docker
 
-A Docker image with all pre-requisites for Android builds is included.  To build:
+A Docker image with all pre-requisites for Android builds is included. To build:
 
-* Install dependencies with `./tools/build/build.sh npm ci`
-* Then build with `./tools/build/build.sh npm run action gulp -- build android`
-  
+- Install dependencies with `./tools/build/build.sh npm ci`
+- Then build with `./tools/build/build.sh npm run action gulp -- build android`
+
 ## Apple (macOS and iOS)
 
 Additional requirements for Apple:
 
-* An Apple Developer Account.  You will need to be invited to join the "Jigsaw Operations LLC" team
-* XCode 13+ ([download](https://developer.apple.com/xcode/))
-* XCode command line tools: `xcode-select --install`
+- An Apple Developer Account. You will need to be invited to join the "Jigsaw Operations LLC" team
+- XCode 13+ ([download](https://developer.apple.com/xcode/))
+- XCode command line tools: `xcode-select --install`
 
 To build for macOS (OS X), run:
 
@@ -97,35 +98,51 @@ To learn more about developing for Apple, see [docs/apple-development](docs/appl
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
-### Windows
-
 Additional requirements for building on Windows:
 
-* [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
+- [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
 
-To build the Electron clients, run:
+To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
-    npm run action src/electron/build windows
+```sh
+npm run action src/electron/build [windows|linux]
+```
 
 To run the Electron clients, run:
 
-    npm run action src/electron/start windows
+```sh
+npm run action src/electron/start [windows|linux]
+```
 
-To package the Electron clients into an installer executable, run:
+### Windows Release
 
-    npm run action src/electron/package_[linux|windows]
+To build the release version of Windows installer, you need the following additional requirements:
 
+- [Java 8+ Runtime](https://www.java.com/en/download/). This is required for the cross-platform Windows executable signing tool [Jsign](https://ebourg.github.io/jsign/). If you don't need to sign the executables, feel free to skip this.
 
 ## Error reporting
 
 To enable error reporting through [Sentry](https://sentry.io/) for local builds, run:
 
-``` bash
+```bash
 export SENTRY_DSN=[Sentry development API key]
 [platform-specific build command]
 ```
+
 Release builds on CI are configured with a production Sentry API key.
+
+## CI Environment Variables
+
+For your CI to run smoothly, you'll need the following in your ENV:
+
+- `SENTRY_DSN` - [url required](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) to enable sentry integration. Same across all platforms.
+- `RELEASES_REPOSITORY` - the username and repository name of the repository you're pushing releases to. In our case, `Jigsaw-Code/outline-releases`
+- `RELEASES_DEPLOY_KEY` - an ssh secret key for the matching releases repository public deploy key - [how to set this up](https://docs.github.com/en/developers/overview/managing-deploy-keys#setup-2)
+- `ANDROID_KEY_STORE_CONTENTS` - the base64'd contents of your [android keystore.jkr](https://developer.android.com/training/articles/keystore) file
+- `ANDROID_KEY_STORE_PASSWORD` - the password required to unlock your android keystore. We assume your key and keystore password are the same.
+- `IOS_MATCH_GIT_BASIC_AUTHORIZATION` - the base64'd username and access token necessary to access your fastlane iOS credentials [match repository](https://docs.fastlane.tools/actions/match/)
+- `IOS_MATCH_PASSWORD` - the password needed to open your match repository
 
 ## Support
 
-For support and to contact us, see: https://support.getoutline.org.  
+For support and to contact us, see: https://support.getoutline.org.

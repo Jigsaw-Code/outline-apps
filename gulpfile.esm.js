@@ -28,14 +28,8 @@ import {environmentJson} from "./scripts/environment_json.mjs";
 //
 //////////////////
 //////////////////
-const {
-  platform,
-  buildMode,
-  KEYSTORE,
-  STOREPASS,
-  KEYALIAS,
-  KEYPASS,
-} = minimist(process.argv, {boolean: true});
+const {platform, buildMode} = minimist(process.argv, {boolean: true});
+const {ANDROID_KEY_STORE_PASSWORD, ANDROID_KEY_STORE_CONTENTS} = process.env;
 
 //////////////////
 //////////////////
@@ -74,7 +68,7 @@ function buildWebApp() {
 //////////////////
 
 // "platform add" is weird: although "cordova build" will succeed without having run it first,
-// *certain things won't behave as you'd expect*, notably cordova-custom-config.
+// *certain things won't behave as you'd expect*.
 function cordovaPlatformAdd() {
   // "platform add" fails if the platform has already been added.
   return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
@@ -96,10 +90,17 @@ function cordovaCompile() {
   const platformArgs = platform === "android" ? "--gradleArg=-PcdvBuildMultipleApks=true" : "";
   const compileArgs = platform === "ios" ? "--device" : "";
   let releaseArgs = "";
-  if (buildMode === "release" && platform === "android") {
-    releaseArgs = `--release -- --keystore=${KEYSTORE} --storePassword=${STOREPASS} --alias=${KEYALIAS} --password=${KEYPASS}`;
-  } else if (buildMode === "release") {
-    releaseArgs = "--release";
+  if (buildMode === "release") {
+    if (platform === "android") {
+      if (!(ANDROID_KEY_STORE_PASSWORD && ANDROID_KEY_STORE_CONTENTS)) {
+        throw new Error(
+          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to sign an Android Release!"
+        );
+      }
+      releaseArgs = `--release -- --keystore=keystore.p12 --alias=privatekey "--storePassword=$ANDROID_KEY_STORE_PASSWORD" "--password=$ANDROID_KEY_STORE_PASSWORD"`;
+    } else {
+      releaseArgs = "--release";
+    }
   }
   return runCommand(`cordova compile ${platform} ${compileArgs} ${releaseArgs} -- ${platformArgs}`);
 }
