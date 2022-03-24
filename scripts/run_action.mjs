@@ -12,32 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {path, chalk, argv} from "zx/globals";
+import chalk from "chalk";
+import fs from "fs-extra";
+import path from "path";
+import spawnSync from "child_process";
 import url from "url";
 
 const resolveActionPath = async actionPath => {
-  let result = "";
-
-  if (!actionPath) return result;
+  if (!actionPath) return "";
 
   const currentDirectory = process.cwd();
-  const rootsQueue = [currentDirectory, `${currentDirectory}/src`];
+  const roots = [currentDirectory, `${currentDirectory}/src`];
+  const extensions = ["sh", "mjs"];
 
-  while (rootsQueue.length && !result) {
-    const root = rootsQueue.shift();
-    const pathCandidate = path.resolve(root, actionPath);
-    const extensionsQueue = ["sh", "mjs"];
+  for (const root of roots) {
+    for (const extension of extensions) {
+      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
 
-    while (extensionsQueue.length && !result) {
-      const extension = extensionsQueue.shift();
-
-      if (await fs.pathExists(`${pathCandidate}.action.${extension}`)) {
-        result = `${pathCandidate}.action.${extension}`;
+      if (await fs.pathExists(pathCandidate)) {
+        return pathCandidate;
       }
     }
   }
-
-  return result;
 };
 
 export async function runAction(actionPath, ...parameters) {
@@ -56,14 +52,14 @@ export async function runAction(actionPath, ...parameters) {
 
       await main(...parameters);
     } else {
-      await $`bash ${resolvedPath} ${parameters}`;
+      spawnSync(`bash ${resolvedPath}`, parameters);
     }
   } catch (error) {
     console.error(error);
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
-    throw new Error("ActionFailed");
+    throw new SystemError(`ActionFailed: ${error.message}`);
   }
 
   console.groupEnd();
@@ -74,9 +70,9 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  return runAction(...argv._.slice(1));
+  return runAction(...process.argv.slice(1));
 }
 
-if (import.meta.url === url.pathToFileURL(argv._[0]).href) {
+if (import.meta.url === url.pathToFileURL(process.argv[0]).href) {
   await main();
 }

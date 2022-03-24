@@ -41,19 +41,20 @@
     "@sentry/electron": "1.2.1",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
+    "chalk": "^5.0.1",
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-promise-ipc": "^2.2.4",
     "electron-updater": "^4.1.2",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^7.0.1",
+    "globby": "^13.1.1",
     "punycode": "^2.1.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
     "socks": "^1.1.10",
     "sudo-prompt": "^8.2.0",
     "url": "^0.11.0",
     "uuidv4": "^4.0.0",
-    "web-animations-js": "^2.3.1",
-    "zx": "^6.0.7"
+    "web-animations-js": "^2.3.1"
   },
   "engines": {
     "node": "^16.13.0",

@@ -1,5 +1,3 @@
-#!/usr/bin/env zx
-
 // Copyright 2022 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {globby} from "zx/globals";
+import globby from "globby";
 
 /**
  * @description returns a list of all valid actions to run
