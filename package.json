@@ -2,7 +2,7 @@
   "name": "outline-client",
   "productName": "Outline",
   "scripts": {
-    "action": "NODE_PATH=. node ./scripts/run_action.mjs",
+    "action": "node ./scripts/run_action.mjs",
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "clean": "rm -rf build node_modules www platforms plugins",

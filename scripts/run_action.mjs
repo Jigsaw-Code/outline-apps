@@ -22,10 +22,7 @@ const spawnStream = (command, parameters, logger) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters);
 
-    childProcess.stdout.on("data", data => {
-      const strData = data.toString();
-      logger(strData);
-    });
+    childProcess.stdout.on("data", data => logger(data.toString()));
 
     childProcess.on("close", code => {
       if (code === 0) {
