@@ -84,8 +84,9 @@ def configure_automatic_code_signing(platform, buildMode)
     title_case = platform
   end
 
-  automatic_code_signing(
+  update_code_signing_settings(
     use_automatic_signing: true,
+    path: "Outline.xcodeproj",
     team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
     code_sign_identity: "#{title_case} Developer"
   )
