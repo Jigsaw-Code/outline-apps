@@ -21,8 +21,7 @@ import url from "url";
 const resolveActionPath = async actionPath => {
   if (!actionPath) return "";
 
-  const currentDirectory = process.cwd();
-  const roots = [currentDirectory, `${currentDirectory}/src`];
+  const roots = [process.env.ROOT_DIR, `${process.env.ROOT_DIR}/src`];
   const extensions = ["sh", "mjs"];
 
   for (const root of roots) {
@@ -52,6 +51,7 @@ export async function runAction(actionPath, ...parameters) {
 
       await main(...parameters);
     } else {
+      // TODO: pipe output to current console.log
       spawnSync(`bash ${resolvedPath}`, parameters);
     }
   } catch (error) {
@@ -74,5 +74,8 @@ async function main() {
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[0]).href) {
+  process.env.ROOT_DIR = process.env.NODE_PATH;
+  process.env.BUILD_DIR = `${process.env.ROOT_DIR}/build`;
+
   await main();
 }
