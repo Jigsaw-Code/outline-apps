@@ -59,7 +59,6 @@ def configure_environment(platform, buildMode)
     build_configuration = "Development"
   end
 
-  disable_automatic_code_signing(path: xcodeproj)
   update_project_provisioning(
     xcodeproj: xcodeproj,
     profile: ENV["sigh_org.outline.#{platform}.client_appstore_profile-path"],
@@ -85,7 +84,7 @@ def configure_automatic_code_signing(platform, buildMode)
   end
 
   update_code_signing_settings(
-    use_automatic_signing: true,
+    use_automatic_signing: buildMode == :debug,
     path: "Outline.xcodeproj",
     team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
     code_sign_identity: "#{title_case} Developer"
