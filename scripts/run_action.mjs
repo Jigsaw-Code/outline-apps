@@ -15,8 +15,26 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import spawnSync from "child_process";
+import {spawn} from "child_process";
 import url from "url";
+
+const spawnStream = (command, parameters, logger) =>
+  new Promise((resolve, reject) => {
+    const childProcess = spawn(command, parameters);
+
+    childProcess.stdout.on("data", data => {
+      const strData = data.toString();
+      logger(strData);
+    });
+
+    childProcess.on("close", code => {
+      if (code === 0) {
+        resolve(childProcess);
+      } else {
+        reject(childProcess);
+      }
+    });
+  });
 
 const resolveActionPath = async actionPath => {
   if (!actionPath) return "";
@@ -51,15 +69,14 @@ export async function runAction(actionPath, ...parameters) {
 
       await main(...parameters);
     } else {
-      // TODO: pipe output to current console.log
-      spawnSync(`bash ${resolvedPath}`, parameters);
+      await spawnStream(resolvedPath, parameters, console.log);
     }
   } catch (error) {
     console.error(error);
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
-    throw new SystemError(`ActionFailed: ${error.message}`);
+    process.exit(1);
   }
 
   console.groupEnd();
@@ -70,11 +87,11 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  return runAction(...process.argv.slice(1));
+  return runAction(...process.argv.slice(2));
 }
 
-if (import.meta.url === url.pathToFileURL(process.argv[0]).href) {
-  process.env.ROOT_DIR = process.env.NODE_PATH;
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  process.env.ROOT_DIR = process.env.npm_config_local_prefix || process.cwd();
   process.env.BUILD_DIR = `${process.env.ROOT_DIR}/build`;
 
   await main();

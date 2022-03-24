@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import globby from "globby";
+import {globby} from "globby";
 
 /**
  * @description returns a list of all valid actions to run
