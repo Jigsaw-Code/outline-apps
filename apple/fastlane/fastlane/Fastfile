@@ -65,6 +65,7 @@ def configure_environment(platform, buildMode)
     target_filter: ".*Outline.*",
     build_configuration: build_configuration
   )
+  
   update_project_provisioning(
     xcodeproj: xcodeproj,
     profile: ENV["sigh_org.outline.#{platform}.client.VpnExtension_appstore_profile-path"],
