@@ -13,11 +13,10 @@
 // limitations under the License.
 
 import chalk from "chalk";
-import fs from "fs-extra";
+import fs from "fs";
 import path from "path";
 import {spawn} from "child_process";
 import url from "url";
-import minimist from "minimist";
 
 import {rootDir} from "./root_dir.mjs";
 
@@ -46,7 +45,7 @@ const resolveActionPath = async actionPath => {
     for (const extension of extensions) {
       const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
 
-      if (await fs.pathExists(pathCandidate)) {
+      if (fs.existsSync(pathCandidate)) {
         return pathCandidate;
       }
     }
@@ -69,10 +68,9 @@ export async function runAction(actionPath, ...parameters) {
 
       await action.main(...parameters);
     } else {
-      await spawnStream(resolvedPath, parameters);
+      await spawnStream("bash", [resolvedPath, ...parameters]);
     }
   } catch (error) {
-    console.error(error);
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -90,11 +88,7 @@ async function main() {
   process.env.ROOT_DIR = rootDir();
   process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
-  const {_} = minimist(process.argv);
-
-  console.log(_);
-
-  return runAction(..._.slice(2));
+  return runAction(...process.argv.slice(2));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
