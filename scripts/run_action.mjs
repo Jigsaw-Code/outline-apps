@@ -56,7 +56,8 @@ export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
     console.info("Please provide an action to run.");
-    return runAction("list");
+    console.info(actionPath, resolvedPath);
+    // return runAction("list");
   }
 
   const startTime = performance.now();
