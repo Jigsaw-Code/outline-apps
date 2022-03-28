@@ -91,7 +91,7 @@ def configure_automatic_code_signing(platform, buildMode)
     use_automatic_signing: buildMode == :debug,
     path: "Outline.xcodeproj",
     team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
-    code_sign_identity: "Apple Developer"
+    code_sign_identity: "Apple Development"
   )
 end
 
