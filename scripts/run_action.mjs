@@ -18,9 +18,11 @@ import path from "path";
 import {spawn} from "child_process";
 import url from "url";
 
+import {rootDir} from "./root_dir.mjs";
+
 const spawnStream = (command, parameters, logger) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters);
+    const childProcess = spawn(command, parameters, {shell: true});
 
     childProcess.stdout.on("data", data => logger(data.toString()));
 
@@ -62,9 +64,9 @@ export async function runAction(actionPath, ...parameters) {
 
   try {
     if (resolvedPath.endsWith("mjs")) {
-      const {main} = await import(resolvedPath);
+      const action = await import(resolvedPath);
 
-      await main(...parameters);
+      await action.main(...parameters);
     } else {
       await spawnStream(resolvedPath, parameters, console.log);
     }
@@ -84,12 +86,12 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
+  process.env.ROOT_DIR = rootDir();
+  process.env.BUILD_DIR = `${process.env.ROOT_DIR}/build`;
+
   return runAction(...process.argv.slice(2));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  process.env.ROOT_DIR = process.env.npm_config_local_prefix || process.cwd();
-  process.env.BUILD_DIR = `${process.env.ROOT_DIR}/build`;
-
   await main();
 }
