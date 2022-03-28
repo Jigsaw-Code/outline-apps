@@ -42,11 +42,8 @@ end
 
 # Configures code signing and provisioning in the xcode project.
 def configure_environment(platform, buildMode)
-  if !ENV["CI"] then
-    return configure_automatic_code_signing(platform, buildMode)
-  end
-
   setup_ci
+  # configure_automatic_code_signing(platform, buildMode)
   get_signing_credentials_and_provisioning_profiles(platform, buildMode)
 
   xcodeproj = "Outline.xcodeproj"
@@ -88,7 +85,7 @@ def configure_automatic_code_signing(platform, buildMode)
   end
 
   update_code_signing_settings(
-    use_automatic_signing: false,
+    use_automatic_signing: !ENV["CI"],
     path: "Outline.xcodeproj",
     team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
     code_sign_identity: "#{title_case} Developer"
