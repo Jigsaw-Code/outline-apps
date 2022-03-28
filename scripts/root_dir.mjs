@@ -19,6 +19,12 @@ import url from "url";
 const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "../..";
 
 export function rootDir() {
+  console.log(
+    import.meta.url,
+    new URL(import.meta.url).pathname,
+    path.resolve(new URL(import.meta.url).pathname, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT)
+  );
+
   return path.resolve(new URL(import.meta.url).pathname, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
 }
 
