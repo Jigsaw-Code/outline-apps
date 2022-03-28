@@ -78,20 +78,20 @@ def configure_environment(platform, buildMode)
 end
 
 def configure_automatic_code_signing(platform, buildMode)
-  # case platform
-  # when :ios
-  #   title_case = "iOS"
-  # when :mac
-  #   title_case = "MacOS"
-  # else
-  #   title_case = platform
-  # end
+  case platform
+  when :ios
+    title_case = "iOS"
+  when :mac
+    title_case = "MacOS"
+  else
+    title_case = platform
+  end
 
   update_code_signing_settings(
-    use_automatic_signing: buildMode == :debug,
+    use_automatic_signing: false,
     path: "Outline.xcodeproj",
     team_id: ENV["APPLE_DEV_PORTAL_TEAM_ID"],
-    code_sign_identity: "Apple Development"
+    code_sign_identity: "#{title_case} Developer"
   )
 end
 
