@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import path from "path";
 import url from "url";
 
-const FILE_PREFIX = "file://";
-
 // WARNING: if you move this file, you MUST update this file path
-const PATH_FROM_ROOT_TO_THIS_FILE = "/scripts/root_dir.mjs";
+const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "../..";
 
 export function rootDir() {
-  return import.meta.url.replace(FILE_PREFIX, "").replace(PATH_FROM_ROOT_TO_THIS_FILE, "");
+  return path.resolve(new URL(import.meta.url).pathname, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
 }
 
 async function main() {

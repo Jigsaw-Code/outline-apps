@@ -20,11 +20,11 @@ import url from "url";
 
 import {rootDir} from "./root_dir.mjs";
 
-const spawnStream = (command, parameters, logger) =>
+const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters, {shell: true});
 
-    childProcess.stdout.on("data", data => logger(data.toString()));
+    childProcess.stdout.on("data", data => console.info(data.toString()));
 
     childProcess.on("close", code => {
       if (code === 0) {
@@ -38,7 +38,7 @@ const spawnStream = (command, parameters, logger) =>
 const resolveActionPath = async actionPath => {
   if (!actionPath) return "";
 
-  const roots = [process.env.ROOT_DIR, `${process.env.ROOT_DIR}/src`];
+  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, "src")];
   const extensions = ["sh", "mjs"];
 
   for (const root of roots) {
@@ -68,7 +68,7 @@ export async function runAction(actionPath, ...parameters) {
 
       await action.main(...parameters);
     } else {
-      await spawnStream(resolvedPath, parameters, console.log);
+      await spawnStream(resolvedPath, parameters);
     }
   } catch (error) {
     console.error(error);
@@ -87,7 +87,7 @@ export async function runAction(actionPath, ...parameters) {
 
 async function main() {
   process.env.ROOT_DIR = rootDir();
-  process.env.BUILD_DIR = `${process.env.ROOT_DIR}/build`;
+  process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
   return runAction(...process.argv.slice(2));
 }
