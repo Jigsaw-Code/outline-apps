@@ -17,6 +17,7 @@ import fs from "fs-extra";
 import path from "path";
 import {spawn} from "child_process";
 import url from "url";
+import minimist from "minimist";
 
 import {rootDir} from "./root_dir.mjs";
 
@@ -89,7 +90,11 @@ async function main() {
   process.env.ROOT_DIR = rootDir();
   process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
-  return runAction(...process.argv.slice(2));
+  const {_} = minimist(process.argv);
+
+  console.log(_);
+
+  return runAction(..._.slice(2));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
