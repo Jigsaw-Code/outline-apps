@@ -46,6 +46,7 @@
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-promise-ipc": "^2.2.4",
     "electron-updater": "^4.1.2",
+    "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
     "punycode": "^2.1.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
