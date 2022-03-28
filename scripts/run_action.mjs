@@ -89,6 +89,8 @@ async function main() {
   process.env.ROOT_DIR = rootDir();
   process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
+  console.log(process.env.ROOT_DIR, process.env.BUILD_DIR);
+
   return runAction(...process.argv.slice(2));
 }
 
