@@ -18,18 +18,12 @@ import url from "url";
 // WARNING: if you move this file, you MUST update this file path
 const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "../..";
 
-export function rootDir() {
-  console.log(
-    import.meta.url,
-    new URL(import.meta.url).pathname,
-    path.resolve(new URL(import.meta.url).pathname, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT)
-  );
-
-  return path.resolve(new URL(import.meta.url).pathname, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
+export function rootDir(fromLocation) {
+  return path.resolve(fromLocation, RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
 }
 
 async function main() {
-  console.log(rootDir());
+  console.log(rootDir(process.argv[1]));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
