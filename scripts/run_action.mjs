@@ -18,7 +18,7 @@ import path from "path";
 import {spawn} from "child_process";
 import url from "url";
 
-import {rootDir} from "./root_dir.mjs";
+import {getRootDir} from "./get_root_dir.mjs";
 
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  process.env.ROOT_DIR = rootDir(process.argv[1]);
+  process.env.ROOT_DIR = getRootDir(process.argv[1]);
   process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
   console.log(process.env.ROOT_DIR, process.env.BUILD_DIR);
