@@ -86,7 +86,7 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  process.env.ROOT_DIR = rootDir();
+  process.env.ROOT_DIR = rootDir(process.argv[1]);
   process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
 
   console.log(process.env.ROOT_DIR, process.env.BUILD_DIR);
