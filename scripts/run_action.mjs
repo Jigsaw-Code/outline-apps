@@ -25,6 +25,7 @@ const spawnStream = (command, parameters) =>
     const childProcess = spawn(command, parameters, {shell: true});
 
     childProcess.stdout.on("data", data => console.info(data.toString()));
+    childProcess.stderr.on("data", error => console.error(chalk.red(error.toString())));
 
     childProcess.on("close", code => {
       if (code === 0) {
