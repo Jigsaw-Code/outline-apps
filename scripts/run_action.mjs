@@ -86,10 +86,8 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  process.env.ROOT_DIR = getRootDir(process.argv[1]);
-  process.env.BUILD_DIR = path.join(process.env.ROOT_DIR, "build");
-
-  console.log(process.env.ROOT_DIR, process.env.BUILD_DIR);
+  process.env.ROOT_DIR ??= getRootDir();
+  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, "build");
 
   return runAction(...process.argv.slice(2));
 }
