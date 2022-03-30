@@ -74,7 +74,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: client_ios_release_${{ github.sha }}
-          path: platforms/ios/Outline.ipa
+          path: |
+            platforms/ios/Outline.ipa
+            platforms/osx/Outline.app.dSYM.zip
           if-no-files-found: error
 
   android:
