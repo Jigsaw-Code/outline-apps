@@ -37,8 +37,8 @@ for i in "$@"; do
 done
 
 if ((STAGING_PERCENTAGE <= 0)) || ((STAGING_PERCENTAGE > 100)); then
-  echo "Staging percentage must be greater than 0 and no more than 100"
-  exit 1
+    echo "Staging percentage must be greater than 0 and no more than 100"
+    exit 1
 fi
 
 if [[ -n ${SENTRY_DSN:-} ]]; then
@@ -51,7 +51,7 @@ fi
 
 readonly WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 
-run_action src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
+node ./scripts/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 
 webpack --config=src/electron/webpack_electron_main.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
@@ -61,7 +61,7 @@ electron-icon-maker --input=resources/electron/icon.png --output=build
 
 # TODO: Move env.sh to build/electron/.
 if [[ "${PLATFORM}" == "windows" ]]; then
-cat > build/env.nsh << EOF
+    cat >build/env.nsh <<EOF
 !define RELEASE "$(node scripts/get_version.mjs windows)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
@@ -69,11 +69,10 @@ fi
 
 electron-builder $(node scripts/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
 
-
 if ((STAGING_PERCENTAGE < 100)); then
     MANIFEST_POSTFIX=
     [[ "${PLATFORM}" == "linux" ]] && MANIFEST_POSTFIX="-linux"
 
-    echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/beta${MANIFEST_POSTFIX}.yml
-    echo "stagingPercentage: $STAGING_PERCENTAGE" >> build/dist/latest${MANIFEST_POSTFIX}.yml
+    echo "stagingPercentage: $STAGING_PERCENTAGE" >>build/dist/beta${MANIFEST_POSTFIX}.yml
+    echo "stagingPercentage: $STAGING_PERCENTAGE" >>build/dist/latest${MANIFEST_POSTFIX}.yml
 fi
