@@ -17,6 +17,16 @@ import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mix
 
 import {ServerConnectionState} from "./server_connection_viz";
 
+export interface ServerCardModel {
+  disabled: boolean;
+  errorMessageId: string;
+  isOutlineServer: boolean;
+  address: string;
+  id: string;
+  name: string;
+  state: ServerConnectionState;
+}
+
 @customElement("server-card")
 export class ServerCard extends LegacyElementMixin(PolymerElement) {
   static template = html`

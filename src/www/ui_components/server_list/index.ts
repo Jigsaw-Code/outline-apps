@@ -14,18 +14,7 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerCard} from "./server_card";
-import {ServerConnectionState} from "./server_card/server_connection_viz";
-
-export interface ServerCardModel {
-  disabled: boolean;
-  errorMessageId: string;
-  isOutlineServer: boolean;
-  address: string;
-  id: string;
-  name: string;
-  state: ServerConnectionState;
-}
+import {ServerCardModel} from "../server_card";
 
 @customElement("server-list")
 export class ServerList extends PolymerElement {
