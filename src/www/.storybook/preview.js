@@ -25,4 +25,7 @@ export const parameters = {
   docs: {
     inlineStories: false,
   },
+  actions: {
+    handles: ["mouseover", "click"],
+  },
 };
