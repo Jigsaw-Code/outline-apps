@@ -3,7 +3,7 @@ import {ServerConnectionState, ServerConnectionViz} from "./index";
 import {html} from "lit-html";
 
 export default {
-  title: "Server Connection Vizualization",
+  title: "Server Card/Server Connection Vizualization",
   component: "server-connection-viz",
   args: {
     state: ServerConnectionState.INITIAL,
