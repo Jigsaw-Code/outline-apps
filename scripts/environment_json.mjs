@@ -38,7 +38,7 @@ export async function environmentJson(platform, buildMode) {
     if (!process.env.SENTRY_DSN) {
       throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
     }
-    
+
     /*
       the SENTRY_DSN follows a stardard URL format: 
       https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
@@ -53,12 +53,12 @@ export async function environmentJson(platform, buildMode) {
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
     APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" ? "-debug" : ""}`,
-    APP_BUILD_NUMBER: await getBuildNumber(platform)
+    APP_BUILD_NUMBER: await getBuildNumber(platform),
   };
 }
 
 async function main() {
-  const { _, buildMode } = minimist(process.argv);
+  const {_, buildMode} = minimist(process.argv);
 
   const platform = _[2];
 
@@ -70,4 +70,3 @@ if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
     return main();
   })();
 }
-
