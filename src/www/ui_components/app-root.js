@@ -45,7 +45,7 @@ import "./licenses-view.js";
 import "./outline-icons.js";
 import "./privacy-view.js";
 import "./server_list.ts";
-import "./server_card/server_card.ts";
+import "./server_card";
 import "./server_card/server_connection_viz";
 import "./servers-view.js";
 import "./server-rename-dialog.js";

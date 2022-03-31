@@ -14,7 +14,7 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerCard} from "./server_card/server_card";
+import {ServerCard} from "./server_card";
 import {ServerConnectionState} from "./server_card/server_connection_viz";
 
 export interface ServerCardModel {
