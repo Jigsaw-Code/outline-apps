@@ -10,5 +10,5 @@ export default {
       type: "web-components",
       configDir: "./src/www/.storybook",
     }),
-  ]
+  ],
 };
