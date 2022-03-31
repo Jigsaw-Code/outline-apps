@@ -13,8 +13,9 @@
 
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
+import {ServerListItem} from "./types";
 
-import {ServerCardModel} from "../server_card";
+export * from "./types";
 
 @customElement("server-list")
 export class ServerList extends PolymerElement {
@@ -65,7 +66,7 @@ export class ServerList extends PolymerElement {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) rootPath: string;
-  @property({type: Array}) servers: ServerCardModel[] = [];
+  @property({type: Array}) servers: ServerListItem[] = [];
 
   @computed("servers")
   get hasSingleServer() {

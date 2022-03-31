@@ -15,7 +15,8 @@
 import * as errors from "../model/errors";
 import * as events from "../model/events";
 import {Server} from "../model/server";
-import {ServerConnectionState, ServerCardModel} from "../ui_components/server_card";
+import {ServerConnectionState} from "../ui_components/server_card";
+import {ServerListItem} from "../ui_components/server_list";
 
 import {Clipboard} from "./clipboard";
 import {EnvironmentVariables} from "./environment";
@@ -471,7 +472,7 @@ export class App {
 
   // Helpers:
 
-  private makeServerCardModel(server: Server): ServerCardModel {
+  private makeServerListItem(server: Server): ServerListItem {
     return {
       disabled: false,
       errorMessageId: server.errorMessageId,
@@ -484,7 +485,7 @@ export class App {
   }
 
   private syncServersToUI() {
-    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerCardModel);
+    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem);
   }
 
   private syncConnectivityStateToServerCards() {
@@ -553,10 +554,10 @@ export class App {
 
   private updateServerCard(id: string, properties: object) {
     // We have to create a new list so the property change is observed.
-    this.rootEl.servers = this.rootEl.servers.map((cardModel: ServerCardModel) => {
+    this.rootEl.servers = this.rootEl.servers.map((cardModel: ServerListItem) => {
       if (cardModel.id === id) {
         // Create a new object so the change is reflected in the server_card view.
-        return {...cardModel, ...properties} as ServerCardModel;
+        return {...cardModel, ...properties} as ServerListItem;
       } else {
         return cardModel;
       }

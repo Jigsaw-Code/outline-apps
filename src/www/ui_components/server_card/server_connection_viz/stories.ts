@@ -15,7 +15,8 @@
   limitations under the License.
 */
 
-import {ServerConnectionState, ServerConnectionViz} from "./index";
+import {ServerConnectionViz} from "./index";
+import {ServerConnectionState} from "./types";
 import {html} from "lit-html";
 
 export default {
