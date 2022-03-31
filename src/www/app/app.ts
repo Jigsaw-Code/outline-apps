@@ -15,8 +15,7 @@
 import * as errors from "../model/errors";
 import * as events from "../model/events";
 import {Server} from "../model/server";
-import {ServerConnectionState} from "../ui_components/server_card/server_connection_viz";
-import {ServerCardModel} from "../ui_components/server_list";
+import {ServerConnectionState, ServerCardModel} from "../ui_components/server_card";
 
 import {Clipboard} from "./clipboard";
 import {EnvironmentVariables} from "./environment";

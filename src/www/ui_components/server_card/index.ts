@@ -17,6 +17,8 @@ import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mix
 
 import {ServerConnectionState} from "./server_connection_viz";
 
+export * from "./server_connection_viz";
+
 export interface ServerCardModel {
   disabled: boolean;
   errorMessageId: string;
