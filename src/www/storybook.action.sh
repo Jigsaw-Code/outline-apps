@@ -15,11 +15,4 @@
 # limitations under the License.
 set -eu
 
-node ./scripts/run_action.mjs src/www/build browser --buildMode=debug
-cordova prepare browser
-
-webpack serve \
-    --mode=development \
-    --static=platforms/browser/www \
-    --config=src/www/webpack_cordova.mjs \
-    --open /index_cordova.html
+web-dev-server --node-resolve --open --watch --root-dir ./src/www

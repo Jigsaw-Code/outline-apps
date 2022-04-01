@@ -92,7 +92,6 @@ jobs:
           name: client_linux_release_${{ github.sha }}
           path: build/dist
           if-no-files-found: error
-
   android:
     name: Build Client Android Release Candidate
     runs-on: ubuntu-20.04
