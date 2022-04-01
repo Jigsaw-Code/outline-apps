@@ -13,10 +13,11 @@
 
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
+
 import Sortable from "sortablejs";
 
 import {ServerCard} from "./server_card";
-import {ServerConnectionState} from "./server_connection_viz";
+import {ServerConnectionState} from "./server_card/server_connection_viz";
 
 export interface ServerCardModel {
   disabled: boolean;
