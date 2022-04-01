@@ -36,7 +36,6 @@ import "@polymer/paper-item/paper-item.js";
 import "@polymer/paper-item/paper-icon-item.js";
 import "@polymer/paper-listbox/paper-listbox.js";
 import "@polymer/paper-toast/paper-toast.js";
-
 import "outline-i18n/index.js";
 import "./about-view.js";
 import "./add-server-view.js";
@@ -46,8 +45,8 @@ import "./licenses-view.js";
 import "./outline-icons.js";
 import "./privacy-view.js";
 import "./server_list.ts";
-import "./server_card.ts";
-import "./server_connection_viz.ts";
+import "./server_card";
+import "./server_card/server_connection_viz";
 import "./servers-view.js";
 import "./server-rename-dialog.js";
 import "./user-comms-dialog.js";
