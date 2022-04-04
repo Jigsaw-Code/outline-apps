@@ -28,7 +28,7 @@ export default {
   title: "Server List",
   component: "server-list",
   args: {
-    locale: "en",
+    locale: "English",
     servers: [
       {
         name: "My Cool Server 1",

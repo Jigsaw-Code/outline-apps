@@ -17,4 +17,4 @@
 
 import * as locales from "../messages";
 
-export const localizerFactory = (locale = "en") => messageId => locales[locale][messageId];
+export const localizerFactory = (locale = "English") => messageId => locales[locale][messageId];

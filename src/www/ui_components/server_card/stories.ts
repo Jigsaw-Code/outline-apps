@@ -31,7 +31,7 @@ export default {
     serverAddress: "1.0.0.127",
     state: ServerConnectionState.INITIAL,
     expanded: false,
-    locale: "en",
+    locale: "English",
   },
   argTypes: {
     state: {
