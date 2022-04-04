@@ -17,7 +17,8 @@
 
 import {ServerConnectionState} from "./server_connection_viz";
 import {html} from "lit-html";
-import {localize} from "../../.storybook/localize";
+import {localizerFactory} from "../../.storybook/localizer_factory";
+import * as locales from "../../messages";
 
 import "./index";
 import {ServerCard} from "./index";
@@ -30,6 +31,7 @@ export default {
     serverAddress: "1.0.0.127",
     state: ServerConnectionState.INITIAL,
     expanded: false,
+    locale: "en",
   },
   argTypes: {
     state: {
@@ -39,13 +41,17 @@ export default {
     expanded: {
       control: "boolean",
     },
+    locale: {
+      control: "select",
+      options: Object.keys(locales),
+    },
   },
 };
 
-export const Example = ({serverName, serverAddress, state, expanded}: ServerCard) => {
+export const Example = ({locale, serverName, serverAddress, state, expanded}: ServerCard & {locale: string}) => {
   return html`
     <server-card
-      .localize=${localize}
+      .localize=${localizerFactory(locale)}
       server-name="${serverName}"
       server-address="${serverAddress}"
       .state="${state ?? ServerConnectionState.INITIAL}"

@@ -19,7 +19,8 @@ import {html} from "lit-html";
 
 import "./index";
 import {ServerList} from "./index";
-import {localize} from "../../.storybook/localize";
+import {localizerFactory} from "../../.storybook/localizer_factory";
+import * as locales from "../../messages";
 
 import {ServerConnectionState} from "../server_card";
 
@@ -27,6 +28,7 @@ export default {
   title: "Server List",
   component: "server-list",
   args: {
+    locale: "en",
     servers: [
       {
         name: "My Cool Server 1",
@@ -49,10 +51,14 @@ export default {
     servers: {
       control: "object",
     },
+    locale: {
+      control: "select",
+      options: Object.keys(locales),
+    },
   },
 };
 
-export const Example = ({servers}: ServerList) =>
+export const Example = ({locale, servers}: ServerList & {locale: string}) =>
   html`
-    <server-list .localize="${localize}" .servers="${servers}"></server-list>
+    <server-list .localize="${localizerFactory(locale)}" .servers="${servers}"></server-list>
   `;

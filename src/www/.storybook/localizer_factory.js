@@ -1,3 +1,4 @@
+/* tslint:disable */
 /*
   Copyright 2022 The Outline Authors
 
@@ -14,15 +15,6 @@
   limitations under the License.
 */
 
-const TEST_MESSAGES: {[messageId: string]: string} = {
-  "server-rename": "Rename",
-  "server-forget": "Remove",
-  "connect-button-label": "Connect",
-  "disconnect-button-label": "Disconnect",
-  "disconnected-server-state": "Disconnected",
-  "server-default-name-outline": "My Outline Server",
-  "default-name-outline": "My Server",
-  "connected-server-state": "Connected",
-};
+import * as locales from "../messages";
 
-export const localize = (messageId: string): string => TEST_MESSAGES[messageId];
+export const localizerFactory = (locale = "en") => messageId => locales[locale][messageId];
