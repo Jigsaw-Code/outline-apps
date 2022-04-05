@@ -17,8 +17,6 @@
 
 import {ServerConnectionState} from "./server_connection_viz";
 import {html} from "lit-html";
-import {localizerFactory} from "../../.storybook/localizer_factory";
-import * as locales from "../../messages";
 
 import "./index";
 import {ServerCard} from "./index";
@@ -41,17 +39,26 @@ export default {
     expanded: {
       control: "boolean",
     },
-    locale: {
-      control: "select",
-      options: Object.keys(locales),
-    },
   },
 };
 
-export const Example = ({locale, serverName, serverAddress, state, expanded}: ServerCard & {locale: string}) => {
+const TEST_MESSAGES: {[messageId: string]: string} = {
+  "server-rename": "Rename",
+  "server-forget": "Remove",
+  "connect-button-label": "Connect",
+  "disconnect-button-label": "Disconnect",
+  "disconnected-server-state": "Disconnected",
+  "server-default-name-outline": "My Outline Server",
+  "default-name-outline": "My Server",
+  "connected-server-state": "Connected",
+};
+
+const localize = (messageId: string): string => TEST_MESSAGES[messageId];
+
+export const Example = ({serverName, serverAddress, state, expanded}: ServerCard & {locale: string}) => {
   return html`
     <server-card
-      .localize=${localizerFactory(locale)}
+      .localize=${localize}
       server-name="${serverName}"
       server-address="${serverAddress}"
       .state="${state ?? ServerConnectionState.INITIAL}"

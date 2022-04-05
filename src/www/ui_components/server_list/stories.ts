@@ -19,8 +19,6 @@ import {html} from "lit-html";
 
 import "./index";
 import {ServerList} from "./index";
-import {localizerFactory} from "../../.storybook/localizer_factory";
-import * as locales from "../../messages";
 
 import {ServerConnectionState} from "../server_card";
 
@@ -28,7 +26,6 @@ export default {
   title: "Server List",
   component: "server-list",
   args: {
-    locale: "English",
     servers: [
       {
         name: "My Cool Server 1",
@@ -51,14 +48,23 @@ export default {
     servers: {
       control: "object",
     },
-    locale: {
-      control: "select",
-      options: Object.keys(locales),
-    },
   },
 };
 
-export const Example = ({locale, servers}: ServerList & {locale: string}) =>
+const TEST_MESSAGES: {[messageId: string]: string} = {
+  "server-rename": "Rename",
+  "server-forget": "Remove",
+  "connect-button-label": "Connect",
+  "disconnect-button-label": "Disconnect",
+  "disconnected-server-state": "Disconnected",
+  "server-default-name-outline": "My Outline Server",
+  "default-name-outline": "My Server",
+  "connected-server-state": "Connected",
+};
+
+const localize = (messageId: string): string => TEST_MESSAGES[messageId];
+
+export const Example = ({servers}: ServerList & {locale: string}) =>
   html`
-    <server-list .localize="${localizerFactory(locale)}" .servers="${servers}"></server-list>
+    <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;
