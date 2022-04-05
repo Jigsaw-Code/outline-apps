@@ -64,7 +64,7 @@ const TEST_MESSAGES: {[messageId: string]: string} = {
 
 const localize = (messageId: string): string => TEST_MESSAGES[messageId];
 
-export const Example = ({servers}: ServerList & {locale: string}) =>
+export const Example = ({servers}: ServerList) =>
   html`
     <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;

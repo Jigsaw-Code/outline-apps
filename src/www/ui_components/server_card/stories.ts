@@ -55,7 +55,7 @@ const TEST_MESSAGES: {[messageId: string]: string} = {
 
 const localize = (messageId: string): string => TEST_MESSAGES[messageId];
 
-export const Example = ({serverName, serverAddress, state, expanded}: ServerCard & {locale: string}) => {
+export const Example = ({serverName, serverAddress, state, expanded}: ServerCard) => {
   return html`
     <server-card
       .localize=${localize}

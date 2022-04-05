@@ -15,9 +15,9 @@ import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 
-import {ServerConnectionState} from "./server_connection_viz";
+import {ServerConnectionState as LocalServerConnectionState} from "./server_connection_viz";
 
-export * from "./server_connection_viz";
+export const ServerConnectionState = LocalServerConnectionState;
 
 @customElement("server-card")
 export class ServerCard extends LegacyElementMixin(PolymerElement) {
@@ -176,7 +176,7 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
   @property({type: String}) serverAddress: string;
   @property({type: String}) serverId: string;
   @property({type: String}) serverName: string;
-  @property({type: String}) state: ServerConnectionState = ServerConnectionState.DISCONNECTED;
+  @property({type: String}) state: LocalServerConnectionState = LocalServerConnectionState.DISCONNECTED;
 
   // Need to declare localize function passed in from parent, or else
   // localize() calls within the template won't be updated.
@@ -198,15 +198,15 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
     if (!this.localize) return "";
 
     switch (this.state) {
-      case ServerConnectionState.CONNECTING:
+      case LocalServerConnectionState.CONNECTING:
         return this.localize("connecting-server-state");
-      case ServerConnectionState.CONNECTED:
+      case LocalServerConnectionState.CONNECTED:
         return this.localize("connected-server-state");
-      case ServerConnectionState.RECONNECTING:
+      case LocalServerConnectionState.RECONNECTING:
         return this.localize("reconnecting-server-state");
-      case ServerConnectionState.DISCONNECTING:
+      case LocalServerConnectionState.DISCONNECTING:
         return this.localize("disconnecting-server-state");
-      case ServerConnectionState.DISCONNECTED:
+      case LocalServerConnectionState.DISCONNECTED:
       default:
         return this.localize("disconnected-server-state");
     }
@@ -217,12 +217,12 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
     if (!this.localize) return "";
 
     switch (this.state) {
-      case ServerConnectionState.CONNECTING:
-      case ServerConnectionState.CONNECTED:
-      case ServerConnectionState.RECONNECTING:
+      case LocalServerConnectionState.CONNECTING:
+      case LocalServerConnectionState.CONNECTED:
+      case LocalServerConnectionState.RECONNECTING:
         return this.localize("disconnect-button-label");
-      case ServerConnectionState.DISCONNECTING:
-      case ServerConnectionState.DISCONNECTED:
+      case LocalServerConnectionState.DISCONNECTING:
+      case LocalServerConnectionState.DISCONNECTED:
       default:
         return this.localize("connect-button-label");
     }
@@ -232,8 +232,8 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
   get connectButtonDisabled() {
     return (
       this.disabled ||
-      this.state === ServerConnectionState.CONNECTING ||
-      this.state === ServerConnectionState.DISCONNECTING
+      this.state === LocalServerConnectionState.CONNECTING ||
+      this.state === LocalServerConnectionState.DISCONNECTING
     );
   }
 
@@ -245,7 +245,7 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
   protected onConnectToggled() {
     const {serverId} = this;
 
-    this.state === ServerConnectionState.DISCONNECTED
+    this.state === LocalServerConnectionState.DISCONNECTED
       ? this.fire("ConnectPressed", {serverId})
       : this.fire("DisconnectPressed", {serverId});
   }
