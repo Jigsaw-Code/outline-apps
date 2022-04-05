@@ -15,9 +15,9 @@
   limitations under the License.
 */
 
-import {ServerConnectionViz} from "./index";
-import {ServerConnectionState} from "./types";
 import {html} from "lit-html";
+
+import {ServerConnectionViz, ServerConnectionState} from "./index";
 
 export default {
   title: "Server Card/Server Connection Vizualization",

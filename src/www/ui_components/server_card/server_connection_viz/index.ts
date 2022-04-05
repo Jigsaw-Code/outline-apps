@@ -14,9 +14,15 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
-import {ServerConnectionState} from "./types";
 
-export * from "./types";
+export enum ServerConnectionState {
+  INITIAL = "INITIAL",
+  CONNECTING = "CONNECTING",
+  CONNECTED = "CONNECTED",
+  RECONNECTING = "RECONNECTING",
+  DISCONNECTING = "DISCONNECTING",
+  DISCONNECTED = "DISCONNECTED",
+}
 
 @customElement("server-connection-viz")
 export class ServerConnectionViz extends LegacyElementMixin(PolymerElement) {

@@ -15,11 +15,10 @@
   limitations under the License.
 */
 
-import {ServerConnectionState} from "./server_connection_viz";
 import {html} from "lit-html";
 
 import "./index";
-import {ServerCard} from "./index";
+import {ServerCard, ServerConnectionState} from "./index";
 
 export default {
   title: "Server Card",
@@ -29,7 +28,6 @@ export default {
     serverAddress: "1.0.0.127",
     state: ServerConnectionState.INITIAL,
     expanded: false,
-    locale: "English",
   },
   argTypes: {
     state: {
