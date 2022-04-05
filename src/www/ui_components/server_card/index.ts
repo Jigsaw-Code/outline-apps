@@ -17,6 +17,7 @@ import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mix
 
 import {ServerConnectionState as LocalServerConnectionState} from "./server_connection_viz";
 
+/* tslint:disable-next-line:variable-name */
 export const ServerConnectionState = LocalServerConnectionState;
 
 @customElement("server-card")
