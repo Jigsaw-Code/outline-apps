@@ -17,39 +17,9 @@
 
 import {html} from "lit-html";
 
-import "./index";
+import {makeStorybookConfig} from "../../.storybook/make_storybook_config";
 import {ServerList} from "./index";
-
 import {ServerConnectionState} from "../server_card";
-
-export default {
-  title: "Server List",
-  component: "server-list",
-  args: {
-    servers: [
-      {
-        name: "My Cool Server 1",
-        address: "127.0.0.1:34873",
-        state: ServerConnectionState.INITIAL,
-      },
-      {
-        name: "My Cool Server 2",
-        address: "127.0.0.1:48094",
-        state: ServerConnectionState.CONNECTED,
-      },
-      {
-        name: "My Cool Server 3",
-        address: "127.0.0.1:12305",
-        state: ServerConnectionState.DISCONNECTING,
-      },
-    ],
-  },
-  argTypes: {
-    servers: {
-      control: "object",
-    },
-  },
-};
 
 const TEST_MESSAGES: {[messageId: string]: string} = {
   "server-rename": "Rename",
@@ -68,3 +38,30 @@ export const Example = ({servers}: ServerList) =>
   html`
     <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;
+
+export default makeStorybookConfig(ServerList, {
+  containerName: "ServerView",
+  controls: [
+    {
+      controlName: "servers",
+      controlType: "object",
+      defaultValue: [
+        {
+          name: "My Cool Server 1",
+          address: "127.0.0.1:34873",
+          state: ServerConnectionState.INITIAL,
+        },
+        {
+          name: "My Cool Server 2",
+          address: "127.0.0.1:48094",
+          state: ServerConnectionState.CONNECTED,
+        },
+        {
+          name: "My Cool Server 3",
+          address: "127.0.0.1:12305",
+          state: ServerConnectionState.DISCONNECTING,
+        },
+      ],
+    },
+  ],
+});

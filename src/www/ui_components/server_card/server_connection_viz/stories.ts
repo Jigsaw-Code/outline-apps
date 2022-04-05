@@ -15,27 +15,25 @@
   limitations under the License.
 */
 
+import {html} from "lit-html";
+import {makeStorybookConfig, StorybookControl} from "../../../.storybook/make_storybook_config";
+
 import {ServerConnectionViz} from "./index";
 import {ServerConnectionState} from "./types";
-import {html} from "lit-html";
 
-export default {
-  title: "Server Card/Server Connection Vizualization",
-  component: "server-connection-viz",
-  args: {
-    state: ServerConnectionState.INITIAL,
-    expanded: false,
+export const controls: StorybookControl[] = [
+  {
+    controlName: "state",
+    controlType: "select",
+    defaultValue: ServerConnectionState.INITIAL,
+    options: Object.keys(ServerConnectionState),
   },
-  argTypes: {
-    state: {
-      control: "select",
-      options: Object.keys(ServerConnectionState),
-    },
-    expanded: {
-      control: "boolean",
-    },
+  {
+    controlName: "expanded",
+    controlType: "boolean",
+    defaultValue: false,
   },
-};
+];
 
 export const Example = ({state, expanded}: ServerConnectionViz) =>
   html`
@@ -44,3 +42,8 @@ export const Example = ({state, expanded}: ServerConnectionViz) =>
       .expanded="${expanded}"
     ></server-connection-viz>
   `;
+
+export default makeStorybookConfig(ServerConnectionViz, {
+  containerName: "ServerView/ServerCard",
+  controls,
+});

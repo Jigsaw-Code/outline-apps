@@ -15,32 +15,11 @@
   limitations under the License.
 */
 
-import {ServerConnectionState} from "./server_connection_viz";
 import {html} from "lit-html";
 
-import "./index";
-import {ServerCard} from "./index";
-
-export default {
-  title: "Server Card",
-  component: "server-card",
-  args: {
-    serverName: "My Server",
-    serverAddress: "1.0.0.127",
-    state: ServerConnectionState.INITIAL,
-    expanded: false,
-    locale: "English",
-  },
-  argTypes: {
-    state: {
-      control: "select",
-      options: Object.keys(ServerConnectionState),
-    },
-    expanded: {
-      control: "boolean",
-    },
-  },
-};
+import {makeStorybookConfig} from "../../.storybook/make_storybook_config";
+import {ServerCard, ServerConnectionState} from "./index";
+import {controls as serverConnectionVizControls} from "./server_connection_viz/stories";
 
 const TEST_MESSAGES: {[messageId: string]: string} = {
   "server-rename": "Rename",
@@ -66,3 +45,20 @@ export const Example = ({serverName, serverAddress, state, expanded}: ServerCard
     ></server-card>
   `;
 };
+
+export default makeStorybookConfig(ServerCard, {
+  containerName: "ServerView",
+  controls: [
+    {
+      controlName: "serverName",
+      controlType: "text",
+      defaultValue: "My Server",
+    },
+    {
+      controlName: "serverAddress",
+      controlType: "text",
+      defaultValue: "1.0.0.127",
+    },
+    ...serverConnectionVizControls,
+  ],
+});
