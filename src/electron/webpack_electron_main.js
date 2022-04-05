@@ -12,39 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const path = require('path');
-const webpack = require('webpack');
+const path = require("path");
+const webpack = require("webpack");
 
-module.exports = (env) => {
-  return {
-    entry: './src/electron/index.ts',
-    target: 'electron-main',
-    node: {
-      __dirname: false,
-      __filename: false
-    },
-    mode: 'production',
-    devtool: 'inline-source-map',
-    module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: 'ts-loader',
-          exclude: /node_modules/,
-        },
+module.exports = env => {
+  return [
+    {
+      entry: "./src/electron/index.ts",
+      target: "electron-main",
+      node: {
+        __dirname: false,
+        __filename: false,
+      },
+      mode: "production",
+      devtool: "inline-source-map",
+      module: {
+        rules: [
+          {
+            test: /\.tsx?$/,
+            use: "ts-loader",
+            exclude: /node_modules/,
+          },
+        ],
+      },
+      resolve: {
+        extensions: [".tsx", ".ts", ".js"],
+      },
+      plugins: [
+        new webpack.DefinePlugin({
+          NETWORK_STACK: JSON.stringify(env.NETWORK_STACK),
+        }),
       ],
+      output: {
+        filename: "index.js",
+        path: path.resolve(__dirname, "../../build/electron/electron"),
+      },
     },
-    resolve: {
-      extensions: [ '.tsx', '.ts', '.js' ],
+    {
+      mode: "production",
+      entry: "./src/electron/preload.ts",
+      target: "electron-preload",
+      output: {
+        filename: "preload.js",
+        path: path.resolve(__dirname, "../../build/electron/electron"),
+      },
+      resolve: {
+        extensions: [".tsx", ".ts", ".js"],
+      },
+      module: {
+        rules: [
+          {
+            test: /\.tsx?$/,
+            use: "ts-loader",
+            exclude: /node_modules/,
+          },
+        ],
+      },
+      devtool: "inline-source-map",
     },
-    plugins: [
-      new webpack.DefinePlugin({
-        NETWORK_STACK: JSON.stringify(env.NETWORK_STACK),
-      }),
-    ],
-    output: {
-      filename: 'index.js',
-      path: path.resolve(__dirname, '../../build/electron/electron'),
-    },
-  }
+  ];
 };
