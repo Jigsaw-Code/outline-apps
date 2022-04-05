@@ -7,5 +7,5 @@ export interface ServerListItem {
   address: string;
   id: string;
   name: string;
-  state: typeof ServerConnectionState;
+  state: ServerConnectionState;
 }
