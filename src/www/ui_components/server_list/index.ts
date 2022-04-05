@@ -13,9 +13,9 @@
 
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
-import {ServerListItem} from "./types";
+import * as ServerListTypes from "./types";
 
-export * from "./types";
+export type ServerListItem = ServerListTypes.ServerListItem;
 
 @customElement("server-list")
 export class ServerList extends PolymerElement {
