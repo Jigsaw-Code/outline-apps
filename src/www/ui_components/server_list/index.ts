@@ -13,6 +13,7 @@
 
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
+import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 
 import {ServerConnectionState} from "../server_card";
 
@@ -27,7 +28,7 @@ export interface ServerListItem {
 }
 
 @customElement("server-list")
-export class ServerList extends PolymerElement {
+export class ServerList extends LegacyElementMixin(PolymerElement) {
   static get template() {
     return html`
       <style>

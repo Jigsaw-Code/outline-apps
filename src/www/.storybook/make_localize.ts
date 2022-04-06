@@ -16,19 +16,15 @@
 
 import IntlMessageFormat from "intl-messageformat";
 import {AppRoot} from "../ui_components/app-root";
+import {StorybookControl} from "./make_storybook_config";
 
 export type Localized<T extends object> = T & {language: string};
 
-export const languageControl = {
-  args: {
-    language: "English",
-  },
-  argTypes: {
-    language: {
-      control: "select",
-      options: Object.keys(AppRoot.properties.LANGUAGES_AVAILABLE.value),
-    },
-  },
+export const languageControl: StorybookControl = {
+  controlName: "language",
+  controlType: "select",
+  defaultValue: "English",
+  options: Object.keys(AppRoot.properties.LANGUAGES_AVAILABLE.value),
 };
 
 export async function makeLocalize(language: string) {

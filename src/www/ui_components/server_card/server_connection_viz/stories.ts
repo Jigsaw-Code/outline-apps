@@ -43,7 +43,7 @@ export const Example = ({state, expanded}: ServerConnectionViz) =>
     ></server-connection-viz>
   `;
 
-export default makeStorybookConfig(ServerConnectionViz, {
-  containerName: "ServerView/ServerCard",
+export default makeStorybookConfig(new ServerConnectionViz(), {
+  containerPath: "ServerView/ServerCard",
   controls,
 });

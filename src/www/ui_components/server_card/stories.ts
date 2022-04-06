@@ -20,6 +20,7 @@ import {html} from "lit-html";
 import {makeStorybookConfig} from "../../.storybook/make_storybook_config";
 import {Localized, languageControl, makeLocalize} from "../../.storybook/make_localize";
 import {ServerCard, ServerConnectionState} from "./index";
+import {controls as serverConnectionVizControls} from "./server_connection_viz/stories";
 
 export const Example = async ({language, serverName, serverAddress, state, expanded}: Localized<ServerCard>) => {
   const localize = await makeLocalize(language);
@@ -35,8 +36,8 @@ export const Example = async ({language, serverName, serverAddress, state, expan
   `;
 };
 
-export default makeStorybookConfig(ServerCard, {
-  containerName: "ServerView",
+export default makeStorybookConfig(new ServerCard(), {
+  containerPath: "ServerView",
   controls: [
     languageControl,
     {

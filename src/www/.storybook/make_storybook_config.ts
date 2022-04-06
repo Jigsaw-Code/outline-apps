@@ -14,6 +14,11 @@
   limitations under the License.
 */
 
+import {PolymerElement} from "@polymer/polymer";
+import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
+
+class LegacyPolymerElement extends LegacyElementMixin(PolymerElement) {}
+
 interface StorybookGenericControl<T> {
   defaultValue?: T;
   controlName: string;
@@ -42,7 +47,7 @@ export type StorybookControl =
   | StorybookObjectControl
   | StorybookBooleanControl;
 
-interface StorybookConfigOptions {
+interface MakeStorybookConfigOptions {
   containerPath?: string;
   controls: StorybookControl[];
 }
@@ -51,12 +56,12 @@ interface StorybookConfig {
   name: string;
   component: string;
   args: {[argName: string]: string | object | boolean | number | string[] | number[]};
-  argTypes: {[argName: string]: {control: string; options: []}};
+  argTypes: {[argName: string]: {control: string; options?: string[] | number[]}};
 }
 
 export function makeStorybookConfig(
-  Component: CustomElementConstructor & {is: string},
-  {controls, containerPath: containerName}: StorybookConfigOptions
+  Component: LegacyPolymerElement,
+  {controls, containerPath: containerName}: MakeStorybookConfigOptions
 ): StorybookConfig {
   const componentName = Component.constructor.name;
 
@@ -67,9 +72,13 @@ export function makeStorybookConfig(
     argTypes: {},
   };
 
-  for (const {controlName, controlType, defaultValue, options} of controls) {
-    result.args[controlName] = defaultValue;
-    result.argTypes[controlName] = {control: controlType, options};
+  for (const control of controls) {
+    result.args[control.controlName] = control.defaultValue;
+    result.argTypes[control.controlName] = {control: control.controlType};
+
+    if ("options" in control) {
+      result.argTypes[control.controlName].options = control.options;
+    }
   }
 
   return result;

@@ -29,8 +29,9 @@ export const Example = async ({language, servers}: Localized<ServerList>) => {
   return html`
     <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;
+};
 
-export default makeStorybookConfig(ServerList, {
+export default makeStorybookConfig(new ServerList(), {
   containerPath: "ServerView",
   controls: [
     languageControl,
