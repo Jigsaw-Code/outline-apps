@@ -16,7 +16,6 @@
 */
 
 import {html} from "lit-html";
-import {merge} from "lodash";
 
 import {makeStorybookConfig} from "../../.storybook/make_storybook_config";
 import {languageControl, Localized, makeLocalize} from "../../.storybook/make_localize";
@@ -34,6 +33,7 @@ export const Example = async ({language, servers}: Localized<ServerList>) => {
 export default makeStorybookConfig(ServerList, {
   containerPath: "ServerView",
   controls: [
+    languageControl,
     {
       controlName: "servers",
       controlType: "object",

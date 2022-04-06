@@ -22,27 +22,6 @@ import {Localized, languageControl, makeLocalize} from "../../.storybook/make_lo
 
 import {ServerCard, ServerConnectionState} from "./index";
 
-// export default merge(languageParameters, {
-//   title: "Server Card",
-//   component: "server-card",
-//   args: {
-//     serverName: "My Server",
-//     serverAddress: "1.0.0.127",
-//     state: ServerConnectionState.INITIAL,
-//     expanded: false,
-//     locale: "English",
-//   },
-//   argTypes: {
-//     state: {
-//       control: "select",
-//       options: Object.keys(ServerConnectionState),
-//     },
-//     expanded: {
-//       control: "boolean",
-//     },
-//   },
-// });
-
 export const Example = async ({language, serverName, serverAddress, state, expanded}: Localized<ServerCard>) => {
   const localize = await makeLocalize(language);
 
@@ -60,6 +39,7 @@ export const Example = async ({language, serverName, serverAddress, state, expan
 export default makeStorybookConfig(ServerCard, {
   containerName: "ServerView",
   controls: [
+    languageControl,
     {
       controlName: "serverName",
       controlType: "text",
