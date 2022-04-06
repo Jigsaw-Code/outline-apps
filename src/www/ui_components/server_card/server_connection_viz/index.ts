@@ -14,6 +14,7 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
+import {StorybookControl} from "../../../.storybook/make_storybook_config";
 
 export enum ServerConnectionState {
   INITIAL = "INITIAL",
@@ -291,3 +292,17 @@ export class ServerConnectionViz extends LegacyElementMixin(PolymerElement) {
     ].includes(state);
   }
 }
+
+export const controls: StorybookControl[] = [
+  {
+    controlName: "state",
+    controlType: "select",
+    defaultValue: ServerConnectionState.INITIAL,
+    options: Object.keys(ServerConnectionState),
+  },
+  {
+    controlName: "expanded",
+    controlType: "boolean",
+    defaultValue: false,
+  },
+];

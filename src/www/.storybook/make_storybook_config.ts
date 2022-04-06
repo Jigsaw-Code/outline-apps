@@ -53,7 +53,7 @@ interface MakeStorybookConfigOptions {
 }
 
 interface StorybookConfig {
-  name: string;
+  title: string;
   component: string;
   args: {[argName: string]: string | object | boolean | number | string[] | number[]};
   argTypes: {[argName: string]: {control: string; options?: string[] | number[]}};
@@ -66,8 +66,8 @@ export function makeStorybookConfig(
   const componentName = Component.constructor.name;
 
   const result: StorybookConfig = {
-    name: containerName ? `${containerName}/${componentName}` : componentName,
-    component: Component.is,
+    title: containerName ? `${containerName}/${componentName}` : componentName,
+    component: Component.localName,
     args: {},
     argTypes: {},
   };

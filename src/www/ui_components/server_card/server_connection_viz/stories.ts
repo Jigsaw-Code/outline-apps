@@ -17,23 +17,9 @@
 
 import {html} from "lit-html";
 
-import {makeStorybookConfig, StorybookControl} from "../../../.storybook/make_storybook_config";
+import {makeStorybookConfig} from "../../../.storybook/make_storybook_config";
 
-import {ServerConnectionViz, ServerConnectionState} from "./index";
-
-export const controls: StorybookControl[] = [
-  {
-    controlName: "state",
-    controlType: "select",
-    defaultValue: ServerConnectionState.INITIAL,
-    options: Object.keys(ServerConnectionState),
-  },
-  {
-    controlName: "expanded",
-    controlType: "boolean",
-    defaultValue: false,
-  },
-];
+import {ServerConnectionViz, ServerConnectionState, controls} from "./index";
 
 export const Example = ({state, expanded}: ServerConnectionViz) =>
   html`

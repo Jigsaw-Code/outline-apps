@@ -14,9 +14,9 @@
   limitations under the License.
 */
 
-import IntlMessageFormat from "intl-messageformat";
-import {AppRoot} from "../ui_components/app-root";
+// import IntlMessageFormat from "intl-messageformat";
 import {StorybookControl} from "./make_storybook_config";
+import {langNameToCode} from "../messages/languages";
 
 export type Localized<T extends object> = T & {language: string};
 
@@ -24,29 +24,31 @@ export const languageControl: StorybookControl = {
   controlName: "language",
   controlType: "select",
   defaultValue: "English",
-  options: Object.keys(AppRoot.properties.LANGUAGES_AVAILABLE.value),
+  options: Object.keys(langNameToCode),
 };
 
-export async function makeLocalize(language: string) {
+export async function makeLocalize(language: string = "English") {
+  const {code} = langNameToCode[language];
+
   let messages: {[key: string]: string};
   try {
-    messages = await (await fetch(`./messages/${language}.json`)).json();
+    messages = await import(`../messages/${code}.json`);
   } catch (e) {
     window.alert(`Could not load messages for language "${language}"`);
   }
-  return (msgId: string, ...args: string[]): string => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (messageID: string, ...args: string[]): string => {
     const params = {} as {[key: string]: any};
     for (let i = 0; i < args.length; i += 2) {
       params[args[i]] = args[i + 1];
     }
-    if (!messages || !messages[msgId]) {
+    if (!messages || !messages[messageID]) {
       // Fallback that shows message id and params.
-      return `${msgId}(${JSON.stringify(params, null, " ")})`;
+      return `${messageID}(${JSON.stringify(params, null, " ")})`;
     }
     // Ideally we would pre-parse and cache the IntlMessageFormat objects,
     // but it's ok here because it's a test app.
-    const formatter = new IntlMessageFormat(messages[msgId], language);
-    return formatter.format(params) as string;
+    // const formatter = new IntlMessageFormat(messages[messageID], language);
+    // return formatter.format(params) as string;
+    return messages[messageID];
   };
 }
