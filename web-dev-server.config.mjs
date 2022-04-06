@@ -5,6 +5,7 @@ export default {
   plugins: [
     esbuildPlugin({
       ts: true,
+      json: true,
     }),
     storybookPlugin({
       type: "web-components",

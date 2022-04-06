@@ -19,7 +19,6 @@ import {html} from "lit-html";
 
 import {makeStorybookConfig} from "../../.storybook/make_storybook_config";
 import {Localized, languageControl, makeLocalize} from "../../.storybook/make_localize";
-
 import {ServerCard, ServerConnectionState} from "./index";
 
 export const Example = async ({language, serverName, serverAddress, state, expanded}: Localized<ServerCard>) => {
