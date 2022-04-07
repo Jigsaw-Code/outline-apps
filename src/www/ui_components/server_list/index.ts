@@ -14,10 +14,9 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerCard} from "./server_card";
-import {ServerConnectionState} from "./server_card/server_connection_viz";
+import {ServerConnectionState} from "../server_card";
 
-export interface ServerCardModel {
+export interface ServerListItem {
   disabled: boolean;
   errorMessageId: string;
   isOutlineServer: boolean;
@@ -76,7 +75,7 @@ export class ServerList extends PolymerElement {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) rootPath: string;
-  @property({type: Array}) servers: ServerCardModel[] = [];
+  @property({type: Array}) servers: ServerListItem[] = [];
 
   @computed("servers")
   get hasSingleServer() {

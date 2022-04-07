@@ -18,24 +18,35 @@
 import {html} from "lit-html";
 
 import "./index";
-import {ServerCard, ServerConnectionState} from "./index";
+import {ServerList} from "./index";
+
+import {ServerConnectionState} from "../server_card";
 
 export default {
-  title: "Server Card",
-  component: "server-card",
+  title: "Server List",
+  component: "server-list",
   args: {
-    serverName: "My Server",
-    serverAddress: "1.0.0.127",
-    state: ServerConnectionState.INITIAL,
-    expanded: false,
+    servers: [
+      {
+        name: "My Cool Server 1",
+        address: "127.0.0.1:34873",
+        state: ServerConnectionState.INITIAL,
+      },
+      {
+        name: "My Cool Server 2",
+        address: "127.0.0.1:48094",
+        state: ServerConnectionState.CONNECTED,
+      },
+      {
+        name: "My Cool Server 3",
+        address: "127.0.0.1:12305",
+        state: ServerConnectionState.DISCONNECTING,
+      },
+    ],
   },
   argTypes: {
-    state: {
-      control: "select",
-      options: Object.keys(ServerConnectionState),
-    },
-    expanded: {
-      control: "boolean",
+    servers: {
+      control: "object",
     },
   },
 };
@@ -53,14 +64,7 @@ const TEST_MESSAGES: {[messageId: string]: string} = {
 
 const localize = (messageId: string): string => TEST_MESSAGES[messageId];
 
-export const Example = ({serverName, serverAddress, state, expanded}: ServerCard) => {
-  return html`
-    <server-card
-      .localize=${localize}
-      server-name="${serverName}"
-      server-address="${serverAddress}"
-      .state="${state ?? ServerConnectionState.INITIAL}"
-      .expanded="${expanded}"
-    ></server-card>
+export const Example = ({servers}: ServerList) =>
+  html`
+    <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;
-};
