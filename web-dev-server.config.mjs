@@ -5,10 +5,11 @@ export default {
   plugins: [
     esbuildPlugin({
       ts: true,
+      json: true,
     }),
     storybookPlugin({
       type: "web-components",
       configDir: "./src/www/.storybook",
     }),
-  ]
+  ],
 };

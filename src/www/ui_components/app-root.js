@@ -44,7 +44,7 @@ import "./language-view.js";
 import "./licenses-view.js";
 import "./outline-icons.js";
 import "./privacy-view.js";
-import "./server_list.ts";
+import "./server_list";
 import "./server_card";
 import "./server_card/server_connection_viz";
 import "./servers-view.js";
@@ -475,7 +475,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           ur: {id: "ur", name: "اردو", dir: "rtl"},
           vi: {id: "vi", name: "Việtnam", dir: "ltr"},
           "zh-CN": {id: "zh-CN", name: "简体中文", dir: "ltr"},
-          "zh-TW": {id: "zh-TW", name: "繁體中文‬‬‪‬", dir: "ltr"},
+          "zh-TW": {id: "zh-TW", name: "繁體中文", dir: "ltr"},
         },
       },
       language: {
@@ -582,8 +582,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       };
     }
 
-    // If cordova is not defined, we're running in Electron.
-    this.platform = cordova?.platformId ?? "Electron";
+    if (typeof cordova === "undefined") {
+      // If cordova is not defined, we're running in Electron.
+      this.platform = "Electron";
+    } else {
+      // Don't use cordova?.platformId, ReferenceError will be thrown
+      this.platform = cordova.platformId;
+    }
   }
 
   setLanguage(languageCode) {
