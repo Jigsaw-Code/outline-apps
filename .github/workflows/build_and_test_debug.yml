@@ -74,8 +74,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
-          node-version: 17
-          cache: npm
+          node-version: 16
 
       - name: Install NPM Dependencies
         run: npm ci
