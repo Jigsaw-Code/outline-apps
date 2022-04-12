@@ -67,13 +67,6 @@ function buildWebApp() {
 //////////////////
 //////////////////
 
-// "platform add" is weird: although "cordova build" will succeed without having run it first,
-// *certain things won't behave as you'd expect*.
-function cordovaPlatformAdd() {
-  // "platform add" fails if the platform has already been added.
-  return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
-}
-
 function cordovaPrepare() {
   return runCommand(`cordova prepare ${platform}`);
 }
@@ -131,7 +124,7 @@ async function writeEnvJson() {
 }
 
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
-const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
+const setupCordova = gulp.series(cordovaPrepare, xcode);
 
 export const build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
 export const setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);
