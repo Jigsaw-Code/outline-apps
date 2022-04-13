@@ -11,7 +11,7 @@ on:
       - synchronize
 
 jobs:
-  web-test:
+  web_test:
     name: Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
@@ -34,11 +34,11 @@ jobs:
       - name: Test Web App
         run: npm run action src/www/test
 
-  linux-debug-build:
+  linux_debug_build:
     name: Linux Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -62,11 +62,11 @@ jobs:
           path: build/dist
           if-no-files-found: error
 
-  windows-debug-build:
+  windows_debug_build:
     name: Windows Debug Build
     runs-on: windows-2019
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -90,11 +90,11 @@ jobs:
           path: build/dist
           if-no-files-found: error
 
-  mac-debug-build:
+  macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -111,21 +111,21 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
-      - name: Build OSX Client
+      - name: Build MacOS Client
         run: npm run action gulp build osx
 
-      - name: Upload Mac Client
+      - name: Upload MacOS Client
         uses: actions/upload-artifact@v2
         with:
-          name: client_mac_debug
+          name: client_macos_debug
           path: platforms/osx
           if-no-files-found: error
 
-  ios-debug-build:
+  ios_debug_build:
     name: iOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -155,11 +155,11 @@ jobs:
           if-no-files-found: error
 
 
-  android-debug-build:
+  android_debug_build:
     name: Android Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     env:
       ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
