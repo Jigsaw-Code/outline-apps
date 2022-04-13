@@ -67,6 +67,17 @@ function buildWebApp() {
 //////////////////
 //////////////////
 
+// "platform add" is weird: although "cordova build" will succeed without having run it first,
+// *certain things won't behave as you'd expect*.
+function cordovaPlatformAdd() {
+  // "platform add" fails if the platform has already been added. We hack macOS because pinning in package.json is breaking Windows.
+  return runCommand(
+    `test -d platforms/${platform} || cordova platform add ${
+      platform === "osx" ? "--nosave github:apache/cordova-osx#9b1480d20d6626c0f5a32294e002b87a0cb35c0a" : platform
+    }`
+  );
+}
+
 function cordovaPrepare() {
   return runCommand(`cordova prepare ${platform}`);
 }
@@ -124,7 +135,7 @@ async function writeEnvJson() {
 }
 
 const setupWebApp = gulp.series(buildWebApp, writeEnvJson);
-const setupCordova = gulp.series(cordovaPrepare, xcode);
+const setupCordova = gulp.series(cordovaPlatformAdd, cordovaPrepare, xcode);
 
 export const build = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova, cordovaCompile);
 export const setup = gulp.series(validateBuildEnvironment, setupWebApp, setupCordova);
