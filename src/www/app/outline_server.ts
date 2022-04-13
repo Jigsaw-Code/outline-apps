@@ -12,30 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
-import * as uuidv4 from 'uuidv4';
+import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from "ShadowsocksConfig";
+import uuidv4 from "uuidv4";
 
-import * as errors from '../model/errors';
-import * as events from '../model/events';
-import {Server, ServerRepository} from '../model/server';
+import * as errors from "../model/errors";
+import * as events from "../model/events";
+import {Server, ServerRepository} from "../model/server";
 
-import {ShadowsocksConfig} from './config';
-import {NativeNetworking} from './net';
-import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
+import {ShadowsocksConfig} from "./config";
+import {NativeNetworking} from "./net";
+import {Tunnel, TunnelFactory, TunnelStatus} from "./tunnel";
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS =
-      ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+  private static readonly SUPPORTED_CIPHERS = ["chacha20-ietf-poly1305", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm"];
 
   errorMessageId?: string;
   private config: ShadowsocksConfig;
 
   constructor(
-      public readonly id: string, public readonly accessKey: string, private _name: string,
-      private tunnel: Tunnel, private net: NativeNetworking,
-      private eventQueue: events.EventQueue) {
+    public readonly id: string,
+    public readonly accessKey: string,
+    private _name: string,
+    private tunnel: Tunnel,
+    private net: NativeNetworking,
+    private eventQueue: events.EventQueue
+  ) {
     this.config = accessKeyToShadowsocksConfig(accessKey);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
@@ -71,7 +74,7 @@ export class OutlineServer implements Server {
   }
 
   get isOutlineServer() {
-    return this.accessKey.includes('outline=1');
+    return this.accessKey.includes("outline=1");
   }
 
   async connect() {
@@ -126,14 +129,17 @@ interface OutlineServerJson {
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
-  public static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
-  public static readonly SERVERS_STORAGE_KEY = 'servers_v1';
+  public static readonly SERVERS_STORAGE_KEY_V0 = "servers";
+  public static readonly SERVERS_STORAGE_KEY = "servers_v1";
   private serverById!: Map<string, OutlineServer>;
-  private lastForgottenServer: OutlineServer|null = null;
+  private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-      private readonly net: NativeNetworking, private readonly createTunnel: TunnelFactory,
-      private eventQueue: events.EventQueue, private storage: Storage) {
+    private readonly net: NativeNetworking,
+    private readonly createTunnel: TunnelFactory,
+    private eventQueue: events.EventQueue,
+    private storage: Storage
+  ) {
     this.loadServers();
   }
 
@@ -178,10 +184,10 @@ export class OutlineServerRepository implements ServerRepository {
 
   undoForget(serverId: string) {
     if (!this.lastForgottenServer) {
-      console.warn('No forgotten server to unforget');
+      console.warn("No forgotten server to unforget");
       return;
     } else if (this.lastForgottenServer.id !== serverId) {
-      console.warn('id of forgotten server', this.lastForgottenServer, 'does not match', serverId);
+      console.warn("id of forgotten server", this.lastForgottenServer, "does not match", serverId);
       return;
     }
     this.serverById.set(this.lastForgottenServer.id, this.lastForgottenServer);
@@ -199,17 +205,17 @@ export class OutlineServerRepository implements ServerRepository {
     try {
       config = SHADOWSOCKS_URI.parse(accessKey);
     } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+      throw new errors.ServerUrlInvalid(error.message || "failed to parse access key");
     }
     if (config.host.isIPv6) {
-      throw new errors.ServerIncompatible('unsupported IPv6 host address');
+      throw new errors.ServerIncompatible("unsupported IPv6 host address");
     }
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
+      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || "unknown");
     }
   }
 
-  private serverFromAccessKey(accessKey: string): OutlineServer|undefined {
+  private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
       if (accessKeysMatch(accessKey, server.accessKey)) {
         return server;
@@ -234,7 +240,7 @@ export class OutlineServerRepository implements ServerRepository {
   // Loads servers from storage, raising an error if there is any problem loading.
   private loadServers() {
     if (this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
-      console.debug('server storage migrated to V1');
+      console.debug("server storage migrated to V1");
       this.loadServersV1();
       return;
     }
@@ -257,8 +263,7 @@ export class OutlineServerRepository implements ServerRepository {
     for (const serverId of Object.keys(configById)) {
       const config = configById[serverId];
       try {
-        this.loadServer(
-            {id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
+        this.loadServer({id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);
@@ -295,14 +300,13 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
-    const server =
-        new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
+    const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.
-        server.errorMessageId = 'unsupported-cipher';
+        server.errorMessageId = "unsupported-cipher";
       } else {
         throw e;
       }
@@ -323,19 +327,21 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
       name: config.tag.data,
     };
   } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+    throw new errors.ServerUrlInvalid(error.message || "failed to parse access key");
   }
 }
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
 export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
-  return SIP002_URI.stringify(makeConfig({
-    host: config.host,
-    port: config.port,
-    method: config.method,
-    password: config.password,
-    tag: config.name,
-  }));
+  return SIP002_URI.stringify(
+    makeConfig({
+      host: config.host,
+      port: config.port,
+      method: config.method,
+      password: config.password,
+      tag: config.name,
+    })
+  );
 }
 
 // Compares access keys proxying parameters.
@@ -343,8 +349,7 @@ function accessKeysMatch(a: string, b: string): boolean {
   try {
     const l = accessKeyToShadowsocksConfig(a);
     const r = accessKeyToShadowsocksConfig(b);
-    return l.host === r.host && l.port === r.port && l.password === r.password &&
-        l.method === r.method;
+    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
   }
