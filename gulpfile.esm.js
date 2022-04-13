@@ -86,7 +86,7 @@ function cordovaPrepare() {
 function xcode() {
   return runCommand(
     platform === "ios" || platform === "osx"
-      ? `rsync -avc apple/xcode/${platform}/ platforms/${platform}/`
+      ? `rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`
       : "echo not running on apple, skipping xcode rsync"
   );
 }

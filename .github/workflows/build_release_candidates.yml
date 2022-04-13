@@ -41,42 +41,6 @@ jobs:
           name: client_linux_release_${{ github.sha }}
           path: build/dist
           if-no-files-found: error
-  ios:
-    name: Build Client iOS Release Candidate
-    runs-on: macos-11
-    timeout-minutes: 15
-    environment: Client iOS Debug
-    env:
-      MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
-      # TODO(daniellacosse): turn this into a deploy key, if possible
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.IOS_MATCH_GIT_BASIC_AUTHORIZATION }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-
-      - name: Install Node
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 16
-          cache: npm
-
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
-
-      - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote -- --buildMode=release
-
-      - name: Upload iOS Release Candidate
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_ios_release_${{ github.sha }}
-          path: platforms/ios
-          if-no-files-found: error
-
   android:
     name: Build Client Android Release Candidate
     runs-on: ubuntu-20.04

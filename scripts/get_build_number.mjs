@@ -38,7 +38,7 @@ export async function getBuildNumber(platform) {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
-      } = await parseFile(`apple/xcode/${platform}/Outline/Outline-Info.plist`);
+      } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf("CFBundleVersion")];
     case "windows":
     case "linux":
@@ -48,8 +48,8 @@ export async function getBuildNumber(platform) {
 }
 
 async function main() {
-  const { _ } = minimist(process.argv);
-  
+  const {_} = minimist(process.argv);
+
   const platform = _[2];
 
   const result = await getBuildNumber(platform);
