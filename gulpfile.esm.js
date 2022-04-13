@@ -71,7 +71,12 @@ function buildWebApp() {
 // *certain things won't behave as you'd expect*.
 function cordovaPlatformAdd() {
   // "platform add" fails if the platform has already been added.
-  return runCommand(`test -d platforms/${platform} || cordova platform add ${platform}`);
+  // We pin macOS here because HEAD is broken and pinning on package.json is breaaking Windows for some reason.
+  return runCommand(
+    `test -d platforms/${platform} || cordova platform add ${
+      platform === "osx" ? "--nosave github:apache/cordova-osx#07e62a53aa6a8a828fd988bc9e884c38c3495a67" : platform
+    }`
+  );
 }
 
 function cordovaPrepare() {
