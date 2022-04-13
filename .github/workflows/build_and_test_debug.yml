@@ -114,10 +114,10 @@ jobs:
       - name: Build OSX Client
         run: npm run action gulp build osx
 
-      - name: Upload Android Client
+      - name: Upload Mac Client
         uses: actions/upload-artifact@v2
         with:
-          name: client_android_debug
+          name: client_mac_debug
           path: platforms/osx
           if-no-files-found: error
 
@@ -147,10 +147,10 @@ jobs:
           npm run action gulp setup ios
           xcodebuild -project platforms/ios/Outline.xcodeproj -configuration "Debug" -sdk "iphonesimulator"
 
-      - name: Upload Android Client
+      - name: Upload iOS Client
         uses: actions/upload-artifact@v2
         with:
-          name: client_android_debug
+          name: client_ios_debug
           path: platforms/ios
           if-no-files-found: error
 
