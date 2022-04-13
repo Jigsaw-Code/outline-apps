@@ -14,7 +14,7 @@
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
-    "codrova-osx@6.0.0": "Version-controlled platform config files at apple/xcode/osx/Outline/config.xml, apple/xcode/osx/osx.json, and apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
+    "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
     "@polymer/app-layout": "^3.1.0",
@@ -46,9 +46,10 @@
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-promise-ipc": "^2.2.4",
     "electron-updater": "^4.1.2",
-    "lit-html": "^2.2.1",
     "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
+    "intl-messageformat": "^9.12.0",
+    "lit-html": "^2.2.1",
     "punycode": "^2.1.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
     "socks": "^1.1.10",
