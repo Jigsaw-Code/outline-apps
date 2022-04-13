@@ -90,59 +90,6 @@ jobs:
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
 
-  mac-debug-build:
-    name: MacOS Debug Build
-    runs-on: macos-11
-    timeout-minutes: 10
-    needs: web-test
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-
-      - name: Install Node
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 16
-          cache: npm
-
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
-
-      - name: Build OSX Client
-        run: npm run action gulp build osx
-
-  ios-debug-build:
-    name: iOS Debug Build
-    runs-on: macos-11
-    timeout-minutes: 12
-    environment: Client iOS Debug
-    needs: web-test
-    env:
-      MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
-      # TODO(daniellacosse): turn this into a deploy key, if possible
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.IOS_MATCH_GIT_BASIC_AUTHORIZATION }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-
-      - name: Install Node
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 16
-          cache: npm
-
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
-
-      - name: Build iOS Client
-        run: npm run action apple/scripts/ios_package_remote -- --buildMode=debug
-
   android-debug-build:
     name: Android Debug Build
     runs-on: ubuntu-20.04
