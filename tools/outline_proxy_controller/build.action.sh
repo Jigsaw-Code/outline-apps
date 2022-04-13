@@ -25,7 +25,7 @@ cp -Rv tools/outline_proxy_controller/* $TEMP/
 
 # Build!
 pushd $TEMP
-docker run --rm -ti -v $TEMP:$TEMP -w $TEMP/build $DOCKER_IMAGE_NAME sh -c 'cmake .. && make'
+docker run --rm -v $TEMP:$TEMP -w $TEMP/build $DOCKER_IMAGE_NAME sh -c 'cmake .. && make'
 popd
 
 # Copy the new binary into the repo.
