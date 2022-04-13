@@ -7,10 +7,9 @@
     "noImplicitThis": true,
     "moduleResolution": "Node",
     "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "allowJs": true,
-    "typeRoots": [
-      "../node_modules/@types",
-      "./types/modules"
-    ]
+    "typeRoots": ["../node_modules/@types", "./types/modules"]
   }
 }

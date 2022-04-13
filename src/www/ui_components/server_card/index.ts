@@ -15,9 +15,9 @@ import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 
-import {ServerConnectionState} from "./server_connection_viz";
+import {ServerConnectionState as _ServerConnectionState} from "./server_connection_viz";
 
-export import ServerConnectionState = ServerConnectionState;
+export import ServerConnectionState = _ServerConnectionState;
 
 @customElement("server-card")
 export class ServerCard extends LegacyElementMixin(PolymerElement) {
