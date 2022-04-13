@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: client_linux_debug
-          path: build/dist/Outline-Client.AppImage
+          path: build/dist
           if-no-files-found: error
 
   windows-debug-build:
@@ -87,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: client_installer_windows_debug
-          path: build/dist/Outline-Client.exe
+          path: build/dist
           if-no-files-found: error
 
   mac-debug-build:
@@ -114,7 +114,46 @@ jobs:
       - name: Build OSX Client
         run: npm run action gulp build osx
 
-  # TODO(daniellacosse): restore ios debug build
+      - name: Upload Android Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_android_debug
+          path: platforms/osx
+          if-no-files-found: error
+
+  ios-debug-build:
+    name: iOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 10
+    needs: web-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build iOS Client
+        run: |
+          npm run action gulp setup ios
+          xcodebuild -project platforms/ios/Outline.xcodeproj -configuration "Debug" -sdk "iphonesimulator"
+
+      - name: Upload Android Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_android_debug
+          path: platforms/ios
+          if-no-files-found: error
+
 
   android-debug-build:
     name: Android Debug Build
@@ -151,5 +190,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: client_android_debug
-          path: platforms/android/app/build/outputs/apk
+          path: platforms/android
           if-no-files-found: error
