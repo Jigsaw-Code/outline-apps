@@ -89,7 +89,7 @@ jobs:
           name: client_installer_windows_debug
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
-          
+
   mac-debug-build:
     name: MacOS Debug Build
     runs-on: macos-11
@@ -113,6 +113,8 @@ jobs:
 
       - name: Build OSX Client
         run: npm run action gulp build osx
+
+  # TODO(daniellacosse): restore ios debug build
 
   android-debug-build:
     name: Android Debug Build
