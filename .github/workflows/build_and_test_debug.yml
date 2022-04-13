@@ -89,6 +89,30 @@ jobs:
           name: client_installer_windows_debug
           path: build/dist/Outline-Client.exe
           if-no-files-found: error
+          
+  mac-debug-build:
+    name: MacOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 10
+    needs: web-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build OSX Client
+        run: npm run action gulp build osx
 
   android-debug-build:
     name: Android Debug Build
