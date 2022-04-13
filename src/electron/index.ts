@@ -14,9 +14,9 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import * as sentry from "@sentry/electron/dist/main";
+import * as sentry from "@sentry/electron";
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from "electron";
-import * as promiseIpc from "electron-promise-ipc";
+import promiseIpc from "electron-promise-ipc";
 import {autoUpdater} from "electron-updater";
 import * as os from "os";
 import * as path from "path";
@@ -106,7 +106,6 @@ function setupWindow(): void {
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
-      preload: path.join(__dirname, "preload.js"),
     },
   });
 
