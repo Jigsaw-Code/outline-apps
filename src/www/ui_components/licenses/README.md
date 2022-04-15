@@ -12,7 +12,7 @@
 - `yarn licenses generate-disclaimer --prod > /tmp/yarn`
 - `cd www`
 - `node <path to your bower-disclaimer repo root>/build > /tmp/bower`
-- `./licenses/third_party.sh > /tmp/third_party`
-- `cat /tmp/{yarn,bower,third_party} > licenses/licenses.txt`
+- `./ui_components/licenses/third_party.sh > /tmp/third_party`
+- `cat /tmp/{yarn,bower,third_party} > ui_components/licenses/licenses.txt`
 
 Done!

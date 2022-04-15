@@ -70,7 +70,7 @@ Polymer({
         };
         // This path works in both Cordova and Electron.
         // Do *not* add a leading slash.
-        xhr.open("GET", "licenses/licenses.txt", true);
+        xhr.open("GET", "ui_components/licenses/licenses.txt", true);
         xhr.send();
       }.bind(this)
     );
