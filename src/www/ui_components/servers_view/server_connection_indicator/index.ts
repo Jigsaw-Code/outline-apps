@@ -24,8 +24,8 @@ export enum ServerConnectionState {
   DISCONNECTED = "DISCONNECTED",
 }
 
-@customElement("server-connection-viz")
-export class ServerConnectionViz extends LegacyElementMixin(PolymerElement) {
+@customElement("server-connection-indicator")
+export class ServerConnectionIndicator extends LegacyElementMixin(PolymerElement) {
   static ANIMATION_DURATION_MS = 1750;
 
   static template = html`
@@ -278,7 +278,8 @@ export class ServerConnectionViz extends LegacyElementMixin(PolymerElement) {
   private stopAnimation() {
     const elapsedAnimationMS = Date.now() - this.animationStartMS;
     const remainingAnimationMS =
-      ServerConnectionViz.ANIMATION_DURATION_MS - (elapsedAnimationMS % ServerConnectionViz.ANIMATION_DURATION_MS);
+      ServerConnectionIndicator.ANIMATION_DURATION_MS -
+      (elapsedAnimationMS % ServerConnectionIndicator.ANIMATION_DURATION_MS);
 
     this.async(() => (this.animationState = this.state), remainingAnimationMS);
   }

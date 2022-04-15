@@ -17,15 +17,14 @@
 
 import {html} from "lit-html";
 
-import "./index";
 import {ServerList} from "./index";
 
-import {ServerConnectionState} from "../server_card";
+import {ServerConnectionState} from "../server_connection_indicator";
 
-import {localize} from "../../.storybook/localize";
+import {localize} from "../../../.storybook/localize";
 
 export default {
-  title: "Server List",
+  title: "Servers View/Server List",
   component: "server-list",
   args: {
     servers: [

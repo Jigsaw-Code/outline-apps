@@ -14,7 +14,7 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerConnectionState} from "../server_card";
+import {ServerConnectionState} from "../server_connection_indicator";
 
 export interface ServerListItem {
   disabled: boolean;

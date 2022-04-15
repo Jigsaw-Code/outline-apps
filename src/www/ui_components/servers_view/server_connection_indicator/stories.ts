@@ -17,11 +17,11 @@
 
 import {html} from "lit-html";
 
-import {ServerConnectionViz, ServerConnectionState} from "./index";
+import {ServerConnectionIndicator, ServerConnectionState} from "./index";
 
 export default {
-  title: "Server Card/Server Connection Vizualization",
-  component: "server-connection-viz",
+  title: "Servers View/Server Connection Indicator",
+  component: "server-connection-indicator",
   args: {
     state: ServerConnectionState.INITIAL,
     expanded: false,
@@ -37,10 +37,10 @@ export default {
   },
 };
 
-export const Example = ({state, expanded}: ServerConnectionViz) =>
+export const Example = ({state, expanded}: ServerConnectionIndicator) =>
   html`
-    <server-connection-viz
+    <server-connection-indicator
       .state="${state ?? ServerConnectionState.INITIAL}"
       .expanded="${expanded}"
-    ></server-connection-viz>
+    ></server-connection-indicator>
   `;

@@ -16,13 +16,13 @@
 */
 
 import {html} from "lit-html";
-import {localize} from "../../.storybook/localize";
+import {localize} from "../../../.storybook/localize";
 
 import "./index";
 import {ServerCard, ServerConnectionState} from "./index";
 
 export default {
-  title: "Server Card",
+  title: "Servers View/Server Card",
   component: "server-card",
   args: {
     serverName: "My Server",
