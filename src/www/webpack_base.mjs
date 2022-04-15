@@ -60,7 +60,7 @@ export const browserConfig = {
       [
         {from: "assets", to: "assets"},
         {from: "messages", to: "messages"},
-        {from: "licenses/licenses.txt", to: "licenses"},
+        {from: "ui_components/licenses/licenses.txt", to: "ui_components/licenses"},
       ],
       {context: __dirname}
     ),
