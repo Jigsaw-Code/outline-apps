@@ -15,13 +15,13 @@
   limitations under the License.
 */
 
-import {html} from "lit-html";
+import "./index";
 
-import {ServerList} from "./index";
-
-import {ServerConnectionState} from "../server_connection_indicator";
+import {html} from "lit";
 
 import {localize} from "../../../.storybook/localize";
+import {ServerList} from "./index";
+import {ServerConnectionState} from "../server_connection_indicator";
 
 export default {
   title: "Servers View/Server List",

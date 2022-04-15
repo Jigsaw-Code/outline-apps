@@ -129,11 +129,11 @@ Polymer({
     },
   },
 
-  _computeShouldShowZeroState: function(servers: ServerListItem[]) {
+  _computeShouldShowZeroState(servers: ServerListItem[]) {
     return !!servers ? servers.length === 0 : false;
   },
 
-  _requestPromptAddServer: function() {
+  _requestPromptAddServer() {
     this.fire("PromptAddServerRequested", {});
   },
 });

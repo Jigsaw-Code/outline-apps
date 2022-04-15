@@ -44,10 +44,7 @@ import "./language-view.js";
 import "./licenses-view.js";
 import "./outline-icons.js";
 import "./privacy-view.js";
-import "./server_list";
-import "./server_card";
-import "./server_card/server_connection_viz";
-import "./servers-view.js";
+import "./servers_view";
 import "./server-rename-dialog.js";
 import "./user-comms-dialog.js";
 

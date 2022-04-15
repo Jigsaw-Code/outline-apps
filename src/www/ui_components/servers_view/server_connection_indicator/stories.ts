@@ -15,7 +15,9 @@
   limitations under the License.
 */
 
-import {html} from "lit-html";
+import "./index";
+
+import {html} from "lit";
 
 import {ServerConnectionIndicator, ServerConnectionState} from "./index";
 
