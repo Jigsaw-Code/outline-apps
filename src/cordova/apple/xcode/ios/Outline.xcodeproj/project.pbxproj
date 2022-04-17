@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -32,11 +32,11 @@
 		FC8804E3235A4BE70072393B /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */; };
 		FC8C30DF1FA78FA9004262BE /* Sentry.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30DE1FA78FA9004262BE /* Sentry.framework */; };
 		FC8C30E01FA78FA9004262BE /* Sentry.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30DE1FA78FA9004262BE /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30F31FA7C2F4004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.framework */; };
-		FC8C30F41FA7C2F4004262BE /* CocoaLumberjack.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30F51FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.framework */; };
-		FC8C30F61FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30F71FA7C300004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.framework */; };
+		FC8C30F31FA7C2F4004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.xcframework */; };
+		FC8C30F41FA7C2F4004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30F51FA7C2F4004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.xcframework */; };
+		FC8C30F61FA7C2F4004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30F71FA7C300004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.xcframework */; };
 		FC8C31091FAA8032004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */; };
 		FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 		FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
@@ -99,8 +99,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FC8C30E01FA78FA9004262BE /* Sentry.framework in Embed Frameworks */,
-				FC8C30F61FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
-				FC8C30F41FA7C2F4004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
+				FC8C30F61FA7C2F4004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
+				FC8C30F41FA7C2F4004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,8 +148,8 @@
 		FC28C2B020222681005FD743 /* OutlineTunnelStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnelStore.swift; path = Outline/Resources/vpn/OutlineTunnelStore.swift; sourceTree = SOURCE_ROOT; };
 		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
 		FC8C30DE1FA78FA9004262BE /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.framework"; sourceTree = "<group>"; };
-		FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.framework"; sourceTree = "<group>"; };
-		FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjackSwift.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.framework"; sourceTree = "<group>"; };
+		FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjack.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.xcframework"; sourceTree = "<group>"; };
+		FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjackSwift.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.xcframework"; sourceTree = "<group>"; };
 		FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
 		FC8C310A1FAA814A004262BE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -163,9 +163,9 @@
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
 				FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */,
 				FC8804E3235A4BE70072393B /* Tun2socks.framework in Frameworks */,
-				FC8C30F51FA7C2F4004262BE /* CocoaLumberjackSwift.framework in Frameworks */,
+				FC8C30F51FA7C2F4004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */,
 				1CE7466BA73B4CCB838EBE21 /* libz.tbd in Frameworks */,
-				FC8C30F31FA7C2F4004262BE /* CocoaLumberjack.framework in Frameworks */,
+				FC8C30F31FA7C2F4004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,7 +176,7 @@
 				FC1ED84E220B8D8F0086CC4C /* Tun2socks.framework in Frameworks */,
 				FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */,
 				3B0347611F212F6900C8EF1F /* libz.tbd in Frameworks */,
-				FC8C30F71FA7C300004262BE /* CocoaLumberjack.framework in Frameworks */,
+				FC8C30F71FA7C300004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,8 +255,8 @@
 				FC1ED84B220B8D8F0086CC4C /* Tun2socks.framework */,
 				FC8C310A1FAA814A004262BE /* NetworkExtension.framework */,
 				941052A220F54953928FF2E2 /* libz.tbd */,
-				FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.framework */,
-				FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.framework */,
+				FC8C30EE1FA7C2D7004262BE /* CocoaLumberjack.xcframework */,
+				FC8C30EF1FA7C2D7004262BE /* CocoaLumberjackSwift.xcframework */,
 				FC8C30DE1FA78FA9004262BE /* Sentry.framework */,
 			);
 			name = Frameworks;
@@ -666,7 +666,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -712,7 +716,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
