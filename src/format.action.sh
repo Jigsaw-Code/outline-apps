@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 set -eu
 
-rm -rf build node_modules www platforms plugins
+pretty-quick --staged --pattern "**/*.{cjs,mjs,html,js,json,md,ts}"

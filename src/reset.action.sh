@@ -16,4 +16,5 @@
 
 set -eu
 
-tslint "src/**/*.ts" "$@"
+npm run action clean
+npm ci
