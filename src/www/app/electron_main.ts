@@ -17,7 +17,7 @@ import "@webcomponents/webcomponentsjs/webcomponents-bundle.js";
 
 import * as sentry from "@sentry/electron";
 import {clipboard, ipcRenderer} from "electron";
-import * as promiseIpc from "electron-promise-ipc";
+import promiseIpc from "electron-promise-ipc";
 import * as os from "os";
 
 import {AbstractClipboard} from "./clipboard";
