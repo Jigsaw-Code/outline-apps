@@ -15,6 +15,9 @@ jobs:
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
+      - name: Support longpaths
+        run: git config --system core.longpaths true
+
       - name: Checkout
         uses: actions/checkout@v2.3.4
 

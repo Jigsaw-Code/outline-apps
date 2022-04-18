@@ -97,8 +97,8 @@
 
     <framework src="apple/lib/ios/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/ios/Sentry.framework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjack.framework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjackSwift.framework" custom="true" />
+    <framework src="apple/lib/ios/CocoaLumberjack.xcframework" custom="true" />
+    <framework src="apple/lib/ios/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
 
    <!-- macOS -->
@@ -122,7 +122,7 @@
 
     <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
     <framework src="apple/lib/macos/Sentry.framework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjack.framework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjackSwift.framework" custom="true" />
+    <framework src="apple/lib/macos/CocoaLumberjack.xcframework" custom="true" />
+    <framework src="apple/lib/macos/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
 </plugin>

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,10 +28,10 @@
 		FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC0799F82037545D00A1C822 /* ServiceManagement.framework */; };
 		FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
 		FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
-		FC1F25132049B2E40012D758 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
-		FC1F25142049B2E40012D758 /* CocoaLumberjack.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; };
-		FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
+		FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
+		FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADA216D289F00F078A5 /* Subnet.swift */; };
 		FC28C281201A93BF005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C280201A93BF005FD743 /* OutlineVpn.swift */; };
 		FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
@@ -46,11 +46,11 @@
 		FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7D56041F86969E00ABD5CA /* EventMonitor.swift */; };
 		FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; };
 		FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
-		FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; };
-		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */; };
+		FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
+		FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
+		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
 		FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */; };
 		FCDE2FB023270B8C006C5B2C /* Tun2socks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.framework */; };
 /* End PBXBuildFile section */
@@ -87,8 +87,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FC8C30DC1FA78E5E004262BE /* Sentry.framework in Embed Frameworks */,
-				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Embed Frameworks */,
-				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.framework in Embed Frameworks */,
+				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
+				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -110,8 +110,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.framework in Embed Frameworks */,
-				FC1F25142049B2E40012D758 /* CocoaLumberjack.framework in Embed Frameworks */,
+				FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
+				FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -176,8 +176,8 @@
 		FC7B59BA223C585F00828002 /* Tun2socks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tun2socks.framework; path = "Outline/Plugins/cordova-plugin-outline/Tun2socks.framework"; sourceTree = "<group>"; };
 		FC7D56041F86969E00ABD5CA /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 		FC8C30D61FA78D1A004262BE /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.framework"; sourceTree = "<group>"; };
-		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.framework"; sourceTree = "<group>"; };
-		FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjackSwift.framework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.framework"; sourceTree = "<group>"; };
+		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjack.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.xcframework"; sourceTree = "<group>"; };
+		FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjackSwift.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.xcframework"; sourceTree = "<group>"; };
 		FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
 		FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -188,10 +188,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */,
-				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.framework in Frameworks */,
+				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */,
 				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
 				70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */,
-				FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.framework in Frameworks */,
+				FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 				70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */,
 				70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */,
 				FC8C30DB1FA78E5E004262BE /* Sentry.framework in Frameworks */,
@@ -204,8 +204,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.framework in Frameworks */,
-				FC1F25132049B2E40012D758 /* CocoaLumberjack.framework in Frameworks */,
+				FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */,
+				FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +215,7 @@
 			files = (
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
 				FC7B59BB223C585F00828002 /* Tun2socks.framework in Frameworks */,
-				FC8C30EC1FA7C106004262BE /* CocoaLumberjack.framework in Frameworks */,
+				FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,8 +268,8 @@
 			children = (
 				FC7B59BA223C585F00828002 /* Tun2socks.framework */,
 				FC0799F82037545D00A1C822 /* ServiceManagement.framework */,
-				FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.framework */,
-				FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.framework */,
+				FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */,
+				FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */,
 				FC8C30D61FA78D1A004262BE /* Sentry.framework */,
 				FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */,
 				70BD686418FFB06500A1EFCF /* SystemConfiguration.framework */,
@@ -786,7 +786,10 @@
 					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n",
 				);
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -819,7 +822,10 @@
 					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n",
 				);
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -862,7 +868,10 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = OutlineLauncher/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
@@ -905,13 +914,17 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = OutlineLauncher/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -938,7 +951,11 @@
 				);
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.VpnExtension;
@@ -970,7 +987,11 @@
 				);
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.VpnExtension;
