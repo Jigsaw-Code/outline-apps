@@ -15,7 +15,7 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 import url from "url";
-import minimist from "minimist";
+import {getBuildEnvironment} from "./get_build_environment.mjs";
 
 /*
   Inputs:
@@ -50,9 +50,7 @@ export async function getVersion(platform) {
 }
 
 async function main() {
-  const {_} = minimist(process.argv);
-
-  const platform = _[2];
+  const {platform} = getBuildEnvironment(process.argv.slice(2));
 
   console.log(await getVersion(platform));
 }

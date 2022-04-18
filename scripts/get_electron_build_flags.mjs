@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import minimist from "minimist";
 import url from "url";
+import {getBuildParameters} from "./get_build_parameters.mjs";
 import {getVersion} from "./get_version.mjs";
 
 export async function getElectronBuildFlags(platform, buildMode) {
@@ -44,9 +44,7 @@ export async function getElectronBuildFlags(platform, buildMode) {
 }
 
 async function main() {
-  const {_, buildMode} = minimist(process.argv);
-
-  const platform = _[2];
+  const {platform, buildMode} = getBuildParameters(process.argv.slice(2));
 
   console.log((await getElectronBuildFlags(platform, buildMode)).join(" "));
 }

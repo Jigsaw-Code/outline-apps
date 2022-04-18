@@ -15,7 +15,7 @@
 import xml2js from "xml2js";
 import fs from "fs/promises";
 import url from "url";
-import minimist from "minimist";
+import {getBuildParameters} from "./get_build_parameters.mjs";
 
 /*
   Inputs:
@@ -48,9 +48,7 @@ export async function getBuildNumber(platform) {
 }
 
 async function main() {
-  const {_} = minimist(process.argv);
-
-  const platform = _[2];
+  const {platform} = getBuildParameters(process.argv.slice(2));
 
   const result = await getBuildNumber(platform);
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import minimist from "minimist";
 import url from "url";
+import {getBuildParameters} from "./get_build_parameters.mjs";
 
 /*
   Inputs:
@@ -29,12 +29,12 @@ export function getWebpackBuildMode(buildMode) {
     case "release":
       return "production";
     default:
-      throw new Error("get_webpack_mode requires a buildMode argument of debug or release");
+      throw new TypeError("get_webpack_mode requires a buildMode argument of debug or release");
   }
 }
 
 function main() {
-  const { buildMode } = minimist(process.argv);
+  const {buildMode} = getBuildParameters(process.argv.slice(2));
 
   const result = getWebpackBuildMode(buildMode);
 

@@ -15,7 +15,7 @@
 import {getVersion} from "./get_version.mjs";
 import {getBuildNumber} from "./get_build_number.mjs";
 import url from "url";
-import minimist from "minimist";
+import {getBuildParameters} from "./get_build_parameters.mjs";
 
 /*
   Inputs:
@@ -23,17 +23,9 @@ import minimist from "minimist";
   => buildMode: the buildMode of binary to build, i.e. debug or release
 
   Outputs:
-  => the environment.json contents
+  => the build environment object
 */
-export async function environmentJson(platform, buildMode) {
-  if (!platform) {
-    throw new TypeError("environmentJson requires a platform argument");
-  }
-
-  if (!(buildMode === "debug" || buildMode === "release")) {
-    throw new TypeError("environmentJson requires a buildMode argument of either 'debug' or 'release'");
-  }
-
+export async function getBuildEnvironment(platform, buildMode) {
   if (buildMode === "release") {
     if (!process.env.SENTRY_DSN) {
       throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
@@ -58,11 +50,9 @@ export async function environmentJson(platform, buildMode) {
 }
 
 async function main() {
-  const {_, buildMode} = minimist(process.argv);
+  const {platform, buildMode} = getBuildParameters(process.argv.slice(2));
 
-  const platform = _[2];
-
-  console.log(JSON.stringify(await environmentJson(platform, buildMode)));
+  console.log(JSON.stringify(await getBuildEnvironment(platform, buildMode)));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
