@@ -12,31 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {cordova} from "cordova-lib";
+import cordovaLib from "cordova-lib";
+const {cordova} = cordovaLib;
 
-import {runAction} from "../scripts/run_action.mjs";
+import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 
-const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
+export const requirements = ["cordova/setup"];
 
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  if (!CORDOVA_PLATFORMS.includes(platform)) {
-    throw new TypeError(
-      `The platform "${platform}" is not a valid Cordova build target. It must be one of: ${CORDOVA_PLATFORMS.join(
-        ", "
-      )}.`
-    );
-  }
-
-  if (platform === "android" && !(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+  if (
+    platform === "android" &&
+    buildMode === "release" &&
+    !(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)
+  ) {
     throw new ReferenceError(
       "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
     );
   }
-
-  await runAction("www/build", platform, `--buildMode=${buildMode}`);
-  await runAction("cordova/setup", platform, `--buildMode=${buildMode}`);
 
   await cordova.compile({
     platforms: [platform],

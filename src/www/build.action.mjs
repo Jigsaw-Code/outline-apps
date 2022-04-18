@@ -33,6 +33,9 @@ const webpackPromise = webpackConfig =>
     });
   });
 
+/**
+ * @description TODO
+ */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
@@ -40,7 +43,7 @@ export async function main(...parameters) {
   await fs.mkdir("www", {recursive: true});
   await fs.writeFile("www/environment.json", JSON.stringify(await getBuildEnvironment(platform, buildMode)));
 
-  // get correct webpack version
+  // get correct webpack config
   let webpackConfig;
 
   switch (platform) {

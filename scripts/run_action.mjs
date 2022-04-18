@@ -67,6 +67,12 @@ export async function runAction(actionPath, ...parameters) {
     if (resolvedPath.endsWith("mjs")) {
       const action = await import(resolvedPath);
 
+      if (action.requirements) {
+        for (const requiredAction of action.requirements) {
+          await runAction(requiredAction, ...parameters);
+        }
+      }
+
       await action.main(...parameters);
     } else {
       await spawnStream("bash", [resolvedPath, ...parameters]);

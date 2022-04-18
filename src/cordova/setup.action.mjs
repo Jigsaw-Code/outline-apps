@@ -13,28 +13,47 @@
 // limitations under the License.
 
 import os from "os";
+import fs from "fs";
 import {execSync} from "child_process";
-import {cordova} from "cordova-lib";
 
+import cordovaLib from "cordova-lib";
+const {cordova} = cordovaLib;
+
+import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
+
+const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
 const WORKING_CORDOVA_OSX_COMMIT = "07e62a53aa6a8a828fd988bc9e884c38c3495a67";
 
+export const requirements = ["www/build"];
+
+/**
+ * @description TODO
+ */
 export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);
   const isApple = platform === "ios" || platform === "osx";
+
+  if (!CORDOVA_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(", ")}.`
+    );
+  }
 
   if (isApple && os.platform() !== "darwin") {
     throw new SystemError("Building an Apple binary requires xcodebuild and can only be done on MacOS");
   }
 
-  if (platform === "osx") {
-    cordova.platform.add(/* TODO: runner */ "../..", [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {
-      save: false,
-    });
+  if (!fs.existsSync(`platform/${platform}`)) {
+    await cordova.platform(
+      "add",
+      [platform === "osx" ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
+      {save: false}
+    );
   }
 
   await cordova.prepare({platforms: [platform], save: false});
 
-  if (isApple && os.platform() === "darwin") {
+  if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
     execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {stdio: "inherit"});
   }
