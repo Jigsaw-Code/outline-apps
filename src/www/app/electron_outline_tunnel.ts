@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ipcRenderer} from 'electron';
-import * as promiseIpc from 'electron-promise-ipc';
+import {ipcRenderer} from "electron";
+import promiseIpc from "electron-promise-ipc";
 
-import * as errors from '../model/errors';
+import * as errors from "../model/errors";
 
-import {ShadowsocksConfig} from './config';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {ShadowsocksConfig} from "./config";
+import {Tunnel, TunnelStatus} from "./tunnel";
 
 export class ElectronOutlineTunnel implements Tunnel {
-  private statusChangeListener: ((status: TunnelStatus) => void)|null = null;
+  private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;
 
@@ -47,10 +47,10 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
 
     try {
-      await promiseIpc.send('start-proxying', {config, id: this.id});
+      await promiseIpc.send("start-proxying", {config, id: this.id});
       this.running = true;
     } catch (e) {
-      if (typeof e === 'number') {
+      if (typeof e === "number") {
         throw new errors.OutlinePluginError(e);
       } else {
         throw e;
@@ -64,7 +64,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     }
 
     try {
-      await promiseIpc.send('stop-proxying');
+      await promiseIpc.send("stop-proxying");
       this.running = false;
     } catch (e) {
       console.error(`Failed to stop tunnel ${e}`);
