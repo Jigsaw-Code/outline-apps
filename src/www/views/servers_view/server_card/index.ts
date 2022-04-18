@@ -14,10 +14,7 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
-
-import {ServerConnectionState as _ServerConnectionState} from "./server_connection_viz";
-
-export import ServerConnectionState = _ServerConnectionState;
+import {ServerConnectionState} from "../server_connection_indicator";
 
 @customElement("server-card")
 export class ServerCard extends LegacyElementMixin(PolymerElement) {
@@ -51,7 +48,7 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
         text-align: center;
         padding: 10% 0;
       }
-      .card-header server-connection-viz {
+      .card-header server-connection-indicator {
         padding: 16px 0 0 16px;
       }
       #serverInfo {
@@ -124,11 +121,11 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
     </style>
     <paper-card class$="[[expandedClassName]]">
       <div class="card-header">
-        <server-connection-viz
+        <server-connection-indicator
           state="[[state]]"
           root-path="[[rootPath]]"
           hidden$="[[expanded]]"
-        ></server-connection-viz>
+        ></server-connection-indicator>
         <div id="serverInfo">
           <div id="serverName">[[localizedServerName]]</div>
           <div id="serverAddress">[[serverAddress]]</div>
@@ -154,7 +151,11 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
             disabled$="[[connectButtonDisabled]]"
             noink=""
           >
-            <server-connection-viz state="[[state]]" root-path="[[rootPath]]" expanded=""></server-connection-viz>
+            <server-connection-indicator
+              state="[[state]]"
+              root-path="[[rootPath]]"
+              expanded=""
+            ></server-connection-indicator>
           </paper-button>
         </div>
         <div class$="status-message [[state]]">[[statusMessage]]</div>
