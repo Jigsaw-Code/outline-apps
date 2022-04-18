@@ -41,7 +41,7 @@ export async function getVersion(platform) {
       } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf("CFBundleShortVersionString")];
     case "windows":
-      return "1.7.0";
+      return "1.7.1";
     case "linux":
       return "1.7.0";
     default:
