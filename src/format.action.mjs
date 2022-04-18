@@ -14,12 +14,9 @@
 
 import prettier from "prettier";
 import fs from "fs/promises";
-import nodegit from "nodegit";
-import path from "path";
 
-import {getRootDir} from "../scripts/get_root_dir.mjs";
+import { getChangedFilepaths } from "../scripts/get_changed_filepaths.mjs";
 
-const REPOSITORY_PATH = path.resolve(getRootDir(), ".git");
 const PRETTIER_OPTIONS = {
   singleQuote: true,
   bracketSpacing: false,
@@ -27,11 +24,12 @@ const PRETTIER_OPTIONS = {
 };
 
 export async function main() {
-  // TODO: filter by extension and unwanted folders
-  const changedFiles = await (await nodegit.Repository.open(REPOSITORY_PATH)).getStatus();
+  const changedFilepaths = await getChangedFilepaths({
+    extensions: [".html", ".md", ".json", ".js", ".cjs", ".mjs", ".ts"],
+    excludePaths: [".github", "docs", "resources", "third_party", "tools"],
+  });
 
-  const formattingJobs = changedFiles.map(async file => {
-    const filePath = path.resolve(getRootDir(), file.path());
+  const formattingJobs = changedFilepaths.map(async (filePath) => {
     const fileContents = await fs.readFile(filePath);
     const formattedContents = prettier.format(fileContents, PRETTIER_OPTIONS);
 

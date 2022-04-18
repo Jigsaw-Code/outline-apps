@@ -12,7 +12,7 @@ on:
 
 jobs:
   web-test:
-    name: Web Test
+    name: Lint and Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
@@ -27,6 +27,9 @@ jobs:
       
       - name: Install NPM Dependencies
         run: npm ci
+
+      - name: Lint
+        run: npm run action lint
 
       - name: Build Web App
         run: npm run action gulp build browser

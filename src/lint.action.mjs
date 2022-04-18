@@ -12,38 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Linter, Configuration} from "tslint";
+import { Linter, Configuration } from "tslint";
 import fs from "fs/promises";
-import nodegit from "nodegit";
-import path from "path";
 
-import {getRootDir} from "../scripts/get_root_dir.mjs";
+import { getChangedFilepaths } from "../scripts/get_changed_filepaths.mjs";
 
-const REPOSITORY_PATH = path.resolve(getRootDir(), ".git");
 const TSLINT_OPTIONS = {
   fix: false,
 };
 
-const linter = new Linter(TSLINT_OPTIONS);
-const configuration = Configuration.findConfiguration("./src/tsconfig.json");
-
 export async function main() {
-  // TODO: filter unwanted folders
-  const changedFiles = await (await nodegit.Repository.open(REPOSITORY_PATH)).getStatus();
+  const linter = new Linter(TSLINT_OPTIONS);
+  const configuration = Configuration.findConfiguration("./src/tsconfig.json");
 
-  const lintingJobs = changedFiles.map(async file => {
-    const filePath = path.resolve(getRootDir(), file.path());
+  const changedFilepaths = await getChangedFilepaths({
+    extensions: [".ts"],
+    excludePaths: [".github", "docs", "resources", "third_party", "tools"],
+  });
 
-    if (filePath.endsWith(".ts")) {
-      const fileContents = await fs.readFile(filePath);
+  const lintingJobs = changedFilepaths.map(async (filePath) => {
+    const fileContents = await fs.readFile(filePath);
 
-      linter.lint(filePath, fileContents, configuration);
-
-      // TODO: ??
-    }
+    linter.lint(filePath, fileContents, configuration);
   });
 
   await Promise.all(lintingJobs);
 
+  // TODO: do something if there are errors here, I guess
   console.log(linter.getResult());
 }
