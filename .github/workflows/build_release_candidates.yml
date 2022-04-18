@@ -98,5 +98,5 @@ jobs:
           name: client_android_release_${{ github.sha }}
           path: |
             Outline.apk
-            platforms/android/app/build/outputs/bundle
+            platforms/android
           if-no-files-found: error

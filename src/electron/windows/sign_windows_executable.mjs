@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { spawn } from 'child_process';
-import { constants } from 'fs';
-import { access } from 'fs/promises';
-import minimist from 'minimist';
-import { dirname, resolve } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import { format } from 'util';
+import {spawn} from "child_process";
+import {constants} from "fs";
+import {access} from "fs/promises";
+import minimist from "minimist";
+import {dirname, resolve} from "path";
+import {fileURLToPath, pathToFileURL} from "url";
+import {format} from "util";
 
 /**
  * Get the parent folder path of this script.
@@ -33,7 +33,7 @@ function currentDirname() {
  * @returns the folder path of outline-client root.
  */
 function outlineDirname() {
-  return resolve(currentDirname(), '..', '..', '..');
+  return resolve(currentDirname(), "..", "..", "..");
 }
 
 function assert(condition, msg) {
@@ -69,33 +69,33 @@ function getOptionValue(options, argName, envName, required) {
 
 function appendPfxJsignArgs(args, options) {
   // self-signed development certificate
-  args.push('--storetype', 'PKCS12');
+  args.push("--storetype", "PKCS12");
 
-  const pfxCert = getOptionValue(options, 'pfx', 'WINDOWS_SIGNING_PFX_CERT', true);
-  args.push('--keystore', pfxCert);
+  const pfxCert = getOptionValue(options, "pfx", "WINDOWS_SIGNING_PFX_CERT", true);
+  args.push("--keystore", pfxCert);
 }
 
 function appendDigicertUsbJsignArgs(args, options) {
   // extended validation certificate stored in USB drive
-  args.push('--storetype', 'PKCS11');
+  args.push("--storetype", "PKCS11");
 
-  const subject = getOptionValue(options, 'subject', 'WINDOWS_SIGNING_EV_CERT_SUBJECT', false);
+  const subject = getOptionValue(options, "subject", "WINDOWS_SIGNING_EV_CERT_SUBJECT", false);
   if (subject) {
-    args.push('--alias', subject);
+    args.push("--alias", subject);
   }
 
   var eTokenCfg;
   switch (process.platform) {
-    case 'win32':
-      eTokenCfg = resolve(currentDirname(), 'digicert-usb-config', 'eToken-windows.cfg');
+    case "win32":
+      eTokenCfg = resolve(currentDirname(), "digicert-usb-config", "eToken-windows.cfg");
       break;
-    case 'darwin':
-      eTokenCfg = resolve(currentDirname(), 'digicert-usb-config', 'eToken-macos.cfg');
+    case "darwin":
+      eTokenCfg = resolve(currentDirname(), "digicert-usb-config", "eToken-macos.cfg");
       break;
     default:
       throw new Error(`we do not support ev signing on ${process.platform}`);
   }
-  args.push('--keystore', eTokenCfg);
+  args.push("--keystore", eTokenCfg);
 }
 
 /**
@@ -106,26 +106,19 @@ function appendDigicertUsbJsignArgs(args, options) {
  */
 function jsign(fileToSign, options) {
   if (!options) {
-    throw new Error('options are required by jsign');
+    throw new Error("options are required by jsign");
   }
   if (!fileToSign) {
-    throw new Error('fileToSign is required by jsign');
+    throw new Error("fileToSign is required by jsign");
   }
 
-  const jSignJarPath = resolve(outlineDirname(), 'third_party', 'jsign', 'jsign-4.0.jar');
-  const jsignProc = spawn(
-      'java',
-      [
-        '-jar', jSignJarPath,
-        ...options,
-        fileToSign,
-      ],
-      {
-        stdio: 'inherit',
-      });
+  const jSignJarPath = resolve(outlineDirname(), "third_party", "jsign", "jsign-4.0.jar");
+  const jsignProc = spawn("java", ["-jar", jSignJarPath, ...options, fileToSign], {
+    stdio: "inherit",
+  });
   return new Promise((resolve, reject) => {
-    jsignProc.on('error', reject);
-    jsignProc.on('exit', resolve);
+    jsignProc.on("error", reject);
+    jsignProc.on("exit", resolve);
   });
 }
 
@@ -138,32 +131,34 @@ function jsign(fileToSign, options) {
  *                         variables.
  */
 export async function signWindowsExecutable(exeFile, algorithm, options) {
-  const type = getOptionValue(options, 'certtype', 'WINDOWS_SIGNING_CERT_TYPE', false);
-  if (!type || type === 'none') {
+  const type = getOptionValue(options, "certtype", "WINDOWS_SIGNING_CERT_TYPE", false);
+  if (!type || type === "none") {
     console.info(`skip signing "${exeFile}"`);
     return;
   }
 
-  assert(!!exeFile, 'executable path is required');
-  assert(
-      algorithm === 'sha1' || algorithm === 'sha256',
-      'hashing algorithm must be either "sha1" or "sha256"');
+  assert(!!exeFile, "executable path is required");
+  assert(algorithm === "sha1" || algorithm === "sha256", 'hashing algorithm must be either "sha1" or "sha256"');
 
   exeFile = resolve(exeFile);
   await assertFileExists(exeFile, 'executable file "%s" does not exist');
 
-  const password = getOptionValue(options, 'password', 'WINDOWS_SIGNING_CERT_PASSWORD', true);
+  const password = getOptionValue(options, "password", "WINDOWS_SIGNING_CERT_PASSWORD", true);
 
   const jsignArgs = [
-    '--alg', algorithm === 'sha256' ? 'SHA-256' : 'SHA-1', '--tsaurl',
-    'http://timestamp.digicert.com', '--storepass', password
+    "--alg",
+    algorithm === "sha256" ? "SHA-256" : "SHA-1",
+    "--tsaurl",
+    "http://timestamp.digicert.com",
+    "--storepass",
+    password,
   ];
 
   switch (type) {
-    case 'pfx':
+    case "pfx":
       appendPfxJsignArgs(jsignArgs, options);
       break;
-    case 'digicert-usb':
+    case "digicert-usb":
       appendDigicertUsbJsignArgs(jsignArgs, options);
       break;
     default:
@@ -174,7 +169,7 @@ export async function signWindowsExecutable(exeFile, algorithm, options) {
   try {
     exitCode = await jsign(exeFile, jsignArgs);
   } catch (err) {
-    console.error('failed to start java, please make sure you have installed java');
+    console.error("failed to start java, please make sure you have installed java");
     throw new Error(err);
   }
 

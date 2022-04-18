@@ -11,21 +11,21 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from '@polymer/decorators';
-import {html, PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {computed, customElement, property} from "@polymer/decorators";
+import {html, PolymerElement} from "@polymer/polymer";
+import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 
 export enum ServerConnectionState {
-  INITIAL = 'INITIAL',
-  CONNECTING = 'CONNECTING',
-  CONNECTED = 'CONNECTED',
-  RECONNECTING = 'RECONNECTING',
-  DISCONNECTING = 'DISCONNECTING',
-  DISCONNECTED = 'DISCONNECTED'
+  INITIAL = "INITIAL",
+  CONNECTING = "CONNECTING",
+  CONNECTED = "CONNECTED",
+  RECONNECTING = "RECONNECTING",
+  DISCONNECTING = "DISCONNECTING",
+  DISCONNECTED = "DISCONNECTED",
 }
 
-@customElement('server-connection-viz') export class ServerConnectionViz extends LegacyElementMixin
-(PolymerElement) {
+@customElement("server-connection-viz")
+export class ServerConnectionViz extends LegacyElementMixin(PolymerElement) {
   static ANIMATION_DURATION_MS = 1750;
 
   static template = html`
@@ -222,14 +222,14 @@ export enum ServerConnectionState {
       }
       /* rtl:end:ignore */
     </style>
-    <div id="container" class\$="[[expandedClassName]]">
-      <img id="small-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
-      <img id="small" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
-      <img id="medium-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
-      <img id="medium" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
-      <img id="large-grey" src\$="[[rootPath]]assets/disc_grey.png" class\$="grey {{animationState}}">
-      <img id="large-zero" src\$="[[rootPath]]assets/disc_empty.png" class\$="{{state}}">
-      <img id="large" src\$="[[rootPath]]assets/disc_color.png" class\$="green {{animationState}}">
+    <div id="container" class$="[[expandedClassName]]">
+      <img id="small-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="small" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="medium-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="medium" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
+      <img id="large-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
+      <img id="large-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
+      <img id="large" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
     </div>
   `;
 
@@ -238,20 +238,20 @@ export enum ServerConnectionState {
   @property({type: String}) rootPath: string;
   @property({type: Boolean}) expanded: boolean;
 
-  @property({type: String, observer: 'syncAnimationState'}) state: ServerConnectionState;
+  @property({type: String, observer: "syncAnimationState"}) state: ServerConnectionState;
   @property({type: String}) animationState: ServerConnectionState = ServerConnectionState.INITIAL;
 
-  @computed('expanded')
+  @computed("expanded")
   get expandedClassName() {
-    return this.expanded ? 'expanded' : '';
+    return this.expanded ? "expanded" : "";
   }
 
-  @computed('state')
+  @computed("state")
   get shouldAnimate() {
     return this.isAnimationState(this.state);
   }
 
-  @computed('animationState')
+  @computed("animationState")
   get isAnimating() {
     return this.isAnimationState(this.animationState);
   }
@@ -278,15 +278,16 @@ export enum ServerConnectionState {
   private stopAnimation() {
     const elapsedAnimationMS = Date.now() - this.animationStartMS;
     const remainingAnimationMS =
-        (ServerConnectionViz.ANIMATION_DURATION_MS -
-         (elapsedAnimationMS % ServerConnectionViz.ANIMATION_DURATION_MS));
+      ServerConnectionViz.ANIMATION_DURATION_MS - (elapsedAnimationMS % ServerConnectionViz.ANIMATION_DURATION_MS);
 
-    this.async(() => this.animationState = this.state, remainingAnimationMS);
+    this.async(() => (this.animationState = this.state), remainingAnimationMS);
   }
 
   private isAnimationState(state: ServerConnectionState): boolean {
     return [
-      ServerConnectionState.CONNECTING, ServerConnectionState.DISCONNECTING, ServerConnectionState.RECONNECTING
+      ServerConnectionState.CONNECTING,
+      ServerConnectionState.DISCONNECTING,
+      ServerConnectionState.RECONNECTING,
     ].includes(state);
   }
 }

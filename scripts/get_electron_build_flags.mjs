@@ -13,13 +13,13 @@
 // limitations under the License.
 import minimist from "minimist";
 import url from "url";
-import { getVersion } from "./get_version.mjs";
+import {getVersion} from "./get_version.mjs";
 
 export async function getElectronBuildFlags(platform, buildMode) {
   let buildFlags = [
     "--publish never",
     "--config src/electron/electron-builder.json",
-    `--config.extraMetadata.version=${await getVersion(platform)}`
+    `--config.extraMetadata.version=${await getVersion(platform)}`,
   ];
 
   if (platform === "linux") {
@@ -33,10 +33,10 @@ export async function getElectronBuildFlags(platform, buildMode) {
     // provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
     // which can be blocked by DNS or SNI without taking down other buckets.
     buildFlags = [
-      ...buildFlags, 
+      ...buildFlags,
       "--config.generateUpdatesFilesForAllChannels=true",
       "--config.publish.provider=generic",
-      `--config.publish.url=https://s3.amazonaws.com/outline-releases/client/${platform}`
+      `--config.publish.url=https://s3.amazonaws.com/outline-releases/client/${platform}`,
     ];
   }
 
@@ -44,8 +44,8 @@ export async function getElectronBuildFlags(platform, buildMode) {
 }
 
 async function main() {
-  const { _, buildMode } = minimist(process.argv);
-  
+  const {_, buildMode} = minimist(process.argv);
+
   const platform = _[2];
 
   console.log((await getElectronBuildFlags(platform, buildMode)).join(" "));

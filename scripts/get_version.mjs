@@ -38,7 +38,7 @@ export async function getVersion(platform) {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
-      } = await parseFile(`apple/xcode/${platform}/Outline/Outline-Info.plist`);
+      } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf("CFBundleShortVersionString")];
     case "windows":
       return "1.7.0";
@@ -50,10 +50,10 @@ export async function getVersion(platform) {
 }
 
 async function main() {
-  const { _ } = minimist(process.argv);
+  const {_} = minimist(process.argv);
 
   const platform = _[2];
-  
+
   console.log(await getVersion(platform));
 }
 

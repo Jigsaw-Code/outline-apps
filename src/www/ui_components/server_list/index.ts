@@ -11,13 +11,12 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from '@polymer/decorators';
-import {html, PolymerElement} from '@polymer/polymer';
+import {computed, customElement, property} from "@polymer/decorators";
+import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerCard} from './server_card';
-import {ServerConnectionState} from './server_connection_viz';
+import {ServerConnectionState} from "../server_card";
 
-export interface ServerCardModel {
+export interface ServerListItem {
   disabled: boolean;
   errorMessageId: string;
   isOutlineServer: boolean;
@@ -27,7 +26,7 @@ export interface ServerCardModel {
   state: ServerConnectionState;
 }
 
-@customElement('server-list')
+@customElement("server-list")
 export class ServerList extends PolymerElement {
   static get template() {
     return html`
@@ -54,15 +53,15 @@ export class ServerList extends PolymerElement {
       </style>
 
       <template is="dom-repeat" items="[[servers]]">
-        <server-card 
-          disabled="[[item.errorMessageId]]" 
-          error-message="[[localize(item.errorMessageId)]]" 
+        <server-card
+          disabled="[[item.errorMessageId]]"
+          error-message="[[localize(item.errorMessageId)]]"
           expanded="[[hasSingleServer]]"
-          localize="[[localize]]" 
-          root-path="[[rootPath]]" 
-          server-address="[[item.address]]" 
+          localize="[[localize]]"
+          root-path="[[rootPath]]"
+          server-address="[[item.address]]"
           server-id="[[item.id]]"
-          server-name="[[item.name]]" 
+          server-name="[[item.name]]"
           is-outline-server="[[item.isOutlineServer]]"
           state="[[item.state]]"
         ></server-card>
@@ -76,9 +75,9 @@ export class ServerList extends PolymerElement {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) rootPath: string;
-  @property({type: Array}) servers: ServerCardModel[] = [];
+  @property({type: Array}) servers: ServerListItem[] = [];
 
-  @computed('servers')
+  @computed("servers")
   get hasSingleServer() {
     return this.servers.length === 1;
   }

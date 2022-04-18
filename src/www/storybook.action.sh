@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Copyright 2018 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,15 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -eu
 
-apple_id "outline-app-manager@google.com" # Apple developer account email address
-itc_team_id "118880544" # iTunes Connect Team ID
-team_id "QT8Z3Q9V3A" # Developer Portal Team ID
-
-for_platform :ios do
-  app_identifier "org.outline.ios.client"
-end
-
-for_platform :osx do
-  app_identifier "org.outline.macos.client"
-end
+web-dev-server --node-resolve --open --watch --root-dir ./src/www
