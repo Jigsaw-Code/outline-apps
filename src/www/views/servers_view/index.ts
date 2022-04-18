@@ -20,7 +20,12 @@ import {html} from "@polymer/polymer/lib/utils/html-tag.js";
 import "./server_list";
 import "./server_card";
 import "./server_connection_indicator";
-import {ServerListItem} from "./server_list";
+
+import {ServerListItem as _ServerListItem} from "./server_list";
+import {ServerConnectionState as _ServerConnectionState} from "./server_connection_indicator";
+
+export type ServerListItem = _ServerListItem;
+export import ServerConnectionState = _ServerConnectionState;
 
 Polymer({
   _template: html`
