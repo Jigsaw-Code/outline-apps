@@ -5,7 +5,7 @@
     "action": "node ./scripts/run_action.mjs",
     "action:help": "npm run action list",
     "action:list": "npm run action list",
-    "clean": "rm -rf build node_modules www platforms plugins .action_cache.json",
+    "clean": "rm -rf build node_modules www platforms plugins",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint": "npm run lint:ts",
