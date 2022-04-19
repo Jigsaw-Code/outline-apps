@@ -168,9 +168,9 @@ export async function runAction(actionPath, ...parameters) {
       ) {
         console.info(
           chalk.bold(`Skipping:`),
-          `No source from this action's dependencies "${action.dependencies.join(
-            ", "
-          )}" are newer than the previous successful run of this action.`
+          "No source file from this action's dependencies",
+          chalk.blue(`"${action.dependencies.join(", ")}"`),
+          "are newer than the previous successful run of this action."
         );
       } else {
         await action.main(...parameters);

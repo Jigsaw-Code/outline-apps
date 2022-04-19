@@ -21,6 +21,7 @@ export const requirements = ["cordova/setup"];
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
+ * WARNING: still a WIP.
  *
  * @param {string[]} parameters
  */
@@ -43,7 +44,7 @@ export async function main(...parameters) {
       device: platform === "ios",
       release: buildMode === "release",
       gradleArg: platform === "android" && "-PcdvBuildMultipleApks=true",
-      // something:
+      // TODO(daniellacosse): verify options and figure out where to put this
       //   '--keystore=keystore.p12 --alias=privatekey "--storePassword=$ANDROID_KEY_STORE_PASSWORD" "--password=$ANDROID_KEY_STORE_PASSWORD"',
     },
   });
