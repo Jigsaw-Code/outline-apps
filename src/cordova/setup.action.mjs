@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import os from "os";
-import fs from "fs";
+import {existsSync} from "fs";
 import {execSync} from "child_process";
+import path from "path";
 
 import cordovaLib from "cordova-lib";
 const {cordova} = cordovaLib;
@@ -24,6 +25,7 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
 const WORKING_CORDOVA_OSX_COMMIT = "07e62a53aa6a8a828fd988bc9e884c38c3495a67";
 
+export const dependencies = ["resources", "src/cordova", "cordova-plugin-outline"];
 export const requirements = ["www/build"];
 
 /**
@@ -43,7 +45,7 @@ export async function main(...parameters) {
     throw new SystemError("Building an Apple binary requires xcodebuild and can only be done on MacOS");
   }
 
-  if (!fs.existsSync(`platform/${platform}`)) {
+  if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
       "add",
       [platform === "osx" ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],

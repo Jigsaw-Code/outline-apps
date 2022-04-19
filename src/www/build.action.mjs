@@ -33,6 +33,8 @@ const webpackPromise = webpackConfig =>
     });
   });
 
+export const dependencies = ["src/www"];
+
 /**
  * @description TODO
  */

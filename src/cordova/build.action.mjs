@@ -19,6 +19,9 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 
 export const requirements = ["cordova/setup"];
 
+/**
+ * @description TODO
+ */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 

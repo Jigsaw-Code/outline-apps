@@ -13,12 +13,81 @@
 // limitations under the License.
 
 import chalk from "chalk";
-import fs from "fs";
+import {existsSync} from "fs";
+import fs from "fs/promises";
 import path from "path";
 import {spawn} from "child_process";
 import url from "url";
 
 import {getRootDir} from "./get_root_dir.mjs";
+
+const resolveActionPath = async actionPath => {
+  if (!actionPath) return "";
+
+  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, "src")];
+  const extensions = ["sh", "mjs"];
+
+  for (const root of roots) {
+    for (const extension of extensions) {
+      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
+
+      if (existsSync(pathCandidate)) {
+        return pathCandidate;
+      }
+    }
+  }
+};
+
+const ACTION_CACHE_FILE = "./.action_cache.json";
+
+const readActionCache = async (actionPathKey, parameters) => {
+  const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+  if (!existsSync(cachePath)) {
+    return {};
+  }
+
+  const cache = JSON.parse(await fs.readFile(cachePath));
+
+  if (JSON.stringify(cache[actionPathKey]?.parameters) !== JSON.stringify(parameters)) {
+    return {};
+  }
+
+  return cache[actionPathKey];
+};
+
+const writeActionCache = async (actionPathKey, actionCacheObject) => {
+  const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+  let cache = {};
+
+  if (existsSync(cachePath)) {
+    cache = JSON.parse(await fs.readFile(cachePath));
+  }
+
+  cache[actionPathKey] = actionCacheObject;
+
+  await fs.writeFile(cachePath, JSON.stringify(cache));
+};
+
+const mostRecentModification = async (foldersAndFiles = []) => {
+  let result = 0;
+
+  while (foldersAndFiles.length) {
+    const currentFolderOrFile = foldersAndFiles.pop();
+    const fileInformation = await fs.stat(currentFolderOrFile);
+
+    result = Math.max(result, fileInformation.mtimeMs);
+
+    if (fileInformation.isDirectory()) {
+      const contents = await fs.readdir(currentFolderOrFile);
+
+      foldersAndFiles = [...foldersAndFiles, ...contents.map(child => `${currentFolderOrFile}/${child}`)];
+    }
+  }
+
+  return result;
+};
 
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
@@ -36,23 +105,6 @@ const spawnStream = (command, parameters) =>
     });
   });
 
-const resolveActionPath = async actionPath => {
-  if (!actionPath) return "";
-
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, "src")];
-  const extensions = ["sh", "mjs"];
-
-  for (const root of roots) {
-    for (const extension of extensions) {
-      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
-
-      if (fs.existsSync(pathCandidate)) {
-        return pathCandidate;
-      }
-    }
-  }
-};
-
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
@@ -60,20 +112,38 @@ export async function runAction(actionPath, ...parameters) {
     return runAction("list");
   }
 
-  const startTime = performance.now();
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
+  const startTime = performance.now();
 
   try {
-    if (resolvedPath.endsWith("mjs")) {
+    if (resolvedPath.endsWith(".mjs")) {
       const action = await import(resolvedPath);
+      const actionCache = await readActionCache(resolvedPath, parameters);
 
-      if (action.requirements) {
+      if (action.requirements?.length) {
         for (const requiredAction of action.requirements) {
           await runAction(requiredAction, ...parameters);
         }
       }
 
-      await action.main(...parameters);
+      if (
+        action.dependencies?.length &&
+        actionCache.lastRan > (await mostRecentModification([...action.dependencies]))
+      ) {
+        console.info(
+          chalk.bold(`Skipping action(${actionPath}):`),
+          `No source from the dependencies "${action.dependencies.join(
+            ", "
+          )}" are newer than previous successful run of this action.`
+        );
+      } else {
+        await action.main(...parameters);
+
+        await writeActionCache(resolvedPath, {
+          parameters,
+          lastRan: Date.now() * 1000,
+        });
+      }
     } else {
       await spawnStream("bash", [resolvedPath, ...parameters]);
     }
