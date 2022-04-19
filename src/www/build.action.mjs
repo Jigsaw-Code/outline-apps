@@ -36,7 +36,9 @@ const webpackPromise = webpackConfig =>
 export const dependencies = ["src/www"];
 
 /**
- * @description TODO
+ * @description Builds the web UI for use across both electron and cordova.
+ *
+ * @param {string[]} parameters
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);

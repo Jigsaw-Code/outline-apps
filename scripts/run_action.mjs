@@ -21,6 +21,9 @@ import url from "url";
 
 import {getRootDir} from "./get_root_dir.mjs";
 
+/**
+ * @description loads the absolute path of the action file
+ */
 const resolveActionPath = async actionPath => {
   if (!actionPath) return "";
 
@@ -38,6 +41,17 @@ const resolveActionPath = async actionPath => {
   }
 };
 
+/**
+ * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
+ * if they can be skipped on subsequent attempts.
+ *
+ * Cache methods:
+ *   readActionCache - loads the latest time the action was run along with the parameters it was run with
+ *   writeActionCache - updates the time an action was run and the parameters it was run with
+ *
+ * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
+ * corruption of the cache
+ */
 const ACTION_CACHE_FILE = "./.action_cache.json";
 
 const readActionCache = async (actionPathKey, parameters) => {
@@ -70,6 +84,13 @@ const writeActionCache = async (actionPathKey, actionCacheObject) => {
   await fs.writeFile(cachePath, JSON.stringify(cache));
 };
 
+/**
+ * @description BFSes a list of file system targets, returning the timestamp of the most
+ * recently modified one.
+ *
+ * @param {Array<Directory | File>} foldersAndFiles List of folders and files to scan.
+ * @returns {number} Timestamp in milliseconds of the most recently modified file.
+ */
 const mostRecentModification = async (foldersAndFiles = []) => {
   let result = 0;
 
@@ -89,6 +110,9 @@ const mostRecentModification = async (foldersAndFiles = []) => {
   return result;
 };
 
+/**
+ * @description promisifies the child process (for supporting legacy bash actions!)
+ */
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters, {shell: true});
@@ -105,6 +129,18 @@ const spawnStream = (command, parameters) =>
     });
   });
 
+/**
+ * @description This is the entrypoint into our custom task runner.
+ * It runs an `*.action.mjs` or `*.action.sh` file with the given parameters.
+ * You can find these files located within their associated directories in the project.
+ * Action files can also define:
+ *   `requirements` - actions that must be run beforehand as prerequisite.
+ *   `dependencies` - files and folders that the action takes as input. If they remain unchanged, the action can be skipped.
+ *
+ * @param {string} actionPath The truncated path to the action you wish to run (e.g. "www/build")
+ * @param {...string} parameters The flags and other parameters we want to run the action with.
+ * @returns {void}
+ */
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
@@ -131,17 +167,17 @@ export async function runAction(actionPath, ...parameters) {
         actionCache.lastRan > (await mostRecentModification([...action.dependencies]))
       ) {
         console.info(
-          chalk.bold(`Skipping action(${actionPath}):`),
-          `No source from the dependencies "${action.dependencies.join(
+          chalk.bold(`Skipping:`),
+          `No source from this action's dependencies "${action.dependencies.join(
             ", "
-          )}" are newer than previous successful run of this action.`
+          )}" are newer than the previous successful run of this action.`
         );
       } else {
         await action.main(...parameters);
 
         await writeActionCache(resolvedPath, {
           parameters,
-          lastRan: Date.now() * 1000,
+          lastRan: Date.now(),
         });
       }
     } else {

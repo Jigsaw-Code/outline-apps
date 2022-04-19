@@ -25,11 +25,15 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
 const WORKING_CORDOVA_OSX_COMMIT = "07e62a53aa6a8a828fd988bc9e884c38c3495a67";
 
-export const dependencies = ["resources", "src/cordova", "cordova-plugin-outline"];
+export const dependencies = ["www", "resources", "src/cordova", "cordova-plugin-outline"];
 export const requirements = ["www/build"];
 
 /**
- * @description TODO
+ * @description Prepares the paramterized cordova project (ios, osx, android) for being built.
+ * We have a couple custom things we must do - like rsyncing code from our apple project into the project
+ * cordova creates.
+ *
+ * @param {string[]} parameters
  */
 export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);

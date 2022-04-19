@@ -20,7 +20,9 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 export const requirements = ["cordova/setup"];
 
 /**
- * @description TODO
+ * @description Builds the parameterized cordova binary (ios, osx, android).
+ *
+ * @param {string[]} parameters
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
