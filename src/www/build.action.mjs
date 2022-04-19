@@ -33,8 +33,6 @@ const webpackPromise = webpackConfig =>
     });
   });
 
-export const dependencies = ["src/www"];
-
 /**
  * @description Builds the web UI for use across both electron and cordova.
  *

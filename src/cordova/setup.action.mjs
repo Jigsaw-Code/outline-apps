@@ -25,7 +25,6 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
 const WORKING_CORDOVA_OSX_COMMIT = "07e62a53aa6a8a828fd988bc9e884c38c3495a67";
 
-export const dependencies = ["www", "resources", "src/cordova", "cordova-plugin-outline"];
 export const requirements = ["www/build"];
 
 /**
