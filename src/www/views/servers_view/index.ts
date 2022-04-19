@@ -14,8 +14,18 @@
   limitations under the License.
 */
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {Polymer} from "@polymer/polymer/lib/legacy/polymer-fn.js";
+import {html} from "@polymer/polymer/lib/utils/html-tag.js";
+
+import "./server_list";
+import "./server_card";
+import "./server_connection_indicator";
+
+import {ServerListItem as _ServerListItem} from "./server_list";
+import {ServerConnectionState as _ServerConnectionState} from "./server_connection_indicator";
+
+export type ServerListItem = _ServerListItem;
+export import ServerConnectionState = _ServerConnectionState;
 
 Polymer({
   _template: html`
@@ -82,7 +92,7 @@ Polymer({
       }
     </style>
     <div class="server-list-container">
-      <div class="flex-column-container" hidden\$="[[!shouldShowZeroState]]">
+      <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
             <server-connection-viz state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
@@ -90,14 +100,29 @@ Polymer({
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
         </div>
-        <div class="footer subtle" inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"></div>
+        <div
+          class="footer subtle"
+          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+        ></div>
       </div>
-      <user-comms-dialog id="autoConnectDialog" localize="[[localize]]" title-localization-key="auto-connect-dialog-title" detail-localization-key="auto-connect-dialog-detail" fire-event-on-hide="AutoConnectDialogDismissed"></user-comms-dialog>
-      <server-list id="serverList" hidden\$="[[shouldShowZeroState]]" servers="[[servers]]" localize="[[localize]]" root-path="[[rootPath]]"></server-list>
+      <user-comms-dialog
+        id="autoConnectDialog"
+        localize="[[localize]]"
+        title-localization-key="auto-connect-dialog-title"
+        detail-localization-key="auto-connect-dialog-detail"
+        fire-event-on-hide="AutoConnectDialogDismissed"
+      ></user-comms-dialog>
+      <server-list
+        id="serverList"
+        hidden$="[[shouldShowZeroState]]"
+        servers="[[servers]]"
+        localize="[[localize]]"
+        root-path="[[rootPath]]"
+      ></server-list>
     </div>
-`,
+  `,
 
-  is: 'servers-view',
+  is: "servers-view",
 
   properties: {
     localize: Function,
@@ -105,15 +130,15 @@ Polymer({
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,
-      computed: '_computeShouldShowZeroState(servers)',
+      computed: "_computeShouldShowZeroState(servers)",
     },
   },
 
-  _computeShouldShowZeroState: function(servers) {
+  _computeShouldShowZeroState(servers: ServerListItem[]) {
     return !!servers ? servers.length === 0 : false;
   },
 
-  _requestPromptAddServer: function() {
-    this.fire('PromptAddServerRequested', {});
-  }
+  _requestPromptAddServer() {
+    this.fire("PromptAddServerRequested", {});
+  },
 });

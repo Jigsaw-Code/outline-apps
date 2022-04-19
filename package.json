@@ -49,7 +49,7 @@
     "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
     "intl-messageformat": "^9.12.0",
-    "lit-html": "^2.2.1",
+    "lit": "^2.2.2",
     "punycode": "^2.1.1",
     "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
     "socks": "^1.1.10",

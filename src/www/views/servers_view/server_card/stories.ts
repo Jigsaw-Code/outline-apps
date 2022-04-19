@@ -15,14 +15,20 @@
   limitations under the License.
 */
 
-import {html} from "lit-html";
+import "./index";
 
-import {ServerConnectionViz, ServerConnectionState} from "./index";
+import {html} from "lit";
+
+import {localize} from "../../../.storybook/localize";
+import {ServerConnectionState} from "../server_connection_indicator";
+import {ServerCard} from "./index";
 
 export default {
-  title: "Server Card/Server Connection Vizualization",
-  component: "server-connection-viz",
+  title: "Servers View/Server Card",
+  component: "server-card",
   args: {
+    serverName: "My Server",
+    serverAddress: "1.0.0.127",
     state: ServerConnectionState.INITIAL,
     expanded: false,
   },
@@ -37,10 +43,14 @@ export default {
   },
 };
 
-export const Example = ({state, expanded}: ServerConnectionViz) =>
-  html`
-    <server-connection-viz
+export const Example = ({serverName, serverAddress, state, expanded}: ServerCard) => {
+  return html`
+    <server-card
+      .localize=${localize}
+      server-name="${serverName}"
+      server-address="${serverAddress}"
       .state="${state ?? ServerConnectionState.INITIAL}"
       .expanded="${expanded}"
-    ></server-connection-viz>
+    ></server-card>
   `;
+};

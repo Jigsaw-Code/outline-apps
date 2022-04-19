@@ -14,11 +14,11 @@
 import {computed, customElement, property} from "@polymer/decorators";
 import {html, PolymerElement} from "@polymer/polymer";
 
-import {ServerConnectionState} from "../server_card";
+import {ServerConnectionState} from "../server_connection_indicator";
 
 export interface ServerListItem {
   disabled: boolean;
-  errorMessageId: string;
+  errorMessageId?: string;
   isOutlineServer: boolean;
   address: string;
   id: string;
@@ -55,7 +55,7 @@ export class ServerList extends PolymerElement {
       <template is="dom-repeat" items="[[servers]]">
         <server-card
           disabled="[[item.errorMessageId]]"
-          error-message="[[localize(item.errorMessageId)]]"
+          error-message="[[getErrorMessage(item.errorMessageId)]]"
           expanded="[[hasSingleServer]]"
           localize="[[localize]]"
           root-path="[[rootPath]]"
@@ -80,5 +80,11 @@ export class ServerList extends PolymerElement {
   @computed("servers")
   get hasSingleServer() {
     return this.servers.length === 1;
+  }
+
+  getErrorMessage(errorMessageId: string) {
+    if (typeof errorMessageId === "string") {
+      return this.localize(errorMessageId);
+    }
   }
 }
