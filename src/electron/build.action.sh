@@ -51,7 +51,7 @@ fi
 
 readonly WEBPACK_MODE="$(node scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 
-node ./scripts/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
+node "${ROOT_DIR}/scripts/run_action.mjs" src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 
 webpack --config=src/electron/webpack_electron_main.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
