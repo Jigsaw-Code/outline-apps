@@ -23,5 +23,5 @@ module.exports = function(context) {
   child_process.execSync('cp -R third_party/CocoaLumberjack/Carthage/Build/CocoaLumberjackSwift.xcframework plugins/cordova-plugin-outline/apple/lib/ios/');
   child_process.execSync(
       'cp -R third_party/outline-go-tun2socks/ios/Tun2socks.framework plugins/cordova-plugin-outline/apple/lib/ios/');
-  child_process.execSync('cp -R third_party/sentry-cocoa/ios/Sentry.framework plugins/cordova-plugin-outline/apple/lib/ios/');
+  child_process.execSync('cp -R third_party/sentry-cocoa/Carthage/Build/Sentry.xcframework plugins/cordova-plugin-outline/apple/lib/ios/');
 }
