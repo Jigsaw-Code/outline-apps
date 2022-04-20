@@ -12,53 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'web-animations-js/web-animations-next-lite.min.js';
-import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+import "web-animations-js/web-animations-next-lite.min.js";
+import "@webcomponents/webcomponentsjs/webcomponents-bundle.js";
 
-import * as sentry from '@sentry/electron';
-import {clipboard, ipcRenderer} from 'electron';
-import * as promiseIpc from 'electron-promise-ipc';
-import * as os from 'os';
+import * as sentry from "@sentry/electron";
+import {clipboard, ipcRenderer} from "electron";
+import promiseIpc from "electron-promise-ipc";
+import * as os from "os";
 
-import {AbstractClipboard} from './clipboard';
-import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {EnvironmentVariables} from './environment';
-import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
-import {FakeNativeNetworking} from './fake_net';
-import {FakeOutlineTunnel} from './fake_tunnel';
-import {getLocalizationFunction, main} from './main';
-import {NativeNetworking} from './net';
-import {AbstractUpdater} from './updater';
-import {UrlInterceptor} from './url_interceptor';
+import {AbstractClipboard} from "./clipboard";
+import {ElectronOutlineTunnel} from "./electron_outline_tunnel";
+import {EnvironmentVariables} from "./environment";
+import {getSentryBrowserIntegrations, OutlineErrorReporter} from "./error_reporter";
+import {FakeNativeNetworking} from "./fake_net";
+import {FakeOutlineTunnel} from "./fake_tunnel";
+import {getLocalizationFunction, main} from "./main";
+import {NativeNetworking} from "./net";
+import {AbstractUpdater} from "./updater";
+import {UrlInterceptor} from "./url_interceptor";
 
-const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
+const isWindows = os.platform() === "win32";
+const isLinux = os.platform() === "linux";
 const isOsSupported = isWindows || isLinux;
 
 const interceptor = new UrlInterceptor();
-ipcRenderer.on('add-server', (e: Event, url: string) => {
+ipcRenderer.on("add-server", (e: Event, url: string) => {
   interceptor.executeListeners(url);
 });
 
-ipcRenderer.on('localizationRequest', (e: Event, localizationKeys: string[]) => {
+ipcRenderer.on("localizationRequest", (e: Event, localizationKeys: string[]) => {
   const localize = getLocalizationFunction();
   if (!localize) {
-    console.error('Localization function not available.');
-    ipcRenderer.send('localizationResponse', null);
+    console.error("Localization function not available.");
+    ipcRenderer.send("localizationResponse", null);
     return;
   }
   const localizationResult: {[key: string]: string} = {};
   for (const key of localizationKeys) {
     localizationResult[key] = localize(key);
   }
-  ipcRenderer.send('localizationResponse', localizationResult);
+  ipcRenderer.send("localizationResponse", localizationResult);
 });
 
 // Pushes a clipboard event whenever the app window receives focus.
 class ElectronClipboard extends AbstractClipboard {
   constructor() {
     super();
-    ipcRenderer.on('push-clipboard', this.emitEvent.bind(this));
+    ipcRenderer.on("push-clipboard", this.emitEvent.bind(this));
   }
 
   getContents() {
@@ -69,7 +69,7 @@ class ElectronClipboard extends AbstractClipboard {
 class ElectronUpdater extends AbstractUpdater {
   constructor() {
     super();
-    ipcRenderer.on('update-downloaded', this.emitEvent.bind(this));
+    ipcRenderer.on("update-downloaded", this.emitEvent.bind(this));
   }
 }
 
@@ -80,21 +80,20 @@ class ElectronErrorReporter implements OutlineErrorReporter {
         dsn: privateDsn,
         release: appVersion,
         appName,
-        integrations: getSentryBrowserIntegrations
+        integrations: getSentryBrowserIntegrations,
       });
     }
   }
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    sentry.captureEvent(
-        {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+    sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
     return Promise.resolve();
   }
 }
 
 class ElectronNativeNetworking implements NativeNetworking {
   async isServerReachable(hostname: string, port: number) {
-    return promiseIpc.send('is-server-reachable', {hostname, port});
+    return promiseIpc.send("is-server-reachable", {hostname, port});
   }
 }
 
@@ -118,14 +117,17 @@ main({
   },
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
-    ipcRenderer.send('environment-info', {'appVersion': env.APP_VERSION, 'dsn': env.SENTRY_DSN});
+    ipcRenderer.send("environment-info", {appVersion: env.APP_VERSION, dsn: env.SENTRY_DSN});
     return new ElectronErrorReporter(
-        env.APP_VERSION, env.SENTRY_DSN || '', new URL(document.URL).searchParams.get('appName') || 'Outline Client');
+      env.APP_VERSION,
+      env.SENTRY_DSN || "",
+      new URL(document.URL).searchParams.get("appName") || "Outline Client"
+    );
   },
   getUpdater: () => {
     return new ElectronUpdater();
   },
   quitApplication: () => {
-    ipcRenderer.send('quit-app');
-  }
+    ipcRenderer.send("quit-app");
+  },
 });

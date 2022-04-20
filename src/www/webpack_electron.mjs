@@ -41,15 +41,9 @@ export default merge(baseConfig, browserConfig, {
   },
   plugins: [
     new webpack.DefinePlugin({
-      // Hack to protect against @sentry/electron not having process.type defined.
-      "process.type": JSON.stringify("renderer"),
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       "window.polymerSkipLoadingFontRoboto": JSON.stringify(true),
     }),
-    // @sentry/electron depends on electron code, even though it's never activated
-    // in the browser. Webpack still tries to build it, but fails with missing APIs.
-    // The IgnorePlugin prevents the compilation of the electron dependency.
-    new webpack.IgnorePlugin({resourceRegExp: /^electron$/, contextRegExp: /@sentry\/electron/}),
     new HtmlWebpackPlugin({
       filename: "index_electron.html",
       template: path.resolve(__dirname, "./index_electron.html"),
