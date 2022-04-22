@@ -96,7 +96,7 @@
     <resource-file src="apple/vpn" />
 
     <framework src="apple/lib/ios/Tun2socks.framework" custom="true" />
-    <framework src="apple/lib/ios/Sentry.framework" custom="true" />
+    <framework src="apple/lib/ios/Sentry.xcframework" custom="true" />
     <framework src="apple/lib/ios/CocoaLumberjack.xcframework" custom="true" />
     <framework src="apple/lib/ios/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
@@ -121,7 +121,7 @@
     <resource-file src="apple/vpn" />
 
     <framework src="apple/lib/macos/Tun2socks.framework" custom="true" />
-    <framework src="apple/lib/macos/Sentry.framework" custom="true" />
+    <framework src="apple/lib/macos/Sentry.xcframework" custom="true" />
     <framework src="apple/lib/macos/CocoaLumberjack.xcframework" custom="true" />
     <framework src="apple/lib/macos/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
