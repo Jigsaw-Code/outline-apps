@@ -24,129 +24,136 @@ export enum ServerConnectionState {
 }
 
 const ANIMATION_DURATION_MS = 1750;
+const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
 @customElement("server-connection-indicator")
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: "connection-state"}) connectionState: ServerConnectionState;
+  @property({attribute: "root-path"}) rootPath: string;
 
   @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
   private animationStartMS: number;
 
-  static styles = css`
-    :host {
-      position: relative;
-      display: inline-block;
-      aspect-ratio: 1;
+  static styles = [
+    css`
+      :host {
+        position: relative;
+        display: inline-block;
+        aspect-ratio: 1;
 
-      --timing: ${ANIMATION_DURATION_MS}ms;
-      --timing-function: ease-out;
+        --timing: ${ANIMATION_DURATION_MS}ms;
+        --timing-function: ease-out;
 
-      --large-circle-scale: scale(1);
-      --large-circle-delay: 500ms;
+        --circle-large-scale: scale(1);
+        --circle-large-delay: 500ms;
 
-      --medium-circle-scale: scale(0.5);
-      --medium-circle-delay: 250ms;
+        --circle-medium-scale: scale(0.66);
+        --circle-medium-delay: 250ms;
 
-      --small-circle-scale: scale(0.33);
-      --small-circle-delay: 0ms;
+        --circle-small-scale: scale(0.33);
+        --circle-small-delay: 0ms;
 
-      --initial-circle-opacity: 0.5;
-      --initial-circle-color: grayscale(0.5);
+        --circle-initial-opacity: 0.5;
+        --circle-initial-color: grayscale(0.5);
 
-      --connected-circle-opacity: 1;
-      --connected-circle-color: grayscale(0);
+        --circle-connected-opacity: 1;
+        --circle-connected-color: grayscale(0);
 
-      --disconnected-circle-opacity: 1;
-      --disconnected-circle-color: grayscale(1);
-    }
-
-    :host,
-    .circle {
-      width: 100%;
-      height: 100%;
-    }
-
-    .circle {
-      position: absolute;
-      display: inline-block;
-
-      transition-property: filter, opacity;
-      transition-timing: var(--timing);
-      transition-timing-function: var(--timing-function);
-
-      animation-timing: var(--timing);
-      animation-timing-function: var(--timing-function);
-      animation-iteration-count: infinite;
-    }
-
-    .circle-large {
-      transform: var(--large-circle-scale);
-      animation-delay: var(--large-circle-delay);
-    }
-
-    .circle-medium {
-      transform: var(--medium-circle-scale);
-      animation-delay: var(--medium-circle-delay);
-    }
-
-    .circle-small {
-      transform: var(--small-circle-scale);
-      animation-delay: var(--small-circle-delay);
-    }
-
-    .circle-initial {
-      opacity: var(--initial-circle-opacity);
-      filter: var(--initial-circle-color);
-    }
-
-    .circle-connected,
-    .circle-disconnecting {
-      opacity: var(--connected-circle-opacity);
-      filter: var(--connected-circle-color);
-    }
-
-    .circle-disconnected,
-    .circle-connecting {
-      opacity: var(--disconnected-circle-opacity);
-      filter: var(--disconnected-circle-color);
-    }
-
-    .circle-connecting,
-    .circle-disconnecting {
-      animation-name: rotate-with-pause;
-    }
-
-    .circle-disconnecting {
-      animation-direction: reverse;
-    }
-
-    @keyframes rotate-with-pause {
-      0% {
-        transform: rotate(0deg);
+        --circle-disconnected-opacity: 1;
+        --circle-disconnected-color: grayscale(1);
       }
-      60%,
-      100% {
-        transform: rotate(360deg);
+
+      :host,
+      .circle {
+        width: 100%;
+        height: 100%;
       }
-    }
-  `;
+
+      .circle {
+        position: absolute;
+        display: inline-block;
+
+        transition-property: transform, filter, opacity;
+        transition-duration: var(--timing);
+        transition-timing-function: var(--timing-function);
+
+        animation-duration: var(--timing);
+        animation-timing-function: var(--timing-function);
+        animation-iteration-count: infinite;
+      }
+
+      .circle-initial {
+        opacity: var(--circle-initial-opacity);
+        filter: var(--circle-initial-color);
+      }
+
+      .circle-connected,
+      .circle-reconnecting,
+      .circle-disconnecting {
+        opacity: var(--circle-connected-opacity);
+        filter: var(--circle-connected-color);
+      }
+
+      .circle-disconnected,
+      .circle-connecting {
+        opacity: var(--circle-disconnected-opacity);
+        filter: var(--circle-disconnected-color);
+      }
+
+      .circle-disconnecting {
+        animation-direction: reverse;
+        --timing-function: ease-in;
+      }
+    `,
+    ...CIRCLE_SIZES.map(
+      /* prettier-ignore */
+      circleSize => css`
+        .circle-${circleSize} {
+          transform: var(--circle-${circleSize}-scale);
+          animation-delay: var(--circle-${circleSize}-delay);
+        }
+
+        .circle-${circleSize}.circle-connecting,
+        .circle-${circleSize}.circle-reconnecting,
+        .circle-${circleSize}.circle-disconnecting {
+          animation-name: circle-${circleSize}-rotate-with-pause;
+        }
+
+        /* Do not mirror animation for RTL languages */
+        /* rtl:begin:ignore */
+        @keyframes circle-${circleSize}-rotate-with-pause {
+          0% {
+            transform: rotate(0deg) var(--circle-${circleSize}-scale);
+          }
+          60%,
+          100% {
+            transform: rotate(360deg) var(--circle-${circleSize}-scale);
+          }
+        }
+        /* rtl:end:ignore */
+      `
+    ),
+  ];
 
   render() {
     if (this.shouldAnimate) {
       this.startAnimation();
-    }
-
-    if (this.isAnimating && !this.shouldAnimate) {
+    } else if (this.isAnimating && !this.shouldAnimate) {
       this.stopAnimation();
+    } else {
+      this.animationState = this.connectionState;
     }
 
-    const circles = this.animationState === ServerConnectionState.INITIAL ? ["large"] : ["large", "medium", "small"];
+    const circles = this.animationState === ServerConnectionState.INITIAL ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
 
     return html`
       ${circles.map(
         circleSize =>
           html`
-            <img class="circle circle-${circleSize} circle-${this.animationState}" src="assets/disc_color.png" />
+            <img
+              class="circle circle-${circleSize} circle-${this.animationState}"
+              src="${this.rootPath}assets/circle.webp"
+            />
           `
       )}
     `;
@@ -176,8 +183,8 @@ export class ServerConnectionIndicator extends LitElement {
   private isAnimationState(state: ServerConnectionState): boolean {
     return [
       ServerConnectionState.CONNECTING,
-      ServerConnectionState.DISCONNECTING,
       ServerConnectionState.RECONNECTING,
+      ServerConnectionState.DISCONNECTING,
     ].includes(state);
   }
 }
