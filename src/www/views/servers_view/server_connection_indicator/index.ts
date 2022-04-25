@@ -73,6 +73,8 @@ export class ServerConnectionIndicator extends LitElement {
         position: absolute;
         display: inline-block;
 
+        left: 0;
+
         transition-property: transform, filter, opacity;
         transition-duration: var(--timing);
         transition-timing-function: var(--timing-function);

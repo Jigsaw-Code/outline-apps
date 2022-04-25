@@ -43,13 +43,19 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
       }
       .card-header {
         display: flex;
+        align-items: flex-end;
       }
       .card-content {
         text-align: center;
         padding: 10% 0;
       }
       .card-header server-connection-indicator {
-        padding: 16px 0 0 16px;
+        width: 48px;
+        height: 48px;
+        margin-left: 18px;
+      }
+      .expanded .card-header server-connection-indicator {
+        display: none;
       }
       #serverInfo {
         flex: 1;
@@ -75,6 +81,8 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
         border-radius: 100px;
         margin: 0;
         padding: 3px 3px 0;
+        width: 100%;
+        max-width: 192px;
       }
       .status-message {
         color: var(--disabled-text-color);
@@ -122,9 +130,8 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
     <paper-card class$="[[expandedClassName]]">
       <div class="card-header">
         <server-connection-indicator
-          state="[[state]]"
+          connection-state="[[state]]"
           root-path="[[rootPath]]"
-          hidden$="[[expanded]]"
         ></server-connection-indicator>
         <div id="serverInfo">
           <div id="serverName">[[localizedServerName]]</div>
@@ -152,9 +159,8 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
             noink=""
           >
             <server-connection-indicator
-              state="[[state]]"
+              connection-state="[[state]]"
               root-path="[[rootPath]]"
-              expanded=""
             ></server-connection-indicator>
           </paper-button>
         </div>
