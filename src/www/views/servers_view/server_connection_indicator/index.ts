@@ -24,6 +24,7 @@ export enum ServerConnectionState {
 }
 
 const ANIMATION_DURATION_MS = 1750;
+const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
 @customElement("server-connection-indicator")
@@ -41,14 +42,14 @@ export class ServerConnectionIndicator extends LitElement {
         display: inline-block;
         aspect-ratio: 1;
 
-        --timing: ${ANIMATION_DURATION_MS}ms;
+        --duration: ${ANIMATION_DURATION_MS}ms;
         --timing-function: ease-out;
 
         --circle-large-scale: scale(1);
-        --circle-large-delay: 500ms;
+        --circle-large-delay: ${ANIMATION_DELAY_MS}ms;
 
         --circle-medium-scale: scale(0.66);
-        --circle-medium-delay: 250ms;
+        --circle-medium-delay: ${ANIMATION_DELAY_MS / 2}ms;
 
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
@@ -76,10 +77,10 @@ export class ServerConnectionIndicator extends LitElement {
         left: 0;
 
         transition-property: transform, filter, opacity;
-        transition-duration: var(--timing);
+        transition-duration: var(--duration);
         transition-timing-function: var(--timing-function);
 
-        animation-duration: var(--timing);
+        animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
       }
@@ -177,7 +178,15 @@ export class ServerConnectionIndicator extends LitElement {
 
   private stopAnimation() {
     const elapsedAnimationMS = Date.now() - this.animationStartMS;
-    const remainingAnimationMS = ANIMATION_DURATION_MS - (elapsedAnimationMS % ANIMATION_DURATION_MS);
+
+    const remainingAnimationMS =
+      ANIMATION_DURATION_MS -
+      (elapsedAnimationMS %
+        // while the animation is reversed, the animation delay
+        // is included in the total play time
+        (this.animationState === ServerConnectionState.DISCONNECTING
+          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+          : ANIMATION_DURATION_MS));
 
     setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
   }
