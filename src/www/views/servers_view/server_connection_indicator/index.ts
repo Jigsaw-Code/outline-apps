@@ -152,7 +152,7 @@ export class ServerConnectionIndicator extends LitElement {
           html`
             <img
               class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${this.rootPath}assets/circle.webp"
+              src="${this.rootPath}assets/circle.png"
             />
           `
       )}
