@@ -49,9 +49,9 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
     readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&sentry_key=$API_KEY"
 fi
 
-readonly WEBPACK_MODE="$(node ${ROOT_DIR}/scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
+readonly WEBPACK_MODE="$(node ./scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
 
-node "${ROOT_DIR}/scripts/run_action.mjs" src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
+node ./scripts/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 
 webpack --config=src/electron/webpack_electron_main.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
@@ -62,12 +62,12 @@ electron-icon-maker --input=resources/electron/icon.png --output=build
 # TODO: Move env.sh to build/electron/.
 if [[ "${PLATFORM}" == "windows" ]]; then
     cat >build/env.nsh <<EOF
-!define RELEASE "$(node ${ROOT_DIR}/scripts/get_version.mjs windows)"
+!define RELEASE "$(node ./scripts/get_version.mjs windows)"
 !define SENTRY_URL "${SENTRY_URL:-}"
 EOF
 fi
 
-electron-builder $(node ${ROOT_DIR}/scripts/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
+electron-builder $(node ./scripts/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
 
 if ((STAGING_PERCENTAGE < 100)); then
     MANIFEST_POSTFIX=

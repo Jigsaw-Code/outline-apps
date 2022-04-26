@@ -20,16 +20,7 @@ import os from "os";
 const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "..";
 
 export function getRootDir() {
-  let rootDir = path.resolve(
-    path.dirname(url.fileURLToPath(import.meta.url)),
-    RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT
-  );
-
-  if (os.platform().startsWith("win")) {
-    rootDir = `file://${rootDir}`;
-  }
-
-  return rootDir;
+  return path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
 }
 
 async function main() {
