@@ -17,6 +17,7 @@ const {cordova} = cordovaLib;
 
 import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 
+export const dependencies = ["src/www"];
 export const requirements = ["cordova/setup"];
 
 /**
