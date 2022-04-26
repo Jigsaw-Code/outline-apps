@@ -12,30 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {execFile} from 'child_process';
-import {powerMonitor} from 'electron';
-import {platform} from 'os';
-import {promisify} from 'util';
+import {execFile} from "child_process";
+import {powerMonitor} from "electron";
+import {platform} from "os";
+import {promisify} from "util";
 
-import {ShadowsocksConfig} from '../www/app/config';
-import {TunnelStatus} from '../www/app/tunnel';
-import * as errors from '../www/model/errors';
+import {ShadowsocksConfig} from "../www/app/config";
+import {TunnelStatus} from "../www/app/tunnel";
+import * as errors from "../www/model/errors";
 
-import {ChildProcessHelper} from './process';
-import {RoutingDaemon} from './routing_service';
-import {pathToEmbeddedBinary} from './util';
-import {VpnTunnel} from './vpn_tunnel';
+import {ChildProcessHelper} from "./process";
+import {RoutingDaemon} from "./routing_service";
+import {pathToEmbeddedBinary} from "./util";
+import {VpnTunnel} from "./vpn_tunnel";
 
-const isLinux = platform() === 'linux';
-const isWindows = platform() === 'win32';
+const isLinux = platform() === "linux";
+const isWindows = platform() === "win32";
 
-const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
-const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
-const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
-const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
+const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? "outline-tun0" : "outline-tap0";
+const TUN2SOCKS_TAP_DEVICE_IP = "10.0.85.2";
+const TUN2SOCKS_VIRTUAL_ROUTER_IP = "10.0.85.1";
+const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = "255.255.255.0";
 
 // Cloudflare and Quad9 resolvers.
-const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
+const DNS_RESOLVERS = ["1.1.1.1", "9.9.9.9"];
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child process
 // outline-go-tun2socks. The routing service modifies the routing table so that the TAP device
@@ -70,7 +70,7 @@ export class GoVpnTunnel implements VpnTunnel {
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
-    this.onAllHelpersStopped = new Promise((resolve) => {
+    this.onAllHelpersStopped = new Promise(resolve => {
       this.resolveAllHelpersStopped = resolve;
     });
 
@@ -86,11 +86,13 @@ export class GoVpnTunnel implements VpnTunnel {
 
   // Fulfills once all three helpers have started successfully.
   async connect(checkProxyConnectivity: boolean) {
+    await this.routing.ensureDaemonInstalled();
+
     if (isWindows) {
       // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
       // closed.
-      powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
+      powerMonitor.on("suspend", this.suspendListener.bind(this));
+      powerMonitor.on("resume", this.resumeListener.bind(this));
     }
 
     // Disconnect the tunnel if the routing service disconnects unexpectedly.
@@ -128,17 +130,17 @@ export class GoVpnTunnel implements VpnTunnel {
   private async suspendListener() {
     // Preemptively stop tun2socks to avoid a silent restart that will fail.
     await this.tun2socks.stop();
-    console.log('stopped tun2socks in preparation for suspend');
+    console.log("stopped tun2socks in preparation for suspend");
   }
 
   private resumeListener() {
     if (this.disconnected) {
       // NOTE: Cannot remove resume listeners - Electron bug?
-      console.error('resume event invoked but this tunnel is terminated - doing nothing');
+      console.error("resume event invoked but this tunnel is terminated - doing nothing");
       return;
     }
 
-    console.log('restarting tun2socks after resume');
+    console.log("restarting tun2socks after resume");
     this.tun2socks.start(this.isUdpEnabled);
 
     // Check if UDP support has changed; if so, silently restart.
@@ -171,8 +173,8 @@ export class GoVpnTunnel implements VpnTunnel {
     }
 
     if (isWindows) {
-      powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
-      powerMonitor.removeListener('resume', this.resumeListener.bind(this));
+      powerMonitor.removeListener("suspend", this.suspendListener.bind(this));
+      powerMonitor.removeListener("resume", this.resumeListener.bind(this));
     }
 
     try {
@@ -201,16 +203,15 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   // Sets an optional callback for when the routing daemon is attempting to re-connect.
-  onReconnecting(newListener: () => void|undefined) {
+  onReconnecting(newListener: () => void | undefined) {
     this.reconnectingListener = newListener;
   }
 
   // Sets an optional callback for when the routing daemon successfully reconnects.
-  onReconnected(newListener: () => void|undefined) {
+  onReconnected(newListener: () => void | undefined) {
     this.reconnectedListener = newListener;
   }
 }
-
 
 // outline-go-tun2socks is a Go program that processes IP traffic from a TUN/TAP device
 // and relays it to a Shadowsocks proxy server.
@@ -218,8 +219,7 @@ class GoTun2socks {
   private process: ChildProcessHelper;
 
   constructor(private config: ShadowsocksConfig) {
-    this.process =
-        new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
+    this.process = new ChildProcessHelper(pathToEmbeddedBinary("outline-go-tun2socks", "tun2socks"));
   }
 
   async start(isUdpEnabled: boolean) {
@@ -229,33 +229,32 @@ class GoTun2socks {
     //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
     //   -proxyCipher chacha20-ietf-poly1035 [-dnsFallback] [-checkConnectivity]
     const args: string[] = [];
-    args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
-    args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
-    args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
-    args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-proxyHost', this.config.host || '');
-    args.push('-proxyPort', `${this.config.port}`);
-    args.push('-proxyPassword', this.config.password || '');
-    args.push('-proxyCipher', this.config.method || '');
-    args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
+    args.push("-tunName", TUN2SOCKS_TAP_DEVICE_NAME);
+    args.push("-tunAddr", TUN2SOCKS_TAP_DEVICE_IP);
+    args.push("-tunGw", TUN2SOCKS_VIRTUAL_ROUTER_IP);
+    args.push("-tunMask", TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+    args.push("-tunDNS", DNS_RESOLVERS.join(","));
+    args.push("-proxyHost", this.config.host || "");
+    args.push("-proxyPort", `${this.config.port}`);
+    args.push("-proxyPassword", this.config.password || "");
+    args.push("-proxyCipher", this.config.method || "");
+    args.push("-logLevel", this.process.isDebugModeEnabled ? "debug" : "info");
     if (!isUdpEnabled) {
-      args.push('-dnsFallback');
+      args.push("-dnsFallback");
     }
 
     return new Promise<void>((resolve, reject) => {
       this.process.onExit = (code?: number, signal?: string) => {
         reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
       };
-      this.process.onStdErr = (data?: string|Buffer) => {
-        if (!data?.toString().includes('tun2socks running')) {
+      this.process.onStdErr = (data?: string | Buffer) => {
+        if (!data?.toString().includes("tun2socks running")) {
           return;
         }
-        console.debug('tun2socks started');
+        console.debug("tun2socks started");
         this.process.onExit = async (code?: number, signal?: string) => {
-           // The process exited unexpectedly, restart it.
-          console.warn(
-            `tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
+          // The process exited unexpectedly, restart it.
+          console.warn(`tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
           await this.start(isUdpEnabled);
         };
         this.process.onStdErr = null;
@@ -266,7 +265,7 @@ class GoTun2socks {
   }
 
   async stop() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       this.process.onExit = (code?: number, signal?: string) => {
         console.log(`tun2socks stopped with signal: ${signal}, code: ${code}.`);
         resolve();
@@ -286,17 +285,17 @@ class GoTun2socks {
 // forwarding is supported. Throws if the checks fail or if the process fails to start.
 async function checkConnectivity(config: ShadowsocksConfig) {
   const args = [];
-  args.push('-proxyHost', config.host || '');
-  args.push('-proxyPort', `${config.port}`);
-  args.push('-proxyPassword', config.password || '');
-  args.push('-proxyCipher', config.method || '');
+  args.push("-proxyHost", config.host || "");
+  args.push("-proxyPort", `${config.port}`);
+  args.push("-proxyPassword", config.password || "");
+  args.push("-proxyCipher", config.method || "");
   // Checks connectivity and exits with an error code as defined in `errors.ErrorCode`
   // -tun* and -dnsFallback options have no effect on this mode.
-  args.push('-checkConnectivity');
+  args.push("-checkConnectivity");
 
   const exec = promisify(execFile);
   try {
-    await exec(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'), args);
+    await exec(pathToEmbeddedBinary("outline-go-tun2socks", "tun2socks"), args);
   } catch (e) {
     console.error(`connectivity check failed: ${e}`);
     const code = e.status;
