@@ -28,6 +28,12 @@ export const requirements = ["cordova/setup"];
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
+  let downstreamArgv = [];
+
+  if (platform === "android") {
+    downstreamArgv.push("--gradleArg=-PcdvBuildMultipleApks=true");
+  }
+
   if (
     platform === "android" &&
     buildMode === "release" &&
@@ -43,9 +49,21 @@ export async function main(...parameters) {
     options: {
       device: platform === "ios",
       release: buildMode === "release",
-      gradleArg: platform === "android" && "-PcdvBuildMultipleApks=true",
-      // TODO(daniellacosse): verify options and figure out where to put this
-      //   '--keystore=keystore.p12 --alias=privatekey "--storePassword=$ANDROID_KEY_STORE_PASSWORD" "--password=$ANDROID_KEY_STORE_PASSWORD"',
+      argv:
+        platform === "android"
+          ? [
+              ...(buildMode === "release"
+                ? [
+                    "--keystore=keystore.p12",
+                    "--alias=privatekey",
+                    "--storePassword=$ANDROID_KEY_STORE_PASSWORD",
+                    "--password=$ANDROID_KEY_STORE_PASSWORD",
+                    "--",
+                  ]
+                : []),
+              "--gradleArg=-PcdvBuildMultipleApks=true",
+            ]
+          : [],
     },
   });
 }
