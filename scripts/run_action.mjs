@@ -46,7 +46,7 @@ const resolveActionPath = async actionPath => {
  */
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters, {shell: true});
+    const childProcess = spawn(command, parameters);
 
     childProcess.stdout.on("data", data => console.info(data.toString()));
     childProcess.stderr.on("data", error => console.error(chalk.red(error.toString())));
