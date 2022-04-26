@@ -144,14 +144,28 @@ export class ServerConnectionIndicator extends LitElement {
     }
 
     if (this.isAnimationState(this.connectionState)) {
-      return this.startAnimation();
-    }
+      // start the animation and the animation timer
+      this.animationStartMS = Date.now();
 
-    if (this.isAnimationState(this.animationState)) {
-      return this.stopAnimation();
-    }
+      this.animationState = this.connectionState;
+    } else if (this.isAnimationState(this.animationState)) {
+      // schedule the end of the animation
+      // based on when the animation loop started
+      const elapsedAnimationMS = Date.now() - this.animationStartMS;
 
-    this.animationState = this.connectionState;
+      const remainingAnimationMS =
+        ANIMATION_DURATION_MS -
+        (elapsedAnimationMS %
+          // while the animation is reversed, the animation delay
+          // is included in the total play time
+          (this.animationState === ServerConnectionState.DISCONNECTING
+            ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+            : ANIMATION_DURATION_MS));
+
+      setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
+    } else {
+      this.animationState = this.connectionState;
+    }
   }
 
   render() {
@@ -168,27 +182,6 @@ export class ServerConnectionIndicator extends LitElement {
           `
       )}
     `;
-  }
-
-  private startAnimation() {
-    this.animationStartMS = Date.now();
-
-    this.animationState = this.connectionState;
-  }
-
-  private stopAnimation() {
-    const elapsedAnimationMS = Date.now() - this.animationStartMS;
-
-    const remainingAnimationMS =
-      ANIMATION_DURATION_MS -
-      (elapsedAnimationMS %
-        // while the animation is reversed, the animation delay
-        // is included in the total play time
-        (this.animationState === ServerConnectionState.DISCONNECTING
-          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-          : ANIMATION_DURATION_MS));
-
-    setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
   }
 
   private isAnimationState(state: ServerConnectionState): boolean {
