@@ -21,18 +21,11 @@ export const requirements = ["cordova/setup"];
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
- * WARNING: still a WIP.
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
-
-  let downstreamArgv = [];
-
-  if (platform === "android") {
-    downstreamArgv.push("--gradleArg=-PcdvBuildMultipleApks=true");
-  }
 
   if (
     platform === "android" &&
