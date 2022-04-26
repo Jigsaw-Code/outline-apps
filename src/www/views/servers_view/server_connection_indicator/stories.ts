@@ -15,8 +15,6 @@
   limitations under the License.
 */
 
-import "./index";
-
 import {html} from "lit";
 
 import {ServerConnectionIndicator, ServerConnectionState} from "./index";
@@ -25,24 +23,21 @@ export default {
   title: "Servers View/Server Connection Indicator",
   component: "server-connection-indicator",
   args: {
-    state: ServerConnectionState.INITIAL,
-    expanded: false,
+    connectionState: ServerConnectionState.INITIAL,
   },
   argTypes: {
-    state: {
+    connectionState: {
       control: "select",
-      options: Object.keys(ServerConnectionState),
-    },
-    expanded: {
-      control: "boolean",
+      options: Object.values(ServerConnectionState),
     },
   },
 };
 
-export const Example = ({state, expanded}: ServerConnectionIndicator) =>
+export const Example = ({connectionState}: ServerConnectionIndicator) =>
   html`
-    <server-connection-indicator
-      .state="${state ?? ServerConnectionState.INITIAL}"
-      .expanded="${expanded}"
-    ></server-connection-indicator>
+    <div style="width: clamp(64px, 100vw, 512px);">
+      <server-connection-indicator
+        connection-state="${connectionState ?? ServerConnectionState.INITIAL}"
+      ></server-connection-indicator>
+    </div>
   `;
