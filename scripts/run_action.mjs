@@ -43,6 +43,75 @@ const resolveActionPath = async actionPath => {
 };
 
 /**
+ * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
+ * if they can be skipped on subsequent attempts.
+ *
+ * Cache methods:
+ *   readActionCache - loads the latest time the action was run along with the parameters it was run with
+ *   writeActionCache - updates the time an action was run and the parameters it was run with
+ *
+ * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
+ * corruption of the cache
+ */
+const ACTION_CACHE_FILE = "./.action_cache.json";
+
+const readActionCache = async (actionPathKey, parameters) => {
+  const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+  if (!existsSync(cachePath)) {
+    return {};
+  }
+
+  const cache = JSON.parse(await fs.readFile(cachePath));
+
+  if (JSON.stringify(cache[actionPathKey]?.parameters) !== JSON.stringify(parameters)) {
+    return {};
+  }
+
+  return cache[actionPathKey];
+};
+
+const writeActionCache = async (actionPathKey, actionCacheObject) => {
+  const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+  let cache = {};
+
+  if (existsSync(cachePath)) {
+    cache = JSON.parse(await fs.readFile(cachePath));
+  }
+
+  cache[actionPathKey] = actionCacheObject;
+
+  await fs.writeFile(cachePath, JSON.stringify(cache));
+};
+
+/**
+ * @description BFSes a list of file system targets, returning the timestamp of the most
+ * recently modified one.
+ *
+ * @param {Array<Directory | File>} foldersAndFiles List of folders and files to scan.
+ * @returns {number} Timestamp in milliseconds of the most recently modified file.
+ */
+const mostRecentModification = async (foldersAndFiles = []) => {
+  let result = 0;
+
+  while (foldersAndFiles.length) {
+    const currentFolderOrFile = foldersAndFiles.pop();
+    const fileInformation = await fs.stat(currentFolderOrFile);
+
+    result = Math.max(result, fileInformation.mtimeMs);
+
+    if (fileInformation.isDirectory()) {
+      const contents = await fs.readdir(currentFolderOrFile);
+
+      foldersAndFiles = [...foldersAndFiles, ...contents.map(child => `${currentFolderOrFile}/${child}`)];
+    }
+  }
+
+  return result;
+};
+
+/**
  * @description promisifies the child process (for supporting legacy bash actions!)
  */
 const spawnStream = (command, parameters) =>
@@ -88,6 +157,7 @@ export async function runAction(actionPath, ...parameters) {
       const action = os.platform().startsWith("win")
         ? await import(`file://${resolvedPath}`)
         : await import(resolvedPath);
+      const actionCache = await readActionCache(resolvedPath, parameters);
 
       if (action.requirements?.length) {
         for (const requiredAction of action.requirements) {
@@ -95,7 +165,24 @@ export async function runAction(actionPath, ...parameters) {
         }
       }
 
-      await action.main(...parameters);
+      if (
+        action.dependencies?.length &&
+        actionCache.lastRan > (await mostRecentModification([...action.dependencies]))
+      ) {
+        console.info(
+          chalk.bold(`Skipping:`),
+          "No source file from this action's dependencies",
+          chalk.blue(`"${action.dependencies.join(", ")}"`),
+          "are newer than the previous successful run of this action."
+        );
+      } else {
+        await action.main(...parameters);
+
+        await writeActionCache(resolvedPath, {
+          parameters,
+          lastRan: Date.now(),
+        });
+      }
     } else {
       await spawnStream("bash", [resolvedPath, ...parameters]);
     }
