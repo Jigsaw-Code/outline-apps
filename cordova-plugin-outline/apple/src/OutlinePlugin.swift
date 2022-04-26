@@ -146,63 +146,45 @@ class OutlinePlugin: CDVPlugin {
 
   func initializeErrorReporting(_ command: CDVInvokedUrlCommand) {
     DDLogInfo("initializeErrorReporting")
-    guard let apiKey = command.argument(at: 0) as? String else {
+    guard let sentryDsn = command.argument(at: 0) as? String else {
       return sendError("Missing error reporting API key.", callbackId: command.callbackId)
     }
-    do {
-      Client.shared = try Client(dsn: apiKey)
-      try Client.shared?.startCrashHandler()
-      Client.shared?.breadcrumbs.maxBreadcrumbs = OutlinePlugin.kMaxBreadcrumbs;
-      sendSuccess(true, callbackId: command.callbackId)
-    } catch let error {
-      sendError("Failed to init error reporting: \(error)", callbackId: command.callbackId)
+    SentrySDK.start { options in
+      options.dsn = sentryDsn
+      options.maxBreadcrumbs = OutlinePlugin.kMaxBreadcrumbs
+      // Remove device identifier, timezone, and memory stats.
+      options.beforeSend = { event in
+        event.context?["app"]?.removeValue(forKey: "device_app_hash")
+        if var device = event.context?["device"] {
+          device.removeValue(forKey: "timezone")
+          device.removeValue(forKey: "memory_size")
+          device.removeValue(forKey: "free_memory")
+          device.removeValue(forKey: "usable_memory")
+          device.removeValue(forKey: "storage_size")
+          event.context?["device"] = device
+        }
+        return event
+      }
     }
+    sendSuccess(true, callbackId: command.callbackId)
   }
 
   func reportEvents(_ command: CDVInvokedUrlCommand) {
-    guard Client.shared != nil else {
-      sendError("Failed to report events. Sentry not initialized.", callbackId: command.callbackId)
-      return
-    }
-    let event = Event(level: .info)
     var uuid: String
     if let eventId = command.argument(at: 0) as? String {
       // Associate this event with the one reported from JS.
-      event.tags = ["user_event_id": eventId]
+      SentrySDK.configureScope { scope in
+        scope.setTag(value: eventId, key: "user_event_id")
+      }
       uuid = eventId
     } else {
       uuid = NSUUID().uuidString
     }
-    event.message = "\(OutlinePlugin.kPlatform) report (\(uuid))"
-
-    // Remove device identifier, timezone, and memory stats. Note that we cannot use the
-    // beforeSerializeEvent callback, since contexts are only added after serialization
-    // if not present.
-    let serializedEvent = event.serialize()
-    let contexts = serializedEvent["contexts"] as? [String: [String: Any]]
-    var appContext = contexts?["app"]
-    appContext?["device_app_hash"] = ""
-    var deviceContext = contexts?["device"]
-    deviceContext?["timezone"] = ""
-    deviceContext?["memory_size"] = ""
-    deviceContext?["free_memory"] = ""
-    deviceContext?["usable_memory"] = ""
-    deviceContext?["storage_size"] = ""
-    event.context = Context()
-    // Setting the sanitized contexts will prevent them from being added on serialization.
-    event.context?.appContext = appContext
-    event.context?.deviceContext = deviceContext
-
     OutlineSentryLogger.sharedInstance.addVpnExtensionLogsToSentry()
-    Client.shared?.send(event: event) { (error) in
-      if error == nil {
-        self.sendSuccess(true, callbackId: command.callbackId)
-        Client.shared?.breadcrumbs.clear() // Breadcrumbs are persisted, clear on send success.
-      } else {
-        self.sendError("Failed to report event: \(String(describing: error))",
-                       callbackId: command.callbackId)
-      }
+    SentrySDK.capture(message: "\(OutlinePlugin.kPlatform) report (\(uuid))") { scope in
+      scope.setLevel(.info)
     }
+    self.sendSuccess(true, callbackId: command.callbackId)
   }
 
 #if os(macOS)
