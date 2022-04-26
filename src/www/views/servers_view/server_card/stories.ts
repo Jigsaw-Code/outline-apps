@@ -35,7 +35,7 @@ export default {
   argTypes: {
     state: {
       control: "select",
-      options: Object.keys(ServerConnectionState),
+      options: Object.values(ServerConnectionState),
     },
     expanded: {
       control: "boolean",
