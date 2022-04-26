@@ -139,9 +139,9 @@ export class ServerConnectionIndicator extends LitElement {
   ];
 
   render() {
-    if (this.shouldAnimate) {
+    if (this.isAnimationState(this.connectionState)) {
       this.startAnimation();
-    } else if (this.isAnimating && !this.shouldAnimate) {
+    } else if (this.isAnimationState(this.animationState)) {
       this.stopAnimation();
     } else {
       this.animationState = this.connectionState;
