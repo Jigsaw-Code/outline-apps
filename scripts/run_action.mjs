@@ -17,6 +17,7 @@ import {existsSync} from "fs";
 import fs from "fs/promises";
 import path from "path";
 import {spawn} from "child_process";
+import os from "os";
 import url from "url";
 
 import {getRootDir} from "./get_root_dir.mjs";
@@ -83,8 +84,10 @@ export async function runAction(actionPath, ...parameters) {
   const startTime = performance.now();
 
   try {
-    if (resolvedPath.endsWith(".mjs")) {
-      const action = await import(resolvedPath);
+    if (resolvedPath.endsWith("mjs")) {
+      const action = os.platform().startsWith("win")
+        ? await import(`file://${resolvedPath}`)
+        : await import(resolvedPath);
 
       if (action.requirements?.length) {
         for (const requiredAction of action.requirements) {
