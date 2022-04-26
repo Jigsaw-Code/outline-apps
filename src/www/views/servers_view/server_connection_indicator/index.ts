@@ -138,15 +138,23 @@ export class ServerConnectionIndicator extends LitElement {
     ),
   ];
 
-  render() {
-    if (this.isAnimationState(this.connectionState)) {
-      this.startAnimation();
-    } else if (this.isAnimationState(this.animationState)) {
-      this.stopAnimation();
-    } else {
-      this.animationState = this.connectionState;
+  willUpdate(changedProperties: Map<keyof ServerConnectionIndicator, ServerConnectionState>) {
+    if (!changedProperties.has("connectionState")) {
+      return;
     }
 
+    if (this.isAnimationState(this.connectionState)) {
+      return this.startAnimation();
+    }
+
+    if (this.isAnimationState(this.animationState)) {
+      return this.stopAnimation();
+    }
+
+    this.animationState = this.connectionState;
+  }
+
+  render() {
     const circles = this.animationState === ServerConnectionState.INITIAL ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
 
     return html`
@@ -160,14 +168,6 @@ export class ServerConnectionIndicator extends LitElement {
           `
       )}
     `;
-  }
-
-  private get shouldAnimate() {
-    return this.isAnimationState(this.connectionState);
-  }
-
-  private get isAnimating() {
-    return this.isAnimationState(this.animationState);
   }
 
   private startAnimation() {
