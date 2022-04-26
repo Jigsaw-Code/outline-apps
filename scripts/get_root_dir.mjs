@@ -14,12 +14,22 @@
 
 import path from "path";
 import url from "url";
+import os from "os";
 
 // WARNING: if you move this file, you MUST update this file path
 const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "..";
 
 export function getRootDir() {
-  return path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
+  let rootDir = path.resolve(
+    path.dirname(url.fileURLToPath(import.meta.url)),
+    RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT
+  );
+
+  if (os.platform().startsWith("win")) {
+    rootDir = `file://${rootDir}`;
+  }
+
+  return rootDir;
 }
 
 async function main() {
