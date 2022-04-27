@@ -229,7 +229,7 @@ export class RoutingDaemon {
   }
 
   private installDaemon(): Promise<void> {
-    console.info(`(re-)installing routing daemon`);
+    console.info(`Installing routing daemon`);
     return new Promise<void>((resolve, reject) => {
       sudo.exec(getServiceStartCommand(), {name: "Outline"}, sudoError => {
         if (sudoError) {
