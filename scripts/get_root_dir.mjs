@@ -14,7 +14,6 @@
 
 import path from "path";
 import url from "url";
-import os from "os";
 
 // WARNING: if you move this file, you MUST update this file path
 const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = "..";
