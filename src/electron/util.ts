@@ -21,8 +21,7 @@ import * as path from 'path';
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
-const OUTLINE_PROXY_CONTROLLER_PATH =
-    path.join(unpackedAppPath(), 'tools', 'outline_proxy_controller', 'dist');
+const OUTLINE_PROXY_CONTROLLER_PATH = path.join(unpackedAppPath(), 'tools', 'outline_proxy_controller', 'dist');
 
 const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
 const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
@@ -33,9 +32,7 @@ function unpackedAppPath() {
 }
 
 export function pathToEmbeddedBinary(toolname: string, filename: string) {
-  return path.join(
-      unpackedAppPath(), 'third_party', toolname, os.platform(),
-      filename + (isWindows ? '.exe' : ''));
+  return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
 }
 
 export function getServiceStartCommand(): string {
@@ -46,11 +43,10 @@ export function getServiceStartCommand(): string {
     //   build/windows
     //
     // Surrounding quotes important, consider "c:\program files"!
-    return `"${
-        path.join(
-            app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) :
-                                                    app.getAppPath(),
-            'install_windows_service.bat')}"`;
+    return `"${path.join(
+      app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
+      'install_windows_service.bat'
+    )}"`;
   } else if (isLinux) {
     return path.join(copyServiceFilesToTempFolder(), LINUX_INSTALLER_FILENAME);
   } else {
@@ -62,12 +58,11 @@ export function getServiceStartCommand(): string {
 function copyServiceFilesToTempFolder() {
   const tmp = fs.mkdtempSync('/tmp/');
   console.log(`copying service files to ${tmp}`);
-  [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(
-      (filename) => {
-        const src = path.join(OUTLINE_PROXY_CONTROLLER_PATH, filename);
-        // https://github.com/jprichardson/node-fs-extra/issues/323
-        const dest = path.join(tmp, filename);
-        fsextra.copySync(src, dest, {overwrite: true});
-      });
+  [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(filename => {
+    const src = path.join(OUTLINE_PROXY_CONTROLLER_PATH, filename);
+    // https://github.com/jprichardson/node-fs-extra/issues/323
+    const dest = path.join(tmp, filename);
+    fsextra.copySync(src, dest, {overwrite: true});
+  });
   return tmp;
 }
