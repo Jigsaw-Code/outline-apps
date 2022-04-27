@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import os from "os";
+import url from "url";
 import {existsSync} from "fs";
 import {execSync} from "child_process";
 import path from "path";
@@ -20,12 +21,11 @@ import path from "path";
 import cordovaLib from "cordova-lib";
 const {cordova} = cordovaLib;
 
+import {runAction} from "../../scripts/run_action.mjs";
 import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 
 const CORDOVA_PLATFORMS = ["ios", "osx", "android"];
 const WORKING_CORDOVA_OSX_COMMIT = "07e62a53aa6a8a828fd988bc9e884c38c3495a67";
-
-export const requirements = ["www/build"];
 
 /**
  * @description Prepares the paramterized cordova project (ios, osx, android) for being built.
@@ -35,7 +35,7 @@ export const requirements = ["www/build"];
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform} = getBuildParameters(parameters);
+  const {platform, buildMode} = getBuildParameters(parameters);
   const isApple = platform === "ios" || platform === "osx";
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
@@ -47,6 +47,8 @@ export async function main(...parameters) {
   if (isApple && os.platform() !== "darwin") {
     throw new SystemError("Building an Apple binary requires xcodebuild and can only be done on MacOS");
   }
+
+  await runAction("www/build", [`--buildMode=${buildMode}`]);
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
@@ -60,6 +62,11 @@ export async function main(...parameters) {
 
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
+    // TODO(daniellacosse): move this to a cordova hook
     execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {stdio: "inherit"});
   }
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
 }

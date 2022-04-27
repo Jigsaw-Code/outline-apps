@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import url from "url";
+
 import cordovaLib from "cordova-lib";
 const {cordova} = cordovaLib;
 
+import {runAction} from "../../scripts/run_action.mjs";
 import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
-
-export const requirements = ["cordova/setup"];
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
@@ -27,14 +28,28 @@ export const requirements = ["cordova/setup"];
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  if (
-    platform === "android" &&
-    buildMode === "release" &&
-    !(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)
-  ) {
-    throw new ReferenceError(
-      "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
-    );
+  await runAction("cordova/setup", parameters);
+
+  let argv = [];
+
+  if (platform === "android") {
+    if (platform === "release") {
+      argv = [
+        "--keystore=keystore.p12",
+        "--alias=privatekey",
+        "--storePassword=$ANDROID_KEY_STORE_PASSWORD",
+        "--password=$ANDROID_KEY_STORE_PASSWORD",
+        "--",
+      ];
+
+      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+        throw new ReferenceError(
+          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+        );
+      }
+    }
+
+    argv.push("--gradleArg=-PcdvBuildMultipleApks=true");
   }
 
   await cordova.compile({
@@ -42,21 +57,11 @@ export async function main(...parameters) {
     options: {
       device: platform === "ios",
       release: buildMode === "release",
-      argv:
-        platform === "android"
-          ? [
-              ...(buildMode === "release"
-                ? [
-                    "--keystore=keystore.p12",
-                    "--alias=privatekey",
-                    "--storePassword=$ANDROID_KEY_STORE_PASSWORD",
-                    "--password=$ANDROID_KEY_STORE_PASSWORD",
-                    "--",
-                  ]
-                : []),
-              "--gradleArg=-PcdvBuildMultipleApks=true",
-            ]
-          : [],
+      argv,
     },
   });
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
 }

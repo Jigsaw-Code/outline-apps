@@ -47,7 +47,7 @@ const resolveActionPath = async actionPath => {
  */
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters);
+    const childProcess = spawn(command, parameters, {shell: true});
 
     childProcess.stdout.on("data", data => console.info(data.toString()));
     childProcess.stderr.on("data", error => console.error(chalk.red(error.toString())));
@@ -84,21 +84,8 @@ export async function runAction(actionPath, ...parameters) {
   const startTime = performance.now();
 
   try {
-    if (resolvedPath.endsWith("mjs")) {
-      const action = os.platform().startsWith("win")
-        ? await import(`file://${resolvedPath}`)
-        : await import(resolvedPath);
-
-      if (action.requirements?.length) {
-        for (const requiredAction of action.requirements) {
-          await runAction(requiredAction, ...parameters);
-        }
-      }
-
-      await action.main(...parameters);
-    } else {
-      await spawnStream("bash", [resolvedPath, ...parameters]);
-    }
+    // TODO(daniellacosse): call javascript actions directly without creating a circular dependency
+    await spawnStream(resolvedPath.endsWith("mjs") ? "node" : "bash", [resolvedPath, ...parameters]);
   } catch (error) {
     console.error(error);
     console.groupEnd();
@@ -117,6 +104,7 @@ export async function runAction(actionPath, ...parameters) {
 async function main() {
   process.env.ROOT_DIR ??= getRootDir();
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, "build");
+  process.env.FORCE_COLOR = true;
 
   return runAction(...process.argv.slice(2));
 }

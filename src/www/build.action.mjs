@@ -14,6 +14,7 @@
 
 import fs from "fs/promises";
 import webpack from "webpack";
+import url from "url";
 
 import electronConfig from "./webpack_electron.mjs";
 import cordovaConfig from "./webpack_cordova.mjs";
@@ -63,4 +64,8 @@ export async function main(...parameters) {
   webpackConfig.mode = getWebpackBuildMode(buildMode);
 
   await webpackPromise(webpackConfig);
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
 }

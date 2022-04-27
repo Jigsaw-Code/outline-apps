@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import url from "url";
 import {globby} from "globby";
 
 /**
@@ -21,4 +22,8 @@ export async function main() {
   for (const actionPath of await globby(["**/*.action.sh", "**/*.action.mjs"])) {
     console.info(actionPath.match(/(.+)\.action/)[1]);
   }
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
 }
