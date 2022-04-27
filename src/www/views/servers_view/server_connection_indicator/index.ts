@@ -11,284 +11,184 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from "@polymer/decorators";
-import {html, PolymerElement} from "@polymer/polymer";
-import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
+import {html, css, LitElement} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 
 export enum ServerConnectionState {
-  INITIAL = "INITIAL",
-  CONNECTING = "CONNECTING",
-  CONNECTED = "CONNECTED",
-  RECONNECTING = "RECONNECTING",
-  DISCONNECTING = "DISCONNECTING",
-  DISCONNECTED = "DISCONNECTED",
+  INITIAL = "initial",
+  CONNECTING = "connecting",
+  CONNECTED = "connected",
+  RECONNECTING = "reconnecting",
+  DISCONNECTING = "disconnecting",
+  DISCONNECTED = "disconnected",
 }
 
-@customElement("server-connection-indicator")
-export class ServerConnectionIndicator extends LegacyElementMixin(PolymerElement) {
-  static ANIMATION_DURATION_MS = 1750;
+const ANIMATION_DURATION_MS = 1750;
+const ANIMATION_DELAY_MS = 500;
+const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
-  static template = html`
-    <style>
-      /* Do not mirror animation for RTL languages */
-      /* rtl:begin:ignore */
-      @keyframes rotate-with-pause {
-        0% {
-          transform: rotate(0deg);
-        }
-        60%,
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      @keyframes rotate-backward-with-pause {
-        0% {
-          transform: rotate(360deg);
-        }
-        60%,
-        100% {
-          transform: rotate(0deg);
-        }
-      }
+@customElement("server-connection-indicator")
+export class ServerConnectionIndicator extends LitElement {
+  @property({attribute: "connection-state"}) connectionState: ServerConnectionState;
+  @property({attribute: "root-path"}) rootPath: string;
+
+  @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
+  private animationStartMS: number;
+
+  static styles = [
+    css`
       :host {
-        margin: 0 auto;
-      }
-      #container {
-        border-radius: 80px;
-        margin: 0 auto;
         position: relative;
+        display: inline-block;
+        aspect-ratio: 1;
+
+        --duration: ${ANIMATION_DURATION_MS}ms;
+        --timing-function: ease-out;
+
+        --circle-large-scale: scale(1);
+        --circle-large-delay: ${ANIMATION_DELAY_MS}ms;
+
+        --circle-medium-scale: scale(0.66);
+        --circle-medium-delay: ${ANIMATION_DELAY_MS / 2}ms;
+
+        --circle-small-scale: scale(0.33);
+        --circle-small-delay: 0ms;
+
+        --circle-initial-opacity: 0.5;
+        --circle-initial-color: grayscale(0.5);
+
+        --circle-connected-opacity: 1;
+        --circle-connected-color: grayscale(0);
+
+        --circle-disconnected-opacity: 1;
+        --circle-disconnected-color: grayscale(1);
       }
-      img {
+
+      :host,
+      .circle {
+        width: 100%;
+        height: 100%;
+      }
+
+      .circle {
         position: absolute;
         display: inline-block;
-        transition-timing-function: ease-out;
-        transition-duration: 1s;
-      }
-      .grey.DISCONNECTED {
-        opacity: 1;
-      }
-      .grey.CONNECTED {
-        opacity: 0;
-      }
-      .grey.DISCONNECTING {
-        opacity: 0.8;
-      }
-      .grey.INITIAL,
-      .green.INITIAL,
-      .green.DISCONNECTED,
-      .green.CONNECTING,
-      .green.RECONNECTING,
-      .green.DISCONNECTING {
-        opacity: 0;
-      }
-      .green.CONNECTED {
-        opacity: 1;
-      }
-      #small.CONNECTING,
-      #small-grey.CONNECTING,
-      #small.RECONNECTING,
-      #small-grey.RECONNECTING {
-        animation: rotate-with-pause 1.75s ease-out infinite;
-      }
-      #medium.CONNECTING,
-      #medium-grey.CONNECTING,
-      #medium.RECONNECTING,
-      #medium-grey.RECONNECTING {
-        animation: rotate-with-pause 1.75s ease-out 250ms infinite;
-      }
-      #large.CONNECTING,
-      #large-grey.CONNECTING,
-      #large.RECONNECTING,
-      #large-grey.RECONNECTING {
-        animation: rotate-with-pause 1.75s ease-out 500ms infinite;
-      }
-      #small.DISCONNECTING,
-      #small-grey.DISCONNECTING {
-        animation: rotate-backward-with-pause 1.75s ease-out infinite;
-      }
-      #medium.DISCONNECTING,
-      #medium-grey.DISCONNECTING {
-        animation: rotate-backward-with-pause 1.75s ease-out 250ms infinite;
-      }
-      #large.DISCONNECTING,
-      #large-grey.DISCONNECTING {
-        animation: rotate-backward-with-pause 1.75s ease-out 500ms infinite;
-      }
-      #small,
-      #small-grey {
-        top: 16px;
-        left: 16px;
-        height: 16px;
-        width: 16px;
-        z-index: 300;
-      }
-      #medium,
-      #medium-grey {
-        top: 8px;
-        left: 8px;
-        height: 32px;
-        width: 32px;
-        transition-delay: 250ms;
-        z-index: 200;
-      }
-      #large,
-      #large-grey,
-      #large-zero {
-        top: 0;
+
         left: 0;
-        height: 48px;
-        width: 48px;
-        transition-delay: 500ms;
-        z-index: 100;
+
+        transition-property: transform, filter, opacity;
+        transition-duration: var(--duration);
+        transition-timing-function: var(--timing-function);
+
+        animation-duration: var(--duration);
+        animation-timing-function: var(--timing-function);
+        animation-iteration-count: infinite;
       }
-      .expanded #small,
-      .expanded #small-grey {
-        top: 60px;
-        left: 60px;
-        height: 40px;
-        width: 40px;
+
+      .circle-initial {
+        opacity: var(--circle-initial-opacity);
+        filter: var(--circle-initial-color);
       }
-      .expanded #medium,
-      .expanded #medium-grey {
-        top: 30px;
-        left: 30px;
-        height: 100px;
-        width: 100px;
+
+      .circle-connected,
+      .circle-reconnecting,
+      .circle-disconnecting {
+        opacity: var(--circle-connected-opacity);
+        filter: var(--circle-connected-color);
       }
-      .expanded #large,
-      .expanded #large-grey,
-      .expanded #large-zero {
-        top: 0;
-        left: 0;
-        height: 160px;
-        width: 160px;
+
+      .circle-disconnected,
+      .circle-connecting {
+        opacity: var(--circle-disconnected-opacity);
+        filter: var(--circle-disconnected-color);
       }
-      #large {
-        position: relative;
+
+      .circle-disconnecting {
+        animation-direction: reverse;
+        --timing-function: ease-in;
       }
-      #large-zero {
-        opacity: 0;
-      }
-      #large-zero.INITIAL {
-        opacity: 1;
-      }
-      @media (max-width: 360px) {
-        #small,
-        #small-grey {
-          top: 12px;
-          left: 12px;
-          height: 8px;
-          width: 8px;
+    `,
+    ...CIRCLE_SIZES.map(
+      /* prettier-ignore */
+      circleSize => css`
+        .circle-${circleSize} {
+          transform: var(--circle-${circleSize}-scale);
+          animation-delay: var(--circle-${circleSize}-delay);
         }
-        #medium,
-        #medium-grey {
-          top: 8px;
-          left: 8px;
-          height: 16px;
-          width: 16px;
+
+        .circle-${circleSize}.circle-connecting,
+        .circle-${circleSize}.circle-reconnecting,
+        .circle-${circleSize}.circle-disconnecting {
+          animation-name: circle-${circleSize}-rotate-with-pause;
         }
-        #large,
-        #large-grey,
-        #large-zero {
-          top: 0;
-          left: 0;
-          height: 32px;
-          width: 32px;
+
+        /* Do not mirror animation for RTL languages */
+        /* rtl:begin:ignore */
+        @keyframes circle-${circleSize}-rotate-with-pause {
+          0% {
+            transform: rotate(0deg) var(--circle-${circleSize}-scale);
+          }
+          60%,
+          100% {
+            transform: rotate(360deg) var(--circle-${circleSize}-scale);
+          }
         }
-      }
-      @media (min-height: 600px) {
-        .expanded #small,
-        .expanded #small-grey {
-          top: 72px;
-          left: 72px;
-          height: 48px;
-          width: 48px;
-        }
-        .expanded #medium,
-        .expanded #medium-grey {
-          top: 36px;
-          left: 36px;
-          height: 120px;
-          width: 120px;
-        }
-        .expanded #large,
-        .expanded #large-grey,
-        .expanded #large-zero {
-          top: 0;
-          left: 0;
-          height: 192px;
-          width: 192px;
-        }
-      }
-      /* rtl:end:ignore */
-    </style>
-    <div id="container" class$="[[expandedClassName]]">
-      <img id="small-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="small" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="medium-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="medium" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-      <img id="large-grey" src$="[[rootPath]]assets/disc_grey.png" class$="grey {{animationState}}" />
-      <img id="large-zero" src$="[[rootPath]]assets/disc_empty.png" class$="{{state}}" />
-      <img id="large" src$="[[rootPath]]assets/disc_color.png" class$="green {{animationState}}" />
-    </div>
-  `;
+        /* rtl:end:ignore */
+      `
+    ),
+  ];
 
-  animationStartMS: number;
-
-  @property({type: String}) rootPath: string;
-  @property({type: Boolean}) expanded: boolean;
-
-  @property({type: String, observer: "syncAnimationState"}) state: ServerConnectionState;
-  @property({type: String}) animationState: ServerConnectionState = ServerConnectionState.INITIAL;
-
-  @computed("expanded")
-  get expandedClassName() {
-    return this.expanded ? "expanded" : "";
-  }
-
-  @computed("state")
-  get shouldAnimate() {
-    return this.isAnimationState(this.state);
-  }
-
-  @computed("animationState")
-  get isAnimating() {
-    return this.isAnimationState(this.animationState);
-  }
-
-  // @ts-ignore
-  private syncAnimationState() {
-    if (this.shouldAnimate) {
-      return this.startAnimation();
+  willUpdate(changedProperties: Map<keyof ServerConnectionIndicator, ServerConnectionState>) {
+    if (!changedProperties.has("connectionState")) {
+      return;
     }
 
-    if (!this.shouldAnimate && this.isAnimating) {
-      return this.stopAnimation();
+    if (this.isAnimationState(this.connectionState)) {
+      // start the animation and the animation timer
+      this.animationStartMS = Date.now();
+
+      this.animationState = this.connectionState;
+    } else if (this.isAnimationState(this.animationState)) {
+      // schedule the end of the animation
+      // based on when the animation loop started
+      const elapsedAnimationMS = Date.now() - this.animationStartMS;
+
+      const remainingAnimationMS =
+        ANIMATION_DURATION_MS -
+        (elapsedAnimationMS %
+          // while the animation is reversed, the animation delay
+          // is included in the total play time
+          (this.animationState === ServerConnectionState.DISCONNECTING
+            ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+            : ANIMATION_DURATION_MS));
+
+      setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
+    } else {
+      this.animationState = this.connectionState;
     }
-
-    this.animationState = this.state;
   }
 
-  private startAnimation() {
-    this.animationStartMS = Date.now();
+  render() {
+    const circles = this.animationState === ServerConnectionState.INITIAL ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
 
-    this.animationState = this.state;
-  }
-
-  private stopAnimation() {
-    const elapsedAnimationMS = Date.now() - this.animationStartMS;
-    const remainingAnimationMS =
-      ServerConnectionIndicator.ANIMATION_DURATION_MS -
-      (elapsedAnimationMS % ServerConnectionIndicator.ANIMATION_DURATION_MS);
-
-    this.async(() => (this.animationState = this.state), remainingAnimationMS);
+    return html`
+      ${circles.map(
+        circleSize =>
+          html`
+            <img
+              class="circle circle-${circleSize} circle-${this.animationState}"
+              src="${this.rootPath}assets/circle.png"
+            />
+          `
+      )}
+    `;
   }
 
   private isAnimationState(state: ServerConnectionState): boolean {
     return [
       ServerConnectionState.CONNECTING,
-      ServerConnectionState.DISCONNECTING,
       ServerConnectionState.RECONNECTING,
+      ServerConnectionState.DISCONNECTING,
     ].includes(state);
   }
 }
