@@ -43,7 +43,7 @@ Additional requirements for Android:
 - [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
   - Place it at `~/Android/Sdk/cmdline-tools/latest`
 - Android SDK 30 (with build-tools) via commandline `~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-30" "build-tools;30.0.3"`
-  - Set up the environment: `export ANDROID_SDK_ROOT=~/Android/Sdk`
+  - Set up the environment: `export ANDROID_HOME=~/Android/Sdk`
 - [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
