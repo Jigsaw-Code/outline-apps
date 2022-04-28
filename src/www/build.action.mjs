@@ -24,23 +24,23 @@ import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../../scripts/get_build_environment.mjs';
 import {getWebpackBuildMode} from '../../scripts/get_webpack_build_mode.mjs';
 
-const webpackPromise = webpackConfig =>
-  new Promise((resolve, reject) => {
-    webpack(webpackConfig, (error, stats) => {
-      if (error || stats.hasErrors()) {
-        reject(error || 'Unknown Webpack error.');
-      }
-
-      resolve(stats);
-    });
-  });
-
 /**
  * @description Builds the web UI for use across both electron and cordova.
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
+  const webpackPromise = webpackConfig =>
+    new Promise((resolve, reject) => {
+      webpack(webpackConfig, (error, stats) => {
+        if (error || stats.hasErrors()) {
+          reject(error || 'Unknown Webpack error.');
+        }
+
+        resolve(stats);
+      });
+    });
+
   const {platform, buildMode} = getBuildParameters(parameters);
 
   // write build environment
