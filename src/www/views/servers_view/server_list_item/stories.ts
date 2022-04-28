@@ -15,42 +15,41 @@
   limitations under the License.
 */
 
-import "./index";
-
 import {html} from "lit";
+
+import "./server_card";
+import {ServerCard as ServerCardElement} from "./server_card";
 
 import {localize} from "../../../.storybook/localize";
 import {ServerConnectionState} from "../server_connection_indicator";
-import {ServerCard} from "./index";
 
 export default {
-  title: "Servers View/Server Card",
+  title: "Servers View/Server List Item",
   component: "server-card",
   args: {
-    serverName: "My Server",
-    serverAddress: "1.0.0.127",
-    state: ServerConnectionState.INITIAL,
+    server: {
+      name: "My Server",
+      address: "1.0.0.127",
+      connectionState: ServerConnectionState.INITIAL,
+    },
     expanded: false,
+    disabled: false,
   },
   argTypes: {
-    state: {
-      control: "select",
-      options: Object.values(ServerConnectionState),
+    server: {
+      object: "select",
     },
     expanded: {
+      control: "boolean",
+    },
+    disabled: {
       control: "boolean",
     },
   },
 };
 
-export const Example = ({serverName, serverAddress, state, expanded}: ServerCard) => {
+export const ServerCard = ({server, disabled, expanded}: ServerCardElement) => {
   return html`
-    <server-card
-      .localize=${localize}
-      server-name="${serverName}"
-      server-address="${serverAddress}"
-      .state="${state ?? ServerConnectionState.INITIAL}"
-      .expanded="${expanded}"
-    ></server-card>
+    <server-card .localize=${localize} .server=${server} ?expanded=${expanded} ?disabled=${disabled}></server-card>
   `;
 };

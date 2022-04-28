@@ -18,10 +18,9 @@ import {Polymer} from "@polymer/polymer/lib/legacy/polymer-fn.js";
 import {html} from "@polymer/polymer/lib/utils/html-tag.js";
 
 import "./server_list";
-import "./server_card";
-import "./server_connection_indicator";
+import "./server_list_item/server_card";
 
-import {ServerListItem as _ServerListItem} from "./server_list";
+import {ServerListItem as _ServerListItem} from "./server_list_item";
 import {ServerConnectionState as _ServerConnectionState} from "./server_connection_indicator";
 
 export type ServerListItem = _ServerListItem;
@@ -95,7 +94,7 @@ Polymer({
       <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-viz state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
+            <server-connection-indicator connection-state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>

@@ -56,3 +56,5 @@ export const Example = ({servers}: ServerList) =>
   html`
     <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;
+
+// TODO: alternative list item
