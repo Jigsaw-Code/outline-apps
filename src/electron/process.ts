@@ -26,7 +26,7 @@ export class ChildProcessHelper {
   protected isInDebugMode = false;
 
   private exitListener?: (code?: number, signal?: string) => void;
-  private stdErrListener?: (data?: string|Buffer) => void;
+  private stdErrListener?: (data?: string | Buffer) => void;
 
   constructor(private path: string) {}
 
@@ -49,7 +49,7 @@ export class ChildProcessHelper {
 
       logExit(processName, code, signal);
     };
-    const onStdErr = (data?: string|Buffer) => {
+    const onStdErr = (data?: string | Buffer) => {
       if (this.isInDebugMode) {
         console.error(`[STDERR - ${processName}]: ${data}`);
       }
@@ -58,7 +58,6 @@ export class ChildProcessHelper {
       }
     };
     this.process.stderr.on('data', onStdErr.bind(this));
-
 
     if (this.isInDebugMode) {
       // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
@@ -69,8 +68,8 @@ export class ChildProcessHelper {
 
     // We have to listen for both events: error means the process could not be launched and in that
     // case exit will not be invoked.
-    this.process.on('error', onExit.bind((this)));
-    this.process.on('exit', onExit.bind((this)));
+    this.process.on('error', onExit.bind(this));
+    this.process.on('exit', onExit.bind(this));
   }
 
   // Use #onExit to be notified when the process exits.
@@ -86,11 +85,11 @@ export class ChildProcessHelper {
     this.process.kill();
   }
 
-  set onExit(newListener: ((code?: number, signal?: string) => void)|undefined) {
+  set onExit(newListener: ((code?: number, signal?: string) => void) | undefined) {
     this.exitListener = newListener;
   }
 
-  set onStdErr(listener: ((data?: string|Buffer) => void)|undefined) {
+  set onStdErr(listener: ((data?: string | Buffer) => void) | undefined) {
     this.stdErrListener = listener;
     if (!this.stdErrListener && !this.isDebugModeEnabled) {
       this.process.stderr.removeAllListeners();

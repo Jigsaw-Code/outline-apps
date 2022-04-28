@@ -12,30 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const path = require("path");
-const webpack = require("webpack");
+const path = require('path');
+const webpack = require('webpack');
 
 module.exports = env => {
   return {
-    entry: "./src/electron/index.ts",
-    target: "electron-main",
+    entry: './src/electron/index.ts',
+    target: 'electron-main',
     node: {
       __dirname: false,
       __filename: false,
     },
-    mode: "production",
-    devtool: "inline-source-map",
+    mode: 'production',
+    devtool: 'inline-source-map',
     module: {
       rules: [
         {
           test: /\.tsx?$/,
-          use: "ts-loader",
+          use: 'ts-loader',
           exclude: /node_modules/,
         },
       ],
     },
     resolve: {
-      extensions: [".tsx", ".ts", ".js"],
+      extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
       new webpack.DefinePlugin({
@@ -43,8 +43,8 @@ module.exports = env => {
       }),
     ],
     output: {
-      filename: "index.js",
-      path: path.resolve(__dirname, "../../build/electron/electron"),
+      filename: 'index.js',
+      path: path.resolve(__dirname, '../../build/electron/electron'),
     },
   };
 };
