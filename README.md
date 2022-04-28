@@ -31,7 +31,7 @@ The latter command will open a browser instance running the app. Browser platfor
 The app logic is located in [src/www/app](src/www/app). UI components are located in [src/www/ui_components](src/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
 
 ```sh
-npm run action src/www/ui_components/storybook
+npm run action src/www/storybook
 ```
 
 ## Building the Android app
@@ -39,8 +39,11 @@ npm run action src/www/ui_components/storybook
 Additional requirements for Android:
 
 - [Android Studio 2020.3.1+](https://developer.android.com/studio)
+  - Optional for building, but useful for development
 - [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
-- Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+  - Place it at `$HOME/Android/Sdk/cmdline-tools/latest`
+- Android SDK 30 (with build-tools) via commandline `$HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+  - Set up the environment: `export ANDROID_SDK_ROOT=$HOME/Android/Sdk` (`ANDROID_HOME` is the [recommendation](https://developer.android.com/studio/command-line/variables), but Cordova wants `ANDROID_SDK_ROOT`)
 - [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`

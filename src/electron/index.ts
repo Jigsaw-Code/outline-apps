@@ -14,9 +14,9 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import * as sentry from '@sentry/electron/dist/main';
+import * as sentry from '@sentry/electron';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
-import * as promiseIpc from 'electron-promise-ipc';
+import promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
 import * as path from 'path';
@@ -41,7 +41,7 @@ const tunnelStore = new TunnelStore(app.getPath('userData'));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow: Electron.BrowserWindow|null;
+let mainWindow: Electron.BrowserWindow | null;
 let tray: Tray;
 
 let isAppQuitting = false;
@@ -50,7 +50,7 @@ let localizedStrings: {[key: string]: string} = {
   'tray-open-window': 'Open',
   'connected-server-state': 'Connected',
   'disconnected-server-state': 'Disconnected',
-  'quit': 'Quit'
+  quit: 'Quit',
 };
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
@@ -61,24 +61,27 @@ declare const NETWORK_STACK: string;
 
 const TRAY_ICON_IMAGES = {
   connected: createTrayIconImage('connected.png'),
-  disconnected: createTrayIconImage('disconnected.png')
+  disconnected: createTrayIconImage('disconnected.png'),
 };
 
 const enum Options {
-  AUTOSTART = '--autostart'
+  AUTOSTART = '--autostart',
 }
 
 const REACHABILITY_TIMEOUT_MS = 10000;
 
-let currentTunnel: VpnTunnel|undefined;
+let currentTunnel: VpnTunnel | undefined;
 
 function setupMenu(): void {
   if (debugMode) {
-    Menu.setApplicationMenu(Menu.buildFromTemplate([{
-      label: 'Developer',
-      submenu: Menu.buildFromTemplate(
-          [{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}])
-    }]));
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        {
+          label: 'Developer',
+          submenu: Menu.buildFromTemplate([{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}]),
+        },
+      ])
+    );
   } else {
     // Hide standard menu.
     Menu.setApplicationMenu(null);
@@ -97,8 +100,14 @@ function setupTray(): void {
 
 function setupWindow(): void {
   // Create the browser window.
-  mainWindow = new BrowserWindow(
-      {width: 360, height: 640, resizable: false, webPreferences: {nodeIntegration: true}});
+  mainWindow = new BrowserWindow({
+    width: 360,
+    height: 640,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'index_electron.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
@@ -152,24 +161,23 @@ function updateTray(status: TunnelStatus) {
   const isConnected = status === TunnelStatus.CONNECTED;
   tray.setImage(isConnected ? TRAY_ICON_IMAGES.connected : TRAY_ICON_IMAGES.disconnected);
   // Retrieve localized strings, falling back to the pre-populated English default.
-  const statusString = isConnected ? localizedStrings['connected-server-state'] :
-                                     localizedStrings['disconnected-server-state'];
+  const statusString = isConnected
+    ? localizedStrings['connected-server-state']
+    : localizedStrings['disconnected-server-state'];
   let menuTemplate = [
-    {label: statusString, enabled: false}, {type: 'separator'} as MenuItemConstructorOptions,
-    {label: localizedStrings['quit'], click: quitApp}
+    {label: statusString, enabled: false},
+    {type: 'separator'} as MenuItemConstructorOptions,
+    {label: localizedStrings['quit'], click: quitApp},
   ];
   if (os.platform() === 'linux') {
     // Because the click event is never fired on Linux, we need an explicit open option.
-    menuTemplate = [
-      {label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate
-    ];
+    menuTemplate = [{label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate];
   }
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
 function createTrayIconImage(imageName: string) {
-  const image =
-      nativeImage.createFromPath(path.join(app.getAppPath(), 'resources', 'tray', imageName));
+  const image = nativeImage.createFromPath(path.join(app.getAppPath(), 'resources', 'tray', imageName));
   if (image.isEmpty()) {
     throw new Error(`cannot find ${imageName} tray icon image`);
   }
@@ -392,10 +400,9 @@ function main() {
     mainWindow?.webContents.send('push-clipboard');
   });
 
-  promiseIpc.on('is-server-reachable', async (args: {hostname: string, port: number}) => {
+  promiseIpc.on('is-server-reachable', async (args: {hostname: string; port: number}) => {
     try {
-      await connectivity.isServerReachable(
-          args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
+      await connectivity.isServerReachable(args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
       return true;
     } catch {
       return false;
@@ -403,7 +410,7 @@ function main() {
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
-  promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig, id: string}) => {
+  promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig; id: string}) => {
     // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
     //       being faster, this would help prevent traffic leaks - the Cordova clients already do
     //       this).
@@ -420,14 +427,13 @@ function main() {
       // resolve it just once, upfront.
       args.config.host = await connectivity.lookupIp(args.config.host || '');
 
-      await connectivity.isServerReachable(
-          args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+      await connectivity.isServerReachable(args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
 
       await startVpn(args.config, args.id);
       console.log(`connected to ${args.id}`);
       await setupAutoLaunch(args);
       // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-      tunnelStore.save(args).catch((e) => {
+      tunnelStore.save(args).catch(e => {
         console.error('Failed to store tunnel.');
       });
     } catch (e) {
@@ -441,7 +447,7 @@ function main() {
 
   // Error reporting.
   // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-  ipcMain.on('environment-info', (event: Event, info: {appVersion: string, dsn: string}) => {
+  ipcMain.on('environment-info', (event: Event, info: {appVersion: string; dsn: string}) => {
     if (info.dsn) {
       sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
     }
@@ -451,13 +457,12 @@ function main() {
 
   ipcMain.on('quit-app', quitApp);
 
-  ipcMain.on(
-      'localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
-        if (!!localizationResult) {
-          localizedStrings = localizationResult;
-        }
-        updateTray(TunnelStatus.DISCONNECTED);
-      });
+  ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
+    if (!!localizationResult) {
+      localizedStrings = localizationResult;
+    }
+    updateTray(TunnelStatus.DISCONNECTED);
+  });
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', (ev, info) => {

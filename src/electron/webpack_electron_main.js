@@ -15,13 +15,13 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = (env) => {
+module.exports = env => {
   return {
     entry: './src/electron/index.ts',
     target: 'electron-main',
     node: {
       __dirname: false,
-      __filename: false
+      __filename: false,
     },
     mode: 'production',
     devtool: 'inline-source-map',
@@ -35,7 +35,7 @@ module.exports = (env) => {
       ],
     },
     resolve: {
-      extensions: [ '.tsx', '.ts', '.js' ],
+      extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
       new webpack.DefinePlugin({
@@ -46,5 +46,5 @@ module.exports = (env) => {
       filename: 'index.js',
       path: path.resolve(__dirname, '../../build/electron/electron'),
     },
-  }
+  };
 };

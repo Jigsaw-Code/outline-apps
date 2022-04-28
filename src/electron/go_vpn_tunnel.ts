@@ -70,7 +70,7 @@ export class GoVpnTunnel implements VpnTunnel {
     // lifecycle:
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
-    this.onAllHelpersStopped = new Promise((resolve) => {
+    this.onAllHelpersStopped = new Promise(resolve => {
       this.resolveAllHelpersStopped = resolve;
     });
 
@@ -90,7 +90,7 @@ export class GoVpnTunnel implements VpnTunnel {
       // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
       // closed.
       powerMonitor.on('suspend', this.suspendListener.bind(this));
-      powerMonitor.on('resume', this.resumeListener.bind((this)));
+      powerMonitor.on('resume', this.resumeListener.bind(this));
     }
 
     // Disconnect the tunnel if the routing service disconnects unexpectedly.
@@ -201,16 +201,15 @@ export class GoVpnTunnel implements VpnTunnel {
   }
 
   // Sets an optional callback for when the routing daemon is attempting to re-connect.
-  onReconnecting(newListener: () => void|undefined) {
+  onReconnecting(newListener: () => void | undefined) {
     this.reconnectingListener = newListener;
   }
 
   // Sets an optional callback for when the routing daemon successfully reconnects.
-  onReconnected(newListener: () => void|undefined) {
+  onReconnected(newListener: () => void | undefined) {
     this.reconnectedListener = newListener;
   }
 }
-
 
 // outline-go-tun2socks is a Go program that processes IP traffic from a TUN/TAP device
 // and relays it to a Shadowsocks proxy server.
@@ -218,8 +217,7 @@ class GoTun2socks {
   private process: ChildProcessHelper;
 
   constructor(private config: ShadowsocksConfig) {
-    this.process =
-        new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
+    this.process = new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
   }
 
   async start(isUdpEnabled: boolean) {
@@ -247,15 +245,14 @@ class GoTun2socks {
       this.process.onExit = (code?: number, signal?: string) => {
         reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
       };
-      this.process.onStdErr = (data?: string|Buffer) => {
+      this.process.onStdErr = (data?: string | Buffer) => {
         if (!data?.toString().includes('tun2socks running')) {
           return;
         }
         console.debug('tun2socks started');
         this.process.onExit = async (code?: number, signal?: string) => {
-           // The process exited unexpectedly, restart it.
-          console.warn(
-            `tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
+          // The process exited unexpectedly, restart it.
+          console.warn(`tun2socks exited unexpectedly with signal: ${signal}, code: ${code}. Restarting...`);
           await this.start(isUdpEnabled);
         };
         this.process.onStdErr = null;
@@ -266,7 +263,7 @@ class GoTun2socks {
   }
 
   async stop() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       this.process.onExit = (code?: number, signal?: string) => {
         console.log(`tun2socks stopped with signal: ${signal}, code: ${code}.`);
         resolve();

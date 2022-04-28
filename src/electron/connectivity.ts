@@ -26,21 +26,28 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 // Effectively a no-op if hostname is already an IP.
 export function lookupIp(hostname: string): Promise<string> {
   return util.timeoutPromise(
-      new Promise<string>((fulfill, reject) => {
-        dns.lookup(hostname, 4, (e, address) => {
-          if (e) {
-            return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
-          }
-          fulfill(address);
-        });
-      }),
-      DNS_LOOKUP_TIMEOUT_MS, 'DNS lookup');
+    new Promise<string>((fulfill, reject) => {
+      dns.lookup(hostname, 4, (e, address) => {
+        if (e) {
+          return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
+        }
+        fulfill(address);
+      });
+    }),
+    DNS_LOOKUP_TIMEOUT_MS,
+    'DNS lookup'
+  );
 }
 
 // Resolves iff a (TCP) connection can be established with the specified destination within the
 // specified timeout (zero means "no timeout"), optionally retrying with a delay.
 export function isServerReachable(
-    host: string, port: number, timeout = 0, maxAttempts = 1, retryIntervalMs = 0): Promise<void> {
+  host: string,
+  port: number,
+  timeout = 0,
+  maxAttempts = 1,
+  retryIntervalMs = 0
+): Promise<void> {
   let attempt = 0;
   return new Promise((fulfill, reject) => {
     const connect = () => {
