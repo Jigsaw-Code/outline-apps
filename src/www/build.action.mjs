@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import fs from "fs/promises";
-import webpack from "webpack";
-import url from "url";
+import fs from 'fs/promises';
+import webpack from 'webpack';
+import url from 'url';
 
-import electronConfig from "./webpack_electron.mjs";
-import cordovaConfig from "./webpack_cordova.mjs";
+import electronConfig from './webpack_electron.mjs';
+import cordovaConfig from './webpack_cordova.mjs';
 
-import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
-import {getBuildEnvironment} from "../../scripts/get_build_environment.mjs";
-import {getWebpackBuildMode} from "../../scripts/get_webpack_build_mode.mjs";
+import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
+import {getBuildEnvironment} from '../../scripts/get_build_environment.mjs';
+import {getWebpackBuildMode} from '../../scripts/get_webpack_build_mode.mjs';
 
 const webpackPromise = webpackConfig =>
   new Promise((resolve, reject) => {
     webpack(webpackConfig, (error, stats) => {
       if (error || stats.hasErrors()) {
-        reject(error || "Unknown Webpack error.");
+        reject(error || 'Unknown Webpack error.');
       }
 
       resolve(stats);
@@ -43,19 +43,20 @@ export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
   // write build environment
-  await fs.mkdir("www", {recursive: true});
-  await fs.writeFile("www/environment.json", JSON.stringify(await getBuildEnvironment(platform, buildMode)));
+  await fs.mkdir('www', {recursive: true});
+  await fs.writeFile('www/environment.json', JSON.stringify(await getBuildEnvironment(platform, buildMode)));
 
   // get correct webpack config
   let webpackConfig;
 
   switch (platform) {
-    case "windows":
-    case "linux":
+    case 'windows':
+    case 'linux':
       webpackConfig = electronConfig;
-    case "ios":
-    case "macos":
-    case "android":
+      break;
+    case 'ios':
+    case 'macos':
+    case 'android':
     default:
       webpackConfig = cordovaConfig;
       break;

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from "url";
+import url from 'url';
 
-import cordovaLib from "cordova-lib";
+import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from "../../scripts/run_action.mjs";
-import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
+import {runAction} from '../../scripts/run_action.mjs';
+import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
@@ -28,18 +28,18 @@ import {getBuildParameters} from "../../scripts/get_build_parameters.mjs";
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  await runAction("cordova/setup", parameters);
+  await runAction('cordova/setup', parameters);
 
   let argv = [];
 
-  if (platform === "android") {
-    if (platform === "release") {
+  if (platform === 'android') {
+    if (platform === 'release') {
       argv = [
-        "--keystore=keystore.p12",
-        "--alias=privatekey",
-        "--storePassword=$ANDROID_KEY_STORE_PASSWORD",
-        "--password=$ANDROID_KEY_STORE_PASSWORD",
-        "--",
+        '--keystore=keystore.p12',
+        '--alias=privatekey',
+        '--storePassword=$ANDROID_KEY_STORE_PASSWORD',
+        '--password=$ANDROID_KEY_STORE_PASSWORD',
+        '--',
       ];
 
       if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
@@ -49,14 +49,14 @@ export async function main(...parameters) {
       }
     }
 
-    argv.push("--gradleArg=-PcdvBuildMultipleApks=true");
+    argv.push('--gradleArg=-PcdvBuildMultipleApks=true');
   }
 
   await cordova.compile({
     platforms: [platform],
     options: {
-      device: platform === "ios",
-      release: buildMode === "release",
+      device: platform === 'ios',
+      release: buildMode === 'release',
       argv,
     },
   });
