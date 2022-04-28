@@ -1,5 +1,3 @@
-* @Jigsaw-Code/outline-owners
-
 /docs/       @Jigsaw-Code/outline-strings-owners
 /resources/  @Jigsaw-Code/outline-strings-owners
 *.json       @Jigsaw-Code/outline-strings-owners
@@ -14,3 +12,5 @@
 # Ensure that if any JSON files are added to the model directory, they are
 # still subject to full owners approval.
 /src/www/model/           @Jigsaw-Code/outline-owners
+/cordova-plugin-outline/  @Jigsaw-Code/outline-owners
+/src/www/cordova/         @Jigsaw-Code/outline-owners
