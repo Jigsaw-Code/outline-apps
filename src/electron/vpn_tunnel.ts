@@ -33,10 +33,10 @@ export interface VpnTunnel {
   readonly onceDisconnected: Promise<void>;
 
   // Sets an optional callback for when the tunnel is attempting to re-connect.
-  onReconnecting(listener?: (() => void)): void;
+  onReconnecting(listener?: () => void): void;
 
   // Sets an optional callback for when the tunnel successfully reconnects.
-  onReconnected(listener?: (() => void)): void;
+  onReconnected(listener?: () => void): void;
 
   // Turns on verbose logging. Must be called before connecting the tunnel.
   enableDebugMode(): void;

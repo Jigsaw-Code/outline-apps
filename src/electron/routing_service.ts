@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {createConnection, Socket} from "net";
-import {platform} from "os";
-import * as sudo from "sudo-prompt";
+import {createConnection, Socket} from 'net';
+import {platform} from 'os';
+import * as sudo from 'sudo-prompt';
 
-import * as errors from "../www/model/errors";
+import * as errors from '../www/model/errors';
 
-import {TunnelStatus} from "../www/app/tunnel";
-import {getServiceStartCommand} from "./util";
+import {TunnelStatus} from '../www/app/tunnel';
+import {getServiceStartCommand} from './util';
 
-const isWindows = platform() === "win32";
-const SERVICE_NAME = isWindows ? "\\\\.\\pipe\\OutlineServicePipe" : "/var/run/outline_controller";
+const isWindows = platform() === 'win32';
+const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 interface RoutingServiceRequest {
   action: string;
@@ -37,9 +37,9 @@ interface RoutingServiceResponse {
 }
 
 enum RoutingServiceAction {
-  CONFIGURE_ROUTING = "configureRouting",
-  RESET_ROUTING = "resetRouting",
-  STATUS_CHANGED = "statusChanged",
+  CONFIGURE_ROUTING = 'configureRouting',
+  RESET_ROUTING = 'resetRouting',
+  STATUS_CHANGED = 'statusChanged',
 }
 
 enum RoutingServiceStatusCode {
@@ -86,7 +86,7 @@ export class RoutingDaemon {
       return;
     }
     if (isWindows) {
-      throw new errors.SystemConfigurationException("please rerun Outline installer in Windows");
+      throw new errors.SystemConfigurationException('please rerun Outline installer in Windows');
     }
     await this.installDaemon();
   }
@@ -96,15 +96,15 @@ export class RoutingDaemon {
   async start(retry = true) {
     return new Promise<void>((fulfill, reject) => {
       const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
-        newSocket.removeListener("error", initialErrorHandler);
+        newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
           newSocket.removeAllListeners();
           this.fulfillDisconnect();
         };
-        newSocket.once("close", cleanup);
-        newSocket.once("error", cleanup);
+        newSocket.once('close', cleanup);
+        newSocket.once('error', cleanup);
 
-        newSocket.once("data", data => {
+        newSocket.once('data', data => {
           const message = this.parseRoutingServiceResponse(data);
           if (
             !message ||
@@ -115,12 +115,12 @@ export class RoutingDaemon {
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
             //       the only time the routing service will fail.
-            reject(new Error(!!message ? message.errorMessage : "empty routing service response"));
+            reject(new Error(!!message ? message.errorMessage : 'empty routing service response'));
             newSocket.end();
             return;
           }
 
-          newSocket.on("data", this.dataHandler.bind(this));
+          newSocket.on('data', this.dataHandler.bind(this));
           fulfill();
         });
 
@@ -135,7 +135,7 @@ export class RoutingDaemon {
       const initialErrorHandler = () => {
         reject(new errors.SystemConfigurationException(`routing daemon is not running`));
       };
-      newSocket.once("error", initialErrorHandler);
+      newSocket.once('error', initialErrorHandler);
     });
   }
 
@@ -165,7 +165,7 @@ export class RoutingDaemon {
   // failure.
   private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse | undefined {
     if (!data) {
-      console.error("received empty response from routing service");
+      console.error('received empty response from routing service');
       return undefined;
     }
     let response: RoutingServiceResponse | undefined = undefined;
@@ -190,7 +190,7 @@ export class RoutingDaemon {
         }
       );
       if (!written) {
-        reject(new Error("Write failed"));
+        reject(new Error('Write failed'));
       }
     });
   }
@@ -223,15 +223,15 @@ export class RoutingDaemon {
   private isDaemonInstalled(): Promise<boolean> {
     return new Promise<boolean>(resolve => {
       const connection: Socket = createConnection(SERVICE_NAME, () => connection.destroy());
-      connection.once("error", () => connection.destroy());
-      connection.once("close", hasError => resolve(!hasError));
+      connection.once('error', () => connection.destroy());
+      connection.once('close', hasError => resolve(!hasError));
     });
   }
 
   private installDaemon(): Promise<void> {
     console.info(`Installing routing daemon`);
     return new Promise<void>((resolve, reject) => {
-      sudo.exec(getServiceStartCommand(), {name: "Outline"}, sudoError => {
+      sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
         if (sudoError) {
           // NOTE: The script could have terminated with an error - see the comment in
           //       sudo-prompt's typings definition.

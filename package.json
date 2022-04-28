@@ -137,10 +137,5 @@
       "ios",
       "osx"
     ]
-  },
-  "prettier": {
-    "bracketSpacing": false,
-    "trailingComma": "es5",
-    "printWidth": 120
   }
 }

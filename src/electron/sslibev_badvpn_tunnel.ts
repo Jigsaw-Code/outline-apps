@@ -12,43 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {execSync} from "child_process";
-import * as dgram from "dgram";
-import * as dns from "dns";
-import {powerMonitor} from "electron";
-import * as net from "net";
-import {platform} from "os";
-import * as path from "path";
-import * as process from "process";
-import * as socks from "socks";
+import {execSync} from 'child_process';
+import * as dgram from 'dgram';
+import * as dns from 'dns';
+import {powerMonitor} from 'electron';
+import * as net from 'net';
+import {platform} from 'os';
+import * as path from 'path';
+import * as process from 'process';
+import * as socks from 'socks';
 
-import {ShadowsocksConfig} from "../www/app/config";
-import {TunnelStatus} from "../www/app/tunnel";
-import * as errors from "../www/model/errors";
+import {ShadowsocksConfig} from '../www/app/config';
+import {TunnelStatus} from '../www/app/tunnel';
+import * as errors from '../www/model/errors';
 
-import {isServerReachable} from "./connectivity";
-import {ChildProcessHelper} from "./process";
-import {RoutingDaemon} from "./routing_service";
-import {pathToEmbeddedBinary} from "./util";
-import {VpnTunnel} from "./vpn_tunnel";
+import {isServerReachable} from './connectivity';
+import {ChildProcessHelper} from './process';
+import {RoutingDaemon} from './routing_service';
+import {pathToEmbeddedBinary} from './util';
+import {VpnTunnel} from './vpn_tunnel';
 
-const isLinux = platform() === "linux";
-const isWindows = platform() === "win32";
+const isLinux = platform() === 'linux';
+const isWindows = platform() === 'win32';
 
-const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? "outline-tun0" : "outline-tap0";
-const TUN2SOCKS_TAP_DEVICE_IP = "10.0.85.2";
-const TUN2SOCKS_VIRTUAL_ROUTER_IP = "10.0.85.1";
-const TUN2SOCKS_TAP_DEVICE_NETWORK = "10.0.85.0";
-const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = "255.255.255.0";
+const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
+const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
+const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
+const TUN2SOCKS_TAP_DEVICE_NETWORK = '10.0.85.0';
+const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
 
 // ss-local will almost always start, and fast: short timeouts, fast retries.
 const SSLOCAL_CONNECTION_TIMEOUT = 10;
 const SSLOCAL_MAX_ATTEMPTS = 30;
-const SSLOCAL_PROXY_HOST = "127.0.0.1";
+const SSLOCAL_PROXY_HOST = '127.0.0.1';
 const SSLOCAL_PROXY_PORT = 1081;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
-const CREDENTIALS_TEST_DOMAINS = ["example.com", "ietf.org", "wikipedia.org"];
+const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
 
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
@@ -82,7 +82,7 @@ function testTapDevice(tapDeviceName: string, tapDeviceIp: string) {
   // # End of IPv4 configuration
   const lines = execSync(`netsh interface ipv4 dump`)
     .toString()
-    .split("\n");
+    .split('\n');
 
   // Find lines containing the TAP device name.
   const tapLines = lines.filter(s => s.indexOf(tapDeviceName) !== -1);
@@ -157,11 +157,11 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     });
     const exits = [this.routing.onceDisconnected, ssLocalExit, tun2socksExit];
     Promise.race(exits).then(() => {
-      console.log("a helper has exited, disconnecting");
+      console.log('a helper has exited, disconnecting');
       this.disconnect();
     });
     this.onAllHelpersStopped = Promise.all(exits).then(() => {
-      console.log("all helpers have exited");
+      console.log('all helpers have exited');
       this.terminated = true;
     });
   }
@@ -184,8 +184,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
       // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
       // closed.
-      powerMonitor.on("suspend", this.suspendListener.bind(this));
-      powerMonitor.on("resume", this.resumeListener.bind(this));
+      powerMonitor.on('suspend', this.suspendListener.bind(this));
+      powerMonitor.on('resume', this.resumeListener.bind(this));
     }
 
     // ss-local must be up in order to test UDP support and validate credentials.
@@ -224,18 +224,18 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
   private suspendListener() {
     // Swap out the current listener, restart once the system resumes.
     this.tun2socks.onExit = () => {
-      console.log("stopped tun2socks in preparation for suspend");
+      console.log('stopped tun2socks in preparation for suspend');
     };
   }
 
   private resumeListener() {
     if (this.terminated) {
       // NOTE: Cannot remove resume listeners - Electron bug?
-      console.error("resume event invoked but this tunnel is terminated - doing nothing");
+      console.error('resume event invoked but this tunnel is terminated - doing nothing');
       return;
     }
 
-    console.log("restarting tun2socks after resume");
+    console.log('restarting tun2socks after resume');
 
     this.tun2socks.onExit = this.tun2socksExitListener;
     this.tun2socks.start(this.isUdpEnabled);
@@ -264,7 +264,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
     // Swap out the current listener, restart once the current process exits.
     this.tun2socks.onExit = () => {
-      console.log("restarting tun2socks");
+      console.log('restarting tun2socks');
       this.tun2socks.onExit = this.tun2socksExitListener;
       this.tun2socks.start(this.isUdpEnabled);
     };
@@ -273,8 +273,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
-    powerMonitor.removeListener("suspend", this.suspendListener.bind(this));
-    powerMonitor.removeListener("resume", this.resumeListener.bind(this));
+    powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
+    powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
     // This is the clean shutdown order, but to minimize delay, we don't
     // wait for each shutdown step to complete.  They may therefore complete
@@ -313,19 +313,19 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
 class SsLocal extends ChildProcessHelper {
   constructor(private readonly proxyPort: number) {
-    super(pathToEmbeddedBinary("shadowsocks-libev", "ss-local"));
+    super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
   start(config: ShadowsocksConfig) {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
-    const args = ["-l", this.proxyPort.toString()];
-    args.push("-s", config.host || "");
-    args.push("-p", `${config.port}`);
-    args.push("-k", config.password || "");
-    args.push("-m", config.method || "");
-    args.push("-u");
+    const args = ['-l', this.proxyPort.toString()];
+    args.push('-s', config.host || '');
+    args.push('-p', `${config.port}`);
+    args.push('-k', config.password || '');
+    args.push('-m', config.method || '');
+    args.push('-u');
     if (this.isInDebugMode) {
-      args.push("-v");
+      args.push('-v');
     }
 
     this.launch(args);
@@ -334,7 +334,7 @@ class SsLocal extends ChildProcessHelper {
 
 class BadvpnTun2socks extends ChildProcessHelper {
   constructor(private proxyAddress: string, private proxyPort: number) {
-    super(pathToEmbeddedBinary("badvpn", "badvpn-tun2socks"));
+    super(pathToEmbeddedBinary('badvpn', 'badvpn-tun2socks'));
   }
 
   start(isUdpEnabled: boolean) {
@@ -346,20 +346,20 @@ class BadvpnTun2socks extends ChildProcessHelper {
     //   --transparent-dns
     const args: string[] = [];
     args.push(
-      "--tundev",
+      '--tundev',
       isLinux
         ? TUN2SOCKS_TAP_DEVICE_NAME
         : `tap0901:${TUN2SOCKS_TAP_DEVICE_NAME}:${TUN2SOCKS_TAP_DEVICE_IP}:${TUN2SOCKS_TAP_DEVICE_NETWORK}:${TUN2SOCKS_VIRTUAL_ROUTER_NETMASK}`
     );
-    args.push("--netif-ipaddr", TUN2SOCKS_VIRTUAL_ROUTER_IP);
-    args.push("--netif-netmask", TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
-    args.push("--socks-server-addr", `${this.proxyAddress}:${this.proxyPort}`);
-    args.push("--transparent-dns");
+    args.push('--netif-ipaddr', TUN2SOCKS_VIRTUAL_ROUTER_IP);
+    args.push('--netif-netmask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
+    args.push('--socks-server-addr', `${this.proxyAddress}:${this.proxyPort}`);
+    args.push('--transparent-dns');
     if (isUdpEnabled) {
-      args.push("--socks5-udp");
-      args.push("--udp-relay-addr", `${this.proxyAddress}:${this.proxyPort}`);
+      args.push('--socks5-udp');
+      args.push('--udp-relay-addr', `${this.proxyAddress}:${this.proxyPort}`);
     }
-    args.push("--loglevel", this.isInDebugMode ? "info" : "error");
+    args.push('--loglevel', this.isInDebugMode ? 'info' : 'error');
 
     this.launch(args);
   }
@@ -386,8 +386,8 @@ function validateServerCredentials(proxyAddress: string, proxyIp: number) {
 
         socket.write(`HEAD / HTTP/1.1\r\nHost: ${testDomain}\r\n\r\n`);
 
-        socket.on("data", data => {
-          if (data.toString().startsWith("HTTP/1.1")) {
+        socket.on('data', data => {
+          if (data.toString().startsWith('HTTP/1.1')) {
             socket.end();
             fulfill();
           } else {
@@ -396,7 +396,7 @@ function validateServerCredentials(proxyAddress: string, proxyIp: number) {
           }
         });
 
-        socket.on("close", () => {
+        socket.on('close', () => {
           reject(new errors.InvalidServerCredentials(`could not connect to remote test website`));
         });
 
@@ -445,22 +445,22 @@ function checkUdpForwardingEnabled(proxyAddress: string, proxyIp: number): Promi
   return new Promise((resolve, reject) => {
     socks.createConnection(
       {
-        proxy: {ipaddress: proxyAddress, port: proxyIp, type: 5, command: "associate"},
-        target: {host: "0.0.0.0", port: 0}, // Specify the actual target once we get a response.
+        proxy: {ipaddress: proxyAddress, port: proxyIp, type: 5, command: 'associate'},
+        target: {host: '0.0.0.0', port: 0}, // Specify the actual target once we get a response.
       },
       (err, socket, info) => {
         if (err) {
           reject(new errors.RemoteUdpForwardingDisabled(`could not connect to local proxy`));
           return;
         }
-        const packet = socks.createUDPFrame({host: "1.1.1.1", port: 53}, DNS_REQUEST);
-        const udpSocket = dgram.createSocket("udp4");
+        const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, DNS_REQUEST);
+        const udpSocket = dgram.createSocket('udp4');
 
-        udpSocket.on("error", e => {
-          reject(new errors.RemoteUdpForwardingDisabled("UDP socket failure"));
+        udpSocket.on('error', e => {
+          reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
         });
 
-        udpSocket.on("message", (msg, info) => {
+        udpSocket.on('message', (msg, info) => {
           stopUdp();
           resolve(true);
         });
