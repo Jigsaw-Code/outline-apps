@@ -15,6 +15,7 @@
 import fs from 'fs/promises';
 import webpack from 'webpack';
 import url from 'url';
+import path from 'path';
 
 import electronConfig from './webpack_electron.mjs';
 import cordovaConfig from './webpack_cordova.mjs';
@@ -43,8 +44,11 @@ export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
   // write build environment
-  await fs.mkdir('www', {recursive: true});
-  await fs.writeFile('www/environment.json', JSON.stringify(await getBuildEnvironment(platform, buildMode)));
+  await fs.mkdir(path.resolve(process.env.ROOT_DIR, 'www'), {recursive: true});
+  await fs.writeFile(
+    path.resolve(process.env.ROOT_DIR, 'www/environment.json'),
+    JSON.stringify(await getBuildEnvironment(platform, buildMode))
+  );
 
   // get correct webpack config
   let webpackConfig;

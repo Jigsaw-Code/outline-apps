@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from "url";
-import minimist from "minimist";
+import url from 'url';
+import minimist from 'minimist';
 
-const VALID_PLATFORMS = ["linux", "windows", "ios", "osx", "android"];
-const VALID_BUILD_MODES = ["debug", "release"];
+const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'osx', 'android'];
+const VALID_BUILD_MODES = ['debug', 'release'];
 
 /*
   Inputs:
@@ -33,21 +33,21 @@ export function getBuildParameters(buildParameters) {
 
   if (platform && !VALID_PLATFORMS.includes(platform)) {
     throw new TypeError(
-      `Platform "${platform}" is not a valid target for Outline Client. Must be one of ${VALID_PLATFORMS.join(", ")}`
+      `Platform "${platform}" is not a valid target for Outline Client. Must be one of ${VALID_PLATFORMS.join(', ')}`
     );
   }
 
   if (buildMode && !VALID_BUILD_MODES.includes(buildMode)) {
     throw new TypeError(
       `Build mode "${buildMode}" is not a valid build mode for Outline Client. Must be one of ${VALID_BUILD_MODES.join(
-        ", "
+        ', '
       )}`
     );
   }
 
   // set defaults
-  platform ??= "browser";
-  buildMode ??= "debug";
+  platform ??= 'browser';
+  buildMode ??= 'debug';
 
   return {platform, buildMode};
 }

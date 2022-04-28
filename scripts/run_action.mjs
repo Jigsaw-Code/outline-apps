@@ -12,24 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from "chalk";
-import {existsSync} from "fs";
-import fs from "fs/promises";
-import path from "path";
-import {spawn} from "child_process";
-import os from "os";
-import url from "url";
+import chalk from 'chalk';
+import {existsSync} from 'fs';
+import path from 'path';
+import {spawn} from 'child_process';
+import url from 'url';
 
-import {getRootDir} from "./get_root_dir.mjs";
+import {getRootDir} from './get_root_dir.mjs';
 
 /**
  * @description loads the absolute path of the action file
  */
 const resolveActionPath = async actionPath => {
-  if (!actionPath) return "";
+  if (!actionPath) return '';
 
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, "src")];
-  const extensions = ["sh", "mjs"];
+  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+  const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {
     for (const extension of extensions) {
@@ -49,10 +47,10 @@ const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters, {shell: true});
 
-    childProcess.stdout.on("data", data => console.info(data.toString()));
-    childProcess.stderr.on("data", error => console.error(chalk.red(error.toString())));
+    childProcess.stdout.on('data', data => console.info(data.toString()));
+    childProcess.stderr.on('data', error => console.error(chalk.red(error.toString())));
 
-    childProcess.on("close", code => {
+    childProcess.on('close', code => {
       if (code === 0) {
         resolve(childProcess);
       } else {
@@ -76,8 +74,8 @@ const spawnStream = (command, parameters) =>
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
-    console.info("Please provide an action to run.");
-    return runAction("list");
+    console.info('Please provide an action to run.');
+    return runAction('list');
   }
 
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
@@ -85,7 +83,7 @@ export async function runAction(actionPath, ...parameters) {
 
   try {
     // TODO(daniellacosse): call javascript actions directly without creating a circular dependency
-    await spawnStream(resolvedPath.endsWith("mjs") ? "node" : "bash", [resolvedPath, ...parameters]);
+    await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
   } catch (error) {
     console.error(error);
     console.groupEnd();
@@ -103,7 +101,7 @@ export async function runAction(actionPath, ...parameters) {
 
 async function main() {
   process.env.ROOT_DIR ??= getRootDir();
-  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, "build");
+  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
 
   return runAction(...process.argv.slice(2));

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getVersion} from "./get_version.mjs";
-import {getBuildNumber} from "./get_build_number.mjs";
-import url from "url";
-import {getBuildParameters} from "./get_build_parameters.mjs";
+import {getVersion} from './get_version.mjs';
+import {getBuildNumber} from './get_build_number.mjs';
+import url from 'url';
+import {getBuildParameters} from './get_build_parameters.mjs';
 
 /*
   Inputs:
@@ -26,9 +26,9 @@ import {getBuildParameters} from "./get_build_parameters.mjs";
   => the build environment object
 */
 export async function getBuildEnvironment(platform, buildMode) {
-  if (buildMode === "release") {
+  if (buildMode === 'release') {
     if (!process.env.SENTRY_DSN) {
-      throw new TypeError("Release builds require SENTRY_DSN, but it is not defined.");
+      throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
     }
 
     /*
@@ -44,7 +44,7 @@ export async function getBuildEnvironment(platform, buildMode) {
 
   return {
     SENTRY_DSN: process.env.SENTRY_DSN,
-    APP_VERSION: `${await getVersion(platform)}${buildMode === "debug" ? "-debug" : ""}`,
+    APP_VERSION: `${await getVersion(platform)}${buildMode === 'debug' ? '-debug' : ''}`,
     APP_BUILD_NUMBER: await getBuildNumber(platform),
   };
 }

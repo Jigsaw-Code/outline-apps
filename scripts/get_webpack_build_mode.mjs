@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from "url";
-import {getBuildParameters} from "./get_build_parameters.mjs";
+import url from 'url';
+import {getBuildParameters} from './get_build_parameters.mjs';
 
 /*
   Inputs:
@@ -24,12 +24,12 @@ import {getBuildParameters} from "./get_build_parameters.mjs";
 */
 export function getWebpackBuildMode(buildMode) {
   switch (buildMode) {
-    case "debug":
-      return "development";
-    case "release":
-      return "production";
+    case 'debug':
+      return 'development';
+    case 'release':
+      return 'production';
     default:
-      throw new TypeError("get_webpack_mode requires a buildMode argument of debug or release");
+      throw new TypeError('get_webpack_mode requires a buildMode argument of debug or release');
   }
 }
 
