@@ -22,7 +22,7 @@
  */
 async function electronBuilderEntryPoint(configuration) {
   // CommonJS module is required, ES6 module is not supported by electron-builder
-  const { signWindowsExecutable } = await import('./sign_windows_executable.mjs');
+  const {signWindowsExecutable} = await import('./sign_windows_executable.mjs');
   await signWindowsExecutable(configuration.path, configuration.hash, null);
 }
 
