@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build Windows Installer
-        run: npm run action src/electron/build windows -- --buildMode=release
+        run: npm run action electron/build windows -- --buildMode=release
 
       - name: Upload Windows Installer
         uses: actions/upload-artifact@v2

@@ -11,31 +11,31 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import minimist from "minimist";
-import url from "url";
-import {getVersion} from "./get_version.mjs";
+import url from 'url';
+import {getBuildParameters} from './get_build_parameters.mjs';
+import {getVersion} from './get_version.mjs';
 
 export async function getElectronBuildFlags(platform, buildMode) {
   let buildFlags = [
-    "--publish never",
-    "--config src/electron/electron-builder.json",
+    '--publish never',
+    '--config src/electron/electron-builder.json',
     `--config.extraMetadata.version=${await getVersion(platform)}`,
   ];
 
-  if (platform === "linux") {
-    buildFlags = ["--linux", ...buildFlags];
-  } else if (platform === "windows") {
-    buildFlags = ["--win", ...buildFlags];
+  if (platform === 'linux') {
+    buildFlags = ['--linux', ...buildFlags];
+  } else if (platform === 'windows') {
+    buildFlags = ['--win', ...buildFlags];
   }
 
-  if (buildMode === "release") {
+  if (buildMode === 'release') {
     // Publishing is disabled, updates are pulled from AWS. We use the generic provider instead of the S3
     // provider since the S3 provider uses "virtual-hosted style" URLs (my-bucket.s3.amazonaws.com)
     // which can be blocked by DNS or SNI without taking down other buckets.
     buildFlags = [
       ...buildFlags,
-      "--config.generateUpdatesFilesForAllChannels=true",
-      "--config.publish.provider=generic",
+      '--config.generateUpdatesFilesForAllChannels=true',
+      '--config.publish.provider=generic',
       `--config.publish.url=https://s3.amazonaws.com/outline-releases/client/${platform}`,
     ];
   }
@@ -44,11 +44,9 @@ export async function getElectronBuildFlags(platform, buildMode) {
 }
 
 async function main() {
-  const {_, buildMode} = minimist(process.argv);
+  const {platform, buildMode} = getBuildParameters(process.argv.slice(2));
 
-  const platform = _[2];
-
-  console.log((await getElectronBuildFlags(platform, buildMode)).join(" "));
+  console.log((await getElectronBuildFlags(platform, buildMode)).join(' '));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

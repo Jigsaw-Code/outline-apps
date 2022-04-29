@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import xml2js from "xml2js";
-import fs from "fs/promises";
-import url from "url";
-import minimist from "minimist";
+import xml2js from 'xml2js';
+import fs from 'fs/promises';
+import url from 'url';
+import {getBuildEnvironment} from './get_build_environment.mjs';
 
 /*
   Inputs:
@@ -28,31 +28,29 @@ export async function getVersion(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
-    case "android":
-    case "browser":
-      const {widget} = await parseFile("config.xml");
+    case 'android':
+    case 'browser':
+      const {widget} = await parseFile('config.xml');
       return widget.$.version;
-    case "ios":
-    case "osx":
+    case 'ios':
+    case 'osx':
       const {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
       } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
-      return plistValues[plistKeys.indexOf("CFBundleShortVersionString")];
-    case "windows":
-      return "1.7.1";
-    case "linux":
-      return "1.7.0";
+      return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
+    case 'windows':
+      return '1.7.1';
+    case 'linux':
+      return '1.7.0';
     default:
-      throw new Error("get_version must be provided a platform argument");
+      throw new Error('get_version must be provided a platform argument');
   }
 }
 
 async function main() {
-  const {_} = minimist(process.argv);
-
-  const platform = _[2];
+  const {platform} = getBuildEnvironment(process.argv.slice(2));
 
   console.log(await getVersion(platform));
 }
