@@ -11,12 +11,12 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from "@polymer/decorators";
-import {html, PolymerElement} from "@polymer/polymer";
-import {LegacyElementMixin} from "@polymer/polymer/lib/legacy/legacy-element-mixin";
-import {ServerConnectionState} from "../server_connection_indicator";
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {ServerConnectionState} from '../server_connection_indicator';
 
-@customElement("server-card")
+@customElement('server-card')
 export class ServerCard extends LegacyElementMixin(PolymerElement) {
   static template = html`
     <style>
@@ -81,8 +81,8 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
         border-radius: 100px;
         margin: 0;
         padding: 3px 3px 0;
-        width: 100%;
-        max-width: 192px;
+        width: 192px;
+        height: 192px;
       }
       .status-message {
         color: var(--disabled-text-color);
@@ -191,51 +191,51 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
 
-  @computed("serverName", "isOutlineServer", "localize")
+  @computed('serverName', 'isOutlineServer', 'localize')
   get localizedServerName() {
     if (this.serverName?.length) {
       return this.serverName;
     }
 
-    return this.localize(this.isOutlineServer ? "server-default-name-outline" : "server-default-name");
+    return this.localize(this.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
   }
 
-  @computed("state", "localize")
+  @computed('state', 'localize')
   get statusMessage() {
-    if (!this.localize) return "";
+    if (!this.localize) return '';
 
     switch (this.state) {
       case ServerConnectionState.CONNECTING:
-        return this.localize("connecting-server-state");
+        return this.localize('connecting-server-state');
       case ServerConnectionState.CONNECTED:
-        return this.localize("connected-server-state");
+        return this.localize('connected-server-state');
       case ServerConnectionState.RECONNECTING:
-        return this.localize("reconnecting-server-state");
+        return this.localize('reconnecting-server-state');
       case ServerConnectionState.DISCONNECTING:
-        return this.localize("disconnecting-server-state");
+        return this.localize('disconnecting-server-state');
       case ServerConnectionState.DISCONNECTED:
       default:
-        return this.localize("disconnected-server-state");
+        return this.localize('disconnected-server-state');
     }
   }
 
-  @computed("state", "localize")
+  @computed('state', 'localize')
   get connectButtonLabel() {
-    if (!this.localize) return "";
+    if (!this.localize) return '';
 
     switch (this.state) {
       case ServerConnectionState.CONNECTING:
       case ServerConnectionState.CONNECTED:
       case ServerConnectionState.RECONNECTING:
-        return this.localize("disconnect-button-label");
+        return this.localize('disconnect-button-label');
       case ServerConnectionState.DISCONNECTING:
       case ServerConnectionState.DISCONNECTED:
       default:
-        return this.localize("connect-button-label");
+        return this.localize('connect-button-label');
     }
   }
 
-  @computed("state")
+  @computed('state')
   get connectButtonDisabled() {
     return (
       this.disabled ||
@@ -244,26 +244,26 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
     );
   }
 
-  @computed("expanded")
+  @computed('expanded')
   get expandedClassName() {
-    return this.expanded ? "expanded" : "";
+    return this.expanded ? 'expanded' : '';
   }
 
   protected onConnectToggled() {
     const {serverId} = this;
 
     this.state === ServerConnectionState.DISCONNECTED
-      ? this.fire("ConnectPressed", {serverId})
-      : this.fire("DisconnectPressed", {serverId});
+      ? this.fire('ConnectPressed', {serverId})
+      : this.fire('DisconnectPressed', {serverId});
   }
 
   protected onMenuItemPressed({detail: {selected}}: CustomEvent) {
     const {serverName, serverId} = this;
 
-    if (selected === "forget") {
-      this.fire("ForgetPressed", {serverId});
-    } else if (selected === "rename") {
-      this.fire("ShowServerRename", {serverName, serverId});
+    if (selected === 'forget') {
+      this.fire('ForgetPressed', {serverId});
+    } else if (selected === 'rename') {
+      this.fire('ShowServerRename', {serverName, serverId});
     }
 
     // This can leave the pressed paper-item in the selected state,

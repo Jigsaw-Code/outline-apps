@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import xml2js from "xml2js";
-import fs from "fs/promises";
-import url from "url";
-import minimist from "minimist";
+import xml2js from 'xml2js';
+import fs from 'fs/promises';
+import url from 'url';
+import {getBuildParameters} from './get_build_parameters.mjs';
 
 /*
   Inputs:
@@ -28,29 +28,27 @@ export async function getBuildNumber(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
-    case "android":
-    case "browser":
-      const {widget} = await parseFile("config.xml");
-      return widget.$["android-versionCode"];
-    case "ios":
-    case "osx":
+    case 'android':
+    case 'browser':
+      const {widget} = await parseFile('config.xml');
+      return widget.$['android-versionCode'];
+    case 'ios':
+    case 'osx':
       const {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
       } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
-      return plistValues[plistKeys.indexOf("CFBundleVersion")];
-    case "windows":
-    case "linux":
+      return plistValues[plistKeys.indexOf('CFBundleVersion')];
+    case 'windows':
+    case 'linux':
     default:
       return;
   }
 }
 
 async function main() {
-  const {_} = minimist(process.argv);
-
-  const platform = _[2];
+  const {platform} = getBuildParameters(process.argv.slice(2));
 
   const result = await getBuildNumber(platform);
 
