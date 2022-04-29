@@ -28,7 +28,7 @@ import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  await runAction('cordova/setup', parameters);
+  await runAction('cordova/setup', ...parameters);
 
   let argv = [];
 
