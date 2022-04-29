@@ -33,7 +33,7 @@ jobs:
         run: npm ci
 
       - name: Build Linux Release Candidate
-        run: npm run action src/electron/build linux -- --buildMode=release
+        run: npm run action electron/build linux -- --buildMode=release
 
       - name: Upload Linux Release Candidate
         uses: actions/upload-artifact@v2
@@ -74,7 +74,7 @@ jobs:
         run: |
           echo "$ANDROID_KEY_STORE_CONTENTS" | base64 --decode > keystore.p12
 
-          npm run action gulp build android -- --buildMode=release
+          npm run action cordova/build android -- --buildMode=release
 
           wget \
             -q https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-1.8.2.jar \

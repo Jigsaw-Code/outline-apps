@@ -29,10 +29,10 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        run: npm run action gulp build browser
+        run: npm run action www/build
 
       - name: Test Web App
-        run: npm run action src/www/test
+        run: npm run action www/test
 
   linux_debug_build:
     name: Linux Debug Build
@@ -53,7 +53,7 @@ jobs:
         run: npm ci
 
       - name: Build Linux Client
-        run: npm run action src/electron/build linux
+        run: npm run action electron/build linux
       
       - name: Upload Linux Client
         uses: actions/upload-artifact@v2
@@ -84,7 +84,7 @@ jobs:
         run: npm ci
 
       - name: Build Windows Client
-        run: npm run action src/electron/build windows
+        run: npm run action electron/build windows
 
       - name: Upload Windows Client
         uses: actions/upload-artifact@v2
@@ -115,7 +115,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build MacOS Client
-        run: npm run action gulp build osx
+        run: npm run action cordova/build osx
 
       - name: Upload MacOS Client
         uses: actions/upload-artifact@v2
@@ -187,7 +187,7 @@ jobs:
         run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action gulp build android
+        run: npm run action cordova/build android
 
       - name: Upload Android Client
         uses: actions/upload-artifact@v2
