@@ -108,7 +108,17 @@ export class RoutingDaemon {
           }
 
           newSocket.on('data', this.dataHandler.bind(this));
-          fulfill();
+
+          // Potential race condition: this routing daemon might already be stopped by the tunnel
+          // when one of the dependencies (ss-local/tunnel2socks) exited
+          // TODO(junyi): better handling this case in the next installation logic fix
+          if (this.stopping) {
+            cleanup();
+            newSocket.destroy();
+            reject(new errors.SystemConfigurationException('routing daemon service stopped before started'));
+          } else {
+            fulfill();
+          }
         });
 
         newSocket.write(
@@ -134,7 +144,7 @@ export class RoutingDaemon {
             return;
           }
 
-          fulfill(this.start(false));
+          this.start(false).then(fulfill, reject);
         });
       };
       newSocket.once('error', initialErrorHandler);
@@ -200,18 +210,21 @@ export class RoutingDaemon {
   // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
   async stop() {
-    if (!this.socket) {
-      // Never started.
-      this.fulfillDisconnect();
-      return;
-    }
-    if (this.stopping) {
-      // Already stopped.
-      return;
-    }
-    this.stopping = true;
+    try {
+      if (!this.socket) {
+        // Never started.
+        return;
+      }
+      if (this.stopping) {
+        // Already stopped.
+        return;
+      }
+      this.stopping = true;
 
-    return this.writeReset();
+      return this.writeReset();
+    } finally {
+      this.fulfillDisconnect();
+    }
   }
 
   public get onceDisconnected() {
