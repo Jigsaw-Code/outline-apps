@@ -14,15 +14,15 @@
   limitations under the License.
 */
 
-import {Polymer} from "@polymer/polymer/lib/legacy/polymer-fn.js";
-import {html} from "@polymer/polymer/lib/utils/html-tag.js";
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-import "./server_list";
-import "./server_card";
-import "./server_connection_indicator";
+import './server_list';
+import './server_card';
+import './server_connection_indicator';
 
-import {ServerListItem as _ServerListItem} from "./server_list";
-import {ServerConnectionState as _ServerConnectionState} from "./server_connection_indicator";
+import {ServerListItem as _ServerListItem} from './server_list';
+import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 
 export type ServerListItem = _ServerListItem;
 export import ServerConnectionState = _ServerConnectionState;
@@ -85,6 +85,8 @@ Polymer({
         border-top-style: solid;
       }
       paper-button {
+        width: 192px;
+        height: 192px;
         display: flex;
         flex-direction: column;
         text-transform: none;
@@ -95,7 +97,10 @@ Polymer({
       <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-viz state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
+            <server-connection-indicator
+              connection-state="INITIAL"
+              root-path="[[rootPath]]"
+            ></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
@@ -122,7 +127,7 @@ Polymer({
     </div>
   `,
 
-  is: "servers-view",
+  is: 'servers-view',
 
   properties: {
     localize: Function,
@@ -130,7 +135,7 @@ Polymer({
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,
-      computed: "_computeShouldShowZeroState(servers)",
+      computed: '_computeShouldShowZeroState(servers)',
     },
   },
 
@@ -139,6 +144,6 @@ Polymer({
   },
 
   _requestPromptAddServer() {
-    this.fire("PromptAddServerRequested", {});
+    this.fire('PromptAddServerRequested', {});
   },
 });
