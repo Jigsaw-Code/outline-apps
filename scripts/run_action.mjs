@@ -92,7 +92,7 @@ export async function runAction(actionPath, ...parameters) {
   try {
     await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
   } catch (error) {
-    console.error(chalk.red(error?.message ? error.message : 'An unknown Error occurred.'));
+    error?.message && console.error(chalk.red(error.message));
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
