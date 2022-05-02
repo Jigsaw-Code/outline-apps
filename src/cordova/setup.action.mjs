@@ -48,7 +48,7 @@ export async function main(...parameters) {
     throw new SystemError('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  await runAction('www/build', `--buildMode=${buildMode}`);
+  await runAction('www/build', {parameters: [`--buildMode=${buildMode}`], inputs: ['src/www']});
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(

@@ -21,45 +21,6 @@ import url from 'url';
 import {getRootDir} from './get_root_dir.mjs';
 
 /**
- * @description loads the absolute path of the action file
- */
-const resolveActionPath = async actionPath => {
-  if (!actionPath) return '';
-
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
-  const extensions = ['sh', 'mjs'];
-
-  for (const root of roots) {
-    for (const extension of extensions) {
-      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
-
-      if (existsSync(pathCandidate)) {
-        return pathCandidate;
-      }
-    }
-  }
-};
-
-/**
- * @description promisifies the child process (for supporting legacy bash actions!)
- */
-const spawnStream = (command, parameters) =>
-  new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters, {shell: true});
-
-    childProcess.stdout.on('data', data => console.info(data.toString()));
-    childProcess.stderr.on('data', error => console.error(chalk.red(error.toString())));
-
-    childProcess.on('close', code => {
-      if (code === 0) {
-        resolve(childProcess);
-      } else {
-        reject(childProcess);
-      }
-    });
-  });
-
-/**
  * @description This is the entrypoint into our custom task runner.
  * It runs an `*.action.mjs` or `*.action.sh` file with the given parameters.
  * You can find these files located within their associated directories in the project.
@@ -71,19 +32,143 @@ const spawnStream = (command, parameters) =>
  * @param {...string} parameters The flags and other parameters we want to run the action with.
  * @returns {void}
  */
-export async function runAction(actionPath, ...parameters) {
+export async function runAction(actionPath, {parameters, inputs} = {}) {
+  /**
+   * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
+   * if they can be skipped on subsequent attempts.
+   *
+   * Cache methods:
+   *   readActionCache - loads the latest time the action was run along with the parameters it was run with
+   *   writeActionCache - updates the time an action was run and the parameters it was run with
+   *
+   * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
+   * corruption of the cache
+   */
+  const ACTION_CACHE_FILE = './.action_cache.json';
+
+  const readActionCache = async (actionPathKey, parameters) => {
+    const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+    if (!existsSync(cachePath)) {
+      return {};
+    }
+
+    const cache = JSON.parse(await fs.readFile(cachePath));
+
+    if (JSON.stringify(cache[actionPathKey]?.parameters) !== JSON.stringify(parameters)) {
+      return {};
+    }
+
+    return cache[actionPathKey];
+  };
+
+  const writeActionCache = async (actionPathKey, actionCacheObject) => {
+    const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
+
+    let cache = {};
+
+    if (existsSync(cachePath)) {
+      cache = JSON.parse(await fs.readFile(cachePath));
+    }
+
+    cache[actionPathKey] = actionCacheObject;
+
+    await fs.writeFile(cachePath, JSON.stringify(cache));
+  };
+
+  /**
+   * @description BFSes a list of file system targets, returning the timestamp of the most
+   * recently modified one.
+   *
+   * @param {Array<Directory | File>} inputs List of folders and files to scan.
+   * @returns {number} Timestamp in milliseconds of the most recently modified file.
+   */
+  const mostRecentModification = async inputs => {
+    let result = 0;
+    let foldersAndFiles = [...inputs];
+
+    while (foldersAndFiles.length) {
+      const currentFolderOrFile = foldersAndFiles.pop();
+      const fileInformation = await fs.stat(currentFolderOrFile);
+
+      result = Math.max(result, fileInformation.mtimeMs);
+
+      if (fileInformation.isDirectory()) {
+        const contents = await fs.readdir(currentFolderOrFile);
+
+        foldersAndFiles = [...foldersAndFiles, ...contents.map(child => `${currentFolderOrFile}/${child}`)];
+      }
+    }
+
+    return result;
+  };
+
+  /**
+   * @description loads the absolute path of the action file
+   */
+  const resolveActionPath = async actionPath => {
+    if (!actionPath) return '';
+
+    const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+    const extensions = ['sh', 'mjs'];
+
+    for (const root of roots) {
+      for (const extension of extensions) {
+        const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
+
+        if (existsSync(pathCandidate)) {
+          return pathCandidate;
+        }
+      }
+    }
+  };
+
+  /**
+   * @description promisifies the child process (for supporting legacy bash actions!)
+   */
+  const spawnStream = (command, parameters) =>
+    new Promise((resolve, reject) => {
+      const childProcess = spawn(command, parameters, {shell: true});
+
+      childProcess.stdout.on('data', data => console.info(data.toString()));
+      childProcess.stderr.on('data', error => console.error(chalk.red(error.toString())));
+
+      childProcess.on('close', code => {
+        if (code === 0) {
+          resolve(childProcess);
+        } else {
+          reject(childProcess);
+        }
+      });
+    });
+
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
     console.info('Please provide an action to run.');
     return runAction('list');
   }
 
+  const actionCache = await readActionCache(resolvedPath, parameters);
+
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    // TODO(daniellacosse): call javascript actions directly without creating a circular dependency
-    await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+    if (inputs?.length && actionCache.lastRan > (await mostRecentModification(inputs))) {
+      console.info(
+        chalk.bold(`Skipping:`),
+        'No source file from the given inputs',
+        chalk.blue(`"${inputs.join(', ')}"`),
+        'are newer than the previous successful run of this action.'
+      );
+    } else {
+      await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+
+      await writeActionCache(resolvedPath, {
+        parameters,
+        lastRan: Date.now(),
+      });
+    }
   } catch (error) {
     console.error(error);
     console.groupEnd();
