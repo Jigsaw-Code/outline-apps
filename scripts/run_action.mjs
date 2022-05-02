@@ -32,7 +32,7 @@ import {getRootDir} from './get_root_dir.mjs';
  * @param {...string} parameters The flags and other parameters we want to run the action with.
  * @returns {void}
  */
-export async function runAction(actionPath, {parameters, inputs} = {}) {
+export async function runAction(actionPath, {parameters, inputs} = {parameters: []}) {
   /**
    * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
    * if they can be skipped on subsequent attempts.
