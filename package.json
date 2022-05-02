@@ -82,6 +82,7 @@
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
+    "cz-conventional-changelog": "^3.3.0",
     "electron": "^11.5.0",
     "electron-builder": "^22.9.1",
     "electron-icon-maker": "^0.0.4",
@@ -117,7 +118,8 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint:ts -- --fix && npm run format"
+      "pre-commit": "npm run lint:ts -- --fix && npm run format",
+      "prepare-commit-msg": "exec < /dev/tty && npx cz --hook || true"
     }
   },
   "cordova": {
@@ -134,5 +136,10 @@
       "ios",
       "osx"
     ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
