@@ -14,6 +14,7 @@
 
 import chalk from 'chalk';
 import {existsSync} from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import {spawn} from 'child_process';
 import url from 'url';
