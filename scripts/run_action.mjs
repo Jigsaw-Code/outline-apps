@@ -32,7 +32,7 @@ import {getRootDir} from './get_root_dir.mjs';
  * @param {...string} parameters The flags and other parameters we want to run the action with.
  * @returns {void}
  */
-export async function runAction(actionPath, {parameters, inputs} = {parameters: []}) {
+export async function runAction(actionPath, {parameters = [], inputs = []}) {
   /**
    * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
    * if they can be skipped on subsequent attempts.
@@ -154,7 +154,7 @@ export async function runAction(actionPath, {parameters, inputs} = {parameters: 
   const startTime = performance.now();
 
   try {
-    if (inputs?.length && actionCache.lastRan > (await mostRecentModification(inputs))) {
+    if (actionCache.lastRan > (await mostRecentModification(inputs))) {
       console.info(
         chalk.bold(`Skipping:`),
         'No source file from the given inputs',
