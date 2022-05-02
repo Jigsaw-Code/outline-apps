@@ -146,9 +146,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build iOS Client
-        run: |
-          npm run action gulp setup ios
-          xcodebuild -project platforms/ios/Outline.xcodeproj -configuration "Debug" -sdk "iphonesimulator"
+        run: npm run action cordova/build ios
 
       - name: Upload iOS Client
         uses: actions/upload-artifact@v2
