@@ -20,6 +20,7 @@ import {spawn} from 'child_process';
 import url from 'url';
 
 import {getRootDir} from './get_root_dir.mjs';
+import {argv} from 'process';
 
 /**
  * @description This is the entrypoint into our custom task runner.
@@ -155,7 +156,7 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
   const startTime = performance.now();
 
   try {
-    if (actionCache.lastRan > (await mostRecentModification(inputs))) {
+    if (inputs.length && actionCache.lastRan > (await mostRecentModification(inputs))) {
       console.info(
         chalk.bold(`Skipping:`),
         'No source file from the given inputs',
@@ -171,7 +172,7 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
       });
     }
   } catch (error) {
-    console.error(error);
+    error?.message && console.error(error.message);
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -190,7 +191,7 @@ async function main() {
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
 
-  return runAction(...process.argv.slice(2));
+  return runAction(process.argv[2], {parameters: process.argv.slice(3)});
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
