@@ -124,9 +124,9 @@ export async function runAction(actionPath, {parameters = [], inputs = []}) {
   };
 
   /**
-   * @description promisifies the child process (for supporting legacy bash actions!)
+   * @description promisifies the child process spawner
    */
-  const spawnStream = (command, parameters) =>
+  const spawnPromise = (command, parameters) =>
     new Promise((resolve, reject) => {
       const childProcess = spawn(command, parameters, {shell: true});
 
@@ -162,7 +162,7 @@ export async function runAction(actionPath, {parameters = [], inputs = []}) {
         'are newer than the previous successful run of this action.'
       );
     } else {
-      await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+      await spawnPromise(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
 
       await writeActionCache(resolvedPath, {
         parameters,
