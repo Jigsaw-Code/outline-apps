@@ -14,6 +14,7 @@
 
 import fs from 'fs/promises';
 import webpack from 'webpack';
+import url from 'url';
 import path from 'path';
 
 import electronConfig from './webpack_electron.mjs';
