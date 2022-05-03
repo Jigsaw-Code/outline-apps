@@ -39,27 +39,19 @@ export class ServerCard extends ServerListItemElement {
   @state() toggleOptionsMenu: () => void;
 
   static styles = css`
-    :host,
-    .server-card-header,
-    .server-card-body,
-    .server-card-footer {
-      display: block;
-      width: 100%;
-    }
-
     :host {
+      width: 100%;
+      height: 100%;
+
       user-select: none;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
 
       box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.3);
-      border: 1px solid hsl(0, 0%, 85%);
+      border-top: 1px solid hsl(0, 0%, 85%);
       border-radius: 2px;
 
-      min-width: 320px;
-
-      /* TODO: make :host a card */
+      display: flex;
+      flex-direction: column;
 
       /* css variables */
       --outline-error: hsl(4, 90%, 58%);
@@ -75,17 +67,19 @@ export class ServerCard extends ServerListItemElement {
       align-items: center;
       justify-content: space-around;
       box-sizing: border-box;
-      padding: 1rem 1rem;
+      padding: 1rem;
+      flex: 1;
     }
 
     .server-card-metadata-text {
       user-select: text;
-      margin: 0 1rem;
+      margin: 0 0.75rem;
       flex: 1;
     }
 
     .server-card-metadata-server-name {
       margin: 0;
+      margin-bottom: 0.25rem;
     }
 
     .server-card-metadata-server-address {
@@ -94,6 +88,7 @@ export class ServerCard extends ServerListItemElement {
 
     .server-card-menu {
       align-self: flex-start;
+      margin: -0.5rem -0.25rem;
     }
 
     .server-card-body {
@@ -148,7 +143,7 @@ export class ServerCard extends ServerListItemElement {
   render() {
     const connectionIndicator = html`
       <server-connection-indicator
-        style="width: 64px; height: 64px"
+        style="max-height: 5rem;"
         connection-state="${this.server.connectionState}"
         root-path="${this.rootPath}"
       ></server-connection-indicator>

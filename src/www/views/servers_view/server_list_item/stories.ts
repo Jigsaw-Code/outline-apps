@@ -32,26 +32,22 @@ export default {
       address: '1.0.0.127',
       connectionState: ServerConnectionState.INITIAL,
     },
-    expanded: false,
-    disabled: false,
+    elementHeight: 300,
   },
   argTypes: {
     server: {
       object: 'select',
     },
-    expanded: {
-      control: 'boolean',
-    },
-    disabled: {
-      control: 'boolean',
+    elementHeight: {
+      control: {type: 'number', min: 120, max: 600, step: 5},
     },
   },
 };
 
-export const ServerCard = ({server, disabled, expanded}: ServerCardElement) => {
+export const ServerCard = ({server, elementHeight}: ServerCardElement & {elementHeight: number}) => {
   return html`
-    <div style="width: 100%; height: 300px;">
-      <server-card .localize=${localize} .server=${server} ?expanded=${expanded} ?disabled=${disabled}></server-card>
+    <div style="width: 100%; height: ${elementHeight}px;">
+      <server-card .localize=${localize} .server=${server}></server-card>
     </div>
   `;
 };

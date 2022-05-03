@@ -11,26 +11,26 @@
   limitations under the License.
 */
 
-import {html, css, LitElement} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {html, css, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
-  INITIAL = "initial",
-  CONNECTING = "connecting",
-  CONNECTED = "connected",
-  RECONNECTING = "reconnecting",
-  DISCONNECTING = "disconnecting",
-  DISCONNECTED = "disconnected",
+  INITIAL = 'initial',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  RECONNECTING = 'reconnecting',
+  DISCONNECTING = 'disconnecting',
+  DISCONNECTED = 'disconnected',
 }
 
 const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
-@customElement("server-connection-indicator")
+@customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
-  @property({attribute: "connection-state"}) connectionState: ServerConnectionState;
-  @property({attribute: "root-path"}) rootPath: string;
+  @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
+  @property({attribute: 'root-path'}) rootPath: string;
 
   @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
   private animationStartMS: number;
@@ -66,7 +66,6 @@ export class ServerConnectionIndicator extends LitElement {
 
       :host,
       .circle {
-        width: 100%;
         height: 100%;
       }
 
@@ -139,7 +138,7 @@ export class ServerConnectionIndicator extends LitElement {
   ];
 
   willUpdate(changedProperties: Map<keyof ServerConnectionIndicator, ServerConnectionState>) {
-    if (!changedProperties.has("connectionState")) {
+    if (!changedProperties.has('connectionState')) {
       return;
     }
 
