@@ -40,6 +40,10 @@ class ActionCache {
   }
 
   async read(actionPathKey, actionOptions) {
+    if (!existsSync(this.cachePath)) {
+      await fs.writeFile(this.cachePath, '{}');
+    }
+
     const cache = JSON.parse(await fs.readFile(this.cachePath));
 
     if (JSON.stringify(cache[actionPathKey]?.options) !== JSON.stringify(actionOptions)) {
