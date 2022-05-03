@@ -1,0 +1,14 @@
+{
+  "/Users/daniellacosse/outline/outline-client/src/cordova/build.action.mjs": {
+    "options": {"parameters": ["osx"], "inputs": []},
+    "timestamp": 1651591605851
+  },
+  "/Users/daniellacosse/outline/outline-client/src/www/build.action.mjs": {
+    "options": {"parameters": ["--buildMode=debug"], "inputs": ["src/www"]},
+    "timestamp": 1651591537845
+  },
+  "/Users/daniellacosse/outline/outline-client/src/cordova/setup.action.mjs": {
+    "options": {"parameters": ["osx"], "inputs": ["www", "resources", "src/cordova", "cordova-plugin-outline"]},
+    "timestamp": 1651591539169
+  }
+}

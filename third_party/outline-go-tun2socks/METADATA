@@ -7,5 +7,5 @@ third_party {
     value: "https://github.com/Jigsaw-Code/outline-go-tun2socks"
   }
   version: "2.2.1"
-  last_upgrade_date { year: 2020 month: 11 day: 3 }
+  last_upgrade_date { year: 2022 month: 4 day: 20 }
 }

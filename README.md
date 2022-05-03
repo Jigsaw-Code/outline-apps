@@ -39,8 +39,11 @@ npm run action src/www/storybook
 Additional requirements for Android:
 
 - [Android Studio 2020.3.1+](https://developer.android.com/studio)
+  - Optional for building, but useful for development
 - [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
-- Android SDK 30 (with build-tools) via commandline `sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+  - Place it at `$HOME/Android/Sdk/cmdline-tools/latest`
+- Android SDK 30 (with build-tools) via commandline `$HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-30" "build-tools;30.0.3"`
+  - Set up the environment: `export ANDROID_SDK_ROOT=$HOME/Android/Sdk` (`ANDROID_HOME` is the [recommendation](https://developer.android.com/studio/command-line/variables), but Cordova wants `ANDROID_SDK_ROOT`)
 - [Gradle 7.3+](https://gradle.org/install/)
 
 > 💡 NOTE: If you're running linux, you can automatically set up the development environment by running `bash ./tools/build/setup_linux_android.sh`
@@ -78,11 +81,11 @@ Additional requirements for Apple:
 
 To build for macOS (OS X), run:
 
-    npm run action gulp build osx
+    npm run action build/cordova osx
 
 To build for iOS, run:
 
-    npm run action gulp build ios
+    npm run action build/cordova ios
 
 To open the macOS project on XCode:
 

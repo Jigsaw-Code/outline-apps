@@ -21,18 +21,17 @@ import * as errors from '../www/model/errors';
 import {TunnelStatus} from '../www/app/tunnel';
 import {getServiceStartCommand} from './util';
 
-const SERVICE_NAME =
-    platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+const SERVICE_NAME = platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 const isLinux = platform() === 'linux';
 
 interface RoutingServiceRequest {
   action: string;
-  parameters: {[parameter: string]: string|boolean};
+  parameters: {[parameter: string]: string | boolean};
 }
 
 interface RoutingServiceResponse {
-  action: RoutingServiceAction;  // Matches RoutingServiceRequest.action
+  action: RoutingServiceAction; // Matches RoutingServiceRequest.action
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
   connectionStatus: TunnelStatus;
@@ -41,13 +40,13 @@ interface RoutingServiceResponse {
 enum RoutingServiceAction {
   CONFIGURE_ROUTING = 'configureRouting',
   RESET_ROUTING = 'resetRouting',
-  STATUS_CHANGED = 'statusChanged'
+  STATUS_CHANGED = 'statusChanged',
 }
 
 enum RoutingServiceStatusCode {
   SUCCESS = 0,
   GENERIC_FAILURE = 1,
-  UNSUPPORTED_ROUTING_TABLE = 2
+  UNSUPPORTED_ROUTING_TABLE = 2,
 }
 
 // Communicates with the Outline routing daemon via a Unix socket.
@@ -65,13 +64,13 @@ enum RoutingServiceStatusCode {
 //  - Linux: systemctl start|stop outline_proxy_controller.service
 //  - Windows: net start|stop OutlineService
 export class RoutingDaemon {
-  private socket: Socket|undefined;
+  private socket: Socket | undefined;
 
   private stopping = false;
 
   private fulfillDisconnect!: () => void;
 
-  private disconnected = new Promise<void>((F) => {
+  private disconnected = new Promise<void>(F => {
     this.fulfillDisconnect = F;
   });
 
@@ -83,7 +82,7 @@ export class RoutingDaemon {
   // configured the system's routing table.
   async start(retry = true) {
     return new Promise<void>((fulfill, reject) => {
-      const newSocket = this.socket = createConnection(SERVICE_NAME, () => {
+      const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
           newSocket.removeAllListeners();
@@ -92,10 +91,13 @@ export class RoutingDaemon {
         newSocket.once('close', cleanup);
         newSocket.once('error', cleanup);
 
-        newSocket.once('data', (data) => {
+        newSocket.once('data', data => {
           const message = this.parseRoutingServiceResponse(data);
-          if (!message || message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
-              message.statusCode !== RoutingServiceStatusCode.SUCCESS) {
+          if (
+            !message ||
+            message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
+            message.statusCode !== RoutingServiceStatusCode.SUCCESS
+          ) {
             // NOTE: This will rarely occur because the connectivity tests
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
@@ -109,11 +111,13 @@ export class RoutingDaemon {
           fulfill();
         });
 
-        newSocket.write(JSON.stringify({
-          action: RoutingServiceAction.CONFIGURE_ROUTING,
-          parameters: {'proxyIp': this.proxyAddress, 'isAutoConnect': this.isAutoConnect}
-        } as RoutingServiceRequest));
-      });
+        newSocket.write(
+          JSON.stringify({
+            action: RoutingServiceAction.CONFIGURE_ROUTING,
+            parameters: {proxyIp: this.proxyAddress, isAutoConnect: this.isAutoConnect},
+          } as RoutingServiceRequest)
+        );
+      }));
 
       const initialErrorHandler = () => {
         if (!retry) {
@@ -122,7 +126,7 @@ export class RoutingDaemon {
         }
 
         console.info(`(re-)installing routing daemon`);
-        sudo.exec(getServiceStartCommand(), {name: 'Outline'}, (sudoError) => {
+        sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
           if (sudoError) {
             // NOTE: The script could have terminated with an error - see the comment in
             //       sudo-prompt's typings definition.
@@ -161,12 +165,12 @@ export class RoutingDaemon {
 
   // Parses JSON `data` as a `RoutingServiceResponse`. Logs the error and returns undefined on
   // failure.
-  private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse|undefined {
+  private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse | undefined {
     if (!data) {
       console.error('received empty response from routing service');
       return undefined;
     }
-    let response: RoutingServiceResponse|undefined = undefined;
+    let response: RoutingServiceResponse | undefined = undefined;
     try {
       response = JSON.parse(data.toString());
     } catch (error) {
@@ -177,17 +181,18 @@ export class RoutingDaemon {
 
   private async writeReset() {
     return new Promise<void>((resolve, reject) => {
-      const written = this.socket.write(JSON.stringify(
-        {action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
-        (err) => {
+      const written = this.socket.write(
+        JSON.stringify({action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
+        err => {
           if (err) {
             reject(err);
           } else {
             resolve();
           }
-        });
+        }
+      );
       if (!written) {
-        reject(new Error("Write failed"));
+        reject(new Error('Write failed'));
       }
     });
   }
@@ -213,7 +218,7 @@ export class RoutingDaemon {
     return this.disconnected;
   }
 
-  public set onNetworkChange(newListener: ((status: TunnelStatus) => void)|undefined) {
+  public set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
     this.networkChangeListener = newListener;
   }
 }
