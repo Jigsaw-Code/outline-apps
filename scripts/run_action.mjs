@@ -91,6 +91,11 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
 
     while (foldersAndFiles.length) {
       const currentFolderOrFile = foldersAndFiles.pop();
+
+      if (!existsSync(currentFolderOrFile)) {
+        return 0;
+      }
+
       const fileInformation = await fs.stat(currentFolderOrFile);
 
       result = Math.max(result, fileInformation.mtimeMs);
