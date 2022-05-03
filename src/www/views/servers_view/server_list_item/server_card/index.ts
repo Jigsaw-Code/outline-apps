@@ -11,23 +11,23 @@
   limitations under the License.
 */
 
-import {html, css} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {html, css} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 
-import "../../server_connection_indicator";
-import "@material/mwc-button";
-import "@material/mwc-icon-button";
-import "@material/mwc-menu";
+import '../../server_connection_indicator';
+import '@material/mwc-button';
+import '@material/mwc-icon-button';
+import '@material/mwc-menu';
 
-import {ServerConnectionState} from "../../server_connection_indicator";
-import {ServerListItemElement, ServerListItemEvent} from "..";
+import {ServerConnectionState} from '../../server_connection_indicator';
+import {ServerListItemElement, ServerListItemEvent} from '..';
 
-@customElement("server-card")
+@customElement('server-card')
 export class ServerCard extends ServerListItemElement {
   @property() disabled: boolean;
   @property() expanded: boolean;
 
-  @property({attribute: "root-path"}) rootPath: string;
+  @property({attribute: 'root-path'}) rootPath: string;
   @property() localize: (messageID: string) => string;
 
   @state() connectButtonText: string;
@@ -48,8 +48,16 @@ export class ServerCard extends ServerListItemElement {
     }
 
     :host {
-      position: relative;
       user-select: none;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.3);
+      border: 1px solid hsl(0, 0%, 85%);
+      border-radius: 2px;
+
+      min-width: 320px;
 
       /* TODO: make :host a card */
 
@@ -58,16 +66,34 @@ export class ServerCard extends ServerListItemElement {
       --outline-primary: hsl(170, 60%, 46%);
       --outline-dark-gray: hsl(213, 5%, 39%);
       --outline-medium-gray: hsl(0, 0%, 45%);
+
+      --mdc-theme-primary: var(--outline-primary);
     }
 
     .server-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      box-sizing: border-box;
+      padding: 1rem 1rem;
+    }
+
+    .server-card-metadata-text {
       user-select: text;
+      margin: 0 1rem;
+      flex: 1;
+    }
+
+    .server-card-metadata-server-name {
+      margin: 0;
+    }
+
+    .server-card-metadata-server-address {
+      color: gray;
     }
 
     .server-card-menu {
-      position: absolute;
-      top: 0;
-      right: 0;
+      align-self: flex-start;
     }
 
     .server-card-body {
@@ -78,8 +104,11 @@ export class ServerCard extends ServerListItemElement {
 
     .server-card-footer {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: end;
+      background: hsl(0, 0%, 95%);
+      border-top: 1px solid hsl(0, 0%, 85%);
+      box-sizing: border-box;
+      padding: 0.25rem 1rem;
     }
 
     .server-card-error {
@@ -88,11 +117,11 @@ export class ServerCard extends ServerListItemElement {
   `;
 
   willUpdate(updatedProperties: Map<keyof ServerCard, ServerCard[keyof ServerCard]>) {
-    if (updatedProperties.has("optionsMenuOpen")) {
+    if (updatedProperties.has('optionsMenuOpen')) {
       this.toggleOptionsMenu = () => (this.optionsMenuOpen = !this.optionsMenuOpen);
     }
 
-    if (updatedProperties.has("server") || updatedProperties.has("localize")) {
+    if (updatedProperties.has('server') || updatedProperties.has('localize')) {
       this.renameButtonDispatcher = () =>
         this.dispatchEvent(new CustomEvent(ServerListItemEvent.RENAME, {detail: this.server}));
       this.forgetButtonDispatcher = () =>
@@ -105,11 +134,11 @@ export class ServerCard extends ServerListItemElement {
           ServerConnectionState.RECONNECTING,
         ].includes(this.server.connectionState)
       ) {
-        this.connectButtonText = this.localize("disconnect-button-label");
+        this.connectButtonText = this.localize('disconnect-button-label');
         this.connectButtonDispatcher = () =>
           this.dispatchEvent(new CustomEvent(ServerListItemEvent.DISCONNECT, {detail: this.server}));
       } else {
-        this.connectButtonText = this.localize("connect-button-label");
+        this.connectButtonText = this.localize('connect-button-label');
         this.connectButtonDispatcher = () =>
           this.dispatchEvent(new CustomEvent(ServerListItemEvent.CONNECT, {detail: this.server}));
       }
@@ -119,6 +148,7 @@ export class ServerCard extends ServerListItemElement {
   render() {
     const connectionIndicator = html`
       <server-connection-indicator
+        style="width: 64px; height: 64px"
         connection-state="${this.server.connectionState}"
         root-path="${this.rootPath}"
       ></server-connection-indicator>
@@ -128,27 +158,28 @@ export class ServerCard extends ServerListItemElement {
       <span class="server-card-error">${this.localize(this.server.errorMessageId)}</span>
     `;
 
+    const menu = html`
+      <div class="server-card-menu">
+        <mwc-icon-button icon="more_vert" @click=${this.toggleOptionsMenu}></mwc-icon-button>
+        <mwc-menu ?open="${this.optionsMenuOpen}">
+          <mwc-list-item @click="${this.renameButtonDispatcher}">${this.localize('server-rename')}</mwc-list-item>
+          <mwc-list-item @click="${this.forgetButtonDispatcher}">${this.localize('server-forget')}</mwc-list-item>
+        </mwc-menu>
+      </div>
+    `;
+
     const header = html`
       <header class="server-card-header">
         ${!this.expanded && connectionIndicator}
-        <div>
-          <h2>
+        <div class="server-card-metadata-text">
+          <h3 class="server-card-metadata-server-name">
             ${this.server.name ||
-              this.localize(this.server.isOutlineServer ? "server-default-name-outline" : "server-default-name")}
-          </h2>
-          <span>${this.server.address}</span>
+              this.localize(this.server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name')}
+          </h3>
+          <span class="server-card-metadata-server-address">${this.server.address}</span>
         </div>
+        ${menu}
       </header>
-    `;
-
-    const menu = html`
-      <div class="server-card-menu">
-        <mwc-icon-button icon="more-vert" @click=${this.toggleOptionsMenu}></mwc-icon-button>
-        <mwc-menu ?open="${this.optionsMenuOpen}">
-          <mwc-list-item @click="${this.renameButtonDispatcher}">${this.localize("server-rename")}</mwc-list-item>
-          <mwc-list-item @click="${this.forgetButtonDispatcher}">${this.localize("server-forget")}</mwc-list-item>
-        </mwc-menu>
-      </div>
     `;
 
     const body = html`
@@ -167,6 +198,6 @@ export class ServerCard extends ServerListItemElement {
       </footer>
     `;
 
-    return this.expanded ? [header, menu, body, footer] : [header, menu, footer];
+    return this.expanded ? [header, body, footer] : [header, footer];
   }
 }

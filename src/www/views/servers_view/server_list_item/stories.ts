@@ -15,21 +15,21 @@
   limitations under the License.
 */
 
-import {html} from "lit";
+import {html} from 'lit';
 
-import "./server_card";
-import {ServerCard as ServerCardElement} from "./server_card";
+import './server_card';
+import {ServerCard as ServerCardElement} from './server_card';
 
-import {localize} from "../../../.storybook/localize";
-import {ServerConnectionState} from "../server_connection_indicator";
+import {localize} from '../../../.storybook/localize';
+import {ServerConnectionState} from '../server_connection_indicator';
 
 export default {
-  title: "Servers View/Server List Item",
-  component: "server-card",
+  title: 'Servers View/Server List Item',
+  component: 'server-card',
   args: {
     server: {
-      name: "My Server",
-      address: "1.0.0.127",
+      name: 'My Server',
+      address: '1.0.0.127',
       connectionState: ServerConnectionState.INITIAL,
     },
     expanded: false,
@@ -37,19 +37,21 @@ export default {
   },
   argTypes: {
     server: {
-      object: "select",
+      object: 'select',
     },
     expanded: {
-      control: "boolean",
+      control: 'boolean',
     },
     disabled: {
-      control: "boolean",
+      control: 'boolean',
     },
   },
 };
 
 export const ServerCard = ({server, disabled, expanded}: ServerCardElement) => {
   return html`
-    <server-card .localize=${localize} .server=${server} ?expanded=${expanded} ?disabled=${disabled}></server-card>
+    <div style="width: 100%; height: 300px;">
+      <server-card .localize=${localize} .server=${server} ?expanded=${expanded} ?disabled=${disabled}></server-card>
+    </div>
   `;
 };
