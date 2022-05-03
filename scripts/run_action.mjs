@@ -20,116 +20,60 @@ import {spawn} from 'child_process';
 import url from 'url';
 
 import {getRootDir} from './get_root_dir.mjs';
-import {argv} from 'process';
+
+/**
+ * @description The "Action Cache" is a simple JSON file we use to track previous action runs and determine
+ * if they can be skipped on subsequent attempts.
+ *
+ * Cache methods:
+ *   readActionCache - loads the latest time the action was run along with the parameters it was run with
+ *   writeActionCache - updates the time an action was run and the parameters it was run with
+ *
+ * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
+ * corruption of the cache
+ */
+class ActionCache {
+  ACTION_CACHE_FILE = './.action_cache.json';
+
+  constructor() {
+    this.cachePath = path.resolve(process.env.ROOT_DIR, this.ACTION_CACHE_FILE);
+  }
+
+  async read(actionPathKey, actionOptions) {
+    const cache = JSON.parse(await fs.readFile(this.cachePath));
+
+    if (JSON.stringify(cache[actionPathKey]?.options) !== JSON.stringify(actionOptions)) {
+      return {};
+    }
+
+    return cache[actionPathKey];
+  }
+
+  async update(actionPathKey, actionCacheObject) {
+    let cache = {};
+
+    if (existsSync(this.cachePath)) {
+      cache = JSON.parse(await fs.readFile(this.cachePath));
+    }
+
+    cache[actionPathKey] = actionCacheObject;
+
+    return fs.writeFile(this.cachePath, JSON.stringify(cache));
+  }
+}
 
 /**
  * @description This is the entrypoint into our custom task runner.
  * It runs an `*.action.mjs` or `*.action.sh` file with the given parameters.
  * You can find these files located within their associated directories in the project.
- * Action files can also define:
- *   `requirements` - actions that must be run beforehand as prerequisite.
- *   `dependencies` - files and folders that the action takes as input. If they remain unchanged, the action can be skipped.
  *
  * @param {string} actionPath The truncated path to the action you wish to run (e.g. "www/build")
- * @param {...string} parameters The flags and other parameters we want to run the action with.
+ * @param {Object} options Additional action options
+ * @param {string[]} options.parameters Command line arguments passed in to the action script
+ * @param {string[]} options.inputs Files and folders the action consumes. Specify these to skip the action when able
  * @returns {void}
  */
 export async function runAction(actionPath, {parameters = [], inputs = []} = {}) {
-  /**
-   * The "Action Cache" is a simple JSON file we use to track previous action runs and determine
-   * if they can be skipped on subsequent attempts.
-   *
-   * Cache methods:
-   *   readActionCache - loads the latest time the action was run along with the parameters it was run with
-   *   writeActionCache - updates the time an action was run and the parameters it was run with
-   *
-   * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
-   * corruption of the cache
-   */
-  const ACTION_CACHE_FILE = './.action_cache.json';
-
-  const readActionCache = async (actionPathKey, parameters) => {
-    const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
-
-    if (!existsSync(cachePath)) {
-      return {};
-    }
-
-    const cache = JSON.parse(await fs.readFile(cachePath));
-
-    if (JSON.stringify(cache[actionPathKey]?.parameters) !== JSON.stringify(parameters)) {
-      return {};
-    }
-
-    return cache[actionPathKey];
-  };
-
-  const writeActionCache = async (actionPathKey, actionCacheObject) => {
-    const cachePath = path.resolve(process.env.ROOT_DIR, ACTION_CACHE_FILE);
-
-    let cache = {};
-
-    if (existsSync(cachePath)) {
-      cache = JSON.parse(await fs.readFile(cachePath));
-    }
-
-    cache[actionPathKey] = actionCacheObject;
-
-    await fs.writeFile(cachePath, JSON.stringify(cache));
-  };
-
-  /**
-   * @description BFSes a list of file system targets, returning the timestamp of the most
-   * recently modified one.
-   *
-   * @param {Array<Directory | File>} inputs List of folders and files to scan.
-   * @returns {number} Timestamp in milliseconds of the most recently modified file.
-   */
-  const mostRecentModification = async inputs => {
-    let result = 0;
-    let foldersAndFiles = [...inputs];
-
-    while (foldersAndFiles.length) {
-      const currentFolderOrFile = foldersAndFiles.pop();
-
-      if (!existsSync(currentFolderOrFile)) {
-        return 0;
-      }
-
-      const fileInformation = await fs.stat(currentFolderOrFile);
-
-      result = Math.max(result, fileInformation.mtimeMs);
-
-      if (fileInformation.isDirectory()) {
-        const contents = await fs.readdir(currentFolderOrFile);
-
-        foldersAndFiles = [...foldersAndFiles, ...contents.map(child => `${currentFolderOrFile}/${child}`)];
-      }
-    }
-
-    return result;
-  };
-
-  /**
-   * @description loads the absolute path of the action file
-   */
-  const resolveActionPath = async actionPath => {
-    if (!actionPath) return '';
-
-    const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
-    const extensions = ['sh', 'mjs'];
-
-    for (const root of roots) {
-      for (const extension of extensions) {
-        const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
-
-        if (existsSync(pathCandidate)) {
-          return pathCandidate;
-        }
-      }
-    }
-  };
-
   /**
    * @description promisifies the child process spawner
    */
@@ -137,8 +81,16 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
     new Promise((resolve, reject) => {
       const childProcess = spawn(command, parameters, {shell: true});
 
-      childProcess.stdout.on('data', data => console.info(data.toString()));
-      childProcess.stderr.on('data', error => console.error(chalk.red(error.toString())));
+      const forEachMessageLine = (buffer, callback) => {
+        buffer
+          .toString()
+          .split('\n')
+          .filter(line => line.trim())
+          .forEach(callback);
+      };
+
+      childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
+      childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
 
       childProcess.on('close', code => {
         if (code === 0) {
@@ -149,33 +101,74 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
       });
     });
 
-  const resolvedPath = await resolveActionPath(actionPath);
+  let resolvedPath;
+  const pathRoots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+  const fileExtensions = ['sh', 'mjs'];
+
+  for (const root of pathRoots) {
+    for (const extension of fileExtensions) {
+      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
+
+      if (existsSync(pathCandidate)) {
+        resolvedPath = pathCandidate;
+        break;
+      }
+    }
+  }
+
   if (!resolvedPath) {
     console.info('Please provide an action to run.');
     return runAction('list');
   }
 
-  const actionCache = await readActionCache(resolvedPath, parameters);
+  const cache = new ActionCache();
+
+  const actionOptions = {parameters, inputs};
+  const lastRunMetadata = await cache.read(resolvedPath, actionOptions);
+
+  if (inputs.length) {
+    for (const input of inputs) {
+      if (!existsSync(input)) {
+        throw new ReferenceError(`action(${actionPath}) requires the input: "${input}". Aborting!`);
+      }
+    }
+
+    let mostRecentlyModifiedInput = 0;
+    let inputsToCheck = [...inputs];
+    while (inputsToCheck.length) {
+      const currentFolderOrFile = inputsToCheck.pop();
+      const fileInformation = await fs.stat(currentFolderOrFile);
+
+      mostRecentlyModifiedInput = Math.max(mostRecentlyModifiedInput, fileInformation.mtimeMs);
+
+      if (fileInformation.isDirectory()) {
+        const contents = await fs.readdir(currentFolderOrFile);
+
+        inputsToCheck = [...inputsToCheck, ...contents.map(child => `${currentFolderOrFile}/${child}`)];
+      }
+    }
+
+    if (lastRunMetadata.timestamp > mostRecentlyModifiedInput) {
+      console.info(
+        chalk.bold(`Skipping action(${actionPath}):`),
+        'No source file from the given inputs',
+        chalk.blue(`"${inputs.join(', ')}"`),
+        'are newer than the previous successful run of this action.'
+      );
+
+      return;
+    }
+  }
 
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    if (inputs.length && actionCache.lastRan > (await mostRecentModification(inputs))) {
-      console.info(
-        chalk.bold(`Skipping:`),
-        'No source file from the given inputs',
-        chalk.blue(`"${inputs.join(', ')}"`),
-        'are newer than the previous successful run of this action.'
-      );
-    } else {
-      await spawnPromise(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
-
-      await writeActionCache(resolvedPath, {
-        parameters,
-        lastRan: Date.now(),
-      });
-    }
+    await spawnPromise(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+    await cache.update(resolvedPath, {
+      options: actionOptions,
+      timestamp: Date.now(),
+    });
   } catch (error) {
     error?.message && console.error(error.message);
     console.groupEnd();
