@@ -174,7 +174,9 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
       timestamp: Date.now(),
     });
   } catch (error) {
-    error?.message && console.error(error.message);
+    if (error?.message) {
+      console.error(chalk.red(error.message));
+    }
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
