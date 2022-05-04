@@ -24,11 +24,11 @@ const {cordova} = cordovaLib;
 import {runAction} from '../../scripts/run_action.mjs';
 import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['ios', 'osx', 'android'];
+const CORDOVA_PLATFORMS = ['ios', 'macos', 'android'];
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**
- * @description Prepares the paramterized cordova project (ios, osx, android) for being built.
+ * @description Prepares the paramterized cordova project (ios, macos, android) for being built.
  * We have a couple custom things we must do - like rsyncing code from our apple project into the project
  * cordova creates.
  *
@@ -36,7 +36,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
-  const isApple = platform === 'ios' || platform === 'osx';
+  const isApple = platform === 'ios' || platform === 'macos';
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -53,7 +53,7 @@ export async function main(...parameters) {
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
       'add',
-      [platform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
+      [platform === 'macos' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
       {save: false}
     );
   }
