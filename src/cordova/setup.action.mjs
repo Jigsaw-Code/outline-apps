@@ -24,7 +24,7 @@ const {cordova} = cordovaLib;
 import {runAction} from '../../scripts/run_action.mjs';
 import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['ios', 'osx', 'android'];
+const CORDOVA_PLATFORMS = ['ios', 'osx', 'android', 'browser'];
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**

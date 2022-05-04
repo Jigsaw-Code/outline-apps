@@ -85,12 +85,14 @@ Polymer({
         border-top-style: solid;
       }
       paper-button {
-        width: 192px;
-        height: 192px;
         display: flex;
         flex-direction: column;
         text-transform: none;
         outline: none; /* Remove outline for Safari. */
+      }
+      paper-button server-connection-indicator {
+        width: 192px;
+        height: 192px;
       }
     </style>
     <div class="server-list-container">
@@ -98,7 +100,7 @@ Polymer({
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
             <server-connection-indicator
-              connection-state="INITIAL"
+              connection-state="disconnected"
               root-path="[[rootPath]]"
             ></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
