@@ -22,6 +22,18 @@ import '@material/mwc-menu';
 import {ServerConnectionState} from '../../server_connection_indicator';
 import {ServerListItemElement, ServerListItemEvent} from '..';
 
+/*
+  TODOs:
+
+  menu?
+  remove expanded option in favor of resize listener
+  variableize and hoist values
+  make work in list et. al.
+  style tweaks
+  disabled?
+  ...
+*/
+
 @customElement('server-card')
 export class ServerCard extends ServerListItemElement {
   @property() disabled: boolean;
