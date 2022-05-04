@@ -58,7 +58,7 @@ export async function main(...parameters) {
     );
   }
 
-  await cordova.prepare({platforms: [platform], save: false});
+  await cordova.prepare({platforms: [platform === 'macos' ? 'osx' : platform], save: false});
 
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
