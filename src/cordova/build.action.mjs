@@ -53,7 +53,7 @@ export async function main(...parameters) {
   }
 
   await cordova.compile({
-    platforms: [platform],
+    platforms: [platform === 'macos' ? 'osx' : platform],
     options: {
       device: platform === 'ios' && buildMode === 'release',
       emulator: platform === 'ios' && buildMode === 'debug',
