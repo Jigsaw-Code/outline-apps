@@ -12,20 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ipcRenderer} from "electron";
-import promiseIpc from "electron-promise-ipc";
+import {ipcRenderer} from 'electron';
+import promiseIpc from 'electron-promise-ipc';
+import * as os from 'os';
 
-import * as errors from "../model/errors";
+import {ErrorCode, OutlinePluginError} from '../model/errors';
 
-import {ShadowsocksConfig} from "./config";
-import {Tunnel, TunnelStatus} from "./tunnel";
+import {ShadowsocksConfig} from './config';
+import {Tunnel, TunnelStatus} from './tunnel';
+import {OutlineUIService} from './ui_service';
+
+const isLinux = os.platform() === 'linux';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;
 
-  constructor(public readonly id: string) {
+  constructor(public readonly id: string, private readonly uiService: OutlineUIService) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
@@ -47,11 +51,16 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
 
     try {
-      await promiseIpc.send("start-proxying", {config, id: this.id});
+      await promiseIpc.send('start-proxying', {config, id: this.id});
       this.running = true;
     } catch (e) {
-      if (typeof e === "number") {
-        throw new errors.OutlinePluginError(e);
+      if (typeof e === 'number') {
+        if (e === ErrorCode.SYSTEM_MISCONFIGURED) {
+          if (await this.tryInstallServices()) {
+            throw new OutlinePluginError(ErrorCode.SYSTEM_MISCONFIGURED_WITH_SUCCESSFUL_INSTALLATION);
+          }
+        }
+        throw new OutlinePluginError(e);
       } else {
         throw e;
       }
@@ -64,7 +73,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     }
 
     try {
-      await promiseIpc.send("stop-proxying");
+      await promiseIpc.send('stop-proxying');
       this.running = false;
     } catch (e) {
       console.error(`Failed to stop tunnel ${e}`);
@@ -85,6 +94,26 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.statusChangeListener(status);
     } else {
       console.error(`${this.id} status changed to ${status} but no listener set`);
+    }
+  }
+
+  private async tryInstallServices(): Promise<boolean> {
+    if (!isLinux) {
+      return Promise.resolve(false);
+    }
+    const confirmation = await this.uiService.showConfirmation('outline-services-installation-confirmation');
+    if (!confirmation) {
+      return Promise.resolve(false);
+    }
+    this.uiService.showSimpleNotification('outline-services-installing', Infinity);
+    try {
+      return await promiseIpc.send('install-outline-services');
+    } catch (e) {
+      if (typeof e === 'number') {
+        throw new OutlinePluginError(e);
+      } else {
+        throw e;
+      }
     }
   }
 }

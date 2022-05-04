@@ -21,11 +21,11 @@ import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
+import * as sudo from 'sudo-prompt';
 import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as connectivity from './connectivity';
-import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
@@ -34,6 +34,11 @@ import {RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+import {NoAdminPermissions, toErrorCode} from '../www/model/errors';
+import {getServiceStartCommand} from './util';
+
+const isLinux = os.platform() === 'linux';
+const isWindows = os.platform() === 'win32';
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -134,7 +139,7 @@ function setupWindow(): void {
     event.preventDefault();
     mainWindow.hide();
   });
-  if (os.platform() === 'win32') {
+  if (isWindows) {
     // On Windows we hide the app from the taskbar.
     mainWindow.on('minimize', (event: Event) => {
       event.preventDefault();
@@ -169,7 +174,7 @@ function updateTray(status: TunnelStatus) {
     {type: 'separator'} as MenuItemConstructorOptions,
     {label: localizedStrings['quit'], click: quitApp},
   ];
-  if (os.platform() === 'linux') {
+  if (isLinux) {
     // Because the click event is never fired on Linux, we need an explicit open option.
     menuTemplate = [{label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate];
   }
@@ -214,7 +219,7 @@ function interceptShadowsocksLink(argv: string[]) {
 async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
   try {
     await tunnelStore.save(args);
-    if (os.platform() === 'linux') {
+    if (isLinux) {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
@@ -232,7 +237,7 @@ async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
 
 async function tearDownAutoLaunch() {
   try {
-    if (os.platform() === 'linux') {
+    if (isLinux) {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
@@ -438,12 +443,33 @@ function main() {
       });
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
-      throw errors.toErrorCode(e);
+      // clean up the state, no need to await because stopVpn might throw another error which can be ignored
+      stopVpn();
+      throw toErrorCode(e);
     }
   });
 
   // Disconnects from the current server, if any.
   promiseIpc.on('stop-proxying', stopVpn);
+
+  // Install backend services (for Linux only)
+  promiseIpc.on('install-outline-services', () => {
+    console.assert(isLinux, 'outline services can only be installed on Linux');
+    console.log('installing outline routing daemon...');
+    return new Promise<boolean>((resolve, reject) => {
+      sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
+        if (sudoError) {
+          // NOTE: The script could have terminated with an error - see the comment in
+          //       sudo-prompt's typings definition.
+          console.error('failed to install outline routing daemon due to', sudoError);
+          reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
+        } else {
+          console.info('outline routing daemon installed successfully');
+          resolve(true);
+        }
+      });
+    });
+  });
 
   // Error reporting.
   // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.

@@ -14,12 +14,8 @@
 
 import {execSync} from 'child_process';
 import * as dgram from 'dgram';
-import * as dns from 'dns';
 import {powerMonitor} from 'electron';
-import * as net from 'net';
 import {platform} from 'os';
-import * as path from 'path';
-import * as process from 'process';
 import * as socks from 'socks';
 
 import {ShadowsocksConfig} from '../www/app/config';
@@ -177,8 +173,6 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   // Fulfills once all three helpers have started successfully.
   async connect(checkProxyConnectivity: boolean) {
-    await this.routing.ensureDaemonInstalled();
-
     if (isWindows) {
       testTapDevice(TUN2SOCKS_TAP_DEVICE_NAME, TUN2SOCKS_TAP_DEVICE_IP);
 
@@ -273,6 +267,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
+    console.log('disconnecting from libev badvpn tunnel...');
+
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
@@ -285,6 +281,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
     try {
       await this.routing.stop();
+      console.info('disconnected from libev badvpn tunnel');
     } catch (e) {
       // This can happen for several reasons, e.g. the daemon may have stopped while we were
       // connected.

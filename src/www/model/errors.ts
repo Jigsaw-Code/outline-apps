@@ -18,9 +18,8 @@ export class OutlineError extends Error {
   constructor(message?: string) {
     // ref:
     // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
-    super(message);  // 'Error' breaks prototype chain here
-    Object.setPrototypeOf(this,
-                          new.target.prototype);  // restore prototype chain
+    super(message); // 'Error' breaks prototype chain here
+    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = new.target.name;
   }
 }
@@ -89,6 +88,8 @@ export class ServerUnreachable extends RegularNativeError {}
 export class IllegalServerConfiguration extends RegularNativeError {}
 export class NoAdminPermissions extends RegularNativeError {}
 export class SystemConfigurationException extends RegularNativeError {}
+// server connection failed, but successfully install the Outline services
+export class SystemConfigurationExceptionWithSuccessfulInstallation extends RegularNativeError {}
 
 //////
 // Now, "unexpected" errors.
@@ -124,7 +125,9 @@ export const enum ErrorCode {
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
-  SYSTEM_MISCONFIGURED = 12
+  SYSTEM_MISCONFIGURED = 12,
+  // server connection failed, but successfully install the Outline services
+  SYSTEM_MISCONFIGURED_WITH_SUCCESSFUL_INSTALLATION = 13,
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
@@ -156,6 +159,8 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new UnsupportedRoutingTable();
     case ErrorCode.SYSTEM_MISCONFIGURED:
       return new SystemConfigurationException();
+    case ErrorCode.SYSTEM_MISCONFIGURED_WITH_SUCCESSFUL_INSTALLATION:
+      return new SystemConfigurationExceptionWithSuccessfulInstallation();
     default:
       throw new Error(`unknown ErrorCode ${errorCode}`);
   }
@@ -188,6 +193,8 @@ export function toErrorCode(e: NativeError): ErrorCode {
     return ErrorCode.NO_ADMIN_PERMISSIONS;
   } else if (e instanceof SystemConfigurationException) {
     return ErrorCode.SYSTEM_MISCONFIGURED;
+  } else if (e instanceof SystemConfigurationExceptionWithSuccessfulInstallation) {
+    return ErrorCode.SYSTEM_MISCONFIGURED_WITH_SUCCESSFUL_INSTALLATION;
   }
   throw new Error(`unknown NativeError ${e.name}`);
 }

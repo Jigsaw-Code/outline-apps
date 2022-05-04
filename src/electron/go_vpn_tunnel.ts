@@ -86,8 +86,6 @@ export class GoVpnTunnel implements VpnTunnel {
 
   // Fulfills once all three helpers have started successfully.
   async connect(checkProxyConnectivity: boolean) {
-    await this.routing.ensureDaemonInstalled();
-
     if (isWindows) {
       // Windows: when the system suspends, tun2socks terminates due to the TAP device getting
       // closed.

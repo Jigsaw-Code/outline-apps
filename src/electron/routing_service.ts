@@ -14,12 +14,9 @@
 
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
-import * as sudo from 'sudo-prompt';
-
-import * as errors from '../www/model/errors';
 
 import {TunnelStatus} from '../www/app/tunnel';
-import {getServiceStartCommand} from './util';
+import {SystemConfigurationException} from '../www/model/errors';
 
 const isWindows = platform() === 'win32';
 const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
@@ -77,20 +74,6 @@ export class RoutingDaemon {
 
   constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
 
-  /**
-   * Make sure the routing daemon is installed in the system.
-   * A SystemConfigurationException will be thrown if installation failed.
-   */
-  public async ensureDaemonInstalled() {
-    if (await this.isDaemonInstalled()) {
-      return;
-    }
-    if (isWindows) {
-      throw new errors.SystemConfigurationException('please rerun Outline installer in Windows');
-    }
-    await this.installDaemon();
-  }
-
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
   async start(retry = true) {
@@ -132,9 +115,7 @@ export class RoutingDaemon {
         );
       }));
 
-      const initialErrorHandler = () => {
-        reject(new errors.SystemConfigurationException(`routing daemon is not running`));
-      };
+      const initialErrorHandler = () => reject(new SystemConfigurationException(`routing daemon is not running`));
       newSocket.once('error', initialErrorHandler);
     });
   }
@@ -198,18 +179,21 @@ export class RoutingDaemon {
   // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
   async stop() {
-    if (!this.socket) {
-      // Never started.
-      this.fulfillDisconnect();
-      return;
-    }
-    if (this.stopping) {
-      // Already stopped.
-      return;
-    }
-    this.stopping = true;
+    try {
+      if (!this.socket) {
+        // Never started.
+        return;
+      }
+      if (this.stopping) {
+        // Already stopped.
+        return;
+      }
+      this.stopping = true;
 
-    return this.writeReset();
+      return this.writeReset();
+    } finally {
+      this.fulfillDisconnect();
+    }
   }
 
   public get onceDisconnected() {
@@ -218,28 +202,5 @@ export class RoutingDaemon {
 
   public set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
     this.networkChangeListener = newListener;
-  }
-
-  private isDaemonInstalled(): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
-      const connection: Socket = createConnection(SERVICE_NAME, () => connection.destroy());
-      connection.once('error', () => connection.destroy());
-      connection.once('close', hasError => resolve(!hasError));
-    });
-  }
-
-  private installDaemon(): Promise<void> {
-    console.info(`Installing routing daemon`);
-    return new Promise<void>((resolve, reject) => {
-      sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
-        if (sudoError) {
-          // NOTE: The script could have terminated with an error - see the comment in
-          //       sudo-prompt's typings definition.
-          reject(new errors.NoAdminPermissions(sudoError.message));
-        } else {
-          resolve();
-        }
-      });
-    });
   }
 }
