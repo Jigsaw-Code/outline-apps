@@ -47,8 +47,16 @@ const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters, {shell: true});
 
-    childProcess.stdout.on('data', data => console.info(data.toString()));
-    childProcess.stderr.on('data', error => console.error(chalk.red(error.toString())));
+    const forEachMessageLine = (buffer, callback) => {
+      buffer
+        .toString()
+        .split('\n')
+        .filter(line => line.trim())
+        .forEach(callback);
+    };
+
+    childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
+    childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
 
     childProcess.on('close', code => {
       if (code === 0) {
@@ -82,10 +90,11 @@ export async function runAction(actionPath, ...parameters) {
   const startTime = performance.now();
 
   try {
-    // TODO(daniellacosse): call javascript actions directly without creating a circular dependency
     await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
   } catch (error) {
-    console.error(error);
+  if (error?.message) {
+    console.error(chalk.red(error.message));
+  }
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
