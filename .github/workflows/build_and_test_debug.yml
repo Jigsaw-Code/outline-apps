@@ -11,7 +11,7 @@ on:
       - synchronize
 
 jobs:
-  web-test:
+  web_test:
     name: Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
@@ -29,16 +29,16 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        run: npm run action gulp build browser
+        run: npm run action www/build
 
       - name: Test Web App
-        run: npm run action src/www/test
+        run: npm run action www/test
 
-  linux-debug-build:
+  linux_debug_build:
     name: Linux Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -53,20 +53,20 @@ jobs:
         run: npm ci
 
       - name: Build Linux Client
-        run: npm run action src/electron/build linux
+        run: npm run action electron/build linux
       
       - name: Upload Linux Client
         uses: actions/upload-artifact@v2
         with:
           name: client_linux_debug
-          path: build/dist/Outline-Client.AppImage
+          path: build/dist
           if-no-files-found: error
 
-  windows-debug-build:
+  windows_debug_build:
     name: Windows Debug Build
     runs-on: windows-2019
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Support longpaths
         run: git config --system core.longpaths true
@@ -84,20 +84,20 @@ jobs:
         run: npm ci
 
       - name: Build Windows Client
-        run: npm run action src/electron/build windows
+        run: npm run action electron/build windows
 
       - name: Upload Windows Client
         uses: actions/upload-artifact@v2
         with:
           name: client_installer_windows_debug
-          path: build/dist/Outline-Client.exe
+          path: build/dist
           if-no-files-found: error
 
-  mac-debug-build:
+  macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-11
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -114,16 +114,53 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
-      - name: Build OSX Client
-        run: npm run action gulp build osx
+      - name: Build MacOS Client
+        run: npm run action cordova/build osx
 
-  # TODO(daniellacosse): restore ios debug build
+      - name: Upload MacOS Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_macos_debug
+          path: platforms/osx
+          if-no-files-found: error
 
-  android-debug-build:
+  ios_debug_build:
+    name: iOS Debug Build
+    runs-on: macos-11
+    timeout-minutes: 10
+    needs: web_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build iOS Client
+        run: npm run action cordova/build ios
+
+      - name: Upload iOS Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_ios_debug
+          path: platforms/ios
+          if-no-files-found: error
+
+
+  android_debug_build:
     name: Android Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
-    needs: web-test
+    needs: web_test
     env:
       ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
@@ -148,11 +185,11 @@ jobs:
         run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action gulp build android
+        run: npm run action cordova/build android
 
       - name: Upload Android Client
         uses: actions/upload-artifact@v2
         with:
           name: client_android_debug
-          path: platforms/android/app/build/outputs/apk
+          path: platforms/android
           if-no-files-found: error

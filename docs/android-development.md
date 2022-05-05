@@ -7,7 +7,7 @@ The main entrypoint to Android's Java code is `cordova-plugin-outline/android/ja
 ### To install the APK
 
 * Connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
-* Build the app, with `npm run action gulp -- build android`
+* Build the app, with `npm run action cordova/build android`
 * From the project root, run: `adb install -r -d platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk`
 
 ### To debug the web app on Android

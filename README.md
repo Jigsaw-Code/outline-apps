@@ -81,11 +81,11 @@ Additional requirements for Apple:
 
 To build for macOS (OS X), run:
 
-    npm run action gulp build osx
+    npm run action build/cordova osx
 
 To build for iOS, run:
 
-    npm run action gulp build ios
+    npm run action build/cordova ios
 
 To open the macOS project on XCode:
 

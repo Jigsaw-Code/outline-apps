@@ -12,22 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from "chalk";
-import fs from "fs";
-import path from "path";
-import {spawn} from "child_process";
-import url from "url";
+import chalk from 'chalk';
+import {existsSync} from 'fs';
+import path from 'path';
+import {spawn} from 'child_process';
+import url from 'url';
 
-import {getRootDir} from "./get_root_dir.mjs";
+import {getRootDir} from './get_root_dir.mjs';
 
+/**
+ * @description loads the absolute path of the action file
+ */
+const resolveActionPath = async actionPath => {
+  if (!actionPath) return '';
+
+  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+  const extensions = ['sh', 'mjs'];
+
+  for (const root of roots) {
+    for (const extension of extensions) {
+      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
+
+      if (existsSync(pathCandidate)) {
+        return pathCandidate;
+      }
+    }
+  }
+};
+
+/**
+ * @description promisifies the child process (for supporting legacy bash actions!)
+ */
 const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
     const childProcess = spawn(command, parameters, {shell: true});
 
-    childProcess.stdout.on("data", data => console.info(data.toString()));
-    childProcess.stderr.on("data", error => console.error(chalk.red(error.toString())));
+    const forEachMessageLine = (buffer, callback) => {
+      buffer
+        .toString()
+        .split('\n')
+        .filter(line => line.trim())
+        .forEach(callback);
+    };
 
-    childProcess.on("close", code => {
+    childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
+    childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
+
+    childProcess.on('close', code => {
       if (code === 0) {
         resolve(childProcess);
       } else {
@@ -36,42 +67,34 @@ const spawnStream = (command, parameters) =>
     });
   });
 
-const resolveActionPath = async actionPath => {
-  if (!actionPath) return "";
-
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, "src")];
-  const extensions = ["sh", "mjs"];
-
-  for (const root of roots) {
-    for (const extension of extensions) {
-      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
-
-      if (fs.existsSync(pathCandidate)) {
-        return pathCandidate;
-      }
-    }
-  }
-};
-
+/**
+ * @description This is the entrypoint into our custom task runner.
+ * It runs an `*.action.mjs` or `*.action.sh` file with the given parameters.
+ * You can find these files located within their associated directories in the project.
+ * Action files can also define:
+ *   `requirements` - actions that must be run beforehand as prerequisite.
+ *   `dependencies` - files and folders that the action takes as input. If they remain unchanged, the action can be skipped.
+ *
+ * @param {string} actionPath The truncated path to the action you wish to run (e.g. "www/build")
+ * @param {...string} parameters The flags and other parameters we want to run the action with.
+ * @returns {void}
+ */
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
-    console.info("Please provide an action to run.");
-    return runAction("list");
+    console.info('Please provide an action to run.');
+    return runAction('list');
   }
 
-  const startTime = performance.now();
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
+  const startTime = performance.now();
 
   try {
-    if (resolvedPath.endsWith("mjs")) {
-      const action = await import(resolvedPath);
-
-      await action.main(...parameters);
-    } else {
-      await spawnStream("bash", [resolvedPath, ...parameters]);
-    }
+    await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
   } catch (error) {
+  if (error?.message) {
+    console.error(chalk.red(error.message));
+  }
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -87,7 +110,8 @@ export async function runAction(actionPath, ...parameters) {
 
 async function main() {
   process.env.ROOT_DIR ??= getRootDir();
-  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, "build");
+  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
+  process.env.FORCE_COLOR = true;
 
   return runAction(...process.argv.slice(2));
 }
