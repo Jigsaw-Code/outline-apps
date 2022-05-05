@@ -18,7 +18,7 @@ import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
 import './server_list';
-import './server_list_item/server_card';
+import './server_list_item/server_row_card';
 import './server_connection_indicator';
 
 import {ServerListItem as _ServerListItem} from './server_list_item';

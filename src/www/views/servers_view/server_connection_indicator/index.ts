@@ -55,7 +55,7 @@ export class ServerConnectionIndicator extends LitElement {
         --circle-small-delay: 0ms;
 
         --circle-initial-opacity: 0.5;
-        --circle-initial-color: grayscale(0.5);
+        --circle-initial-color: grayscale(1);
 
         --circle-connected-opacity: 1;
         --circle-connected-color: grayscale(0);

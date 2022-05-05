@@ -11,12 +11,14 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from "@polymer/decorators";
-import {html, PolymerElement} from "@polymer/polymer";
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 
-import {ServerListItem} from "../server_list_item";
+import '../server_list_item/server_row_card';
+import '../server_list_item/server_hero_card';
+import {ServerListItem} from '../server_list_item';
 
-@customElement("server-list")
+@customElement('server-list')
 export class ServerList extends PolymerElement {
   static get template() {
     return html`
@@ -28,33 +30,24 @@ export class ServerList extends PolymerElement {
           height: 100%;
         }
 
-        server-card {
+        server-row-card {
           margin: 8px auto;
-          max-width: 400px; /* better card spacing on pixel and iphone */
-          padding: 0 8px; /* necessary for smaller displays */
+          height: 130px;
         }
 
-        @media (min-width: 600px) {
-          server-card {
-            margin: 24px auto;
-            max-width: 550px;
-          }
+        server-hero-card {
+          height: 400px;
         }
       </style>
 
+      <!-- TODO(daniellacosse): use slots instead after we move this to lit -->
       <template is="dom-repeat" items="[[servers]]">
-        <server-card
-          disabled="[[item.errorMessageId]]"
-          error-message="[[getErrorMessage(item.errorMessageId)]]"
-          expanded="[[hasSingleServer]]"
-          localize="[[localize]]"
-          root-path="[[rootPath]]"
-          server-address="[[item.address]]"
-          server-id="[[item.id]]"
-          server-name="[[item.name]]"
-          is-outline-server="[[item.isOutlineServer]]"
-          state="[[item.state]]"
-        ></server-card>
+        <template is="dom-if" if="[[hasSingleServer]]">
+          <server-hero-card localize="[[localize]]" root-path="[[rootPath]]" server="[[item]]"></server-hero-card>
+        </template>
+        <template is="dom-if" if="[[!hasSingleServer]]">
+          <server-row-card localize="[[localize]]" root-path="[[rootPath]]" server="[[item]]"></server-row-card>
+        </template>
       </template>
     `;
   }
@@ -67,13 +60,13 @@ export class ServerList extends PolymerElement {
   @property({type: String}) rootPath: string;
   @property({type: Array}) servers: ServerListItem[] = [];
 
-  @computed("servers")
+  @computed('servers')
   get hasSingleServer() {
     return this.servers.length === 1;
   }
 
   getErrorMessage(errorMessageId: string) {
-    if (typeof errorMessageId === "string") {
+    if (typeof errorMessageId === 'string') {
       return this.localize(errorMessageId);
     }
   }

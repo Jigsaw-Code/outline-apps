@@ -17,11 +17,19 @@
 
 import {html} from 'lit';
 
-import './server_card';
-import {ServerCard as ServerCardElement} from './server_card';
+import './server_row_card';
 
 import {localize} from '../../../.storybook/localize';
 import {ServerConnectionState} from '../server_connection_indicator';
+import {ServerListItemElement} from '.';
+
+/*
+  TODOs:
+  text overflow
+  label names for aria
+  menu position
+  test app
+*/
 
 export default {
   title: 'Servers View/Server List Item',
@@ -32,22 +40,24 @@ export default {
       address: '1.0.0.127',
       connectionState: ServerConnectionState.INITIAL,
     },
-    elementHeight: 300,
   },
   argTypes: {
     server: {
       object: 'select',
     },
-    elementHeight: {
-      control: {type: 'number', min: 120, max: 600, step: 5},
-    },
   },
 };
 
-export const ServerCard = ({server, elementHeight}: ServerCardElement & {elementHeight: number}) => {
-  return html`
-    <div style="width: 100%; height: ${elementHeight}px;">
-      <server-card .localize=${localize} .server=${server}></server-card>
+export const ServerRowCard = ({server}: ServerListItemElement) =>
+  html`
+    <div style="width: 100%; height: clamp(100px, 100%, 150px);">
+      <server-row-card .localize=${localize} .server=${server}></server-row-card>
     </div>
   `;
-};
+
+export const ServerHeroCard = ({server}: ServerListItemElement) =>
+  html`
+    <div style="width: 100%; height: 100%;">
+      <server-hero-card .localize=${localize} .server=${server}></server-hero-card>
+    </div>
+  `;
