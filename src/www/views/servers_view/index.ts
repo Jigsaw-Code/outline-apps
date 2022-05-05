@@ -85,19 +85,24 @@ Polymer({
         border-top-style: solid;
       }
       paper-button {
-        width: 192px;
-        height: 192px;
         display: flex;
         flex-direction: column;
         text-transform: none;
         outline: none; /* Remove outline for Safari. */
+      }
+      paper-button server-connection-indicator {
+        width: 192px;
+        height: 192px;
       }
     </style>
     <div class="server-list-container">
       <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-indicator connection-state="INITIAL" root-path="[[rootPath]]" expanded=""></server-connection-viz>
+            <server-connection-indicator
+              connection-state="disconnected"
+              root-path="[[rootPath]]"
+            ></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
