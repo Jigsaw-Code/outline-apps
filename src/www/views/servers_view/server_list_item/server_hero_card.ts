@@ -201,6 +201,14 @@ export class ServerHeroCard extends ServerListItemElement {
       <div class="card-connection-button-container">
         <server-connection-indicator
           @click="${!hasErrorMessage && this.dispatchServerConnectEvent}"
+          @keydown="${(event: KeyboardEvent) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            if (event.key === 'Enter') {
+              this.dispatchServerConnectEvent();
+            }
+          }}"
           connection-state="${this.server.connectionState}"
           id="${connectButtonText}"
           role="button"
