@@ -46,6 +46,7 @@ export class ServerHeroCard extends ServerListItemElement {
       --server-address-size: 0.875rem;
 
       align-items: center;
+      background: var(--outline-card-background);
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
       display: grid;
@@ -66,6 +67,7 @@ export class ServerHeroCard extends ServerListItemElement {
 
     .card-metadata {
       font-family: var(--outline-font-family);
+      color: var(--outline-text-color);
       grid-area: metadata;
       height: 100%;
       display: flex;
@@ -80,12 +82,13 @@ export class ServerHeroCard extends ServerListItemElement {
     .card-metadata-server-name {
       display: block;
       margin-bottom: var(--outline-mini-gutter);
+      color: var(--outline-text-color);
       font-size: var(--server-name-size);
       font-family: var(--outline-font-family);
     }
 
     .card-metadata-server-address {
-      color: var(--outline-medium-gray);
+      color: var(--outline-label-color);
       font-size: var(--server-address-size);
       font-family: var(--outline-font-family);
     }
@@ -116,14 +119,14 @@ export class ServerHeroCard extends ServerListItemElement {
     }
 
     .card-connection-label {
-      color: var(--outline-medium-gray);
+      color: var(--outline-label-color);
       font-size: var(--server-address-size);
       font-family: var(--outline-font-family);
     }
 
     .card-footer {
       align-items: center;
-      background: var(--outline-light-gray);
+      background: var(--outline-card-footer);
       border-top: var(--outline-hairline);
       box-sizing: border-box;
       display: flex;

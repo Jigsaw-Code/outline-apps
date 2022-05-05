@@ -152,14 +152,21 @@ export class ServerConnectionIndicator extends LitElement {
       // based on when the animation loop started
       const elapsedAnimationMS = Date.now() - this.animationStartMS;
 
-      const remainingAnimationMS =
-        ANIMATION_DURATION_MS -
-        (elapsedAnimationMS %
-          // while the animation is reversed, the animation delay
-          // is included in the total play time
-          (this.animationState === ServerConnectionState.DISCONNECTING
-            ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-            : ANIMATION_DURATION_MS));
+      // while the animation is reversed, the animation delay
+      // is included in the total play time
+      const animationDurationMS =
+        this.animationState === ServerConnectionState.DISCONNECTING
+          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+          : ANIMATION_DURATION_MS;
+
+      const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
+
+      console.log({elapsedAnimationMS, remainingAnimationMS});
+      console.log(
+        this.animationState === ServerConnectionState.DISCONNECTING
+          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+          : ANIMATION_DURATION_MS
+      );
 
       setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
     } else {

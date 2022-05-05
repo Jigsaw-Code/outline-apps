@@ -31,7 +31,7 @@ Polymer({
   _template: html`
     <style>
       :host {
-        margin: 0 !important;
+        margin-top: 1rem;
         width: 100%;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
@@ -50,9 +50,10 @@ Polymer({
         display: none !important;
       }
       .server-list-container {
-        background-color: #efefef;
         width: 100%;
         height: 100%;
+        max-width: 400px;
+        margin: auto;
       }
       .flex-column-container {
         margin: 0 auto;

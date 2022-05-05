@@ -44,6 +44,7 @@ export class ServerRowCard extends ServerListItemElement {
       --server-address-size: 0.875rem;
 
       align-items: center;
+      background: var(--outline-card-background);
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
       display: grid;
@@ -62,7 +63,6 @@ export class ServerRowCard extends ServerListItemElement {
     }
 
     .card-metadata {
-      font-family: var(--outline-font-family);
       grid-area: metadata;
       height: 100%;
       display: flex;
@@ -86,14 +86,15 @@ export class ServerRowCard extends ServerListItemElement {
     .card-metadata-server-name {
       display: block;
       margin-bottom: var(--outline-mini-gutter);
-      font-size: var(--server-name-size);
+      color: var(--outline-text-color);
       font-family: var(--outline-font-family);
+      font-size: var(--server-name-size);
     }
 
     .card-metadata-server-address {
-      color: var(--outline-medium-gray);
-      font-size: var(--server-address-size);
+      color: var(--outline-label-color);
       font-family: var(--outline-font-family);
+      font-size: var(--server-address-size);
     }
 
     .card-menu {
@@ -104,7 +105,7 @@ export class ServerRowCard extends ServerListItemElement {
 
     .card-footer {
       align-items: center;
-      background: var(--outline-light-gray);
+      background: var(--outline-card-footer);
       border-top: var(--outline-hairline);
       box-sizing: border-box;
       display: flex;

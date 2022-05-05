@@ -327,7 +327,9 @@ export class App {
   }
 
   private async forgetServer(event: CustomEvent) {
-    const serverId = event.detail.serverId;
+    event.stopImmediatePropagation();
+
+    const serverId = event.detail.id;
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
@@ -350,7 +352,9 @@ export class App {
   }
 
   private async connectServer(event: CustomEvent) {
-    const serverId = event.detail.serverId;
+    event.stopImmediatePropagation();
+
+    const serverId = event.detail.id;
     if (!serverId) {
       throw new Error(`connectServer event had no server ID`);
     }
@@ -392,7 +396,9 @@ export class App {
   }
 
   private async disconnectServer(event: CustomEvent) {
-    const serverId = event.detail.serverId;
+    event.stopImmediatePropagation();
+
+    const serverId = event.detail.id;
     if (!serverId) {
       throw new Error(`disconnectServer event had no server ID`);
     }

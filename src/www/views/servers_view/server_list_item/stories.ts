@@ -23,14 +23,6 @@ import {localize} from '../../../.storybook/localize';
 import {ServerConnectionState} from '../server_connection_indicator';
 import {ServerListItemElement} from '.';
 
-/*
-  TODOs:
-  text overflow
-  label names for aria
-  menu position
-  test app
-*/
-
 export default {
   title: 'Servers View/Server List Item',
   component: 'server-card',

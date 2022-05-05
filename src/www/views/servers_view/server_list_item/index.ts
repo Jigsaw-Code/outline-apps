@@ -32,17 +32,23 @@ export class ServerListItemElement extends LitElement {
   }
 
   dispatchServerRenameEvent() {
-    this.dispatchEvent(new CustomEvent(ServerListItemEvent.RENAME, {detail: this.server}));
+    this.dispatchEvent(
+      new CustomEvent(ServerListItemEvent.RENAME, {detail: this.server, bubbles: true, composed: true})
+    );
   }
 
   dispatchServerForgetEvent() {
-    this.dispatchEvent(new CustomEvent(ServerListItemEvent.FORGET, {detail: this.server}));
+    this.dispatchEvent(
+      new CustomEvent(ServerListItemEvent.FORGET, {detail: this.server, bubbles: true, composed: true})
+    );
   }
 
   dispatchServerConnectEvent() {
     this.dispatchEvent(
       new CustomEvent(this.isConnected ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
         detail: this.server,
+        bubbles: true,
+        composed: true,
       })
     );
   }
