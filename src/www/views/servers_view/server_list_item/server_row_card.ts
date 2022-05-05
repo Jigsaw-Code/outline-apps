@@ -156,7 +156,7 @@ export class ServerRowCard extends ServerListItemElement {
         </div>
       </div>
       <div class="card-menu">
-        <mwc-icon-button icon="more_vert" @click=${() => this.menuRef.value?.show()}></mwc-icon-button>
+        <mwc-icon-button icon="more_vert" @click=${() => this.menuRef.value?.show()} tabindex="0"></mwc-icon-button>
         <mwc-menu ${ref(this.menuRef)}>
           <mwc-list-item @click="${this.dispatchServerRenameEvent}">${this.localize('server-rename')}</mwc-list-item>
           <mwc-list-item @click="${this.dispatchServerForgetEvent}">${this.localize('server-forget')}</mwc-list-item>
@@ -166,6 +166,7 @@ export class ServerRowCard extends ServerListItemElement {
         <span class="card-error">${errorMessageText}</span>
         <mwc-button
           label="${connectButtonText}"
+          tabindex="0"
           @click="${this.dispatchServerConnectEvent}"
           ?disabled=${hasErrorMessage}
         >
