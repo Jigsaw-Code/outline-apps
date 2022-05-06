@@ -18,6 +18,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import {spawn} from 'child_process';
 import url from 'url';
+import concurrently from 'concurrently';
 
 import {getRootDir} from './get_root_dir.mjs';
 
@@ -77,7 +78,23 @@ class ActionCache {
  * @param {string[]} options.inputs Files and folders the action consumes. Specify these to skip the action when able
  * @returns {void}
  */
-export async function runAction(actionPath, {parameters = [], inputs = []} = {}) {
+export async function runAction(actionPath, {parallel, parameters = [], inputs = []} = {}) {
+  if (parallel) {
+    return concurrently(
+      [actionPath, ...parameters].map(command => ({
+        command: `npm:action ${command}`,
+        name: `${command.split(/\s+/)[0]}(${command
+          .split(/\s+/)
+          .slice(1)
+          .join()})`,
+      })),
+      {
+        prefixColors: ['bgRed', 'bgGreen', 'bgYellow', 'bgMagenta', 'bgCyan'],
+        killOthers: ['failure'],
+      }
+    );
+  }
+
   /**
    * @description promisifies the child process spawner
    */
@@ -195,7 +212,15 @@ async function main() {
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
 
-  return runAction(process.argv[2], {parameters: process.argv.slice(3)});
+  const parameters = process.argv.slice(3);
+
+  let parallel = false;
+  if (parameters.includes('--parallel')) {
+    parameters.splice(parameters.indexOf('--parallel'), 1);
+    parallel = true;
+  }
+
+  return runAction(process.argv[2], {parameters, parallel});
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
