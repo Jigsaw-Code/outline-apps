@@ -11,6 +11,8 @@ jobs:
   name_check:
     name: Pull Request Name Check
     runs-on: ubuntu-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
@@ -24,6 +26,8 @@ jobs:
   size_label:
     name: Change Size Label
     runs-on: ubuntu-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Apply Size Label
         uses: pascalgn/size-label-action@a4655c448bb838e8d73b81e97fd0831bb4cbda1e
