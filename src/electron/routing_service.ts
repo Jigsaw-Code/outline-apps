@@ -86,6 +86,7 @@ export class RoutingDaemon {
         newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
           newSocket.removeAllListeners();
+          this.socket = null;
           this.fulfillDisconnect();
         };
         newSocket.once('close', cleanup);
@@ -131,6 +132,7 @@ export class RoutingDaemon {
 
       const initialErrorHandler = () => {
         if (!retry) {
+          this.socket = null;
           reject(new errors.SystemConfigurationException(`routing daemon is not running`));
           return;
         }
@@ -140,6 +142,7 @@ export class RoutingDaemon {
           if (sudoError) {
             // NOTE: The script could have terminated with an error - see the comment in
             //       sudo-prompt's typings definition.
+            this.socket = null;
             reject(new errors.NoAdminPermissions());
             return;
           }
@@ -210,21 +213,18 @@ export class RoutingDaemon {
   // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
   async stop() {
-    try {
-      if (!this.socket) {
-        // Never started.
-        return;
-      }
-      if (this.stopping) {
-        // Already stopped.
-        return;
-      }
-      this.stopping = true;
-
-      return this.writeReset();
-    } finally {
+    if (!this.socket) {
+      // Never started.
       this.fulfillDisconnect();
+      return;
     }
+    if (this.stopping) {
+      // Already stopped.
+      return;
+    }
+    this.stopping = true;
+
+    return this.writeReset();
   }
 
   public get onceDisconnected() {

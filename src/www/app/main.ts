@@ -33,7 +33,7 @@ document.addEventListener('WebComponentsReady', () => {
 
 // Used to delay loading the app until (translation) resources have been loaded. This can happen a
 // little later than WebComponentsReady.
-const oncePolymerIsReady = new Promise<void>((resolve) => {
+const oncePolymerIsReady = new Promise<void>(resolve => {
   document.addEventListener('app-localize-resources-loaded', () => {
     console.debug('received app-localize-resources-loaded event');
     resolve();
@@ -48,57 +48,80 @@ function getRootEl() {
 }
 
 function createServerRepo(
-    eventQueue: EventQueue, storage: Storage, deviceSupport: boolean, net: NativeNetworking,
-    createTunnel: TunnelFactory) {
+  eventQueue: EventQueue,
+  storage: Storage,
+  deviceSupport: boolean,
+  net: NativeNetworking,
+  createTunnel: TunnelFactory
+) {
   const repo = new OutlineServerRepository(net, createTunnel, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
-      repo.add(shadowsocksConfigToAccessKey({
-        host: '127.0.0.1',
-        port: 123,
-        method: 'chacha20-ietf-poly1305',
-        name: 'Fake Working Server'
-      }));
-      repo.add(shadowsocksConfigToAccessKey({
-        host: '192.0.2.1',
-        port: 123,
-        method: 'chacha20-ietf-poly1305',
-        name: 'Fake Broken Server'
-      }));
-      repo.add(shadowsocksConfigToAccessKey({
-        host: '10.0.0.24',
-        port: 123,
-        method: 'chacha20-ietf-poly1305',
-        name: 'Fake Unreachable Server'
-      }));
+      repo.add(
+        shadowsocksConfigToAccessKey({
+          host: '127.0.0.1',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          name: 'Fake Working Server',
+        })
+      );
+      repo.add(
+        shadowsocksConfigToAccessKey({
+          host: '192.0.2.1',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          name: 'Fake Broken Server',
+        })
+      );
+      repo.add(
+        shadowsocksConfigToAccessKey({
+          host: '10.0.0.24',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          name: 'Fake Unreachable Server',
+        })
+      );
     }
   }
   return repo;
 }
 
 export function main(platform: OutlinePlatform) {
-  return Promise.all([onceEnvVars, oncePolymerIsReady])
-      .then(
-          ([environmentVars]) => {
-            console.debug('running main() function');
+  return Promise.all([onceEnvVars, oncePolymerIsReady]).then(
+    ([environmentVars]) => {
+      console.debug('running main() function');
 
-            const queryParams = new URL(document.URL).searchParams;
-            const debugMode = queryParams.get('debug') === 'true';
+      const queryParams = new URL(document.URL).searchParams;
+      const debugMode = queryParams.get('debug') === 'true';
 
-            const eventQueue = new EventQueue();
-            const serverRepo = createServerRepo(
-                eventQueue, window.localStorage, platform.hasDeviceSupport(),
-                platform.getNativeNetworking(), platform.getTunnelFactory());
-            const settings = new Settings();
-            const app = new App(
-                eventQueue, serverRepo, getRootEl(), debugMode, platform.getUrlInterceptor(),
-                platform.getClipboard(), platform.getErrorReporter(environmentVars), settings,
-                environmentVars, platform.getUpdater(), platform.quitApplication);
-          },
-          (e) => {
-            onUnexpectedError(e);
-          });
+      const eventQueue = new EventQueue();
+      const serverRepo = createServerRepo(
+        eventQueue,
+        window.localStorage,
+        platform.hasDeviceSupport(),
+        platform.getNativeNetworking(),
+        platform.getTunnelFactory()
+      );
+      const settings = new Settings();
+      const app = new App(
+        eventQueue,
+        serverRepo,
+        getRootEl(),
+        debugMode,
+        platform.getUrlInterceptor(),
+        platform.getClipboard(),
+        platform.getErrorReporter(environmentVars),
+        settings,
+        environmentVars,
+        platform.getUpdater(),
+        platform.quitApplication
+      );
+    },
+    e => {
+      onUnexpectedError(e);
+    }
+  );
 }
 
 function onUnexpectedError(error: Error) {

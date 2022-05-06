@@ -15,8 +15,7 @@
 # limitations under the License.
 set -eu
 
-node ./scripts/run_action.mjs src/www/build browser --buildMode=debug
-cordova prepare browser
+node ./scripts/run_action.mjs cordova/setup browser --buildMode=debug
 
 webpack serve \
     --mode=development \
