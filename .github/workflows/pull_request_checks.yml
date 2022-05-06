@@ -1,8 +1,5 @@
 name: Pull Request Checks
 
-concurrency:
-  cancel-in-progress: true
-
 on:
   pull_request:
     types:
@@ -42,10 +39,10 @@ jobs:
           sizes: >
             {
               "0": "XS",
-              "128": "S",
-              "256": "M",
-              "512": "L",
-              "1024": "XL",
-              "2048": "XXL"
+              "64": "S",
+              "128": "M",
+              "256": "L",
+              "512": "XL",
+              "1024": "XXL"
             }
     
