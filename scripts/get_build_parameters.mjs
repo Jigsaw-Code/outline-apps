@@ -49,7 +49,7 @@ export function getBuildParameters(buildParameters) {
   platform ??= 'browser';
   buildMode ??= 'debug';
 
-  return {platform, buildMode};
+  return {platform, buildMode, cordovaPlatform: platform === 'macos' ? 'osx' : platform};
 }
 
 async function main() {

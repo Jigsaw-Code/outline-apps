@@ -26,7 +26,7 @@ import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {cordovaPlatform: platform, buildMode} = getBuildParameters(parameters);
 
   await runAction('cordova/setup', ...parameters);
 
@@ -53,7 +53,7 @@ export async function main(...parameters) {
   }
 
   await cordova.compile({
-    platforms: [platform === 'macos' ? 'osx' : platform],
+    platforms: [platform],
     options: {
       device: platform === 'ios' && buildMode === 'release',
       emulator: platform === 'ios' && buildMode === 'debug',

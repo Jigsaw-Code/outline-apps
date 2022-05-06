@@ -35,7 +35,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {cordovaPlatform: platform, buildMode} = getBuildParameters(parameters);
   const isApple = platform === 'ios' || platform === 'macos';
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
@@ -58,12 +58,12 @@ export async function main(...parameters) {
     );
   }
 
-  await cordova.prepare({platforms: [platform === 'macos' ? 'osx' : platform], save: false});
+  await cordova.prepare({platforms: [platform], save: false});
 
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
     // TODO(daniellacosse): move this to a cordova hook
-    execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform === 'macos' ? 'osx' : platform}/`, {
+    execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {
       stdio: 'inherit',
     });
   }
