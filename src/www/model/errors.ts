@@ -18,9 +18,8 @@ export class OutlineError extends Error {
   constructor(message?: string) {
     // ref:
     // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
-    super(message);  // 'Error' breaks prototype chain here
-    Object.setPrototypeOf(this,
-                          new.target.prototype);  // restore prototype chain
+    super(message); // 'Error' breaks prototype chain here
+    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = new.target.name;
   }
 }
@@ -124,7 +123,7 @@ export const enum ErrorCode {
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
-  SYSTEM_MISCONFIGURED = 12
+  SYSTEM_MISCONFIGURED = 12,
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant

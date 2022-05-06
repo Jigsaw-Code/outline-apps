@@ -33,7 +33,7 @@ export interface OutlinePlatform {
 
   getTunnelFactory(): TunnelFactory;
 
-  getUrlInterceptor(): UrlInterceptor|undefined;
+  getUrlInterceptor(): UrlInterceptor | undefined;
 
   getClipboard(): Clipboard;
 
