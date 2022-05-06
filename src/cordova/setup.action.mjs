@@ -36,7 +36,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  */
 export async function main(...parameters) {
   const {cordovaPlatform: platform, buildMode} = getBuildParameters(parameters);
-  const isApple = platform === 'ios' || platform === 'macos';
+  const isApple = platform === 'ios' || platform === 'osx';
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -53,7 +53,7 @@ export async function main(...parameters) {
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
       'add',
-      [platform === 'macos' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
+      [platform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
       {save: false}
     );
   }
