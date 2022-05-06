@@ -82,11 +82,8 @@ export async function runAction(actionPath, {parallel, parameters = [], inputs =
   if (parallel) {
     return concurrently(
       [actionPath, ...parameters].map(command => ({
-        command: `npm:action ${command}`,
-        name: `${command.split(/\s+/)[0]}(${command
-          .split(/\s+/)
-          .slice(1)
-          .join()})`,
+        command: `npm run action ${command}`,
+        name: command,
       })),
       {
         prefixColors: ['bgRed', 'bgGreen', 'bgYellow', 'bgMagenta', 'bgCyan'],
