@@ -1,0 +1,51 @@
+name: Pull Request Checks
+
+concurrency:
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  name_check:
+    name: Pull Request Name Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Ensure Commitizen Format
+        uses: JulienKode/pull-request-name-linter-action@98794a8b815ec05560813c42e55fd8d32d3fd248
+
+  size_label:
+    name: Change Size Label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply Size Label
+        uses: pascalgn/size-label-action@a4655c448bb838e8d73b81e97fd0831bb4cbda1e
+        env:
+          IGNORED: |
+            LICENSE
+            package-lock.json
+            resources
+            src/www/assets
+            src/www/messages
+            third_party
+        with:
+          sizes: >
+            {
+              "0": "XS",
+              "128": "S",
+              "256": "M",
+              "512": "L",
+              "1024": "XL",
+              "2048": "XXL"
+            }
+    
