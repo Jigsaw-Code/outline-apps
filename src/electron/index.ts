@@ -438,6 +438,8 @@ function main() {
       });
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
+      // stop the vpn and forget, no need to await because stopVpn itself might throw another error
+      stopVpn();
       throw errors.toErrorCode(e);
     }
   });
