@@ -111,7 +111,7 @@ export class RoutingDaemon {
           newSocket.on('data', this.dataHandler.bind(this));
 
           // Potential race condition: this routing daemon might already be stopped by the tunnel
-          // when one of the dependencies (ss-local/tunnel2socks) exited
+          // when one of the dependencies (ss-local/tun2socks) exited
           // TODO(junyi): better handling this case in the next installation logic fix
           if (this.stopping) {
             cleanup();
