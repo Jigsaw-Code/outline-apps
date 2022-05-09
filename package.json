@@ -100,7 +100,7 @@
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
     "puppeteer": "^13.1.2",
-    "rimraf": "^3.0.2",
+    "rmfr": "^2.0.0",
     "style-loader": "^2.0.0",
     "ts-loader": "^8.0.14",
     "tslint": "^5.12.0",
