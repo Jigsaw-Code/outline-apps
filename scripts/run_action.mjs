@@ -148,7 +148,7 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
       if (fileInformation.isDirectory()) {
         const contents = await fs.readdir(currentFolderOrFile);
 
-        inputsToCheck.push(...contents.map(child => `${currentFolderOrFile}/${child}`);
+        inputsToCheck.push(...contents.map(child => `${currentFolderOrFile}/${child}`));
       }
     }
 
