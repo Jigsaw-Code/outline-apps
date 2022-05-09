@@ -4,8 +4,18 @@ on:
   pull_request:
     types:
       - opened
+      
+     # This `edited` flag is why we need a separate workflow - 
+     # specifying edited here causes this job to be re-run whenever someone edits the PR title/description. 
+     
+     # If we had the debug builds in this file, they would run unnecessarily, costing resources.
       - edited
+
       - synchronize
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   name_check:
