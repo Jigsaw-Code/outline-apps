@@ -9,6 +9,9 @@ on:
     types:
       - opened
       - synchronize
+  push:
+    branches:
+      - master
 
 jobs:
   web_test:

@@ -17,6 +17,7 @@ import url from 'url';
 import {existsSync} from 'fs';
 import {execSync} from 'child_process';
 import path from 'path';
+import rimraf from 'rimraf';
 
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
@@ -57,6 +58,8 @@ export async function main(...parameters) {
       {save: false}
     );
   }
+
+  await rimraf(`platforms/${platform}`);
 
   await cordova.prepare({platforms: [platform], save: false});
 
