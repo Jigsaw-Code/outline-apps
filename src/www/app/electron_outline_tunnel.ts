@@ -20,8 +20,8 @@ import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
-import {OutlineUIService} from './ui_service';
 
+const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
 
 export class ElectronOutlineTunnel implements Tunnel {
@@ -29,7 +29,7 @@ export class ElectronOutlineTunnel implements Tunnel {
 
   private running = false;
 
-  constructor(public readonly id: string, private readonly uiService: OutlineUIService) {
+  constructor(public readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     ipcRenderer.on(`proxy-connected-${this.id}`, (e: Event) => {
@@ -55,11 +55,6 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.running = true;
     } catch (e) {
       if (typeof e === 'number') {
-        if (e === ErrorCode.SYSTEM_MISCONFIGURED) {
-          if (await this.tryInstallServices()) {
-            throw new OutlinePluginError(ErrorCode.SYSTEM_MISCONFIGURED_WITH_SUCCESSFUL_INSTALLATION);
-          }
-        }
         throw new OutlinePluginError(e);
       } else {
         throw e;
@@ -88,32 +83,23 @@ export class ElectronOutlineTunnel implements Tunnel {
     this.statusChangeListener = listener;
   }
 
+  readonly canInstallServices = isWindows || isLinux;
+
+  async installServices(): Promise<void> {
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    const err = await ipcRenderer.invoke('install-outline-services');
+    if (err !== ErrorCode.NO_ERROR) {
+      throw new OutlinePluginError(err);
+    }
+  }
+
   private handleStatusChange(status: TunnelStatus) {
     this.running = status === TunnelStatus.CONNECTED;
     if (this.statusChangeListener) {
       this.statusChangeListener(status);
     } else {
       console.error(`${this.id} status changed to ${status} but no listener set`);
-    }
-  }
-
-  private async tryInstallServices(): Promise<boolean> {
-    if (!isLinux) {
-      return Promise.resolve(false);
-    }
-    const confirmation = await this.uiService.showConfirmation('outline-services-installation-confirmation');
-    if (!confirmation) {
-      return Promise.resolve(false);
-    }
-    this.uiService.showSimpleNotification('outline-services-installing', Infinity);
-    try {
-      return await promiseIpc.send('install-outline-services');
-    } catch (e) {
-      if (typeof e === 'number') {
-        throw new OutlinePluginError(e);
-      } else {
-        throw e;
-      }
     }
   }
 }

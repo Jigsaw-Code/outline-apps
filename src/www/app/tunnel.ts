@@ -17,7 +17,7 @@ import {ShadowsocksConfig} from './config';
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,
-  RECONNECTING
+  RECONNECTING,
 }
 
 export type TunnelFactory = (id: string) => Tunnel;
@@ -42,4 +42,15 @@ export interface Tunnel {
 
   // Sets a listener, to be called when the tunnel status changes.
   onStatusChange(listener: (status: TunnelStatus) => void): void;
+
+  /**
+   * Get a value indicating whether this tunnel is able to install required services at runtime.
+   */
+  readonly canInstallServices: boolean;
+
+  /**
+   * Install required services at runtime, and returns installation result.
+   * Failures will be thrown as exceptions.
+   */
+  installServices(): Promise<void>;
 }

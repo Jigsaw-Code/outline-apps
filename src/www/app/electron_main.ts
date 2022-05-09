@@ -104,9 +104,9 @@ main({
   getNativeNetworking: () => {
     return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
   },
-  getTunnelFactory: uiService => {
+  getTunnelFactory: () => {
     return (id: string) => {
-      return isOsSupported ? new ElectronOutlineTunnel(id, uiService) : new FakeOutlineTunnel(id);
+      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
     };
   },
   getUrlInterceptor: () => {

@@ -21,21 +21,19 @@ import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
-import * as sudo from 'sudo-prompt';
 import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as connectivity from './connectivity';
+import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
-import {RoutingDaemon} from './routing_service';
+import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {NoAdminPermissions, toErrorCode} from '../www/model/errors';
-import {getServiceStartCommand} from './util';
 
 const isLinux = os.platform() === 'linux';
 const isWindows = os.platform() === 'win32';
@@ -445,30 +443,29 @@ function main() {
       console.error(`could not connect: ${e.name} (${e.message})`);
       // clean up the state, no need to await because stopVpn might throw another error which can be ignored
       stopVpn();
-      throw toErrorCode(e);
+      throw errors.toErrorCode(e);
     }
   });
 
   // Disconnects from the current server, if any.
   promiseIpc.on('stop-proxying', stopVpn);
 
-  // Install backend services (for Linux only)
-  promiseIpc.on('install-outline-services', () => {
-    console.assert(isLinux, 'outline services can only be installed on Linux');
-    console.log('installing outline routing daemon...');
-    return new Promise<boolean>((resolve, reject) => {
-      sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
-        if (sudoError) {
-          // NOTE: The script could have terminated with an error - see the comment in
-          //       sudo-prompt's typings definition.
-          console.error('failed to install outline routing daemon due to', sudoError);
-          reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
-        } else {
-          console.info('outline routing daemon installed successfully');
-          resolve(true);
-        }
-      });
-    });
+  // Install backend services and return the error code
+  ipcMain.handle('install-outline-services', async () => {
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    try {
+      if (await installRoutingServices()) {
+        return errors.ErrorCode.NO_ERROR;
+      } else {
+        return errors.ErrorCode.UNEXPECTED;
+      }
+    } catch (e) {
+      if (typeof e === 'number') {
+        return e;
+      }
+      return errors.ErrorCode.UNEXPECTED;
+    }
   });
 
   // Error reporting.

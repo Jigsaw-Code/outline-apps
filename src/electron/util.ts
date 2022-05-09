@@ -19,47 +19,35 @@ import * as os from 'os';
 import * as path from 'path';
 
 const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
-
-const OUTLINE_PROXY_CONTROLLER_PATH = path.join(unpackedAppPath(), 'tools', 'outline_proxy_controller', 'dist');
-
-const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
-const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
-const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
 
 function unpackedAppPath() {
   return app.getAppPath().replace('app.asar', 'app.asar.unpacked');
+}
+
+/**
+ * Get the parent directory path of the current application binary.
+ * @returns A string representing the path of the application directory.
+ */
+export function getAppPath() {
+  const electronAppPath = app.getAppPath();
+  if (isWindows && electronAppPath.includes('app.asar')) {
+    return path.dirname(app.getPath('exe'));
+  }
+  return electronAppPath;
 }
 
 export function pathToEmbeddedBinary(toolname: string, filename: string) {
   return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
 }
 
-export function getServiceStartCommand(): string {
-  if (isWindows) {
-    // Locating the script is tricky: when packaged, this basically boils down to:
-    //   c:\program files\Outline\
-    // but during development:
-    //   build/windows
-    //
-    // Surrounding quotes important, consider "c:\program files"!
-    return `"${path.join(
-      app.getAppPath().includes('app.asar') ? path.dirname(app.getPath('exe')) : app.getAppPath(),
-      'install_windows_service.bat'
-    )}"`;
-  } else if (isLinux) {
-    return path.join(copyServiceFilesToTempFolder(), LINUX_INSTALLER_FILENAME);
-  } else {
-    throw new Error('unsupported os');
-  }
-}
-
 // On some distributions, root is not allowed access the AppImage folder: copy the files to /tmp.
-function copyServiceFilesToTempFolder() {
+export function copyServiceFilesToTempFolder(sourcePathRelativeToApp: string, filenames: string[]) {
   const tmp = fs.mkdtempSync('/tmp/');
+  const srcPath = path.join(unpackedAppPath(), sourcePathRelativeToApp);
+
   console.log(`copying service files to ${tmp}`);
-  [LINUX_DAEMON_FILENAME, LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME, LINUX_INSTALLER_FILENAME].forEach(filename => {
-    const src = path.join(OUTLINE_PROXY_CONTROLLER_PATH, filename);
+  filenames.forEach(filename => {
+    const src = path.join(srcPath, filename);
     // https://github.com/jprichardson/node-fs-extra/issues/323
     const dest = path.join(tmp, filename);
     fsextra.copySync(src, dest, {overwrite: true});

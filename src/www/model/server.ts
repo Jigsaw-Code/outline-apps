@@ -43,6 +43,12 @@ export interface Server {
 
   // Checks whether the server is reachable.
   checkReachable(): Promise<boolean>;
+
+  // Checks whether we can fix the underlying outline services for this server.
+  canFixServices(): Promise<boolean>;
+
+  // Try to fix the underlying outline services for this server.
+  tryFixServices(): Promise<void>;
 }
 
 export interface ServerRepository {
@@ -50,5 +56,5 @@ export interface ServerRepository {
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];
-  getById(serverId: string): Server|undefined;
+  getById(serverId: string): Server | undefined;
 }

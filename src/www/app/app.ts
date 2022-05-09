@@ -22,7 +22,6 @@ import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServer, OutlineServerRepository} from './outline_server';
 import {Settings, SettingsKey} from './settings';
-import {OutlineUIService, OutlineUIServiceHandler} from './ui_service';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -52,8 +51,9 @@ export function unwrapInvite(s: string): string {
   return s;
 }
 
-export class App implements OutlineUIServiceHandler {
+export class App {
   private feedbackViewEl: polymer.Base;
+  private localize: (...args: string[]) => string;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
 
   constructor(
@@ -68,16 +68,15 @@ export class App implements OutlineUIServiceHandler {
     environmentVars: EnvironmentVariables,
     private updater: Updater,
     private quitApplication: () => void,
-    uiService: OutlineUIService,
     document = window.document
   ) {
-    uiService.setHandler(this);
-
     this.feedbackViewEl = rootEl.$.feedbackView;
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
+
+    this.localize = this.rootEl.localize.bind(this.rootEl);
 
     if (urlInterceptor) {
       this.registerUrlInterceptionListener(urlInterceptor);
@@ -170,8 +169,6 @@ export class App implements OutlineUIServiceHandler {
       messageParams = ['serverName', this.getServerDisplayName(e.server)];
     } else if (e instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
-    } else if (e instanceof errors.SystemConfigurationExceptionWithSuccessfulInstallation) {
-      messageKey = 'outline-services-installed';
     } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
       messageKey = 'error-shadowsocks-unsupported-cipher';
       messageParams = ['cipher', e.cipher];
@@ -351,10 +348,42 @@ export class App implements OutlineUIServiceHandler {
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       this.updateServerCard(serverId, {state: ServerConnectionState.DISCONNECTED});
-      this.showLocalizedError(e);
       console.error(`could not connect to server ${serverId}: ${e.name}`);
       if (!(e instanceof errors.RegularNativeError)) {
         this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
+      }
+      if (e instanceof errors.SystemConfigurationException) {
+        if (await this.confirmToInstallOutlineServices(server)) {
+          await this.installOutlineServices(server);
+          return;
+        }
+      }
+      this.showLocalizedError(e);
+    }
+  }
+
+  private async confirmToInstallOutlineServices(server: Server): Promise<boolean> {
+    if (!(await server.canFixServices())) {
+      return false;
+    }
+    const proceed = await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'));
+    if (!proceed) {
+      return false;
+    }
+    return true;
+  }
+
+  private async installOutlineServices(server: Server): Promise<void> {
+    this.rootEl.showToast(this.localize('outline-services-installing'), Infinity);
+    try {
+      await server.tryFixServices();
+      this.rootEl.showToast(this.localize('outline-services-installed'));
+    } catch (e) {
+      console.error('failed to set up Outline VPN', e);
+      if (e instanceof errors.UnexpectedPluginError) {
+        this.rootEl.showToast(this.localize('outline-services-installation-failed'));
+      } else {
+        this.showLocalizedError(e);
       }
     }
   }
@@ -474,30 +503,14 @@ export class App implements OutlineUIServiceHandler {
 
   //#endregion EventQueue event handlers
 
-  //#region OutlineUIServiceHandler
+  //#region UI dialogs
 
-  localize(...args: string[]): string {
-    console.assert(!!this.rootEl);
-    return this.rootEl.localize(...args);
-  }
-
-  showSimpleDialog(message: string, okOnly: boolean): Promise<boolean> {
+  private showConfirmationDialog(message: string): Promise<boolean> {
     // Temporarily use window.alert and window.confirm here
-    return new Promise<boolean>(resolve => {
-      if (okOnly) {
-        alert(message);
-        resolve(true);
-      } else {
-        resolve(confirm(message));
-      }
-    });
+    return new Promise<boolean>(resolve => resolve(confirm(message)));
   }
 
-  showNotification(message: string, timeout?: number): void {
-    this.rootEl.showToast(message, timeout);
-  }
-
-  //#endregion OutlineUIServiceHandler
+  //#endregion UI dialogs
 
   // Helpers:
 

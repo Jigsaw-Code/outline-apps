@@ -61,4 +61,10 @@ export class FakeOutlineTunnel implements Tunnel {
   onStatusChange(listener: (status: TunnelStatus) => void): void {
     // NOOP
   }
+
+  readonly canInstallServices = false;
+
+  installServices(): Promise<void> {
+    return Promise.resolve();
+  }
 }

@@ -14,10 +14,14 @@
 
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
+import * as path from 'path';
+import * as sudo from 'sudo-prompt';
 
 import {TunnelStatus} from '../www/app/tunnel';
-import {SystemConfigurationException} from '../www/model/errors';
+import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
+import {copyServiceFilesToTempFolder, getAppPath} from './util';
 
+const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
 const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
@@ -76,7 +80,7 @@ export class RoutingDaemon {
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
-  async start(retry = true) {
+  async start() {
     return new Promise<void>((fulfill, reject) => {
       const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
@@ -112,7 +116,7 @@ export class RoutingDaemon {
           if (this.stopping) {
             cleanup();
             newSocket.destroy();
-            reject(new errors.SystemConfigurationException('routing daemon service stopped before started'));
+            reject(new SystemConfigurationException('routing daemon service stopped before started'));
           } else {
             fulfill();
           }
@@ -214,4 +218,48 @@ export class RoutingDaemon {
   public set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
     this.networkChangeListener = newListener;
   }
+}
+
+function getServiceInstallationCommand(): string {
+  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
+  const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
+  const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
+  const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
+  const WINDOWS_INSTALLER_FILENAME = 'install_windows_service.bat';
+
+  if (isWindows) {
+    // Locating the script is tricky: when packaged, this basically boils down to:
+    //   c:\program files\Outline\
+    // but during development:
+    //   build/windows
+    //
+    // Surrounding quotes important, consider "c:\program files"!
+    return `"${path.join(getAppPath(), WINDOWS_INSTALLER_FILENAME)}"`;
+  } else if (isLinux) {
+    const tmpFolder = copyServiceFilesToTempFolder(OUTLINE_PROXY_CONTROLLER_PATH, [
+      LINUX_DAEMON_FILENAME,
+      LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME,
+      LINUX_INSTALLER_FILENAME,
+    ]);
+    return path.join(tmpFolder, LINUX_INSTALLER_FILENAME);
+  } else {
+    throw new Error('unsupported os');
+  }
+}
+
+export function installRoutingServices(): Promise<boolean> {
+  console.info('installing outline routing service...');
+  return new Promise<boolean>((resolve, reject) => {
+    sudo.exec(getServiceInstallationCommand(), {name: 'Outline'}, sudoError => {
+      if (sudoError) {
+        // NOTE: The script could have terminated with an error - see the comment in
+        //       sudo-prompt's typings definition.
+        console.error('failed to install outline routing service due to', sudoError);
+        reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
+      } else {
+        console.info('outline routing service installed successfully');
+        resolve(true);
+      }
+    });
+  });
 }

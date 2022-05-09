@@ -17,7 +17,6 @@ import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {NativeNetworking} from './net';
 import {TunnelFactory} from './tunnel';
-import {OutlineUIService} from './ui_service';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 
@@ -32,7 +31,7 @@ export interface OutlinePlatform {
 
   getNativeNetworking(): NativeNetworking;
 
-  getTunnelFactory(uiService: OutlineUIService): TunnelFactory;
+  getTunnelFactory(): TunnelFactory;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

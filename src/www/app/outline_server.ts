@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from "ShadowsocksConfig";
-import uuidv4 from "uuidv4";
+import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
+import uuidv4 from 'uuidv4';
 
-import * as errors from "../model/errors";
-import * as events from "../model/events";
-import {Server, ServerRepository} from "../model/server";
+import * as errors from '../model/errors';
+import * as events from '../model/events';
+import {Server, ServerRepository} from '../model/server';
 
-import {ShadowsocksConfig} from "./config";
-import {NativeNetworking} from "./net";
-import {Tunnel, TunnelFactory, TunnelStatus} from "./tunnel";
+import {ShadowsocksConfig} from './config';
+import {NativeNetworking} from './net';
+import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = ["chacha20-ietf-poly1305", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm"];
+  private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
   private config: ShadowsocksConfig;
@@ -74,7 +74,7 @@ export class OutlineServer implements Server {
   }
 
   get isOutlineServer() {
-    return this.accessKey.includes("outline=1");
+    return this.accessKey.includes('outline=1');
   }
 
   async connect() {
@@ -107,6 +107,21 @@ export class OutlineServer implements Server {
     return this.net.isServerReachable(this.config.host, this.config.port);
   }
 
+  canFixServices(): Promise<boolean> {
+    return Promise.resolve(this.tunnel.canInstallServices);
+  }
+
+  async tryFixServices(): Promise<void> {
+    try {
+      await this.tunnel.installServices();
+    } catch (e) {
+      if (e.errorCode) {
+        throw errors.fromErrorCode(e.errorCode);
+      }
+      throw e;
+    }
+  }
+
   static isServerCipherSupported(cipher?: string) {
     return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }
@@ -129,8 +144,8 @@ interface OutlineServerJson {
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
-  public static readonly SERVERS_STORAGE_KEY_V0 = "servers";
-  public static readonly SERVERS_STORAGE_KEY = "servers_v1";
+  public static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
+  public static readonly SERVERS_STORAGE_KEY = 'servers_v1';
   private serverById!: Map<string, OutlineServer>;
   private lastForgottenServer: OutlineServer | null = null;
 
@@ -184,10 +199,10 @@ export class OutlineServerRepository implements ServerRepository {
 
   undoForget(serverId: string) {
     if (!this.lastForgottenServer) {
-      console.warn("No forgotten server to unforget");
+      console.warn('No forgotten server to unforget');
       return;
     } else if (this.lastForgottenServer.id !== serverId) {
-      console.warn("id of forgotten server", this.lastForgottenServer, "does not match", serverId);
+      console.warn('id of forgotten server', this.lastForgottenServer, 'does not match', serverId);
       return;
     }
     this.serverById.set(this.lastForgottenServer.id, this.lastForgottenServer);
@@ -205,13 +220,13 @@ export class OutlineServerRepository implements ServerRepository {
     try {
       config = SHADOWSOCKS_URI.parse(accessKey);
     } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message || "failed to parse access key");
+      throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
     }
     if (config.host.isIPv6) {
-      throw new errors.ServerIncompatible("unsupported IPv6 host address");
+      throw new errors.ServerIncompatible('unsupported IPv6 host address');
     }
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || "unknown");
+      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
     }
   }
 
@@ -240,7 +255,7 @@ export class OutlineServerRepository implements ServerRepository {
   // Loads servers from storage, raising an error if there is any problem loading.
   private loadServers() {
     if (this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
-      console.debug("server storage migrated to V1");
+      console.debug('server storage migrated to V1');
       this.loadServersV1();
       return;
     }
@@ -306,7 +321,7 @@ export class OutlineServerRepository implements ServerRepository {
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.
-        server.errorMessageId = "unsupported-cipher";
+        server.errorMessageId = 'unsupported-cipher';
       } else {
         throw e;
       }
@@ -327,7 +342,7 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
       name: config.tag.data,
     };
   } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || "failed to parse access key");
+    throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
   }
 }
 

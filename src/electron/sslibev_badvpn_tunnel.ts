@@ -267,7 +267,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
-    console.log('disconnecting from libev badvpn tunnel...');
+    console.info('disconnecting from libev badvpn tunnel...');
 
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));

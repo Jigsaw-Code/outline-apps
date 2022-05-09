@@ -23,7 +23,6 @@ import {OutlineServerRepository, shadowsocksConfigToAccessKey} from './outline_s
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
-import {OutlineUIService} from './ui_service';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;
@@ -97,13 +96,12 @@ export function main(platform: OutlinePlatform) {
       const debugMode = queryParams.get('debug') === 'true';
 
       const eventQueue = new EventQueue();
-      const uiService = new OutlineUIService();
       const serverRepo = createServerRepo(
         eventQueue,
         window.localStorage,
         platform.hasDeviceSupport(),
         platform.getNativeNetworking(),
-        platform.getTunnelFactory(uiService)
+        platform.getTunnelFactory()
       );
       const settings = new Settings();
       const app = new App(
@@ -117,8 +115,7 @@ export function main(platform: OutlinePlatform) {
         settings,
         environmentVars,
         platform.getUpdater(),
-        platform.quitApplication,
-        uiService
+        platform.quitApplication
       );
     },
     e => {
@@ -141,7 +138,7 @@ function onUnexpectedError(error: Error) {
 }
 
 // Returns Polymer's localization function. Must be called after WebComponentsReady has fired.
-export function getLocalizationFunction(): ((message: string) => string) | null {
+export function getLocalizationFunction() {
   const rootEl = getRootEl();
   if (!rootEl) {
     return null;
