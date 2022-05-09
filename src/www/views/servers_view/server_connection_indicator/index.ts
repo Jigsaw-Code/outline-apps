@@ -11,26 +11,26 @@
   limitations under the License.
 */
 
-import {html, css, LitElement} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {html, css, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
-  INITIAL = "initial",
-  CONNECTING = "connecting",
-  CONNECTED = "connected",
-  RECONNECTING = "reconnecting",
-  DISCONNECTING = "disconnecting",
-  DISCONNECTED = "disconnected",
+  INITIAL = 'initial',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  RECONNECTING = 'reconnecting',
+  DISCONNECTING = 'disconnecting',
+  DISCONNECTED = 'disconnected',
 }
 
 const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
-@customElement("server-connection-indicator")
+@customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
-  @property({attribute: "connection-state"}) connectionState: ServerConnectionState;
-  @property({attribute: "root-path"}) rootPath: string;
+  @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
+  @property({attribute: 'root-path'}) rootPath: string;
 
   @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
   private animationStartMS: number;
@@ -54,9 +54,6 @@ export class ServerConnectionIndicator extends LitElement {
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
 
-        --circle-initial-opacity: 0.5;
-        --circle-initial-color: grayscale(0.5);
-
         --circle-connected-opacity: 1;
         --circle-connected-color: grayscale(0);
 
@@ -66,7 +63,6 @@ export class ServerConnectionIndicator extends LitElement {
 
       :host,
       .circle {
-        width: 100%;
         height: 100%;
       }
 
@@ -83,11 +79,6 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
-      }
-
-      .circle-initial {
-        opacity: var(--circle-initial-opacity);
-        filter: var(--circle-initial-color);
       }
 
       .circle-connected,
@@ -139,7 +130,7 @@ export class ServerConnectionIndicator extends LitElement {
   ];
 
   willUpdate(changedProperties: Map<keyof ServerConnectionIndicator, ServerConnectionState>) {
-    if (!changedProperties.has("connectionState")) {
+    if (!changedProperties.has('connectionState')) {
       return;
     }
 
@@ -153,14 +144,14 @@ export class ServerConnectionIndicator extends LitElement {
       // based on when the animation loop started
       const elapsedAnimationMS = Date.now() - this.animationStartMS;
 
-      const remainingAnimationMS =
-        ANIMATION_DURATION_MS -
-        (elapsedAnimationMS %
-          // while the animation is reversed, the animation delay
-          // is included in the total play time
-          (this.animationState === ServerConnectionState.DISCONNECTING
-            ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-            : ANIMATION_DURATION_MS));
+      // while the animation is reversed, the animation delay
+      // is included in the total play time
+      const animationDurationMS =
+        this.animationState === ServerConnectionState.DISCONNECTING
+          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
+          : ANIMATION_DURATION_MS;
+
+      const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
 
       setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
     } else {
@@ -169,7 +160,8 @@ export class ServerConnectionIndicator extends LitElement {
   }
 
   render() {
-    const circles = this.animationState === ServerConnectionState.INITIAL ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
+    const isInitial = this.animationState === ServerConnectionState.INITIAL;
+    const circles = isInitial ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
 
     return html`
       ${circles.map(
@@ -177,7 +169,7 @@ export class ServerConnectionIndicator extends LitElement {
           html`
             <img
               class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${this.rootPath}assets/circle.png"
+              src="${this.rootPath}assets/${isInitial ? 'circle_initial' : 'circle'}.png"
             />
           `
       )}

@@ -100,7 +100,7 @@ Polymer({
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
             <server-connection-indicator
-              connection-state="disconnected"
+              connection-state="initial"
               root-path="[[rootPath]]"
             ></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
