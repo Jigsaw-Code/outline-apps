@@ -8,19 +8,26 @@ This document describes how to develop and debug for macOS (formerly known as OS
 
 To build for macOS (OS X), run:
 
-    npm run action build/cordova osx
+```sh
+  npm run action build/cordova osx
+```
 
 To build for iOS, run:
 
-    npm run action build/cordova ios
+```sh
+  npm run action build/cordova ios
+```
 
 To open the macOS project on XCode:
 
-    open ./platforms/osx/Outline.xcodeproj
+```sh
+  open ./platforms/osx/Outline.xcodeproj
 
 To open the iOS project on XCode:
 
-    open ./platforms/ios/Outline.xcodeproj
+```sh
+  open ./platforms/ios/Outline.xcodeproj
+```
 
 ## Adding support for your device in XCode
 

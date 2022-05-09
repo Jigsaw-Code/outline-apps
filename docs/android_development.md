@@ -20,13 +20,13 @@ Additional requirements for Android:
 
 To build for android, run:
 
-    npm run action cordova/build android
+```sh
+  npm run action cordova/build android
+```
 
 Make sure to rebuild after modifying platform dependent files!
 
-If this gives you unexpected Cordova errors, run:
-
-    npm run reset && npm run action cordova/build android
+> 💡 NOTE: If this command ever gives you unexpected Cordova errors, try runnning `npm run reset` first.
 
 Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
 
