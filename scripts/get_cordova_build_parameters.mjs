@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
-import minimist from 'minimist';
+import {getBuildParameters} from './get_build_parameters.mjs';
 
 /*
   Inputs:
