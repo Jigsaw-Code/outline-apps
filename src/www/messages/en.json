@@ -51,7 +51,7 @@
   "outline-plugin-error-udp-forwarding-not-enabled": "It seems like this server doesn’t support UDP forwarding. If this happens again, please contact your server admin.",
   "outline-plugin-error-unsupported-routing-table": "It seems like another VPN is active. Please disconnect it and try again.",
   "outline-plugin-error-vpn-permission-not-granted": "Outline needs your permission to set up a VPN connection to the server. Please try again, or submit feedback if you need help.",
-  "outline-services-installation-confirmation": "We will install Outline Services to the operating system which may require admin permissions. Would you like to proceed?",
+  "outline-services-installation-confirmation": "We will set up the Outline VPN, which may require admin permissions. Would you like to proceed?",
   "outline-services-installed": "The Outline VPN has been successfully set up, please try again to connect to the server.",
   "outline-services-installing": "Installing Outline services...",
   "privacy": "Privacy",
