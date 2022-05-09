@@ -52,7 +52,7 @@
   "outline-plugin-error-unsupported-routing-table": "It seems like another VPN is active. Please disconnect it and try again.",
   "outline-plugin-error-vpn-permission-not-granted": "Outline needs your permission to set up a VPN connection to the server. Please try again, or submit feedback if you need help.",
   "outline-services-installation-confirmation": "We will install Outline Services to the operating system which may require admin permissions. Would you like to proceed?",
-  "outline-services-installed": "Outline services have been successfully installed, please try again to connect to the server.",
+  "outline-services-installed": "The Outline VPN has been successfully set up, please try again to connect to the server.",
   "outline-services-installing": "Installing Outline services...",
   "privacy": "Privacy",
   "privacy-text": "Some technical information is sent if you submit feedback, if there’s an app error or crash, or if your server administrator opts in to share anonymous server usage data.",
