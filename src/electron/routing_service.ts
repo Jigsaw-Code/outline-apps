@@ -82,6 +82,7 @@ export class RoutingDaemon {
         newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
           newSocket.removeAllListeners();
+          this.socket = null;
           this.fulfillDisconnect();
         };
         newSocket.once('close', cleanup);
@@ -104,7 +105,17 @@ export class RoutingDaemon {
           }
 
           newSocket.on('data', this.dataHandler.bind(this));
-          fulfill();
+
+          // Potential race condition: this routing daemon might already be stopped by the tunnel
+          // when one of the dependencies (ss-local/tun2socks) exited
+          // TODO(junyi): better handling this case in the next installation logic fix
+          if (this.stopping) {
+            cleanup();
+            newSocket.destroy();
+            reject(new errors.SystemConfigurationException('routing daemon service stopped before started'));
+          } else {
+            fulfill();
+          }
         });
 
         newSocket.write(
@@ -115,7 +126,10 @@ export class RoutingDaemon {
         );
       }));
 
-      const initialErrorHandler = () => reject(new SystemConfigurationException(`routing daemon is not running`));
+      const initialErrorHandler = () => {
+        this.socket = null;
+        reject(new SystemConfigurationException(`routing daemon is not running`));
+      };
       newSocket.once('error', initialErrorHandler);
     });
   }
@@ -179,21 +193,18 @@ export class RoutingDaemon {
   // stop() resolves when the stop command has been sent.
   // Use #onceDisconnected to be notified when the connection terminates.
   async stop() {
-    try {
-      if (!this.socket) {
-        // Never started.
-        return;
-      }
-      if (this.stopping) {
-        // Already stopped.
-        return;
-      }
-      this.stopping = true;
-
-      return this.writeReset();
-    } finally {
+    if (!this.socket) {
+      // Never started.
       this.fulfillDisconnect();
+      return;
     }
+    if (this.stopping) {
+      // Already stopped.
+      return;
+    }
+    this.stopping = true;
+
+    return this.writeReset();
   }
 
   public get onceDisconnected() {
