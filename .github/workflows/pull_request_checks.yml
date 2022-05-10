@@ -13,14 +13,12 @@ on:
 
       - synchronize
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   name_check:
     name: Pull Request Name Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    permissions:
+      pull-requests: read
     env: 
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -41,7 +39,10 @@ jobs:
 
   size_label:
     name: Change Size Label
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    permissions:
+      contents: read
+      pull-requests: write
     env: 
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
