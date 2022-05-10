@@ -103,7 +103,7 @@ export class RoutingDaemon {
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
             //       the only time the routing service will fail.
-            reject(new Error(!!message ? message.errorMessage : 'empty routing service response'));
+            reject(new Error(message ? message.errorMessage : 'empty routing service response'));
             newSocket.end();
             return;
           }

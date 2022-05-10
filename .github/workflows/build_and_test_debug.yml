@@ -26,7 +26,10 @@ jobs:
           cache: npm
       
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm 
+        
+      - name: Run Linter
+        run: npm run lint
 
       - name: Build Web App
         run: npm run action www/build

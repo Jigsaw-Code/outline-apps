@@ -460,7 +460,7 @@ function main() {
   ipcMain.on('quit-app', quitApp);
 
   ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
-    if (!!localizationResult) {
+    if (localizationResult) {
       localizedStrings = localizationResult;
     }
     updateTray(TunnelStatus.DISCONNECTED);
