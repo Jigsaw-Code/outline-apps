@@ -50,6 +50,8 @@ export async function main(...parameters) {
   }
 
   await runAction('www/build', `--buildMode=${buildMode}`);
+  
+  await rmfr(`platforms/${platform}`);
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
@@ -58,8 +60,6 @@ export async function main(...parameters) {
       {save: false}
     );
   }
-
-  await rmfr(`platforms/${platform}`);
 
   await cordova.prepare({platforms: [platform], save: false});
 
