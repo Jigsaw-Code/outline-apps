@@ -15,39 +15,39 @@
   limitations under the License.
 */
 
-import "./index";
+import './index';
 
-import {html} from "lit";
+import {html} from 'lit';
 
-import {localize} from "../../../.storybook/localize";
-import {ServerList} from "./index";
-import {ServerConnectionState} from "../server_connection_indicator";
+import {localize} from '../../../.storybook/localize';
+import {ServerList} from './index';
+import {ServerConnectionState} from '../server_connection_indicator';
 
 export default {
-  title: "Servers View/Server List",
-  component: "server-list",
+  title: 'Servers View/Server List',
+  component: 'server-list',
   args: {
     servers: [
       {
-        name: "My Cool Server 1",
-        address: "127.0.0.1:34873",
-        state: ServerConnectionState.INITIAL,
+        name: 'My Cool Server 1',
+        address: '127.0.0.1:34873',
+        state: ServerConnectionState.DISCONNECTED,
       },
       {
-        name: "My Cool Server 2",
-        address: "127.0.0.1:48094",
+        name: 'My Cool Server 2',
+        address: '127.0.0.1:48094',
         state: ServerConnectionState.CONNECTED,
       },
       {
-        name: "My Cool Server 3",
-        address: "127.0.0.1:12305",
+        name: 'My Cool Server 3',
+        address: '127.0.0.1:12305',
         state: ServerConnectionState.DISCONNECTING,
       },
     ],
   },
   argTypes: {
     servers: {
-      control: "object",
+      control: 'object',
     },
   },
 };

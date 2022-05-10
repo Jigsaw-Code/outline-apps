@@ -15,7 +15,6 @@ import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
-  INITIAL = 'initial',
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
   RECONNECTING = 'reconnecting',
@@ -32,7 +31,7 @@ export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
   @property({attribute: 'root-path'}) rootPath: string;
 
-  @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
+  @state() private animationState: ServerConnectionState = ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
 
   static styles = [
@@ -160,16 +159,13 @@ export class ServerConnectionIndicator extends LitElement {
   }
 
   render() {
-    const isInitial = this.animationState === ServerConnectionState.INITIAL;
-    const circles = isInitial ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
-
     return html`
-      ${circles.map(
+      ${CIRCLE_SIZES.map(
         circleSize =>
           html`
             <img
               class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${this.rootPath}assets/${isInitial ? 'circle_initial' : 'circle'}.png"
+              src="${this.rootPath}assets/circle.png"
             />
           `
       )}
