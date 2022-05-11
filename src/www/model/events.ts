@@ -14,6 +14,7 @@
 
 import {Server} from './server';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OutlineEvent {}
 
 export type OutlineEventListener<T extends OutlineEvent> = (event: T) => void;
@@ -49,7 +50,7 @@ export class ServerReconnecting implements OutlineEvent {
 // Simple publisher-subscriber queue.
 export class EventQueue {
   private queuedEvents: OutlineEvent[] = [];
-  // tslint:disable-next-line: no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private listenersByEventType = new Map<Function, any[]>();
   private isStarted = false;
   private isPublishing = false;
@@ -61,8 +62,10 @@ export class EventQueue {
 
   // Registers a listener for events of the type of the given constructor.
   subscribe<T extends OutlineEvent>(
-      // tslint:disable-next-line: no-any
-      eventConstructor: {new(...args: any[]): T}, listener: OutlineEventListener<T>): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    eventConstructor: {new (...args: any[]): T},
+    listener: OutlineEventListener<T>
+  ): void {
     let listeners = this.listenersByEventType.get(eventConstructor);
     if (!listeners) {
       listeners = [];

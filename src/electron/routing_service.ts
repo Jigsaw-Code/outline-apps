@@ -23,8 +23,6 @@ import {getServiceStartCommand} from './util';
 
 const SERVICE_NAME = platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
-const isLinux = platform() === 'linux';
-
 interface RoutingServiceRequest {
   action: string;
   parameters: {[parameter: string]: string | boolean};

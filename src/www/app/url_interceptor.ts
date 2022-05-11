@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/webintents.d.ts'/>
+import '../../types/ambient/webintents.d.ts';
 
 export class UrlInterceptor {
   protected launchUrl?: string;
-  private listeners: Array<((url: string) => void)> = [];
+  private listeners: Array<(url: string) => void> = [];
 
   registerListener(listener: (url: string) => void) {
     this.listeners.push(listener);
@@ -44,7 +44,7 @@ export class UrlInterceptor {
 export class AndroidUrlInterceptor extends UrlInterceptor {
   constructor() {
     super();
-    window.webintent.getUri((launchUrl) => {
+    window.webintent.getUri(launchUrl => {
       window.webintent.onNewIntent(this.executeListeners.bind(this));
       this.executeListeners(launchUrl);
     });

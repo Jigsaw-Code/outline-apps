@@ -81,7 +81,7 @@ describe('Settings', () => {
   it('throws when storage is corrupted', () => {
     const storage = new InMemoryStorage(new Map([[Settings.STORAGE_KEY, '"malformed": "json"']]));
     expect(() => {
-      const settings = new Settings(storage, FAKE_SETTINGS_KEYS);
+      new Settings(storage, FAKE_SETTINGS_KEYS);
     }).toThrowError(SyntaxError);
   });
 });

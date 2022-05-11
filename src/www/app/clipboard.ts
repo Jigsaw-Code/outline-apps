@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../../types/ambient/clipboard.d.ts'/>
+import '../../types/ambient/webintents.d.ts';
 
 export type ClipboardListener = (text: string) => void;
 
@@ -28,7 +28,7 @@ export interface Clipboard {
 
 // Generic clipboard. Implementations should only have to implement getContents().
 export class AbstractClipboard implements Clipboard {
-  private listener: ClipboardListener|null = null;
+  private listener: ClipboardListener | null = null;
 
   getContents(): Promise<string> {
     return Promise.reject(new Error('unimplemented skeleton method'));

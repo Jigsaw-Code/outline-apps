@@ -14,14 +14,14 @@
 
 import * as errors from '../model/errors';
 
-export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<T> {
-  let winner: Promise<T>;
+export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<T | undefined> {
+  let winner: Promise<T | undefined> | undefined = undefined;
   const timeout = new Promise<T>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
-      if (winner) {
+      if (winner === undefined) {
         console.log(`Promise "${name}" resolved before ${ms} ms.`);
-        resolve();
+        resolve(undefined);
       } else {
         console.log(`Promise "${name}" timed out after ${ms} ms.`);
         reject(new errors.OperationTimedOut(ms, name));

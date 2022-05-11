@@ -413,7 +413,7 @@ export class App {
     }
   }
 
-  private async submitFeedback(event: CustomEvent) {
+  private async submitFeedback() {
     const formData = this.feedbackViewEl.getValidatedFormData();
     if (!formData) {
       return;
