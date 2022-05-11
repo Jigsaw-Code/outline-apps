@@ -143,8 +143,8 @@ export class ServerConnectionIndicator extends LitElement {
       // based on when the animation loop started
       const elapsedAnimationMS = Date.now() - this.animationStartMS;
 
-      // while the animation is reversed, the animation delay
-      // is included in the total play time
+      // While the animation is reversed, the animation delay
+      // is included in the total play time.
       const animationDurationMS =
         this.animationState === ServerConnectionState.DISCONNECTING
           ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
