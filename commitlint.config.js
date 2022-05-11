@@ -4,7 +4,7 @@ module.exports = {
     'scope-enum': [
       2,
       'always',
-      ['android', 'apple', 'ios', 'macos', 'cordova', 'devtools', 'electron', 'linux', 'windows', 'www'],
+      ['android', 'apple', 'ios', 'macos', 'cordova', 'devtools', 'electron', 'linux', 'windows', 'www', 'docs'],
     ],
   },
 };
