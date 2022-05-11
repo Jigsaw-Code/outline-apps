@@ -1,0 +1,68 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types:
+      - opened
+      
+     # This `edited` flag is why we need a separate workflow - 
+     # specifying edited here causes this job to be re-run whenever someone edits the PR title/description. 
+     
+     # If we had the debug builds in this file, they would run unnecessarily, costing resources.
+      - edited
+
+      - synchronize
+
+jobs:
+  name_check:
+    name: Pull Request Name Check
+    runs-on: ubuntu-latest    
+    permissions:
+      pull-requests: read
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+
+      - name: Install Node
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 16
+          cache: npm
+      
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Ensure Commitizen Format
+        uses: JulienKode/pull-request-name-linter-action@98794a8b815ec05560813c42e55fd8d32d3fd248
+
+  size_label:
+    name: Change Size Label
+    runs-on: ubuntu-latest    
+    permissions:
+      contents: read
+      pull-requests: write
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Apply Size Label
+        uses: pascalgn/size-label-action@a4655c448bb838e8d73b81e97fd0831bb4cbda1e
+        env:
+          IGNORED: |
+            LICENSE
+            package-lock.json
+            resources
+            src/www/assets
+            src/www/messages
+            third_party
+        with:
+          sizes: >
+            {
+              "0": "XS",
+              "64": "S",
+              "128": "M",
+              "256": "L",
+              "512": "XL",
+              "1024": "XXL"
+            }
