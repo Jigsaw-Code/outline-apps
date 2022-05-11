@@ -1,7 +1,8 @@
 build
 node_modules
-platforms
-plugins
-www
-third_party
-tools
+
+/platforms
+/plugins
+/www
+/third_party
+/tools
