@@ -19,7 +19,7 @@ export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): P
   const timeout = new Promise<T>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       clearTimeout(timeoutId);
-      if (winner === undefined) {
+      if (winner !== undefined) {
         console.log(`Promise "${name}" resolved before ${ms} ms.`);
         resolve(undefined);
       } else {
