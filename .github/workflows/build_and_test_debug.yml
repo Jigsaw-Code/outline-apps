@@ -9,6 +9,9 @@ on:
     types:
       - opened
       - synchronize
+  push:
+    branches:
+      - master
 
 jobs:
   web_test:
@@ -115,7 +118,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build MacOS Client
-        run: npm run action cordova/build osx
+        run: npm run action cordova/build macos
 
       - name: Upload MacOS Client
         uses: actions/upload-artifact@v2

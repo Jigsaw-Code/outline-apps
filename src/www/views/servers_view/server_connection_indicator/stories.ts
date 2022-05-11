@@ -15,19 +15,19 @@
   limitations under the License.
 */
 
-import {html} from "lit";
+import {html} from 'lit';
 
-import {ServerConnectionIndicator, ServerConnectionState} from "./index";
+import {ServerConnectionIndicator, ServerConnectionState} from './index';
 
 export default {
-  title: "Servers View/Server Connection Indicator",
-  component: "server-connection-indicator",
+  title: 'Servers View/Server Connection Indicator',
+  component: 'server-connection-indicator',
   args: {
-    connectionState: ServerConnectionState.INITIAL,
+    connectionState: ServerConnectionState.DISCONNECTED,
   },
   argTypes: {
     connectionState: {
-      control: "select",
+      control: 'select',
       options: Object.values(ServerConnectionState),
     },
   },
@@ -37,7 +37,7 @@ export const Example = ({connectionState}: ServerConnectionIndicator) =>
   html`
     <div style="width: clamp(64px, 100vw, 512px);">
       <server-connection-indicator
-        connection-state="${connectionState ?? ServerConnectionState.INITIAL}"
+        connection-state="${connectionState ?? ServerConnectionState.DISCONNECTED}"
       ></server-connection-indicator>
     </div>
   `;

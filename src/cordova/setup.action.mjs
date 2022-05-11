@@ -17,25 +17,26 @@ import url from 'url';
 import {existsSync} from 'fs';
 import {execSync} from 'child_process';
 import path from 'path';
+import rmfr from 'rmfr';
 
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../../scripts/run_action.mjs';
-import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
+import {getCordovaBuildParameters} from '../../scripts/get_cordova_build_parameters.mjs';
 
 const CORDOVA_PLATFORMS = ['ios', 'osx', 'android', 'browser'];
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**
- * @description Prepares the paramterized cordova project (ios, osx, android) for being built.
+ * @description Prepares the paramterized cordova project (ios, macos, android) for being built.
  * We have a couple custom things we must do - like rsyncing code from our apple project into the project
  * cordova creates.
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {platform, buildMode} = getCordovaBuildParameters(parameters);
   const isApple = platform === 'ios' || platform === 'osx';
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
@@ -49,6 +50,8 @@ export async function main(...parameters) {
   }
 
   await runAction('www/build', {parameters: [`--buildMode=${buildMode}`], inputs: ['src/www']});
+  
+  await rmfr(`platforms/${platform}`);
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
@@ -63,7 +66,9 @@ export async function main(...parameters) {
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
     // TODO(daniellacosse): move this to a cordova hook
-    execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {stdio: 'inherit'});
+    execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {
+      stdio: 'inherit',
+    });
   }
 }
 

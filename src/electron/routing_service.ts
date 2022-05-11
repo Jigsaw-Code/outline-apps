@@ -86,6 +86,7 @@ export class RoutingDaemon {
         newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
           newSocket.removeAllListeners();
+          this.socket = null;
           this.fulfillDisconnect();
         };
         newSocket.once('close', cleanup);
@@ -108,7 +109,17 @@ export class RoutingDaemon {
           }
 
           newSocket.on('data', this.dataHandler.bind(this));
-          fulfill();
+
+          // Potential race condition: this routing daemon might already be stopped by the tunnel
+          // when one of the dependencies (ss-local/tun2socks) exited
+          // TODO(junyi): better handling this case in the next installation logic fix
+          if (this.stopping) {
+            cleanup();
+            newSocket.destroy();
+            reject(new errors.SystemConfigurationException('routing daemon service stopped before started'));
+          } else {
+            fulfill();
+          }
         });
 
         newSocket.write(
@@ -121,6 +132,7 @@ export class RoutingDaemon {
 
       const initialErrorHandler = () => {
         if (!retry) {
+          this.socket = null;
           reject(new errors.SystemConfigurationException(`routing daemon is not running`));
           return;
         }
@@ -130,11 +142,12 @@ export class RoutingDaemon {
           if (sudoError) {
             // NOTE: The script could have terminated with an error - see the comment in
             //       sudo-prompt's typings definition.
+            this.socket = null;
             reject(new errors.NoAdminPermissions());
             return;
           }
 
-          fulfill(this.start(false));
+          this.start(false).then(fulfill, reject);
         });
       };
       newSocket.once('error', initialErrorHandler);
