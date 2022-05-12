@@ -1,5 +1,5 @@
 {
-  "customSyntax": "@stylelint/postcss-css-in-js",
+  "customSyntax": "postcss-lit",
   "plugins": [
     "stylelint-no-unsupported-browser-features"
   ],
