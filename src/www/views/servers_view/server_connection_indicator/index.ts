@@ -26,9 +26,9 @@ const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
 
 // These must be CSSResult values to be embedded in the
-// CSS below, but the standard css literal doesn't take
+// CSS below, but the standard css tag doesn't take
 // literals for security reasons, and wrapping them in the normal
-// literal confuses the linter.
+// tag confuses the linter.
 const CIRCLE_SIZES = ['large', 'medium', 'small'].map(unsafeCSS);
 
 export class ServerConnectionIndicator extends LitElement {
