@@ -30,6 +30,9 @@ jobs:
       
       - name: Install NPM Dependencies
         run: npm ci
+        
+      - name: Run Linter
+        run: npm run lint
 
       - name: Build Web App
         run: npm run action www/build

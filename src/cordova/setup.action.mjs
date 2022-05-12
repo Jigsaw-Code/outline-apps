@@ -50,7 +50,7 @@ export async function main(...parameters) {
   }
 
   await runAction('www/build', `--buildMode=${buildMode}`);
-  
+
   await rmfr(`platforms/${platform}`);
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {

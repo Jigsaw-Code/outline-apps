@@ -20,7 +20,7 @@ declare module 'electron-promise-ipc' {
   class PromiseIpc {
     constructor(args?: {maxTimeoutMs?: number});
     on(eventName: string, callback: Function): void;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     send(eventName: string, arg?: {}): Promise<any>;
   }
 
