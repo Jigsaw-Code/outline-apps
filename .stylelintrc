@@ -1,0 +1,9 @@
+{
+  "customSyntax": "@stylelint/postcss-css-in-js",
+  "plugins": [
+    "stylelint-no-unsupported-browser-features"
+  ],
+  "rules": {
+    "plugin/no-unsupported-browser-features": true
+  }
+}

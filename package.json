@@ -8,8 +8,9 @@
     "clean": "rm -rf build node_modules www platforms plugins",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint": "npm run lint:ts",
+    "lint": "npm run lint:ts && npm run lint:css",
     "lint:ts": "eslint 'src/**/*.ts'",
+    "lint:css": "stylelint 'src/www/views/**/*.ts'",
     "reset": "npm run clean && npm ci"
   },
   "comments": {
@@ -63,6 +64,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@commitlint/config-conventional": "^16.2.4",
+    "@stylelint/postcss-css-in-js": "^0.38.0",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^2.8.6",
@@ -107,6 +109,8 @@
     "puppeteer": "^13.1.2",
     "rmfr": "^2.0.0",
     "style-loader": "^2.0.0",
+    "stylelint": "^14.8.2",
+    "stylelint-no-unsupported-browser-features": "^5.0.3",
     "ts-loader": "^8.0.14",
     "typescript": "^3.9.7",
     "webpack": "^5.16.0",

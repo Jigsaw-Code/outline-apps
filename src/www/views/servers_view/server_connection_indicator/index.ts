@@ -11,8 +11,8 @@
   limitations under the License.
 */
 
-import {html, css, LitElement} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
+import {html, css, LitElement, unsafeCSS} from 'lit';
+import {property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
@@ -24,9 +24,13 @@ export enum ServerConnectionState {
 
 const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
-const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
-@customElement('server-connection-indicator')
+// These must be CSSResult values to be embedded in the
+// CSS below, but the standard css literal doesn't take
+// literals for security reasons, and wrapping them in the normal
+// literal confuses the linter.
+const CIRCLE_SIZES = ['large', 'medium', 'small'].map(unsafeCSS);
+
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
   @property({attribute: 'root-path'}) rootPath: string;
@@ -63,6 +67,7 @@ export class ServerConnectionIndicator extends LitElement {
       :host,
       .circle {
         height: 100%;
+        hyphens: auto;
       }
 
       .circle {
@@ -180,3 +185,5 @@ export class ServerConnectionIndicator extends LitElement {
     ].includes(state);
   }
 }
+
+customElements.define('server-connection-indicator', ServerConnectionIndicator);
