@@ -23,11 +23,11 @@ export class InMemoryStorage implements Storage {
     throw new Error('InMemoryStorage.clear not implemented');
   }
 
-  getItem(key: string): string|null {
+  getItem(key: string): string | null {
     return this.store.get(key) || null;
   }
 
-  key(index: number): string|null {
+  key(): string | null {
     throw new Error('InMemoryStorage.key not implemented');
   }
 

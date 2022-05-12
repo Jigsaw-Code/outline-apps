@@ -242,7 +242,7 @@ class GoTun2socks {
     }
 
     return new Promise<void>((resolve, reject) => {
-      this.process.onExit = (code?: number, signal?: string) => {
+      this.process.onExit = (code?: number) => {
         reject(errors.fromErrorCode(code ?? errors.ErrorCode.UNEXPECTED));
       };
       this.process.onStdErr = (data?: string | Buffer) => {

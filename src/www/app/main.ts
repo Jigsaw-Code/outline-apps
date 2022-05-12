@@ -104,7 +104,7 @@ export function main(platform: OutlinePlatform) {
         platform.getTunnelFactory()
       );
       const settings = new Settings();
-      const app = new App(
+      new App(
         eventQueue,
         serverRepo,
         getRootEl(),

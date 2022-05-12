@@ -13,13 +13,13 @@
 // limitations under the License.
 
 import url from 'url';
-import {globby} from 'globby';
+import * as globby from 'globby';
 
 /**
  * @description returns a list of all valid actions to run
  */
 export async function main() {
-  for (const actionPath of await globby(['**/*.action.sh', '**/*.action.mjs'])) {
+  for (const actionPath of await globby.default(['**/*.action.sh', '**/*.action.mjs'])) {
     console.info(actionPath.match(/(.+)\.action/)[1]);
   }
 }

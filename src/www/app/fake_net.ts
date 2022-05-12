@@ -15,7 +15,7 @@
 import {NativeNetworking} from './net';
 
 export class FakeNativeNetworking implements NativeNetworking {
-  async isServerReachable(hostname: string, port: number) {
+  async isServerReachable(hostname: string, _port: number) {
     return !hostname.includes('unreachable');
   }
 }
