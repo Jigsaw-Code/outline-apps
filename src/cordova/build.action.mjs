@@ -17,8 +17,8 @@ import url from 'url';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../../scripts/run_action.mjs';
-import {getCordovaBuildParameters} from '../../scripts/get_cordova_build_parameters.mjs';
+import {runAction} from '../build';
+import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
