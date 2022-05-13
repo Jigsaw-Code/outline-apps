@@ -37,6 +37,7 @@ import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {ShadowsocksConfig} from './config';
+import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
@@ -118,12 +119,6 @@ class CordovaTunnel implements Tunnel {
     // Can't use `pluginExec` because Cordova needs to call the listener multiple times.
     cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
   }
-
-  readonly canInstallServices = false;
-
-  installServices(): Promise<void> {
-    return Promise.resolve();
-  }
 }
 
 // This class should only be instantiated after Cordova fires the deviceready event.
@@ -168,6 +163,10 @@ class CordovaPlatform implements OutlinePlatform {
 
   getUpdater() {
     return new AbstractUpdater();
+  }
+
+  getVpnServiceInstaller(): VpnInstaller {
+    return new NoOpVpnInstaller();
   }
 
   quitApplication() {

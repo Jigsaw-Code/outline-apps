@@ -455,11 +455,8 @@ function main() {
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:
     // https://github.com/electron/electron/issues/24427
     try {
-      if (await installRoutingServices()) {
-        return errors.ErrorCode.NO_ERROR;
-      } else {
-        return errors.ErrorCode.UNEXPECTED;
-      }
+      await installRoutingServices();
+      return errors.ErrorCode.NO_ERROR;
     } catch (e) {
       if (typeof e === 'number') {
         return e;

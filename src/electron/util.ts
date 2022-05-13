@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import {app} from 'electron';
-import * as fs from 'fs';
-import * as fsextra from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -38,19 +36,4 @@ export function getAppPath() {
 
 export function pathToEmbeddedBinary(toolname: string, filename: string) {
   return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
-}
-
-// On some distributions, root is not allowed access the AppImage folder: copy the files to /tmp.
-export function copyServiceFilesToTempFolder(sourcePathRelativeToApp: string, filenames: string[]) {
-  const tmp = fs.mkdtempSync('/tmp/');
-  const srcPath = path.join(unpackedAppPath(), sourcePathRelativeToApp);
-
-  console.log(`copying service files to ${tmp}`);
-  filenames.forEach(filename => {
-    const src = path.join(srcPath, filename);
-    // https://github.com/jprichardson/node-fs-extra/issues/323
-    const dest = path.join(tmp, filename);
-    fsextra.copySync(src, dest, {overwrite: true});
-  });
-  return tmp;
 }

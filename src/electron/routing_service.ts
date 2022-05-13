@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
 import * as path from 'path';
@@ -19,7 +20,7 @@ import * as sudo from 'sudo-prompt';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
-import {copyServiceFilesToTempFolder, getAppPath} from './util';
+import {getAppPath} from './util';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -220,46 +221,86 @@ export class RoutingDaemon {
   }
 }
 
-function getServiceInstallationCommand(): string {
-  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
-  const LINUX_DAEMON_FILENAME = 'OutlineProxyController';
-  const LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME = 'outline_proxy_controller.service';
-  const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
-  const WINDOWS_INSTALLER_FILENAME = 'install_windows_service.bat';
+//#region routing service installation
 
-  if (isWindows) {
-    // Locating the script is tricky: when packaged, this basically boils down to:
-    //   c:\program files\Outline\
-    // but during development:
-    //   build/windows
-    //
-    // Surrounding quotes important, consider "c:\program files"!
-    return `"${path.join(getAppPath(), WINDOWS_INSTALLER_FILENAME)}"`;
-  } else if (isLinux) {
-    const tmpFolder = copyServiceFilesToTempFolder(OUTLINE_PROXY_CONTROLLER_PATH, [
-      LINUX_DAEMON_FILENAME,
-      LINUX_DAEMON_SYSTEMD_SERVICE_FILENAME,
-      LINUX_INSTALLER_FILENAME,
-    ]);
-    return path.join(tmpFolder, LINUX_INSTALLER_FILENAME);
-  } else {
-    throw new Error('unsupported os');
-  }
-}
-
-export function installRoutingServices(): Promise<boolean> {
-  console.info('installing outline routing service...');
-  return new Promise<boolean>((resolve, reject) => {
-    sudo.exec(getServiceInstallationCommand(), {name: 'Outline'}, sudoError => {
+function executeCommandAsRoot(command: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    sudo.exec(command, {name: 'Outline'}, sudoError => {
       if (sudoError) {
         // NOTE: The script could have terminated with an error - see the comment in
         //       sudo-prompt's typings definition.
-        console.error('failed to install outline routing service due to', sudoError);
+        console.error('failed to execute command as root: ', sudoError);
         reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
       } else {
-        console.info('outline routing service installed successfully');
-        resolve(true);
+        resolve();
       }
     });
   });
 }
+
+function installWindowsRoutingServices(): Promise<void> {
+  const WINDOWS_INSTALLER_FILENAME = 'install_windows_service.bat';
+
+  // Locating the script is tricky: when packaged, this basically boils down to:
+  //   c:\program files\Outline\
+  // but during development:
+  //   build/windows
+  //
+  // Surrounding quotes important, consider "c:\program files"!
+  const script = `"${path.join(getAppPath(), WINDOWS_INSTALLER_FILENAME)}"`;
+  return executeCommandAsRoot(script);
+}
+
+async function installLinuxRoutingServices(): Promise<void> {
+  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
+  const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
+  // [InstallationFileName, isExecutable]...
+  const LINUX_SERVICE_FILE_NAMES: Array<[string, boolean]> = [
+    [LINUX_INSTALLER_FILENAME, true],
+    ['OutlineProxyController', true],
+    ['outline_proxy_controller.service', false],
+  ];
+
+  // These Linux service files are located in a mounted folder of the AppImage, typically
+  // located at /tmp/.mount_Outlinxxxxxx/resources/. These files can only be acceeded by
+  // the user who launched Outline.AppImage, so even root cannot access the files or folders.
+  // Therefore we have to copy these files to a normal temporary folder, and execute them
+  // as root.
+  //
+  // Also, we are copying individual files instead of the entire folder because they are in
+  // electron's "asar" archive (which is returned by getAppPath). Electron tries to inject
+  // some logic to node's fs API and make sure the caller can access files in the archive.
+  // However directories are not supported.
+  //
+  // References:
+  // - https://github.com/AppImage/AppImageKit/issues/146
+  // - https://xwartz.gitbooks.io/electron-gitbook/content/en/tutorial/application-packaging.html
+  const tmp = await fsextra.mkdtemp('/tmp/');
+  const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
+
+  console.log(`copying service installation files to ${tmp}`);
+  for (const [filename, executable] of LINUX_SERVICE_FILE_NAMES) {
+    const dest = path.join(tmp, filename);
+    await fsextra.copy(path.join(srcFolderPath, filename), dest, {overwrite: true});
+    if (executable) {
+      await fsextra.chmod(dest, 0o755);
+    }
+  }
+  console.log(`all service installation files copied to ${tmp} successfully`);
+
+  await executeCommandAsRoot(path.join(tmp, LINUX_INSTALLER_FILENAME));
+}
+
+export async function installRoutingServices(): Promise<void> {
+  console.info('installing outline routing service...');
+  if (isWindows) {
+    await installWindowsRoutingServices();
+  } else if (isLinux) {
+    await installLinuxRoutingServices();
+  } else {
+    throw new Error('unsupported os');
+  }
+  console.info('outline routing service installed successfully');
+}
+
+//#endregion routing service installation

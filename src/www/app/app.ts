@@ -24,6 +24,7 @@ import {OutlineServer, OutlineServerRepository} from './outline_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
+import {VpnInstaller} from './vpn_installer';
 
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
@@ -67,6 +68,7 @@ export class App {
     private settings: Settings,
     environmentVars: EnvironmentVariables,
     private updater: Updater,
+    private installer: VpnInstaller,
     private quitApplication: () => void,
     document = window.document
   ) {
@@ -353,8 +355,8 @@ export class App {
         this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
       }
       if (e instanceof errors.SystemConfigurationException) {
-        if (await this.confirmToInstallOutlineServices(server)) {
-          await this.installOutlineServices(server);
+        if (await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'))) {
+          await this.installVpnService();
           return;
         }
       }
@@ -362,28 +364,18 @@ export class App {
     }
   }
 
-  private async confirmToInstallOutlineServices(server: Server): Promise<boolean> {
-    if (!(await server.canFixServices())) {
-      return false;
-    }
-    const proceed = await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'));
-    if (!proceed) {
-      return false;
-    }
-    return true;
-  }
-
-  private async installOutlineServices(server: Server): Promise<void> {
+  private async installVpnService(): Promise<void> {
     this.rootEl.showToast(this.localize('outline-services-installing'), Infinity);
     try {
-      await server.tryFixServices();
+      await this.installer.installVpn();
       this.rootEl.showToast(this.localize('outline-services-installed'));
     } catch (e) {
-      console.error('failed to set up Outline VPN', e);
-      if (e instanceof errors.UnexpectedPluginError) {
+      const err = e.errorCode ? errors.fromErrorCode(e.errorCode) : e;
+      console.error('failed to set up Outline VPN', err);
+      if (err instanceof errors.UnexpectedPluginError) {
         this.rootEl.showToast(this.localize('outline-services-installation-failed'));
       } else {
-        this.showLocalizedError(e);
+        this.showLocalizedError(err);
       }
     }
   }

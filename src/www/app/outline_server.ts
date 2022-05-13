@@ -107,21 +107,6 @@ export class OutlineServer implements Server {
     return this.net.isServerReachable(this.config.host, this.config.port);
   }
 
-  canFixServices(): Promise<boolean> {
-    return Promise.resolve(this.tunnel.canInstallServices);
-  }
-
-  async tryFixServices(): Promise<void> {
-    try {
-      await this.tunnel.installServices();
-    } catch (e) {
-      if (e.errorCode) {
-        throw errors.fromErrorCode(e.errorCode);
-      }
-      throw e;
-    }
-  }
-
   static isServerCipherSupported(cipher?: string) {
     return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }

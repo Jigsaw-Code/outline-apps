@@ -14,15 +14,11 @@
 
 import {ipcRenderer} from 'electron';
 import promiseIpc from 'electron-promise-ipc';
-import * as os from 'os';
 
-import {ErrorCode, OutlinePluginError} from '../model/errors';
+import * as errors from '../model/errors';
 
 import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
-
-const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
@@ -55,7 +51,7 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.running = true;
     } catch (e) {
       if (typeof e === 'number') {
-        throw new OutlinePluginError(e);
+        throw new errors.OutlinePluginError(e);
       } else {
         throw e;
       }
@@ -81,17 +77,6 @@ export class ElectronOutlineTunnel implements Tunnel {
 
   onStatusChange(listener: (status: TunnelStatus) => void): void {
     this.statusChangeListener = listener;
-  }
-
-  readonly canInstallServices = isWindows || isLinux;
-
-  async installServices(): Promise<void> {
-    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
-    // https://github.com/electron/electron/issues/24427
-    const err = await ipcRenderer.invoke('install-outline-services');
-    if (err !== ErrorCode.NO_ERROR) {
-      throw new OutlinePluginError(err);
-    }
   }
 
   private handleStatusChange(status: TunnelStatus) {

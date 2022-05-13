@@ -20,6 +20,8 @@ import {clipboard, ipcRenderer} from 'electron';
 import promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
 
+import {ErrorCode, OutlinePluginError} from '../model/errors';
+
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
@@ -30,6 +32,7 @@ import {getLocalizationFunction, main} from './main';
 import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
+import {VpnInstaller} from './vpn_installer';
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
@@ -73,6 +76,18 @@ class ElectronUpdater extends AbstractUpdater {
   }
 }
 
+class ElectronVpnInstaller implements VpnInstaller {
+  public async installVpn(): Promise<void> {
+    const err = await ipcRenderer.invoke('install-outline-services');
+
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    if (err !== ErrorCode.NO_ERROR) {
+      throw new OutlinePluginError(err);
+    }
+  }
+}
+
 class ElectronErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, privateDsn: string, appName: string) {
     if (privateDsn) {
@@ -98,9 +113,7 @@ class ElectronNativeNetworking implements NativeNetworking {
 }
 
 main({
-  hasDeviceSupport: () => {
-    return isOsSupported;
-  },
+  hasDeviceSupport: () => isOsSupported,
   getNativeNetworking: () => {
     return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
   },
@@ -109,12 +122,8 @@ main({
       return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
     };
   },
-  getUrlInterceptor: () => {
-    return interceptor;
-  },
-  getClipboard: () => {
-    return new ElectronClipboard();
-  },
+  getUrlInterceptor: () => interceptor,
+  getClipboard: () => new ElectronClipboard(),
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {appVersion: env.APP_VERSION, dsn: env.SENTRY_DSN});
@@ -124,10 +133,7 @@ main({
       new URL(document.URL).searchParams.get('appName') || 'Outline Client'
     );
   },
-  getUpdater: () => {
-    return new ElectronUpdater();
-  },
-  quitApplication: () => {
-    ipcRenderer.send('quit-app');
-  },
+  getUpdater: () => new ElectronUpdater(),
+  getVpnServiceInstaller: () => new ElectronVpnInstaller(),
+  quitApplication: () => ipcRenderer.send('quit-app'),
 });
