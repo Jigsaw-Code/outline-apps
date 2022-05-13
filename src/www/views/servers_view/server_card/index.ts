@@ -84,6 +84,9 @@ export class ServerCard extends LegacyElementMixin(PolymerElement) {
         width: 192px;
         height: 192px;
       }
+      #server-visualization-button server-connection-indicator {
+        width: 192px;
+      }
       .status-message {
         color: var(--disabled-text-color);
         font-size: small;
