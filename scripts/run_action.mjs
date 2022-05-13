@@ -92,9 +92,9 @@ export async function runAction(actionPath, ...parameters) {
   try {
     await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
   } catch (error) {
-  if (error?.message) {
-    console.error(chalk.red(error.message));
-  }
+    if (error?.message) {
+      console.error(chalk.red(error.message));
+    }
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -112,6 +112,22 @@ async function main() {
   process.env.ROOT_DIR ??= getRootDir();
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
+
+  console.info(
+    chalk.bgGreen.bold(`
+     / __ \\| |  | |__   __| |    |_   _| \\ | |  ____|    
+    | |  | | |  | |  | |  | |      | | |  \\| | |__       
+    | |  | | |  | |  | |  | |      | | | . \` |  __|      
+    | |__| | |__| |  | |  | |____ _| |_| |\\  | |____     
+     \\____/ \\____/   |_|  |______|_____|_| \\_|______|    `)
+  );
+  console.info(
+    chalk.gray(`
+=========================================================
+             © The Outline Authors, 2022
+=========================================================
+`)
+  );
 
   return runAction(...process.argv.slice(2));
 }
