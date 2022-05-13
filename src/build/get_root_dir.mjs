@@ -12,26 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import path from 'path';
 import url from 'url';
-import {getBuildParameters} from './get_build_parameters.mjs';
 
-/*
-  Inputs:
-  => platform: the list of action arguments passed in
+// WARNING: if you move this file, you MUST update this file path
+const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = '../..';
 
-  Outputs:
-  => an object containing the specificed cordova platform and buildMode.
-*/
-export function getCordovaBuildParameters(parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
-
-  return {platform: platform === 'macos' ? 'osx' : platform, buildMode};
-}
-
-async function main() {
-  console.log(getCordovaBuildParameters(process.argv.slice(2)));
-}
-
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  main();
+export function getRootDir() {
+  return path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
 }
