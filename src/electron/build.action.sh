@@ -67,7 +67,7 @@ if [[ "${PLATFORM}" == "windows" ]]; then
 EOF
 fi
 
-electron-builder $(node ./electron/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
+electron-builder $(node ./src/electron/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
 
 if ((STAGING_PERCENTAGE < 100)); then
     MANIFEST_POSTFIX=
