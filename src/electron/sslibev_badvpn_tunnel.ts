@@ -14,12 +14,8 @@
 
 import {execSync} from 'child_process';
 import * as dgram from 'dgram';
-import * as dns from 'dns';
 import {powerMonitor} from 'electron';
-import * as net from 'net';
 import {platform} from 'os';
-import * as path from 'path';
-import * as process from 'process';
 import * as socks from 'socks';
 
 import {ShadowsocksConfig} from '../www/app/config';
@@ -49,7 +45,6 @@ const SSLOCAL_PROXY_PORT = 1081;
 const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
-const DNS_LOOKUP_TIMEOUT_MS = 10000;
 
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
@@ -147,7 +142,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
     //  - once any helper fails or exits, stop them all
     //  - once *all* helpers have stopped, we're done
     const ssLocalExit = new Promise<void>(resolve => {
-      this.ssLocal.onExit = (code?: number, signal?: string) => {
+      this.ssLocal.onExit = () => {
         resolve();
       };
     });
@@ -454,11 +449,11 @@ function checkUdpForwardingEnabled(proxyAddress: string, proxyIp: number): Promi
         const packet = socks.createUDPFrame({host: '1.1.1.1', port: 53}, DNS_REQUEST);
         const udpSocket = dgram.createSocket('udp4');
 
-        udpSocket.on('error', e => {
+        udpSocket.on('error', () => {
           reject(new errors.RemoteUdpForwardingDisabled('UDP socket failure'));
         });
 
-        udpSocket.on('message', (msg, info) => {
+        udpSocket.on('message', () => {
           stopUdp();
           resolve(true);
         });

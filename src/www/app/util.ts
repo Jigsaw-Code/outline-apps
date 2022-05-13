@@ -14,20 +14,11 @@
 
 import * as errors from '../model/errors';
 
-export function timeoutPromise<T>(promise: Promise<T>, ms: number, name = ''): Promise<T> {
-  let winner: Promise<T>;
-  const timeout = new Promise<T>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      clearTimeout(timeoutId);
-      if (winner) {
-        console.log(`Promise "${name}" resolved before ${ms} ms.`);
-        resolve();
-      } else {
-        console.log(`Promise "${name}" timed out after ${ms} ms.`);
-        reject(new errors.OperationTimedOut(ms, name));
-      }
-    }, ms);
-  });
-  winner = Promise.race([promise, timeout]);
-  return winner;
+export function timeoutPromise<T>(promise: Promise<T>, timeoutDuration: number, timeoutName: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new errors.OperationTimedOut(timeoutDuration, timeoutName)), timeoutDuration)
+    ),
+  ]);
 }

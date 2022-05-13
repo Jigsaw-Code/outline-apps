@@ -40,7 +40,6 @@ import {ShadowsocksConfig} from './config';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
-
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
   constructor() {
@@ -156,9 +155,9 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getErrorReporter(env: EnvironmentVariables) {
-    return this.hasDeviceSupport() ?
-        new CordovaErrorReporter(env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN || '') :
-        new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {});
+    return this.hasDeviceSupport()
+      ? new CordovaErrorReporter(env.APP_VERSION, env.APP_BUILD_NUMBER, env.SENTRY_DSN || '')
+      : new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {});
   }
 
   getUpdater() {
@@ -167,12 +166,18 @@ class CordovaPlatform implements OutlinePlatform {
 
   quitApplication() {
     // Only used in macOS because menu bar apps provide no alternative way of quitting.
-    cordova.exec(() => {}, () => {}, OUTLINE_PLUGIN_NAME, 'quitApplication', []);
+    cordova.exec(
+      () => {},
+      () => {},
+      OUTLINE_PLUGIN_NAME,
+      'quitApplication',
+      []
+    );
   }
 }
 
 // https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
-const onceDeviceReady = new Promise((resolve) => {
+const onceDeviceReady = new Promise(resolve => {
   document.addEventListener('deviceready', resolve);
 });
 

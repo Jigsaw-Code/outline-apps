@@ -9,6 +9,9 @@ on:
     types:
       - opened
       - synchronize
+  push:
+    branches:
+      - master
 
 jobs:
   web_test:
@@ -27,6 +30,9 @@ jobs:
       
       - name: Install NPM Dependencies
         run: npm ci
+        
+      - name: Run Linter
+        run: npm run lint
 
       - name: Build Web App
         run: npm run action www/build
@@ -115,7 +121,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
       - name: Build MacOS Client
-        run: npm run action cordova/build osx
+        run: npm run action cordova/build macos
 
       - name: Upload MacOS Client
         uses: actions/upload-artifact@v2

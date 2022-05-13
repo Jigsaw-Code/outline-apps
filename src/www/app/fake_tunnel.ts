@@ -58,7 +58,7 @@ export class FakeOutlineTunnel implements Tunnel {
     return this.running;
   }
 
-  onStatusChange(listener: (status: TunnelStatus) => void): void {
+  onStatusChange(_listener: (status: TunnelStatus) => void): void {
     // NOOP
   }
 }

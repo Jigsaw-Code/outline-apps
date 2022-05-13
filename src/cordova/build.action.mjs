@@ -17,8 +17,8 @@ import url from 'url';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../../scripts/run_action.mjs';
-import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
+import {runAction} from '../build/run_action.mjs';
+import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, osx, android).
@@ -26,7 +26,7 @@ import {getBuildParameters} from '../../scripts/get_build_parameters.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {platform, buildMode} = getCordovaBuildParameters(parameters);
 
   await runAction('www/build', {parameters: [`--buildMode=${buildMode}`], inputs: ['src/www']});
   await runAction('cordova/setup', {parameters, inputs: ['www', 'resources', 'src/cordova', 'cordova-plugin-outline']});
