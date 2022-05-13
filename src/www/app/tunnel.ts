@@ -17,7 +17,7 @@ import {ShadowsocksConfig} from './config';
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,
-  RECONNECTING
+  RECONNECTING,
 }
 
 export type TunnelFactory = (id: string) => Tunnel;
