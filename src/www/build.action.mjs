@@ -20,7 +20,9 @@ import path from 'path';
 import electronConfig from './webpack_electron.mjs';
 import cordovaConfig from './webpack_cordova.mjs';
 
-import {getBuildParameters, getBuildEnvironment, getWebpackBuildMode} from '../build/index.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
 /**
  * @description Builds the web UI for use across both electron and cordova.
