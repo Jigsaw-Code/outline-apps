@@ -17,7 +17,7 @@ import url from 'url';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../build';
+import {runAction} from '../build/index.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**

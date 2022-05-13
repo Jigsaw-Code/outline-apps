@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import url from 'url';
-import {getVersion, getBuildParameters} from '../build';
+import {getVersion, getBuildParameters} from '../build/index.mjs';
 
 export async function getElectronBuildFlags(platform, buildMode) {
   let buildFlags = [
