@@ -49,7 +49,7 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
     readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&sentry_key=$API_KEY"
 fi
 
-readonly WEBPACK_MODE="$(node ./scripts/get_webpack_mode.mjs --buildMode=${BUILD_MODE})"
+readonly WEBPACK_MODE="$(node ./scripts/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})"
 
 node ./scripts/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 

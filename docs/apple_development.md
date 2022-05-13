@@ -6,30 +6,21 @@ This document describes how to develop and debug for macOS (formerly known as OS
 - XCode 13.2 ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
-To build for macOS (OS X), run:
-
-```sh
-  npm run action build/cordova osx
-```
+## iOS
 
 To build for iOS, run:
 
 ```sh
-  npm run action build/cordova ios
+  npm run action cordova/build ios
 ```
-
-To open the macOS project on XCode:
-
-```sh
-  open ./platforms/osx/Outline.xcodeproj
 
 To open the iOS project on XCode:
 
 ```sh
-  open ./platforms/ios/Outline.xcodeproj
+  open ./platforms/ios/Outline.xcworkspace
 ```
 
-## Adding support for your device in XCode
+### Adding support for your device in XCode
 
 You may find that your iOS version is _too modern_ for 13.2 XCode. You'll need to do the following:
 
@@ -42,7 +33,21 @@ Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Dev
 
 3. Restart XCode!
 
-## MacOS Development in XCode
+## macOS
+
+To build for macOS (OS X), run:
+
+```sh
+  npm run action cordova/build macos
+```
+
+To open the macOS project on XCode:
+
+```sh
+  open ./platforms/osx/Outline.xcodeproj
+```
+
+### MacOS Development in XCode
 
 We recommend that you develop OS X specific functionality in the `platforms/osx` directory.  However this is not version-controlled.  Once you have made your changes in the `platforms/osx` directory, be sure to copy it to the version-controlled source code in `cordova-plugin-outline/apple/`
 
@@ -57,14 +62,14 @@ To run the project in XCode:
 
 The main entry point for Apple specific code is `Outline/Plugins/OutlinePlugin.swift`
 
-## To debug the MacOS VpnExtension process
+### To debug the MacOS VpnExtension process
 
 * VpnExtension runs in a separate process and its output is not logged to the Xcode console. To view its log statements, open the Console.app and filter messages that contain "Outline" or “VpnExtension”.
 * In XCode, click top Debug menu → Attach to Process → VpnExtension
   * This can only be done once the VPN Extension is running (after you are connected).
   * [Detailed instructions](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionCreation.html#//apple_ref/doc/uid/TP40014214-CH5-SW8).
 
-## Debugging the MacOS UI
+### Debugging the MacOS UI
 
 To debug the macOS webview:
 
@@ -72,7 +77,7 @@ To debug the macOS webview:
 * Once this is done, right click → Inspect Context in the Outline client app. This will open the safari debugger
 * To reload the UI without re-running the application, right-click → Reload.
 
-## Fixing the MacOS VpnExtension configuration:
+### Fixing the MacOS VpnExtension configuration:
 
 The VpnExtension is an [application extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/) that handles the device’s traffic when the VPN is enabled. The system must be aware of the extension in order to invoke it. Normally, running the app is enough to trigger the registration of the VpnExtension. However, the system can get confused in a development environment, failing to register the plugin automatically.
 
