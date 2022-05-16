@@ -98,9 +98,7 @@ class ElectronNativeNetworking implements NativeNetworking {
 }
 
 main({
-  hasDeviceSupport: () => {
-    return isOsSupported;
-  },
+  hasDeviceSupport: () => isOsSupported,
   getNativeNetworking: () => {
     return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
   },
@@ -109,12 +107,8 @@ main({
       return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
     };
   },
-  getUrlInterceptor: () => {
-    return interceptor;
-  },
-  getClipboard: () => {
-    return new ElectronClipboard();
-  },
+  getUrlInterceptor: () => interceptor,
+  getClipboard: () => new ElectronClipboard(),
   getErrorReporter: (env: EnvironmentVariables) => {
     // Initialise error reporting in the main process.
     ipcRenderer.send('environment-info', {appVersion: env.APP_VERSION, dsn: env.SENTRY_DSN});
@@ -124,10 +118,6 @@ main({
       new URL(document.URL).searchParams.get('appName') || 'Outline Client'
     );
   },
-  getUpdater: () => {
-    return new ElectronUpdater();
-  },
-  quitApplication: () => {
-    ipcRenderer.send('quit-app');
-  },
+  getUpdater: () => new ElectronUpdater(),
+  quitApplication: () => ipcRenderer.send('quit-app'),
 });
