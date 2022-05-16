@@ -49,9 +49,9 @@ if [[ -n ${SENTRY_DSN:-} ]]; then
     readonly SENTRY_URL="https://sentry.io/api/$PROJECT_ID/store/?sentry_version=7&sentry_key=$API_KEY"
 fi
 
-readonly WEBPACK_MODE="$(node ./scripts/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})"
+readonly WEBPACK_MODE="$(node ./src/build/get_webpack_build_mode.mjs --buildMode=${BUILD_MODE})"
 
-node ./scripts/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
+node ./src/build/run_action.mjs src/www/build "${PLATFORM}" --buildMode="${BUILD_MODE}"
 
 webpack --config=src/electron/webpack_electron_main.js \
     --env NETWORK_STACK="${NETWORK_STACK:-libevbadvpn}" \
@@ -67,7 +67,7 @@ if [[ "${PLATFORM}" == "windows" ]]; then
 EOF
 fi
 
-electron-builder $(node ./scripts/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
+electron-builder $(node ./src/electron/get_electron_build_flags.mjs ${PLATFORM} --buildMode=${BUILD_MODE})
 
 if ((STAGING_PERCENTAGE < 100)); then
     MANIFEST_POSTFIX=

@@ -82,7 +82,17 @@ const spawnStream = (command, parameters) =>
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
-    console.info('Please provide an action to run.');
+    console.info(chalk.red(`Could not find an action at path:`), chalk.red.bold(`"${actionPath}"`));
+    console.info();
+    console.info(chalk.yellow.bold('Please provide a valid action to run.'));
+    console.info();
+    console.info(
+      chalk.white.underline('The'),
+      chalk.white.bold.underline('list'),
+      chalk.white.underline('of valid actions are as follows:')
+    );
+    console.info();
+
     return runAction('list');
   }
 

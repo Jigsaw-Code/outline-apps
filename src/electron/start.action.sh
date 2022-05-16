@@ -15,7 +15,7 @@
 # limitations under the License.
 set -eux
 
-node ./scripts/run_action.mjs src/electron/build "$@"
+node ./src/build/run_action.mjs src/electron/build "$@"
 
 export OUTLINE_DEBUG=true
 electron .
