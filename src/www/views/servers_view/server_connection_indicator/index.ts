@@ -12,7 +12,7 @@
 */
 
 import {html, css, LitElement, unsafeCSS} from 'lit';
-import {property, state} from 'lit/decorators.js';
+import {property, state, customElement} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
@@ -24,13 +24,9 @@ export enum ServerConnectionState {
 
 const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
+const CIRCLE_SIZES = [unsafeCSS`large`, unsafeCSS`medium`, unsafeCSS`small`];
 
-// These must be CSSResult values to be embedded in the
-// CSS below, but the standard css tag doesn't take
-// literals for security reasons, and wrapping them in the normal
-// tag confuses the linter.
-const CIRCLE_SIZES = ['large', 'medium', 'small'].map(unsafeCSS);
-
+@customElement('server-card')
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
   @property({attribute: 'root-path'}) rootPath: string;
@@ -185,5 +181,3 @@ export class ServerConnectionIndicator extends LitElement {
     ].includes(state);
   }
 }
-
-customElements.define('server-connection-indicator', ServerConnectionIndicator);
