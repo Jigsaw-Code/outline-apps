@@ -14,8 +14,6 @@
 
 import {getVersion} from './get_version.mjs';
 import {getBuildNumber} from './get_build_number.mjs';
-import url from 'url';
-import {getBuildParameters} from './get_build_parameters.mjs';
 
 /*
   Inputs:
@@ -47,16 +45,4 @@ export async function getBuildEnvironment(platform, buildMode) {
     APP_VERSION: `${await getVersion(platform)}${buildMode === 'debug' ? '-debug' : ''}`,
     APP_BUILD_NUMBER: await getBuildNumber(platform),
   };
-}
-
-async function main() {
-  const {platform, buildMode} = getBuildParameters(process.argv.slice(2));
-
-  console.log(JSON.stringify(await getBuildEnvironment(platform, buildMode)));
-}
-
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  (async function() {
-    return main();
-  })();
 }

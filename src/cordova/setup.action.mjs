@@ -22,8 +22,8 @@ import rmfr from 'rmfr';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../../scripts/run_action.mjs';
-import {getCordovaBuildParameters} from '../../scripts/get_cordova_build_parameters.mjs';
+import {runAction} from '../build/run_action.mjs';
+import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 const CORDOVA_PLATFORMS = ['ios', 'osx', 'android', 'browser'];
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
@@ -52,6 +52,7 @@ export async function main(...parameters) {
   await runAction('www/build', `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
+  await rmfr('plugins');
 
   if (!existsSync(path.resolve(process.env.ROOT_DIR, `platforms/${platform}`))) {
     await cordova.platform(
