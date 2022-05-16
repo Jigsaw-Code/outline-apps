@@ -82,7 +82,17 @@ const spawnStream = (command, parameters) =>
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
-    console.info('Please provide an action to run.');
+    console.info(chalk.red(`Could not find an action at path:`), chalk.red.bold(`"${actionPath}"`));
+    console.info();
+    console.info(chalk.yellow.bold('Please provide a valid action to run.'));
+    console.info();
+    console.info(
+      chalk.white.underline('The'),
+      chalk.white.bold.underline('list'),
+      chalk.white.underline('of valid actions are as follows:')
+    );
+    console.info();
+
     return runAction('list');
   }
 
@@ -113,21 +123,25 @@ async function main() {
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
 
-  console.info(
-    chalk.bgGreen.bold(`
-     / __ \\| |  | |__   __| |    |_   _| \\ | |  ____|    
-    | |  | | |  | |  | |  | |      | | |  \\| | |__       
-    | |  | | |  | |  | |  | |      | | | . \` |  __|      
-    | |__| | |__| |  | |  | |____ _| |_| |\\  | |____     
-     \\____/ \\____/   |_|  |______|_____|_| \\_|______|    `)
-  );
-  console.info(
-    chalk.gray(`
-=========================================================
-             © The Outline Authors, 2022
-=========================================================
-`)
-  );
+  if (!process.env.IS_ACTION) {
+    console.info(
+      chalk.bgGreen.bold(`
+       / __ \\| |  | |__   __| |    |_   _| \\ | |  ____|    
+      | |  | | |  | |  | |  | |      | | |  \\| | |__       
+      | |  | | |  | |  | |  | |      | | | . \` |  __|      
+      | |__| | |__| |  | |  | |____ _| |_| |\\  | |____     
+       \\____/ \\____/   |_|  |______|_____|_| \\_|______|    `)
+    );
+    console.info(
+      chalk.gray(`
+  =========================================================
+               © The Outline Authors, 2022
+  =========================================================
+  `)
+    );
+
+    process.env.IS_ACTION = true;
+  }
 
   return runAction(...process.argv.slice(2));
 }

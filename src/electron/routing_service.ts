@@ -133,7 +133,7 @@ export class RoutingDaemon {
 
       const initialErrorHandler = () => {
         this.socket = null;
-        reject(new SystemConfigurationException(`routing daemon is not running`));
+        reject(new SystemConfigurationException('routing daemon is not running'));
       };
       newSocket.once('error', initialErrorHandler);
     });

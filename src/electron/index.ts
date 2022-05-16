@@ -35,9 +35,6 @@ import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 
-const isLinux = os.platform() === 'linux';
-const isWindows = os.platform() === 'win32';
-
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
 const tunnelStore = new TunnelStore(app.getPath('userData'));
@@ -137,7 +134,7 @@ function setupWindow(): void {
     event.preventDefault();
     mainWindow.hide();
   });
-  if (isWindows) {
+  if (os.platform() === 'win32') {
     // On Windows we hide the app from the taskbar.
     mainWindow.on('minimize', (event: Event) => {
       event.preventDefault();
@@ -172,7 +169,7 @@ function updateTray(status: TunnelStatus) {
     {type: 'separator'} as MenuItemConstructorOptions,
     {label: localizedStrings['quit'], click: quitApp},
   ];
-  if (isLinux) {
+  if (os.platform() === 'linux') {
     // Because the click event is never fired on Linux, we need an explicit open option.
     menuTemplate = [{label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate];
   }
@@ -217,7 +214,7 @@ function interceptShadowsocksLink(argv: string[]) {
 async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
   try {
     await tunnelStore.save(args);
-    if (isLinux) {
+    if (os.platform() === 'linux') {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
@@ -235,7 +232,7 @@ async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
 
 async function tearDownAutoLaunch() {
   try {
-    if (isLinux) {
+    if (os.platform() === 'linux') {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
