@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const postcss = require('postcss-legacy');
-const rtl = require('postcss-rtl');
+const postcss = require('postcss');
+const rtl = require('postcss-rtlcss');
 
 const CSS_PROCESSOR = postcss([rtl()]);
 
