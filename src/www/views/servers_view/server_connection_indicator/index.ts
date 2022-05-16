@@ -63,7 +63,6 @@ export class ServerConnectionIndicator extends LitElement {
       :host,
       .circle {
         height: 100%;
-        hyphens: auto;
       }
 
       .circle {

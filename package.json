@@ -9,8 +9,8 @@
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint": "npm run lint:ts && npm run lint:css",
-    "lint:ts": "eslint 'src/**/*.ts'",
     "lint:css": "stylelint 'src/www/views/**/*.ts'",
+    "lint:ts": "eslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
   },
   "comments": {
@@ -127,7 +127,7 @@
   "main": "build/electron/electron/index.js",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint && npm run format",
+      "pre-commit": "npm run lint:ts -- --fix && npm run lint:css && npm run format",
       "post-checkout": "npm ci",
       "post-merge": "npm ci"
     }
