@@ -22,7 +22,7 @@ import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
 import {Menu} from '@material/mwc-menu';
 
-import {ServerListItem, ServerListItemElement, ServerListItemEvent, ServerListItemElementWithDispatcher} from '..';
+import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
 const sharedCSS = css`
@@ -103,68 +103,80 @@ const sharedCSS = css`
   }
 `;
 
-// TODO(daniellacosse): don't rerender dispatchers unnecessarily
-const getSharedDispatchers = ({
-  dispatcher,
-  server: {connectionState, id: serverId},
-}: ServerListItemElementWithDispatcher) => ({
-  beginRenameDispatcher: () =>
-    dispatcher(new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId}, bubbles: true, composed: true})),
-  forgetDispatcher: () =>
-    dispatcher(new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId}, bubbles: true, composed: true})),
-  connectToggleDispatcher: () =>
-    dispatcher(
-      new CustomEvent(
-        isConnectedState(connectionState) ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT,
-        {detail: {serverId}, bubbles: true, composed: true}
-      )
-    ),
-});
-
 const isConnectedState = (connectionState: ServerConnectionState) =>
   [ServerConnectionState.CONNECTING, ServerConnectionState.CONNECTED, ServerConnectionState.RECONNECTING].includes(
     connectionState
   );
 
-// const getSharedMessages = () => {};
-
-const renderSharedHTML = (element: ServerListItemElementWithDispatcher) => {
-  const {beginRenameDispatcher, forgetDispatcher, connectToggleDispatcher} = getSharedDispatchers(element);
-  const {server, localizer, menu} = element;
-
-  const serverNameText =
-    server.name ?? localizer(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
+const getSharedComponents = ({
+  server,
+  menu,
+  localizer,
+  dispatchEvent: dispatcher,
+}: ServerListItemElement & LitElement) => {
   const hasErrorMessage = Boolean(server.errorMessageId);
-  const errorMessageText = hasErrorMessage && localizer(server.errorMessageId);
-  const connectButtonText = localizer(
-    isConnectedState(server.connectionState) ? 'disconnect-button-label' : 'connect-button-label'
-  );
+
+  const messages = {
+    serverName:
+      server.name ?? localizer(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
+    error: hasErrorMessage && localizer(server.errorMessageId),
+    connectButton: localizer(
+      isConnectedState(server.connectionState) ? 'disconnect-button-label' : 'connect-button-label'
+    ),
+  };
+
+  // TODO(daniellacosse): don't rerender dispatchers unnecessarily
+  const dispatchers = {
+    beginRename: () =>
+      dispatcher(
+        new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId: server.id}, bubbles: true, composed: true})
+      ),
+    forget: () =>
+      dispatcher(
+        new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId: server.id}, bubbles: true, composed: true})
+      ),
+    connectToggle: () =>
+      dispatcher(
+        new CustomEvent(
+          isConnectedState(server.connectionState) ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT,
+          {detail: {serverId: server.id}, bubbles: true, composed: true}
+        )
+      ),
+  };
 
   return {
-    metadataTextHTML: html`
-      <div class="card-metadata-text">
-        <h2 class="card-metadata-server-name" id="server-name">
-          ${serverNameText}
-        </h2>
-        <label class="card-metadata-server-address">${server.address}</label>
-      </div>
-    `,
-    menuHTML: html`
-      <div class="card-menu">
-        <mwc-icon-button icon="more_vert" @click=${menu.value?.show}></mwc-icon-button>
-        <mwc-menu ${ref(menu)}>
-          <mwc-list-item @click="${beginRenameDispatcher}">${localizer('server-rename')}</mwc-list-item>
-          <mwc-list-item @click="${forgetDispatcher}">${localizer('server-forget')}</mwc-list-item>
-        </mwc-menu>
-      </div>
-    `,
-    footerHTML: html`
-      <footer class="card-footer">
-        <span class="card-error">${errorMessageText}</span>
-        <mwc-button label="${connectButtonText}" @click="${connectToggleDispatcher}" ?disabled=${hasErrorMessage}>
-        </mwc-button>
-      </footer>
-    `,
+    messages,
+    dispatchers,
+    elements: {
+      metadataText: html`
+        <div class="card-metadata-text">
+          <h2 class="card-metadata-server-name" id="server-name">
+            ${messages.serverName}
+          </h2>
+          <label class="card-metadata-server-address">${server.address}</label>
+        </div>
+      `,
+      menu: html`
+        <div class="card-menu">
+          <mwc-icon-button icon="more_vert" @click=${menu.value?.show}></mwc-icon-button>
+          <mwc-menu ${ref(menu)}>
+            <mwc-list-item @click="${dispatchers.beginRename}">${localizer('server-rename')}</mwc-list-item>
+            <mwc-list-item @click="${dispatchers.forget}">${localizer('server-forget')}</mwc-list-item>
+          </mwc-menu>
+        </div>
+      `,
+      footer: html`
+        <footer class="card-footer">
+          <span class="card-error">${messages.error}</span>
+          <mwc-button
+            label="${messages.connectButton}"
+            @click="${dispatchers.connectToggle}"
+            ?disabled=${hasErrorMessage}
+          >
+          </mwc-button>
+        </footer>
+      `,
+    },
   };
 };
 
@@ -201,10 +213,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
   ];
 
   render() {
-    const {metadataTextHTML, menuHTML, footerHTML} = renderSharedHTML({
-      ...this,
-      dispatcher: this.dispatchEvent,
-    });
+    const {elements} = getSharedComponents(this);
 
     return html`
       <div class="card-metadata" aria-labelledby="server-name">
@@ -212,9 +221,9 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
           connection-state="${this.server.connectionState}"
           root-path="${this.rootPath}"
         ></server-connection-indicator>
-        ${metadataTextHTML}
+        ${elements.metadataText}
       </div>
-      ${menuHTML} ${footerHTML}
+      ${elements.menu} ${elements.footer}
     `;
   }
 }
@@ -269,45 +278,37 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
   ];
 
   render() {
-    const element = {...this, dispatcher: this.dispatchEvent};
+    const {elements, dispatchers, messages} = getSharedComponents(this);
 
-    // HTML
-    const {metadataTextHTML, menuHTML, footerHTML} = renderSharedHTML(element);
-    const connectionButtonText = this.localizer(
-      isConnectedState(this.server.connectionState) ? 'disconnect-button-label' : 'connect-button-label'
-    );
     const connectionStatusText = this.localizer(`${this.server.connectionState}-server-state`);
-
-    // dispatchers
-    const {connectToggleDispatcher} = getSharedDispatchers(element);
     const connectToggleKeyboardDispatcher = (event: KeyboardEvent) => {
       event.preventDefault();
       event.stopImmediatePropagation();
 
       if (event.key === 'Enter') {
-        connectToggleDispatcher();
+        dispatchers.connectToggle();
       }
     };
 
     return html`
       <div class="card-metadata" aria-labelledby="server-name">
-        ${metadataTextHTML}
+        ${elements.metadataText}
       </div>
-      ${menuHTML}
+      ${elements.menu}
       <div class="card-connection-button-container">
         <server-connection-indicator
-          @click="${!this.server.errorMessageId && connectToggleDispatcher}"
+          @click="${!this.server.errorMessageId && dispatchers.connectToggle}"
           @keydown="${connectToggleKeyboardDispatcher}"
           connection-state="${this.server.connectionState}"
-          id="${connectionButtonText}"
+          id="${messages.connectButton}"
           role="button"
           tabindex="0"
           root-path="${this.rootPath}"
           title="${connectionStatusText}"
         ></server-connection-indicator>
-        <label class="card-connection-label" for="${connectionButtonText}">${connectionStatusText}</label>
+        <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>
       </div>
-      ${footerHTML}
+      ${elements.footer}
     `;
   }
 }

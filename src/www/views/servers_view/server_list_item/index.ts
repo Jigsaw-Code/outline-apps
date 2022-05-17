@@ -38,5 +38,3 @@ export interface ServerListItemElement {
   localizer: (messageID: string) => string;
   menu: Ref<Menu>;
 }
-
-export type ServerListItemElementWithDispatcher = ServerListItemElement & {dispatcher: (event: Event) => boolean};
