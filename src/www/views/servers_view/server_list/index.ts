@@ -14,7 +14,7 @@
 import {computed, customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 
-import '../server_card';
+import '../server_list_item/server_card';
 import {ServerListItem} from '../server_list_item';
 
 @customElement('server-list')

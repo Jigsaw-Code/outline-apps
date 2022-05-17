@@ -17,11 +17,11 @@
 
 import {html} from 'lit';
 
-import '../index';
+import '../../index';
 
-import {localizer} from '../../../.storybook/l10n';
-import {ServerConnectionState} from '../server_connection_indicator';
-import {ServerListItemElement} from '../server_list_item';
+import {localizer} from '../../../../.storybook/l10n';
+import {ServerConnectionState} from '../../server_connection_indicator';
+import {ServerListItemElement} from '..';
 
 export default {
   title: 'Servers View/Server List Item',
