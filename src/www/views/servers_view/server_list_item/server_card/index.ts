@@ -104,16 +104,19 @@ const sharedCSS = css`
 `;
 
 // TODO(daniellacosse): don't rerender dispatchers unnecessarily
-const getSharedDispatchers = ({dispatcher, server}: ServerListItemElementWithDispatcher) => ({
+const getSharedDispatchers = ({
+  dispatcher,
+  server: {connectionState, id: serverId},
+}: ServerListItemElementWithDispatcher) => ({
   renameDispatcher: () =>
-    dispatcher(new CustomEvent(ServerListItemEvent.RENAME, {detail: server, bubbles: true, composed: true})),
+    dispatcher(new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId}, bubbles: true, composed: true})),
   forgetDispatcher: () =>
-    dispatcher(new CustomEvent(ServerListItemEvent.FORGET, {detail: server, bubbles: true, composed: true})),
+    dispatcher(new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId}, bubbles: true, composed: true})),
   connectToggleDispatcher: () =>
     dispatcher(
       new CustomEvent(
-        isConnectedState(server.connectionState) ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT,
-        {detail: server, bubbles: true, composed: true}
+        isConnectedState(connectionState) ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT,
+        {detail: {serverId}, bubbles: true, composed: true}
       )
     ),
 });

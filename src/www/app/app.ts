@@ -329,7 +329,7 @@ export class App {
   private async forgetServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
-    const serverId = event.detail.id;
+    const {serverId} = event.detail;
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
@@ -346,15 +346,14 @@ export class App {
   }
 
   private renameServer(event: CustomEvent) {
-    const serverId = event.detail.serverId;
-    const newName = event.detail.newName;
+    const {serverId, newName} = event.detail;
     this.serverRepo.rename(serverId, newName);
   }
 
   private async connectServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
-    const serverId = event.detail.id;
+    const {serverId} = event.detail;
     if (!serverId) {
       throw new Error(`connectServer event had no server ID`);
     }
