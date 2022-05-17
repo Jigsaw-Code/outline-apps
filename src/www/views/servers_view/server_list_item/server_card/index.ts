@@ -61,6 +61,11 @@ const sharedCSS = css`
     align-items: center;
   }
 
+  server-connection-indicator {
+    min-height: var(--min-indicator-size);
+    max-height: var(--max-indicator-size);
+  }
+
   .card-metadata-text {
     user-select: text;
     padding: var(--outline-slim-gutter);
@@ -119,11 +124,11 @@ const getSharedComponents = ({
   const messages = {
     serverName:
       server.name ?? localizer(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
-    error: hasErrorMessage && localizer(server.errorMessageId),
+    error: hasErrorMessage ? localizer(server.errorMessageId) : '',
     connectButton: localizer(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
 
-  // TODO(daniellacosse): don't rerender dispatchers unnecessarily
+  // TODO(daniellacosse): cache dispatchers
   const dispatchers = {
     beginRename: () =>
       dispatcher(
@@ -157,7 +162,7 @@ const getSharedComponents = ({
       `,
       menu: html`
         <div class="card-menu">
-          <mwc-icon-button icon="more_vert" @click=${menu.value?.show}></mwc-icon-button>
+          <mwc-icon-button icon="more_vert" @click=${() => menu.value?.show()}></mwc-icon-button>
           <mwc-menu ${ref(menu)}>
             <mwc-list-item @click="${dispatchers.beginRename}">${localizer('server-rename')}</mwc-list-item>
             <mwc-list-item @click="${dispatchers.forget}">${localizer('server-forget')}</mwc-list-item>
@@ -180,13 +185,11 @@ const getSharedComponents = ({
 };
 
 /**
- *
+ * Display a Server as a part of a larger collection.
  */
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-
-  @property({attribute: 'root-path'}) rootPath: string;
   @property() localizer: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
@@ -195,6 +198,12 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     sharedCSS,
     css`
       :host {
+        --min-indicator-size: calc(var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size));
+        --max-indicator-size: calc(
+          var(--outline-slim-gutter) + var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size) +
+            var(--outline-slim-gutter)
+        );
+
         grid-template-columns: 0 1fr auto 0;
         grid-template-rows: 0 minmax(0, 1fr) auto;
         grid-template-areas:
@@ -205,11 +214,6 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 
       server-connection-indicator {
         float: left;
-        min-height: calc(var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size));
-        max-height: calc(
-          var(--outline-slim-gutter) + var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size) +
-            var(--outline-slim-gutter)
-        );
       }
     `,
   ];
@@ -219,10 +223,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 
     return html`
       <div class="card-metadata" aria-labelledby="server-name">
-        <server-connection-indicator
-          connection-state="${this.server.connectionState}"
-          root-path="${this.rootPath}"
-        ></server-connection-indicator>
+        <server-connection-indicator connection-state="${this.server.connectionState}"></server-connection-indicator>
         ${elements.metadataText}
       </div>
       ${elements.menu} ${elements.footer}
@@ -231,13 +232,11 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 }
 
 /**
- *
+ * Display a featured Server in a showcase.
  */
 @customElement('server-hero-card')
 export class ServerHeroCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-
-  @property({attribute: 'root-path'}) rootPath: string;
   @property() localizer: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
@@ -246,6 +245,11 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     sharedCSS,
     css`
       :host {
+        --min-indicator-size: 192px;
+        --max-indicator-size: calc(
+          var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter)
+        );
+
         grid-template-columns: 0 1fr auto 0;
         grid-template-rows: 0 auto minmax(0, 1fr) auto;
         grid-template-areas:
@@ -270,8 +274,6 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
 
       server-connection-indicator {
         cursor: pointer;
-        min-height: 192px;
-        max-height: calc(var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter));
       }
 
       .card-connection-label {
@@ -308,7 +310,6 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
           id="${messages.connectButton}"
           role="button"
           tabindex="0"
-          root-path="${this.rootPath}"
           title="${connectionStatusText}"
         ></server-connection-indicator>
         <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>

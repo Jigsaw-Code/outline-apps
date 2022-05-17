@@ -10,6 +10,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "typeRoots": ["../node_modules/@types", "./types/modules"]
+    "typeRoots": ["../node_modules/@types", "./types/modules", "./types/ambient"]
   }
 }

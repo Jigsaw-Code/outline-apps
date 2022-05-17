@@ -14,6 +14,11 @@
 import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+// TODO(daniellacosse): file import type definitions
+// eslint-disable-next-line
+// @ts-ignore
+import circle from '../../../assets/circle.png';
+
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
@@ -29,7 +34,6 @@ const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 @customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
-  @property({attribute: 'root-path'}) rootPath: string;
 
   @state() private animationState: ServerConnectionState = ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
@@ -163,10 +167,7 @@ export class ServerConnectionIndicator extends LitElement {
       ${CIRCLE_SIZES.map(
         circleSize =>
           html`
-            <img
-              class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${this.rootPath}assets/circle.png"
-            />
+            <img class="circle circle-${circleSize} circle-${this.animationState}" src="${circle}" />
           `
       )}
     `;

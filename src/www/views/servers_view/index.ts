@@ -102,10 +102,7 @@ Polymer({
       <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-indicator
-              connection-state="disconnected"
-              root-path="[[rootPath]]"
-            ></server-connection-indicator>
+            <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
@@ -127,7 +124,6 @@ Polymer({
         hidden$="[[shouldShowZeroState]]"
         servers="[[servers]]"
         localize="[[localize]]"
-        root-path="[[rootPath]]"
       ></server-list>
     </div>
   `,
@@ -136,7 +132,6 @@ Polymer({
 
   properties: {
     localize: Function,
-    rootPath: String,
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,

@@ -22,6 +22,9 @@ export enum ServerListItemEvent {
   RENAME = 'ShowServerRename',
 }
 
+/**
+ * Data required to represent a Server in the UI.
+ */
 export interface ServerListItem {
   disabled: boolean;
   errorMessageId?: string;
@@ -33,11 +36,11 @@ export interface ServerListItem {
 }
 
 /**
- * TODO jsdoc
+ * Required attributes for an element to be used
+ * as an item display in the Server List.
  */
 export interface ServerListItemElement {
   server: ServerListItem;
-  rootPath: string;
   localizer: (messageID: string) => string;
   menu: Ref<Menu>;
 }

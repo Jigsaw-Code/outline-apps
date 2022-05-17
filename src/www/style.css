@@ -60,3 +60,26 @@
     --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;  
   }
 } */
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: normal;
+  src: url(./assets/material_icons.woff2) format('woff2');
+}
+
+.material-icons {
+  -webkit-font-smoothing: antialiased;
+  direction: ltr;
+  display: inline-block;
+  font-family: 'Material Icons';
+  font-size: 1.5rem;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+}

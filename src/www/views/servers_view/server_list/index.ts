@@ -42,10 +42,10 @@ export class ServerList extends PolymerElement {
       <!-- TODO(daniellacosse): use slots instead after we move this to lit -->
       <template is="dom-repeat" items="[[servers]]">
         <template is="dom-if" if="[[hasSingleServer]]">
-          <server-hero-card localize="[[localize]]" root-path="[[rootPath]]" server="[[item]]"></server-hero-card>
+          <server-hero-card localizer="[[localize]]" server="[[item]]"></server-hero-card>
         </template>
         <template is="dom-if" if="[[!hasSingleServer]]">
-          <server-row-card localize="[[localize]]" root-path="[[rootPath]]" server="[[item]]"></server-row-card>
+          <server-row-card localizer="[[localize]]" server="[[item]]"></server-row-card>
         </template>
       </template>
     `;
@@ -56,7 +56,6 @@ export class ServerList extends PolymerElement {
 
   // @polymer/decorators doesn't support Function constructors...
   @property({type: Object}) localize: (messageId: string) => string;
-  @property({type: String}) rootPath: string;
   @property({type: Array}) servers: ServerListItem[] = [];
 
   @computed('servers')
