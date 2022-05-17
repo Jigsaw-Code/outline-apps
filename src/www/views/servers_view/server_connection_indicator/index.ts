@@ -15,7 +15,6 @@ import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
-  INITIAL = 'initial',
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
   RECONNECTING = 'reconnecting',
@@ -32,7 +31,7 @@ export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
   @property({attribute: 'root-path'}) rootPath: string;
 
-  @state() private animationState: ServerConnectionState = ServerConnectionState.INITIAL;
+  @state() private animationState: ServerConnectionState = ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
 
   static styles = [
@@ -53,9 +52,6 @@ export class ServerConnectionIndicator extends LitElement {
 
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
-
-        --circle-initial-opacity: 0.5;
-        --circle-initial-color: grayscale(1);
 
         --circle-connected-opacity: 1;
         --circle-connected-color: grayscale(0);
@@ -82,11 +78,6 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
-      }
-
-      .circle-initial {
-        opacity: var(--circle-initial-opacity);
-        filter: var(--circle-initial-color);
       }
 
       .circle-connected,
@@ -152,21 +143,14 @@ export class ServerConnectionIndicator extends LitElement {
       // based on when the animation loop started
       const elapsedAnimationMS = Date.now() - this.animationStartMS;
 
-      // while the animation is reversed, the animation delay
-      // is included in the total play time
+      // While the animation is reversed, the animation delay
+      // is included in the total play time.
       const animationDurationMS =
         this.animationState === ServerConnectionState.DISCONNECTING
           ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
           : ANIMATION_DURATION_MS;
 
       const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
-
-      console.log({elapsedAnimationMS, remainingAnimationMS});
-      console.log(
-        this.animationState === ServerConnectionState.DISCONNECTING
-          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-          : ANIMATION_DURATION_MS
-      );
 
       setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
     } else {
@@ -175,10 +159,8 @@ export class ServerConnectionIndicator extends LitElement {
   }
 
   render() {
-    const circles = this.animationState === ServerConnectionState.INITIAL ? [CIRCLE_SIZES[0]] : CIRCLE_SIZES;
-
     return html`
-      ${circles.map(
+      ${CIRCLE_SIZES.map(
         circleSize =>
           html`
             <img

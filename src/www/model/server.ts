@@ -50,5 +50,5 @@ export interface ServerRepository {
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];
-  getById(serverId: string): Server|undefined;
+  getById(serverId: string): Server | undefined;
 }

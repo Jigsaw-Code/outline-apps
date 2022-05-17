@@ -31,17 +31,17 @@ export default {
       {
         name: 'My Cool Server 1',
         address: '127.0.0.1:34873',
-        connectionState: ServerConnectionState.INITIAL,
+        state: ServerConnectionState.DISCONNECTED,
       },
       {
         name: 'My Cool Server 2',
         address: '127.0.0.1:48094',
-        connectionState: ServerConnectionState.CONNECTED,
+        state: ServerConnectionState.CONNECTED,
       },
       {
         name: 'My Cool Server 3',
         address: '127.0.0.1:12305',
-        connectionState: ServerConnectionState.DISCONNECTING,
+        state: ServerConnectionState.DISCONNECTING,
       },
     ],
   },

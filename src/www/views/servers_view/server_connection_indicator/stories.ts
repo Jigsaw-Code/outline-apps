@@ -23,7 +23,7 @@ export default {
   title: 'Servers View/Server Connection Indicator',
   component: 'server-connection-indicator',
   args: {
-    connectionState: ServerConnectionState.INITIAL,
+    connectionState: ServerConnectionState.DISCONNECTED,
   },
   argTypes: {
     connectionState: {
@@ -37,7 +37,7 @@ export const Example = ({connectionState}: ServerConnectionIndicator) =>
   html`
     <div style="width: clamp(64px, 100vw, 512px); height: clamp(64px, 100vh, 512px);">
       <server-connection-indicator
-        connection-state="${connectionState ?? ServerConnectionState.INITIAL}"
+        connection-state="${connectionState ?? ServerConnectionState.DISCONNECTED}"
       ></server-connection-indicator>
     </div>
   `;

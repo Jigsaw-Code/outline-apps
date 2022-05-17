@@ -24,6 +24,9 @@ import {ServerListItem as _ServerListItem} from './server_list_item';
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 
 export type ServerListItem = _ServerListItem;
+
+// (This value is used: it's exported.)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export import ServerConnectionState = _ServerConnectionState;
 
 Polymer({
@@ -142,7 +145,7 @@ Polymer({
   },
 
   _computeShouldShowZeroState(servers: ServerListItem[]) {
-    return !!servers ? servers.length === 0 : false;
+    return servers ? servers.length === 0 : false;
   },
 
   _requestPromptAddServer() {

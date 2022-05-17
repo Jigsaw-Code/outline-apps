@@ -14,24 +14,22 @@
 
 import xml2js from 'xml2js';
 import fs from 'fs/promises';
-import url from 'url';
-import {getBuildEnvironment} from './get_build_environment.mjs';
 
 /*
   Inputs:
-  => platform: the platform to get the current version for
+  => platform: the platform to get the build number for
 
   Outputs:
-  => the MAJOR.MINOR.PATCH formatted version number for the given platform
+  => the build number for the given platform. Does nothing if not applicable.
 */
-export async function getVersion(platform) {
+export async function getBuildNumber(platform) {
   // xmljs can parse both plist and xml files
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
     case 'android':
     case 'browser':
       const {widget} = await parseFile('config.xml');
-      return widget.$.version;
+      return widget.$['android-versionCode'];
     case 'ios':
     case 'osx':
       const {
@@ -39,24 +37,10 @@ export async function getVersion(platform) {
           dict: [{key: plistKeys, string: plistValues}],
         },
       } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
-      return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
+      return plistValues[plistKeys.indexOf('CFBundleVersion')];
     case 'windows':
-      return '1.7.1';
     case 'linux':
-      return '1.7.0';
     default:
-      throw new Error('get_version must be provided a platform argument');
+      return;
   }
-}
-
-async function main() {
-  const {platform} = getBuildEnvironment(process.argv.slice(2));
-
-  console.log(await getVersion(platform));
-}
-
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  (async function() {
-    return main();
-  })();
 }

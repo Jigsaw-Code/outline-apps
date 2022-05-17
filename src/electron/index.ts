@@ -433,11 +433,13 @@ function main() {
       console.log(`connected to ${args.id}`);
       await setupAutoLaunch(args);
       // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-      tunnelStore.save(args).catch(e => {
+      tunnelStore.save(args).catch(() => {
         console.error('Failed to store tunnel.');
       });
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
+      // stop the vpn and forget, no need to await because stopVpn itself might throw another error
+      stopVpn();
       throw errors.toErrorCode(e);
     }
   });
@@ -458,14 +460,14 @@ function main() {
   ipcMain.on('quit-app', quitApp);
 
   ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
-    if (!!localizationResult) {
+    if (localizationResult) {
       localizedStrings = localizationResult;
     }
     updateTray(TunnelStatus.DISCONNECTED);
   });
 
   // Notify the UI of updates.
-  autoUpdater.on('update-downloaded', (ev, info) => {
+  autoUpdater.on('update-downloaded', () => {
     mainWindow?.webContents.send('update-downloaded');
   });
 }

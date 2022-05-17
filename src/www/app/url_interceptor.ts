@@ -16,7 +16,7 @@
 
 export class UrlInterceptor {
   protected launchUrl?: string;
-  private listeners: Array<((url: string) => void)> = [];
+  private listeners: Array<(url: string) => void> = [];
 
   registerListener(listener: (url: string) => void) {
     this.listeners.push(listener);
@@ -44,7 +44,7 @@ export class UrlInterceptor {
 export class AndroidUrlInterceptor extends UrlInterceptor {
   constructor() {
     super();
-    window.webintent.getUri((launchUrl) => {
+    window.webintent.getUri(launchUrl => {
       window.webintent.onNewIntent(this.executeListeners.bind(this));
       this.executeListeners(launchUrl);
     });

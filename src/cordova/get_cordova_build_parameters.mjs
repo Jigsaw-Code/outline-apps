@@ -1,4 +1,4 @@
-// Copyright 2021 The Outline Authors
+// Copyright 2022 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {NativeNetworking} from './net';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
-export class FakeNativeNetworking implements NativeNetworking {
-  async isServerReachable(hostname: string, _port: number) {
-    return !hostname.includes('unreachable');
-  }
+/*
+  Inputs:
+  => platform: the list of action arguments passed in
+
+  Outputs:
+  => an object containing the specificed cordova platform and buildMode.
+*/
+export function getCordovaBuildParameters(parameters) {
+  const {platform, buildMode} = getBuildParameters(parameters);
+
+  return {platform: platform === 'macos' ? 'osx' : platform, buildMode};
 }
