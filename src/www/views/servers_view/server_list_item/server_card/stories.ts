@@ -17,20 +17,19 @@
 
 import {html} from 'lit';
 
-import './server_row_card';
+import '../index';
 
-import {localize} from '../../../.storybook/localize';
+import {localizer} from '../../../.storybook/l10n';
 import {ServerConnectionState} from '../server_connection_indicator';
-import {ServerListItemElement} from '.';
+import {ServerListItemElement} from '../server_list_item';
 
 export default {
   title: 'Servers View/Server List Item',
-  component: 'server-card',
   args: {
     server: {
       name: 'My Server',
       address: '1.0.0.127',
-      connectionState: ServerConnectionState.INITIAL,
+      connectionState: ServerConnectionState.DISCONNECTED,
     },
   },
   argTypes: {
@@ -43,13 +42,13 @@ export default {
 export const ServerRowCard = ({server}: ServerListItemElement) =>
   html`
     <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-      <server-row-card .localize=${localize} .server=${server}></server-row-card>
+      <server-row-card .localizer=${localizer} .server=${server}></server-row-card>
     </div>
   `;
 
 export const ServerHeroCard = ({server}: ServerListItemElement) =>
   html`
     <div style="width: 100%; height: 100%;">
-      <server-hero-card .localize=${localize} .server=${server}></server-hero-card>
+      <server-hero-card .localizer=${localizer} .server=${server}></server-hero-card>
     </div>
   `;

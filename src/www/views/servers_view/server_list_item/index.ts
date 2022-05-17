@@ -1,6 +1,18 @@
-import {LitElement} from 'lit';
-import {property} from 'lit/decorators.js';
+/*
+  Copyright 2021 The Outline Authors
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
 
+import {Ref} from 'lit/directives/ref';
+import {Menu} from '@material/mwc-menu';
 import {ServerConnectionState} from '../server_connection_indicator';
 
 export enum ServerListItemEvent {
@@ -20,36 +32,11 @@ export interface ServerListItem {
   connectionState: ServerConnectionState;
 }
 
-export class ServerListItemElement extends LitElement {
-  @property() server: ServerListItem;
-
-  get isConnected() {
-    return [
-      ServerConnectionState.CONNECTING,
-      ServerConnectionState.CONNECTED,
-      ServerConnectionState.RECONNECTING,
-    ].includes(this.server.connectionState);
-  }
-
-  dispatchServerRenameEvent() {
-    this.dispatchEvent(
-      new CustomEvent(ServerListItemEvent.RENAME, {detail: this.server, bubbles: true, composed: true})
-    );
-  }
-
-  dispatchServerForgetEvent() {
-    this.dispatchEvent(
-      new CustomEvent(ServerListItemEvent.FORGET, {detail: this.server, bubbles: true, composed: true})
-    );
-  }
-
-  dispatchServerConnectEvent() {
-    this.dispatchEvent(
-      new CustomEvent(this.isConnected ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
-        detail: this.server,
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+export interface ServerListItemElement {
+  server: ServerListItem;
+  rootPath: string;
+  localizer: (messageID: string) => string;
+  menu: Ref<Menu>;
 }
+
+export type ServerListItemElementWithDispatcher = ServerListItemElement & {dispatcher: (event: Event) => boolean};
