@@ -103,26 +103,24 @@ const sharedCSS = css`
   }
 `;
 
-const isConnectedState = (connectionState: ServerConnectionState) =>
-  [ServerConnectionState.CONNECTING, ServerConnectionState.CONNECTED, ServerConnectionState.RECONNECTING].includes(
-    connectionState
-  );
-
 const getSharedComponents = ({
   server,
   menu,
   localizer,
   dispatchEvent: dispatcher,
 }: ServerListItemElement & LitElement) => {
+  const isConnectedState = [
+    ServerConnectionState.CONNECTING,
+    ServerConnectionState.CONNECTED,
+    ServerConnectionState.RECONNECTING,
+  ].includes(server.connectionState);
   const hasErrorMessage = Boolean(server.errorMessageId);
 
   const messages = {
     serverName:
       server.name ?? localizer(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
     error: hasErrorMessage && localizer(server.errorMessageId),
-    connectButton: localizer(
-      isConnectedState(server.connectionState) ? 'disconnect-button-label' : 'connect-button-label'
-    ),
+    connectButton: localizer(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
 
   // TODO(daniellacosse): don't rerender dispatchers unnecessarily
@@ -137,10 +135,11 @@ const getSharedComponents = ({
       ),
     connectToggle: () =>
       dispatcher(
-        new CustomEvent(
-          isConnectedState(server.connectionState) ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT,
-          {detail: {serverId: server.id}, bubbles: true, composed: true}
-        )
+        new CustomEvent(isConnectedState ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
+          detail: {serverId: server.id},
+          bubbles: true,
+          composed: true,
+        })
       ),
   };
 
@@ -180,6 +179,9 @@ const getSharedComponents = ({
   };
 };
 
+/**
+ *
+ */
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
@@ -228,6 +230,9 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
   }
 }
 
+/**
+ *
+ */
 @customElement('server-hero-card')
 export class ServerHeroCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;

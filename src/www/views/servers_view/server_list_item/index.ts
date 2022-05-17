@@ -32,6 +32,9 @@ export interface ServerListItem {
   connectionState: ServerConnectionState;
 }
 
+/**
+ * TODO jsdoc
+ */
 export interface ServerListItemElement {
   server: ServerListItem;
   rootPath: string;
