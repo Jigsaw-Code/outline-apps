@@ -108,7 +108,7 @@ const getSharedDispatchers = ({
   dispatcher,
   server: {connectionState, id: serverId},
 }: ServerListItemElementWithDispatcher) => ({
-  renameDispatcher: () =>
+  beginRenameDispatcher: () =>
     dispatcher(new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId}, bubbles: true, composed: true})),
   forgetDispatcher: () =>
     dispatcher(new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId}, bubbles: true, composed: true})),
@@ -126,8 +126,10 @@ const isConnectedState = (connectionState: ServerConnectionState) =>
     connectionState
   );
 
+// const getSharedMessages = () => {};
+
 const renderSharedHTML = (element: ServerListItemElementWithDispatcher) => {
-  const {renameDispatcher, forgetDispatcher, connectToggleDispatcher} = getSharedDispatchers(element);
+  const {beginRenameDispatcher, forgetDispatcher, connectToggleDispatcher} = getSharedDispatchers(element);
   const {server, localizer, menu} = element;
 
   const serverNameText =
@@ -151,7 +153,7 @@ const renderSharedHTML = (element: ServerListItemElementWithDispatcher) => {
       <div class="card-menu">
         <mwc-icon-button icon="more_vert" @click=${menu.value?.show}></mwc-icon-button>
         <mwc-menu ${ref(menu)}>
-          <mwc-list-item @click="${renameDispatcher}">${localizer('server-rename')}</mwc-list-item>
+          <mwc-list-item @click="${beginRenameDispatcher}">${localizer('server-rename')}</mwc-list-item>
           <mwc-list-item @click="${forgetDispatcher}">${localizer('server-forget')}</mwc-list-item>
         </mwc-menu>
       </div>
