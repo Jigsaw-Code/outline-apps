@@ -108,12 +108,8 @@ const sharedCSS = css`
   }
 `;
 
-const getSharedComponents = ({
-  server,
-  menu,
-  localizer,
-  dispatchEvent: dispatcher,
-}: ServerListItemElement & LitElement) => {
+const getSharedComponents = (element: ServerListItemElement & LitElement) => {
+  const {server, localizer, menu} = element;
   const isConnectedState = [
     ServerConnectionState.CONNECTING,
     ServerConnectionState.CONNECTED,
@@ -131,15 +127,15 @@ const getSharedComponents = ({
   // TODO(daniellacosse): cache dispatchers
   const dispatchers = {
     beginRename: () =>
-      dispatcher(
+      element.dispatchEvent(
         new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId: server.id}, bubbles: true, composed: true})
       ),
     forget: () =>
-      dispatcher(
+      element.dispatchEvent(
         new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId: server.id}, bubbles: true, composed: true})
       ),
     connectToggle: () =>
-      dispatcher(
+      element.dispatchEvent(
         new CustomEvent(isConnectedState ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
           detail: {serverId: server.id},
           bubbles: true,
