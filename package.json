@@ -66,6 +66,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@commitlint/config-conventional": "^16.2.4",
+    "@rollup/plugin-image": "^2.1.1",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^2.8.6",
