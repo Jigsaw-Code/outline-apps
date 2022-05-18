@@ -39,6 +39,13 @@ const sharedCSS = css`
     --server-name-size: 1rem;
     --server-address-size: 0.875rem;
 
+    display: inline-block;
+    height: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  .card {
     align-items: center;
     background: var(--outline-card-background);
     border-radius: var(--outline-corner);
@@ -90,7 +97,7 @@ const sharedCSS = css`
     font-size: var(--server-address-size);
   }
 
-  .card-menu {
+  .card-menu-button {
     align-self: start;
     grid-area: menu;
     position: relative;
@@ -113,8 +120,9 @@ const sharedCSS = css`
   }
 `;
 
+// TODO(daniellacosse): wrap components in a closure to avoid unnecessary work
 const getSharedComponents = (element: ServerListItemElement & LitElement) => {
-  const {server, localize, menu} = element;
+  const {server, localize, menu, menuButton} = element;
   const isConnectedState = [
     ServerConnectionState.CONNECTING,
     ServerConnectionState.CONNECTED,
@@ -128,11 +136,14 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
 
-  // TODO(daniellacosse): cache dispatchers
   const dispatchers = {
     beginRename: () =>
       element.dispatchEvent(
-        new CustomEvent(ServerListItemEvent.RENAME, {detail: {serverId: server.id}, bubbles: true, composed: true})
+        new CustomEvent(ServerListItemEvent.RENAME, {
+          detail: {serverId: server.id, name: server.name},
+          bubbles: true,
+          composed: true,
+        })
       ),
     forget: () =>
       element.dispatchEvent(
@@ -148,6 +159,21 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       ),
   };
 
+  const handleMenuOpen = () => {
+    const menuElement = menu.value;
+    const menuButtonElement = menuButton.value;
+
+    if (!menuElement) {
+      return;
+    }
+
+    if (!menuElement.anchor) {
+      menuElement.anchor = menuButtonElement;
+    }
+
+    menuElement.show();
+  };
+
   return {
     messages,
     dispatchers,
@@ -161,13 +187,18 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         </div>
       `,
       menu: html`
-        <div class="card-menu">
-          <mwc-icon-button icon="more_vert" @click=${() => menu.value?.show()}></mwc-icon-button>
-          <mwc-menu ${ref(menu)}>
-            <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
-            <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
-          </mwc-menu>
-        </div>
+        <mwc-menu ${ref(menu)} menuCorner="END">
+          <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
+          <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
+        </mwc-menu>
+      `,
+      menuButton: html`
+        <mwc-icon-button
+          ${ref(menuButton)}
+          class="card-menu-button"
+          icon="more_vert"
+          @click=${handleMenuOpen}
+        ></mwc-icon-button>
       `,
       footer: html`
         <footer class="card-footer">
@@ -193,11 +224,12 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() localize: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
+  menuButton: Ref<HTMLElement> = createRef();
 
   static styles = [
     sharedCSS,
     css`
-      :host {
+      .card {
         --min-indicator-size: calc(var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size));
         --max-indicator-size: calc(
           var(--outline-slim-gutter) + var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size) +
@@ -222,11 +254,14 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     const {elements} = getSharedComponents(this);
 
     return html`
-      <div class="card-metadata" aria-labelledby="server-name">
-        <server-connection-indicator connection-state="${this.server.connectionState}"></server-connection-indicator>
-        ${elements.metadataText}
+      <div class="card">
+        <div class="card-metadata" aria-labelledby="server-name">
+          <server-connection-indicator connection-state="${this.server.connectionState}"></server-connection-indicator>
+          ${elements.metadataText}
+        </div>
+        ${elements.menuButton} ${elements.footer}
       </div>
-      ${elements.menu} ${elements.footer}
+      ${elements.menu}
     `;
   }
 }
@@ -240,11 +275,12 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
   @property() localize: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
+  menuButton: Ref<HTMLElement> = createRef();
 
   static styles = [
     sharedCSS,
     css`
-      :host {
+      .card {
         --min-indicator-size: 192px;
         --max-indicator-size: calc(
           var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter)
@@ -298,23 +334,26 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     };
 
     return html`
-      <div class="card-metadata" aria-labelledby="server-name">
-        ${elements.metadataText}
+      <div class="card">
+        <div class="card-metadata" aria-labelledby="server-name">
+          ${elements.metadataText}
+        </div>
+        ${elements.menuButton}
+        <div class="card-connection-button-container">
+          <server-connection-indicator
+            @click="${!this.server.errorMessageId && dispatchers.connectToggle}"
+            @keydown="${connectToggleKeyboardDispatcher}"
+            connection-state="${this.server.connectionState}"
+            id="${messages.connectButton}"
+            role="button"
+            tabindex="0"
+            title="${connectionStatusText}"
+          ></server-connection-indicator>
+          <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>
+        </div>
+        ${elements.footer}
       </div>
       ${elements.menu}
-      <div class="card-connection-button-container">
-        <server-connection-indicator
-          @click="${!this.server.errorMessageId && dispatchers.connectToggle}"
-          @keydown="${connectToggleKeyboardDispatcher}"
-          connection-state="${this.server.connectionState}"
-          id="${messages.connectButton}"
-          role="button"
-          tabindex="0"
-          title="${connectionStatusText}"
-        ></server-connection-indicator>
-        <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>
-      </div>
-      ${elements.footer}
     `;
   }
 }

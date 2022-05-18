@@ -43,4 +43,5 @@ export interface ServerListItemElement {
   server: ServerListItem;
   localize: (messageID: string) => string;
   menu: Ref<Menu>;
+  menuButton: Ref<HTMLElement>;
 }

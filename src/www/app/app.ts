@@ -397,7 +397,7 @@ export class App {
   private async disconnectServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
-    const serverId = event.detail.id;
+    const {serverId} = event.detail;
     if (!serverId) {
       throw new Error(`disconnectServer event had no server ID`);
     }
