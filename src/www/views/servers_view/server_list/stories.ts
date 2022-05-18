@@ -19,7 +19,7 @@ import './index';
 
 import {html} from 'lit';
 
-import {localizer} from '../../../.storybook/l10n';
+import {localize} from '../../../.storybook/localize';
 import {ServerList} from './index';
 import {ServerConnectionState} from '../server_connection_indicator';
 
@@ -54,5 +54,5 @@ export default {
 
 export const Example = ({servers}: ServerList) =>
   html`
-    <server-list .localize="${localizer}" .servers="${servers}"></server-list>
+    <server-list .localize="${localize}" .servers="${servers}"></server-list>
   `;

@@ -109,7 +109,7 @@ const sharedCSS = css`
 `;
 
 const getSharedComponents = (element: ServerListItemElement & LitElement) => {
-  const {server, localizer, menu} = element;
+  const {server, localize, menu} = element;
   const isConnectedState = [
     ServerConnectionState.CONNECTING,
     ServerConnectionState.CONNECTED,
@@ -118,10 +118,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const hasErrorMessage = Boolean(server.errorMessageId);
 
   const messages = {
-    serverName:
-      server.name ?? localizer(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
-    error: hasErrorMessage ? localizer(server.errorMessageId) : '',
-    connectButton: localizer(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
+    serverName: server.name ?? localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
+    error: hasErrorMessage ? localize(server.errorMessageId) : '',
+    connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
 
   // TODO(daniellacosse): cache dispatchers
@@ -160,8 +159,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         <div class="card-menu">
           <mwc-icon-button icon="more_vert" @click=${() => menu.value?.show()}></mwc-icon-button>
           <mwc-menu ${ref(menu)}>
-            <mwc-list-item @click="${dispatchers.beginRename}">${localizer('server-rename')}</mwc-list-item>
-            <mwc-list-item @click="${dispatchers.forget}">${localizer('server-forget')}</mwc-list-item>
+            <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
+            <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
           </mwc-menu>
         </div>
       `,
@@ -186,7 +185,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localizer: (messageID: string) => string;
+  @property() localize: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
 
@@ -233,7 +232,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 @customElement('server-hero-card')
 export class ServerHeroCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localizer: (messageID: string) => string;
+  @property() localize: (messageID: string) => string;
 
   menu: Ref<Menu> = createRef();
 
@@ -283,7 +282,7 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
   render() {
     const {elements, dispatchers, messages} = getSharedComponents(this);
 
-    const connectionStatusText = this.localizer(`${this.server.connectionState}-server-state`);
+    const connectionStatusText = this.localize(`${this.server.connectionState}-server-state`);
     const connectToggleKeyboardDispatcher = (event: KeyboardEvent) => {
       event.preventDefault();
       event.stopImmediatePropagation();

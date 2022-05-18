@@ -41,6 +41,6 @@ export interface ServerListItem {
  */
 export interface ServerListItemElement {
   server: ServerListItem;
-  localizer: (messageID: string) => string;
+  localize: (messageID: string) => string;
   menu: Ref<Menu>;
 }

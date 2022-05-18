@@ -24,7 +24,7 @@ type FormattableMessage =
   | PrimitiveType
   | FormatXMLElementFn<symbol | object, string | symbol | object | (string | symbol | object)[]>;
 
-export const localizer = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
+export const localize = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
   const message = (englishMessages as {[messageID: string]: string})[messageID];
   const formatConfigObject: Record<string, FormattableMessage> = {};
 

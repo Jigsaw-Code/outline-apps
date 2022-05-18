@@ -42,10 +42,10 @@ export class ServerList extends PolymerElement {
       <!-- TODO(daniellacosse): use slots instead after we move this to lit -->
       <template is="dom-repeat" items="[[servers]]">
         <template is="dom-if" if="[[hasSingleServer]]">
-          <server-hero-card localizer="[[localize]]" server="[[item]]"></server-hero-card>
+          <server-hero-card localize="[[localize]]" server="[[item]]"></server-hero-card>
         </template>
         <template is="dom-if" if="[[!hasSingleServer]]">
-          <server-row-card localizer="[[localize]]" server="[[item]]"></server-row-card>
+          <server-row-card localize="[[localize]]" server="[[item]]"></server-row-card>
         </template>
       </template>
     `;
