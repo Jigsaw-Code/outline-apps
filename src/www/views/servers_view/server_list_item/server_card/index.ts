@@ -72,11 +72,16 @@ const sharedCSS = css`
   }
 
   .card-metadata-server-name {
-    display: block;
-    margin-bottom: var(--outline-mini-gutter);
+    -webkit-box-orient: vertical;
+    /* https://caniuse.com/?search=line-clamp */
+    -webkit-line-clamp: 3;
     color: var(--outline-text-color);
-    font-size: var(--server-name-size);
+    display: -webkit-box;
     font-family: var(--outline-font-family);
+    font-size: var(--server-name-size);
+    margin-bottom: var(--outline-mini-gutter);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .card-metadata-server-address {
