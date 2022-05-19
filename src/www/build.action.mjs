@@ -34,7 +34,7 @@ export async function main(...parameters) {
     new Promise((resolve, reject) => {
       webpack(webpackConfig, (error, stats) => {
         if (error || stats.hasErrors()) {
-          reject((error || stats.toJson().errors?.[0]?.message) ?? 'Unknown Webpack error.');
+          reject(error || 'Unknown Webpack error.');
         }
 
         resolve(stats);
