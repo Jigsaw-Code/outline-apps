@@ -24,8 +24,6 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
-// test push...
-
 /**
  * @description Builds the web UI for use across both electron and cordova.
  *
@@ -36,16 +34,7 @@ export async function main(...parameters) {
     new Promise((resolve, reject) => {
       webpack(webpackConfig, (error, stats) => {
         if (error || stats.hasErrors()) {
-          reject(
-            error ||
-              stats
-                .toJson()
-                ?.errors.reduce(
-                  (errorMessages, {message}) => (message ? `${errorMessages}\n${message}` : errorMessages),
-                  ''
-                ) ||
-              'Unknown Webpack error.'
-          );
+          reject(error || 'Unknown Webpack error.');
         }
 
         resolve(stats);
