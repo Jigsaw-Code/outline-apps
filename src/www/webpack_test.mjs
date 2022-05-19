@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {baseConfig, __dirname} from "./webpack_base.mjs";
-import {merge} from "webpack-merge";
+import {baseConfig, __dirname, TS_LOADER} from './webpack_base.mjs';
+import {merge} from 'webpack-merge';
 
 export default merge(baseConfig, {
   module: {
@@ -20,8 +20,8 @@ export default merge(baseConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: ["ts-loader"]
-      }
-    ]
-  }
+        use: [TS_LOADER],
+      },
+    ],
+  },
 });

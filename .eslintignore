@@ -7,9 +7,5 @@ node_modules
 /third_party
 /tools
 
-# TODO(daniellacosse): These files explicitly reference ambient type modules,
-# which is not allowed by the Google style guide. Removing these references would 
-# require restructuring the code, however, so we'll kick the can down the road for now.
-/src/www/app/clipboard.ts
-/src/www/app/cordova_main.ts
-/src/www/app/url_interceptor.ts
+**/*.mjs
+**/*.js

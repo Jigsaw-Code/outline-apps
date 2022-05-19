@@ -2,8 +2,5 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../www"
-  },
-  "include": [
-    "**/*.ts"
-  ]
+  }
 }

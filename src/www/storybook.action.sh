@@ -15,4 +15,9 @@
 # limitations under the License.
 set -eu
 
-web-dev-server --node-resolve --open --watch --root-dir ./src/www
+web-dev-server \
+  --node-resolve \
+  --open \
+  --watch \
+  --root-dir ./src/www \
+  --config ./src/www/web-dev-server.config.mjs

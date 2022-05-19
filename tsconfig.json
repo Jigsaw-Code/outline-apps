@@ -5,11 +5,13 @@
     "removeComments": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "module": "commonjs",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "typeRoots": ["../node_modules/@types", "./types/modules"]
-  }
+    "skipLibCheck": true
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.js", "./src/**/*.mjs"]
 }
