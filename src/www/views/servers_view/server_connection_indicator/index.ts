@@ -12,7 +12,7 @@
 */
 
 import {html, css, LitElement, unsafeCSS} from 'lit';
-import {property, state, customElement} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
@@ -26,7 +26,7 @@ const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [unsafeCSS`large`, unsafeCSS`medium`, unsafeCSS`small`];
 
-@customElement('server-card')
+@customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
   @property({attribute: 'root-path'}) rootPath: string;
