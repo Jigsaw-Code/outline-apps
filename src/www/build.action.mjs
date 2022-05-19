@@ -24,8 +24,6 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
-// test push...
-
 /**
  * @description Builds the web UI for use across both electron and cordova.
  *
