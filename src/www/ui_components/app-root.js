@@ -14,45 +14,45 @@
   limitations under the License.
 */
 
-import "@polymer/polymer/polymer-legacy.js";
-import "@polymer/polymer/lib/legacy/polymer.dom.js";
-import "@polymer/app-layout/app-drawer/app-drawer.js";
-import "@polymer/app-layout/app-header/app-header.js";
-import "@polymer/app-layout/app-header-layout/app-header-layout.js";
-import "@polymer/app-layout/app-toolbar/app-toolbar.js";
-import "@polymer/app-route/app-location.js";
-import "@polymer/app-route/app-route.js";
-import "@polymer/iron-icons/iron-icons.js";
-import "@polymer/iron-icons/communication-icons.js";
-import "@polymer/iron-pages/iron-pages.js";
-import "@polymer/paper-button/paper-button.js";
-import "@polymer/paper-card/paper-card.js";
-import "@polymer/paper-dialog/paper-dialog.js";
-import "@polymer/paper-dropdown-menu/paper-dropdown-menu.js";
-import "@polymer/paper-icon-button/paper-icon-button.js";
-import "@polymer/paper-input/paper-input.js";
-import "@polymer/paper-input/paper-textarea.js";
-import "@polymer/paper-item/paper-item.js";
-import "@polymer/paper-item/paper-icon-item.js";
-import "@polymer/paper-listbox/paper-listbox.js";
-import "@polymer/paper-toast/paper-toast.js";
-import "outline-i18n/index.js";
-import "./about-view.js";
-import "./add-server-view.js";
-import "./feedback-view.js";
-import "./language-view.js";
-import "./licenses-view.js";
-import "./outline-icons.js";
-import "./privacy-view.js";
-import "../views/servers_view";
-import "./server-rename-dialog.js";
-import "./user-comms-dialog.js";
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/polymer/lib/legacy/polymer.dom.js';
+import '@polymer/app-layout/app-drawer/app-drawer.js';
+import '@polymer/app-layout/app-header/app-header.js';
+import '@polymer/app-layout/app-header-layout/app-header-layout.js';
+import '@polymer/app-layout/app-toolbar/app-toolbar.js';
+import '@polymer/app-route/app-location.js';
+import '@polymer/app-route/app-route.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/communication-icons.js';
+import '@polymer/iron-pages/iron-pages.js';
+import '@polymer/paper-button/paper-button.js';
+import '@polymer/paper-card/paper-card.js';
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-input/paper-textarea.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-item/paper-icon-item.js';
+import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-toast/paper-toast.js';
+import 'outline-i18n/index.js';
+import './about-view.js';
+import './add-server-view.js';
+import './feedback-view.js';
+import './language-view.js';
+import './licenses-view.js';
+import './outline-icons.js';
+import './privacy-view.js';
+import '../views/servers_view';
+import './server-rename-dialog.js';
+import './user-comms-dialog.js';
 
-import {AppLocalizeBehavior} from "@polymer/app-localize-behavior/app-localize-behavior.js";
-import {PaperMenuButton} from "@polymer/paper-menu-button/paper-menu-button.js";
-import {mixinBehaviors} from "@polymer/polymer/lib/legacy/class.js";
-import {html} from "@polymer/polymer/lib/utils/html-tag.js";
-import {PolymerElement} from "@polymer/polymer/polymer-element.js";
+import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
+import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
@@ -408,7 +408,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   static get is() {
-    return "app-root";
+    return 'app-root';
   }
 
   static get properties() {
@@ -416,69 +416,69 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       DEFAULT_PAGE: {
         type: String,
         readonly: true,
-        value: "servers",
+        value: 'servers',
       },
       DEFAULT_LANGUAGE: {
         type: String,
         readonly: true,
-        value: "en",
+        value: 'en',
       },
       LANGUAGES_AVAILABLE: {
         type: Object,
         readonly: true,
         value: {
-          am: {id: "am", name: "አማርኛ", dir: "ltr"},
-          ar: {id: "ar", name: "العربية", dir: "rtl"},
-          az: {id: "az", name: "Azərbaycanca", dir: "ltr"},
-          bg: {id: "bg", name: "Български", dir: "ltr"},
-          ca: {id: "ca", name: "Català", dir: "ltr"},
-          cs: {id: "cs", name: "Česky", dir: "ltr"},
-          da: {id: "da", name: "Dansk", dir: "ltr"},
-          de: {id: "de", name: "Deutsch", dir: "ltr"},
-          el: {id: "el", name: "Ελληνικά", dir: "ltr"},
-          en: {id: "en", name: "English", dir: "ltr"},
-          "es-419": {id: "es-419", name: "Español", dir: "ltr"},
-          fa: {id: "fa", name: "فارسی", dir: "rtl"},
-          fi: {id: "fi", name: "Suomi", dir: "ltr"},
-          fil: {id: "fil", name: "Wikang Filipino", dir: "ltr"},
-          fr: {id: "fr", name: "Français", dir: "ltr"},
-          he: {id: "he", name: "עברית", dir: "rtl"},
-          hi: {id: "hi", name: "हिन्दी", dir: "ltr"},
-          hr: {id: "hr", name: "Hrvatski", dir: "ltr"},
-          hu: {id: "hu", name: "Magyar", dir: "ltr"},
-          id: {id: "id", name: "Bahasa Indonesia", dir: "ltr"},
-          it: {id: "it", name: "Italiano", dir: "ltr"},
-          ja: {id: "ja", name: "日本語", dir: "ltr"},
-          kk: {id: "kk", name: "Қазақ тілі", dir: "ltr"},
-          km: {id: "km", name: "ភាសាខ្មែរ", dir: "ltr"},
-          ko: {id: "ko", name: "한국어", dir: "ltr"},
-          lt: {id: "lt", name: "Lietuvių", dir: "ltr"},
-          lv: {id: "lv", name: "Latviešu", dir: "ltr"},
-          my: {id: "my", name: "မြန်မာစာ", dir: "ltr"},
-          nl: {id: "nl", name: "Nederlands", dir: "ltr"},
-          no: {id: "no", name: "Norsk (bokmål / riksmål)", dir: "ltr"},
-          pl: {id: "pl", name: "Polski", dir: "ltr"},
-          "pt-BR": {id: "pt-BR", name: "Português", dir: "ltr"},
-          ro: {id: "ro", name: "Română", dir: "ltr"},
-          ru: {id: "ru", name: "Русский", dir: "ltr"},
-          sk: {id: "sk", name: "Slovenčina", dir: "ltr"},
-          sl: {id: "sl", name: "Slovenščina", dir: "ltr"},
-          sr: {id: "sr", name: "Српски", dir: "ltr"},
-          "sr-Latn": {id: "sr-Latn", name: "Srpski", dir: "ltr"},
-          sv: {id: "sv", name: "Svenska", dir: "ltr"},
-          th: {id: "th", name: "ไทย", dir: "ltr"},
-          tr: {id: "tr", name: "Türkçe", dir: "ltr"},
-          uk: {id: "uk", name: "Українська", dir: "ltr"},
-          ur: {id: "ur", name: "اردو", dir: "rtl"},
-          vi: {id: "vi", name: "Việtnam", dir: "ltr"},
-          "zh-CN": {id: "zh-CN", name: "简体中文", dir: "ltr"},
-          "zh-TW": {id: "zh-TW", name: "繁體中文", dir: "ltr"},
+          am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
+          ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
+          az: {id: 'az', name: 'Azərbaycanca', dir: 'ltr'},
+          bg: {id: 'bg', name: 'Български', dir: 'ltr'},
+          ca: {id: 'ca', name: 'Català', dir: 'ltr'},
+          cs: {id: 'cs', name: 'Česky', dir: 'ltr'},
+          da: {id: 'da', name: 'Dansk', dir: 'ltr'},
+          de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
+          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
+          en: {id: 'en', name: 'English', dir: 'ltr'},
+          'es-419': {id: 'es-419', name: 'Español', dir: 'ltr'},
+          fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
+          fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
+          fil: {id: 'fil', name: 'Wikang Filipino', dir: 'ltr'},
+          fr: {id: 'fr', name: 'Français', dir: 'ltr'},
+          he: {id: 'he', name: 'עברית', dir: 'rtl'},
+          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
+          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
+          hu: {id: 'hu', name: 'Magyar', dir: 'ltr'},
+          id: {id: 'id', name: 'Bahasa Indonesia', dir: 'ltr'},
+          it: {id: 'it', name: 'Italiano', dir: 'ltr'},
+          ja: {id: 'ja', name: '日本語', dir: 'ltr'},
+          kk: {id: 'kk', name: 'Қазақ тілі', dir: 'ltr'},
+          km: {id: 'km', name: 'ភាសាខ្មែរ', dir: 'ltr'},
+          ko: {id: 'ko', name: '한국어', dir: 'ltr'},
+          lt: {id: 'lt', name: 'Lietuvių', dir: 'ltr'},
+          lv: {id: 'lv', name: 'Latviešu', dir: 'ltr'},
+          my: {id: 'my', name: 'မြန်မာစာ', dir: 'ltr'},
+          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
+          no: {id: 'no', name: 'Norsk (bokmål / riksmål)', dir: 'ltr'},
+          pl: {id: 'pl', name: 'Polski', dir: 'ltr'},
+          'pt-BR': {id: 'pt-BR', name: 'Português', dir: 'ltr'},
+          ro: {id: 'ro', name: 'Română', dir: 'ltr'},
+          ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
+          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
+          sl: {id: 'sl', name: 'Slovenščina', dir: 'ltr'},
+          sr: {id: 'sr', name: 'Српски', dir: 'ltr'},
+          'sr-Latn': {id: 'sr-Latn', name: 'Srpski', dir: 'ltr'},
+          sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
+          th: {id: 'th', name: 'ไทย', dir: 'ltr'},
+          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
+          uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
+          ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
+          vi: {id: 'vi', name: 'Việtnam', dir: 'ltr'},
+          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
+          'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr'},
         },
       },
       language: {
         type: String,
         readonly: true,
-        computed: "_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)",
+        computed: '_computeLanguage(LANGUAGES_AVAILABLE, DEFAULT_LANGUAGE)',
       },
       useKeyIfMissing: {
         type: Boolean,
@@ -491,22 +491,22 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       page: {
         type: String,
         readonly: true,
-        computed: "_computePage(routeData.page, DEFAULT_PAGE)",
+        computed: '_computePage(routeData.page, DEFAULT_PAGE)',
       },
       route: Object,
       routeData: Object,
       pageTitleKey: {
         type: String,
-        computed: "_computePageTitleKey(page)",
+        computed: '_computePageTitleKey(page)',
       },
       rootPath: String,
       shouldShowBackButton: {
         type: Boolean,
-        computed: "_computeShouldShowBackButton(page, DEFAULT_PAGE)",
+        computed: '_computeShouldShowBackButton(page, DEFAULT_PAGE)',
       },
       shouldShowAddButton: {
         type: Boolean,
-        computed: "_computeShouldShowAddButton(page)",
+        computed: '_computeShouldShowAddButton(page)',
       },
       servers: {
         type: Array,
@@ -525,12 +525,12 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       },
       shouldShowQuitButton: {
         type: Boolean,
-        computed: "_computeShouldShowQuitButton(platform)",
+        computed: '_computeShouldShowQuitButton(platform)',
         value: false,
       },
       shouldShowAppLogo: {
         type: Boolean,
-        computed: "_computeShouldShowAppLogo(page)",
+        computed: '_computeShouldShowAppLogo(page)',
       },
       toastUrl: {
         type: String,
@@ -579,9 +579,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       };
     }
 
-    if (typeof cordova === "undefined") {
+    if (typeof cordova === 'undefined') {
       // If cordova is not defined, we're running in Electron.
-      this.platform = "Electron";
+      this.platform = 'Electron';
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
       this.platform = cordova.platformId;
@@ -593,14 +593,14 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     this.loadResources(url, languageCode);
 
     const direction = this.LANGUAGES_AVAILABLE[languageCode].dir;
-    document.documentElement.setAttribute("dir", direction);
-    this.$.drawer.align = direction == "ltr" ? "left" : "right";
+    document.documentElement.setAttribute('dir', direction);
+    this.$.drawer.align = direction == 'ltr' ? 'left' : 'right';
 
     this.language = languageCode;
   }
 
   openDrawer() {
-    this.$.drawer.style.opacity = "1";
+    this.$.drawer.style.opacity = '1';
     this.$.drawer.open();
   }
 
@@ -650,16 +650,16 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   changePage(page) {
     if (this.page === page) {
-      console.debug("already on page", page);
+      console.debug('already on page', page);
       return;
     }
-    this.set("route.path", "/" + page);
+    this.set('route.path', '/' + page);
   }
 
   _callToastHandler() {
     var toastButton = this.$.toastButton;
     var handler = toastButton._handler;
-    if (!handler) return console.error("No toast handler found");
+    if (!handler) return console.error('No toast handler found');
     // Close the toast and unbind the handler so there's no chance the
     // user can somehow trigger the same handler twice.
     this.$.toast.close();
@@ -672,7 +672,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
-    const overrideLanguage = window.localStorage.getItem("overrideLanguage");
+    const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
   }
@@ -680,10 +680,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   _computePage(pageFromRoute, DEFAULT_PAGE) {
     if (this.page && pageFromRoute === this.page) {
       return this.page;
-    } else if (pageFromRoute === "help") {
+    } else if (pageFromRoute === 'help') {
       this._openHelpPage(); // Fall-through to navigate to the default page.
-    } else if (pageFromRoute === "quit") {
-      this.fire("QuitPressed");
+    } else if (pageFromRoute === 'quit') {
+      this.fire('QuitPressed');
     } else if (pageFromRoute) {
       return pageFromRoute;
     }
@@ -693,16 +693,16 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // to the default page onto the history stack. Without this, you'd have to press
     // Android's system back button twice instead of once to get out of the app after
     // opening it.
-    history.replaceState({}, "", "#/" + DEFAULT_PAGE);
+    history.replaceState({}, '', '#/' + DEFAULT_PAGE);
     this.setProperties({
-      "route.path": "/" + DEFAULT_PAGE,
-      "routeData.page": DEFAULT_PAGE,
+      'route.path': '/' + DEFAULT_PAGE,
+      'routeData.page': DEFAULT_PAGE,
     });
     return DEFAULT_PAGE;
   }
 
   _computePageTitleKey(page) {
-    return page + "-page-title";
+    return page + '-page-title';
   }
 
   _computeShouldShowBackButton(page, DEFAULT_PAGE) {
@@ -711,7 +711,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   _computeShouldShowAddButton(page) {
     // Only show the add button if we're on the servers page.
-    return page === "servers";
+    return page === 'servers';
   }
 
   _goBack() {
@@ -719,7 +719,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     if (history.length > 1) {
       history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
-      window.dispatchEvent(new CustomEvent("location-changed"));
+      window.dispatchEvent(new CustomEvent('location-changed'));
     }
   }
 
@@ -731,7 +731,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // Anchor tags compete with the app-drawer for click events on iOS. This results in links
     // not opening most of the time. We resort to opening the link programmatically for all
     // platforms.
-    if (this.platform === "ios") {
+    if (this.platform === 'ios') {
       window.open(this.$.helpAnchor.href);
     } else {
       // macOS does not respond to window.open and Windows opens a new browser window.
@@ -741,11 +741,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _computeShouldShowQuitButton(platform) {
-    return platform === "osx" || platform === "Electron";
+    return platform === 'osx' || platform === 'Electron';
   }
 
   _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
-    return shouldShowQuitButton ? "" : "last-menu-item";
+    return shouldShowQuitButton ? '' : 'last-menu-item';
   }
 
   showServerRename(event) {
@@ -753,7 +753,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _computeShouldShowAppLogo(page) {
-    return page === "servers";
+    return page === 'servers';
   }
 
   _getLanguagesAvailableValues(languagesAvailable) {
