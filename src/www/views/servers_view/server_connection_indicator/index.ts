@@ -82,10 +82,16 @@ export class ServerConnectionIndicator extends LitElement {
         animation-iteration-count: infinite;
       }
 
+      /* 
+        these are not applied to circle-large so that 
+        that image can drive the implicit width 
+      */
       .circle-medium,
       .circle-small {
-        position: absolute;
         left: 0;
+        outline: 0;
+        position: absolute;
+        top: 0;
       }
 
       .circle-connected,

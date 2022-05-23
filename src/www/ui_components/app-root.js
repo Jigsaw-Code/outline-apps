@@ -744,7 +744,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.name, event.detail.id);
+    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
   }
 
   _computeShouldShowAppLogo(page) {
