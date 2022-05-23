@@ -71,10 +71,7 @@ export class ServerConnectionIndicator extends LitElement {
       }
 
       .circle {
-        position: absolute;
         display: inline-block;
-
-        left: 0;
 
         transition-property: transform, filter, opacity;
         transition-duration: var(--duration);
@@ -83,6 +80,12 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
+      }
+
+      .circle-medium,
+      .circle-small {
+        position: absolute;
+        left: 0;
       }
 
       .circle-connected,

@@ -27,10 +27,12 @@ export class ServerList extends PolymerElement {
           margin: 0 auto;
           width: 100%;
           height: 100%;
+          padding: 0 8px;
+          box-sizing: border-box;
         }
 
         server-row-card {
-          margin: 8px auto;
+          margin: 0 auto 8px auto;
           height: 130px;
         }
 

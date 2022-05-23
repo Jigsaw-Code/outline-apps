@@ -104,14 +104,12 @@ const sharedCSS = css`
   }
 
   .card-footer {
-    align-items: center;
     background: var(--outline-card-footer);
     border-top: var(--outline-hairline);
     box-sizing: border-box;
-    display: flex;
     grid-area: footer;
-    justify-content: end;
     padding: var(--outline-mini-gutter) var(--outline-gutter);
+    text-align: end;
   }
 
   .card-error {
