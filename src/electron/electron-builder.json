@@ -8,6 +8,7 @@
   "linux": {
     "target": ["AppImage"],
     "files": [
+      "build/icons/png",
       "third_party/badvpn/linux",
       "third_party/outline-go-tun2socks/linux",
       "third_party/shadowsocks-libev/linux",
