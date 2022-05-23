@@ -423,7 +423,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         readonly: true,
         value: 'en',
       },
-      // 'iw' is a deprecated language code, it is replaced by 'he'.
+      // There are Unicode bidirectional control characters (0x202A, 0x202B, 0x202C)
+      // in the language names below. They are useful when you have mixed bidi-context.
+      // For example: https://en.wikipedia.org/wiki/Left-to-right_mark.
       LANGUAGES_AVAILABLE: {
         type: Object,
         readonly: true,
@@ -447,7 +449,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           fi: {id: 'fi', name: '‪Suomi‬', dir: 'ltr'},
           fil: {id: 'fil', name: '‪Filipino‬', dir: 'ltr'},
           fr: {id: 'fr', name: '‪Français‬', dir: 'ltr'},
-          he: {id: 'he', name: 'עברית', dir: 'rtl'},
+          he: {id: 'he', name: '‫עברית‬', dir: 'rtl'},
           hi: {id: 'hi', name: '‪हिन्दी‬', dir: 'ltr'},
           hr: {id: 'hr', name: '‪Hrvatski‬', dir: 'ltr'},
           hu: {id: 'hu', name: '‪magyar‬', dir: 'ltr'},
@@ -466,7 +468,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           nl: {id: 'nl', name: '‪Nederlands‬', dir: 'ltr'},
           no: {id: 'no', name: '‪norsk‬', dir: 'ltr'},
           pl: {id: 'pl', name: '‪polski‬', dir: 'ltr'},
-          'pt-BR': {id: 'pt-BR', name: 'Português', dir: 'ltr'},
+          'pt-BR': {id: 'pt-BR', name: '‪Português (Brasil)‬', dir: 'ltr'},
           'pt-PT': {id: 'pt-PT', name: '‪Português (Portugal)‬', dir: 'ltr'},
           ro: {id: 'ro', name: '‪română‬', dir: 'ltr'},
           ru: {id: 'ru', name: '‪Русский‬', dir: 'ltr'},
