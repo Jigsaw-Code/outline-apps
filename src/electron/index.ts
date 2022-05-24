@@ -35,6 +35,8 @@ import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 
+const isLinux = os.platform() === 'linux';
+
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
 const tunnelStore = new TunnelStore(app.getPath('userData'));
@@ -109,6 +111,21 @@ function setupWindow(): void {
     },
   });
 
+  // Icon is not shown in Ubuntu Dock. It is a recurrent issue happened in Linux:
+  //   - https://github.com/electron-userland/electron-builder/issues/2269
+  // A workaround is to forcibly set the icon of the main window.
+  //
+  // This is a workaround because the icon is fixed to 64x64, which might look blurry
+  // on higher dpi (>= 200%) settings. Setting it to a higher resolution icon (e.g., 128x128)
+  // does not work either because Ubuntu's image resize algorithm is pretty bad, the icon
+  // looks too sharp in a regular dpi (100%) setting.
+  //
+  // The ideal solution would be: either electron-builder supports the app icon; or we add
+  // dpi-aware features to this app.
+  if (isLinux) {
+    mainWindow.setIcon(path.join(app.getAppPath(), 'build', 'icons', 'png', '64x64.png'));
+  }
+
   const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'index_electron.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
@@ -169,7 +186,7 @@ function updateTray(status: TunnelStatus) {
     {type: 'separator'} as MenuItemConstructorOptions,
     {label: localizedStrings['quit'], click: quitApp},
   ];
-  if (os.platform() === 'linux') {
+  if (isLinux) {
     // Because the click event is never fired on Linux, we need an explicit open option.
     menuTemplate = [{label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate];
   }
@@ -214,7 +231,7 @@ function interceptShadowsocksLink(argv: string[]) {
 async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
   try {
     await tunnelStore.save(args);
-    if (os.platform() === 'linux') {
+    if (isLinux) {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
@@ -232,7 +249,7 @@ async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
 
 async function tearDownAutoLaunch() {
   try {
-    if (os.platform() === 'linux') {
+    if (isLinux) {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
