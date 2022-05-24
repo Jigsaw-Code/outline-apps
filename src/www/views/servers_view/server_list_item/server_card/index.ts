@@ -314,6 +314,7 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
         color: var(--outline-label-color);
         font-size: var(--server-address-size);
         font-family: var(--outline-font-family);
+        padding-top: 0.5rem;
       }
     `,
   ];
