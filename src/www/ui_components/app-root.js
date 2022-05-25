@@ -111,6 +111,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         iron-pages {
           display: flex;
           flex: 1;
+          background-color: #efefef;
         }
 
         #drawer-nav {
@@ -269,13 +270,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </app-header>
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-          <servers-view
-            name="servers"
-            id="serversView"
-            servers="[[servers]]"
-            root-path="[[rootPath]]"
-            localize="[[localize]]"
-          ></servers-view>
+          <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]"></servers-view>
           <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
           <about-view
             name="about"
@@ -758,7 +753,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.serverName, event.detail.serverId);
+    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
   }
 
   _computeShouldShowAppLogo(page) {
