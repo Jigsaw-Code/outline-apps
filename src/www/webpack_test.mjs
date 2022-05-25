@@ -22,6 +22,10 @@ export default merge(baseConfig, {
         exclude: /node_modules/,
         use: ['ts-loader'],
       },
+      {
+        test: /\.png$/,
+        use: ['file-loader'],
+      },
     ],
   },
 });

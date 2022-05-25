@@ -14,6 +14,12 @@
 import {html, css, LitElement, unsafeCSS} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+// TODO(daniellacosse): file import type definitions
+// TODO(daniellacosse): fix webpack copy such that we can co-locate this image asset with this folder
+// eslint-disable-next-line
+// @ts-ignore
+import circle from '../../../assets/circle.png';
+
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
@@ -29,7 +35,6 @@ const CIRCLE_SIZES = [unsafeCSS`large`, unsafeCSS`medium`, unsafeCSS`small`];
 @customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
-  @property({attribute: 'root-path'}) rootPath: string;
 
   @state() private animationState: ServerConnectionState = ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
@@ -66,10 +71,7 @@ export class ServerConnectionIndicator extends LitElement {
       }
 
       .circle {
-        position: absolute;
         display: inline-block;
-
-        left: 0;
 
         transition-property: transform, filter, opacity;
         transition-duration: var(--duration);
@@ -78,6 +80,18 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
+      }
+
+      /* 
+        these are not applied to circle-large so that 
+        that image can drive the implicit width 
+      */
+      .circle-medium,
+      .circle-small {
+        left: 0;
+        outline: 0;
+        position: absolute;
+        top: 0;
       }
 
       .circle-connected,
@@ -163,10 +177,7 @@ export class ServerConnectionIndicator extends LitElement {
       ${CIRCLE_SIZES.map(
         circleSize =>
           html`
-            <img
-              class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${this.rootPath}assets/circle.png"
-            />
+            <img class="circle circle-${circleSize} circle-${this.animationState}" src="${circle}" />
           `
       )}
     `;
