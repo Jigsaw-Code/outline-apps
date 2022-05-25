@@ -6,6 +6,3 @@ node_modules
 /www
 /third_party
 /tools
-
-**/*.mjs
-**/*.js
