@@ -57,8 +57,12 @@ export const browserConfig = {
   module: {
     rules: [
       {
-        test: /\.css?$/,
+        test: /\.css$/,
         use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /assets[/\\].*\.(png|woff2)$/,
+        use: ['file-loader'],
       },
     ],
   },

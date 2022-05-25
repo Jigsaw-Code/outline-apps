@@ -35,7 +35,7 @@ export default {
 
 export const Example = ({connectionState}: ServerConnectionIndicator) =>
   html`
-    <div style="width: clamp(64px, 100vw, 512px);">
+    <div style="width: clamp(64px, 100vw, 512px); height: clamp(64px, 100vh, 512px);">
       <server-connection-indicator
         connection-state="${connectionState ?? ServerConnectionState.DISCONNECTED}"
       ></server-connection-indicator>
