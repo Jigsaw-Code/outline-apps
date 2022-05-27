@@ -126,8 +126,6 @@ export class ServerConnectionIndicator extends LitElement {
           animation-name: circle-${circleSize}-rotate-with-pause;
         }
 
-        /* Do not mirror animation for RTL languages */
-        /* rtl:begin:ignore */
         @keyframes circle-${circleSize}-rotate-with-pause {
           0% {
             transform: rotate(0deg) var(--circle-${circleSize}-scale);
@@ -137,7 +135,6 @@ export class ServerConnectionIndicator extends LitElement {
             transform: rotate(360deg) var(--circle-${circleSize}-scale);
           }
         }
-        /* rtl:end:ignore */
       `
     ),
   ];
