@@ -1,5 +1,5 @@
 {
-  "about-outline": "O Outline é um produto da <a href={jigsawUrl}>Jigsaw</a> que qualquer pessoa pode usar para criar, executar e compartilhar acesso à própria VPN. Ele foi desenvolvido para superar bloqueios. Acesse <a href={outlineUrl}>getoutline.org</a> para saber como dar os primeiros passos.$NEWLINE$$NEWLINE$O Outline é um software de código aberto com tecnologia da <a href={shadowsocksUrl}>Shadowsocks</a>. Você pode colaborar com o código no <a href={gitHubUrl}>GitHub</a> e participar de discussões no <a href={redditUrl}>Reddit</a>.",
+  "about-outline": "O Outline é um produto da <a href={jigsawUrl}>Jigsaw</a> que qualquer pessoa pode usar para criar, executar e compartilhar acesso à própria VPN. Ele foi desenvolvido para superar bloqueios. Acesse <a href={outlineUrl}>getoutline.org</a> para saber como começar.$NEWLINE$$NEWLINE$O Outline é um software de código aberto com tecnologia da <a href={shadowsocksUrl}>Shadowsocks</a>. Você pode colaborar com o código no <a href={gitHubUrl}>GitHub</a> e participar de discussões no <a href={redditUrl}>Reddit</a>.",
   "about-page-title": "Sobre",
   "auto-connect-dialog-detail": "Se você não se desconectar do servidor, Outline se conectará automaticamente na próxima vez que o dispositivo for reiniciado.",
   "auto-connect-dialog-title": "Sua proteção está garantida",
