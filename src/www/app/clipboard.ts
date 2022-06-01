@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import '../../types/ambient/clipboard.d.ts';
+
 export type ClipboardListener = (text: string) => void;
 
 export interface Clipboard {

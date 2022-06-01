@@ -33,6 +33,7 @@
         "@typescript-eslint/no-explicit-any": "off"
       }
     },
+    // Turn off type-specific linting for pure javascript files.
     {
       "files": ["*.js", "*.mjs"],
       "extends": ["eslint:recommended"],
