@@ -60,13 +60,6 @@ jobs:
 
       - name: Build Linux Client
         run: npm run action electron/build linux
-      
-      - name: Upload Linux Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_linux_debug
-          path: build/dist
-          if-no-files-found: error
 
   windows_debug_build:
     name: Windows Debug Build
@@ -92,13 +85,6 @@ jobs:
       - name: Build Windows Client
         run: npm run action electron/build windows
 
-      - name: Upload Windows Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_installer_windows_debug
-          path: build/dist
-          if-no-files-found: error
-
   macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-11
@@ -123,13 +109,6 @@ jobs:
       - name: Build MacOS Client
         run: npm run action cordova/build macos
 
-      - name: Upload MacOS Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_macos_debug
-          path: platforms/osx
-          if-no-files-found: error
-
   ios_debug_build:
     name: iOS Debug Build
     runs-on: macos-11
@@ -153,14 +132,6 @@ jobs:
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
-
-      - name: Upload iOS Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_ios_debug
-          path: platforms/ios
-          if-no-files-found: error
-
 
   android_debug_build:
     name: Android Debug Build
@@ -192,10 +163,3 @@ jobs:
 
       - name: Build Android Client
         run: npm run action cordova/build android
-
-      - name: Upload Android Client
-        uses: actions/upload-artifact@v2
-        with:
-          name: client_android_debug
-          path: platforms/android
-          if-no-files-found: error
