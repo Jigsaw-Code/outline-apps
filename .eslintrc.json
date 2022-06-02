@@ -24,7 +24,8 @@
       {
         "argsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/triple-slash-reference": "off"
   },
   "overrides": [
     {

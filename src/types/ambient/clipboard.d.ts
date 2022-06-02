@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export type SuccessCallback = (text: string) => void;
-export type FailureCallback = (error: Error) => void;
+type SuccessCallback = (text: string) => void;
+type FailureCallback = (error: Error) => void;
 
-export interface CordovaPlugins {
+interface CordovaPlugins {
   clipboard: {
     copy(text: string, onSuccess: SuccessCallback, onFailure: FailureCallback): void;
     paste(onSuccess: SuccessCallback, onFailure: FailureCallback): void;

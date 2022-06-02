@@ -13,11 +13,11 @@
 // limitations under the License.
 
 /// <reference types='cordova'/>
+/// <reference path='../../types/ambient/webintents.d.ts'/>
 
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
-import '../../types/ambient/webintents.d.ts';
 
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));

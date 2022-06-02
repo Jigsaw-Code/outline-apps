@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export interface WebIntent {
+interface WebIntent {
   getUri(callback: (url: string) => void): void;
   onNewIntent(callback: (url: string) => void): void;
 }
 
-export interface Window {
+interface Window {
   webintent: WebIntent;
 
   // cordova-ios calls a global function with this signature to handle URLs.
