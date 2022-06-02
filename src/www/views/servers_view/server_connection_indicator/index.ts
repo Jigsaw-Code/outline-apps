@@ -14,10 +14,7 @@
 import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
-// TODO(daniellacosse): file import type definitions
 // TODO(daniellacosse): fix webpack copy such that we can co-locate this image asset with this folder
-// eslint-disable-next-line
-// @ts-ignore
 import circle from '../../../assets/circle.png';
 
 export enum ServerConnectionState {

@@ -23,6 +23,13 @@ export const __dirname = path.dirname(__filename);
 
 export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
 
+export const TS_LOADER = {
+  loader: 'ts-loader',
+  options: {
+    configFile: path.resolve(__dirname, '../../tsconfig.json'),
+  },
+};
+
 export const baseConfig = {
   devtool: 'inline-source-map',
   resolve: {
