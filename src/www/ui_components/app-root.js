@@ -111,6 +111,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         iron-pages {
           display: flex;
           flex: 1;
+          background-color: #efefef;
         }
 
         #drawer-nav {
@@ -269,13 +270,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </app-header>
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-          <servers-view
-            name="servers"
-            id="serversView"
-            servers="[[servers]]"
-            root-path="[[rootPath]]"
-            localize="[[localize]]"
-          ></servers-view>
+          <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]"></servers-view>
           <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
           <about-view
             name="about"
@@ -429,48 +424,57 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         value: {
           am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
           ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
-          az: {id: 'az', name: 'Azərbaycanca', dir: 'ltr'},
-          bg: {id: 'bg', name: 'Български', dir: 'ltr'},
-          ca: {id: 'ca', name: 'Català', dir: 'ltr'},
-          cs: {id: 'cs', name: 'Česky', dir: 'ltr'},
+          az: {id: 'az', name: 'azərbaycan', dir: 'ltr'},
+          bg: {id: 'bg', name: 'български', dir: 'ltr'},
+          bs: {id: 'bs', name: 'bosanski', dir: 'ltr'},
+          ca: {id: 'ca', name: 'català', dir: 'ltr'},
+          cs: {id: 'cs', name: 'Čeština', dir: 'ltr'},
           da: {id: 'da', name: 'Dansk', dir: 'ltr'},
           de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
           el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
           en: {id: 'en', name: 'English', dir: 'ltr'},
-          'es-419': {id: 'es-419', name: 'Español', dir: 'ltr'},
+          'en-GB': {id: 'en-GB', name: 'English (United Kingdom)', dir: 'ltr'},
+          es: {id: 'es', name: 'Español', dir: 'ltr'},
+          'es-419': {id: 'es-419', name: 'Español (Latinoamérica)', dir: 'ltr'},
+          et: {id: 'et', name: 'eesti', dir: 'ltr'},
           fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
           fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
-          fil: {id: 'fil', name: 'Wikang Filipino', dir: 'ltr'},
+          fil: {id: 'fil', name: 'Filipino', dir: 'ltr'},
           fr: {id: 'fr', name: 'Français', dir: 'ltr'},
           he: {id: 'he', name: 'עברית', dir: 'rtl'},
           hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
           hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
-          hu: {id: 'hu', name: 'Magyar', dir: 'ltr'},
-          id: {id: 'id', name: 'Bahasa Indonesia', dir: 'ltr'},
+          hu: {id: 'hu', name: 'magyar', dir: 'ltr'},
+          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr'},
+          id: {id: 'id', name: 'Indonesia', dir: 'ltr'},
           it: {id: 'it', name: 'Italiano', dir: 'ltr'},
           ja: {id: 'ja', name: '日本語', dir: 'ltr'},
-          kk: {id: 'kk', name: 'Қазақ тілі', dir: 'ltr'},
-          km: {id: 'km', name: 'ភាសាខ្មែរ', dir: 'ltr'},
+          ka: {id: 'ka', name: 'ქართული', dir: 'ltr'},
+          kk: {id: 'kk', name: 'қазақ тілі', dir: 'ltr'},
+          km: {id: 'km', name: 'ខ្មែរ', dir: 'ltr'},
           ko: {id: 'ko', name: '한국어', dir: 'ltr'},
-          lt: {id: 'lt', name: 'Lietuvių', dir: 'ltr'},
-          lv: {id: 'lv', name: 'Latviešu', dir: 'ltr'},
-          my: {id: 'my', name: 'မြန်မာစာ', dir: 'ltr'},
+          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr'},
+          lv: {id: 'lv', name: 'latviešu', dir: 'ltr'},
+          mk: {id: 'mk', name: 'македонски', dir: 'ltr'},
+          my: {id: 'my', name: 'မြန်မာ', dir: 'ltr'},
           nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
-          no: {id: 'no', name: 'Norsk (bokmål / riksmål)', dir: 'ltr'},
-          pl: {id: 'pl', name: 'Polski', dir: 'ltr'},
-          'pt-BR': {id: 'pt-BR', name: 'Português', dir: 'ltr'},
-          ro: {id: 'ro', name: 'Română', dir: 'ltr'},
+          no: {id: 'no', name: 'norsk', dir: 'ltr'},
+          pl: {id: 'pl', name: 'polski', dir: 'ltr'},
+          'pt-BR': {id: 'pt-BR', name: 'Português (Brasil)', dir: 'ltr'},
+          'pt-PT': {id: 'pt-PT', name: 'Português (Portugal)', dir: 'ltr'},
+          ro: {id: 'ro', name: 'română', dir: 'ltr'},
           ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
           sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
-          sl: {id: 'sl', name: 'Slovenščina', dir: 'ltr'},
-          sr: {id: 'sr', name: 'Српски', dir: 'ltr'},
-          'sr-Latn': {id: 'sr-Latn', name: 'Srpski', dir: 'ltr'},
+          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr'},
+          sq: {id: 'sq', name: 'shqip', dir: 'ltr'},
+          sr: {id: 'sr', name: 'српски', dir: 'ltr'},
+          'sr-Latn': {id: 'sr-Latn', name: 'srpski (latinica)', dir: 'ltr'},
           sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
           th: {id: 'th', name: 'ไทย', dir: 'ltr'},
           tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
           uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
           ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
-          vi: {id: 'vi', name: 'Việtnam', dir: 'ltr'},
+          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr'},
           'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
           'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr'},
         },
@@ -749,7 +753,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.serverName, event.detail.serverId);
+    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
   }
 
   _computeShouldShowAppLogo(page) {

@@ -24,13 +24,23 @@
       {
         "argsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/triple-slash-reference": "off"
   },
   "overrides": [
     {
       "files": ["*.spec.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    // Turn off type-specific linting for pure javascript files.
+    {
+      "files": ["*.js", "*.mjs"],
+      "extends": ["eslint:recommended"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off"
       }
     }
   ]

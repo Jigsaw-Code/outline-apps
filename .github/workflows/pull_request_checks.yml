@@ -53,8 +53,8 @@ jobs:
             LICENSE
             package-lock.json
             resources
-            src/www/assets
-            src/www/messages
+            src/www/assets/**
+            src/www/messages/**
             third_party
         with:
           sizes: >
