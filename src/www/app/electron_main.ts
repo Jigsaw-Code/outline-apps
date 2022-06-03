@@ -20,6 +20,8 @@ import {clipboard, ipcRenderer} from 'electron';
 import promiseIpc from 'electron-promise-ipc';
 import * as os from 'os';
 
+import {ErrorCode, OutlinePluginError} from '../model/errors';
+
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {EnvironmentVariables} from './environment';
@@ -30,6 +32,7 @@ import {getLocalizationFunction, main} from './main';
 import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
+import {VpnInstaller} from './vpn_installer';
 
 const isWindows = os.platform() === 'win32';
 const isLinux = os.platform() === 'linux';
@@ -70,6 +73,18 @@ class ElectronUpdater extends AbstractUpdater {
   constructor() {
     super();
     ipcRenderer.on('update-downloaded', this.emitEvent.bind(this));
+  }
+}
+
+class ElectronVpnInstaller implements VpnInstaller {
+  public async installVpn(): Promise<void> {
+    const err = await ipcRenderer.invoke('install-outline-services');
+
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    if (err !== ErrorCode.NO_ERROR) {
+      throw new OutlinePluginError(err);
+    }
   }
 }
 
@@ -119,5 +134,6 @@ main({
     );
   },
   getUpdater: () => new ElectronUpdater(),
+  getVpnServiceInstaller: () => new ElectronVpnInstaller(),
   quitApplication: () => ipcRenderer.send('quit-app'),
 });

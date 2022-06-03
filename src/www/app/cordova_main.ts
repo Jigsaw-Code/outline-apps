@@ -37,6 +37,7 @@ import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {ShadowsocksConfig} from './config';
+import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
@@ -162,6 +163,10 @@ class CordovaPlatform implements OutlinePlatform {
 
   getUpdater() {
     return new AbstractUpdater();
+  }
+
+  getVpnServiceInstaller(): VpnInstaller {
+    return new NoOpVpnInstaller();
   }
 
   quitApplication() {

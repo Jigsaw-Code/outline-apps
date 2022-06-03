@@ -115,6 +115,7 @@ export function main(platform: OutlinePlatform) {
         settings,
         environmentVars,
         platform.getUpdater(),
+        platform.getVpnServiceInstaller(),
         platform.quitApplication
       );
     },

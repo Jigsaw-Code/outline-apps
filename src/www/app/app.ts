@@ -24,6 +24,7 @@ import {OutlineServer, OutlineServerRepository} from './outline_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
+import {VpnInstaller} from './vpn_installer';
 
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
@@ -67,6 +68,7 @@ export class App {
     private settings: Settings,
     environmentVars: EnvironmentVariables,
     private updater: Updater,
+    private installer: VpnInstaller,
     private quitApplication: () => void,
     document = window.document
   ) {
@@ -200,25 +202,6 @@ export class App {
     } catch (e) {
       console.warn('cannot read clipboard, system may lack clipboard support');
     }
-  }
-
-  private onServerConnected(event: events.ServerConnected): void {
-    console.debug(`server ${event.server.id} connected`);
-    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.CONNECTED});
-  }
-
-  private onServerDisconnected(event: events.ServerDisconnected): void {
-    console.debug(`server ${event.server.id} disconnected`);
-    try {
-      this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.DISCONNECTED});
-    } catch (e) {
-      console.warn('server card not found after disconnection event, assuming forgotten');
-    }
-  }
-
-  private onServerReconnecting(event: events.ServerReconnecting): void {
-    console.debug(`server ${event.server.id} reconnecting`);
-    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.RECONNECTING});
   }
 
   private displayZeroStateUi() {
@@ -370,10 +353,32 @@ export class App {
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
-      this.showLocalizedError(e);
       console.error(`could not connect to server ${serverId}: ${e.name}`);
       if (!(e instanceof errors.RegularNativeError)) {
         this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
+      }
+      if (e instanceof errors.SystemConfigurationException) {
+        if (await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'))) {
+          await this.installVpnService();
+          return;
+        }
+      }
+      this.showLocalizedError(e);
+    }
+  }
+
+  private async installVpnService(): Promise<void> {
+    this.rootEl.showToast(this.localize('outline-services-installing'), Infinity);
+    try {
+      await this.installer.installVpn();
+      this.rootEl.showToast(this.localize('outline-services-installed'));
+    } catch (e) {
+      const err = e.errorCode ? errors.fromErrorCode(e.errorCode) : e;
+      console.error('failed to set up Outline VPN', err);
+      if (err instanceof errors.UnexpectedPluginError) {
+        this.rootEl.showToast(this.localize('outline-services-installation-failed'));
+      } else {
+        this.showLocalizedError(err);
       }
     }
   }
@@ -437,7 +442,26 @@ export class App {
     }
   }
 
-  // EventQueue event handlers:
+  //#region EventQueue event handlers
+
+  private onServerConnected(event: events.ServerConnected): void {
+    console.debug(`server ${event.server.id} connected`);
+    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.CONNECTED});
+  }
+
+  private onServerDisconnected(event: events.ServerDisconnected): void {
+    console.debug(`server ${event.server.id} disconnected`);
+    try {
+      this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.DISCONNECTED});
+    } catch (e) {
+      console.warn('server card not found after disconnection event, assuming forgotten');
+    }
+  }
+
+  private onServerReconnecting(event: events.ServerReconnecting): void {
+    console.debug(`server ${event.server.id} reconnecting`);
+    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.RECONNECTING});
+  }
 
   private onServerAdded(event: events.ServerAdded) {
     const server = event.server;
@@ -473,6 +497,17 @@ export class App {
     this.updateServerListItem(server.id, {name: server.name});
     this.rootEl.showToast(this.localize('server-rename-complete'));
   }
+
+  //#endregion EventQueue event handlers
+
+  //#region UI dialogs
+
+  private showConfirmationDialog(message: string): Promise<boolean> {
+    // Temporarily use window.alert and window.confirm here
+    return new Promise<boolean>(resolve => resolve(confirm(message)));
+  }
+
+  //#endregion UI dialogs
 
   // Helpers:
 
