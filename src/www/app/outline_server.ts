@@ -29,17 +29,25 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  private config: ShadowsocksConfig;
+  configLocation?: URL;
+  accessKey?: string;
+  private config?: ShadowsocksConfig;
 
   constructor(
     public readonly id: string,
-    public readonly accessKey: string,
+    public readonly accessKeyOrConfigLocation: string,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.config = accessKeyToShadowsocksConfig(accessKey);
+    try {
+      this.config = accessKeyToShadowsocksConfig(accessKeyOrConfigLocation);
+      this.accessKey = accessKeyOrConfigLocation;
+    } finally {
+      this.configLocation = new URL(accessKeyOrConfigLocation);
+    }
+
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -79,6 +87,10 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
+      if (this.configLocation) {
+        this.config = await (await fetch(this.configLocation.toString())).json();
+      }
+
       await this.tunnel.start(this.config);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.

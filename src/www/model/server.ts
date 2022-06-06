@@ -28,6 +28,9 @@ export interface Server {
   // Used to provide a default name to the server card.
   isOutlineServer: boolean;
 
+  // TODO
+  configLocation?: URL;
+
   // The message identifier corresponding to the server error state. This identifier
   // must match one of the localized app message.
   errorMessageId?: string;
