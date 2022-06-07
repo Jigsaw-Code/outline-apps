@@ -424,7 +424,7 @@
     "desciption": "An information message shown when the Outline successfully installed all backend services, and we ask the user try to reconnect to the server."
   },
   "outline_services_installing": {
-    "message": "Setting up Outline VPN...",
+    "message": "Setting up the Outline VPN...",
     "desciption": "An information message indicating Outline is installing all its backend services."
   },
   "fix_this": {
