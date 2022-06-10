@@ -15,7 +15,7 @@
 import * as errors from '../model/errors';
 
 import {ShadowsocksConfig} from './config';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {RoutingPolicy, Tunnel, TunnelStatus} from './tunnel';
 
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
@@ -33,7 +33,7 @@ export class FakeOutlineTunnel implements Tunnel {
     return name?.toLowerCase().includes('unreachable');
   }
 
-  async start(config: ShadowsocksConfig): Promise<void> {
+  async start(config: ShadowsocksConfig, _: RoutingPolicy): Promise<void> {
     if (this.running) {
       return;
     }

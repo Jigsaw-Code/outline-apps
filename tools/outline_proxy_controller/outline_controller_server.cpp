@@ -77,7 +77,7 @@ bool session::isValidJson(std::string str) {
 
 std::tuple<int, std::string, std::string> session::runClientCommand(std::string clientCommand) {
   std::stringstream ss;
-  std::string action, outline_server_ip;
+  std::string action, outline_server_ip, resolver_ip;
   boost::property_tree::ptree pt;
 
   // std::cout << clientCommand << std::endl;
@@ -108,16 +108,24 @@ std::tuple<int, std::string, std::string> session::runClientCommand(std::string 
     boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
     boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
     if (_proxyIp_iter == parameters.not_found()) {
-      std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
+      std::cerr << "Invalid input JSON - proxyIp is not specified" << std::endl;
       return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
     }
     outline_server_ip =
         boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
 
+    boost::property_tree::ptree::assoc_iterator _resolverIp_iter = parameters.find("resolverIp");
+    if (_resolverIp_iter == parameters.not_found()) {
+      std::cerr << "Invalid input JSON - resolverIp is not specified" << std::endl;
+      return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
+    }
+    resolver_ip =
+        boost::lexical_cast<std::string>(pt.to_iterator(_resolverIp_iter)->second.data());
+
     // std::cout << "action: [" << action << "]" << std::endl;
     // std::cout << "outline_server_ip: [" << outline_server_ip << "]" << std::endl;
 
-    outlineProxyController_->routeThroughOutline(outline_server_ip);
+    outlineProxyController_->routeThroughOutline(outline_server_ip, resolver_ip);
     std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
     return std::make_tuple(SUCCESS, "", action);
 

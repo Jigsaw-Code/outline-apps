@@ -410,6 +410,7 @@ function main() {
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
+  // TODO: Add routingPolicy parameter.
   promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig; id: string}) => {
     // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
     //       being faster, this would help prevent traffic leaks - the Cordova clients already do

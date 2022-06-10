@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
@@ -37,11 +38,8 @@ public class VpnTunnel {
   private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
   private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
   private static final int VPN_INTERFACE_MTU = 1500;
-  // OpenDNS, Cloudflare, and Quad9 DNS resolvers' IP addresses.
-  private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
-      "208.67.222.222", "208.67.220.220", "1.1.1.1", "9.9.9.9"};
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
-
+  private static final String VPN_RESOLVER_IP="10.111.222.3";
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
@@ -69,14 +67,13 @@ public class VpnTunnel {
   public synchronized boolean establishVpn() {
     LOG.info("Establishing the VPN.");
     try {
-      dnsResolverAddress = selectDnsResolverAddress();
       VpnService.Builder builder =
           vpnService.newBuilder()
               .setSession(vpnService.getApplicationName())
               .setMtu(VPN_INTERFACE_MTU)
               .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
                   VPN_INTERFACE_PREFIX_LENGTH)
-              .addDnsServer(dnsResolverAddress)
+              .addDnsServer(VPN_RESOLVER_IP)
               .setBlocking(true)
               .addDisallowedApplication(vpnService.getPackageName());
 
@@ -130,7 +127,7 @@ public class VpnTunnel {
    * @throws Exception when the tunnel fails to connect.
    */
   public synchronized void connectTunnel(final String host, int port, final String password,
-      final String cipher, boolean isUdpEnabled) throws Exception {
+      final String cipher, boolean isUdpEnabled, String excludedDomains, List<String> excludedSubnets) throws Exception {
     LOG.info("Connecting the tunnel.");
     if (host == null || port <= 0 || port > 65535 || password == null || cipher == null) {
       throw new IllegalArgumentException("Must provide valid Shadowsocks proxy parameters.");
@@ -144,7 +141,7 @@ public class VpnTunnel {
 
     LOG.fine("Starting tun2socks...");
     tunnel = Tun2socks.connectShadowsocksTunnel(
-        tunFd.getFd(), host, port, password, cipher, isUdpEnabled);
+        tunFd.getFd(), host, port, password, cipher, isUdpEnabled, excludedDomains, String.join(",", excludedSubnets));
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */
@@ -171,11 +168,6 @@ public class VpnTunnel {
 
   private boolean isTunnelConnected() {
     return tunnel != null && tunnel.isConnected();
-  }
-
-  /* Returns a random IP address from |DNS_RESOLVER_IP_ADDRESSES|. */
-  private String selectDnsResolverAddress() {
-    return DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
   }
 
   /* Returns a subnet list that excludes reserved subnets. */

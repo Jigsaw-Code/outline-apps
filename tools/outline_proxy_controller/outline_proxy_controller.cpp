@@ -182,7 +182,7 @@ void OutlineProxyController::detectBestInterfaceIndex() {
   }
 }
 
-void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
+void OutlineProxyController::routeThroughOutline(std::string outlineServerIP, std::string localResolverIP) {
   // Sanity checks
   if (outlineServerIP.empty()) {
     logger.error("Outline Server IP address cannot be empty");
@@ -197,11 +197,13 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   }
 
   this->outlineServerIP = outlineServerIP;
+  this->localResolverIP = localResolverIP;
 
   backupDNSSetting();
 
   try {
-    createRouteforOutlineServer();
+    createEscapeRoute(outlineServerIP);
+    createEscapeRoute(localResolverIP);
   } catch (exception& e) {
     // we can not continue
     logger.error("failed to create a proirity route to outline proxy: " + string(e.what()));
@@ -345,14 +347,11 @@ void OutlineProxyController::createDefaultRouteThroughTun() {
   }
 }
 
-void OutlineProxyController::createRouteforOutlineServer() {
-  // make sure we have IP for the outline server
-  if (outlineServerIP.empty()) throw runtime_error("no outline server is specified");
-
+void OutlineProxyController::createEscapeRoute(const std::string& ip) {
   // make sure we have the default Gateway IP
   if (routingGatewayIP.empty()) {
     logger.warn("default routing gateway is unknown");
-    // because creating the priority route for outline proxy is the first
+    // because creating the escape routes is the first
     // step in routing through outline, we can still hope by query the routing
     // table we get the default gateway IP.
     detectBestInterfaceIndex();
@@ -360,14 +359,14 @@ void OutlineProxyController::createRouteforOutlineServer() {
 
   SubCommand createRouteCommand;
 
-  createRouteCommand.push(SubCommandPart("add", outlineServerIP));
+  createRouteCommand.push(SubCommandPart("add", ip));
   createRouteCommand.push(SubCommandPart("via", routingGatewayIP));
   createRouteCommand.push(SubCommandPart("metric", c_proxy_priority_metric));
 
   auto result = executeIPRoute(createRouteCommand);
   if (!isSuccessful(result)) {
     logger.error(result.first);
-    throw runtime_error("failed to create route for outline proxy");
+    throw runtime_error("failed to create escape route");
   }
 }
 
@@ -439,7 +438,8 @@ void OutlineProxyController::resetFailRoutingAttempt(OutlineConnectionStage fail
       // We need to delete the priority path to the default gateway
       // plus make sure default route to the gateway is there.
       createDefaultRouteThroughGateway();
-      deleteOutlineServerRouting();
+      deleteEscapeRoute(outlineServerIP);
+      deleteEscapeRoute(localResolverIP);
 
     case OUTLINE_PRIORITY_SET_UP:
       // we just need to forget that we have backed up DNS
@@ -486,7 +486,8 @@ void OutlineProxyController::routeDirectly() {
   }
 
   try {
-    deleteOutlineServerRouting();
+    deleteEscapeRoute(outlineServerIP);
+    deleteEscapeRoute(localResolverIP);
   } catch (exception& e) {
     logger.warn("unable to delete priority route for outline proxy: " + string(e.what()));
   }
@@ -520,12 +521,12 @@ void OutlineProxyController::createDefaultRouteThroughGateway() {
   }
 }
 
-void OutlineProxyController::deleteOutlineServerRouting() {
+void OutlineProxyController::deleteEscapeRoute(const std::string& ip) {
   SubCommand deleteRouteCommand;
 
   // first we check if such a route exists
-  if (checkRoutingTableForSpecificRoute(outlineServerIP + " via")) {
-    deleteRouteCommand.push(SubCommandPart("del", outlineServerIP));
+  if (checkRoutingTableForSpecificRoute(ip + " via")) {
+    deleteRouteCommand.push(SubCommandPart("del", ip));
 
     auto result = executeIPRoute(deleteRouteCommand);
     if (!isSuccessful(result)) {

@@ -18,7 +18,7 @@ import promiseIpc from 'electron-promise-ipc';
 import * as errors from '../model/errors';
 
 import {ShadowsocksConfig} from './config';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {RoutingPolicy, Tunnel, TunnelStatus} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
@@ -37,7 +37,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
   }
 
-  async start(config: ShadowsocksConfig) {
+  async start(config: ShadowsocksConfig, routingPolicy: RoutingPolicy) {
     if (this.running) {
       return Promise.resolve();
     }
@@ -47,7 +47,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
 
     try {
-      await promiseIpc.send('start-proxying', {config, id: this.id});
+      await promiseIpc.send('start-proxying', {config, id: this.id, routingPolicy});
       this.running = true;
     } catch (e) {
       if (typeof e === 'number') {

@@ -15,9 +15,11 @@
 package org.outline;
 
 import org.outline.shadowsocks.ShadowsocksConfig;
+import org.outline.RoutingPolicy;
 
 parcelable TunnelConfig {
   String id;
   String name;
   ShadowsocksConfig proxy;
+  RoutingPolicy policy;
 }

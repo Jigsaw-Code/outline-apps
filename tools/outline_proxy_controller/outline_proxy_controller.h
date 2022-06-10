@@ -43,7 +43,7 @@ class OutlineProxyController {
   /**
    *  set the routing table so user traffic get routed though outline
    */
-  void routeThroughOutline(std::string outlineServerIP);
+  void routeThroughOutline(std::string outlineServerIP, std::string resolverIp);
 
   /**
    *
@@ -140,12 +140,12 @@ class OutlineProxyController {
   void processRoutingTable();
 
   void createDefaultRouteThroughTun();
-  void createRouteforOutlineServer();
+  void createEscapeRoute(const std::string& ip);
 
   void createDefaultRouteThroughGateway();
 
   void deleteAllDefaultRoutes();
-  void deleteOutlineServerRouting();
+  void deleteEscapeRoute(const std::string& ip);
 
   /**
    * returns true  if the specific routePart shows up in the routing table
@@ -194,7 +194,8 @@ class OutlineProxyController {
   std::string tunInterfaceIp = "10.0.85.1";
   std::string tunInterfaceRouterIp = "10.0.85.2";
   std::string outlineServerIP;
-  std::string outlineDNSServer = "9.9.9.9";
+  std::string localResolverIP;
+  std::string outlineDNSServer = "10.0.85.3";
 
   std::string clientLocalIP;
   std::string routingGatewayIP;

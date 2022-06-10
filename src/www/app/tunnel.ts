@@ -22,6 +22,11 @@ export const enum TunnelStatus {
 
 export type TunnelFactory = (id: string) => Tunnel;
 
+export interface RoutingPolicy {
+  readonly excludedSubnets: string[];
+  readonly excludedDomains: string;
+}
+
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
 // functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
 export interface Tunnel {
@@ -32,7 +37,7 @@ export interface Tunnel {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(config: ShadowsocksConfig): Promise<void>;
+  start(config: ShadowsocksConfig, routingPolicy: RoutingPolicy): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(): Promise<void>;
