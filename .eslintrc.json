@@ -10,9 +10,28 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "compat"],
+  "plugins": ["@typescript-eslint", "compat", "import"],
   "rules": {
     "compat/compat": "error",
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "./src/www/views",
+            "from": "./src/www/model"
+          },
+          {
+            "target": "./src/www/ui_components",
+            "from": "./src/www/model"
+          },
+          {
+            "target": "./src/www/infrastructure",
+            "from": "./src/www/model"
+          }
+        ]
+      }
+    ],
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",

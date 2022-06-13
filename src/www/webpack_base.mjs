@@ -14,6 +14,7 @@
 import path from 'path';
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
+import CircularDependencyPlugin from 'circular-dependency-plugin';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'module';
 
@@ -46,6 +47,14 @@ export const baseConfig = {
       }),
     ],
   },
+  plugins: [
+    new CircularDependencyPlugin({
+      failOnError: true,
+      onDetected({paths, compilation}) {
+        compilation.errors.push(new Error(`Circular Dependency Detected: ${paths.join(' -> ')}`));
+      },
+    }),
+  ],
 };
 
 export const browserConfig = {
