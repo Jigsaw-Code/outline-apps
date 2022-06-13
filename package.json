@@ -9,7 +9,7 @@
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint": "npm run lint:ts",
-    "lint:ts": "eslint 'src/**/*.ts'",
+    "lint:ts": "eslint --debug 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
   },
   "comments": {
@@ -95,6 +95,7 @@
     "electron-builder": "^22.9.1",
     "electron-icon-maker": "^0.0.4",
     "eslint": "^8.15.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-import": "^2.26.0",
     "esm": "^3.2.25",
