@@ -9,7 +9,7 @@
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint": "npm run lint:ts",
-    "lint:ts": "eslint --debug 'src/**/*.ts'",
+    "lint:ts": "eslint 'src/**/*.ts'",
     "reset": "npm run clean && npm ci"
   },
   "comments": {
