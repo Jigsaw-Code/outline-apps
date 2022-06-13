@@ -18,6 +18,16 @@
       {
         "zones": [
           {
+            "target": "./src/www/infrastructure",
+            "from": "./src/www",
+            "except": ["./infrastructure"]
+          },
+          {
+            "target": "./src/www/model",
+            "from": "./src/www",
+            "except": ["./model", "./infrastructure"]
+          },
+          {
             "target": "./src/www/views",
             "from": "./src/www/model"
           },
@@ -26,8 +36,12 @@
             "from": "./src/www/model"
           },
           {
-            "target": "./src/www/infrastructure",
-            "from": "./src/www/model"
+            "target": "./src/www/views",
+            "from": "./src/www/app"
+          },
+          {
+            "target": "./src/www/ui_components",
+            "from": "./src/www/app"
           }
         ]
       }
