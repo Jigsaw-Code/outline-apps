@@ -31,6 +31,10 @@
     "message": "Change Language",
     "description": "The menu item text and title of a page for a user to set the app language."
   },
+  "language_page_title": {
+    "message": "Select a language",
+    "description": "The title of a page for a user to choose the app language."
+  },
   "quit": {
     "message": "Quit",
     "description": "The text for a button that quits (closes) the application."
@@ -416,7 +420,7 @@
     "desciption": "A prompt message asking for permission whether Outline is allowed to install backend services, because that requires administrative permission."
   },
   "outline_services_installation_failed": {
-    "message": "Unfortunately we are not able to set up Outline VPN, please submit feedback through the app.",
+    "message": "Unfortunately we are not able to set up the Outline VPN, please submit feedback through the app.",
     "desciption": "An error message shown when the user tries to install Outline backend services but failed for some reason."
   },
   "outline_services_installed": {
