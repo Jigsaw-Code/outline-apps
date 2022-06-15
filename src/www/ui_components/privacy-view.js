@@ -24,7 +24,6 @@ Polymer({
         background: #fff;
         width: 100%;
         height: 100vh;
-        font-family: var(--outline-font-family);
         z-index: 1000; /* Give this a high z-index so it overlays the UI. */
       }
       #container {
@@ -113,7 +112,7 @@ Polymer({
     </style>
     <div id="container">
       <div id="header">
-        <img id="privacy-lock" src$="[[rootPath]]assets/privacy-lock.png" />
+        <img id="privacy-lock" src\$="[[rootPath]]assets/privacy-lock.png">
       </div>
       <div id="footer-container">
         <div id="footer">
@@ -128,7 +127,7 @@ Polymer({
         </div>
       </div>
     </div>
-  `,
+`,
 
   is: 'privacy-view',
 
@@ -139,5 +138,5 @@ Polymer({
 
   _privacyTermsAcked: function() {
     this.fire('PrivacyTermsAcked');
-  },
+  }
 });

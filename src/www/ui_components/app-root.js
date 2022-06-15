@@ -72,7 +72,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           --app-drawer-width: 280px;
           display: flex;
           flex-direction: column;
-          font-family: var(--outline-font-family);
         }
 
         app-header {

@@ -28,7 +28,6 @@ Polymer({
         text-align: center;
         width: 100%;
         height: 100vh;
-        font-family: var(--outline-font-family);
       }
 
       #main {
@@ -101,19 +100,16 @@ Polymer({
     </style>
 
     <div id="main">
-      <img src$="[[rootPath]]assets/brand-logo.png" alt="logo" id="logo" />
+      <img src\$="[[rootPath]]assets/brand-logo.png" alt="logo" id="logo">
       <div id="version">[[localize('version', 'appVersion', version)]]</div>
-      <div
-        id="description"
-        inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'outlineUrl', 'https://getoutline.org', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn')]]"
-      ></div>
+      <div id="description" inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'outlineUrl', 'https://getoutline.org', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn')]]"></div>
       <div id="footer">
         <a href="https://jigsaw.google.com">
-          <img id="jigsaw-logo" src$="[[rootPath]]assets/jigsaw-logo.svg" />
+          <img id="jigsaw-logo" src\$="[[rootPath]]assets/jigsaw-logo.svg">
         </a>
       </div>
     </div>
-  `,
+`,
 
   is: 'about-view',
 
@@ -123,5 +119,5 @@ Polymer({
     localize: Function,
     rootPath: String,
     version: String,
-  },
+  }
 });

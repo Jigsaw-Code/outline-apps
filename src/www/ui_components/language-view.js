@@ -18,52 +18,48 @@ import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
-class OutlineLanguageView extends DirMixin(PolymerElement) {
+class OutlineLanguageView extends DirMixin
+(PolymerElement) {
   static get template() {
     return html`
-      <style>
-        :host {
-          background: #fff;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          text-align: center;
-          width: 100%;
-          height: 100vh;
-          font-family: var(--outline-font-family);
+    <style>
+      :host {
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: center;
+        width: 100%;
+        height: 100vh;
+      }
+      .language-item {
+        display: flex;
+        cursor: pointer;
+        font-size: 16px;
+        border-bottom: 1px solid #e0e0e0;
+        padding-left: 24px;
+        --paper-item-selected: {
+          color: var(--medium-green);
+          font-weight: normal;
         }
-        .language-item {
-          display: flex;
-          cursor: pointer;
-          font-size: 16px;
-          border-bottom: 1px solid #e0e0e0;
-          padding-left: 24px;
-          --paper-item-selected: {
-            color: var(--medium-green);
-            font-weight: normal;
-          }
-        }
-        .language-name {
-          text-align: left;
-          flex-grow: 1;
-        }
-      </style>
+      }
+      .language-name {
+        text-align: left;
+        flex-grow: 1;
+      }
+    </style>
 
-      <div id="main">
-        <paper-listbox
-          selected="{{selectedLanguage}}"
-          attr-for-selected="value"
-          on-selected-changed="_languageSelected"
-        >
-          <template is="dom-repeat" items="{{languages}}" as="lang">
-            <paper-item class="language-item" value="{{lang.id}}">
-              <span class="language-name">{{lang.name}}</span>
-              <iron-icon icon="check" hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
-            </paper-item>
-          </template>
-        </paper-listbox>
-      </div>
-    `;
+    <div id="main">
+      <paper-listbox selected="{{selectedLanguage}}" attr-for-selected="value" on-selected-changed="_languageSelected">
+        <template is="dom-repeat" items="{{languages}}" as="lang">
+          <paper-item class="language-item" value="{{lang.id}}">
+            <span class="language-name">{{lang.name}}</span>
+            <iron-icon icon="check" hidden\$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </div>
+`;
   }
 
   static get is() {
