@@ -50,6 +50,9 @@ export const baseConfig = {
   plugins: [
     new CircularDependencyPlugin({
       failOnError: true,
+      onStart() {
+        console.log('detection started');
+      },
       onDetected({paths, compilation}) {
         compilation.errors.push(new Error(`Circular Dependency Detected: ${paths.join(' -> ')}`));
       },
