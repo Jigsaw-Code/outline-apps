@@ -53,7 +53,6 @@ const sharedCSS = css`
     display: grid;
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
-    min-width: var(--min-supported-device-width);
     overflow: hidden;
     user-select: none;
     width: 100%;
