@@ -17,15 +17,20 @@
       "error",
       {
         "zones": [
+          // this means that in the src/www/infrastructure folder,
+          // you can't import any code,
+          // with the exception of other files within the src/www/infrastructure folder
           {
             "target": "./src/www/infrastructure",
-            "from": "./src/www",
-            "except": ["./infrastructure"]
+            "from": ".",
+            "except": ["./src/www/infrastructure"]
           },
+          // similar to above but for src/www/model, but you can use files from both the
+          // src/www/model and src/www/infrastructure paths
           {
             "target": "./src/www/model",
-            "from": "./src/www",
-            "except": ["./model", "./infrastructure"]
+            "from": ".",
+            "except": ["./src/www/model", "./src/www/infrastructure"]
           },
           {
             "target": "./src/www/views",
