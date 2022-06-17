@@ -4,15 +4,53 @@
     "es2021": true,
     "node": true
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:import/typescript"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "compat"],
+  "plugins": ["@typescript-eslint", "compat", "import"],
   "rules": {
     "compat/compat": "error",
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          // this means that in the src/www/infrastructure folder,
+          // you can't import any code,
+          // with the exception of other files within the src/www/infrastructure folder
+          {
+            "target": "./src/www/infrastructure",
+            "from": ".",
+            "except": ["./src/www/infrastructure"]
+          },
+          // similar to above but for src/www/model, but you can use files from both the
+          // src/www/model and src/www/infrastructure paths
+          {
+            "target": "./src/www/model",
+            "from": ".",
+            "except": ["./src/www/model", "./src/www/infrastructure"]
+          },
+          {
+            "target": "./src/www/views",
+            "from": "./src/www/model"
+          },
+          {
+            "target": "./src/www/ui_components",
+            "from": "./src/www/model"
+          },
+          {
+            "target": "./src/www/views",
+            "from": "./src/www/app"
+          },
+          {
+            "target": "./src/www/ui_components",
+            "from": "./src/www/app"
+          }
+        ]
+      }
+    ],
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
