@@ -46,7 +46,7 @@ export async function main(...parameters) {
   }
 
   if (isApple && os.platform() !== 'darwin') {
-    throw new SystemError('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
   await runAction('www/build', platform === 'osx' ? 'macos' : platform, `--buildMode=${buildMode}`);

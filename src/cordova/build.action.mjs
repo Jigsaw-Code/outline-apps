@@ -21,7 +21,7 @@ import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**
- * @description Builds the parameterized cordova binary (ios, osx, android).
+ * @description Builds the parameterized cordova binary (ios, macos, android).
  *
  * @param {string[]} parameters
  */
