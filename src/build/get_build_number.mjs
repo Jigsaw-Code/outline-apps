@@ -31,20 +31,13 @@ export async function getBuildNumber(platform) {
       const {widget} = await parseFile('config.xml');
       return widget.$['android-versionCode'];
     }
-    case 'ios': {
-      const {
-        plist: {
-          dict: [{key: plistKeys, string: plistValues}],
-        },
-      } = await parseFile(`src/cordova/apple/xcode/ios/Outline/Outline-Info.plist`);
-      return plistValues[plistKeys.indexOf('CFBundleVersion')];
-    }
+    case 'ios':
     case 'macos': {
       const {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
-      } = await parseFile(`src/cordova/apple/xcode/osx/Outline/Outline-Info.plist`);
+      } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf('CFBundleVersion')];
     }
     case 'windows':
