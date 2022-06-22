@@ -49,7 +49,7 @@ export async function main(...parameters) {
     throw new SystemError('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  await runAction('www/build', `--buildMode=${buildMode}`);
+  await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
 
