@@ -23,6 +23,7 @@ import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 const CORDOVA_PLATFORMS = ['ios', 'osx', 'android', 'browser'];
@@ -49,7 +50,7 @@ export async function main(...parameters) {
     throw new SystemError('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', getBuildParameters(parameters).platform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
 
