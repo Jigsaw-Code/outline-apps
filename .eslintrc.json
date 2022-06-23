@@ -21,16 +21,16 @@
           // you can't import any code,
           // with the exception of other files within the src/www/infrastructure folder
           {
-            "target": "./src/www/infrastructure",
+            "target": "./src/infrastructure",
             "from": ".",
-            "except": ["./src/www/infrastructure"]
+            "except": ["./src/infrastructure", "./node_modules"]
           },
           // similar to above but for src/www/model, but you can use files from both the
           // src/www/model and src/www/infrastructure paths
           {
             "target": "./src/www/model",
             "from": ".",
-            "except": ["./src/www/model", "./src/www/infrastructure"]
+            "except": ["./src/www/model", "./src/www/infrastructure", "./node_modules"]
           },
           {
             "target": "./src/www/views",

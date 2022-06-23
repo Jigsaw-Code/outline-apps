@@ -12,14 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {InMemoryStorage} from '../infrastructure/memory_storage';
+import {InMemoryStorage} from '../../infrastructure/memory_storage';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../model/events';
 
 import {ShadowsocksConfig} from './config';
 import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
-import {OutlineServer, OutlineServerRepository, ServersStorageV0, ServersStorageV1, shadowsocksConfigToAccessKey} from './outline_server';
+import {
+  OutlineServer,
+  OutlineServerRepository,
+  ServersStorageV0,
+  ServersStorageV1,
+  shadowsocksConfigToAccessKey,
+} from './outline_server';
 
 // TODO(alalama): unit tests for OutlineServer.
 
@@ -29,7 +35,7 @@ describe('OutlineServerRepository', () => {
     port: 1080,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
-    name: 'fake server 0'
+    name: 'fake server 0',
   };
 
   const CONFIG_1: ShadowsocksConfig = {
@@ -37,15 +43,20 @@ describe('OutlineServerRepository', () => {
     port: 1089,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
-    name: 'fake server 1'
+    name: 'fake server 1',
   };
 
   it('loads V0 servers', () => {
     const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]]));
+      new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
+    );
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
     expect(server0?.name).toEqual(CONFIG_0.name);
@@ -59,14 +70,20 @@ describe('OutlineServerRepository', () => {
     const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0, 'v0-server-1': CONFIG_1};
     const storageV1: ServersStorageV1 = [
       {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
-      {id: 'server-1', name: 'renamed server', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)}
+      {id: 'server-1', name: 'renamed server', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)},
     ];
-    const storage = new InMemoryStorage(new Map([
-      [OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)],
-      [OutlineServerRepository.SERVERS_STORAGE_KEY, JSON.stringify(storageV1)]
-    ]));
+    const storage = new InMemoryStorage(
+      new Map([
+        [OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)],
+        [OutlineServerRepository.SERVERS_STORAGE_KEY, JSON.stringify(storageV1)],
+      ])
+    );
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
     expect(server0?.name).toEqual(CONFIG_0.name);
@@ -78,9 +95,14 @@ describe('OutlineServerRepository', () => {
   it('stores V1 servers', () => {
     const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
     const storage = new InMemoryStorage(
-        new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]]));
+      new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
+    );
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     // Trigger storage change.
     repo.forget('server-1');
     repo.undoForget('server-1');
@@ -89,25 +111,28 @@ describe('OutlineServerRepository', () => {
     expect(serversJson).toContain({
       id: 'server-0',
       name: 'fake server 0',
-      accessKey: shadowsocksConfigToAccessKey(CONFIG_0)
+      accessKey: shadowsocksConfigToAccessKey(CONFIG_0),
     });
     expect(serversJson).toContain({
       id: 'server-1',
       name: 'fake server 1',
-      accessKey: shadowsocksConfigToAccessKey(CONFIG_1)
+      accessKey: shadowsocksConfigToAccessKey(CONFIG_1),
     });
   });
 
   it('add stores servers', () => {
     const storage = new InMemoryStorage();
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
     const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
     repo.add(accessKey0);
     repo.add(accessKey1);
-    const servers: ServersStorageV1 =
-        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const servers: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     expect(servers.length).toEqual(2);
     expect(servers[0].accessKey).toEqual(accessKey0);
     expect(servers[0].name).toEqual(CONFIG_0.name);
@@ -118,7 +143,11 @@ describe('OutlineServerRepository', () => {
   it('add emits ServerAdded event', () => {
     const eventQueue = new EventQueue();
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      eventQueue,
+      new InMemoryStorage()
+    );
     const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     let didEmitServerAddedEvent = false;
@@ -134,16 +163,22 @@ describe('OutlineServerRepository', () => {
 
   it('add throws on invalid access keys', () => {
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(),
-        new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      new InMemoryStorage()
+    );
     expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
     expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
   });
 
   it('getAll returns added servers', () => {
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(),
-        new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      new InMemoryStorage()
+    );
     expect(repo.getAll()).toEqual([]);
     const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
     const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
@@ -161,8 +196,11 @@ describe('OutlineServerRepository', () => {
 
   it('getById retrieves added servers', () => {
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(),
-        new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      new InMemoryStorage()
+    );
     const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     const serverId = repo.getAll()[0].id;
@@ -174,8 +212,11 @@ describe('OutlineServerRepository', () => {
 
   it('getById returns undefined for nonexistent servers', () => {
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(),
-        new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      new InMemoryStorage()
+    );
     expect(repo.getById('server-does-not-exist')).toBeUndefined();
     expect(repo.getById('')).toBeUndefined();
   });
@@ -184,13 +225,16 @@ describe('OutlineServerRepository', () => {
     const NEW_SERVER_NAME = 'new server name';
     const storage = new InMemoryStorage();
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
-    const serversStorage: ServersStorageV1 =
-        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     const serverNames = serversStorage.map(s => s.name);
     expect(serverNames).toContain(NEW_SERVER_NAME);
   });
@@ -198,9 +242,13 @@ describe('OutlineServerRepository', () => {
   it('rename emits ServerRenamed event', () => {
     const NEW_SERVER_NAME = 'new server name';
     const eventQueue = new EventQueue();
-    eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
+    eventQueue.subscribe(ServerAdded, () => {}); // Silence dropped event warnings.
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      eventQueue,
+      new InMemoryStorage()
+    );
     const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     const server = repo.getAll()[0];
@@ -217,7 +265,11 @@ describe('OutlineServerRepository', () => {
   it('forgets servers', () => {
     const storage = new InMemoryStorage();
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
@@ -226,17 +278,20 @@ describe('OutlineServerRepository', () => {
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(1);
     expect(serverIds).not.toContain(forgottenServerId);
-    const serversStorage: ServersStorageV1 =
-        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).not.toContain(forgottenServerId);
   });
 
   it('forget emits ServerForgotten events', () => {
     const eventQueue = new EventQueue();
-    eventQueue.subscribe(ServerAdded, () => {});  // Silence dropped event warnings.
+    eventQueue.subscribe(ServerAdded, () => {}); // Silence dropped event warnings.
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      eventQueue,
+      new InMemoryStorage()
+    );
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
@@ -253,7 +308,11 @@ describe('OutlineServerRepository', () => {
   it('undoes forgetting servers', () => {
     const storage = new InMemoryStorage();
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(), storage);
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      storage
+    );
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
@@ -264,8 +323,7 @@ describe('OutlineServerRepository', () => {
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(2);
     expect(serverIds).toContain(forgottenServerId);
-    const serversStorage: ServersStorageV1 =
-        JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).toContain(forgottenServerId);
   });
@@ -276,7 +334,11 @@ describe('OutlineServerRepository', () => {
     eventQueue.subscribe(ServerAdded, () => {});
     eventQueue.subscribe(ServerForgotten, () => {});
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      eventQueue,
+      new InMemoryStorage()
+    );
     repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
     repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
@@ -293,27 +355,36 @@ describe('OutlineServerRepository', () => {
 
   it('validates access keys', () => {
     const repo = new OutlineServerRepository(
-        new FakeNativeNetworking(), getFakeTunnelFactory(), new EventQueue(),
-        new InMemoryStorage());
+      new FakeNativeNetworking(),
+      getFakeTunnelFactory(),
+      new EventQueue(),
+      new InMemoryStorage()
+    );
     // Invalid access keys.
     expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
     expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);
     // IPv6 host.
-    expect(() => repo.validateAccessKey(shadowsocksConfigToAccessKey({
-      host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
-      port: 443,
-      password: 'test',
-      method: 'chacha20-ietf-poly1305'
-    }))).toThrowError(ServerIncompatible);
+    expect(() =>
+      repo.validateAccessKey(
+        shadowsocksConfigToAccessKey({
+          host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
+          port: 443,
+          password: 'test',
+          method: 'chacha20-ietf-poly1305',
+        })
+      )
+    ).toThrowError(ServerIncompatible);
     // Unsupported ciphers.
-    expect(
-        () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
-            {host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})))
-        .toThrowError(ShadowsocksUnsupportedCipher);
-    expect(
-        () => repo.validateAccessKey(shadowsocksConfigToAccessKey(
-            {host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})))
-        .toThrowError(ShadowsocksUnsupportedCipher);
+    expect(() =>
+      repo.validateAccessKey(
+        shadowsocksConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})
+      )
+    ).toThrowError(ShadowsocksUnsupportedCipher);
+    expect(() =>
+      repo.validateAccessKey(
+        shadowsocksConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})
+      )
+    ).toThrowError(ShadowsocksUnsupportedCipher);
   });
 });
 
