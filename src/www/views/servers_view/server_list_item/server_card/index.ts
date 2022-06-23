@@ -61,6 +61,7 @@ const sharedCSS = css`
   .card-metadata {
     font-family: var(--outline-font-family);
     color: var(--outline-text-color);
+    gap: var(--outline-slim-gutter);
     grid-area: metadata;
     height: 100%;
     display: flex;
@@ -74,26 +75,31 @@ const sharedCSS = css`
 
   .card-metadata-text {
     user-select: text;
-    padding: var(--outline-slim-gutter);
   }
 
-  .card-metadata-server-name {
+  .card-metadata-server-name,
+  .card-metadata-server-address {
     -webkit-box-orient: vertical;
-    /* https://caniuse.com/?search=line-clamp */
-    -webkit-line-clamp: 3;
-    color: var(--outline-text-color);
     display: -webkit-box;
     font-family: var(--outline-font-family);
-    font-size: var(--server-name-size);
-    margin-bottom: var(--outline-mini-gutter);
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  .card-metadata-server-name {
+    /* https://caniuse.com/?search=line-clamp */
+    -webkit-line-clamp: 3;
+    color: var(--outline-text-color);
+    font-size: var(--server-name-size);
+    margin-bottom: var(--outline-mini-gutter);
+  }
+
   .card-metadata-server-address {
+    /* https://caniuse.com/?search=line-clamp */
+    -webkit-line-clamp: 2;
     color: var(--outline-label-color);
-    font-family: var(--outline-font-family);
     font-size: var(--server-address-size);
+    word-break: break-all;
   }
 
   .card-menu-button {
