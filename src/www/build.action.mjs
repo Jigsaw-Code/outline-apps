@@ -13,13 +13,13 @@
 // limitations under the License.
 
 import fs from 'fs/promises';
-import webpack from 'webpack';
 import url from 'url';
 import path from 'path';
 
 import electronConfig from './webpack_electron.mjs';
 import cordovaConfig from './webpack_cordova.mjs';
 
+import {webpackPromise} from '../build/webpack_promise.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
@@ -30,26 +30,6 @@ import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const webpackPromise = webpackConfig =>
-    new Promise((resolve, reject) => {
-      webpack(webpackConfig, (error, stats) => {
-        if (error || stats.hasErrors()) {
-          reject(
-            error ||
-              stats
-                .toJson()
-                ?.errors.reduce(
-                  (errorMessages, {message}) => (message ? `${errorMessages}\n${message}` : errorMessages),
-                  ''
-                ) ||
-              'Unknown Webpack error.'
-          );
-        }
-
-        resolve(stats);
-      });
-    });
-
   const {platform, buildMode} = getBuildParameters(parameters);
 
   // write build environment

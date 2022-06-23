@@ -29,7 +29,13 @@ export function getBuildParameters(buildParameters) {
   let {
     _: [platform],
     buildMode,
+    networkStack,
+    stagingPercentage,
   } = minimist(buildParameters);
+
+  if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
+    throw new RangeError('StagingPercentage must be a number between zero and one hundred!');
+  }
 
   if (platform && !VALID_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -48,8 +54,9 @@ export function getBuildParameters(buildParameters) {
   // set defaults
   platform ??= 'browser';
   buildMode ??= 'debug';
+  networkStack ??= 'libevbadvpn';
 
-  return {platform, buildMode};
+  return {platform, buildMode, stagingPercentage, networkStack};
 }
 
 async function main() {
