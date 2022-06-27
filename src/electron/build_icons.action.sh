@@ -15,4 +15,4 @@
 # limitations under the License.
 set -eux
 
-electron-icon-maker $@
+electron-icon-maker "$@"
