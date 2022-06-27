@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from 'url';
 import minimist from 'minimist';
 
 const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
@@ -31,6 +30,7 @@ export function getBuildParameters(buildParameters) {
     buildMode,
     networkStack,
     stagingPercentage,
+    sentryDSN,
   } = minimist(buildParameters);
 
   if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
@@ -55,14 +55,7 @@ export function getBuildParameters(buildParameters) {
   platform ??= 'browser';
   buildMode ??= 'debug';
   networkStack ??= 'libevbadvpn';
+  sentryDSN ??= process.env.SENTRY_DSN;
 
-  return {platform, buildMode, stagingPercentage, networkStack};
-}
-
-async function main() {
-  console.log(getBuildParameters(process.argv.slice(2)));
-}
-
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  main();
+  return {platform, buildMode, stagingPercentage, networkStack, sentryDSN};
 }

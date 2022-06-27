@@ -13,7 +13,12 @@
 // limitations under the License.
 
 import path from 'path';
-import {DefinePlugin} from 'webpack';
+import webpack from 'webpack';
+
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default ({networkStack}) => ({
   entry: './src/electron/index.ts',
@@ -36,7 +41,7 @@ export default ({networkStack}) => ({
     extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
-    new DefinePlugin({
+    new webpack.DefinePlugin({
       networkStack,
     }),
   ],

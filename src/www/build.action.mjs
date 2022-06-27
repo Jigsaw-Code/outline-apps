@@ -30,13 +30,13 @@ import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {platform, buildMode, sentryDSN} = getBuildParameters(parameters);
 
   // write build environment
   await fs.mkdir(path.resolve(process.env.ROOT_DIR, 'www'), {recursive: true});
   await fs.writeFile(
     path.resolve(process.env.ROOT_DIR, 'www/environment.json'),
-    JSON.stringify(await getBuildEnvironment(platform, buildMode))
+    JSON.stringify(await getBuildEnvironment(platform, buildMode, {sentryDSN}))
   );
 
   // get correct webpack config

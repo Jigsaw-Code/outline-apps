@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from 'url';
-import {getBuildParameters} from './get_build_parameters.mjs';
-
 /*
   Inputs:
   => buildMode: the outline build mode
@@ -31,16 +28,4 @@ export function getWebpackBuildMode(buildMode) {
     default:
       throw new TypeError('get_webpack_mode requires a buildMode argument of debug or release');
   }
-}
-
-function main() {
-  const {buildMode} = getBuildParameters(process.argv.slice(2));
-
-  const result = getWebpackBuildMode(buildMode);
-
-  result && console.log(result);
-}
-
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  main();
 }
