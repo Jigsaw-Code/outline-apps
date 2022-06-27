@@ -55,6 +55,7 @@ export function getBuildParameters(buildParameters) {
   platform ??= 'browser';
   buildMode ??= 'debug';
   networkStack ??= 'libevbadvpn';
+  stagingPercentage ??= 100;
   sentryDSN ??= process.env.SENTRY_DSN;
 
   return {platform, buildMode, stagingPercentage, networkStack, sentryDSN};
