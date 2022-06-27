@@ -42,7 +42,7 @@ export default ({networkStack}) => ({
   },
   plugins: [
     new webpack.DefinePlugin({
-      networkStack,
+      NETWORK_STACK: networkStack,
     }),
   ],
   output: {
