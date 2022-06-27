@@ -42,6 +42,7 @@ Polymer({
         height: -webkit-calc(100vh - 64px);
         font-size: 14px;
         line-height: 20px;
+        padding-bottom: 50px;
       }
       :host a {
         color: var(--medium-green);
