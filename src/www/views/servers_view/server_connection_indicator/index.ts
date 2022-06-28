@@ -40,6 +40,7 @@ export class ServerConnectionIndicator extends LitElement {
     css`
       :host {
         height: 100%;
+        outline: 0;
         position: relative;
         display: inline-block;
         aspect-ratio: 1;
