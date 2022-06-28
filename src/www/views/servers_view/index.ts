@@ -42,6 +42,7 @@ Polymer({
         height: -webkit-calc(100vh - 64px);
         font-size: 14px;
         line-height: 20px;
+        /* temporarily hard-coding additional padding at the bottom to give users more scroll room */
         padding-bottom: 50px;
       }
       :host a {
