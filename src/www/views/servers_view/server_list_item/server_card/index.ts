@@ -134,7 +134,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const hasErrorMessage = Boolean(server.errorMessageId);
 
   const messages = {
-    serverName: server.name || localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
+    serverName:
+      server.name.trim() || localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
