@@ -16,8 +16,8 @@
 
  body {
   /*
-    we're not properly CSS resetting - this is to prevent
-    the browser agent from insetting the main window weirdly
+    We're not properly CSS resetting - this is to prevent
+    the browser agent from insetting the main window weirdly.
   */
   margin: 0;
  }
