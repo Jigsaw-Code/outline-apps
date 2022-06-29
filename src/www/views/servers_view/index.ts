@@ -33,7 +33,6 @@ Polymer({
   _template: html`
     <style>
       :host {
-        margin-top: 1rem;
         width: 100%;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
