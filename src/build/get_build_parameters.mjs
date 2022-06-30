@@ -30,7 +30,7 @@ export function getBuildParameters(buildParameters) {
     buildMode,
     networkStack,
     stagingPercentage,
-    sentryDSN,
+    sentryDsn,
   } = minimist(buildParameters);
 
   if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
@@ -56,7 +56,7 @@ export function getBuildParameters(buildParameters) {
   buildMode ??= 'debug';
   networkStack ??= 'libevbadvpn';
   stagingPercentage ??= 100;
-  sentryDSN ??= process.env.SENTRY_DSN;
+  sentryDsn ??= process.env.SENTRY_DSN;
 
-  return {platform, buildMode, stagingPercentage, networkStack, sentryDSN};
+  return {platform, buildMode, stagingPercentage, networkStack, sentryDsn};
 }

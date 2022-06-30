@@ -19,10 +19,13 @@ import {runAction} from '../build/run_action.mjs';
 import {webpackPromise} from '../build/webpack_promise.mjs';
 import electronMainWebpackConfig from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
+import path from 'path';
 import url from 'url';
 
+const ELECTRON_BUILD_DIR = 'build';
+
 export async function main(...parameters) {
-  const {platform, buildMode, networkStack, sentryDSN} = getBuildParameters(parameters);
+  const {platform, buildMode, networkStack, sentryDsn} = getBuildParameters(parameters);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
@@ -34,15 +37,15 @@ export async function main(...parameters) {
   if (platform === 'windows') {
     let windowsEnvironment = `!define RELEASE "${await getVersion(platform)}"`;
 
-    if (sentryDSN) {
-      const {username: apiKey, pathname: projectID} = new URL(sentryDSN);
+    if (sentryDsn) {
+      const {username: apiKey, pathname: projectID} = new URL(sentryDsn);
 
       windowsEnvironment += `\n!define SENTRY_URL "https://sentry.io/api${projectID}/store/?sentry_version=7&sentry_key=${apiKey}"`;
     } else {
       windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
     }
 
-    await fs.writeFile('build/env.nsh', windowsEnvironment);
+    await fs.writeFile(path.resolve(process.env.ROOT_DIR, ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
   }
 }
 
