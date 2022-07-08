@@ -35,6 +35,15 @@ const sharedCSS = css`
     all: initial;
   }
 
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    -webkit-touch-callout: none;
+  }
+
   :host {
     --server-name-size: 1rem;
     --server-address-size: 0.875rem;
@@ -54,7 +63,6 @@ const sharedCSS = css`
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
     overflow: hidden;
-    user-select: none;
     width: 100%;
   }
 
