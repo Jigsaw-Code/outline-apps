@@ -294,9 +294,8 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     css`
       .card {
         --min-indicator-size: 192px;
-        --max-indicator-size: calc(
-          var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter)
-        );
+        /* calc() in combination with grid in this way can be inconsistent on iOS */
+        --max-indicator-size: var(--min-indicator-size);
 
         grid-template-columns: 0 1fr auto 0;
         grid-template-rows: 0 auto minmax(0, 1fr) auto;

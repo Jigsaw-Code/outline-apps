@@ -63,6 +63,12 @@ export async function main(...parameters) {
     );
   }
 
+  if (platform === 'android') {
+    console.warn(
+      "If you're not currently running 'cordova/build android', you may need to for Android Studio to work."
+    );
+  }
+
   await cordova.prepare({platforms: [platform], save: false});
 
   if (isApple) {
