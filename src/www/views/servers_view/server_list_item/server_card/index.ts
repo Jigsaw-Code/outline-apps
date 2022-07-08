@@ -294,7 +294,10 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     css`
       .card {
         --min-indicator-size: 192px;
-        /* calc() in combination with grid in this way can be inconsistent on iOS */
+        /* 
+          TODO(daniellacosse): calc() in combination with grid in this way can be inconsistent on iOS.
+          May be resolved by autoprefixer as well.  
+        */
         --max-indicator-size: var(--min-indicator-size);
 
         grid-template-columns: 0 1fr auto 0;
