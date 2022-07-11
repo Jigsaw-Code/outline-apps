@@ -36,12 +36,9 @@ const sharedCSS = css`
   }
 
   * {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-
     -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   :host {

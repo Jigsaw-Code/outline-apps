@@ -31,10 +31,9 @@ export async function main(...parameters) {
   await runAction('cordova/setup', ...parameters);
 
   if (platform === 'osx' && buildMode === 'release') {
-    console.warn(
+    throw new Error(
       'Production MacOS builds currently must be done in XCode due to a cordova issue. Please open platforms/osx/Outline.xcodeproj to continue.'
     );
-    return;
   }
 
   let argv = [];
