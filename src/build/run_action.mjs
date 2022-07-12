@@ -14,6 +14,7 @@
 
 import chalk from 'chalk';
 import {existsSync} from 'fs';
+import {readFile} from 'fs/promises';
 import path from 'path';
 import {spawn} from 'child_process';
 import url from 'url';
@@ -25,6 +26,10 @@ import {getRootDir} from './get_root_dir.mjs';
  */
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
+
+  if (actionPath in JSON.parse(await readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+    return actionPath;
+  }
 
   const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
   const extensions = ['sh', 'mjs'];
@@ -96,11 +101,21 @@ export async function runAction(actionPath, ...parameters) {
     return runAction('list');
   }
 
+  let runner = 'npm run';
+
+  if (resolvedPath.endsWith('mjs')) {
+    runner = 'node';
+  }
+
+  if (resolvedPath.endsWith('sh')) {
+    runner = 'bash';
+  }
+
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+    await spawnStream(runner, [resolvedPath, ...parameters]);
   } catch (error) {
     if (error?.message) {
       console.error(chalk.red(error.message));

@@ -32,13 +32,13 @@ jobs:
         run: npm ci
         
       - name: Run Linter
-        run: npm run lint
+        run: npm run action lint
 
       - name: Build Web App
         run: npm run action www/build
 
       - name: Test Web App
-        run: npm run action www/test
+        run: npm run action test:www
 
   linux_debug_build:
     name: Linux Debug Build
