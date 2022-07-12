@@ -39,6 +39,8 @@ export class ServerConnectionIndicator extends LitElement {
   static styles = [
     css`
       :host {
+        height: 100%;
+        outline: 0;
         position: relative;
         display: inline-block;
         aspect-ratio: 1;
@@ -60,11 +62,6 @@ export class ServerConnectionIndicator extends LitElement {
 
         --circle-disconnected-opacity: 1;
         --circle-disconnected-color: grayscale(1);
-      }
-
-      :host,
-      .circle {
-        height: 100%;
       }
 
       .circle {
@@ -174,7 +171,7 @@ export class ServerConnectionIndicator extends LitElement {
       ${CIRCLE_SIZES.map(
         circleSize =>
           html`
-            <img class="circle circle-${circleSize} circle-${this.animationState}" src="${circle}" />
+            <img class="circle circle-${circleSize} circle-${this.animationState}" src="${circle}" height="100%" />
           `
       )}
     `;
