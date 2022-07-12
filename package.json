@@ -90,7 +90,7 @@
     "cordova-plugin-outline": "file:cordova-plugin-outline",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
-    "electron": "^11.5.0",
+    "electron": "^15.5.5",
     "electron-builder": "^22.9.1",
     "electron-icon-maker": "^0.0.4",
     "eslint": "^8.15.0",
