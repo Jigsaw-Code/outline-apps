@@ -16,10 +16,13 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getVersion} from '../build/get_version.mjs';
 import {runAction} from '../build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
+import copydir from 'copy-dir';
 import fs from 'fs/promises';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
+
+const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, stagingPercentage} = getBuildParameters(parameters);
@@ -27,7 +30,11 @@ export async function main(...parameters) {
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
   await runAction('electron/build_main', ...parameters);
-  await runAction('electron/build_icons', '--input=resources/electron/icon.png', '--output=build');
+
+  await copydir.sync(
+    path.join(getRootDir(), 'src/electron/icons'),
+    path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
+  );
 
   const electronConfig = JSON.parse(
     await fs.readFile(path.resolve(getRootDir(), './src/electron/electron-builder.json'))
