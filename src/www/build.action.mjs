@@ -36,7 +36,7 @@ export async function main(...parameters) {
   await fs.mkdir(path.resolve(process.env.ROOT_DIR, 'www'), {recursive: true});
   await fs.writeFile(
     path.resolve(process.env.ROOT_DIR, 'www/environment.json'),
-    JSON.stringify(await getBuildEnvironment(platform, buildMode, {sentryDsn}))
+    JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
   );
 
   // get correct webpack config
