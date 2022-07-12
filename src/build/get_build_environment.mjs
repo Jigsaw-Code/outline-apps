@@ -23,7 +23,7 @@ import {getBuildNumber} from './get_build_number.mjs';
   Outputs:
   => the build environment object
 */
-export async function getBuildEnvironment(platform, buildMode, {sentryDsn} = {}) {
+export async function getBuildEnvironment(platform, buildMode, sentryDsn) {
   if (buildMode === 'release') {
     if (!sentryDsn) {
       throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
