@@ -171,7 +171,12 @@ export class ServerConnectionIndicator extends LitElement {
       ${CIRCLE_SIZES.map(
         circleSize =>
           html`
-            <img class="circle circle-${circleSize} circle-${this.animationState}" src="${circle}" height="100%" />
+            <img
+              class="circle circle-${circleSize} circle-${this.animationState}"
+              src="${circle}"
+              height="100%"
+              draggable="false"
+            />
           `
       )}
     `;
