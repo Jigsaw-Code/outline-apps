@@ -78,10 +78,6 @@ const sharedCSS = css`
     max-height: var(--max-indicator-size);
   }
 
-  .card-metadata-text {
-    user-select: text;
-  }
-
   .card-metadata-server-name,
   .card-metadata-server-address {
     -webkit-box-orient: vertical;
@@ -89,6 +85,8 @@ const sharedCSS = css`
     font-family: var(--outline-font-family);
     overflow: hidden;
     text-overflow: ellipsis;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   .card-metadata-server-name {
