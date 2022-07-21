@@ -35,6 +35,12 @@ const sharedCSS = css`
     all: initial;
   }
 
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
   :host {
     --server-name-size: 1rem;
     --server-address-size: 0.875rem;
@@ -54,7 +60,6 @@ const sharedCSS = css`
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
     overflow: hidden;
-    user-select: none;
     width: 100%;
   }
 
@@ -73,10 +78,6 @@ const sharedCSS = css`
     max-height: var(--max-indicator-size);
   }
 
-  .card-metadata-text {
-    user-select: text;
-  }
-
   .card-metadata-server-name,
   .card-metadata-server-address {
     -webkit-box-orient: vertical;
@@ -84,6 +85,8 @@ const sharedCSS = css`
     font-family: var(--outline-font-family);
     overflow: hidden;
     text-overflow: ellipsis;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   .card-metadata-server-name {
@@ -286,9 +289,11 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     css`
       .card {
         --min-indicator-size: 192px;
-        --max-indicator-size: calc(
-          var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter)
-        );
+        /* 
+          TODO(daniellacosse): calc() in combination with grid in this way can be inconsistent on iOS.
+          May be resolved by autoprefixer as well.  
+        */
+        --max-indicator-size: var(--min-indicator-size);
 
         grid-template-columns: 0 1fr auto 0;
         grid-template-rows: 0 auto minmax(0, 1fr) auto;
