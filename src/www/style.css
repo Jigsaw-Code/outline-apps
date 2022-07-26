@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+ body {
+  /*
+    We're not properly CSS resetting - this is to prevent
+    the browser agent from insetting the main window weirdly.
+  */
+  margin: 0;
+ }
+
 :root {
   /* tokens */
   --min-supported-device-width: 320px;

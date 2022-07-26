@@ -31,6 +31,10 @@
     "message": "Change Language",
     "description": "The menu item text and title of a page for a user to set the app language."
   },
+  "language_page_title": {
+    "message": "Select a language",
+    "description": "The title of a page for a user to choose the app language."
+  },
   "quit": {
     "message": "Quit",
     "description": "The text for a button that quits (closes) the application."
@@ -96,7 +100,7 @@
     "description": "Status text showing that a form is progress of being submitted."
   },
   "about_outline": {
-    "message": "Outline is a product by $JIGSAW$ that lets anyone create, run, and share access to their own VPN. Outline is designed to be resistant to blocking. Visit $GETOUTLINE$ to learn how to get started.$NEWLINE$$NEWLINE$Outline is open source software powered by $SHADOWSOCKS$. You can contribute to the code on $GITHUB$ and join the conversation on $REDDIT$.",
+    "message": "Outline is a product by $JIGSAW$ that lets anyone create, run, and share access to their own VPN. Outline is designed to be resistant to blocking. Visit $GETOUTLINE$ to learn how to get started.$NEW_LINE$$NEW_LINE$Outline is open source software powered by $SHADOWSOCKS$. You can contribute to the code on $GITHUB$ and join the conversation on $REDDIT$.",
     "description": "The contents of the About page of the app. Outline is the product name and can be found in the translation glossary.",
     "placeholders": {
       "GITHUB": {
@@ -392,7 +396,7 @@
     "description": "An error message shown when the user tries to connect to a server that cannot be reached for some reason."
   },
   "outline_plugin_error_admin_permissions": {
-    "message": "Outline needs admin permissions in order to run. If you don't have admin permissions, please try again after restarting your Windows computer or ask your system administrator for help.",
+    "message": "Outline needs admin permissions in order to be initialized. If you don't have admin permissions, please try again after restarting your computer or ask your system administrator for help.",
     "description": "An error message when the application is not granted administrator permissions."
   },
   "outline_plugin_error_routing_tables": {
@@ -410,6 +414,22 @@
   "outline_plugin_error_system_configuration": {
     "message": "Sorry, it looks like Outline is not properly installed. Please try installing it again. If that doesn't work, please submit feedback through the app.",
     "description": "Error message shown when the application cannot connect because the installer could not configure the system or because changes have been made to the system which can only be corrected by running the installer again."
+  },
+  "outline_services_installation_confirmation": {
+    "message": "We will initialize Outline, which may require admin permissions. Would you like to proceed?",
+    "desciption": "A prompt message asking for permission whether Outline is allowed to install backend services, because that requires administrative permission."
+  },
+  "outline_services_installation_failed": {
+    "message": "Unfortunately we are not able to initialize Outline, please submit feedback through the app.",
+    "desciption": "An error message shown when the user tries to install Outline backend services but failed for some reason."
+  },
+  "outline_services_installed": {
+    "message": "Outline has been successfully initialized, please try again to connect to the server.",
+    "desciption": "An information message shown when the Outline successfully installed all backend services, and we ask the user try to reconnect to the server."
+  },
+  "outline_services_installing": {
+    "message": "Initializing Outline...",
+    "desciption": "An information message indicating Outline is installing all its backend services."
   },
   "fix_this": {
     "message": "Fix this",

@@ -33,7 +33,6 @@ Polymer({
   _template: html`
     <style>
       :host {
-        margin-top: 1rem;
         width: 100%;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
@@ -42,6 +41,8 @@ Polymer({
         height: -webkit-calc(100vh - 64px);
         font-size: 14px;
         line-height: 20px;
+        /* Temporarily hard-coding additional padding at the bottom to give users more scroll room. */
+        padding-bottom: 50px;
       }
       :host a {
         color: var(--medium-green);

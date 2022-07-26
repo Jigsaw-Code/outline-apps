@@ -35,6 +35,12 @@ const sharedCSS = css`
     all: initial;
   }
 
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
   :host {
     --server-name-size: 1rem;
     --server-address-size: 0.875rem;
@@ -53,15 +59,14 @@ const sharedCSS = css`
     display: grid;
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
-    min-width: var(--min-supported-device-width);
     overflow: hidden;
-    user-select: none;
     width: 100%;
   }
 
   .card-metadata {
     font-family: var(--outline-font-family);
     color: var(--outline-text-color);
+    gap: var(--outline-slim-gutter);
     grid-area: metadata;
     height: 100%;
     display: flex;
@@ -73,28 +78,31 @@ const sharedCSS = css`
     max-height: var(--max-indicator-size);
   }
 
-  .card-metadata-text {
+  .card-metadata-server-name,
+  .card-metadata-server-address {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    font-family: var(--outline-font-family);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-user-select: text;
     user-select: text;
-    padding: var(--outline-slim-gutter);
   }
 
   .card-metadata-server-name {
-    -webkit-box-orient: vertical;
     /* https://caniuse.com/?search=line-clamp */
     -webkit-line-clamp: 3;
     color: var(--outline-text-color);
-    display: -webkit-box;
-    font-family: var(--outline-font-family);
     font-size: var(--server-name-size);
     margin-bottom: var(--outline-mini-gutter);
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .card-metadata-server-address {
+    /* https://caniuse.com/?search=line-clamp */
+    -webkit-line-clamp: 2;
     color: var(--outline-label-color);
-    font-family: var(--outline-font-family);
     font-size: var(--server-address-size);
+    word-break: break-all;
   }
 
   .card-menu-button {
@@ -129,7 +137,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const hasErrorMessage = Boolean(server.errorMessageId);
 
   const messages = {
-    serverName: server.name ?? localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
+    serverName:
+      server.name?.trim() || localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
@@ -280,9 +289,11 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     css`
       .card {
         --min-indicator-size: 192px;
-        --max-indicator-size: calc(
-          var(--min-supported-device-width) - var(--outline-slim-gutter) - var(--outline-slim-gutter)
-        );
+        /* 
+          TODO(daniellacosse): calc() in combination with grid in this way can be inconsistent on iOS.
+          May be resolved by autoprefixer as well.  
+        */
+        --max-indicator-size: var(--min-indicator-size);
 
         grid-template-columns: 0 1fr auto 0;
         grid-template-rows: 0 auto minmax(0, 1fr) auto;

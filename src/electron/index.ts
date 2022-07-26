@@ -30,7 +30,7 @@ import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
-import {RoutingDaemon} from './routing_service';
+import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
@@ -455,7 +455,7 @@ function main() {
       });
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
-      // stop the vpn and forget, no need to await because stopVpn itself might throw another error
+      // clean up the state, no need to await because stopVpn might throw another error which can be ignored
       stopVpn();
       throw errors.toErrorCode(e);
     }
@@ -463,6 +463,21 @@ function main() {
 
   // Disconnects from the current server, if any.
   promiseIpc.on('stop-proxying', stopVpn);
+
+  // Install backend services and return the error code
+  ipcMain.handle('install-outline-services', async () => {
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    try {
+      await installRoutingServices();
+      return errors.ErrorCode.NO_ERROR;
+    } catch (e) {
+      if (typeof e === 'number') {
+        return e;
+      }
+      return errors.ErrorCode.UNEXPECTED;
+    }
+  });
 
   // Error reporting.
   // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.

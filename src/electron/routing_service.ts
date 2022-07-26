@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
+import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
-import * as errors from '../www/model/errors';
-
 import {TunnelStatus} from '../www/app/tunnel';
-import {getServiceStartCommand} from './util';
+import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
+import {getAppPath} from './util';
 
-const SERVICE_NAME = platform() === 'win32' ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+const isLinux = platform() === 'linux';
+const isWindows = platform() === 'win32';
+const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
 
 interface RoutingServiceRequest {
   action: string;
@@ -78,7 +81,7 @@ export class RoutingDaemon {
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
-  async start(retry = true) {
+  async start() {
     return new Promise<void>((fulfill, reject) => {
       const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
@@ -114,7 +117,7 @@ export class RoutingDaemon {
           if (this.stopping) {
             cleanup();
             newSocket.destroy();
-            reject(new errors.SystemConfigurationException('routing daemon service stopped before started'));
+            reject(new SystemConfigurationException('routing daemon service stopped before started'));
           } else {
             fulfill();
           }
@@ -129,24 +132,8 @@ export class RoutingDaemon {
       }));
 
       const initialErrorHandler = () => {
-        if (!retry) {
-          this.socket = null;
-          reject(new errors.SystemConfigurationException(`routing daemon is not running`));
-          return;
-        }
-
-        console.info(`(re-)installing routing daemon`);
-        sudo.exec(getServiceStartCommand(), {name: 'Outline'}, sudoError => {
-          if (sudoError) {
-            // NOTE: The script could have terminated with an error - see the comment in
-            //       sudo-prompt's typings definition.
-            this.socket = null;
-            reject(new errors.NoAdminPermissions());
-            return;
-          }
-
-          this.start(false).then(fulfill, reject);
-        });
+        this.socket = null;
+        reject(new SystemConfigurationException('routing daemon is not running'));
       };
       newSocket.once('error', initialErrorHandler);
     });
@@ -233,3 +220,87 @@ export class RoutingDaemon {
     this.networkChangeListener = newListener;
   }
 }
+
+//#region routing service installation
+
+function executeCommandAsRoot(command: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    sudo.exec(command, {name: 'Outline'}, sudoError => {
+      if (sudoError) {
+        // NOTE: The script could have terminated with an error - see the comment in
+        //       sudo-prompt's typings definition.
+        console.error('failed to execute command as root: ', sudoError);
+        reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function installWindowsRoutingServices(): Promise<void> {
+  const WINDOWS_INSTALLER_FILENAME = 'install_windows_service.bat';
+
+  // Locating the script is tricky: when packaged, this basically boils down to:
+  //   c:\program files\Outline\
+  // but during development:
+  //   build/windows
+  //
+  // Surrounding quotes important, consider "c:\program files"!
+  const script = `"${path.join(getAppPath(), WINDOWS_INSTALLER_FILENAME)}"`;
+  return executeCommandAsRoot(script);
+}
+
+async function installLinuxRoutingServices(): Promise<void> {
+  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
+  const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
+  // [InstallationFileName, isExecutable]...
+  const LINUX_SERVICE_FILE_NAMES: Array<[string, boolean]> = [
+    [LINUX_INSTALLER_FILENAME, true],
+    ['OutlineProxyController', true],
+    ['outline_proxy_controller.service', false],
+  ];
+
+  // These Linux service files are located in a mounted folder of the AppImage, typically
+  // located at /tmp/.mount_Outlinxxxxxx/resources/. These files can only be acceeded by
+  // the user who launched Outline.AppImage, so even root cannot access the files or folders.
+  // Therefore we have to copy these files to a normal temporary folder, and execute them
+  // as root.
+  //
+  // Also, we are copying individual files instead of the entire folder because they are in
+  // electron's "asar" archive (which is returned by getAppPath). Electron tries to inject
+  // some logic to node's fs API and make sure the caller can access files in the archive.
+  // However directories are not supported.
+  //
+  // References:
+  // - https://github.com/AppImage/AppImageKit/issues/146
+  // - https://xwartz.gitbooks.io/electron-gitbook/content/en/tutorial/application-packaging.html
+  const tmp = await fsextra.mkdtemp('/tmp/');
+  const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
+
+  console.log(`copying service installation files to ${tmp}`);
+  for (const [filename, executable] of LINUX_SERVICE_FILE_NAMES) {
+    const dest = path.join(tmp, filename);
+    await fsextra.copy(path.join(srcFolderPath, filename), dest, {overwrite: true});
+    if (executable) {
+      await fsextra.chmod(dest, 0o755);
+    }
+  }
+  console.log(`all service installation files copied to ${tmp} successfully`);
+
+  await executeCommandAsRoot(path.join(tmp, LINUX_INSTALLER_FILENAME));
+}
+
+export async function installRoutingServices(): Promise<void> {
+  console.info('installing outline routing service...');
+  if (isWindows) {
+    await installWindowsRoutingServices();
+  } else if (isLinux) {
+    await installLinuxRoutingServices();
+  } else {
+    throw new Error('unsupported os');
+  }
+  console.info('outline routing service installed successfully');
+}
+
+//#endregion routing service installation

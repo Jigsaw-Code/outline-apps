@@ -27,17 +27,19 @@ export async function getVersion(platform) {
   const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
     case 'android':
-    case 'browser':
+    case 'browser': {
       const {widget} = await parseFile('config.xml');
       return widget.$.version;
+    }
     case 'ios':
-    case 'osx':
+    case 'macos': {
       const {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
       } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
+    }
     case 'windows':
       return '1.7.1';
     case 'linux':

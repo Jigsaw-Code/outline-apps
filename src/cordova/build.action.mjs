@@ -21,7 +21,7 @@ import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**
- * @description Builds the parameterized cordova binary (ios, osx, android).
+ * @description Builds the parameterized cordova binary (ios, macos, android).
  *
  * @param {string[]} parameters
  */
@@ -29,6 +29,14 @@ export async function main(...parameters) {
   const {platform, buildMode} = getCordovaBuildParameters(parameters);
 
   await runAction('cordova/setup', ...parameters);
+
+  if (platform === 'osx' && buildMode === 'release') {
+    // Cordova-osx overrides the CODE_SIGNING_IDENTITY in the build.xconfig it generates.
+    // To fix this we need to either update what we're rsync-ing or re-configure cordova-osx somehow.
+    throw new Error(
+      'Production MacOS builds currently must be done in XCode due to a cordova issue. Please open platforms/osx/Outline.xcodeproj to continue.'
+    );
+  }
 
   let argv = [];
 
