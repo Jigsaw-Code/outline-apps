@@ -23,6 +23,18 @@ import {ShadowsocksConfig} from './config';
 import {NativeNetworking} from './net';
 import {Tunnel, TunnelFactory, TunnelStatus} from './tunnel';
 
+function isURL(string: string) {
+  let url;
+
+  try {
+    url = new URL(string);
+  } catch (_) {
+    url = false;
+  }
+
+  return Boolean(url);
+}
+
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
@@ -35,19 +47,17 @@ export class OutlineServer implements Server {
 
   constructor(
     public readonly id: string,
-    public readonly accessKeyOrConfigLocation: string,
+    public readonly accessKeyOrURL: string,
     private _name: string,
+    private _address: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    try {
-      this.config = accessKeyToShadowsocksConfig(accessKeyOrConfigLocation);
-      this.accessKey = accessKeyOrConfigLocation;
-    } finally {
-      if (process.env.FF_ONLINE_CONFIG) {
-        this.configLocation = new URL(accessKeyOrConfigLocation);
-      }
+    if (process.env.FF_ONLINE_CONFIG && isURL(accessKeyOrURL)) {
+      this.configLocation = new URL(accessKeyOrURL);
+    } else {
+      this.accessKey = accessKeyOrURL;
     }
 
     this.tunnel.onStatusChange((status: TunnelStatus) => {
@@ -70,30 +80,45 @@ export class OutlineServer implements Server {
     });
   }
 
+  get address() {
+    return this._address;
+  }
+
   get name() {
     return this._name;
   }
 
   set name(newName: string) {
     this._name = newName;
-    this.config.name = newName;
-  }
-
-  get address() {
-    return `${this.config.host}:${this.config.port}`;
   }
 
   get isOutlineServer() {
+    if (process.env.FF_ONLINE_CONFIG && this.configLocation) {
+      return this.configLocation.search.includes('outline=1');
+    }
+
     return this.accessKey.includes('outline=1');
+  }
+
+  async syncConfig() {
+    let config = null;
+    if (process.env.FF_ONLINE_CONFIG && this.configLocation) {
+      config = (await (await fetch(this.configLocation.toString())).json()) as ShadowsocksConfig;
+    } else {
+      config = accessKeyToShadowsocksConfig(this.accessKey);
+    }
+
+    const {host, port, name} = config;
+
+    this._address = `${host}:${port}`;
+    this._name = name;
+
+    return config;
   }
 
   async connect() {
     try {
-      if (this.configLocation && process.env.FF_ONLINE_CONFIG) {
-        this.config = await (await fetch(this.configLocation.toString())).json();
-      }
-
-      await this.tunnel.start(this.config);
+      await this.tunnel.start(await this.syncConfig());
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -117,8 +142,10 @@ export class OutlineServer implements Server {
     return this.tunnel.isRunning();
   }
 
-  checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.config.host, this.config.port);
+  async checkReachable(): Promise<boolean> {
+    const {host, port} = await this.syncConfig();
+
+    return this.net.isServerReachable(host, port);
   }
 
   static isServerCipherSupported(cipher?: string) {
@@ -216,18 +243,6 @@ export class OutlineServerRepository implements ServerRepository {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
     let config = null;
-    if (process.env.FF_ONLINE_CONFIG) {
-      let isURL;
-      try {
-        isURL = Boolean(new URL(accessKey));
-      } catch (e) {
-        isURL = false;
-      }
-
-      if (isURL) {
-        return;
-      }
-    }
     try {
       config = SHADOWSOCKS_URI.parse(accessKey);
     } catch (error) {
@@ -325,10 +340,15 @@ export class OutlineServerRepository implements ServerRepository {
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(id: string, accessKey: string, name: string): OutlineServer {
-    const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
+  private createServer(id: string, accessKeyOrURL: string, name: string): OutlineServer {
+    const server = new OutlineServer(id, accessKeyOrURL, name, '', this.createTunnel(id), this.net, this.eventQueue);
+
+    if (process.env.FF_ONLINE_CONFIG && isURL(accessKeyOrURL)) {
+      return server;
+    }
+
     try {
-      this.validateAccessKey(accessKey);
+      this.validateAccessKey(accessKeyOrURL);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.
@@ -337,6 +357,7 @@ export class OutlineServerRepository implements ServerRepository {
         throw e;
       }
     }
+
     return server;
   }
 }
