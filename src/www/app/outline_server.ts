@@ -45,7 +45,9 @@ export class OutlineServer implements Server {
       this.config = accessKeyToShadowsocksConfig(accessKeyOrConfigLocation);
       this.accessKey = accessKeyOrConfigLocation;
     } finally {
-      this.configLocation = new URL(accessKeyOrConfigLocation);
+      if (process.env.FF_ONLINE_CONFIG) {
+        this.configLocation = new URL(accessKeyOrConfigLocation);
+      }
     }
 
     this.tunnel.onStatusChange((status: TunnelStatus) => {
@@ -87,7 +89,7 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      if (this.configLocation) {
+      if (this.configLocation && process.env.FF_ONLINE_CONFIG) {
         this.config = await (await fetch(this.configLocation.toString())).json();
       }
 
@@ -214,6 +216,18 @@ export class OutlineServerRepository implements ServerRepository {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
     let config = null;
+    if (process.env.FF_ONLINE_CONFIG) {
+      let isURL;
+      try {
+        isURL = Boolean(new URL(accessKey));
+      } catch (e) {
+        isURL = false;
+      }
+
+      if (isURL) {
+        return;
+      }
+    }
     try {
       config = SHADOWSOCKS_URI.parse(accessKey);
     } catch (error) {
