@@ -14,9 +14,8 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import * as sentry from '@sentry/electron';
+import * as sentry from '@sentry/electron/main';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
-import promiseIpc from 'electron-promise-ipc';
 import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
 import * as path from 'path';
@@ -34,6 +33,17 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+
+// Build-time macros injected by webpack's DefinePlugin:
+//   - NETWORK_STACK is either 'go' or 'libevbadvpn' by default
+//   - SENTRY_DSN is either undefined or a url string
+//   - APP_VERSION should always be a string
+declare const NETWORK_STACK: string;
+declare const SENTRY_DSN: string | undefined;
+declare const APP_VERSION: string;
+
+// Run-time environment variables:
+const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const isLinux = os.platform() === 'linux';
 
@@ -55,12 +65,6 @@ let localizedStrings: {[key: string]: string} = {
   quit: 'Quit',
 };
 
-const debugMode = process.env.OUTLINE_DEBUG === 'true';
-
-// Build-time constant defined by webpack and set to the value of $NETWORK_STACK,
-// or 'libevbadvpn' by default.
-declare const NETWORK_STACK: string;
-
 const TRAY_ICON_IMAGES = {
   connected: createTrayIconImage('connected.png'),
   disconnected: createTrayIconImage('disconnected.png'),
@@ -73,6 +77,18 @@ const enum Options {
 const REACHABILITY_TIMEOUT_MS = 10000;
 
 let currentTunnel: VpnTunnel | undefined;
+
+/**
+ * Sentry must be initialized before electron app is ready:
+ *   - https://github.com/getsentry/sentry-electron/blob/3.0.7/src/main/ipc.ts#L70
+ */
+function setupSentry(): void {
+  // Use 'typeof(v)' instead of '!!v' here to prevent ReferenceError
+  if (typeof SENTRY_DSN !== 'undefined' && typeof APP_VERSION !== 'undefined') {
+    // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
+    sentry.init({dsn: SENTRY_DSN, release: APP_VERSION, maxBreadcrumbs: 100});
+  }
+}
 
 function setupMenu(): void {
   if (debugMode) {
@@ -108,6 +124,8 @@ function setupWindow(): void {
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -313,14 +331,20 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
 }
 
 // Invoked by both the stop-proxying event and quit handler.
-async function stopVpn() {
-  if (!currentTunnel) {
-    return;
-  }
+async function stopVpn(): Promise<errors.ErrorCode> {
+  try {
+    if (!currentTunnel) {
+      return;
+    }
 
-  currentTunnel.disconnect();
-  await tearDownAutoLaunch();
-  await currentTunnel.onceDisconnected;
+    currentTunnel.disconnect();
+    await tearDownAutoLaunch();
+    await currentTunnel.onceDisconnected;
+
+    return errors.ErrorCode.NO_ERROR;
+  } catch {
+    return errors.ErrorCode.UNEXPECTED;
+  }
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
@@ -357,6 +381,8 @@ function checkForUpdates() {
 }
 
 function main() {
+  setupSentry();
+
   if (!app.requestSingleInstanceLock()) {
     console.log('another instance is running - exiting');
     app.quit();
@@ -368,6 +394,9 @@ function main() {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.on('ready', async () => {
+    // To clearly identify app restarts in Sentry.
+    console.info('Outline is starting');
+
     setupMenu();
     setupTray();
     // TODO(fortuna): Start the app with the window hidden on auto-start?
@@ -417,9 +446,9 @@ function main() {
     mainWindow?.webContents.send('push-clipboard');
   });
 
-  promiseIpc.on('is-server-reachable', async (args: {hostname: string; port: number}) => {
+  ipcMain.handle('is-server-reachable', async (_, {hostname, port}: {hostname: string; port: number}) => {
     try {
-      await connectivity.isServerReachable(args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
+      await connectivity.isServerReachable(hostname || '', port || 0, REACHABILITY_TIMEOUT_MS);
       return true;
     } catch {
       return false;
@@ -427,7 +456,7 @@ function main() {
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
-  promiseIpc.on('start-proxying', async (args: {config: ShadowsocksConfig; id: string}) => {
+  ipcMain.handle('start-proxying', async (_, args: {config: ShadowsocksConfig; id: string}) => {
     // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
     //       being faster, this would help prevent traffic leaks - the Cordova clients already do
     //       this).
@@ -453,16 +482,19 @@ function main() {
       tunnelStore.save(args).catch(() => {
         console.error('Failed to store tunnel.');
       });
+
+      return errors.ErrorCode.NO_ERROR;
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
       // clean up the state, no need to await because stopVpn might throw another error which can be ignored
       stopVpn();
-      throw errors.toErrorCode(e);
+
+      return errors.toErrorCode(e);
     }
   });
 
   // Disconnects from the current server, if any.
-  promiseIpc.on('stop-proxying', stopVpn);
+  ipcMain.handle('stop-proxying', stopVpn);
 
   // Install backend services and return the error code
   ipcMain.handle('install-outline-services', async () => {
@@ -477,16 +509,6 @@ function main() {
       }
       return errors.ErrorCode.UNEXPECTED;
     }
-  });
-
-  // Error reporting.
-  // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-  ipcMain.on('environment-info', (event: Event, info: {appVersion: string; dsn: string}) => {
-    if (info.dsn) {
-      sentry.init({dsn: info.dsn, release: info.appVersion, maxBreadcrumbs: 100});
-    }
-    // To clearly identify app restarts in Sentry.
-    console.info(`Outline is starting`);
   });
 
   ipcMain.on('quit-app', quitApp);

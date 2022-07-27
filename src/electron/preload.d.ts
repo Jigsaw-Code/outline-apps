@@ -19,10 +19,18 @@ export interface INativeOsAPI {
   platform: string;
 }
 
+type ErrorCode = import('../www/model/errors').ErrorCode;
+type ShadowsocksConfig = import('../www/app/config').ShadowsocksConfig;
+
 export interface IIpcAPI {
   sendQuitApp(): void;
-  sendEnvironmentInfo(env: {appVersion: string; dsn: string}): void;
-  sendInstallOutlineServices(): Promise<import('../www/model/errors').ErrorCode>;
+  sendInstallOutlineServices(): Promise<ErrorCode>;
+  sendIsServerReachable(hostname: string, port: number): Promise<boolean>;
+  sendStartProxy(config: ShadowsocksConfig, id: string): Promise<ErrorCode>;
+  sendStopProxy(): Promise<ErrorCode>;
+  onProxyConnected(id: string, callback: () => void): void;
+  onProxyReconnecting(id: string, callback: () => void): void;
+  onceProxyDisconnected(id: string, callback: () => void): void;
   onAddServer(callback: (url: string) => void): void;
   onLocalizationRequest(callback: (localizationKeys: string[]) => void): void;
   sendLocalizationResponse(result?: {[key: string]: string}): void;

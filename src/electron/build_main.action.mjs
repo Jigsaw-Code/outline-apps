@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getVersion} from '../build/get_version.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
@@ -26,11 +27,12 @@ const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, networkStack, sentryDsn} = getBuildParameters(parameters);
+  const buildEnv = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
   await webpackPromise(
-    electronMainWebpackConfigs({networkStack}).map(cfg => ({
+    electronMainWebpackConfigs({networkStack, buildEnv}).map(cfg => ({
       ...cfg,
       mode: getWebpackBuildMode(buildMode),
     }))

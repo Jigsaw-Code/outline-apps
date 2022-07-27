@@ -19,6 +19,7 @@
 
 import {contextBridge, ipcRenderer} from 'electron';
 import * as os from 'os';
+import {ShadowsocksConfig} from '../www/app/config';
 import {ErrorCode} from '../www/model/errors';
 
 contextBridge.exposeInMainWorld('os', {
@@ -30,16 +31,36 @@ contextBridge.exposeInMainWorld('ipc', {
     ipcRenderer.send('quit-app');
   },
 
-  sendEnvironmentInfo: (env: {appVersion: string; dsn: string}): void => {
-    ipcRenderer.send('environment-info', env);
-  },
-
   sendInstallOutlineServices: (): Promise<ErrorCode> => {
     return ipcRenderer.invoke('install-outline-services');
   },
 
   onAddServer: (callback: (url: string) => void): void => {
     ipcRenderer.on('add-server', (_, url) => callback(url));
+  },
+
+  sendIsServerReachable: (hostname: string, port: number): Promise<boolean> => {
+    return ipcRenderer.invoke('is-server-reachable', {hostname, port});
+  },
+
+  sendStartProxy: (config: ShadowsocksConfig, id: string): Promise<ErrorCode> => {
+    return ipcRenderer.invoke('start-proxying', {config, id});
+  },
+
+  sendStopProxy: (): Promise<ErrorCode> => {
+    return ipcRenderer.invoke('stop-proxying');
+  },
+
+  onProxyConnected: (id: string, callback: () => void): void => {
+    ipcRenderer.on(`proxy-connected-${id}`, callback);
+  },
+
+  onProxyReconnecting: (id: string, callback: () => void): void => {
+    ipcRenderer.on(`proxy-reconnecting-${id}`, callback);
+  },
+
+  onceProxyDisconnected: (id: string, callback: () => void): void => {
+    ipcRenderer.once(`proxy-disconnected-${id}`, callback);
   },
 
   onLocalizationRequest: (callback: (localizationKeys: string[]) => void): void => {

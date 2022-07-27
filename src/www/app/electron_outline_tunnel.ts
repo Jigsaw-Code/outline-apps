@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ipcRenderer} from 'electron';
-import promiseIpc from 'electron-promise-ipc';
-
-import * as errors from '../model/errors';
+/// <reference path="../../electron/preload.d.ts" />
 
 import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
+import {throwIfIpcError} from './util';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
@@ -28,11 +26,11 @@ export class ElectronOutlineTunnel implements Tunnel {
   constructor(public readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
-    ipcRenderer.on(`proxy-connected-${this.id}`, () => {
+    window.ipc.onProxyConnected(this.id, () => {
       this.handleStatusChange(TunnelStatus.CONNECTED);
     });
 
-    ipcRenderer.on(`proxy-reconnecting-${this.id}`, () => {
+    window.ipc.onProxyReconnecting(this.id, () => {
       this.handleStatusChange(TunnelStatus.RECONNECTING);
     });
   }
@@ -42,20 +40,13 @@ export class ElectronOutlineTunnel implements Tunnel {
       return Promise.resolve();
     }
 
-    ipcRenderer.once(`proxy-disconnected-${this.id}`, () => {
+    window.ipc.onceProxyDisconnected(this.id, () => {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    try {
-      await promiseIpc.send('start-proxying', {config, id: this.id});
-      this.running = true;
-    } catch (e) {
-      if (typeof e === 'number') {
-        throw new errors.OutlinePluginError(e);
-      } else {
-        throw e;
-      }
-    }
+    const err = await window.ipc.sendStartProxy(config, this.id);
+    throwIfIpcError(err);
+    this.running = true;
   }
 
   async stop() {
@@ -64,7 +55,8 @@ export class ElectronOutlineTunnel implements Tunnel {
     }
 
     try {
-      await promiseIpc.send('stop-proxying');
+      const err = await window.ipc.sendStopProxy();
+      throwIfIpcError(err);
       this.running = false;
     } catch (e) {
       console.error(`Failed to stop tunnel ${e}`);
