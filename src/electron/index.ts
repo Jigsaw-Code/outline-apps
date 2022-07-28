@@ -171,7 +171,7 @@ function setupWindow(): void {
   mainWindow.webContents.on('will-navigate', (event: Event, url: string) => {
     try {
       const parsed: URL = new URL(url);
-      if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'macappstore:') {
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
         shell.openExternal(url);
       } else {
         console.warn(`Refusing to open URL with protocol "${parsed.protocol}"`);
