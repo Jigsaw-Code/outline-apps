@@ -123,7 +123,7 @@ function setupWindow(): void {
     height: 640,
     resizable: false,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
