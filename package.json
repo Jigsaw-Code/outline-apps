@@ -49,7 +49,7 @@
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-updater": "^5.0.5",
     "lit": "^2.2.2",
-    "ShadowsocksConfig": "Jigsaw-Code/outline-shadowsocksconfig#v0.1.2",
+    "ShadowsocksConfig": "github:Jigsaw-Code/outline-shadowsocksconfig#v0.2.1",
     "socks": "^1.1.10",
     "sudo-prompt": "^8.2.0",
     "uuidv4": "^4.0.0",
