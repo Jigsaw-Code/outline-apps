@@ -219,7 +219,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             min-height: 42px;
           }
         }
-        @media (min-height: 600px) {
+        @media (min-height: 650px) {
           #logo-nav {
             height: 180px;
           }
