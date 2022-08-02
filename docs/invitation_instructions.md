@@ -16,7 +16,7 @@ Have an invitation to connect to an Outline server? Follow these instructions to
 | [iOS ›](https://itunes.apple.com/app/outline-app/id1356177741) | Get Outline on the App Store |
 | [Windows ›](https://s3.amazonaws.com/outline-releases/client/Outline-Client.exe) | Download Outline.exe and double click to launch. |
 | [macOS ›](https://itunes.apple.com/app/outline-app/id1356178125) | Download outline.dmg, double click to install. Add Outline to your applications folder, double click to launch. |
-| [Linux ›]( https://s3.amazonaws.com/outline-releases/client/Outline-Client.AppImage) | Download Outline.AppImage and double click to launch. |
+| [Linux ›]( https://s3.amazonaws.com/outline-releases/client/Outline-Client.AppImage) | Download Outline.AppImage, [make it executable](https://docs.appimage.org/introduction/quickstart.html), then double click to launch. |
 
 
 ## 3. Add server and connect
