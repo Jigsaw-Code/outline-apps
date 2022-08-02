@@ -27,12 +27,12 @@ const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, networkStack, sentryDsn} = getBuildParameters(parameters);
-  const buildEnv = await getBuildEnvironment(platform, buildMode, sentryDsn);
+  const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
   await webpackPromise(
-    electronMainWebpackConfigs({networkStack, buildEnv}).map(cfg => ({
+    electronMainWebpackConfigs({networkStack, sentryDsn, APP_VERSION}).map(cfg => ({
       ...cfg,
       mode: getWebpackBuildMode(buildMode),
     }))
