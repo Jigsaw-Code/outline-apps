@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// <reference types='cordova'/>
-/// <reference path='../../types/ambient/webintents.d.ts'/>
+/// <reference path='../types/webintents.d.ts'/>
 
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';

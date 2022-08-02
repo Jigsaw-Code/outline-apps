@@ -23,6 +23,7 @@ import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 const CORDOVA_PLATFORMS = ['ios', 'osx', 'android', 'browser'];
@@ -37,6 +38,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: outlinePlatform} = getBuildParameters(parameters);
   const isApple = platform === 'ios' || platform === 'osx';
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
@@ -46,10 +48,10 @@ export async function main(...parameters) {
   }
 
   if (isApple && os.platform() !== 'darwin') {
-    throw new SystemError('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  await runAction('www/build', `--buildMode=${buildMode}`);
+  await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
 
@@ -66,7 +68,7 @@ export async function main(...parameters) {
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
     // TODO(daniellacosse): move this to a cordova hook
-    execSync(`rsync -avc src/cordova/apple/xcode/${platform}/ platforms/${platform}/`, {
+    execSync(`rsync -avc src/cordova/apple/xcode/${outlinePlatform}/ platforms/${platform}/`, {
       stdio: 'inherit',
     });
   }
