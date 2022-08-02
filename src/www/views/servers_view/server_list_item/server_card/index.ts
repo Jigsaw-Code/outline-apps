@@ -73,10 +73,6 @@ const sharedCSS = css`
     align-items: center;
   }
 
-  .card-metadata-text {
-    max-width: 225px;
-  }
-
   server-connection-indicator {
     min-height: var(--min-indicator-size);
     max-height: var(--max-indicator-size);
