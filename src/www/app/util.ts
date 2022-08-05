@@ -22,24 +22,3 @@ export function timeoutPromise<T>(promise: Promise<T>, timeoutDuration: number, 
     ),
   ]);
 }
-
-/**
- * Catching custom errors (even as simple as numbers) does not work in ipcRenderer:
- *   - https://github.com/electron/electron/issues/24427
- *
- * We will return error code in IPC handlers (similar to return err in golang)
- * and convert it back to Outline error here. If it is NO_ERROR, nothing will happen.
- * @param err The error code returned by an IPC message
- */
-export function throwIfIpcError(err: errors.ErrorCode | object | undefined): void {
-  if (typeof err === 'number') {
-    if (err !== errors.ErrorCode.NO_ERROR) {
-      throw new errors.OutlinePluginError(err);
-    }
-  } else {
-    console.warn(`IPC error must be an ErrorCode, but it is ${typeof err}`);
-    if (typeof err !== 'undefined' && err !== null) {
-      throw err;
-    }
-  }
-}

@@ -17,65 +17,15 @@
 // any more. We have to inject key features into the global window object
 // in preload: https://www.electronjs.org/docs/latest/tutorial/tutorial-preload.
 
-import {contextBridge, ipcRenderer} from 'electron';
+// Please also update preload.d.ts whenever you changed this file.
+
+import {contextBridge} from 'electron';
 import * as os from 'os';
-import {ShadowsocksConfig} from '../www/app/config';
-import {ErrorCode} from '../www/model/errors';
+import {OutlineIpcPreloadImpl} from './ipc-preload';
 
-contextBridge.exposeInMainWorld('os', {
-  platform: os.platform(),
-});
-
-contextBridge.exposeInMainWorld('ipc', {
-  sendQuitApp: (): void => {
-    ipcRenderer.send('quit-app');
+contextBridge.exposeInMainWorld('electron', {
+  os: {
+    platform: os.platform(),
   },
-
-  sendInstallOutlineServices: (): Promise<ErrorCode> => {
-    return ipcRenderer.invoke('install-outline-services');
-  },
-
-  onAddServer: (callback: (url: string) => void): void => {
-    ipcRenderer.on('add-server', (_, url) => callback(url));
-  },
-
-  sendIsServerReachable: (hostname: string, port: number): Promise<boolean> => {
-    return ipcRenderer.invoke('is-server-reachable', {hostname, port});
-  },
-
-  sendStartProxy: (config: ShadowsocksConfig, id: string): Promise<ErrorCode> => {
-    return ipcRenderer.invoke('start-proxying', {config, id});
-  },
-
-  sendStopProxy: (): Promise<ErrorCode> => {
-    return ipcRenderer.invoke('stop-proxying');
-  },
-
-  onProxyConnected: (id: string, callback: () => void): void => {
-    ipcRenderer.on(`proxy-connected-${id}`, callback);
-  },
-
-  onProxyReconnecting: (id: string, callback: () => void): void => {
-    ipcRenderer.on(`proxy-reconnecting-${id}`, callback);
-  },
-
-  onceProxyDisconnected: (id: string, callback: () => void): void => {
-    ipcRenderer.once(`proxy-disconnected-${id}`, callback);
-  },
-
-  onLocalizationRequest: (callback: (localizationKeys: string[]) => void): void => {
-    ipcRenderer.on('localizationRequest', (_, keys) => callback(keys));
-  },
-
-  sendLocalizationResponse: (result?: {[key: string]: string}): void => {
-    ipcRenderer.send('localizationResponse', result);
-  },
-
-  onPushClipboard: (callback: () => void): void => {
-    ipcRenderer.on('push-clipboard', callback);
-  },
-
-  onUpdateDownloaded: (callback: () => void): void => {
-    ipcRenderer.on('update-downloaded', callback);
-  },
+  ipc: new OutlineIpcPreloadImpl(),
 });

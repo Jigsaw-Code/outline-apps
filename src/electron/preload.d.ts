@@ -12,42 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {OutlineIpcPreloadImpl} from './ipc-preload';
+
 // This file can be referenced in electron renderer scripts. It defines
 // the strongly typed global objects injected by preload.ts
 
-export interface INativeOsAPI {
+export interface NativeOsApi {
   platform: string;
 }
 
-type ErrorCode = import('../www/model/errors').ErrorCode;
-type ShadowsocksConfig = import('../www/app/config').ShadowsocksConfig;
-
-export interface IIpcAPI {
-  sendQuitApp(): void;
-  sendInstallOutlineServices(): Promise<ErrorCode>;
-  sendIsServerReachable(hostname: string, port: number): Promise<boolean>;
-  sendStartProxy(config: ShadowsocksConfig, id: string): Promise<ErrorCode>;
-  sendStopProxy(): Promise<ErrorCode>;
-  onProxyConnected(id: string, callback: () => void): void;
-  onProxyReconnecting(id: string, callback: () => void): void;
-  onceProxyDisconnected(id: string, callback: () => void): void;
-  onAddServer(callback: (url: string) => void): void;
-  onLocalizationRequest(callback: (localizationKeys: string[]) => void): void;
-  sendLocalizationResponse(result?: {[key: string]: string}): void;
-  onPushClipboard(callback: () => void): void;
-  onUpdateDownloaded(callback: () => void): void;
+export interface ElectronApi {
+  readonly os: NativeOsApi;
+  readonly ipc: OutlineIpcPreloadImpl;
 }
 
 declare global {
   interface Window {
     /**
-     * The OS platform object, should only be used in electron renderer.
+     * All electron or node features exposed to electron's renderer process.
      */
-    os: INativeOsAPI;
-
-    /**
-     * The IpcRenderer object, should only be used in electron renderer.
-     */
-    ipc: IIpcAPI;
+    electron: ElectronApi;
   }
 }

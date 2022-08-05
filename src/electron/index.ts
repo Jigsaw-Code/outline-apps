@@ -33,7 +33,25 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+import {
+  ADD_SERVER_CHANNEL,
+  APP_UPDATE_DOWNLOADED_CHANNEL,
+  CHECK_REACHABLE_CHANNEL,
+  INSTALL_SERVICES_CHANNEL,
+  LOCALIZATION_RESPONSE_CHANNEL,
+  OutlineIpcClient,
+  OutlineIpcHandler,
+  PUSH_CLIPBOARD_CHANNEL,
+  QUIT_APP_CHANNEL,
+  REQUEST_LOCALIZATION_CHANNEL,
+  START_VPN_CHANNEL,
+  STOP_VPN_CHANNEL,
+  VPN_CONNECTED_CHANNEL,
+  VPN_DISCONNECTED_CHANNEL,
+  VPN_RECONNECTING_CHANNEL,
+} from './ipc';
 
+// TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
 //   - NETWORK_STACK is either 'go' or 'libevbadvpn' by default
 //   - SENTRY_DSN is either undefined or a url string
@@ -55,6 +73,9 @@ const tunnelStore = new TunnelStore(app.getPath('userData'));
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | null;
 let tray: Tray;
+
+let ipcClient: OutlineIpcClient | null = null;
+const ipcHandler = new OutlineIpcHandler(ipcMain);
 
 let isAppQuitting = false;
 // Default to English strings in case we fail to retrieve them from the renderer process.
@@ -129,6 +150,8 @@ function setupWindow(): void {
     },
   });
 
+  ipcClient = new OutlineIpcClient(mainWindow.webContents);
+
   // Icon is not shown in Ubuntu Dock. It is a recurrent issue happened in Linux:
   //   - https://github.com/electron-userland/electron-builder/issues/2269
   // A workaround is to forcibly set the icon of the main window.
@@ -179,7 +202,7 @@ function setupWindow(): void {
 
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('localizationRequest', Object.keys(localizedStrings));
+    ipcClient.send(REQUEST_LOCALIZATION_CHANNEL, Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
   });
 
@@ -245,7 +268,7 @@ function interceptShadowsocksLink(argv: string[]) {
         // The system adds a trailing slash to the intercepted URL (before the fragment).
         // Remove it before sending to the UI.
         url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
-        mainWindow.webContents.send('add-server', url);
+        ipcClient.send(ADD_SERVER_CHANNEL, url);
       } else {
         console.error('called with URL but mainWindow not open');
       }
@@ -340,7 +363,7 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
 }
 
 // Invoked by both the stop-proxying event and quit handler.
-async function stopVpn(): Promise<errors.ErrorCode> {
+async function stopVpn(): Promise<[errors.ErrorCode, void]> {
   try {
     if (!currentTunnel) {
       return;
@@ -350,33 +373,37 @@ async function stopVpn(): Promise<errors.ErrorCode> {
     await tearDownAutoLaunch();
     await currentTunnel.onceDisconnected;
 
-    return errors.ErrorCode.NO_ERROR;
-  } catch {
-    return errors.ErrorCode.UNEXPECTED;
+    return [errors.ErrorCode.NO_ERROR, undefined];
+  } catch (e) {
+    console.error('could not disconnect: ', e);
+    return [errors.ErrorCode.UNEXPECTED, undefined];
   }
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
-  let statusString;
+  function sendEvent(
+    e: typeof VPN_CONNECTED_CHANNEL | typeof VPN_RECONNECTING_CHANNEL | typeof VPN_DISCONNECTED_CHANNEL
+  ): void {
+    if (ipcClient) {
+      ipcClient.send(e, tunnelId);
+    } else {
+      console.warn(`received ${e} event for ${tunnelId} but no mainWindow to notify`);
+    }
+  }
+
   switch (status) {
     case TunnelStatus.CONNECTED:
-      statusString = 'connected';
+      sendEvent(VPN_CONNECTED_CHANNEL);
       break;
     case TunnelStatus.DISCONNECTED:
-      statusString = 'disconnected';
+      sendEvent(VPN_DISCONNECTED_CHANNEL);
       break;
     case TunnelStatus.RECONNECTING:
-      statusString = 'reconnecting';
+      sendEvent(VPN_RECONNECTING_CHANNEL);
       break;
     default:
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
-  }
-  const event = `proxy-${statusString}-${tunnelId}`;
-  if (mainWindow) {
-    mainWindow.webContents.send(event);
-  } else {
-    console.warn(`received ${event} event but no mainWindow to notify`);
   }
   updateTray(status);
 }
@@ -452,20 +479,20 @@ function main() {
 
   // This event fires whenever the app's window receives focus.
   app.on('browser-window-focus', () => {
-    mainWindow?.webContents.send('push-clipboard');
+    ipcClient?.send(PUSH_CLIPBOARD_CHANNEL);
   });
 
-  ipcMain.handle('is-server-reachable', async (_, {hostname, port}: {hostname: string; port: number}) => {
+  ipcHandler.handle(CHECK_REACHABLE_CHANNEL, async (hostname, port) => {
     try {
       await connectivity.isServerReachable(hostname || '', port || 0, REACHABILITY_TIMEOUT_MS);
-      return true;
+      return [errors.ErrorCode.NO_ERROR, true];
     } catch {
-      return false;
+      return [errors.ErrorCode.NO_ERROR, false];
     }
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
-  ipcMain.handle('start-proxying', async (_, args: {config: ShadowsocksConfig; id: string}) => {
+  ipcHandler.handle(START_VPN_CHANNEL, async (config: ShadowsocksConfig, id: string) => {
     // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
     //       being faster, this would help prevent traffic leaks - the Cordova clients already do
     //       this).
@@ -475,54 +502,55 @@ function main() {
       await currentTunnel.onceDisconnected;
     }
 
-    console.log(`connecting to ${args.id}...`);
+    console.log(`connecting to ${id}...`);
 
     try {
       // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
       // resolve it just once, upfront.
-      args.config.host = await connectivity.lookupIp(args.config.host || '');
+      config.host = await connectivity.lookupIp(config.host || '');
 
-      await connectivity.isServerReachable(args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+      await connectivity.isServerReachable(config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS);
 
-      await startVpn(args.config, args.id);
-      console.log(`connected to ${args.id}`);
-      await setupAutoLaunch(args);
+      await startVpn(config, id);
+      console.log(`connected to ${id}`);
+      await setupAutoLaunch({config, id});
       // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-      tunnelStore.save(args).catch(() => {
+      tunnelStore.save({config, id}).catch(() => {
         console.error('Failed to store tunnel.');
       });
 
-      return errors.ErrorCode.NO_ERROR;
+      return [errors.ErrorCode.NO_ERROR, undefined];
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
       // clean up the state, no need to await because stopVpn might throw another error which can be ignored
       stopVpn();
 
-      return errors.toErrorCode(e);
+      return [errors.toErrorCode(e), undefined];
     }
   });
 
   // Disconnects from the current server, if any.
-  ipcMain.handle('stop-proxying', stopVpn);
+  ipcHandler.handle(STOP_VPN_CHANNEL, stopVpn);
 
   // Install backend services and return the error code
-  ipcMain.handle('install-outline-services', async () => {
+  ipcHandler.handle(INSTALL_SERVICES_CHANNEL, async () => {
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:
     // https://github.com/electron/electron/issues/24427
     try {
       await installRoutingServices();
-      return errors.ErrorCode.NO_ERROR;
+      return [errors.ErrorCode.NO_ERROR, undefined];
     } catch (e) {
       if (typeof e === 'number') {
-        return e;
+        return [e, undefined];
       }
-      return errors.ErrorCode.UNEXPECTED;
+      console.error('Unexpected error caught when installing services', e);
+      return [errors.ErrorCode.UNEXPECTED, undefined];
     }
   });
 
-  ipcMain.on('quit-app', quitApp);
+  ipcHandler.on(QUIT_APP_CHANNEL, quitApp);
 
-  ipcMain.on('localizationResponse', (event: Event, localizationResult: {[key: string]: string}) => {
+  ipcHandler.on(LOCALIZATION_RESPONSE_CHANNEL, (localizationResult: {[key: string]: string}) => {
     if (localizationResult) {
       localizedStrings = localizationResult;
     }
@@ -531,7 +559,7 @@ function main() {
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', () => {
-    mainWindow?.webContents.send('update-downloaded');
+    ipcClient?.send(APP_UPDATE_DOWNLOADED_CHANNEL);
   });
 }
 

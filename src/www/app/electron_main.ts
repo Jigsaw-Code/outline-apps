@@ -29,35 +29,49 @@ import {getLocalizationFunction, main} from './main';
 import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
-import {throwIfIpcError} from './util';
 import {VpnInstaller} from './vpn_installer';
+import {
+  ADD_SERVER_CHANNEL,
+  APP_UPDATE_DOWNLOADED_CHANNEL,
+  CHECK_REACHABLE_CHANNEL,
+  INSTALL_SERVICES_CHANNEL,
+  LOCALIZATION_RESPONSE_CHANNEL,
+  OutlineIpcClient,
+  OutlineIpcHandler,
+  PUSH_CLIPBOARD_CHANNEL,
+  QUIT_APP_CHANNEL,
+  REQUEST_LOCALIZATION_CHANNEL,
+} from '../../electron/ipc';
 
-const isWindows = window.os.platform === 'win32';
-const isLinux = window.os.platform === 'linux';
+const isWindows = window.electron.os.platform === 'win32';
+const isLinux = window.electron.os.platform === 'linux';
 const isOsSupported = isWindows || isLinux;
 
-const interceptor = new UrlInterceptor();
-window.ipc.onAddServer(interceptor.executeListeners);
+const ipcClient = new OutlineIpcClient(window.electron.ipc);
+const ipcHandler = new OutlineIpcHandler(window.electron.ipc);
 
-window.ipc.onLocalizationRequest(localizationKeys => {
+const interceptor = new UrlInterceptor();
+ipcHandler.on(ADD_SERVER_CHANNEL, interceptor.executeListeners);
+
+ipcHandler.on(REQUEST_LOCALIZATION_CHANNEL, localizationKeys => {
   const localize = getLocalizationFunction();
   if (!localize) {
     console.error('Localization function not available.');
-    window.ipc.sendLocalizationResponse(null);
+    ipcClient.send(LOCALIZATION_RESPONSE_CHANNEL, null);
     return;
   }
   const localizationResult: {[key: string]: string} = {};
   for (const key of localizationKeys) {
     localizationResult[key] = localize(key);
   }
-  window.ipc.sendLocalizationResponse(localizationResult);
+  ipcClient.send(LOCALIZATION_RESPONSE_CHANNEL, localizationResult);
 });
 
 // Pushes a clipboard event whenever the app window receives focus.
 class ElectronClipboard extends AbstractClipboard {
   constructor() {
     super();
-    window.ipc.onPushClipboard(this.emitEvent.bind(this));
+    ipcHandler.on(PUSH_CLIPBOARD_CHANNEL, this.emitEvent.bind(this));
   }
 
   getContents() {
@@ -68,14 +82,13 @@ class ElectronClipboard extends AbstractClipboard {
 class ElectronUpdater extends AbstractUpdater {
   constructor() {
     super();
-    window.ipc.onUpdateDownloaded(this.emitEvent.bind(this));
+    ipcHandler.on(APP_UPDATE_DOWNLOADED_CHANNEL, this.emitEvent.bind(this));
   }
 }
 
 class ElectronVpnInstaller implements VpnInstaller {
-  public async installVpn(): Promise<void> {
-    const err = await window.ipc.sendInstallOutlineServices();
-    throwIfIpcError(err);
+  public installVpn(): Promise<void> {
+    return ipcClient.invoke(INSTALL_SERVICES_CHANNEL);
   }
 }
 
@@ -98,7 +111,7 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 
 class ElectronNativeNetworking implements NativeNetworking {
   isServerReachable(hostname: string, port: number) {
-    return window.ipc.sendIsServerReachable(hostname, port);
+    return ipcClient.invoke(CHECK_REACHABLE_CHANNEL, hostname, port);
   }
 }
 
@@ -109,7 +122,7 @@ main({
   },
   getTunnelFactory: () => {
     return (id: string) => {
-      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
+      return isOsSupported ? new ElectronOutlineTunnel(id, ipcClient, ipcHandler) : new FakeOutlineTunnel(id);
     };
   },
   getUrlInterceptor: () => interceptor,
@@ -117,5 +130,5 @@ main({
   getErrorReporter: (env: EnvironmentVariables) => new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || ''),
   getUpdater: () => new ElectronUpdater(),
   getVpnServiceInstaller: () => new ElectronVpnInstaller(),
-  quitApplication: () => window.ipc.sendQuitApp(),
+  quitApplication: () => ipcClient.send(QUIT_APP_CHANNEL),
 });

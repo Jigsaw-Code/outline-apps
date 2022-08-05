@@ -66,6 +66,9 @@ export default ({networkStack, sentryDsn, appVersion}) => [
         },
       ],
     },
+    resolve: {
+      extensions: ['.ts'],
+    },
     output: {
       filename: 'preload.js',
       path: path.resolve(__dirname, '../../build/electron/electron'),
