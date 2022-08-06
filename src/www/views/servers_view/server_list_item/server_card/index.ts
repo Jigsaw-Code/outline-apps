@@ -73,10 +73,6 @@ const sharedCSS = css`
     align-items: center;
   }
 
-  .card-metadata-text {
-    max-width: 225px;
-  }
-
   server-connection-indicator {
     min-height: var(--min-indicator-size);
     max-height: var(--max-indicator-size);
@@ -99,6 +95,7 @@ const sharedCSS = css`
     color: var(--outline-text-color);
     font-size: var(--server-name-size);
     margin-bottom: var(--outline-mini-gutter);
+    word-break: break-all;
   }
 
   .card-metadata-server-address {
@@ -192,7 +189,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       metadataText: html`
         <div class="card-metadata-text">
           <h2 class="card-metadata-server-name" id="server-name">
-            ${messages.serverName}
+            ${messages.serverName} Loremipsumdolorsitamet,consecteturadipisicingelit.Ea,suscipit.
           </h2>
           <label class="card-metadata-server-address">${server.address}</label>
         </div>
