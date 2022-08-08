@@ -28,7 +28,7 @@ export function getElectronBuildParameters(parameters) {
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
-      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${ELECTRON_PLATFORMS.join(', ')}.`
+      `The platform "${platform}" is not a valid Electron platform. It must be one of: ${ELECTRON_PLATFORMS.join(', ')}.`
     );
   }
 
