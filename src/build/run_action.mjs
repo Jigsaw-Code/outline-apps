@@ -16,10 +16,10 @@ import chalk from 'chalk';
 import {existsSync} from 'fs';
 import {readFile} from 'fs/promises';
 import path from 'path';
-import {spawn} from 'child_process';
 import url from 'url';
 
 import {getRootDir} from './get_root_dir.mjs';
+import {spawnStream} from './spawn_stream.mjs';
 
 /**
  * @description loads the absolute path of the action file
@@ -44,33 +44,6 @@ const resolveActionPath = async actionPath => {
     }
   }
 };
-
-/**
- * @description promisifies the child process (for supporting legacy bash actions!)
- */
-const spawnStream = (command, parameters) =>
-  new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters, {shell: true});
-
-    const forEachMessageLine = (buffer, callback) => {
-      buffer
-        .toString()
-        .split('\n')
-        .filter(line => line.trim())
-        .forEach(callback);
-    };
-
-    childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
-    childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
-
-    childProcess.on('close', code => {
-      if (code === 0) {
-        resolve(childProcess);
-      } else {
-        reject(childProcess);
-      }
-    });
-  });
 
 /**
  * @description This is the entrypoint into our custom task runner.

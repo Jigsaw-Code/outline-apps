@@ -16,13 +16,10 @@ import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
 
-import electronConfig from './webpack_electron.mjs';
-import cordovaConfig from './webpack_cordova.mjs';
-
 import {webpackPromise} from '../build/webpack_promise.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
+import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
 /**
  * @description Builds the web UI for use across both electron and cordova.
@@ -39,25 +36,7 @@ export async function main(...parameters) {
     JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
   );
 
-  // get correct webpack config
-  let webpackConfig;
-
-  switch (platform) {
-    case 'windows':
-    case 'linux':
-      webpackConfig = electronConfig;
-      break;
-    case 'ios':
-    case 'macos':
-    case 'android':
-    default:
-      webpackConfig = cordovaConfig;
-      break;
-  }
-
-  webpackConfig.mode = getWebpackBuildMode(buildMode);
-
-  await webpackPromise(webpackConfig);
+  await webpackPromise(getBrowserWebpackConfig(platform, buildMode));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

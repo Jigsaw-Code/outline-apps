@@ -14,23 +14,23 @@
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
+const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 /*
   Inputs:
   => platform: the list of action arguments passed in
 
   Outputs:
-  => an object containing the specificed cordova platform and buildMode.
+  => an object containing the required electron parameters.
 */
-export function getCordovaBuildParameters(parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+export function getElectronBuildParameters(parameters) {
+  const {platform, buildMode, stagingPercentage, networkStack, sentryDsn} = getBuildParameters(parameters);
 
-  if (!CORDOVA_PLATFORMS.includes(platform)) {
+  if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
-      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(', ')}.`
+      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${ELECTRON_PLATFORMS.join(', ')}.`
     );
   }
 
-  return {platform: platform === 'macos' ? 'osx' : platform, buildMode};
+  return {platform: platform === 'macos' ? 'osx' : platform, buildMode, networkStack, stagingPercentage, sentryDsn};
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getVersion} from '../build/get_version.mjs';
 import {runAction} from '../build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
@@ -25,7 +25,7 @@ import path from 'path';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage} = getBuildParameters(parameters);
+  const {platform, buildMode, stagingPercentage} = getElectronBuildParameters(parameters);
   const version = await getVersion(platform);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);

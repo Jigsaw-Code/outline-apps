@@ -38,7 +38,7 @@ jobs:
         run: npm run action www/build
 
       - name: Test Web App
-        run: npm run action test:www
+        run: npm run action www/test
 
   linux_debug_build:
     name: Linux Debug Build

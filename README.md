@@ -31,7 +31,7 @@ The latter command will open a browser instance running the app. Browser platfor
 The app logic is located in [src/www/app](src/www/app). UI components are located in [src/www/ui_components](src/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
 
 ```sh
-npm run action src/www/storybook
+npm run action src/www/start storybook
 ```
 
 ## Accepting a server invite
