@@ -8,13 +8,9 @@
     "clean": "rm -rf build node_modules www platforms plugins",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint:ts": "eslint 'src/**/*.ts'",
+    "lint:ts": "eslint --ext ts src",
     "lint": "npm run lint:ts",
-    "reset": "npm run clean && npm ci",
-    "start:electron": "OUTLINE_DEBUG=true electron .",
-    "start:www": "webpack serve --mode=development --static=platforms/browser/www --config=src/www/webpack_cordova.mjs --open /index_cordova.html",
-    "storybook:www": "web-dev-server --node-resolve --open --watch --root-dir ./src/www --config ./src/www/web-dev-server.config.mjs",
-    "test:www": "karma start ./src/www/karma.conf.js"
+    "reset": "npm run clean && npm ci"
   },
   "comments": {
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
