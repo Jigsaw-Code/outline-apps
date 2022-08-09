@@ -191,7 +191,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       metadataText: html`
         <div class="card-metadata-text">
           <h2 class="card-metadata-server-name" id="server-name">
-            ${messages.serverName} Loremipsumdolorsitamet,consecteturadipisicingelit.Ea,suscipit.
+            ${messages.serverName}
           </h2>
           <label class="card-metadata-server-address">${server.address}</label>
         </div>
