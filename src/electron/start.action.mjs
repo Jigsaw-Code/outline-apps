@@ -37,7 +37,7 @@ export async function main(...parameters) {
 
   process.env.OUTLINE_DEBUG = buildMode === 'debug';
 
-  await spawnStream(electron, path.resolve(getRootDir(), ELECTRON_BUILD_DIR));
+  await spawnStream(electron, [path.resolve(getRootDir(), ELECTRON_BUILD_DIR)]);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
