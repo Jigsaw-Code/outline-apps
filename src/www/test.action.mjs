@@ -13,42 +13,38 @@
 // limitations under the License.
 
 import url from 'url';
-import {Server} from 'karma';
-import {executablePath} from 'puppeteer';
+import karma from 'karma';
+import puppeteer from 'puppeteer';
+import path from 'path';
+import {getRootDir} from '../build/get_root_dir.mjs';
 
-import webpackTestConfig from './webpack_test.mjs';
+const KARMA_CONFIG_PATH = 'src/www/karma.conf.js';
 
 /**
- * @description TODO
+ * @description Runs the Karma tests against the web UI.
  *
  * @param {string[]} parameters
  */
 export async function main() {
   const karmaPromise = config =>
     new Promise((resolve, reject) => {
-      new Server(config, exitCode => {
+      new karma.Server(config, exitCode => {
         if (exitCode !== 0) {
           reject(exitCode);
         }
 
         resolve(exitCode);
-      });
+      }).start();
     });
 
-  process.env.CHROMIUM_BIN = executablePath();
+  process.env.CHROMIUM_BIN = puppeteer.executablePath();
 
-  await karmaPromise({
-    browsers: ['ChromiumHeadless'],
-    colors: true,
-    files: ['**/*.spec.ts'],
-    frameworks: ['webpack', 'jasmine'],
-    preprocessors: {
-      '**/*.spec.ts': ['webpack'],
-    },
-    reporters: ['progress'],
-    singleRun: true,
-    webpack: webpackTestConfig,
+  const config = await karma.config.parseConfig(path.resolve(getRootDir(), KARMA_CONFIG_PATH), null, {
+    promiseConfig: true,
+    throwErrors: true,
   });
+
+  await karmaPromise(config);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

@@ -77,7 +77,7 @@ export async function runAction(actionPath, ...parameters) {
   let runner = 'npm run';
 
   if (resolvedPath.endsWith('mjs')) {
-    runner = 'node';
+    runner = 'node --trace-uncaught';
   }
 
   if (resolvedPath.endsWith('sh')) {
