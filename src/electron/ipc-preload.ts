@@ -14,6 +14,7 @@
 
 import {ipcRenderer, IpcRendererEvent} from 'electron';
 import {
+  IpcInvokeResultCrossBoundary,
   OutlineIpcOneWayChannels,
   OutlineIpcTwoWayChannels,
   OUTLINE_ONE_WAY_IPC_CHANNELS,
@@ -46,7 +47,10 @@ export class OutlineIpcPreloadImpl {
     ipcRenderer.send(channel, ...args);
   };
 
-  public readonly invoke = async (channel: string, ...args: unknown[]): Promise<[ErrorCode, unknown]> => {
+  public readonly invoke = async <T extends OutlineIpcTwoWayChannels>(
+    channel: string,
+    ...args: unknown[]
+  ): IpcInvokeResultCrossBoundary<T> => {
     if (!OUTLINE_TWO_WAY_IPC_CHANNELS.includes(<OutlineIpcTwoWayChannels>channel)) {
       console.warn(`ipc channel ${channel} is not allowed to invoke`);
       return [ErrorCode.UNEXPECTED, undefined];
@@ -60,7 +64,7 @@ export class OutlineIpcPreloadImpl {
       console.error(`ipc invoke via ${channel} received a tuple without ErrorCode`);
       return [ErrorCode.UNEXPECTED, undefined];
     }
-    return result as [ErrorCode, unknown];
+    return result as Awaited<IpcInvokeResultCrossBoundary<T>>;
   };
 
   public readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {

@@ -14,7 +14,7 @@
 
 import {IpcMainEvent, IpcMainInvokeEvent, IpcRendererEvent} from 'electron';
 import {ShadowsocksConfig} from '../www/app/config';
-import {ErrorCode, OutlinePluginError} from '../www/model/errors';
+import {ErrorCode, NativeError, OutlinePluginError, toErrorCode} from '../www/model/errors';
 
 // This file is used to define all IPC messages. To add a new IPC message:
 //   1. Add a `XXX_CHANNEL` constant below
@@ -87,19 +87,18 @@ export interface OutlineIpcOneWayService {
  * This interface should only be used for type definitions, please **do not**
  * try to implement it.
  *
- * Please make sure the return type is always a `Promise` of a two-element
- * tuple `[ErrorCode, any]` where the second `any` type can be replaced by any
- * concrete types like `number` or `void`.
+ * Please do not include `Promise` or `ErrorCode` in the return type, they will
+ * be automatically handled by `OutlineIpcClient` and `OutlineIpcHandler`.
  *
  * We use `ErrorCode` (a.k.a, a `number`) to pass exceptions because catching
  * custom errors (even as simple as numbers) does not work in electron:
  *   - https://github.com/electron/electron/issues/24427
  */
 export interface OutlineIpcTwoWayService {
-  [INSTALL_SERVICES_CHANNEL]: () => Promise<[ErrorCode, void]>;
-  [CHECK_REACHABLE_CHANNEL]: (hostname: string, port: number) => Promise<[ErrorCode, boolean]>;
-  [START_VPN_CHANNEL]: (config: ShadowsocksConfig, id: string) => Promise<[ErrorCode, void]>;
-  [STOP_VPN_CHANNEL]: () => Promise<[ErrorCode, void]>;
+  [INSTALL_SERVICES_CHANNEL]: () => void;
+  [CHECK_REACHABLE_CHANNEL]: (hostname: string, port: number) => boolean;
+  [START_VPN_CHANNEL]: (config: ShadowsocksConfig, id: string) => void;
+  [STOP_VPN_CHANNEL]: () => void;
 }
 
 /**
@@ -115,6 +114,18 @@ export type OutlineIpcOneWayChannels = typeof OUTLINE_ONE_WAY_IPC_CHANNELS[numbe
 export type OutlineIpcTwoWayChannels = typeof OUTLINE_TWO_WAY_IPC_CHANNELS[number] & keyof OutlineIpcTwoWayService;
 
 /**
+ * The IPC response type across boundaries. This type should be shared between
+ * `.handle` and `.invoke` methods.
+ *
+ * We use `ErrorCode` (a.k.a, a `number`) to pass exceptions because catching
+ * custom errors (even as simple as numbers) does not work in electron:
+ *   - https://github.com/electron/electron/issues/24427
+ */
+export type IpcInvokeResultCrossBoundary<T extends OutlineIpcTwoWayChannels> = Promise<
+  [ErrorCode, ReturnType<OutlineIpcTwoWayService[T]>]
+>;
+
+/**
  * The IPC sender class which can be used by both main process and renderer
  * process. The caller is responsible to give it the correct implementation
  * of the underlying IPC strategy (for example, `mainWindow.webContents`,
@@ -122,10 +133,10 @@ export type OutlineIpcTwoWayChannels = typeof OUTLINE_TWO_WAY_IPC_CHANNELS[numbe
  *
  * @example
  *   // In main process
- *   const client = new OutlineIpcClient(mainWindow.webContent);
+ *   const client = new OutlineIpcClient(mainWindow.webContents);
  *   client.send(APP_UPDATE_DOWNLOADED_CHANNEL);
  *
- *   // In renderer process
+ *   // In renderer process (window.ipcImpl is injected by preload)
  *   const client = new OutlineIpcClient(window.ipcImpl);
  *   const result = await client.invoke(STOP_VPN_CHANNEL);
  */
@@ -137,7 +148,7 @@ export class OutlineIpcClient {
   public constructor(
     private readonly ipcImpl: {
       send(channel: string, ...args: unknown[]): void;
-      invoke?(channel: string, ...args: unknown[]): Promise<[ErrorCode, unknown]>;
+      invoke?<T extends OutlineIpcTwoWayChannels>(channel: string, ...args: unknown[]): IpcInvokeResultCrossBoundary<T>;
     }
   ) {}
 
@@ -164,12 +175,12 @@ export class OutlineIpcClient {
   public async invoke<T extends OutlineIpcTwoWayChannels>(
     channel: T,
     ...args: Parameters<OutlineIpcTwoWayService[T]>
-  ): Promise<Awaited<ReturnType<OutlineIpcTwoWayService[T]>>[1]> {
+  ): Promise<ReturnType<OutlineIpcTwoWayService[T]>> {
     const [err, result] = await this.ipcImpl.invoke(channel, ...args);
     if (err !== ErrorCode.NO_ERROR) {
       throw new OutlinePluginError(err);
     }
-    return result as Awaited<ReturnType<OutlineIpcTwoWayService[T]>>[1];
+    return result as ReturnType<OutlineIpcTwoWayService[T]>;
   }
 }
 
@@ -185,7 +196,7 @@ export class OutlineIpcClient {
  *   handler.on(QUIT_APP_CHANNEL, () => { ... });
  *   handler.handle(STOP_VPN_CHANNEL, async () => { ... });
  *
- *   // In renderer process
+ *   // In renderer process (window.ipcImpl is injected by preload)
  *   const handler = new OutlineIpcHandler(window.ipcImpl);
  *   handler.on(APP_UPDATE_DOWNLOADED_CHANNEL, () => { ... });
  */
@@ -222,12 +233,34 @@ export class OutlineIpcHandler {
    * @param channel One of the predefined `OUTLINE_TWO_WAY_IPC_CHANNELS`.
    * @param handler A handler function whose parameters can be inferred by the
    *                `channel` and the return value will be sent back to renderer.
+   *                You can throw any errors derived from `NativeError`.
    */
   public handle<T extends OutlineIpcTwoWayChannels>(
     channel: T,
-    handler: (...args: Parameters<OutlineIpcTwoWayService[T]>) => ReturnType<OutlineIpcTwoWayService[T]>
+    handler: (
+      ...args: Parameters<OutlineIpcTwoWayService[T]>
+    ) => ReturnType<OutlineIpcTwoWayService[T]> | Promise<ReturnType<OutlineIpcTwoWayService[T]>>
   ): void {
-    return this.ipcImpl.handle(channel, (_, ...args: Parameters<OutlineIpcTwoWayService[T]>) => handler(...args));
+    return this.ipcImpl.handle(
+      channel,
+      async (_, ...args: Parameters<OutlineIpcTwoWayService[T]>): IpcInvokeResultCrossBoundary<T> => {
+        try {
+          const result = handler(...args);
+          if (typeof result === 'object' && typeof result.then === 'function') {
+            return [ErrorCode.NO_ERROR, await result];
+          }
+          return [ErrorCode.NO_ERROR, result as ReturnType<OutlineIpcTwoWayService[T]>];
+        } catch (e) {
+          if (typeof e === 'number') {
+            return [e, undefined];
+          } else if (e instanceof NativeError) {
+            return [toErrorCode(e), undefined];
+          } else {
+            return [ErrorCode.UNEXPECTED, undefined];
+          }
+        }
+      }
+    );
   }
 
   /**

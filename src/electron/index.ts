@@ -24,7 +24,6 @@ import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as connectivity from './connectivity';
-import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
@@ -363,47 +362,36 @@ async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = f
 }
 
 // Invoked by both the stop-proxying event and quit handler.
-async function stopVpn(): Promise<[errors.ErrorCode, void]> {
-  try {
-    if (!currentTunnel) {
-      return;
-    }
-
-    currentTunnel.disconnect();
-    await tearDownAutoLaunch();
-    await currentTunnel.onceDisconnected;
-
-    return [errors.ErrorCode.NO_ERROR, undefined];
-  } catch (e) {
-    console.error('could not disconnect: ', e);
-    return [errors.ErrorCode.UNEXPECTED, undefined];
+async function stopVpn() {
+  if (!currentTunnel) {
+    return;
   }
+
+  currentTunnel.disconnect();
+  await tearDownAutoLaunch();
+  await currentTunnel.onceDisconnected;
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
-  function sendEvent(
-    e: typeof VPN_CONNECTED_CHANNEL | typeof VPN_RECONNECTING_CHANNEL | typeof VPN_DISCONNECTED_CHANNEL
-  ): void {
-    if (ipcClient) {
-      ipcClient.send(e, tunnelId);
-    } else {
-      console.warn(`received ${e} event for ${tunnelId} but no mainWindow to notify`);
-    }
-  }
-
+  let evt: typeof VPN_CONNECTED_CHANNEL | typeof VPN_RECONNECTING_CHANNEL | typeof VPN_DISCONNECTED_CHANNEL;
   switch (status) {
     case TunnelStatus.CONNECTED:
-      sendEvent(VPN_CONNECTED_CHANNEL);
+      evt = VPN_CONNECTED_CHANNEL;
       break;
     case TunnelStatus.DISCONNECTED:
-      sendEvent(VPN_DISCONNECTED_CHANNEL);
+      evt = VPN_DISCONNECTED_CHANNEL;
       break;
     case TunnelStatus.RECONNECTING:
-      sendEvent(VPN_RECONNECTING_CHANNEL);
+      evt = VPN_RECONNECTING_CHANNEL;
       break;
     default:
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
+  }
+  if (ipcClient) {
+    ipcClient.send(evt, tunnelId);
+  } else {
+    console.warn(`received ${evt} event for ${tunnelId} but no mainWindow to notify`);
   }
   updateTray(status);
 }
@@ -485,14 +473,14 @@ function main() {
   ipcHandler.handle(CHECK_REACHABLE_CHANNEL, async (hostname, port) => {
     try {
       await connectivity.isServerReachable(hostname || '', port || 0, REACHABILITY_TIMEOUT_MS);
-      return [errors.ErrorCode.NO_ERROR, true];
+      return true;
     } catch {
-      return [errors.ErrorCode.NO_ERROR, false];
+      return false;
     }
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
-  ipcHandler.handle(START_VPN_CHANNEL, async (config: ShadowsocksConfig, id: string) => {
+  ipcHandler.handle(START_VPN_CHANNEL, async (config, id) => {
     // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
     //       being faster, this would help prevent traffic leaks - the Cordova clients already do
     //       this).
@@ -518,39 +506,23 @@ function main() {
       tunnelStore.save({config, id}).catch(() => {
         console.error('Failed to store tunnel.');
       });
-
-      return [errors.ErrorCode.NO_ERROR, undefined];
     } catch (e) {
       console.error(`could not connect: ${e.name} (${e.message})`);
       // clean up the state, no need to await because stopVpn might throw another error which can be ignored
       stopVpn();
-
-      return [errors.toErrorCode(e), undefined];
+      throw e;
     }
   });
 
   // Disconnects from the current server, if any.
   ipcHandler.handle(STOP_VPN_CHANNEL, stopVpn);
 
-  // Install backend services and return the error code
-  ipcHandler.handle(INSTALL_SERVICES_CHANNEL, async () => {
-    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
-    // https://github.com/electron/electron/issues/24427
-    try {
-      await installRoutingServices();
-      return [errors.ErrorCode.NO_ERROR, undefined];
-    } catch (e) {
-      if (typeof e === 'number') {
-        return [e, undefined];
-      }
-      console.error('Unexpected error caught when installing services', e);
-      return [errors.ErrorCode.UNEXPECTED, undefined];
-    }
-  });
+  // Install backend services (Linux daemon/Win32 Service)
+  ipcHandler.handle(INSTALL_SERVICES_CHANNEL, installRoutingServices);
 
   ipcHandler.on(QUIT_APP_CHANNEL, quitApp);
 
-  ipcHandler.on(LOCALIZATION_RESPONSE_CHANNEL, (localizationResult: {[key: string]: string}) => {
+  ipcHandler.on(LOCALIZATION_RESPONSE_CHANNEL, localizationResult => {
     if (localizationResult) {
       localizedStrings = localizationResult;
     }
