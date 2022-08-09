@@ -34,13 +34,15 @@ The app logic is located in [src/www/app](src/www/app). UI components are locate
 npm run action src/www/start storybook
 ```
 
-> 💡 NOTE: every script in this repository can be run with `npm run action` - for a CLI-like experience, try adding
+> 💡 NOTE: the `src` part of the path is optional. `npm run action www/start` resolves to the same script.
+
+> 💡 NOTE: every script in this repository can be run with `npm run action` - for a CLI-like experience, add
 >
 > ```sh
 > alias outline="npm run action"
 > ```
 >
-> to your shell.
+> to your shell, then try `outline www/start`!
 
 ## Accepting a server invite
 

@@ -46,8 +46,5 @@ export const getBrowserWebpackConfig = (platform, buildMode) => {
 
   webpackConfig.mode = getWebpackBuildMode(buildMode);
 
-  webpackConfig.devServer ??= {};
-  webpackConfig.devServer.open = buildMode === 'debug';
-
   return webpackConfig;
 };
