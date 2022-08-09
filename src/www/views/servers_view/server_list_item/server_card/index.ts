@@ -95,6 +95,8 @@ const sharedCSS = css`
     color: var(--outline-text-color);
     font-size: var(--server-name-size);
     margin-bottom: var(--outline-mini-gutter);
+    /* To break the line in case a sequence of word characters is longer than the line.
+       See https://github.com/Jigsaw-Code/outline-client/issues/1372. */
     word-break: break-all;
   }
 
