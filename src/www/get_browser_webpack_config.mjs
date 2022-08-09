@@ -16,6 +16,13 @@ import electronConfig from './webpack_electron.mjs';
 import cordovaConfig from './webpack_cordova.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
+/*
+  Inputs:
+  => the platform and buildMode
+
+  Outputs:
+  => the webpack config for the given platform and buildMode
+*/
 export const getBrowserWebpackConfig = (platform, buildMode) => {
   if (platform === 'storybook') {
     throw new TypeError("Storybook is currently run with '@web/dev-server', not webpack.");
