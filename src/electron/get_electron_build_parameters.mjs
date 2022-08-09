@@ -28,9 +28,11 @@ export function getElectronBuildParameters(parameters) {
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
-      `The platform "${platform}" is not a valid Electron platform. It must be one of: ${ELECTRON_PLATFORMS.join(', ')}.`
+      `The platform "${platform}" is not a valid Electron platform. It must be one of: ${ELECTRON_PLATFORMS.join(
+        ', '
+      )}.`
     );
   }
 
-  return {platform: platform === 'macos' ? 'osx' : platform, buildMode, networkStack, stagingPercentage, sentryDsn};
+  return {platform, buildMode, networkStack, stagingPercentage, sentryDsn};
 }

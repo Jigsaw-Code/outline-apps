@@ -14,7 +14,7 @@
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
+const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android'];
 
 /*
   Inputs:

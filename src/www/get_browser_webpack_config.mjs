@@ -17,16 +17,21 @@ import cordovaConfig from './webpack_cordova.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
 export const getBrowserWebpackConfig = (platform, buildMode) => {
+  if (platform === 'storybook') {
+    throw new TypeError("Storybook is currently run with '@web/dev-server', not webpack.");
+  }
+
   let webpackConfig;
 
   switch (platform) {
-    case 'windows':
     case 'linux':
+    case 'windows':
       webpackConfig = electronConfig;
       break;
+    case 'android':
+    case 'browser':
     case 'ios':
     case 'macos':
-    case 'android':
     default:
       webpackConfig = cordovaConfig;
       break;

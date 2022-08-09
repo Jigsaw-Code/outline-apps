@@ -19,6 +19,8 @@ import path from 'path';
 import {webpackPromise} from '../build/webpack_promise.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {getRootDir} from '../build/get_root_dir.mjs';
+
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
 /**
@@ -30,9 +32,9 @@ export async function main(...parameters) {
   const {platform, buildMode, sentryDsn} = getBuildParameters(parameters);
 
   // write build environment
-  await fs.mkdir(path.resolve(process.env.ROOT_DIR, 'www'), {recursive: true});
+  await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
   await fs.writeFile(
-    path.resolve(process.env.ROOT_DIR, 'www/environment.json'),
+    path.resolve(getRootDir(), 'www/environment.json'),
     JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
   );
 

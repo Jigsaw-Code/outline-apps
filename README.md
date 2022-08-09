@@ -18,7 +18,7 @@ After cloning this repo, install all node dependencies:
 npm install
 ```
 
-## Building the web app
+## Building the shared web app
 
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
@@ -33,6 +33,14 @@ The app logic is located in [src/www/app](src/www/app). UI components are locate
 ```sh
 npm run action src/www/start storybook
 ```
+
+> 💡 NOTE: every script in this repository can be run with `npm run action` - for a CLI-like experience, try adding
+>
+> ```sh
+> alias outline="npm run action"
+> ```
+>
+> to your shell.
 
 ## Accepting a server invite
 
