@@ -31,7 +31,7 @@ const resolveActionPath = async actionPath => {
     return actionPath;
   }
 
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
   const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {

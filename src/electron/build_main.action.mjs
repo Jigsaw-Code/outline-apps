@@ -21,6 +21,7 @@ import electronMainWebpackConfig from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
+import {getRootDir} from '../build/get_root_dir.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
@@ -45,7 +46,7 @@ export async function main(...parameters) {
       windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
     }
 
-    await fs.writeFile(path.resolve(process.env.ROOT_DIR, ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
+    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
   }
 }
 

@@ -22,6 +22,7 @@ import {fromRollup} from '@web/dev-server-rollup';
 import image from '@rollup/plugin-image';
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {runAction} from '../build/run_action.mjs';
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 import path from 'path';
 import {getRootDir} from '../build/get_root_dir.mjs';
@@ -64,6 +65,9 @@ export async function main(...parameters) {
       },
     });
   }
+
+  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('cordova/setup', platform, `--buildMode=${buildMode}`);
 
   const webpackConfig = getBrowserWebpackConfig(platform, buildMode);
 
