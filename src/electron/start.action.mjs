@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import url from 'url';
-import path from 'path';
 import electron from 'electron';
 
 import {runAction} from '../build/run_action.mjs';
@@ -21,10 +20,8 @@ import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 
-const ELECTRON_BUILD_DIR = 'build';
-
 /**
- * @description TODO
+ * @description Builds and starts the electron application.
  *
  * @param {string[]} parameters
  */
@@ -37,7 +34,7 @@ export async function main(...parameters) {
 
   process.env.OUTLINE_DEBUG = buildMode === 'debug';
 
-  await spawnStream(electron, [path.resolve(getRootDir(), ELECTRON_BUILD_DIR)]);
+  await spawnStream(electron, [getRootDir()]);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
