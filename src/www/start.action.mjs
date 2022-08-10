@@ -15,61 +15,21 @@
 import url from 'url';
 import webpack from 'webpack';
 import WebpackServer from 'webpack-dev-server';
-import {startDevServer} from '@web/dev-server';
-import {esbuildPlugin} from '@web/dev-server-esbuild';
-import {storybookPlugin} from '@web/dev-server-storybook';
-import {fromRollup} from '@web/dev-server-rollup';
-import image from '@rollup/plugin-image';
 
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
-import path from 'path';
-import {getRootDir} from '../build/get_root_dir.mjs';
-
-const WWW_PATH = './src/www';
-const STORYBOOK_PATH = './src/www/.storybook';
 
 /**
- * @description TODO
- *
- * @param {string[]} parameters
+ * @description Starts the web app for development.
  */
-export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+export async function main() {
+  await runAction('www/build', 'browser');
 
-  if (platform === 'storybook') {
-    return startDevServer({
-      config: {
-        nodeResolve: true,
-        open: true,
-        watch: true,
-        rootDir: path.resolve(getRootDir(), WWW_PATH),
-        mimeTypes: {
-          // serve all png files as js so as to not confuse rollup
-          '**/*.png': 'js',
-        },
-        plugins: [
-          fromRollup(image)({
-            include: ['./src/**/*.png'],
-          }),
-          esbuildPlugin({
-            ts: true,
-            json: true,
-          }),
-          storybookPlugin({
-            type: 'web-components',
-            configDir: path.resolve(getRootDir(), STORYBOOK_PATH),
-          }),
-        ],
-      },
-    });
-  }
+  // TODO(daniellacosse): Browser-only webpack setup that's extended both by electron and cordova.
+  // Currently, only the cordova web build works in standalone mode.
+  await runAction('cordova/setup', 'browser');
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
-  await runAction('cordova/setup', platform, `--buildMode=${buildMode}`);
-
-  const webpackConfig = getBrowserWebpackConfig(platform, buildMode);
+  const webpackConfig = getBrowserWebpackConfig('browser', 'debug');
 
   await new WebpackServer(webpackConfig.devServer, webpack(webpackConfig)).start();
 }
