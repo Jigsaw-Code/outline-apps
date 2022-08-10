@@ -24,10 +24,6 @@ import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
   => the webpack config for the given platform and buildMode
 */
 export const getBrowserWebpackConfig = (platform, buildMode) => {
-  if (platform === 'storybook') {
-    throw new TypeError("Storybook is currently run with '@web/dev-server', not webpack.");
-  }
-
   let webpackConfig;
 
   switch (platform) {

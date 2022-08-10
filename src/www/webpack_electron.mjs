@@ -18,9 +18,6 @@ import {baseConfig, browserConfig, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER
 import {merge} from 'webpack-merge';
 
 export default merge(baseConfig, browserConfig, {
-  devServer: {
-    open: path.resolve(__dirname, 'index_electron.html'),
-  },
   entry: [path.resolve(__dirname, './app/electron_main.ts')],
   target: 'electron-renderer',
   module: {
