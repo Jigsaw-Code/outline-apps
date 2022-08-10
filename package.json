@@ -92,7 +92,7 @@
     "css-loader": "^5.0.1",
     "electron": "^11.5.0",
     "electron-builder": "^22.9.1",
-    "electron-icon-maker": "^0.0.4",
+    "electron-icon-maker": "^0.0.5",
     "eslint": "^8.15.0",
     "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-compat": "^4.0.2",
