@@ -153,12 +153,26 @@ Polymer({
         <div class="title">[[localize('server-add-access-key')]]</div>
         <div class="faded">[[localize('server-add-instructions')]]</div>
       </div>
-      <paper-input id="accessKeyInput" class="shadow" label="[[localize('server-access-key-label', 'ssProtocol', 'ss://')]]" no-label-float="" value="{{accessKey}}" pattern="((ss://)|(https://s3\\.amazonaws\\.com/outline-vpn/((index\\.html.*[#].*/invite/)|(invite\\.html.*[#]))ss)).*">
+      <paper-input
+        id="accessKeyInput"
+        class="shadow"
+        label="[[localize('server-access-key-label', 'ssProtocol', 'ss://')]]"
+        no-label-float=""
+        value="{{accessKey}}"
+        pattern="((ss://)|(https://)).*"
+      >
         <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
       </paper-input>
       <div class="footer center top-divider">
-        <div id="addServerFooter" inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"></div>
-        <div id="invalidAccessKeyFooter" hidden="" inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<span class=input-invalid>', 'closeLine', '</span><br/>')]]"></div>
+        <div
+          id="addServerFooter"
+          inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+        ></div>
+        <div
+          id="invalidAccessKeyFooter"
+          hidden=""
+          inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<span class=input-invalid>', 'closeLine', '</span><br/>')]]"
+        ></div>
       </div>
     </paper-dialog>
 
@@ -182,7 +196,7 @@ Polymer({
         </div>
       </div>
     </paper-dialog>
-`,
+  `,
 
   is: 'add-server-view',
 
@@ -225,9 +239,13 @@ Polymer({
 
   _accessKeyChanged: function() {
     // Use debounce to detect when the user has stopped typing.
-    this.debounce('accessKeyChanged', () => {
-      this._addServerFromInput();
-    }, 750);
+    this.debounce(
+      'accessKeyChanged',
+      () => {
+        this._addServerFromInput();
+      },
+      750
+    );
   },
 
   _addServerFromInput: function() {
@@ -291,5 +309,5 @@ Polymer({
 
   _disallowScroll: function(event) {
     event.preventDefault();
-  }
+  },
 });

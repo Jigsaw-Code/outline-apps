@@ -31,6 +31,10 @@ import {VpnInstaller} from './vpn_installer';
 export function unwrapInvite(s: string): string {
   try {
     const url = new URL(s);
+    if (process.env.FF_ONLINE_CONFIG && url.protocol == 'https:') {
+      return s;
+    }
+
     if (url.hash) {
       const decodedFragment = decodeURIComponent(url.hash);
 
@@ -284,19 +288,19 @@ export class App {
     }
   }
 
-  private confirmAddServer(accessKey: string, fromClipboard = false) {
+  private confirmAddServer(accessKeyOrURL: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
-    accessKey = unwrapInvite(accessKey);
+    accessKeyOrURL = unwrapInvite(accessKeyOrURL);
     if (fromClipboard) {
-      if (accessKey in this.ignoredAccessKeys) {
+      if (accessKeyOrURL in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
       } else if (fromClipboard && addServerView.isAddingServer()) {
         return console.debug('Already adding a server');
       }
     }
     try {
-      this.serverRepo.validateAccessKey(accessKey);
-      addServerView.openAddServerConfirmationSheet(accessKey);
+      this.serverRepo.validateAccessKey(accessKeyOrURL);
+      addServerView.openAddServerConfirmationSheet(accessKeyOrURL);
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
@@ -554,12 +558,6 @@ export class App {
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!url || !unwrapInvite(url).startsWith('ss://')) {
-        // This check is necessary to ignore empty and malformed install-referrer URLs in Android
-        // while allowing ss:// and invite URLs.
-        // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-shadowsocks url`);
-      }
       try {
         this.confirmAddServer(url);
       } catch (err) {
