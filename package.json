@@ -92,6 +92,7 @@
     "electron": "^19.0.8",
     "electron-builder": "^23.1.0",
     "electron-icon-maker": "^0.0.5",
+    "emoji-regex": "^10.1.0",
     "eslint": "^8.15.0",
     "eslint-import-resolver-typescript": "^3.4.0",
     "eslint-plugin-compat": "^4.0.2",
