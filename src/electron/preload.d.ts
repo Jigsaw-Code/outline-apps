@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {OutlineIpcPreloadImpl} from './ipc-preload';
+import {Clipboard} from 'electron';
+import {ElectronRendererMethodChannel} from './preload';
 
 // This file can be referenced in electron renderer scripts. It defines
 // the strongly typed global objects injected by preload.ts
@@ -23,7 +24,8 @@ export interface NativeOsApi {
 
 export interface ElectronApi {
   readonly os: NativeOsApi;
-  readonly ipc: OutlineIpcPreloadImpl;
+  readonly clipboard: Clipboard;
+  readonly methodChannel: ElectronRendererMethodChannel;
 }
 
 declare global {

@@ -24,6 +24,7 @@ import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as connectivity from './connectivity';
+import * as errors from '../www/model/errors';
 
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
@@ -32,23 +33,6 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {
-  ADD_SERVER_CHANNEL,
-  APP_UPDATE_DOWNLOADED_CHANNEL,
-  CHECK_REACHABLE_CHANNEL,
-  INSTALL_SERVICES_CHANNEL,
-  LOCALIZATION_RESPONSE_CHANNEL,
-  OutlineIpcClient,
-  OutlineIpcHandler,
-  PUSH_CLIPBOARD_CHANNEL,
-  QUIT_APP_CHANNEL,
-  REQUEST_LOCALIZATION_CHANNEL,
-  START_VPN_CHANNEL,
-  STOP_VPN_CHANNEL,
-  VPN_CONNECTED_CHANNEL,
-  VPN_DISCONNECTED_CHANNEL,
-  VPN_RECONNECTING_CHANNEL,
-} from './ipc';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
@@ -72,9 +56,6 @@ const tunnelStore = new TunnelStore(app.getPath('userData'));
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | null;
 let tray: Tray;
-
-let ipcClient: OutlineIpcClient | null = null;
-const ipcHandler = new OutlineIpcHandler(ipcMain);
 
 let isAppQuitting = false;
 // Default to English strings in case we fail to retrieve them from the renderer process.
@@ -149,8 +130,6 @@ function setupWindow(): void {
     },
   });
 
-  ipcClient = new OutlineIpcClient(mainWindow.webContents);
-
   // Icon is not shown in Ubuntu Dock. It is a recurrent issue happened in Linux:
   //   - https://github.com/electron-userland/electron-builder/issues/2269
   // A workaround is to forcibly set the icon of the main window.
@@ -201,7 +180,7 @@ function setupWindow(): void {
 
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
-    ipcClient.send(REQUEST_LOCALIZATION_CHANNEL, Object.keys(localizedStrings));
+    mainWindow.webContents.send('outline-ipc-localization-request', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
   });
 
@@ -267,7 +246,7 @@ function interceptShadowsocksLink(argv: string[]) {
         // The system adds a trailing slash to the intercepted URL (before the fragment).
         // Remove it before sending to the UI.
         url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
-        ipcClient.send(ADD_SERVER_CHANNEL, url);
+        mainWindow.webContents.send('outline-ipc-add-server', url);
       } else {
         console.error('called with URL but mainWindow not open');
       }
@@ -373,25 +352,26 @@ async function stopVpn() {
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
-  let evt: typeof VPN_CONNECTED_CHANNEL | typeof VPN_RECONNECTING_CHANNEL | typeof VPN_DISCONNECTED_CHANNEL;
+  let statusString;
   switch (status) {
     case TunnelStatus.CONNECTED:
-      evt = VPN_CONNECTED_CHANNEL;
+      statusString = 'connected';
       break;
     case TunnelStatus.DISCONNECTED:
-      evt = VPN_DISCONNECTED_CHANNEL;
+      statusString = 'disconnected';
       break;
     case TunnelStatus.RECONNECTING:
-      evt = VPN_RECONNECTING_CHANNEL;
+      statusString = 'reconnecting';
       break;
     default:
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
   }
-  if (ipcClient) {
-    ipcClient.send(evt, tunnelId);
+  const event = `outline-ipc-proxy-${statusString}-${tunnelId}`;
+  if (mainWindow) {
+    mainWindow.webContents.send(event);
   } else {
-    console.warn(`received ${evt} event for ${tunnelId} but no mainWindow to notify`);
+    console.warn(`received ${event} event but no mainWindow to notify`);
   }
   updateTray(status);
 }
@@ -467,12 +447,12 @@ function main() {
 
   // This event fires whenever the app's window receives focus.
   app.on('browser-window-focus', () => {
-    ipcClient?.send(PUSH_CLIPBOARD_CHANNEL);
+    mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  ipcHandler.handle(CHECK_REACHABLE_CHANNEL, async (hostname, port) => {
+  ipcMain.handle('outline-ipc-is-server-reachable', async (_, args: {hostname: string; port: number}) => {
     try {
-      await connectivity.isServerReachable(hostname || '', port || 0, REACHABILITY_TIMEOUT_MS);
+      await connectivity.isServerReachable(args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
       return true;
     } catch {
       return false;
@@ -480,49 +460,66 @@ function main() {
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
-  ipcHandler.handle(START_VPN_CHANNEL, async (config, id) => {
-    // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
-    //       being faster, this would help prevent traffic leaks - the Cordova clients already do
-    //       this).
-    if (currentTunnel) {
-      console.log('disconnecting from current server...');
-      currentTunnel.disconnect();
-      await currentTunnel.onceDisconnected;
+  ipcMain.handle(
+    'outline-ipc-start-proxying',
+    async (_, args: {config: ShadowsocksConfig; id: string}): Promise<errors.ErrorCode> => {
+      // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
+      //       being faster, this would help prevent traffic leaks - the Cordova clients already do
+      //       this).
+      if (currentTunnel) {
+        console.log('disconnecting from current server...');
+        currentTunnel.disconnect();
+        await currentTunnel.onceDisconnected;
+      }
+
+      console.log(`connecting to ${args.id}...`);
+
+      try {
+        // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
+        // resolve it just once, upfront.
+        args.config.host = await connectivity.lookupIp(args.config.host || '');
+
+        await connectivity.isServerReachable(args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+
+        await startVpn(args.config, args.id);
+        console.log(`connected to ${args.id}`);
+        await setupAutoLaunch(args);
+        // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
+        tunnelStore.save(args).catch(() => {
+          console.error('Failed to store tunnel.');
+        });
+
+        return errors.ErrorCode.NO_ERROR;
+      } catch (e) {
+        console.error(`could not connect: ${e.name} (${e.message})`);
+        // clean up the state, no need to await because stopVpn might throw another error which can be ignored
+        stopVpn();
+        return errors.toErrorCode(e);
+      }
     }
+  );
 
-    console.log(`connecting to ${id}...`);
+  // Disconnects from the current server, if any.
+  ipcMain.handle('outline-ipc-stop-proxying', stopVpn);
 
+  // Install backend services and return the error code
+  ipcMain.handle('outline-ipc-install-outline-services', async () => {
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
     try {
-      // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
-      // resolve it just once, upfront.
-      config.host = await connectivity.lookupIp(config.host || '');
-
-      await connectivity.isServerReachable(config.host || '', config.port || 0, REACHABILITY_TIMEOUT_MS);
-
-      await startVpn(config, id);
-      console.log(`connected to ${id}`);
-      await setupAutoLaunch({config, id});
-      // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-      tunnelStore.save({config, id}).catch(() => {
-        console.error('Failed to store tunnel.');
-      });
+      await installRoutingServices();
+      return errors.ErrorCode.NO_ERROR;
     } catch (e) {
-      console.error(`could not connect: ${e.name} (${e.message})`);
-      // clean up the state, no need to await because stopVpn might throw another error which can be ignored
-      stopVpn();
-      throw e;
+      if (typeof e === 'number') {
+        return e;
+      }
+      return errors.ErrorCode.UNEXPECTED;
     }
   });
 
-  // Disconnects from the current server, if any.
-  ipcHandler.handle(STOP_VPN_CHANNEL, stopVpn);
+  ipcMain.on('outline-ipc-quit-app', quitApp);
 
-  // Install backend services (Linux daemon/Win32 Service)
-  ipcHandler.handle(INSTALL_SERVICES_CHANNEL, installRoutingServices);
-
-  ipcHandler.on(QUIT_APP_CHANNEL, quitApp);
-
-  ipcHandler.on(LOCALIZATION_RESPONSE_CHANNEL, localizationResult => {
+  ipcMain.on('outline-ipc-localization-response', (_, localizationResult: {[key: string]: string}) => {
     if (localizationResult) {
       localizedStrings = localizationResult;
     }
@@ -531,7 +528,7 @@ function main() {
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', () => {
-    ipcClient?.send(APP_UPDATE_DOWNLOADED_CHANNEL);
+    mainWindow?.webContents.send('outline-ipc-update-downloaded');
   });
 }
 

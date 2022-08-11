@@ -19,13 +19,49 @@
 
 // Please also update preload.d.ts whenever you changed this file.
 
-import {contextBridge} from 'electron';
+import {clipboard, contextBridge, ipcRenderer, IpcRendererEvent} from 'electron';
 import * as os from 'os';
-import {OutlineIpcPreloadImpl} from './ipc-preload';
+
+/**
+ * The method channel for sending messages through electron's IPC.
+ *
+ * All functions are defined as fields because `contextBridge` will only inject
+ * fields (defined in object) but not functions (defined in prototype) to the
+ * global object.
+ */
+export class ElectronRendererMethodChannel {
+  /**
+   * Construct a electron's renderer method channel with a specific namespace.
+   * @param namespace The namespace string which will be the prefix of all channels.
+   *
+   * We need to have a namespace due to security consideration:
+   *   - https://www.electronjs.org/docs/latest/tutorial/context-isolation#security-considerations
+   */
+  public constructor(private readonly namespace: string) {}
+
+  public readonly send = (channel: string, ...args: unknown[]): void =>
+    ipcRenderer.send(`${this.namespace}-${channel}`, ...args);
+
+  // TODO: replace the `any` with a better type once we unify the IPC call framework
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  public readonly invoke = (channel: string, ...args: unknown[]): Promise<any> =>
+    ipcRenderer.invoke(`${this.namespace}-${channel}`, ...args);
+
+  public readonly on = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+    ipcRenderer.on(`${this.namespace}-${channel}`, listener);
+  };
+
+  public readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+    ipcRenderer.once(`${this.namespace}-${channel}`, listener);
+  };
+}
 
 contextBridge.exposeInMainWorld('electron', {
+  // TODO: move this os definition to a platform api call in the future
   os: {
     platform: os.platform(),
   },
-  ipc: new OutlineIpcPreloadImpl(),
+  // TODO: move this clipboard definition to a platform api call as well
+  clipboard: clipboard,
+  methodChannel: new ElectronRendererMethodChannel('outline-ipc'),
 });

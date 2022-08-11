@@ -12,15 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  OutlineIpcClient,
-  OutlineIpcHandler,
-  START_VPN_CHANNEL,
-  STOP_VPN_CHANNEL,
-  VPN_CONNECTED_CHANNEL,
-  VPN_DISCONNECTED_CHANNEL,
-  VPN_RECONNECTING_CHANNEL,
-} from '../../electron/ipc';
+import * as errors from '../model/errors';
+
 import {ShadowsocksConfig} from './config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
@@ -29,22 +22,14 @@ export class ElectronOutlineTunnel implements Tunnel {
 
   private running = false;
 
-  constructor(
-    public readonly id: string,
-    private readonly ipcClient: OutlineIpcClient,
-    private readonly ipcHandler: OutlineIpcHandler
-  ) {
+  constructor(public readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
-    this.ipcHandler.on(VPN_CONNECTED_CHANNEL, id => {
-      if (id === this.id) {
-        this.handleStatusChange(TunnelStatus.CONNECTED);
-      }
+    window.electron.methodChannel.on(`proxy-connected-${this.id}`, () => {
+      this.handleStatusChange(TunnelStatus.CONNECTED);
     });
-    this.ipcHandler.on(VPN_RECONNECTING_CHANNEL, id => {
-      if (id === this.id) {
-        this.handleStatusChange(TunnelStatus.RECONNECTING);
-      }
+    window.electron.methodChannel.on(`proxy-reconnecting-${this.id}`, () => {
+      this.handleStatusChange(TunnelStatus.RECONNECTING);
     });
   }
 
@@ -53,13 +38,14 @@ export class ElectronOutlineTunnel implements Tunnel {
       return Promise.resolve();
     }
 
-    this.ipcHandler.once(VPN_DISCONNECTED_CHANNEL, id => {
-      if (id === this.id) {
-        this.handleStatusChange(TunnelStatus.DISCONNECTED);
-      }
+    window.electron.methodChannel.once(`proxy-disconnected-${this.id}`, () => {
+      this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    await this.ipcClient.invoke(START_VPN_CHANNEL, config, this.id);
+    const err = await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
+    if (err != errors.ErrorCode.NO_ERROR) {
+      throw new errors.OutlinePluginError(err);
+    }
     this.running = true;
   }
 
@@ -69,7 +55,7 @@ export class ElectronOutlineTunnel implements Tunnel {
     }
 
     try {
-      await this.ipcClient.invoke(STOP_VPN_CHANNEL);
+      await window.electron.methodChannel.invoke('stop-proxying');
       this.running = false;
     } catch (e) {
       console.error(`Failed to stop tunnel ${e}`);

@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import {TunnelStatus} from '../www/app/tunnel';
-import {NoAdminPermissions, SystemConfigurationException, UnexpectedPluginError} from '../www/model/errors';
+import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
 import {getAppPath} from './util';
 
 const isLinux = platform() === 'linux';
@@ -230,7 +230,7 @@ function executeCommandAsRoot(command: string): Promise<void> {
         // NOTE: The script could have terminated with an error - see the comment in
         //       sudo-prompt's typings definition.
         console.error('failed to execute command as root: ', sudoError);
-        reject(new NoAdminPermissions(sudoError.message));
+        reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
       } else {
         resolve();
       }
@@ -298,7 +298,7 @@ export async function installRoutingServices(): Promise<void> {
   } else if (isLinux) {
     await installLinuxRoutingServices();
   } else {
-    throw new UnexpectedPluginError('unsupported os');
+    throw new Error('unsupported os');
   }
   console.info('outline routing service installed successfully');
 }
