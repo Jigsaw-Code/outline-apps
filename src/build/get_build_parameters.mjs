@@ -14,7 +14,7 @@
 
 import minimist from 'minimist';
 
-const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser', 'storybook'];
+const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
 const VALID_BUILD_MODES = ['debug', 'release'];
 
 /*
