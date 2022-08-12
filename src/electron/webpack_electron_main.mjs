@@ -20,33 +20,58 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default ({networkStack}) => ({
-  entry: './src/electron/index.ts',
-  target: 'electron-main',
-  node: {
-    __dirname: false,
-    __filename: false,
-  },
-  devtool: 'inline-source-map',
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
+export default ({networkStack, sentryDsn, appVersion}) => [
+  {
+    entry: './src/electron/index.ts',
+    target: 'electron-main',
+    node: {
+      __dirname: false,
+      __filename: false,
+    },
+    devtool: 'inline-source-map',
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
+        },
+      ],
+    },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
+    },
+    plugins: [
+      new webpack.DefinePlugin({
+        NETWORK_STACK: JSON.stringify(networkStack),
+        SENTRY_DSN: JSON.stringify(sentryDsn),
+        APP_VERSION: JSON.stringify(appVersion),
+      }),
     ],
+    output: {
+      filename: 'index.js',
+      path: path.resolve(__dirname, '../../build/electron/electron'),
+    },
   },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+  {
+    entry: './src/electron/preload.ts',
+    target: 'electron-preload',
+    devtool: 'inline-source-map',
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
+        },
+      ],
+    },
+    resolve: {
+      extensions: ['.ts'],
+    },
+    output: {
+      filename: 'preload.js',
+      path: path.resolve(__dirname, '../../build/electron/electron'),
+    },
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      NETWORK_STACK: networkStack,
-    }),
-  ],
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, '../../build/electron/electron'),
-  },
-});
+];

@@ -80,6 +80,13 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-unused-vars": "off"
       }
+    },
+    // No need to check browser compatibility for electron files
+    {
+      "files": ["./src/www/app/electron_main.ts"],
+      "rules": {
+        "compat/compat": "off"
+      }
     }
   ]
 }

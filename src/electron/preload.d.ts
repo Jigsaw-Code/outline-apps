@@ -12,18 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Typings for:
-// https://www.npmjs.com/package/electron-promise-ipc
+import {Clipboard} from 'electron';
+import {ElectronRendererMethodChannel} from './preload';
 
-declare module 'electron-promise-ipc' {
-  // TODO: Export this class definition in addition to the default instance.
-  class PromiseIpc {
-    constructor(args?: {maxTimeoutMs?: number});
-    on(eventName: string, callback: Function): void;
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    send(eventName: string, arg?: {}): Promise<any>;
+// This file can be referenced in electron renderer scripts. It defines
+// the strongly typed global objects injected by preload.ts
+
+export interface NativeOsApi {
+  platform: string;
+}
+
+export interface ElectronApi {
+  readonly os: NativeOsApi;
+  readonly clipboard: Clipboard;
+  readonly methodChannel: ElectronRendererMethodChannel;
+}
+
+declare global {
+  interface Window {
+    /**
+     * All electron or node features exposed to electron's renderer process.
+     */
+    electron: ElectronApi;
   }
-
-  const defaultInstance: PromiseIpc;
-  export = defaultInstance;
 }
