@@ -1,13 +1,4 @@
-/docs/       @Jigsaw-Code/outline-releasers
-/resources/  @Jigsaw-Code/outline-releasers
-*.json       @Jigsaw-Code/outline-releasers
-*.md         @Jigsaw-Code/outline-releasers
-*.png        @Jigsaw-Code/outline-releasers
-*.svg        @Jigsaw-Code/outline-releasers
-
-/src/cordova/             @Jigsaw-Code/outline-releasers
-/src/electron/            @Jigsaw-Code/outline-releasers
-/cordova-plugin-outline/  @Jigsaw-Code/outline-releasers
+*       @Jigsaw-Code/outline-dev
 
 /cordova-plugin-outline/  @Jigsaw-Code/outline-networking-owners
 /third_party/             @Jigsaw-Code/outline-networking-owners
