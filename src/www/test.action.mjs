@@ -26,7 +26,7 @@ const KARMA_CONFIG_PATH = 'src/www/karma.conf.js';
  * @param {string[]} parameters
  */
 export async function main() {
-  const runKarmaPromise = config =>
+  const runKarma = config =>
     new Promise((resolve, reject) => {
       new karma.Server(config, exitCode => {
         if (exitCode !== 0) {
@@ -44,7 +44,7 @@ export async function main() {
     throwErrors: true,
   });
 
-  await runKarmaPromise(config);
+  await runKarma(config);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
