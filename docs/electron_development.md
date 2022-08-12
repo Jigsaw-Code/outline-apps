@@ -18,7 +18,7 @@ npm run action electron/start [windows|linux]
 
 Requirements for building on Windows:
 
-- If running action scripts outside of `src`, you'll need [Cygwin](https://cygwin.com/install.html). It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
+- [Cygwin](https://cygwin.com/install.html), if running action scripts outside of `src`. It provides the "missing Unix pieces" required by build system such as rsync (and many others). Besides the default selected Unix tools such as `bash` and `rsync`, please also make sure to install `git` during Cygwin installation as well. You will need to clone this repository using `git` in Cygwin instead of the native Windows version of git, in order to ensure Unix line endings.
 
 To build the _release_ version of Windows installer, you'll also need:
 
