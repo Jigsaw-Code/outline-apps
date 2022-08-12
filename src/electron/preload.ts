@@ -63,5 +63,6 @@ contextBridge.exposeInMainWorld('electron', {
   },
   // TODO: move this clipboard definition to a platform api call as well
   clipboard: clipboard,
+  // TODO: refactor channel namespace to a constant
   methodChannel: new ElectronRendererMethodChannel('outline-ipc'),
 });

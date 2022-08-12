@@ -180,6 +180,7 @@ function setupWindow(): void {
 
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
+    // TODO: refactor channel name and namespace to a constant
     mainWindow.webContents.send('outline-ipc-localization-request', Object.keys(localizedStrings));
     interceptShadowsocksLink(process.argv);
   });
@@ -246,6 +247,7 @@ function interceptShadowsocksLink(argv: string[]) {
         // The system adds a trailing slash to the intercepted URL (before the fragment).
         // Remove it before sending to the UI.
         url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
+        // TODO: refactor channel name and namespace to a constant
         mainWindow.webContents.send('outline-ipc-add-server', url);
       } else {
         console.error('called with URL but mainWindow not open');
@@ -367,6 +369,7 @@ function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
       console.error(`Cannot send unknown proxy status: ${status}`);
       return;
   }
+  // TODO: refactor channel name and namespace to a constant
   const event = `outline-ipc-proxy-${statusString}-${tunnelId}`;
   if (mainWindow) {
     mainWindow.webContents.send(event);
@@ -447,9 +450,11 @@ function main() {
 
   // This event fires whenever the app's window receives focus.
   app.on('browser-window-focus', () => {
+    // TODO: refactor channel name and namespace to a constant
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.handle('outline-ipc-is-server-reachable', async (_, args: {hostname: string; port: number}) => {
     try {
       await connectivity.isServerReachable(args.hostname || '', args.port || 0, REACHABILITY_TIMEOUT_MS);
@@ -460,6 +465,7 @@ function main() {
   });
 
   // Connects to the specified server, if that server is reachable and the credentials are valid.
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
     async (_, args: {config: ShadowsocksConfig; id: string}): Promise<errors.ErrorCode> => {
@@ -500,9 +506,11 @@ function main() {
   );
 
   // Disconnects from the current server, if any.
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.handle('outline-ipc-stop-proxying', stopVpn);
 
   // Install backend services and return the error code
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.handle('outline-ipc-install-outline-services', async () => {
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:
     // https://github.com/electron/electron/issues/24427
@@ -517,8 +525,10 @@ function main() {
     }
   });
 
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.on('outline-ipc-quit-app', quitApp);
 
+  // TODO: refactor channel name and namespace to a constant
   ipcMain.on('outline-ipc-localization-response', (_, localizationResult: {[key: string]: string}) => {
     if (localizationResult) {
       localizedStrings = localizationResult;
@@ -528,6 +538,7 @@ function main() {
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', () => {
+    // TODO: refactor channel name and namespace to a constant
     mainWindow?.webContents.send('outline-ipc-update-downloaded');
   });
 }
