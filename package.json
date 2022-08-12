@@ -5,7 +5,7 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rm -rf build node_modules www platforms plugins",
+    "clean": "rimraf build node_modules www platforms plugins",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts src",
