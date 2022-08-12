@@ -1,15 +1,7 @@
-/docs/       @Jigsaw-Code/outline-strings-owners
-/resources/  @Jigsaw-Code/outline-strings-owners
-*.json       @Jigsaw-Code/outline-strings-owners
-*.md         @Jigsaw-Code/outline-strings-owners
-*.png        @Jigsaw-Code/outline-strings-owners
-*.svg        @Jigsaw-Code/outline-strings-owners
+*       @Jigsaw-Code/outline-dev
 
 /cordova-plugin-outline/  @Jigsaw-Code/outline-networking-owners
 /third_party/             @Jigsaw-Code/outline-networking-owners
 /tools/                   @Jigsaw-Code/outline-networking-owners
 
-/src/cordova/             @Jigsaw-Code/outline-owners
-/src/electron/            @Jigsaw-Code/outline-owners
-/src/www/model/           @Jigsaw-Code/outline-owners
-/cordova-plugin-outline/  @Jigsaw-Code/outline-owners
+/src/www/model/           @fortuna 
