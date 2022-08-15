@@ -32,6 +32,7 @@ export async function main(...parameters) {
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
+  // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
     electronMainWebpackConfigs({networkStack, sentryDsn, APP_VERSION}).map(config => ({
       ...config,
