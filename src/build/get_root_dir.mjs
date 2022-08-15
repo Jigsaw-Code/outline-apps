@@ -23,5 +23,5 @@ const ROOT_DIR = path.resolve(
 );
 
 export function getRootDir() {
-  return rootDir;
+  return ROOT_DIR;
 }

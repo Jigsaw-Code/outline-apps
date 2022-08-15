@@ -36,11 +36,14 @@ npm run action src/www/storybook
 
 > 💡 NOTE: the `src` part of the path is optional. `npm run action www/start` resolves to the same script.
 
-> 💡 NOTE: every script in this repository can be run with `npm run action` - for a CLI-like experience, add
+> 💡 NOTE: every script in this repository can be run with `npm run action` -
+> for a CLI-like experience, add something like
 >
 > ```sh
 > alias outline="npm run action"
 > ```
+>
+> _(you can call it whatever you like)_
 >
 > to your shell, then try `outline www/start`!
 
