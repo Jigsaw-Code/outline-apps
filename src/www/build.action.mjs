@@ -16,7 +16,7 @@ import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
 
-import {webpackPromise} from '../build/webpack_promise.mjs';
+import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
@@ -38,7 +38,7 @@ export async function main(...parameters) {
     JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
   );
 
-  await webpackPromise(getBrowserWebpackConfig(platform, buildMode));
+  await runWebpack(getBrowserWebpackConfig(platform, buildMode));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

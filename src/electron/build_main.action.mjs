@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getVersion} from '../build/get_version.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
-import {webpackPromise} from '../build/webpack_promise.mjs';
-import electronMainWebpackConfig from './webpack_electron_main.mjs';
+import {runWebpack} from '../build/run_webpack.mjs';
+import electronMainWebpackConfigs from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
@@ -27,13 +28,16 @@ const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, networkStack, sentryDsn} = getElectronBuildParameters(parameters);
+  const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
-  await webpackPromise({
-    ...electronMainWebpackConfig({networkStack}),
-    mode: getWebpackBuildMode(buildMode),
-  });
+  await runWebpack(
+    electronMainWebpackConfigs({networkStack, sentryDsn, APP_VERSION}).map(config => ({
+      ...config,
+      mode: getWebpackBuildMode(buildMode),
+    }))
+  );
 
   if (platform === 'windows') {
     let windowsEnvironment = `!define RELEASE "${await getVersion(platform)}"`;
