@@ -37,7 +37,7 @@ export async function main(...parameters) {
   );
 
   const electronConfig = JSON.parse(
-    await fs.readFile(path.resolve(getRootDir(), './src/electron/electron-builder.json'))
+    await fs.readFile(path.resolve(getRootDir(), 'src', 'electron', 'electron-builder.json'))
   );
 
   // build electron binary

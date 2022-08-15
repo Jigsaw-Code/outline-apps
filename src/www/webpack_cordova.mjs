@@ -30,9 +30,9 @@ const BABEL_LOADER = {
 export default merge(baseConfig, browserConfig, {
   devServer: {
     open: '/index_cordova.html',
-    static: path.resolve(getRootDir(), 'platforms/browser/www'),
+    static: path.resolve(getRootDir(), 'platforms', 'browser', 'www'),
   },
-  entry: [path.resolve(__dirname, 'app/cordova_main.ts')],
+  entry: [path.resolve(__dirname, 'app', 'cordova_main.ts')],
   target: ['web', 'es5'],
   module: {
     rules: [
@@ -69,7 +69,7 @@ export default merge(baseConfig, browserConfig, {
     }),
     new HtmlWebpackPlugin({
       filename: 'index_cordova.html',
-      template: path.resolve(__dirname, './index_cordova.html'),
+      template: path.resolve(__dirname, 'index_cordova.html'),
     }),
   ],
 });

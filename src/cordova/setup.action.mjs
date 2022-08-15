@@ -49,7 +49,7 @@ export async function main(...parameters) {
 
   await rmfr(`platforms/${platform}`);
 
-  if (!existsSync(path.resolve(getRootDir(), `platforms/${platform}`))) {
+  if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
     await cordova.platform(
       'add',
       [platform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
