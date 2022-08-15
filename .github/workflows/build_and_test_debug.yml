@@ -32,7 +32,7 @@ jobs:
         run: npm ci
         
       - name: Run Linter
-        run: npm run lint
+        run: npm run action lint
 
       - name: Build Web App
         run: npm run action www/build

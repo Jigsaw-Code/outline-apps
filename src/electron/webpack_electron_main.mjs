@@ -50,7 +50,7 @@ export default ({networkStack, sentryDsn, appVersion}) => [
     ],
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, '../../build/electron/electron'),
+      path: path.resolve(__dirname, '..', '..', 'build', 'electron', 'electron'),
     },
   },
   {
@@ -71,7 +71,7 @@ export default ({networkStack, sentryDsn, appVersion}) => [
     },
     output: {
       filename: 'preload.js',
-      path: path.resolve(__dirname, '../../build/electron/electron'),
+      path: path.resolve(__dirname, '..', '..', 'build', 'electron', 'electron'),
     },
   },
 ];

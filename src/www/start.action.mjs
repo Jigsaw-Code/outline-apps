@@ -13,24 +13,25 @@
 // limitations under the License.
 
 import url from 'url';
-import * as globby from 'globby';
-import path from 'path';
-import fs from 'fs/promises';
-import {getRootDir} from './src/build/get_root_dir.mjs';
+import webpack from 'webpack';
+import WebpackServer from 'webpack-dev-server';
+
+import {runAction} from '../build/run_action.mjs';
+import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
 /**
- * @description returns a list of all valid actions to run
+ * @description Starts the web app for development.
  */
 export async function main() {
-  const {scripts} = JSON.parse(await fs.readFile(path.join(getRootDir(), 'package.json')));
+  await runAction('www/build', 'browser');
 
-  for (const script in scripts) {
-    console.info(script);
-  }
+  // TODO(daniellacosse): Browser-only webpack setup that's extended both by electron and cordova.
+  // Currently, only the cordova web build works in standalone mode.
+  await runAction('cordova/setup', 'browser');
 
-  for (const actionPath of await globby.default(['**/*.action.sh', '**/*.action.mjs'])) {
-    console.info(actionPath.match(/(.+)\.action/)[1]);
-  }
+  const webpackConfig = getBrowserWebpackConfig('browser', 'debug');
+
+  await new WebpackServer(webpackConfig.devServer, webpack(webpackConfig)).start();
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
