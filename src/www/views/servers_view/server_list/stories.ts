@@ -54,5 +54,13 @@ export default {
 
 export const Example = ({servers}: ServerList) =>
   html`
-    <server-list .localize="${localize}" .servers="${servers}"></server-list>
+    <server-list
+      .localize="${localize}"
+      .serverItems="${servers}"
+      .itemTemplate="${(server, localize) => {
+        return html`
+          <server-row-card .server="${server}" .localize="${localize}"></server-row-card>
+        `;
+      }}"
+    ></server-list>
   `;

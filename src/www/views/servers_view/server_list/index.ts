@@ -11,63 +11,40 @@
   limitations under the License.
 */
 
-import {computed, customElement, property} from '@polymer/decorators';
-import {html, PolymerElement} from '@polymer/polymer';
-
 import '../server_list_item/server_card';
-import {ServerListItem} from '../server_list_item';
+import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 
 @customElement('server-list')
-export class ServerList extends PolymerElement {
-  static get template() {
-    return html`
-      <style>
-        :host {
-          display: block;
-          margin: 0 auto;
-          width: 100%;
-          height: 100%;
-          padding: 8px;
-          box-sizing: border-box;
-        }
+export class ServerList extends LitElement {
+  @property() localize: (messageID: string) => string;
+  @property() serverItems: ServerListItem[];
+  @property() itemTemplate: (server: ServerListItem, localize: (messageID: string) => string) => LitElement;
 
-        server-row-card {
-          margin: 0 auto 8px auto;
-          height: 130px;
-        }
-
-        server-hero-card {
-          height: 400px;
-        }
-      </style>
-
-      <!-- TODO(daniellacosse): use slots instead after we move this to lit -->
-      <template is="dom-repeat" items="[[servers]]">
-        <template is="dom-if" if="[[hasSingleServer]]">
-          <server-hero-card localize="[[localize]]" server="[[item]]"></server-hero-card>
-        </template>
-        <template is="dom-if" if="[[!hasSingleServer]]">
-          <server-row-card localize="[[localize]]" server="[[item]]"></server-row-card>
-        </template>
-      </template>
-    `;
-  }
-
-  // Need to declare localize function passed in from parent, or else
-  // localize() calls within the template won't be updated.
-
-  // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: (messageId: string) => string;
-  @property({type: Array}) servers: ServerListItem[] = [];
-
-  @computed('servers')
-  get hasSingleServer() {
-    return this.servers.length === 1;
-  }
-
-  getErrorMessage(errorMessageId: string) {
-    if (typeof errorMessageId === 'string') {
-      return this.localize(errorMessageId);
+  static styles = css`
+    ul,
+    li {
+      all: initial;
     }
+
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+  `;
+
+  render() {
+    return html`
+      <ul>
+        ${this.serverItems.map(
+          server =>
+            html`
+              <li>${this.itemTemplate(server, this.localize)}</li>
+            `
+        )}
+      </ul>
+    `;
   }
 }
