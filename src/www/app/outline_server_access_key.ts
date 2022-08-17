@@ -13,61 +13,50 @@
 // limitations under the License.
 
 import {Config, makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
-import * as errors from '../model/errors';
+import {ServerUrlInvalid} from '../model/errors';
 import {ShadowsocksConfig} from './config';
 
-export function parseAccessKey(accessKey: string): Config {
-  try {
-    return SHADOWSOCKS_URI.parse(accessKey);
-  } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+export class OutlineServerAccessKey implements ShadowsocksConfig {
+  _rawConfig: Config;
+
+  host?: string;
+  port?: number;
+  method?: string;
+  password?: string;
+  name?: string;
+
+  constructor(accessKey: string) {
+    try {
+      this._rawConfig = SHADOWSOCKS_URI.parse(accessKey);
+    } catch ({message}) {
+      throw new ServerUrlInvalid(message ?? 'Failed to parse access key.');
+    }
+
+    this.host = this._rawConfig.host.data;
+    this.port = this._rawConfig.port.data;
+    this.method = this._rawConfig.method.data;
+    this.password = this._rawConfig.password.data;
+    this.name = this._rawConfig.tag.data;
   }
-}
 
-// Parses an access key string into a ShadowsocksConfig object.
-export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConfig {
-  try {
-    const {
-      host: {data: host},
-      port: {data: port},
-      method: {data: method},
-      password: {data: password},
-      tag: {data: name},
-    } = parseAccessKey(accessKey);
-
-    return {
-      host,
-      port,
-      method,
-      password,
-      name,
-    };
-  } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+  isEqualTo(that: OutlineServerAccessKey) {
+    return (
+      this.host === that.host &&
+      this.port === that.port &&
+      this.password === that.password &&
+      this.method === that.method
+    );
   }
-}
 
-// Encodes a Shadowsocks proxy configuration into an access key string.
-export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
-  return SIP002_URI.stringify(
-    makeConfig({
-      host: config.host,
-      port: config.port,
-      method: config.method,
-      password: config.password,
-      tag: config.name,
-    })
-  );
-}
-
-// Compares access keys proxying parameters.
-export function accessKeysMatch(a: string, b: string): boolean {
-  try {
-    const l = accessKeyToShadowsocksConfig(a);
-    const r = accessKeyToShadowsocksConfig(b);
-    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
-  } catch (e) {
-    console.debug(`failed to parse access key for comparison`);
+  toString() {
+    return SIP002_URI.stringify(
+      makeConfig({
+        host: this.host,
+        port: this.port,
+        method: this.method,
+        password: this.password,
+        tag: this.name,
+      })
+    );
   }
-  return false;
 }
