@@ -19,13 +19,10 @@ import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRena
 import {ShadowsocksConfig} from './config';
 import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
-import {
-  OutlineServer,
-  OutlineServerRepository,
-  ServersStorageV0,
-  ServersStorageV1,
-  shadowsocksConfigToAccessKey,
-} from './outline_server';
+
+import {OutlineServer} from './outline_server';
+import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from './outline_server_repository';
+import {shadowsocksConfigToAccessKey} from './outline_server_access_key';
 
 // TODO(alalama): unit tests for OutlineServer.
 
