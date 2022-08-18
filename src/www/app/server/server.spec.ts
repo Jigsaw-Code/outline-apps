@@ -81,7 +81,7 @@ describe('OutlineServerRepository', () => {
       storage
     );
     expect(repo.getById('server-0')?.accessKey.toString()).toEqual(CONFIG_0.toString());
-    expect(repo.getById('server-0')?.accessKey.toString()).toEqual(CONFIG_1.toString());
+    expect(repo.getById('server-1')?.accessKey.toString()).toEqual(CONFIG_1.toString());
   });
 
   it('stores V1 servers', () => {
