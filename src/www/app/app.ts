@@ -21,6 +21,7 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServer} from './server';
+import {OutlineServerAccessConfig} from './server/access_config';
 import {OutlineServerRepository} from './server/repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -296,8 +297,7 @@ export class App {
       }
     }
     try {
-      this.serverRepo.validateAccessKey(accessKey);
-      addServerView.openAddServerConfirmationSheet(accessKey);
+      addServerView.openAddServerConfirmationSheet(new OutlineServerAccessConfig(accessKey));
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.

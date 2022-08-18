@@ -23,7 +23,7 @@ import {ShadowsocksConfig} from '../config';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from '.';
-import {OutlineServerAccessKey} from './access_key';
+import {OutlineServerAccessConfig} from './access_config';
 
 // DEPRECATED: V0 server persistence format.
 export interface ServersStorageV0 {
@@ -65,7 +65,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    const config = new OutlineServerAccessKey(accessKey);
+    const config = new OutlineServerAccessConfig(accessKey);
     const server = this.createServer(uuidv4(), config);
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -114,23 +114,11 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    let config = null;
-    try {
-      config = new OutlineServerAccessKey(accessKey);
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
-    }
-    if (config._rawConfig.host.isIPv6) {
-      throw new errors.ServerIncompatible('unsupported IPv6 host address');
-    }
-    if (!OutlineServer.isServerCipherSupported(config._rawConfig.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(config._rawConfig.method.data || 'unknown');
-    }
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (server.accessKey.isEqualTo(new OutlineServerAccessKey(accessKey))) {
+      if (server.accessConfig.isEqualTo(new OutlineServerAccessConfig(accessKey))) {
         return server;
       }
     }
@@ -142,7 +130,7 @@ export class OutlineServerRepository implements ServerRepository {
     for (const server of this.serverById.values()) {
       servers.push({
         id: server.id,
-        accessKey: server.accessKey.toString(),
+        accessKey: server.accessConfig.toString(),
         name: server.name,
       });
     }
@@ -178,7 +166,7 @@ export class OutlineServerRepository implements ServerRepository {
       try {
         this.loadServer({
           id: serverId,
-          accessKey: OutlineServerAccessKey.fromConfig(config).toString(),
+          accessKey: new OutlineServerAccessConfig(config).toString(),
           name: config.name,
         });
       } catch (e) {
@@ -212,7 +200,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private loadServer({id, accessKey, name}: OutlineServerJson) {
-    const config = new OutlineServerAccessKey(accessKey);
+    const config = new OutlineServerAccessConfig(accessKey);
 
     config.name = name;
 
@@ -220,18 +208,13 @@ export class OutlineServerRepository implements ServerRepository {
     this.serverById.set(id, server);
   }
 
-  private createServer(id: string, config: OutlineServerAccessKey): OutlineServer {
-    const server = new OutlineServer(id, config, config.name, this.createTunnel(id), this.net, this.eventQueue);
-    try {
-      this.validateAccessKey(config.toString());
-    } catch (e) {
-      if (e instanceof errors.ShadowsocksUnsupportedCipher) {
-        // Don't throw for backward-compatibility.
-        server.errorMessageId = 'unsupported-cipher';
-      } else {
-        throw e;
-      }
+  private createServer(id: string, config: OutlineServerAccessConfig): OutlineServer {
+    const alreadyAddedServer = this.serverFromAccessKey(config.toString());
+
+    if (alreadyAddedServer) {
+      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    return server;
+
+    return new OutlineServer(id, config, config.name, this.createTunnel(id), this.net, this.eventQueue);
   }
 }

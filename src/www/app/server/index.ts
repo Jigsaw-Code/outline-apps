@@ -19,7 +19,7 @@ import {Server} from '../../model/server';
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus} from '../tunnel';
 
-import {OutlineServerAccessKey} from './access_key';
+import {OutlineServerAccessConfig} from './access_config';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
@@ -39,7 +39,7 @@ export class OutlineServer implements Server {
 
   constructor(
     public readonly id: string,
-    public readonly accessKey: OutlineServerAccessKey,
+    public readonly accessConfig: OutlineServerAccessConfig,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
@@ -54,20 +54,20 @@ export class OutlineServer implements Server {
 
   set name(newName: string) {
     this._name = newName;
-    this.accessKey.name = newName;
+    this.accessConfig.name = newName;
   }
 
   get address() {
-    return `${this.accessKey.host}:${this.accessKey.port}`;
+    return `${this.accessConfig.host}:${this.accessConfig.port}`;
   }
 
   get isOutlineServer() {
-    return this.accessKey.isOutlineServer;
+    return this.accessConfig.isOutlineServer;
   }
 
   async connect() {
     try {
-      await this.tunnel.start(this.accessKey);
+      await this.tunnel.start(this.accessConfig);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -92,7 +92,7 @@ export class OutlineServer implements Server {
   }
 
   async checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.accessKey.host, this.accessKey.port);
+    return this.net.isServerReachable(this.accessConfig.host, this.accessConfig.port);
   }
 
   private handleTunnelStatusChange(status: TunnelStatus) {

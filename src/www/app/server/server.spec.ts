@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {InMemoryStorage} from '../../../infrastructure/memory_storage';
-import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
+import {ServerUrlInvalid} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 
 import {FakeNativeNetworking} from '../fake_net';
@@ -21,12 +21,12 @@ import {FakeOutlineTunnel} from '../fake_tunnel';
 
 import {OutlineServer} from '.';
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from './repository';
-import {OutlineServerAccessKey} from './access_key';
+import {OutlineServerAccessConfig} from './access_config';
 
 // TODO(alalama): unit tests for OutlineServer.
 
 describe('OutlineServerRepository', () => {
-  const CONFIG_0 = OutlineServerAccessKey.fromConfig({
+  const CONFIG_0 = new OutlineServerAccessConfig({
     host: '127.0.0.1',
     port: 1080,
     password: 'test',
@@ -34,7 +34,7 @@ describe('OutlineServerRepository', () => {
     name: 'fake server 0',
   });
 
-  const CONFIG_1 = OutlineServerAccessKey.fromConfig({
+  const CONFIG_1 = new OutlineServerAccessConfig({
     host: '10.0.0.1',
     port: 1089,
     password: 'test',
@@ -54,10 +54,10 @@ describe('OutlineServerRepository', () => {
       storage
     );
     const server0 = repo.getById('server-0');
-    expect(server0?.accessKey).toEqual(CONFIG_0);
+    expect(server0?.accessConfig).toEqual(CONFIG_0);
     expect(server0?.name).toEqual(CONFIG_0.name);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessKey).toEqual(CONFIG_1);
+    expect(server1?.accessConfig).toEqual(CONFIG_1);
     expect(server1?.name).toEqual(CONFIG_1.name);
   });
 
@@ -80,8 +80,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    expect(repo.getById('server-0')?.accessKey.isEqualTo(CONFIG_0)).toBe(true);
-    expect(repo.getById('server-1')?.accessKey.isEqualTo(CONFIG_1)).toBe(true);
+    expect(repo.getById('server-0')?.accessConfig.isEqualTo(CONFIG_0)).toBe(true);
+    expect(repo.getById('server-1')?.accessConfig.isEqualTo(CONFIG_1)).toBe(true);
   });
 
   it('stores V1 servers', () => {
@@ -145,7 +145,7 @@ describe('OutlineServerRepository', () => {
     let didEmitServerAddedEvent = false;
     eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
       const server = event.server as OutlineServer;
-      expect(server.accessKey).toEqual(new OutlineServerAccessKey(accessKey));
+      expect(server.accessConfig).toEqual(new OutlineServerAccessConfig(accessKey));
       expect(server.name).toEqual(CONFIG_0.name);
       didEmitServerAddedEvent = true;
     });
@@ -178,9 +178,9 @@ describe('OutlineServerRepository', () => {
     repo.add(accessKey1);
     const servers = repo.getAll();
     expect(servers.length).toEqual(2);
-    const accessKeys = servers.map(s => s.accessKey);
-    expect(accessKeys).toContain(new OutlineServerAccessKey(accessKey0));
-    expect(accessKeys).toContain(new OutlineServerAccessKey(accessKey1));
+    const accessKeys = servers.map(s => s.accessConfig);
+    expect(accessKeys).toContain(new OutlineServerAccessConfig(accessKey0));
+    expect(accessKeys).toContain(new OutlineServerAccessConfig(accessKey1));
     const serverNames = servers.map(s => s.name);
     expect(serverNames).toContain(CONFIG_0.name);
     expect(serverNames).toContain(CONFIG_1.name);
@@ -198,7 +198,7 @@ describe('OutlineServerRepository', () => {
     const serverId = repo.getAll()[0].id;
     const server = repo.getById(serverId);
     expect(server.id).toEqual(serverId);
-    expect(server.accessKey).toEqual(new OutlineServerAccessKey(accessKey));
+    expect(server.accessConfig).toEqual(new OutlineServerAccessConfig(accessKey));
     expect(server.name).toEqual(CONFIG_0.name);
   });
 
@@ -343,50 +343,6 @@ describe('OutlineServerRepository', () => {
     });
     eventQueue.startPublishing();
     expect(didEmitServerForgetUndoneEvent).toBeTruthy();
-  });
-
-  it('validates access keys', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
-    // Invalid access keys.
-    expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);
-    // IPv6 host.
-    expect(() =>
-      repo.validateAccessKey(
-        OutlineServerAccessKey.fromConfig({
-          host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
-          port: 443,
-          password: 'test',
-          method: 'chacha20-ietf-poly1305',
-        }).toString()
-      )
-    ).toThrowError(ServerIncompatible);
-    // Unsupported ciphers.
-    expect(() =>
-      repo.validateAccessKey(
-        OutlineServerAccessKey.fromConfig({
-          host: '127.0.0.1',
-          port: 443,
-          password: 'test',
-          method: 'aes-256-ctr',
-        }).toString()
-      )
-    ).toThrowError(ShadowsocksUnsupportedCipher);
-    expect(() =>
-      repo.validateAccessKey(
-        OutlineServerAccessKey.fromConfig({
-          host: '127.0.0.1',
-          port: 443,
-          password: 'test',
-          method: 'chacha20',
-        }).toString()
-      )
-    ).toThrowError(ShadowsocksUnsupportedCipher);
   });
 });
 

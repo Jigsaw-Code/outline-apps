@@ -19,7 +19,7 @@ import {EventQueue} from '../model/events';
 import {App} from './app';
 import {onceEnvVars} from './environment';
 import {NativeNetworking} from './net';
-import {OutlineServerAccessKey} from './server/access_key';
+import {OutlineServerAccessConfig} from './server/access_config';
 import {OutlineServerRepository} from './server/repository';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
@@ -60,7 +60,7 @@ function createServerRepo(
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
       repo.add(
-        OutlineServerAccessKey.fromConfig({
+        OutlineServerAccessConfig.fromConfig({
           host: '127.0.0.1',
           port: 123,
           method: 'chacha20-ietf-poly1305',
@@ -68,7 +68,7 @@ function createServerRepo(
         }).toString()
       );
       repo.add(
-        OutlineServerAccessKey.fromConfig({
+        OutlineServerAccessConfig.fromConfig({
           host: '192.0.2.1',
           port: 123,
           method: 'chacha20-ietf-poly1305',
@@ -76,7 +76,7 @@ function createServerRepo(
         }).toString()
       );
       repo.add(
-        OutlineServerAccessKey.fromConfig({
+        OutlineServerAccessConfig.fromConfig({
           host: '10.0.0.24',
           port: 123,
           method: 'chacha20-ietf-poly1305',
