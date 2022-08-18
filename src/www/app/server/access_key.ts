@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import {Config, makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
-import {ServerUrlInvalid} from '../model/errors';
-import {ShadowsocksConfig} from './config';
+import {ServerUrlInvalid} from '../../model/errors';
+import {ShadowsocksConfig} from '../config';
 
 export class OutlineServerAccessKey implements ShadowsocksConfig {
   _rawConfig: Config;
@@ -25,7 +25,22 @@ export class OutlineServerAccessKey implements ShadowsocksConfig {
   password?: string;
   name?: string;
 
+  isOutlineServer = false;
+
+  static fromConfig({name, ...config}: ShadowsocksConfig) {
+    return new OutlineServerAccessKey(
+      SIP002_URI.stringify(
+        makeConfig({
+          ...config,
+          tag: name,
+        })
+      )
+    );
+  }
+
   constructor(accessKey: string) {
+    this.isOutlineServer = accessKey.includes('outline=1');
+
     try {
       this._rawConfig = SHADOWSOCKS_URI.parse(accessKey);
     } catch ({message}) {

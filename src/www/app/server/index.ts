@@ -12,51 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../model/errors';
-import * as events from '../model/events';
-import {Server} from '../model/server';
+import * as errors from '../../model/errors';
+import * as events from '../../model/events';
+import {Server} from '../../model/server';
 
-import {ShadowsocksConfig} from './config';
-import {NativeNetworking} from './net';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {NativeNetworking} from '../net';
+import {Tunnel, TunnelStatus} from '../tunnel';
 
-import {accessKeyToShadowsocksConfig} from './outline_server_access_key';
+import {OutlineServerAccessKey} from './access_key';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+  private static readonly SUPPORTED_CIPHERS = new Set([
+    'chacha20-ietf-poly1305',
+    'aes-128-gcm',
+    'aes-192-gcm',
+    'aes-256-gcm',
+  ]);
 
   errorMessageId?: string;
-  private config: ShadowsocksConfig;
+
+  static isServerCipherSupported(cipher: string) {
+    return OutlineServer.SUPPORTED_CIPHERS.has(cipher);
+  }
 
   constructor(
     public readonly id: string,
-    public readonly accessKey: string,
+    public readonly accessKey: OutlineServerAccessKey,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.config = accessKeyToShadowsocksConfig(accessKey);
-    this.tunnel.onStatusChange((status: TunnelStatus) => {
-      let statusEvent: events.OutlineEvent;
-      switch (status) {
-        case TunnelStatus.CONNECTED:
-          statusEvent = new events.ServerConnected(this);
-          break;
-        case TunnelStatus.DISCONNECTED:
-          statusEvent = new events.ServerDisconnected(this);
-          break;
-        case TunnelStatus.RECONNECTING:
-          statusEvent = new events.ServerReconnecting(this);
-          break;
-        default:
-          console.warn(`Received unknown tunnel status ${status}`);
-          return;
-      }
-      eventQueue.enqueue(statusEvent);
-    });
+    this.tunnel.onStatusChange(this.handleTunnelStatusChange);
   }
 
   get name() {
@@ -65,20 +54,20 @@ export class OutlineServer implements Server {
 
   set name(newName: string) {
     this._name = newName;
-    this.config.name = newName;
+    this.accessKey.name = newName;
   }
 
   get address() {
-    return `${this.config.host}:${this.config.port}`;
+    return `${this.accessKey.host}:${this.accessKey.port}`;
   }
 
   get isOutlineServer() {
-    return this.accessKey.includes('outline=1');
+    return this.accessKey.isOutlineServer;
   }
 
   async connect() {
     try {
-      await this.tunnel.start(this.config);
+      await this.tunnel.start(this.accessKey);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -98,15 +87,32 @@ export class OutlineServer implements Server {
     }
   }
 
-  checkRunning(): Promise<boolean> {
+  async checkRunning(): Promise<boolean> {
     return this.tunnel.isRunning();
   }
 
-  checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.config.host, this.config.port);
+  async checkReachable(): Promise<boolean> {
+    return this.net.isServerReachable(this.accessKey.host, this.accessKey.port);
   }
 
-  static isServerCipherSupported(cipher?: string) {
-    return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
+  private handleTunnelStatusChange(status: TunnelStatus) {
+    let statusEvent: events.OutlineEvent;
+
+    switch (status) {
+      case TunnelStatus.CONNECTED:
+        statusEvent = new events.ServerConnected(this);
+        break;
+      case TunnelStatus.DISCONNECTED:
+        statusEvent = new events.ServerDisconnected(this);
+        break;
+      case TunnelStatus.RECONNECTING:
+        statusEvent = new events.ServerReconnecting(this);
+        break;
+      default:
+        console.warn(`Received unknown tunnel status ${status}.`);
+        return;
+    }
+
+    this.eventQueue.enqueue(statusEvent);
   }
 }
