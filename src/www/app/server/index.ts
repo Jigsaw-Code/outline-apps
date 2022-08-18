@@ -22,20 +22,7 @@ import {Tunnel, TunnelStatus} from '../tunnel';
 import {OutlineServerAccessConfig} from './access_config';
 
 export class OutlineServer implements Server {
-  // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
-  // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = new Set([
-    'chacha20-ietf-poly1305',
-    'aes-128-gcm',
-    'aes-192-gcm',
-    'aes-256-gcm',
-  ]);
-
   errorMessageId?: string;
-
-  static isServerCipherSupported(cipher: string) {
-    return OutlineServer.SUPPORTED_CIPHERS.has(cipher);
-  }
 
   constructor(
     public readonly id: string,
