@@ -201,10 +201,10 @@ export class OutlineServerRepository implements ServerRepository {
 
   private loadServer({id, accessKey, name}: OutlineServerJson) {
     const config = new OutlineServerAccessConfig(accessKey);
-
-    config.name = name;
-
     const server = this.createServer(id, config);
+
+    server.name = name;
+
     this.serverById.set(id, server);
   }
 

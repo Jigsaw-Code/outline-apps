@@ -36,16 +36,15 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    return this._name;
+    return this._name ?? this.accessConfig.name;
   }
 
   set name(newName: string) {
     this._name = newName;
-    this.accessConfig.name = newName;
   }
 
   get address() {
-    return `${this.accessConfig.host}:${this.accessConfig.port}`;
+    return this.accessConfig.address;
   }
 
   get isOutlineServer() {

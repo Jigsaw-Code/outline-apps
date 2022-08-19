@@ -21,38 +21,12 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServer} from './server';
-import {OutlineServerAccessConfig} from './server/access_config';
+import {OutlineServerAccessConfig, OutlineServerAccessType} from './server/access_config';
 import {OutlineServerRepository} from './server/repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-
-// If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
-// otherwise return s.
-export function unwrapInvite(s: string): string {
-  try {
-    const url = new URL(s);
-    if (url.hash) {
-      const decodedFragment = decodeURIComponent(url.hash);
-
-      // Search in the fragment for ss:// for two reasons:
-      //  - URL.hash includes the leading # (what).
-      //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
-      //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
-      //    seems like a reasonable thing to do, let's support those URLs too.
-      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
-
-      if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
-        return possibleShadowsocksUrl;
-      }
-    }
-  } catch (e) {
-    // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // unexpected things in the clipboard.
-  }
-  return s;
-}
 
 export class App {
   private feedbackViewEl: polymer.Base;
@@ -288,7 +262,6 @@ export class App {
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
-    accessKey = unwrapInvite(accessKey);
     if (fromClipboard) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
@@ -555,16 +528,17 @@ export class App {
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!url || !unwrapInvite(url).startsWith('ss://')) {
-        // This check is necessary to ignore empty and malformed install-referrer URLs in Android
-        // while allowing ss:// and invite URLs.
-        // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-shadowsocks url`);
-      }
       try {
+        if (new OutlineServerAccessConfig(url).type !== OutlineServerAccessType.SHADOWSOCKS_URI) {
+          // This check is necessary to ignore empty and malformed install-referrer URLs in Android
+          // while allowing ss:// and invite URLs.
+          // TODO: Stop receiving install referrer intents so we can remove this.
+          return console.debug(`Ignoring intercepted non-shadowsocks url`);
+        }
+
         this.confirmAddServer(url);
-      } catch (err) {
-        this.showLocalizedErrorInDefaultPage(err);
+      } catch (error) {
+        this.showLocalizedErrorInDefaultPage(error);
       }
     });
   }

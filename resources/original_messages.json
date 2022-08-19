@@ -161,6 +161,10 @@
     "message": "Undo",
     "description": "A text button in a toast that appears after a server has been forgotten (no longer saved for use by the application)"
   },
+  "server_address_pending": {
+    "message": "PENDING",
+    "description": "Message shown in place of the server address when it has yet to be loaded"
+  },
   "connected_server_state": {
     "message": "Connected",
     "description": "A status message on a particular server that indicates the server is currently connected and in use."

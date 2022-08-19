@@ -81,7 +81,10 @@ describe('OutlineServerRepository', () => {
       storage
     );
     expect(repo.getById('server-0')?.accessConfig.isEqualTo(CONFIG_0)).toBe(true);
+    expect(repo.getById('server-0')?.name).toBe(CONFIG_0.name);
+
     expect(repo.getById('server-1')?.accessConfig.isEqualTo(CONFIG_1)).toBe(true);
+    expect(repo.getById('server-1')?.name).toBe('renamed server');
   });
 
   it('stores V1 servers', () => {
