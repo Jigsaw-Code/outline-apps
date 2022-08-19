@@ -354,3 +354,34 @@ function getFakeTunnelFactory() {
     return new FakeOutlineTunnel(id);
   };
 }
+
+describe('OutlineServerAccessConfig', () => {
+  it('errors on empty string', () => {
+    expect(() => new OutlineServerAccessConfig('')).toThrow();
+  });
+
+  it('errors on garbage', () => {
+    const s = 'i am not a shadowsocks link';
+    expect(() => new OutlineServerAccessConfig(s)).toThrow();
+  });
+
+  it('errors on url without fragment', () => {
+    const s = 'https://whatever.com/invite.html';
+    expect(() => new OutlineServerAccessConfig(s)).toThrow();
+  });
+
+  it('errors on non-ss fragment', () => {
+    const s = 'https://whatever.com/invite.html#iamjustaname';
+    expect(() => new OutlineServerAccessConfig(s)).toThrow();
+  });
+
+  // it('detects ss fragment', () => {
+  //   const s = 'ss://myhost.com:3333';
+  //   expect(unwrapInvite(`https://whatever.com/invite.html#${encodeURIComponent(s)}`)).toEqual(s);
+  // });
+
+  // it('handles fragment after redirect', () => {
+  //   const s = 'ss://myhost.com:3333';
+  //   expect(unwrapInvite(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`)).toEqual(s);
+  // });
+});
