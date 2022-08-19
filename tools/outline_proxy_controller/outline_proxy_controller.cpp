@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -20,6 +21,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
+
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "logger.h"
 #include "outline_proxy_controller.h"
@@ -28,6 +33,93 @@ using namespace std;
 using namespace outline;
 
 extern Logger logger;
+
+/**
+ * @brief
+ * Create a new child process of `cmd` with arguments `args`, and return its
+ * process id as well as the redirected stdout/stderr stream.
+ *
+ * This function is similar to popen, but popen executes an arbitrary command
+ * in a shell context which opens a hole of os command injection; while this
+ * function will make sure we only execute `cmd` itself.
+ * 
+ * @param cmd The process name to be executed.
+ * @param args The arguments of the process (don't include `cmd` itself).
+ * @return std::tuple<pid_t, FILE*> The process ID and its stdout/stderr stream.
+ */
+static tuple<pid_t, FILE*> safe_popen(const string &cmd, const vector<string> &args) {
+  // pipefd[0] is read-only; pipefd[1] is write-only
+  int pipefd[2];
+  if (pipe(pipefd) == -1) {
+    throw runtime_error("failed to create pipe for " + cmd + " command");
+  }
+
+  pid_t pid;
+  switch (pid = fork()) {
+  case -1:
+    close(pipefd[0]);
+    close(pipefd[1]);
+    throw runtime_error("failed to fork a new process for " + cmd + " command");
+  case 0:
+    // child process:
+    //   redirect stdout/stderr to write pipe and close read pipe
+    close(pipefd[0]);
+    dup2(pipefd[1], STDOUT_FILENO);
+    dup2(pipefd[1], STDERR_FILENO);
+    close(pipefd[1]);
+
+    // argv must start with the command itself, and end with NULL
+    vector<const char*> subProcArgv{ cmd.c_str() };
+    transform(cbegin(args), cend(args),
+              back_inserter(subProcArgv),
+              [](const auto &e) { return e.c_str(); });
+    subProcArgv.push_back(nullptr);
+
+    // const_cast might mess up on the std::string memory,
+    // but it's ok cuz the entire memory space will be replaced soon
+    execvp(subProcArgv[0], const_cast<char* const*>(subProcArgv.data()));
+    _exit(EXIT_FAILURE);
+  }
+
+  close(pipefd[1]);
+  FILE* redirectedStdout = fdopen(pipefd[0], "r");
+  if (!redirectedStdout) {
+    close(pipefd[0]);
+    throw runtime_error("failed to read from pipe for " + cmd + " command");
+  }
+  return { pid, redirectedStdout };
+}
+
+/**
+ * @brief
+ * Wait the child process created by `safe_popen` to be terminated and get
+ * its exit code. Will also clean up the redirected stream.
+ *
+ * @param pid The child process ID.
+ * @param pipe The child process's stdout/stderr stream.
+ * @return uint8_t The exit code (or signal) of the child process.
+ */
+static uint8_t safe_pclose(pid_t pid, FILE* pipe) {
+  fclose(pipe);
+
+  pid_t exitedPid;
+  int status;
+  do {
+    exitedPid = waitpid(pid, &status, 0);
+    // ignore any signals received in this process
+  } while (exitedPid == -1 && errno == EINTR);
+
+  if (exitedPid != pid) {
+    throw runtime_error("failed to get exit code");
+  }
+  if (WIFEXITED(status)) {
+    return WEXITSTATUS(status);
+  } else if (WIFSIGNALED(status)) {
+    return WTERMSIG(status);
+  } else {
+    throw runtime_error("failed to get exit code");
+  }
+}
 
 string OutlineProxyController::getParamValueInResult(const string resultString,
                                                      const string param) {
@@ -60,26 +152,30 @@ OutputAndStatus OutlineProxyController::executeCommand(const std::string command
                                                        const SubCommand received_args) {
   array<char, 128> buffer;
   string result;
-  string cmd = commandName;
 
+  vector<string> commandArgs;
   SubCommand args = received_args;
 
   while (!args.empty()) {
-    auto curArg = args.front();
-    cmd += " " + (curArg.first) + " " + (curArg.second);
+    auto arg{ args.front() };
+    if (!arg.first.empty()) {
+      commandArgs.push_back(arg.first);
+    }
+    if (!arg.second.empty()) {
+      commandArgs.push_back(arg.second);
+    }
     args.pop();
   }
 
-  cmd += c_redirect_stderr_into_stdout;
-
-  FILE* pipe = popen(cmd.c_str(), "r");
-  if (!pipe) throw std::runtime_error("failed to run " + commandName + " command!");
+  pid_t pid;
+  FILE *pipe;
+  tie(pid, pipe) = safe_popen(commandName.c_str(), commandArgs);
 
   while (!feof(pipe)) {
     if (fgets(buffer.data(), 128, pipe) != nullptr) result += buffer.data();
   }
 
-  return make_pair(result, WEXITSTATUS(pclose(pipe)));
+  return { result, safe_pclose(pid, pipe) };
 }
 
 OutlineProxyController::OutlineProxyController() {
