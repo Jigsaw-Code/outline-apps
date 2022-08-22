@@ -19,28 +19,29 @@ import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRena
 import {FakeNativeNetworking} from '../fake_net';
 import {FakeOutlineTunnel} from '../fake_tunnel';
 
-import {OutlineServer} from '.';
-import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from './repository';
-import {OutlineServerAccessConfig} from './access_config';
+import {OutlineServer} from './server';
+import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from '.';
+import {OutlineServiceConfig} from './service_config';
+import {accessKeyToServiceConfig} from './service_config/utils';
 
 // TODO(alalama): unit tests for OutlineServer.
 
 describe('OutlineServerRepository', () => {
-  const CONFIG_0 = new OutlineServerAccessConfig({
+  const CONFIG_0 = {
     host: '127.0.0.1',
     port: 1080,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
     name: 'fake server 0',
-  });
+  };
 
-  const CONFIG_1 = new OutlineServerAccessConfig({
+  const CONFIG_1 = {
     host: '10.0.0.1',
     port: 1089,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
     name: 'fake server 1',
-  });
+  };
 
   it('loads V0 servers', () => {
     const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
@@ -54,10 +55,10 @@ describe('OutlineServerRepository', () => {
       storage
     );
     const server0 = repo.getById('server-0');
-    expect(server0?.accessConfig).toEqual(CONFIG_0);
+    expect(server0?.accessConfig.connection).toEqual(CONFIG_0);
     expect(server0?.name).toEqual(CONFIG_0.name);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessConfig).toEqual(CONFIG_1);
+    expect(server1?.accessConfig.connection).toEqual(CONFIG_1);
     expect(server1?.name).toEqual(CONFIG_1.name);
   });
 
@@ -80,10 +81,14 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    expect(repo.getById('server-0')?.accessConfig.isEqualTo(CONFIG_0)).toBe(true);
+    expect(repo.getById('server-0')?.accessConfig.isEqualTo(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0))).toBe(
+      true
+    );
     expect(repo.getById('server-0')?.name).toBe(CONFIG_0.name);
 
-    expect(repo.getById('server-1')?.accessConfig.isEqualTo(CONFIG_1)).toBe(true);
+    expect(repo.getById('server-1')?.accessConfig.isEqualTo(new OutlineServiceConfig(CONFIG_1.name, CONFIG_1))).toBe(
+      true
+    );
     expect(repo.getById('server-1')?.name).toBe('renamed server');
   });
 
@@ -148,7 +153,7 @@ describe('OutlineServerRepository', () => {
     let didEmitServerAddedEvent = false;
     eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
       const server = event.server as OutlineServer;
-      expect(server.accessConfig).toEqual(new OutlineServerAccessConfig(accessKey));
+      expect(server.accessConfig).toEqual(accessKeyToServiceConfig(accessKey));
       expect(server.name).toEqual(CONFIG_0.name);
       didEmitServerAddedEvent = true;
     });
@@ -182,8 +187,8 @@ describe('OutlineServerRepository', () => {
     const servers = repo.getAll();
     expect(servers.length).toEqual(2);
     const accessKeys = servers.map(s => s.accessConfig);
-    expect(accessKeys).toContain(new OutlineServerAccessConfig(accessKey0));
-    expect(accessKeys).toContain(new OutlineServerAccessConfig(accessKey1));
+    expect(accessKeys).toContain(accessKeyToServiceConfig(accessKey0));
+    expect(accessKeys).toContain(accessKeyToServiceConfig(accessKey1));
     const serverNames = servers.map(s => s.name);
     expect(serverNames).toContain(CONFIG_0.name);
     expect(serverNames).toContain(CONFIG_1.name);
@@ -201,7 +206,7 @@ describe('OutlineServerRepository', () => {
     const serverId = repo.getAll()[0].id;
     const server = repo.getById(serverId);
     expect(server.id).toEqual(serverId);
-    expect(server.accessConfig).toEqual(new OutlineServerAccessConfig(accessKey));
+    expect(server.accessConfig).toEqual(accessKeyToServiceConfig(accessKey));
     expect(server.name).toEqual(CONFIG_0.name);
   });
 

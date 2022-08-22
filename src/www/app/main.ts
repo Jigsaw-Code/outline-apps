@@ -19,8 +19,8 @@ import {EventQueue} from '../model/events';
 import {App} from './app';
 import {onceEnvVars} from './environment';
 import {NativeNetworking} from './net';
-import {OutlineServerAccessConfig} from './server/access_config';
-import {OutlineServerRepository} from './server/repository';
+import {OutlineServiceConfig} from './server/service_config';
+import {OutlineServerRepository} from './server';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
@@ -60,27 +60,24 @@ function createServerRepo(
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
       repo.add(
-        new OutlineServerAccessConfig({
+        new OutlineServiceConfig('Fake Working Server', {
           host: '127.0.0.1',
           port: 123,
           method: 'chacha20-ietf-poly1305',
-          name: 'Fake Working Server',
         }).toString()
       );
       repo.add(
-        new OutlineServerAccessConfig({
+        new OutlineServiceConfig('Fake Broken Server', {
           host: '192.0.2.1',
           port: 123,
           method: 'chacha20-ietf-poly1305',
-          name: 'Fake Broken Server',
         }).toString()
       );
       repo.add(
-        new OutlineServerAccessConfig({
+        new OutlineServiceConfig('Fake Unreachable Server', {
           host: '10.0.0.24',
           port: 123,
           method: 'chacha20-ietf-poly1305',
-          name: 'Fake Unreachable Server',
         }).toString()
       );
     }

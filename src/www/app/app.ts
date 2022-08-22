@@ -20,9 +20,9 @@ import {ServerListItem, ServerConnectionState} from '../views/servers_view';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {OutlineServer} from './server';
-import {OutlineServerAccessConfig, OutlineServerAccessType} from './server/access_config';
-import {OutlineServerRepository} from './server/repository';
+import {OutlineServer} from './server/server';
+import {accessKeyToServiceConfig} from './server/service_config/utils';
+import {OutlineServerRepository} from './server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -270,7 +270,7 @@ export class App {
       }
     }
     try {
-      addServerView.openAddServerConfirmationSheet(new OutlineServerAccessConfig(accessKey));
+      addServerView.openAddServerConfirmationSheet(accessKeyToServiceConfig(accessKey));
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
@@ -529,7 +529,7 @@ export class App {
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
       try {
-        if (new OutlineServerAccessConfig(url).type !== OutlineServerAccessType.SHADOWSOCKS_URI) {
+        if (!accessKeyToServiceConfig(url)) {
           // This check is necessary to ignore empty and malformed install-referrer URLs in Android
           // while allowing ss:// and invite URLs.
           // TODO: Stop receiving install referrer intents so we can remove this.
