@@ -43,15 +43,16 @@ extern Logger logger;
  * in a shell context which opens a hole of os command injection; while this
  * function will make sure we only execute `cmd` itself.
  * 
- * @param cmd The process name to be executed.
+ * @param filename The process name to be executed.
  * @param args The arguments of the process (don't include `cmd` itself).
  * @return std::tuple<pid_t, FILE*> The process ID and its stdout/stderr stream.
  */
-static tuple<pid_t, FILE*> safe_popen(const string &cmd, const vector<string> &args) {
+static tuple<pid_t, FILE*> safe_popen(const string &filename,
+                                      const CommandArguments &args) {
   // pipefd[0] is read-only; pipefd[1] is write-only
   int pipefd[2];
   if (pipe(pipefd) == -1) {
-    throw runtime_error("failed to create pipe for " + cmd + " command");
+    throw runtime_error("failed to create pipe for " + filename + " command");
   }
 
   pid_t pid;
@@ -59,7 +60,7 @@ static tuple<pid_t, FILE*> safe_popen(const string &cmd, const vector<string> &a
   case -1:
     close(pipefd[0]);
     close(pipefd[1]);
-    throw runtime_error("failed to fork a new process for " + cmd + " command");
+    throw runtime_error("failed to fork a new process for " + filename + " command");
   case 0:
     // child process:
     //   redirect stdout/stderr to write pipe and close read pipe
@@ -69,7 +70,7 @@ static tuple<pid_t, FILE*> safe_popen(const string &cmd, const vector<string> &a
     close(pipefd[1]);
 
     // argv must start with the command itself, and end with NULL
-    vector<const char*> subProcArgv{ cmd.c_str() };
+    vector<const char*> subProcArgv{ filename.c_str() };
     transform(cbegin(args), cend(args),
               back_inserter(subProcArgv),
               [](const auto &e) { return e.c_str(); });
@@ -85,7 +86,7 @@ static tuple<pid_t, FILE*> safe_popen(const string &cmd, const vector<string> &a
   FILE* redirectedStdout = fdopen(pipefd[0], "r");
   if (!redirectedStdout) {
     close(pipefd[0]);
-    throw runtime_error("failed to read from pipe for " + cmd + " command");
+    throw runtime_error("failed to read from pipe for " + filename + " command");
   }
   return { pid, redirectedStdout };
 }
@@ -136,41 +137,31 @@ string OutlineProxyController::getParamValueInResult(const string resultString,
   return resultString.substr(valuePosition, delimiterPosition - valuePosition);
 }
 
-OutputAndStatus OutlineProxyController::executeIPRoute(const SubCommand args) {
-  return executeCommand(IPRouteCommand, args);
+OutputAndStatus OutlineProxyController::executeIPRoute(const CommandArguments &args) {
+  return executeCommand(IPCommand, IPRouteSubCommand, args);
 }
 
-OutputAndStatus OutlineProxyController::executeIPLink(const SubCommand args) {
-  return executeCommand(IPLinkCommand, args);
+OutputAndStatus OutlineProxyController::executeIPLink(const CommandArguments &args) {
+  return executeCommand(IPCommand, IPLinkSubCommand, args);
 }
 
-OutputAndStatus OutlineProxyController::executeIPTunTap(const SubCommand args) {
-  return executeCommand(IPTunTapCommand, args);
+OutputAndStatus OutlineProxyController::executeIPTunTap(const CommandArguments &args) {
+  return executeCommand(IPCommand, IPTunTapSubCommand, args);
 }
 
 OutputAndStatus OutlineProxyController::executeCommand(const std::string commandName,
-                                                       const SubCommand received_args) {
-  array<char, 128> buffer;
-  string result;
-
-  vector<string> commandArgs;
-  SubCommand args = received_args;
-
-  while (!args.empty()) {
-    auto arg{ args.front() };
-    if (!arg.first.empty()) {
-      commandArgs.push_back(arg.first);
-    }
-    if (!arg.second.empty()) {
-      commandArgs.push_back(arg.second);
-    }
-    args.pop();
+                                                       const std::string subCommandName,
+                                                       CommandArguments received_args) {
+  if (!subCommandName.empty()) {
+    received_args.insert(begin(received_args), subCommandName);
   }
 
   pid_t pid;
   FILE *pipe;
-  tie(pid, pipe) = safe_popen(commandName.c_str(), commandArgs);
+  tie(pid, pipe) = safe_popen(commandName.c_str(), received_args);
 
+  array<char, 128> buffer;
+  string result;
   while (!feof(pipe)) {
     if (fgets(buffer.data(), 128, pipe) != nullptr) result += buffer.data();
   }
@@ -196,11 +187,10 @@ OutlineProxyController::OutlineProxyController() {
 void OutlineProxyController::addOutlineTunDev() {
   if (!outlineTunDeviceExsits()) {
     // first we check if it exists and not try to add it
-    SubCommand createTunDeviceCommand;
-    createTunDeviceCommand.push(SubCommandPart("add dev", tunInterfaceName));
-    createTunDeviceCommand.push(SubCommandPart("mode", "tun"));
-
-    auto tunDeviceAdditionResult = executeIPTunTap(createTunDeviceCommand);
+    auto tunDeviceAdditionResult = executeIPTunTap({
+      "add", "dev", tunInterfaceName,
+      "mode", "tun"
+    });
 
     if (!outlineTunDeviceExsits()) {
       logger.error(tunDeviceAdditionResult.first);
@@ -212,10 +202,10 @@ void OutlineProxyController::addOutlineTunDev() {
   }
 
   // set the device up
-  SubCommand setUpTunDeviceCommand;
-  setUpTunDeviceCommand.push(SubCommandPart("set", tunInterfaceName));
-  setUpTunDeviceCommand.push(SubCommandPart("up", ""));
-  auto tunDeviceAdditionResult = executeIPLink(setUpTunDeviceCommand);
+  auto tunDeviceAdditionResult = executeIPLink({
+    "set", tunInterfaceName,
+    "up"
+  });
 
   // if we fail to set bring up the device that's an unrecoverable
   if (!isSuccessful(tunDeviceAdditionResult)) {
@@ -225,12 +215,8 @@ void OutlineProxyController::addOutlineTunDev() {
 }
 
 bool OutlineProxyController::outlineTunDeviceExsits() {
-  SubCommand checkDevCommand;
-
-  checkDevCommand.push(SubCommandPart("show", tunInterfaceName));
-
   // this commands return non zero status if the device doesn't exists
-  auto tunDeviceExistanceResult = executeIPLink(checkDevCommand);
+  auto tunDeviceExistanceResult = executeIPLink({ "show", tunInterfaceName });
 
   return isSuccessful(tunDeviceExistanceResult);
 }
@@ -241,11 +227,10 @@ void OutlineProxyController::setTunDeviceIP() {
         "can not set the ip address of a non-existing tun network interface, gone?");
   }
 
-  SubCommand addIPCommand;
-
-  addIPCommand.push(SubCommandPart("replace", tunInterfaceIp + "/24"));
-  addIPCommand.push(SubCommandPart("dev", tunInterfaceName));
-  auto tunDeviceAdditionResult = executeIPAddress(addIPCommand);
+  auto tunDeviceAdditionResult = executeIPAddress({
+    "replace", tunInterfaceIp + "/24",
+    "dev", tunInterfaceName
+  });
 
   if (!isSuccessful(tunDeviceAdditionResult)) {
     logger.error(tunDeviceAdditionResult.first);
@@ -254,12 +239,9 @@ void OutlineProxyController::setTunDeviceIP() {
 }
 
 void OutlineProxyController::detectBestInterfaceIndex() {
-  SubCommand getRouteCommand;
-
   // our best guest is the route that outline server already can be reached
   // it is the default gateway if outline is connected or not
-  getRouteCommand.push(make_pair("get", outlineServerIP));
-  auto result = executeIPRoute(getRouteCommand);
+  auto result = executeIPRoute({ "get", outlineServerIP });
 
   if (!isSuccessful(result)) {
     logger.error(result.first);
@@ -385,9 +367,6 @@ void OutlineProxyController::backupDNSSetting() {
 }
 
 void OutlineProxyController::deleteAllDefaultRoutes() {
-  SubCommand deleteRouteCommand;
-  deleteRouteCommand.push(SubCommandPart("del", "default"));
-
   // TODO: we are going to delete all default routes
   // but the correct way of dealing with is to find the minimum
   // metric of all default routing if it 0, then bump up all routing
@@ -396,7 +375,7 @@ void OutlineProxyController::deleteAllDefaultRoutes() {
   // try to see if there is still default route in the table
   while (checkRoutingTableForSpecificRoute("default via")) {
     // routing table has "default via" string, delete it
-    auto result = executeIPRoute(deleteRouteCommand);
+    auto result = executeIPRoute({ "del", "default" });
 
     if (!isSuccessful(result)) {
       logger.error(result.first);
@@ -406,9 +385,7 @@ void OutlineProxyController::deleteAllDefaultRoutes() {
 }
 
 bool OutlineProxyController::checkRoutingTableForSpecificRoute(std::string routePart) {
-  SubCommand getRoutingTableCommand;  // that's just empty
-
-  auto routingTableResult = executeIPRoute(getRoutingTableCommand);
+  auto routingTableResult = executeIPRoute({});  // just empty args
   if (!isSuccessful(routingTableResult)) {
     logger.error(routingTableResult.first);
     throw runtime_error("failed to query the routing table");
@@ -428,13 +405,11 @@ bool OutlineProxyController::checkRoutingTableForSpecificRoute(std::string route
 }
 
 void OutlineProxyController::createDefaultRouteThroughTun() {
-  SubCommand createRouteCommand;
-
-  createRouteCommand.push(SubCommandPart("add", "default"));
-  createRouteCommand.push(SubCommandPart("via", tunInterfaceRouterIp));
-  createRouteCommand.push(SubCommandPart("metric", c_normal_traffic_priority_metric));
-
-  auto result = executeIPRoute(createRouteCommand);
+  auto result = executeIPRoute({
+    "add", "default",
+    "via", tunInterfaceRouterIp,
+    "metric", c_normal_traffic_priority_metric
+  });
   if (!isSuccessful(result)) {
     logger.error(result.first);
     throw runtime_error("failed to execute create default route through the tun device");
@@ -454,13 +429,11 @@ void OutlineProxyController::createRouteforOutlineServer() {
     detectBestInterfaceIndex();
   }
 
-  SubCommand createRouteCommand;
-
-  createRouteCommand.push(SubCommandPart("add", outlineServerIP));
-  createRouteCommand.push(SubCommandPart("via", routingGatewayIP));
-  createRouteCommand.push(SubCommandPart("metric", c_proxy_priority_metric));
-
-  auto result = executeIPRoute(createRouteCommand);
+  auto result = executeIPRoute({
+    "add", outlineServerIP,
+    "via", routingGatewayIP,
+    "metric", c_proxy_priority_metric
+  });
   if (!isSuccessful(result)) {
     logger.error(result.first);
     throw runtime_error("failed to create route for outline proxy");
@@ -469,16 +442,16 @@ void OutlineProxyController::createRouteforOutlineServer() {
 
 void OutlineProxyController::toggleIPv6(bool IPv6Status) {
   // TODO: Don't enable everything keep track of what was enabled before
-  SubCommand disableIPv6Command;
 
   std::string IPv6Disabled = (IPv6Status) ? "0" : "1";
 
-  disableIPv6Command.push(SubCommandPart("-w", "net.ipv6.conf.all.disable_ipv6=" + IPv6Disabled));
-  auto sysctlResultAll = executeSysctl(disableIPv6Command);
+  auto sysctlResultAll = executeSysctl({
+    "-w", "net.ipv6.conf.all.disable_ipv6=" + IPv6Disabled
+  });
 
-  disableIPv6Command.push(
-      SubCommandPart("-w", "net.ipv6.conf.default.disable_ipv6=" + IPv6Disabled));
-  auto sysctlResultDefault = executeSysctl(disableIPv6Command);
+  auto sysctlResultDefault = executeSysctl({
+    "-w", "net.ipv6.conf.default.disable_ipv6=" + IPv6Disabled
+  });
 
   if (!isSuccessful(sysctlResultAll) || !isSuccessful(sysctlResultDefault)) {
     logger.error(sysctlResultAll.first);
@@ -550,8 +523,8 @@ void OutlineProxyController::resetFailRoutingAttempt(OutlineConnectionStage fail
   routingStatus = ROUTING_THROUGH_DEFAULT_GATEWAY;
 }
 
-OutputAndStatus OutlineProxyController::executeSysctl(const SubCommand args) {
-  return executeCommand(sysctlCommand, args);
+OutputAndStatus OutlineProxyController::executeSysctl(const CommandArguments &args) {
+  return executeCommand(sysctlCommand, "", args);
 }
 
 void OutlineProxyController::routeDirectly() {
@@ -604,12 +577,10 @@ void OutlineProxyController::routeDirectly() {
 }
 
 void OutlineProxyController::createDefaultRouteThroughGateway() {
-  SubCommand createRouteCommand;
-
-  createRouteCommand.push(SubCommandPart("add", "default"));
-  createRouteCommand.push(SubCommandPart("via", routingGatewayIP));
-
-  auto result = executeIPRoute(createRouteCommand);
+  auto result = executeIPRoute({
+    "add", "default",
+    "via", routingGatewayIP
+  });
   if (!isSuccessful(result)) {
     logger.error(result.first);
     throw runtime_error("failed to create back the route through the network default gateway");
@@ -617,13 +588,9 @@ void OutlineProxyController::createDefaultRouteThroughGateway() {
 }
 
 void OutlineProxyController::deleteOutlineServerRouting() {
-  SubCommand deleteRouteCommand;
-
   // first we check if such a route exists
   if (checkRoutingTableForSpecificRoute(outlineServerIP + " via")) {
-    deleteRouteCommand.push(SubCommandPart("del", outlineServerIP));
-
-    auto result = executeIPRoute(deleteRouteCommand);
+    auto result = executeIPRoute({ "del", outlineServerIP });
     if (!isSuccessful(result)) {
       logger.error(result.first);
       throw runtime_error("failed to delete outline server direct routing entry.");
@@ -671,24 +638,23 @@ void OutlineProxyController::getIntefraceMetric() {}
 
 void OutlineProxyController::deleteOutlineTunDev() {
   if (outlineTunDeviceExsits()) {
-    SubCommand deleteTunDeviceCommand;
-
-    deleteTunDeviceCommand.push(SubCommandPart("del dev", tunInterfaceName));
-    deleteTunDeviceCommand.push(SubCommandPart("mode", "tun"));
     try {
-      OutputAndStatus tunDeviceAdditionResult = executeIPTunTap(deleteTunDeviceCommand);
+      OutputAndStatus tunDeviceAdditionResult = executeIPTunTap({
+        "del", "dev", tunInterfaceName,
+        "mode", "tun"
+      });
     } catch (exception& e) {
       logger.warn("failed to delete outline tun interface: " + string(e.what()));
     }
   }
 }
 
-OutputAndStatus OutlineProxyController::executeIPCommand(const SubCommand args) {
-  return executeCommand(IPCommand, args);
+OutputAndStatus OutlineProxyController::executeIPCommand(const CommandArguments &args) {
+  return executeCommand(IPCommand, "", args);
 }
 
-OutputAndStatus OutlineProxyController::executeIPAddress(const SubCommand args) {
-  return executeCommand(IPAddressCommand, args);
+OutputAndStatus OutlineProxyController::executeIPAddress(const CommandArguments &args) {
+  return executeCommand(IPCommand, IPAddressSubCommand, args);
 }
 
 std::string OutlineProxyController::getTunDeviceName() { return tunInterfaceName; }
