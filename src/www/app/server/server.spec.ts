@@ -67,8 +67,8 @@ describe('OutlineServerRepository', () => {
     // Store V0 servers with different ids.
     const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0, 'v0-server-1': CONFIG_1};
     const storageV1: ServersStorageV1 = [
-      {id: 'server-0', name: 'fake server 0', accessKey: CONFIG_0.toString()},
-      {id: 'server-1', name: 'renamed server', accessKey: CONFIG_1.toString()},
+      {id: 'server-0', name: 'fake server 0', accessKey: new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString()},
+      {id: 'server-1', name: 'renamed server', accessKey: new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString()},
     ];
     const storage = new InMemoryStorage(
       new Map([
@@ -112,12 +112,12 @@ describe('OutlineServerRepository', () => {
     expect(serversJson).toContain({
       id: 'server-0',
       name: 'fake server 0',
-      accessKey: CONFIG_0.toString(),
+      accessKey: new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString(),
     });
     expect(serversJson).toContain({
       id: 'server-1',
       name: 'fake server 1',
-      accessKey: CONFIG_1.toString(),
+      accessKey: new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString(),
     });
   });
 
@@ -129,8 +129,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    const accessKey0 = CONFIG_0.toString();
-    const accessKey1 = CONFIG_1.toString();
+    const accessKey0 = new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString();
+    const accessKey1 = new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString();
     repo.add(accessKey0);
     repo.add(accessKey1);
     const servers: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
@@ -149,7 +149,7 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    const accessKey = CONFIG_0.toString();
+    const accessKey = new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString();
     repo.add(accessKey);
     let didEmitServerAddedEvent = false;
     eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
@@ -181,8 +181,8 @@ describe('OutlineServerRepository', () => {
       new InMemoryStorage()
     );
     expect(repo.getAll()).toEqual([]);
-    const accessKey0 = CONFIG_0.toString();
-    const accessKey1 = CONFIG_1.toString();
+    const accessKey0 = new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString();
+    const accessKey1 = new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString();
     repo.add(accessKey0);
     repo.add(accessKey1);
     const servers = repo.getAll();
@@ -202,7 +202,7 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       new InMemoryStorage()
     );
-    const accessKey = CONFIG_0.toString();
+    const accessKey = new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString();
     repo.add(accessKey);
     const serverId = repo.getAll()[0].id;
     const server = repo.getById(serverId);
@@ -231,7 +231,7 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(CONFIG_0.toString());
+    repo.add(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString());
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
@@ -250,7 +250,7 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    const accessKey = CONFIG_0.toString();
+    const accessKey = new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString();
     repo.add(accessKey);
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
@@ -271,8 +271,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(CONFIG_0.toString());
-    repo.add(CONFIG_1.toString());
+    repo.add(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString());
+    repo.add(new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString());
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     expect(repo.getById(forgottenServerId)).toBeUndefined();
@@ -293,8 +293,8 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    repo.add(CONFIG_0.toString());
-    repo.add(CONFIG_1.toString());
+    repo.add(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString());
+    repo.add(new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString());
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     let didEmitServerForgottenEvent = false;
@@ -314,8 +314,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(CONFIG_0.toString());
-    repo.add(CONFIG_1.toString());
+    repo.add(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString());
+    repo.add(new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString());
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
@@ -340,8 +340,8 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    repo.add(CONFIG_0.toString());
-    repo.add(CONFIG_1.toString());
+    repo.add(new OutlineServiceConfig(CONFIG_0.name, CONFIG_0).toString());
+    repo.add(new OutlineServiceConfig(CONFIG_1.name, CONFIG_1).toString());
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);

@@ -42,6 +42,6 @@ export class OutlineServiceConfig {
   }
 
   toString() {
-    return SIP002_URI.stringify(makeConfig(this.connection));
+    return SIP002_URI.stringify(makeConfig({...this.connection, tag: this.serviceName}));
   }
 }
