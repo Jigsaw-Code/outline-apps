@@ -119,7 +119,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (server.accessConfig.isEqualTo(accessKeyToServiceConfig(accessKey))) {
+      if (server.serviceConfig.isEqualTo(accessKeyToServiceConfig(accessKey))) {
         return server;
       }
     }
@@ -131,7 +131,7 @@ export class OutlineServerRepository implements ServerRepository {
     for (const server of this.serverById.values()) {
       servers.push({
         id: server.id,
-        accessKey: server.accessConfig.toString(),
+        accessKey: server.serviceConfig.toString(),
         name: server.name,
       });
     }

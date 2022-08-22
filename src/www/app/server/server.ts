@@ -26,7 +26,7 @@ export class OutlineServer implements Server {
 
   constructor(
     public readonly id: string,
-    public readonly accessConfig: OutlineServiceConfig,
+    public readonly serviceConfig: OutlineServiceConfig,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
@@ -36,7 +36,7 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    return this._name ?? this.accessConfig.serviceName;
+    return this._name ?? this.serviceConfig.serviceName;
   }
 
   set name(newName: string) {
@@ -44,16 +44,16 @@ export class OutlineServer implements Server {
   }
 
   get address(): string | undefined {
-    return this.accessConfig.connectionAddress;
+    return this.serviceConfig.connectionAddress;
   }
 
   get isOutlineServer() {
-    return this.accessConfig.isOutlineService;
+    return this.serviceConfig.isOutlineService;
   }
 
   async connect() {
     try {
-      await this.tunnel.start(this.accessConfig.connection);
+      await this.tunnel.start(this.serviceConfig.connection);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -78,7 +78,7 @@ export class OutlineServer implements Server {
   }
 
   async checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.accessConfig.connection.host, this.accessConfig.connection.port);
+    return this.net.isServerReachable(this.serviceConfig.connection.host, this.serviceConfig.connection.port);
   }
 
   private handleTunnelStatusChange(status: TunnelStatus) {

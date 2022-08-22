@@ -35,6 +35,8 @@ export function accessKeyToServiceConfig(accessKey: string): OutlineServiceConfi
   ) {
     return inviteUrlToServiceConfig(accessKey);
   }
+
+  throw new ServerUrlInvalid('Access key does not have a valid format.');
 }
 
 export function shadowsocksUriToServiceConfig(shadowsocksUri: string): OutlineServiceConfig {
@@ -47,7 +49,7 @@ export function shadowsocksUriToServiceConfig(shadowsocksUri: string): OutlineSe
   }
 
   if (connection.host.isIPv6) {
-    throw new ServerIncompatible('unsupported IPv6 host address');
+    throw new ServerIncompatible('Unsupported IPv6 host address');
   }
 
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.

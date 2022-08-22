@@ -18,7 +18,7 @@ import {ShadowsocksConfig} from '../../config';
 export class OutlineServiceConfig {
   constructor(
     public serviceName: string,
-    public connection: Readonly<ShadowsocksConfig>,
+    public connection: Readonly<ShadowsocksConfig> = Object.freeze({}),
     public isOutlineService: boolean = false
   ) {}
 
@@ -44,8 +44,4 @@ export class OutlineServiceConfig {
   toString() {
     return SIP002_URI.stringify(makeConfig(this.connection));
   }
-
-  // async loadConnectionConfig(): Promise<Readonly<ShadowsocksConfig>> {
-  //   return this.connection;
-  // }
 }
