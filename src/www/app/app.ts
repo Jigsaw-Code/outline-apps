@@ -529,13 +529,15 @@ export class App {
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
       try {
-        if (!accessKeyToServiceConfig(url)) {
-          // This check is necessary to ignore empty and malformed install-referrer URLs in Android
-          // while allowing ss:// and invite URLs.
-          // TODO: Stop receiving install referrer intents so we can remove this.
-          return console.debug(`Ignoring intercepted non-shadowsocks url`);
-        }
+        // This check is necessary to ignore empty and malformed install-referrer URLs in Android
+        // while allowing ss:// and invite URLs.
+        // TODO: Stop receiving install referrer intents so we can remove this.
+        accessKeyToServiceConfig(url);
+      } catch (e) {
+        return console.debug(`Ignoring intercepted non-shadowsocks url`, e);
+      }
 
+      try {
         this.confirmAddServer(url);
       } catch (error) {
         this.showLocalizedErrorInDefaultPage(error);
