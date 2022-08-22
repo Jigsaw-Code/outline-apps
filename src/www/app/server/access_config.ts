@@ -55,9 +55,9 @@ export class OutlineServerAccessConfig implements ShadowsocksConfig {
     return this._port;
   }
 
-  get address() {
+  get address(): string | undefined {
     if (!this._host) {
-      return 'server-address-pending';
+      return;
     }
 
     return `${this._host}${this._port ? ':' : ''}${this._port}`;

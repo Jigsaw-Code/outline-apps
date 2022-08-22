@@ -69,7 +69,6 @@
   "server-add-instructions": "Copy and paste an access key to add a server.",
   "server-add-invalid": "{openLine}Invalid access key.{closeLine}Enter a valid access key (ss://) to add a server.",
   "server-add-zero-state-instructions": "Click to add a server.",
-  "server-address-pending": "PENDING",
   "server-added": "Added server “{serverName}”!",
   "server-connected": "Connected to “{serverName}”",
   "server-create-your-own": "Don’t have an access key?<br>Create your own at {openLink}our website{closeLink}.",

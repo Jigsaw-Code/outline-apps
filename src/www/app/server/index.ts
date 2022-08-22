@@ -43,7 +43,7 @@ export class OutlineServer implements Server {
     this._name = newName;
   }
 
-  get address() {
+  get address(): string | undefined {
     return this.accessConfig.address;
   }
 
