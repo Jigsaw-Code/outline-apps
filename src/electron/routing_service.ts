@@ -20,7 +20,7 @@ import * as sudo from 'sudo-prompt';
 
 import {TunnelStatus} from '../www/app/tunnel';
 import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
-import {getAppPath} from './util';
+import {getAppPath} from './paths';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
