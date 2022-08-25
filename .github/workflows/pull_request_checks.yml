@@ -50,6 +50,7 @@ jobs:
       # https://github.com/pascalgn/size-label-action/issues/10
       - if: ${{ !github.event.pull_request.head.repo.fork }}
         name: Apply Size Label
+        uses: pascalgn/size-label-action@a4655c448bb838e8d73b81e97fd0831bb4cbda1e
         env:
           IGNORED: |
             LICENSE
