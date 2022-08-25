@@ -15,6 +15,7 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
+import {OperationTimedOut} from '../../infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
 
 import {Clipboard} from './clipboard';
@@ -148,7 +149,7 @@ export class App {
       messageKey = 'error-invalid-access-key';
     } else if (e instanceof errors.ServerIncompatible) {
       messageKey = 'error-server-incompatible';
-    } else if (e instanceof errors.OperationTimedOut) {
+    } else if (e instanceof OperationTimedOut) {
       messageKey = 'error-timeout';
     } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
