@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2022 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../model/errors';
-
-export function timeoutPromise<T>(promise: Promise<T>, timeoutDuration: number, timeoutName: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new errors.OperationTimedOut(timeoutDuration, timeoutName)), timeoutDuration)
-    ),
-  ]);
+export class CustomError extends Error {
+  constructor(message?: string) {
+    // ref:
+    // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
+    super(message); // 'Error' breaks prototype chain here
+    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
+    this.name = new.target.name;
+  }
 }
