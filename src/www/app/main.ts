@@ -75,7 +75,7 @@ function createServerRepo(
             host: '192.0.2.1',
             port: 123,
             method: 'chacha20-ietf-poly1305',
-            name: 'Fake Broken Server',
+            tag: 'Fake Broken Server',
           })
         )
       );
