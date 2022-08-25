@@ -85,7 +85,7 @@ function createServerRepo(
             host: '10.0.0.24',
             port: 123,
             method: 'chacha20-ietf-poly1305',
-            name: 'Fake Unreachable Server',
+            tag: 'Fake Unreachable Server',
           })
         )
       );
