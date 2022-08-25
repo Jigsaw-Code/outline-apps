@@ -22,6 +22,8 @@ import {Tunnel, TunnelStatus} from '../tunnel';
 
 import {accessKeyToShadowsocksConfig} from './access_key_serialization';
 
+// PLEASE DON'T use this class outside of this `outline_server_repository` folder!
+
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html

@@ -18,6 +18,8 @@ import * as errors from '../../model/errors';
 
 import {ShadowsocksConfig} from '../config';
 
+// DON'T use these methods outside of this folder!
+
 // Parses an access key string into a ShadowsocksConfig object.
 export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConfig {
   try {
