@@ -20,7 +20,7 @@ import {App} from './app';
 import {onceEnvVars} from './environment';
 import {NativeNetworking} from './net';
 import {OutlineServerRepository} from './outline_server_repository';
-import {shadowsocksConfigToAccessKey} from './outline_server_repository/outline_server_access_key';
+import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
@@ -60,28 +60,34 @@ function createServerRepo(
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
       repo.add(
-        shadowsocksConfigToAccessKey({
-          host: '127.0.0.1',
-          port: 123,
-          method: 'chacha20-ietf-poly1305',
-          name: 'Fake Working Server',
-        })
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '127.0.0.1',
+            port: 123,
+            method: 'chacha20-ietf-poly1305',
+            tag: 'Fake Working Server',
+          })
+        )
       );
       repo.add(
-        shadowsocksConfigToAccessKey({
-          host: '192.0.2.1',
-          port: 123,
-          method: 'chacha20-ietf-poly1305',
-          name: 'Fake Broken Server',
-        })
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '192.0.2.1',
+            port: 123,
+            method: 'chacha20-ietf-poly1305',
+            name: 'Fake Broken Server',
+          })
+        )
       );
       repo.add(
-        shadowsocksConfigToAccessKey({
-          host: '10.0.0.24',
-          port: 123,
-          method: 'chacha20-ietf-poly1305',
-          name: 'Fake Unreachable Server',
-        })
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '10.0.0.24',
+            port: 123,
+            method: 'chacha20-ietf-poly1305',
+            name: 'Fake Unreachable Server',
+          })
+        )
       );
     }
   }

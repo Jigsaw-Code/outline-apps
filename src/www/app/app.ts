@@ -21,7 +21,6 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
 import {OutlineServerRepository} from './outline_server_repository';
-import {OutlineServer} from './outline_server_repository/outline_server';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -578,7 +577,7 @@ export class App {
     if (server.name) {
       return server.name;
     }
-    return (server as OutlineServer).isOutlineServer
+    return (server as Server).isOutlineServer
       ? this.localize('server-default-name-outline')
       : this.localize('server-default-name');
   }

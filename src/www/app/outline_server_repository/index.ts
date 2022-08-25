@@ -23,8 +23,20 @@ import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
-import {OutlineServer} from './outline_server';
-import {accessKeysMatch, accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './outline_server_access_key';
+import {OutlineServer} from './server';
+import {accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './access_key_serialization';
+
+// Compares access keys proxying parameters.
+function accessKeysMatch(a: string, b: string): boolean {
+  try {
+    const l = accessKeyToShadowsocksConfig(a);
+    const r = accessKeyToShadowsocksConfig(b);
+    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
+  } catch (e) {
+    console.debug(`failed to parse access key for comparison`);
+  }
+  return false;
+}
 
 // DEPRECATED: V0 server persistence format.
 export interface ServersStorageV0 {

@@ -20,7 +20,7 @@ import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus} from '../tunnel';
 
-import {accessKeyToShadowsocksConfig} from './outline_server_access_key';
+import {accessKeyToShadowsocksConfig} from './access_key_serialization';
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.

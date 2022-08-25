@@ -46,15 +46,3 @@ export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string 
     })
   );
 }
-
-// Compares access keys proxying parameters.
-export function accessKeysMatch(a: string, b: string): boolean {
-  try {
-    const l = accessKeyToShadowsocksConfig(a);
-    const r = accessKeyToShadowsocksConfig(b);
-    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
-  } catch (e) {
-    console.debug(`failed to parse access key for comparison`);
-  }
-  return false;
-}

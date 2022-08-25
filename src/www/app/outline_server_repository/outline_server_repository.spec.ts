@@ -21,8 +21,8 @@ import {FakeNativeNetworking} from '../fake_net';
 import {FakeOutlineTunnel} from '../fake_tunnel';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from '.';
-import {OutlineServer} from './outline_server';
-import {shadowsocksConfigToAccessKey} from './outline_server_access_key';
+import {OutlineServer} from './server';
+import {shadowsocksConfigToAccessKey} from './access_key_serialization';
 
 // TODO(alalama): unit tests for OutlineServer.
 
