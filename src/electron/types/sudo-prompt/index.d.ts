@@ -24,10 +24,6 @@ declare module 'sudo-prompt' {
   export function exec(
     command: string,
     options?: SudoPromptOptions,
-    // NOTE: The callback arguments are a mess and differ from platform to platform. This is for
-    //       Linux, where stdout/stderr are never set and the error always says "User did not
-    //       grant permission." *even if the user did grant permission but the script exited with
-    //       a non-zero status*.
-    callback?: (error?: Error) => void
+    callback?: (error?: Error, stdout: string, stderr: string) => void
   ): void;
 }
