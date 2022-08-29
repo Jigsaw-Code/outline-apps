@@ -16,11 +16,11 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {Server} from '../../model/server';
 
-import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus} from '../tunnel';
 
-import {accessKeyToShadowsocksConfig} from './access_key_serialization';
+import {accessKeyToServerConfig} from './access_key_serialization';
+import {OutlineServerConfig} from './server_config';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -30,7 +30,7 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  private config: ShadowsocksConfig;
+  private config: OutlineServerConfig;
 
   constructor(
     public readonly id: string,
@@ -40,7 +40,7 @@ export class OutlineServer implements Server {
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.config = accessKeyToShadowsocksConfig(accessKey);
+    this.config = accessKeyToServerConfig(accessKey);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -62,16 +62,15 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    return this._name;
+    return this._name || this.config.serverName;
   }
 
   set name(newName: string) {
     this._name = newName;
-    this.config.name = newName;
   }
 
   get address() {
-    return `${this.config.host}:${this.config.port}`;
+    return this.config.serverAddress;
   }
 
   get isOutlineServer() {
@@ -105,7 +104,7 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.config.host, this.config.port);
+    return this.net.isServerReachable(this.config.connection.host.data, this.config.connection.port.data);
   }
 
   static isServerCipherSupported(cipher?: string) {

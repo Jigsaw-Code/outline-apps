@@ -17,7 +17,8 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import {promisify} from 'util';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
+
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
@@ -232,10 +233,10 @@ class GoTun2socks {
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-proxyHost', this.config.host || '');
-    args.push('-proxyPort', `${this.config.port}`);
-    args.push('-proxyPassword', this.config.password || '');
-    args.push('-proxyCipher', this.config.method || '');
+    args.push('-proxyHost', String(this.config.host.data));
+    args.push('-proxyPort', String(this.config.port.data));
+    args.push('-proxyPassword', String(this.config.password.data));
+    args.push('-proxyCipher', String(this.config.method.data));
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
@@ -283,10 +284,10 @@ class GoTun2socks {
 // forwarding is supported. Throws if the checks fail or if the process fails to start.
 async function checkConnectivity(config: ShadowsocksConfig) {
   const args = [];
-  args.push('-proxyHost', config.host || '');
-  args.push('-proxyPort', `${config.port}`);
-  args.push('-proxyPassword', config.password || '');
-  args.push('-proxyCipher', config.method || '');
+  args.push('-proxyHost', String(config.host.data));
+  args.push('-proxyPort', String(config.port.data));
+  args.push('-proxyPassword', String(config.password.data));
+  args.push('-proxyCipher', String(config.method.data));
   // Checks connectivity and exits with an error code as defined in `errors.ErrorCode`
   // -tun* and -dnsFallback options have no effect on this mode.
   args.push('-checkConnectivity');

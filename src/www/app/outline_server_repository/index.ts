@@ -12,25 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+import {SHADOWSOCKS_URI, Config as ShadowsocksConfig} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
 
-import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
-import {accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './access_key_serialization';
+import {OutlineServerConfig} from './server_config';
+import {accessKeyToServerConfig, serverConfigToAccessKey} from './access_key_serialization';
 
 // Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
   try {
-    const l = accessKeyToShadowsocksConfig(a);
-    const r = accessKeyToShadowsocksConfig(b);
+    const {connection: l} = accessKeyToServerConfig(a);
+    const {connection: r} = accessKeyToServerConfig(b);
     return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
@@ -78,8 +78,8 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, config.name);
+    const config = accessKeyToServerConfig(accessKey);
+    const server = this.createServer(uuidv4(), accessKey, config.serverName);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -188,8 +188,15 @@ export class OutlineServerRepository implements ServerRepository {
     }
     for (const serverId of Object.keys(configById)) {
       const config = configById[serverId];
+
+      const serverConfig = new OutlineServerConfig(config.tag.data, config);
+
       try {
-        this.loadServer({id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
+        this.loadServer({
+          id: serverId,
+          accessKey: serverConfigToAccessKey(serverConfig),
+          name: serverConfig.serverName,
+        });
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);

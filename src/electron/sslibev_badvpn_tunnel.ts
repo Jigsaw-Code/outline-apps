@@ -18,7 +18,8 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import * as socks from 'socks';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
+
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
@@ -315,10 +316,10 @@ class SsLocal extends ChildProcessHelper {
   start(config: ShadowsocksConfig) {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
-    args.push('-s', config.host || '');
-    args.push('-p', `${config.port}`);
-    args.push('-k', config.password || '');
-    args.push('-m', config.method || '');
+    args.push('-s', String(config.host.data));
+    args.push('-p', String(config.port.data));
+    args.push('-k', String(config.password.data));
+    args.push('-m', String(config.method.data));
     args.push('-u');
     if (this.isInDebugMode) {
       args.push('-v');

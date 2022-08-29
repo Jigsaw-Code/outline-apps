@@ -12,39 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {OutlineServerConfig} from './server_config';
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
-
 import * as errors from '../../model/errors';
-
-import {ShadowsocksConfig} from '../config';
 
 // DON'T use these methods outside of this folder!
 
 // Parses an access key string into a ShadowsocksConfig object.
-export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConfig {
+export function accessKeyToServerConfig(accessKey: string): OutlineServerConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(accessKey);
-    return {
-      host: config.host.data,
-      port: config.port.data,
-      method: config.method.data,
-      password: config.password.data,
-      name: config.tag.data,
-    };
+    return new OutlineServerConfig(config.tag.data, Object.freeze(config), accessKey.includes('outline=1'));
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
   }
 }
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
-export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
-  return SIP002_URI.stringify(
-    makeConfig({
-      host: config.host,
-      port: config.port,
-      method: config.method,
-      password: config.password,
-      tag: config.name,
-    })
-  );
+export function serverConfigToAccessKey(config: OutlineServerConfig): string {
+  return SIP002_URI.stringify(makeConfig(config.connection)) + config.isOutlineServer ? '?outline=1' : '';
 }

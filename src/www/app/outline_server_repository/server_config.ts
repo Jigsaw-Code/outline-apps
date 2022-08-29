@@ -1,9 +1,9 @@
-// Copyright 2020 The Outline Authors
+// Copyright 2018 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+//,
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -12,11 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Represents a Shadowsocks proxy server configuration.
-export interface ShadowsocksConfig {
-  host?: string;
-  port?: number;
-  password?: string;
-  method?: string;
-  name?: string;
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
+
+export class OutlineServerConfig {
+  constructor(
+    public serverName: string,
+    public connection: Readonly<ShadowsocksConfig>,
+    public isOutlineServer: boolean = false
+  ) {}
+
+  get serverAddress(): string {
+    const {host, port} = this.connection;
+
+    if (!host.data) {
+      return '';
+    }
+
+    return `${host.data}${port.data ? ':' : ''}${port.data}`;
+  }
 }
