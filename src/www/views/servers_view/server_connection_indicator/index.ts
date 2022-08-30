@@ -67,6 +67,9 @@ export class ServerConnectionIndicator extends LitElement {
       .circle {
         display: inline-block;
 
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+
         transition-property: transform, filter, opacity;
         transition-duration: var(--duration);
         transition-timing-function: var(--timing-function);
@@ -74,6 +77,9 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
+        -webkit-animation-duration: var(--duration);
+        -webkit-animation-timing-function: var(--timing-function);
+        -webkit-animation-iteration-count: infinite;
       }
 
       /* 
@@ -93,12 +99,14 @@ export class ServerConnectionIndicator extends LitElement {
       .circle-disconnecting {
         opacity: var(--circle-connected-opacity);
         filter: var(--circle-connected-color);
+        -webkit-filter: var(--circle-connected-color);
       }
 
       .circle-disconnected,
       .circle-connecting {
         opacity: var(--circle-disconnected-opacity);
         filter: var(--circle-disconnected-color);
+        -webkit-filter: var(--circle-disconnected-color);
       }
 
       .circle-disconnecting {
@@ -110,7 +118,7 @@ export class ServerConnectionIndicator extends LitElement {
       /* prettier-ignore */
       circleSize => css`
         .circle-${circleSize} {
-          transform: var(--circle-${circleSize}-scale);
+          transform: translate3d(0, 0, 0) var(--circle-${circleSize}-scale);
           animation-delay: var(--circle-${circleSize}-delay);
         }
 
@@ -124,11 +132,11 @@ export class ServerConnectionIndicator extends LitElement {
         /* rtl:begin:ignore */
         @keyframes circle-${circleSize}-rotate-with-pause {
           0% {
-            transform: rotate(0deg) var(--circle-${circleSize}-scale);
+            transform: translate3d(0, 0, 0) rotate(0deg) var(--circle-${circleSize}-scale);
           }
           60%,
           100% {
-            transform: rotate(360deg) var(--circle-${circleSize}-scale);
+            transform: translate3d(0, 0, 0) rotate(360deg) var(--circle-${circleSize}-scale);
           }
         }
         /* rtl:end:ignore */
