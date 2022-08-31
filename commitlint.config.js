@@ -17,6 +17,8 @@ module.exports = {
         'electron/linux',
         'electron/windows',
         'www',
+        'service/linux',
+        'service/windows',
       ],
     ],
   },

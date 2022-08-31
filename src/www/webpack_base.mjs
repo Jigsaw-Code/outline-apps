@@ -21,12 +21,12 @@ export const require = createRequire(import.meta.url);
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
-export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '../../scripts/rtl_css_webpack.js');
+export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '..', '..', 'scripts', 'rtl_css_webpack.js');
 
 export const TS_LOADER = {
   loader: 'ts-loader',
   options: {
-    configFile: path.resolve(__dirname, '../../tsconfig.json'),
+    configFile: path.resolve(__dirname, '..', '..', 'tsconfig.json'),
   },
 };
 
@@ -49,9 +49,9 @@ export const baseConfig = {
 };
 
 export const browserConfig = {
-  entry: [path.resolve(__dirname, './style.css')],
+  entry: [path.resolve(__dirname, 'style.css')],
   output: {
-    path: path.resolve(__dirname, '../../www'),
+    path: path.resolve(__dirname, '..', '..', 'www'),
     filename: 'main.js',
   },
   module: {
