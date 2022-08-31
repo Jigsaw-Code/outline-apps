@@ -14,11 +14,12 @@
 
 import chalk from 'chalk';
 import {existsSync} from 'fs';
+import {readFile} from 'fs/promises';
 import path from 'path';
-import {spawn} from 'child_process';
 import url from 'url';
 
 import {getRootDir} from './get_root_dir.mjs';
+import {spawnStream} from './spawn_stream.mjs';
 
 /**
  * @description loads the absolute path of the action file
@@ -26,7 +27,11 @@ import {getRootDir} from './get_root_dir.mjs';
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
 
-  const roots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
+  if (actionPath in JSON.parse(await readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+    return actionPath;
+  }
+
+  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
   const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {
@@ -39,33 +44,6 @@ const resolveActionPath = async actionPath => {
     }
   }
 };
-
-/**
- * @description promisifies the child process (for supporting legacy bash actions!)
- */
-const spawnStream = (command, parameters) =>
-  new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters, {shell: true});
-
-    const forEachMessageLine = (buffer, callback) => {
-      buffer
-        .toString()
-        .split('\n')
-        .filter(line => line.trim())
-        .forEach(callback);
-    };
-
-    childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
-    childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
-
-    childProcess.on('close', code => {
-      if (code === 0) {
-        resolve(childProcess);
-      } else {
-        reject(childProcess);
-      }
-    });
-  });
 
 /**
  * @description This is the entrypoint into our custom task runner.
@@ -96,11 +74,21 @@ export async function runAction(actionPath, ...parameters) {
     return runAction('list');
   }
 
+  let runner = 'npm run';
+
+  if (resolvedPath.endsWith('mjs')) {
+    runner = 'node --trace-uncaught';
+  }
+
+  if (resolvedPath.endsWith('sh')) {
+    runner = 'bash';
+  }
+
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    await spawnStream(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+    await spawnStream(runner, [resolvedPath, ...parameters]);
   } catch (error) {
     if (error?.message) {
       console.error(chalk.red(error.message));

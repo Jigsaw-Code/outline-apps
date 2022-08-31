@@ -18,6 +18,8 @@ import webpack from 'webpack';
 import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 import {merge} from 'webpack-merge';
 
+import {getRootDir} from '../build/get_root_dir.mjs';
+
 const BABEL_LOADER = {
   loader: 'babel-loader',
   options: {
@@ -26,7 +28,11 @@ const BABEL_LOADER = {
 };
 
 export default merge(baseConfig, browserConfig, {
-  entry: [path.resolve(__dirname, './app/cordova_main.ts')],
+  devServer: {
+    open: '/index_cordova.html',
+    static: path.resolve(getRootDir(), 'platforms', 'browser', 'www'),
+  },
+  entry: [path.resolve(__dirname, 'app', 'cordova_main.ts')],
   target: ['web', 'es5'],
   module: {
     rules: [
@@ -63,7 +69,7 @@ export default merge(baseConfig, browserConfig, {
     }),
     new HtmlWebpackPlugin({
       filename: 'index_cordova.html',
-      template: path.resolve(__dirname, './index_cordova.html'),
+      template: path.resolve(__dirname, 'index_cordova.html'),
     }),
   ],
 });

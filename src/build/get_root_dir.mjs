@@ -16,8 +16,9 @@ import path from 'path';
 import url from 'url';
 
 // WARNING: if you move this file, you MUST update this file path
-const RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT = '../..';
+const ROOT_DIR = path.resolve(
+  path.dirname(url.fileURLToPath(import.meta.url)), '..', '..');
 
 export function getRootDir() {
-  return path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), RELATIVE_PATH_FROM_THIS_FILE_TO_PROJECT_ROOT);
+  return ROOT_DIR;
 }
