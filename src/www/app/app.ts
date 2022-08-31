@@ -15,12 +15,13 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
+import {OperationTimedOut} from '../../infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {OutlineServer, OutlineServerRepository} from './outline_server';
+import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -148,7 +149,7 @@ export class App {
       messageKey = 'error-invalid-access-key';
     } else if (e instanceof errors.ServerIncompatible) {
       messageKey = 'error-server-incompatible';
-    } else if (e instanceof errors.OperationTimedOut) {
+    } else if (e instanceof OperationTimedOut) {
       messageKey = 'error-timeout';
     } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
@@ -577,7 +578,7 @@ export class App {
     if (server.name) {
       return server.name;
     }
-    return (server as OutlineServer).isOutlineServer
+    return (server as Server).isOutlineServer
       ? this.localize('server-default-name-outline')
       : this.localize('server-default-name');
   }

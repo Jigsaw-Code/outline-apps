@@ -15,7 +15,7 @@
 import * as dns from 'dns';
 import * as net from 'net';
 
-import * as util from '../www/app/util';
+import {timeoutPromise} from '../infrastructure/timeout_promise';
 import * as errors from '../www/model/errors';
 
 const DNS_LOOKUP_TIMEOUT_MS = 10000;
@@ -25,7 +25,7 @@ const DNS_LOOKUP_TIMEOUT_MS = 10000;
 //
 // Effectively a no-op if hostname is already an IP.
 export function lookupIp(hostname: string): Promise<string> {
-  return util.timeoutPromise(
+  return timeoutPromise(
     new Promise<string>((fulfill, reject) => {
       dns.lookup(hostname, 4, (e, address) => {
         if (e) {

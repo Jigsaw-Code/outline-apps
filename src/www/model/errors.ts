@@ -13,48 +13,33 @@
 // limitations under the License.
 
 import {Server} from './server';
+import {CustomError} from '../../infrastructure/custom_error';
 
-export class OutlineError extends Error {
-  constructor(message?: string) {
-    // ref:
-    // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
-    super(message); // 'Error' breaks prototype chain here
-    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
-    this.name = new.target.name;
-  }
-}
-
-export class ServerAlreadyAdded extends OutlineError {
+export class ServerAlreadyAdded extends CustomError {
   constructor(public readonly server: Server) {
     super();
   }
 }
 
-export class ShadowsocksUnsupportedCipher extends OutlineError {
+export class ShadowsocksUnsupportedCipher extends CustomError {
   constructor(public readonly cipher: string) {
     super();
   }
 }
 
-export class ServerIncompatible extends OutlineError {
+export class ServerIncompatible extends CustomError {
   constructor(message: string) {
     super(message);
   }
 }
 
-export class ServerUrlInvalid extends OutlineError {
+export class ServerUrlInvalid extends CustomError {
   constructor(message: string) {
     super(message);
   }
 }
 
-export class OperationTimedOut extends OutlineError {
-  constructor(public readonly timeoutMs: number, public readonly operationName: string) {
-    super();
-  }
-}
-
-export class FeedbackSubmissionError extends OutlineError {
+export class FeedbackSubmissionError extends CustomError {
   constructor() {
     super();
   }
@@ -63,7 +48,7 @@ export class FeedbackSubmissionError extends OutlineError {
 // Error thrown by "native" code.
 //
 // TODO: Rename this class, "plugin" is a poor name since the Electron apps do not have plugins.
-export class OutlinePluginError extends OutlineError {
+export class OutlinePluginError extends CustomError {
   constructor(public readonly errorCode: ErrorCode) {
     super();
   }
@@ -73,7 +58,7 @@ export class OutlinePluginError extends OutlineError {
 // Bifurcates into two subclasses:
 //  - "expected" errors originating in native code, e.g. incorrect password
 //  - "unexpected" errors originating in native code, e.g. unhandled routing table
-export class NativeError extends OutlineError {}
+export class NativeError extends CustomError {}
 export class RegularNativeError extends NativeError {}
 export class RedFlagNativeError extends NativeError {}
 
@@ -127,7 +112,7 @@ export const enum ErrorCode {
 }
 
 // Converts an ErrorCode - originating in "native" code - to an instance of the relevant
-// OutlineError subclass.
+// CustomError subclass.
 // Throws if the error code is not one defined in ErrorCode or is ErrorCode.NO_ERROR.
 export function fromErrorCode(errorCode: ErrorCode): NativeError {
   switch (errorCode) {

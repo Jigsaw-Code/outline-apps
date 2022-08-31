@@ -14,18 +14,17 @@
 
 #pragma once
 
-#include <queue>
 #include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <cstdlib>
 
 namespace outline {
 
 typedef std::pair<std::string, uint8_t> OutputAndStatus;
-typedef std::pair<const std::string, const std::string> SubCommandPart;
-typedef std::queue<SubCommandPart> SubCommand;
+typedef std::vector<std::string> CommandArguments;
 
 class OutlineProxyController {
  public:
@@ -126,15 +125,17 @@ class OutlineProxyController {
   /**
    * exectues a shell command and returns the stdout
    */
-  OutputAndStatus executeCommand(const std::string commandName, const SubCommand args);
+  OutputAndStatus executeCommand(const std::string commandName,
+                                 const std::string subCommandName,
+                                 CommandArguments args);
 
-  OutputAndStatus executeIPCommand(const SubCommand args);
-  OutputAndStatus executeIPRoute(const SubCommand args);
-  OutputAndStatus executeIPLink(const SubCommand args);
-  OutputAndStatus executeIPTunTap(const SubCommand args);
-  OutputAndStatus executeIPAddress(const SubCommand args);
+  OutputAndStatus executeIPCommand(const CommandArguments &args);
+  OutputAndStatus executeIPRoute(const CommandArguments &args);
+  OutputAndStatus executeIPLink(const CommandArguments &args);
+  OutputAndStatus executeIPTunTap(const CommandArguments &args);
+  OutputAndStatus executeIPAddress(const CommandArguments &args);
 
-  OutputAndStatus executeSysctl(const SubCommand args);
+  OutputAndStatus executeSysctl(const CommandArguments &args);
 
   void detectBestInterfaceIndex();
   void processRoutingTable();
@@ -169,21 +170,14 @@ class OutlineProxyController {
    */
   std::string getParamValueInResult(std::string resultString, std::string param);
 
-  /**
-   *  store created route as an string so it can be deleted later
-   */
-  std::string createRoutingString(SubCommand args);
-
  private:
-  const std::string c_redirect_stderr_into_stdout = " 2>&1";
-
   const std::string resultDelimiter = " ";
 
   const std::string IPCommand = "ip";
-  const std::string IPRouteCommand = "ip route";
-  const std::string IPAddressCommand = "ip addr";
-  const std::string IPLinkCommand = "ip link";
-  const std::string IPTunTapCommand = "ip tuntap";
+  const std::string IPRouteSubCommand = "route";
+  const std::string IPAddressSubCommand = "addr";
+  const std::string IPLinkSubCommand = "link";
+  const std::string IPTunTapSubCommand = "tuntap";
   const std::string sysctlCommand = "sysctl";
 
   const std::string c_normal_traffic_priority_metric = "10";
