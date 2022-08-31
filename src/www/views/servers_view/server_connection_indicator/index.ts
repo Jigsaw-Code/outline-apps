@@ -67,6 +67,11 @@ export class ServerConnectionIndicator extends LitElement {
       .circle {
         display: inline-block;
 
+        /* 
+          setting translate3d can have weird behavior on certain platforms, so 
+          hiding the element backface becomes necessary - 
+          https://developer.mozilla.org/en-US/docs/Web/CSS/backface-visibility 
+        */
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
 
