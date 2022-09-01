@@ -92,6 +92,6 @@ export class TunnelStore {
     if (!config || !tunnel.id) {
       return false;
     }
-    return config.method && config.password && config.host && config.port && config.name;
+    return config.method.data && config.password.data && config.host.data && config.port.data && config.tag.data;
   }
 }

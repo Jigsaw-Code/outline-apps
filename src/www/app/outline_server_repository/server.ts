@@ -79,7 +79,7 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      await this.tunnel.start(this.config);
+      await this.tunnel.start(this.config.shadowsocksConnection);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
