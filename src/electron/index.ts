@@ -26,7 +26,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {Config as ShadowsocksConfig, Host} from 'ShadowsocksConfig';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
@@ -296,7 +296,7 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network statck
 // specified at build time.
 function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
-  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
+  const routing = new RoutingDaemon(config.host.data || '', isAutoConnect);
   let tunnel: VpnTunnel;
   if (NETWORK_STACK === 'go') {
     console.log('Using Go network stack');
@@ -483,9 +483,13 @@ function main() {
       try {
         // Rather than repeadedly resolving a hostname in what may be a fingerprint-able way,
         // resolve it just once, upfront.
-        args.config.host = await connectivity.lookupIp(args.config.host || '');
+        args.config.host = new Host(await connectivity.lookupIp(args.config.host.data || ''));
 
-        await connectivity.isServerReachable(args.config.host || '', args.config.port || 0, REACHABILITY_TIMEOUT_MS);
+        await connectivity.isServerReachable(
+          args.config.host.data || '',
+          args.config.port.data || 0,
+          REACHABILITY_TIMEOUT_MS
+        );
 
         await startVpn(args.config, args.id);
         console.log(`connected to ${args.id}`);

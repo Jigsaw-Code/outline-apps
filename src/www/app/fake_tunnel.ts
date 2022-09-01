@@ -14,7 +14,7 @@
 
 import * as errors from '../model/errors';
 
-import {ShadowsocksConfig} from './config';
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 // Fake Tunnel implementation for demoing and testing.
@@ -38,9 +38,9 @@ export class FakeOutlineTunnel implements Tunnel {
       return;
     }
 
-    if (this.playUnreachable(config.name)) {
+    if (this.playUnreachable(config.tag.data)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
-    } else if (this.playBroken(config.name)) {
+    } else if (this.playBroken(config.tag.data)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE);
     }
 

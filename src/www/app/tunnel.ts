@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksConfig} from './config';
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
 
 export const enum TunnelStatus {
   CONNECTED,

@@ -14,7 +14,7 @@
 
 import * as errors from '../model/errors';
 
-import {ShadowsocksConfig} from './config';
+import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
