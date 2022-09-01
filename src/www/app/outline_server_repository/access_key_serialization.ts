@@ -22,7 +22,7 @@ import * as errors from '../../model/errors';
 export function accessKeyToServerConfig(accessKey: string): OutlineServerConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(accessKey);
-    return new OutlineServerConfig(config.tag.data, Object.freeze(config), accessKey.includes('outline=1'));
+    return new OutlineServerConfig(config.tag.data, Object.freeze(config));
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
   }
@@ -30,5 +30,5 @@ export function accessKeyToServerConfig(accessKey: string): OutlineServerConfig 
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
 export function serverConfigToAccessKey(config: OutlineServerConfig): string {
-  return SIP002_URI.stringify(makeConfig(config.connection)) + config.isOutlineServer ? '?outline=1' : '';
+  return SIP002_URI.stringify(makeConfig(config.shadowsocksConnection));
 }

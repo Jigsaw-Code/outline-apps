@@ -19,7 +19,7 @@ import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRena
 import {FakeNativeNetworking} from '../fake_net';
 import {FakeOutlineTunnel} from '../fake_tunnel';
 
-import {Host, Port, Method, Password, Tag} from 'ShadowsocksConfig';
+import {makeConfig} from 'ShadowsocksConfig';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from '.';
 import {OutlineServer} from './server';
@@ -31,30 +31,37 @@ import {OutlineServerConfig} from './server_config';
 describe('OutlineServerRepository', () => {
   const CONFIG_0 = new OutlineServerConfig(
     'fake server 0',
-    Object.freeze({
-      host: new Host('127.0.0.1'),
-      port: new Port(1080),
-      password: new Password('test'),
-      method: new Method('chacha20-ietf-poly1305'),
-      tag: new Tag('fake server 0'),
-      extra: {},
-    })
+    Object.freeze(
+      makeConfig({
+        host: '127.0.0.1',
+        port: 1080,
+        password: 'test',
+        method: 'chacha20-ietf-poly1305',
+        tag: 'fake server 0',
+        extra: {},
+      })
+    )
   );
 
   const CONFIG_1 = new OutlineServerConfig(
     'fake server 1',
-    Object.freeze({
-      host: new Host('10.0.0.1'),
-      port: new Port(1089),
-      password: new Password('test'),
-      method: new Method('chacha20-ietf-poly1305'),
-      tag: new Tag('fake server 1'),
-      extra: {},
-    })
+    Object.freeze(
+      makeConfig({
+        host: '10.0.0.1',
+        port: 1089,
+        password: 'test',
+        method: 'chacha20-ietf-poly1305',
+        tag: 'fake server 1',
+        extra: {},
+      })
+    )
   );
 
   it('loads V0 servers', () => {
-    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0.connection, 'server-1': CONFIG_1.connection};
+    const storageV0: ServersStorageV0 = {
+      'server-0': CONFIG_0.shadowsocksConnection,
+      'server-1': CONFIG_1.shadowsocksConnection,
+    };
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
@@ -74,7 +81,10 @@ describe('OutlineServerRepository', () => {
 
   it('loads V1 servers', () => {
     // Store V0 servers with different ids.
-    const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0.connection, 'v0-server-1': CONFIG_1.connection};
+    const storageV0: ServersStorageV0 = {
+      'v0-server-0': CONFIG_0.shadowsocksConnection,
+      'v0-server-1': CONFIG_1.shadowsocksConnection,
+    };
     const storageV1: ServersStorageV1 = [
       {id: 'server-0', name: 'fake server 0', accessKey: serverConfigToAccessKey(CONFIG_0)},
       {id: 'server-1', name: 'renamed server', accessKey: serverConfigToAccessKey(CONFIG_1)},
@@ -100,7 +110,10 @@ describe('OutlineServerRepository', () => {
   });
 
   it('stores V1 servers', () => {
-    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0.connection, 'server-1': CONFIG_1.connection};
+    const storageV0: ServersStorageV0 = {
+      'server-0': CONFIG_0.shadowsocksConnection,
+      'server-1': CONFIG_1.shadowsocksConnection,
+    };
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
@@ -376,14 +389,16 @@ describe('OutlineServerRepository', () => {
         serverConfigToAccessKey(
           new OutlineServerConfig(
             'test',
-            Object.freeze({
-              host: new Host('2001:0:ce49:7601:e866:efff:62c3:fffe'),
-              port: new Port(443),
-              password: new Password('test'),
-              method: new Method('chacha20-ietf-poly1305'),
-              tag: new Tag('test'),
-              extra: {},
-            })
+            Object.freeze(
+              makeConfig({
+                host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
+                port: 443,
+                password: 'test',
+                method: 'chacha20-ietf-poly1305',
+                tag: 'test',
+                extra: {},
+              })
+            )
           )
         )
       )
@@ -394,14 +409,16 @@ describe('OutlineServerRepository', () => {
         serverConfigToAccessKey(
           new OutlineServerConfig(
             'test',
-            Object.freeze({
-              host: new Host('127.0.0.1'),
-              port: new Port(443),
-              password: new Password('test'),
-              method: new Method('aes-256-ctr'),
-              tag: new Tag('test'),
-              extra: {},
-            })
+            Object.freeze(
+              makeConfig({
+                host: '127.0.0.1',
+                port: 443,
+                password: 'test',
+                method: 'aes-256-ctr',
+                tag: 'test',
+                extra: {},
+              })
+            )
           )
         )
       )
@@ -411,14 +428,16 @@ describe('OutlineServerRepository', () => {
         serverConfigToAccessKey(
           new OutlineServerConfig(
             'test',
-            Object.freeze({
-              host: new Host('127.0.0.1'),
-              port: new Port(443),
-              password: new Password('test'),
-              method: new Method('chacha20'),
-              tag: new Tag('test'),
-              extra: {},
-            })
+            Object.freeze(
+              makeConfig({
+                host: '127.0.0.1',
+                port: 443,
+                password: 'test',
+                method: 'chacha20',
+                tag: 'test',
+                extra: {},
+              })
+            )
           )
         )
       )

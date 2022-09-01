@@ -70,7 +70,7 @@ export class OutlineServer implements Server {
   }
 
   get address() {
-    return this.config.serverAddress;
+    return this.config.shadowsocksServerAddress;
   }
 
   get isOutlineServer() {
@@ -104,7 +104,10 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.config.connection.host.data, this.config.connection.port.data);
+    return this.net.isServerReachable(
+      this.config.shadowsocksConnection.host.data,
+      this.config.shadowsocksConnection.port.data
+    );
   }
 
   static isServerCipherSupported(cipher?: string) {

@@ -29,8 +29,8 @@ import {accessKeyToServerConfig, serverConfigToAccessKey} from './access_key_ser
 // Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
   try {
-    const {connection: l} = accessKeyToServerConfig(a);
-    const {connection: r} = accessKeyToServerConfig(b);
+    const {shadowsocksConnection: l} = accessKeyToServerConfig(a);
+    const {shadowsocksConnection: r} = accessKeyToServerConfig(b);
     return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);

@@ -15,19 +15,19 @@
 import {Config as ShadowsocksConfig} from 'ShadowsocksConfig';
 
 export class OutlineServerConfig {
-  constructor(
-    public serverName: string,
-    public connection: Readonly<ShadowsocksConfig>,
-    public isOutlineServer: boolean = false
-  ) {}
+  constructor(public serverName: string, public shadowsocksConnection: Readonly<ShadowsocksConfig>) {}
 
-  get serverAddress(): string {
-    const {host, port} = this.connection;
+  get shadowsocksServerAddress(): string {
+    const {host, port} = this.shadowsocksConnection;
 
     if (!host.data) {
       return '';
     }
 
     return `${host.data}${port.data ? ':' : ''}${port.data}`;
+  }
+
+  get isOutlineServer() {
+    return this.shadowsocksConnection.extra.outline === '1';
   }
 }
