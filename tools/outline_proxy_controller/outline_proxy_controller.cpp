@@ -228,7 +228,7 @@ void OutlineProxyController::setTunDeviceIP() {
   }
 
   auto tunDeviceAdditionResult = executeIPAddress({
-    "replace", tunInterfaceIp + "/24",
+    "replace", tunInterfaceIp + "/32",
     "dev", tunInterfaceName
   });
 
@@ -236,6 +236,23 @@ void OutlineProxyController::setTunDeviceIP() {
     logger.error(tunDeviceAdditionResult.first);
     throw runtime_error("failed to set the tun device ip address");
   }
+  logger.info("successfully set the tun device ip address");
+
+  // Because we are using `10.0.85.1/32` single-host subnet, the gateway
+  // IP `10.0.85.2` is not configured, we need to explicityly add it, otherwise
+  // we cannot configure the default gateway due to "Nexthop has invalid gateway".
+  // If we are using `10.0.85.0/24` we don't need to do this step.
+  auto gatewayRouteResult = executeIPRoute({
+    "replace", tunInterfaceRouterIp,
+    "dev", tunInterfaceName,
+    "src", tunInterfaceIp,
+  });
+
+  if (!isSuccessful(gatewayRouteResult)) {
+    logger.error(gatewayRouteResult.first);
+    throw runtime_error("failed to add outline gateway routing entry");
+  }
+  logger.info("successfully added outline gateway routing entry");
 }
 
 void OutlineProxyController::detectBestInterfaceIndex() {
