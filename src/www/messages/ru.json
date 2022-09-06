@@ -61,7 +61,7 @@
   "reconnecting-server-state": "Повторное подключение…",
   "save": "Сохранить",
   "server-access-key-detected": "Обнаружен ключ доступа",
-  "server-access-key-label": "ss://klyuch-dostupa",
+  "server-access-key-label": "ss://access-key",
   "server-add": "Добавить сервер",
   "server-add-access-key": "Добавление ключа доступа",
   "server-add-ignore": "Игнорировать",
