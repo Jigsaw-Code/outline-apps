@@ -13,10 +13,10 @@
 // limitations under the License.
 
 // Represents a Shadowsocks proxy server configuration.
-export interface ShadowsocksConfig {
+export interface ShadowsocksSessionConfig {
   host?: string;
   port?: number;
   password?: string;
   method?: string;
-  name?: string;
+  tag?: string;
 }

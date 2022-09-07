@@ -14,7 +14,7 @@
 
 import * as errors from '../model/errors';
 
-import {ShadowsocksConfig} from './config';
+import {ShadowsocksSessionConfig} from './outline_server_repository/shadowsocks_session_config';
 import {Tunnel, TunnelStatus} from './tunnel';
 
 // Fake Tunnel implementation for demoing and testing.
@@ -33,14 +33,14 @@ export class FakeOutlineTunnel implements Tunnel {
     return name?.toLowerCase().includes('unreachable');
   }
 
-  async start(config: ShadowsocksConfig): Promise<void> {
+  async start(config: ShadowsocksSessionConfig): Promise<void> {
     if (this.running) {
       return;
     }
 
-    if (this.playUnreachable(config.name)) {
+    if (this.playUnreachable(config.tag)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
-    } else if (this.playBroken(config.name)) {
+    } else if (this.playBroken(config.tag)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE);
     }
 

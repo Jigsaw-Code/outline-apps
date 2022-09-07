@@ -16,31 +16,31 @@ import {InMemoryStorage} from '../../../infrastructure/memory_storage';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 
-import {ShadowsocksConfig} from '../config';
+import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
 import {FakeNativeNetworking} from '../fake_net';
 import {FakeOutlineTunnel} from '../fake_tunnel';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from '.';
 import {OutlineServer} from './server';
-import {shadowsocksConfigToAccessKey} from './access_key_serialization';
+import {shadowsocksSessionConfigToAccessKey as shadowsocksConfigToAccessKey} from './access_key_serialization';
 
 // TODO(alalama): unit tests for OutlineServer.
 
 describe('OutlineServerRepository', () => {
-  const CONFIG_0: ShadowsocksConfig = {
+  const CONFIG_0: ShadowsocksSessionConfig = {
     host: '127.0.0.1',
     port: 1080,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
-    name: 'fake server 0',
+    tag: 'fake server 0',
   };
 
-  const CONFIG_1: ShadowsocksConfig = {
+  const CONFIG_1: ShadowsocksSessionConfig = {
     host: '10.0.0.1',
     port: 1089,
     password: 'test',
     method: 'chacha20-ietf-poly1305',
-    name: 'fake server 1',
+    tag: 'fake server 1',
   };
 
   it('loads V0 servers', () => {
@@ -56,10 +56,10 @@ describe('OutlineServerRepository', () => {
     );
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
-    expect(server0?.name).toEqual(CONFIG_0.name);
+    expect(server0?.name).toEqual(CONFIG_0.tag);
     const server1 = repo.getById('server-1');
     expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
-    expect(server1?.name).toEqual(CONFIG_1.name);
+    expect(server1?.name).toEqual(CONFIG_1.tag);
   });
 
   it('loads V1 servers', () => {
@@ -83,7 +83,7 @@ describe('OutlineServerRepository', () => {
     );
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
-    expect(server0?.name).toEqual(CONFIG_0.name);
+    expect(server0?.name).toEqual(CONFIG_0.tag);
     const server1 = repo.getById('server-1');
     expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
     expect(server1?.name).toEqual('renamed server');
@@ -132,9 +132,9 @@ describe('OutlineServerRepository', () => {
     const servers: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     expect(servers.length).toEqual(2);
     expect(servers[0].accessKey).toEqual(accessKey0);
-    expect(servers[0].name).toEqual(CONFIG_0.name);
+    expect(servers[0].name).toEqual(CONFIG_0.tag);
     expect(servers[1].accessKey).toEqual(accessKey1);
-    expect(servers[1].name).toEqual(CONFIG_1.name);
+    expect(servers[1].name).toEqual(CONFIG_1.tag);
   });
 
   it('add emits ServerAdded event', () => {
@@ -151,7 +151,7 @@ describe('OutlineServerRepository', () => {
     eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
       const server = event.server as OutlineServer;
       expect(server.accessKey).toEqual(accessKey);
-      expect(server.name).toEqual(CONFIG_0.name);
+      expect(server.name).toEqual(CONFIG_0.tag);
       didEmitServerAddedEvent = true;
     });
     eventQueue.startPublishing();
@@ -187,8 +187,8 @@ describe('OutlineServerRepository', () => {
     expect(accessKeys).toContain(accessKey0);
     expect(accessKeys).toContain(accessKey1);
     const serverNames = servers.map(s => s.name);
-    expect(serverNames).toContain(CONFIG_0.name);
-    expect(serverNames).toContain(CONFIG_1.name);
+    expect(serverNames).toContain(CONFIG_0.tag);
+    expect(serverNames).toContain(CONFIG_1.tag);
   });
 
   it('getById retrieves added servers', () => {
@@ -204,7 +204,7 @@ describe('OutlineServerRepository', () => {
     const server = repo.getById(serverId);
     expect(server.id).toEqual(serverId);
     expect(server.accessKey).toEqual(accessKey);
-    expect(server.name).toEqual(CONFIG_0.name);
+    expect(server.name).toEqual(CONFIG_0.tag);
   });
 
   it('getById returns undefined for nonexistent servers', () => {

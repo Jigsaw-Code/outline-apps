@@ -16,12 +16,12 @@ import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
-import {ShadowsocksConfig} from '../config';
+import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
 
 // DON'T use these methods outside of this folder!
 
 // Parses an access key string into a ShadowsocksConfig object.
-export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConfig {
+export function accessKeyToShadowsocksSessionConfig(accessKey: string): ShadowsocksSessionConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(accessKey);
     return {
@@ -29,7 +29,6 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
-      name: config.tag.data,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
@@ -37,14 +36,13 @@ export function accessKeyToShadowsocksConfig(accessKey: string): ShadowsocksConf
 }
 
 // Enccodes a Shadowsocks proxy configuration into an access key string.
-export function shadowsocksConfigToAccessKey(config: ShadowsocksConfig): string {
+export function shadowsocksSessionConfigToAccessKey(config: ShadowsocksSessionConfig): string {
   return SIP002_URI.stringify(
     makeConfig({
       host: config.host,
       port: config.port,
       method: config.method,
       password: config.password,
-      tag: config.name,
     })
   );
 }

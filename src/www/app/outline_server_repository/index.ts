@@ -19,18 +19,18 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
 
-import {ShadowsocksConfig} from '../config';
+import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
 import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
-import {accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './access_key_serialization';
+import {accessKeyToShadowsocksSessionConfig, shadowsocksSessionConfigToAccessKey} from './access_key_serialization';
 
 // Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
   try {
-    const l = accessKeyToShadowsocksConfig(a);
-    const r = accessKeyToShadowsocksConfig(b);
+    const l = accessKeyToShadowsocksSessionConfig(a);
+    const r = accessKeyToShadowsocksSessionConfig(b);
     return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
@@ -40,7 +40,13 @@ function accessKeysMatch(a: string, b: string): boolean {
 
 // DEPRECATED: V0 server persistence format.
 export interface ServersStorageV0 {
-  [serverId: string]: ShadowsocksConfig;
+  [serverId: string]: {
+    host?: string;
+    port?: number;
+    password?: string;
+    method?: string;
+    name?: string;
+  };
 }
 
 // V1 server persistence format.
@@ -78,8 +84,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, config.name);
+    const server = this.createServer(uuidv4(), accessKey, SHADOWSOCKS_URI.parse(accessKey).tag.data);
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -189,7 +194,11 @@ export class OutlineServerRepository implements ServerRepository {
     for (const serverId of Object.keys(configById)) {
       const config = configById[serverId];
       try {
-        this.loadServer({id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
+        this.loadServer({
+          id: serverId,
+          accessKey: shadowsocksSessionConfigToAccessKey(config as ShadowsocksSessionConfig),
+          name: config.name,
+        });
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);

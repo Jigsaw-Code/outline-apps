@@ -18,7 +18,7 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import * as socks from 'socks';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {ShadowsocksSessionConfig} from '../www/app/outline_server_repository/shadowsocks_session_config';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
@@ -136,7 +136,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksSessionConfig) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -312,7 +312,7 @@ class SsLocal extends ChildProcessHelper {
     super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
-  start(config: ShadowsocksConfig) {
+  start(config: ShadowsocksSessionConfig) {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');
