@@ -84,6 +84,8 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
+    this.validateAccessKey(accessKey);
+
     const server = this.createServer(uuidv4(), accessKey, SHADOWSOCKS_URI.parse(accessKey).tag.data);
     this.serverById.set(server.id, server);
     this.storeServers();
