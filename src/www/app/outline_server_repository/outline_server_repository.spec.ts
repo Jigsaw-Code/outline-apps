@@ -93,7 +93,10 @@ describe('OutlineServerRepository', () => {
   });
 
   it('stores V1 servers', () => {
-    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
+    const storageV0: ServersStorageV0 = {
+      'server-0': {...CONFIG_0, name: CONFIG_0.tag},
+      'server-1': {...CONFIG_1, name: CONFIG_1.tag},
+    };
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
