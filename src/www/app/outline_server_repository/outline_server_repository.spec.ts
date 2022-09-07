@@ -22,7 +22,7 @@ import {FakeOutlineTunnel} from '../fake_tunnel';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1} from '.';
 import {OutlineServer} from './server';
-import {shadowsocksSessionConfigToAccessKey as shadowsocksConfigToAccessKey} from './access_key_serialization';
+import {shadowsocksSessionConfigToAccessKey} from './access_key_serialization';
 
 // TODO(alalama): unit tests for OutlineServer.
 
@@ -44,7 +44,10 @@ describe('OutlineServerRepository', () => {
   };
 
   it('loads V0 servers', () => {
-    const storageV0: ServersStorageV0 = {'server-0': CONFIG_0, 'server-1': CONFIG_1};
+    const storageV0: ServersStorageV0 = {
+      'server-0': {...CONFIG_0, name: CONFIG_0.tag},
+      'server-1': {...CONFIG_1, name: CONFIG_1.tag},
+    };
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
@@ -55,10 +58,10 @@ describe('OutlineServerRepository', () => {
       storage
     );
     const server0 = repo.getById('server-0');
-    expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
+    expect(server0?.accessKey).toEqual(shadowsocksSessionConfigToAccessKey(CONFIG_0));
     expect(server0?.name).toEqual(CONFIG_0.tag);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
+    expect(server1?.accessKey).toEqual(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     expect(server1?.name).toEqual(CONFIG_1.tag);
   });
 
@@ -66,8 +69,8 @@ describe('OutlineServerRepository', () => {
     // Store V0 servers with different ids.
     const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0, 'v0-server-1': CONFIG_1};
     const storageV1: ServersStorageV1 = [
-      {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksConfigToAccessKey(CONFIG_0)},
-      {id: 'server-1', name: 'renamed server', accessKey: shadowsocksConfigToAccessKey(CONFIG_1)},
+      {id: 'server-0', name: 'fake server 0', accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_0)},
+      {id: 'server-1', name: 'renamed server', accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_1)},
     ];
     const storage = new InMemoryStorage(
       new Map([
@@ -82,10 +85,10 @@ describe('OutlineServerRepository', () => {
       storage
     );
     const server0 = repo.getById('server-0');
-    expect(server0?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_0));
+    expect(server0?.accessKey).toEqual(shadowsocksSessionConfigToAccessKey(CONFIG_0));
     expect(server0?.name).toEqual(CONFIG_0.tag);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessKey).toEqual(shadowsocksConfigToAccessKey(CONFIG_1));
+    expect(server1?.accessKey).toEqual(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     expect(server1?.name).toEqual('renamed server');
   });
 
@@ -108,12 +111,12 @@ describe('OutlineServerRepository', () => {
     expect(serversJson).toContain({
       id: 'server-0',
       name: 'fake server 0',
-      accessKey: shadowsocksConfigToAccessKey(CONFIG_0),
+      accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_0),
     });
     expect(serversJson).toContain({
       id: 'server-1',
       name: 'fake server 1',
-      accessKey: shadowsocksConfigToAccessKey(CONFIG_1),
+      accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_1),
     });
   });
 
@@ -125,8 +128,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
-    const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
+    const accessKey0 = shadowsocksSessionConfigToAccessKey(CONFIG_0);
+    const accessKey1 = shadowsocksSessionConfigToAccessKey(CONFIG_1);
     repo.add(accessKey0);
     repo.add(accessKey1);
     const servers: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
@@ -145,7 +148,7 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    const accessKey = shadowsocksSessionConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     let didEmitServerAddedEvent = false;
     eventQueue.subscribe(ServerAdded, (event: ServerAdded) => {
@@ -177,8 +180,8 @@ describe('OutlineServerRepository', () => {
       new InMemoryStorage()
     );
     expect(repo.getAll()).toEqual([]);
-    const accessKey0 = shadowsocksConfigToAccessKey(CONFIG_0);
-    const accessKey1 = shadowsocksConfigToAccessKey(CONFIG_1);
+    const accessKey0 = shadowsocksSessionConfigToAccessKey(CONFIG_0);
+    const accessKey1 = shadowsocksSessionConfigToAccessKey(CONFIG_1);
     repo.add(accessKey0);
     repo.add(accessKey1);
     const servers = repo.getAll();
@@ -198,7 +201,7 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       new InMemoryStorage()
     );
-    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    const accessKey = shadowsocksSessionConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     const serverId = repo.getAll()[0].id;
     const server = repo.getById(serverId);
@@ -227,7 +230,7 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_0));
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
@@ -246,7 +249,7 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    const accessKey = shadowsocksConfigToAccessKey(CONFIG_0);
+    const accessKey = shadowsocksSessionConfigToAccessKey(CONFIG_0);
     repo.add(accessKey);
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
@@ -267,8 +270,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     expect(repo.getById(forgottenServerId)).toBeUndefined();
@@ -289,8 +292,8 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     let didEmitServerForgottenEvent = false;
@@ -310,8 +313,8 @@ describe('OutlineServerRepository', () => {
       new EventQueue(),
       storage
     );
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
@@ -336,8 +339,8 @@ describe('OutlineServerRepository', () => {
       eventQueue,
       new InMemoryStorage()
     );
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_0));
-    repo.add(shadowsocksConfigToAccessKey(CONFIG_1));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_0));
+    repo.add(shadowsocksSessionConfigToAccessKey(CONFIG_1));
     const forgottenServerId = repo.getAll()[0].id;
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
@@ -363,7 +366,7 @@ describe('OutlineServerRepository', () => {
     // IPv6 host.
     expect(() =>
       repo.validateAccessKey(
-        shadowsocksConfigToAccessKey({
+        shadowsocksSessionConfigToAccessKey({
           host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
           port: 443,
           password: 'test',
@@ -374,12 +377,12 @@ describe('OutlineServerRepository', () => {
     // Unsupported ciphers.
     expect(() =>
       repo.validateAccessKey(
-        shadowsocksConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})
+        shadowsocksSessionConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'})
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
     expect(() =>
       repo.validateAccessKey(
-        shadowsocksConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})
+        shadowsocksSessionConfigToAccessKey({host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'})
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
   });
