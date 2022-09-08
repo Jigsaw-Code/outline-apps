@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as child_process from 'node:child_process';
+import {createHash} from 'node:crypto';
 import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
-import {promisify} from 'node:util';
 
-import {getAppPath, getCurrentRunningBinaryPath} from '../infrastructure/electron/app_paths';
+import {getAppPath} from '../infrastructure/electron/app_paths';
 import {TunnelStatus} from '../www/app/tunnel';
 import {ErrorCode, SystemConfigurationException} from '../www/model/errors';
 
@@ -227,19 +226,19 @@ export class RoutingDaemon {
 
 /**
  * Execute arbitary shell `command` as root.
- * @param command Any valid shell command(s).
+ * @param command command Any valid shell command(s).
  */
 function executeCommandAsRoot(command: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     sudo.exec(command, {name: 'Outline'}, (sudoError, stdout, stderr) => {
       console.info(stdout);
       console.error(stderr);
-      // This error message is an un-exported constant defined here:
-      //   - https://github.com/jorangreef/sudo-prompt/blob/v9.2.1/index.js#L670
-      const PERMISSION_DENIED = 'did not grant permission';
+
       if (sudoError) {
-        if (sudoError.message?.includes(PERMISSION_DENIED)) {
-          console.error('user rejected to run command as root: ', sudoError);
+        // This error message is an un-exported constant defined here:
+        //   - https://github.com/jorangreef/sudo-prompt/blob/v9.2.1/index.js#L670
+        if (sudoError.message?.includes('did not grant permission')) {
+          console.error('user rejected to run command as root');
           reject(ErrorCode.NO_ADMIN_PERMISSIONS);
         } else {
           console.error('command is running as root but failed: ', sudoError);
@@ -252,33 +251,7 @@ function executeCommandAsRoot(command: string): Promise<void> {
   });
 }
 
-/**
- * Execute arbitary shell `command` as a new child process.
- * @param command Any valid shell command(s).
- * @returns The standard output of the `command`.
- */
-async function executeShellCommand(command: string): Promise<string> {
-  const exec = promisify(child_process.exec);
-  const {stdout, stderr} = await exec(command);
-  console.info(stdout);
-  console.error(stderr);
-  return stdout;
-}
-
-/**
- * By default, root user is not able to connect to X Server, but it is required
- * if we need to run Outline-Client (even in CLI mode) under root. This function let
- * the caller specify whether root user is allowed to access X server. It will also
- * return whether root is allowed before (so we can revert the change we made).
- */
-async function configureRootXServerAccess(allowRootAccess: boolean): Promise<boolean> {
-  const ROOT_USER_ID = 'si:localuser:root';
-  const prevOut = (await executeShellCommand('xhost')) ?? '';
-  await executeShellCommand(`xhost ${allowRootAccess ? '+' : '-'}${ROOT_USER_ID}`);
-  return prevOut.toLowerCase().includes(ROOT_USER_ID);
-}
-
-function doInstallWindowsRoutingServices(): Promise<void> {
+function installWindowsRoutingServices(): Promise<void> {
   const WINDOWS_INSTALLER_FILENAME = 'install_windows_service.bat';
 
   // Locating the script is tricky: when packaged, this basically boils down to:
@@ -291,68 +264,78 @@ function doInstallWindowsRoutingServices(): Promise<void> {
   return executeCommandAsRoot(script);
 }
 
-/**
- * The actual steps to install a Linux Outline service. The caller should already
- * granted the admin permission to the process before calling this method.
- */
-export async function doInstallLinuxRoutingServices(): Promise<void> {
-  if (!isLinux) {
-    throw new Error('please call this method in Linux');
+async function installLinuxRoutingServices(): Promise<void> {
+  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
+  const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
+  const LINUX_SERVICE_FILE_DESCRIPTORS: Array<{filename: string; executable: boolean; sha256: string}> = [
+    {filename: LINUX_INSTALLER_FILENAME, executable: true, sha256: ''},
+    {filename: 'OutlineProxyController', executable: true, sha256: ''},
+    {filename: 'outline_proxy_controller.service', executable: false, sha256: ''},
+  ];
+
+  // These Linux service files are located in a mounted folder of the AppImage, typically
+  // located at /tmp/.mount_Outlinxxxxxx/resources/. These files can only be acceeded by
+  // the user who launched Outline.AppImage, so even root cannot access the files or folders.
+  // Therefore we have to copy these files to a normal temporary folder, and execute them
+  // as root.
+  //
+  // Also, we are copying individual files instead of the entire folder because they are in
+  // electron's "asar" archive (which is returned by getAppPath). Electron tries to inject
+  // some logic to node's fs API and make sure the caller can access files in the archive.
+  // However directories are not supported.
+  //
+  // References:
+  // - https://github.com/AppImage/AppImageKit/issues/146
+  // - https://xwartz.gitbooks.io/electron-gitbook/content/en/tutorial/application-packaging.html
+  const tmp = await fsextra.mkdtemp('/tmp/');
+  const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
+
+  console.log(`copying service installation files to ${tmp}`);
+  for (const descriptor of LINUX_SERVICE_FILE_DESCRIPTORS) {
+    const src = path.join(srcFolderPath, descriptor.filename);
+
+    const srcContent = await fsextra.readFile(src);
+    descriptor.sha256 = createHash('sha256')
+      .update(srcContent)
+      .digest('hex');
+
+    const dest = path.join(tmp, descriptor.filename);
+    await fsextra.copy(src, dest, {overwrite: true});
+
+    if (descriptor.executable) {
+      await fsextra.chmod(dest, 0o755);
+    }
   }
+  console.log(`all service installation files copied to ${tmp} successfully`);
 
-  console.log('installing Outline service...');
-  const SERVICE_SOURCE_FOLDER = path.resolve(getAppPath(), 'tools/outline_proxy_controller/dist');
-  const SERVICE_BINARY = 'OutlineProxyController';
-  const SERVICE_BINARY_TARGET_FOLDER = '/usr/local/sbin';
-  const SERVICE_DEFINITION = 'outline_proxy_controller.service';
-  const SERVICE_DEFINITION_TARGET_FOLDER = '/etc/systemd/system';
+  // At this time, the user running Outline (who is not root) could replace these installation
+  // files in "/tmp/xxx" folder with any arbitrary scripts (because "/tmp/xxx" folder and its
+  // contents are writable by this user). Our system will then run it using root and cause a
+  // potential security breach. Therefore we need to make sure the files are the ones provided
+  // by us:
+  //   1. `chattr +i`, set the immutable flag, the flag can only be cleared by root
+  //   2. `shasum -c`, check them against our checksums embedded in AppImage
+  //   3. Run the installation script
+  //   4. `chattr -i`, always clear the immutable flag, so they can be deleted later
+  let command = `trap "/usr/bin/chattr -R -i ${tmp}" EXIT`;
+  command += `; /usr/bin/chattr -R +i ${tmp}`;
+  command +=
+    ' && ' +
+    LINUX_SERVICE_FILE_DESCRIPTORS.map(
+      ({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`
+    ).join(' && ');
+  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}"`;
 
-  const binSource = path.join(SERVICE_SOURCE_FOLDER, SERVICE_BINARY);
-  const binTarget = path.join(SERVICE_BINARY_TARGET_FOLDER, SERVICE_BINARY);
-  console.log(`copying Outline service binary from "${binSource}" to "${binTarget}"...`);
-  await fsextra.copy(binSource, binTarget, {overwrite: true});
-  await fsextra.chmod(binTarget, 0o755);
-  console.info('successfully installed Outline service binary');
-
-  const svcSource = path.join(SERVICE_SOURCE_FOLDER, SERVICE_DEFINITION);
-  const svcTarget = path.join(SERVICE_DEFINITION_TARGET_FOLDER, SERVICE_DEFINITION);
-  console.log(`copying Outline service definition from "${svcSource}" to "${svcTarget}"...`);
-  await fsextra.copy(svcSource, svcTarget, {overwrite: true});
-  console.info('successfully installed Outline service definition');
-
-  console.log('registering Outline service to systemctl...');
-  await executeShellCommand('systemctl daemon-reload');
-  await executeShellCommand(`systemctl enable ${SERVICE_DEFINITION}`);
-  await executeShellCommand(`systemctl restart ${SERVICE_DEFINITION}`);
-  console.info('Outline service successfully registered');
-
-  // Because the .service file specifies Type=simple, the installation script exits immediately.
-  // Sleep for a couple of seconds before exiting.
-  await new Promise(r => setTimeout(r, 2000));
-  console.info('Outline service successfully installed');
+  console.log('trying to run command as root: ', command);
+  await executeCommandAsRoot(command);
 }
 
 export async function installRoutingServices(): Promise<void> {
   console.info('installing outline routing service...');
   if (isWindows) {
-    await doInstallWindowsRoutingServices();
+    await installWindowsRoutingServices();
   } else if (isLinux) {
-    // Run `sudo ./Outline-Client.AppImage --install` to install the service
-    //   * `--headless` is required by chromium:
-    //       'ERROR:ozone_platform_x11.cc(247)] Missing X server or $DISPLAY'
-    //   * `$DISPLAY` and `xhost +si:localuser:root` is required by electron:
-    //       'Gtk-WARNING **: 18:24:17.308: cannot open display: '
-    //   * `--no-sandbox` is required for root due to chrome issue: https://crbug.com/638180
-    //   * gpu related options are used to prevent any potential GPU permission issues
-    const oldRootXServerAccess = await configureRootXServerAccess(true);
-    try {
-      await executeCommandAsRoot(
-        `DISPLAY=${process.env.DISPLAY} ` +
-          `${getCurrentRunningBinaryPath()} --install --headless --no-sandbox --disable-gpu --disable-gpu-sandbox`
-      );
-    } finally {
-      await configureRootXServerAccess(oldRootXServerAccess);
-    }
+    await installLinuxRoutingServices();
   } else {
     throw new Error('unsupported os');
   }

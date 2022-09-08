@@ -29,7 +29,7 @@ import * as errors from '../www/model/errors';
 import {ShadowsocksConfig} from '../www/app/config';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
-import {doInstallLinuxRoutingServices, installRoutingServices, RoutingDaemon} from './routing_service';
+import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
@@ -78,23 +78,6 @@ const enum Options {
 const REACHABILITY_TIMEOUT_MS = 10000;
 
 let currentTunnel: VpnTunnel | undefined;
-
-async function checkCliOptions() {
-  // We need to "--install" the Outline services
-  if (app.commandLine.hasSwitch('install')) {
-    try {
-      if (!isLinux) {
-        console.error('"--install" option is not supported on this platform');
-        app.exit(1);
-      }
-      await doInstallLinuxRoutingServices();
-      app.exit(0);
-    } catch (e) {
-      console.error('failed to install Outline services: ', e);
-      app.exit(1);
-    }
-  }
-}
 
 /**
  * Sentry must be initialized before electron app is ready:
@@ -404,9 +387,7 @@ function checkForUpdates() {
   }
 }
 
-async function main() {
-  await checkCliOptions();
-
+function main() {
   setupSentry();
 
   if (!app.requestSingleInstanceLock()) {

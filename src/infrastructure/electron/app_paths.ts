@@ -45,13 +45,3 @@ export function getAppPath() {
 export function pathToEmbeddedBinary(toolname: string, filename: string) {
   return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
 }
-
-/**
- * Get the path of the current running app, so we can use it to relaunch.
- *   - For AppImage, `./Outline-Client.AppImage`
- *   - For Windows, `C:\Program Files (x86)\Outline\Outline.exe`
- * @returns A string representing the path of the current app.
- */
-export function getCurrentRunningBinaryPath() {
-  return process.env.APPIMAGE || app.getPath('exe');
-}
