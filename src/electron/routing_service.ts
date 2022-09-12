@@ -267,7 +267,7 @@ function installWindowsRoutingServices(): Promise<void> {
 async function installLinuxRoutingServices(): Promise<void> {
   const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
   const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
-  const LINUX_SERVICE_FILE_DESCRIPTORS: Array<{filename: string; executable: boolean; sha256: string}> = [
+  const installationFileDescriptors: Array<{filename: string; executable: boolean; sha256: string}> = [
     {filename: LINUX_INSTALLER_FILENAME, executable: true, sha256: ''},
     {filename: 'OutlineProxyController', executable: true, sha256: ''},
     {filename: 'outline_proxy_controller.service', executable: false, sha256: ''},
@@ -291,7 +291,7 @@ async function installLinuxRoutingServices(): Promise<void> {
   const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
 
   console.log(`copying service installation files to ${tmp}`);
-  for (const descriptor of LINUX_SERVICE_FILE_DESCRIPTORS) {
+  for (const descriptor of installationFileDescriptors) {
     const src = path.join(srcFolderPath, descriptor.filename);
 
     const srcContent = await fsextra.readFile(src);
@@ -303,7 +303,7 @@ async function installLinuxRoutingServices(): Promise<void> {
     await fsextra.copy(src, dest, {overwrite: true});
 
     if (descriptor.executable) {
-      await fsextra.chmod(dest, 0o755);
+      await fsextra.chmod(dest, 0o700);
     }
   }
   console.log(`all service installation files copied to ${tmp} successfully`);
@@ -314,16 +314,16 @@ async function installLinuxRoutingServices(): Promise<void> {
   // potential security breach. Therefore we need to make sure the files are the ones provided
   // by us:
   //   1. `chattr +i`, set the immutable flag, the flag can only be cleared by root
-  //   2. `shasum -c`, check them against our checksums embedded in AppImage
+  //   2. `shasum -c`, check them against our checksums calculated from the scripts in AppImage
   //   3. Run the installation script
   //   4. `chattr -i`, always clear the immutable flag, so they can be deleted later
   let command = `trap "/usr/bin/chattr -R -i ${tmp}" EXIT`;
   command += `; /usr/bin/chattr -R +i ${tmp}`;
   command +=
     ' && ' +
-    LINUX_SERVICE_FILE_DESCRIPTORS.map(
-      ({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`
-    ).join(' && ');
+    installationFileDescriptors
+      .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`)
+      .join(' && ');
   command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}"`;
 
   console.log('trying to run command as root: ', command);
