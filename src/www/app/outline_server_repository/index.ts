@@ -193,12 +193,12 @@ export class OutlineServerRepository implements ServerRepository {
       throw new Error(`could not parse saved V0 servers: ${e.message}`);
     }
     for (const serverId of Object.keys(configById)) {
-      const config = configById[serverId];
+      const {name, ...config} = configById[serverId];
       try {
         this.loadServer({
           id: serverId,
           accessKey: shadowsocksSessionConfigToAccessKey(config as ShadowsocksSessionConfig),
-          name: config.name,
+          name,
         });
       } catch (e) {
         // Don't propagate so other stored servers can be created.
