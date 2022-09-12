@@ -198,7 +198,7 @@ export class OutlineServerRepository implements ServerRepository {
         this.loadServer({
           id: serverId,
           accessKey: shadowsocksSessionConfigToAccessKey(config as ShadowsocksSessionConfig),
-          name: config.host,
+          name: config.name,
         });
       } catch (e) {
         // Don't propagate so other stored servers can be created.
