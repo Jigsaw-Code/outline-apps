@@ -58,6 +58,7 @@ export function serversStorageV0ConfigToAccessKey(config: ServersStorageV0Config
       port: config.port,
       method: config.method,
       password: config.password,
+      tag: config.name,
     })
   );
 }
