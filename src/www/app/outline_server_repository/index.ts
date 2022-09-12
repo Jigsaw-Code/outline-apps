@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import * as errors from '../../model/errors';
@@ -20,10 +20,10 @@ import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
 
 import {NativeNetworking} from '../net';
-import {TunnelFactory, ShadowsocksSessionConfig} from '../tunnel';
+import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
-import {accessKeyToShadowsocksSessionConfig, shadowsocksSessionConfigToAccessKey} from './access_key_serialization';
+import {accessKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
@@ -38,14 +38,28 @@ function accessKeysMatch(a: string, b: string): boolean {
 }
 
 // DEPRECATED: V0 server persistence format.
+
+interface ServersStorageV0Config {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  name?: string;
+}
 export interface ServersStorageV0 {
-  [serverId: string]: {
-    host?: string;
-    port?: number;
-    password?: string;
-    method?: string;
-    name?: string;
-  };
+  [serverId: string]: ServersStorageV0Config;
+}
+
+// Enccodes a V0 storage configuration into an access key string.
+export function serversStorageV0ConfigToAccessKey(config: ServersStorageV0Config): string {
+  return SIP002_URI.stringify(
+    makeConfig({
+      host: config.host,
+      port: config.port,
+      method: config.method,
+      password: config.password,
+    })
+  );
 }
 
 // V1 server persistence format.
@@ -193,12 +207,13 @@ export class OutlineServerRepository implements ServerRepository {
       throw new Error(`could not parse saved V0 servers: ${e.message}`);
     }
     for (const serverId of Object.keys(configById)) {
-      const {name, ...config} = configById[serverId];
+      const v0Config = configById[serverId];
+
       try {
         this.loadServer({
           id: serverId,
-          accessKey: shadowsocksSessionConfigToAccessKey(config as ShadowsocksSessionConfig),
-          name,
+          accessKey: serversStorageV0ConfigToAccessKey(v0Config),
+          name: v0Config.name,
         });
       } catch (e) {
         // Don't propagate so other stored servers can be created.

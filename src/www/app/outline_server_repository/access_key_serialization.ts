@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
+import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
@@ -33,16 +33,4 @@ export function accessKeyToShadowsocksSessionConfig(accessKey: string): Shadowso
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
   }
-}
-
-// Enccodes a Shadowsocks proxy configuration into an access key string.
-export function shadowsocksSessionConfigToAccessKey(config: ShadowsocksSessionConfig): string {
-  return SIP002_URI.stringify(
-    makeConfig({
-      host: config.host,
-      port: config.port,
-      method: config.method,
-      password: config.password,
-    })
-  );
 }
