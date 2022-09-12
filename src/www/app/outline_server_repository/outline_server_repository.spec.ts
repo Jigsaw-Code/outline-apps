@@ -108,12 +108,12 @@ describe('OutlineServerRepository', () => {
     const serversJson = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
     expect(serversJson).toContain({
       id: 'server-0',
-      name: 'fake server 0',
+      name: '127.0.0.1',
       accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_0_V0),
     });
     expect(serversJson).toContain({
       id: 'server-1',
-      name: 'fake server 1',
+      name: '10.0.0.1',
       accessKey: shadowsocksSessionConfigToAccessKey(CONFIG_1_V0),
     });
   });
