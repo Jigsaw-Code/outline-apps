@@ -15,7 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {ShadowsocksSessionConfig} from '../www/app/outline_server_repository/shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 
 // Format to store a tunnel configuration.
 export interface SerializableTunnel {
@@ -92,6 +92,6 @@ export class TunnelStore {
     if (!config || !tunnel.id) {
       return false;
     }
-    return config.method && config.password && config.host && config.port && config.tag;
+    return config.method && config.password && config.host && config.port;
   }
 }

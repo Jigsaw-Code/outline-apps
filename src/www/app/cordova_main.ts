@@ -36,7 +36,7 @@ import {Tunnel, TunnelStatus} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
-import {ShadowsocksSessionConfig} from './outline_server_repository/shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from './tunnel';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';

@@ -18,7 +18,7 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import * as socks from 'socks';
 
-import {ShadowsocksSessionConfig} from '../www/app/outline_server_repository/shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 

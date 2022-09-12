@@ -16,9 +16,8 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {Server} from '../../model/server';
 
-import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
 import {NativeNetworking} from '../net';
-import {Tunnel, TunnelStatus} from '../tunnel';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 import {accessKeyToShadowsocksSessionConfig} from './access_key_serialization';
 

@@ -16,7 +16,7 @@ import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
-import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from '../tunnel';
 
 // DON'T use these methods outside of this folder!
 
@@ -29,7 +29,6 @@ export function accessKeyToShadowsocksSessionConfig(accessKey: string): Shadowso
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
-      tag: config.tag.data,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
@@ -44,7 +43,6 @@ export function shadowsocksSessionConfigToAccessKey(config: ShadowsocksSessionCo
       port: config.port,
       method: config.method,
       password: config.password,
-      tag: config.tag,
     })
   );
 }
