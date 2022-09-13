@@ -17,13 +17,13 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import {promisify} from 'util';
 
+import {pathToEmbeddedBinary} from '../infrastructure/electron/app_paths';
 import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
 import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';
-import {pathToEmbeddedBinary} from '../infrastructure/electron/app_paths';
 import {VpnTunnel} from './vpn_tunnel';
 
 const isLinux = platform() === 'linux';
