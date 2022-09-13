@@ -36,7 +36,7 @@ import {Tunnel, TunnelStatus} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
-import {ShadowsocksConfig} from './config';
+import {ShadowsocksSessionConfig} from './tunnel';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
@@ -97,7 +97,7 @@ class CordovaNativeNetworking implements NativeNetworking {
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 
-  start(config: ShadowsocksConfig) {
+  start(config: ShadowsocksSessionConfig) {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
