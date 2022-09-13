@@ -17,7 +17,7 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import {promisify} from 'util';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
@@ -63,7 +63,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksSessionConfig) {
     this.tun2socks = new GoTun2socks(config);
 
     // This promise, tied to both helper process' exits, is key to the instance's
@@ -216,7 +216,7 @@ export class GoVpnTunnel implements VpnTunnel {
 class GoTun2socks {
   private process: ChildProcessHelper;
 
-  constructor(private config: ShadowsocksConfig) {
+  constructor(private config: ShadowsocksSessionConfig) {
     this.process = new ChildProcessHelper(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'));
   }
 
@@ -281,7 +281,7 @@ class GoTun2socks {
 // `config`. Checks whether proxy server is reachable, whether the network and proxy support UDP
 // forwarding and validates the proxy credentials. Resolves with a boolean indicating whether UDP
 // forwarding is supported. Throws if the checks fail or if the process fails to start.
-async function checkConnectivity(config: ShadowsocksConfig) {
+async function checkConnectivity(config: ShadowsocksSessionConfig) {
   const args = [];
   args.push('-proxyHost', config.host || '');
   args.push('-proxyPort', `${config.port}`);

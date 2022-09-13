@@ -26,7 +26,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
@@ -295,7 +295,7 @@ async function tearDownAutoLaunch() {
 
 // Factory function to create a VPNTunnel instance backed by a network statck
 // specified at build time.
-function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
+function createVpnTunnel(config: ShadowsocksSessionConfig, isAutoConnect: boolean): VpnTunnel {
   const routing = new RoutingDaemon(config.host || '', isAutoConnect);
   let tunnel: VpnTunnel;
   if (NETWORK_STACK === 'go') {
@@ -310,7 +310,7 @@ function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): Vpn
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
-async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = false) {
+async function startVpn(config: ShadowsocksSessionConfig, id: string, isAutoConnect = false) {
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -468,7 +468,7 @@ function main() {
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {config: ShadowsocksConfig; id: string}): Promise<errors.ErrorCode> => {
+    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<errors.ErrorCode> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
