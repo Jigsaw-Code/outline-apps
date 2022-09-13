@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksConfig} from './config';
+export interface ShadowsocksSessionConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+}
 
 export const enum TunnelStatus {
   CONNECTED,
@@ -32,7 +37,7 @@ export interface Tunnel {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(config: ShadowsocksConfig): Promise<void>;
+  start(config: ShadowsocksSessionConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(): Promise<void>;

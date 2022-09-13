@@ -18,12 +18,20 @@ import * as path from 'path';
 
 const isWindows = os.platform() === 'win32';
 
+/**
+ * Get the unpacked asar folder path.
+ *   - For AppImage, `/tmp/.mount_OutlinXXXXXX/resources/app.asar.unpacked/`
+ *   - For Windows, `C:\Program Files (x86)\Outline\`
+ * @returns A string representing the path of the unpacked asar folder.
+ */
 function unpackedAppPath() {
   return app.getAppPath().replace('app.asar', 'app.asar.unpacked');
 }
 
 /**
  * Get the parent directory path of the current application binary.
+ *   - For AppImage, `/tmp/.mount_OutlinXXXXX/resources/app.asar`
+ *   - For Windows, `C:\Program Files (x86)\Outline\`
  * @returns A string representing the path of the application directory.
  */
 export function getAppPath() {

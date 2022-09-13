@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {createHash} from 'node:crypto';
 import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
 import {platform} from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
-import {TunnelStatus} from '../www/app/tunnel';
-import {NoAdminPermissions, SystemConfigurationException, toErrorCode} from '../www/model/errors';
 import {getAppPath} from '../infrastructure/electron/app_paths';
+import {TunnelStatus} from '../www/app/tunnel';
+import {ErrorCode, SystemConfigurationException} from '../www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -223,14 +224,26 @@ export class RoutingDaemon {
 
 //#region routing service installation
 
+/**
+ * Execute arbitary shell `command` as root.
+ * @param command command Any valid shell command(s).
+ */
 function executeCommandAsRoot(command: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    sudo.exec(command, {name: 'Outline'}, sudoError => {
+    sudo.exec(command, {name: 'Outline'}, (sudoError, stdout, stderr) => {
+      console.info(stdout);
+      console.error(stderr);
+
       if (sudoError) {
-        // NOTE: The script could have terminated with an error - see the comment in
-        //       sudo-prompt's typings definition.
-        console.error('failed to execute command as root: ', sudoError);
-        reject(toErrorCode(new NoAdminPermissions(sudoError.message)));
+        // This error message is an un-exported constant defined here:
+        //   - https://github.com/jorangreef/sudo-prompt/blob/v9.2.1/index.js#L670
+        if (sudoError.message?.includes('did not grant permission')) {
+          console.error('user rejected to run command as root');
+          reject(ErrorCode.NO_ADMIN_PERMISSIONS);
+        } else {
+          console.error('command is running as root but failed: ', sudoError);
+          reject(ErrorCode.UNEXPECTED);
+        }
       } else {
         resolve();
       }
@@ -254,11 +267,10 @@ function installWindowsRoutingServices(): Promise<void> {
 async function installLinuxRoutingServices(): Promise<void> {
   const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
   const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
-  // [InstallationFileName, isExecutable]...
-  const LINUX_SERVICE_FILE_NAMES: Array<[string, boolean]> = [
-    [LINUX_INSTALLER_FILENAME, true],
-    ['OutlineProxyController', true],
-    ['outline_proxy_controller.service', false],
+  const installationFileDescriptors: Array<{filename: string; executable: boolean; sha256: string}> = [
+    {filename: LINUX_INSTALLER_FILENAME, executable: true, sha256: ''},
+    {filename: 'OutlineProxyController', executable: true, sha256: ''},
+    {filename: 'outline_proxy_controller.service', executable: false, sha256: ''},
   ];
 
   // These Linux service files are located in a mounted folder of the AppImage, typically
@@ -279,16 +291,43 @@ async function installLinuxRoutingServices(): Promise<void> {
   const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
 
   console.log(`copying service installation files to ${tmp}`);
-  for (const [filename, executable] of LINUX_SERVICE_FILE_NAMES) {
-    const dest = path.join(tmp, filename);
-    await fsextra.copy(path.join(srcFolderPath, filename), dest, {overwrite: true});
-    if (executable) {
-      await fsextra.chmod(dest, 0o755);
+  for (const descriptor of installationFileDescriptors) {
+    const src = path.join(srcFolderPath, descriptor.filename);
+
+    const srcContent = await fsextra.readFile(src);
+    descriptor.sha256 = createHash('sha256')
+      .update(srcContent)
+      .digest('hex');
+
+    const dest = path.join(tmp, descriptor.filename);
+    await fsextra.copy(src, dest, {overwrite: true});
+
+    if (descriptor.executable) {
+      await fsextra.chmod(dest, 0o700);
     }
   }
   console.log(`all service installation files copied to ${tmp} successfully`);
 
-  await executeCommandAsRoot(path.join(tmp, LINUX_INSTALLER_FILENAME));
+  // At this time, the user running Outline (who is not root) could replace these installation
+  // files in "/tmp/xxx" folder with any arbitrary scripts (because "/tmp/xxx" folder and its
+  // contents are writable by this user). Our system will then run it using root and cause a
+  // potential security breach. Therefore we need to make sure the files are the ones provided
+  // by us:
+  //   1. `chattr +i`, set the immutable flag, the flag can only be cleared by root
+  //   2. `shasum -c`, check them against our checksums calculated from the scripts in AppImage
+  //   3. Run the installation script
+  //   4. `chattr -i`, always clear the immutable flag, so they can be deleted later
+  let command = `trap "/usr/bin/chattr -R -i ${tmp}" EXIT`;
+  command += `; /usr/bin/chattr -R +i ${tmp}`;
+  command +=
+    ' && ' +
+    installationFileDescriptors
+      .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`)
+      .join(' && ');
+  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}"`;
+
+  console.log('trying to run command as root: ', command);
+  await executeCommandAsRoot(command);
 }
 
 export async function installRoutingServices(): Promise<void> {
