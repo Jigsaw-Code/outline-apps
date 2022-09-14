@@ -22,13 +22,21 @@ Using -d runs the controller in the daemon mode.
 
 Then you can communicate with the controller through the local unix socket /var/run/outline_controller
 
-You then need to run ss-local and badvpn with parameter from the outline server.
+You then need to run [`tun2socks` (of outline-go-tun2socks)](https://github.com/Jigsaw-Code/outline-go-tun2socks) with the parameters from the outline server.
+
+    ./tun2socks \
+        -tunName outline-tun0 -tunDNS 1.1.1.1,9.9.9.9 \
+        -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
+        -proxyHost $OUTLINE_SERVER_IP -proxyPort $OUTLINE_SERVER_PORT -proxyPassword $OUTLINE_PASSWORD \
+        -proxyCipher chacha20-ietf-poly1035 [-dnsFallback]
+
+Or you can also run legacy `ss-local` (contained in [shadowsocks-libev](https://github.com/shadowsocks/shadowsocks-libev)) and [`badvpn`](https://code.google.com/archive/p/badvpn/).
     
-    ss-local -s $OUTLINE_SERVER_IP -p outline_port -b 0.0.0.0 -l 1080 -k $OUTLINE_PASSWORD -m chacha20-ietf-poly1305 -u
+    ss-local -s $OUTLINE_SERVER_IP -p $OUTLINE_SERVER_PORT -b 0.0.0.0 -l 1080 -k $OUTLINE_PASSWORD -m chacha20-ietf-poly1305 -u
 
     badvpn-tun2socks --tundev tun0 --netif-ipaddr 10.0.85.2 --netif-netmask 255.255.255.0 --socks-server-addr localhost:1080
     
-(These commands run by Outline client electoron app if you are using the app).
+(These commands run by Outline client electron app if you are using the app).
 
 After that if you write the following json command into the unix socket
     

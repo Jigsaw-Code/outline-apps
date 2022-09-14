@@ -30,16 +30,13 @@ import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
-import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
-//   - NETWORK_STACK is either 'go' or 'libevbadvpn' by default
 //   - SENTRY_DSN is either undefined or a url string
 //   - APP_VERSION should always be a string
-declare const NETWORK_STACK: string;
 declare const SENTRY_DSN: string | undefined;
 declare const APP_VERSION: string;
 
@@ -297,15 +294,8 @@ async function tearDownAutoLaunch() {
 // specified at build time.
 function createVpnTunnel(config: ShadowsocksSessionConfig, isAutoConnect: boolean): VpnTunnel {
   const routing = new RoutingDaemon(config.host || '', isAutoConnect);
-  let tunnel: VpnTunnel;
-  if (NETWORK_STACK === 'go') {
-    console.log('Using Go network stack');
-    tunnel = new GoVpnTunnel(routing, config);
-  } else {
-    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config);
-  }
+  const tunnel = new GoVpnTunnel(routing, config);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
-
   return tunnel;
 }
 
