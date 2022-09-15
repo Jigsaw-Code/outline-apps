@@ -171,7 +171,6 @@ describe('OutlineServerRepository', () => {
       new InMemoryStorage()
     );
     expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
   });
 
   it('getAll returns added servers', () => {
