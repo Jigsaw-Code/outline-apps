@@ -100,8 +100,8 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    let serverName;
-    if (this.isDynamicAccessKey(accessKey)) {
+    let serverName = accessKey;
+    if (!this.isDynamicAccessKey(accessKey)) {
       try {
         serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
       } catch (e) {
