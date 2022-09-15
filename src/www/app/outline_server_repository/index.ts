@@ -166,7 +166,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private isDynamicAccessKey(accessKey: string) {
-    return accessKey.startsWith('ss://');
+    return !accessKey.startsWith('ss://');
   }
 
   private validateStaticKey(staticKey: string) {
