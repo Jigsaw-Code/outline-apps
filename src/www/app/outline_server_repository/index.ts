@@ -98,6 +98,10 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
+    if (!accessKey) {
+      throw new errors.ServerUrlInvalid('Access key is empty.');
+    }
+
     let serverName = accessKey;
     if (accessKey.startsWith('ss://')) {
       try {
