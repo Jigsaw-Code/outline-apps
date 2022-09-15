@@ -98,7 +98,16 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    const server = this.createServer(uuidv4(), accessKey, SHADOWSOCKS_URI.parse(accessKey).tag.data);
+    let serverName;
+    if (accessKey.startsWith('ss://')) {
+      serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
+    } else if (accessKey.startsWith('ssconf://') || accessKey.startsWith('https://')) {
+      serverName = new URL(accessKey).hostname;
+    } else {
+      serverName = accessKey;
+    }
+
+    const server = this.createServer(uuidv4(), accessKey, serverName);
 
     if (!server.isDynamic) {
       this.validateStaticKey(accessKey);

@@ -163,7 +163,7 @@ describe('OutlineServerRepository', () => {
     expect(didEmitServerAddedEvent).toBeTruthy();
   });
 
-  it('add throws on invalid access keys', () => {
+  fit('add throws on invalid access keys', () => {
     const repo = new OutlineServerRepository(
       new FakeNativeNetworking(),
       getFakeTunnelFactory(),
@@ -171,6 +171,7 @@ describe('OutlineServerRepository', () => {
       new InMemoryStorage()
     );
     expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
   });
 
   it('getAll returns added servers', () => {

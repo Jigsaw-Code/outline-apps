@@ -40,6 +40,7 @@ export class OutlineServer implements Server {
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
+    console.log('HELLOL');
     if (accessKey.startsWith('ss://')) {
       this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
       this.isDynamic = false;
