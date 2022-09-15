@@ -26,7 +26,7 @@ import {OutlineServer} from './server';
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // Compares access keys proxying parameters.
-function accessKeysMatch(a: string, b: string): boolean {
+function staticKeysMatch(a: string, b: string): boolean {
   try {
     const l = staticKeyToShadowsocksSessionConfig(a);
     const r = staticKeyToShadowsocksSessionConfig(b);
@@ -98,9 +98,12 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    this.validateStaticKey(accessKey);
-
     const server = this.createServer(uuidv4(), accessKey, SHADOWSOCKS_URI.parse(accessKey).tag.data);
+
+    if (!server.isDynamic) {
+      this.validateStaticKey(accessKey);
+    }
+
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -164,7 +167,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (accessKeysMatch(accessKey, server.accessKey)) {
+      if (server.isDynamic && accessKey === server.accessKey) {
+        return server;
+      }
+
+      if (staticKeysMatch(accessKey, server.accessKey)) {
         return server;
       }
     }
