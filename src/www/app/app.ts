@@ -296,7 +296,7 @@ export class App {
       }
     }
     try {
-      this.serverRepo.validateStaticKey(accessKey);
+      this.serverRepo.validateAccessKey(accessKey);
       addServerView.openAddServerConfirmationSheet(accessKey);
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
