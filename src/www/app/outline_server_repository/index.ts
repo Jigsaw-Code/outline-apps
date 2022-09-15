@@ -98,24 +98,18 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    if (!accessKey) {
-      throw new errors.ServerUrlInvalid('Access key is empty.');
-    }
+    this.validateAccessKey(accessKey);
 
-    let serverName = accessKey;
+    let serverName;
     if (accessKey.startsWith('ss://')) {
       try {
         serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
       } catch (e) {
-        // do nothing, we have to validate later...
+        serverName = accessKey;
       }
     }
 
     const server = this.createServer(uuidv4(), accessKey, serverName);
-
-    if (!server.isDynamic) {
-      this.validateStaticKey(accessKey);
-    }
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -159,7 +153,19 @@ export class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  validateStaticKey(staticKey: string) {
+  validateAccessKey(accessKey: string) {
+    if (accessKey.startsWith('ss://')) {
+      return this.validateStaticKey(accessKey);
+    }
+
+    try {
+      new URL(accessKey);
+    } catch (error) {
+      throw new errors.ServerUrlInvalid(error.message);
+    }
+  }
+
+  private validateStaticKey(staticKey: string) {
     const alreadyAddedServer = this.serverFromAccessKey(staticKey);
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
@@ -274,9 +280,7 @@ export class OutlineServerRepository implements ServerRepository {
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
     const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
     try {
-      if (!server.isDynamic) {
-        this.validateStaticKey(accessKey);
-      }
+      this.validateAccessKey(accessKey);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.

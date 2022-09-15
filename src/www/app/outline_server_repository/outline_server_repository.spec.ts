@@ -363,11 +363,11 @@ describe('OutlineServerRepository', () => {
       new InMemoryStorage()
     );
     // Invalid access keys.
-    expect(() => repo.validateStaticKey('')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.validateStaticKey('ss://invalid')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);
     // IPv6 host.
     expect(() =>
-      repo.validateStaticKey(
+      repo.validateAccessKey(
         SIP002_URI.stringify(
           makeConfig({
             host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
@@ -380,12 +380,12 @@ describe('OutlineServerRepository', () => {
     ).toThrowError(ServerIncompatible);
     // Unsupported ciphers.
     expect(() =>
-      repo.validateStaticKey(
+      repo.validateAccessKey(
         SIP002_URI.stringify(makeConfig({host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'}))
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
     expect(() =>
-      repo.validateStaticKey(
+      repo.validateAccessKey(
         SIP002_URI.stringify(makeConfig({host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'}))
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
