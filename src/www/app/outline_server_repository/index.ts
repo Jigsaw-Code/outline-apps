@@ -23,13 +23,13 @@ import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
-import {accessKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // Compares access keys proxying parameters.
 function accessKeysMatch(a: string, b: string): boolean {
   try {
-    const l = accessKeyToShadowsocksSessionConfig(a);
-    const r = accessKeyToShadowsocksSessionConfig(b);
+    const l = staticKeyToShadowsocksSessionConfig(a);
+    const r = staticKeyToShadowsocksSessionConfig(b);
     return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
@@ -98,7 +98,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    this.validateAccessKey(accessKey);
+    this.validateStaticKey(accessKey);
 
     const server = this.createServer(uuidv4(), accessKey, SHADOWSOCKS_URI.parse(accessKey).tag.data);
     this.serverById.set(server.id, server);
@@ -143,14 +143,14 @@ export class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  validateAccessKey(accessKey: string) {
-    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
+  validateStaticKey(staticKey: string) {
+    const alreadyAddedServer = this.serverFromAccessKey(staticKey);
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
     let config = null;
     try {
-      config = SHADOWSOCKS_URI.parse(accessKey);
+      config = SHADOWSOCKS_URI.parse(staticKey);
     } catch (error) {
       throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
     }
@@ -254,7 +254,7 @@ export class OutlineServerRepository implements ServerRepository {
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
     const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
     try {
-      this.validateAccessKey(accessKey);
+      this.validateStaticKey(accessKey);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.

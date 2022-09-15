@@ -19,7 +19,7 @@ import {Server} from '../../model/server';
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
-import {accessKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -29,7 +29,8 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  private sessionConfig: ShadowsocksSessionConfig;
+  readonly isDynamic: boolean;
+  private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
     public readonly id: string,
@@ -39,7 +40,13 @@ export class OutlineServer implements Server {
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.sessionConfig = accessKeyToShadowsocksSessionConfig(accessKey);
+    if (accessKey.startsWith('ss://')) {
+      this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+      this.isDynamic = false;
+    } else {
+      this.isDynamic = true;
+    }
+
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -69,6 +76,8 @@ export class OutlineServer implements Server {
   }
 
   get address() {
+    if (!this.sessionConfig) return '';
+
     return `${this.sessionConfig.host}:${this.sessionConfig.port}`;
   }
 
@@ -78,6 +87,16 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
+      if (this.isDynamic) {
+        this.sessionConfig = await (
+          await fetch(this.accessKey, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+        ).json();
+      }
+
       await this.tunnel.start(this.sessionConfig);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
@@ -103,7 +122,7 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.sessionConfig.host, this.sessionConfig.port);
+    return this.net.isServerReachable(this.sessionConfig?.host, this.sessionConfig?.port);
   }
 
   static isServerCipherSupported(cipher?: string) {
