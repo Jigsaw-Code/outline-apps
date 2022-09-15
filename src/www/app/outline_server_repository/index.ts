@@ -101,8 +101,6 @@ export class OutlineServerRepository implements ServerRepository {
     let serverName;
     if (accessKey.startsWith('ss://')) {
       serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
-    } else if (accessKey.startsWith('ssconf://') || accessKey.startsWith('https://')) {
-      serverName = new URL(accessKey).hostname;
     } else {
       serverName = accessKey;
     }
