@@ -29,7 +29,6 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  readonly isDynamic: boolean;
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
@@ -38,13 +37,11 @@ export class OutlineServer implements Server {
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
-    private eventQueue: events.EventQueue
+    private eventQueue: events.EventQueue,
+    public readonly isDynamic: boolean
   ) {
-    if (accessKey.startsWith('ss://')) {
+    if (!this.isDynamic) {
       this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
-      this.isDynamic = false;
-    } else {
-      this.isDynamic = true;
     }
 
     this.tunnel.onStatusChange((status: TunnelStatus) => {

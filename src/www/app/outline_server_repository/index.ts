@@ -101,7 +101,7 @@ export class OutlineServerRepository implements ServerRepository {
     this.validateAccessKey(accessKey);
 
     let serverName;
-    if (accessKey.startsWith('ss://')) {
+    if (this.isDynamicAccessKey(accessKey)) {
       try {
         serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
       } catch (e) {
@@ -154,7 +154,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   validateAccessKey(accessKey: string) {
-    if (accessKey.startsWith('ss://')) {
+    if (!this.isDynamicAccessKey(accessKey)) {
       return this.validateStaticKey(accessKey);
     }
 
@@ -163,6 +163,10 @@ export class OutlineServerRepository implements ServerRepository {
     } catch (error) {
       throw new errors.ServerUrlInvalid(error.message);
     }
+  }
+
+  private isDynamicAccessKey(accessKey: string) {
+    return accessKey.startsWith('ss://');
   }
 
   private validateStaticKey(staticKey: string) {
@@ -278,7 +282,15 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
-    const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
+    const server = new OutlineServer(
+      id,
+      accessKey,
+      name,
+      this.createTunnel(id),
+      this.net,
+      this.eventQueue,
+      this.isDynamicAccessKey(accessKey)
+    );
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {
