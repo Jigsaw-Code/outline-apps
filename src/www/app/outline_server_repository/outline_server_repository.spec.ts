@@ -163,7 +163,7 @@ describe('OutlineServerRepository', () => {
     expect(didEmitServerAddedEvent).toBeTruthy();
   });
 
-  fit('add throws on invalid access keys', () => {
+  it('add throws on invalid access keys', () => {
     const repo = new OutlineServerRepository(
       new FakeNativeNetworking(),
       getFakeTunnelFactory(),
