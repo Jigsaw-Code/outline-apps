@@ -261,7 +261,9 @@ export class OutlineServerRepository implements ServerRepository {
   private createServer(id: string, accessKey: string, name: string): OutlineServer {
     const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
     try {
-      this.validateStaticKey(accessKey);
+      if (!server.isDynamic) {
+        this.validateStaticKey(accessKey);
+      }
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.

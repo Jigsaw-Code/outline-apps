@@ -355,7 +355,7 @@ describe('OutlineServerRepository', () => {
     expect(didEmitServerForgetUndoneEvent).toBeTruthy();
   });
 
-  it('validates access keys', () => {
+  it('validates static access keys', () => {
     const repo = new OutlineServerRepository(
       new FakeNativeNetworking(),
       getFakeTunnelFactory(),
