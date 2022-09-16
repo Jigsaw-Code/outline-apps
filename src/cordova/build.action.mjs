@@ -41,7 +41,7 @@ export async function main(...parameters) {
   let argv = [];
 
   if (platform === 'android') {
-    if (platform === 'release') {
+    if (buildMode === 'release') {
       argv = [
         '--keystore=keystore.p12',
         '--alias=privatekey',
