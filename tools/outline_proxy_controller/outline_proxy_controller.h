@@ -173,12 +173,12 @@ class OutlineProxyController {
  private:
   const std::string resultDelimiter = " ";
 
-  const std::string IPCommand = "ip";
+  const std::string IPCommand = "/usr/sbin/ip";
   const std::string IPRouteSubCommand = "route";
   const std::string IPAddressSubCommand = "addr";
   const std::string IPLinkSubCommand = "link";
   const std::string IPTunTapSubCommand = "tuntap";
-  const std::string sysctlCommand = "sysctl";
+  const std::string sysctlCommand = "/usr/sbin/sysctl";
 
   const std::string c_normal_traffic_priority_metric = "10";
   const std::string c_proxy_priority_metric = "5";
