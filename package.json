@@ -1,5 +1,6 @@
 {
   "name": "outline-client",
+  "version": "1.7.3",
   "productName": "Outline",
   "scripts": {
     "action:help": "npm run action list",
