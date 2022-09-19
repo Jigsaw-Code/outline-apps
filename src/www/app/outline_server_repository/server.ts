@@ -38,9 +38,9 @@ export class OutlineServer implements Server {
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue,
-    public readonly isDynamic: boolean
+    public readonly isAccessKeyDynamic: boolean
   ) {
-    if (!this.isDynamic) {
+    if (!this.isAccessKeyDynamic) {
       this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
     }
 
@@ -84,9 +84,9 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      if (this.isDynamic) {
+      if (this.isAccessKeyDynamic) {
         this.sessionConfig = await (
-          await fetch(this.accessKey, {
+          await fetch(this.accessKey.replace('ssconf://', 'https://'), {
             headers: {
               'Content-Type': 'application/json',
             },
@@ -108,6 +108,7 @@ export class OutlineServer implements Server {
   async disconnect() {
     try {
       await this.tunnel.stop();
+      this.sessionConfig = undefined;
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
@@ -119,7 +120,11 @@ export class OutlineServer implements Server {
   }
 
   checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.sessionConfig?.host, this.sessionConfig?.port);
+    if (!this.sessionConfig) {
+      return Promise.resolve(false);
+    }
+
+    return this.net.isServerReachable(this.sessionConfig.host, this.sessionConfig.port);
   }
 
   static isServerCipherSupported(cipher?: string) {

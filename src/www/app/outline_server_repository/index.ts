@@ -100,16 +100,7 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    let serverName = accessKey;
-    if (!this.isDynamicAccessKey(accessKey)) {
-      try {
-        serverName = SHADOWSOCKS_URI.parse(accessKey).tag.data;
-      } catch (e) {
-        serverName = accessKey;
-      }
-    }
-
-    const server = this.createServer(uuidv4(), accessKey, serverName);
+    const server = this.createServer(uuidv4(), accessKey, this.inferAccessKeyName(accessKey));
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -169,6 +160,16 @@ export class OutlineServerRepository implements ServerRepository {
     return !accessKey.startsWith('ss://');
   }
 
+  private inferAccessKeyName(accessKey: string) {
+    if (this.isDynamicAccessKey(accessKey)) {
+      const {hostname, port, hash} = new URL(accessKey);
+
+      return hash ?? `${hostname}:${port}`;
+    }
+
+    return SHADOWSOCKS_URI.parse(accessKey).tag.data;
+  }
+
   private validateStaticKey(staticKey: string) {
     const alreadyAddedServer = this.serverFromAccessKey(staticKey);
     if (alreadyAddedServer) {
@@ -190,7 +191,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (server.isDynamic && accessKey === server.accessKey) {
+      if (server.isAccessKeyDynamic && accessKey === server.accessKey) {
         return server;
       }
 
