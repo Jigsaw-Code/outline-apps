@@ -10023,49 +10023,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The following software may be included in this product: libev-mingw
-A copy of the source code may be downloaded from: 
-This software contains the following license and notice below:
-
-All files in libev are
-Copyright (c)2007,2008,2009,2010,2011,2012,2013 Marc Alexander Lehmann.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-
-    * Redistributions in binary form must reproduce the above
-      copyright notice, this list of conditions and the following
-      disclaimer in the documentation and/or other materials provided
-      with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Alternatively, the contents of this package may be used under the terms
-of the GNU General Public License ("GPL") version 2 or any later version,
-in which case the provisions of the GPL are applicable instead of the
-above. If you wish to allow the use of your version of this package only
-under the terms of the GPL and not to allow others to use your version of
-this file under the BSD license, indicate your decision by deleting the
-provisions above and replace them with the notice and other provisions
-required by the GPL in this and the other files of this package. If you do
-not delete the provisions above, a recipient may use your version of this
-file under either the BSD or the GPL.
-
-
 The following software may be included in this product: sentry-android
 A copy of the source code may be downloaded from: https://sentry.io
 This software contains the following license and notice below:
@@ -10085,14 +10042,6 @@ Redistribution and use in source and binary forms, with or without modification,
     3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-The following software may be included in this product: mbedtls
-A copy of the source code may be downloaded from: https://tls.mbed.org/
-This software contains the following license and notice below:
-
-Unless specifically indicated otherwise in a file, files are licensed
-under the Apache 2.0 license, as can be found in: apache-2.0.txt
 
 
 The following software may be included in this product: CocoaLumberjack
@@ -10117,27 +10066,6 @@ with or without modification, are permitted provided that the following conditio
   written permission of Deusty, LLC.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-The following software may be included in this product: c-ares
-A copy of the source code may be downloaded from: https://c-ares.haxx.se/
-This software contains the following license and notice below:
-
-# c-ares license
-
-Copyright (c) 2007 - 2018, Daniel Stenberg with many contributors, see AUTHORS
-file.
-
-Copyright 1998 by the Massachusetts Institute of Technology.
-
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose and without fee is hereby granted, provided that
-the above copyright notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining to
-distribution of the software without specific, written prior permission.
-M.I.T. makes no representations about the suitability of this software for any
-purpose.  It is provided "as is" without express or implied warranty.
 
 
 The following software may be included in this product: sentry-cocoa
@@ -10360,172 +10288,6 @@ This software contains the following license and notice below:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-
-The following software may be included in this product: pcre
-A copy of the source code may be downloaded from: https://www.pcre.org/
-This software contains the following license and notice below:
-
-PCRE LICENCE
-------------
-
-PCRE is a library of functions to support regular expressions whose syntax
-and semantics are as close as possible to those of the Perl 5 language.
-
-Release 8 of PCRE is distributed under the terms of the "BSD" licence, as
-specified below. The documentation for PCRE, supplied in the "doc"
-directory, is distributed under the same terms as the software itself. The data
-in the testdata directory is not copyrighted and is in the public domain.
-
-The basic library functions are written in C and are freestanding. Also
-included in the distribution is a set of C++ wrapper functions, and a
-just-in-time compiler that can be used to optimize pattern matching. These
-are both optional features that can be omitted when the library is built.
-
-
-THE BASIC LIBRARY FUNCTIONS
----------------------------
-
-Written by:       Philip Hazel
-Email local part: ph10
-Email domain:     cam.ac.uk
-
-University of Cambridge Computing Service,
-Cambridge, England.
-
-Copyright (c) 1997-2018 University of Cambridge
-All rights reserved.
-
-
-PCRE JUST-IN-TIME COMPILATION SUPPORT
--------------------------------------
-
-Written by:       Zoltan Herczeg
-Email local part: hzmester
-Emain domain:     freemail.hu
-
-Copyright(c) 2010-2018 Zoltan Herczeg
-All rights reserved.
-
-
-STACK-LESS JUST-IN-TIME COMPILER
---------------------------------
-
-Written by:       Zoltan Herczeg
-Email local part: hzmester
-Emain domain:     freemail.hu
-
-Copyright(c) 2009-2018 Zoltan Herczeg
-All rights reserved.
-
-
-THE C++ WRAPPER FUNCTIONS
--------------------------
-
-Contributed by:   Google Inc.
-
-Copyright (c) 2007-2012, Google Inc.
-All rights reserved.
-
-
-THE "BSD" LICENCE
------------------
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-    * Neither the name of the University of Cambridge nor the name of Google
-      Inc. nor the names of their contributors may be used to endorse or
-      promote products derived from this software without specific prior
-      written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
-
-End
-
-
-The following software may be included in this product: sodium
-A copy of the source code may be downloaded from: https://libsodium.org/
-This software contains the following license and notice below:
-
-/*
- * ISC License
- *
- * Copyright (c) 2013-2017
- * Frank Denis <j at pureftpd dot org>
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
-
-
-The following software may be included in this product: libev
-A copy of the source code may be downloaded from: http://software.schmorp.de/pkg/libev.html
-This software contains the following license and notice below:
-
-All files in libev are
-Copyright (c)2007,2008,2009,2010,2011,2012,2013 Marc Alexander Lehmann.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-
-    * Redistributions in binary form must reproduce the above
-      copyright notice, this list of conditions and the following
-      disclaimer in the documentation and/or other materials provided
-      with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Alternatively, the contents of this package may be used under the terms
-of the GNU General Public License ("GPL") version 2 or any later version,
-in which case the provisions of the GPL are applicable instead of the
-above. If you wish to allow the use of your version of this package only
-under the terms of the GPL and not to allow others to use your version of
-this file under the BSD license, indicate your decision by deleting the
-provisions above and replace them with the notice and other provisions
-required by the GPL in this and the other files of this package. If you do
-not delete the provisions above, a recipient may use your version of this
-file under either the BSD or the GPL.
 
 
 The following software may be included in this product: outline-go-tun2socks
