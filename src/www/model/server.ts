@@ -14,6 +14,15 @@
 
 // TODO: add guidelines for this file
 
+export enum ServerType {
+  // the connection data is static, doesn't change, and isn't deleted on disconnect
+  STATIC_CONNECTION,
+
+  // the connection data is refetched via the access key on each connection
+  // and deleted on each disconnection
+  DYNAMIC_CONNECTION,
+}
+
 export interface Server {
   // A unique id that identifies this Server.
   readonly id: string;

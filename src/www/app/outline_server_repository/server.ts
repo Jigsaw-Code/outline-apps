@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {Server} from '../../model/server';
+import {Server, ServerType} from '../../model/server';
 
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
@@ -34,13 +36,14 @@ export class OutlineServer implements Server {
   constructor(
     public readonly id: string,
     public readonly accessKey: string,
+    public readonly type: ServerType,
+    public readonly localize: (...args: string[]) => string,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
-    private eventQueue: events.EventQueue,
-    public readonly isAccessKeyDynamic: boolean
+    private eventQueue: events.EventQueue
   ) {
-    if (!this.isAccessKeyDynamic) {
+    if (this.type === ServerType.DYNAMIC_CONNECTION) {
       this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
     }
 
@@ -65,7 +68,21 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    return this._name;
+    if (this._name) {
+      return this._name;
+    }
+
+    let url;
+    switch (this.type) {
+      case ServerType.DYNAMIC_CONNECTION:
+        url = new URL(this.accessKey);
+
+        return url.hash ?? url.port === '443' ? url.hostname : `${url.hostname}:${url.port}`;
+      case ServerType.STATIC_CONNECTION:
+        return SHADOWSOCKS_URI.parse(this.accessKey).tag.data;
+      default:
+        return this.localize(this.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
+    }
   }
 
   set name(newName: string) {
@@ -84,9 +101,9 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      if (this.isAccessKeyDynamic) {
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
         this.sessionConfig = await (
-          await fetch(this.accessKey.replace('ssconf://', 'https://'), {
+          await fetch(this.accessKey.replace(/^ssconf:\/\//, 'https://'), {
             headers: {
               'Content-Type': 'application/json',
             },
@@ -119,6 +136,7 @@ export class OutlineServer implements Server {
     return this.tunnel.isRunning();
   }
 
+  // NOTE: you should only be calling this method on running servers
   checkReachable(): Promise<boolean> {
     if (!this.sessionConfig) {
       return Promise.resolve(false);

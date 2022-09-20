@@ -17,7 +17,7 @@ import uuidv4 from 'uuidv4';
 
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {ServerRepository} from '../../model/server';
+import {ServerRepository, ServerType} from '../../model/server';
 
 import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
@@ -83,6 +83,7 @@ export class OutlineServerRepository implements ServerRepository {
   constructor(
     private readonly net: NativeNetworking,
     private readonly createTunnel: TunnelFactory,
+    private readonly localize: (...args: string[]) => string,
     private eventQueue: events.EventQueue,
     private storage: Storage
   ) {
@@ -100,7 +101,7 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey, this.inferAccessKeyName(accessKey));
+    const server = this.createServer(uuidv4(), accessKey);
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -160,16 +161,6 @@ export class OutlineServerRepository implements ServerRepository {
     return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
   }
 
-  private inferAccessKeyName(accessKey: string) {
-    if (this.isDynamicAccessKey(accessKey)) {
-      const {hostname, port, hash} = new URL(accessKey);
-
-      return hash ?? `${hostname}:${port}`;
-    }
-
-    return SHADOWSOCKS_URI.parse(accessKey).tag.data;
-  }
-
   private validateStaticKey(staticKey: string) {
     const alreadyAddedServer = this.serverFromAccessKey(staticKey);
     if (alreadyAddedServer) {
@@ -191,7 +182,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (server.isAccessKeyDynamic && accessKey === server.accessKey) {
+      if (server.type === ServerType.DYNAMIC_CONNECTION && accessKey === server.accessKey) {
         return server;
       }
 
@@ -282,16 +273,18 @@ export class OutlineServerRepository implements ServerRepository {
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(id: string, accessKey: string, name: string): OutlineServer {
+  private createServer(id: string, accessKey: string, name?: string): OutlineServer {
     const server = new OutlineServer(
       id,
       accessKey,
+      this.isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
+      this.localize,
       name,
       this.createTunnel(id),
       this.net,
-      this.eventQueue,
-      this.isDynamicAccessKey(accessKey)
+      this.eventQueue
     );
+
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {
