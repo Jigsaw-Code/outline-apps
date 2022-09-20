@@ -157,7 +157,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private isDynamicAccessKey(accessKey: string) {
-    return !accessKey.startsWith('ss://');
+    return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
   }
 
   private inferAccessKeyName(accessKey: string) {
