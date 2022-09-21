@@ -26,7 +26,7 @@ export enum ServerListItemEvent {
  * Data required to represent a Server in the UI.
  */
 export interface ServerListItem {
-  sessionConfigLocation: string;
+  sessionConfigLocation: URL;
   disabled: boolean;
   errorMessageId?: string;
   isOutlineServer: boolean;

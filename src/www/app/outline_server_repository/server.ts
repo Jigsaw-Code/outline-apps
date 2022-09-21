@@ -80,12 +80,10 @@ export class OutlineServer implements Server {
 
   get sessionConfigLocation() {
     if (this.type !== ServerType.DYNAMIC_CONNECTION) {
-      return '';
+      return;
     }
 
-    const {port, hostname} = new URL(this.accessKey);
-
-    return port === '443' ? hostname : `${hostname}:${port}`;
+    return new URL(this.accessKey);
   }
 
   get isOutlineServer() {

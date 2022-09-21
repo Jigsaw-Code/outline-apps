@@ -37,6 +37,17 @@ function staticKeysMatch(a: string, b: string): boolean {
   return false;
 }
 
+// NOTE: For extracting a name that the user has explicitly set, only.
+// (Currenly done by setting the hash on the URI)
+function serverNameFromStaticKey(staticKey: string): string {
+  return SHADOWSOCKS_URI.parse(staticKey).tag.data;
+}
+
+// Determines if the key is expected to be a url pointing to an ephemeral session config.
+function isDynamicAccessKey(accessKey: string): boolean {
+  return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
+}
+
 // DEPRECATED: V0 server persistence format.
 
 interface ServersStorageV0Config {
@@ -100,7 +111,7 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey, this.serverNameFromAccessKey(accessKey));
+    const server = this.createServer(uuidv4(), accessKey, serverNameFromStaticKey(accessKey));
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -145,7 +156,7 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   validateAccessKey(accessKey: string) {
-    if (!this.isDynamicAccessKey(accessKey)) {
+    if (!isDynamicAccessKey(accessKey)) {
       return this.validateStaticKey(accessKey);
     }
 
@@ -154,10 +165,6 @@ export class OutlineServerRepository implements ServerRepository {
     } catch (error) {
       throw new errors.ServerUrlInvalid(error.message);
     }
-  }
-
-  private isDynamicAccessKey(accessKey: string) {
-    return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
   }
 
   private validateStaticKey(staticKey: string) {
@@ -177,12 +184,6 @@ export class OutlineServerRepository implements ServerRepository {
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
       throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
     }
-  }
-
-  // NOTE: For extracting a name that the user has explicitly set, only.
-  // (Currenly done by setting the hash on the URL/URI)
-  private serverNameFromAccessKey(accessKey: string): string {
-    return decodeURIComponent(new URL(accessKey).hash.slice(1));
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
@@ -282,7 +283,7 @@ export class OutlineServerRepository implements ServerRepository {
     const server = new OutlineServer(
       id,
       accessKey,
-      this.isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
+      isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
       this.createTunnel(id),
       this.net,
