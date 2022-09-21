@@ -182,7 +182,7 @@ export class OutlineServerRepository implements ServerRepository {
   // NOTE: For extracting a name that the user has explicitly set, only.
   // (Currenly done by setting the hash on the URL/URI)
   private serverNameFromAccessKey(accessKey: string): string {
-    return new URL(accessKey).hash.slice(1);
+    return decodeURIComponent(new URL(accessKey).hash.slice(1));
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
