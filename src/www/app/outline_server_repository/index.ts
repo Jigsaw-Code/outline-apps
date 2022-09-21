@@ -83,7 +83,6 @@ export class OutlineServerRepository implements ServerRepository {
   constructor(
     private readonly net: NativeNetworking,
     private readonly createTunnel: TunnelFactory,
-    private readonly localize: (...args: string[]) => string,
     private eventQueue: events.EventQueue,
     private storage: Storage
   ) {
@@ -101,7 +100,7 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey);
+    const server = this.createServer(uuidv4(), accessKey, this.serverNameFromAccessKey(accessKey));
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -178,6 +177,12 @@ export class OutlineServerRepository implements ServerRepository {
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
       throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
     }
+  }
+
+  // NOTE: For extracting a name that the user has explicitly set, only.
+  // (Currenly done by setting the hash on the URL/URI)
+  private serverNameFromAccessKey(accessKey: string): string {
+    return new URL(accessKey).hash.slice(1);
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
@@ -278,7 +283,6 @@ export class OutlineServerRepository implements ServerRepository {
       id,
       accessKey,
       this.isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
-      this.localize,
       name,
       this.createTunnel(id),
       this.net,

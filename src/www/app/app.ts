@@ -515,6 +515,7 @@ export class App {
   private makeServerListItem(server: Server): ServerListItem {
     return {
       disabled: false,
+      sessionConfigLocation: server.sessionConfigLocation,
       errorMessageId: server.errorMessageId,
       isOutlineServer: server.isOutlineServer,
       name: server.name,

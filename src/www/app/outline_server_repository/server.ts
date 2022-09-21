@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
-
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {Server, ServerType} from '../../model/server';
@@ -37,7 +35,6 @@ export class OutlineServer implements Server {
     public readonly id: string,
     public readonly accessKey: string,
     public readonly type: ServerType,
-    public readonly localize: (...args: string[]) => string,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
@@ -68,21 +65,7 @@ export class OutlineServer implements Server {
   }
 
   get name() {
-    if (this._name) {
-      return this._name;
-    }
-
-    let url;
-    switch (this.type) {
-      case ServerType.DYNAMIC_CONNECTION:
-        url = new URL(this.accessKey);
-
-        return url.hash ?? url.port === '443' ? url.hostname : `${url.hostname}:${url.port}`;
-      case ServerType.STATIC_CONNECTION:
-        return SHADOWSOCKS_URI.parse(this.accessKey).tag.data;
-      default:
-        return this.localize(this.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
-    }
+    return this._name;
   }
 
   set name(newName: string) {
@@ -93,6 +76,16 @@ export class OutlineServer implements Server {
     if (!this.sessionConfig) return '';
 
     return `${this.sessionConfig.host}:${this.sessionConfig.port}`;
+  }
+
+  get sessionConfigLocation() {
+    if (this.type !== ServerType.DYNAMIC_CONNECTION) {
+      return '';
+    }
+
+    const {port, hostname} = new URL(this.accessKey);
+
+    return port === '443' ? hostname : `${hostname}:${port}`;
   }
 
   get isOutlineServer() {

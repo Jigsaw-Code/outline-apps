@@ -27,8 +27,14 @@ export interface Server {
   // A unique id that identifies this Server.
   readonly id: string;
 
+  // A type specifying the manner in which the Server connects.
+  readonly type: ServerType;
+
   // The name of this server, as given by the user.
   name: string;
+
+  // The location to pull the session config from on each connection.
+  sessionConfigLocation: string;
 
   // The address of the service.
   address: string;

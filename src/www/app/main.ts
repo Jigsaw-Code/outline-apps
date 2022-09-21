@@ -55,7 +55,7 @@ function createServerRepo(
   net: NativeNetworking,
   createTunnel: TunnelFactory
 ) {
-  const repo = new OutlineServerRepository(net, createTunnel, getLocalizationFunction(), eventQueue, storage);
+  const repo = new OutlineServerRepository(net, createTunnel, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
