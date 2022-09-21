@@ -16,17 +16,27 @@
 
 readonly PREFIX=/usr/local
 readonly SERVICE_NAME=outline_proxy_controller.service
+readonly GROUP_NAME=outlinevpn
+readonly SCRIPT_DIR="$(dirname ${0})"
+
+# Create outlinevpn group
+/usr/sbin/groupadd "${GROUP_NAME}"
+if /usr/bin/id "${1}" &>/dev/null; then
+  /usr/sbin/usermod -aG "${GROUP_NAME}" "${1}"
+  /usr/bin/echo "user ${1} has been added to ${GROUP_NAME} group"
+else
+  /usr/bin/echo "warn: no user will be added to ${GROUP_NAME} group" >&2
+fi
 
 # Copy/update the service's files.
-readonly SCRIPT_DIR=$(dirname $0)
-cp -f "$SCRIPT_DIR/OutlineProxyController" $PREFIX/sbin
-cp -f "$SCRIPT_DIR/$SERVICE_NAME" /etc/systemd/system/
+/usr/bin/cp -f "${SCRIPT_DIR}/OutlineProxyController" "${PREFIX}/sbin"
+/usr/bin/cp -f "${SCRIPT_DIR}/${SERVICE_NAME}" "/etc/systemd/system/"
 
 # (Re-)start the service.
-systemctl daemon-reload
-systemctl enable $SERVICE_NAME
-systemctl restart $SERVICE_NAME
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable "${SERVICE_NAME}"
+/usr/bin/systemctl restart "${SERVICE_NAME}"
 
 # Because the .service file specifies Type=simple, the installation script exits immediately.
 # Sleep for a couple of seconds before exiting.
-sleep 2
+/usr/bin/sleep 2

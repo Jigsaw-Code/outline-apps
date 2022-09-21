@@ -19,11 +19,16 @@
 #include <stdexcept>
 #include <string>
 
+#include <grp.h>
+#include <unistd.h>
+
 #include "outline_controller_server.h"
 
 using namespace std;
 using namespace outline;
 using boost::asio::local::stream_protocol;
+
+static const char * const OUTLINE_GRP_NAME = "outlinevpn";
 
 void session::start() {
   auto self(shared_from_this());
@@ -144,8 +149,13 @@ OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_con
   ::unlink(unix_socket_name.c_str());
   boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
     stream_protocol::acceptor acceptor(io_context, stream_protocol::endpoint(unix_socket_name));
-    chmod(unix_socket_name.c_str(),
-          S_IRWXU | S_IROTH | S_IWOTH);  // enables all user to read from and write into socket
+    auto outlineGrp = getgrnam(OUTLINE_GRP_NAME);
+    if (outlineGrp != nullptr) {
+      chown(unix_socket_name.c_str(), -1, outlineGrp->gr_gid);
+    } else {
+      std::cerr << "failed to get the id of " << OUTLINE_GRP_NAME << " group" << std::endl;
+    }
+    chmod(unix_socket_name.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     for (;;) {
       boost::system::error_code ec;
