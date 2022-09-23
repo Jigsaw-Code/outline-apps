@@ -139,11 +139,16 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   ].includes(server.connectionState);
   const hasErrorMessage = Boolean(server.errorMessageId);
 
-  const placeholderServerName =
-    server.sessionConfigLocation.port === '443'
-      ? server.sessionConfigLocation.hostname
-      : `${server.sessionConfigLocation.hostname}:${server.sessionConfigLocation.port}` ||
-        localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
+  let placeholderServerName;
+
+  if (server.sessionConfigLocation) {
+    placeholderServerName =
+      server.sessionConfigLocation.port === '443'
+        ? server.sessionConfigLocation.hostname
+        : `${server.sessionConfigLocation.hostname}:${server.sessionConfigLocation.port}`;
+  } else {
+    placeholderServerName = localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
+  }
 
   const messages = {
     serverName: server.name ?? placeholderServerName,
