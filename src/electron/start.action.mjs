@@ -28,9 +28,9 @@ import {spawnStream} from '../build/spawn_stream.mjs';
 export async function main(...parameters) {
   const {platform, buildMode} = getElectronBuildParameters(parameters);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
-  await runAction('electron/build_main', ...parameters);
-  await runAction('electron/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', {parameters: [platform, `--buildMode=${buildMode}`]});
+  await runAction('electron/build_main', {parameters});
+  await runAction('electron/build', {parameters: [platform, `--buildMode=${buildMode}`]});
 
   process.env.OUTLINE_DEBUG = buildMode === 'debug';
 

@@ -30,7 +30,7 @@ export async function main(...parameters) {
   const {platform, buildMode, networkStack, sentryDsn} = getElectronBuildParameters(parameters);
   const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', {parameters: [platform, `--buildMode=${buildMode}`], inputs: ['src/www']});
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(

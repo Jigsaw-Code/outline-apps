@@ -28,8 +28,8 @@ export async function main(...parameters) {
   const {platform, buildMode, stagingPercentage} = getElectronBuildParameters(parameters);
   const version = await getVersion(platform);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
-  await runAction('electron/build_main', ...parameters);
+  await runAction('www/build', {parameters: [platform, `--buildMode=${buildMode}`], inputs: ['src/www']});
+  await runAction('electron/build_main', {parameters, inputs: ['www', 'src/electron']});
 
   await copydir.sync(
     path.join(getRootDir(), 'src/electron/icons'),

@@ -18,53 +18,33 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
+import {ActionCache} from './action_cache.mjs';
 import {getRootDir} from './get_root_dir.mjs';
 import {spawnStream} from './spawn_stream.mjs';
 
 /**
- * @description The "Action Cache" is a simple JSON file we use to track previous action runs and determine
- * if they can be skipped on subsequent attempts.
- *
- * Cache methods:
- *   read - loads the latest time the action was run along with the parameters it was run with
- *   update - updates the time an action was run and the parameters it was run with
- *
- * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
- * corruption of the cache
+ * @description loads the absolute path of the action file
  */
-class ActionCache {
-  ACTION_CACHE_FILE = './.action_cache.json';
+const resolveActionPath = async actionPath => {
+  if (!actionPath) return '';
 
-  constructor() {
-    this.cachePath = path.resolve(process.env.ROOT_DIR, this.ACTION_CACHE_FILE);
+  if (actionPath in JSON.parse(await fs.readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+    return actionPath;
   }
 
-  async read(actionPathKey, actionOptions) {
-    if (!existsSync(this.cachePath)) {
-      await fs.writeFile(this.cachePath, '{}');
+  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
+  const extensions = ['sh', 'mjs'];
+
+  for (const root of roots) {
+    for (const extension of extensions) {
+      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
+
+      if (existsSync(pathCandidate)) {
+        return pathCandidate;
+      }
     }
-
-    const cache = JSON.parse(await fs.readFile(this.cachePath));
-
-    if (JSON.stringify(cache[actionPathKey]?.options) !== JSON.stringify(actionOptions)) {
-      return {};
-    }
-
-    return cache[actionPathKey];
   }
-
-  async update(actionPathKey, actionCacheObject) {
-    let cache = {};
-
-    if (existsSync(this.cachePath)) {
-      cache = JSON.parse(await fs.readFile(this.cachePath));
-    }
-
-    cache[actionPathKey] = actionCacheObject;
-
-    return fs.writeFile(this.cachePath, JSON.stringify(cache));
-  }
-}
+};
 
 /**
  * @description This is the entrypoint into our custom task runner.
@@ -78,21 +58,7 @@ class ActionCache {
  * @returns {void}
  */
 export async function runAction(actionPath, {parameters = [], inputs = []} = {}) {
-  let resolvedPath;
-  const pathRoots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
-  const fileExtensions = ['sh', 'mjs'];
-
-  for (const root of pathRoots) {
-    for (const extension of fileExtensions) {
-      const pathCandidate = `${path.resolve(root, actionPath)}.action.${extension}`;
-
-      if (existsSync(pathCandidate)) {
-        resolvedPath = pathCandidate;
-        break;
-      }
-    }
-  }
-
+  const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
     console.info(chalk.red(`Could not find an action at path:`), chalk.red.bold(`"${actionPath}"`));
     console.info();
