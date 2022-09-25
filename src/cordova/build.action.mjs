@@ -18,6 +18,8 @@ import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
+
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 
 /**
@@ -27,8 +29,9 @@ import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
  */
 export async function main(...parameters) {
   const {platform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: outlinePlatform} = getBuildParameters(parameters);
 
-  await runAction('www/build', {parameters: [platform, `--buildMode=${buildMode}`], inputs: ['src/www']});
+  await runAction('www/build', {parameters: [outlinePlatform, `--buildMode=${buildMode}`], inputs: ['src/www']});
   await runAction('cordova/setup', {parameters, inputs: ['www', 'resources', 'src/cordova', 'cordova-plugin-outline']});
 
   if (platform === 'osx' && buildMode === 'release') {
