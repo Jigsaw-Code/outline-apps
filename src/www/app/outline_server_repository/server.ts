@@ -40,8 +40,14 @@ export class OutlineServer implements Server {
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+    switch (this.type) {
+      case ServerType.DYNAMIC_CONNECTION:
+        this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
+        break;
+      case ServerType.STATIC_CONNECTION:
+      default:
+        this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+        break;
     }
 
     this.tunnel.onStatusChange((status: TunnelStatus) => {
@@ -94,7 +100,7 @@ export class OutlineServer implements Server {
     try {
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
         this.sessionConfig = await (
-          await fetch(this.accessKey.replace(/^ssconf:\/\//, 'https://'), {
+          await fetch(this.accessKey, {
             headers: {
               'Content-Type': 'application/json',
             },
@@ -116,7 +122,10 @@ export class OutlineServer implements Server {
   async disconnect() {
     try {
       await this.tunnel.stop();
-      this.sessionConfig = undefined;
+
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
+        this.sessionConfig = undefined;
+      }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();

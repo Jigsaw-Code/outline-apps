@@ -161,7 +161,8 @@ export class OutlineServerRepository implements ServerRepository {
     }
 
     try {
-      new URL(accessKey);
+      // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
+      new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
     } catch (error) {
       throw new errors.ServerUrlInvalid(error.message);
     }
