@@ -23,8 +23,9 @@
   </head>
   <body unresolved>
     <script>
-      if (require("os").platform() === "linux") {
-        document.title = "Outline Beta";
+      // exposed in preload.ts
+      if (window.electron.os.platform === 'linux') {
+        document.title = 'Outline Beta';
       }
     </script>
     <app-root></app-root>

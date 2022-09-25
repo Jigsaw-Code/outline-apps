@@ -23,9 +23,9 @@ import {getBuildNumber} from './get_build_number.mjs';
   Outputs:
   => the build environment object
 */
-export async function getBuildEnvironment(platform, buildMode) {
+export async function getBuildEnvironment(platform, buildMode, sentryDsn) {
   if (buildMode === 'release') {
-    if (!process.env.SENTRY_DSN) {
+    if (!sentryDsn) {
       throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
     }
 
@@ -34,14 +34,14 @@ export async function getBuildEnvironment(platform, buildMode) {
       https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
     */
     try {
-      new URL(process.env.SENTRY_DSN);
+      new URL(sentryDsn);
     } catch (e) {
-      throw new TypeError(`The SENTRY_DSN ${process.env.SENTRY_DSN} is not a valid URL!`);
+      throw new TypeError(`The sentryDsn ${sentryDsn} is not a valid URL!`);
     }
   }
 
   return {
-    SENTRY_DSN: process.env.SENTRY_DSN,
+    SENTRY_DSN: sentryDsn,
     APP_VERSION: `${await getVersion(platform)}${buildMode === 'debug' ? '-debug' : ''}`,
     APP_BUILD_NUMBER: await getBuildNumber(platform),
   };

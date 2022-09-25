@@ -18,14 +18,14 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 import * as socks from 'socks';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {pathToEmbeddedBinary} from '../infrastructure/electron/app_paths';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import * as errors from '../www/model/errors';
 
 import {isServerReachable} from './connectivity';
 import {ChildProcessHelper} from './process';
 import {RoutingDaemon} from './routing_service';
-import {pathToEmbeddedBinary} from './util';
 import {VpnTunnel} from './vpn_tunnel';
 
 const isLinux = platform() === 'linux';
@@ -136,7 +136,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksConfig) {
+  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksSessionConfig) {
     // This trio of Promises, each tied to a helper process' exit, is key to the instance's
     // lifecycle:
     //  - once any helper fails or exits, stop them all
@@ -266,6 +266,8 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
   async disconnect() {
+    console.info('disconnecting from libev badvpn tunnel...');
+
     powerMonitor.removeListener('suspend', this.suspendListener.bind(this));
     powerMonitor.removeListener('resume', this.resumeListener.bind(this));
 
@@ -278,6 +280,7 @@ export class ShadowsocksLibevBadvpnTunnel implements VpnTunnel {
 
     try {
       await this.routing.stop();
+      console.info('disconnected from libev badvpn tunnel');
     } catch (e) {
       // This can happen for several reasons, e.g. the daemon may have stopped while we were
       // connected.
@@ -309,7 +312,7 @@ class SsLocal extends ChildProcessHelper {
     super(pathToEmbeddedBinary('shadowsocks-libev', 'ss-local'));
   }
 
-  start(config: ShadowsocksConfig) {
+  start(config: ShadowsocksSessionConfig) {
     // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');

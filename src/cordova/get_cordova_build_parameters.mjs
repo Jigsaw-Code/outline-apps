@@ -14,6 +14,8 @@
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
+const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
+
 /*
   Inputs:
   => platform: the list of action arguments passed in
@@ -23,6 +25,12 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 */
 export function getCordovaBuildParameters(parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
+
+  if (!CORDOVA_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(', ')}.`
+    );
+  }
 
   return {platform: platform === 'macos' ? 'osx' : platform, buildMode};
 }

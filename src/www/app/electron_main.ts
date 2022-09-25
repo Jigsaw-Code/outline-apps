@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// <reference path="../../electron/preload.d.ts" />
+
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import * as sentry from '@sentry/electron';
-import {clipboard, ipcRenderer} from 'electron';
-import promiseIpc from 'electron-promise-ipc';
-import * as os from 'os';
+import * as sentry from '@sentry/electron/renderer';
+
+import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
@@ -30,56 +31,70 @@ import {getLocalizationFunction, main} from './main';
 import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
+import {VpnInstaller} from './vpn_installer';
 
-const isWindows = os.platform() === 'win32';
-const isLinux = os.platform() === 'linux';
+const isWindows = window.electron.os.platform === 'win32';
+const isLinux = window.electron.os.platform === 'linux';
 const isOsSupported = isWindows || isLinux;
 
 const interceptor = new UrlInterceptor();
-ipcRenderer.on('add-server', (e: Event, url: string) => {
+window.electron.methodChannel.on('add-server', (_: Event, url: string) => {
   interceptor.executeListeners(url);
 });
 
-ipcRenderer.on('localizationRequest', (e: Event, localizationKeys: string[]) => {
+window.electron.methodChannel.on('localization-request', (_: Event, localizationKeys: string[]) => {
   const localize = getLocalizationFunction();
   if (!localize) {
     console.error('Localization function not available.');
-    ipcRenderer.send('localizationResponse', null);
+    window.electron.methodChannel.send('localization-response', null);
     return;
   }
   const localizationResult: {[key: string]: string} = {};
   for (const key of localizationKeys) {
     localizationResult[key] = localize(key);
   }
-  ipcRenderer.send('localizationResponse', localizationResult);
+  window.electron.methodChannel.send('localization-response', localizationResult);
 });
 
 // Pushes a clipboard event whenever the app window receives focus.
 class ElectronClipboard extends AbstractClipboard {
   constructor() {
     super();
-    ipcRenderer.on('push-clipboard', this.emitEvent.bind(this));
+    window.electron.methodChannel.on('push-clipboard', this.emitEvent.bind(this));
   }
 
   getContents() {
-    return Promise.resolve(clipboard.readText());
+    // navigator.clipboard might raise 'Document is not focused' DOMException
+    // when you turn on F12 view.
+    return Promise.resolve(window.electron.clipboard.readText());
   }
 }
 
 class ElectronUpdater extends AbstractUpdater {
   constructor() {
     super();
-    ipcRenderer.on('update-downloaded', this.emitEvent.bind(this));
+    window.electron.methodChannel.on('update-downloaded', this.emitEvent.bind(this));
+  }
+}
+
+class ElectronVpnInstaller implements VpnInstaller {
+  public async installVpn(): Promise<void> {
+    const err = await window.electron.methodChannel.invoke('install-outline-services');
+
+    // catch custom errors (even simple as numbers) does not work for ipcRenderer:
+    // https://github.com/electron/electron/issues/24427
+    if (err !== ErrorCode.NO_ERROR) {
+      throw new OutlinePluginError(err);
+    }
   }
 }
 
 class ElectronErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, privateDsn: string, appName: string) {
+  constructor(appVersion: string, privateDsn: string) {
     if (privateDsn) {
       sentry.init({
         dsn: privateDsn,
         release: appVersion,
-        appName,
         integrations: getSentryBrowserIntegrations,
       });
     }
@@ -92,8 +107,8 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 class ElectronNativeNetworking implements NativeNetworking {
-  async isServerReachable(hostname: string, port: number) {
-    return promiseIpc.send('is-server-reachable', {hostname, port});
+  isServerReachable(hostname: string, port: number): Promise<boolean> {
+    return window.electron.methodChannel.invoke('is-server-reachable', {hostname, port});
   }
 }
 
@@ -109,15 +124,8 @@ main({
   },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),
-  getErrorReporter: (env: EnvironmentVariables) => {
-    // Initialise error reporting in the main process.
-    ipcRenderer.send('environment-info', {appVersion: env.APP_VERSION, dsn: env.SENTRY_DSN});
-    return new ElectronErrorReporter(
-      env.APP_VERSION,
-      env.SENTRY_DSN || '',
-      new URL(document.URL).searchParams.get('appName') || 'Outline Client'
-    );
-  },
+  getErrorReporter: (env: EnvironmentVariables) => new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || ''),
   getUpdater: () => new ElectronUpdater(),
-  quitApplication: () => ipcRenderer.send('quit-app'),
+  getVpnServiceInstaller: () => new ElectronVpnInstaller(),
+  quitApplication: () => window.electron.methodChannel.send('quit-app'),
 });

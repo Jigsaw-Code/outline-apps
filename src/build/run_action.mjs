@@ -16,18 +16,18 @@ import chalk from 'chalk';
 import {existsSync} from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
-import {spawn} from 'child_process';
 import url from 'url';
 
 import {getRootDir} from './get_root_dir.mjs';
+import {spawnStream} from './spawn_stream.mjs';
 
 /**
  * @description The "Action Cache" is a simple JSON file we use to track previous action runs and determine
  * if they can be skipped on subsequent attempts.
  *
  * Cache methods:
- *   readActionCache - loads the latest time the action was run along with the parameters it was run with
- *   writeActionCache - updates the time an action was run and the parameters it was run with
+ *   read - loads the latest time the action was run along with the parameters it was run with
+ *   update - updates the time an action was run and the parameters it was run with
  *
  * TODO(daniellacosse): convert the cache to a folder so each actions can run in parallel without risking
  * corruption of the cache
@@ -78,33 +78,6 @@ class ActionCache {
  * @returns {void}
  */
 export async function runAction(actionPath, {parameters = [], inputs = []} = {}) {
-  /**
-   * @description promisifies the child process spawner
-   */
-  const spawnPromise = (command, parameters) =>
-    new Promise((resolve, reject) => {
-      const childProcess = spawn(command, parameters, {shell: true});
-
-      const forEachMessageLine = (buffer, callback) => {
-        buffer
-          .toString()
-          .split('\n')
-          .filter(line => line.trim())
-          .forEach(callback);
-      };
-
-      childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
-      childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
-
-      childProcess.on('close', code => {
-        if (code === 0) {
-          resolve(childProcess);
-        } else {
-          reject(childProcess);
-        }
-      });
-    });
-
   let resolvedPath;
   const pathRoots = [process.env.ROOT_DIR, path.join(process.env.ROOT_DIR, 'src')];
   const fileExtensions = ['sh', 'mjs'];
@@ -174,11 +147,21 @@ export async function runAction(actionPath, {parameters = [], inputs = []} = {})
     }
   }
 
+  let runner = 'npm run';
+
+  if (resolvedPath.endsWith('mjs')) {
+    runner = 'node --trace-uncaught';
+  }
+
+  if (resolvedPath.endsWith('sh')) {
+    runner = 'bash';
+  }
+
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    await spawnPromise(resolvedPath.endsWith('mjs') ? 'node' : 'bash', [resolvedPath, ...parameters]);
+    await spawnStream(runner, [resolvedPath, ...parameters]);
     await cache.update(resolvedPath, {
       options: actionOptions,
       timestamp: Date.now(),

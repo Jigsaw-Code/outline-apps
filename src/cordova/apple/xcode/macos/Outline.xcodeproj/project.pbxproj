@@ -1,0 +1,1038 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		591E137A57874E4A92300F1B /* OutlineConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C0FE24369C408597E6E257 /* OutlineConnectivity.swift */; };
+		707060AF18FFC05700755D46 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707060AE18FFC05700755D46 /* MainViewController.xib */; };
+		70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD682618FFB02D00A1EFCF /* Cocoa.framework */; };
+		70BD683118FFB02D00A1EFCF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 70BD682F18FFB02D00A1EFCF /* InfoPlist.strings */; };
+		70BD683318FFB02D00A1EFCF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BD683218FFB02D00A1EFCF /* main.m */; };
+		70BD683F18FFB02D00A1EFCF /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70BD683E18FFB02D00A1EFCF /* Images.xcassets */; };
+		70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD686018FFB04300A1EFCF /* libCordova.a */; };
+		70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD686418FFB06500A1EFCF /* SystemConfiguration.framework */; };
+		70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD686518FFB06500A1EFCF /* WebKit.framework */; };
+		70BD686D18FFB0BF00A1EFCF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BD686A18FFB0BF00A1EFCF /* AppDelegate.m */; };
+		70BD686E18FFB0BF00A1EFCF /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BD686C18FFB0BF00A1EFCF /* MainViewController.m */; };
+		737FCE3329B34151A67331B4 /* OutlinePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */; };
+		7A5BA083B0B5480CA037B818 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = D83B939D01CF4540A9A3DF86 /* vpn */; };
+		DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 469466FF1BDB44C081741BF5 /* CDVClipboard.m */; };
+		EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */ = {isa = PBXBuildFile; fileRef = A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */; };
+		FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0799E82037532A00A1C822 /* AppDelegate.swift */; };
+		FC0799F02037532A00A1C822 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FC0799EE2037532A00A1C822 /* Main.storyboard */; };
+		FC0799F72037543F00A1C822 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = FC0799E62037532900A1C822 /* OutlineLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC0799F82037545D00A1C822 /* ServiceManagement.framework */; };
+		FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
+		FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
+		FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
+		FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
+		FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADA216D289F00F078A5 /* Subnet.swift */; };
+		FC28C281201A93BF005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C280201A93BF005FD743 /* OutlineVpn.swift */; };
+		FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
+		FC28C284201A93D6005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
+		FC28C2B720223167005FD743 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
+		FC5FF93A1F3E1E5F0032A745 /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */; };
+		FC5FF94E1F3E1EF00032A745 /* PacketTunnelProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */; };
+		FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */; };
+		FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */; };
+		FC7B59BB223C585F00828002 /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.xcframework */; };
+		FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7D56041F86969E00ABD5CA /* EventMonitor.swift */; };
+		FC8C30DB1FA78E5E004262BE /* Sentry.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.xcframework */; };
+		FC8C30DC1FA78E5E004262BE /* Sentry.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
+		FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
+		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
+		FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */; };
+		FCDE2FB023270B8C006C5B2C /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.xcframework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		70BD685F18FFB04300A1EFCF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 70BD673A18FF9DAE00A1EFCF;
+			remoteInfo = CordovaLib;
+		};
+		70BD687018FFB19500A1EFCF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 70BD673918FF9DAE00A1EFCF;
+			remoteInfo = CordovaLib;
+		};
+		FC5FF9381F3E1E5F0032A745 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 70BD681B18FFB02D00A1EFCF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FC5FF92A1F3E1E5F0032A745;
+			remoteInfo = VpnExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		708BE60C1B851BAD00301ADB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				FC8C30DC1FA78E5E004262BE /* Sentry.xcframework in Embed Frameworks */,
+				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
+				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC0799F62037541600A1C822 /* Copy OutlineLauncher */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				FC0799F72037543F00A1C822 /* OutlineLauncher.app in Copy OutlineLauncher */,
+			);
+			name = "Copy OutlineLauncher";
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		FC1F25172049B2E40012D758 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
+				FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FC5FF93A1F3E1E5F0032A745 /* VpnExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		01C0FE24369C408597E6E257 /* OutlineConnectivity.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlineConnectivity.swift; path = "cordova-plugin-outline/OutlineConnectivity.swift"; sourceTree = "<group>"; };
+		19209C3AABCC45AB8CFDD974 /* CDVClipboard.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVClipboard.h; path = "cordova-plugin-clipboard/CDVClipboard.h"; sourceTree = "<group>"; };
+		469466FF1BDB44C081741BF5 /* CDVClipboard.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVClipboard.m; path = "cordova-plugin-clipboard/CDVClipboard.m"; sourceTree = "<group>"; };
+		707060AE18FFC05700755D46 /* MainViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainViewController.xib; sourceTree = "<group>"; };
+		707060B018FFC0D900755D46 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
+		70BD682318FFB02D00A1EFCF /* Outline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Outline.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		70BD682618FFB02D00A1EFCF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		70BD682918FFB02D00A1EFCF /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		70BD682A18FFB02D00A1EFCF /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		70BD682B18FFB02D00A1EFCF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		70BD682E18FFB02D00A1EFCF /* Outline-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Outline-Info.plist"; sourceTree = "<group>"; };
+		70BD683018FFB02D00A1EFCF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		70BD683218FFB02D00A1EFCF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		70BD683418FFB02D00A1EFCF /* Outline-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Outline-Prefix.pch"; sourceTree = "<group>"; };
+		70BD683E18FFB02D00A1EFCF /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CordovaLib.xcodeproj; path = CordovaLib/CordovaLib.xcodeproj; sourceTree = "<group>"; };
+		70BD686418FFB06500A1EFCF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		70BD686518FFB06500A1EFCF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		70BD686918FFB0BF00A1EFCF /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		70BD686A18FFB0BF00A1EFCF /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		70BD686B18FFB0BF00A1EFCF /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
+		70BD686C18FFB0BF00A1EFCF /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
+		70DAA8D91908785C00AF3749 /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; path = www; sourceTree = "<group>"; };
+		A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; path = "Outline-Bridging-Header.h"; sourceTree = "<group>"; };
+		AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
+		D83B939D01CF4540A9A3DF86 /* vpn */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; path = vpn; sourceTree = "<group>"; };
+		FC0799E62037532900A1C822 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC0799E82037532A00A1C822 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FC0799EF2037532A00A1C822 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FC0799F12037532A00A1C822 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FC0799F22037532A00A1C822 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
+		FC0799F82037545D00A1C822 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		FC1FCADA216D289F00F078A5 /* Subnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Subnet.swift; path = Outline/Resources/vpn/Subnet.swift; sourceTree = SOURCE_ROOT; };
+		FC28C280201A93BF005FD743 /* OutlineVpn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineVpn.swift; path = "cordova-plugin-outline/OutlineVpn.swift"; sourceTree = "<group>"; };
+		FC28C282201A93D0005FD743 /* OutlineTunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnel.swift; path = "cordova-plugin-outline/OutlineTunnel.swift"; sourceTree = "<group>"; };
+		FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnelStore.swift; path = Outline/Resources/vpn/OutlineTunnelStore.swift; sourceTree = SOURCE_ROOT; };
+		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
+		FC5FF9121F3E1D1B0032A745 /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Outline.entitlements; sourceTree = "<group>"; };
+		FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VpnExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		FC5FF9491F3E1EF00032A745 /* PacketTunnelProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PacketTunnelProvider.h; path = Outline/Resources/vpn/PacketTunnelProvider.h; sourceTree = SOURCE_ROOT; };
+		FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PacketTunnelProvider.m; path = Outline/Resources/vpn/PacketTunnelProvider.m; sourceTree = SOURCE_ROOT; };
+		FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CDVMacOsUrlHandler.swift; sourceTree = "<group>"; };
+		FC7B59BA223C585F00828002 /* Tun2socks.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Tun2socks.xcframework; path = "Outline/Plugins/cordova-plugin-outline/Tun2socks.xcframework"; sourceTree = "<group>"; };
+		FC7D56041F86969E00ABD5CA /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
+		FC8C30D61FA78D1A004262BE /* Sentry.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Sentry.xcframework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.xcframework"; sourceTree = "<group>"; };
+		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjack.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.xcframework"; sourceTree = "<group>"; };
+		FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjackSwift.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.xcframework"; sourceTree = "<group>"; };
+		FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
+		FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		70BD682018FFB02D00A1EFCF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */,
+				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */,
+				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
+				70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */,
+				FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */,
+				70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */,
+				70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */,
+				FC8C30DB1FA78E5E004262BE /* Sentry.xcframework in Frameworks */,
+				FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */,
+				FCDE2FB023270B8C006C5B2C /* Tun2socks.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC0799E32037532900A1C822 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */,
+				FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC5FF9281F3E1E5F0032A745 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
+				FC7B59BB223C585F00828002 /* Tun2socks.xcframework in Frameworks */,
+				FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7069FBC31905A1F9000B48E1 /* Plugins */ = {
+			isa = PBXGroup;
+			children = (
+				FC28C282201A93D0005FD743 /* OutlineTunnel.swift */,
+				FC28C280201A93BF005FD743 /* OutlineVpn.swift */,
+				AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */,
+				FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */,
+				01C0FE24369C408597E6E257 /* OutlineConnectivity.swift */,
+				469466FF1BDB44C081741BF5 /* CDVClipboard.m */,
+				19209C3AABCC45AB8CFDD974 /* CDVClipboard.h */,
+			);
+			name = Plugins;
+			path = Outline/Plugins;
+			sourceTree = SOURCE_ROOT;
+		};
+		70BD681A18FFB02D00A1EFCF = {
+			isa = PBXGroup;
+			children = (
+				707060B018FFC0D900755D46 /* config.xml */,
+				70DAA8D91908785C00AF3749 /* www */,
+				70BD682C18FFB02D00A1EFCF /* Outline */,
+				70BD686818FFB0BF00A1EFCF /* Classes */,
+				7069FBC31905A1F9000B48E1 /* Plugins */,
+				70D86C851B903D11000750E0 /* Resources */,
+				FC5FF92C1F3E1E5F0032A745 /* VpnExtension */,
+				FC0799E72037532A00A1C822 /* OutlineLauncher */,
+				70BD682518FFB02D00A1EFCF /* Frameworks */,
+				70BD682418FFB02D00A1EFCF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		70BD682418FFB02D00A1EFCF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				70BD682318FFB02D00A1EFCF /* Outline.app */,
+				FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */,
+				FC0799E62037532900A1C822 /* OutlineLauncher.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		70BD682518FFB02D00A1EFCF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FC7B59BA223C585F00828002 /* Tun2socks.xcframework */,
+				FC0799F82037545D00A1C822 /* ServiceManagement.framework */,
+				FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */,
+				FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */,
+				FC8C30D61FA78D1A004262BE /* Sentry.xcframework */,
+				FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */,
+				70BD686418FFB06500A1EFCF /* SystemConfiguration.framework */,
+				70BD686518FFB06500A1EFCF /* WebKit.framework */,
+				70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */,
+				70BD682618FFB02D00A1EFCF /* Cocoa.framework */,
+				70BD682818FFB02D00A1EFCF /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		70BD682818FFB02D00A1EFCF /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				70BD682918FFB02D00A1EFCF /* AppKit.framework */,
+				70BD682A18FFB02D00A1EFCF /* CoreData.framework */,
+				70BD682B18FFB02D00A1EFCF /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		70BD682C18FFB02D00A1EFCF /* Outline */ = {
+			isa = PBXGroup;
+			children = (
+				FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */,
+				FC5FF9121F3E1D1B0032A745 /* Outline.entitlements */,
+				70BD682D18FFB02D00A1EFCF /* Supporting Files */,
+				707060AE18FFC05700755D46 /* MainViewController.xib */,
+				70BD683E18FFB02D00A1EFCF /* Images.xcassets */,
+			);
+			path = Outline;
+			sourceTree = "<group>";
+		};
+		70BD682D18FFB02D00A1EFCF /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				70BD682E18FFB02D00A1EFCF /* Outline-Info.plist */,
+				70BD682F18FFB02D00A1EFCF /* InfoPlist.strings */,
+				70BD683218FFB02D00A1EFCF /* main.m */,
+				70BD683418FFB02D00A1EFCF /* Outline-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		70BD685B18FFB04300A1EFCF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				70BD686018FFB04300A1EFCF /* libCordova.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		70BD686818FFB0BF00A1EFCF /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */,
+				70BD686918FFB0BF00A1EFCF /* AppDelegate.h */,
+				70BD686A18FFB0BF00A1EFCF /* AppDelegate.m */,
+				FC7D56041F86969E00ABD5CA /* EventMonitor.swift */,
+				70BD686B18FFB0BF00A1EFCF /* MainViewController.h */,
+				70BD686C18FFB0BF00A1EFCF /* MainViewController.m */,
+			);
+			name = Classes;
+			path = Outline/Classes;
+			sourceTree = "<group>";
+		};
+		70D86C851B903D11000750E0 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */,
+				A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */,
+				D83B939D01CF4540A9A3DF86 /* vpn */,
+			);
+			name = Resources;
+			path = Outline/Resources;
+			sourceTree = "<group>";
+		};
+		FC0799E72037532A00A1C822 /* OutlineLauncher */ = {
+			isa = PBXGroup;
+			children = (
+				FC0799E82037532A00A1C822 /* AppDelegate.swift */,
+				FC0799EE2037532A00A1C822 /* Main.storyboard */,
+				FC0799F12037532A00A1C822 /* Info.plist */,
+				FC0799F22037532A00A1C822 /* OutlineLauncher.entitlements */,
+			);
+			path = OutlineLauncher;
+			sourceTree = "<group>";
+		};
+		FC5FF92C1F3E1E5F0032A745 /* VpnExtension */ = {
+			isa = PBXGroup;
+			children = (
+				FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */,
+				FC5FF9491F3E1EF00032A745 /* PacketTunnelProvider.h */,
+				FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */,
+				FC1FCADA216D289F00F078A5 /* Subnet.swift */,
+			);
+			name = VpnExtension;
+			path = Outline/Resources/vpn;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		70BD682218FFB02D00A1EFCF /* Outline */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70BD685418FFB02D00A1EFCF /* Build configuration list for PBXNativeTarget "Outline" */;
+			buildPhases = (
+				70BD687218FFB1A300A1EFCF /* Copy www directory */,
+				70BD681F18FFB02D00A1EFCF /* Sources */,
+				70BD682018FFB02D00A1EFCF /* Frameworks */,
+				70BD682118FFB02D00A1EFCF /* Resources */,
+				FC0799F62037541600A1C822 /* Copy OutlineLauncher */,
+				708BE60C1B851BAD00301ADB /* Embed Frameworks */,
+				FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				70BD687118FFB19500A1EFCF /* PBXTargetDependency */,
+				FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */,
+			);
+			name = Outline;
+			productName = Outline;
+			productReference = 70BD682318FFB02D00A1EFCF /* Outline.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FC0799E52037532900A1C822 /* OutlineLauncher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FC0799F52037532A00A1C822 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
+			buildPhases = (
+				FC0799E22037532900A1C822 /* Sources */,
+				FC0799E32037532900A1C822 /* Frameworks */,
+				FC0799E42037532900A1C822 /* Resources */,
+				FC1F25172049B2E40012D758 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OutlineLauncher;
+			productName = OutlineLauncher;
+			productReference = FC0799E62037532900A1C822 /* OutlineLauncher.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FC5FF92A1F3E1E5F0032A745 /* VpnExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FC5FF93E1F3E1E5F0032A745 /* Build configuration list for PBXNativeTarget "VpnExtension" */;
+			buildPhases = (
+				FC5FF9271F3E1E5F0032A745 /* Sources */,
+				FC5FF9281F3E1E5F0032A745 /* Frameworks */,
+				FC5FF9291F3E1E5F0032A745 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VpnExtension;
+			productName = VpnExtension;
+			productReference = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		70BD681B18FFB02D00A1EFCF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0920;
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = __CDV_ORGANIZATION_NAME__;
+				TargetAttributes = {
+					70BD682218FFB02D00A1EFCF = {
+						LastSwiftMigration = 1130;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+							com.apple.NetworkExtensions = {
+								enabled = 1;
+							};
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+							com.apple.VPNLite = {
+								enabled = 1;
+							};
+						};
+					};
+					FC0799E52037532900A1C822 = {
+						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1130;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+						};
+					};
+					FC5FF92A1F3E1E5F0032A745 = {
+						CreatedOnToolsVersion = 8.3.2;
+						LastSwiftMigration = 1130;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+							com.apple.NetworkExtensions = {
+								enabled = 1;
+							};
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+							com.apple.VPNLite = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 70BD681E18FFB02D00A1EFCF /* Build configuration list for PBXProject "Outline" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				English,
+				en,
+				Base,
+			);
+			mainGroup = 70BD681A18FFB02D00A1EFCF;
+			productRefGroup = 70BD682418FFB02D00A1EFCF /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 70BD685B18FFB04300A1EFCF /* Products */;
+					ProjectRef = 70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				70BD682218FFB02D00A1EFCF /* Outline */,
+				FC5FF92A1F3E1E5F0032A745 /* VpnExtension */,
+				FC0799E52037532900A1C822 /* OutlineLauncher */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		70BD686018FFB04300A1EFCF /* libCordova.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCordova.a;
+			remoteRef = 70BD685F18FFB04300A1EFCF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		70BD682118FFB02D00A1EFCF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70BD683118FFB02D00A1EFCF /* InfoPlist.strings in Resources */,
+				707060AF18FFC05700755D46 /* MainViewController.xib in Resources */,
+				70BD683F18FFB02D00A1EFCF /* Images.xcassets in Resources */,
+				EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */,
+				7A5BA083B0B5480CA037B818 /* vpn in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC0799E42037532900A1C822 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC0799F02037532A00A1C822 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC5FF9291F3E1E5F0032A745 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		70BD687218FFB1A300A1EFCF /* Copy www directory */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy www directory";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "NODEJS_PATH=/usr/local/bin; NVM_NODE_PATH=~/.nvm/versions/node/`nvm version 2>/dev/null`/bin; N_NODE_PATH=`find /usr/local/n/versions/node/* -maxdepth 0 -type d 2>/dev/null | tail -1`/bin; XCODE_NODE_PATH=`xcode-select --print-path`/usr/share/xcs/Node/bin; PATH=$NODEJS_PATH:$NVM_NODE_PATH:$N_NODE_PATH:$XCODE_NODE_PATH:$PATH && node cordova/lib/copy-www-build-step.js\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		70BD681F18FFB02D00A1EFCF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */,
+				FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */,
+				70BD683318FFB02D00A1EFCF /* main.m in Sources */,
+				70BD686D18FFB0BF00A1EFCF /* AppDelegate.m in Sources */,
+				FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */,
+				70BD686E18FFB0BF00A1EFCF /* MainViewController.m in Sources */,
+				737FCE3329B34151A67331B4 /* OutlinePlugin.swift in Sources */,
+				591E137A57874E4A92300F1B /* OutlineConnectivity.swift in Sources */,
+				FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */,
+				DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */,
+				FC28C281201A93BF005FD743 /* OutlineVpn.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC0799E22037532900A1C822 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */,
+				FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */,
+				FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC5FF9271F3E1E5F0032A745 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC28C284201A93D6005FD743 /* OutlineTunnel.swift in Sources */,
+				FC5FF94E1F3E1EF00032A745 /* PacketTunnelProvider.m in Sources */,
+				FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */,
+				FC28C2B720223167005FD743 /* OutlineTunnelStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		70BD687118FFB19500A1EFCF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CordovaLib;
+			targetProxy = 70BD687018FFB19500A1EFCF /* PBXContainerItemProxy */;
+		};
+		FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FC5FF92A1F3E1E5F0032A745 /* VpnExtension */;
+			targetProxy = FC5FF9381F3E1E5F0032A745 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		70BD682F18FFB02D00A1EFCF /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				70BD683018FFB02D00A1EFCF /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		FC0799EE2037532A00A1C822 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FC0799EF2037532A00A1C822 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		70BD685218FFB02D00A1EFCF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = arm64;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		70BD685318FFB02D00A1EFCF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = arm64;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		70BD685518FFB02D00A1EFCF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Outline/Outline.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Outline/Outline-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
+					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n",
+				);
+				INFOPLIST_FILE = "Outline/Outline-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Outline/Resources/Outline-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		70BD685618FFB02D00A1EFCF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Outline/Outline.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Outline/Outline-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
+					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"\n",
+				);
+				INFOPLIST_FILE = "Outline/Outline-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Outline/Resources/Outline-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		FC0799F32037532A00A1C822 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = OutlineLauncher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FC0799F42037532A00A1C822 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = OutlineLauncher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FC5FF93F1F3E1E5F0032A745 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_ENTITLEMENTS = Outline/VpnExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.VpnExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FC5FF9401F3E1E5F0032A745 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_ENTITLEMENTS = Outline/VpnExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
+				);
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Outline/VpnExtension-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.VpnExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		70BD681E18FFB02D00A1EFCF /* Build configuration list for PBXProject "Outline" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70BD685218FFB02D00A1EFCF /* Debug */,
+				70BD685318FFB02D00A1EFCF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		70BD685418FFB02D00A1EFCF /* Build configuration list for PBXNativeTarget "Outline" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70BD685518FFB02D00A1EFCF /* Debug */,
+				70BD685618FFB02D00A1EFCF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FC0799F52037532A00A1C822 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FC0799F32037532A00A1C822 /* Debug */,
+				FC0799F42037532A00A1C822 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FC5FF93E1F3E1E5F0032A745 /* Build configuration list for PBXNativeTarget "VpnExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FC5FF93F1F3E1E5F0032A745 /* Debug */,
+				FC5FF9401F3E1E5F0032A745 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 70BD681B18FFB02D00A1EFCF /* Project object */;
+}

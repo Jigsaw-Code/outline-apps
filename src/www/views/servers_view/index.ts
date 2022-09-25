@@ -17,11 +17,10 @@
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-import './server_list';
-import './server_card';
 import './server_connection_indicator';
+import './server_list';
 
-import {ServerListItem as _ServerListItem} from './server_list';
+import {ServerListItem as _ServerListItem} from './server_list_item';
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 
 export type ServerListItem = _ServerListItem;
@@ -34,7 +33,6 @@ Polymer({
   _template: html`
     <style>
       :host {
-        margin: 0 !important;
         width: 100%;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
@@ -53,9 +51,10 @@ Polymer({
         display: none !important;
       }
       .server-list-container {
-        background-color: #efefef;
         width: 100%;
         height: 100%;
+        max-width: 400px;
+        margin: auto;
       }
       .flex-column-container {
         margin: 0 auto;
@@ -102,10 +101,7 @@ Polymer({
       <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
         <div class="flex-column-container">
           <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-indicator
-              connection-state="disconnected"
-              root-path="[[rootPath]]"
-            ></server-connection-indicator>
+            <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
             <div class="header">[[localize('server-add')]]</div>
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
@@ -127,7 +123,6 @@ Polymer({
         hidden$="[[shouldShowZeroState]]"
         servers="[[servers]]"
         localize="[[localize]]"
-        root-path="[[rootPath]]"
       ></server-list>
     </div>
   `,
@@ -136,7 +131,6 @@ Polymer({
 
   properties: {
     localize: Function,
-    rootPath: String,
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,

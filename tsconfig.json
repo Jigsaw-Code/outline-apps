@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true
+  },
+  // We don't need TypeScript to check javascript files.
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "www", "./src/**/*.js", "./src/**/*.mjs", "./www/**/*", "./build/**/*"]
+}
