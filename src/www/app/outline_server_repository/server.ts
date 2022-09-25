@@ -102,6 +102,7 @@ export class OutlineServer implements Server {
         this.sessionConfig = await (
           await fetch(this.accessKey, {
             headers: {
+              'Access-Control-Request-Headers': 'Content-Type',
               'Content-Type': 'application/json',
             },
           })

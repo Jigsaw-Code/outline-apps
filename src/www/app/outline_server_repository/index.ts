@@ -37,15 +37,19 @@ function staticKeysMatch(a: string, b: string): boolean {
   return false;
 }
 
-// NOTE: For extracting a name that the user has explicitly set, only.
-// (Currenly done by setting the hash on the URI)
-function serverNameFromStaticKey(staticKey: string): string {
-  return SHADOWSOCKS_URI.parse(staticKey).tag.data;
-}
-
 // Determines if the key is expected to be a url pointing to an ephemeral session config.
 function isDynamicAccessKey(accessKey: string): boolean {
   return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
+}
+
+// NOTE: For extracting a name that the user has explicitly set, only.
+// (Currenly done by setting the hash on the URI)
+function serverNameFromAccessKey(accessKey: string): string {
+  if (isDynamicAccessKey(accessKey)) {
+    return new URL(accessKey.replace(/^ssconf:\/\//, 'https://')).hostname;
+  }
+
+  return SHADOWSOCKS_URI.parse(accessKey).tag.data;
 }
 
 // DEPRECATED: V0 server persistence format.
@@ -111,7 +115,7 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey, serverNameFromStaticKey(accessKey));
+    const server = this.createServer(uuidv4(), accessKey, serverNameFromAccessKey(accessKey));
 
     this.serverById.set(server.id, server);
     this.storeServers();
