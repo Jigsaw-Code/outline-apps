@@ -5,3 +5,6 @@
 /tools/                   @Jigsaw-Code/outline-networking-owners
 
 /src/www/model/           @fortuna 
+
+/src/build/               @daniellacosse
+*.action.mjs              @daniellacosse
