@@ -14,13 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -eux
+
 readonly PREFIX=/usr/local
 readonly SERVICE_NAME=outline_proxy_controller.service
 readonly GROUP_NAME=outlinevpn
 readonly SCRIPT_DIR="$(dirname ${0})"
 
 # Create outlinevpn group
-/usr/sbin/groupadd "${GROUP_NAME}"
+/usr/sbin/groupadd -f "${GROUP_NAME}"
 if /usr/bin/id "${1}" &>/dev/null; then
   /usr/sbin/usermod -aG "${GROUP_NAME}" "${1}"
   /usr/bin/echo "user ${1} has been added to ${GROUP_NAME} group"
