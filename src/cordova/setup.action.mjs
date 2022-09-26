@@ -25,7 +25,7 @@ const {cordova} = cordovaLib;
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
@@ -49,7 +49,7 @@ export async function main(...parameters) {
 
   await rmfr(`platforms/${platform}`);
 
-  if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
+  if (!existsSync(path.resolve(getProjectRootDir(), 'platforms', platform))) {
     await cordova.platform(
       'add',
       [platform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],

@@ -19,7 +19,7 @@ import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
 import fs from 'fs/promises';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 import path from 'path';
 
 const ELECTRON_BUILD_DIR = 'build';
@@ -28,16 +28,17 @@ export async function main(...parameters) {
   const {platform, buildMode, stagingPercentage} = getElectronBuildParameters(parameters);
   const version = await getVersion(platform);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/build_preload', platform, `--buildMode=${buildMode}`);
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
-    path.join(getRootDir(), 'src/electron/icons'),
-    path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
+    path.join(getProjectRootDir(), 'src/electron/icons'),
+    path.join(getProjectRootDir(), ELECTRON_BUILD_DIR, 'icons')
   );
 
   const electronConfig = JSON.parse(
-    await fs.readFile(path.resolve(getRootDir(), 'src', 'electron', 'electron-builder.json'))
+    await fs.readFile(path.resolve(getProjectRootDir(), 'src', 'electron', 'electron-builder.json'))
   );
 
   // build electron binary

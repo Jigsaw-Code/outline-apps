@@ -12,35 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import electronConfig from './webpack_electron.mjs';
-import cordovaConfig from './webpack_cordova.mjs';
+import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
+import {runAction} from '../build/run_action.mjs';
+import {runWebpack} from '../build/run_webpack.mjs';
+import url from 'url';
+import webpackConfig from './webpack_electron_preload.mjs';
 
-/*
-  Inputs:
-  => the platform and buildMode
+export async function main(...parameters) {
+  const {platform, buildMode} = getElectronBuildParameters(parameters);
 
-  Outputs:
-  => the webpack config for the given platform and buildMode
-*/
-export const getBrowserWebpackConfig = (platform, buildMode) => {
-  let webpackConfig;
+  await runAction('electron/www/build', platform, `--buildMode=${buildMode}`);
 
-  switch (platform) {
-    case 'linux':
-    case 'windows':
-      webpackConfig = electronConfig;
-      break;
-    case 'android':
-    case 'browser':
-    case 'ios':
-    case 'macos':
-    default:
-      webpackConfig = cordovaConfig;
-      break;
-  }
+  await runWebpack({
+    ...webpackConfig,
+    mode: getWebpackBuildMode(buildMode),
+  });
+}
 
-  webpackConfig.mode = getWebpackBuildMode(buildMode);
-
-  return webpackConfig;
-};
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
+}

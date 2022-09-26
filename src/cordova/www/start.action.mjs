@@ -16,20 +16,16 @@ import url from 'url';
 import webpack from 'webpack';
 import WebpackServer from 'webpack-dev-server';
 
-import {runAction} from '../build/run_action.mjs';
-import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
+import {runAction} from '../../build/run_action.mjs';
+
+import webpackConfig from './webpack_config.mjs';
 
 /**
  * @description Starts the web app for development.
  */
 export async function main() {
-  await runAction('www/build', 'browser');
-
-  // TODO(daniellacosse): Browser-only webpack setup that's extended both by electron and cordova.
-  // Currently, only the cordova web build works in standalone mode.
+  await runAction('cordova/www/build', 'browser');
   await runAction('cordova/setup', 'browser');
-
-  const webpackConfig = getBrowserWebpackConfig('browser', 'debug');
 
   await new WebpackServer(webpackConfig.devServer, webpack(webpackConfig)).start();
 }

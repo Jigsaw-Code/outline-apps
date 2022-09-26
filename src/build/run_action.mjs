@@ -18,7 +18,7 @@ import {readFile} from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
-import {getRootDir} from './get_root_dir.mjs';
+import {getProjectRootDir} from './get_project_root_dir.mjs';
 import {spawnStream} from './spawn_stream.mjs';
 
 /**
@@ -27,11 +27,11 @@ import {spawnStream} from './spawn_stream.mjs';
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
 
-  if (actionPath in JSON.parse(await readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+  if (actionPath in JSON.parse(await readFile(path.join(getProjectRootDir(), 'package.json'))).scripts) {
     return actionPath;
   }
 
-  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
+  const roots = [getProjectRootDir(), path.join(getProjectRootDir(), 'src')];
   const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {
@@ -107,7 +107,7 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  process.env.ROOT_DIR ??= getRootDir();
+  process.env.ROOT_DIR ??= getProjectRootDir();
   process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
   process.env.FORCE_COLOR = true;
 

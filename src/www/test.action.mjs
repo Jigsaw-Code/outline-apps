@@ -16,7 +16,7 @@ import url from 'url';
 import karma from 'karma';
 import puppeteer from 'puppeteer';
 import path from 'path';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 
 const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
 
@@ -39,7 +39,7 @@ export async function main() {
 
   process.env.CHROMIUM_BIN = puppeteer.executablePath();
 
-  const config = await karma.config.parseConfig(path.resolve(getRootDir(), ...KARMA_CONFIG_PATH), null, {
+  const config = await karma.config.parseConfig(path.resolve(getProjectRootDir(), ...KARMA_CONFIG_PATH), null, {
     promiseConfig: true,
     throwErrors: true,
   });

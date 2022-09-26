@@ -18,11 +18,11 @@ import {getVersion} from '../build/get_version.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {runWebpack} from '../build/run_webpack.mjs';
-import electronMainWebpackConfigs from './webpack_electron_main.mjs';
+import createElectronMainWebpackConfig from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
@@ -30,15 +30,13 @@ export async function main(...parameters) {
   const {platform, buildMode, networkStack, sentryDsn} = getElectronBuildParameters(parameters);
   const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/build_preload', platform, `--buildMode=${buildMode}`);
 
-  // TODO(daniellacosse): separate building the preload script out into its own separate step
-  await runWebpack(
-    electronMainWebpackConfigs({networkStack, sentryDsn, APP_VERSION}).map(config => ({
-      ...config,
-      mode: getWebpackBuildMode(buildMode),
-    }))
-  );
+  await runWebpack({
+    ...createElectronMainWebpackConfig({networkStack, sentryDsn, APP_VERSION}),
+    mode: getWebpackBuildMode(buildMode),
+  });
 
   if (platform === 'windows') {
     let windowsEnvironment = `!define RELEASE "${await getVersion(platform)}"`;
@@ -51,7 +49,7 @@ export async function main(...parameters) {
       windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
     }
 
-    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
+    await fs.writeFile(path.resolve(getProjectRootDir(), ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
   }
 }
 

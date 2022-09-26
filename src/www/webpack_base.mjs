@@ -14,19 +14,17 @@
 import path from 'path';
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {fileURLToPath} from 'url';
 import {createRequire} from 'module';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 
 export const require = createRequire(import.meta.url);
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
 
-export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '..', '..', 'scripts', 'rtl_css_webpack.js');
+export const GENERATE_CSS_RTL_LOADER = path.resolve(getProjectRootDir(), '..', 'scripts', 'rtl_css_webpack.js');
 
 export const TS_LOADER = {
   loader: 'ts-loader',
   options: {
-    configFile: path.resolve(__dirname, '..', '..', 'tsconfig.json'),
+    configFile: path.resolve(getProjectRootDir(), '..', 'tsconfig.json'),
   },
 };
 
@@ -49,9 +47,9 @@ export const baseConfig = {
 };
 
 export const browserConfig = {
-  entry: [path.resolve(__dirname, 'style.css')],
+  entry: [path.resolve(getProjectRootDir(), 'www', 'style.css')],
   output: {
-    path: path.resolve(__dirname, '..', '..', 'www'),
+    path: path.resolve(getProjectRootDir(), '..', 'www'),
     filename: 'main.js',
   },
   module: {
@@ -73,7 +71,7 @@ export const browserConfig = {
         {from: 'messages', to: 'messages'},
         {from: 'ui_components/licenses/licenses.txt', to: 'ui_components/licenses'},
       ],
-      {context: __dirname}
+      {context: getProjectRootDir()}
     ),
   ],
 };

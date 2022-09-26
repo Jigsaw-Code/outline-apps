@@ -17,7 +17,7 @@ import electron from 'electron';
 
 import {runAction} from '../build/run_action.mjs';
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 
 /**
@@ -28,13 +28,14 @@ import {spawnStream} from '../build/spawn_stream.mjs';
 export async function main(...parameters) {
   const {platform, buildMode} = getElectronBuildParameters(parameters);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('electron/build_preload', platform, `--buildMode=${buildMode}`);
   await runAction('electron/build_main', ...parameters);
   await runAction('electron/build', platform, `--buildMode=${buildMode}`);
 
   process.env.OUTLINE_DEBUG = buildMode === 'debug';
 
-  await spawnStream(electron, [getRootDir()]);
+  await spawnStream(electron, [getProjectRootDir()]);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

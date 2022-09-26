@@ -16,12 +16,11 @@ import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
 
-import {runWebpack} from '../build/run_webpack.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
-
-import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
+import {runWebpack} from '../../build/run_webpack.mjs';
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import {getProjectRootDir} from '../../build/get_project_root_dir.mjs';
+import webpackConfig from './webpack_config.mjs';
+import {getWebpackBuildMode} from '../../build/get_webpack_build_mode.mjs';
 
 /**
  * @description Builds the web UI for use across both electron and cordova.
@@ -29,16 +28,15 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, sentryDsn} = getBuildParameters(parameters);
+  const {buildMode} = getBuildParameters(parameters);
 
   // write build environment
-  await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
-  await fs.writeFile(
-    path.resolve(getRootDir(), 'www/environment.json'),
-    JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
-  );
+  await fs.mkdir(path.resolve(getProjectRootDir(), 'www'), {recursive: true});
 
-  await runWebpack(getBrowserWebpackConfig(platform, buildMode));
+  await runWebpack({
+    ...webpackConfig,
+    mode: getWebpackBuildMode(buildMode),
+  });
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

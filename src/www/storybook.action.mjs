@@ -20,7 +20,7 @@ import {fromRollup} from '@web/dev-server-rollup';
 import image from '@rollup/plugin-image';
 
 import path from 'path';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getProjectRootDir} from '../build/get_project_root_dir.mjs';
 
 const WWW_PATH = ['src', 'www'];
 const STORYBOOK_PATH = [...WWW_PATH, '.storybook'];
@@ -34,7 +34,7 @@ export async function main() {
       nodeResolve: true,
       open: true,
       watch: true,
-      rootDir: path.resolve(getRootDir(), ...WWW_PATH),
+      rootDir: path.resolve(getProjectRootDir(), ...WWW_PATH),
       mimeTypes: {
         // serve all png files as js so as to not confuse rollup
         '**/*.png': 'js',
@@ -49,7 +49,7 @@ export async function main() {
         }),
         storybookPlugin({
           type: 'web-components',
-          configDir: path.resolve(getRootDir(), ...STORYBOOK_PATH),
+          configDir: path.resolve(getProjectRootDir(), ...STORYBOOK_PATH),
         }),
       ],
     },

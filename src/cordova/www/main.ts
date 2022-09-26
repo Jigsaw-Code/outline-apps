@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// <reference types='cordova'/>
-/// <reference path='../types/webintents.d.ts'/>
+/// <reference path='../../www/types/webintents.d.ts'/>
 
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
@@ -24,20 +24,20 @@ setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 
 
 import * as sentry from '@sentry/browser';
 
-import {AbstractClipboard} from './clipboard';
-import {EnvironmentVariables} from './environment';
-import {SentryErrorReporter} from './error_reporter';
-import {FakeNativeNetworking} from './fake_net';
-import {main} from './main';
-import * as errors from '../model/errors';
-import {NativeNetworking} from './net';
-import {OutlinePlatform} from './platform';
-import {Tunnel, TunnelStatus} from './tunnel';
-import {AbstractUpdater} from './updater';
-import * as interceptors from './url_interceptor';
-import {FakeOutlineTunnel} from './fake_tunnel';
-import {ShadowsocksSessionConfig} from './tunnel';
-import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
+import {AbstractClipboard} from '../../www/app/clipboard';
+import {EnvironmentVariables} from '../../www/app/environment';
+import {SentryErrorReporter} from '../../www/app/error_reporter';
+import {FakeNativeNetworking} from '../../www/app/fake_net';
+import {main} from '../../www/app/main';
+import * as errors from '../../www/model/errors';
+import {NativeNetworking} from '../../www/app/net';
+import {OutlinePlatform} from '../../www/app/platform';
+import {Tunnel, TunnelStatus} from '../../www/app/tunnel';
+import {AbstractUpdater} from '../../www/app/updater';
+import * as interceptors from '../../www/app/url_interceptor';
+import {FakeOutlineTunnel} from '../../www/app/fake_tunnel';
+import {ShadowsocksSessionConfig} from '../../www/app/tunnel';
+import {NoOpVpnInstaller, VpnInstaller} from '../../www/app/vpn_installer';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 

@@ -12,41 +12,64 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import path from 'path';
+import CopyPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
-import {baseConfig, browserConfig, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
+import {baseConfig, browserConfig, require, TS_LOADER, GENERATE_CSS_RTL_LOADER} from '../../www/webpack_base.mjs';
 import {merge} from 'webpack-merge';
 
+import {getProjectRootDir} from '../../build/get_project_root_dir.mjs';
+
+const BABEL_LOADER = {
+  loader: 'babel-loader',
+  options: {
+    presets: ['@babel/preset-env'],
+  },
+};
+
 export default merge(baseConfig, browserConfig, {
-  entry: [path.resolve(__dirname, 'app', 'electron_main.ts')],
-  target: 'electron-renderer',
+  devServer: {
+    open: '/index.html',
+    static: path.resolve(getProjectRootDir(), 'platforms', 'browser', 'www'),
+  },
+  entry: [path.resolve(getProjectRootDir(), 'src', 'cordova', 'www', 'main.ts')],
+  target: ['web', 'es5'],
   module: {
     rules: [
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: [TS_LOADER, GENERATE_CSS_RTL_LOADER],
+        use: [BABEL_LOADER, TS_LOADER, GENERATE_CSS_RTL_LOADER],
       },
       {
         test: /\.m?ts$/,
         include: /node_modules/,
-        use: [TS_LOADER],
+        use: [BABEL_LOADER, TS_LOADER],
       },
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
-        use: [GENERATE_CSS_RTL_LOADER],
+        use: [BABEL_LOADER, GENERATE_CSS_RTL_LOADER],
+      },
+      {
+        test: /\.m?js$/,
+        include: /node_modules/,
+        use: [BABEL_LOADER],
       },
     ],
   },
   plugins: [
+    new CopyPlugin(
+      [{from: require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'), to: 'webcomponentsjs'}],
+      {context: path.resolve(getProjectRootDir(), 'src', 'www')}
+    ),
     new webpack.DefinePlugin({
       // Statically link the Roboto font, rather than link to fonts.googleapis.com
       'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
     }),
     new HtmlWebpackPlugin({
-      filename: 'index_electron.html',
-      template: path.resolve(__dirname, 'index_electron.html'),
+      filename: 'index.html',
+      template: path.resolve(getProjectRootDir(), 'src', 'cordova', 'www', 'index.html'),
     }),
   ],
 });

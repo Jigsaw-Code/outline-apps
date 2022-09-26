@@ -19,19 +19,19 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as sentry from '@sentry/electron/renderer';
 
-import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {ErrorCode, OutlinePluginError} from '../../www/model/errors';
 
-import {AbstractClipboard} from './clipboard';
-import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {EnvironmentVariables} from './environment';
-import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
-import {FakeNativeNetworking} from './fake_net';
-import {FakeOutlineTunnel} from './fake_tunnel';
-import {getLocalizationFunction, main} from './main';
-import {NativeNetworking} from './net';
-import {AbstractUpdater} from './updater';
-import {UrlInterceptor} from './url_interceptor';
-import {VpnInstaller} from './vpn_installer';
+import {AbstractClipboard} from '../../www/app/clipboard';
+import {ElectronOutlineTunnel} from './outline_tunnel';
+import {EnvironmentVariables} from '../../www/app/environment';
+import {getSentryBrowserIntegrations, OutlineErrorReporter} from '../../www/app/error_reporter';
+import {FakeNativeNetworking} from '../../www/app/fake_net';
+import {FakeOutlineTunnel} from '../../www/app/fake_tunnel';
+import {getLocalizationFunction, main} from '../../www/app/main';
+import {NativeNetworking} from '../../www/app/net';
+import {AbstractUpdater} from '../../www/app/updater';
+import {UrlInterceptor} from '../../www/app/url_interceptor';
+import {VpnInstaller} from '../../www/app/vpn_installer';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
