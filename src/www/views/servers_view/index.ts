@@ -14,8 +14,8 @@
   limitations under the License.
 */
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 
 import './server_connection_indicator';
 import './server_list';
@@ -25,124 +25,99 @@ import {ServerConnectionState as _ServerConnectionState} from './server_connecti
 
 export type ServerListItem = _ServerListItem;
 
+/*
+  TODO: dialogs should be handled elsewhere
+
+  <user-comms-dialog
+    id="autoConnectDialog"
+    localize="[[localize]]"
+    title-localization-key="auto-connect-dialog-title"
+    detail-localization-key="auto-connect-dialog-detail"
+    fire-event-on-hide="AutoConnectDialogDismissed"
+  ></user-comms-dialog>
+*/
+
 // (This value is used: it's exported.)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export import ServerConnectionState = _ServerConnectionState;
 
-Polymer({
-  _template: html`
-    <style>
-      :host {
-        width: 100%;
-        height: 100%;
-        /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
-         * Subtract |header-height| to fix iOS padding, and |server-margin| to fix scrolling in Android.
-         */
-        height: -webkit-calc(100vh - 64px);
-        font-size: 14px;
-        line-height: 20px;
-      }
-      :host a {
-        color: var(--medium-green);
-        text-decoration: none;
-      }
-      /* Do not remove, this allows the hidden attribute to work with flex displays. */
-      [hidden] {
-        display: none !important;
-      }
-      .server-list-container {
-        width: 100%;
-        height: 100%;
-        max-width: 400px;
-        margin: auto;
-      }
-      .flex-column-container {
-        margin: 0 auto;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        display: -webkit-flex;
-        -webkit-flex-wrap: wrap;
-        flex-wrap: wrap;
-        -webkit-flex-direction: column;
-        flex-direction: column;
-        -webkit-flex: 1;
-        flex: 1;
-        justify-content: center;
-      }
-      .header {
-        font-size: 20px;
-        color: rgba(0, 0, 0, 0.87);
-        line-height: 32px;
-        margin-top: 34px;
-      }
-      .subtle {
-        color: rgba(0, 0, 0, 0.54);
-      }
-      .footer {
-        margin: 0;
-        padding: 24px 0 16px 0;
-        border-top-width: 1px;
-        border-top-color: rgba(0, 0, 0, 0.08);
-        border-top-style: solid;
-      }
-      paper-button {
-        display: flex;
-        flex-direction: column;
-        text-transform: none;
-        outline: none; /* Remove outline for Safari. */
-      }
-      paper-button server-connection-indicator {
-        width: 192px;
-        height: 192px;
-      }
-    </style>
-    <div class="server-list-container">
-      <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
-        <div class="flex-column-container">
-          <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-            <div class="header">[[localize('server-add')]]</div>
-            <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
-          </paper-button>
-        </div>
-        <div
-          class="footer subtle"
-          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
-        ></div>
-      </div>
-      <user-comms-dialog
-        id="autoConnectDialog"
-        localize="[[localize]]"
-        title-localization-key="auto-connect-dialog-title"
-        detail-localization-key="auto-connect-dialog-detail"
-        fire-event-on-hide="AutoConnectDialogDismissed"
-      ></user-comms-dialog>
+export enum ServersViewEvent {
+  START_SERVER_CREATION = 'PromptAddServerRequested',
+}
+
+@customElement('servers-view')
+export class ServersView extends LitElement {
+  @property() localize: (...messageIDs: string[]) => string;
+  @property() serverItems: ServerListItem[];
+
+  static styles = css`
+    header,
+    p,
+    footer,
+    button {
+      all: initial;
+    }
+
+    :host {
+      width: 100%;
+      height: 100%;
+    }
+
+    :host,
+    button {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    footer {
+      border: solid var();
+      border-top: var();
+      padding: 0 var();
+    }
+  `;
+
+  render() {
+    if (this.serverItems.length === 0) {
+      return html`
+        <button @click=${() => this.dispatchEvent(new CustomEvent(ServersViewEvent.START_SERVER_CREATION))}>
+          <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+          <header>
+            <h2>${this.localize('server-add')}</h2>
+            <p>${this.localize('server-add-zero-state-instructions')}</p>
+          </header>
+        </button>
+        <footer>
+          ${this.localize(
+            'server-create-your-own-zero-state',
+            'breakLine',
+            '<br/>',
+            'openLink',
+            '<a href=https://s3.amazonaws.com/outline-vpn/index.html>',
+            'closeLink',
+            '</a>'
+          )}
+        </footer>
+      `;
+    }
+
+    const serverItemTemplate =
+      this.serverItems.length === 1
+        ? (server: ServerListItem) =>
+            html`
+              <server-hero-card localize=${this.localize} server=${server}></server-hero-card>
+            `
+        : (server: ServerListItem) =>
+            html`
+              <server-row-card localize=${this.localize} server=${server}></server-row-card>
+            `;
+
+    return html`
       <server-list
-        id="serverList"
-        hidden$="[[shouldShowZeroState]]"
-        servers="[[servers]]"
-        localize="[[localize]]"
+        localize=${this.localize}
+        item-template=${serverItemTemplate}
+        server-items=${this.serverItems}
       ></server-list>
-    </div>
-  `,
-
-  is: 'servers-view',
-
-  properties: {
-    localize: Function,
-    servers: Array,
-    shouldShowZeroState: {
-      type: Boolean,
-      computed: '_computeShouldShowZeroState(servers)',
-    },
-  },
-
-  _computeShouldShowZeroState(servers: ServerListItem[]) {
-    return servers ? servers.length === 0 : false;
-  },
-
-  _requestPromptAddServer() {
-    this.fire('PromptAddServerRequested', {});
-  },
-});
+    `;
+  }
+}
