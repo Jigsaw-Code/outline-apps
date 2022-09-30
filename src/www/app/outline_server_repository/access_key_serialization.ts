@@ -24,11 +24,19 @@ import {ShadowsocksSessionConfig} from '../tunnel';
 export function accessKeyToShadowsocksSessionConfig(accessKey: string): ShadowsocksSessionConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(accessKey);
+    let plugin, pluginOptions;
+    if (config.extra.plugin) {
+      const pluginData = config.extra.plugin.split(';');
+      plugin = pluginData[0];
+      pluginOptions = pluginData.slice(1).join(';');
+    }
     return {
       host: config.host.data,
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
+      plugin,
+      pluginOptions,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');

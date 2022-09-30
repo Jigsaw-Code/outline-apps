@@ -320,6 +320,8 @@ class SsLocal extends ChildProcessHelper {
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
+    args.push('--plugin', config.plugin || '');
+    args.push('--plugin-opts', config.pluginOptions || '');
     if (this.isInDebugMode) {
       args.push('-v');
     }
