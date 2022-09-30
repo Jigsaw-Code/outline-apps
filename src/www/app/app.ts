@@ -348,7 +348,7 @@ export class App {
     this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTING});
     try {
       await server.connect();
-      this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTED});
+      this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTED, address: server.address});
       console.log(`connected to server ${serverId}`);
       this.rootEl.showToast(this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
       this.maybeShowAutoConnectDialog();
@@ -414,7 +414,10 @@ export class App {
     this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTING});
     try {
       await server.disconnect();
-      this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
+      this.updateServerListItem(serverId, {
+        connectionState: ServerConnectionState.DISCONNECTED,
+        address: server.address,
+      });
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
