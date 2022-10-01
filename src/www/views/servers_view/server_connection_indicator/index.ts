@@ -14,6 +14,8 @@
 import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS, SERVER_CONNECTION_INDICATOR_DELAY_MS} from '../../../constants';
+
 // TODO(daniellacosse): fix webpack copy such that we can co-locate this image asset with this folder
 import circle from '../../../assets/circle.png';
 
@@ -25,8 +27,6 @@ export enum ServerConnectionState {
   DISCONNECTED = 'disconnected',
 }
 
-const ANIMATION_DURATION_MS = 1750;
-const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
 @customElement('server-connection-indicator')
@@ -45,14 +45,14 @@ export class ServerConnectionIndicator extends LitElement {
         display: inline-block;
         aspect-ratio: 1;
 
-        --duration: ${ANIMATION_DURATION_MS}ms;
+        --duration: ${SERVER_CONNECTION_INDICATOR_DURATION_MS}ms;
         --timing-function: ease-out;
 
         --circle-large-scale: scale(1);
-        --circle-large-delay: ${ANIMATION_DELAY_MS}ms;
+        --circle-large-delay: ${SERVER_CONNECTION_INDICATOR_DELAY_MS}ms;
 
         --circle-medium-scale: scale(0.66);
-        --circle-medium-delay: ${ANIMATION_DELAY_MS / 2}ms;
+        --circle-medium-delay: ${SERVER_CONNECTION_INDICATOR_DELAY_MS / 2}ms;
 
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
@@ -168,8 +168,8 @@ export class ServerConnectionIndicator extends LitElement {
       // is included in the total play time.
       const animationDurationMS =
         this.animationState === ServerConnectionState.DISCONNECTING
-          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-          : ANIMATION_DURATION_MS;
+          ? SERVER_CONNECTION_INDICATOR_DURATION_MS + SERVER_CONNECTION_INDICATOR_DELAY_MS
+          : SERVER_CONNECTION_INDICATOR_DURATION_MS;
 
       const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
 

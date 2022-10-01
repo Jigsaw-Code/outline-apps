@@ -99,7 +99,14 @@ export class OutlineServer implements Server {
   async connect() {
     try {
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.sessionConfig = await (await fetch(this.accessKey)).json();
+        const {method, password, server, server_port: serverPort} = await (await fetch(this.accessKey)).json();
+
+        this.sessionConfig = {
+          method,
+          password,
+          host: server,
+          port: serverPort,
+        };
       }
 
       await this.tunnel.start(this.sessionConfig);

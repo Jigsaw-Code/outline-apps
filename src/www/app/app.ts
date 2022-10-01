@@ -27,6 +27,8 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../constants';
+
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
 export function unwrapInvite(s: string): string {
@@ -419,8 +421,18 @@ export class App {
       await server.disconnect();
       this.updateServerListItem(serverId, {
         connectionState: ServerConnectionState.DISCONNECTED,
-        address: server.address,
       });
+
+      // Wait until the server connection indicator is done animating to update the
+      // address, which potentially will remove it.
+      this.rootEl.async(
+        () =>
+          this.updateServerListItem(serverId, {
+            address: server.address,
+          }),
+        SERVER_CONNECTION_INDICATOR_DURATION_MS
+      );
+
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
