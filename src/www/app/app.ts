@@ -531,7 +531,7 @@ export class App {
   }
 
   private syncServersToUI() {
-    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem);
+    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem.bind(this));
   }
 
   private syncConnectivityStateToServerCards() {
