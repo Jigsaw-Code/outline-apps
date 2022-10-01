@@ -17,6 +17,7 @@ import * as events from '../model/events';
 import {Server} from '../model/server';
 import {OperationTimedOut} from '../../infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -26,8 +27,6 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-
-import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../constants';
 
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.

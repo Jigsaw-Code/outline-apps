@@ -14,10 +14,11 @@
 import {html, css, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
-import {SERVER_CONNECTION_INDICATOR_DURATION_MS, SERVER_CONNECTION_INDICATOR_DELAY_MS} from '../../../constants';
-
 // TODO(daniellacosse): fix webpack copy such that we can co-locate this image asset with this folder
 import circle from '../../../assets/circle.png';
+
+export const SERVER_CONNECTION_INDICATOR_DURATION_MS = 1750;
+export const SERVER_CONNECTION_INDICATOR_DELAY_MS = 500;
 
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
