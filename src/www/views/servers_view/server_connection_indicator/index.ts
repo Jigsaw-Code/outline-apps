@@ -25,6 +25,11 @@ export enum ServerConnectionState {
   DISCONNECTED = 'disconnected',
 }
 
+const isServerConnectionAnimationState = (state: ServerConnectionState) =>
+  [ServerConnectionState.CONNECTING, ServerConnectionState.RECONNECTING, ServerConnectionState.DISCONNECTING].includes(
+    state
+  );
+
 const ANIMATION_DURATION_MS = 1750;
 const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
@@ -154,52 +159,29 @@ export class ServerConnectionIndicator extends LitElement {
       return;
     }
 
-    if (this.isAnimationState(this.connectionState)) {
-      // start the animation and the animation timer
-      this.animationStartMS = Date.now();
-
-      this.animationState = this.connectionState;
-    } else if (this.isAnimationState(this.animationState)) {
-      // schedule the end of the animation
-      // based on when the animation loop started
-      const elapsedAnimationMS = Date.now() - this.animationStartMS;
-
-      // While the animation is reversed, the animation delay
-      // is included in the total play time.
-      const animationDurationMS =
-        this.animationState === ServerConnectionState.DISCONNECTING
-          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-          : ANIMATION_DURATION_MS;
-
-      const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
-
-      setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
-    } else {
-      this.animationState = this.connectionState;
+    if (isServerConnectionAnimationState(this.connectionState)) {
+      return (this.animationState = this.connectionState);
     }
+
+    if (isServerConnectionAnimationState(this.animationState)) {
+      return this.refs.baseCircle.addEventListener('animationend', () => {
+        this.animationState = this.connectionState;
+        this.refs.baseCircle.removeEventListener('animationend', 'TODO: this');
+      });
+    }
+
+    this.animationState = this.connectionState;
   }
 
   render() {
     return html`
       ${CIRCLE_SIZES.map(
-        circleSize =>
+        (circleSize, index) =>
           html`
-            <img
-              class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${circle}"
-              height="100%"
-              draggable="false"
-            />
+            <img refs="${index === 0 && 'baseCircle'} class="circle circle-${circleSize} circle-${this.animationState}"
+            src="${circle}" height="100%" draggable="false" />
           `
       )}
     `;
-  }
-
-  private isAnimationState(state: ServerConnectionState): boolean {
-    return [
-      ServerConnectionState.CONNECTING,
-      ServerConnectionState.RECONNECTING,
-      ServerConnectionState.DISCONNECTING,
-    ].includes(state);
   }
 }
