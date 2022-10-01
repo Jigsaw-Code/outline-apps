@@ -424,6 +424,9 @@ export class App {
 
       // Wait until the server connection indicator is done animating to update the
       // address, which potentially will remove it.
+
+      // TODO(daniellacosse): Server connection indicator should broadcast an
+      // animationend event, which the app can respond to.
       this.rootEl.async(
         () =>
           this.updateServerListItem(serverId, {
