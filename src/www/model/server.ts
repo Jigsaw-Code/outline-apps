@@ -23,6 +23,7 @@ export enum ServerType {
   DYNAMIC_CONNECTION,
 }
 
+// TODO(daniellacosse): determine what properties should be controlled only by the Server implementation and make them readonly
 export interface Server {
   // A unique id that identifies this Server.
   readonly id: string;

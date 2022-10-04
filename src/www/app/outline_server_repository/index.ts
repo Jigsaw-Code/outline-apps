@@ -25,6 +25,8 @@ import {TunnelFactory} from '../tunnel';
 import {OutlineServer} from './server';
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
+// TODO(daniellacosse): write unit tests for these functions
+
 // Compares access keys proxying parameters.
 function staticKeysMatch(a: string, b: string): boolean {
   try {
