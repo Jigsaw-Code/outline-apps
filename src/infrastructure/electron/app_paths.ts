@@ -42,6 +42,18 @@ export function getAppPath() {
   return electronAppPath;
 }
 
-export function pathToEmbeddedBinary(toolname: string, filename: string) {
-  return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
+export function pathToEmbeddedBinary(toolname: string, filename: string, isPlugin = false) {
+  if (isPlugin) {
+    return path.join(
+      unpackedAppPath(),
+      'third_party',
+      toolname,
+      'plugins',
+      filename,
+      os.platform(),
+      filename + (isWindows ? '.exe' : '')
+    );
+  } else {
+    return path.join(unpackedAppPath(), 'third_party', toolname, os.platform(), filename + (isWindows ? '.exe' : ''));
+  }
 }

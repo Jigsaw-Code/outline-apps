@@ -12,6 +12,7 @@
       "third_party/badvpn/linux",
       "third_party/outline-go-tun2socks/linux",
       "third_party/shadowsocks-libev/linux",
+      "third_party/shadowsocks-libev/plugins/obfs-local/linux",
       "tools/outline_proxy_controller/dist"
     ],
     "icon": "build/icons/png",
@@ -27,7 +28,8 @@
     "files": [
       "third_party/badvpn/win32",
       "third_party/outline-go-tun2socks/win32",
-      "third_party/shadowsocks-libev/win32"
+      "third_party/shadowsocks-libev/win32",
+      "third_party/shadowsocks-libev/plugins/obfs-local/win32"
     ],
     "icon": "build/icons/win/icon.ico",
     "sign": "src/electron/windows/electron_builder_signing_plugin.cjs"

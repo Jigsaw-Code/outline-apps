@@ -35,8 +35,12 @@ export class ChildProcessHelper {
    * started in verbose mode if supported.
    * @param args The args for the process
    */
-  launch(args: string[]) {
-    this.process = spawn(this.path, args);
+  launch(args: string[], options: {} = null) {
+    if (options) {
+      this.process = spawn(this.path, args, options);
+    } else {
+      this.process = spawn(this.path, args);
+    }
     const processName = path.basename(this.path);
 
     const onExit = (code?: number, signal?: string) => {

@@ -46,6 +46,9 @@ const SSLOCAL_RETRY_INTERVAL_MS = 100;
 
 const CREDENTIALS_TEST_DOMAINS = ['example.com', 'ietf.org', 'wikipedia.org'];
 
+const OBFS_LOCAL_PLUGIN = 'obfs-local';
+const SUPPORTED_SS_PLUGINS = [OBFS_LOCAL_PLUGIN];
+
 const UDP_FORWARDING_TEST_TIMEOUT_MS = 5000;
 const UDP_FORWARDING_TEST_RETRY_INTERVAL_MS = 1000;
 
@@ -313,18 +316,33 @@ class SsLocal extends ChildProcessHelper {
   }
 
   start(config: ShadowsocksSessionConfig) {
-    // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u
+    // ss-local -s x.x.x.x -p 65336 -k mypassword -m chacha20-ietf-poly1035 -l 1081 -u [--plugin <plugin> --plugin-opts "<plugin-options>"]
+    let options = null;
     const args = ['-l', this.proxyPort.toString()];
     args.push('-s', config.host || '');
     args.push('-p', `${config.port}`);
     args.push('-k', config.password || '');
     args.push('-m', config.method || '');
     args.push('-u');
+    if (config.hasOwnProperty('extra')) {
+      if (config.extra.hasOwnProperty('plugin')) {
+        const pluginName = String(config.extra['plugin'].split(';')[0]).split('.exe')[0];
+        const pluginOptions = config.extra['plugin'].substring(config.extra['plugin'].indexOf(';') + 1);
+        if (!SUPPORTED_SS_PLUGINS.includes(pluginName)) {
+          throw new errors.IllegalServerConfiguration(`${pluginName} is not currently supported`);
+        }
+        if (isWindows) {
+          options = {windowsVerbatimArguments: true};
+        }
+        args.push('--plugin', `"${pathToEmbeddedBinary('shadowsocks-libev', pluginName, true)}"`);
+        args.push('--plugin-opts', `"${pluginOptions}"`);
+      }
+    }
     if (this.isInDebugMode) {
       args.push('-v');
     }
 
-    this.launch(args);
+    this.launch(args, options);
   }
 }
 

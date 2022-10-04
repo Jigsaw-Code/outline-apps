@@ -29,6 +29,7 @@ export function accessKeyToShadowsocksSessionConfig(accessKey: string): Shadowso
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
+      extra: config.extra,
     };
   } catch (error) {
     throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
