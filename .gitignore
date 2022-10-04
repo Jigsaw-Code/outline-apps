@@ -19,3 +19,8 @@ tools/OutlineService/OutlineService/bin/*
 *.sw?
 tools/smartdnsblock/bin/*
 !tools/smartdnsblock/bin/*.exe
+keystore.p12
+Outline.apk
+Outline.apks
+universal.apk
+toc.pb
