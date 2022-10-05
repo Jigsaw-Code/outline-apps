@@ -21,6 +21,7 @@
 
 #include <grp.h>
 #include <unistd.h>
+#include <pwd.h>
 
 #include "outline_controller_server.h"
 
@@ -141,17 +142,19 @@ std::tuple<int, std::string, std::string> session::runClientCommand(std::string 
 }
 
 OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_context,
-                                                 const std::string& file)
+                                                 const std::string& file,
+                                                 uid_t owning_user)
     : outlineProxyController_(std::make_shared<OutlineProxyController>()),
       unix_socket_name(file)
-
 {
   ::unlink(unix_socket_name.c_str());
   boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
     stream_protocol::acceptor acceptor(io_context, stream_protocol::endpoint(unix_socket_name));
     auto outlineGrp = getgrnam(OUTLINE_GRP_NAME);
     if (outlineGrp != nullptr) {
-      chown(unix_socket_name.c_str(), -1, outlineGrp->gr_gid);
+      auto ownerUid = getpwuid(owning_user) != nullptr ? owning_user : -1;
+      chown(unix_socket_name.c_str(), ownerUid, outlineGrp->gr_gid);
+      std::cout << "updated unix socket owner to " << ownerUid << "," << outlineGrp->gr_gid << std::endl;
     } else {
       std::cerr << "failed to get the id of " << OUTLINE_GRP_NAME << " group" << std::endl;
     }
