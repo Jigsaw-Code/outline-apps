@@ -541,10 +541,6 @@ export class App {
     return false;
   }
 
-  private canServerConnectionChange(serverId: string): boolean {
-    return !this.serverConnectionChangeTimeouts[serverId];
-  }
-
   private syncServersToUI() {
     this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem);
   }
