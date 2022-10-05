@@ -17,6 +17,7 @@
 set -eux
 
 readonly PREFIX=/usr/local
+readonly SERVICE_DIR=/etc/systemd/system
 readonly SERVICE_NAME=outline_proxy_controller.service
 readonly GROUP_NAME=outlinevpn
 readonly SCRIPT_DIR="$(dirname ${0})"
@@ -32,7 +33,13 @@ fi
 
 # Copy/update the service's files.
 /usr/bin/cp -f "${SCRIPT_DIR}/OutlineProxyController" "${PREFIX}/sbin"
-/usr/bin/cp -f "${SCRIPT_DIR}/${SERVICE_NAME}" "/etc/systemd/system/"
+/usr/bin/cp -f "${SCRIPT_DIR}/${SERVICE_NAME}" "${SERVICE_DIR}/"
+
+# Replace "--owning-user-id" argument in ".service" file with the actual user
+if /usr/bin/id "${1}" &>/dev/null; then
+  owneruid="$(id -u "${1}")"
+  /usr/bin/sed -i "s/--owning-user-id=-1/--owning-user-id=${owneruid}/g" "${SERVICE_DIR}/${SERVICE_NAME}"
+fi
 
 # (Re-)start the service.
 /usr/bin/systemctl daemon-reload

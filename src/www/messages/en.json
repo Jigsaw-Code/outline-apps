@@ -53,7 +53,7 @@
   "outline-plugin-error-vpn-permission-not-granted": "Outline needs your permission to set up a VPN connection to the server. Please try again, or submit feedback if you need help.",
   "outline-services-installation-confirmation": "We will initialize Outline, which may require admin permissions. Would you like to proceed?",
   "outline-services-installation-failed": "Unfortunately we are not able to initialize Outline, please submit feedback through the app.",
-  "outline-services-installed": "Outline has been successfully initialized, please restart your machine for changes to take effect.",
+  "outline-services-installed": "Outline has been successfully initialized, please try again to connect to the server.",
   "outline-services-installing": "Initializing Outline...",
   "privacy": "Privacy",
   "privacy-text": "Some technical information is sent if you submit feedback, if there’s an app error or crash, or if your server administrator opts in to share anonymous server usage data.",

@@ -424,7 +424,7 @@
     "desciption": "An error message shown when the user tries to install Outline backend services but failed for some reason."
   },
   "outline_services_installed": {
-    "message": "Outline has been successfully initialized, please restart your machine for changes to take effect.",
+    "message": "Outline has been successfully initialized, please try again to connect to the server.",
     "desciption": "An information message shown when the Outline successfully installed all backend services, and we ask the user try to reconnect to the server."
   },
   "outline_services_installing": {
