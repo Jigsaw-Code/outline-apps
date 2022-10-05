@@ -86,7 +86,9 @@ class OutlineControllerServer {
   /*
    * constructor: setup a listener on the file as a unix socket
    */
-  OutlineControllerServer(boost::asio::io_context& io_context, const std::string& file);
+  OutlineControllerServer(boost::asio::io_context& io_context,
+                          const std::string& file,
+                          uid_t owning_user);
 
  private:
   std::shared_ptr<OutlineProxyController> outlineProxyController_;
