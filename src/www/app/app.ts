@@ -345,8 +345,7 @@ export class App {
       throw new Error(`connectServer event had no server ID`);
     }
 
-    if (!this.canServerConnectionChange(serverId)) return;
-    this.setServerConnectionChangeTimeout(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT);
+    if (this.throttleServerConnectionChange(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT)) return;
 
     const server = this.getServerByServerId(serverId);
     console.log(`connecting to server ${serverId}`);
@@ -414,8 +413,7 @@ export class App {
       throw new Error(`disconnectServer event had no server ID`);
     }
 
-    if (!this.canServerConnectionChange(serverId)) return;
-    this.setServerConnectionChangeTimeout(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT);
+    if (this.throttleServerConnectionChange(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT)) return;
 
     const server = this.getServerByServerId(serverId);
     console.log(`disconnecting from server ${serverId}`);
@@ -533,10 +531,14 @@ export class App {
     };
   }
 
-  private setServerConnectionChangeTimeout(serverId: string, time: number) {
+  private throttleServerConnectionChange(serverId: string, time: number) {
+    if (this.serverConnectionChangeTimeouts[serverId]) return true;
+    
     this.serverConnectionChangeTimeouts[serverId] = true;
 
     setTimeout(() => delete this.serverConnectionChangeTimeouts[serverId], time);
+    
+    return false;
   }
 
   private canServerConnectionChange(serverId: string): boolean {
