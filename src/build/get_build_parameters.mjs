@@ -28,7 +28,6 @@ export function getBuildParameters(buildParameters) {
   let {
     _: [platform],
     buildMode,
-    networkStack,
     stagingPercentage,
     sentryDsn,
   } = minimist(buildParameters);
@@ -54,9 +53,8 @@ export function getBuildParameters(buildParameters) {
   // set defaults
   platform ??= 'browser';
   buildMode ??= 'debug';
-  networkStack ??= 'libevbadvpn';
   stagingPercentage ??= 100;
   sentryDsn ??= process.env.SENTRY_DSN;
 
-  return {platform, buildMode, stagingPercentage, networkStack, sentryDsn};
+  return {platform, buildMode, stagingPercentage, sentryDsn};
 }
