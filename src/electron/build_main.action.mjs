@@ -27,14 +27,14 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, networkStack, sentryDsn} = getElectronBuildParameters(parameters);
+  const {platform, buildMode, sentryDsn} = getElectronBuildParameters(parameters);
   const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
-    electronMainWebpackConfigs({networkStack, sentryDsn, APP_VERSION}).map(config => ({
+    electronMainWebpackConfigs({sentryDsn, APP_VERSION}).map(config => ({
       ...config,
       mode: getWebpackBuildMode(buildMode),
     }))

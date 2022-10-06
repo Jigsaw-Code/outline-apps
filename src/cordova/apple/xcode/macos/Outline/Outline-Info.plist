@@ -28,6 +28,7 @@
       <key>CFBundleURLSchemes</key>
       <array>
         <string>ss</string>
+        <string>ssconf</string>
       </array>
     </dict>
   </array>
