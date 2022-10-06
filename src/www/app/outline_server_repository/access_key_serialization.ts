@@ -21,9 +21,9 @@ import {ShadowsocksSessionConfig} from '../tunnel';
 // DON'T use these methods outside of this folder!
 
 // Parses an access key string into a ShadowsocksConfig object.
-export function accessKeyToShadowsocksSessionConfig(accessKey: string): ShadowsocksSessionConfig {
+export function staticKeyToShadowsocksSessionConfig(staticKey: string): ShadowsocksSessionConfig {
   try {
-    const config = SHADOWSOCKS_URI.parse(accessKey);
+    const config = SHADOWSOCKS_URI.parse(staticKey);
     return {
       host: config.host.data,
       port: config.port.data,
@@ -31,6 +31,6 @@ export function accessKeyToShadowsocksSessionConfig(accessKey: string): Shadowso
       password: config.password.data,
     };
   } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+    throw new errors.ServerUrlInvalid(error.message || 'Failed to parse static access key.');
   }
 }
