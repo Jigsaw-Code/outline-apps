@@ -17,6 +17,7 @@ import * as events from '../model/events';
 import {Server} from '../model/server';
 import {OperationTimedOut} from '../../infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -348,7 +349,10 @@ export class App {
     this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTING});
     try {
       await server.connect();
-      this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTED});
+      this.updateServerListItem(serverId, {
+        connectionState: ServerConnectionState.CONNECTED,
+        address: server.address,
+      });
       console.log(`connected to server ${serverId}`);
       this.rootEl.showToast(this.localize('server-connected', 'serverName', this.getServerDisplayName(server)));
       this.maybeShowAutoConnectDialog();
@@ -414,7 +418,23 @@ export class App {
     this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTING});
     try {
       await server.disconnect();
-      this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
+      this.updateServerListItem(serverId, {
+        connectionState: ServerConnectionState.DISCONNECTED,
+      });
+
+      // Wait until the server connection indicator is done animating to update the
+      // address, which potentially will remove it.
+
+      // TODO(daniellacosse): Server connection indicator should broadcast an
+      // animationend event, which the app can respond to.
+      this.rootEl.async(
+        () =>
+          this.updateServerListItem(serverId, {
+            address: server.address,
+          }),
+        SERVER_CONNECTION_INDICATOR_DURATION_MS
+      );
+
       console.log(`disconnected from server ${serverId}`);
       this.rootEl.showToast(this.localize('server-disconnected', 'serverName', this.getServerDisplayName(server)));
     } catch (e) {
@@ -517,7 +537,7 @@ export class App {
       disabled: false,
       errorMessageId: server.errorMessageId,
       isOutlineServer: server.isOutlineServer,
-      name: server.name,
+      name: this.getServerDisplayName(server),
       address: server.address,
       id: server.id,
       connectionState: ServerConnectionState.DISCONNECTED,
@@ -525,7 +545,7 @@ export class App {
   }
 
   private syncServersToUI() {
-    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem);
+    this.rootEl.servers = this.serverRepo.getAll().map(this.makeServerListItem.bind(this));
   }
 
   private syncConnectivityStateToServerCards() {
@@ -578,9 +598,14 @@ export class App {
     if (server.name) {
       return server.name;
     }
-    return (server as Server).isOutlineServer
-      ? this.localize('server-default-name-outline')
-      : this.localize('server-default-name');
+
+    if (server.sessionConfigLocation) {
+      return server.sessionConfigLocation.port === '443'
+        ? server.sessionConfigLocation.hostname
+        : `${server.sessionConfigLocation.hostname}:${server.sessionConfigLocation.port}`;
+    }
+
+    return this.localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name');
   }
 
   // Returns the server having serverId, throws if the server cannot be found.

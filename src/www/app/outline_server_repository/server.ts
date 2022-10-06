@@ -14,12 +14,12 @@
 
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {Server} from '../../model/server';
+import {Server, ServerType} from '../../model/server';
 
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
-import {accessKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -29,17 +29,27 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  private sessionConfig: ShadowsocksSessionConfig;
+  private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
     public readonly id: string,
     public readonly accessKey: string,
+    public readonly type: ServerType,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.sessionConfig = accessKeyToShadowsocksSessionConfig(accessKey);
+    switch (this.type) {
+      case ServerType.DYNAMIC_CONNECTION:
+        this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
+        break;
+      case ServerType.STATIC_CONNECTION:
+      default:
+        this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+        break;
+    }
+
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -69,7 +79,17 @@ export class OutlineServer implements Server {
   }
 
   get address() {
+    if (!this.sessionConfig) return '';
+
     return `${this.sessionConfig.host}:${this.sessionConfig.port}`;
+  }
+
+  get sessionConfigLocation() {
+    if (this.type !== ServerType.DYNAMIC_CONNECTION) {
+      return;
+    }
+
+    return new URL(this.accessKey);
   }
 
   get isOutlineServer() {
@@ -78,6 +98,17 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
+        const {method, password, server, server_port: serverPort} = await (await fetch(this.accessKey)).json();
+
+        this.sessionConfig = {
+          method,
+          password,
+          host: server,
+          port: serverPort,
+        };
+      }
+
       await this.tunnel.start(this.sessionConfig);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
@@ -92,6 +123,10 @@ export class OutlineServer implements Server {
   async disconnect() {
     try {
       await this.tunnel.stop();
+
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
+        this.sessionConfig = undefined;
+      }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
@@ -102,7 +137,12 @@ export class OutlineServer implements Server {
     return this.tunnel.isRunning();
   }
 
+  // NOTE: you should only be calling this method on running servers
   checkReachable(): Promise<boolean> {
+    if (!this.sessionConfig) {
+      return Promise.resolve(false);
+    }
+
     return this.net.isServerReachable(this.sessionConfig.host, this.sessionConfig.port);
   }
 
