@@ -240,17 +240,19 @@ async function quitApp() {
 
 function interceptShadowsocksLink(argv: string[]) {
   if (argv.length > 1) {
-    const protocol = 'ss://';
+    const protocols = ['ss://', 'ssconf://'];
     let url = argv[1];
-    if (url.startsWith(protocol)) {
-      if (mainWindow) {
-        // The system adds a trailing slash to the intercepted URL (before the fragment).
-        // Remove it before sending to the UI.
-        url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
-        // TODO: refactor channel name and namespace to a constant
-        mainWindow.webContents.send('outline-ipc-add-server', url);
-      } else {
-        console.error('called with URL but mainWindow not open');
+    for (const protocol of protocols) {
+      if (url.startsWith(protocol)) {
+        if (mainWindow) {
+          // The system adds a trailing slash to the intercepted URL (before the fragment).
+          // Remove it before sending to the UI.
+          url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
+          // TODO: refactor channel name and namespace to a constant
+          mainWindow.webContents.send('outline-ipc-add-server', url);
+        } else {
+          console.error('called with URL but mainWindow not open');
+        }
       }
     }
   }
@@ -396,6 +398,7 @@ function main() {
   }
 
   app.setAsDefaultProtocolClient('ss');
+  app.setAsDefaultProtocolClient('ssconf');
 
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
