@@ -37,6 +37,7 @@ class ControllerConfig {
  public:
   string socketFilename;
   string loggerFilename;
+  uid_t owningUid;
 
   bool daemonized = false;
   bool onlyShowHelp = false;
@@ -48,10 +49,14 @@ class ControllerConfig {
    */
   ControllerConfig(int argc, char* argv[]) {
     po::options_description desc;
-    desc.add_options()("help,h", "print this message")("daemonize,d", "run in daemon mode")(
-        "socket-filename,s", po::value<string>(),
-        "unix socket filename where controller listen on for commands")(
-        "log-filename,l", po::value<string>(), "the filename to store the loggers output");
+    desc.add_options()
+      ("help,h", "print this message")
+      ("daemonize,d", "run in daemon mode")
+      ("socket-filename,s", po::value<string>(),
+       "unix socket filename where controller listen on for commands")
+      ("owning-user-id,u", po::value<uid_t>()->default_value(-1),
+       "id of the user who owns socket-filename")
+      ("log-filename,l", po::value<string>(), "the filename to store the loggers output");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -78,6 +83,8 @@ class ControllerConfig {
     if (vm.count("daemonize")) {
       daemonized = true;
     }
+
+    owningUid = vm["owning-user-id"].as<uid_t>();
   }
 };
 
@@ -91,7 +98,8 @@ int main(int argc, char* argv[]) {
       if (controllerConfig.onlyShowHelp) return EXIT_SUCCESS;
 
       // Initialise the server.
-      OutlineControllerServer server(io_context, controllerConfig.socketFilename);
+      OutlineControllerServer server{
+        io_context, controllerConfig.socketFilename, controllerConfig.owningUid};
 
       io_context.run();
 

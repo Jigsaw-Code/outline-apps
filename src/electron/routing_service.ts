@@ -15,7 +15,7 @@
 import {createHash} from 'node:crypto';
 import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
-import {platform} from 'os';
+import {platform, userInfo} from 'os';
 import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
@@ -324,7 +324,7 @@ async function installLinuxRoutingServices(): Promise<void> {
     installationFileDescriptors
       .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`)
       .join(' && ');
-  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}"`;
+  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}" "${userInfo().username}"`;
 
   console.log('trying to run command as root: ', command);
   await executeCommandAsRoot(command);
