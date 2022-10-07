@@ -78,12 +78,11 @@ export class App {
     document = window.document
   ) {
     this.feedbackViewEl = rootEl.$.feedbackView;
+    this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
-
-    this.localize = this.rootEl.localize.bind(this.rootEl);
 
     if (urlInterceptor) {
       this.registerUrlInterceptionListener(urlInterceptor);
@@ -553,11 +552,11 @@ export class App {
 
   private throttleServerConnectionChange(serverId: string, time: number) {
     if (this.serverConnectionChangeTimeouts[serverId]) return true;
-    
+
     this.serverConnectionChangeTimeouts[serverId] = true;
 
     setTimeout(() => delete this.serverConnectionChangeTimeouts[serverId], time);
-    
+
     return false;
   }
 
