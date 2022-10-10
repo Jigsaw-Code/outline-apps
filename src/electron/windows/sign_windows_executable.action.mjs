@@ -67,21 +67,23 @@ function getOptionValue(options, argName, envName, required) {
   return v;
 }
 
-function appendPfxJsignArgs(args, options) {
+function concatPfxJsignArgs(args, options) {
   // self-signed development certificate
-  args.push('--storetype', 'PKCS12');
+  let newArgs = args.concat('--storetype', 'PKCS12');
 
   const pfxCert = getOptionValue(options, 'pfx', 'WINDOWS_SIGNING_PFX_CERT', true);
-  args.push('--keystore', pfxCert);
+  newArgs = newArgs.concat('--keystore', pfxCert);
+
+  return newArgs;
 }
 
-function appendDigicertUsbJsignArgs(args, options) {
+function concatDigicertUsbJsignArgs(args, options) {
   // extended validation certificate stored in USB drive
-  args.push('--storetype', 'PKCS11');
+  let newArgs = args.concat('--storetype', 'PKCS11');
 
   const subject = getOptionValue(options, 'subject', 'WINDOWS_SIGNING_EV_CERT_SUBJECT', false);
   if (subject) {
-    args.push('--alias', subject);
+    newArgs = newArgs.concat('--alias', subject);
   }
 
   var eTokenCfg;
@@ -95,21 +97,25 @@ function appendDigicertUsbJsignArgs(args, options) {
     default:
       throw new Error(`we do not support ev signing on ${process.platform}`);
   }
-  args.push('--keystore', eTokenCfg);
+  newArgs = newArgs.concat('--keystore', eTokenCfg);
+
+  return newArgs;
 }
 
-function appendGcpHsmJsignArgs(args, options) {
+function concatGcpHsmJsignArgs(args, options) {
   // Google Cloud Key Management HSM based certificate
-  args.push('--storetype', 'GOOGLECLOUD');
+  let newArgs = args.concat('--storetype', 'GOOGLECLOUD');
 
   const keyRing = getOptionValue(options, 'gcp-keyring', 'WINDOWS_SIGNING_GCP_KEYRING', true);
-  args.push('--keystore', keyRing);
+  newArgs = newArgs.concat('--keystore', keyRing);
 
   const keyName = getOptionValue(options, 'gcp-private-key', 'WINDOWS_SIGNING_GCP_PRIVATE_KEY', true);
-  args.push('--alias', keyName);
+  newArgs = newArgs.concat('--alias', keyName);
 
   const certFile = getOptionValue(options, 'gcp-public-cert', 'WINDOWS_SIGNING_GCP_PUBLIC_CERT', true);
-  args.push('--certfile', certFile);
+  newArgs = newArgs.concat('--certfile', certFile);
+
+  return newArgs;
 }
 
 /**
@@ -159,7 +165,7 @@ export async function signWindowsExecutable(exeFile, algorithm, options) {
 
   const password = getOptionValue(options, 'password', 'WINDOWS_SIGNING_CERT_PASSWORD', true);
 
-  const jsignArgs = [
+  let jsignArgs = [
     '--alg',
     algorithm === 'sha256' ? 'SHA-256' : 'SHA-1',
     '--tsaurl',
@@ -170,13 +176,13 @@ export async function signWindowsExecutable(exeFile, algorithm, options) {
 
   switch (type) {
     case 'pfx':
-      appendPfxJsignArgs(jsignArgs, options);
+      jsignArgs = concatPfxJsignArgs(jsignArgs, options);
       break;
     case 'digicert-usb':
-      appendDigicertUsbJsignArgs(jsignArgs, options);
+      jsignArgs = concatDigicertUsbJsignArgs(jsignArgs, options);
       break;
     case 'gcp-hsm':
-      appendGcpHsmJsignArgs(jsignArgs, options);
+      jsignArgs = concatGcpHsmJsignArgs(jsignArgs, options);
       break;
     default:
       throw new Error(`cert type ${type} is not supported`);
@@ -204,7 +210,7 @@ async function main() {
 }
 
 // Call this script through CLI to sign a Windows executable:
-//   node sign_windows_executable.mjs
+//   npm run action src/electron/windows/sign_windows_executable --
 //     --target <exe-path-to-sign>
 //     --algorithm <sha1|sha256>
 //     --certtype <none|pfx|digicert-usb|gcp-hsm>
@@ -227,9 +233,5 @@ async function main() {
 //   WINDOWS_SIGNING_GCP_PRIVATE_KEY <=> --gcp-private-key
 //   WINDOWS_SIGNING_GCP_PUBLIC_CERT <=> --gcp-public-cert
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try {
-    await main();
-  } catch (err) {
-    console.error(err);
-  }
+  await main();
 }
