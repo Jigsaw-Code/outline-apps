@@ -20,7 +20,7 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default ({networkStack, sentryDsn, appVersion}) => [
+export default ({sentryDsn, appVersion}) => [
   {
     entry: './src/electron/index.ts',
     target: 'electron-main',
@@ -43,7 +43,6 @@ export default ({networkStack, sentryDsn, appVersion}) => [
     },
     plugins: [
       new webpack.DefinePlugin({
-        NETWORK_STACK: JSON.stringify(networkStack),
         SENTRY_DSN: JSON.stringify(sentryDsn),
         APP_VERSION: JSON.stringify(appVersion),
       }),

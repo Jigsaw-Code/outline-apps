@@ -41,9 +41,9 @@ export async function getVersion(platform) {
       return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
     }
     case 'windows':
-      return '1.7.3';
+      return '1.8.0';
     case 'linux':
-      return '1.7.3';
+      return '1.8.0';
     default:
       throw new Error('get_version must be provided a platform argument');
   }

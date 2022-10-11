@@ -24,7 +24,7 @@ const ELECTRON_PLATFORMS = ['linux', 'windows'];
   => an object containing the required electron parameters.
 */
 export function getElectronBuildParameters(parameters) {
-  const {platform, buildMode, stagingPercentage, networkStack, sentryDsn} = getBuildParameters(parameters);
+  const {platform, buildMode, stagingPercentage, sentryDsn} = getBuildParameters(parameters);
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -34,5 +34,5 @@ export function getElectronBuildParameters(parameters) {
     );
   }
 
-  return {platform, buildMode, networkStack, stagingPercentage, sentryDsn};
+  return {platform, buildMode, stagingPercentage, sentryDsn};
 }
