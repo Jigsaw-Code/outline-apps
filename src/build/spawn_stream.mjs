@@ -20,7 +20,7 @@ import {spawn} from 'child_process';
  */
 export const spawnStream = (command, parameters) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters, {shell: true});
+    const childProcess = spawn(command, parameters);
 
     const forEachMessageLine = (buffer, callback) => {
       buffer

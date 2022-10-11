@@ -12,6 +12,6 @@ third_party {
     type: GIT
     value: "https://github.com/ebourg/jsign"
   }
-  version: "4.0"
-  last_upgrade_date { year: 2022 month: 2 day: 28 }
+  version: "4.2"
+  last_upgrade_date { year: 2022 month: 10 day: 6 }
 }
