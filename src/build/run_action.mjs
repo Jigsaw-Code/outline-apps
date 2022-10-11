@@ -55,7 +55,7 @@ const resolveActionPath = async actionPath => {
  *
  * @param {string} actionPath The truncated path to the action you wish to run (e.g. "www/build")
  * @param {...string} parameters The flags and other parameters we want to run the action with.
- * @returns {void}
+ * @returns {Promise<void>}
  */
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);

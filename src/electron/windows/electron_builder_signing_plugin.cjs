@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// CommonJS module is required, ES6 module is not supported by electron-builder:
+//   /outline-client/node_modules/app-builder-lib/out/platformPackager.js:597
+//       const m = require(p);
+//       ^
+//   Error [ERR_REQUIRE_ESM]: require() of ES Module .../electron_builder_signing_plugin.mjs not supported.
+//   Instead change the require of .../electron_builder_signing_plugin.mjs to a dynamic import() which is
+//   available in all CommonJS modules.
+
 /**
  * The entry point which will be called by electron-builder signing module.
  * @param {Object} configuration a configuration containing signing information
@@ -21,9 +29,10 @@
  * @param {Object} configuration.options a duplication of electron-builder.json
  */
 async function electronBuilderEntryPoint(configuration) {
-  // CommonJS module is required, ES6 module is not supported by electron-builder
-  const {signWindowsExecutable} = await import('./sign_windows_executable.action.mjs');
-  await signWindowsExecutable(configuration.path, configuration.hash, null);
+  const {runAction} = await import('../../build/run_action.mjs');
+  await runAction('src/electron/windows/sign_windows_executable',
+    '--target', configuration.path,
+    '--algorithm', configuration.hash);
 }
 
 exports.default = electronBuilderEntryPoint;

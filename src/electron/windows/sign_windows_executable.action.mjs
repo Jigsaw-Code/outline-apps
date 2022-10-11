@@ -150,7 +150,7 @@ function jsign(fileToSign, options) {
  *                         the options will also be read from environment
  *                         variables.
  */
-export async function signWindowsExecutable(exeFile, algorithm, options) {
+async function signWindowsExecutable(exeFile, algorithm, options) {
   const type = getOptionValue(options, 'certtype', 'WINDOWS_SIGNING_CERT_TYPE', false);
   if (!type || type === 'none') {
     console.info(`skip signing "${exeFile}"`);
