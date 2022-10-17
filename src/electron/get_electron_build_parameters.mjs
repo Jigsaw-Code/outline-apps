@@ -36,18 +36,20 @@ export function getElectronBuildParameters(parameters) {
     );
   }
 
-  if (buildMode === 'release' && !publishJson) {
-    throw new TypeError(
-      "You need to add an electron-builder compliant seralized JSON publish config object as a 'publish' flag." +
-        'See here: https://www.electron.build/configuration/publish#publishers'
-    );
-  }
-
   let publish = {};
-  try {
-    publish = JSON.parse(publishJson);
-  } catch (e) {
-    throw new TypeError(`--publish failed to parse with message: ${e.message}`);
+  if (buildMode === 'release') {
+    if (!publishJson) {
+      throw new TypeError(
+        "You need to add an electron-builder compliant seralized JSON publish config object as a 'publish' flag." +
+          'See here: https://www.electron.build/configuration/publish#publishers'
+      );
+    }
+
+    try {
+      publish = JSON.parse(publishJson);
+    } catch (e) {
+      throw new TypeError(`--publish failed to parse with message: ${e.message}`);
+    }
   }
 
   return {platform, buildMode, stagingPercentage, sentryDsn, publish};
