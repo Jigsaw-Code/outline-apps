@@ -42,7 +42,7 @@ export async function main(...parameters) {
 
   // build electron binary
   await electron.build({
-    publish: 'never',
+    publish: buildMode === 'release' ? 'always' : 'never',
     targets: Platform[platform.toLocaleUpperCase()].createTarget(),
     config: {
       ...electronConfig,
