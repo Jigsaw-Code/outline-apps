@@ -36,7 +36,7 @@ export function getElectronBuildParameters(parameters) {
     );
   }
 
-  let publish = {};
+  let publish;
   if (buildMode === 'release') {
     if (!publishJson) {
       throw new TypeError(
