@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import minimist from 'minimist';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
@@ -25,6 +26,7 @@ const ELECTRON_PLATFORMS = ['linux', 'windows'];
 */
 export function getElectronBuildParameters(parameters) {
   const {platform, buildMode, stagingPercentage, sentryDsn} = getBuildParameters(parameters);
+  const {publish: publishJson} = minimist(parameters);
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -34,5 +36,19 @@ export function getElectronBuildParameters(parameters) {
     );
   }
 
-  return {platform, buildMode, stagingPercentage, sentryDsn};
+  if (buildMode === 'release' && !publishJson) {
+    throw new TypeError(
+      "You need to add an electron-builder compliant seralized JSON publish config object as a 'publish' flag." +
+        'See here: https://www.electron.build/configuration/publish#publishers'
+    );
+  }
+
+  let publish = {};
+  try {
+    publish = JSON.parse(publishJson);
+  } catch (e) {
+    throw new TypeError(`--publish failed to parse with message: ${e.message}`);
+  }
+
+  return {platform, buildMode, stagingPercentage, sentryDsn, publish};
 }

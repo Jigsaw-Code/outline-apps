@@ -25,7 +25,7 @@ import path from 'path';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage} = getElectronBuildParameters(parameters);
+  const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
   const version = await getVersion(platform);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
@@ -46,6 +46,7 @@ export async function main(...parameters) {
     targets: Platform[platform.toLocaleUpperCase()].createTarget(),
     config: {
       ...electronConfig,
+      publish,
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
