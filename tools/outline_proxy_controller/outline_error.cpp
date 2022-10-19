@@ -17,59 +17,60 @@
 
 namespace outline {
 
+namespace impl {
+
 /**
  * @brief The error category representing all error codes used by outline.
  */
-class outline_error_category : public std::error_category {
+class OutlineErrorCategory : public std::error_category {
 public:
-  virtual const char *name() const noexcept override;
-  virtual std::string message(int) const override;
+  virtual const char *name() const noexcept override {
+    return "outline";
+  }
+
+  virtual std::string message(int ev) const override {
+    switch (ev) {
+      case static_cast<int>(ErrorCode::kOk):
+        return "ok";
+      case static_cast<int>(ErrorCode::kUnexpected):
+        return "unexpected";
+      case static_cast<int>(ErrorCode::kVpnPermissionDenied):
+        return "vpn permission denied";
+      case static_cast<int>(ErrorCode::kInvalidServerCredentials):
+        return "invalid server credentials";
+      case static_cast<int>(ErrorCode::kUdpRelayNotEnabled):
+        return "udp relay not enabled";
+      case static_cast<int>(ErrorCode::kServerUnreachable):
+        return "server unreachable";
+      case static_cast<int>(ErrorCode::kVpnStartFailure):
+        return "vpn start failure";
+      case static_cast<int>(ErrorCode::kInvalidServerConfiguration):
+        return "invalid server configuration";
+      case static_cast<int>(ErrorCode::kShadowsocksStartFailure):
+        return "shadowsocks start failure";
+      case static_cast<int>(ErrorCode::kConfigureSystemProxyFailure):
+        return "configure system proxy failure";
+      case static_cast<int>(ErrorCode::kAdminPermissionDenied):
+        return "admin permission denied";
+      case static_cast<int>(ErrorCode::kUnsupportedRoutingTable):
+        return "unsupported routing table";
+      case static_cast<int>(ErrorCode::kSystemMisconfigured):
+        return "system misconfigured";
+      default:
+        return "(unrecognized error)";
+    }
+  }
 };
 
-const std::error_category& outline_category() {
-  static outline_error_category singleton;
-  return singleton;
 }
 
-std::error_code make_error_code(outline_errc err) {
-  return {static_cast<int>(err), outline_category()};
+const std::error_category& OutlineErrorCategory() {
+  static impl::OutlineErrorCategory instance;
+  return instance;
 }
 
-const char *outline_error_category::name() const noexcept {
-  return "outline";
-}
-
-std::string outline_error_category::message(int ev) const {
-  switch (ev) {
-    case static_cast<int>(outline_errc::ok):
-      return "ok";
-    case static_cast<int>(outline_errc::unexpected):
-      return "unexpected";
-    case static_cast<int>(outline_errc::vpn_permission_denied):
-      return "vpn permission denied";
-    case static_cast<int>(outline_errc::invalid_server_credentials):
-      return "invalid server credentials";
-    case static_cast<int>(outline_errc::udp_relay_not_enabled):
-      return "udp relay not enabled";
-    case static_cast<int>(outline_errc::server_unreachable):
-      return "server unreachable";
-    case static_cast<int>(outline_errc::vpn_start_failure):
-      return "vpn start failure";
-    case static_cast<int>(outline_errc::invalid_server_configuration):
-      return "invalid server configuration";
-    case static_cast<int>(outline_errc::shadowsocks_start_failure):
-      return "shadowsocks start failure";
-    case static_cast<int>(outline_errc::configure_system_proxy_failure):
-      return "configure system proxy failure";
-    case static_cast<int>(outline_errc::admin_permission_denied):
-      return "admin permission denied";
-    case static_cast<int>(outline_errc::unsupported_routing_table):
-      return "unsupported routing table";
-    case static_cast<int>(outline_errc::system_misconfigured):
-      return "system misconfigured";
-    default:
-      return "(unrecognized error)";
-  }
+std::error_code make_error_code(ErrorCode err) {
+  return {static_cast<int>(err), OutlineErrorCategory()};
 }
 
 }

@@ -25,20 +25,20 @@ namespace outline {
  * @brief The standard error code constants used by outline.
  * @remarks The codes are copied from "/src/www/model/errors.ts".
  */
-enum class outline_errc {
-  ok = 0,
-  unexpected = 1,
-  vpn_permission_denied = 2,
-  invalid_server_credentials = 3,
-  udp_relay_not_enabled = 4,
-  server_unreachable = 5,
-  vpn_start_failure = 6,
-  invalid_server_configuration = 7,
-  shadowsocks_start_failure = 8,
-  configure_system_proxy_failure = 9,
-  admin_permission_denied = 10,
-  unsupported_routing_table = 11,
-  system_misconfigured = 12,
+enum class ErrorCode {
+  kOk = 0,
+  kUnexpected = 1,
+  kVpnPermissionDenied = 2,
+  kInvalidServerCredentials = 3,
+  kUdpRelayNotEnabled = 4,
+  kServerUnreachable = 5,
+  kVpnStartFailure = 6,
+  kInvalidServerConfiguration = 7,
+  kShadowsocksStartFailure = 8,
+  kConfigureSystemProxyFailure = 9,
+  kAdminPermissionDenied = 10,
+  kUnsupportedRoutingTable = 11,
+  kSystemMisconfigured = 12,
 };
 
 /**
@@ -46,13 +46,13 @@ enum class outline_errc {
  * 
  * @return const std::error_category& The outline error category.
  */
-const std::error_category& outline_category();
+const std::error_category& OutlineErrorCategory();
 
 /**
  * @brief Construct an error_code from outline_error.
  * @remarks Can declare in the same namespace thanks to Koenig lookup.
  */
-std::error_code make_error_code(outline::outline_errc);
+std::error_code make_error_code(ErrorCode);
 
 }
 
@@ -60,5 +60,5 @@ namespace std {
 /**
  * @brief Register to STL for implicit conversion to error_code.
  */
-template<> struct is_error_code_enum<outline::outline_errc> : true_type {};
+template<> struct is_error_code_enum<outline::ErrorCode> : true_type {};
 }
