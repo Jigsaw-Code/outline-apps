@@ -42,11 +42,6 @@ const std::string CONFIGURE_ROUTING = "configureRouting";
 const std::string RESET_ROUTING = "resetRouting";
 const std::string GET_DEVICE_NAME = "getDeviceName";
 
-// Error codes to communicate back to the app
-const int SUCCESS = 0;
-const int GENERIC_FAILURE = 1;
-const int UNSUPPORTED_ROUTING_TABLE = 2;
-
 // Minimum length of JSON input from app
 const int JSON_INPUT_MIN_LENGTH = 10;
 

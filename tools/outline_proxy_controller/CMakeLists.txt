@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project (OutlineProxyController)
 set(BOOST_VERSION 1.67)
 set(Boost_USE_STATIC_LIBS ON)
@@ -30,8 +30,9 @@ configure_file (
   "${PROJECT_BINARY_DIR}/OutlineProxyControllerConfig.h"
   )
 
-set(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -Wall -O0 -ggdb ${SANITIZE}")
+set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -ggdb ${SANITIZE}")
 
 include_directories(
     "${Boost_INCLUDE_DIR}")
@@ -41,6 +42,7 @@ add_executable(OutlineProxyController
     outline_proxy_controller.cpp
     outline_controller_server.cpp
     outline_daemon.cpp
+    outline_error.cpp
     logger.cpp
     )
 
