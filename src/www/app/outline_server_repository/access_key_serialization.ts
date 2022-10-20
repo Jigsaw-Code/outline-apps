@@ -31,6 +31,52 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
       password: config.password.data,
     };
   } catch (error) {
-    throw new errors.ServerUrlInvalid(error.message || 'Failed to parse static access key.');
+    throw new errors.ServerAccessKeyInvalid(error.message || 'Failed to parse static access key.');
+  }
+}
+
+// fetches information from a dynamic access key and attempts to parse it
+// TODO(daniellacosse): unit tests
+export async function promiseShadowsocksSessionConfigFromDynamicAccessKey(
+  dynamicKey: string
+): Promise<ShadowsocksSessionConfig> {
+  let response, sessionConfig;
+  try {
+    response = await fetch(dynamicKey);
+  } catch (error) {
+    throw new errors.ServerUnreachable(error.message || 'Failed to fetch VPN information from dynamic access key.');
+  }
+
+  const responseBody = (await response.text()).replace(/“|”/g, '"').trim();
+
+  try {
+    const {method, password, server: host, server_port: port} = JSON.parse(responseBody);
+
+    sessionConfig = {
+      method,
+      password,
+      host,
+      port,
+    };
+  } catch (e) {
+    // Assume it's just the static key text being returned...
+  }
+
+  for (const key of ['method', 'password', 'host', 'port']) {
+    if (sessionConfig && !sessionConfig[key]) {
+      throw new errors.ServerAccessKeyInvalid(
+        `Incomplete VPN information returned from dynamic access key: missing "${key}".`
+      );
+    }
+  }
+
+  if (sessionConfig) return sessionConfig;
+
+  try {
+    return staticKeyToShadowsocksSessionConfig(responseBody);
+  } catch (error) {
+    throw new errors.ServerAccessKeyInvalid(
+      error.message || 'Failed to parse VPN information from returned static access key.'
+    );
   }
 }

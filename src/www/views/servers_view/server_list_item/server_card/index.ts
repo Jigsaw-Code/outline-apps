@@ -57,6 +57,7 @@ const sharedCSS = css`
     border-radius: var(--outline-corner);
     box-shadow: var(--outline-elevation);
     display: grid;
+    gap: var(--outline-slim-gutter);
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
     overflow: hidden;

@@ -19,7 +19,10 @@ import {Server, ServerType} from '../../model/server';
 import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
-import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {
+  promiseShadowsocksSessionConfigFromDynamicAccessKey,
+  staticKeyToShadowsocksSessionConfig,
+} from './access_key_serialization';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -99,14 +102,7 @@ export class OutlineServer implements Server {
   async connect() {
     try {
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        const {method, password, server, server_port: serverPort} = await (await fetch(this.accessKey)).json();
-
-        this.sessionConfig = {
-          method,
-          password,
-          host: server,
-          port: serverPort,
-        };
+        this.sessionConfig = await promiseShadowsocksSessionConfigFromDynamicAccessKey(this.accessKey);
       }
 
       await this.tunnel.start(this.sessionConfig);

@@ -39,6 +39,12 @@ export class ServerUrlInvalid extends CustomError {
   }
 }
 
+export class ServerAccessKeyInvalid extends CustomError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class FeedbackSubmissionError extends CustomError {
   constructor() {
     super();
