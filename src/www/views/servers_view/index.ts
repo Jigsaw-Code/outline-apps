@@ -108,7 +108,8 @@ Polymer({
         </div>
         <div
           class="footer subtle"
-          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+          hidden$="[[languageIsFa]]"
+          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
         ></div>
       </div>
       <user-comms-dialog
