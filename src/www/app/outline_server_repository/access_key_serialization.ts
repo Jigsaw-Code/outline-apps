@@ -35,22 +35,10 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-// fetches information from a dynamic access key and attempts to parse it
-// TODO(daniellacosse): unit tests
-export async function promiseShadowsocksSessionConfigFromDynamicAccessKey(
-  dynamicKey: string
-): Promise<ShadowsocksSessionConfig> {
-  let response, sessionConfig;
+function maybeParseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
+  let sessionConfig;
   try {
-    response = await fetch(dynamicKey);
-  } catch (error) {
-    throw new errors.ServerUnreachable(error.message || 'Failed to fetch VPN information from dynamic access key.');
-  }
-
-  const responseBody = (await response.text()).replace(/“|”/g, '"').trim();
-
-  try {
-    const {method, password, server: host, server_port: port} = JSON.parse(responseBody);
+    const {method, password, server: host, server_port: port} = JSON.parse(maybeJsonText);
 
     sessionConfig = {
       method,
@@ -58,8 +46,9 @@ export async function promiseShadowsocksSessionConfigFromDynamicAccessKey(
       host,
       port,
     };
-  } catch (e) {
-    // Assume it's just the static key text being returned...
+  } catch (_) {
+    // It's not JSON, so return null.
+    return null;
   }
 
   for (const key of ['method', 'password', 'host', 'port']) {
@@ -70,7 +59,24 @@ export async function promiseShadowsocksSessionConfigFromDynamicAccessKey(
     }
   }
 
-  if (sessionConfig) return sessionConfig;
+  return sessionConfig;
+}
+
+// fetches information from a dynamic access key and attempts to parse it
+// TODO(daniellacosse): unit tests
+export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
+  let response;
+  try {
+    response = await fetch(configLocation);
+  } catch (error) {
+    throw new errors.SessionConfigFetchFailed(
+      error.message || 'Failed to fetch VPN information from dynamic access key.'
+    );
+  }
+
+  const responseBody = (await response.text()).replace(/“|”/g, '"').trim();
+
+  if (maybeParseShadowsocksSessionConfigJson(responseBody)) return maybeParseShadowsocksSessionConfigJson(responseBody);
 
   try {
     return staticKeyToShadowsocksSessionConfig(responseBody);
