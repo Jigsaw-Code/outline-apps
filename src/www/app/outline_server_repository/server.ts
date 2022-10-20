@@ -42,7 +42,7 @@ export class OutlineServer implements Server {
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
-        this.sessionConfigLocation = new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
+        this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
         break;
       case ServerType.STATIC_CONNECTION:
       default:
