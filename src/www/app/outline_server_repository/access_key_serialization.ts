@@ -74,7 +74,7 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
     );
   }
 
-  const responseBody = (await response.text()).replace(/“|”/g, '"').trim();
+  const responseBody = (await response.text()).trim();
 
   if (maybeParseShadowsocksSessionConfigJson(responseBody)) return maybeParseShadowsocksSessionConfigJson(responseBody);
 
