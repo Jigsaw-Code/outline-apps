@@ -51,6 +51,7 @@ void session::start() {
           }
         }
         auto [err, result, action] = runClientCommand(clientCommand);
+        // TODO: replace the following code with a json library to handle special characters
         response << "{\"statusCode\": " << err
                  << ",\"returnValue\": \"" << result << "\""
                  << ",\"action\": \"" << action << "\"}" << std::endl;
@@ -138,6 +139,7 @@ std::tuple<int, std::string, std::string> session::runClientCommand(std::string 
   } catch (const std::system_error& err) {
     std::cerr << "[" << err.code() << "] " << err.what() << std::endl;
     if (err.code().category() == OutlineErrorCategory()) {
+      // TODO: add err.what() to give more details to the client
       return {err.code().value(), {}, action};
     }
     return {static_cast<int>(ErrorCode::kUnexpected), {}, action};

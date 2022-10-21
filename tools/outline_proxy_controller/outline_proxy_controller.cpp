@@ -297,6 +297,8 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
 
   backupDNSSetting();
 
+  // TODO: add more details when throwing system_error (e.g., use different error
+  // codes, or append detail messages)
   try {
     createRouteforOutlineServer();
   } catch (exception& e) {
