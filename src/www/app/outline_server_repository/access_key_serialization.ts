@@ -35,7 +35,7 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function maybeParseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
+function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
   let sessionConfig;
   try {
     const {method, password, server: host, server_port: port} = JSON.parse(maybeJsonText);
@@ -76,7 +76,8 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
   const responseBody = (await response.text()).trim();
 
-  if (maybeParseShadowsocksSessionConfigJson(responseBody)) return maybeParseShadowsocksSessionConfigJson(responseBody);
+  const parseShadowsocksSessionResult = parseShadowsocksSessionConfigJson(responseBody);
+  if (parseShadowsocksSessionResult) return parseShadowsocksSessionResult;
 
   try {
     return staticKeyToShadowsocksSessionConfig(responseBody);
