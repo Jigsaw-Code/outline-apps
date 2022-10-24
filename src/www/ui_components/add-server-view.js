@@ -165,7 +165,13 @@ Polymer({
       <div class="footer center top-divider">
         <div
           id="addServerFooter"
+          hidden$="[[showAltAccessMessage]]"
           inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+        ></div>
+        <div
+          id="addServerFooterAlt"
+          hidden$="[[!showAltAccessMessage]]"
+          inner-h-t-m-l="[[localize('server-create-your-own-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
         ></div>
         <div
           id="invalidAccessKeyFooter"
@@ -201,9 +207,15 @@ Polymer({
 
   properties: {
     localize: Function,
+    language: String,
+    platform: String,
     accessKey: {
       type: String,
       observer: '_accessKeyChanged',
+    },
+    showAltAccessMessage: {
+      type: Boolean,
+      computed: '_computeShowAltAccessMessage()',
     },
   },
 
@@ -299,14 +311,21 @@ Polymer({
     input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
       this.$.addServerFooter.hidden = true;
+      this.$.addServerFooterAlt.hidden = true;
       this.$.invalidAccessKeyFooter.hidden = false;
     } else {
-      this.$.addServerFooter.hidden = false;
+      this.$.addServerFooter.hidden = false || this.showAltAccessMessage;
+      this.$.addServerFooterAlt.hidden = false || !this.showAltAccessMessage;
       this.$.invalidAccessKeyFooter.hidden = true;
     }
   },
 
   _disallowScroll: function(event) {
     event.preventDefault();
+  },
+
+  _computeShowAltAccessMessage() {
+    // Hack to show an alternative message
+    return this.language === 'fa' && this.platform !== 'ios';
   },
 });
