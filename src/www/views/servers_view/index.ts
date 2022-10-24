@@ -106,16 +106,18 @@ Polymer({
             <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
           </paper-button>
         </div>
-        <div
-          class="footer subtle"
-          hidden$="[[showAltAccessMessage]]"
-          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
-        ></div>
-        <div
-          class="footer subtle"
-          hidden$="[[!showAltAccessMessage]]"
-          inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
-        ></div>
+        <template is="dom-if" if="[[!showAltAccessMessage]]">
+          <div
+           class="footer subtle"
+            inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+          ></div>
+        </template>
+        <template is="dom-if" if="[[showAltAccessMessage]]">
+          <div
+            class="footer subtle"
+            inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
+          ></div>
+        </template>
       </div>
       <user-comms-dialog
         id="autoConnectDialog"
