@@ -326,6 +326,6 @@ Polymer({
 
   _computeShowAltAccessMessage() {
     // Hack to show an alternative message
-    return this.language === 'fa' && this.platform !== 'ios';
+    return this.language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx';
   },
 });
