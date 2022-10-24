@@ -47,6 +47,7 @@ import './privacy-view.js';
 import '../views/servers_view';
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
+import './login-page.js';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -294,6 +295,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             localize="[[localize]]"
             root-path="[[rootPath]]"
           ></licenses-view>
+
+          <login-page name="login" localize="[[localize]]" on-login-sucessfully="_onLoginSuccess"></login-page>
         </iron-pages>
       </app-header-layout>
 
@@ -412,7 +415,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       DEFAULT_PAGE: {
         type: String,
         readonly: true,
-        value: 'servers',
+        value: localStorage.getItem('outline-user') ? 'servers' : 'login',
       },
       DEFAULT_LANGUAGE: {
         type: String,
@@ -515,6 +518,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       },
       servers: {
         type: Array,
+        value: localStorage.getItem('outline-servers') ? JSON.parse(localStorage.getItem('outline-servers')) : []
       },
       // Tells AppLocalizeBehavior to bubble its
       // app-localize-resources-loaded event, allowing us listen for it on
@@ -765,6 +769,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     return Object.values(languagesAvailable).sort((a, b) => {
       return a.name > b.name ? 1 : -1;
     });
+  }
+
+  _onLoginSuccess(e){
+    this.set('routeData.page', 'servers');
+    if(e.detail){
+      this.set('servers', e.detail)
+    }
   }
 }
 customElements.define(AppRoot.is, AppRoot);
