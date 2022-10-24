@@ -23,9 +23,9 @@
 #include <unistd.h>
 #include <pwd.h>
 
+#include "outline_error.h"
 #include "outline_controller_server.h"
 
-using namespace std;
 using namespace outline;
 using boost::asio::local::stream_protocol;
 
@@ -50,10 +50,11 @@ void session::start() {
             break;
           }
         }
-        auto rc = runClientCommand(clientCommand);
-        response << "{\"statusCode\": " << std::get<0>(rc) << ",\"returnValue\": \""
-                 << std::get<1>(rc) << "\""
-                 << ",\"action\": \"" << std::get<2>(rc) << "\"}" << std::endl;
+        auto [err, result, action] = runClientCommand(clientCommand);
+        // TODO: replace the following code with a json library to handle special characters
+        response << "{\"statusCode\": " << err
+                 << ",\"returnValue\": \"" << result << "\""
+                 << ",\"action\": \"" << action << "\"}" << std::endl;
         boost::asio::async_write(
             socket_, boost::asio::buffer(response.str(), response.str().length()), yield);
         std::cout << "Wrote back (" << response.str() << ") to unix socket" << std::endl;
@@ -94,51 +95,55 @@ std::tuple<int, std::string, std::string> session::runClientCommand(std::string 
     boost::property_tree::read_json(ss, pt);
   } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-    return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", "");
+    return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
   }
 
   boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
   if (_action_iter == pt.not_found()) {
     std::cerr << "Invalid input JSON - action doesn't exist" << std::endl;
-    return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", "");
+    return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
   }
   action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
   // std::cout << action << std::endl;
 
-  if (action == CONFIGURE_ROUTING) {
-    boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
-    if (_parameters_iter == pt.not_found()) {
-      std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-      return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
+  try {
+    if (action == CONFIGURE_ROUTING) {
+      boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
+      if (_parameters_iter == pt.not_found()) {
+        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
+        return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
+      }
+      boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
+      boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
+      if (_proxyIp_iter == parameters.not_found()) {
+        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
+        return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
+      }
+      outline_server_ip =
+          boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
+
+      outlineProxyController_->routeThroughOutline(outline_server_ip);
+      std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
+      return {static_cast<int>(ErrorCode::kOk), {}, action};
+    } else if (action == RESET_ROUTING) {
+      outlineProxyController_->routeDirectly();
+      std::cout << "Reset Routing done" << std::endl;
+      return {static_cast<int>(ErrorCode::kOk), {}, action};
+    } else if (action == GET_DEVICE_NAME) {
+      std::cout << "Get device name done" << std::endl;
+      return {static_cast<int>(ErrorCode::kOk), outlineProxyController_->getTunDeviceName(), action};
+    } else {
+      std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
+      return {static_cast<int>(ErrorCode::kUnexpected), "Undefined Action", {}};
     }
-    boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
-    boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
-    if (_proxyIp_iter == parameters.not_found()) {
-      std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
-      return std::make_tuple(GENERIC_FAILURE, "Invalid JSON", action);
+  } catch (const std::system_error& err) {
+    std::cerr << "[" << err.code() << "] " << err.what() << std::endl;
+    if (err.code().category() == OutlineErrorCategory()) {
+      // TODO: add err.what() to give more details to the client
+      return {err.code().value(), {}, action};
     }
-    outline_server_ip =
-        boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
-
-    // std::cout << "action: [" << action << "]" << std::endl;
-    // std::cout << "outline_server_ip: [" << outline_server_ip << "]" << std::endl;
-
-    outlineProxyController_->routeThroughOutline(outline_server_ip);
-    std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
-    return std::make_tuple(SUCCESS, "", action);
-
-  } else if (action == RESET_ROUTING) {
-    outlineProxyController_->routeDirectly();
-    std::cout << "Reset Routing done" << std::endl;
-    return std::make_tuple(SUCCESS, "", action);
-  } else if (action == GET_DEVICE_NAME) {
-    std::cout << "Reset Routing done" << std::endl;
-    return std::make_tuple(SUCCESS, outlineProxyController_->getTunDeviceName(), action);
-  } else {
-    std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
+    return {static_cast<int>(ErrorCode::kUnexpected), {}, action};
   }
-
-  return std::make_tuple(GENERIC_FAILURE, "Undefined Action", "");
 }
 
 OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_context,
@@ -153,8 +158,11 @@ OutlineControllerServer::OutlineControllerServer(boost::asio::io_context& io_con
     auto outlineGrp = getgrnam(OUTLINE_GRP_NAME);
     if (outlineGrp != nullptr) {
       auto ownerUid = getpwuid(owning_user) != nullptr ? owning_user : -1;
-      chown(unix_socket_name.c_str(), ownerUid, outlineGrp->gr_gid);
-      std::cout << "updated unix socket owner to " << ownerUid << "," << outlineGrp->gr_gid << std::endl;
+      if (chown(unix_socket_name.c_str(), ownerUid, outlineGrp->gr_gid) == 0) {
+        std::cout << "updated unix socket owner to " << ownerUid << "," << outlineGrp->gr_gid << std::endl;
+      } else {
+        std::cerr << "failed to update unix socket owner" << std::endl;
+      }
     } else {
       std::cerr << "failed to get the id of " << OUTLINE_GRP_NAME << " group" << std::endl;
     }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -21,12 +22,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <tuple>
 
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "logger.h"
+#include "outline_error.h"
 #include "outline_proxy_controller.h"
 
 using namespace std;
@@ -156,9 +159,7 @@ OutputAndStatus OutlineProxyController::executeCommand(const std::string command
     received_args.insert(begin(received_args), subCommandName);
   }
 
-  pid_t pid;
-  FILE *pipe;
-  tie(pid, pipe) = safe_popen(commandName.c_str(), received_args);
+  auto [pid, pipe] = safe_popen(commandName.c_str(), received_args);
 
   array<char, 128> buffer;
   string result;
@@ -280,8 +281,9 @@ void OutlineProxyController::detectBestInterfaceIndex() {
 void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   // Sanity checks
   if (outlineServerIP.empty()) {
-    logger.error("Outline Server IP address cannot be empty");
-    throw runtime_error("outlineServerIP is empty");
+    throw std::system_error{
+      ErrorCode::kInvalidServerConfiguration,
+      "Outline Server IP address cannot be empty"};
   }
 
   logger.info("attempting to route through outline server " + outlineServerIP);
@@ -295,6 +297,8 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
 
   backupDNSSetting();
 
+  // TODO: add more details when throwing system_error (e.g., use different error
+  // codes, or append detail messages)
   try {
     createRouteforOutlineServer();
   } catch (exception& e) {
@@ -303,7 +307,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     // We failed to make a route through outline proxy. We just remove the flag
     // indicating DNS is backed up.
     resetFailRoutingAttempt(OUTLINE_PRIORITY_SET_UP);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -312,7 +316,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     logger.error("failed to remove the default route throw the current default router: " +
                  string(e.what()));
     resetFailRoutingAttempt(DEFAULT_GATEWAY_ROUTE_DELETED);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -320,7 +324,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   } catch (exception& e) {
     logger.error("failed to route network traffic through outline tun interfacet: ", e.what());
     resetFailRoutingAttempt(TRAFFIC_ROUTED_THROUGH_TUN);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -330,7 +334,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     logger.error("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
                  string(e.what()));
     resetFailRoutingAttempt(IPV6_ROUTING_FAILED);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -342,7 +346,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     // vulnerable to DNS poisening so we are going to reverse everthing
     logger.error("failed to enforce outline DNS server: ", e.what());
     resetFailRoutingAttempt(OUTLINE_DNS_SET);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   routingStatus = ROUTING_THROUGH_OUTLINE;
