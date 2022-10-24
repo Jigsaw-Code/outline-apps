@@ -207,15 +207,10 @@ Polymer({
 
   properties: {
     localize: Function,
-    language: String,
-    platform: String,
+    showAltAccessMessage: Boolean,
     accessKey: {
       type: String,
       observer: '_accessKeyChanged',
-    },
-    showAltAccessMessage: {
-      type: Boolean,
-      computed: '_computeShowAltAccessMessage()',
     },
   },
 
@@ -322,10 +317,5 @@ Polymer({
 
   _disallowScroll: function(event) {
     event.preventDefault();
-  },
-
-  _computeShowAltAccessMessage() {
-    // Hack to show an alternative message
-    return this.language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx';
   },
 });

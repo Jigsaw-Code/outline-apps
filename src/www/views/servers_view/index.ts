@@ -137,16 +137,11 @@ Polymer({
 
   properties: {
     localize: Function,
-    language: String,
-    platform: String,
+    showAltAccessMessage: Boolean,
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,
       computed: '_computeShouldShowZeroState(servers)',
-    },
-    showAltAccessMessage: {
-      type: Boolean,
-      computed: '_computeShowAltAccessMessage()',
     },
   },
 
@@ -156,10 +151,5 @@ Polymer({
 
   _requestPromptAddServer() {
     this.fire('PromptAddServerRequested', {});
-  },
-
-  _computeShowAltAccessMessage() {
-    // Hack to show an alternative message
-    return this.language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx';
   },
 });
