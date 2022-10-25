@@ -81,7 +81,7 @@
     "babel-loader": "^8.2.2",
     "chalk": "^5.0.1",
     "copy-dir": "^1.3.0",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^11.0.0",
     "cordova-android": "^10.1.1",
     "cordova-browser": "~6.0.0",
     "cordova-ios": "~6.1.0",
