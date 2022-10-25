@@ -163,15 +163,24 @@ Polymer({
         <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
       </paper-input>
       <div class="footer center top-divider">
-        <div
-          id="addServerFooter"
-          inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
-        ></div>
-        <div
-          id="invalidAccessKeyFooter"
-          hidden=""
-          inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<span class=input-invalid>', 'closeLine', '</span><br/>')]]"
-        ></div>
+        <template is="dom-if" if="[[shouldShowNormalAccessMessage]]">
+          <div
+            id="addServerFooter"
+            inner-h-t-m-l="[[localize('server-create-your-own', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+          ></div>
+        </template>
+        <template is="dom-if" if="[[shouldShowAltAccessMessage]]">
+          <div
+            id="addServerFooterAlt"
+            inner-h-t-m-l="[[localize('server-create-your-own-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
+          ></div>
+        </template>
+        <template is="dom-if" if="[[invalidAccessKeyInput]]">
+          <div
+            id="invalidAccessKeyFooter"
+            inner-h-t-m-l="[[localize('server-add-invalid', 'openLine', '<span class=input-invalid>', 'closeLine', '</span><br/>')]]"
+          ></div>
+        </template>
       </div>
     </paper-dialog>
 
@@ -201,9 +210,22 @@ Polymer({
 
   properties: {
     localize: Function,
+    useAltAccessMessage: Boolean,
+    invalidAccessKeyInput: {
+      Boolean,
+      value: false,
+    },
     accessKey: {
       type: String,
       observer: '_accessKeyChanged',
+    },
+    shouldShowNormalAccessMessage: {
+      type: Boolean,
+      computed: '_computeShouldShowNormalAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
+    },
+    shouldShowAltAccessMessage: {
+      type: Boolean,
+      computed: '_computeShouldShowAltAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
     },
   },
 
@@ -298,15 +320,21 @@ Polymer({
     var input = event.target;
     input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
-      this.$.addServerFooter.hidden = true;
-      this.$.invalidAccessKeyFooter.hidden = false;
+      this.invalidAccessKeyInput = input.invalid;
     } else {
-      this.$.addServerFooter.hidden = false;
-      this.$.invalidAccessKeyFooter.hidden = true;
+      this.invalidAccessKeyInput = false;
     }
   },
 
   _disallowScroll: function(event) {
     event.preventDefault();
+  },
+
+  _computeShouldShowNormalAccessMessage(useAltAccessMessage, invalidAccessKeyInput) {
+    return !useAltAccessMessage && !invalidAccessKeyInput;
+  },
+
+  _computeShouldShowAltAccessMessage(useAltAccessMessage, invalidAccessKeyInput) {
+    return useAltAccessMessage && !invalidAccessKeyInput;
   },
 });

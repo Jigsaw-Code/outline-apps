@@ -46,10 +46,6 @@ Polymer({
         color: var(--medium-green);
         text-decoration: none;
       }
-      /* Do not remove, this allows the hidden attribute to work with flex displays. */
-      [hidden] {
-        display: none !important;
-      }
       .server-list-container {
         width: 100%;
         height: 100%;
@@ -98,19 +94,29 @@ Polymer({
       }
     </style>
     <div class="server-list-container">
-      <div class="flex-column-container" hidden$="[[!shouldShowZeroState]]">
+      <template is="dom-if" if="[[shouldShowZeroState]]">
         <div class="flex-column-container">
-          <paper-button noink="" on-tap="_requestPromptAddServer">
-            <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-            <div class="header">[[localize('server-add')]]</div>
-            <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
-          </paper-button>
+          <div class="flex-column-container">
+            <paper-button noink="" on-tap="_requestPromptAddServer">
+              <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+              <div class="header">[[localize('server-add')]]</div>
+              <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
+            </paper-button>
+          </div>
+          <template is="dom-if" if="[[!useAltAccessMessage]]">
+            <div
+             class="footer subtle"
+              inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+            ></div>
+          </template>
+          <template is="dom-if" if="[[useAltAccessMessage]]">
+            <div
+              class="footer subtle"
+              inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
+            ></div>
+          </template>
         </div>
-        <div
-          class="footer subtle"
-          inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
-        ></div>
-      </div>
+      </template>
       <user-comms-dialog
         id="autoConnectDialog"
         localize="[[localize]]"
@@ -118,12 +124,13 @@ Polymer({
         detail-localization-key="auto-connect-dialog-detail"
         fire-event-on-hide="AutoConnectDialogDismissed"
       ></user-comms-dialog>
-      <server-list
-        id="serverList"
-        hidden$="[[shouldShowZeroState]]"
-        servers="[[servers]]"
-        localize="[[localize]]"
-      ></server-list>
+      <template is="dom-if" if="[[!shouldShowZeroState]]">
+        <server-list
+          id="serverList"
+          servers="[[servers]]"
+          localize="[[localize]]"
+        ></server-list>
+      </template>
     </div>
   `,
 
@@ -131,6 +138,7 @@ Polymer({
 
   properties: {
     localize: Function,
+    useAltAccessMessage: Boolean,
     servers: Array,
     shouldShowZeroState: {
       type: Boolean,
