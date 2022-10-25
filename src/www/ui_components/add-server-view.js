@@ -320,7 +320,7 @@ Polymer({
     var input = event.target;
     input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
-      this.invalidAccessKeyInput = true;
+      this.invalidAccessKeyInput = input.invalid;
     } else {
       this.invalidAccessKeyInput = false;
     }
