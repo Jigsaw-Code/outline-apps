@@ -104,6 +104,7 @@ export class GoVpnTunnel implements VpnTunnel {
     console.log(`UDP support: ${this.isUdpEnabled}`);
     await this.tun2socks.start(this.isUdpEnabled);
 
+    console.log('starting routing daemon');
     await this.routing.start();
   }
 
@@ -225,7 +226,8 @@ class GoTun2socks {
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
     //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
-    //   -proxyCipher chacha20-ietf-poly1035 [-dnsFallback] [-checkConnectivity]
+    //   -proxyCipher chacha20-ietf-poly1035
+    //   [-dnsFallback] [-checkConnectivity] [-proxyPrefix]
     const args: string[] = [];
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
@@ -236,6 +238,7 @@ class GoTun2socks {
     args.push('-proxyPort', `${this.config.port}`);
     args.push('-proxyPassword', this.config.password || '');
     args.push('-proxyCipher', this.config.method || '');
+    args.push('-proxyPrefix', encodeURI(this.config.prefix || ''));
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
@@ -287,6 +290,7 @@ async function checkConnectivity(config: ShadowsocksSessionConfig) {
   args.push('-proxyPort', `${config.port}`);
   args.push('-proxyPassword', config.password || '');
   args.push('-proxyCipher', config.method || '');
+  args.push('-proxyPrefix', encodeURI(config.prefix || ''));
   // Checks connectivity and exits with an error code as defined in `errors.ErrorCode`
   // -tun* and -dnsFallback options have no effect on this mode.
   args.push('-checkConnectivity');
@@ -296,7 +300,7 @@ async function checkConnectivity(config: ShadowsocksSessionConfig) {
     await exec(pathToEmbeddedBinary('outline-go-tun2socks', 'tun2socks'), args);
   } catch (e) {
     console.error(`connectivity check failed: ${e}`);
-    const code = e.status;
+    const code = e.code;
     if (code === errors.ErrorCode.UDP_RELAY_NOT_ENABLED) {
       // Don't treat lack of UDP support as an error, relay to the caller.
       return false;

@@ -17,6 +17,7 @@ export interface ShadowsocksSessionConfig {
   port?: number;
   password?: string;
   method?: string;
+  prefix?: string;
 }
 
 export const enum TunnelStatus {

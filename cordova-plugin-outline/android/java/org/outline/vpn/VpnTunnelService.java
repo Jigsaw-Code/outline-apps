@@ -173,6 +173,16 @@ public class VpnTunnelService extends VpnService {
     } catch (JSONException e) {
       LOG.fine("Tunnel config missing name");
     }
+    try {
+      String prefix = config.getString("prefix");
+      LOG.fine("Activating experimental prefix support");
+      tunnelConfig.proxy.prefix = new byte[prefix.length()];
+      for (int i = 0; i < prefix.length(); i++) {
+        tunnelConfig.proxy.prefix[i] = (byte)prefix[i];
+      }
+    } catch (JSONException e) {
+      // pass
+    }
     return tunnelConfig;
   }
 
@@ -233,8 +243,7 @@ public class VpnTunnelService extends VpnService {
     final boolean remoteUdpForwardingEnabled =
         isAutoStart ? tunnelStore.isUdpSupported() : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
-      vpnTunnel.connectTunnel(proxyConfig.host, proxyConfig.port, proxyConfig.password,
-          proxyConfig.method, remoteUdpForwardingEnabled);
+      vpnTunnel.connectTunnel(proxyConfig, remoteUdpForwardingEnabled);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();

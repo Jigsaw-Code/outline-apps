@@ -27,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import tun2socks.OutlineTunnel;
 import tun2socks.Tun2socks;
+import org.outline.shadowsocks.ShadowsocksConfig;
+
 
 /**
  * Manages the life-cycle of the system VPN, and of the tunnel that processes its traffic.
@@ -120,19 +122,15 @@ public class VpnTunnel {
   /**
    * Connects a tunnel between a Shadowsocks proxy server and the VPN TUN interface.
    *
-   * @param host is  IP address of the SOCKS proxy server.
-   * @param port is the port of the SOCKS proxy server.
-   * @param password is the password of the Shadowsocks proxy.
-   * @param cipher is the encryption cipher used by the Shadowsocks proxy.
+   * @param config provides the IP address, port, password, and cipher used by the Shadowsocks proxy.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
    * @throws Exception when the tunnel fails to connect.
    */
-  public synchronized void connectTunnel(final String host, int port, final String password,
-      final String cipher, boolean isUdpEnabled) throws Exception {
+  public synchronized void connectTunnel(final ShadowsocksConfig config, boolean isUdpEnabled) throws Exception {
     LOG.info("Connecting the tunnel.");
-    if (host == null || port <= 0 || port > 65535 || password == null || cipher == null) {
+    if (host == null || config.port <= 0 || config.port > 65535 || config.password == null || config.cipher == null) {
       throw new IllegalArgumentException("Must provide valid Shadowsocks proxy parameters.");
     }
     if (tunFd == null) {
@@ -144,7 +142,7 @@ public class VpnTunnel {
 
     LOG.fine("Starting tun2socks...");
     tunnel = Tun2socks.connectShadowsocksTunnel(
-        tunFd.getFd(), host, port, password, cipher, isUdpEnabled);
+        tunFd.getFd(), config.host, config.port, config.password, config.cipher, config.prefix, isUdpEnabled);
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */
