@@ -19,5 +19,5 @@ parcelable ShadowsocksConfig {
   int port;
   String password;
   String method;
-  byte[] prefix;
+  @nullable byte[] prefix;
 }

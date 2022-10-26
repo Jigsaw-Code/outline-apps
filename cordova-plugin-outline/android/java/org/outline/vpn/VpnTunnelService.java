@@ -30,7 +30,6 @@ import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Base64;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -175,13 +174,14 @@ public class VpnTunnelService extends VpnService {
       LOG.fine("Tunnel config missing name");
     }
     try {
-      String prefixBase64 = config.getString("prefixBase64");
-      tunnelConfig.proxy.prefix = Base64.decode(prefixBase64, Base64.DEFAULT);
+      String prefix = config.getString("prefix");
       LOG.fine("Activating experimental prefix support");
+      tunnelConfig.proxy.prefix = new byte[prefix.length()];
+      for (int i = 0; i < prefix.length(); i++) {
+        tunnelConfig.proxy.prefix[i] = (byte)prefix.charAt(i);
+      }
     } catch (JSONException e) {
       // pass
-    } catch (IllegalArgumentException e) {
-      LOG.warning("Base64 error while decoding prefix");
     }
     return tunnelConfig;
   }
@@ -450,7 +450,15 @@ public class VpnTunnelService extends VpnService {
       proxyConfig.put("port", config.proxy.port);
       proxyConfig.put("password", config.proxy.password);
       proxyConfig.put("method", config.proxy.method);
-      proxyConfig.put("prefix", Base64.encode(config.proxy.prefix, Base64.DEFAULT));
+
+      if (config.proxy.prefix != null) {
+        char[] chars = new char[config.proxy.prefix.length];
+        for (int i = 0; i < config.proxy.prefix.length; i++) {
+          chars[i] = (char)(config.proxy.prefix[i] & 0xFF);
+        }
+        proxyConfig.put("prefix", new String(chars));
+      }
+
       tunnel.put(TUNNEL_ID_KEY, config.id).put(TUNNEL_CONFIG_KEY, proxyConfig);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
