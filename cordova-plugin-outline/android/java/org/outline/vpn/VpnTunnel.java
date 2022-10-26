@@ -122,16 +122,16 @@ public class VpnTunnel {
   /**
    * Connects a tunnel between a Shadowsocks proxy server and the VPN TUN interface.
    *
-   * @param config provides the IP address, port, password, and cipher used by the Shadowsocks proxy.
+   * @param client provides access to the Shadowsocks proxy.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
    * @throws Exception when the tunnel fails to connect.
    */
-  public synchronized void connectTunnel(final ShadowsocksConfig config, boolean isUdpEnabled) throws Exception {
+  public synchronized void connectTunnel(final shadowsocks.Client client, boolean isUdpEnabled) throws Exception {
     LOG.info("Connecting the tunnel.");
-    if (host == null || config.port <= 0 || config.port > 65535 || config.password == null || config.cipher == null) {
-      throw new IllegalArgumentException("Must provide valid Shadowsocks proxy parameters.");
+    if (client == null) {
+      throw new IllegalArgumentException("Must provide a Shadowsocks client.");
     }
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
@@ -141,8 +141,7 @@ public class VpnTunnel {
     }
 
     LOG.fine("Starting tun2socks...");
-    tunnel = Tun2socks.connectShadowsocksTunnel(
-        tunFd.getFd(), config.host, config.port, config.password, config.cipher, config.prefix, isUdpEnabled);
+    tunnel = Tun2socks.connectShadowsocksTunnel(tunFd.getFd(), client, isUdpEnabled);
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */

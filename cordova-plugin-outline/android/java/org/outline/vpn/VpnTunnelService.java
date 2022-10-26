@@ -30,6 +30,7 @@ import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Base64;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,14 +175,13 @@ public class VpnTunnelService extends VpnService {
       LOG.fine("Tunnel config missing name");
     }
     try {
-      String prefix = config.getString("prefix");
+      String prefixBase64 = config.getString("prefixBase64");
+      tunnelConfig.proxy.prefix = Base64.decode(prefixBase64, Base64.DEFAULT);
       LOG.fine("Activating experimental prefix support");
-      tunnelConfig.proxy.prefix = new byte[prefix.length()];
-      for (int i = 0; i < prefix.length(); i++) {
-        tunnelConfig.proxy.prefix[i] = (byte)prefix[i];
-      }
     } catch (JSONException e) {
       // pass
+    } catch (IllegalArgumentException e) {
+      LOG.warning("Base64 error while decoding prefix");
     }
     return tunnelConfig;
   }
@@ -211,13 +211,26 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final ShadowsocksConfig proxyConfig = config.proxy;
+    final shadowsocks.Config configCopy = new shadowsocks.Config();
+    configCopy.setHost(config.proxy.host);
+    configCopy.setPort(config.proxy.port);
+    configCopy.setCipherName(config.proxy.method);
+    configCopy.setPassword(config.proxy.password);
+    configCopy.setPrefix(config.proxy.prefix);
+    final shadowsocks.Client client;
+    try {
+      client = new shadowsocks.Client(configCopy);
+    } catch (Exception e) {
+      tearDownActiveTunnel();
+      return OutlinePlugin.ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+    }
+
     OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
     if (!isAutoStart) {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        errorCode = checkServerConnectivity(proxyConfig);
+        errorCode = checkServerConnectivity(client);
         if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
                 || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
           tearDownActiveTunnel();
@@ -243,7 +256,7 @@ public class VpnTunnelService extends VpnService {
     final boolean remoteUdpForwardingEnabled =
         isAutoStart ? tunnelStore.isUdpSupported() : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
     try {
-      vpnTunnel.connectTunnel(proxyConfig, remoteUdpForwardingEnabled);
+      vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();
@@ -295,10 +308,9 @@ public class VpnTunnelService extends VpnService {
 
   // Shadowsocks
 
-  private OutlinePlugin.ErrorCode checkServerConnectivity(final ShadowsocksConfig config) {
+  private OutlinePlugin.ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
     try {
-      long errorCode = shadowsocks.Shadowsocks.checkConnectivity(
-          config.host, config.port, config.password, config.method);
+      long errorCode = Shadowsocks.checkConnectivity(client);
       OutlinePlugin.ErrorCode result = OutlinePlugin.ErrorCode.values()[(int) errorCode];
       LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
       return result;
@@ -438,6 +450,7 @@ public class VpnTunnelService extends VpnService {
       proxyConfig.put("port", config.proxy.port);
       proxyConfig.put("password", config.proxy.password);
       proxyConfig.put("method", config.proxy.method);
+      proxyConfig.put("prefix", Base64.encode(config.proxy.prefix, Base64.DEFAULT));
       tunnel.put(TUNNEL_ID_KEY, config.id).put(TUNNEL_CONFIG_KEY, proxyConfig);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
