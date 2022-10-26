@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ChildProcess, spawn} from 'child_process';
-import * as path from 'path';
+import {ChildProcess, spawn} from 'node:child_process';
+import {basename} from 'node:path';
+import process from 'node:process';
 
 // Simple "one shot" child process launcher.
 //
@@ -22,89 +23,107 @@ import * as path from 'path';
 //       (which may be immediately after calling #startInternal if, e.g. the binary cannot be
 //       found).
 export class ChildProcessHelper {
-  private process?: ChildProcess;
-  protected isInDebugMode = false;
+  private readonly processName: string;
+  private subProcess?: ChildProcess = null;
+  private exitCodePromise?: Promise<number | string> = Promise.resolve('not started');
+  private isDebug = false;
 
-  private exitListener?: (code?: number, signal?: string) => void;
   private stdErrListener?: (data?: string | Buffer) => void;
 
-  constructor(private path: string) {}
+  constructor(private readonly path: string) {
+    this.processName = basename(this.path);
+  }
 
   /**
    * Starts the process with the given args. If enableDebug() has been called, then the process is
-   * started in verbose mode if supported.
+   * started in verbose mode if supported. This method will only start the process, it will not
+   * wait for it to be ended. Please use stop() or waitForExit() instead.
    * @param args The args for the process
    */
-  launch(args: string[]) {
-    this.process = spawn(this.path, args);
-    const processName = path.basename(this.path);
-
-    const onExit = (code?: number, signal?: string) => {
-      if (this.process) {
-        this.process.removeAllListeners();
-      }
-      if (this.exitListener) {
-        this.exitListener(code, signal);
-      }
-
-      logExit(processName, code, signal);
-    };
-    const onStdErr = (data?: string | Buffer) => {
-      if (this.isInDebugMode) {
-        console.error(`[STDERR - ${processName}]: ${data}`);
-      }
-      if (this.stdErrListener) {
-        this.stdErrListener(data);
-      }
-    };
-    this.process.stderr.on('data', onStdErr.bind(this));
-
-    if (this.isInDebugMode) {
-      // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
-      // send web traffic information to Sentry.
-      this.process.stdout.pipe(process.stdout);
-      this.process.stderr.pipe(process.stderr);
+  launch(args: string[]): void {
+    if (this.subProcess) {
+      throw new Error(`subprocess ${this.processName} has already been launched`);
     }
+    this.subProcess = spawn(this.path, args);
+    this.exitCodePromise = new Promise(resolve => {
+      const onExit = (code?: number, signal?: string) => {
+        if (this.subProcess) {
+          this.subProcess.removeAllListeners();
+          this.subProcess = null;
+        } else {
+          // When listening to both the 'exit' and 'error' events, guard against accidentally
+          // invoking handler functions multiple times.
+          return;
+        }
 
-    // We have to listen for both events: error means the process could not be launched and in that
-    // case exit will not be invoked.
-    this.process.on('error', onExit.bind(this));
-    this.process.on('exit', onExit.bind(this));
+        logExit(this.processName, code, signal);
+        resolve(code ?? signal);
+      };
+
+      const onStdErr = (data?: string | Buffer) => {
+        if (this.isDebugModeEnabled) {
+          console.error(`[STDERR - ${this.processName}]: ${data}`);
+        }
+        if (this.stdErrListener) {
+          this.stdErrListener(data);
+        }
+      };
+      this.subProcess.stderr.on('data', onStdErr.bind(this));
+
+      if (this.isDebugModeEnabled) {
+        // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
+        // send web traffic information to Sentry.
+        this.subProcess.stdout.pipe(process.stdout);
+        this.subProcess.stderr.pipe(process.stderr);
+      }
+
+      // We have to listen for both events: error means the process could not be launched and in that
+      // case exit will not be invoked.
+      this.subProcess.on('error', onExit.bind(this));
+      this.subProcess.on('exit', onExit.bind(this));
+    });
   }
 
-  // Use #onExit to be notified when the process exits.
-  stop() {
-    if (!this.process) {
+  /**
+   * Try to kill the process and wait for the exit code.
+   * @returns Either an exit code or a signal string (if the process is ended by a signal).
+   */
+  stop(): Promise<number | string> {
+    if (!this.subProcess) {
       // Never started.
-      if (this.exitListener) {
-        this.exitListener(null, null);
-      }
       return;
     }
-
-    this.process.kill();
+    this.subProcess.kill();
+    return this.exitCodePromise;
   }
 
-  set onExit(newListener: ((code?: number, signal?: string) => void) | undefined) {
-    this.exitListener = newListener;
+  /**
+   * Wait for the process to end, and get out the exit code.
+   * @returns Either an exit code or a signal string (if the process is ended by a signal).
+   */
+  waitForEnd(): Promise<number | string> {
+    return this.exitCodePromise;
   }
 
   set onStdErr(listener: ((data?: string | Buffer) => void) | undefined) {
     this.stdErrListener = listener;
     if (!this.stdErrListener && !this.isDebugModeEnabled) {
-      this.process.stderr.removeAllListeners();
+      this.subProcess?.stderr.removeAllListeners();
     }
   }
 
   /**
-   * Enables verbose logging for the process.  Must be called before launch().
+   * Whether to enable verbose logging for the process.  Must be called before launch().
    */
-  enableDebugMode() {
-    this.isInDebugMode = true;
+  set isDebugModeEnabled(value: boolean) {
+    this.isDebug = value;
   }
 
-  get isDebugModeEnabled() {
-    return this.isInDebugMode;
+  /**
+   * Get a value indicates whether verbose logging for the process is enabled.
+   */
+  get isDebugModeEnabled(): boolean {
+    return this.isDebug;
   }
 }
 
