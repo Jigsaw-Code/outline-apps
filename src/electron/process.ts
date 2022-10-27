@@ -16,6 +16,24 @@ import {ChildProcess, spawn} from 'node:child_process';
 import {basename} from 'node:path';
 import process from 'node:process';
 
+/**
+ * A child process is terminated abnormally, caused by a non-zero exit code.
+ */
+export class ProcessTerminatedExitCodeError extends Error {
+  constructor(public readonly exitCode: number) {
+    super(`Process terminated by non-zero exit code: ${exitCode}`);
+  }
+}
+
+/**
+ * A child process is terminated abnormally, caused by a signal string.
+ */
+export class ProcessTerminatedSignalError extends Error {
+  constructor(public readonly signal: string) {
+    super(`Process terminated by signal: ${signal}`);
+  }
+}
+
 // Simple "one shot" child process launcher.
 //
 // NOTE: Because there is no way in Node.js to tell whether a process launched successfully,
@@ -24,9 +42,13 @@ import process from 'node:process';
 //       found).
 export class ChildProcessHelper {
   private readonly processName: string;
-  private subProcess?: ChildProcess = null;
-  private exitCodePromise?: Promise<number | string> = Promise.resolve('not started');
-  private isDebug = false;
+  private childProcess?: ChildProcess = null;
+  private waitProcessToExit?: Promise<void>;
+
+  /**
+   * Whether to enable verbose logging for the process.  Must be called before launch().
+   */
+  public isDebugModeEnabled = false;
 
   private stdErrListener?: (data?: string | Buffer) => void;
 
@@ -35,21 +57,24 @@ export class ChildProcessHelper {
   }
 
   /**
-   * Starts the process with the given args. If enableDebug() has been called, then the process is
-   * started in verbose mode if supported. This method will only start the process, it will not
-   * wait for it to be ended. Please use stop() or waitForExit() instead.
+   * Start the process with the given args and wait for the process to exit. If `isDebugModeEnabled`
+   * is `true`, the process is started in verbose mode if supported.
+   *
+   * If the process does not exist normally (i.e., exit code !== 0 or received a signal), it will
+   * throw either `ProcessTerminatedExitCodeError` or `ProcessTerminatedSignalError`.
+   *
    * @param args The args for the process
    */
-  launch(args: string[]): void {
-    if (this.subProcess) {
+  async launch(args: string[]): Promise<void> {
+    if (this.childProcess) {
       throw new Error(`subprocess ${this.processName} has already been launched`);
     }
-    this.subProcess = spawn(this.path, args);
-    this.exitCodePromise = new Promise(resolve => {
+    this.childProcess = spawn(this.path, args);
+    return (this.waitProcessToExit = new Promise((resolve, reject) => {
       const onExit = (code?: number, signal?: string) => {
-        if (this.subProcess) {
-          this.subProcess.removeAllListeners();
-          this.subProcess = null;
+        if (this.childProcess) {
+          this.childProcess.removeAllListeners();
+          this.childProcess = null;
         } else {
           // When listening to both the 'exit' and 'error' events, guard against accidentally
           // invoking handler functions multiple times.
@@ -57,7 +82,13 @@ export class ChildProcessHelper {
         }
 
         logExit(this.processName, code, signal);
-        resolve(code ?? signal);
+        if (code === 0) {
+          resolve();
+        } else if (code) {
+          reject(new ProcessTerminatedExitCodeError(code));
+        } else {
+          reject(new ProcessTerminatedSignalError(signal));
+        }
       };
 
       const onStdErr = (data?: string | Buffer) => {
@@ -68,62 +99,42 @@ export class ChildProcessHelper {
           this.stdErrListener(data);
         }
       };
-      this.subProcess.stderr.on('data', onStdErr.bind(this));
+      this.childProcess.stderr.on('data', onStdErr.bind(this));
 
       if (this.isDebugModeEnabled) {
         // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
         // send web traffic information to Sentry.
-        this.subProcess.stdout.pipe(process.stdout);
-        this.subProcess.stderr.pipe(process.stderr);
+        this.childProcess.stdout.pipe(process.stdout);
+        this.childProcess.stderr.pipe(process.stderr);
       }
 
       // We have to listen for both events: error means the process could not be launched and in that
       // case exit will not be invoked.
-      this.subProcess.on('error', onExit.bind(this));
-      this.subProcess.on('exit', onExit.bind(this));
-    });
+      this.childProcess.on('error', onExit.bind(this));
+      this.childProcess.on('exit', onExit.bind(this));
+    }));
   }
 
   /**
-   * Try to kill the process and wait for the exit code.
-   * @returns Either an exit code or a signal string (if the process is ended by a signal).
+   * Try to kill the process and wait for the process to exit.
+   *
+   * If the process does not exist normally (i.e., exit code !== 0 or received a signal), it will
+   * throw either `ProcessTerminatedExitCodeError` or `ProcessTerminatedSignalError`.
    */
-  stop(): Promise<number | string> {
-    if (!this.subProcess) {
+  stop(): Promise<void> {
+    if (!this.childProcess) {
       // Never started.
       return;
     }
-    this.subProcess.kill();
-    return this.exitCodePromise;
-  }
-
-  /**
-   * Wait for the process to end, and get out the exit code.
-   * @returns Either an exit code or a signal string (if the process is ended by a signal).
-   */
-  waitForEnd(): Promise<number | string> {
-    return this.exitCodePromise;
+    this.childProcess.kill();
+    return this.waitProcessToExit;
   }
 
   set onStdErr(listener: ((data?: string | Buffer) => void) | undefined) {
     this.stdErrListener = listener;
     if (!this.stdErrListener && !this.isDebugModeEnabled) {
-      this.subProcess?.stderr.removeAllListeners();
+      this.childProcess?.stderr.removeAllListeners();
     }
-  }
-
-  /**
-   * Whether to enable verbose logging for the process.  Must be called before launch().
-   */
-  set isDebugModeEnabled(value: boolean) {
-    this.isDebug = value;
-  }
-
-  /**
-   * Get a value indicates whether verbose logging for the process is enabled.
-   */
-  get isDebugModeEnabled(): boolean {
-    return this.isDebug;
   }
 }
 
