@@ -14,7 +14,7 @@
 
 cmake_minimum_required (VERSION 3.1)
 project (OutlineProxyController)
-set(BOOST_VERSION 1.67)
+set(BOOST_VERSION 1.80)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS
                                                         regex
@@ -31,7 +31,6 @@ configure_file (
   )
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -ggdb ${SANITIZE}")
 
 include_directories(
@@ -46,6 +45,7 @@ add_executable(OutlineProxyController
     logger.cpp
     )
 
+target_compile_features(OutlineProxyController PRIVATE cxx_std_20)
 target_link_libraries(OutlineProxyController
     ${Boost_LIBRARIES}
 )

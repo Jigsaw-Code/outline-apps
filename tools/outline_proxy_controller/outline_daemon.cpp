@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <syslog.h>
-#include <unistd.h>
-#include <array>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 
-#include <boost/asio/io_context.hpp>
+#include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
+#include <syslog.h>
+#include <unistd.h>
 
 #include "logger.h"
 #include "outline_controller_server.h"
@@ -93,16 +93,14 @@ int main(int argc, char* argv[]) {
     boost::asio::io_context io_context;
 
     try {
-      ControllerConfig controllerConfig(argc, argv);
-
-      if (controllerConfig.onlyShowHelp) return EXIT_SUCCESS;
+      ControllerConfig config(argc, argv);
+      if (config.onlyShowHelp) return EXIT_SUCCESS;
 
       // Initialise the server.
-      OutlineControllerServer server{
-        io_context, controllerConfig.socketFilename, controllerConfig.owningUid};
+      OutlineControllerServer server{config.socketFilename, config.owningUid};
+      boost::asio::co_spawn(io_context, server.Start(), boost::asio::detached);
 
       io_context.run();
-
     } catch (std::exception& e) {
       syslog(LOG_ERR | LOG_USER, "Exception: %s", e.what());
       std::cerr << "Exception: " << e.what() << std::endl;

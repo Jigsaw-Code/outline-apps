@@ -12,8 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 RUN apt update && apt dist-upgrade -y
 # Preempt interactive tzdata prompt
 RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get -y install tzdata
-RUN apt install -y build-essential cmake libboost-all-dev
+RUN apt install -y build-essential gcc-11 g++-11 cmake wget
+
+# Install boost 1.80 manually (apt install libboost-all-dev is 1.74 at the time of writing)
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.bz2 \
+    && tar --bzip2 -xf ./boost_1_80_0.tar.bz2
+RUN cd boost_1_80_0 \
+    && ./bootstrap.sh \
+    && ./b2 install
