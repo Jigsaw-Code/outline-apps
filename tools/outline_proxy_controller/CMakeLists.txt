@@ -46,6 +46,7 @@ add_executable(OutlineProxyController
     )
 
 target_compile_features(OutlineProxyController PRIVATE cxx_std_20)
+target_compile_options(OutlineProxyController PRIVATE "-fcoroutines")
 target_link_libraries(OutlineProxyController
-    ${Boost_LIBRARIES}
-)
+    -static-libstdc++
+    ${Boost_LIBRARIES})
