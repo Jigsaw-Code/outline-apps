@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -26,6 +26,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "logger.h"
 #include "outline_controller_server.h"
 #include "outline_error.h"
 
@@ -42,12 +43,12 @@ static const int kChannelBufferSize = 1024;
 /**
  * @brief Checks the input string and returns true if it's a valid json.
  */
-static bool IsValidJson(const std::string &input) {
-  if (input.length() >= kJsonInputMinLength) {
+static bool IsValidJson(const std::string &raw_str) {
+  if (raw_str.length() >= kJsonInputMinLength) {
     try {
+      std::istringstream input{raw_str};
       boost::property_tree::ptree pt;
       boost::property_tree::read_json(input, pt);
-      std::cout << "Valid JSON" << std::endl;
       return true;
     } catch (std::exception const& e) {
     }
@@ -56,16 +57,21 @@ static bool IsValidJson(const std::string &input) {
 }
 
 OutlineClientSession::OutlineClientSession(
-  boost::asio::local::stream_protocol::socket channel,
+  boost::asio::local::stream_protocol::socket &&channel,
   std::shared_ptr<OutlineProxyController> outline_proxy_controller)
   : channel_(std::move(channel)),
     outline_controller_(outline_proxy_controller)
-{}
+{
+  logger.info("client session started");
+}
+
+OutlineClientSession::~OutlineClientSession() {
+  logger.info("client session terminated");
+}
 
 boost::asio::awaitable<void> OutlineClientSession::Start() {
   using namespace boost::asio;
 
-  std::cout << "Client Connected" << std::endl;
   try {
     std::string client_command, raw_buffer;
     std::ostringstream response;
@@ -73,7 +79,6 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
       do {
         co_await async_read_until(
           channel_, dynamic_buffer(raw_buffer, kChannelBufferSize), "}", use_awaitable);
-        std::cout << raw_buffer << std::endl;
         client_command.append(raw_buffer);
         raw_buffer.clear();
       } while (!IsValidJson(client_command));
@@ -85,7 +90,7 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
                << ",\"action\": \"" << result.action << "\"}";
 
       co_await async_write(channel_, buffer(response.str()), use_awaitable);
-      std::cout << "Wrote back \"" << response.str() << "\" to unix socket" << std::endl;
+      logger.debug("Wrote back \"" + response.str() + "\" to unix socket");
       client_command.clear();
       response.str(std::string{});
     }
@@ -95,7 +100,7 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
 }
 
 OutlineClientSession::CommandResult OutlineClientSession::RunClientCommand(const std::string &command) {
-  std::cout << command << std::endl;
+  logger.debug("handling client request \"" + command + "\"...");
 
   std::stringstream ss;
   ss << command;
@@ -106,50 +111,50 @@ OutlineClientSession::CommandResult OutlineClientSession::RunClientCommand(const
   try {
     boost::property_tree::read_json(ss, pt);
   } catch (std::exception const& e) {
-    std::cerr << e.what() << std::endl;
+    logger.error(e.what());
     return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
   }
 
   boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
   if (_action_iter == pt.not_found()) {
-    std::cerr << "Invalid input JSON - action doesn't exist" << std::endl;
+    logger.error("Invalid input JSON - action doesn't exist");
     return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
   }
   action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
-  // std::cout << action << std::endl;
+  logger.debug("handling action \"" + action + "\"");
 
   try {
     if (action == CONFIGURE_ROUTING) {
       boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
       if (_parameters_iter == pt.not_found()) {
-        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
+        logger.error("Invalid input JSON - parameters doesn't exist");
         return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
       }
       boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
       boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
       if (_proxyIp_iter == parameters.not_found()) {
-        std::cerr << "Invalid input JSON - parameters doesn't exist" << std::endl;
+        logger.error("Invalid input JSON - parameters doesn't exist");
         return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
       }
       outline_server_ip =
           boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
 
       outline_controller_->routeThroughOutline(outline_server_ip);
-      std::cout << "Configure Routing to " << outline_server_ip << " is done." << std::endl;
+      logger.info("Configure Routing to " + outline_server_ip + " is done.");
       return {static_cast<int>(ErrorCode::kOk), {}, action};
     } else if (action == RESET_ROUTING) {
       outline_controller_->routeDirectly();
-      std::cout << "Reset Routing done" << std::endl;
+      logger.info("Reset Routing done");
       return {static_cast<int>(ErrorCode::kOk), {}, action};
     } else if (action == GET_DEVICE_NAME) {
-      std::cout << "Get device name done" << std::endl;
+      logger.info("Get device name done");
       return {static_cast<int>(ErrorCode::kOk), outline_controller_->getTunDeviceName(), action};
     } else {
-      std::cerr << "Invalid action specified in JSON (" << action << ")" << std::endl;
+      logger.error("Invalid action specified in JSON (" + action + ")");
       return {static_cast<int>(ErrorCode::kUnexpected), "Undefined Action", {}};
     }
   } catch (const std::system_error& err) {
-    std::cerr << "[" << err.code() << "] " << err.what() << std::endl;
+    logger.error("[" + err.code().message() + "] " + err.what());
     if (err.code().category() == OutlineErrorCategory()) {
       // TODO: add err.what() to give more details to the client
       return {err.code().value(), {}, action};
@@ -172,12 +177,13 @@ static void SetOutlineUnixSocketGroupAndOwner(const char* const socket_name,
   if (outline_group != nullptr) {
     auto owner_uid = ::getpwuid(owning_user) != nullptr ? owning_user : -1;
     if (::chown(socket_name, owner_uid, outline_group->gr_gid) == 0) {
-      std::cout << "updated unix socket owner to " << owner_uid << "," << outline_group->gr_gid << std::endl;
+      logger.info("updated unix socket owner to " +
+        std::to_string(owner_uid) + "," + std::to_string(outline_group->gr_gid));
     } else {
-      std::cerr << "failed to update unix socket owner" << std::endl;
+      logger.warn("failed to update unix socket owner");
     }
   } else {
-    std::cerr << "failed to get the id of " << group_name << " group" << std::endl;
+    logger.warn("failed to get the id of " + std::string{group_name} + " group");
   }
   ::chmod(socket_name, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
@@ -202,7 +208,11 @@ boost::asio::awaitable<void> OutlineControllerServer::Start() {
     stream_protocol::socket socket{executor};
     if (auto [err] = co_await acceptor.async_accept(socket, as_tuple(use_awaitable)); !err) {
       auto client_session = std::make_shared<OutlineClientSession>(std::move(socket), outline_controller_);
-      co_spawn(executor, client_session->Start(), detached);
+
+      // The following lambda capturing client_session is necessary, otherwise client_session
+      // will be deleted as soon as our local variable is out of scope (keep in mind that co_spawn
+      // will run asynchronously).
+      co_spawn(executor, [client_session]() { return client_session->Start(); }, detached);
     }
   }
 }

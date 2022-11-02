@@ -35,8 +35,6 @@
 using namespace std;
 using namespace outline;
 
-extern Logger logger;
-
 /**
  * @brief
  * Create a new child process of `cmd` with arguments `args`, and return its

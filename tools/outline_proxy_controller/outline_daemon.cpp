@@ -31,8 +31,6 @@ using namespace std;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-extern Logger logger;
-
 class ControllerConfig {
  public:
   string socketFilename;
@@ -96,7 +94,8 @@ int main(int argc, char* argv[]) {
       ControllerConfig config(argc, argv);
       if (config.onlyShowHelp) return EXIT_SUCCESS;
 
-      // Initialise the server.
+      // Initialise the server. No need to make_shared because io_context.run() will
+      // block until all asynchronous operations ended.
       OutlineControllerServer server{config.socketFilename, config.owningUid};
       boost::asio::co_spawn(io_context, server.Start(), boost::asio::detached);
 

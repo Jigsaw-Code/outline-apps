@@ -44,8 +44,10 @@ public:
    * @param channel A socket that the session will be reading from and writing to.
    * @param outline_proxy_controller A worker which can be used to configure the system.
    */
-  OutlineClientSession(boost::asio::local::stream_protocol::socket channel,
+  OutlineClientSession(boost::asio::local::stream_protocol::socket &&channel,
                        std::shared_ptr<OutlineProxyController> outline_proxy_controller);
+
+  ~OutlineClientSession();
 
 public:
   /**
