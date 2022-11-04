@@ -274,7 +274,14 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   config.port = [self.tunnelConfig.port intValue];
   config.password = self.tunnelConfig.password;
   config.cipherName = self.tunnelConfig.method;
-  config.prefix = [self.tunnelConfig.prefix dataUsingEncoding:NSASCIIStringEncoding];  // FIXME: Check this conversion.
+
+  uint8 prefixBytes[self.tunnelConfig.prefix.length];
+  for (int i = 0; i < self.tunnelConfig.prefix.length; i++) {
+    prefixBytes[i] = [self.tunnelConfig.prefix characterAtIndex:i];
+  }
+  config.prefix = [[NSData alloc] initWithBytes:prefixBytes
+                                         length:self.tunnelConfig.prefix.length];
+
   NSError *err;
   ShadowsocksClient* client = ShadowsocksNewClient(config, &err);
   if (err != nil) {
