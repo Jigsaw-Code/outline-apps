@@ -131,9 +131,13 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   // culprit and can explicitly disconnect.
   long errorCode = noError;
   if (!isOnDemand) {
-    ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.tunnelConfig.port intValue],
-                                 self.tunnelConfig.password, self.tunnelConfig.method, &errorCode,
-                                 nil);
+    ShadowsocksClient* client = [self getClient];
+    if (client == nil) {
+      return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                   code:NEVPNErrorConfigurationInvalid
+                                               userInfo:nil]);
+    }
+    ShadowsocksCheckConnectivity(client, &errorCode, nil);
   }
   if (errorCode != noError && errorCode != udpRelayNotEnabled) {
     [self execAppCallbackForAction:kActionStart errorCode:errorCode];
@@ -263,6 +267,21 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 }
 
 # pragma mark - Network
+
+- (ShadowsocksClient*) getClient {
+  ShadowsocksConfig* config = [ShadowsocksConfig init];
+  config.host = self.hostNetworkAddress;
+  config.port = [self.tunnelConfig.port intValue];
+  config.password = self.tunnelConfig.password;
+  config.cipherName = self.tunnelConfig.method;
+  config.prefix = [self.tunnelConfig.prefix dataUsingEncoding:NSASCIIStringEncoding];  // FIXME: Check this conversion.
+  NSError *err;
+  ShadowsocksClient* client = ShadowsocksNewClient(config, &err);
+  if (err != nil) {
+    DDLogInfo(@"Failed to construct client.");
+  }
+  return client;
+}
 
 - (void)connectTunnel:(NEPacketTunnelNetworkSettings *)settings
            completion:(void (^)(NSError *))completionHandler {
@@ -492,10 +511,16 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 
   DDLogInfo(@"Configuration or host IP address changed with the network. Reconnecting tunnel.");
   self.hostNetworkAddress = activeHostNetworkAddress;
+  ShadowsocksClient* client = [self getClient];
+  if (client == nil) {
+    [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
+    [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
+                                                    code:NEVPNErrorConfigurationInvalid
+                                                userInfo:nil]];
+    return;
+  }
   long errorCode = noError;
-  ShadowsocksCheckConnectivity(self.hostNetworkAddress, [self.tunnelConfig.port intValue],
-                               self.tunnelConfig.password, self.tunnelConfig.method, &errorCode,
-                               nil);
+  ShadowsocksCheckConnectivity(client, &errorCode, nil);
   if (errorCode != noError && errorCode != udpRelayNotEnabled) {
     DDLogError(@"Connectivity checks failed. Tearing down VPN");
     [self execAppCallbackForAction:kActionStart errorCode:errorCode];
@@ -556,10 +581,13 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  NSError *err;
+  ShadowsocksClient* client = [self getClient];
+  if (client == nil) {
+    return NO;
+  }
+  NSError* err;
   self.tunnel = Tun2socksConnectShadowsocksTunnel(
-      weakSelf, self.hostNetworkAddress, [self.tunnelConfig.port intValue],
-      self.tunnelConfig.password, self.tunnelConfig.method, isUdpSupported, &err);
+      weakSelf, client, isUdpSupported, &err);
   if (err != nil) {
     DDLogError(@"Failed to start tun2socks: %@", err);
     return NO;
