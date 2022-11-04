@@ -275,7 +275,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   config.password = self.tunnelConfig.password;
   config.cipherName = self.tunnelConfig.method;
 
-  uint8 prefixBytes[self.tunnelConfig.prefix.length];
+  uint8_t prefixBytes[self.tunnelConfig.prefix.length];
   for (int i = 0; i < self.tunnelConfig.prefix.length; i++) {
     prefixBytes[i] = [self.tunnelConfig.prefix characterAtIndex:i];
   }
