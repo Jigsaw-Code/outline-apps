@@ -296,6 +296,8 @@ export class App {
         return console.debug('Ignoring access key');
       } else if (fromClipboard && addServerView.isAddingServer()) {
         return console.debug('Already adding a server');
+      } else if (fromClipboard && accessKey.startsWith('https://')) {
+        return console.debug('https:// keys should be pasted in explicitly.');
       }
     }
     try {
