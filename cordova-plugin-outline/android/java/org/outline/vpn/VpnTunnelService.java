@@ -221,6 +221,7 @@ public class VpnTunnelService extends VpnService {
     try {
       client = new shadowsocks.Client(configCopy);
     } catch (Exception e) {
+      LOG.log(Level.WARNING, "Invalid configuration", e);
       tearDownActiveTunnel();
       return OutlinePlugin.ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
     }
