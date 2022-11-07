@@ -230,6 +230,8 @@ Polymer({
   },
 
   ready: function() {
+    this.fire('ClipboardTextRequested');
+
     this.$.serverDetectedSheet.addEventListener('opened-changed', this._openChanged.bind(this));
     this.$.addServerSheet.addEventListener('opened-changed', this._openChanged.bind(this));
     // Workaround for --paper-input-container-input-[focus|invalid] not getting applied.

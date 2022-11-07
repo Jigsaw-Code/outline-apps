@@ -112,6 +112,7 @@ export class App {
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
+    this.rootEl.addEventListener('ClipboardTextRequested', this.pullClipboardText.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.onServerAdded.bind(this));
@@ -128,7 +129,6 @@ export class App {
       this.displayPrivacyView();
     }
     this.displayZeroStateUi();
-    this.pullClipboardText();
   }
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
@@ -294,10 +294,8 @@ export class App {
     if (fromClipboard) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
-      } else if (fromClipboard && addServerView.isAddingServer()) {
-        return console.debug('Already adding a server');
-      } else if (fromClipboard && accessKey.startsWith('https://')) {
-        return console.debug('https:// keys should be pasted in explicitly.');
+      } else if (accessKey.startsWith('https://')) {
+        return console.debug('Non-S3 https:// keys should be pasted in explicitly.');
       }
     }
     try {
