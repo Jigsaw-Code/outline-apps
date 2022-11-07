@@ -167,21 +167,28 @@ public class VpnTunnelService extends VpnService {
     tunnelConfig.proxy.port = config.getInt("port");
     tunnelConfig.proxy.password = config.getString("password");
     tunnelConfig.proxy.method = config.getString("method");
+    // `name` and `prefix` are optional properties.
     try {
-      // `name` is an optional property; don't throw if it fails to parse.
       tunnelConfig.name = config.getString("name");
     } catch (JSONException e) {
       LOG.fine("Tunnel config missing name");
     }
+    String prefix = null;
     try {
-      String prefix = config.getString("prefix");
+      prefix = config.getString("prefix");
       LOG.fine("Activating experimental prefix support");
-      tunnelConfig.proxy.prefix = new byte[prefix.length()];
-      for (int i = 0; i < prefix.length(); i++) {
-        tunnelConfig.proxy.prefix[i] = (byte)prefix.charAt(i);
-      }
     } catch (JSONException e) {
       // pass
+    }
+    if (prefix != null) {
+      tunnelConfig.proxy.prefix = new byte[prefix.length()];
+      for (int i = 0; i < prefix.length(); i++) {
+        char c = prefix.charAt(i);
+        if ((c & 0xFF) != c) {
+          throw new JSONException(String.format("Prefix character '%c' is out of range", c));
+        }
+        tunnelConfig.proxy.prefix[i] = (byte)c;
+      }
     }
     return tunnelConfig;
   }
@@ -455,6 +462,7 @@ public class VpnTunnelService extends VpnService {
       if (config.proxy.prefix != null) {
         char[] chars = new char[config.proxy.prefix.length];
         for (int i = 0; i < config.proxy.prefix.length; i++) {
+          // Unsigned bit width extension requires a mask in Java.
           chars[i] = (char)(config.proxy.prefix[i] & 0xFF);
         }
         proxyConfig.put("prefix", new String(chars));

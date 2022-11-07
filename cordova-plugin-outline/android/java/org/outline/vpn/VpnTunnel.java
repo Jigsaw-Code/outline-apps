@@ -123,6 +123,7 @@ public class VpnTunnel {
    * Connects a tunnel between a Shadowsocks proxy server and the VPN TUN interface.
    *
    * @param client provides access to the Shadowsocks proxy.
+   * @param isUdpEnabled conveys the result of UDP probing.  TODO: Roll this into `client`.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.

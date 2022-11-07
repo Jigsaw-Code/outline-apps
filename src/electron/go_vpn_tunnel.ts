@@ -241,7 +241,7 @@ class GoTun2socks {
     args.push('-proxyPort', `${this.config.port}`);
     args.push('-proxyPassword', this.config.password || '');
     args.push('-proxyCipher', this.config.method || '');
-    args.push('-proxyPrefix', encodeURI(this.config.prefix || ''));
+    args.push('-proxyPrefix', this.config.prefix || '');
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
