@@ -19,17 +19,13 @@
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/local/stream_protocol.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include "outline_proxy_controller.h"
 
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 
 namespace outline {
-
-// Routing commands from App
-const std::string CONFIGURE_ROUTING = "configureRouting";
-const std::string RESET_ROUTING = "resetRouting";
-const std::string GET_DEVICE_NAME = "getDeviceName";
 
 /**
  * @brief A session that serves requests from a specific Outline client, and
@@ -68,12 +64,12 @@ private:
   };
 
   /**
-   * @brief interprets the commmand (in JSON) from the client app and act upon them.
+   * @brief interprets the request from the client app and act upon them.
    *
-   * @param command The Json string sent by Outline client.
+   * @param request The Json object sent by Outline client.
    * @return CommandResult The result of the command execution.
    */
-  CommandResult RunClientCommand(const std::string &command);
+  CommandResult RunClientCommand(const boost::property_tree::ptree &request);
 
 private:
   boost::asio::local::stream_protocol::socket channel_;

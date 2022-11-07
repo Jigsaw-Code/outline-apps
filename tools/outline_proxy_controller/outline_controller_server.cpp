@@ -34,6 +34,11 @@ using namespace outline;
 
 //#region OutlineClientSession Implementation
 
+// Routing commands from App
+static const std::string kConfigureRoutingAction = "configureRouting";
+static const std::string kResetRoutingAction = "resetRouting";
+static const std::string kGetDeviceNameAction = "getDeviceName";
+
 // Minimum length of JSON input from app
 static const int kJsonInputMinLength = 10;
 
@@ -41,17 +46,21 @@ static const int kJsonInputMinLength = 10;
 static const int kChannelBufferSize = 1024;
 
 /**
- * @brief Checks the input string and returns true if it's a valid json.
+ * @brief Try to parse the raw input string as a Json object, and put the parsed object
+ *        into `result`. The function returns `false` if `raw_str` is not valid.
+ *
+ * @param raw_str The input Json string to be parsed into a property tree.
+ * @param result The result Boost property tree data structure.
+ * @return true `raw_str` is a valid Json and `result` is the parsed property tree.
+ * @return false `raw_str` is invalid and `result` is in an invalid state as well.
  */
-static bool IsValidJson(const std::string &raw_str) {
-  if (raw_str.length() >= kJsonInputMinLength) {
-    try {
-      std::istringstream input{raw_str};
-      boost::property_tree::ptree pt;
-      boost::property_tree::read_json(input, pt);
-      return true;
-    } catch (std::exception const& e) {
-    }
+static bool TryParseJson(const std::string &raw_str, boost::property_tree::ptree &result) {
+  result.clear();
+  try {
+    std::istringstream input{raw_str};
+    boost::property_tree::read_json(input, result);
+    return true;
+  } catch (const std::exception&) {
   }
   return false;
 }
@@ -74,6 +83,7 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
 
   try {
     std::string client_command, raw_buffer;
+    boost::property_tree::ptree request_obj;
     std::ostringstream response;
     for (;;) {
       do {
@@ -81,16 +91,18 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
           channel_, dynamic_buffer(raw_buffer, kChannelBufferSize), "}", use_awaitable);
         client_command.append(raw_buffer);
         raw_buffer.clear();
-      } while (!IsValidJson(client_command));
+      } while (client_command.length() < kJsonInputMinLength || !TryParseJson(client_command, request_obj));
 
-      auto result = RunClientCommand(client_command);
+      logger.debug("handling client request \"" + client_command + "\"...");
+      auto result = RunClientCommand(request_obj);
+
       // TODO: replace the following code with a json library to handle special characters
       response << "{\"statusCode\": " << result.status
                << ",\"returnValue\": \"" << result.result << "\""
                << ",\"action\": \"" << result.action << "\"}";
-
       co_await async_write(channel_, buffer(response.str()), use_awaitable);
       logger.debug("Wrote back \"" + response.str() + "\" to unix socket");
+
       client_command.clear();
       response.str(std::string{});
     }
@@ -99,54 +111,41 @@ boost::asio::awaitable<void> OutlineClientSession::Start() {
   }
 }
 
-OutlineClientSession::CommandResult OutlineClientSession::RunClientCommand(const std::string &command) {
-  logger.debug("handling client request \"" + command + "\"...");
-
-  std::stringstream ss;
-  ss << command;
-
+OutlineClientSession::CommandResult OutlineClientSession::RunClientCommand(const boost::property_tree::ptree &request) {
   std::string action, outline_server_ip;
-  boost::property_tree::ptree pt;
 
-  try {
-    boost::property_tree::read_json(ss, pt);
-  } catch (std::exception const& e) {
-    logger.error(e.what());
-    return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
-  }
-
-  boost::property_tree::ptree::assoc_iterator _action_iter = pt.find("action");
-  if (_action_iter == pt.not_found()) {
+  auto action_iter = request.find("action");
+  if (action_iter == request.not_found()) {
     logger.error("Invalid input JSON - action doesn't exist");
     return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", {}};
   }
-  action = boost::lexical_cast<std::string>(pt.to_iterator(_action_iter)->second.data());
+
+  action = boost::lexical_cast<std::string>(request.to_iterator(action_iter)->second.data());
   logger.debug("handling action \"" + action + "\"");
 
   try {
-    if (action == CONFIGURE_ROUTING) {
-      boost::property_tree::ptree::assoc_iterator _parameters_iter = pt.find("parameters");
-      if (_parameters_iter == pt.not_found()) {
+    if (action == kConfigureRoutingAction) {
+      auto parameters_iter = request.find("parameters");
+      if (parameters_iter == request.not_found()) {
         logger.error("Invalid input JSON - parameters doesn't exist");
         return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
       }
-      boost::property_tree::ptree parameters = pt.to_iterator(_parameters_iter)->second;
-      boost::property_tree::ptree::assoc_iterator _proxyIp_iter = parameters.find("proxyIp");
-      if (_proxyIp_iter == parameters.not_found()) {
+      const auto parameters = request.to_iterator(parameters_iter)->second;
+      auto proxyIp_iter = parameters.find("proxyIp");
+      if (proxyIp_iter == parameters.not_found()) {
         logger.error("Invalid input JSON - parameters doesn't exist");
         return {static_cast<int>(ErrorCode::kUnexpected), "Invalid JSON", action};
       }
       outline_server_ip =
-          boost::lexical_cast<std::string>(pt.to_iterator(_proxyIp_iter)->second.data());
-
+          boost::lexical_cast<std::string>(request.to_iterator(proxyIp_iter)->second.data());
       outline_controller_->routeThroughOutline(outline_server_ip);
       logger.info("Configure Routing to " + outline_server_ip + " is done.");
       return {static_cast<int>(ErrorCode::kOk), {}, action};
-    } else if (action == RESET_ROUTING) {
+    } else if (action == kResetRoutingAction) {
       outline_controller_->routeDirectly();
       logger.info("Reset Routing done");
       return {static_cast<int>(ErrorCode::kOk), {}, action};
-    } else if (action == GET_DEVICE_NAME) {
+    } else if (action == kGetDeviceNameAction) {
       logger.info("Get device name done");
       return {static_cast<int>(ErrorCode::kOk), outline_controller_->getTunDeviceName(), action};
     } else {
