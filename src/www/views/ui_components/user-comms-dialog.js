@@ -90,14 +90,16 @@ Polymer({
         <div id="title" class="highlight">[[localize(titleLocalizationKey)]]</div>
         <div id="detail">[[localize(detailLocalizationKey)]]</div>
         <div id="buttons">
-          <a hidden\$="[[_shouldHideLink()]]" href\$="[[linkUrl]]">
+          <a hidden$="[[_shouldHideLink()]]" href$="[[linkUrl]]">
             <paper-button>[[localize(linkTextLocalizationKey)]]</paper-button>
           </a>
-          <paper-button class="highlight" on-tap="_dismiss">[[localize(dismissButtonTextLocalizationKey)]]</paper-button>
+          <paper-button class="highlight" on-tap="_dismiss"
+            >[[localize(dismissButtonTextLocalizationKey)]]</paper-button
+          >
         </div>
       </div>
     </div>
-`,
+  `,
 
   is: 'user-comms-dialog',
 
@@ -147,5 +149,5 @@ Polymer({
 
   _shouldHideLink: function() {
     return !this.linkUrl;
-  }
+  },
 });

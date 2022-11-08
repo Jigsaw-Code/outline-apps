@@ -27,4 +27,3 @@ $_documentContainer.innerHTML = `<iron-iconset-svg name="outline-icons" size="24
 </iron-iconset-svg>`;
 
 document.head.appendChild($_documentContainer.content);
-;

@@ -15,7 +15,7 @@
 */
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js'
+import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
 Polymer({
@@ -36,7 +36,7 @@ Polymer({
     </style>
 
     <code id="licensesText"></code>
-`,
+  `,
 
   is: 'licenses-view',
 
@@ -53,23 +53,26 @@ Polymer({
     // This complexity is to avoid unconditionally loading the (huge) license
     // text at startup.
     var appRoot = dom(this).getOwnerRoot().host;
-    window.addEventListener('location-changed', function() {
-      if (this._licensesLoaded || appRoot.page !== 'licenses') {
-        return;
-      }
+    window.addEventListener(
+      'location-changed',
+      function() {
+        if (this._licensesLoaded || appRoot.page !== 'licenses') {
+          return;
+        }
 
-      var xhr = new XMLHttpRequest();
-      xhr.onload = () => {
-        this.$.licensesText.innerText = xhr.responseText;
-        this._licensesLoaded = true;
-      };
-      xhr.onerror = () => {
-        console.error('could not load license.txt');
-      };
-      // This path works in both Cordova and Electron.
-      // Do *not* add a leading slash.
-      xhr.open('GET', 'ui_components/licenses/licenses.txt', true);
-      xhr.send();
-    }.bind(this));
-  }
+        var xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+          this.$.licensesText.innerText = xhr.responseText;
+          this._licensesLoaded = true;
+        };
+        xhr.onerror = () => {
+          console.error('could not load license.txt');
+        };
+        // This path works in both Cordova and Electron.
+        // Do *not* add a leading slash.
+        xhr.open('GET', 'ui_components/licenses/licenses.txt', true);
+        xhr.send();
+      }.bind(this)
+    );
+  },
 });
