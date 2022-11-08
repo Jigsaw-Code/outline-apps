@@ -15,10 +15,7 @@
 import url from 'url';
 import electron from 'electron';
 
-import {runAction} from '../build/run_action.mjs';
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
-import {spawnStream} from '../build/spawn_stream.mjs';
+import {runAction, getElectronBuildParameters, getRootDir, spawnStream} from '@outline/build';
 
 /**
  * @description Builds and starts the electron application.

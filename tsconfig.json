@@ -13,6 +13,6 @@
     "skipLibCheck": true
   },
   // We don't need TypeScript to check javascript files.
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "src/build/index.mjs"],
   "exclude": ["node_modules", "www", "./src/**/*.js", "./src/**/*.mjs", "./www/**/*", "./build/**/*"]
 }

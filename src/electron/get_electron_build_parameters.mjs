@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import minimist from 'minimist';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getBuildParameters} from '@outline/build';
 
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
 

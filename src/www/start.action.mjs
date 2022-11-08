@@ -16,7 +16,7 @@ import url from 'url';
 import webpack from 'webpack';
 import WebpackServer from 'webpack-dev-server';
 
-import {runAction} from '../build/run_action.mjs';
+import {runAction} from '@outline/build';
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
 /**

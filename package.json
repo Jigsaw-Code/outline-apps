@@ -66,6 +66,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@commitlint/config-conventional": "^16.2.4",
+    "@outline/build": "file:src/build",
     "@rollup/plugin-image": "^2.1.1",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
@@ -79,7 +80,6 @@
     "@web/dev-server-esbuild": "^0.2.16",
     "@web/dev-server-storybook": "^0.4.2",
     "babel-loader": "^8.2.2",
-    "chalk": "^5.0.1",
     "copy-dir": "^1.3.0",
     "copy-webpack-plugin": "^5.1.1",
     "cordova-android": "^10.1.1",
@@ -124,8 +124,7 @@
     "webpack-cli": "^4.4.0",
     "webpack-dev-server": "^4.5.0",
     "webpack-merge": "^5.8.0",
-    "webpack-shell-plugin-next": "^2.1.1",
-    "xml2js": "^0.4.17"
+    "webpack-shell-plugin-next": "^2.1.1"
   },
   "optionalDependencies": {
     "ios-deploy": "^1.11.4"
@@ -150,5 +149,8 @@
       "ios",
       "osx"
     ]
-  }
+  },
+  "workspaces": [
+    "src/*"
+  ]
 }

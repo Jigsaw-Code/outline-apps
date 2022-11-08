@@ -22,10 +22,8 @@ import rmfr from 'rmfr';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../build/run_action.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {runAction, getBuildParameters, getRootDir} from '@outline/build';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 

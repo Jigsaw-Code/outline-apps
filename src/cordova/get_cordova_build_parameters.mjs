@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getBuildParameters} from '@outline/build';
 
 const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
 

@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
-import {runAction} from '../build/run_action.mjs';
+import {getElectronBuildParameters, runAction, getVersion, getRootDir} from '@outline/build';
+
 import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
 import fs from 'fs/promises';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
 
 const ELECTRON_BUILD_DIR = 'build';

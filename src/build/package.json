@@ -1,0 +1,11 @@
+{
+  "name": "@outline/build",
+  "module": "index.mjs",
+  "version": "0.0.0",
+  "dependencies": {
+    "minimist": "^1.2.6",
+    "xml2js": "^0.4.23",
+    "chalk": "^5.1.2",
+    "webpack": "^5.74.0"
+  }
+}

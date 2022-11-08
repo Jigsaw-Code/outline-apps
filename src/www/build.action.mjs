@@ -16,11 +16,7 @@ import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
 
-import {runWebpack} from '../build/run_webpack.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
-
+import {runWebpack, getBuildParameters, getBuildEnvironment, getRootDir} from '@outline/build';
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
 /**

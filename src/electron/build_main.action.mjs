@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
-import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
-import {runAction} from '../build/run_action.mjs';
-import {runWebpack} from '../build/run_webpack.mjs';
+import {
+  getBuildEnvironment,
+  getElectronBuildParameters,
+  getVersion,
+  getWebpackBuildMode,
+  getRootDir,
+  runAction,
+  runWebpack,
+} from '@outline/build';
+
 import electronMainWebpackConfigs from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
