@@ -1,5 +1,5 @@
 {
-  "files": ["build/electron", "www", "resources/tray", "!node_modules/electron"],
+  "files": ["build/electron", "www", "!node_modules/electron"],
   "asarUnpack": ["third_party", "tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
@@ -7,8 +7,13 @@
   },
   "linux": {
     "target": ["AppImage"],
-    "files": ["build/icons/png", "third_party/outline-go-tun2socks/linux", "tools/outline_proxy_controller/dist"],
-    "icon": "build/icons/png",
+    "files": [
+      "src/electron/linux/resources/icons",
+      "src/electron/linux/resources/tray",
+      "src/electron/linux/tools/outline_proxy_controller/dist",
+      "third_party/outline-go-tun2socks/linux"
+    ],
+    "icon": "src/electron/linux/resources/icons",
     "category": "Network"
   },
   "win": {
@@ -18,12 +23,12 @@
         "arch": "ia32"
       }
     ],
-    "files": ["third_party/outline-go-tun2socks/win32"],
-    "icon": "build/icons/win/icon.ico",
-    "sign": "src/electron/windows/electron_builder_signing_plugin.cjs"
+    "files": ["src/electron/windows/resources/tray", "third_party/outline-go-tun2socks/win32"],
+    "icon": "src/electron/windows/icons/icon.ico",
+    "sign": "src/electron/windows/scripts/electron_builder_signing_plugin.cjs"
   },
   "nsis": {
     "perMachine": true,
-    "include": "src/electron/custom_install_steps.nsh"
+    "include": "src/electron/windows/custom_install_steps.nsh"
   }
 }

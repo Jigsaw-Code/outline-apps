@@ -32,7 +32,7 @@ export async function main(...parameters) {
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
-    path.join(getRootDir(), 'src/electron/icons'),
+    path.join(getRootDir(), 'src', 'electron', 'resources', 'icons'),
     path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
   );
 
