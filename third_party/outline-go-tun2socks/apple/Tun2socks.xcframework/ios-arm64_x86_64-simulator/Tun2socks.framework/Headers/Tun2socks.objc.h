@@ -10,6 +10,7 @@
 #include "ref.h"
 #include "Universe.objc.h"
 
+#include "Shadowsocks.objc.h"
 
 @protocol Tun2socksOutlineTunnel;
 @class Tun2socksOutlineTunnel;
@@ -33,15 +34,12 @@
 Returns an OutlineTunnel instance that should be used to input packets to the tunnel.
 
 `tunWriter` is used to output packets to the TUN (VPN).
-`host` is  IP address of the Shadowsocks proxy server.
-`port` is the port of the Shadowsocks proxy server.
-`password` is the password of the Shadowsocks proxy.
-`cipher` is the encryption cipher the Shadowsocks proxy.
+`client` is the Shadowsocks client (created by [shadowsocks.NewClient]).
 `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 
 Sets an error if the tunnel fails to connect.
  */
-FOUNDATION_EXPORT id<Tun2socksOutlineTunnel> _Nullable Tun2socksConnectShadowsocksTunnel(id<Tun2socksTunWriter> _Nullable tunWriter, NSString* _Nullable host, long port, NSString* _Nullable password, NSString* _Nullable cipher, BOOL isUDPEnabled, NSError* _Nullable* _Nullable error);
+FOUNDATION_EXPORT id<Tun2socksOutlineTunnel> _Nullable Tun2socksConnectShadowsocksTunnel(id<Tun2socksTunWriter> _Nullable tunWriter, ShadowsocksClient* _Nullable client, BOOL isUDPEnabled, NSError* _Nullable* _Nullable error);
 
 @class Tun2socksOutlineTunnel;
 

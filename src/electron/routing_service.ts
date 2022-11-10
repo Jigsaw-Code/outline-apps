@@ -132,7 +132,8 @@ export class RoutingDaemon {
         );
       }));
 
-      const initialErrorHandler = () => {
+      const initialErrorHandler = (err: Error) => {
+        console.error('Routing daemon socket setup failed', err);
         this.socket = null;
         reject(new SystemConfigurationException('routing daemon is not running'));
       };
