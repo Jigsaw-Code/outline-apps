@@ -1,8 +1,8 @@
 {
-  "commitish" : "7.13.0",
+  "commitish" : "7.31.1",
   "Mac" : [
     {
-      "hash" : "8583a4510e313c911373834c8f0c3d45194ca052bc117a9ddd7f83bb38b5d6a8",
+      "hash" : "a53a97fe8899082556272f7ec5a18dac2671b1ef201dda621a329ae9551aabd7",
       "name" : "Sentry",
       "container" : "Sentry.xcframework",
       "identifier" : "macos-arm64_x86_64"
@@ -10,16 +10,16 @@
   ],
   "iOS" : [
     {
-      "hash" : "5ab8b6051e2c3c4fdfd0b4de68b54253c285472624ca8dfdc94fa3f7942a306e",
+      "hash" : "3ec575645c13e5a65b6e020eaad9b7be3060c829e2e71038f674fb47d0e9bc86",
       "name" : "Sentry",
       "container" : "Sentry.xcframework",
-      "identifier" : "ios-arm64_i386_x86_64-simulator"
+      "identifier" : "ios-arm64"
     },
     {
-      "hash" : "4262c6e9c62aa9cfd29d112885c29f8fb5de7990b9a0e55f71b413074e421a0d",
+      "hash" : "021e5c3ff84bd1af0d1221149f2296d258073dc232a457e6ce47e1a5d9c3cce0",
       "name" : "Sentry",
       "container" : "Sentry.xcframework",
-      "identifier" : "ios-arm64_armv7"
+      "identifier" : "ios-arm64_x86_64-simulator"
     }
   ]
 }

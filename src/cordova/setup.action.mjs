@@ -62,6 +62,12 @@ export async function main(...parameters) {
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
     // TODO(daniellacosse): move this to a cordova hook
+    execSync(`cd third_party/CocoaLumberjack && make clean && make`, {
+      stdio: 'inherit',
+    });
+    execSync(`cd third_party/sentry-cocoa && make clean && make`, {
+      stdio: 'inherit',
+    });
     execSync(`rsync -avc src/cordova/apple/xcode/${outlinePlatform}/ platforms/${platform}/`, {
       stdio: 'inherit',
     });
