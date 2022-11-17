@@ -20,6 +20,19 @@ To open the iOS project on XCode:
   open ./platforms/ios/Outline.xcworkspace
 ```
 
+### Adding support for your device in XCode
+
+You may find that your iOS version is _too modern_ for XCode. You'll need to do the following:
+
+1. Download a folder corresponding to your iOS version from [this community-managed repository](https://github.com/iGhibli/iOS-DeviceSupport/tree/master/DeviceSupport).
+2. Unzip the file and add it to XCode:
+
+```
+Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Developer >> Platforms >> iPhoneOS.platform >> DeviceSupport
+```
+
+3. Restart XCode!
+
 ## macOS
 
 To build for macOS (OS X), run:
