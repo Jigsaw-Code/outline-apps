@@ -6,6 +6,8 @@ This document describes how to develop and debug for macOS (formerly known as OS
 - XCode ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
+> NOTE: Should you encounter issues with your build, there may be apple-specific dependencies that are out of date. Run `npm run clean` and try again!
+
 ## iOS
 
 To build for iOS, run:
