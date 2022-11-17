@@ -88,7 +88,7 @@ jobs:
   macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-11
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: web_test
     steps:
       - name: Checkout
@@ -112,7 +112,7 @@ jobs:
   ios_debug_build:
     name: iOS Debug Build
     runs-on: macos-11
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: web_test
     steps:
       - name: Checkout
