@@ -3,7 +3,7 @@
 This document describes how to develop and debug for macOS (formerly known as OS X) and iOS. You will need:
 
 - An Apple Developer Account. You will need to be invited to your developer team as well.
-- XCode 13.2 ([download](https://developer.apple.com/xcode/))
+- XCode ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
 ## iOS
@@ -19,19 +19,6 @@ To open the iOS project on XCode:
 ```sh
   open ./platforms/ios/Outline.xcworkspace
 ```
-
-### Adding support for your device in XCode
-
-You may find that your iOS version is _too modern_ for 13.2 XCode. You'll need to do the following:
-
-1. Download a folder corresponding to your iOS version from [this community-managed repository](https://github.com/iGhibli/iOS-DeviceSupport/tree/master/DeviceSupport).
-2. Unzip the file and add it to XCode:
-
-```
-Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Developer >> Platforms >> iPhoneOS.platform >> DeviceSupport
-```
-
-3. Restart XCode!
 
 ## macOS
 
