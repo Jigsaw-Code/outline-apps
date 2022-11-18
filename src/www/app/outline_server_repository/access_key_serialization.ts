@@ -29,6 +29,7 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
       port: config.port.data,
       method: config.method.data,
       password: config.password.data,
+      prefix: config.extra['prefix'],
     };
   } catch (error) {
     throw new errors.ServerAccessKeyInvalid(error.message || 'Failed to parse static access key.');
@@ -38,19 +39,21 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
 function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
   let sessionConfig;
   try {
-    const {method, password, server: host, server_port: port} = JSON.parse(maybeJsonText);
+    const {method, password, server: host, server_port: port, extra} = JSON.parse(maybeJsonText);
 
     sessionConfig = {
       method,
       password,
       host,
       port,
+      prefix: extra['prefix'],
     };
   } catch (_) {
     // It's not JSON, so return null.
     return null;
   }
 
+  // These are the mandatory keys.
   for (const key of ['method', 'password', 'host', 'port']) {
     if (sessionConfig && !sessionConfig[key]) {
       throw new errors.ServerAccessKeyInvalid(
