@@ -32,7 +32,13 @@ function staticKeysMatch(a: string, b: string): boolean {
   try {
     const l = staticKeyToShadowsocksSessionConfig(a);
     const r = staticKeyToShadowsocksSessionConfig(b);
-    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
+    return (
+      l.host === r.host &&
+      l.port === r.port &&
+      l.password === r.password &&
+      l.method === r.method &&
+      l.prefix == r.prefix
+    );
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
   }

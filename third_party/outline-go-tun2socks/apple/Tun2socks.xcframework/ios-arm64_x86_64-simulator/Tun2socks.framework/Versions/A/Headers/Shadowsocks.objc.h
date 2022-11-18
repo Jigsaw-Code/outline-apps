@@ -11,6 +11,49 @@
 #include "Universe.objc.h"
 
 
+@class ShadowsocksClient;
+@class ShadowsocksConfig;
+
+/**
+ * Client provides a transparent container for [client.Client] that
+is exportable (as an opaque object) via gobind.
+ */
+@interface ShadowsocksClient : NSObject <goSeqRefInterface> {
+}
+@property(strong, readonly) _Nonnull id _ref;
+
+- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
+/**
+ * NewClient provides a gobind-compatible wrapper for [client.NewClient].
+ */
+- (nullable instancetype)init:(ShadowsocksConfig* _Nullable)config;
+// skipped field Client.Client with unsupported type: github.com/Jigsaw-Code/outline-ss-server/client.Client
+
+// skipped method Client.DialTCP with unsupported parameter or return types
+
+// skipped method Client.ListenUDP with unsupported parameter or return types
+
+// skipped method Client.SetTCPSaltGenerator with unsupported parameter or return types
+
+@end
+
+/**
+ * Config represents a shadowsocks server configuration.
+Exported via gobind.
+ */
+@interface ShadowsocksConfig : NSObject <goSeqRefInterface> {
+}
+@property(strong, readonly) _Nonnull id _ref;
+
+- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
+- (nonnull instancetype)init;
+@property (nonatomic) NSString* _Nonnull host;
+@property (nonatomic) long port;
+@property (nonatomic) NSString* _Nonnull password;
+@property (nonatomic) NSString* _Nonnull cipherName;
+@property (nonatomic) NSData* _Nullable prefix;
+@end
+
 /**
  * Outline error codes. Must be kept in sync with definitions in outline-client/cordova-plugin-outline/outlinePlugin.js
  */
@@ -70,12 +113,17 @@ the current network. Parallelizes the execution of TCP and UDP checks, selects t
 error code to return accounting for transient network failures.
 Returns an error if an unexpected error ocurrs.
  */
-FOUNDATION_EXPORT BOOL ShadowsocksCheckConnectivity(NSString* _Nullable host, long port, NSString* _Nullable password, NSString* _Nullable cipher, long* _Nullable ret0_, NSError* _Nullable* _Nullable error);
+FOUNDATION_EXPORT BOOL ShadowsocksCheckConnectivity(ShadowsocksClient* _Nullable client, long* _Nullable ret0_, NSError* _Nullable* _Nullable error);
 
 /**
  * CheckServerReachable determines whether the server at `host:port` is reachable over TCP.
 Returns an error if the server is unreachable.
  */
 FOUNDATION_EXPORT BOOL ShadowsocksCheckServerReachable(NSString* _Nullable host, long port, NSError* _Nullable* _Nullable error);
+
+/**
+ * NewClient provides a gobind-compatible wrapper for [client.NewClient].
+ */
+FOUNDATION_EXPORT ShadowsocksClient* _Nullable ShadowsocksNewClient(ShadowsocksConfig* _Nullable config, NSError* _Nullable* _Nullable error);
 
 #endif
