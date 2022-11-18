@@ -142,9 +142,8 @@ boost::asio::awaitable<void> OutlineClientSession::MonitorNetworkChanges() {
       }
     }
   } catch (const std::exception &err) {
-    logger.warn("failed to monitor network changes due to:");
-    logger.warn(err.what());
-    logger.warn("will ignore further network changes");
+    logger.warn("failed to monitor network changes due to:" + std::string{err.what()} +
+                ", will ignore further network changes");
     throw;
   }
 }

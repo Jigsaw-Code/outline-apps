@@ -100,6 +100,12 @@ boost::asio::awaitable<NetworkChangeEvent> NetworkMonitor::WaitForChangeEvent() 
 
 EndOfMultiPartMsg:
     ;
+
+    // We use IsNextChangeEventReady here because netlink events are noisy.
+    // For example, our "connect to Outline" operation itself will lead to ~10
+    // change events, and all of the events are immediately ready in the buffer.
+    // So instead of co_returning ~10 times (with the same network condition),
+    // I tried to aggregate them all and just co_return once.
   } while (received_events.IsEmpty() || IsNextChangeEventReady());
 
   co_return received_events;
