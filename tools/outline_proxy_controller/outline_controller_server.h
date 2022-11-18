@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <sys/types.h>
@@ -21,6 +24,7 @@
 #include <boost/asio/local/stream_protocol.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "outline_error.h"
 #include "outline_proxy_controller.h"
 
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
@@ -47,7 +51,7 @@ public:
 
 public:
   /**
-   * @brief Start serving requests from a specific Outline client asynchronously.
+   * @brief Start a session for a specific Outline client asynchronously.
    *
    * @return boost::asio::awaitable<void> A co_awaitable C++20 coroutine.
    */
@@ -55,14 +59,41 @@ public:
 
 private:
   /**
-   * @brief Execution result of a client request command.
+   * @brief Start serving requests from a specific Outline client asynchronously.
    */
-  struct CommandResult {
-    int status;
-    std::string result;
-    std::string action;
+  boost::asio::awaitable<void> ServeClientCommands();
+
+  /**
+   * @brief Start monitoring network changes and update connection status asynchronously.
+   */
+  boost::asio::awaitable<void> MonitorNetworkChanges();
+
+private:
+  /** @brief `TunnelStatus` in "src/www/app/tunnel.ts" */
+  enum class ConnectionState : int {
+    kConnected = 0,
+    kDisconnected = 1,
+    kReconnecting = 2,
   };
 
+  /** @brief Execution result of a client request command. */
+  struct CommandResult {
+    int status_code;
+    std::optional<std::string> error_message;
+    std::string action;
+    std::optional<ConnectionState> connection_state;
+  };
+
+  /** @brief Factory method to create a success result. */
+  static CommandResult SucceededResult(const std::string &action);
+
+  /** @brief Factory method to create a failed result. */
+  static CommandResult ErrorResult(ErrorCode, const std::string &err_msg, const std::string &action);
+
+  /** @brief Factory method to create a connection state changed notification. */
+  static CommandResult ConnectionStateChangedResult(ConnectionState state);
+
+private:
   /**
    * @brief interprets the request from the client app and act upon them.
    *
@@ -70,6 +101,12 @@ private:
    * @return CommandResult The result of the command execution.
    */
   CommandResult RunClientCommand(const boost::property_tree::ptree &request);
+
+private:
+  /**
+   * @brief Send a specific response to Outline client.
+   */
+  boost::asio::awaitable<void> SendResponse(const CommandResult &response);
 
 private:
   boost::asio::local::stream_protocol::socket channel_;

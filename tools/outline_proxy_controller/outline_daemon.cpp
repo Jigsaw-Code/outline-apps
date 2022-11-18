@@ -25,6 +25,7 @@
 
 #include "logger.h"
 #include "outline_controller_server.h"
+#include "OutlineProxyControllerConfig.h"
 
 using namespace outline;
 using namespace std;
@@ -87,6 +88,8 @@ class ControllerConfig {
 };
 
 int main(int argc, char* argv[]) {
+  std::cout << OUTLINEVPN_NAME << " [for OutlineVPN Client] v" << OUTLINEVPN_VERSION << std::endl;
+
   try {
     boost::asio::io_context io_context;
 
