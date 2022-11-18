@@ -70,7 +70,7 @@ public:
    * @brief Try to disconnect and connect again, and returns whether we have
    *        successfully reconnected to the target server.
    */
-  bool TryReconfigureRouting() noexcept;
+  bool ReconfigureRouting() noexcept;
 
 private:
   // this enum is representing different stage of outing and "de"routing

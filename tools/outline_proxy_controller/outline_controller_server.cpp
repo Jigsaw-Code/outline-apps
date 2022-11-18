@@ -89,7 +89,7 @@ OutlineClientSession::~OutlineClientSession() {
 boost::asio::awaitable<void> OutlineClientSession::Start() {
   using namespace boost::asio::experimental::awaitable_operators;
 
-  // Wait any one to success (and cancels the other), ignoring errors
+  // Wait any one to succeed and cancel the other, ignoring errors
   co_await (ServeClientCommands() || MonitorNetworkChanges());
 }
 
@@ -134,7 +134,7 @@ boost::asio::awaitable<void> OutlineClientSession::MonitorNetworkChanges() {
         if (outline_controller_->IsOutlineRoutingPolluted()) {
           logger.debug("network condition changed, reconnecting...");
           co_await SendResponse(ConnectionStateChangedResult(ConnectionState::kReconnecting));
-          if (outline_controller_->TryReconfigureRouting()) {
+          if (outline_controller_->ReconfigureRouting()) {
             logger.info("reconnected successfully");
             co_await SendResponse(ConnectionStateChangedResult(ConnectionState::kConnected));
           }

@@ -335,7 +335,7 @@ bool OutlineProxyController::IsOutlineRoutingPolluted() noexcept {
   }
 }
 
-bool OutlineProxyController::TryReconfigureRouting() noexcept {
+bool OutlineProxyController::ReconfigureRouting() noexcept {
   try {
     routing_status_ = OutlineConnectionStatus::kReconfiguringRouting;
     routeDirectly();
