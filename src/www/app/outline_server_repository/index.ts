@@ -57,7 +57,7 @@ function serverNameFromAccessKey(accessKey: string): string {
     const {hostname, hash} = new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
 
     if (hash && hash !== '#') {
-      return hash.slice(1);
+      return decodeURIComponent(hash.slice(1));
     }
 
     return hostname;
