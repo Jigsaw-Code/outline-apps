@@ -88,7 +88,7 @@
     "cordova-lib": "^11.0.0",
     "cordova-osx": "github:apache/cordova-osx",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
-    "cordova-plugin-outline": "file:src/cordova_plugin",
+    "cordova-plugin-outline": "file:src/cordova/plugin",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
     "electron": "^19.0.8",
@@ -150,5 +150,8 @@
       "ios",
       "osx"
     ]
-  }
+  },
+  "workspaces": [
+    "src/cordova/plugin"
+  ]
 }
