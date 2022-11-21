@@ -104,6 +104,7 @@ export class GoVpnTunnel implements VpnTunnel {
     // Don't await here because we want to launch both binaries
     this.tun2socks.start(this.isUdpEnabled);
 
+    console.log('starting routing daemon');
     await this.routing.start();
   }
 
@@ -228,7 +229,8 @@ class GoTun2socks {
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
     //   -proxyHost 127.0.0.1 -proxyPort 1080 -proxyPassword mypassword \
-    //   -proxyCipher chacha20-ietf-poly1035 [-dnsFallback] [-checkConnectivity]
+    //   -proxyCipher chacha20-ietf-poly1035
+    //   [-dnsFallback] [-checkConnectivity] [-proxyPrefix]
     const args: string[] = [];
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
@@ -239,6 +241,7 @@ class GoTun2socks {
     args.push('-proxyPort', `${this.config.port}`);
     args.push('-proxyPassword', this.config.password || '');
     args.push('-proxyCipher', this.config.method || '');
+    args.push('-proxyPrefix', this.config.prefix || '');
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');

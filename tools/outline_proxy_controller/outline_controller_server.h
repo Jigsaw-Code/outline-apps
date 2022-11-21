@@ -12,82 +12,136 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <array>
-#include <cstdio>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
+#pragma once
 
-#include <sys/stat.h>
+#include <memory>
+#include <optional>
+#include <string>
+
 #include <sys/types.h>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/asio.hpp>
-#include <boost/asio/spawn.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/local/stream_protocol.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "outline_error.h"
 #include "outline_proxy_controller.h"
 
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 
-using namespace std;
-using boost::asio::local::stream_protocol;
-
 namespace outline {
 
-// Routing commands from App
-const std::string CONFIGURE_ROUTING = "configureRouting";
-const std::string RESET_ROUTING = "resetRouting";
-const std::string GET_DEVICE_NAME = "getDeviceName";
-
-// Minimum length of JSON input from app
-const int JSON_INPUT_MIN_LENGTH = 10;
-
-class session : public std::enable_shared_from_this<session> {
- public:
-  session(stream_protocol::socket sock,
-          std::shared_ptr<OutlineProxyController> outlineProxyController)
-      : socket_(std::move(sock)),
-        executor_(socket_.get_executor()),
-        outlineProxyController_(outlineProxyController) {}
+/**
+ * @brief A session that serves requests from a specific Outline client, and
+ *        configures the system accordingly with root privileges.
+ */
+class OutlineClientSession : public std::enable_shared_from_this<OutlineClientSession> {
+public:
   /**
-   * callback from async_accept, starts a new session when
-   * a connection is comming in and reads the input from
-   * the client
+   * @brief Construct a new OutlineClientSession object with a specific channel as well
+   *        as the underlying worker `outline_proxy_controller`.
+   * 
+   * @param channel A socket that the session will be reading from and writing to.
+   * @param outline_proxy_controller A worker which can be used to configure the system.
    */
-  void start();
+  OutlineClientSession(boost::asio::local::stream_protocol::socket &&channel,
+                       std::shared_ptr<OutlineProxyController> outline_proxy_controller);
 
- private:
+  ~OutlineClientSession();
+
+public:
   /**
-   * Checks the input string and returns true if it's a valid json
+   * @brief Start a session for a specific Outline client asynchronously.
+   *
+   * @return boost::asio::awaitable<void> A co_awaitable C++20 coroutine.
    */
-  bool isValidJson(std::string str);
+  boost::asio::awaitable<void> Start();
+
+private:
+  /**
+   * @brief Start serving requests from a specific Outline client asynchronously.
+   */
+  boost::asio::awaitable<void> ServeClientCommands();
 
   /**
-   * interprets the commmands arriving as JSON input from the client app and
-   * act upon them
+   * @brief Start monitoring network changes and update connection status asynchronously.
    */
-  std::tuple<int, std::string, std::string> runClientCommand(std::string clientCommand);
+  boost::asio::awaitable<void> MonitorNetworkChanges();
 
-  stream_protocol::socket socket_;
-  boost::asio::executor executor_;
-  std::shared_ptr<OutlineProxyController> outlineProxyController_;
+private:
+  /** @brief `TunnelStatus` in "src/www/app/tunnel.ts" */
+  enum class ConnectionState : int {
+    kConnected = 0,
+    kDisconnected = 1,
+    kReconnecting = 2,
+  };
+
+  /** @brief Execution result of a client request command. */
+  struct CommandResult {
+    int status_code;
+    std::optional<std::string> error_message;
+    std::string action;
+    std::optional<ConnectionState> connection_state;
+  };
+
+  /** @brief Factory method to create a success result. */
+  static CommandResult SucceededResult(const std::string &action);
+
+  /** @brief Factory method to create a failed result. */
+  static CommandResult ErrorResult(ErrorCode, const std::string &err_msg, const std::string &action);
+
+  /** @brief Factory method to create a connection state changed notification. */
+  static CommandResult ConnectionStateChangedResult(ConnectionState state);
+
+private:
+  /**
+   * @brief interprets the request from the client app and act upon them.
+   *
+   * @param request The Json object sent by Outline client.
+   * @return CommandResult The result of the command execution.
+   */
+  CommandResult RunClientCommand(const boost::property_tree::ptree &request);
+
+private:
+  /**
+   * @brief Send a specific response to Outline client.
+   */
+  boost::asio::awaitable<void> SendResponse(const CommandResult &response);
+
+private:
+  boost::asio::local::stream_protocol::socket channel_;
+  std::shared_ptr<OutlineProxyController> outline_controller_;
 };
 
+/**
+ * @brief A server that accepts requests from Outline client. Each request will
+ *        be served by a dedicated `OutlineClientSession` asynchronously.
+ */
 class OutlineControllerServer {
- public:
-  /*
-   * constructor: setup a listener on the file as a unix socket
+public:
+  /**
+   * @brief Construct a new OutlineControllerServer object with a specific
+   *        Unix socket name and the owner uid who is running Outline.
+   *        Need to call `start()` to start accepting requests.
+   *
+   * @param unix_socket The Unix socket name that we will be listening.
+   * @param owning_user The owner uid of the Unix socket (typically it is the
+   *                    user who installs Outline).
    */
-  OutlineControllerServer(boost::asio::io_context& io_context,
-                          const std::string& file,
-                          uid_t owning_user);
+  OutlineControllerServer(const std::string& unix_socket, uid_t owning_user);
 
- private:
-  std::shared_ptr<OutlineProxyController> outlineProxyController_;
-  std::string unix_socket_name;
+public:
+  /**
+   * @brief Start listening to the Outline Unix socket asynchronously.
+   *
+   * @return boost::asio::awaitable<void> A co_awaitable C++20 coroutine.
+   */
+  boost::asio::awaitable<void> Start();
+
+private:
+  std::shared_ptr<OutlineProxyController> outline_controller_;
+  std::string unix_socket_name_;
+  uid_t socket_owner_id_;
 };
 
 }  // namespace outline

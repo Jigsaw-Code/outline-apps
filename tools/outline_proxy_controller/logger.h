@@ -92,6 +92,11 @@ class Logger {
                      std::string user_nick = "");
 };
 
+/**
+ * @brief A global logger instance which can be used to print logs.
+ */
+extern Logger logger;
+
 }  // namespace outline
 
 #endif  // SRC_LOGGER_H_
