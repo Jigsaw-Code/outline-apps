@@ -54,7 +54,13 @@ function isDynamicAccessKey(accessKey: string): boolean {
 // (Currenly done by setting the hash on the URI)
 function serverNameFromAccessKey(accessKey: string): string {
   if (isDynamicAccessKey(accessKey)) {
-    return new URL(accessKey.replace(/^ssconf:\/\//, 'https://')).hostname;
+    const {hostname, hash} = new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
+
+    if (hash && hash !== '#') {
+      return hash.slice(1);
+    }
+
+    return hostname;
   }
 
   return SHADOWSOCKS_URI.parse(accessKey).tag.data;
