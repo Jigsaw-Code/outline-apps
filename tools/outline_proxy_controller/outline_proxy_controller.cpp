@@ -13,26 +13,34 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <tuple>
 
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "logger.h"
+#include "outline_error.h"
 #include "outline_proxy_controller.h"
 
 using namespace std;
 using namespace outline;
 
-extern Logger logger;
+// TODO: we extensively use shell command `ip route` and parse the output
+//       string in the implementation, replace it with raw netlink API
+
+static const std::regex kDefaultRoutingEntryPattern{"^default via (\\S+) dev (\\S+).*"};
+static const std::regex kRoutingEntryPattern{"^(\\S+) dev (\\S+).*"};
 
 /**
  * @brief
@@ -156,9 +164,7 @@ OutputAndStatus OutlineProxyController::executeCommand(const std::string command
     received_args.insert(begin(received_args), subCommandName);
   }
 
-  pid_t pid;
-  FILE *pipe;
-  tie(pid, pipe) = safe_popen(commandName.c_str(), received_args);
+  auto [pid, pipe] = safe_popen(commandName.c_str(), received_args);
 
   array<char, 128> buffer;
   string result;
@@ -228,7 +234,7 @@ void OutlineProxyController::setTunDeviceIP() {
   }
 
   auto tunDeviceAdditionResult = executeIPAddress({
-    "replace", tunInterfaceIp + "/24",
+    "replace", tunInterfaceIp + "/32",
     "dev", tunInterfaceName
   });
 
@@ -236,10 +242,27 @@ void OutlineProxyController::setTunDeviceIP() {
     logger.error(tunDeviceAdditionResult.first);
     throw runtime_error("failed to set the tun device ip address");
   }
+  logger.info("successfully set the tun device ip address");
+
+  // Because we are using `10.0.85.1/32` single-host subnet, the gateway
+  // IP `10.0.85.2` is not configured, we need to explicityly add it, otherwise
+  // we cannot configure the default gateway due to "Nexthop has invalid gateway".
+  // If we are using `10.0.85.0/24` we don't need to do this step.
+  auto gatewayRouteResult = executeIPRoute({
+    "replace", tunInterfaceRouterIp,
+    "dev", tunInterfaceName,
+    "src", tunInterfaceIp,
+  });
+
+  if (!isSuccessful(gatewayRouteResult)) {
+    logger.error(gatewayRouteResult.first);
+    throw runtime_error("failed to add outline gateway routing entry");
+  }
+  logger.info("successfully added outline gateway routing entry");
 }
 
 void OutlineProxyController::detectBestInterfaceIndex() {
-  // our best guest is the route that outline server already can be reached
+  // our best guess is the route that outline server already can be reached
   // it is the default gateway if outline is connected or not
   auto result = executeIPRoute({ "get", outlineServerIP });
 
@@ -260,33 +283,102 @@ void OutlineProxyController::detectBestInterfaceIndex() {
   }
 }
 
+bool OutlineProxyController::IsOutlineRoutingPolluted() noexcept {
+  if (routing_status_ == OutlineConnectionStatus::kReconfiguringRouting) {
+    return true;
+  }
+  if (routing_status_ != OutlineConnectionStatus::kRoutingThroughOutline) {
+    return false;
+  }
+
+  try {
+    auto result = executeIPRoute({});
+    if (!isSuccessful(result)) {
+      logger.warn("[routing polluted] failed to get routing table: " + result.first);
+      return true;
+    }
+
+    // A valid Outline'd `ip route` output must contains:
+    //   - One and only one default gateway through Outline `default via 10.0.85.2 dev outline-tun0`
+    //   - At least one non-Outline routing entry like `192.168.1.0/24 dev ens33 ...` (otherwise it
+    //     means the NIC might be turned off, and we need to enter "reconnecting" state)
+    bool has_outline_default_entry = false;
+    bool has_non_outline_device = false;
+
+    std::istringstream routing_table{result.first};
+    for (std::string routing_entry; std::getline(routing_table, routing_entry);) {
+      std::smatch entry_match;
+      if (std::regex_match(routing_entry, entry_match, kDefaultRoutingEntryPattern)) {
+        if (entry_match[1].str() == tunInterfaceRouterIp && entry_match[2].str() == tunInterfaceName) {
+          has_outline_default_entry = true;
+        } else {
+          logger.info("[routing polluted] extra non-Outline default gateway: " + routing_entry);
+          return true;
+        }
+      } else if (std::regex_match(routing_entry, entry_match, kRoutingEntryPattern)) {
+        if (entry_match[1].str() != tunInterfaceRouterIp && entry_match[2].str() != tunInterfaceName) {
+          has_non_outline_device = true;
+        }
+      }
+    }
+
+    if (!has_outline_default_entry || !has_non_outline_device) {
+      logger.info(std::string{"[routing polluted]"}
+        + (!has_outline_default_entry ? " no Outline default gateway;" : "")
+        + (!has_non_outline_device ? " no outgoing network interface;" : ""));
+      return true;
+    }
+    return false;
+  } catch (const std::exception &err) {
+    logger.warn("[routing polluted] unexpected error: " + std::string{err.what()});
+    return true;
+  }
+}
+
+bool OutlineProxyController::ReconfigureRouting() noexcept {
+  try {
+    routing_status_ = OutlineConnectionStatus::kReconfiguringRouting;
+    routeDirectly();
+    routeThroughOutline(outlineServerIP);
+    return true;
+  } catch (const std::exception &err) {
+    logger.warn("failed to reconnect, will retry later: " + std::string{err.what()});
+    routing_status_ = OutlineConnectionStatus::kReconfiguringRouting;
+    return false;
+  }
+}
+
 void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   // Sanity checks
   if (outlineServerIP.empty()) {
-    logger.error("Outline Server IP address cannot be empty");
-    throw runtime_error("outlineServerIP is empty");
+    throw std::system_error{
+      ErrorCode::kInvalidServerConfiguration,
+      "Outline Server IP address cannot be empty"};
   }
 
   logger.info("attempting to route through outline server " + outlineServerIP);
 
   // TODO: make sure the routing rule isn't already in the table
-  if (routingStatus == ROUTING_THROUGH_OUTLINE) {
+  if (routing_status_ != OutlineConnectionStatus::kRoutingThroughDefaultGateway) {
     logger.warn("it seems that we are already routing through outline server");
   }
+  routing_status_ = OutlineConnectionStatus::kConfiguringRouting;
 
   this->outlineServerIP = outlineServerIP;
 
   backupDNSSetting();
 
+  // TODO: add more details when throwing system_error (e.g., use different error
+  // codes, or append detail messages)
   try {
     createRouteforOutlineServer();
   } catch (exception& e) {
     // we can not continue
-    logger.error("failed to create a proirity route to outline proxy: " + string(e.what()));
+    logger.error("failed to create a priority route to outline proxy: " + string(e.what()));
     // We failed to make a route through outline proxy. We just remove the flag
     // indicating DNS is backed up.
     resetFailRoutingAttempt(OUTLINE_PRIORITY_SET_UP);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -295,7 +387,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     logger.error("failed to remove the default route throw the current default router: " +
                  string(e.what()));
     resetFailRoutingAttempt(DEFAULT_GATEWAY_ROUTE_DELETED);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -303,7 +395,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
   } catch (exception& e) {
     logger.error("failed to route network traffic through outline tun interfacet: ", e.what());
     resetFailRoutingAttempt(TRAFFIC_ROUTED_THROUGH_TUN);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -313,7 +405,7 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     logger.error("possible net traffic leakage. failed to disable IPv6 routes on all interfaces: " +
                  string(e.what()));
     resetFailRoutingAttempt(IPV6_ROUTING_FAILED);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
   try {
@@ -325,10 +417,10 @@ void OutlineProxyController::routeThroughOutline(std::string outlineServerIP) {
     // vulnerable to DNS poisening so we are going to reverse everthing
     logger.error("failed to enforce outline DNS server: ", e.what());
     resetFailRoutingAttempt(OUTLINE_DNS_SET);
-    return;
+    throw std::system_error{ErrorCode::kConfigureSystemProxyFailure};
   }
 
-  routingStatus = ROUTING_THROUGH_OUTLINE;
+  routing_status_ = OutlineConnectionStatus::kRoutingThroughOutline;
   logger.info("successfully routing through the outline server");
 }
 
@@ -520,7 +612,7 @@ void OutlineProxyController::resetFailRoutingAttempt(OutlineConnectionStage fail
       break;
   }
 
-  routingStatus = ROUTING_THROUGH_DEFAULT_GATEWAY;
+  routing_status_ = OutlineConnectionStatus::kRoutingThroughDefaultGateway;
 }
 
 OutputAndStatus OutlineProxyController::executeSysctl(const CommandArguments &args) {
@@ -529,50 +621,51 @@ OutputAndStatus OutlineProxyController::executeSysctl(const CommandArguments &ar
 
 void OutlineProxyController::routeDirectly() {
   logger.info("attempting to dismantle routing through outline server");
-  if (routingStatus == ROUTING_THROUGH_DEFAULT_GATEWAY) {
+  if (routing_status_ == OutlineConnectionStatus::kRoutingThroughDefaultGateway) {
     logger.warn("it does not seem that we are routing through outline server");
   }
+  routing_status_ = OutlineConnectionStatus::kConfiguringRouting;
 
   try {
-    // before deleting all route make sure that we have kept track of default
-    // router info.
-    if (routingGatewayIP.empty()) {
-      logger.warn("default routing gateway is unknown");
-      detectBestInterfaceIndex();
-    }
-
     deleteAllDefaultRoutes();
-  } catch (exception& e) {
+  } catch (const exception& e) {
     logger.error("failed to delete the route through outline proxy " + string(e.what()));
     // this might be because our route got deleted, we are going to add the
     // original default route nonetheless
   }
 
   try {
+    if (routingGatewayIP.empty()) {
+      logger.warn("default routing gateway is unknown");
+      detectBestInterfaceIndex();
+    }
     createDefaultRouteThroughGateway();
-  } catch (exception& e) {
+  } catch (const exception& e) {
     logger.error("failed to make a default route through the network gateway: " + string(e.what()));
+    // the old routingGatewayIP is invalid (might because NIC is turned off), just clear it and
+    // hopefully next time we can get a new default gateway IP
+    routingGatewayIP.clear();
   }
 
   try {
     deleteOutlineServerRouting();
-  } catch (exception& e) {
+  } catch (const exception& e) {
     logger.warn("unable to delete priority route for outline proxy: " + string(e.what()));
   }
 
   try {
     toggleIPv6(true);
-  } catch (exception& e) {
+  } catch (const exception& e) {
     logger.error("failed to enable IPv6 for all interfaces:" + string(e.what()));
   }
 
   try {
     restoreDNSSetting();
-  } catch (exception& e) {
+  } catch (const exception& e) {
     logger.warn("unable restoring DNS configuration " + string(e.what()));
   }
 
-  routingStatus = ROUTING_THROUGH_DEFAULT_GATEWAY;
+  routing_status_ = OutlineConnectionStatus::kRoutingThroughDefaultGateway;
   logger.info("now routing through the network default gateway");
 }
 
@@ -659,7 +752,13 @@ OutputAndStatus OutlineProxyController::executeIPAddress(const CommandArguments 
 
 std::string OutlineProxyController::getTunDeviceName() { return tunInterfaceName; }
 
-OutlineProxyController::~OutlineProxyController() {
-  if (routingStatus == ROUTING_THROUGH_OUTLINE) routeDirectly();
-  deleteOutlineTunDev();
+OutlineProxyController::~OutlineProxyController() noexcept {
+  try {
+    if (routing_status_ != OutlineConnectionStatus::kRoutingThroughDefaultGateway) {
+      routeDirectly();
+    }
+    deleteOutlineTunDev();
+  } catch (...) {
+    // destructors must not throw exception
+  }
 }

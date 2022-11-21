@@ -17,6 +17,9 @@ import {customElement, property, state} from 'lit/decorators.js';
 // TODO(daniellacosse): fix webpack copy such that we can co-locate this image asset with this folder
 import circle from '../../../assets/circle.png';
 
+export const SERVER_CONNECTION_INDICATOR_DURATION_MS = 1750;
+export const SERVER_CONNECTION_INDICATOR_DELAY_MS = 500;
+
 export enum ServerConnectionState {
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
@@ -25,8 +28,6 @@ export enum ServerConnectionState {
   DISCONNECTED = 'disconnected',
 }
 
-const ANIMATION_DURATION_MS = 1750;
-const ANIMATION_DELAY_MS = 500;
 const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
 @customElement('server-connection-indicator')
@@ -45,14 +46,14 @@ export class ServerConnectionIndicator extends LitElement {
         display: inline-block;
         aspect-ratio: 1;
 
-        --duration: ${ANIMATION_DURATION_MS}ms;
+        --duration: ${SERVER_CONNECTION_INDICATOR_DURATION_MS}ms;
         --timing-function: ease-out;
 
         --circle-large-scale: scale(1);
-        --circle-large-delay: ${ANIMATION_DELAY_MS}ms;
+        --circle-large-delay: ${SERVER_CONNECTION_INDICATOR_DELAY_MS}ms;
 
         --circle-medium-scale: scale(0.66);
-        --circle-medium-delay: ${ANIMATION_DELAY_MS / 2}ms;
+        --circle-medium-delay: ${SERVER_CONNECTION_INDICATOR_DELAY_MS / 2}ms;
 
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
@@ -67,6 +68,14 @@ export class ServerConnectionIndicator extends LitElement {
       .circle {
         display: inline-block;
 
+        /* 
+          setting translate3d can have weird behavior on certain platforms, so 
+          hiding the element backface becomes necessary - 
+          https://developer.mozilla.org/en-US/docs/Web/CSS/backface-visibility 
+        */
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+
         transition-property: transform, filter, opacity;
         transition-duration: var(--duration);
         transition-timing-function: var(--timing-function);
@@ -74,6 +83,9 @@ export class ServerConnectionIndicator extends LitElement {
         animation-duration: var(--duration);
         animation-timing-function: var(--timing-function);
         animation-iteration-count: infinite;
+        -webkit-animation-duration: var(--duration);
+        -webkit-animation-timing-function: var(--timing-function);
+        -webkit-animation-iteration-count: infinite;
       }
 
       /* 
@@ -93,12 +105,14 @@ export class ServerConnectionIndicator extends LitElement {
       .circle-disconnecting {
         opacity: var(--circle-connected-opacity);
         filter: var(--circle-connected-color);
+        -webkit-filter: var(--circle-connected-color);
       }
 
       .circle-disconnected,
       .circle-connecting {
         opacity: var(--circle-disconnected-opacity);
         filter: var(--circle-disconnected-color);
+        -webkit-filter: var(--circle-disconnected-color);
       }
 
       .circle-disconnecting {
@@ -110,7 +124,7 @@ export class ServerConnectionIndicator extends LitElement {
       /* prettier-ignore */
       circleSize => css`
         .circle-${circleSize} {
-          transform: var(--circle-${circleSize}-scale);
+          transform: translate3d(0, 0, 0) var(--circle-${circleSize}-scale);
           animation-delay: var(--circle-${circleSize}-delay);
         }
 
@@ -124,11 +138,11 @@ export class ServerConnectionIndicator extends LitElement {
         /* rtl:begin:ignore */
         @keyframes circle-${circleSize}-rotate-with-pause {
           0% {
-            transform: rotate(0deg) var(--circle-${circleSize}-scale);
+            transform: translate3d(0, 0, 0) rotate(0deg) var(--circle-${circleSize}-scale);
           }
           60%,
           100% {
-            transform: rotate(360deg) var(--circle-${circleSize}-scale);
+            transform: translate3d(0, 0, 0) rotate(360deg) var(--circle-${circleSize}-scale);
           }
         }
         /* rtl:end:ignore */
@@ -155,8 +169,8 @@ export class ServerConnectionIndicator extends LitElement {
       // is included in the total play time.
       const animationDurationMS =
         this.animationState === ServerConnectionState.DISCONNECTING
-          ? ANIMATION_DURATION_MS + ANIMATION_DELAY_MS
-          : ANIMATION_DURATION_MS;
+          ? SERVER_CONNECTION_INDICATOR_DURATION_MS + SERVER_CONNECTION_INDICATOR_DELAY_MS
+          : SERVER_CONNECTION_INDICATOR_DURATION_MS;
 
       const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
 

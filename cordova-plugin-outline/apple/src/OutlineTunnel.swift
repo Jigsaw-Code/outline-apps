@@ -23,9 +23,13 @@ class OutlineTunnel: NSObject, Codable {
   var port: String?
   var method: String?
   var password: String?
+  var prefix: Data?
   var config: [String: String] {
+    let scalars = prefix?.map{Unicode.Scalar($0)}
+    let characters = scalars?.map{Character($0)}
+    let prefixStr = String(characters ?? [])
     return ["host": host ?? "", "port": port ?? "", "password": password ?? "",
-            "method": method ?? ""]
+            "method": method ?? "", "prefix": prefixStr]
   }
 
   @objc
@@ -43,6 +47,9 @@ class OutlineTunnel: NSObject, Codable {
     self.method = config["method"] as? String
     if let port = config["port"] {
       self.port = String(describing: port)  // Handle numeric values
+    }
+    if let prefix = config["prefix"] as? String {
+      self.prefix = Data(prefix.utf16.map{UInt8($0)})
     }
   }
 

@@ -40,24 +40,21 @@ export async function main(...parameters) {
 
   let argv = [];
 
-  if (platform === 'android') {
-    if (platform === 'release') {
-      argv = [
-        '--keystore=keystore.p12',
-        '--alias=privatekey',
-        '--storePassword=$ANDROID_KEY_STORE_PASSWORD',
-        '--password=$ANDROID_KEY_STORE_PASSWORD',
-        '--',
-      ];
-
-      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
-        throw new ReferenceError(
-          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
-        );
-      }
+  if (platform === 'android' && buildMode === 'release') {
+    if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+      throw new ReferenceError(
+        "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+      );
     }
 
-    argv.push('--gradleArg=-PcdvBuildMultipleApks=true');
+    argv = [
+      '--keystore=keystore.p12',
+      '--alias=privatekey',
+      `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+      `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+      '--',
+      '--gradleArg=-PcdvBuildMultipleApks=true',
+    ];
   }
 
   await cordova.compile({

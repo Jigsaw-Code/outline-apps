@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleShortVersionString</key>
-	<string>1.7.2</string>
+	<string>1.8.1</string>
 	<key>CFBundleVersion</key>
-	<string>33</string>
+	<string>34</string>
   <key>CFBundleDevelopmentRegion</key>
   <string>English</string>
 	<key>CFBundleDisplayName</key>
@@ -32,6 +32,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>ss</string>
+				<string>ssconf</string>
 			</array>
 		</dict>
 	</array>

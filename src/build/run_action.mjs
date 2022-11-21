@@ -55,7 +55,7 @@ const resolveActionPath = async actionPath => {
  *
  * @param {string} actionPath The truncated path to the action you wish to run (e.g. "www/build")
  * @param {...string} parameters The flags and other parameters we want to run the action with.
- * @returns {void}
+ * @returns {Promise<void>}
  */
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
@@ -74,21 +74,24 @@ export async function runAction(actionPath, ...parameters) {
     return runAction('list');
   }
 
-  let runner = 'npm run';
+  let runner = 'npm';
+  let subCommands = ['run'];
 
   if (resolvedPath.endsWith('mjs')) {
-    runner = 'node --trace-uncaught';
+    runner = 'node';
+    subCommands = ['--trace-uncaught'];
   }
 
   if (resolvedPath.endsWith('sh')) {
     runner = 'bash';
+    subCommands = [];
   }
 
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
   const startTime = performance.now();
 
   try {
-    await spawnStream(runner, [resolvedPath, ...parameters]);
+    await spawnStream(runner, [...subCommands, resolvedPath, ...parameters]);
   } catch (error) {
     if (error?.message) {
       console.error(chalk.red(error.message));

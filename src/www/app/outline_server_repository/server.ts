@@ -14,13 +14,12 @@
 
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {Server} from '../../model/server';
+import {Server, ServerType} from '../../model/server';
 
-import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
-import {Tunnel, TunnelStatus} from '../tunnel';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
-import {accessKeyToShadowsocksConfig} from './access_key_serialization';
+import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -30,17 +29,27 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  private config: ShadowsocksConfig;
+  private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
     public readonly id: string,
     public readonly accessKey: string,
+    public readonly type: ServerType,
     private _name: string,
     private tunnel: Tunnel,
     private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
-    this.config = accessKeyToShadowsocksConfig(accessKey);
+    switch (this.type) {
+      case ServerType.DYNAMIC_CONNECTION:
+        this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
+        break;
+      case ServerType.STATIC_CONNECTION:
+      default:
+        this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+        break;
+    }
+
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -67,11 +76,20 @@ export class OutlineServer implements Server {
 
   set name(newName: string) {
     this._name = newName;
-    this.config.name = newName;
   }
 
   get address() {
-    return `${this.config.host}:${this.config.port}`;
+    if (!this.sessionConfig) return '';
+
+    return `${this.sessionConfig.host}:${this.sessionConfig.port}`;
+  }
+
+  get sessionConfigLocation() {
+    if (this.type !== ServerType.DYNAMIC_CONNECTION) {
+      return;
+    }
+
+    return new URL(this.accessKey);
   }
 
   get isOutlineServer() {
@@ -80,7 +98,11 @@ export class OutlineServer implements Server {
 
   async connect() {
     try {
-      await this.tunnel.start(this.config);
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
+        this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+      }
+
+      await this.tunnel.start(this.sessionConfig);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
@@ -94,6 +116,10 @@ export class OutlineServer implements Server {
   async disconnect() {
     try {
       await this.tunnel.stop();
+
+      if (this.type === ServerType.DYNAMIC_CONNECTION) {
+        this.sessionConfig = undefined;
+      }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
@@ -104,8 +130,13 @@ export class OutlineServer implements Server {
     return this.tunnel.isRunning();
   }
 
+  // NOTE: you should only be calling this method on running servers
   checkReachable(): Promise<boolean> {
-    return this.net.isServerReachable(this.config.host, this.config.port);
+    if (!this.sessionConfig) {
+      return Promise.resolve(false);
+    }
+
+    return this.net.isServerReachable(this.sessionConfig.host, this.sessionConfig.port);
   }
 
   static isServerCipherSupported(cipher?: string) {

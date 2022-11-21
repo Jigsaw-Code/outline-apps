@@ -26,20 +26,17 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import * as connectivity from './connectivity';
 import * as errors from '../www/model/errors';
 
-import {ShadowsocksConfig} from '../www/app/config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
-import {ShadowsocksLibevBadvpnTunnel} from './sslibev_badvpn_tunnel';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
-//   - NETWORK_STACK is either 'go' or 'libevbadvpn' by default
 //   - SENTRY_DSN is either undefined or a url string
 //   - APP_VERSION should always be a string
-declare const NETWORK_STACK: string;
 declare const SENTRY_DSN: string | undefined;
 declare const APP_VERSION: string;
 
@@ -240,17 +237,19 @@ async function quitApp() {
 
 function interceptShadowsocksLink(argv: string[]) {
   if (argv.length > 1) {
-    const protocol = 'ss://';
+    const protocols = ['ss://', 'ssconf://'];
     let url = argv[1];
-    if (url.startsWith(protocol)) {
-      if (mainWindow) {
-        // The system adds a trailing slash to the intercepted URL (before the fragment).
-        // Remove it before sending to the UI.
-        url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
-        // TODO: refactor channel name and namespace to a constant
-        mainWindow.webContents.send('outline-ipc-add-server', url);
-      } else {
-        console.error('called with URL but mainWindow not open');
+    for (const protocol of protocols) {
+      if (url.startsWith(protocol)) {
+        if (mainWindow) {
+          // The system adds a trailing slash to the intercepted URL (before the fragment).
+          // Remove it before sending to the UI.
+          url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
+          // TODO: refactor channel name and namespace to a constant
+          mainWindow.webContents.send('outline-ipc-add-server', url);
+        } else {
+          console.error('called with URL but mainWindow not open');
+        }
       }
     }
   }
@@ -295,22 +294,15 @@ async function tearDownAutoLaunch() {
 
 // Factory function to create a VPNTunnel instance backed by a network statck
 // specified at build time.
-function createVpnTunnel(config: ShadowsocksConfig, isAutoConnect: boolean): VpnTunnel {
+function createVpnTunnel(config: ShadowsocksSessionConfig, isAutoConnect: boolean): VpnTunnel {
   const routing = new RoutingDaemon(config.host || '', isAutoConnect);
-  let tunnel: VpnTunnel;
-  if (NETWORK_STACK === 'go') {
-    console.log('Using Go network stack');
-    tunnel = new GoVpnTunnel(routing, config);
-  } else {
-    tunnel = new ShadowsocksLibevBadvpnTunnel(routing, config);
-  }
+  const tunnel = new GoVpnTunnel(routing, config);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
-
   return tunnel;
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
-async function startVpn(config: ShadowsocksConfig, id: string, isAutoConnect = false) {
+async function startVpn(config: ShadowsocksSessionConfig, id: string, isAutoConnect = false) {
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -396,6 +388,7 @@ function main() {
   }
 
   app.setAsDefaultProtocolClient('ss');
+  app.setAsDefaultProtocolClient('ssconf');
 
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
@@ -468,7 +461,7 @@ function main() {
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {config: ShadowsocksConfig; id: string}): Promise<errors.ErrorCode> => {
+    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<errors.ErrorCode> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).

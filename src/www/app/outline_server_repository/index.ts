@@ -12,35 +12,78 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {ServerRepository} from '../../model/server';
+import {ServerRepository, ServerType} from '../../model/server';
 
-import {ShadowsocksConfig} from '../config';
 import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
-import {accessKeyToShadowsocksConfig, shadowsocksConfigToAccessKey} from './access_key_serialization';
+import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+
+// TODO(daniellacosse): write unit tests for these functions
 
 // Compares access keys proxying parameters.
-function accessKeysMatch(a: string, b: string): boolean {
+function staticKeysMatch(a: string, b: string): boolean {
   try {
-    const l = accessKeyToShadowsocksConfig(a);
-    const r = accessKeyToShadowsocksConfig(b);
-    return l.host === r.host && l.port === r.port && l.password === r.password && l.method === r.method;
+    const l = staticKeyToShadowsocksSessionConfig(a);
+    const r = staticKeyToShadowsocksSessionConfig(b);
+    return (
+      l.host === r.host &&
+      l.port === r.port &&
+      l.password === r.password &&
+      l.method === r.method &&
+      l.prefix == r.prefix
+    );
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
   }
   return false;
 }
 
+// Determines if the key is expected to be a url pointing to an ephemeral session config.
+function isDynamicAccessKey(accessKey: string): boolean {
+  return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
+}
+
+// NOTE: For extracting a name that the user has explicitly set, only.
+// (Currenly done by setting the hash on the URI)
+function serverNameFromAccessKey(accessKey: string): string {
+  if (isDynamicAccessKey(accessKey)) {
+    return new URL(accessKey.replace(/^ssconf:\/\//, 'https://')).hostname;
+  }
+
+  return SHADOWSOCKS_URI.parse(accessKey).tag.data;
+}
+
 // DEPRECATED: V0 server persistence format.
+
+interface ServersStorageV0Config {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  name?: string;
+}
 export interface ServersStorageV0 {
-  [serverId: string]: ShadowsocksConfig;
+  [serverId: string]: ServersStorageV0Config;
+}
+
+// Enccodes a V0 storage configuration into an access key string.
+export function serversStorageV0ConfigToAccessKey(config: ServersStorageV0Config): string {
+  return SIP002_URI.stringify(
+    makeConfig({
+      host: config.host,
+      port: config.port,
+      method: config.method,
+      password: config.password,
+      tag: config.name,
+    })
+  );
 }
 
 // V1 server persistence format.
@@ -78,8 +121,10 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    const config = accessKeyToShadowsocksConfig(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, config.name);
+    this.validateAccessKey(accessKey);
+
+    const server = this.createServer(uuidv4(), accessKey, serverNameFromAccessKey(accessKey));
+
     this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -123,13 +168,26 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   validateAccessKey(accessKey: string) {
-    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
+    if (!isDynamicAccessKey(accessKey)) {
+      return this.validateStaticKey(accessKey);
+    }
+
+    try {
+      // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
+      new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
+    } catch (error) {
+      throw new errors.ServerUrlInvalid(error.message);
+    }
+  }
+
+  private validateStaticKey(staticKey: string) {
+    const alreadyAddedServer = this.serverFromAccessKey(staticKey);
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
     let config = null;
     try {
-      config = SHADOWSOCKS_URI.parse(accessKey);
+      config = SHADOWSOCKS_URI.parse(staticKey);
     } catch (error) {
       throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
     }
@@ -143,7 +201,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (accessKeysMatch(accessKey, server.accessKey)) {
+      if (server.type === ServerType.DYNAMIC_CONNECTION && accessKey === server.accessKey) {
+        return server;
+      }
+
+      if (staticKeysMatch(accessKey, server.accessKey)) {
         return server;
       }
     }
@@ -187,9 +249,14 @@ export class OutlineServerRepository implements ServerRepository {
       throw new Error(`could not parse saved V0 servers: ${e.message}`);
     }
     for (const serverId of Object.keys(configById)) {
-      const config = configById[serverId];
+      const v0Config = configById[serverId];
+
       try {
-        this.loadServer({id: serverId, accessKey: shadowsocksConfigToAccessKey(config), name: config.name});
+        this.loadServer({
+          id: serverId,
+          accessKey: serversStorageV0ConfigToAccessKey(v0Config),
+          name: v0Config.name,
+        });
       } catch (e) {
         // Don't propagate so other stored servers can be created.
         console.error(e);
@@ -225,8 +292,17 @@ export class OutlineServerRepository implements ServerRepository {
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(id: string, accessKey: string, name: string): OutlineServer {
-    const server = new OutlineServer(id, accessKey, name, this.createTunnel(id), this.net, this.eventQueue);
+  private createServer(id: string, accessKey: string, name?: string): OutlineServer {
+    const server = new OutlineServer(
+      id,
+      accessKey,
+      isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
+      name,
+      this.createTunnel(id),
+      this.net,
+      this.eventQueue
+    );
+
     try {
       this.validateAccessKey(accessKey);
     } catch (e) {

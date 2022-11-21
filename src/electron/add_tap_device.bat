@@ -102,7 +102,7 @@ powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\"" <nul
 :: TODO: Actually search the system for an unused subnet or make the subnet
 ::       configurable in the Outline client.
 echo Configuring TAP device subnet...
-netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.0
+netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.255
 if %errorlevel% neq 0 (
   echo Could not set TAP network device subnet. >&2
   exit /b %ERROR_TAP_CONFIGURE_SUBNET%

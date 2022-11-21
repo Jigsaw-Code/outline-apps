@@ -57,6 +57,7 @@ const sharedCSS = css`
     border-radius: var(--outline-corner);
     box-shadow: var(--outline-elevation);
     display: grid;
+    gap: var(--outline-slim-gutter);
     grid-gap: var(--outline-slim-gutter);
     height: 100%;
     overflow: hidden;
@@ -140,8 +141,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const hasErrorMessage = Boolean(server.errorMessageId);
 
   const messages = {
-    serverName:
-      server.name?.trim() || localize(server.isOutlineServer ? 'server-default-name-outline' : 'server-default-name'),
+    serverName: server.name,
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };

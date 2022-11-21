@@ -1,5 +1,6 @@
 {
   "name": "outline-client",
+  "version": "0.0.0",
   "productName": "Outline",
   "scripts": {
     "action:help": "npm run action list",
@@ -13,6 +14,7 @@
     "reset": "npm run clean && npm ci"
   },
   "comments": {
+    "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
     "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
     "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
@@ -51,7 +53,7 @@
     "lit": "^2.2.2",
     "ShadowsocksConfig": "github:Jigsaw-Code/outline-shadowsocksconfig#v0.2.1",
     "socks": "^1.1.10",
-    "sudo-prompt": "^8.2.0",
+    "sudo-prompt": "^9.2.1",
     "uuidv4": "^4.0.0",
     "web-animations-js": "^2.3.2"
   },

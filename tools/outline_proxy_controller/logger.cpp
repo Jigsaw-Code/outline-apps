@@ -20,7 +20,9 @@
 
 using namespace outline;
 
-Logger logger(DEBUG);
+namespace outline {
+  Logger logger(DEBUG);
+}
 
 // Standard constructor
 // Threshold adopts a default level of DEBUG if an invalid threshold is provided.
