@@ -53,17 +53,20 @@ function isDynamicAccessKey(accessKey: string): boolean {
 // NOTE: For extracting a name that the user has explicitly set, only.
 // (Currenly done by setting the hash on the URI)
 function serverNameFromAccessKey(accessKey: string): string {
-  if (isDynamicAccessKey(accessKey)) {
-    const {hostname, hash} = new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
+  const {hostname, hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
 
-    if (hash && hash !== '#') {
-      return decodeURIComponent(hash.slice(1));
-    }
+  let result;
+  if (hash && hash !== '#') {
+    // locates the first key-value pair in the search params-compliant
+    // string that has no value (i.e. thing=a&My%20Server%20Name&thing=b)
+    const {groups} = hash.slice(1).match(/(?:^|&)(?<name>[^=]+)(?:&|$)/);
 
-    return hostname;
+    result = groups?.name;
   }
 
-  return SHADOWSOCKS_URI.parse(accessKey).tag.data;
+  result ??= hostname;
+
+  return decodeURIComponent(result);
 }
 
 // DEPRECATED: V0 server persistence format.
