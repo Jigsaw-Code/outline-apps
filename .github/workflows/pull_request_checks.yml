@@ -58,7 +58,7 @@ jobs:
             resources
             src/www/assets/**
             src/www/messages/**
-            third_party
+            third_party/**
         with:
           sizes: >
             {
