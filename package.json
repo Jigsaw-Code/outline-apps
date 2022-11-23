@@ -6,7 +6,7 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rimraf build node_modules www platforms plugins",
+    "clean": "rimraf build node_modules www platforms plugins third_party/CocoaLumberjack/Carthage/Build third_party/sentry-cocoa/Carthage/Build",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts src",
@@ -88,7 +88,7 @@
     "cordova-lib": "^11.0.0",
     "cordova-osx": "github:apache/cordova-osx",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
-    "cordova-plugin-outline": "file:cordova-plugin-outline",
+    "cordova-plugin-outline": "file:src/cordova/plugin",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
     "electron": "^19.0.8",
@@ -150,5 +150,8 @@
       "ios",
       "osx"
     ]
-  }
+  },
+  "workspaces": [
+    "src/cordova/plugin"
+  ]
 }
