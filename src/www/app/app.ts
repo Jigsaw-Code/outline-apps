@@ -112,7 +112,6 @@ export class App {
     this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
-    this.rootEl.addEventListener('ClipboardTextRequested', this.pullClipboardText.bind(this));
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(events.ServerAdded, this.onServerAdded.bind(this));
@@ -129,6 +128,7 @@ export class App {
       this.displayPrivacyView();
     }
     this.displayZeroStateUi();
+    this.pullClipboardText();
   }
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
