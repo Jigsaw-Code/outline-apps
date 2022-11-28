@@ -294,7 +294,7 @@ export class App {
     if (fromClipboard && !addServerView.isAddingServer()) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
-      } else if (accessKey.startsWith('https://') && addServerView.isAddingServer()) {
+      } else if (accessKey.startsWith('https://')) {
         return console.debug('Non-S3 https:// keys should be pasted in explicitly.');
       }
     }
