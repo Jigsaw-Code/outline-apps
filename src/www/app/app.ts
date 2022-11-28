@@ -295,7 +295,7 @@ export class App {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
       } else if (accessKey.startsWith('https://')) {
-        return console.debug('Non-S3 https:// keys should be pasted in explicitly.');
+        return console.debug('Non-Invite https:// keys should be pasted in explicitly.');
       }
     }
     try {
