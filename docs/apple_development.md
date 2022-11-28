@@ -3,8 +3,11 @@
 This document describes how to develop and debug for macOS (formerly known as OS X) and iOS. You will need:
 
 - An Apple Developer Account. You will need to be invited to your developer team as well.
-- XCode 13.2 ([download](https://developer.apple.com/xcode/))
+- XCode 13.2+ ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
+- Carthage, which can be installed with `brew install carthage`
+
+> NOTE: Should you encounter issues with your build, there may be apple-specific dependencies that are out of date. Run `npm run clean` and try again!
 
 ## iOS
 
@@ -22,7 +25,7 @@ To open the iOS project on XCode:
 
 ### Adding support for your device in XCode
 
-You may find that your iOS version is _too modern_ for 13.2 XCode. You'll need to do the following:
+You may find that your iOS version is _too modern_ for XCode. You'll need to do the following:
 
 1. Download a folder corresponding to your iOS version from [this community-managed repository](https://github.com/iGhibli/iOS-DeviceSupport/tree/master/DeviceSupport).
 2. Unzip the file and add it to XCode:
