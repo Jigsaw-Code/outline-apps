@@ -269,7 +269,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 # pragma mark - Network
 
 - (ShadowsocksClient*) getClient {
-  ShadowsocksConfig* config = [ShadowsocksConfig init];
+  ShadowsocksConfig* config = [[ShadowsocksConfig alloc] init];
   config.host = self.hostNetworkAddress;
   config.port = [self.tunnelConfig.port intValue];
   config.password = self.tunnelConfig.password;
