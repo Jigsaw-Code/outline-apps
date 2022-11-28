@@ -291,10 +291,10 @@ export class App {
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard) {
+    if (fromClipboard && !addServerView.isAddingServer()) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
-      } else if (accessKey.startsWith('https://')) {
+      } else if (accessKey.startsWith('https://') && addServerView.isAddingServer()) {
         return console.debug('Non-S3 https:// keys should be pasted in explicitly.');
       }
     }
