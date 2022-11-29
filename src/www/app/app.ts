@@ -291,11 +291,11 @@ export class App {
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard) {
+    if (fromClipboard && !addServerView.isAddingServer()) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
-      } else if (fromClipboard && addServerView.isAddingServer()) {
-        return console.debug('Already adding a server');
+      } else if (accessKey.startsWith('https://')) {
+        return console.debug('Non-Invite https:// keys should be pasted in explicitly.');
       }
     }
     try {
