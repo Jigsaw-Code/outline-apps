@@ -3,9 +3,9 @@
 # (see: https://developer.chrome.com/docs/multidevice/webview/#what-version-of-chrome-is-it-based-on)
 android >= 36
 
-# We use Electron v11.5.
+# We use Electron v19.1.
 # This is the version of Chrome it requires:
-chrome >= 85
+chrome >= 102
 
 # This is the iOS deployment target specified in the config.xml:
 ios >= 11
