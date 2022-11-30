@@ -52,21 +52,17 @@ function isDynamicAccessKey(accessKey: string): boolean {
 
 // NOTE: For extracting a name that the user has explicitly set, only.
 // (Currenly done by setting the hash on the URI)
-function serverNameFromAccessKey(accessKey: string): string {
-  const {hostname, hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
+function serverNameFromAccessKey(accessKey: string): string | undefined {
+  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
 
-  let result;
-  if (hash && hash !== '#') {
-    // locates the first key-value pair in the search params-compliant
-    // string that has no value (i.e. thing=a&My%20Server%20Name&thing=b)
-    const {groups} = hash.slice(1).match(/(?:^|&)(?<name>[^=]+)(?:&|$)/);
+  if (!hash) return;
 
-    result = groups?.name;
-  }
-
-  result ??= hostname;
-
-  return decodeURIComponent(result);
+  return decodeURIComponent(
+    hash
+      .slice(1)
+      .split('&')
+      .find(keyValuePair => !keyValuePair.includes('='))
+  );
 }
 
 // DEPRECATED: V0 server persistence format.
@@ -132,7 +128,15 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey, serverNameFromAccessKey(accessKey));
+    let serverName = serverNameFromAccessKey(accessKey);
+
+    if (!serverName && isDynamicAccessKey(accessKey)) {
+      const {hostname} = new URL(accessKey);
+
+      serverName = hostname;
+    }
+
+    const server = this.createServer(uuidv4(), accessKey, serverName);
 
     this.serverById.set(server.id, server);
     this.storeServers();
