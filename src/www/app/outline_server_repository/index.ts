@@ -52,12 +52,17 @@ function isDynamicAccessKey(accessKey: string): boolean {
 
 // NOTE: For extracting a name that the user has explicitly set, only.
 // (Currenly done by setting the hash on the URI)
-function serverNameFromAccessKey(accessKey: string): string {
-  if (isDynamicAccessKey(accessKey)) {
-    return new URL(accessKey.replace(/^ssconf:\/\//, 'https://')).hostname;
-  }
+function serverNameFromAccessKey(accessKey: string): string | undefined {
+  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
 
-  return SHADOWSOCKS_URI.parse(accessKey).tag.data;
+  if (!hash) return;
+
+  return decodeURIComponent(
+    hash
+      .slice(1)
+      .split('&')
+      .find(keyValuePair => !keyValuePair.includes('='))
+  );
 }
 
 // DEPRECATED: V0 server persistence format.
@@ -123,7 +128,15 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    const server = this.createServer(uuidv4(), accessKey, serverNameFromAccessKey(accessKey));
+    let serverName = serverNameFromAccessKey(accessKey);
+
+    if (!serverName && isDynamicAccessKey(accessKey)) {
+      const {hostname} = new URL(accessKey);
+
+      serverName = hostname;
+    }
+
+    const server = this.createServer(uuidv4(), accessKey, serverName);
 
     this.serverById.set(server.id, server);
     this.storeServers();
