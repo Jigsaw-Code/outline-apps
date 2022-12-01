@@ -20,8 +20,29 @@ import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {ConfigQueue} from './config_queue';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
+
+// ### Do we need this class?
+/*
+class RecurringCallback {
+  // ### doc we used this to avoid scheduling multiple times simultaneously.
+  private intervalHandle: ReturnType<typeof setInterval> = null;
+
+  constructor(private readonly intervalMs: number) {}
+
+  async start(callback: any) {
+    await callback();
+    this.intervalHandle = setInterval(callback, this.intervalMs);
+  }
+  stop() {
+    if (!this.intervalHandle) return;
+    clearInterval(this.intervalHandle);
+    this.intervalHandle = null;
+  }
+}
+*/
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
@@ -29,7 +50,10 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
+  // ### notes
+  private configQueue: ConfigQueue = new ConfigQueue();
   private sessionConfig?: ShadowsocksSessionConfig;
+  private dynamicConfigInterval: ReturnType<typeof setInterval> = null;
 
   constructor(
     public readonly id: string,
@@ -96,10 +120,33 @@ export class OutlineServer implements Server {
     return this.accessKey.includes('outline=1');
   }
 
+  private async startDynamicConfigRefresh() {
+    this.stopDynamicConfigRefresh();
+    const callback = async () => {
+      const sessionConfigs =
+        await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+      this.configQueue.updateConfigs(sessionConfigs)
+    }
+    await callback();
+    this.dynamicConfigInterval = setInterval(
+      callback, 5 /*min*/ * 60 /*sec/min*/ * 1000 /*ms/sec*/);
+  }
+
+  private stopDynamicConfigRefresh() {
+    if (!this.dynamicConfigInterval) return;
+    clearInterval(this.dynamicConfigInterval);
+    this.dynamicConfigInterval = null;
+  }
+
   async connect() {
+    // connect() is triggered by a manual user connect action
+    // so we must reset the configQueue.
+    this.configQueue.reset();
     try {
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+        this.startDynamicConfigRefresh();
+        this.sessionConfig = this.configQueue.getConfig();
+        // ### check for null!
       }
 
       await this.tunnel.start(this.sessionConfig);
@@ -114,6 +161,7 @@ export class OutlineServer implements Server {
   }
 
   async disconnect() {
+    this.stopDynamicConfigRefresh();
     try {
       await this.tunnel.stop();
 

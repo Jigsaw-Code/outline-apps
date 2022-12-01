@@ -36,38 +36,57 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
-  let sessionConfig;
-  try {
-    const {method, password, server: host, server_port: port, extra} = JSON.parse(maybeJsonText);
+interface SessionConfigJson {
+  method: string,
+  password: string,
+  server: string,
+  server_port: number,
+  extra: {prefix: string},
+}
 
-    sessionConfig = {
-      method,
-      password,
-      host,
-      port,
-      prefix: extra['prefix'],
-    };
-  } catch (_) {
-    // It's not JSON, so return null.
-    return null;
-  }
+function parseSingleShadowsocksSessionConfig(jsonObject : SessionConfigJson): ShadowsocksSessionConfig {
+  const {method, password, server: host, server_port: port, extra} = jsonObject;
+  const sessionConfig = {
+    method,
+    password,
+    host,
+    port,
+    prefix: extra['prefix'],
+  };
 
   // These are the mandatory keys.
-  for (const key of ['method', 'password', 'host', 'port']) {
-    if (sessionConfig && !sessionConfig[key]) {
+  type Key = keyof typeof sessionConfig;
+  for (const key of ['method' as Key, 'password' as Key, 'host' as Key, 'port' as Key]) {
+    if (!sessionConfig[key]) {
       throw new errors.ServerAccessKeyInvalid(
         `Incomplete VPN information returned from dynamic access key: missing "${key}".`
       );
     }
   }
-
   return sessionConfig;
+}
+
+function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig[] | null {
+  let jsonObject : any;
+  try {
+    jsonObject = JSON.parse(maybeJsonText);
+  } catch (_) {
+    // It's not JSON, so return null.
+    // ### Wouldn't it be better to throw SererAccessKeyInvalid as below?
+    return null;
+  }
+
+  if (!(jsonObject instanceof Array)) {
+    return [parseSingleShadowsocksSessionConfig(jsonObject)];
+  }
+
+  // Now we know jsonObject is an Array.  Parse each individual config in the array.
+  return jsonObject.map(parseSingleShadowsocksSessionConfig);
 }
 
 // fetches information from a dynamic access key and attempts to parse it
 // TODO(daniellacosse): unit tests
-export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
+export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig[]> {
   let response;
   try {
     response = await fetch(configLocation);
@@ -83,7 +102,7 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
   if (parseShadowsocksSessionResult) return parseShadowsocksSessionResult;
 
   try {
-    return staticKeyToShadowsocksSessionConfig(responseBody);
+    return [staticKeyToShadowsocksSessionConfig(responseBody)];
   } catch (error) {
     throw new errors.ServerAccessKeyInvalid(
       error.message || 'Failed to parse VPN information from returned static access key.'
