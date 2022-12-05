@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleShortVersionString</key>
-	<string>1.9.0</string>
-	<key>CFBundleVersion</key>
-	<string>36</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.9.0</string>
+  <key>CFBundleVersion</key>
+  <string>36</string>
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleExecutable</key>
@@ -34,20 +34,20 @@
   </array>
   <key>ITSAppUsesNonExemptEncryption</key>
   <false/>
-	<key>LSApplicationCategoryType</key>
-	<string>public.app-category.utilities</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
-	<key>LSUIElement</key>
-	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>NSMainNibFile</key>
-	<string>MainViewController</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.utilities</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>${MACOSX_DEPLOYMENT_TARGET}</string>
+  <key>LSUIElement</key>
+  <true/>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+  </dict>
+  <key>NSMainNibFile</key>
+  <string>MainViewController</string>
+  <key>NSPrincipalClass</key>
+  <string>NSApplication</string>
 </dict>
 </plist>
