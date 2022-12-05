@@ -9,6 +9,8 @@
 	<key>CFBundleDisplayName</key>
 	<string>VpnExtension</string>
 	<key>CFBundleExecutable</key>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
