@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
   A(Apps) <--> S(Socket)
-  subgraph OS
+  subgraph Operating System
     S <--> R(Routing Table)
   end
   R <-- Outline OFF --> IF(Network Interface)
