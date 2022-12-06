@@ -11,7 +11,7 @@ flowchart LR
   R <-- Outline ON --> TUN(Tun Device)
   TUN <--> T2S(Tun2socket)
   subgraph Outline Client
-    T2S <--> SC(SSClient)
+    T2S <--> SC(Shadowsocks Client)
   end
   SC <--> IF
 ```
