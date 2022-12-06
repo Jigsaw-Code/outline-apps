@@ -14,4 +14,5 @@ flowchart LR
     T2S <--> SC(Shadowsocks Client)
   end
   SC <--> IF
+  click TUN "https://en.wikipedia.org/wiki/TUN/TAP" _blank
 ```
