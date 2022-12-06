@@ -9,7 +9,7 @@ flowchart LR
   R <-- Outline OFF --> IF(Network Interface)
   IF <--> INET(((Internet)))
   R <-- Outline ON --> TUN(Tun Device)
-  TUN <--> T2S(Run2socks)
+  TUN <--> T2S(Tun2socket)
   subgraph Outline Client
     T2S <--> SC(SSClient)
   end
