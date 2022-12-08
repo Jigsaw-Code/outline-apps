@@ -1,7 +1,7 @@
 *       @Jigsaw-Code/outline-dev
 
-/cordova-plugin-outline/  @Jigsaw-Code/outline-networking-owners
-/third_party/             @Jigsaw-Code/outline-networking-owners
-/tools/                   @Jigsaw-Code/outline-networking-owners
+/src/cordova/plugin/  @Jigsaw-Code/outline-networking-owners
+/third_party/         @Jigsaw-Code/outline-networking-owners
+/tools/               @Jigsaw-Code/outline-networking-owners
 
 /src/www/model/           @fortuna 
