@@ -12,27 +12,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import url from 'url';
 import {getRootDir} from '../../build/get_root_dir.mjs';
-import {readFile, readdir, writeFile} from 'fs/promises';
+import {readFile, readdir, writeFile, mkdir, access} from 'fs/promises';
 import {getNativeAndroidMessageDirectory} from './get_native_android_message_directory.mjs';
 import XML from 'xmlbuilder2';
 
 export async function main() {
-  const files = await readdir(`${getRootDir()}/www/messages`);
+  const root = `${getRootDir()}/www/messages`;
+  const files = await readdir(root);
 
-  for (const filepath of files) {
-    const xmlStrings = [];
-    for (const messageId in JSON.parse(await readFile(filepath, 'utf8'))) {
+  for (const filename of files) {
+    const filepath = `${root}/${filename}`;
+    const messageData = JSON.parse(await readFile(filepath, 'utf8'));
+    const xmlStrings = [
+      {
+        '@name': 'app_name',
+        '#text': 'Outline',
+      },
+      {
+        '@name': 'launcher_name',
+        '#text': '@string/app_name',
+      },
+      {
+        '@name': 'activity_name',
+        '#text': '@string/launcher_name',
+      },
+    ];
+
+    for (const messageId in messageData) {
       xmlStrings.push({
         '@name': messageId.replaceAll('-', '_'),
+        '#text': messageData[messageId],
       });
+    }
+
+    const androidDirectory = getNativeAndroidMessageDirectory(filepath);
+
+    try {
+      await access(androidDirectory);
+    } catch (e) {
+      await mkdir(androidDirectory);
     }
 
     await writeFile(
       `${getNativeAndroidMessageDirectory(filepath)}/strings.xml`,
       XML.create({
         resources: {string: xmlStrings},
-      }).end()
+      }).end({prettyPrint: true})
     );
   }
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main();
 }

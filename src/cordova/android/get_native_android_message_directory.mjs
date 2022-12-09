@@ -32,10 +32,10 @@ export const getNativeAndroidMessageDirectory = filepath => {
       languageCode = 'zh-rTW';
       break;
     case 'pt-BR':
-      languageCode = 'zh-rBR';
+      languageCode = 'pt-rBR';
       break;
     case 'pt-PT':
-      languageCode = 'zh-rPT';
+      languageCode = 'pt-rPT';
       break;
   }
 
