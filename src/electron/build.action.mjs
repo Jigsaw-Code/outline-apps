@@ -28,6 +28,10 @@ export async function main(...parameters) {
   const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
   const version = await getVersion(platform);
 
+  if (buildMode === 'debug') {
+    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+  }
+
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
   await runAction('electron/build_main', ...parameters);
 
