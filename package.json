@@ -55,7 +55,8 @@
     "socks": "^1.1.10",
     "sudo-prompt": "^9.2.1",
     "uuidv4": "^4.0.0",
-    "web-animations-js": "^2.3.2"
+    "web-animations-js": "^2.3.2",
+    "xmlbuilder2": "^3.0.2"
   },
   "engines": {
     "node": "^16.13.0",

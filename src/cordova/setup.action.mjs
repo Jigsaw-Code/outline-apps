@@ -60,6 +60,10 @@ export async function main(...parameters) {
     });
   }
 
+  if (platform === 'android') {
+    await runAction('cordova/android/import_messages');
+  }
+
   if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
     await cordova.platform(
       'add',
