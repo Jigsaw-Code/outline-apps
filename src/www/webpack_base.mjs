@@ -21,7 +21,7 @@ export const require = createRequire(import.meta.url);
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
-export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, '..', '..', 'scripts', 'rtl_css_webpack.js');
+export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'webpack_css_rtl_loader.cjs');
 
 export const TS_LOADER = {
   loader: 'ts-loader',
