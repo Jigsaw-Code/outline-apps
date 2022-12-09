@@ -39,6 +39,6 @@ for TRANSLATION_FILE in "$TRANSLATIONS_DIR/*"; do
 
   NATIVE_DIR="src/cordova/plugin/android/resources/strings/values-$LANG"
   OUTPUT_FILE="$NATIVE_DIR/strings.xml"
-  python "$ROOT_DIR/scripts/l10n/import_native_android_strings.py" $TRANSLATION_FILE $OUTPUT_FILE
+  python3 "$ROOT_DIR/src/cordova/android/import_messages.py" $TRANSLATION_FILE $OUTPUT_FILE
 done
 
