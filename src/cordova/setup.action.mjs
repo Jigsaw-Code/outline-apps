@@ -45,6 +45,10 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
+  if (buildMode === 'debug') {
+    console.warn(`WARNING: setting up "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+  }
+
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
