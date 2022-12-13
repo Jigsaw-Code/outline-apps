@@ -13,31 +13,25 @@
 // limitations under the License.
 
 export const getNativeAndroidMessageDirectory = filepath => {
-  let [languageCode] = filepath
+  let [polymerLanguageFilename] = filepath
     .split('/')
     .at(-1)
     .split('.');
 
-  switch (languageCode) {
+  switch (polymerLanguageFilename) {
     case 'es-419':
-      languageCode = 'es';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-es';
     case 'sr-Latn':
-      languageCode = 'b+sr+Latn';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-b+sr+Latn';
     case 'zh-CN':
-      languageCode = 'zh-rCN';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-zh-rCN';
     case 'zh-TW':
-      languageCode = 'zh-rTW';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-zh-rTW';
     case 'pt-BR':
-      languageCode = 'pt-rBR';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-pt-rBR';
     case 'pt-PT':
-      languageCode = 'pt-rPT';
-      break;
+      return 'src/cordova/plugin/android/resources/strings/values-pt-rPT';
+    default:
+      return `src/cordova/plugin/android/resources/strings/values-${polymerLanguageFilename}`;
   }
-
-  return `src/cordova/plugin/android/resources/strings/values-${languageCode}`;
 };

@@ -18,36 +18,30 @@ import {readFile, readdir, writeFile, mkdir, access} from 'fs/promises';
 import {getNativeAndroidMessageDirectory} from './get_native_android_message_directory.mjs';
 import XML from 'xmlbuilder2';
 
+const ANDROID_XML_STRING_ID_PROPERTY = '@name';
+const ANDROID_XML_TEXT_CONTENT = '#';
+
 export async function main() {
-  const root = `${getRootDir()}/www/messages`;
-  const files = await readdir(root);
+  const requiredAndroidStrings = XML.create(
+    await readFile(`${getRootDir()}/src/cordova/plugin/android/resources/strings/values/strings.xml`, 'utf8')
+  ).end({format: 'object'}).resources.string;
 
-  for (const filename of files) {
-    const filepath = `${root}/${filename}`;
-    const messageData = JSON.parse(await readFile(filepath, 'utf8'));
-    const xmlStrings = [
-      {
-        '@name': 'app_name',
-        '#text': 'Outline',
-      },
-      {
-        '@name': 'launcher_name',
-        '#text': '@string/app_name',
-      },
-      {
-        '@name': 'activity_name',
-        '#text': '@string/launcher_name',
-      },
-    ];
+  const messagesDirectory = `${getRootDir()}/www/messages`;
+  for (const messagesFilename of await readdir(messagesDirectory)) {
+    const messagesFilepath = `${messagesDirectory}/${messagesFilename}`;
+    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
 
-    for (const messageId in messageData) {
-      xmlStrings.push({
-        '@name': messageId.replaceAll('-', '_'),
-        '#text': messageData[messageId],
+    let androidStrings = [];
+    for (const requiredStringObject of requiredAndroidStrings) {
+      const messageId = requiredStringObject[ANDROID_XML_STRING_ID_PROPERTY].replaceAll('_', '-');
+
+      androidStrings.push({
+        [ANDROID_XML_STRING_ID_PROPERTY]: requiredStringObject[ANDROID_XML_STRING_ID_PROPERTY],
+        [ANDROID_XML_TEXT_CONTENT]: messageData[messageId] ?? requiredStringObject[ANDROID_XML_TEXT_CONTENT],
       });
     }
 
-    const androidDirectory = getNativeAndroidMessageDirectory(filepath);
+    const androidDirectory = getNativeAndroidMessageDirectory(messagesFilepath);
 
     try {
       await access(androidDirectory);
@@ -56,9 +50,9 @@ export async function main() {
     }
 
     await writeFile(
-      `${getNativeAndroidMessageDirectory(filepath)}/strings.xml`,
+      `${getNativeAndroidMessageDirectory(messagesFilepath)}/strings.xml`,
       XML.create({
-        resources: {string: xmlStrings},
+        resources: {string: androidStrings},
       }).end({prettyPrint: true})
     );
   }
