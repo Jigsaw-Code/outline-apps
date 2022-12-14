@@ -39,7 +39,7 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
 function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
   let sessionConfig;
   try {
-    const {method, password, server: host, server_port: port, extra} = JSON.parse(maybeJsonText);
+    const {method, password, server: host, server_port: port, extra = {}} = JSON.parse(maybeJsonText);
 
     sessionConfig = {
       method,
