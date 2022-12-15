@@ -408,7 +408,7 @@
     "description": "An error message when the application encounters antivirus software that prevents it from connecting."
   },
   "outline_plugin_error_unsupported_routing_table": {
-    "message":   "It seems like another VPN is active. Please disconnect it and try again.",
+    "message": "It seems like another VPN is active. Please disconnect it and try again.",
     "description": "An error message when the application fails to connect due to another active VPN."
   },
   "outline_plugin_error_system_configuration": {
