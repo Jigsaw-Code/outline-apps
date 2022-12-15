@@ -20,6 +20,8 @@
 //   Instead change the require of .../electron_builder_signing_plugin.mjs to a dynamic import() which is
 //   available in all CommonJS modules.
 
+const {runAction} = require('../../../../build/run_action.mjs');
+
 /**
  * The entry point which will be called by electron-builder signing module.
  * @param {Object} configuration a configuration containing signing information
@@ -28,11 +30,6 @@
  * @param {boolean} configuration.isNest whether it is a secondary signature
  * @param {Object} configuration.options a duplication of electron-builder.json
  */
-async function electronBuilderEntryPoint(configuration) {
-  const {runAction} = await import('../../build/run_action.mjs');
-  await runAction('src/electron/windows/sign_windows_executable',
-    '--target', configuration.path,
-    '--algorithm', configuration.hash);
-}
-
-exports.default = electronBuilderEntryPoint;
+exports.default = async function electronBuilderEntryPoint({path, hash}) {
+  await runAction('electron/windows/sign', '--target', path, '--algorithm', hash);
+};

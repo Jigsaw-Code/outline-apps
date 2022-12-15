@@ -10,7 +10,7 @@
     "files": [
       "src/electron/linux/resources",
       "third_party/outline-go-tun2socks/linux",
-      "tools/outline_proxy_controller/dist"
+      "src/electron/linux/tools/outline_proxy_controller/dist"
     ],
     "icon": "src/electron/linux/resources",
     "category": "Network"
@@ -24,7 +24,7 @@
     ],
     "files": ["third_party/outline-go-tun2socks/win32"],
     "icon": "src/electron/windows/resources/icon.ico",
-    "sign": "src/electron/windows/electron_builder_signing_plugin.cjs"
+    "sign": "src/electron/windows/tools/digicert_usb/plugin.cjs"
   },
   "nsis": {
     "perMachine": true,

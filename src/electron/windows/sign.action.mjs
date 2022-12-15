@@ -89,10 +89,10 @@ function concatDigicertUsbJsignArgs(args, options) {
   var eTokenCfg;
   switch (process.platform) {
     case 'win32':
-      eTokenCfg = resolve(currentDirname(), 'digicert-usb-config', 'eToken-windows.cfg');
+      eTokenCfg = resolve(currentDirname(), 'digicert_usb', 'eToken_windows.cfg');
       break;
     case 'darwin':
-      eTokenCfg = resolve(currentDirname(), 'digicert-usb-config', 'eToken-macos.cfg');
+      eTokenCfg = resolve(currentDirname(), 'digicert_usb', 'eToken_macos.cfg');
       break;
     default:
       throw new Error(`we do not support ev signing on ${process.platform}`);
