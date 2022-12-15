@@ -5,7 +5,8 @@ This document describes how to develop and debug for macOS (formerly known as OS
 - An Apple Developer Account. You will need to be invited to your developer team as well.
 - XCode 13.2+ ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
-- Carthage, which can be installed with `brew install carthage`
+- Carthage ([install instructions](https://github.com/Carthage/Carthage/blob/master/README.md#installing-carthage))
+  - If you have [Homebrew installed](https://docs.brew.sh/Installation) you can do `brew install carthage`.
 
 > NOTE: Should you encounter issues with your build, there may be apple-specific dependencies that are out of date. Run `npm run clean` and try again!
 
