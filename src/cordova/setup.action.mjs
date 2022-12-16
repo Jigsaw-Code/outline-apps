@@ -52,6 +52,7 @@ export async function main(...parameters) {
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
+  await rmfr('plugins');
 
   if (isApple) {
     // since apple can only be build on darwin systems, we don't have to worry about windows support here
