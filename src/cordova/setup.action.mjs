@@ -54,17 +54,6 @@ export async function main(...parameters) {
   await rmfr(`platforms/${platform}`);
   await rmfr('plugins');
 
-  if (isApple) {
-    // since apple can only be build on darwin systems, we don't have to worry about windows support here
-    // TODO(daniellacosse): move this to a cordova hook
-    execSync(`cd third_party/CocoaLumberjack && make`, {
-      stdio: 'inherit',
-    });
-    execSync(`cd third_party/sentry-cocoa && make`, {
-      stdio: 'inherit',
-    });
-  }
-
   if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
     await cordova.platform(
       'add',
