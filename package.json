@@ -6,7 +6,7 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rimraf build node_modules www platforms plugins third_party/CocoaLumberjack/Carthage/Build third_party/sentry-cocoa/Carthage/Build",
+    "clean": "rimraf build node_modules www platforms plugins",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts src",
