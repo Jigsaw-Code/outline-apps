@@ -49,6 +49,10 @@ npm run action src/www/storybook
 >
 > to your shell, then try `outline www/start`!
 
+## Life of a Packet
+
+[How does the Outline Client work?](docs/life_of_a_packet.md)
+
 ## Accepting a server invite
 
 [Looking for instructions on how to accept a server invite?](docs/invitation_instructions.md)
@@ -57,13 +61,9 @@ npm run action src/www/storybook
 
 Each platform is handled differently:
 
-1. [Developing for Apple **(MacOS and iOS)**](docs/apple_development.md)
-2. [Developing for **Android**](docs/android_development.md)
-3. [Developing for Electron **(Windows and Linux)**](docs/electron_development.md)
-
-## Localization
-
-[We have several pipelines for managing message localization.](docs/localization.md)
+1. [Developing for Apple **(MacOS and iOS)**](src/cordova/apple)
+2. [Developing for **Android**](src/cordova/android)
+3. [Developing for Electron **(Windows and Linux)**](src/electron)
 
 ## Error reporting
 
