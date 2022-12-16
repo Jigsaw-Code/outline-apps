@@ -52,6 +52,7 @@ export async function main(...parameters) {
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
+  await rmfr('plugins');
 
   if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
     await cordova.platform(
