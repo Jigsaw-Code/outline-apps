@@ -24,7 +24,9 @@ import {execSync} from 'child_process';
  *
  * @param {string[]} parameters
  */
-export async function main() {
+export async function main(...parameters) {
+  const PLATFORM = parameters[0];
+
   const PLUGIN_OUTPUT = path.join(process.env.BUILD_DIR, 'cordova', 'plugin');
   await rmfr(PLUGIN_OUTPUT);
   mkdirSync(PLUGIN_OUTPUT, {recursive: true});
@@ -32,23 +34,25 @@ export async function main() {
   cpSync(path.join(process.env.ROOT_DIR, 'src', 'cordova', 'plugin'), PLUGIN_OUTPUT, {recursive: true});
 
   // Android
-  const ANDROID_LIB_DIR = path.join(PLUGIN_OUTPUT, 'android', 'libs');
-  mkdirSync(ANDROID_LIB_DIR, {recursive: true});
-  cpSync(
-    path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'tun2socks.aar'),
-    path.join(ANDROID_LIB_DIR, 'tun2socks.aar')
-  );
-  cpSync(
-    path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'jni'),
-    path.join(ANDROID_LIB_DIR, 'obj'),
-    {recursive: true}
-  );
+  if (PLATFORM === 'android') {
+    const ANDROID_LIB_DIR = path.join(PLUGIN_OUTPUT, 'android', 'libs');
+    mkdirSync(ANDROID_LIB_DIR, {recursive: true});
+    cpSync(
+      path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'tun2socks.aar'),
+      path.join(ANDROID_LIB_DIR, 'tun2socks.aar')
+    );
+    cpSync(
+      path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'jni'),
+      path.join(ANDROID_LIB_DIR, 'obj'),
+      {recursive: true}
+    );
+  }
 
   // Apple
-  execSync('echo "Building CocoaLumberjack" && cd third_party/CocoaLumberjack && make', {stdio: 'inherit'});
-  execSync('echo "Building sentry-cocoa" && cd third_party/sentry-cocoa && make', {stdio: 'inherit'});
-  for (const platform of ['ios', 'macos']) {
-    const LIB_DIR = path.join(PLUGIN_OUTPUT, 'apple', 'lib', platform);
+  if (PLATFORM === 'ios' || PLATFORM === 'macos') {
+    execSync('echo "Building CocoaLumberjack" && cd third_party/CocoaLumberjack && make', {stdio: 'inherit'});
+    execSync('echo "Building sentry-cocoa" && cd third_party/sentry-cocoa && make', {stdio: 'inherit'});
+    const LIB_DIR = path.join(PLUGIN_OUTPUT, 'apple', 'lib', PLATFORM);
     mkdirSync(LIB_DIR, {recursive: true});
     cpSync(
       path.join(
