@@ -14,7 +14,7 @@
 
 import url from 'url';
 
-import {cpSync, mkdirSync} from 'fs';
+import {cp, mkdir} from 'node:fs/promises';
 import path from 'path';
 import rmfr from 'rmfr';
 import {execSync} from 'child_process';
@@ -29,19 +29,19 @@ export async function main(...parameters) {
 
   const PLUGIN_OUTPUT = path.join(process.env.BUILD_DIR, 'cordova', 'plugin');
   await rmfr(PLUGIN_OUTPUT);
-  mkdirSync(PLUGIN_OUTPUT, {recursive: true});
+  await mkdir(PLUGIN_OUTPUT, {recursive: true});
 
-  cpSync(path.join(process.env.ROOT_DIR, 'src', 'cordova', 'plugin'), PLUGIN_OUTPUT, {recursive: true});
+  await cp(path.join(process.env.ROOT_DIR, 'src', 'cordova', 'plugin'), PLUGIN_OUTPUT, {recursive: true});
 
   // Android
   if (PLATFORM === 'android') {
     const ANDROID_LIB_DIR = path.join(PLUGIN_OUTPUT, 'android', 'libs');
-    mkdirSync(ANDROID_LIB_DIR, {recursive: true});
-    cpSync(
+    await mkdir(ANDROID_LIB_DIR, {recursive: true});
+    await cp(
       path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'tun2socks.aar'),
       path.join(ANDROID_LIB_DIR, 'tun2socks.aar')
     );
-    cpSync(
+    await cp(
       path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'android', 'jni'),
       path.join(ANDROID_LIB_DIR, 'obj'),
       {recursive: true}
@@ -53,8 +53,8 @@ export async function main(...parameters) {
     execSync('echo "Building CocoaLumberjack" && cd third_party/CocoaLumberjack && make', {stdio: 'inherit'});
     execSync('echo "Building sentry-cocoa" && cd third_party/sentry-cocoa && make', {stdio: 'inherit'});
     const LIB_DIR = path.join(PLUGIN_OUTPUT, 'apple', 'lib', PLATFORM);
-    mkdirSync(LIB_DIR, {recursive: true});
-    cpSync(
+    await mkdir(LIB_DIR, {recursive: true});
+    await cp(
       path.join(
         process.env.BUILD_DIR,
         'third_party',
@@ -66,7 +66,7 @@ export async function main(...parameters) {
       path.join(LIB_DIR, 'CocoaLumberjack.xcframework'),
       {recursive: true}
     );
-    cpSync(
+    await cp(
       path.join(
         process.env.BUILD_DIR,
         'third_party',
@@ -78,12 +78,12 @@ export async function main(...parameters) {
       path.join(LIB_DIR, 'CocoaLumberjackSwift.xcframework'),
       {recursive: true}
     );
-    cpSync(
+    await cp(
       path.join(process.env.BUILD_DIR, 'third_party', 'sentry-cocoa', 'Carthage', 'Build', 'Sentry.xcframework'),
       path.join(LIB_DIR, 'Sentry.xcframework'),
       {recursive: true}
     );
-    cpSync(
+    await cp(
       path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'apple', 'Tun2socks.xcframework'),
       path.join(LIB_DIR, 'Tun2socks.xcframework'),
       {recursive: true}
