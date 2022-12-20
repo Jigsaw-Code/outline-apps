@@ -161,8 +161,8 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Setup Android
-        run: bash ./tools/build/setup_linux_android.sh
+      - name: Setup Android Container
+        run: bash ./src/cordova/android/container/setup.sh
 
       - name: Build Android Client
         run: npm run action cordova/build android

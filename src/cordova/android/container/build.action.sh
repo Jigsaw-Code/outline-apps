@@ -15,4 +15,4 @@
 # limitations under the License.
 set -eux
 
-docker build -t quay.io/outline/build-android tools/build
+docker build -t quay.io/outline/build-android src/cordova/android/container

@@ -31,6 +31,6 @@ RUN echo '{"allow_root": true}' > /root/.bowerrc
 # https://cordova.apache.org/docs/en/latest/reference/cordova-cli/#cordova-telemetry-command
 ENV CI=true
 
-COPY ./setup_linux_android.sh ./setup_linux_android.sh
+COPY ./setup.sh ./setup.sh
 
-RUN bash ./setup_linux_android.sh
+RUN bash ./setup.sh
