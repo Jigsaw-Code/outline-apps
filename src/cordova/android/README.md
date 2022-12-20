@@ -12,7 +12,7 @@ Additional requirements for Android:
   - Optional for building, but useful for development
 - [Latest Android Sdk Commandline Tools](https://developer.android.com/studio/command-line)
   - Place it at `$HOME/Android/Sdk/cmdline-tools/latest`
-- Android SDK 30 (with build-tools) via commandline `$HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31" "build-tools;30.0.3"`
+- Android SDK 30 (with build-tools) via commandline `$HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-32" "build-tools;32.0.0"`
   - Set up the environment: `export ANDROID_SDK_ROOT=$HOME/Android/Sdk` (`ANDROID_HOME` is the [recommendation](https://developer.android.com/studio/command-line/variables), but Cordova wants `ANDROID_SDK_ROOT`)
 - [Gradle 7.3+](https://gradle.org/install/)
 

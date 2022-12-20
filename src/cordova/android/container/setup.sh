@@ -32,7 +32,7 @@ ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-"/opt/android-sdk"}
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
-ANDROID_BUILD_TOOLS_VERSION=${ANDROID_BUILD_TOOLS_VERSION:-"30.0.3"}
+ANDROID_BUILD_TOOLS_VERSION=${ANDROID_BUILD_TOOLS_VERSION:-"32.0.0"}
 
 # NDK (side by side) version must be kept in sync with the default build tools NDK version.
 NDK_VERSION=${NDK_VERSION:-"21.0.6113669"}
