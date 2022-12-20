@@ -26,7 +26,7 @@ set -eu
 # Download Android Command Line Tools:
 #   https://developer.android.com/studio/command-line
 # This is version 2.1.
-ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-"/opt/android-sdk"}
+ANDROID_HOME="/opt/android-sdk"
 
 # Android SDK Build Tools:
 #   https://developer.android.com/studio/releases/build-tools.html
