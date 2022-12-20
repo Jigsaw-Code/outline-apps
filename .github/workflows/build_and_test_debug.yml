@@ -159,7 +159,7 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v1.4.3
         with:
-          java-version: 1.8
+          java-version: 1.11
 
       - name: Setup Android Container
         run: bash ./src/cordova/android/container/setup.sh
