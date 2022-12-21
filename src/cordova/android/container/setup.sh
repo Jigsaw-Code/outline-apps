@@ -28,6 +28,8 @@ set -eu
 # This is version 2.1.
 # ANDROID_HOME="/opt/android-sdk"
 
+unset $ANDROID_HOME
+
 # Android SDK Build Tools:
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
