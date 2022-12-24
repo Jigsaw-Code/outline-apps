@@ -45,20 +45,14 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
+  if (buildMode === 'debug') {
+    console.warn(`WARNING: setting up "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+  }
+
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${platform}`);
-
-  if (isApple) {
-    // since apple can only be build on darwin systems, we don't have to worry about windows support here
-    // TODO(daniellacosse): move this to a cordova hook
-    execSync(`cd third_party/CocoaLumberjack && make`, {
-      stdio: 'inherit',
-    });
-    execSync(`cd third_party/sentry-cocoa && make`, {
-      stdio: 'inherit',
-    });
-  }
+  await rmfr('plugins');
 
   if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
     await cordova.platform(

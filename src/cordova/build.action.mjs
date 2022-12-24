@@ -30,6 +30,10 @@ export async function main(...parameters) {
 
   await runAction('cordova/setup', ...parameters);
 
+  if (buildMode === 'debug') {
+    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+  }
+
   if (platform === 'osx' && buildMode === 'release') {
     // Cordova-osx overrides the CODE_SIGNING_IDENTITY in the build.xconfig it generates.
     // To fix this we need to either update what we're rsync-ing or re-configure cordova-osx somehow.

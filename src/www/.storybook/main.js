@@ -15,5 +15,5 @@
 */
 
 module.exports = {
-  stories: ["../views/**/stories.ts"],
+  stories: ['../views/**/stories.ts'],
 };
