@@ -37,7 +37,7 @@
         </intent-filter>
       </service>
 
-      <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="true">
+      <receiver android:name="org.outline.vpn.VpnServiceStarter" android:enabled="true" android:exported="false">
           <intent-filter>
             <action android:name="android.intent.action.BOOT_COMPLETED" />
           </intent-filter>
