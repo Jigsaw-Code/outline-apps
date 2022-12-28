@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/fortuna/firehook/outline-client/platforms/osx/Outline.xcodeproj">
+      location = "container:../../../platforms/osx/Outline.xcodeproj">
    </FileRef>
 </Workspace>
