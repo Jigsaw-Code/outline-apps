@@ -49,6 +49,7 @@ export async function main(...parameters) {
     console.warn(`WARNING: setting up "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
+  await runAction('cordova/build_plugin', outlinePlatform);
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   await rmfr(`platforms/${cordovaPlatform}`);

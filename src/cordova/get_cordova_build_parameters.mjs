@@ -24,13 +24,17 @@ const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
   => an object containing the specificed cordova platform and buildMode.
 */
 export function getCordovaBuildParameters(parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {platform: outlinePlatform, buildMode} = getBuildParameters(parameters);
 
-  if (!CORDOVA_PLATFORMS.includes(platform)) {
+  const cordovaPlatform = outlinePlatform === 'macos' ? 'osx' : outlinePlatform;
+
+  if (!CORDOVA_PLATFORMS.includes(cordovaPlatform)) {
     throw new TypeError(
-      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(', ')}.`
+      `The platform "${cordovaPlatform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(
+        ', '
+      )}.`
     );
   }
 
-  return {platform: platform === 'macos' ? 'osx' : platform, buildMode};
+  return {platform: cordovaPlatform, buildMode};
 }

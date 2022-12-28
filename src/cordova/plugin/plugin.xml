@@ -49,8 +49,6 @@
       <meta-data android:name="io.sentry.auto-init" android:value="false" />
     </config-file>
 
-    <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
-
     <source-file src="android/aidl" target-dir="app/src/main" />
     <source-file
       src="android/java/org/outline/OutlinePlugin.java"
