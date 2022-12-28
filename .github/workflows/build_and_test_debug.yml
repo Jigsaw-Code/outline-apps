@@ -127,9 +127,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Install Carthage
-        run: brew install carthage
-
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
