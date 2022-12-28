@@ -20,7 +20,6 @@ const {cordova} = cordovaLib;
 import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {execSync} from 'child_process';
-import * as path from 'node:path';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -37,7 +36,7 @@ export async function main(...parameters) {
   }
 
   if (cordovaPlatform === 'osx') {
-    const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'src', 'cordova', 'apple', 'macos.xcworkspace');
+    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/macos.xcworkspace`;
     if (buildMode === 'release') {
       execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
         stdio: 'inherit',
@@ -53,7 +52,7 @@ export async function main(...parameters) {
     return;
   }
   if (cordovaPlatform === 'ios') {
-    const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'platforms', 'ios', 'Outline.xcworkspace');
+    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/platforms/ios/Outline.xcworkspace`;
     if (buildMode === 'release') {
       execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
         stdio: 'inherit',
