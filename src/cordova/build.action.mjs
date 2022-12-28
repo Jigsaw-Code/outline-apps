@@ -45,35 +45,41 @@ export async function main(...parameters) {
     });
     return;
   }
-
-  let argv = [];
-
-  if (cordovaPlatform === 'android' && buildMode === 'release') {
-    if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
-      throw new ReferenceError(
-        "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
-      );
-    }
-
-    argv = [
-      '--keystore=keystore.p12',
-      '--alias=privatekey',
-      `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
-      `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
-      '--',
-      '--gradleArg=-PcdvBuildMultipleApks=true',
-    ];
+  if (cordovaPlatform === 'ios') {
+    const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'platforms', 'ios', 'Outline.xcworkspace');
+    const BUILD_CONFIG = buildMode === 'release' ? 'Release' : 'Debug';
+    const ACTION = buildMode === 'release' ? 'clean archive' : 'build';
+    execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration ${BUILD_CONFIG} ${ACTION}`, {
+      stdio: 'inherit',
+    });
+    return;
   }
-
-  await cordova.compile({
-    platforms: [cordovaPlatform],
-    options: {
-      device: cordovaPlatform === 'ios' && buildMode === 'release',
-      emulator: cordovaPlatform === 'ios' && buildMode === 'debug',
-      release: buildMode === 'release',
-      argv,
-    },
-  });
+  if (cordovaPlatform === 'android') {
+    let argv = [];
+    if (buildMode === 'release') {
+      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+        throw new ReferenceError(
+          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+        );
+      }
+      argv = [
+        '--keystore=keystore.p12',
+        '--alias=privatekey',
+        `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+        `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+        '--',
+        '--gradleArg=-PcdvBuildMultipleApks=true',
+      ];
+    }
+    await cordova.compile({
+      platforms: ['android'],
+      options: {
+        release: buildMode === 'release',
+        argv,
+      },
+    });
+    return;
+  }
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
