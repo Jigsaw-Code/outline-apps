@@ -38,20 +38,34 @@ export async function main(...parameters) {
 
   if (cordovaPlatform === 'osx') {
     const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'src', 'cordova', 'apple', 'macos.xcworkspace');
-    const BUILD_CONFIG = buildMode === 'release' ? 'Release' : 'Debug';
-    const ACTION = buildMode === 'release' ? 'clean archive' : 'build';
-    execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration ${BUILD_CONFIG} ${ACTION}`, {
-      stdio: 'inherit',
-    });
+    if (buildMode === 'release') {
+      execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
+        stdio: 'inherit',
+      });
+    } else {
+      execSync(
+        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY=""`,
+        {
+          stdio: 'inherit',
+        }
+      );
+    }
     return;
   }
   if (cordovaPlatform === 'ios') {
     const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'platforms', 'ios', 'Outline.xcworkspace');
-    const BUILD_CONFIG = buildMode === 'release' ? 'Release' : 'Debug';
-    const ACTION = buildMode === 'release' ? 'clean archive' : 'build';
-    execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration ${BUILD_CONFIG} ${ACTION}`, {
-      stdio: 'inherit',
-    });
+    if (buildMode === 'release') {
+      execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
+        stdio: 'inherit',
+      });
+    } else {
+      execSync(
+        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY=""`,
+        {
+          stdio: 'inherit',
+        }
+      );
+    }
     return;
   }
   if (cordovaPlatform === 'android') {
