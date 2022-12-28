@@ -28,6 +28,7 @@ import {execSync} from 'child_process';
  */
 export async function main(...parameters) {
   const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
+  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   await runAction('cordova/setup', ...parameters);
 
@@ -35,24 +36,8 @@ export async function main(...parameters) {
     console.warn(`WARNING: building "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (cordovaPlatform === 'osx') {
-    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/macos.xcworkspace`;
-    if (buildMode === 'release') {
-      execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
-        stdio: 'inherit',
-      });
-    } else {
-      execSync(
-        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO`,
-        {
-          stdio: 'inherit',
-        }
-      );
-    }
-    return;
-  }
-  if (cordovaPlatform === 'ios') {
-    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/platforms/ios/Outline.xcworkspace`;
+  if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
+    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/${outlinePlatform}.xcworkspace`;
     if (buildMode === 'release') {
       execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
         stdio: 'inherit',
