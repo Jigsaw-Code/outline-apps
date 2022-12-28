@@ -19,6 +19,8 @@ const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
+import {execSync} from 'child_process';
+import * as path from 'node:path';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -26,25 +28,27 @@ import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
 
   await runAction('cordova/setup', ...parameters);
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: building "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (platform === 'osx' && buildMode === 'release') {
-    // Cordova-osx overrides the CODE_SIGNING_IDENTITY in the build.xconfig it generates.
-    // To fix this we need to either update what we're rsync-ing or re-configure cordova-osx somehow.
-    throw new Error(
-      'Production MacOS builds currently must be done in XCode due to a cordova issue. Please open platforms/osx/Outline.xcodeproj to continue.'
-    );
+  if (cordovaPlatform === 'osx') {
+    const WORKSPACE_PATH = path.join(process.env.ROOT_DIR, 'src', 'cordova', 'apple', 'macos.xcworkspace');
+    const BUILD_CONFIG = buildMode === 'release' ? 'Release' : 'Debug';
+    const ACTION = buildMode === 'release' ? 'clean archive' : 'build';
+    execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration ${BUILD_CONFIG} ${ACTION}`, {
+      stdio: 'inherit',
+    });
+    return;
   }
 
   let argv = [];
 
-  if (platform === 'android' && buildMode === 'release') {
+  if (cordovaPlatform === 'android' && buildMode === 'release') {
     if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
       throw new ReferenceError(
         "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
@@ -62,10 +66,10 @@ export async function main(...parameters) {
   }
 
   await cordova.compile({
-    platforms: [platform],
+    platforms: [cordovaPlatform],
     options: {
-      device: platform === 'ios' && buildMode === 'release',
-      emulator: platform === 'ios' && buildMode === 'debug',
+      device: cordovaPlatform === 'ios' && buildMode === 'release',
+      emulator: cordovaPlatform === 'ios' && buildMode === 'debug',
       release: buildMode === 'release',
       argv,
     },

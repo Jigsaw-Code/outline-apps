@@ -120,7 +120,5 @@
     <resource-file src="apple/vpn" />
 
     <framework src="apple/lib/macos/Tun2socks.xcframework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjack.xcframework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
 </plugin>
