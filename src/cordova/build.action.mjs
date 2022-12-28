@@ -38,6 +38,7 @@ export async function main(...parameters) {
 
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
     const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/${outlinePlatform}.xcworkspace`;
+    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
     if (buildMode === 'release') {
       execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
         stdio: 'inherit',
