@@ -14,7 +14,12 @@
   limitations under the License.
 -->
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="org.outline.android.client" version="1.9.0" android-versionCode="43" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<!-- Note: osx-CFBundleIdentifier does not work, despite documentation. We set in with <config-file> instead. -->
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0"
+    version="1.9.0"
+    id="org.outline.android.client" android-versionCode="43"
+    ios-CFBundleIdentifier="org.outline.ios.client" ios-CFBundleVersion="35"
+>
     <name>Outline</name>
     <description>
         Internet without borders (powered by Shadowsocks)
@@ -115,6 +120,34 @@
         <!-- Notifications iPhone, iPad -->
         <icon src="resources/icons/ios/Icon-20@2x.png" width="40" height="40" />
         <icon src="resources/icons/ios/Icon-20@3x.png" width="60" height="60" />
+
+        <config-file target="*/Outline-Info.plist" parent="CFBundleIdentifier">
+            <string>org.outline.ios.client</string>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="CFBundleVersion">
+            <string>35</string>
+        </config-file>
+        <!-- TODO: Do we need these empty Icons entries? -->
+        <config-file target="*/Outline-Info.plist" parent="CFBundleIcons">
+            <dict/>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="CFBundleIcons~ipad">
+            <dict/>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="CFBundleURLTypes">
+            <array>
+                <dict>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>ss</string>
+                    <string>ssconf</string>
+                </array>
+                </dict>
+            </array>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="ITSAppUsesNonExemptEncryption">
+            <false/>
+        </config-file>
     </platform>
 
     <!-- macOS -->
@@ -128,5 +161,36 @@
         <icon src="resources/icons/osx/icon-256.png" width="256" height="256" />
         <icon src="resources/icons/osx/icon-512.png" width="512" height="512" />
         <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
+
+        <config-file target="*/Outline-Info.plist" parent="CFBundleIdentifier">
+            <string>org.outline.macos.client</string>
+        </config-file>
+        <!-- If neeeded to override the version name: -->
+        <!-- config-file target="*/Outline-Info.plist" parent="CFBundleShortVersionString">
+            <string>1.9.0</string>
+        </config-file -->
+        <config-file target="*/Outline-Info.plist" parent="CFBundleVersion">
+            <string>36</string>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="CFBundleURLTypes">
+            <array>
+                <dict>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>ss</string>
+                    <string>ssconf</string>
+                </array>
+                </dict>
+            </array>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="ITSAppUsesNonExemptEncryption">
+            <false/>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="LSApplicationCategoryType">
+            <string>public.app-category.utilities</string>
+        </config-file>
+        <config-file target="*/Outline-Info.plist" parent="LSUIElement">
+            <true/>
+        </config-file>
     </platform>
 </widget>
