@@ -44,7 +44,7 @@ export async function main(...parameters) {
       });
     } else {
       execSync(
-        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY=""`,
+        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO`,
         {
           stdio: 'inherit',
         }
@@ -60,7 +60,7 @@ export async function main(...parameters) {
       });
     } else {
       execSync(
-        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY=""`,
+        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO`,
         {
           stdio: 'inherit',
         }
