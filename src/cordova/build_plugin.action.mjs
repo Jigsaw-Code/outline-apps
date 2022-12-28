@@ -47,48 +47,6 @@ export async function main(...parameters) {
       {recursive: true}
     );
   }
-
-  // Apple
-  if (PLATFORM === 'ios' || PLATFORM === 'macos') {
-    execSync('echo "Building CocoaLumberjack" && cd third_party/CocoaLumberjack && make', {stdio: 'inherit'});
-    execSync('echo "Building sentry-cocoa" && cd third_party/sentry-cocoa && make', {stdio: 'inherit'});
-    const LIB_DIR = path.join(PLUGIN_OUTPUT, 'apple', 'lib', PLATFORM);
-    await mkdir(LIB_DIR, {recursive: true});
-    await cp(
-      path.join(
-        process.env.BUILD_DIR,
-        'third_party',
-        'CocoaLumberjack',
-        'Carthage',
-        'Build',
-        'CocoaLumberjack.xcframework'
-      ),
-      path.join(LIB_DIR, 'CocoaLumberjack.xcframework'),
-      {recursive: true}
-    );
-    await cp(
-      path.join(
-        process.env.BUILD_DIR,
-        'third_party',
-        'CocoaLumberjack',
-        'Carthage',
-        'Build',
-        'CocoaLumberjackSwift.xcframework'
-      ),
-      path.join(LIB_DIR, 'CocoaLumberjackSwift.xcframework'),
-      {recursive: true}
-    );
-    await cp(
-      path.join(process.env.BUILD_DIR, 'third_party', 'sentry-cocoa', 'Carthage', 'Build', 'Sentry.xcframework'),
-      path.join(LIB_DIR, 'Sentry.xcframework'),
-      {recursive: true}
-    );
-    await cp(
-      path.join(process.env.ROOT_DIR, 'third_party', 'outline-go-tun2socks', 'apple', 'Tun2socks.xcframework'),
-      path.join(LIB_DIR, 'Tun2socks.xcframework'),
-      {recursive: true}
-    );
-  }
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import Foundation
-import CocoaLumberjack
-import CocoaLumberjackSwift
 
 // Persistence layer for a single |OutlineTunnel| object.
 @objcMembers

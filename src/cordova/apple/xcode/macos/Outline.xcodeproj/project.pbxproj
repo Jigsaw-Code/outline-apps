@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		52355CFB295B70030057557B /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52355CFA295B70030057557B /* Sentry */; };
+		52CBB849295BC79300D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB848295BC79300D0073F /* CocoaLumberjack */; };
+		52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */; };
+		52CBB84D295BC7F700D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84C295BC7F700D0073F /* CocoaLumberjack */; };
+		52CBB84F295BC7F700D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */; };
+		52CBB851295BC81900D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB850295BC81900D0073F /* CocoaLumberjack */; };
+		52CBB853295BC81900D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB852295BC81900D0073F /* CocoaLumberjackSwift */; };
 		591E137A57874E4A92300F1B /* OutlineConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C0FE24369C408597E6E257 /* OutlineConnectivity.swift */; };
 		707060AF18FFC05700755D46 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707060AE18FFC05700755D46 /* MainViewController.xib */; };
 		70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD682618FFB02D00A1EFCF /* Cocoa.framework */; };
@@ -28,10 +35,6 @@
 		FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC0799F82037545D00A1C822 /* ServiceManagement.framework */; };
 		FC1F250F2049B0DB0012D758 /* OutlineTunnelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C2B520223164005FD743 /* OutlineTunnelStore.swift */; };
 		FC1F25122049B1470012D758 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
-		FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
-		FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
-		FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC1FCADC216D290100F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADA216D289F00F078A5 /* Subnet.swift */; };
 		FC28C281201A93BF005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C280201A93BF005FD743 /* OutlineVpn.swift */; };
 		FC28C283201A93D0005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C282201A93D0005FD743 /* OutlineTunnel.swift */; };
@@ -44,13 +47,6 @@
 		FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */; };
 		FC7B59BB223C585F00828002 /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.xcframework */; };
 		FC7D56051F86969E00ABD5CA /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7D56041F86969E00ABD5CA /* EventMonitor.swift */; };
-		FC8C30DB1FA78E5E004262BE /* Sentry.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.xcframework */; };
-		FC8C30DC1FA78E5E004262BE /* Sentry.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30D61FA78D1A004262BE /* Sentry.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
-		FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; };
-		FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */; };
 		FC8C30FC1FA7DDCB004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */; };
 		FCDE2FB023270B8C006C5B2C /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC7B59BA223C585F00828002 /* Tun2socks.xcframework */; };
 /* End PBXBuildFile section */
@@ -80,19 +76,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		708BE60C1B851BAD00301ADB /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				FC8C30DC1FA78E5E004262BE /* Sentry.xcframework in Embed Frameworks */,
-				FC8C30EB1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
-				FC8C30E91FA7C0F6004262BE /* CocoaLumberjack.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		FC0799F62037541600A1C822 /* Copy OutlineLauncher */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 8;
@@ -103,18 +86,6 @@
 			);
 			name = "Copy OutlineLauncher";
 			runOnlyForDeploymentPostprocessing = 1;
-		};
-		FC1F25172049B2E40012D758 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				FC1F25162049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Embed Frameworks */,
-				FC1F25142049B2E40012D758 /* CocoaLumberjack.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -173,11 +144,8 @@
 		FC5FF9491F3E1EF00032A745 /* PacketTunnelProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PacketTunnelProvider.h; path = Outline/Resources/vpn/PacketTunnelProvider.h; sourceTree = SOURCE_ROOT; };
 		FC5FF94A1F3E1EF00032A745 /* PacketTunnelProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PacketTunnelProvider.m; path = Outline/Resources/vpn/PacketTunnelProvider.m; sourceTree = SOURCE_ROOT; };
 		FC6E7F8D204DC1BE003CB365 /* CDVMacOsUrlHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CDVMacOsUrlHandler.swift; sourceTree = "<group>"; };
-		FC7B59BA223C585F00828002 /* Tun2socks.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Tun2socks.xcframework; path = "Outline/Plugins/cordova-plugin-outline/Tun2socks.xcframework"; sourceTree = "<group>"; };
+		FC7B59BA223C585F00828002 /* Tun2socks.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Tun2socks.xcframework; path = "../../third_party/outline-go-tun2socks/apple/Tun2socks.xcframework"; sourceTree = SOURCE_ROOT; };
 		FC7D56041F86969E00ABD5CA /* EventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
-		FC8C30D61FA78D1A004262BE /* Sentry.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Sentry.xcframework; path = "Outline/Plugins/cordova-plugin-outline/Sentry.xcframework"; sourceTree = "<group>"; };
-		FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjack.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjack.xcframework"; sourceTree = "<group>"; };
-		FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CocoaLumberjackSwift.xcframework; path = "Outline/Plugins/cordova-plugin-outline/CocoaLumberjackSwift.xcframework"; sourceTree = "<group>"; };
 		FC8C30FB1FA7DDCB004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
 		FCB2DED41F3E3CAD000C6A44 /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -188,14 +156,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */,
-				FC8C30EA1FA7C0F6004262BE /* CocoaLumberjackSwift.xcframework in Frameworks */,
-				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
 				70BD686618FFB06500A1EFCF /* SystemConfiguration.framework in Frameworks */,
-				FC8C30E81FA7C0F6004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 				70BD686718FFB06500A1EFCF /* WebKit.framework in Frameworks */,
 				70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */,
-				FC8C30DB1FA78E5E004262BE /* Sentry.xcframework in Frameworks */,
 				FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */,
+				52CBB849295BC79300D0073F /* CocoaLumberjack in Frameworks */,
+				52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */,
+				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
+				52355CFB295B70030057557B /* Sentry in Frameworks */,
 				FCDE2FB023270B8C006C5B2C /* Tun2socks.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -204,8 +172,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC1F25152049B2E40012D758 /* CocoaLumberjackSwift.xcframework in Frameworks */,
-				FC1F25132049B2E40012D758 /* CocoaLumberjack.xcframework in Frameworks */,
+				52CBB851295BC81900D0073F /* CocoaLumberjack in Frameworks */,
+				52CBB853295BC81900D0073F /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,8 +182,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
+				52CBB84D295BC7F700D0073F /* CocoaLumberjack in Frameworks */,
+				52CBB84F295BC7F700D0073F /* CocoaLumberjackSwift in Frameworks */,
 				FC7B59BB223C585F00828002 /* Tun2socks.xcframework in Frameworks */,
-				FC8C30EC1FA7C106004262BE /* CocoaLumberjack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,9 +237,6 @@
 			children = (
 				FC7B59BA223C585F00828002 /* Tun2socks.xcframework */,
 				FC0799F82037545D00A1C822 /* ServiceManagement.framework */,
-				FC8C30E41FA7C0E9004262BE /* CocoaLumberjack.xcframework */,
-				FC8C30E51FA7C0E9004262BE /* CocoaLumberjackSwift.xcframework */,
-				FC8C30D61FA78D1A004262BE /* Sentry.xcframework */,
 				FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */,
 				70BD686418FFB06500A1EFCF /* SystemConfiguration.framework */,
 				70BD686518FFB06500A1EFCF /* WebKit.framework */,
@@ -382,7 +348,6 @@
 				70BD682018FFB02D00A1EFCF /* Frameworks */,
 				70BD682118FFB02D00A1EFCF /* Resources */,
 				FC0799F62037541600A1C822 /* Copy OutlineLauncher */,
-				708BE60C1B851BAD00301ADB /* Embed Frameworks */,
 				FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */,
 			);
 			buildRules = (
@@ -392,6 +357,11 @@
 				FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */,
 			);
 			name = Outline;
+			packageProductDependencies = (
+				52355CFA295B70030057557B /* Sentry */,
+				52CBB848295BC79300D0073F /* CocoaLumberjack */,
+				52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */,
+			);
 			productName = Outline;
 			productReference = 70BD682318FFB02D00A1EFCF /* Outline.app */;
 			productType = "com.apple.product-type.application";
@@ -403,13 +373,16 @@
 				FC0799E22037532900A1C822 /* Sources */,
 				FC0799E32037532900A1C822 /* Frameworks */,
 				FC0799E42037532900A1C822 /* Resources */,
-				FC1F25172049B2E40012D758 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = OutlineLauncher;
+			packageProductDependencies = (
+				52CBB850295BC81900D0073F /* CocoaLumberjack */,
+				52CBB852295BC81900D0073F /* CocoaLumberjackSwift */,
+			);
 			productName = OutlineLauncher;
 			productReference = FC0799E62037532900A1C822 /* OutlineLauncher.app */;
 			productType = "com.apple.product-type.application";
@@ -427,6 +400,10 @@
 			dependencies = (
 			);
 			name = VpnExtension;
+			packageProductDependencies = (
+				52CBB84C295BC7F700D0073F /* CocoaLumberjack */,
+				52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */,
+			);
 			productName = VpnExtension;
 			productReference = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -497,6 +474,10 @@
 				Base,
 			);
 			mainGroup = 70BD681A18FFB02D00A1EFCF;
+			packageReferences = (
+				52355CF9295B70020057557B /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
+			);
 			productRefGroup = 70BD682418FFB02D00A1EFCF /* Products */;
 			projectDirPath = "";
 			projectReferences = (
@@ -676,7 +657,6 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_ARCHS = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -736,7 +716,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_ARCHS = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1033,6 +1012,63 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		52355CF9295B70020057557B /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = exactVersion;
+				version = 7.31.3;
+			};
+		};
+		52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
+			requirement = {
+				kind = exactVersion;
+				version = 3.7.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		52355CFA295B70030057557B /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52355CF9295B70020057557B /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+		52CBB848295BC79300D0073F /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		52CBB84C295BC7F700D0073F /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		52CBB850295BC81900D0073F /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		52CBB852295BC81900D0073F /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 70BD681B18FFB02D00A1EFCF /* Project object */;
 }

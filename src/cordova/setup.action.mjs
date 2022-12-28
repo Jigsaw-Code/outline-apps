@@ -66,7 +66,11 @@ export async function main(...parameters) {
   await cordova.prepare({platforms: [cordovaPlatform], save: false});
 
   if (isApple) {
-    // since apple can only be build on darwin systems, we don't have to worry about windows support here
+    // Since apple can only be build on darwin systems, we don't have to worry about windows support here.
+    // For development, pull edits to the project files with:
+    // rsync -avc --existing platforms/ios/ src/cordova/apple/xcode/ios/
+    // or
+    // rsync -avc --existing platforms/osx/ src/cordova/apple/xcode/macos/
     // TODO(daniellacosse): move this to a cordova hook
     execSync(`rsync -avc src/cordova/apple/xcode/${outlinePlatform}/ platforms/${cordovaPlatform}/`, {
       stdio: 'inherit',
