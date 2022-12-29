@@ -10,7 +10,7 @@ The main entrypoint to Android's Java code is `cordova-plugin-outline/android/ja
 
 Additional requirements for Android:
 
-- [Java JDK](https://www.java.com/en/download/)
+- [Java JDK 11](https://jdk.java.net/archive/)
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
 - Android SDK 30 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-30" "build-tools;30.0.3"`
