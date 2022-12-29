@@ -8,6 +8,7 @@ The main entrypoint to Android's Java code is `cordova-plugin-outline/android/ja
 
 Additional requirements for Android:
 
+- [Java JDK](https://www.java.com/en/download/)
 - [Android Studio 2020.3.1+](https://developer.android.com/studio)
   - Optional for building, but useful for development
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
