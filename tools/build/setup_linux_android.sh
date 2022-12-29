@@ -39,6 +39,7 @@ NDK_VERSION=${NDK_VERSION:-"21.0.6113669"}
 
 cd /opt
 
+# From https://developer.android.com/studio#command-line-tools-only.
 wget \
   -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip \
   -O android-commandline-tools.zip
