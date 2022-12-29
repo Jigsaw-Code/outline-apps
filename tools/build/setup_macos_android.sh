@@ -84,7 +84,7 @@ function main() {
 
   echo "Setup done. Make sure to define these environment variables:"
   echo "export ANDROID_SDK_ROOT=${android_home}"
-  echo "PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/8.0/bin:${ANDROID_SDK_ROOT}/emulator"
+  echo 'PATH="$PATH:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/8.0/bin:${ANDROID_SDK_ROOT}/emulator"'
 }
 
 main
