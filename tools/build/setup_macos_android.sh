@@ -26,19 +26,14 @@ ANDROID_BUILD_TOOLS_VERSION=${ANDROID_BUILD_TOOLS_VERSION:-"30.0.3"}
 NDK_VERSION=${NDK_VERSION:-"21.0.6113669"}
 
 function install_jdk() {
-  if [[ -d "$HOME/Library/Java/JavaVirtualMachines/jdk-19.0.1.jdk" ]]; then
+  # Cordova Android 10 has to use JDK 11.
+  if [[ -d "$HOME/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk" ]]; then
     echo "JDK already installed"
     return
   fi
 
-  declare arch_url
-  if [[ "$(uname -m)" == "arm64" ]]; then
-    arch_url="aarch64"
-  else
-    acrh_url="x64"
-  fi
   echo "Downloading JDK"
-  curl "https://download.java.net/java/GA/jdk19.0.1/afdd2e245b014143b62ccb916125e3ce/10/GPL/openjdk-19.0.1_macos-${arch_url}_bin.tar.gz" | tar -xzk -C "$HOME/Library/Java/JavaVirtualMachines/"
+  curl https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz | tar -xzk -C "$HOME/Library/Java/JavaVirtualMachines/"
 }
 
 function install_android_tools() {
@@ -69,6 +64,9 @@ function install_gradle() {
 }
 
 function main() {
+  # See https://cordova.apache.org/docs/en/11.x/guide/platforms/android/index.html
+  # For Cordova Android requirements.
+
   if [[ "$(uname -s)" != 'Darwin' ]]; then
     echo "Must run from a macOS machine" > 2
     exit 1
