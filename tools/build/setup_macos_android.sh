@@ -59,6 +59,11 @@ function install_gradle() {
   if which gradle > /dev/null; then
     echo "Gradle already installed"
   else
+    if ! which brew > /dev/null; then
+      # TODO(fortuna): Install gradle without Homebrew: https://gradle.org/install/#manually
+      echo "Homebrew is not installed. You need to manually install it: https://docs.brew.sh/Installation" > 2
+      exit 1
+    fi
     brew install gradle
   fi
 }
