@@ -84,8 +84,9 @@ function main() {
   install_gradle
   gradle --version
 
-  echo "Setup done. Make sure to define ANDROID_SDK_ROOT:"
+  echo "Setup done. Make sure to define these environment variables:"
   echo "export ANDROID_SDK_ROOT=${android_home}"
+  echo "PATH=$PATH:${android_home}/cmdline-tools/8.0/bin"
 }
 
 main
