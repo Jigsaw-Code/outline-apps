@@ -37,47 +37,41 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
   const {platform: outlinePlatform} = getBuildParameters(parameters);
-  const isApple = platform === 'ios' || platform === 'osx';
+  const isApple = cordovaPlatform === 'ios' || cordovaPlatform === 'osx';
 
   if (isApple && os.platform() !== 'darwin') {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: setting up "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: setting up "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
-  await rmfr(`platforms/${platform}`);
+  await rmfr(`platforms/${cordovaPlatform}`);
+  await rmfr('plugins');
 
-  if (isApple) {
-    // since apple can only be build on darwin systems, we don't have to worry about windows support here
-    // TODO(daniellacosse): move this to a cordova hook
-    execSync(`cd third_party/CocoaLumberjack && make`, {
-      stdio: 'inherit',
-    });
-    execSync(`cd third_party/sentry-cocoa && make`, {
-      stdio: 'inherit',
-    });
-  }
-
-  if (!existsSync(path.resolve(getRootDir(), 'platforms', platform))) {
+  if (!existsSync(path.resolve(getRootDir(), 'platforms', cordovaPlatform))) {
     await cordova.platform(
       'add',
-      [platform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : platform],
+      [cordovaPlatform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : cordovaPlatform],
       {save: false}
     );
   }
 
-  await cordova.prepare({platforms: [platform], save: false});
+  await cordova.prepare({platforms: [cordovaPlatform], save: false});
 
   if (isApple) {
-    // since apple can only be build on darwin systems, we don't have to worry about windows support here
+    // Since apple can only be build on darwin systems, we don't have to worry about windows support here.
+    // For development, pull edits to the project files with:
+    // rsync -avc --existing platforms/ios/ src/cordova/apple/xcode/ios/
+    // or
+    // rsync -avc --existing platforms/osx/ src/cordova/apple/xcode/macos/
     // TODO(daniellacosse): move this to a cordova hook
-    execSync(`rsync -avc src/cordova/apple/xcode/${outlinePlatform}/ platforms/${platform}/`, {
+    execSync(`rsync -avc src/cordova/apple/xcode/${outlinePlatform}/ platforms/${cordovaPlatform}/`, {
       stdio: 'inherit',
     });
   }
