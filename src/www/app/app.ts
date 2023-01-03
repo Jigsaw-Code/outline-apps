@@ -28,6 +28,8 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
+import {getAccessKey} from './cordova_main';
+
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
 export function unwrapInvite(s: string): string {
@@ -101,6 +103,7 @@ export class App {
     this.rootEl.addEventListener('PromptAddServerRequested', this.requestPromptAddServer.bind(this));
     this.rootEl.addEventListener('AddServerConfirmationRequested', this.requestAddServerConfirmation.bind(this));
     this.rootEl.addEventListener('AddServerRequested', this.requestAddServer.bind(this));
+    this.rootEl.addEventListener('LoginRequested', this.requestLogin.bind(this));
     this.rootEl.addEventListener('IgnoreServerRequested', this.requestIgnoreServer.bind(this));
     this.rootEl.addEventListener('ConnectPressed', this.connectServer.bind(this));
     this.rootEl.addEventListener('DisconnectPressed', this.disconnectServer.bind(this));
@@ -265,6 +268,17 @@ export class App {
   private requestIgnoreServer(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
     this.ignoredAccessKeys[accessKey] = true;
+  }
+
+  private requestLogin(event: CustomEvent) {
+    try {
+        const result = getAccessKey(event.detail.userName, event.detail.password);
+          result.then((value) => {
+        });
+    } catch (err) {
+      this.changeToDefaultPage();
+      this.showLocalizedError(err);
+    }
   }
 
   private requestAddServer(event: CustomEvent) {

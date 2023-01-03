@@ -17,6 +17,11 @@ import CocoaLumberjackSwift
 import NetworkExtension
 import Sentry
 
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 @objcMembers
 class OutlinePlugin: CDVPlugin {
 
@@ -132,6 +137,109 @@ class OutlinePlugin: CDVPlugin {
     OutlineVpn.shared.isServerReachable(host: host, port: port) { errorCode in
       self.sendSuccess(errorCode == OutlineVpn.ErrorCode.noError, callbackId: command.callbackId)
     }
+  }
+
+  func getAccessKey(_ command: CDVInvokedUrlCommand) {
+    DDLogInfo("getAccessKey")
+    guard let userName = command.argument(at: 0) as? String else {
+      return sendError("Missing user name" , callbackId: command.callbackId)
+    }
+    DDLogInfo(userName)
+    guard let password = command.argument(at: 1) as? String else {
+      return sendError("Missing password", callbackId: command.callbackId)
+    }
+    DDLogInfo(password)
+
+    var semaphore = DispatchSemaphore (value: 0)
+
+    /*var request = URLRequest(url: URL(string: "http://98.207.164.74:22000/shadowsocks_gateway/login/?user-name=" + userName + "&password=" + password)!,timeoutInterval: Double.infinity)
+request.httpMethod = "POST"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in 
+      guard let data = data else {
+        DDLogInfo(String(describing: error))
+        semaphore.signal()
+        return
+      }
+      DDLogInfo(String(data: data, encoding: .utf8)!)
+      semaphore.signal()
+    }*/
+
+    let parameters = [
+      [
+        "key": "payload",
+        "value": "{\"email\":\"" + userName + "\",\"password_md5\":\"" + password + "\"}",
+        "type": "text"
+      ]] as [[String : Any]]
+    
+    let boundary = "Boundary-\(UUID().uuidString)"
+    var body = ""
+    var error: Error? = nil
+    for param in parameters {
+      if param["disabled"] == nil {
+        let paramName = param["key"]!
+        body += "--\(boundary)\r\n"
+        body += "Content-Disposition:form-data; name=\"\(paramName)\""
+        if param["contentType"] != nil {
+          body += "\r\nContent-Type: \(param["contentType"] as! String)"
+        }
+        let paramType = param["type"] as! String
+        if paramType == "text" {
+          let paramValue = param["value"] as! String
+          body += "\r\n\r\n\(paramValue)\r\n"
+        } else {
+          let paramSrc = param["src"] as! String
+          do {
+            let fileData = try NSData(contentsOfFile:paramSrc, options:[]) as Data
+            let fileContent = String(data: fileData, encoding: .utf8)!
+            body += "; filename=\"\(paramSrc)\"\r\n"
+              + "Content-Type: \"content-type header\"\r\n\r\n\(fileContent)\r\n"
+          } catch {
+          }
+        }
+      }
+    }
+    body += "--\(boundary)--\r\n";
+    let postData = body.data(using: .utf8)
+    
+    var request = URLRequest(url: URL(string: "http://39.106.82.246:22000/shadowsocks_gateway/login/")!,timeoutInterval: Double.infinity)
+    request.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+    
+    request.httpMethod = "POST"
+    request.httpBody = postData
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in 
+      guard let data = data else {
+        print(String(describing: error))
+        semaphore.signal()
+        return
+      }
+      let jsonResponse = String(data: data, encoding: .utf8)!
+      DDLogInfo(jsonResponse)
+      let jsonData = jsonResponse.data(using: .utf8)!
+      struct ServerAddress: Decodable {
+        let location: String
+        let uri: String
+      }
+
+      struct ServerAddressList: Decodable {
+        let ss_servers: [ServerAddress]
+      }
+
+      struct ResponseData: Decodable {
+        let data: ServerAddressList
+        let success: Int
+      }
+
+      let responseData: ResponseData = try! JSONDecoder().decode(ResponseData.self, from: jsonData)
+
+      DDLogInfo(responseData.data)
+
+      semaphore.signal()
+    }
+
+    task.resume()
+    semaphore.wait()
   }
 
   func onStatusChange(_ command: CDVInvokedUrlCommand) {

@@ -94,5 +94,8 @@
   "unreachable-server-state": "Unreachable",
   "unsupported-cipher": "Unsupported cipher",
   "update-downloaded": "An updated version of Outline has been downloaded. It will be installed when you restart Outline.",
-  "version": "Version {appVersion}"
+  "version": "Version {appVersion}",
+  "login-title-key": "Login to Your DragonHole Account",
+  "user-name": "<user name>",
+  "password": "<password>"
 }

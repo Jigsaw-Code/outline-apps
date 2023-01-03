@@ -94,6 +94,10 @@ class CordovaNativeNetworking implements NativeNetworking {
   }
 }
 
+export async function getAccessKey(username: string, password: string) {
+  return await pluginExecWithErrorCode<string>('getAccessKey', username, password);
+}
+
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 

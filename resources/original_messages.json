@@ -486,5 +486,17 @@
   "tray_open_window": {
     "message": "Open",
     "description": "Tray menu entry to show the application window."
+  },
+  "login_title_key": {
+    "message": "Login to Your DragonHole Account",
+    "description": "Login UI's title"
+  },
+  "user_name": {
+    "message": "<user name>",
+    "description": "User name prompt in the user name input"
+  },
+  "password": {
+    "message": "<password>",
+    "description": "Password prompt in the password input"
   }
 }

@@ -150,18 +150,30 @@ Polymer({
 
     <paper-dialog id="addServerSheet" with-backdrop>
       <div class="vertical-margin">
-        <div class="title">[[localize('server-add-access-key')]]</div>
-        <div class="faded">[[localize('server-add-instructions')]]</div>
+        <div class="title">[[localize('login-title-key')]]</div>
       </div>
       <paper-input
-        id="accessKeyInput"
+        id="userName"
         class="shadow"
-        label="[[localize('server-access-key-label', 'ssProtocol', 'ss://')]]"
+        label="[[localize('user-name')]]"
         no-label-float=""
-        value="{{accessKey}}"
+        value="{{userName}}"
       >
-        <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
       </paper-input>
+
+      <paper-input
+        id="password"
+        class="shadow"
+        label="[[localize('password')]]"
+        no-label-float=""
+        value="{{password}}"
+        type="password"
+      >
+      </paper-input>
+      <div class="vertical-margin">
+        <paper-button raised class="shadow" id="login" on-tap="_login">[[localize('login')]]</paper-button>
+      </div>
+
       <div class="footer center top-divider">
         <template is="dom-if" if="[[shouldShowNormalAccessMessage]]">
           <div
@@ -278,6 +290,11 @@ Polymer({
     if (accessKeyInput.validate()) {
       this.fire('AddServerConfirmationRequested', {accessKey: this.accessKey});
     }
+  },
+
+  _login: function() {
+    this.fire('LoginRequested', {userName: this.userName, password: this.password});
+    this.close();
   },
 
   _addDetectedServer: function() {
