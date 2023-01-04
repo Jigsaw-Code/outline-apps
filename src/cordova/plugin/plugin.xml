@@ -86,19 +86,12 @@
       </feature>
     </config-file>
 
-    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_ios.js" />
-
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
     <source-file src="apple/src/OutlineTunnel.swift" />
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/vpn" />
-
-    <framework src="apple/lib/ios/Tun2socks.xcframework" custom="true" />
-    <framework src="apple/lib/ios/Sentry.xcframework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjack.xcframework" custom="true" />
-    <framework src="apple/lib/ios/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
 
    <!-- macOS -->
@@ -110,8 +103,6 @@
       </feature>
     </config-file>
 
-    <hook type="before_plugin_install" src="apple/scripts/copy_third_party_frameworks_macos.js" />
-
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
@@ -119,10 +110,5 @@
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
-
-    <framework src="apple/lib/macos/Tun2socks.xcframework" custom="true" />
-    <framework src="apple/lib/macos/Sentry.xcframework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjack.xcframework" custom="true" />
-    <framework src="apple/lib/macos/CocoaLumberjackSwift.xcframework" custom="true" />
   </platform>
 </plugin>

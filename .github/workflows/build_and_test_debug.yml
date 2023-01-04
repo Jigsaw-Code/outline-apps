@@ -87,7 +87,7 @@ jobs:
 
   macos_debug_build:
     name: MacOS Debug Build
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 30
     needs: web_test
     steps:
@@ -104,14 +104,14 @@ jobs:
         run: npm ci
 
       - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+        run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
       - name: Build MacOS Client
         run: npm run action cordova/build macos
 
   ios_debug_build:
     name: iOS Debug Build
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 30
     needs: web_test
     steps:
@@ -127,11 +127,8 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Install Carthage
-        run: brew install carthage
-
       - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+        run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
