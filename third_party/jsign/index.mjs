@@ -35,8 +35,8 @@ export async function jsign(fileToSign, options) {
     throw new Error('options are required by jsign');
   }
 
-  const jSignJarPath = await ensureJsignJar();
-  const jsignProc = spawn('java', ['-jar', jSignJarPath, ...options, fileToSign], {
+  const jsignJarPath = await ensureJsignJar();
+  const jsignProc = spawn('java', ['-jar', jsignJarPath, ...options, fileToSign], {
     stdio: 'inherit',
   });
   return await new Promise((resolve, reject) => {

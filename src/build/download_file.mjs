@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import {createWriteStream} from 'node:fs';
-import {default as redir} from 'follow-redirects';
+import {pipeline} from 'node:stream/promises';
+import fetch from 'node-fetch';
 
 /**
  * Download a remote file from `fileUrl` and save it to `filepath`, using HTTPS protocol.
@@ -23,18 +24,10 @@ import {default as redir} from 'follow-redirects';
  * @returns {Promise<void>} A task that will be completed once the download is completed.
  */
 export async function downloadHttpsFile(fileUrl, filepath) {
-  return new Promise((resolve, reject) => {
-    redir.https
-      .get(fileUrl, response => {
-        if (response.statusCode !== 200) {
-          reject(new Error(`failed to download "${fileUrl}": ${response.statusCode} ${response.statusMessage}`));
-        } else {
-          const target = createWriteStream(filepath)
-            .once('finish', resolve)
-            .once('error', reject);
-          response.once('error', reject).pipe(target);
-        }
-      })
-      .on('error', reject);
-  });
+  const response = await fetch(fileUrl);
+  if (!response.ok) {
+    throw new Error(`failed to download "${fileUrl}": ${response.status} ${response.statusText}`);
+  }
+  const target = createWriteStream(filepath);
+  await pipeline(response.body, target);
 }
