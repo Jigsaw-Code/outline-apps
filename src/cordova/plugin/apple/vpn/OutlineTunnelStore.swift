@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Foundation
+import Tun2socks
 
 // Persistence layer for a single |OutlineTunnel| object.
 @objcMembers

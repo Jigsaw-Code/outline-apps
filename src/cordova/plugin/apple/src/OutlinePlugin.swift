@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CocoaLumberjack
-import CocoaLumberjackSwift
-import NetworkExtension
 import Sentry
+import CocoaLumberjackSwift
+import Tun2socks
+import NetworkExtension
 
 @objcMembers
 class OutlinePlugin: CDVPlugin {
