@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import CocoaLumberjackSwift
-import Tun2socks
 import NetworkExtension
 
 // Manages the system's VPN tunnel through the VpnExtension process.
