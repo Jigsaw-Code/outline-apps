@@ -8,21 +8,11 @@ let package = Package(
     products: [
         .library(
             name: "OutlineTun2Socks",
-            targets: ["Tun2socks", "OutlineDependencies"]),
+            targets: ["Tun2socks"]),
     ],
     dependencies: [
-      .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
-      .package(url: "https://github.com/getsentry/sentry-cocoa", exact: "7.31.3"),
     ],
     targets: [
-        .target(
-            name: "OutlineDependencies",
-            dependencies:
-                ["CocoaLumberjack",
-                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                 .product(name: "Sentry", package: "sentry-cocoa")
-                ]
-        ),
         .binaryTarget(
             name: "Tun2socks",
             url: "https://github.com/Jigsaw-Code/outline-go-tun2socks/releases/download/outline-v3.0.0/apple.zip",

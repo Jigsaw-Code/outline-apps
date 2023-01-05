@@ -1,3 +1,3 @@
 # OutlineTun2Socks
 
-A description of this package.
+This package provides the Outline Tun2socks framework as a Swift Package.
