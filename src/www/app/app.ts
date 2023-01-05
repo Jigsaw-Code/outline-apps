@@ -30,9 +30,9 @@ import {VpnInstaller} from './vpn_installer';
 
 // If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
 // otherwise return s.
-export function unwrapInvite(s: string): string {
+export function unwrapInvite(possiblyInviteUrl: string): string {
   try {
-    const url = new URL(s);
+    const url = new URL(possiblyInviteUrl);
     if (url.hash) {
       const decodedFragment = decodeURIComponent(url.hash);
 
@@ -41,6 +41,7 @@ export function unwrapInvite(s: string): string {
       //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
       //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
       //    seems like a reasonable thing to do, let's support those URLs too.
+      //  - ssconf:// is not supported by the invite flow, so we don't need to check it
       const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
 
       if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
@@ -48,10 +49,10 @@ export function unwrapInvite(s: string): string {
       }
     }
   } catch (e) {
-    // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // unexpected things in the clipboard.
+    // It wasn't invite URL!
   }
-  return s;
+
+  return possiblyInviteUrl;
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
@@ -589,14 +590,23 @@ export class App {
     }
   }
 
+  private isOutlineAccessKey(url: string): boolean {
+    if (!url) return false;
+
+    url = unwrapInvite(url);
+
+    return url.startsWith('ss://') || url.startsWith('ssconf://');
+  }
+
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!url || !(unwrapInvite(url).startsWith('ss://') || unwrapInvite(url).startsWith('ssconf://'))) {
+      if (!this.isOutlineAccessKey(url)) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
-        // while allowing ss:// and invite URLs.
+        // while allowing ss://, ssconf:// and invite URLs.
         // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-shadowsocks url`);
+        return console.debug(`Ignoring intercepted non-outline url`);
       }
+
       try {
         this.confirmAddServer(url);
       } catch (err) {
