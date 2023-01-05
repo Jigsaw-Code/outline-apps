@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/CocoaLumberjack/CocoaLumberjack",
       "state" : {
-        "revision" : "0188d31089b5881a269e01777be74c7316924346",
-        "version" : "3.8.0"
+        "revision" : "80ada1f753b0d53d9b57c465936a7c4169375002",
+        "version" : "3.7.4"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa",
       "state" : {
-        "revision" : "cf43eac1aa12017868c257ad3854ad87a5de0758",
-        "version" : "7.31.5"
+        "revision" : "c3c19e29f775ee95b77aa3168f3e2fd6c20deba6",
+        "version" : "7.31.3"
       }
     },
     {

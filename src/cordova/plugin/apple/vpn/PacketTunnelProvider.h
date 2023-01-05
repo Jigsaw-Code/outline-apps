@@ -16,6 +16,7 @@
 #define PacketTunnelProvider_h
 
 @import NetworkExtension;
+@import CocoaLumberjack;
 @import Sentry;
 
 extern const DDLogLevel ddLogLevel;
