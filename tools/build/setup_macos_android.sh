@@ -20,8 +20,12 @@ source "$(dirname "$0")/android_tools_versions.sh" || exit
 
 function install_jdk() {
   # Cordova Android 10 has to use JDK 11.
+  if [[ "$(javac --version) 2> /dev/null" =~ "javac 11.*" ]]; then
+    echo 'JDK already installed';
+  fi
+
   if [[ -d "$HOME/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk" ]]; then
-    echo 'JDK already installed'
+    echo 'JDK already installed, but not configured properly. Make sure to set JAVA_HOME.'
     return
   fi
 
