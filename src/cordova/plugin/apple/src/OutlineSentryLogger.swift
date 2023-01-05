@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Sentry
+import CocoaLumberjack
 import CocoaLumberjackSwift
+import Sentry
 
 // Custom CocoaLumberjack logger that logs messages to Sentry.
 @objc

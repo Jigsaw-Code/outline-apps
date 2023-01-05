@@ -17,7 +17,6 @@
 
 @import NetworkExtension;
 @import CocoaLumberjack;
-@import Sentry;
 
 extern const DDLogLevel ddLogLevel;
 

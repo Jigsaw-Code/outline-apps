@@ -26,7 +26,6 @@
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
 		7213383E07114591931284F8 /* OutlineConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119806AF98394D7D8749BB30 /* OutlineConnectivity.swift */; };
-		F6764318296770320091D72C /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F6764317296770320091D72C /* Sentry */; };
 		F8EB0D7A90A642BD93C2F424 /* vpn in Resources */ = {isa = PBXBuildFile; fileRef = E8672BD859474DB9A8434AAC /* vpn */; };
 		FC1FCAE0216D2A6E00F078A5 /* Subnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FCADE216D2A6E00F078A5 /* Subnet.swift */; };
 		FC28C298201BB4E9005FD743 /* OutlineTunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */; };
@@ -165,7 +164,6 @@
 				FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */,
 				3B0347611F212F6900C8EF1F /* libz.tbd in Frameworks */,
 				52CBB896295BD93600D0073F /* CocoaLumberjack in Frameworks */,
-				F6764318296770320091D72C /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,7 +361,6 @@
 			name = VpnExtension;
 			packageProductDependencies = (
 				52CBB895295BD93600D0073F /* CocoaLumberjack */,
-				F6764317296770320091D72C /* Sentry */,
 			);
 			productName = VpnExtension;
 			productReference = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */;
@@ -897,11 +894,6 @@
 			productName = CocoaLumberjack;
 		};
 		52CE53E6295B6A310064D03D /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
-		F6764317296770320091D72C /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
