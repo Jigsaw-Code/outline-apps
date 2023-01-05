@@ -14,7 +14,6 @@
 
 import Sentry
 import CocoaLumberjackSwift
-import Tun2socks
 
 // Custom CocoaLumberjack logger that logs messages to Sentry.
 @objc

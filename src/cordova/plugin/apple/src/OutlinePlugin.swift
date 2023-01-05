@@ -14,7 +14,6 @@
 
 import Sentry
 import CocoaLumberjackSwift
-import Tun2socks
 import NetworkExtension
 
 @objcMembers
