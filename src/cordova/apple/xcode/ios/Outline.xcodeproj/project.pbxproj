@@ -116,7 +116,7 @@
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		F658245D2965DE460081643F /* OutlineTun2Socks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineTun2Socks; path = ../../OutlineTun2Socks; sourceTree = "<group>"; };
+		F658245D2965DE460081643F /* OutlineTun2Socks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineTun2Socks; path = ../../src/cordova/apple/OutlineTun2Socks; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
 		FC1FCADE216D2A6E00F078A5 /* Subnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Subnet.swift; path = Outline/Resources/vpn/Subnet.swift; sourceTree = SOURCE_ROOT; };
 		FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnel.swift; path = "cordova-plugin-outline/OutlineTunnel.swift"; sourceTree = "<group>"; };
