@@ -16,14 +16,7 @@
 
 set -eu
 
-# Android SDK Build Tools:
-#   https://developer.android.com/studio/releases/build-tools.html
-# To find the latest version's label:
-#   sdkmanager --list|grep build-tools
-ANDROID_BUILD_TOOLS_VERSION=${ANDROID_BUILD_TOOLS_VERSION:-'30.0.3'}
-
-# NDK (side by side) version must be kept in sync with the default build tools NDK version.
-NDK_VERSION=${NDK_VERSION:-'21.0.6113669'}
+source "$(dirname "$0")/android_tools_versions.sh" || exit
 
 function install_jdk() {
   # Cordova Android 10 has to use JDK 11.
@@ -52,7 +45,7 @@ function install_android_tools() {
   fi
 
   echo 'Installing build-tools and ndk'
-  "${cmdline_tools_dir}/bin/sdkmanager" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "ndk;${NDK_VERSION}"
+  "${cmdline_tools_dir}/bin/sdkmanager" "build-tools;${OUTLINE_ANDROID_BUILD_TOOLS_VERSION}" "ndk;${OUTLINE_ANDROID_NDK_VERSION}"
 }
 
 function install_gradle() {
