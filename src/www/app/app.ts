@@ -67,6 +67,8 @@ export function isOutlineServiceLocation(url: string): boolean {
 
   url = unwrapInvite(url);
 
+  // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
+  // so we're using `startsWith`
   return url.startsWith(`${OUTLINE_PROTOCOL.STATIC}//`) || url.startsWith(`${OUTLINE_PROTOCOL.DYNAMIC}//`);
 }
 
