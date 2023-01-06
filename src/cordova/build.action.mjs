@@ -19,6 +19,7 @@ const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
+import {execSync} from 'child_process';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -26,50 +27,58 @@ import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
+  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   await runAction('cordova/setup', ...parameters);
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: building "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (platform === 'osx' && buildMode === 'release') {
-    // Cordova-osx overrides the CODE_SIGNING_IDENTITY in the build.xconfig it generates.
-    // To fix this we need to either update what we're rsync-ing or re-configure cordova-osx somehow.
-    throw new Error(
-      'Production MacOS builds currently must be done in XCode due to a cordova issue. Please open platforms/osx/Outline.xcodeproj to continue.'
-    );
-  }
-
-  let argv = [];
-
-  if (platform === 'android' && buildMode === 'release') {
-    if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
-      throw new ReferenceError(
-        "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+  if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
+    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/${outlinePlatform}.xcworkspace`;
+    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
+    if (buildMode === 'release') {
+      execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
+        stdio: 'inherit',
+      });
+    } else {
+      execSync(
+        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO`,
+        {
+          stdio: 'inherit',
+        }
       );
     }
-
-    argv = [
-      '--keystore=keystore.p12',
-      '--alias=privatekey',
-      `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
-      `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
-      '--',
-      '--gradleArg=-PcdvBuildMultipleApks=true',
-    ];
+    return;
   }
-
-  await cordova.compile({
-    platforms: [platform],
-    options: {
-      device: platform === 'ios' && buildMode === 'release',
-      emulator: platform === 'ios' && buildMode === 'debug',
-      release: buildMode === 'release',
-      argv,
-    },
-  });
+  if (cordovaPlatform === 'android') {
+    let argv = [];
+    if (buildMode === 'release') {
+      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+        throw new ReferenceError(
+          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+        );
+      }
+      argv = [
+        '--keystore=keystore.p12',
+        '--alias=privatekey',
+        `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+        `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+        '--',
+        '--gradleArg=-PcdvBuildMultipleApks=true',
+      ];
+    }
+    await cordova.compile({
+      platforms: ['android'],
+      options: {
+        release: buildMode === 'release',
+        argv,
+      },
+    });
+    return;
+  }
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

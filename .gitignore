@@ -8,8 +8,6 @@ info.txt
 /plugins
 /www
 /third_party/Potatso/Pods
-/third_party/**/Carthage/Checkouts/
-/third_party/**/Carthage/Build/
 xcuserdata/
 .vs/
 obj/

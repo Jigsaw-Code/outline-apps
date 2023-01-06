@@ -20,11 +20,8 @@ Native platforms consume [outline-go-tun2socks](https://github.com/Jigsaw-Code/o
 
 ## Additional Apple Dependencies
 
-We use the [Carthage dependency manager](https://github.com/Carthage/Carthage) to install third party dependencies: sentry-cocoa and CocoaLumberjack.
+We use [Swift Packages](https://developer.apple.com/documentation/xcode/swift-packages) for third party dependencies: sentry-cocoa and CocoaLumberjack.
 
-To upgrade the Carthage dependencies:
+To upgrade the Swift Package dependencies, update the `version` field for the corresponding package under the `XCRemoteSwiftPackageReference` section in the Outline.pbxproj file for [macOS](https://github.com/Jigsaw-Code/outline-client/blob/master/src/cordova/apple/xcode/macos/Outline.xcodeproj/project.pbxproj) or [iOS](https://github.com/Jigsaw-Code/outline-client/blob/master/src/cordova/apple/xcode/ios/Outline.xcodeproj/project.pbxproj).
 
-- Install Carthage by running `brew install carthage`.
-- Update the framework's version in Cartfile (e.g. `github "getsentry/sentry-cocoa" "x.y.z"`).
-- From the dependency directory (e.g. `third_party/CocoaLumberjack`), run `make`. This will build the frameworks for macOS and iOS.
-- Add Cartfile and Cartfile.resolved to git and commit the changes.
+Alternatively, open the xcworkspace file for the curresponding OS, and update the packages via the XCode UI.
