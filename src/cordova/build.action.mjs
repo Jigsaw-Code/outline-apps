@@ -70,7 +70,11 @@ export async function main(...parameters) {
         '--gradleArg=-PcdvBuildMultipleApks=true',
       ];
     }
+
+    cordova.on('verbose', console.debug);
+
     await cordova.compile({
+      verbose: buildMode === 'debug',
       platforms: ['android'],
       options: {
         release: buildMode === 'release',
