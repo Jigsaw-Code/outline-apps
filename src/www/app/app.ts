@@ -28,8 +28,13 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
-// If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
-// otherwise return s.
+enum OUTLINE_PROTOCOL {
+  STATIC = 'ss:',
+  DYNAMIC = 'ssconf',
+}
+
+// If "possiblyInviteUul" is a URL whose fragment contains a Shadowsocks URL
+// then return that Shadowsocks URL, otherwise return the original string.
 export function unwrapInvite(possiblyInviteUrl: string): string {
   try {
     const url = new URL(possiblyInviteUrl);
@@ -41,18 +46,28 @@ export function unwrapInvite(possiblyInviteUrl: string): string {
       //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
       //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
       //    seems like a reasonable thing to do, let's support those URLs too.
-      //  - ssconf:// is not supported by the invite flow, so we don't need to check it
-      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
+      //  - Dynamic keys are not supported by the invite flow, so we don't need to check for them
+      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf(`${OUTLINE_PROTOCOL.STATIC}//`));
 
-      if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
+      if (new URL(possibleShadowsocksUrl).protocol === OUTLINE_PROTOCOL.STATIC) {
         return possibleShadowsocksUrl;
       }
     }
   } catch (e) {
-    // It wasn't invite URL!
+    // It wasn't an invite URL!
   }
 
   return possiblyInviteUrl;
+}
+
+// Returns true if the given url was a valid Outline invitation or
+// access key
+export function isOutlineServiceLocation(url: string): boolean {
+  if (!url) return false;
+
+  url = unwrapInvite(url);
+
+  return Object.values(OUTLINE_PROTOCOL).includes(new URL(url).protocol as OUTLINE_PROTOCOL);
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
@@ -590,17 +605,9 @@ export class App {
     }
   }
 
-  private isOutlineAccessKey(url: string): boolean {
-    if (!url) return false;
-
-    url = unwrapInvite(url);
-
-    return url.startsWith('ss://') || url.startsWith('ssconf://');
-  }
-
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!this.isOutlineAccessKey(url)) {
+      if (!isOutlineServiceLocation(url)) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
         // while allowing ss://, ssconf:// and invite URLs.
         // TODO: Stop receiving install referrer intents so we can remove this.

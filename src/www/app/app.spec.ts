@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {unwrapInvite} from './app';
+import {unwrapInvite, isOutlineServiceLocation} from './app';
 
 describe('unwrapInvite', () => {
   it('ignores empty string', () => {
@@ -41,7 +41,22 @@ describe('unwrapInvite', () => {
 
   it('handles fragment after redirect', () => {
     const s = 'ss://myhost.com:3333';
-    expect(unwrapInvite(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`))
-        .toEqual(s);
+    expect(unwrapInvite(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`)).toEqual(s);
+  });
+});
+
+describe('isOutlineServiceLocation', () => {
+  it('ignores empty string', () => expect(isOutlineServiceLocation('')).toBe(false));
+  it('ignores garbage', () => expect(isOutlineServiceLocation('i am not a outline service location')).toBe(false));
+  it('ignores random https links', () => expect(isOutlineServiceLocation('https://example.com')).toBe(false));
+
+  it('detects static keys', () => expect(isOutlineServiceLocation('ss://myhost.com:3333')).toBe(true));
+  it('detects dynamic keys', () =>
+    expect(isOutlineServiceLocation('ssconf://my.cool.server.com:3423#veryfast')).toBe(true));
+  it('detects invitations', () => {
+    const s = 'ss://myhost.com:3333';
+    expect(isOutlineServiceLocation(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`)).toEqual(
+      true
+    );
   });
 });
