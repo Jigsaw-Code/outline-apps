@@ -18,7 +18,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import org.outline.OutlinePlugin;
 
 // Starts the VpnTunnelService on boot and after app updates. Receives broadcasts for
 // android.intent.action.BOOT_COMPLETED and android.intent.action.MY_PACKAGE_REPLACED.
@@ -29,7 +28,7 @@ public class VpnServiceStarter extends BroadcastReceiver {
   public void onReceive(Context context, Intent intent) {
     final VpnTunnelStore tunnelStore = new VpnTunnelStore(context);
     boolean wasConnectedAtShutdown =
-        OutlinePlugin.TunnelStatus.CONNECTED.equals(tunnelStore.getTunnelStatus());
+        VpnTunnelService.TunnelStatus.CONNECTED.equals(tunnelStore.getTunnelStatus());
     if (!wasConnectedAtShutdown) {
       return;
     }

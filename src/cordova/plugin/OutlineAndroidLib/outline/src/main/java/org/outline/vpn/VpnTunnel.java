@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import tun2socks.OutlineTunnel;
 import tun2socks.Tun2socks;
-import org.outline.shadowsocks.ShadowsocksConfig;
 
 
 /**
