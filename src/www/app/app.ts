@@ -67,13 +67,7 @@ export function isOutlineServiceLocation(url: string): boolean {
 
   url = unwrapInvite(url);
 
-  try {
-    return Object.values(OUTLINE_PROTOCOL).includes(new URL(url).protocol as OUTLINE_PROTOCOL);
-  } catch (e) {
-    // not a valid URL!
-  }
-
-  return false;
+  return url.startsWith(`${OUTLINE_PROTOCOL.STATIC}//`) || url.startsWith(`${OUTLINE_PROTOCOL.DYNAMIC}//`);
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
