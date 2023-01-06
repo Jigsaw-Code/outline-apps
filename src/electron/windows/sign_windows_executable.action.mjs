@@ -161,7 +161,7 @@ async function signWindowsExecutable(exeFile, algorithm, options) {
   try {
     exitCode = await jsign(exeFile, jsignArgs);
   } catch (err) {
-    console.error('failed to download and run jsign, please also make sure java is installed');
+    console.error('failed to run jsign');
     throw new Error(err);
   }
 
