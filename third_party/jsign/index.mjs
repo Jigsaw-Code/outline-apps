@@ -57,7 +57,7 @@ async function ensureJsignJar() {
     return jsignPath;
   }
 
-  console.log(`downloading jsign from "${JSIGN_DOWNLOAD_URL}" to "${jsignPath}"`);
+  console.debug(`downloading jsign from "${JSIGN_DOWNLOAD_URL}" to "${jsignPath}"`);
   await downloadHttpsFile(JSIGN_DOWNLOAD_URL, jsignPath);
 
   const actualChecksum = await getFileChecksum(jsignPath, 'sha256');
@@ -66,6 +66,6 @@ async function ensureJsignJar() {
       `Expected checksum ${JSIGN_SHA256_CHECKSUM}, but found ${actualChecksum}`);
   }
 
-  console.info(`successfully downloaded "${jsignPath}"`);
+  console.debug(`successfully downloaded "${jsignPath}"`);
   return jsignPath;
 }
