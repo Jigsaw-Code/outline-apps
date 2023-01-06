@@ -55,7 +55,7 @@ export async function main(...parameters) {
   if (cordovaPlatform === 'osx') {
     await cordova.platform(
       'add',
-      [cordovaPlatform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : cordovaPlatform],
+      [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`],
       {save: false}
     );
   }
