@@ -30,7 +30,7 @@ import {VpnInstaller} from './vpn_installer';
 
 enum OUTLINE_PROTOCOL {
   STATIC = 'ss:',
-  DYNAMIC = 'ssconf',
+  DYNAMIC = 'ssconf:',
 }
 
 // If "possiblyInviteUul" is a URL whose fragment contains a Shadowsocks URL
