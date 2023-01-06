@@ -27,7 +27,7 @@ import {execSync} from 'child_process';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   await runAction('cordova/setup', ...parameters);
@@ -71,10 +71,12 @@ export async function main(...parameters) {
       ];
     }
 
-    cordova.on('verbose', console.debug);
+    if (verbose) {
+      cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
+    }
 
     await cordova.compile({
-      verbose: buildMode === 'debug',
+      verbose,
       platforms: ['android'],
       options: {
         release: buildMode === 'release',

@@ -34,8 +34,8 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
   const {platform: outlinePlatform} = getBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const isApple = cordovaPlatform === 'ios' || cordovaPlatform === 'osx';
 
   if (isApple && os.platform() !== 'darwin') {
@@ -53,19 +53,17 @@ export async function main(...parameters) {
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
   if (cordovaPlatform === 'osx') {
-    await cordova.platform(
-      'add',
-      [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`],
-      {save: false}
-    );
+    await cordova.platform('add', [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {save: false});
   }
 
-  cordova.on('verbose', console.debug);
+  if (verbose) {
+    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
+  }
 
   await cordova.prepare({
     platforms: [cordovaPlatform],
     save: false,
-    verbose: buildMode === 'debug',
+    verbose,
   });
 
   if (isApple) {
