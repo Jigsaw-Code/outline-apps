@@ -1,5 +1,6 @@
 .idea
 .vscode
+.history
 *.DS_Store
 /build
 info.txt
