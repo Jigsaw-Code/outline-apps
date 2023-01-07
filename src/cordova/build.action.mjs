@@ -21,6 +21,9 @@ import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {execSync} from 'child_process';
 
+import os from 'node:os';
+import fs from 'node:fs';
+
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
  *
@@ -54,6 +57,8 @@ export async function main(...parameters) {
     return;
   }
   if (cordovaPlatform === 'android') {
+    await checkSdkFolderIsWritable();
+
     let argv = [];
     if (buildMode === 'release') {
       if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
@@ -79,6 +84,23 @@ export async function main(...parameters) {
     });
     return;
   }
+}
+
+async function checkSdkFolderIsWritable() {
+  const sdkFolder = process.env.ANDROID_SDK_ROOT;
+  if (!isFolderWritable(sdkFolder)) {
+    console.error(`The sdk folder '${sdkFolder}' is not writable! Android builds will fail.`);
+    const uid = os.userInfo().uid;
+    if (uid !== 0) {
+      console.error(`It might be non-writable because you are running as ${uid} instead of running as root.`);
+      console.error(`A workaround is to run 'node ./src/cordova/build.action.mjs' instead of 'npm run action cordova/build'`);
+    }
+    process.exit(1);
+  }
+}
+
+async function isFolderWritable(folder) {
+  return await fs.promises.access(folder, fs.constants.W_OK).then(() => true, () => false);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
