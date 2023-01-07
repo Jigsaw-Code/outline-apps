@@ -93,9 +93,6 @@ export async function runAction(actionPath, ...parameters) {
   try {
     await spawnStream(runner, [...subCommands, resolvedPath, ...parameters]);
   } catch (error) {
-    if (error?.exitCode) {
-      console.error(chalk.red(`Exit code: ${error.exitCode} ${error.constructor?.name}`));
-    }
     console.error(chalk.red(String(error)));
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));

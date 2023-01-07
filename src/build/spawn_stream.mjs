@@ -37,7 +37,7 @@ export const spawnStream = (command, parameters) =>
       if (code === 0) {
         resolve(childProcess);
       } else {
-        reject(childProcess);
+        reject(new Error(`Process '${command}' failed with error code ${code}`));
       }
     });
   });
