@@ -51,7 +51,10 @@ fi
 if (( $# > 0 )); then
   readonly GIT_ROOT=$(git rev-parse --show-toplevel)
   # To prevent every build from downloading a fresh copy of gradle, we can keep the downloaded gradle between builds and re-use it
-  readonly CACHE_GRADLE="-v /tmp/outline-docker-gradle-cache:/root/.gradle"
+  CACHE_GRADLE=""
+  if [ -n "$OUTLINE_BUILD_CACHE_GRADLE" ]; then
+    CACHE_GRADLE="-v /tmp/outline-docker-gradle-cache:/root/.gradle"
+  fi
   # Rather than a working directory of something like "/worker", mirror
   # the path on the host so that symlink tricks work as expected.
   docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" -e SENTRY_DSN=${SENTRY_DSN:-} $CACHE_GRADLE $IMAGE_NAME "$@"
