@@ -107,7 +107,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
       - name: Build MacOS Client
-        run: npm run action cordova/build macos -- --verbose
+        run: npm run action cordova/build macos
 
   ios_debug_build:
     name: iOS Debug Build
@@ -131,7 +131,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
       - name: Build iOS Client
-        run: npm run action cordova/build ios -- --verbose
+        run: npm run action cordova/build ios
 
   android_debug_build:
     name: Android Debug Build
