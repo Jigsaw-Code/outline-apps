@@ -156,7 +156,7 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v1.4.3
         with:
-          java-version: 1.8
+          java-version: 11
 
       - name: Setup Android
         run: bash ./tools/build/setup_linux_android.sh
