@@ -16,7 +16,7 @@
 
 set -eu
 
-source "$(dirname "$0")/android_tools_versions.sh" || exit
+source "$(dirname "$0")/src/cordova/android/tools_versions.sh" || exit
 
 function install_jdk() {
   # Cordova Android 10 has to use JDK 11.

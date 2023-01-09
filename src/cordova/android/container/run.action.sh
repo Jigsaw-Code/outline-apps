@@ -15,10 +15,9 @@
 # limitations under the License.
 set -eu
 
-readonly IMAGE_NAME="quay.io/outline/build-android:2020-09-14@sha256:432b3ad1d7bfb247e8bda82e2943cbe06f7d07b6585e3f3d22df5706fc6b9ba1"
-
 BUILD=false
 PUBLISH=false
+IMAGE_NAME="cordova_android_container"
 
 function error() {
   echo "$@" >&2
@@ -49,12 +48,17 @@ if ! which docker > /dev/null; then
 fi
 
 if (( $# > 0 )); then
-  readonly GIT_ROOT=$(git rev-parse --show-toplevel)
+  # build the container
+  docker build -t "${IMAGE_NAME}" src/cordova/android/container
+
   # Rather than a working directory of something like "/worker", mirror
   # the path on the host so that symlink tricks work as expected.
-  docker run --rm -ti -v "$GIT_ROOT":"$GIT_ROOT" -w "$GIT_ROOT" -e SENTRY_DSN=${SENTRY_DSN:-} $IMAGE_NAME "$@"
+  readonly GIT_ROOT=$(git rev-parse --show-toplevel)
+  docker run --rm -v "${GIT_ROOT}":"${GIT_ROOT}" -w "${GIT_ROOT}" -e SENTRY_DSN=${SENTRY_DSN:-} "${IMAGE_NAME}" npm run action "$@"
+
   # GNU stat uses -c for format, which BSD stat does not accept; it uses -f instead
   stat -c 2>&1 | grep -q illegal && STATFLAG="f" || STATFLAG="c"
+
   # TODO: Don't spin up a second container just to chown.
-  docker run --rm -ti -v "$GIT_ROOT":/worker -w /worker $IMAGE_NAME chown -R $(stat -$STATFLAG "%u:%g" .git) /worker
+  docker run --rm -v "${GIT_ROOT}":/worker -w /worker "${IMAGE_NAME}" chown -R $(stat -$STATFLAG "%u:%g" .git) /worker
 fi

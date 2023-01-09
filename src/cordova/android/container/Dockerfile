@@ -19,10 +19,11 @@ FROM debian:9
 #  - Bower requires git
 #  - gnupg is needed by the Node.js installer to add an Apt repository.
 #  - Several of Outline's build scripts require rsync.
+# TODO: update to java 11???
 RUN apt update && apt dist-upgrade -y && apt install -y wget unzip openjdk-8-jdk-headless gradle git gnupg rsync && apt clean
 
 # Node.js and NPM.
-RUN wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+RUN wget -qO- https://deb.nodesource.com/setup_16.x | bash -
 RUN apt update && apt install -y nodejs && apt clean
 
 # https://stackoverflow.com/questions/25672924/run-bower-from-root-user-its-possible-how
@@ -31,6 +32,7 @@ RUN echo '{"allow_root": true}' > /root/.bowerrc
 # https://cordova.apache.org/docs/en/latest/reference/cordova-cli/#cordova-telemetry-command
 ENV CI=true
 
+COPY ./tools_versions.sh ./tools_versions.sh
 COPY ./setup.sh ./setup.sh
 
 RUN bash ./setup.sh
