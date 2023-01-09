@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {spawn} from 'child_process';
 import {constants} from 'fs';
 import {access} from 'fs/promises';
 import minimist from 'minimist';
@@ -20,20 +19,14 @@ import {dirname, resolve} from 'path';
 import {fileURLToPath, pathToFileURL} from 'url';
 import {format} from 'util';
 
+import {jsign} from '../../../third_party/jsign/index.mjs';
+
 /**
  * Get the parent folder path of this script.
  * @returns the folder path containing the current script.
  */
 function currentDirname() {
   return dirname(fileURLToPath(import.meta.url));
-}
-
-/**
- * Get the outline-client root folder path.
- * @returns the folder path of outline-client root.
- */
-function outlineDirname() {
-  return resolve(currentDirname(), '..', '..', '..');
 }
 
 function assert(condition, msg) {
@@ -119,30 +112,6 @@ function concatGcpHsmJsignArgs(args, options) {
 }
 
 /**
- * Run jsign.jar according to the corresponding options targeting fileToSign.
- * @param {string} fileToSign The path string of a file to be signed.
- * @param {string[]} options The options to be passed to jsign. see https://ebourg.github.io/jsign/
- * @returns {Promise<number>} A promise containing the exit code of jsign.
- */
-function jsign(fileToSign, options) {
-  if (!options) {
-    throw new Error('options are required by jsign');
-  }
-  if (!fileToSign) {
-    throw new Error('fileToSign is required by jsign');
-  }
-
-  const jSignJarPath = resolve(outlineDirname(), 'third_party', 'jsign', 'jsign-4.2.jar');
-  const jsignProc = spawn('java', ['-jar', jSignJarPath, ...options, fileToSign], {
-    stdio: 'inherit',
-  });
-  return new Promise((resolve, reject) => {
-    jsignProc.on('error', reject);
-    jsignProc.on('exit', resolve);
-  });
-}
-
-/**
  * Sign the target exeFile using a specific algorithm and options.
  * @param {string} exeFile the full path of the exe file to be signed.
  * @param {'sha1'|'sha256'} algorithm the algorithm used for signing.
@@ -192,8 +161,7 @@ async function signWindowsExecutable(exeFile, algorithm, options) {
   try {
     exitCode = await jsign(exeFile, jsignArgs);
   } catch (err) {
-    console.error('failed to start java, please make sure you have installed java');
-    throw new Error(err);
+    throw new Error('failed to run jsign', {cause: err});
   }
 
   if (exitCode === 0) {
