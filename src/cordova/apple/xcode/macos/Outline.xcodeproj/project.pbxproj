@@ -125,7 +125,7 @@
 		A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; path = "Outline-Bridging-Header.h"; sourceTree = "<group>"; };
 		AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		D83B939D01CF4540A9A3DF86 /* vpn */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; path = vpn; sourceTree = "<group>"; };
-		F69339172968AFFD00823853 /* OutlineTun2Socks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineTun2Socks; path = ../../src/cordova/apple/OutlineTun2Socks; sourceTree = "<group>"; };
+		F6D3364F296CF49600AFD613 /* OutlineDependencies */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineDependencies; path = ../../OutlineDependencies; sourceTree = "<group>"; };
 		FC0799E62037532900A1C822 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC0799E82037532A00A1C822 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FC0799EF2037532A00A1C822 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -312,7 +312,7 @@
 		F69339162968AFFD00823853 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				F69339172968AFFD00823853 /* OutlineTun2Socks */,
+				F6D3364F296CF49600AFD613 /* OutlineDependencies */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -357,7 +357,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F693391D2968B13000823853 /* PBXTargetDependency */,
+				F6D33651296CF4A700AFD613 /* PBXTargetDependency */,
 				70BD687118FFB19500A1EFCF /* PBXTargetDependency */,
 				FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */,
 			);
@@ -382,6 +382,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F6D33655296CF4AE00AFD613 /* PBXTargetDependency */,
 			);
 			name = OutlineLauncher;
 			packageProductDependencies = (
@@ -403,7 +404,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F693391F2968B13500823853 /* PBXTargetDependency */,
+				F6D33653296CF4AA00AFD613 /* PBXTargetDependency */,
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
@@ -606,13 +607,17 @@
 			name = CordovaLib;
 			targetProxy = 70BD687018FFB19500A1EFCF /* PBXContainerItemProxy */;
 		};
-		F693391D2968B13000823853 /* PBXTargetDependency */ = {
+		F6D33651296CF4A700AFD613 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = F693391C2968B13000823853 /* OutlineTun2Socks */;
+			productRef = F6D33650296CF4A700AFD613 /* OutlineDependencies */;
 		};
-		F693391F2968B13500823853 /* PBXTargetDependency */ = {
+		F6D33653296CF4AA00AFD613 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = F693391E2968B13500823853 /* OutlineTun2Socks */;
+			productRef = F6D33652296CF4AA00AFD613 /* OutlineDependencies */;
+		};
+		F6D33655296CF4AE00AFD613 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = F6D33654296CF4AE00AFD613 /* OutlineDependencies */;
 		};
 		FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1082,13 +1087,17 @@
 			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
 		};
-		F693391C2968B13000823853 /* OutlineTun2Socks */ = {
+		F6D33650296CF4A700AFD613 /* OutlineDependencies */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = OutlineTun2Socks;
+			productName = OutlineDependencies;
 		};
-		F693391E2968B13500823853 /* OutlineTun2Socks */ = {
+		F6D33652296CF4AA00AFD613 /* OutlineDependencies */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = OutlineTun2Socks;
+			productName = OutlineDependencies;
+		};
+		F6D33654296CF4AE00AFD613 /* OutlineDependencies */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineDependencies;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

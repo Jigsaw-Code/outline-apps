@@ -132,7 +132,7 @@
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		F676431629676F8B0091D72C /* OutlineTun2Socks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineTun2Socks; path = ../../src/cordova/apple/OutlineTun2Socks; sourceTree = "<group>"; };
+		F6D33649296CF46200AFD613 /* OutlineDependencies */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineDependencies; path = ../../src/cordova/apple/OutlineDependencies; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
 		FC1FCADE216D2A6E00F078A5 /* Subnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Subnet.swift; path = Outline/Resources/vpn/Subnet.swift; sourceTree = SOURCE_ROOT; };
 		FC28C295201BB4E9005FD743 /* OutlineTunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineTunnel.swift; path = "cordova-plugin-outline/OutlineTunnel.swift"; sourceTree = "<group>"; };
@@ -195,7 +195,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				F676431529676F8B0091D72C /* Packages */,
+				F6D33648296CF46200AFD613 /* Packages */,
 				3B0347431F212E6500C8EF1F /* Outline.entitlements */,
 				EB87FDF41871DAF40020F90C /* config.xml */,
 				EB87FDF31871DA8E0020F90C /* www */,
@@ -304,10 +304,10 @@
 			name = Staging;
 			sourceTree = "<group>";
 		};
-		F676431529676F8B0091D72C /* Packages */ = {
+		F6D33648296CF46200AFD613 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				F676431629676F8B0091D72C /* OutlineTun2Socks */,
+				F6D33649296CF46200AFD613 /* OutlineDependencies */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -330,7 +330,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F676431A296770750091D72C /* PBXTargetDependency */,
+				F6D3364B296CF46B00AFD613 /* PBXTargetDependency */,
 				301BF551109A68C00062928A /* PBXTargetDependency */,
 				3B0347521F212F0200C8EF1F /* PBXTargetDependency */,
 			);
@@ -355,7 +355,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F676431C2967707B0091D72C /* PBXTargetDependency */,
+				F6D3364D296CF47100AFD613 /* PBXTargetDependency */,
 				FC28C2C2202913BE005FD743 /* PBXTargetDependency */,
 			);
 			name = VpnExtension;
@@ -534,13 +534,13 @@
 			target = 3B0347471F212F0100C8EF1F /* VpnExtension */;
 			targetProxy = 3B0347511F212F0200C8EF1F /* PBXContainerItemProxy */;
 		};
-		F676431A296770750091D72C /* PBXTargetDependency */ = {
+		F6D3364B296CF46B00AFD613 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = F6764319296770750091D72C /* OutlineTun2Socks */;
+			productRef = F6D3364A296CF46B00AFD613 /* OutlineDependencies */;
 		};
-		F676431C2967707B0091D72C /* PBXTargetDependency */ = {
+		F6D3364D296CF47100AFD613 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = F676431B2967707B0091D72C /* OutlineTun2Socks */;
+			productRef = F6D3364C296CF47100AFD613 /* OutlineDependencies */;
 		};
 		FC28C2C2202913BE005FD743 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -898,13 +898,13 @@
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
-		F6764319296770750091D72C /* OutlineTun2Socks */ = {
+		F6D3364A296CF46B00AFD613 /* OutlineDependencies */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = OutlineTun2Socks;
+			productName = OutlineDependencies;
 		};
-		F676431B2967707B0091D72C /* OutlineTun2Socks */ = {
+		F6D3364C296CF47100AFD613 /* OutlineDependencies */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = OutlineTun2Socks;
+			productName = OutlineDependencies;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -4,10 +4,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "OutlineTun2Socks",
+    name: "OutlineDependencies",
     products: [
         .library(
-            name: "OutlineTun2Socks",
+            name: "OutlineDependencies",
             targets: ["Tun2socks"]),
     ],
     dependencies: [
