@@ -89,7 +89,6 @@
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
-    <source-file src="apple/src/OutlineTunnel.swift" />
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/vpn" />
   </platform>
@@ -106,7 +105,6 @@
     <source-file src="apple/src/OutlinePlugin.swift" />
     <source-file src="apple/src/OutlineConnectivity.swift" />
     <source-file src="apple/src/OutlineSentryLogger.swift" />
-    <source-file src="apple/src/OutlineTunnel.swift" />
     <source-file src="apple/src/OutlineVpn.swift" />
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
     <resource-file src="apple/vpn" />
