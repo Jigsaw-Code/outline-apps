@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Cocoa
+import VPNSources
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {

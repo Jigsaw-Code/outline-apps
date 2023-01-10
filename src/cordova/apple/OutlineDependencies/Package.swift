@@ -8,14 +8,14 @@ let package = Package(
     products: [
         .library(
             name: "OutlineDependencies",
-            targets: ["Tun2socks"]),
+            targets: ["Tun2socks", "VPNSourcesObjC", "VPNSources"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
     ],
     targets: [
         .target(
-            name: "VPNSources-ObjC",
+            name: "VPNSourcesObjC",
             dependencies:
                 ["CocoaLumberjack",
                  .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),

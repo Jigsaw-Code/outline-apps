@@ -16,6 +16,7 @@ import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
 import Sentry
+import VPNSources
 
 @objcMembers
 class OutlinePlugin: CDVPlugin {
