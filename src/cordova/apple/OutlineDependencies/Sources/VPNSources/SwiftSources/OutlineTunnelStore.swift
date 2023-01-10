@@ -11,59 +11,60 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 import Foundation
 
 // Persistence layer for a single |OutlineTunnel| object.
 @objcMembers
 public class OutlineTunnelStore: NSObject {
-    // TODO(alalama): s/connection/tunnel when we update the schema.
-    private static let kTunnelStoreKey = "connectionStore"
-    private static let kTunnelStatusKey = "connectionStatus"
-    private static let kUdpSupportKey = "udpSupport"
-    
-    private let defaults: UserDefaults?
-    
-    // Constructs the store with UserDefaults as the storage.
-    public required init(appGroup: String) {
-        defaults = UserDefaults(suiteName: appGroup)
-        super.init()
+  // TODO(alalama): s/connection/tunnel when we update the schema.
+  private static let kTunnelStoreKey = "connectionStore"
+  private static let kTunnelStatusKey = "connectionStatus"
+  private static let kUdpSupportKey = "udpSupport"
+
+  private let defaults: UserDefaults?
+
+  // Constructs the store with UserDefaults as the storage.
+  public required init(appGroup: String) {
+    defaults = UserDefaults(suiteName: appGroup)
+    super.init()
+  }
+
+  // Loads a previously saved tunnel from the store.
+  public func load() -> OutlineTunnel? {
+    if let encodedTunnel = defaults?.data(forKey: OutlineTunnelStore.kTunnelStoreKey) {
+      return OutlineTunnel.decode(encodedTunnel)
     }
-    
-    // Loads a previously saved tunnel from the store.
-    public func load() -> OutlineTunnel? {
-        if let encodedTunnel = defaults?.data(forKey: OutlineTunnelStore.kTunnelStoreKey) {
-            return OutlineTunnel.decode(encodedTunnel)
-        }
-        return nil
+    return nil
+  }
+
+  // Writes |tunnel| to the store.
+  @discardableResult
+  public func save(_ tunnel: OutlineTunnel) -> Bool {
+    if let encodedTunnel = tunnel.encode() {
+      defaults?.set(encodedTunnel, forKey: OutlineTunnelStore.kTunnelStoreKey)
     }
-    
-    // Writes |tunnel| to the store.
-    @discardableResult
-    public func save(_ tunnel: OutlineTunnel) -> Bool {
-        if let encodedTunnel = tunnel.encode() {
-            defaults?.set(encodedTunnel, forKey: OutlineTunnelStore.kTunnelStoreKey)
-        }
-        return true
+    return true
+  }
+
+  public var status: OutlineTunnel.TunnelStatus {
+    get {
+      let status = defaults?.integer(forKey: OutlineTunnelStore.kTunnelStatusKey)
+          ?? OutlineTunnel.TunnelStatus.disconnected.rawValue
+      return OutlineTunnel.TunnelStatus(rawValue:status)
+          ?? OutlineTunnel.TunnelStatus.disconnected
     }
-    
-    public var status: OutlineTunnel.TunnelStatus {
-        get {
-            let status = defaults?.integer(forKey: OutlineTunnelStore.kTunnelStatusKey)
-            ?? OutlineTunnel.TunnelStatus.disconnected.rawValue
-            return OutlineTunnel.TunnelStatus(rawValue:status)
-            ?? OutlineTunnel.TunnelStatus.disconnected
-        }
-        set(newStatus) {
-            defaults?.set(newStatus.rawValue, forKey: OutlineTunnelStore.kTunnelStatusKey)
-        }
+    set(newStatus) {
+      defaults?.set(newStatus.rawValue, forKey: OutlineTunnelStore.kTunnelStatusKey)
     }
-    
-    public var isUdpSupported: Bool {
-        get {
-            return defaults?.bool(forKey: OutlineTunnelStore.kUdpSupportKey) ?? false
-        }
-        set(udpSupport) {
-            defaults?.set(udpSupport, forKey: OutlineTunnelStore.kUdpSupportKey)
-        }
+  }
+
+  public var isUdpSupported: Bool {
+    get {
+      return defaults?.bool(forKey: OutlineTunnelStore.kUdpSupportKey) ?? false
     }
+    set(udpSupport) {
+      defaults?.set(udpSupport, forKey: OutlineTunnelStore.kUdpSupportKey)
+    }
+  }
 }

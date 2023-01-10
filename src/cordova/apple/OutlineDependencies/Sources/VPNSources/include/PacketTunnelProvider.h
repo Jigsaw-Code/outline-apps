@@ -17,6 +17,7 @@
 
 @import NetworkExtension;
 @import CocoaLumberjack;
+@import NetworkExtension;
 
 extern const DDLogLevel ddLogLevel;
 
@@ -26,19 +27,19 @@ extern const DDLogLevel ddLogLevel;
 //  - cordova-plugin-outline/apple/src/OutlineVpn.swift#ErrorCode
 //  - www/model/errors.ts
 typedef NS_ENUM(NSInteger, ErrorCode) {
-    noError = 0,
-    undefinedError = 1,
-    vpnPermissionNotGranted = 2,
-    invalidServerCredentials = 3,
-    udpRelayNotEnabled = 4,
-    serverUnreachable = 5,
-    vpnStartFailure = 6,
-    illegalServerConfiguration = 7,
-    shadowsocksStartFailure = 8,
-    configureSystemProxyFailure = 9,
-    noAdminPermissions = 10,
-    unsupportedRoutingTable = 11,
-    systemMisconfigured = 12
+  noError = 0,
+  undefinedError = 1,
+  vpnPermissionNotGranted = 2,
+  invalidServerCredentials = 3,
+  udpRelayNotEnabled = 4,
+  serverUnreachable = 5,
+  vpnStartFailure = 6,
+  illegalServerConfiguration = 7,
+  shadowsocksStartFailure = 8,
+  configureSystemProxyFailure = 9,
+  noAdminPermissions = 10,
+  unsupportedRoutingTable = 11,
+  systemMisconfigured = 12
 };
 
 @end
