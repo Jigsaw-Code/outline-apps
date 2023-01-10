@@ -31,6 +31,12 @@ RUN echo '{"allow_root": true}' > /root/.bowerrc
 # https://cordova.apache.org/docs/en/latest/reference/cordova-cli/#cordova-telemetry-command
 ENV CI=true
 
+COPY ./android_tools_versions.sh ./android_tools_versions.sh
 COPY ./setup_linux_android.sh ./setup_linux_android.sh
+
+# We define the variable here, so it can be seen by both the setup script, and the running container
+ENV ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-"/opt/android-sdk"}
+# Older versions use ANDROID_HOME instead, may as well include this in the image
+ENV ANDROID_HOME="$ANDROID_SDK_ROOT"
 
 RUN bash ./setup_linux_android.sh

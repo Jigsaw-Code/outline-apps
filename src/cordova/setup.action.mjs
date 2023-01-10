@@ -82,3 +82,6 @@ export async function main(...parameters) {
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
   await main(...process.argv.slice(2));
 }
+
+// Without this, the script exits with code 1, causing the caller to fail
+process.exit(0);
