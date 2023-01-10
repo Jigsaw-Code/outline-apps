@@ -160,4 +160,4 @@ jobs:
         run: bash ./src/cordova/android/container/setup.sh
 
       - name: Build Android Client
-        run: npm run action cordova/build android
+        run: npm run action cordova/build android -- --verbose

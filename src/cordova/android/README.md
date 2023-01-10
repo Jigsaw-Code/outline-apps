@@ -26,6 +26,12 @@ To build for android, run:
   npm run action cordova/build android
 ```
 
+We also support passing a `--verbose` option on cordova android:
+
+```sh
+    npm run action cordova/build android -- --verbose
+```
+
 Make sure to rebuild after modifying platform dependent files!
 
 > 💡 NOTE: If this command ever gives you unexpected Cordova errors, try runnning `npm run reset` first.

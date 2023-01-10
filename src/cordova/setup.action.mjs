@@ -14,9 +14,7 @@
 
 import os from 'os';
 import url from 'url';
-import {existsSync} from 'fs';
 import {execSync} from 'child_process';
-import path from 'path';
 import rmfr from 'rmfr';
 
 import cordovaLib from 'cordova-lib';
@@ -25,7 +23,6 @@ const {cordova} = cordovaLib;
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
@@ -37,8 +34,8 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode} = getCordovaBuildParameters(parameters);
   const {platform: outlinePlatform} = getBuildParameters(parameters);
+  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const isApple = cordovaPlatform === 'ios' || cordovaPlatform === 'osx';
 
   if (isApple && os.platform() !== 'darwin') {
@@ -46,23 +43,28 @@ export async function main(...parameters) {
   }
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: setting up "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: setting up "${outlinePlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
+
+  await rmfr('www');
+  await rmfr('platforms');
+  await rmfr('plugins');
 
   await runAction('www/build', outlinePlatform, `--buildMode=${buildMode}`);
 
-  await rmfr(`platforms/${cordovaPlatform}`);
-  await rmfr('plugins');
-
-  if (!existsSync(path.resolve(getRootDir(), 'platforms', cordovaPlatform))) {
-    await cordova.platform(
-      'add',
-      [cordovaPlatform === 'osx' ? `github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}` : cordovaPlatform],
-      {save: false}
-    );
+  if (cordovaPlatform === 'osx') {
+    await cordova.platform('add', [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {save: false});
   }
 
-  await cordova.prepare({platforms: [cordovaPlatform], save: false});
+  if (verbose) {
+    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
+  }
+
+  await cordova.prepare({
+    platforms: [cordovaPlatform],
+    save: false,
+    verbose,
+  });
 
   if (isApple) {
     // Since apple can only be build on darwin systems, we don't have to worry about windows support here.

@@ -41,7 +41,7 @@ export async function getVersion(platform) {
       return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
     }
     case 'windows':
-      return '1.9.0';
+      return '1.9.1';
     case 'linux':
       return '1.9.0';
     default:
