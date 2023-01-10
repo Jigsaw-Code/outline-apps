@@ -11,8 +11,28 @@ let package = Package(
             targets: ["Tun2socks"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
     ],
     targets: [
+        .target(
+            name: "VPNSources-ObjC",
+            dependencies:
+                ["CocoaLumberjack",
+                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                 "Tun2socks",
+                 "VPNSources"
+                ],
+            path: "./Sources/VPNSources/",
+            exclude: ["SwiftSources"],
+            cSettings: [
+                .headerSearchPath("Internal"),
+            ]
+        ),
+        .target(
+            name: "VPNSources",
+            dependencies: [],
+            path: "Sources/VPNSources/SwiftSources"
+        ),
         .binaryTarget(
             name: "Tun2socks",
             url: "https://github.com/Jigsaw-Code/outline-go-tun2socks/releases/download/outline-v3.0.0/apple.zip",
