@@ -28,7 +28,7 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
-enum OUTLINE_PROTOCOL {
+enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss:',
   DYNAMIC = 'ssconf:',
 }
@@ -47,9 +47,11 @@ export function unwrapInvite(possiblyInviteUrl: string): string {
       //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
       //    seems like a reasonable thing to do, let's support those URLs too.
       //  - Dynamic keys are not supported by the invite flow, so we don't need to check for them
-      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf(`${OUTLINE_PROTOCOL.STATIC}//`));
+      const possibleShadowsocksUrl = decodedFragment.substring(
+        decodedFragment.indexOf(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}//`)
+      );
 
-      if (new URL(possibleShadowsocksUrl).protocol === OUTLINE_PROTOCOL.STATIC) {
+      if (new URL(possibleShadowsocksUrl).protocol === OUTLINE_ACCESS_KEY_SCHEME.STATIC) {
         return possibleShadowsocksUrl;
       }
     }
@@ -62,14 +64,14 @@ export function unwrapInvite(possiblyInviteUrl: string): string {
 
 // Returns true if the given url was a valid Outline invitation or
 // access key
-export function isOutlineServiceLocation(url: string): boolean {
+export function isOutlineAccessKey(url: string): boolean {
   if (!url) return false;
-
-  url = unwrapInvite(url);
 
   // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
   // so we're using `startsWith`
-  return url.startsWith(`${OUTLINE_PROTOCOL.STATIC}//`) || url.startsWith(`${OUTLINE_PROTOCOL.DYNAMIC}//`);
+  return (
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}//`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}//`)
+  );
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
@@ -609,7 +611,7 @@ export class App {
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!isOutlineServiceLocation(url)) {
+      if (!isOutlineAccessKey(unwrapInvite(url))) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
         // while allowing ss://, ssconf:// and invite URLs.
         // TODO: Stop receiving install referrer intents so we can remove this.
