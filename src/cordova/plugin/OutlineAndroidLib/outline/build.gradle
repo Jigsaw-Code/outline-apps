@@ -34,7 +34,7 @@ dependencies {
     // tun2socks.aar from its original path in the third_party directory.  We do
     // this by relative path:
     compileOnly fileTree(dir: '../../../../../third_party/outline-go-tun2socks/android', include: ['tun2socks.aar'])
-    // However, Cordova uses this library as a subproject of plugins/cordova-plugin-outline/
+    // However, Cordova copies this library as a subproject of the generated project,
     // which results in it being built from a different path, so we need a different
     // relative path to locate tun2socks.aar:
     compileOnly fileTree(dir: '../../../../third_party/outline-go-tun2socks/android', include: ['tun2socks.aar'])
