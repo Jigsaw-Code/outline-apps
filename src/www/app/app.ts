@@ -615,7 +615,7 @@ export class App {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
         // while allowing ss://, ssconf:// and invite URLs.
         // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-outline url`);
+        return console.debug(`Ignoring intercepted non-Outline url`);
       }
 
       try {
