@@ -29,8 +29,8 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
-  STATIC = 'ss:',
-  DYNAMIC = 'ssconf:',
+  STATIC = 'ss',
+  DYNAMIC = 'ssconf',
 }
 
 // If "possiblyInviteUul" is a URL whose fragment contains a Shadowsocks URL
