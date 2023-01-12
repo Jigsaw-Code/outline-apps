@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowJs": true,
     "baseUrl": "./",
-    "downlevelIteration": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "module": "commonjs",
@@ -14,7 +13,7 @@
     "resolveJsonModule": true,
     "rootDir": "./",
     "skipLibCheck": true,
-    "target": "es5"
+    "target": "es2017"
   },
   "exclude": ["*.cjs", "*.js", "*.mjs"],
   "include": ["src"]
