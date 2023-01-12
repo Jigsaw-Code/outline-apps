@@ -13,10 +13,8 @@ Additional requirements for Android:
 - [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
-- Android SDK 30 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-30" "build-tools;30.0.3"`
-  - Set up the environment: `export ANDROID_SDK_ROOT=$HOME/Android/sdk` (`ANDROID_HOME` is the [recommendation](https://developer.android.com/studio/command-line/variables), but Cordova wants `ANDROID_SDK_ROOT`)
+- Android SDK 32 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-32" "build-tools;33.0.0"`
 - [Gradle 7.3+](https://gradle.org/install/)
-  - On macOS: `brew install gradle`
 
 [Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code.
 
@@ -29,7 +27,7 @@ To build for android, run:
 We also support passing a `--verbose` option on cordova android:
 
 ```sh
-    npm run action cordova/build android -- --verbose
+  npm run action cordova/build android -- --verbose
 ```
 
 Make sure to rebuild after modifying platform dependent files!
