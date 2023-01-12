@@ -70,7 +70,7 @@ export function isOutlineAccessKey(url: string): boolean {
   // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
   // so we're using `startsWith`
   return (
-    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}//`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}//`)
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
   );
 }
 
