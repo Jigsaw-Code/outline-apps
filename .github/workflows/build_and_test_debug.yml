@@ -132,6 +132,29 @@ jobs:
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
+        
+  spm_debug_build:
+    name: Swift Package Debug Build
+    runs-on: macos-12
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        target: [iOS, tvOS, macOS, catalyst, watchOS]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        
+      - name: Build and Test iOS
+        run: xcodebuild test -scheme OutlineAppleLib -destination 'platform=iOS,name=iPhone 14'
+      
+      - name: Build and Test macOS (arm)
+        run: xcodebuild test -scheme OutlineAppleLib -destination 'platform=macOS,arch=arm64'
+        
+      - name: Build and Test macOS (x86)
+        run: xcodebuild test -scheme OutlineAppleLib -destination 'platform=macOS,arch=x86_64'
+        
+      - name: Build and Test Catalyst
+        run: xcodebuild test -scheme OutlineAppleLib -destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst'
 
   android_debug_build:
     name: Android Debug Build
