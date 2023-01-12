@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {unwrapInvite} from './app';
+import {unwrapInvite, isOutlineAccessKey} from './app';
 
 describe('unwrapInvite', () => {
   it('ignores empty string', () => {
@@ -41,7 +41,15 @@ describe('unwrapInvite', () => {
 
   it('handles fragment after redirect', () => {
     const s = 'ss://myhost.com:3333';
-    expect(unwrapInvite(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`))
-        .toEqual(s);
+    expect(unwrapInvite(`https://whatever.com/invite.html#/en/invite/${encodeURIComponent(s)}`)).toEqual(s);
   });
+});
+
+describe('isOutlineAccessKey', () => {
+  it('ignores empty string', () => expect(isOutlineAccessKey('')).toBe(false));
+  it('ignores garbage', () => expect(isOutlineAccessKey('i am not a outline service location')).toBe(false));
+  it('ignores random https links', () => expect(isOutlineAccessKey('https://example.com')).toBe(false));
+
+  it('detects static keys', () => expect(isOutlineAccessKey('ss://myhost.com:3333')).toBe(true));
+  it('detects dynamic keys', () => expect(isOutlineAccessKey('ssconf://my.cool.server.com:3423#veryfast')).toBe(true));
 });
