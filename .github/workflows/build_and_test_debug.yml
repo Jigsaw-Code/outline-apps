@@ -162,4 +162,4 @@ jobs:
         run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action cordova/build android
+        run: npm run action cordova/build android -- --verbose

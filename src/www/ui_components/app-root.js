@@ -343,10 +343,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <iron-icon icon="outline-icons:outline" slot="item-icon"></iron-icon>
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-icon-item>
-            <paper-icon-item name="feedback">
+            <!-- TODO(daniellacosse): fix sentry and restore feedback view -->
+            <!-- <paper-icon-item name="feedback">
               <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
               [[localize('feedback-page-title')]]
-            </paper-icon-item>
+            </paper-icon-item> -->
             <paper-icon-item name="about">
               <iron-icon icon="info" slot="item-icon"></iron-icon>
               [[localize('about-page-title')]]

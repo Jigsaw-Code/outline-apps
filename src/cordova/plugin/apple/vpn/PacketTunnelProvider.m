@@ -16,8 +16,8 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
-#import <Tun2Socks/Tun2socks.h>
 #include "VpnExtension-Swift.h"
+@import Tun2socks;
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kActionStart = @"start";
