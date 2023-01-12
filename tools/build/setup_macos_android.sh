@@ -88,7 +88,7 @@ function main() {
   install_android_tools "${android_home}"
   echo
 
-  declare -r gradle_home="${HOME}/opt/gradle"
+  declare -r gradle_home="/opt/gradle"
   install_gradle "${gradle_home}"
   "${gradle_home}/gradle-7.6/bin/gradle" --version
 
