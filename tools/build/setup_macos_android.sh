@@ -58,12 +58,11 @@ function install_android_tools() {
 }
 
 function install_gradle() {
+  declare -r gradle_home=${1?Need to pass Gradle home}
   if which -s gradle; then
     echo 'Gradle already installed'
   else
-    declare -r gradle_home=${1?Need to pass Gradle home}
     declare -r tmp_zip_dir="$(mktemp -d)"
-
     mkdir -p "${gradle_home}"
     curl "https://downloads.gradle-dn.com/distributions/gradle-7.6-bin.zip" --create-dirs --output "${tmp_zip_dir}/gradle.zip"
     unzip -d "${gradle_home}" "${tmp_zip_dir}/gradle.zip"
@@ -72,6 +71,7 @@ function install_gradle() {
 }
 
 function main() {
+
   # See https://cordova.apache.org/docs/en/11.x/guide/platforms/android/index.html
   # For Cordova Android requirements.
 
@@ -86,14 +86,15 @@ function main() {
 
   declare -r android_home="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
   install_android_tools "${android_home}"
+  echo
 
   declare -r gradle_home="${HOME}/opt/gradle"
   install_gradle "${gradle_home}"
   "${gradle_home}/gradle-7.6/bin/gradle" --version
 
   echo 'Setup done. Make these environment variables are defined:'
-  echo "export ANDROID_SDK_ROOT=${android_home}"
-  echo 'export PATH="$PATH:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/cmdline-tools/8.0/bin:${ANDROID_SDK_ROOT}/emulator:${HOME}/opt/gradle/gradle-7.6/bin"'
+  echo "export ANDROID_HOME=${android_home}"
+  echo 'export PATH="$PATH:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/8.0/bin:${ANDROID_HOME}/emulator:'"${gradle_home}"'/gradle-7.6/bin"'
 }
 
 main
