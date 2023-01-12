@@ -48,10 +48,10 @@ export function unwrapInvite(possiblyInviteUrl: string): string {
       //    seems like a reasonable thing to do, let's support those URLs too.
       //  - Dynamic keys are not supported by the invite flow, so we don't need to check for them
       const possibleShadowsocksUrl = decodedFragment.substring(
-        decodedFragment.indexOf(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}//`)
+        decodedFragment.indexOf(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`)
       );
 
-      if (new URL(possibleShadowsocksUrl).protocol === OUTLINE_ACCESS_KEY_SCHEME.STATIC) {
+      if (new URL(possibleShadowsocksUrl).protocol === `${OUTLINE_ACCESS_KEY_SCHEME.STATIC}:`) {
         return possibleShadowsocksUrl;
       }
     }
