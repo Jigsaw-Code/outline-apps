@@ -26,7 +26,7 @@ function install_jdk() {
   fi
 
   if [[ -d "${HOME}/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk" ]]; then
-    echo 'JDK already installed, but not configured properly.'
+    echo 'JDK already installed, but not configured properly. Make sure to set JAVA_HOME.'
     return
   fi
 
@@ -46,6 +46,8 @@ function install_android_tools() {
     # From https://developer.android.com/studio#command-line-tools-only
     echo "Installing Android command-line tools to ${cmdline_tools_dir}"
     declare -r tmp_zip_dir="$(mktemp -d)"
+
+    # android commandlinetools download location found on this webpage: https://developer.android.com/studio#command-line-tools-only
     curl "https://dl.google.com/android/repository/commandlinetools-mac-9123335_latest.zip" --create-dirs --output "${tmp_zip_dir}/tools.zip"
     unzip -q "${tmp_zip_dir}/tools.zip" -d "${tmp_zip_dir}"
     mkdir -p "${cmdline_tools_root}"
@@ -61,17 +63,17 @@ function install_gradle() {
   declare -r gradle_home=${1?Need to pass Gradle home}
   if which -s gradle; then
     echo 'Gradle already installed'
-  else
-    declare -r tmp_zip_dir="$(mktemp -d)"
-    mkdir -p "${gradle_home}"
-    curl "https://downloads.gradle-dn.com/distributions/gradle-7.6-bin.zip" --create-dirs --output "${tmp_zip_dir}/gradle.zip"
-    unzip -d "${gradle_home}" "${tmp_zip_dir}/gradle.zip"
-    rm -r "${tmp_zip_dir}"
+    return
   fi
+
+  declare -r tmp_zip_dir="$(mktemp -d)"
+  mkdir -p "${gradle_home}"
+  curl "https://downloads.gradle-dn.com/distributions/gradle-7.6-bin.zip" --create-dirs --output "${tmp_zip_dir}/gradle.zip"
+  unzip -d "${gradle_home}" "${tmp_zip_dir}/gradle.zip"
+  rm -r "${tmp_zip_dir}"
 }
 
 function main() {
-
   # See https://cordova.apache.org/docs/en/11.x/guide/platforms/android/index.html
   # For Cordova Android requirements.
 
@@ -93,6 +95,7 @@ function main() {
   "${gradle_home}/gradle-7.6/bin/gradle" --version
 
   echo 'Setup done. Make these environment variables are defined:'
+  echo 'export JAVA_HOME=$HOME/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk/Contents/Home'
   echo "export ANDROID_HOME=${android_home}"
   echo 'export PATH="$PATH:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/8.0/bin:${ANDROID_HOME}/emulator:'"${gradle_home}"'/gradle-7.6/bin"'
 }

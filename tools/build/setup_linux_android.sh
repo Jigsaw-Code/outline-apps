@@ -32,9 +32,9 @@ ANDROID_HOME=${ANDROID_HOME:-"/opt/android-sdk"}
 
 cd /opt
 
-# From https://developer.android.com/studio#command-line-tools-only.
+# android commandlinetools download location found on this webpage: https://developer.android.com/studio#command-line-tools-only
 wget \
-  -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip \
+  -q https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip \
   -O android-commandline-tools.zip
 
 mkdir -p ${ANDROID_HOME}/cmdline-tools
