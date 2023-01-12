@@ -4,34 +4,34 @@
 import PackageDescription
 
 let package = Package(
-    name: "OutlineDependencies",
+    name: "OutlineAppleLib",
     products: [
         .library(
-            name: "OutlineDependencies",
-            targets: ["Tun2socks", "VPNSourcesObjC", "VPNSources"]),
+            name: "OutlineAppleLib",
+            targets: ["Tun2socks", "OutlineTunnel", "OutlineTunnelObjC"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
     ],
     targets: [
         .target(
-            name: "VPNSourcesObjC",
+            name: "OutlineTunnelObjC",
             dependencies:
                 ["CocoaLumberjack",
                  .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                  "Tun2socks",
-                 "VPNSources"
+                 "OutlineTunnel"
                 ],
-            path: "./Sources/VPNSources/",
+            path: "./Sources/OutlineTunnelSources/",
             exclude: ["SwiftSources"],
             cSettings: [
                 .headerSearchPath("Internal"),
             ]
         ),
         .target(
-            name: "VPNSources",
+            name: "OutlineTunnel",
             dependencies: [],
-            path: "Sources/VPNSources/SwiftSources"
+            path: "Sources/OutlineTunnelSources/SwiftSources"
         ),
         .binaryTarget(
             name: "Tun2socks",
@@ -39,7 +39,7 @@ let package = Package(
             checksum: "14d4ced347b3c6a4bf6264c7b33e4899b6e7b2885a3dc4fc0d9b2c3c49159791"
         ),
         .testTarget(
-            name: "VPNSourcesTest",
-            dependencies: ["VPNSources", "VPNSourcesObjC"]),
+            name: "OutlineTunnelTest",
+            dependencies: ["OutlineTunnel", "OutlineTunnelObjC"]),
     ]
 )
