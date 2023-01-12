@@ -15,7 +15,7 @@
 import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
-import VPNSources
+import OutlineTunnel
 
 // Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers

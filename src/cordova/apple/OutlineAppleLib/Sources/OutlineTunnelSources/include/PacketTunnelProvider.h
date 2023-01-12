@@ -17,7 +17,6 @@
 
 @import NetworkExtension;
 @import CocoaLumberjack;
-@import NetworkExtension;
 
 extern const DDLogLevel ddLogLevel;
 

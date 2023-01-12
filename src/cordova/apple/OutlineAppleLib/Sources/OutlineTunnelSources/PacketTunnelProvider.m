@@ -17,7 +17,7 @@
 #include <ifaddrs.h>
 #include <netdb.h>
 
-@import VPNSources;
+@import OutlineTunnel;
 @import Tun2socks;
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
