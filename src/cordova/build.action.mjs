@@ -55,7 +55,8 @@ export async function main(...parameters) {
   }
   if (cordovaPlatform === 'android') {
     let argv = [
-      // Path is relative to /platforms/android/.  See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+      // Path is relative to /platforms/android/.
+      // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
       '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
     ];
     if (verbose) {

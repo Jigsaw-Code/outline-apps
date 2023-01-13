@@ -1,6 +1,6 @@
 repositories {
   flatDir {
-    dirs 'src/main/libs' //, '../../../../../third_party/outline-go-tun2socks/android'
+    dirs 'src/main/libs'
   }
 }
 
