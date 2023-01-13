@@ -28,11 +28,16 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
-// If s is a URL whose fragment contains a Shadowsocks URL then return that Shadowsocks URL,
-// otherwise return s.
-export function unwrapInvite(s: string): string {
+enum OUTLINE_ACCESS_KEY_SCHEME {
+  STATIC = 'ss',
+  DYNAMIC = 'ssconf',
+}
+
+// If "possiblyInviteUul" is a URL whose fragment contains a Shadowsocks URL
+// then return that Shadowsocks URL, otherwise return the original string.
+export function unwrapInvite(possiblyInviteUrl: string): string {
   try {
-    const url = new URL(s);
+    const url = new URL(possiblyInviteUrl);
     if (url.hash) {
       const decodedFragment = decodeURIComponent(url.hash);
 
@@ -41,17 +46,32 @@ export function unwrapInvite(s: string): string {
       //  - When a user opens invite.html#ENCODEDSSURL in their browser, the website (currently)
       //    redirects to invite.html#/en/invite/ENCODEDSSURL. Since copying that redirected URL
       //    seems like a reasonable thing to do, let's support those URLs too.
-      const possibleShadowsocksUrl = decodedFragment.substring(decodedFragment.indexOf('ss://'));
+      //  - Dynamic keys are not supported by the invite flow, so we don't need to check for them
+      const possibleShadowsocksUrl = decodedFragment.substring(
+        decodedFragment.indexOf(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`)
+      );
 
-      if (new URL(possibleShadowsocksUrl).protocol === 'ss:') {
+      if (new URL(possibleShadowsocksUrl).protocol === `${OUTLINE_ACCESS_KEY_SCHEME.STATIC}:`) {
         return possibleShadowsocksUrl;
       }
     }
   } catch (e) {
-    // Something wasn't a URL, or it couldn't be decoded - no problem, people put all kinds of
-    // unexpected things in the clipboard.
+    // It wasn't an invite URL!
   }
-  return s;
+
+  return possiblyInviteUrl;
+}
+
+// Returns true if the given url was a valid Outline invitation or
+// access key
+export function isOutlineAccessKey(url: string): boolean {
+  if (!url) return false;
+
+  // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
+  // so we're using `startsWith`
+  return (
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
+  );
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
@@ -591,12 +611,13 @@ export class App {
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
     urlInterceptor.registerListener(url => {
-      if (!url || !unwrapInvite(url).startsWith('ss://')) {
+      if (!isOutlineAccessKey(unwrapInvite(url))) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
-        // while allowing ss:// and invite URLs.
+        // while allowing ss://, ssconf:// and invite URLs.
         // TODO: Stop receiving install referrer intents so we can remove this.
-        return console.debug(`Ignoring intercepted non-shadowsocks url`);
+        return console.debug(`Ignoring intercepted non-Outline url`);
       }
+
       try {
         this.confirmAddServer(url);
       } catch (err) {
