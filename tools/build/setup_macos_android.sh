@@ -91,7 +91,7 @@ function main() {
   echo
 
   # Install location as suggested by https://gradle.org/install/#manually
-  declare -r gradle_home="/opt/gradle"
+  declare -r gradle_home="/usr/local/opt/gradle"
   install_gradle "${gradle_home}"
   "${gradle_home}/gradle-7.6/bin/gradle" --version
 
