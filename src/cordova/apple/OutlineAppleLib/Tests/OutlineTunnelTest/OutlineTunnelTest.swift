@@ -1,6 +1,6 @@
 import XCTest
 @testable import OutlineTunnel
-@testable import OutlineTunnelObjC
+@testable import PacketTunnelProvider
 
 final class OutlineTunnelTest: XCTestCase {
     
