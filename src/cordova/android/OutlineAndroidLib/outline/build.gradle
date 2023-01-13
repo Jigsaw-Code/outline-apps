@@ -2,6 +2,9 @@ plugins {
     id 'com.android.library'
 }
 
+// Needed for the composite build to recognize this module as 'org.outline:outline:0.0'.
+group = 'org.outline'
+
 android {
     namespace 'org.outline'
     compileSdk 30
@@ -33,13 +36,10 @@ dependencies {
     // To make this project editable directly in the source tree, we need to load
     // tun2socks.aar from its original path in the third_party directory.  We do
     // this by relative path:
-    compileOnly fileTree(dir: '../../../../../third_party/outline-go-tun2socks/android', include: ['tun2socks.aar'])
-    // However, Cordova copies this library as a subproject of the generated project,
-    // which results in it being built from a different path, so we need a different
-    // relative path to locate tun2socks.aar:
-    compileOnly fileTree(dir: '../../../../third_party/outline-go-tun2socks/android', include: ['tun2socks.aar'])
-    // These can't both be correct.  Luckily, gradle silently ignores fileTree()
-    // directives that don't match any files.
+    compileOnly fileTree(dir: '../../../../../third_party/outline-go-tun2socks/android',
+            include: ['tun2socks.aar'])
+    // Note: A flatDir repository might be preferable, but this is not compatible
+    // with a composite build (https://github.com/gradle/gradle/issues/911).
 
     implementation 'io.sentry:sentry-android:2.0.2'
     implementation 'org.apache.commons:commons-collections4:4.4'

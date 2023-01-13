@@ -54,7 +54,13 @@ export async function main(...parameters) {
     return;
   }
   if (cordovaPlatform === 'android') {
-    let argv = [];
+    let argv = [
+      // Path is relative to /platforms/android/.  See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+      '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+    ];
+    if (verbose) {
+      argv.push('--gradleArg=--info');
+    }
     if (buildMode === 'release') {
       if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
         throw new ReferenceError(

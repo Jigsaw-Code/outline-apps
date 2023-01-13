@@ -68,7 +68,6 @@
 
     <framework src="android/java/build-extras.gradle" custom="true"
       type="gradleReference" />
-    <framework src="OutlineAndroidLib/outline" custom="true"/>
   </platform>
 
   <!-- iOS -->
