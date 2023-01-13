@@ -16,6 +16,8 @@ import Foundation
 
 // Serializable class to wrap a tunnel's configuration.
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
+// Note that this class and its non-private properties must be public in order to be visible to the ObjC
+// target of the OutlineAppleLib Swift Package.
 @objcMembers
 public class OutlineTunnel: NSObject, Codable {
   public var id: String?
