@@ -106,6 +106,9 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
+      - name: Test OutlineAppleLib 
+        run: npm run action cordova/test macos
+
       - name: Build MacOS Client
         run: npm run action cordova/build macos
 
@@ -129,6 +132,9 @@ jobs:
 
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
+
+      - name: Test OutlineAppleLib 
+        run: npm run action cordova/test ios
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
