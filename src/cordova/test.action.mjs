@@ -17,12 +17,11 @@ import url from 'url';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {execSync} from 'child_process';
 
 /**
- * @description Tests the parameterized cordova binary (ios, macos, android).
+ * @description Tests the parameterized cordova binary (ios, macos).
  *
  * @param {string[]} parameters
  */
