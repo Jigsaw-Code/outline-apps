@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
+import os from 'os';
 
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
@@ -29,13 +30,13 @@ export async function main(...parameters) {
   const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
-  console.log('Testing OutlineAppleLib on "${outlinePlatform}"');
-
-  if (isApple && os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
-  }
+  console.log(`Testing OutlineAppleLib on "${outlinePlatform}"`);
 
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
+    if (os.platform() !== 'darwin') {
+      throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    }
+
     const PACKAGE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/OutlineAppleLib/`;
     const PACKAGE_NAME = `OutlineAppleLib`;
 
