@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <application>
+        <!-- This is needed for the instrumentation tests to run. -->
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+    </application>
+</manifest>
+

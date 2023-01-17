@@ -41,6 +41,10 @@ import org.outline.log.SentryErrorReporter;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 
+import static org.outline.vpn.VpnTunnelService.ErrorCode;
+import static org.outline.vpn.VpnTunnelService.MessageData;
+import static org.outline.vpn.VpnTunnelService.TunnelStatus;
+
 public class OutlinePlugin extends CordovaPlugin {
   private static final Logger LOG = Logger.getLogger(OutlinePlugin.class.getName());
 
@@ -75,54 +79,6 @@ public class OutlinePlugin extends CordovaPlugin {
     // Returns whether |action| is the underlying value of this instance.
     public boolean is(final String action) {
       return this.value.equals(action);
-    }
-  }
-
-  // Plugin error codes. Keep in sync with www/model/errors.ts.
-  public enum ErrorCode {
-    NO_ERROR(0),
-    UNEXPECTED(1),
-    VPN_PERMISSION_NOT_GRANTED(2),
-    INVALID_SERVER_CREDENTIALS(3),
-    UDP_RELAY_NOT_ENABLED(4),
-    SERVER_UNREACHABLE(5),
-    VPN_START_FAILURE(6),
-    ILLEGAL_SERVER_CONFIGURATION(7),
-    SHADOWSOCKS_START_FAILURE(8),
-    CONFIGURE_SYSTEM_PROXY_FAILURE(9),
-    NO_ADMIN_PERMISSIONS(10),
-    UNSUPPORTED_ROUTING_TABLE(11),
-    SYSTEM_MISCONFIGURED(12);
-
-    public final int value;
-    ErrorCode(int value) {
-      this.value = value;
-    }
-  }
-
-  public enum TunnelStatus {
-    INVALID(-1), // Internal use only.
-    CONNECTED(0),
-    DISCONNECTED(1),
-    RECONNECTING(2);
-
-    public final int value;
-    TunnelStatus(int value) {
-      this.value = value;
-    }
-  }
-
-  // IPC message and intent parameters.
-  public enum MessageData {
-    TUNNEL_ID("tunnelId"),
-    TUNNEL_CONFIG("tunnelConfig"),
-    ACTION("action"),
-    PAYLOAD("payload"),
-    ERROR_REPORTING_API_KEY("errorReportingApiKey");
-
-    public final String value;
-    MessageData(final String value) {
-      this.value = value;
     }
   }
 
@@ -175,7 +131,7 @@ public class OutlinePlugin extends CordovaPlugin {
     OutlineLogger.registerLogHandler(SentryErrorReporter.BREADCRUMB_LOG_HANDLER);
     Context context = getBaseContext();
     IntentFilter broadcastFilter = new IntentFilter();
-    broadcastFilter.addAction(Action.ON_STATUS_CHANGE.value);
+    broadcastFilter.addAction(VpnTunnelService.STATUS_BROADCAST_KEY);
     broadcastFilter.addCategory(context.getPackageName());
     context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter);
 
