@@ -20,11 +20,6 @@ source "$(dirname "$0")/android_tools_versions.sh" || exit
 
 function install_jdk() {
   # Cordova Android 10 has to use JDK 11.
-  if [[ "$(javac --version) 2> /dev/null" =~ "javac 11." ]]; then
-    echo 'JDK already installed'
-    return
-  fi
-
   if [[ -d "${HOME}/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk" ]]; then
     echo 'JDK already installed, but not configured properly. Make sure to set JAVA_HOME.'
     return
@@ -91,7 +86,7 @@ function main() {
   echo
 
   # Install location as suggested by https://gradle.org/install/#manually
-  declare -r gradle_home="/usr/local/opt/gradle"
+  declare -r gradle_home="$HOME/Library/Android/gradle"
   install_gradle "${gradle_home}"
   "${gradle_home}/gradle-7.6/bin/gradle" --version
 
