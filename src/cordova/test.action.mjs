@@ -31,6 +31,10 @@ export async function main(...parameters) {
 
   console.log('Testing OutlineAppleLib on "${outlinePlatform}"');
 
+  if (isApple && os.platform() !== 'darwin') {
+    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+  }
+
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
     const PACKAGE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/OutlineAppleLib/`;
     const PACKAGE_NAME = `OutlineAppleLib`;
