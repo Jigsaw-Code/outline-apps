@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
-import org.outline.OutlinePlugin;
 import org.outline.TunnelConfig;
 import org.outline.log.SentryErrorReporter;
 import org.outline.shadowsocks.ShadowsocksConfig;
@@ -53,6 +52,56 @@ public class VpnTunnelService extends VpnService {
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
+
+  public static final String STATUS_BROADCAST_KEY = "onStatusChange";
+
+  // Plugin error codes. Keep in sync with www/model/errors.ts.
+  public enum ErrorCode {
+    NO_ERROR(0),
+    UNEXPECTED(1),
+    VPN_PERMISSION_NOT_GRANTED(2),
+    INVALID_SERVER_CREDENTIALS(3),
+    UDP_RELAY_NOT_ENABLED(4),
+    SERVER_UNREACHABLE(5),
+    VPN_START_FAILURE(6),
+    ILLEGAL_SERVER_CONFIGURATION(7),
+    SHADOWSOCKS_START_FAILURE(8),
+    CONFIGURE_SYSTEM_PROXY_FAILURE(9),
+    NO_ADMIN_PERMISSIONS(10),
+    UNSUPPORTED_ROUTING_TABLE(11),
+    SYSTEM_MISCONFIGURED(12);
+
+    public final int value;
+    ErrorCode(int value) {
+      this.value = value;
+    }
+  }
+
+  public enum TunnelStatus {
+    INVALID(-1), // Internal use only.
+    CONNECTED(0),
+    DISCONNECTED(1),
+    RECONNECTING(2);
+
+    public final int value;
+    TunnelStatus(int value) {
+      this.value = value;
+    }
+  }
+
+  // IPC message and intent parameters.
+  public enum MessageData {
+    TUNNEL_ID("tunnelId"),
+    TUNNEL_CONFIG("tunnelConfig"),
+    ACTION("action"),
+    PAYLOAD("payload"),
+    ERROR_REPORTING_API_KEY("errorReportingApiKey");
+
+    public final String value;
+    MessageData(final String value) {
+      this.value = value;
+    }
+  }
 
   private VpnTunnel vpnTunnel;
   private TunnelConfig tunnelConfig;
@@ -106,7 +155,7 @@ public class VpnTunnelService extends VpnService {
       startLastSuccessfulTunnel();
     }
     String errorReportingApiKey =
-        intent.getStringExtra(OutlinePlugin.MessageData.ERROR_REPORTING_API_KEY.value);
+        intent.getStringExtra(MessageData.ERROR_REPORTING_API_KEY.value);
     if (errorReportingApiKey != null) {
       initErrorReporting(errorReportingApiKey);
     }
@@ -132,7 +181,7 @@ public class VpnTunnelService extends VpnService {
   @Override
   public void onRevoke() {
     LOG.info("VPN revoked.");
-    broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.DISCONNECTED);
+    broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
     tearDownActiveTunnel();
   }
 
@@ -195,20 +244,20 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private OutlinePlugin.ErrorCode startTunnel(final TunnelConfig config) {
+  private ErrorCode startTunnel(final TunnelConfig config) {
     return startTunnel(config, false);
   }
 
-  private synchronized OutlinePlugin.ErrorCode startTunnel(
+  private synchronized ErrorCode startTunnel(
       final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s.", config.id));
     if (config.id == null || config.proxy == null) {
-      return OutlinePlugin.ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {
       // Broadcast the previous instance disconnect event before reassigning the tunnel config.
-      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.DISCONNECTED);
+      broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
       stopForeground();
       try {
         // Disconnect the tunnel; do not tear down the VPN to avoid leaking traffic.
@@ -230,23 +279,23 @@ public class VpnTunnelService extends VpnService {
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Invalid configuration", e);
       tearDownActiveTunnel();
-      return OutlinePlugin.ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
     }
 
-    OutlinePlugin.ErrorCode errorCode = OutlinePlugin.ErrorCode.NO_ERROR;
+    ErrorCode errorCode = ErrorCode.NO_ERROR;
     if (!isAutoStart) {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
         errorCode = checkServerConnectivity(client);
-        if (!(errorCode == OutlinePlugin.ErrorCode.NO_ERROR
-                || errorCode == OutlinePlugin.ErrorCode.UDP_RELAY_NOT_ENABLED)) {
+        if (!(errorCode == ErrorCode.NO_ERROR
+                || errorCode == ErrorCode.UDP_RELAY_NOT_ENABLED)) {
           tearDownActiveTunnel();
           return errorCode;
         }
       } catch (Exception e) {
         tearDownActiveTunnel();
-        return OutlinePlugin.ErrorCode.SHADOWSOCKS_START_FAILURE;
+        return ErrorCode.SHADOWSOCKS_START_FAILURE;
       }
     }
     tunnelConfig = config;
@@ -256,31 +305,31 @@ public class VpnTunnelService extends VpnService {
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         tearDownActiveTunnel();
-        return OutlinePlugin.ErrorCode.VPN_START_FAILURE;
+        return ErrorCode.VPN_START_FAILURE;
       }
       startNetworkConnectivityMonitor();
     }
 
     final boolean remoteUdpForwardingEnabled =
-        isAutoStart ? tunnelStore.isUdpSupported() : errorCode == OutlinePlugin.ErrorCode.NO_ERROR;
+        isAutoStart ? tunnelStore.isUdpSupported() : errorCode == ErrorCode.NO_ERROR;
     try {
       vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();
-      return OutlinePlugin.ErrorCode.VPN_START_FAILURE;
+      return ErrorCode.VPN_START_FAILURE;
     }
     startForegroundWithNotification(config);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
-    return OutlinePlugin.ErrorCode.NO_ERROR;
+    return ErrorCode.NO_ERROR;
   }
 
-  private synchronized OutlinePlugin.ErrorCode stopTunnel(final String tunnelId) {
+  private synchronized ErrorCode stopTunnel(final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-      return OutlinePlugin.ErrorCode.UNEXPECTED;
+      return ErrorCode.UNEXPECTED;
     }
     tearDownActiveTunnel();
-    return OutlinePlugin.ErrorCode.NO_ERROR;
+    return ErrorCode.NO_ERROR;
   }
 
   private synchronized boolean isTunnelActive(final String tunnelId) {
@@ -305,7 +354,7 @@ public class VpnTunnelService extends VpnService {
     stopForeground();
     tunnelConfig = null;
     stopNetworkConnectivityMonitor();
-    tunnelStore.setTunnelStatus(OutlinePlugin.TunnelStatus.DISCONNECTED);
+    tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
   }
 
   /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
@@ -316,16 +365,16 @@ public class VpnTunnelService extends VpnService {
 
   // Shadowsocks
 
-  private OutlinePlugin.ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
+  private ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
     try {
       long errorCode = Shadowsocks.checkConnectivity(client);
-      OutlinePlugin.ErrorCode result = OutlinePlugin.ErrorCode.values()[(int) errorCode];
+      ErrorCode result = ErrorCode.values()[(int) errorCode];
       LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
       return result;
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Connectivity checks failed", e);
     }
-    return OutlinePlugin.ErrorCode.UNEXPECTED;
+    return ErrorCode.UNEXPECTED;
   }
 
   // Connectivity
@@ -345,8 +394,8 @@ public class VpnTunnelService extends VpnService {
       if (networkInfo == null || networkInfo.getState() != NetworkInfo.State.CONNECTED) {
         return;
       }
-      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.CONNECTED);
-      updateNotification(OutlinePlugin.TunnelStatus.CONNECTED);
+      broadcastVpnConnectivityChange(TunnelStatus.CONNECTED);
+      updateNotification(TunnelStatus.CONNECTED);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
@@ -372,8 +421,8 @@ public class VpnTunnelService extends VpnService {
           && activeNetworkInfo.getState() == NetworkInfo.State.CONNECTED) {
         return;
       }
-      broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus.RECONNECTING);
-      updateNotification(OutlinePlugin.TunnelStatus.RECONNECTING);
+      broadcastVpnConnectivityChange(TunnelStatus.RECONNECTING);
+      updateNotification(TunnelStatus.RECONNECTING);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         setUnderlyingNetworks(null);
@@ -410,15 +459,15 @@ public class VpnTunnelService extends VpnService {
   // Broadcasts
 
   /* Broadcast change in the VPN connectivity. */
-  private void broadcastVpnConnectivityChange(OutlinePlugin.TunnelStatus status) {
+  private void broadcastVpnConnectivityChange(TunnelStatus status) {
     if (tunnelConfig == null) {
       LOG.warning("Tunnel disconnected, not sending VPN connectivity broadcast");
       return;
     }
-    Intent statusChange = new Intent(OutlinePlugin.Action.ON_STATUS_CHANGE.value);
+    Intent statusChange = new Intent(STATUS_BROADCAST_KEY);
     statusChange.addCategory(getPackageName());
-    statusChange.putExtra(OutlinePlugin.MessageData.PAYLOAD.value, status.value);
-    statusChange.putExtra(OutlinePlugin.MessageData.TUNNEL_ID.value, tunnelConfig.id);
+    statusChange.putExtra(MessageData.PAYLOAD.value, status.value);
+    statusChange.putExtra(MessageData.TUNNEL_ID.value, tunnelConfig.id);
     sendBroadcast(statusChange);
   }
 
@@ -473,7 +522,7 @@ public class VpnTunnelService extends VpnService {
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
     }
-    tunnelStore.setTunnelStatus(OutlinePlugin.TunnelStatus.CONNECTED);
+    tunnelStore.setTunnelStatus(TunnelStatus.CONNECTED);
     tunnelStore.setIsUdpSupported(isUdpSupported);
   }
 
@@ -505,12 +554,12 @@ public class VpnTunnelService extends VpnService {
   }
 
   /* Updates the persistent notification to reflect the tunnel status. */
-  private void updateNotification(OutlinePlugin.TunnelStatus status) {
+  private void updateNotification(TunnelStatus status) {
     try {
       if (notificationBuilder == null) {
         return; // No notification to update.
       }
-      final String statusStringResourceId = status == OutlinePlugin.TunnelStatus.CONNECTED
+      final String statusStringResourceId = status == TunnelStatus.CONNECTED
           ? "connected_server_state"
           : "reconnecting_server_state";
       notificationBuilder.setContentText(getStringResource(statusStringResourceId));
