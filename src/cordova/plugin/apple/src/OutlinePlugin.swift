@@ -16,6 +16,7 @@ import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
 import Sentry
+import OutlineTunnel
 
 @objcMembers
 class OutlinePlugin: CDVPlugin {

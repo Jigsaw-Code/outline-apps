@@ -15,8 +15,10 @@
 import Foundation
 
 // Persistence layer for a single |OutlineTunnel| object.
+// Note that this class and its non-private properties must be public in order to be visible to the ObjC
+// target of the OutlineAppleLib Swift Package.
 @objcMembers
-class OutlineTunnelStore: NSObject {
+public class OutlineTunnelStore: NSObject {
   // TODO(alalama): s/connection/tunnel when we update the schema.
   private static let kTunnelStoreKey = "connectionStore"
   private static let kTunnelStatusKey = "connectionStatus"
@@ -25,13 +27,13 @@ class OutlineTunnelStore: NSObject {
   private let defaults: UserDefaults?
 
   // Constructs the store with UserDefaults as the storage.
-  required init(appGroup: String) {
+  public required init(appGroup: String) {
     defaults = UserDefaults(suiteName: appGroup)
     super.init()
   }
 
   // Loads a previously saved tunnel from the store.
-  func load() -> OutlineTunnel? {
+  public func load() -> OutlineTunnel? {
     if let encodedTunnel = defaults?.data(forKey: OutlineTunnelStore.kTunnelStoreKey) {
       return OutlineTunnel.decode(encodedTunnel)
     }
@@ -40,14 +42,14 @@ class OutlineTunnelStore: NSObject {
 
   // Writes |tunnel| to the store.
   @discardableResult
-  func save(_ tunnel: OutlineTunnel) -> Bool {
+  public func save(_ tunnel: OutlineTunnel) -> Bool {
     if let encodedTunnel = tunnel.encode() {
       defaults?.set(encodedTunnel, forKey: OutlineTunnelStore.kTunnelStoreKey)
     }
     return true
   }
 
-  var status: OutlineTunnel.TunnelStatus {
+  public var status: OutlineTunnel.TunnelStatus {
     get {
       let status = defaults?.integer(forKey: OutlineTunnelStore.kTunnelStatusKey)
           ?? OutlineTunnel.TunnelStatus.disconnected.rawValue
@@ -59,7 +61,7 @@ class OutlineTunnelStore: NSObject {
     }
   }
 
-  var isUdpSupported: Bool {
+  public var isUdpSupported: Bool {
     get {
       return defaults?.bool(forKey: OutlineTunnelStore.kUdpSupportKey) ?? false
     }

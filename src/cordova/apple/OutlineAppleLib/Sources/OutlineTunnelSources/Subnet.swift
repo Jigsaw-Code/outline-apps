@@ -15,9 +15,11 @@
 import Foundation
 
 // Represents an IP subnetwork.
+// Note that this class and its non-private properties must be public in order to be visible to the ObjC
+// target of the OutlineAppleLib Swift Package.
 @objcMembers
-class Subnet: NSObject {
-  static let kReservedSubnets = [
+public class Subnet: NSObject {
+  public static let kReservedSubnets = [
     "10.0.0.0/8",
     "100.64.0.0/10",
     "169.254.0.0/16",
@@ -36,7 +38,7 @@ class Subnet: NSObject {
   ]
 
   // Parses a CIDR subnet into a Subnet object. Returns nil on failure.
-  static func parse(_ cidrSubnet: String) -> Subnet? {
+  public static func parse(_ cidrSubnet: String) -> Subnet? {
     let components = cidrSubnet.components(separatedBy: "/")
     guard components.count == 2 else {
       NSLog("Malformed CIDR subnet")
@@ -50,7 +52,7 @@ class Subnet: NSObject {
   }
 
   // Returns a list of reserved Subnets.
-  static func getReservedSubnets() -> [Subnet] {
+  public static func getReservedSubnets() -> [Subnet] {
     var subnets: [Subnet] = []
     for cidrSubnet in kReservedSubnets {
       if let subnet = self.parse(cidrSubnet) {
@@ -64,7 +66,7 @@ class Subnet: NSObject {
   public var prefix: UInt16
   public var mask: String
 
-  init(address: String, prefix: UInt16) {
+  public init(address: String, prefix: UInt16) {
     self.address = address
     self.prefix = prefix
     let mask = (0xffffffff as UInt32) << (32 - prefix);

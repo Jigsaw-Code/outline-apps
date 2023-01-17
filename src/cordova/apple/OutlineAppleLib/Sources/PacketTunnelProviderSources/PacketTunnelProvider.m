@@ -16,7 +16,8 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
-#include "VpnExtension-Swift.h"
+
+@import OutlineTunnel;
 @import Tun2socks;
 
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
