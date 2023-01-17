@@ -31,6 +31,7 @@ export function getBuildParameters(buildParameters) {
     stagingPercentage,
     sentryDsn,
     verbose,
+    osVersion,
   } = minimist(buildParameters);
 
   if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
@@ -58,5 +59,5 @@ export function getBuildParameters(buildParameters) {
   sentryDsn ??= process.env.SENTRY_DSN;
   verbose ??= false;
 
-  return {platform, buildMode, stagingPercentage, sentryDsn, verbose};
+  return {platform, buildMode, stagingPercentage, sentryDsn, verbose, osVersion};
 }

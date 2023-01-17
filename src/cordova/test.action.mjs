@@ -27,10 +27,10 @@ import {execSync} from 'child_process';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, osVersion} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
-  console.log(`Testing OutlineAppleLib on ${outlinePlatform}`);
+  console.log(`Testing OutlineAppleLib on ${outlinePlatform} ${osVersion}`);
 
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
     if (os.platform() !== 'darwin') {
@@ -42,19 +42,7 @@ export async function main(...parameters) {
 
     if (outlinePlatform === 'macos') {
       // Test arm macs
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination 'platform=macOS,arch=arm64'`, {
-        cwd: PACKAGE_PATH,
-        stdio: 'inherit',
-      });
-
-      // Test intel macs
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination 'platform=macOS,arch=x86_64'`, {
-        cwd: PACKAGE_PATH,
-        stdio: 'inherit',
-      });
-
-      // Test catalyst
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination 'platform=macOS,arch=x86_64'`, {
+      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination '${osVersion}'`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });
@@ -62,13 +50,7 @@ export async function main(...parameters) {
 
     if (outlinePlatform === 'ios') {
       // Test iPhone 14, iOS 16.2
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'`, {
-        cwd: PACKAGE_PATH,
-        stdio: 'inherit',
-      });
-
-      // Test iPhone X, iOS 13.7
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination 'platform=iOS Simulator,name=iPhone X,OS=13.7'`, {
+      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination '${osVersion}'`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });

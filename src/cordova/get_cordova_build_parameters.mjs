@@ -24,7 +24,7 @@ const CORDOVA_PLATFORMS = ['ios', 'macos', 'osx', 'android', 'browser'];
   => an object containing the specificed cordova platform and buildMode.
 */
 export function getCordovaBuildParameters(parameters) {
-  const {platform, buildMode, verbose} = getBuildParameters(parameters);
+  const {platform, buildMode, verbose, osVersion} = getBuildParameters(parameters);
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -32,5 +32,5 @@ export function getCordovaBuildParameters(parameters) {
     );
   }
 
-  return {platform: platform === 'macos' ? 'osx' : platform, buildMode, verbose};
+  return {platform: platform === 'macos' ? 'osx' : platform, buildMode, verbose, osVersion};
 }
