@@ -19,7 +19,6 @@ import android.content.SharedPreferences;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.outline.OutlinePlugin;
 
 // Persistence layer for a single tunnel configuration. Uses |SharedPreferences| as the store.
 class VpnTunnelStore {
@@ -64,13 +63,13 @@ class VpnTunnelStore {
     editor.remove(TUNNEL_KEY).commit();
   }
 
-  public OutlinePlugin.TunnelStatus getTunnelStatus() {
+  public VpnTunnelService.TunnelStatus getTunnelStatus() {
     final String tunnelStatus = preferences.getString(
-        TUNNEL_STATUS_KEY, OutlinePlugin.TunnelStatus.DISCONNECTED.toString());
-    return OutlinePlugin.TunnelStatus.valueOf(tunnelStatus);
+        TUNNEL_STATUS_KEY, VpnTunnelService.TunnelStatus.DISCONNECTED.toString());
+    return VpnTunnelService.TunnelStatus.valueOf(tunnelStatus);
   }
 
-  public void setTunnelStatus(OutlinePlugin.TunnelStatus status) {
+  public void setTunnelStatus(VpnTunnelService.TunnelStatus status) {
     if (status == null) {
       LOG.severe("Received null tunnel status");
       return;
