@@ -30,7 +30,7 @@ export async function main(...parameters) {
   const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
-  console.log(`Testing OutlineAppleLib on "${outlinePlatform}"`);
+  console.log(`Testing OutlineAppleLib on ${outlinePlatform}`);
 
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
     if (os.platform() !== 'darwin') {
