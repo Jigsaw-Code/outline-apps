@@ -65,7 +65,7 @@ export function getBuildParameters(buildParameters) {
   // Set default test parameters
 
   // osVersion is only necessary on iOS
-  if (!osVersion && platform == 'ios') {
+  if (!osVersion && platform == 'ios' && !deviceModel == 'Any iPhone') {
     osVersion = '16.2';
   }
   // Device model can only be specified for iOS
