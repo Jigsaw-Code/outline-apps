@@ -16,15 +16,17 @@ import Foundation
 
 // Serializable class to wrap a tunnel's configuration.
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
+// Note that this class and its non-private properties must be public in order to be visible to the ObjC
+// target of the OutlineAppleLib Swift Package.
 @objcMembers
-class OutlineTunnel: NSObject, Codable {
-  var id: String?
-  var host: String?
-  var port: String?
-  var method: String?
-  var password: String?
-  var prefix: Data?
-  var config: [String: String] {
+public class OutlineTunnel: NSObject, Codable {
+  public var id: String?
+  public var host: String?
+  public var port: String?
+  public var method: String?
+  public var password: String?
+  public var prefix: Data?
+  public var config: [String: String] {
     let scalars = prefix?.map{Unicode.Scalar($0)}
     let characters = scalars?.map{Character($0)}
     let prefixStr = String(characters ?? [])
@@ -33,13 +35,13 @@ class OutlineTunnel: NSObject, Codable {
   }
 
   @objc
-  enum TunnelStatus: Int {
+  public enum TunnelStatus: Int {
     case connected = 0
     case disconnected = 1
     case reconnecting = 2
   }
 
-  convenience init(id: String, config: [String: Any]) {
+  public convenience init(id: String, config: [String: Any]) {
     self.init()
     self.id = id
     self.host = config["host"] as? String
@@ -53,11 +55,11 @@ class OutlineTunnel: NSObject, Codable {
     }
   }
 
-  func encode() -> Data? {
+  public func encode() -> Data? {
     return try? JSONEncoder().encode(self)
   }
 
-  static func decode(_ jsonData: Data) -> OutlineTunnel? {
+  public static func decode(_ jsonData: Data) -> OutlineTunnel? {
     return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
   }
 
