@@ -18,10 +18,10 @@ import os from 'os';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {execSync} from 'child_process';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
+import {getTestParameters} from './get_test_parameters.mjs';
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
@@ -29,7 +29,7 @@ import path from 'path';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = getBuildParameters(parameters);
+  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = getTestParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   console.log(`Testing OutlineAppleLib on ${outlinePlatform}, ${osVersion}`);

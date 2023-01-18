@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import minimist from 'minimist';
+import os from 'os';
 
 const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
-const VALID_BUILD_MODES = ['debug', 'release'];
 
 /*
   Inputs:
@@ -24,18 +24,14 @@ const VALID_BUILD_MODES = ['debug', 'release'];
   Outputs:
   => an object containing the specificed platform and buildMode.
 */
-export function getBuildParameters(buildParameters) {
+export function getTestParameters(buildParameters) {
   let {
     _: [platform],
-    buildMode,
-    stagingPercentage,
-    sentryDsn,
     verbose,
+    osVersion,
+    deviceModel,
+    cpuArchitecture,
   } = minimist(buildParameters);
-
-  if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
-    throw new RangeError('StagingPercentage must be a number between zero and one hundred!');
-  }
 
   if (platform && !VALID_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -43,20 +39,17 @@ export function getBuildParameters(buildParameters) {
     );
   }
 
-  if (buildMode && !VALID_BUILD_MODES.includes(buildMode)) {
-    throw new TypeError(
-      `Build mode "${buildMode}" is not a valid build mode for Outline Client. Must be one of ${VALID_BUILD_MODES.join(
-        ', '
-      )}`
-    );
-  }
-
   // set defaults
   platform ??= 'browser';
-  buildMode ??= 'debug';
-  stagingPercentage ??= 100;
-  sentryDsn ??= process.env.SENTRY_DSN;
-  verbose ??= false;
 
-  return {platform, buildMode, stagingPercentage, sentryDsn, verbose};
+  // Device model can only be specified for iOS
+  if (!deviceModel && platform == 'ios') {
+    deviceModel = 'iPhone 14';
+  }
+  // CPU architecture can only be specified for macOS
+  if (!cpuArchitecture && platform == 'macos') {
+    cpuArchitecture = os.arch();
+  }
+
+  return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
 }
