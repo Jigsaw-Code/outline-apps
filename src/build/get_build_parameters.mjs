@@ -59,5 +59,13 @@ export function getBuildParameters(buildParameters) {
   sentryDsn ??= process.env.SENTRY_DSN;
   verbose ??= false;
 
+  if (!osVersion) {
+    if (platform == 'ios') {
+      osVersion = 'platform=iOS Simulator,name=iPhone 14,OS=16.2';
+    } else if (platform == 'macos') {
+      osVersion = 'platform=macOS,arch=x86_64';
+    }
+  }
+
   return {platform, buildMode, stagingPercentage, sentryDsn, verbose, osVersion};
 }

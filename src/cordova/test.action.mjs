@@ -18,8 +18,10 @@ import os from 'os';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {execSync} from 'child_process';
+import {getRootDir} from '../build/get_root_dir.mjs';
+import path from 'path';
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
@@ -27,17 +29,17 @@ import {execSync} from 'child_process';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, osVersion} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, osVersion} = getBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
-  console.log(`Testing OutlineAppleLib on ${outlinePlatform} ${osVersion}`);
+  console.log(`Testing OutlineAppleLib on ${outlinePlatform}, ${osVersion}`);
 
   if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
     if (os.platform() !== 'darwin') {
       throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
     }
 
-    const PACKAGE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/OutlineAppleLib/`;
+    const PACKAGE_PATH = path.join(getRootDir(), '/src/cordova/apple/OutlineAppleLib/');
     const PACKAGE_NAME = `OutlineAppleLib`;
 
     if (outlinePlatform === 'macos') {
