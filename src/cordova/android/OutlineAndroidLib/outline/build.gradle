@@ -7,11 +7,11 @@ group = 'org.outline'
 
 android {
     namespace 'org.outline'
-    compileSdk 30
+    compileSdk 32
 
     defaultConfig {
         minSdk 22
-        targetSdk 30
+        targetSdk 32
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
