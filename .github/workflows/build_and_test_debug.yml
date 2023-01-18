@@ -107,7 +107,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app
 
       - name: Test OutlineAppleLib (x86)
-        run: npm run action cordova/test macos -- --cpuArchitecture x86_64
+        run: npm run action cordova/test macos
 
       # Commenting out until we implement Catalyst
       # - name: Test OutlineAppleLib (Catalyst)
@@ -134,10 +134,7 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_14.2.app
-
-      - name: Test OutlineAppleLib (iOS 16)
+      - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
 
       - name: Set XCode Version
