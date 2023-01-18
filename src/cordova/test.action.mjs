@@ -43,21 +43,21 @@ export async function main(...parameters) {
     const PACKAGE_NAME = `OutlineAppleLib`;
 
     if (outlinePlatform === 'macos') {
-      var platformSpecification = `platform=macOS,arch=${cpuArchitecture}`;
+      let xcodeDestination = `platform=macOS,arch=${cpuArchitecture}`;
 
       if (osVersion) {
-        platformSpecification += `OS=${osVersion}`;
+        xcodeDestination += `OS=${osVersion}`;
       }
 
-      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${platformSpecification}"`, {
+      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });
     }
 
     if (outlinePlatform === 'ios') {
-      var platformSpecification = `platform=iOS Simulator,name=${deviceModel},OS=${osVersion}`;
-      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${platformSpecification}"`, {
+      let xcodeDestination = `platform=iOS Simulator,name=${deviceModel},OS=${osVersion}`;
+      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });
