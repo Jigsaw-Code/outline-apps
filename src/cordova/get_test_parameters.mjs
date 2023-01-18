@@ -48,7 +48,7 @@ export function getTestParameters(buildParameters) {
   }
   // CPU architecture can only be specified for macOS
   if (!cpuArchitecture && platform == 'macos') {
-    cpuArchitecture = os.arch();
+    cpuArchitecture = 'x86_64';
   }
 
   return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
