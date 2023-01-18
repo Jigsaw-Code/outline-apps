@@ -135,7 +135,7 @@ jobs:
         run: npm ci
 
       - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_11.5.app
+        run: sudo xcode-select -switch /Applications/Xcode_14.2.app
 
       - name: Test OutlineAppleLib (iOS 13)
         run: npm run action cordova/test ios -- --osVersion 'platform=iOS Simulator,name=iPhone 8,OS=13.2'
