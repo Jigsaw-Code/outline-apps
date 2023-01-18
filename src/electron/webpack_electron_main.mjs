@@ -14,6 +14,7 @@
 
 import path from 'path';
 import webpack from 'webpack';
+import nodeExternals from 'webpack-node-externals';
 
 import {fileURLToPath} from 'url';
 
@@ -41,6 +42,13 @@ export default ({sentryDsn, appVersion}) => [
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
     },
+
+    // never inline ffi-napi package because it will use __dirname to load the prebuilt
+    // binary: https://github.com/node-ffi-napi/ref-napi/blob/latest/lib/ref.js#L8
+    // if we inline this package, the __dirname will point to our electron root folder
+    // instead of the ffi-napi package folder
+    externals: [nodeExternals({allowlist: [/^(?!(^ffi-napi$)).*$/i]})],
+
     plugins: [
       new webpack.DefinePlugin({
         SENTRY_DSN: JSON.stringify(sentryDsn),
