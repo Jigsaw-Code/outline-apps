@@ -138,7 +138,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_14.2.app
 
       - name: Test OutlineAppleLib (iOS 16)
-        run: npm run action cordova/test ios -- --deviceModel 'Any iPhone'
+        run: npm run action cordova/test ios
 
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.3.app

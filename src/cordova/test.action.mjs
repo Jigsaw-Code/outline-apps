@@ -56,7 +56,7 @@ export async function main(...parameters) {
     }
 
     if (outlinePlatform === 'ios') {
-      let xcodeDestination = `platform=iOS,name=${deviceModel}`;
+      let xcodeDestination = `platform=iOS Simulator,name=${deviceModel}`;
 
       if (osVersion) {
         xcodeDestination += `,OS=${osVersion}`;
