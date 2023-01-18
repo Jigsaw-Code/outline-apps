@@ -41,6 +41,22 @@ export default ({sentryDsn, appVersion}) => [
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
     },
+
+    // never inline ffi-napi/ref-napi package because they will use __dirname
+    // to load the prebuilt addon binary:
+    //   https://github.com/node-ffi-napi/ref-napi/blob/latest/lib/ref.js#L8
+    //
+    // if we inline this package, the __dirname will point to our electron's
+    // root folder instead of the ffi-napi/ref-napi package folder; but the
+    // native binaries are located in ffi-napi/ref-napi package itself.
+    //
+    // also, these native addons must be loaded by Node's `require()` instead
+    // of webpack's `require()`.
+    externals: {
+      'ffi-napi': 'commonjs ffi-napi',
+      'ref-napi': 'commonjs ref-napi',
+    },
+
     plugins: [
       new webpack.DefinePlugin({
         SENTRY_DSN: JSON.stringify(sentryDsn),

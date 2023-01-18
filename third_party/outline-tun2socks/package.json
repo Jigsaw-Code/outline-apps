@@ -1,0 +1,23 @@
+{
+  "name": "outline-tun2socks",
+  "version": "1.0.0",
+  "description": "A simple wrapper of Jigsaw-Code/outline-go-tun2socks for NodeJS.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "outline",
+    "tun2socks"
+  ],
+  "author": "Outline Authors",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ffi-napi": "^4.0.3",
+    "ref-napi": "^3.0.3",
+    "ref-struct-di": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/ffi-napi": "^4.0.7"
+  }
+}
