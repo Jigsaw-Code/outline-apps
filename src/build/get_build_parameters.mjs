@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import minimist from 'minimist';
+import os from 'os';
 
 const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
 const VALID_BUILD_MODES = ['debug', 'release'];
@@ -32,6 +33,8 @@ export function getBuildParameters(buildParameters) {
     sentryDsn,
     verbose,
     osVersion,
+    deviceModel,
+    cpuArchitecture,
   } = minimist(buildParameters);
 
   if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
@@ -59,13 +62,20 @@ export function getBuildParameters(buildParameters) {
   sentryDsn ??= process.env.SENTRY_DSN;
   verbose ??= false;
 
-  if (!osVersion) {
-    if (platform == 'ios') {
-      osVersion = 'platform=iOS Simulator,name=iPhone 14,OS=16.2';
-    } else if (platform == 'macos') {
-      osVersion = 'platform=macOS,arch=x86_64';
-    }
+  // Set default test parameters
+
+  // osVersion is only necessary on iOS
+  if (!osVersion && platform == 'ios') {
+    osVersion = '16.2';
+  }
+  // Device model can only be specified for iOS
+  if (!deviceModel && platform == 'ios') {
+    deviceModel = 'iPhone 14';
+  }
+  // CPU architecture can only be specified for macOS
+  if (!cpuArchitecture && platform == 'macos') {
+    cpuArchitecture = os.arch();
   }
 
-  return {platform, buildMode, stagingPercentage, sentryDsn, verbose, osVersion};
+  return {platform, buildMode, stagingPercentage, sentryDsn, verbose, osVersion, deviceModel, cpuArchitecture};
 }

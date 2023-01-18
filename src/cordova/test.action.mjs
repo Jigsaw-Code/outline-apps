@@ -29,7 +29,7 @@ import path from 'path';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, osVersion} = getBuildParameters(parameters);
+  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = getBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   console.log(`Testing OutlineAppleLib on ${outlinePlatform}, ${osVersion}`);
@@ -43,16 +43,21 @@ export async function main(...parameters) {
     const PACKAGE_NAME = `OutlineAppleLib`;
 
     if (outlinePlatform === 'macos') {
-      // Test arm macs
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination '${osVersion}'`, {
+      var platformSpecification = `platform=macOS,arch=${cpuArchitecture}`;
+
+      if (osVersion) {
+        platformSpecification += `OS=${osVersion}`;
+      }
+
+      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${platformSpecification}"`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });
     }
 
     if (outlinePlatform === 'ios') {
-      // Test iPhone 14, iOS 16.2
-      execSync(`xcodebuild test -scheme ${PACKAGE_NAME} -destination '${osVersion}'`, {
+      var platformSpecification = `platform=iOS Simulator,name=${deviceModel},OS=${osVersion}`;
+      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${platformSpecification}"`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
       });

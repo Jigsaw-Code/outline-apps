@@ -109,6 +109,9 @@ jobs:
       - name: Test OutlineAppleLib (x86)
         run: npm run action cordova/test macos -- --osVersion 'platform=macOS,arch=x86_64'
 
+      - name: Test OutlineAppleLib (x86)
+        run: npm run action cordova/test macos -- --osVersion 'platform=macOS,arch=arm64'
+
       # Commenting out until we implement Catalyst
       # - name: Test OutlineAppleLib (Catalyst)
       #   run: npm run action cordova/test macos -- --osVersion 'platform=macOS,arch=x86_64,variant=Mac Catalyst'
