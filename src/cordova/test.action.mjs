@@ -46,7 +46,7 @@ export async function main(...parameters) {
       let xcodeDestination = `platform=macOS,arch=${cpuArchitecture}`;
 
       if (osVersion) {
-        xcodeDestination += `OS=${osVersion}`;
+        xcodeDestination += `,OS=${osVersion}`;
       }
 
       execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
@@ -56,7 +56,12 @@ export async function main(...parameters) {
     }
 
     if (outlinePlatform === 'ios') {
-      let xcodeDestination = `platform=iOS Simulator,name=${deviceModel},OS=${osVersion}`;
+      let xcodeDestination = `platform=iOS Simulator,name=${deviceModel}`;
+
+      if (osVersion) {
+        xcodeDestination += `,OS=${osVersion}`;
+      }
+
       execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
         cwd: PACKAGE_PATH,
         stdio: 'inherit',
