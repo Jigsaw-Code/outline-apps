@@ -46,9 +46,10 @@ export function getTestParameters(buildParameters) {
   platform ??= 'browser';
 
   // Device model can only be specified for iOS
-  if (!deviceModel && platform == 'ios') {
-    deviceModel = DEFAULT_IOS_DEVICE_MODEL;
+  if (platform === 'ios') {
+    deviceModel ??= DEFAULT_IOS_DEVICE_MODEL;
   }
+
   // CPU architecture can only be specified for macOS
   if (!cpuArchitecture && platform == 'macos') {
     cpuArchitecture = DEFAULT_MACOS_ARCH;

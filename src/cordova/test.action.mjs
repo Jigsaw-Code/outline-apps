@@ -67,6 +67,8 @@ export async function main(...parameters) {
         stdio: 'inherit',
       });
     }
+  } else {
+    throw new Error('Testing is only currently supported for Apple platforms.');
   }
 }
 
