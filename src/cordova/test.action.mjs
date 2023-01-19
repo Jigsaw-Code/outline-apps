@@ -14,11 +14,14 @@
 
 import url from 'url';
 import os from 'os';
+import minimist from 'minimist';
+import path from 'path';
 
 import {execSync} from 'child_process';
 import {getRootDir} from '../build/get_root_dir.mjs';
-import path from 'path';
-import {getTestParameters} from './get_test_parameters.mjs';
+
+const DEFAULT_IOS_DEVICE_MODEL = 'iPhone 14';
+const DEFAULT_MACOS_ARCH = 'x86_64';
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
@@ -67,6 +70,28 @@ export async function main(...parameters) {
   } else {
     throw new Error('Testing is only currently supported for Apple platforms.');
   }
+}
+
+function getTestParameters(buildParameters) {
+  let {
+    _: [platform],
+    verbose,
+    osVersion,
+    deviceModel,
+    cpuArchitecture,
+  } = minimist(buildParameters);
+
+  // Device model can only be specified for iOS
+  if (platform === 'ios') {
+    deviceModel ??= DEFAULT_IOS_DEVICE_MODEL;
+  }
+
+  // CPU architecture can only be specified for macOS
+  if (!cpuArchitecture && platform == 'macos') {
+    cpuArchitecture = DEFAULT_MACOS_ARCH;
+  }
+
+  return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
