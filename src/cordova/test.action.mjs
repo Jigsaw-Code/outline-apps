@@ -15,9 +15,6 @@
 import url from 'url';
 import os from 'os';
 
-import cordovaLib from 'cordova-lib';
-const {cordova} = cordovaLib;
-
 import {execSync} from 'child_process';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
