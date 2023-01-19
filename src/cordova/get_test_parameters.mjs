@@ -17,6 +17,9 @@ import os from 'os';
 
 const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
 
+const DEFAULT_IOS_DEVICE_MODEL = 'iPhone 14';
+const DEFAULT_MACOS_ARCH = 'x86_64';
+
 /*
   Inputs:
   => platform: the list of action arguments passed in
@@ -44,11 +47,11 @@ export function getTestParameters(buildParameters) {
 
   // Device model can only be specified for iOS
   if (!deviceModel && platform == 'ios') {
-    deviceModel = 'iPhone 14';
+    deviceModel = DEFAULT_IOS_DEVICE_MODEL;
   }
   // CPU architecture can only be specified for macOS
   if (!cpuArchitecture && platform == 'macos') {
-    cpuArchitecture = 'x86_64';
+    cpuArchitecture = DEFAULT_MACOS_ARCH;
   }
 
   return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
