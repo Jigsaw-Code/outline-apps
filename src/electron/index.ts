@@ -14,7 +14,7 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import * as sentry from '@sentry/electron/main';
+import * as Sentry from '@sentry/electron/main';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
@@ -84,7 +84,7 @@ function setupSentry(): void {
   // Use 'typeof(v)' instead of '!!v' here to prevent ReferenceError
   if (typeof SENTRY_DSN !== 'undefined' && typeof APP_VERSION !== 'undefined') {
     // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-    sentry.init({dsn: SENTRY_DSN, release: APP_VERSION, maxBreadcrumbs: 100});
+    Sentry.init({dsn: SENTRY_DSN, release: APP_VERSION, maxBreadcrumbs: 100});
   }
 }
 

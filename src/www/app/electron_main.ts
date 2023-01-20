@@ -17,7 +17,7 @@
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import * as sentry from '@sentry/electron/renderer';
+import * as Sentry from '@sentry/electron/renderer';
 
 import {ErrorCode, OutlinePluginError} from '../model/errors';
 
@@ -92,7 +92,7 @@ class ElectronVpnInstaller implements VpnInstaller {
 class ElectronErrorReporter implements OutlineErrorReporter {
   constructor(appVersion: string, privateDsn: string) {
     if (privateDsn) {
-      sentry.init({
+      Sentry.init({
         dsn: privateDsn,
         release: appVersion,
         integrations: getSentryBrowserIntegrations,
@@ -101,7 +101,7 @@ class ElectronErrorReporter implements OutlineErrorReporter {
   }
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+    Sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
     return Promise.resolve();
   }
 }

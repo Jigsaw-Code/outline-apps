@@ -15,7 +15,6 @@
   },
   "comments": {
     "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
-    "sentry": "@sentry/electron depends on @sentry/browser; use @sentry/browser as a transitive dependency to avoid version mismatches that make the build fail. See: https://github.com/getsentry/sentry-javascript/issues/1853",
     "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
@@ -43,7 +42,8 @@
     "@polymer/paper-ripple": "^3.0.2",
     "@polymer/paper-styles": "^3.0.1",
     "@polymer/paper-toast": "^3.0.1",
-    "@sentry/electron": "^3.0.7",
+    "@sentry/browser": "^7.31.1",
+    "@sentry/electron": "^4.2.0",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
     "browserslist": "^4.20.3",
