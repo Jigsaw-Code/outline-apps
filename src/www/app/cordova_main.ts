@@ -22,7 +22,7 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
 
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';

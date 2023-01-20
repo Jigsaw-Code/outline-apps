@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 import {Integration as SentryIntegration} from '@sentry/types';
 
 export interface OutlineErrorReporter {
@@ -28,7 +28,11 @@ export class SentryErrorReporter implements OutlineErrorReporter {
   }
 
   async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    Sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+    Sentry.captureEvent({
+      message: userFeedback,
+      user: {email: userEmail},
+      tags: {category: feedbackCategory, isFeedback: Boolean(userFeedback)},
+    });
     Sentry.configureScope(scope => {
       scope.setUser({email: userEmail || ''});
       if (this.tags) {

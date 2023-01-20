@@ -14,7 +14,7 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import Sentry from '@sentry/electron/main';
+import * as Sentry from '@sentry/electron/main';
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import {autoUpdater} from 'electron-updater';
 import * as os from 'os';

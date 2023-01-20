@@ -17,7 +17,7 @@
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import Sentry from '@sentry/electron/renderer';
+import * as Sentry from '@sentry/electron/renderer';
 
 import {ErrorCode, OutlinePluginError} from '../model/errors';
 
