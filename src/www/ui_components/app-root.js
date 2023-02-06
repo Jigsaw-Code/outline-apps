@@ -362,11 +362,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <!-- TODO(daniellacosse): restore feedback functionality on desktop -->
-            <!-- <paper-icon-item name="feedback">
-              <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
-              [[localize('feedback-page-title')]]
-            </paper-icon-item> -->
+            <!-- TODO(daniellacosse): restore feedback functionality in electron -->
+            <span hidden$="[[isElectron]]">
+              <paper-item name="feedback">
+                <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
+                [[localize('feedback-page-title')]]
+              </paper-item>
+            </span>
             <paper-item name="about">
               <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
               [[localize('about-page-title')]]
@@ -523,6 +525,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       appVersion: {
         type: String,
         readonly: true,
+      },
+      isElectron: {
+        type: Boolean,
+        readonly: true,
+        computed: '_computeIsElectron()',
       },
       page: {
         type: String,
@@ -715,6 +722,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
+  }
+
+  _computeIsElectron() {
+    return typeof window.electron !== 'undefined';
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
