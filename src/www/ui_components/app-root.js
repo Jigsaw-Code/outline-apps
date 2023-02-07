@@ -362,8 +362,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <!-- TODO(daniellacosse): restore feedback functionality in electron -->
-            <span hidden$="[[isElectron]]">
+            <span hidden$="[[shouldHideFeedback]]">
               <paper-item name="feedback">
                 <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
                 [[localize('feedback-page-title')]]
@@ -526,10 +525,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: String,
         readonly: true,
       },
-      isElectron: {
+      shouldHideFeedback: {
         type: Boolean,
         readonly: true,
-        computed: '_computeIsElectron()',
+        computed: '_computeShouldHideFeedback()',
       },
       page: {
         type: String,
@@ -724,7 +723,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
   }
 
-  _computeIsElectron() {
+  _computeShouldHideFeedback() {
+    // TODO(daniellacosse): restore feedback functionality in electron
     return typeof window.electron !== 'undefined';
   }
 
