@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+const path = require('path');
+
 module.exports = async function(config) {
   const testConfig = await import('./webpack_test.mjs');
 
@@ -22,8 +25,18 @@ module.exports = async function(config) {
     preprocessors: {
       '**/*.spec.ts': ['webpack'],
     },
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage-istanbul'],
     singleRun: true,
     webpack: testConfig.default,
+    coverageIstanbulReporter: {
+      // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/73c25ce79f91010d1ff073aa6ff3fd01114f90db/packages/istanbul-reports/lib
+      reports: ['html', 'json', 'text-summary'],
+
+      // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
+      dir: path.join(__dirname, 'coverage'),
+
+      // if using webpack and pre-loaders, work around webpack breaking the source path
+      // fixWebpackSourcePaths: true,
+    },
   });
 };

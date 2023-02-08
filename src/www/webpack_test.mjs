@@ -20,7 +20,7 @@ export default merge(baseConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: [TS_LOADER],
+        use: ['@jsdevtools/coverage-istanbul-loader', TS_LOADER],
       },
       {
         test: /\.png$/,
