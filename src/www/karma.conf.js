@@ -29,14 +29,8 @@ module.exports = async function(config) {
     singleRun: true,
     webpack: testConfig.default,
     coverageIstanbulReporter: {
-      // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/73c25ce79f91010d1ff073aa6ff3fd01114f90db/packages/istanbul-reports/lib
       reports: ['html', 'json', 'text-summary'],
-
-      // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
       dir: path.join(__dirname, 'coverage'),
-
-      // if using webpack and pre-loaders, work around webpack breaking the source path
-      // fixWebpackSourcePaths: true,
     },
   });
 };
