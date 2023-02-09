@@ -39,6 +39,12 @@ jobs:
 
       - name: Test Web App
         run: npm run action www/test
+      
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: src/www/coverage/coverage-final.json
+          flags: unittests
 
   linux_debug_build:
     name: Linux Debug Build
