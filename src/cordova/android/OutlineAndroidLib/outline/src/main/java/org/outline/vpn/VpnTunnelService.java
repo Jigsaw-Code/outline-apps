@@ -352,6 +352,7 @@ public class VpnTunnelService extends VpnService {
   private void tearDownActiveTunnel() {
     stopVpnTunnel();
     stopForeground();
+    broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
     tunnelConfig = null;
     stopNetworkConnectivityMonitor();
     tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
