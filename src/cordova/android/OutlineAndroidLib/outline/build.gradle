@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 // Needed for the composite build to recognize this module as 'org.outline:outline:0.0'.
