@@ -23,6 +23,11 @@ export default merge(baseConfig, {
         use: ['@jsdevtools/coverage-istanbul-loader', TS_LOADER],
       },
       {
+        test: /\.m?js$/,
+        exclude: /node_modules/,
+        use: ['@jsdevtools/coverage-istanbul-loader'],
+      },
+      {
         test: /\.png$/,
         use: ['file-loader'],
       },
