@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {TunnelConnectionResult} from '../app/tunnel';
+
 // TODO: add guidelines for this file
 
 export enum ServerType {
@@ -49,10 +51,10 @@ export interface Server {
   errorMessageId?: string;
 
   // Connects to the server, redirecting the device's traffic.
-  connect(): Promise<void>;
+  connect(): Promise<TunnelConnectionResult>;
 
   // Disconnects from the server and stops any traffic redirection.
-  disconnect(): Promise<void>;
+  disconnect(): Promise<TunnelConnectionResult>;
 
   // Checks whether the server is already active and in use.
   checkRunning(): Promise<boolean>;

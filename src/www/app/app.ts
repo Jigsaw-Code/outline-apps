@@ -27,6 +27,7 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
+import {Result} from 'src/infrastructure/result';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -70,7 +71,8 @@ export function isOutlineAccessKey(url: string): boolean {
   // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
   // so we're using `startsWith`
   return (
-    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) ||
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
   );
 }
 
@@ -151,6 +153,18 @@ export class App {
     this.pullClipboardText();
   }
 
+  V2_getLocalizedErrorMessageID(errorCode: number) {
+    // TODO(daniellacosse): import from messages/errors.json or sometihng
+    return outlineErrorMessages[errorCode];
+  }
+
+  V2_scheduleErrorNotifications(errorCodes: number[], {toastDuration = 1000, isBatch}) {
+    // TODO(daniellacosse): either add errors 1:1 to notif queue or batch them together
+    // and start the queue if it didn't exsist.
+    // batched messages for now will just say `Several errors occured (#101, #203, #300)`
+  }
+
+  // TODO(daniellacosse): replace with `V2_scheduleLocalizedErrorMessage`
   showLocalizedError(e?: Error, toastDuration = 10000) {
     let messageKey: string;
     let messageParams: string[] | undefined;
@@ -360,9 +374,11 @@ export class App {
   private async connectServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
+    const connectionResult = new Result();
+
     const {serverId} = event.detail;
     if (!serverId) {
-      throw new Error(`connectServer event had no server ID`);
+      connectionResult.addError(ServerError.MISSING_ID);
     }
 
     if (this.throttleServerConnectionChange(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT)) return;
@@ -371,7 +387,9 @@ export class App {
     console.log(`connecting to server ${serverId}`);
 
     this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTING});
+
     try {
+      // TODO(daniellacosse): can handle result here, using V2_scheduleErrorNotifications if necessary
       await server.connect();
       this.updateServerListItem(serverId, {
         connectionState: ServerConnectionState.CONNECTED,

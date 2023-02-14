@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Result} from '../../infrastructure/result';
+
+import {NativeOSErrorCodes, TunnelConnectionErrorCodes, ShadowsocksSessionErrorCodes} from '../model/v2_errors';
+
 export interface ShadowsocksSessionConfig {
   host?: string;
   port?: number;
@@ -26,6 +30,11 @@ export const enum TunnelStatus {
   RECONNECTING,
 }
 
+export class TunnelConnectionResult extends Result<
+  TunnelStatus,
+  NativeOSErrorCodes | TunnelConnectionErrorCodes | ShadowsocksSessionErrorCodes
+> {}
+
 export type TunnelFactory = (id: string) => Tunnel;
 
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
@@ -38,10 +47,10 @@ export interface Tunnel {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(config: ShadowsocksSessionConfig): Promise<void>;
+  start(config: ShadowsocksSessionConfig): Promise<TunnelConnectionResult>;
 
   // Stops the tunnel and VPN service.
-  stop(): Promise<void>;
+  stop(): Promise<TunnelConnectionResult>;
 
   // Returns whether the tunnel instance is active.
   isRunning(): Promise<boolean>;
