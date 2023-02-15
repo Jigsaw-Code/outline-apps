@@ -98,7 +98,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           margin-top: 2px;
         }
 
-        app-toolbar paper-icon-button {
+        app-toolbar paper-button {
           /* make the ink color (used for tap animations) actually visible */
           --paper-icon-button-ink-color: #eff;
         }
@@ -125,7 +125,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         }
 
         /* rtl:begin:ignore */
-        #drawer-nav paper-icon-item {
+        #drawer-nav paper-item {
           cursor: pointer;
           font-size: 16px;
           --paper-item-selected: {
@@ -135,8 +135,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           }
         }
 
-        #drawer-nav paper-icon-item:focus::before,
-        #drawer-nav paper-icon-item:focus::after {
+        #drawer-nav paper-item:focus::before,
+        #drawer-nav paper-item:focus::after {
           color: var(--medium-green);
           background-color: var(--light-gray);
         }
@@ -167,16 +167,20 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           border-width: 0px;
         }
 
-        #drawer-nav paper-icon-item .item-label {
+        #drawer-nav paper-item .item-label {
           float: left;
         }
 
-        #drawer-nav paper-icon-item:not(.iron-selected) {
+        #drawer-nav paper-item:not(.iron-selected) {
           opacity: 0.8;
         }
 
         #drawer-nav paper-item {
           min-height: 32px;
+        }
+
+        .first-menu-item {
+          margin-top: 12px;
         }
 
         .last-menu-item {
@@ -189,11 +193,23 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         }
 
         paper-item > :first-child {
-          color: rgba(0, 0, 0, 0.54);
-          font-size: 14px;
-          text-decoration: none;
-          width: 100%;
           cursor: pointer;
+        }
+
+        paper-item > img {
+          height: 24px;
+          width: 24px;
+          margin-right: 10px;
+        }
+
+        paper-item > a {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        paper-button {
+          min-width: 0;
+          margin: 0;
         }
 
         paper-toast {
@@ -215,7 +231,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           :host {
             --app-drawer-width: 250px;
           }
-          #drawer-nav paper-icon-item {
+          #drawer-nav paper-item {
             min-height: 42px;
           }
         }
@@ -242,30 +258,33 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         <app-header slot="header" fixed="">
           <app-toolbar>
             <div id="app-toolbar-left">
-              <paper-icon-button
+              <paper-button
                 id="menuBtn"
                 hidden$="[[shouldShowBackButton]]"
-                icon="menu"
                 on-tap="openDrawer"
-              ></paper-icon-button>
-              <paper-icon-button
+              >
+                <img src$="[[rootPath]]assets/icons/menu.png" alt="menu" />
+              </paper-button>
+              <paper-button
                 id="backBtn"
                 hidden$="[[!shouldShowBackButton]]"
-                icon="arrow-back"
                 on-tap="_goBack"
-              ></paper-icon-button>
+              >
+                <img src$="[[rootPath]]assets/icons/back.png" alt="back" />
+              </paper-button>
             </div>
             <div main-title="" class$="[[page]]">
-              <img src$="[[rootPath]]assets/outline-client-logo.svg" hidden$="[[!shouldShowAppLogo]]" />
+              <img src$="[[rootPath]]assets/outline-client-logo.png" hidden$="[[!shouldShowAppLogo]]" />
               <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
             </div>
             <div id="app-toolbar-right">
-              <paper-icon-button
+              <paper-button
                 id="addBtn"
-                icon="add"
                 on-tap="promptAddServer"
                 hidden$="[[!shouldShowAddButton]]"
-              ></paper-icon-button>
+              >
+                <img src$="[[rootPath]]assets/icons/add.png" alt="add" />
+              </paper-button>
             </div>
           </app-toolbar>
         </app-header>
@@ -339,32 +358,33 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           </div>
           <hr class="nav-hr" />
           <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
-            <paper-icon-item name="servers">
-              <iron-icon icon="outline-icons:outline" slot="item-icon"></iron-icon>
+            <paper-item name="servers" class="first-menu-item">
+              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
-            </paper-icon-item>
-            <!-- TODO(daniellacosse): fix sentry and restore feedback view -->
-            <!-- <paper-icon-item name="feedback">
-              <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
-              [[localize('feedback-page-title')]]
-            </paper-icon-item> -->
-            <paper-icon-item name="about">
-              <iron-icon icon="info" slot="item-icon"></iron-icon>
+            </paper-item>
+            <span hidden$="[[shouldHideFeedback]]">
+              <paper-item name="feedback">
+                <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
+                [[localize('feedback-page-title')]]
+              </paper-item>
+            </span>
+            <paper-item name="about">
+              <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
               [[localize('about-page-title')]]
-            </paper-icon-item>
-            <paper-icon-item name="help">
+            </paper-item>
+            <paper-item name="help">
               <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden=""></a>
-              <iron-icon icon="help" slot="item-icon"></iron-icon>
+              <img src$="[[rootPath]]assets/icons/help.png" alt="help"  />
               [[localize('help-page-title')]]
-            </paper-icon-item>
-            <paper-icon-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
-              <iron-icon icon="language" slot="item-icon"></iron-icon>
+            </paper-item>
+            <paper-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
+              <img src$="[[rootPath]]assets/icons/change_language.png" alt="change language"  />
               [[localize('change-language-page-title')]]
-            </paper-icon-item>
-            <paper-icon-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
-              <iron-icon icon="cancel" slot="item-icon"></iron-icon>
+            </paper-item>
+            <paper-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
+              <img src$="[[rootPath]]assets/icons/quit.png" alt="quit" />
               [[localize('quit')]]
-            </paper-icon-item>
+            </paper-item>
             <paper-item class="border-top">
               <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
             </paper-item>
@@ -424,10 +444,12 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: Object,
         readonly: true,
         value: {
+          af: {id: 'af', name: 'Afrikaans', dir: 'ltr'},
           am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
           ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
           az: {id: 'az', name: 'azərbaycan', dir: 'ltr'},
           bg: {id: 'bg', name: 'български', dir: 'ltr'},
+          bn: {id: 'bn', name: 'বাংলা', dir: 'ltr'},
           bs: {id: 'bs', name: 'bosanski', dir: 'ltr'},
           ca: {id: 'ca', name: 'català', dir: 'ltr'},
           cs: {id: 'cs', name: 'Čeština', dir: 'ltr'},
@@ -449,16 +471,22 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           hu: {id: 'hu', name: 'magyar', dir: 'ltr'},
           hy: {id: 'hy', name: 'հայերեն', dir: 'ltr'},
           id: {id: 'id', name: 'Indonesia', dir: 'ltr'},
+          is: {id: 'is', name: 'íslenska', dir: 'ltr'},
           it: {id: 'it', name: 'Italiano', dir: 'ltr'},
           ja: {id: 'ja', name: '日本語', dir: 'ltr'},
           ka: {id: 'ka', name: 'ქართული', dir: 'ltr'},
           kk: {id: 'kk', name: 'қазақ тілі', dir: 'ltr'},
           km: {id: 'km', name: 'ខ្មែរ', dir: 'ltr'},
           ko: {id: 'ko', name: '한국어', dir: 'ltr'},
+          lo: {id: 'lo', name: 'ລາວ', dir: 'ltr'},
           lt: {id: 'lt', name: 'lietuvių', dir: 'ltr'},
           lv: {id: 'lv', name: 'latviešu', dir: 'ltr'},
           mk: {id: 'mk', name: 'македонски', dir: 'ltr'},
+          mn: {id: 'mn', name: 'монгол', dir: 'ltr'},
+          ms: {id: 'ms', name: 'Melayu', dir: 'ltr'},
+          mr: {id: 'mr', name: 'मराठी', dir: 'ltr'},
           my: {id: 'my', name: 'မြန်မာ', dir: 'ltr'},
+          ne: {id: 'ne', name: 'नेपाली', dir: 'ltr'},
           nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
           no: {id: 'no', name: 'norsk', dir: 'ltr'},
           pl: {id: 'pl', name: 'polski', dir: 'ltr'},
@@ -466,12 +494,15 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           'pt-PT': {id: 'pt-PT', name: 'Português (Portugal)', dir: 'ltr'},
           ro: {id: 'ro', name: 'română', dir: 'ltr'},
           ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
+          si: {id: 'si', name: 'සිංහල', dir: 'ltr'},
           sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
           sl: {id: 'sl', name: 'slovenščina', dir: 'ltr'},
           sq: {id: 'sq', name: 'shqip', dir: 'ltr'},
           sr: {id: 'sr', name: 'српски', dir: 'ltr'},
           'sr-Latn': {id: 'sr-Latn', name: 'srpski (latinica)', dir: 'ltr'},
           sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
+          sw: {id: 'sw', name: 'Kiswahili', dir: 'ltr'},
+          ta: {id: 'ta', name: 'தமிழ்', dir: 'ltr'},
           th: {id: 'th', name: 'ไทย', dir: 'ltr'},
           tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
           uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
@@ -493,6 +524,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       appVersion: {
         type: String,
         readonly: true,
+      },
+      shouldHideFeedback: {
+        type: Boolean,
+        readonly: true,
+        computed: '_computeShouldHideFeedback()',
       },
       page: {
         type: String,
@@ -685,6 +721,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
+  }
+
+  _computeShouldHideFeedback() {
+    // TODO(daniellacosse): restore feedback functionality in electron
+    return typeof window.electron !== 'undefined';
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {

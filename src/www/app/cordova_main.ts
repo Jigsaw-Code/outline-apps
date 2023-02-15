@@ -22,7 +22,7 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
 
-import * as sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
@@ -84,7 +84,7 @@ class CordovaErrorReporter extends SentryErrorReporter {
     await super.report(userFeedback, feedbackCategory, userEmail);
     // Sends previously captured logs and events to the error reporting framework.
     // Associates the report to the provided unique identifier.
-    await pluginExec<void>('reportEvents', sentry.lastEventId() || '');
+    await pluginExec<void>('reportEvents', Sentry.lastEventId() || '');
   }
 }
 

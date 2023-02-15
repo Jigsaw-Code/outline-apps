@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+const path = require('path');
+
 module.exports = async function(config) {
   const testConfig = await import('./webpack_test.mjs');
 
@@ -22,8 +25,12 @@ module.exports = async function(config) {
     preprocessors: {
       '**/*.spec.ts': ['webpack'],
     },
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage-istanbul'],
     singleRun: true,
     webpack: testConfig.default,
+    coverageIstanbulReporter: {
+      reports: ['html', 'json', 'text-summary'],
+      dir: path.join(__dirname, 'coverage'),
+    },
   });
 };

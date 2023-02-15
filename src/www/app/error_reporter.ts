@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 import {Integration as SentryIntegration} from '@sentry/types';
 
 export interface OutlineErrorReporter {
@@ -20,26 +20,29 @@ export interface OutlineErrorReporter {
 }
 
 export class SentryErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, dsn: string, private tags: {[id: string]: string;}) {
+  constructor(appVersion: string, dsn: string, private tags: {[id: string]: string}) {
     if (dsn) {
-      sentry.init({dsn, release: appVersion, integrations: getSentryBrowserIntegrations});
+      Sentry.init({dsn, release: appVersion, integrations: getSentryBrowserIntegrations});
     }
     this.setUpUnhandledRejectionListener();
   }
 
   async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    sentry.captureEvent(
-        {message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
-    sentry.configureScope(scope => {
+    Sentry.captureEvent({
+      message: userFeedback,
+      user: {email: userEmail},
+      tags: {category: feedbackCategory, isFeedback: Boolean(userFeedback)},
+    });
+    Sentry.configureScope(scope => {
       scope.setUser({email: userEmail || ''});
       if (this.tags) {
         scope.setTags(this.tags);
       }
       scope.setTag('category', feedbackCategory);
     });
-    sentry.captureMessage(userFeedback);
-    sentry.configureScope(scope => {
-      scope.clear();  // Reset the user context, don't cache the email
+    Sentry.captureMessage(userFeedback);
+    Sentry.configureScope(scope => {
+      scope.clear(); // Reset the user context, don't cache the email
     });
   }
 
@@ -50,7 +53,7 @@ export class SentryErrorReporter implements OutlineErrorReporter {
     window.addEventListener(unhandledRejection, (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       const msg = reason.stack ? reason.stack : reason;
-      sentry.addBreadcrumb({message: msg, category: unhandledRejection});
+      Sentry.addBreadcrumb({message: msg, category: unhandledRejection});
     });
   }
 }
@@ -58,12 +61,11 @@ export class SentryErrorReporter implements OutlineErrorReporter {
 // Returns a list of Sentry browser integrations that maintains the default integrations,
 // but replaces the Breadcrumbs integration with a custom one that only collects console statements.
 // See https://docs.sentry.io/platforms/javascript/configuration/integrations/default/
-export function getSentryBrowserIntegrations(defaultIntegrations: SentryIntegration[]):
-    SentryIntegration[] {
+export function getSentryBrowserIntegrations(defaultIntegrations: SentryIntegration[]): SentryIntegration[] {
   const integrations = defaultIntegrations.filter(integration => {
     return integration.name !== 'Breadcrumbs';
   });
-  const breadcrumbsIntegration = new sentry.Integrations.Breadcrumbs({
+  const breadcrumbsIntegration = new Sentry.Integrations.Breadcrumbs({
     console: true,
     dom: false,
     fetch: false,

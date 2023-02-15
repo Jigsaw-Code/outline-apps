@@ -39,6 +39,12 @@ jobs:
 
       - name: Test Web App
         run: npm run action www/test
+      
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: src/www/coverage/coverage-final.json
+          flags: unittests
 
   linux_debug_build:
     name: Linux Debug Build
@@ -148,8 +154,6 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
-    env:
-      ANDROID_SDK_ROOT: /opt/android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
