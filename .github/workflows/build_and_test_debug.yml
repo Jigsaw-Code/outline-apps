@@ -118,7 +118,8 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          directory: ./src/cordova/apple/coverage
+          xcode: true
+          xcode_archive_path: ./src/cordova/apple/coverage/TestResult.xcresult
           flags: unittests, apple, macos
 
   ios_debug_build:
@@ -149,7 +150,8 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          directory: ./src/cordova/apple/coverage
+          xcode: true
+          xcode_archive_path: ./src/cordova/apple/coverage/TestResult.xcresult
           flags: unittests, apple, ios
 
   android_debug_build:

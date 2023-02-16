@@ -16,7 +16,7 @@ import url from 'url';
 import os from 'os';
 import minimist from 'minimist';
 import path from 'path';
-// import fs from 'fs/promises';
+import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -96,22 +96,15 @@ export async function main(...parameters) {
     ...Object.entries(xcodeBuildTestFlags).flatMap(([key, value]) => [`-${key}`, value])
   );
 
-  // TODO(daniellacosse): separate test coverage build step
-  // const testCoverageDirectoryPath = path.join(xcodeBuildTestFlags.derivedDataPath, 'Logs', 'Test');
-  // const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
-  //   filename.endsWith('xcresult')
-  // );
+  const testCoverageDirectoryPath = path.join(xcodeBuildTestFlags.derivedDataPath, 'Logs', 'Test');
+  const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
+    filename.endsWith('xcresult')
+  );
 
-  // const coverageJson = await spawnStream(
-  //   'xcrun',
-  //   'xccov',
-  //   'view',
-  //   '--report',
-  //   '--json',
-  //   path.join(testCoverageDirectoryPath, testCoverageResultFilename)
-  // );
-
-  // await fs.writeFile(path.join(xcodeBuildTestFlags.derivedDataPath, 'coverage-final.json'), coverageJson);
+  await fs.rename(
+    path.join(testCoverageDirectoryPath, testCoverageResultFilename),
+    path.join(xcodeBuildTestFlags.derivedDataPath, 'TestResult.xcresult')
+  );
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
