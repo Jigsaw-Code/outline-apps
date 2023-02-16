@@ -16,11 +16,14 @@ import url from 'url';
 import os from 'os';
 import minimist from 'minimist';
 import path from 'path';
+import fs from 'fs/promises';
+import rmfr from 'rmfr';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {getSupportedOSTarget} from '../build/get_supported_os_target.mjs';
 
+const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
 async function getCordovaTestParameters(buildParameters) {
@@ -80,14 +83,35 @@ export async function main(...parameters) {
   const xcodeBuildTestFlags = {
     scheme: APPLE_LIBRARY_NAME,
     destination: serializeXcodeDestination(xcodeDestination),
-    workspace: path.join(getRootDir(), 'src', 'cordova', 'apple', APPLE_LIBRARY_NAME),
+    workspace: path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
+    enableCodeCoverage: 'YES',
+    derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
   };
+
+  await rmfr(xcodeBuildTestFlags.derivedDataPath);
 
   await spawnStream(
     'xcodebuild',
     'test',
     ...Object.entries(xcodeBuildTestFlags).flatMap(([key, value]) => [`-${key}`, value])
   );
+
+  // TODO(daniellacosse): separate test coverage build step
+  // const testCoverageDirectoryPath = path.join(xcodeBuildTestFlags.derivedDataPath, 'Logs', 'Test');
+  // const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
+  //   filename.endsWith('xcresult')
+  // );
+
+  // const coverageJson = await spawnStream(
+  //   'xcrun',
+  //   'xccov',
+  //   'view',
+  //   '--report',
+  //   '--json',
+  //   path.join(testCoverageDirectoryPath, testCoverageResultFilename)
+  // );
+
+  // await fs.writeFile(path.join(xcodeBuildTestFlags.derivedDataPath, 'coverage-final.json'), coverageJson);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

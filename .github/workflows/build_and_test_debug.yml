@@ -40,11 +40,10 @@ jobs:
       - name: Test Web App
         run: npm run action www/test
       
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: src/www/coverage/coverage-final.json
-          flags: unittests
+          files: ./src/www/coverage/coverage-final.json
+          flags: unittests, www
 
   linux_debug_build:
     name: Linux Debug Build
@@ -94,8 +93,10 @@ jobs:
   macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-12
-    timeout-minutes: 30
+    timeout-minutes: 10
     needs: web_test
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_13.3.app/Contents/Developer
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -109,24 +110,24 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.3.app
-
-      - name: Test OutlineAppleLib (x86)
+      - name: Test OutlineAppleLib
         run: npm run action cordova/test macos
-
-      # Commenting out until we implement Catalyst
-      # - name: Test OutlineAppleLib (Catalyst)
-      #   run: npm run action cordova/test macos -- --osVersion 'platform=macOS,arch=x86_64,variant=Mac Catalyst'
 
       - name: Build MacOS Client
         run: npm run action cordova/build macos
 
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./src/cordova/apple/coverage
+          flags: unittests, apple, macos
+
   ios_debug_build:
     name: iOS Debug Build
     runs-on: macos-12
-    timeout-minutes: 30
+    timeout-minutes: 10
     needs: web_test
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_13.3.app/Contents/Developer
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -143,11 +144,13 @@ jobs:
       - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
 
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.3.app
-
       - name: Build iOS Client
         run: npm run action cordova/build ios
+
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./src/cordova/apple/coverage
+          flags: unittests, apple, ios
 
   android_debug_build:
     name: Android Debug Build
