@@ -16,7 +16,7 @@ import url from 'url';
 import os from 'os';
 import minimist from 'minimist';
 import path from 'path';
-import fs from 'fs/promises';
+// import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
