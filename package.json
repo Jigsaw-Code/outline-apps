@@ -58,7 +58,7 @@
     "web-animations-js": "^2.3.2"
   },
   "engines": {
-    "node": "^16.13.0",
+    "node": "^16.18.0",
     "npm": "^8.1.0"
   },
   "devDependencies": {

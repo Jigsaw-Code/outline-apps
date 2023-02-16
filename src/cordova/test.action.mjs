@@ -17,62 +17,13 @@ import os from 'os';
 import minimist from 'minimist';
 import path from 'path';
 
-import {execSync} from 'child_process';
+import {spawnStream} from '../build/spawn_stream.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
+import {getSupportedOSTarget} from '../build/get_supported_os_target.mjs';
 
-const DEFAULT_IOS_DEVICE_MODEL = 'iPhone 14';
-const DEFAULT_MACOS_ARCH = 'x86_64';
+const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
-/**
- * @description Tests the parameterized cordova binary (ios, macos).
- *
- * @param {string[]} parameters
- */
-export async function main(...parameters) {
-  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = getTestParameters(parameters);
-  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
-
-  console.log(`Testing OutlineAppleLib on ${outlinePlatform}, ${osVersion}`);
-
-  if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
-    if (os.platform() !== 'darwin') {
-      throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
-    }
-
-    const PACKAGE_PATH = path.join(getRootDir(), '/src/cordova/apple/OutlineAppleLib/');
-    const PACKAGE_NAME = `OutlineAppleLib`;
-
-    if (outlinePlatform === 'macos') {
-      let xcodeDestination = `platform=macOS,arch=${cpuArchitecture}`;
-
-      if (osVersion) {
-        xcodeDestination += `,OS=${osVersion}`;
-      }
-
-      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
-        cwd: PACKAGE_PATH,
-        stdio: 'inherit',
-      });
-    }
-
-    if (outlinePlatform === 'ios') {
-      let xcodeDestination = `platform=iOS Simulator,name=${deviceModel}`;
-
-      if (osVersion) {
-        xcodeDestination += `,OS=${osVersion}`;
-      }
-
-      execSync(`xcodebuild test -scheme "${PACKAGE_NAME}" -destination "${xcodeDestination}"`, {
-        cwd: PACKAGE_PATH,
-        stdio: 'inherit',
-      });
-    }
-  } else {
-    throw new Error('Testing is only currently supported for Apple platforms.');
-  }
-}
-
-function getTestParameters(buildParameters) {
+async function getCordovaTestParameters(buildParameters) {
   let {
     _: [platform],
     verbose,
@@ -83,15 +34,60 @@ function getTestParameters(buildParameters) {
 
   // Device model can only be specified for iOS
   if (platform === 'ios') {
-    deviceModel ??= DEFAULT_IOS_DEVICE_MODEL;
+    deviceModel ??= `iPhone ${await getSupportedOSTarget('ios')}`;
   }
 
   // CPU architecture can only be specified for macOS
-  if (!cpuArchitecture && platform == 'macos') {
-    cpuArchitecture = DEFAULT_MACOS_ARCH;
+  if (platform === 'macos') {
+    cpuArchitecture ??= os.machine();
   }
 
   return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
+}
+
+const serializeXcodeDestination = parameters =>
+  Object.entries(parameters)
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}=${value}`)
+    .join();
+
+/**
+ * @description Tests the parameterized cordova binary (ios, macos).
+ *
+ * @param {string[]} parameters
+ */
+export async function main(...parameters) {
+  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = await getCordovaTestParameters(
+    parameters
+  );
+  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
+
+  if (outlinePlatform !== 'macos' && outlinePlatform !== 'ios') {
+    throw new Error('Testing is only currently supported for Apple platforms.');
+  }
+
+  if (os.platform() !== 'darwin') {
+    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+  }
+
+  const xcodeDestination = {
+    platform: outlinePlatform === 'macos' ? 'macOS' : 'iOS Simulator',
+    name: outlinePlatform === 'ios' && deviceModel,
+    arch: outlinePlatform === 'macos' && cpuArchitecture,
+    OS: osVersion,
+  };
+
+  const xcodeBuildTestFlags = {
+    scheme: APPLE_LIBRARY_NAME,
+    destination: serializeXcodeDestination(xcodeDestination),
+    workspace: path.join(getRootDir(), 'src', 'cordova', 'apple', APPLE_LIBRARY_NAME),
+  };
+
+  await spawnStream(
+    'xcodebuild',
+    'test',
+    ...Object.entries(xcodeBuildTestFlags).flatMap(([key, value]) => [`-${key}`, value])
+  );
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

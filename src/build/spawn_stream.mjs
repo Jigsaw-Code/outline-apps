@@ -18,9 +18,9 @@ import {spawn} from 'child_process';
 /**
  * @description promisifies the child process (for supporting legacy bash actions!)
  */
-export const spawnStream = (command, parameters) =>
+export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters);
+    const childProcess = spawn(command.replaceAll(/\s+/g, ' ').trim(), parameters);
 
     const forEachMessageLine = (buffer, callback) => {
       buffer

@@ -91,7 +91,7 @@ export async function runAction(actionPath, ...parameters) {
   const startTime = performance.now();
 
   try {
-    await spawnStream(runner, [...subCommands, resolvedPath, ...parameters]);
+    await spawnStream(runner, ...subCommands, resolvedPath, ...parameters);
   } catch (error) {
     if (error?.message) {
       console.error(chalk.red(error.message));
