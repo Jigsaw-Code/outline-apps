@@ -156,6 +156,13 @@ export class App {
     this.eventQueue.subscribe(events.ServerDisconnected, this.onServerDisconnected.bind(this));
     this.eventQueue.subscribe(events.ServerReconnecting, this.onServerReconnecting.bind(this));
 
+    this.eventQueue.subscribe(events.ServerAdded, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerForgotten, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerRenamed, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerForgetUndone, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerConnected, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerDisconnected, this.onTelemetryEvent.bind(this));
+    this.eventQueue.subscribe(events.ServerReconnecting, this.onTelemetryEvent.bind(this));
     this.eventQueue.startPublishing();
 
     if (!this.arePrivacyTermsAcked()) {
@@ -350,6 +357,8 @@ export class App {
   private async forgetServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
+    this.uiTelemetryEvent('forgetServer', event);
+
     const {serverId} = event.detail;
     const server = this.serverRepo.getById(serverId);
     if (!server) {
@@ -378,6 +387,8 @@ export class App {
     if (!serverId) {
       throw new Error(`connectServer event had no server ID`);
     }
+
+    this.uiTelemetryEvent('connectServer', event);
 
     if (this.throttleServerConnectionChange(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT)) return;
 
@@ -450,6 +461,8 @@ export class App {
       throw new Error(`disconnectServer event had no server ID`);
     }
 
+    this.uiTelemetryEvent('disconnectServer', event);
+
     if (this.throttleServerConnectionChange(serverId, DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT)) return;
 
     const server = this.getServerByServerId(serverId);
@@ -503,7 +516,40 @@ export class App {
     }
   }
 
+  private uiTelemetryEvent(eventSource: string, event: CustomEvent): void {
+    console.debug(`firing UI telemetry for ${eventSource}`);
+    appInsights.trackEvent({name: `UI ${eventSource}`, properties: {detail: event.detail}});
+
+    appInsights.flush();
+  }
+
   //#region EventQueue event handlers
+  private onTelemetryEvent(event: events.OutlineEvent): void {
+    if (event instanceof events.ServerConnected) {
+      console.debug(`firing telemetry for server ${event.server.id} connected`);
+      appInsights.trackEvent({name: 'server connected', properties: {server: event.server}});
+    } else if (event instanceof events.ServerDisconnected) {
+      console.debug(`firing telemetry for server ${event.server.id} disconnected`);
+      appInsights.trackEvent({name: 'server disconnected', properties: {server: event.server}});
+    } else if (event instanceof events.ServerReconnecting) {
+      console.debug(`firing telemetry for server ${event.server.id} reconnecting`);
+      appInsights.trackEvent({name: 'server reconnecting', properties: {server: event.server}});
+    } else if (event instanceof events.ServerAdded) {
+      console.debug(`firing telemetry for server ${this.getServerDisplayName(event.server)} added`);
+      appInsights.trackEvent({name: 'server added', properties: {server: event.server}});
+    } else if (event instanceof events.ServerForgotten) {
+      console.debug(`firing telemetry for server ${this.getServerDisplayName(event.server)} forgotten`);
+      appInsights.trackEvent({name: 'server forgotten', properties: {server: event.server}});
+    } else if (event instanceof events.ServerForgetUndone) {
+      console.debug(`firing telemetry for server ${this.getServerDisplayName(event.server)} forgotten undone`);
+      appInsights.trackEvent({name: 'server forgotten undone', properties: {server: event.server}});
+    } else if (event instanceof events.ServerRenamed) {
+      console.debug(`firing telemetry for server ${this.getServerDisplayName(event.server)} renamed`);
+      appInsights.trackEvent({name: 'server renamed', properties: {server: event.server}});
+    }
+
+    appInsights.flush();
+  }
 
   private onServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.server.id} connected`);
