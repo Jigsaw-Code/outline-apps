@@ -28,6 +28,16 @@ import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 
+import {ApplicationInsights} from '@microsoft/applicationinsights-web';
+
+const appInsights = new ApplicationInsights({
+  config: {
+    connectionString:
+      'InstrumentationKey=d0405c03-1431-4d5e-b197-6e3e4b8eb72e;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/;LiveEndpoint=https://westus2.livediagnostics.monitor.azure.com/',
+    /* ...Other Configuration Options... */
+  },
+});
+
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
   DYNAMIC = 'ssconf',
@@ -70,7 +80,8 @@ export function isOutlineAccessKey(url: string): boolean {
   // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
   // so we're using `startsWith`
   return (
-    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) ||
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
   );
 }
 
@@ -97,6 +108,9 @@ export class App {
     private quitApplication: () => void,
     document = window.document
   ) {
+    appInsights.loadAppInsights();
+    appInsights.trackPageView(); // Manually call trackPageView to establish the current user/session/pageview
+
     this.feedbackViewEl = rootEl.$.feedbackView;
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
