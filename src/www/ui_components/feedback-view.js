@@ -19,7 +19,7 @@
 /* end: dropdown menu dependencies */
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js'
+import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
 Polymer({
@@ -79,18 +79,35 @@ Polymer({
           </paper-listbox>
         </paper-dropdown-menu>
 
-        <paper-input id="email" type="email" name="email" label="[[localize('email-feedback-input')]]" on-value-changed="_emailValueChanged" onkeydown="this.invalid = false;"></paper-input>
-        <p class="info" hidden\$="[[!shouldShowLanguageDisclaimer]]">[[localize('feedback-language-disclaimer')]]</p>
+        <paper-input
+          id="email"
+          type="email"
+          name="email"
+          label="[[localize('email-feedback-input')]]"
+          on-value-changed="_emailValueChanged"
+          onkeydown="this.invalid = false;"
+        ></paper-input>
+        <p class="info" hidden$="[[!shouldShowLanguageDisclaimer]]">[[localize('feedback-language-disclaimer')]]</p>
 
-        <paper-textarea id="feedback" name="feedback" label="[[localize('feedback-input')]]" rows="3" onkeydown="this.invalid = false;" required=""></paper-textarea>
+        <paper-textarea
+          id="feedback"
+          name="feedback"
+          label="[[localize('feedback-input')]]"
+          rows="3"
+          onkeydown="this.invalid = false;"
+          required=""
+        ></paper-textarea>
 
-        <p class="info" inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection>', 'privacyPolicyLinkClose', '</a>')]]"></p>
+        <p
+          class="info"
+          inner-h-t-m-l="[[localize('feedback-privacy', 'privacyPolicyLinkOpen', '<a href=https://support.getoutline.org/s/article/Data-collection>', 'privacyPolicyLinkClose', '</a>')]]"
+        ></p>
       </div>
       <div class="card-actions">
-        <paper-button id="submitButton" disabled\$="[[submitting]]">[[submitButtonLabel]]</paper-button>
+        <paper-button id="submitButton" disabled$="[[submitting]]">[[submitButtonLabel]]</paper-button>
       </div>
     </paper-card>
-`,
+  `,
 
   is: 'feedback-view',
 
@@ -122,16 +139,19 @@ Polymer({
 
   ready: function() {
     var appRoot = dom(this).getOwnerRoot().host;
-    window.addEventListener('location-changed', function() {
-      if (appRoot.page !== 'feedback') return;
-      // Workaround:
-      // https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
-      if (!this.$.dropdownMenu.value) {
-        var tmp = this.$.categoryList.selected;
-        this.$.categoryList.selected = undefined;
-        this.$.categoryList.selected = tmp;
-      }
-    }.bind(this));
+    window.addEventListener(
+      'location-changed',
+      function() {
+        if (appRoot.page !== 'feedback') return;
+        // Workaround:
+        // https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
+        if (!this.$.dropdownMenu.value) {
+          var tmp = this.$.categoryList.selected;
+          this.$.categoryList.selected = undefined;
+          this.$.categoryList.selected = tmp;
+        }
+      }.bind(this)
+    );
   },
 
   _emailValueChanged: function() {
@@ -173,5 +193,5 @@ Polymer({
     this.$.categoryList.category = 'general';
     this.$.feedback.value = '';
     this.$.email.value = '';
-  }
+  },
 });
