@@ -73,12 +73,18 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  const xcodeDestination = {
-    platform: outlinePlatform === 'macos' ? 'macOS' : 'iOS Simulator',
-    name: outlinePlatform === 'ios' && deviceModel,
-    arch: outlinePlatform === 'macos' && cpuArchitecture,
-    OS: osVersion,
-  };
+  const xcodeDestination =
+    outlinePlatform === 'macos'
+      ? {
+          platform: 'macOS',
+          arch: cpuArchitecture,
+          OS: osVersion,
+        }
+      : {
+          platform: 'iOS Simulator',
+          name: deviceModel,
+          OS: osVersion,
+        };
 
   const xcodeBuildTestFlags = {
     scheme: APPLE_LIBRARY_NAME,
