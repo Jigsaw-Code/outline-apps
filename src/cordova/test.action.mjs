@@ -26,28 +26,6 @@ import {getSupportedOSTarget} from '../build/get_supported_os_target.mjs';
 const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
-async function getCordovaTestParameters(buildParameters) {
-  let {
-    _: [platform],
-    verbose,
-    osVersion,
-    deviceModel,
-    cpuArchitecture,
-  } = minimist(buildParameters);
-
-  // Device model can only be specified for iOS
-  if (platform === 'ios') {
-    deviceModel ??= `iPhone ${await getSupportedOSTarget('ios')}`;
-  }
-
-  // CPU architecture can only be specified for macOS
-  if (platform === 'macos') {
-    cpuArchitecture ??= os.machine();
-  }
-
-  return {platform, verbose, osVersion, deviceModel, cpuArchitecture};
-}
-
 const serializeXcodeDestination = parameters =>
   Object.entries(parameters)
     .filter(([, value]) => value)
@@ -60,9 +38,13 @@ const serializeXcodeDestination = parameters =>
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, osVersion, deviceModel, cpuArchitecture} = await getCordovaTestParameters(
-    parameters
-  );
+  let {
+    _: [cordovaPlatform],
+    osVersion,
+    deviceModel,
+    cpuArchitecture,
+  } = minimist(parameters);
+
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   if (outlinePlatform !== 'macos' && outlinePlatform !== 'ios') {
@@ -77,12 +59,12 @@ export async function main(...parameters) {
     outlinePlatform === 'macos'
       ? {
           platform: 'macOS',
-          arch: cpuArchitecture,
+          arch: cpuArchitecture ?? os.machine(),
           OS: osVersion,
         }
       : {
           platform: 'iOS Simulator',
-          name: deviceModel,
+          name: deviceModel ?? `iPhone ${await getSupportedOSTarget('ios')}`,
           OS: osVersion,
         };
 
