@@ -22,7 +22,7 @@ export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
     let result = [];
 
-    const childProcess = spawn(command.replaceAll(/\s+/g, ' ').trim(), parameters);
+    const childProcess = spawn(command, parameters);
 
     const forEachMessageLine = (buffer, callback) => {
       buffer
