@@ -39,13 +39,11 @@ const serializeXcodeDestination = parameters =>
  */
 export async function main(...parameters) {
   let {
-    _: [cordovaPlatform],
+    _: [outlinePlatform],
     osVersion,
     deviceModel,
     cpuArchitecture,
   } = minimist(parameters);
-
-  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
 
   if (outlinePlatform !== 'macos' && outlinePlatform !== 'ios') {
     throw new Error('Testing is only currently supported for Apple platforms.');
