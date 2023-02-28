@@ -362,12 +362,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <span hidden$="[[shouldHideFeedback]]">
-              <paper-item name="feedback">
-                <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
-                [[localize('feedback-page-title')]]
-              </paper-item>
-            </span>
+            <paper-item name="feedback" hidden$="[[shouldHideFeedback]]">
+              <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
+              [[localize('feedback-page-title')]]
+            </paper-item>
             <paper-item name="about">
               <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
               [[localize('about-page-title')]]
