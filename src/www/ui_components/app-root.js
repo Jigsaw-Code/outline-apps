@@ -389,7 +389,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
             </paper-item>
             <paper-item>
-              <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection"
+              <a href="https://support.getoutline.org/s/article/Data-collection"
                 >[[localize('data-collection')]]</a
               >
             </paper-item>
