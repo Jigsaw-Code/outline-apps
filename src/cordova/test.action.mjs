@@ -55,16 +55,8 @@ export async function main(...parameters) {
 
   const xcodeDestination =
     outlinePlatform === 'macos'
-      ? {
-          platform: 'macOS',
-          arch: cpuArchitecture ?? os.machine(),
-          OS: osVersion,
-        }
-      : {
-          platform: 'iOS Simulator',
-          name: deviceModel ?? `iPhone ${await getSupportedOSTarget('ios')}`,
-          OS: osVersion,
-        };
+      ?  `platform=macOS,arch=${cpuArchitecture ?? os.machine()},OS=${osVersion}`
+      : `platform=iOS Simulator,name=${deviceModel ?? `iPhone ${await getSupportedOSTarget('ios')}},OS=${osVersion}`;
 
   const xcodeBuildTestFlags = {
     scheme: APPLE_LIBRARY_NAME,
