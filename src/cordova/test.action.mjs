@@ -19,18 +19,12 @@ import path from 'path';
 import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
-import {spawnStream} from '../build/spawn_stream.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
-import {getSupportedOSTarget} from '../build/get_supported_os_target.mjs';
+import {getXcodebuildDestination} from '../build/get_xcodebuild_destination.mjs';
+import * as runXcodebuild from '../build/run_xcodebuild.mjs';
 
 const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
-
-const serializeXcodeDestination = parameters =>
-  Object.entries(parameters)
-    .filter(([, value]) => value)
-    .map(([key, value]) => `${key}=${value}`)
-    .join();
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
@@ -40,9 +34,6 @@ const serializeXcodeDestination = parameters =>
 export async function main(...parameters) {
   let {
     _: [outlinePlatform],
-    osVersion,
-    deviceModel,
-    cpuArchitecture,
   } = minimist(parameters);
 
   if (outlinePlatform !== 'macos' && outlinePlatform !== 'ios') {
@@ -53,35 +44,30 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  const xcodeDestination =
-    outlinePlatform === 'macos'
-      ?  `platform=macOS,arch=${cpuArchitecture ?? os.machine()},OS=${osVersion}`
-      : `platform=iOS Simulator,name=${deviceModel ?? `iPhone ${await getSupportedOSTarget('ios')}},OS=${osVersion}`;
-
-  const xcodeBuildTestFlags = {
+  const xcodebuildFlags = {
     scheme: APPLE_LIBRARY_NAME,
-    destination: serializeXcodeDestination(xcodeDestination),
     workspace: path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
-    enableCodeCoverage: 'YES',
-    derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
   };
 
-  await rmfr(xcodeBuildTestFlags.derivedDataPath);
+  await runXcodebuild.clean(xcodebuildFlags);
 
-  await spawnStream(
-    'xcodebuild',
-    'test',
-    ...Object.entries(xcodeBuildTestFlags).flatMap(([key, value]) => [`-${key}`, value])
-  );
+  const xcodebuildTestFlags = {
+    ...xcodebuildFlags,
+    enableCodeCoverage: 'YES',
+    destination: getXcodebuildDestination(outlinePlatform),
+    derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
+  };
+  await rmfr(xcodebuildTestFlags.derivedDataPath);
+  await runXcodebuild.test({xcodebuildTestFlags});
 
-  const testCoverageDirectoryPath = path.join(xcodeBuildTestFlags.derivedDataPath, 'Logs', 'Test');
+  const testCoverageDirectoryPath = path.join(xcodebuildTestFlags.derivedDataPath, 'Logs', 'Test');
   const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
     filename.endsWith('xcresult')
   );
 
   await fs.rename(
     path.join(testCoverageDirectoryPath, testCoverageResultFilename),
-    path.join(xcodeBuildTestFlags.derivedDataPath, 'TestResult.xcresult')
+    path.join(xcodebuildTestFlags.derivedDataPath, 'TestResult.xcresult')
   );
 }
 
