@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {parseXmlFile} from './parse_xml_file.mjs';
+import {parseXmlOrPlistFile} from './parse_xml_or_plist_file.mjs';
 
 /*
   Inputs:
@@ -26,7 +26,7 @@ export async function getBuildNumber(platform) {
   switch (platform) {
     case 'android':
     case 'browser': {
-      const {widget} = await parseXmlFile('config.xml');
+      const {widget} = await parseXmlOrPlistFile('config.xml');
       return widget.$['android-versionCode'];
     }
     case 'ios':
@@ -35,7 +35,7 @@ export async function getBuildNumber(platform) {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
-      } = await parseXmlFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
+      } = await parseXmlOrPlistFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf('CFBundleVersion')];
     }
     case 'windows':

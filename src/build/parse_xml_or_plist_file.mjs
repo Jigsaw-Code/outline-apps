@@ -15,6 +15,6 @@
 import xml2js from 'xml2js';
 import fs from 'fs/promises';
 
-export async function parseXmlFile(filePath) {
+export async function parseXmlOrPlistFile(filePath) {
   return xml2js.parseStringPromise(await fs.readFile(filePath));
 }
