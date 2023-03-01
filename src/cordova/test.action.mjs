@@ -46,6 +46,7 @@ export async function main(...parameters) {
 
   const xcodebuildFlags = {
     scheme: APPLE_LIBRARY_NAME,
+    destination: getXcodebuildDestination(outlinePlatform),
     workspace: path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
   };
 
@@ -54,7 +55,6 @@ export async function main(...parameters) {
   const xcodebuildTestFlags = {
     ...xcodebuildFlags,
     enableCodeCoverage: 'YES',
-    destination: getXcodebuildDestination(outlinePlatform),
     derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
   };
   await rmfr(xcodebuildTestFlags.derivedDataPath);
