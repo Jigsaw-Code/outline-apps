@@ -5,17 +5,17 @@
   "scripts": {
     "action:help": "npm run action list",
     "action:list": "npm run action list",
-    "action": "node ./src/build/run_action.mjs",
+    "action": "node ./apps/client/build/run_action.mjs",
     "clean": "rimraf build node_modules www platforms plugins third_party/jsign/*.jar",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint:ts": "eslint --ext ts src",
+    "lint:ts": "eslint --ext ts apps/client",
     "lint": "npm run lint:ts",
     "reset": "npm run clean && npm ci"
   },
   "comments": {
     "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
-    "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
+    "codrova-osx": "Version-controlled platform config files at apps/client/cordova/apple/xcode/osx/Outline/config.xml, apps/client/cordova/apple/xcode/osx/osx.json, and apps/client/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
     "@material/mwc-button": "^0.25.3",
@@ -89,7 +89,7 @@
     "cordova-lib": "^11.0.0",
     "cordova-osx": "github:apache/cordova-osx",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
-    "cordova-plugin-outline": "file:src/cordova/plugin",
+    "cordova-plugin-outline": "file:apps/client/cordova/plugin",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
     "electron": "^19.1.9",
@@ -156,6 +156,6 @@
     ]
   },
   "workspaces": [
-    "src/cordova/plugin"
+    "apps/client/cordova/plugin"
   ]
 }

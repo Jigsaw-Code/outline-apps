@@ -16,5 +16,5 @@
     "target": "es2017"
   },
   "exclude": ["*.cjs", "*.js", "*.mjs"],
-  "include": ["src"]
+  "include": ["apps/client"]
 }

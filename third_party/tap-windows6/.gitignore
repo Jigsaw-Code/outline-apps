@@ -1,10 +1,10 @@
 dist/**
 *.pyc
 *.tar.gz
-src/config.h
-src/SOURCES
-src/build*.log
-src/obj*
-src/i386
-src/amd64
+apps/client/config.h
+apps/client/SOURCES
+apps/client/build*.log
+apps/client/obj*
+apps/client/i386
+apps/client/amd64
 tap-windows-*.exe

@@ -43,7 +43,7 @@ jobs:
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: src/www/coverage/coverage-final.json
+          files: apps/client/www/coverage/coverage-final.json
           flags: unittests
 
   linux_debug_build:

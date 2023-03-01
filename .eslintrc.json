@@ -17,45 +17,45 @@
       "error",
       {
         "zones": [
-          // This means that in the src/infrastructure folder,
+          // This means that in the apps/client/infrastructure folder,
           // you can't import any code,
-          // with the exception of other files within the src/infrastructure folder.
+          // with the exception of other files within the apps/client/infrastructure folder.
           {
-            "target": "./src/infrastructure",
+            "target": "./apps/client/infrastructure",
             "from": ".",
-            "except": ["./src/infrastructure", "./node_modules"]
+            "except": ["./apps/client/infrastructure", "./node_modules"]
           },
-          // Similar to above but for src/www/model, but you can use files from both the
-          // src/www/model and src/www/infrastructure paths.
+          // Similar to above but for apps/client/www/model, but you can use files from both the
+          // apps/client/www/model and apps/client/www/infrastructure paths.
           {
-            "target": "./src/www/model",
+            "target": "./apps/client/www/model",
             "from": ".",
-            "except": ["./src/www/model", "./src/infrastructure", "./node_modules"]
+            "except": ["./apps/client/www/model", "./apps/client/infrastructure", "./node_modules"]
           },
           // Prevents the internals of the outline_server_repository from being used publicly in the app.
           {
-            "target": "./src/www/app/*.ts",
-            "from": "./src/www/app/outline_server_repository/server.ts"
+            "target": "./apps/client/www/app/*.ts",
+            "from": "./apps/client/www/app/outline_server_repository/server.ts"
           },
           {
-            "target": "./src/www/app/*.ts",
-            "from": "./src/www/app/outline_server_repository/access_key_serialization.ts"
+            "target": "./apps/client/www/app/*.ts",
+            "from": "./apps/client/www/app/outline_server_repository/access_key_serialization.ts"
           },
           {
-            "target": "./src/www/views",
-            "from": "./src/www/model"
+            "target": "./apps/client/www/views",
+            "from": "./apps/client/www/model"
           },
           {
-            "target": "./src/www/ui_components",
-            "from": "./src/www/model"
+            "target": "./apps/client/www/ui_components",
+            "from": "./apps/client/www/model"
           },
           {
-            "target": "./src/www/views",
-            "from": "./src/www/app"
+            "target": "./apps/client/www/views",
+            "from": "./apps/client/www/app"
           },
           {
-            "target": "./src/www/ui_components",
-            "from": "./src/www/app"
+            "target": "./apps/client/www/ui_components",
+            "from": "./apps/client/www/app"
           }
         ]
       }
@@ -93,7 +93,7 @@
     },
     // No need to check browser compatibility for electron files
     {
-      "files": ["./src/www/app/electron_main.ts"],
+      "files": ["./apps/client/www/app/electron_main.ts"],
       "rules": {
         "compat/compat": "off"
       }

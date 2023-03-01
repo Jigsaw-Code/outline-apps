@@ -36,12 +36,12 @@ using namespace outline;
 
 //#region OutlineClientSession Implementation
 
-// Routing commands from App (src/electron/routing_service.ts)
+// Routing commands from App (apps/client/electron/routing_service.ts)
 static const std::string kConfigureRoutingAction = "configureRouting";
 static const std::string kResetRoutingAction = "resetRouting";
 static const std::string kNotifyStatusChangedAction = "statusChanged";
 
-// Response fields (src/electron/routing_service.ts)
+// Response fields (apps/client/electron/routing_service.ts)
 static const char* const kResponseActionField = "action";
 static const char* const kResponseStatusField = "statusCode";
 static const char* const kResponseErrorField = "errorMessage";

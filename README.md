@@ -26,21 +26,21 @@ npm install
 
 ## Building the shared web app
 
-Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
+Outline clients share the same web app across all platforms. This code is located in the apps/client/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
 ```sh
-npm run action src/www/start
+npm run action apps/client/www/start
 ```
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
 
-The app logic is located in [src/www/app](src/www/app). UI components are located in [src/www/ui_components](src/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
+The app logic is located in [apps/client/www/app](apps/client/www/app). UI components are located in [apps/client/www/ui_components](apps/client/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
 
 ```sh
-npm run action src/www/storybook
+npm run action apps/client/www/storybook
 ```
 
-> 💡 NOTE: the `src` part of the path is optional. `npm run action www/start` resolves to the same script.
+> 💡 NOTE: the `apps/client` part of the path is optional. `npm run action www/start` resolves to the same script.
 
 > 💡 NOTE: every script in this repository can be run with `npm run action` -
 > for a CLI-like experience, add something like
@@ -65,9 +65,9 @@ npm run action src/www/storybook
 
 Each platform is handled differently:
 
-1. [Developing for Apple **(MacOS and iOS)**](src/cordova/apple)
-2. [Developing for **Android**](src/cordova/android)
-3. [Developing for Electron **(Windows and Linux)**](src/electron)
+1. [Developing for Apple **(MacOS and iOS)**](apps/client/cordova/apple)
+2. [Developing for **Android**](apps/client/cordova/android)
+3. [Developing for Electron **(Windows and Linux)**](apps/client/electron)
 
 ## Error reporting
 

@@ -69,7 +69,7 @@ private:
   boost::asio::awaitable<void> MonitorNetworkChanges();
 
 private:
-  /** @brief `TunnelStatus` in "src/www/app/tunnel.ts" */
+  /** @brief `TunnelStatus` in "apps/client/www/app/tunnel.ts" */
   enum class ConnectionState : int {
     kConnected = 0,
     kDisconnected = 1,

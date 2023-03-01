@@ -13,24 +13,38 @@
 // limitations under the License.
 
 import url from 'url';
-import * as globby from 'globby';
+import karma from 'karma';
+import puppeteer from 'puppeteer';
 import path from 'path';
-import fs from 'fs/promises';
-import {getRootDir} from './apps/client/build/get_root_dir.mjs';
+import {getRootDir} from '../build/get_root_dir.mjs';
+
+const KARMA_CONFIG_PATH = ['apps/client', 'www', 'karma.conf.js'];
 
 /**
- * @description returns a list of all valid actions to run
+ * @description Runs the Karma tests against the web UI.
+ *
+ * @param {string[]} parameters
  */
 export async function main() {
-  const {scripts} = JSON.parse(await fs.readFile(path.join(getRootDir(), 'package.json')));
+  const runKarma = config =>
+    new Promise((resolve, reject) => {
+      new karma.Server(config, exitCode => {
+        if (exitCode !== 0) {
+          reject(exitCode);
+        }
 
-  for (const script in scripts) {
-    console.info(script);
-  }
+        resolve(exitCode);
+      }).start();
+    });
 
-  for (const actionPath of await globby.default(['**/*.action.sh', '**/*.action.mjs'])) {
-    console.info(actionPath.match(/(.+)\.action/)[1]);
-  }
+  process.env.CHROMIUM_BIN = puppeteer.executablePath();
+
+  const config = await karma.config.parseConfig(path.resolve(getRootDir(), ...KARMA_CONFIG_PATH), null, {
+    promiseConfig: true,
+    throwErrors: true,
+  });
+
+  await runKarma(config);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
