@@ -36,12 +36,12 @@ export async function main(...parameters) {
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
-    path.join(getRootDir(), 'apps/client/electron/icons'),
+    path.join(getRootDir(), 'apps', 'client', 'electron', 'icons'),
     path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
   );
 
   const electronConfig = JSON.parse(
-    await fs.readFile(path.resolve(getRootDir(), 'apps/client', 'electron', 'electron-builder.json'))
+    await fs.readFile(path.resolve(getRootDir(), 'apps', 'client', 'electron', 'electron-builder.json'))
   );
 
   // build electron binary
