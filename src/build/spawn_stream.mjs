@@ -22,7 +22,7 @@ export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
     const result = [];
 
-    const childProcess = spawn(command, parameters);
+    const childProcess = spawn(command, parameters, {env: process.env});
 
     const forEachMessageLine = (buffer, callback) => {
       buffer
