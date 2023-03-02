@@ -20,7 +20,7 @@ import {spawn} from 'child_process';
  */
 export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
-    let result = [];
+    const result = [];
 
     const childProcess = spawn(command, parameters);
 

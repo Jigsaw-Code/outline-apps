@@ -32,7 +32,7 @@ const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  let {
+  const {
     _: [outlinePlatform],
   } = minimist(parameters);
 
