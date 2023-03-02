@@ -15,7 +15,7 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
-import {OperationTimedOut} from '../../client/infrastructure/timeout_promise';
+import {OperationTimedOut} from '../../infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
