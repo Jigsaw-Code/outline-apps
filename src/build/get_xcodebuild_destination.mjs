@@ -16,13 +16,13 @@ import os from 'node:os';
 import {getIosDeploymentTarget} from './get_ios_deployment_target.mjs';
 
 // https://mokacoding.com/blog/xcodebuild-destination-options/
-export function getXcodebuildDestination(platform) {
+export async function getXcodebuildDestination(platform) {
   switch (platform) {
     case 'macos': {
       return `platform=macOS,arch=${os.machine()}`;
     }
     case 'ios': {
-      return `platform=iOS Simulator,name=${getIosDeploymentTarget()}}`;
+      return `platform=iOS Simulator,name=${await getIosDeploymentTarget()}}`;
     }
     default: {
       throw new Error(

@@ -46,7 +46,7 @@ export async function main(...parameters) {
 
   const xcodebuildFlags = {
     scheme: APPLE_LIBRARY_NAME,
-    destination: getXcodebuildDestination(outlinePlatform),
+    destination: await getXcodebuildDestination(outlinePlatform),
     workspace: path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
   };
 
