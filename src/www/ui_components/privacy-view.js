@@ -120,7 +120,7 @@ Polymer({
           <h3>[[localize('privacy-title')]]</h3>
           <p class="faded">[[localize('privacy-text')]]</p>
           <div id="button-container">
-            <a href="https://s3.amazonaws.com/outline-vpn/index.html#/en/support/dataCollection">
+            <a href="https://support.getoutline.org/s/article/Data-collection">
               <paper-button class="faded">[[localize('learn-more')]]</paper-button>
             </a>
             <paper-button on-tap="_privacyTermsAcked">[[localize('got-it')]]</paper-button>

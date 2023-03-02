@@ -35,7 +35,7 @@ let package = Package(
         .binaryTarget(
             name: "Tun2socks",
             url: "https://github.com/Jigsaw-Code/outline-go-tun2socks/releases/download/v3.1.0/apple.zip",
-            checksum: "dcdd8ea539426858fccc8b3ee2f771297c0edde6d4f9f8f76f7148fee397d784"
+            checksum: "78f291482da13fd035de19d21a075048407658aab077fdeb23ce435f33cec3a2"
         ),
         .testTarget(
             name: "OutlineTunnelTest",

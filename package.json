@@ -9,7 +9,7 @@
     "clean": "rimraf build node_modules www platforms plugins third_party/jsign/*.jar",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint:ts": "eslint --ext ts src",
+    "lint:ts": "eslint --ext ts,mjs src",
     "lint": "npm run lint:ts",
     "reset": "npm run clean && npm ci"
   },
