@@ -22,7 +22,7 @@ export async function getXcodebuildDestination(platform) {
       return `platform=macOS,arch=${os.machine()}`;
     }
     case 'ios': {
-      return `platform=iOS Simulator,name=${await getIosDeploymentTarget()}}`;
+      return `platform=iOS Simulator,name=${await getIosDeploymentTarget()}`;
     }
     default: {
       throw new Error(
