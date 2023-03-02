@@ -58,7 +58,7 @@ export async function main(...parameters) {
     derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
   };
   await rmfr(xcodebuildTestFlags.derivedDataPath);
-  await runXcodebuild.test({xcodebuildTestFlags});
+  await runXcodebuild.test(xcodebuildTestFlags);
 
   const testCoverageDirectoryPath = path.join(xcodebuildTestFlags.derivedDataPath, 'Logs', 'Test');
   const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
