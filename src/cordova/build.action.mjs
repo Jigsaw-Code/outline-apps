@@ -20,8 +20,8 @@ const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
-import * as runXcodebuild from '../build/run_xcodebuild.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
+import {spawnStream} from 'src/build/spawn_stream.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -39,28 +39,28 @@ export async function main(...parameters) {
   }
 
   if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
-    const xcodebuildFlags = {
-      workspace: path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
-      scheme: 'Outline',
-    };
-
-    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
-    await runXcodebuild.clean(xcodebuildFlags);
+    const xcodebuildBaseArguments = [
+      'xcodebuild',
+      'clean',
+      '-workspace',
+      path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
+      '-scheme',
+      'Outline',
+    ];
 
     if (buildMode === 'release') {
-      return runXcodebuild.archive({
-        ...xcodebuildFlags,
-        configuration: 'Release',
-      });
+      return spawnStream(...xcodebuildBaseArguments, 'archive', '-configuration', 'Release');
     }
 
-    process.env.CODE_SIGN_IDENTITY = '';
-    process.env.CODE_SIGNING_ALLOWED = 'NO';
-
-    return runXcodebuild.build({
-      ...xcodebuildFlags,
-      configuration: 'Debug',
-    });
+    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
+    return spawnStream(
+      ...xcodebuildBaseArguments,
+      'build',
+      '-configuration',
+      'Debug',
+      'CODE_SIGN_IDENTITY=""',
+      'CODE_SIGNING_ALLOWED="NO"'
+    );
   }
 
   if (cordovaPlatform === 'android') {

@@ -19,9 +19,9 @@ import path from 'path';
 import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
+import {getIosDeploymentTarget} from './get_ios_deployment_target.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
-import {getXcodebuildDestination} from '../build/get_xcodebuild_destination.mjs';
-import * as runXcodebuild from '../build/run_xcodebuild.mjs';
+import {spawnStream} from 'src/build/spawn_stream.mjs';
 
 const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
@@ -44,30 +44,36 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  const xcodebuildFlags = {
-    scheme: APPLE_LIBRARY_NAME,
-    destination: await getXcodebuildDestination(outlinePlatform),
-    workspace: path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
-  };
+  const derivedDataPath = path.join(APPLE_ROOT, 'coverage');
 
-  await runXcodebuild.clean(xcodebuildFlags);
+  await spawnStream(
+    'xcodebuild',
+    'clean',
+    'test',
+    '-scheme',
+    APPLE_LIBRARY_NAME,
+    '-destination',
+    outlinePlatform === 'macos'
+      ? `platform=macOS,arch=${os.machine()},OS=latest`
+      : `platform=iOS Simulator,name=${await getIosDeploymentTarget()},OS=latest`,
+    '-workspace',
+    path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
+    '-enableCodeCoverage',
+    'YES',
+    '-derivedDataPath',
+    derivedDataPath
+  );
 
-  const xcodebuildTestFlags = {
-    ...xcodebuildFlags,
-    enableCodeCoverage: 'YES',
-    derivedDataPath: path.join(APPLE_ROOT, 'coverage'),
-  };
-  await rmfr(xcodebuildTestFlags.derivedDataPath);
-  await runXcodebuild.test(xcodebuildTestFlags);
+  await rmfr(derivedDataPath);
 
-  const testCoverageDirectoryPath = path.join(xcodebuildTestFlags.derivedDataPath, 'Logs', 'Test');
+  const testCoverageDirectoryPath = path.join(derivedDataPath, 'Logs', 'Test');
   const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
     filename.endsWith('xcresult')
   );
 
   await fs.rename(
     path.join(testCoverageDirectoryPath, testCoverageResultFilename),
-    path.join(xcodebuildTestFlags.derivedDataPath, 'TestResult.xcresult')
+    path.join(derivedDataPath, 'TestResult.xcresult')
   );
 }
 
