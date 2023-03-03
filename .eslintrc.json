@@ -61,6 +61,7 @@
       }
     ],
     "no-prototype-builtins": "off",
+    "prefer-const": "error",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "off",

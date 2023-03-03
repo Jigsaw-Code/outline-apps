@@ -82,6 +82,7 @@ export async function main(...parameters) {
         );
       }
       argv = [
+        ...argv,
         '--keystore=keystore.p12',
         '--alias=privatekey',
         `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
