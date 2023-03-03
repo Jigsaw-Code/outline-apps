@@ -46,12 +46,7 @@ export async function main(...parameters) {
 
   const derivedDataPath = path.join(APPLE_ROOT, 'coverage');
 
-  console.log({
-    APPLE_ROOT,
-    getRootDir: getRootDir(),
-    derivedDataPath,
-  });
-
+  await rmfr(derivedDataPath);
   await spawnStream(
     'xcodebuild',
     'clean',
@@ -69,8 +64,6 @@ export async function main(...parameters) {
     '-derivedDataPath',
     derivedDataPath
   );
-
-  await rmfr(derivedDataPath);
 
   const testCoverageDirectoryPath = path.join(derivedDataPath, 'Logs', 'Test');
   const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
