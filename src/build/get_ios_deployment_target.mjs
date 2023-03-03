@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {parseXmlOrPlistFile} from './parse_xml_or_plist_file.mjs';
+import {parseXmlFile} from './parse_xml_file.mjs';
 
 export async function getIosDeploymentTarget() {
   const {
     widget: {platform: platformList},
-  } = await parseXmlOrPlistFile('config.xml');
+  } = await parseXmlFile('config.xml');
 
   const iosDeploymentTargetXMLTag = platformList
     .find(({$}) => $.name === 'ios')
