@@ -46,6 +46,12 @@ export async function main(...parameters) {
 
   const derivedDataPath = path.join(APPLE_ROOT, 'coverage');
 
+  console.log({
+    APPLE_ROOT,
+    getRootDir: getRootDir(),
+    derivedDataPath,
+  });
+
   await spawnStream(
     'xcodebuild',
     'clean',
@@ -54,7 +60,7 @@ export async function main(...parameters) {
     APPLE_LIBRARY_NAME,
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,arch=${os.machine()},OS=latest`
+      ? `platform=macOS,arch=${os.machine()}`
       : `platform=iOS Simulator,name=${await getIosDeploymentTarget()},OS=latest`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
