@@ -19,7 +19,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
-import {getIosDeploymentTarget} from '../build/get_ios_deployment_target.mjs';
+// import {getIosDeploymentTarget} from '../build/get_ios_deployment_target.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 
@@ -55,8 +55,8 @@ export async function main(...parameters) {
     APPLE_LIBRARY_NAME,
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,arch=${os.machine()}`
-      : `platform=iOS Simulator,name=${await getIosDeploymentTarget()},OS=latest`,
+      ? `generic/platform=macOS`
+      : `generic/platform=iOS Simulator`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
     '-enableCodeCoverage',
