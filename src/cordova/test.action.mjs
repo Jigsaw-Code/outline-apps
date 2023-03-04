@@ -55,7 +55,7 @@ export async function main(...parameters) {
     APPLE_LIBRARY_NAME,
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,variant=macOS,arch=${os.machine()}`
+      ? `platform=macOS,arch=${os.machine()}`
       : `platform=iOS Simulator,name=Any iOS Device,OS=${await getIosDeploymentTarget()}`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
