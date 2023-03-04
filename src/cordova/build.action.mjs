@@ -46,6 +46,8 @@ export async function main(...parameters) {
       path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
       '-scheme',
       'Outline',
+      '-destination',
+      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS'
     ];
 
     if (buildMode === 'release') {
