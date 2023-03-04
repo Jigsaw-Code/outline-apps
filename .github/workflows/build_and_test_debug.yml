@@ -144,7 +144,7 @@ jobs:
 
       - name: Test OutlineAppleLib
         run: |
-          xcversion simulators --install='iOS 11.0'
+          xcversion simulators --install='iOS 11.0 Simulator'
           npm run action cordova/test ios
 
       - name: Build iOS Client
