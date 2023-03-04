@@ -23,5 +23,5 @@ export async function getIosDeploymentTarget() {
     .find(({$}) => $.name === 'ios')
     .preference.find(({$}) => $.name === 'deployment-target');
 
-  return `iPhone ${Number(iosDeploymentTargetXMLTag.$.value)}`;
+  return Number(iosDeploymentTargetXMLTag.$.value);
 }
