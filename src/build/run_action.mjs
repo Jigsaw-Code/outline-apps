@@ -111,7 +111,9 @@ export async function runAction(actionPath, ...parameters) {
 
 async function main() {
   process.env.ROOT_DIR ??= getRootDir();
-  process.env.BUILD_DIR ??= path.join(process.env.ROOT_DIR, 'build');
+  process.env.OUTPUT_DIR ??= path.join(process.env.ROOT_DIR, 'output');
+  process.env.BUILD_DIR ??= path.join(process.env.OUTPUT_DIR, 'build');
+  process.env.COVERAGE_DIR ??= path.join(process.env.OUTPUT_DIR, 'coverage');
   process.env.FORCE_COLOR = true;
 
   if (!process.env.IS_ACTION) {

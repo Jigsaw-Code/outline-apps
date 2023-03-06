@@ -19,7 +19,6 @@ import path from 'path';
 import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
-import {getIosDeploymentTarget} from '../build/get_ios_deployment_target.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 
@@ -44,7 +43,7 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  const derivedDataPath = path.join(APPLE_ROOT, 'coverage');
+  const derivedDataPath = path.join(process.env.COVERAGE_DIR, 'apple');
 
   await rmfr(derivedDataPath);
   await spawnStream(
@@ -56,7 +55,9 @@ export async function main(...parameters) {
     '-destination',
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`
-      : `platform=iOS Simulator,name=Any iOS Device,OS=${await getIosDeploymentTarget()}`,
+      : // iOS 12.4 is the lowest available iOS simulator for download on our verison
+        // of Xcode
+        `platform=iOS Simulator,name=Any iOS Device,OS=12.4`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
     '-enableCodeCoverage',

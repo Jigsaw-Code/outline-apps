@@ -30,7 +30,7 @@ module.exports = async function(config) {
     webpack: testConfig.default,
     coverageIstanbulReporter: {
       reports: ['html', 'json', 'text-summary'],
-      dir: path.join(__dirname, 'coverage'),
+      dir: path.join(process.env?.COVERAGE_DIR ?? __dirname, 'www'),
     },
   });
 };
