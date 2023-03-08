@@ -56,8 +56,8 @@ export async function main(...parameters) {
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`
       : // iOS 12.4 is the lowest available iOS simulator for download on our verison
-        // of Xcode
-        `platform=iOS Simulator,name=Any iOS Device,OS=12.4`,
+        // of Xcode and iPhone 8 is the latest iPhone Simulator you can run with that OS
+        `platform=iOS Simulator,name=iPhone 8,OS=12.4`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
     '-enableCodeCoverage',
