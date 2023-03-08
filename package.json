@@ -6,7 +6,7 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rimraf build node_modules www platforms plugins third_party/jsign/*.jar",
+    "clean": "rimraf output node_modules www platforms plugins third_party/jsign/*.jar",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts,mjs src",
@@ -58,7 +58,7 @@
     "web-animations-js": "^2.3.2"
   },
   "engines": {
-    "node": "^16.13.0",
+    "node": "^16.18.0",
     "npm": "^8.1.0"
   },
   "devDependencies": {

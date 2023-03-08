@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import path from 'node:path';
 import url from 'url';
 
 import cordovaLib from 'cordova-lib';
@@ -19,7 +20,8 @@ const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
-import {execSync} from 'child_process';
+import {getRootDir} from '../build/get_root_dir.mjs';
+import {spawnStream} from '../build/spawn_stream.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -33,35 +35,48 @@ export async function main(...parameters) {
   await runAction('cordova/setup', ...parameters);
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${cordovaPlatform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: building "${outlinePlatform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (outlinePlatform === 'macos' || outlinePlatform === 'ios') {
-    const WORKSPACE_PATH = `${process.env.ROOT_DIR}/src/cordova/apple/${outlinePlatform}.xcworkspace`;
-    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
+  if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
+    const xcodebuildBaseArguments = [
+      'xcodebuild',
+      'clean',
+      '-workspace',
+      path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
+      '-scheme',
+      'Outline',
+      '-destination',
+      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS'
+    ];
+
     if (buildMode === 'release') {
-      execSync(`xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Release clean archive`, {
-        stdio: 'inherit',
-      });
-    } else {
-      execSync(
-        `xcodebuild -workspace ${WORKSPACE_PATH} -scheme Outline -configuration Debug build CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO`,
-        {
-          stdio: 'inherit',
-        }
-      );
+      return spawnStream(...xcodebuildBaseArguments, 'archive', '-configuration', 'Release');
     }
-    return;
+
+    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
+    return spawnStream(
+      ...xcodebuildBaseArguments,
+      'build',
+      '-configuration',
+      'Debug',
+      'CODE_SIGN_IDENTITY=""',
+      'CODE_SIGNING_ALLOWED="NO"'
+    );
   }
+
   if (cordovaPlatform === 'android') {
     let argv = [
       // Path is relative to /platforms/android/.
       // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
       '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
     ];
+
     if (verbose) {
       argv.push('--gradleArg=--info');
+      cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
     }
+
     if (buildMode === 'release') {
       if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
         throw new ReferenceError(
@@ -79,11 +94,7 @@ export async function main(...parameters) {
       ];
     }
 
-    if (verbose) {
-      cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-    }
-
-    await cordova.compile({
+    return cordova.compile({
       verbose,
       platforms: ['android'],
       options: {
@@ -91,7 +102,6 @@ export async function main(...parameters) {
         argv,
       },
     });
-    return;
   }
 }
 

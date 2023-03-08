@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import xml2js from 'xml2js';
-import fs from 'fs/promises';
+import {parseXmlFile} from './parse_xml_file.mjs';
 
 /*
   Inputs:
@@ -23,12 +22,10 @@ import fs from 'fs/promises';
   => the MAJOR.MINOR.PATCH formatted version number for the given platform
 */
 export async function getVersion(platform) {
-  // xmljs can parse both plist and xml files
-  const parseFile = async filePath => await xml2js.parseStringPromise(await fs.readFile(filePath));
   switch (platform) {
     case 'android':
     case 'browser': {
-      const {widget} = await parseFile('config.xml');
+      const {widget} = await parseXmlFile('config.xml');
       return widget.$.version;
     }
     case 'ios':
@@ -37,7 +34,7 @@ export async function getVersion(platform) {
         plist: {
           dict: [{key: plistKeys, string: plistValues}],
         },
-      } = await parseFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
+      } = await parseXmlFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
       return plistValues[plistKeys.indexOf('CFBundleShortVersionString')];
     }
     case 'windows':

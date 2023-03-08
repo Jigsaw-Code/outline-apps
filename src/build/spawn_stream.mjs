@@ -18,16 +18,21 @@ import {spawn} from 'child_process';
 /**
  * @description promisifies the child process (for supporting legacy bash actions!)
  */
-export const spawnStream = (command, parameters) =>
+export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
-    const childProcess = spawn(command, parameters);
+    const result = [];
+
+    const childProcess = spawn(command, parameters, {env: process.env});
 
     const forEachMessageLine = (buffer, callback) => {
       buffer
         .toString()
         .split('\n')
         .filter(line => line.trim())
-        .forEach(callback);
+        .forEach(line => {
+          result.push(line);
+          callback(line);
+        });
     };
 
     childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
@@ -35,7 +40,7 @@ export const spawnStream = (command, parameters) =>
 
     childProcess.on('close', code => {
       if (code === 0) {
-        resolve(childProcess);
+        resolve(result.join(''));
       } else {
         reject(childProcess);
       }

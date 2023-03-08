@@ -1,6 +1,7 @@
 .idea
 .vscode
 *.DS_Store
+/output
 /build
 info.txt
 /node_modules
