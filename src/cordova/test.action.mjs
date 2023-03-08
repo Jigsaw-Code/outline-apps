@@ -43,7 +43,7 @@ export async function main(...parameters) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  const derivedDataPath = path.join(process.env.COVERAGE_DIR, 'apple');
+  const derivedDataPath = path.join(process.env.COVERAGE_DIR, 'apple', outlinePlatform);
 
   await rmfr(derivedDataPath);
   await spawnStream(
