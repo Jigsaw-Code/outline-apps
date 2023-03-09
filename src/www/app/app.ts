@@ -70,7 +70,8 @@ export function isOutlineAccessKey(url: string): boolean {
   // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
   // so we're using `startsWith`
   return (
-    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) || url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) ||
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
   );
 }
 
@@ -153,9 +154,11 @@ export class App {
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
     let messageKey: string;
-    let messageParams: string[] | undefined;
-    let buttonKey: string;
-    let buttonHandler: () => void;
+    let messageParams: string[] = [];
+    let buttonKey = 'error-details';
+    let buttonHandler = () => {
+      this.showErrorDetailDialog(e);
+    };
     let buttonLink: string;
 
     if (e instanceof errors.VpnPermissionNotGranted) {
@@ -202,16 +205,14 @@ export class App {
       messageKey = 'error-unexpected';
     }
 
-    const message = messageParams ? this.localize(messageKey, ...messageParams) : this.localize(messageKey);
-
     // Defer by 500ms so that this toast is shown after any toasts that get shown when any
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
         this.rootEl.showToast(
-          message,
+          this.localize(messageKey, ...messageParams),
           toastDuration,
-          buttonKey ? this.localize(buttonKey) : undefined,
+          this.localize(buttonKey),
           buttonHandler,
           buttonLink
         );
@@ -550,8 +551,17 @@ export class App {
   //#region UI dialogs
 
   private showConfirmationDialog(message: string): Promise<boolean> {
-    // Temporarily use window.alert and window.confirm here
+    // Temporarily use window.confirm here
     return new Promise<boolean>(resolve => resolve(confirm(message)));
+  }
+
+  private showErrorDetailDialog(error: Error) {
+    // Temporarily use window.alert here
+    if (error.stack) {
+      return alert(error.stack);
+    }
+
+    return alert(error.message);
   }
 
   //#endregion UI dialogs
