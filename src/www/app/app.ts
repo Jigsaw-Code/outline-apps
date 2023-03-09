@@ -563,7 +563,7 @@ export class App {
     let message = error.toString();
 
     if (error.cause) {
-      message += '\n';
+      message += '\nCause: ';
       message += error.cause.toString();
     }
 
