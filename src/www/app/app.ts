@@ -153,12 +153,16 @@ export class App {
   }
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
+    const hasErrorDetails = Boolean(e.message || e.cause);
+
     let messageKey: string;
     let messageParams: string[] = [];
-    let buttonKey = 'error-details';
-    let buttonHandler = () => {
-      this.showErrorDetailDialog(e);
-    };
+    let buttonKey = hasErrorDetails ? 'error-details' : undefined;
+    let buttonHandler = hasErrorDetails
+      ? () => {
+          this.showErrorDetailDialog(e);
+        }
+      : undefined;
     let buttonLink: string;
 
     if (e instanceof errors.VpnPermissionNotGranted) {
@@ -212,7 +216,7 @@ export class App {
         this.rootEl.showToast(
           this.localize(messageKey, ...messageParams),
           toastDuration,
-          this.localize(buttonKey),
+          buttonKey ? this.localize(buttonKey) : undefined,
           buttonHandler,
           buttonLink
         );
@@ -556,12 +560,15 @@ export class App {
   }
 
   private showErrorDetailDialog(error: Error) {
-    // Temporarily use window.alert here
-    if (error.stack) {
-      return alert(error.stack);
+    let message = error.toString();
+
+    if (error.cause) {
+      message += '\n';
+      message += error.cause.toString();
     }
 
-    return alert(error.message);
+    // Temporarily use window.alert here
+    return alert(message);
   }
 
   //#endregion UI dialogs
