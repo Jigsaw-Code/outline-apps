@@ -291,6 +291,8 @@ class GoTun2socks {
       this.config.password || '',
       '-proxyCipher',
       this.config.method || '',
+      '-proxyPrefix',
+      this.config.prefix || '',
       '-checkConnectivity',
     ]);
   }
