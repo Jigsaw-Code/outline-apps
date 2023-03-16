@@ -23,7 +23,6 @@ import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {EnvironmentVariables} from './environment';
 import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
 import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
@@ -90,14 +89,11 @@ class ElectronVpnInstaller implements VpnInstaller {
 }
 
 class ElectronErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, privateDsn: string) {
-    if (privateDsn) {
-      Sentry.init({
-        dsn: privateDsn,
-        release: appVersion,
-        integrations: getSentryBrowserIntegrations,
-      });
-    }
+  constructor() {
+    // parameters are initialized in main process
+    Sentry.init({
+      integrations: getSentryBrowserIntegrations,
+    });
   }
 
   report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
@@ -124,7 +120,7 @@ main({
   },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),
-  getErrorReporter: (env: EnvironmentVariables) => new ElectronErrorReporter(env.APP_VERSION, env.SENTRY_DSN || ''),
+  getErrorReporter: _ => new ElectronErrorReporter(),
   getUpdater: () => new ElectronUpdater(),
   getVpnServiceInstaller: () => new ElectronVpnInstaller(),
   quitApplication: () => window.electron.methodChannel.send('quit-app'),
