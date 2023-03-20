@@ -70,7 +70,7 @@ function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSe
 export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
   let response;
   try {
-    response = await fetch(configLocation, {cache: 'reload'});
+    response = await fetch(configLocation, {cache: 'no-store'});
   } catch (error) {
     throw new errors.SessionConfigFetchFailed(
       error.message || 'Failed to fetch VPN information from dynamic access key.'
