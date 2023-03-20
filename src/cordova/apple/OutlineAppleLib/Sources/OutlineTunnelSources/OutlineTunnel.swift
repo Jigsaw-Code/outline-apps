@@ -14,25 +14,10 @@
 
 import Foundation
 
-// Serializable class to wrap a tunnel's configuration.
-// Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
-// Note that this class and its non-private properties must be public in order to be visible to the ObjC
-// target of the OutlineAppleLib Swift Package.
 @objcMembers
-public class OutlineTunnel: NSObject, Codable {
-  public var id: String?
-  public var host: String?
-  public var port: String?
-  public var method: String?
-  public var password: String?
-  public var prefix: Data?
-  public var config: [String: String] {
-    let scalars = prefix?.map{Unicode.Scalar($0)}
-    let characters = scalars?.map{Character($0)}
-    let prefixStr = String(characters ?? [])
-    return ["host": host ?? "", "port": port ?? "", "password": password ?? "",
-            "method": method ?? "", "prefix": prefixStr]
-  }
+class OutlineTunnel: NSObject, Codable {
+  var id: String?
+  var configString: String?
 
   @objc
   public enum TunnelStatus: Int {
@@ -41,26 +26,39 @@ public class OutlineTunnel: NSObject, Codable {
     case reconnecting = 2
   }
 
-  public convenience init(id: String, config: [String: Any]) {
+  public convenience init(id: String?, configString: String) {
     self.init()
     self.id = id
-    self.host = config["host"] as? String
-    self.password = config["password"] as? String
-    self.method = config["method"] as? String
-    if let port = config["port"] {
-      self.port = String(describing: port)  // Handle numeric values
-    }
-    if let prefix = config["prefix"] as? String {
-      self.prefix = Data(prefix.utf16.map{UInt8($0)})
-    }
+    self.configString = configString
   }
-
+  
   public func encode() -> Data? {
-    return try? JSONEncoder().encode(self)
+    return configString!.data(using: .utf8)
   }
 
-  public static func decode(_ jsonData: Data) -> OutlineTunnel? {
-    return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
+  static func decode(_ encodedTunnelData: Data) -> OutlineTunnel? {
+    return OutlineTunnel(id: nil,
+                         configString: String(decoding: encodedTunnelData,
+                                              as: UTF8.self))
+  }
+
+  // Private helper to retrieve the host from the config string.
+  private func configToDictionary() -> [String: Any]? {
+      if let data = configString!.data(using: .utf8) {
+        do {
+          return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        } catch {
+          print(error.localizedDescription)
+        }
+      }
+      return nil
+    }
+
+  public func host() -> String? {
+    guard let host = configToDictionary()!["host"] else {
+      return nil
+    }
+    return host as? String
   }
 
 }
