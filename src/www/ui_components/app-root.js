@@ -362,7 +362,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <paper-item name="feedback" hidden$="[[shouldHideFeedback]]">
+            <paper-item name="feedback">
               <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
               [[localize('feedback-page-title')]]
             </paper-item>
@@ -522,11 +522,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       appVersion: {
         type: String,
         readonly: true,
-      },
-      shouldHideFeedback: {
-        type: Boolean,
-        readonly: true,
-        computed: '_computeShouldHideFeedback()',
       },
       page: {
         type: String,
@@ -719,11 +714,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
     const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
-  }
-
-  _computeShouldHideFeedback() {
-    // TODO(daniellacosse): restore feedback functionality in electron
-    return typeof window.electron !== 'undefined';
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
