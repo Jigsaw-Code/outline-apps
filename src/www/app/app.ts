@@ -153,16 +153,10 @@ export class App {
   }
 
   showLocalizedError(e?: Error, toastDuration = 10000) {
-    const hasErrorDetails = Boolean(e.message || e.cause);
-
     let messageKey: string;
     let messageParams: string[] = [];
-    let buttonKey = hasErrorDetails ? 'error-details' : undefined;
-    let buttonHandler = hasErrorDetails
-      ? () => {
-          this.showErrorDetailDialog(e);
-        }
-      : undefined;
+    let buttonKey: string;
+    let buttonHandler: () => void;
     let buttonLink: string;
 
     if (e instanceof errors.VpnPermissionNotGranted) {
@@ -206,7 +200,15 @@ export class App {
       messageKey = 'error-shadowsocks-unsupported-cipher';
       messageParams = ['cipher', e.cipher];
     } else {
+      const hasErrorDetails = Boolean(e.message || e.cause);
+
       messageKey = 'error-unexpected';
+      buttonKey = hasErrorDetails ? 'error-details' : undefined;
+      buttonHandler = hasErrorDetails
+        ? () => {
+            this.showErrorDetailDialog(e);
+          }
+        : undefined;
     }
 
     // Defer by 500ms so that this toast is shown after any toasts that get shown when any
