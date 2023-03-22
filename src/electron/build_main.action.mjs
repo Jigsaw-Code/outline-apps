@@ -34,7 +34,7 @@ export async function main(...parameters) {
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
-    electronMainWebpackConfigs({sentryDsn, APP_VERSION}).map(config => ({
+    electronMainWebpackConfigs({sentryDsn, appVersion: APP_VERSION}).map(config => ({
       ...config,
       mode: getWebpackBuildMode(buildMode),
     }))

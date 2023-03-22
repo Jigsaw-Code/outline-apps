@@ -84,7 +84,12 @@ function setupSentry(): void {
   // Use 'typeof(v)' instead of '!!v' here to prevent ReferenceError
   if (typeof SENTRY_DSN !== 'undefined' && typeof APP_VERSION !== 'undefined') {
     // This config makes console (log/info/warn/error - no debug!) output go to breadcrumbs.
-    Sentry.init({dsn: SENTRY_DSN, release: APP_VERSION, maxBreadcrumbs: 100});
+    Sentry.init({
+      dsn: SENTRY_DSN,
+      release: APP_VERSION,
+      maxBreadcrumbs: 100,
+      debug: debugMode,
+    });
   }
 }
 
