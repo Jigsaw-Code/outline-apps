@@ -14,10 +14,7 @@
 
 package org.outline;
 
-import org.outline.shadowsocks.ShadowsocksConfig;
-
 parcelable TunnelConfig {
   String id;
-  String name;
-  ShadowsocksConfig proxy;
+  String proxyString;  
 }

@@ -42,7 +42,7 @@ class OutlineVpn: NSObject {
   private enum MessageKey {
     static let action = "action"
     static let tunnelId = "tunnelId"
-    static let config = "config"
+    static let tunnelConfigString = "tunnelConfigString"
     static let errorCode = "errorCode"
     static let host = "host"
     static let port = "port"
@@ -95,7 +95,9 @@ class OutlineVpn: NSObject {
     if isActive(tunnelId) {
       return completion(ErrorCode.noError)
     } else if isVpnConnected() {
-      return restartVpn(tunnelId, config: tunnel.config, completion: completion)
+      return restartVpn(tunnelId,
+                        tunnelConfigString: tunnel.configString!,
+                        completion: completion)
     }
     self.startVpn(tunnel, isAutoConnect: false, completion)
   }
@@ -165,14 +167,16 @@ class OutlineVpn: NSObject {
       self.sendVpnExtensionMessage(message) { response in
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
-      var config: [String: String]? = nil
+
+      var config: [String: String]? = [:]
       if !isAutoConnect {
-        config = tunnel.config
         config?[MessageKey.tunnelId] = tunnelId
+        config?[MessageKey.tunnelConfigString] = tunnel.configString
       } else {
         // macOS app was started by launcher.
         config = [MessageKey.isOnDemand: "true"];
       }
+
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
         try session.startTunnel(options: config)
@@ -191,13 +195,16 @@ class OutlineVpn: NSObject {
   }
 
   // Sends message to extension to restart the tunnel without tearing down the VPN.
-  private func restartVpn(_ tunnelId: String, config: [String: String],
+  private func restartVpn(_ tunnelId: String,
+                          tunnelConfigString: String,
                           completion: @escaping(Callback)) {
     if activeTunnelId != nil {
       vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
-    let message = [MessageKey.action: Action.restart, MessageKey.tunnelId: tunnelId,
-                   MessageKey.config:config] as [String : Any]
+    let message = [MessageKey.action: Action.restart,
+                   MessageKey.tunnelId: tunnelId,
+                   MessageKey.tunnelConfigString : tunnelConfigString
+    ] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)
     }

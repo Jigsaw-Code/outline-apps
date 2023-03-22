@@ -76,11 +76,11 @@ class OutlinePlugin: CDVPlugin {
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
     DDLogInfo("\(Action.start) \(tunnelId)")
-    guard let config = command.argument(at: 1) as? [String: Any], containsExpectedKeys(config) else {
+    guard let configString = command.argument(at: 1) as? String else {
       return sendError("Invalid configuration", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
-    let tunnel = OutlineTunnel(id: tunnelId, config: config)
+    let tunnel = OutlineTunnel(id: tunnelId, configString: configString)
     OutlineVpn.shared.start(tunnel) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
         #if os(macOS)
@@ -231,12 +231,6 @@ class OutlinePlugin: CDVPlugin {
       let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: Int32(tunnelStatus))
       send(pluginResult: result, callbackId: callbackId, keepCallback: true)
     }
-  }
-
-  // Returns whether |config| contains all the expected keys
-  private func containsExpectedKeys(_ config: [String: Any]?) -> Bool {
-    return config?["host"] != nil && config?["port"] != nil &&
-        config?["password"] != nil && config?["method"] != nil
   }
 
   // MARK: Callback helpers
