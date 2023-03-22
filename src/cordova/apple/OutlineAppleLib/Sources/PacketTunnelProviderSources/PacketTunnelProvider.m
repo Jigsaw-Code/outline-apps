@@ -115,7 +115,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   self.tunnelConfig = tunnelConfig;
 
   // Compute the IP address of the host in the active network.
-  self.hostNetworkAddress = 
+  self.hostNetworkAddress =
       [self getNetworkIpAddress:[self.tunnelConfig.host UTF8String]];
   if (self.hostNetworkAddress == nil) {
     [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];

@@ -16,6 +16,7 @@ import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
 import Sentry
+import OutlineTunnel
 
 @objcMembers
 class OutlinePlugin: CDVPlugin {
@@ -75,9 +76,11 @@ class OutlinePlugin: CDVPlugin {
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
     DDLogInfo("\(Action.start) \(tunnelId)")
-
-    let configString = command.argument(at: 1) as? String
-    let tunnel = OutlineTunnel(id: tunnelId, configString: configString!)    
+    guard let configString = command.argument(at: 1) as? String else {
+      return sendError("Invalid configuration", callbackId: command.callbackId,
+                       errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+    }
+    let tunnel = OutlineTunnel(id: tunnelId, configString: configString)
     OutlineVpn.shared.start(tunnel) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
         #if os(macOS)

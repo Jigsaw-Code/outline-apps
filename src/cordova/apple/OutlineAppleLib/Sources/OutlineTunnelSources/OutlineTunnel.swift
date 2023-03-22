@@ -15,9 +15,9 @@
 import Foundation
 
 @objcMembers
-class OutlineTunnel: NSObject, Codable {
-  var id: String?
-  var configString: String?
+public class OutlineTunnel: NSObject, Codable {
+  public var id: String?
+  public var configString: String?
 
   @objc
   public enum TunnelStatus: Int {
@@ -32,7 +32,7 @@ class OutlineTunnel: NSObject, Codable {
     self.configString = configString
   }
   
-  public func encode() -> Data? {
+  func encode() -> Data? {
     return configString!.data(using: .utf8)
   }
 
@@ -44,15 +44,15 @@ class OutlineTunnel: NSObject, Codable {
 
   // Private helper to retrieve the host from the config string.
   private func configToDictionary() -> [String: Any]? {
-      if let data = configString!.data(using: .utf8) {
-        do {
-          return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-        } catch {
-          print(error.localizedDescription)
-        }
+    if let data = configString!.data(using: .utf8) {
+      do {
+        return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+      } catch {
+        print(error.localizedDescription)
       }
-      return nil
     }
+    return nil
+  }
 
   public func host() -> String? {
     guard let host = configToDictionary()!["host"] else {

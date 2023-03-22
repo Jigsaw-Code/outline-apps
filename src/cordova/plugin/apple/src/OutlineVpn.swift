@@ -167,6 +167,7 @@ class OutlineVpn: NSObject {
       self.sendVpnExtensionMessage(message) { response in
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
+
       var config: [String: String]? = [:]
       if !isAutoConnect {
         config?[MessageKey.tunnelId] = tunnelId
@@ -175,6 +176,7 @@ class OutlineVpn: NSObject {
         // macOS app was started by launcher.
         config = [MessageKey.isOnDemand: "true"];
       }
+
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
         try session.startTunnel(options: config)
@@ -193,13 +195,16 @@ class OutlineVpn: NSObject {
   }
 
   // Sends message to extension to restart the tunnel without tearing down the VPN.
-  private func restartVpn(_ tunnelId: String, tunnelConfigString: String,
+  private func restartVpn(_ tunnelId: String,
+                          tunnelConfigString: String,
                           completion: @escaping(Callback)) {
     if activeTunnelId != nil {
       vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
-    let message = [MessageKey.action: Action.restart, MessageKey.tunnelId: tunnelId,
-                   MessageKey.tunnelConfigString : tunnelConfigString] as [String : Any]
+    let message = [MessageKey.action: Action.restart,
+                   MessageKey.tunnelId: tunnelId,
+                   MessageKey.tunnelConfigString : tunnelConfigString
+    ] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)
     }
