@@ -101,7 +101,8 @@ class CordovaTunnel implements Tunnel {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, config);
+    const configString = JSON.stringify(config);
+    return pluginExecWithErrorCode<void>('start', this.id, configString);
   }
 
   stop() {
