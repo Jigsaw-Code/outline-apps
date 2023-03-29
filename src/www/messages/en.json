@@ -14,6 +14,7 @@
   "disconnected-server-state": "Disconnected",
   "disconnecting-server-state": "Disconnecting...",
   "email-feedback-input": "Email address (optional)",
+  "error-details": "Details",
   "error-feedback-submission": "Sorry, we were unable to submit your feedback. Please check that you are connected to the internet and try again.",
   "error-invalid-access-key": "Invalid access key. Please try again, or submit feedback for help.",
   "error-server-already-added": "Server “{serverName}” already added.",

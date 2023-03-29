@@ -26,7 +26,7 @@ export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'webpack_css_rtl_
 export const TS_LOADER = {
   loader: 'ts-loader',
   options: {
-    configFile: path.resolve(__dirname, '..', '..', 'tsconfig.json'),
+    configFile: path.resolve(__dirname, 'tsconfig.json'),
   },
 };
 
