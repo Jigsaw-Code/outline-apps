@@ -339,6 +339,10 @@
       }
     }
   },
+  "error_details": {
+    "message": "Details",
+    "description": "Button pointing to additional details of an error shown to the user"
+  },
   "error_unexpected": {
     "message": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback.",
     "description": "An error message shown when the cause is not really known."
