@@ -215,7 +215,7 @@ export class App {
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
-        const buttonMessage = this.localize(buttonKey);
+        const buttonMessage = typeof buttonKey === 'string' ? this.localize(buttonKey) : undefined;
         const hasButtonMessage = Boolean(buttonMessage);
 
         if (hasButtonMessage) {
