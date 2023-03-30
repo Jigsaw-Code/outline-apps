@@ -215,13 +215,20 @@ export class App {
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
-        this.rootEl.showToast(
-          this.localize(messageKey, ...messageParams),
-          toastDuration,
-          buttonKey ? this.localize(buttonKey) : undefined,
-          buttonHandler,
-          buttonLink
-        );
+        const buttonMessage = typeof buttonKey === 'string' ? this.localize(buttonKey) : undefined;
+        const hasButtonMessage = Boolean(buttonMessage);
+
+        if (hasButtonMessage) {
+          this.rootEl.showToast(
+            this.localize(messageKey, ...messageParams),
+            toastDuration,
+            buttonMessage,
+            buttonHandler,
+            buttonLink
+          );
+        } else {
+          this.rootEl.showToast(this.localize(messageKey, ...messageParams), toastDuration);
+        }
       }, 500);
     }
   }
