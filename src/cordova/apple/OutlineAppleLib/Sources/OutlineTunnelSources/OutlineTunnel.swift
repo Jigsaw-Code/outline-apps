@@ -17,7 +17,8 @@ import Foundation
 @objcMembers
 public class OutlineTunnel: NSObject, Codable {
   public var id: String?
-  public var configString: String?
+  public var host: String?
+  public var proxyConfigString: String?
 
   @objc
   public enum TunnelStatus: Int {
@@ -26,39 +27,47 @@ public class OutlineTunnel: NSObject, Codable {
     case reconnecting = 2
   }
 
-  public convenience init(id: String?, configString: String) {
+  public convenience init?(_ tunnelConfig: [String: Any]?) {
+    if containsExpectedKeys(tunnelConfig)
+      return nil
+    self.init(tunnelConfig?["id"], tunnelConfig?["host"], tunnelConfig?["proxyConfigString"])
+  }
+
+  public init(id: String, host: String, configString: String) {
     self.init()
     self.id = id
-    self.configString = configString
+    self.host = host
+    self.proxyConfigString = proxyConfigString
   }
   
   func encode() -> Data? {
-    return configString!.data(using: .utf8)
+    let encoder = JSONEncoder()
+
+    do {
+      let json = try encoder.encode(self)
+      return Data(json.utf8)
+    } catch {
+      print("Failed to encode the tunnel")
+      return nil
+    }    
   }
 
   static func decode(_ encodedTunnelData: Data) -> OutlineTunnel? {
-    return OutlineTunnel(id: nil,
-                         configString: String(decoding: encodedTunnelData,
-                                              as: UTF8.self))
-  }
+    let decoder = JSONDecoder()
 
-  // Private helper to retrieve the host from the config string.
-  private func configToDictionary() -> [String: Any]? {
-    if let data = configString!.data(using: .utf8) {
-      do {
-        return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-      } catch {
-        print(error.localizedDescription)
-      }
-    }
-    return nil
-  }
-
-  public func host() -> String? {
-    guard let host = configToDictionary()!["host"] else {
+    do {
+      let decodedTunnel = try decoder.decode([OutlineTunnel].self, from: encodedTunnelData)
+      return decodedTunnel
+    } catch {
+      print("Failed to decode the tunnel")
       return nil
     }
-    return host as? String
+  }
+
+  private func containsExpectedKeys(_ tunnelConfig: [String: Any]?) -> Bool {
+    return tunnelConfig?["id"] != nil && 
+        tunnelConfig?["host"] != nil &&
+        tunnelConfig?["proxyConfigString"] != nil
   }
 
 }

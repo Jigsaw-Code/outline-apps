@@ -42,7 +42,8 @@ class OutlineVpn: NSObject {
   private enum MessageKey {
     static let action = "action"
     static let tunnelId = "tunnelId"
-    static let tunnelConfigString = "tunnelConfigString"
+    static let tunnelHost = "tunnelHost"    
+    static let tunnelProxyConfigString = "tunnelProxyConfigString"
     static let errorCode = "errorCode"
     static let host = "host"
     static let port = "port"
@@ -95,8 +96,7 @@ class OutlineVpn: NSObject {
     if isActive(tunnelId) {
       return completion(ErrorCode.noError)
     } else if isVpnConnected() {
-      return restartVpn(tunnelId,
-                        tunnelConfigString: tunnel.configString!,
+      return restartVpn(tunnel,
                         completion: completion)
     }
     self.startVpn(tunnel, isAutoConnect: false, completion)
@@ -171,7 +171,8 @@ class OutlineVpn: NSObject {
       var config: [String: String]? = [:]
       if !isAutoConnect {
         config?[MessageKey.tunnelId] = tunnelId
-        config?[MessageKey.tunnelConfigString] = tunnel.configString
+        config?[MessageKey.tunnelHost] = tunnel.host
+        config?[MessageKey.tunnelProxyConfigString] = tunnel.tunnelProxyConfigString
       } else {
         // macOS app was started by launcher.
         config = [MessageKey.isOnDemand: "true"];
@@ -195,15 +196,15 @@ class OutlineVpn: NSObject {
   }
 
   // Sends message to extension to restart the tunnel without tearing down the VPN.
-  private func restartVpn(_ tunnelId: String,
-                          tunnelConfigString: String,
-                          completion: @escaping(Callback)) {
+  private func restartVpn(_ tunnel: OutlineTunnel,
+                            completion: @escaping(Callback)) {
     if activeTunnelId != nil {
       vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
     let message = [MessageKey.action: Action.restart,
-                   MessageKey.tunnelId: tunnelId,
-                   MessageKey.tunnelConfigString : tunnelConfigString
+                   MessageKey.tunnelId: tunnel.id,
+                   MessageKey.tunnelHost: tunnel.host,
+                   MessageKey.tunnelConfigString : tunnel.tunnelProxyConfigString
     ] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)

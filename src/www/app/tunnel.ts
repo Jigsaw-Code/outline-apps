@@ -20,6 +20,12 @@ export interface ShadowsocksSessionConfig {
   prefix?: string;
 }
 
+export interface TunnelConfig {
+  id: string; // Tunnel id
+  host: string; // Proxy host for iOS, etc.
+  proxyConfigString: string; // Opaque proxy configuration
+}
+
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,

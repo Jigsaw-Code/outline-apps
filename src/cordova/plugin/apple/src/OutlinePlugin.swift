@@ -67,20 +67,18 @@ class OutlinePlugin: CDVPlugin {
    Starts the VPN. This method is idempotent for a given tunnel.
    - Parameters:
     - command: CDVInvokedUrlCommand, where command.arguments
-      - tunnelId: string, ID of the tunnel
-      - config: [String: Any], represents a server configuration
+      - tunnelCnfig: [String: Any], represents a tunnel configuration
    */
   func start(_ command: CDVInvokedUrlCommand) {
-    guard let tunnelId = command.argument(at: 0) as? String else {
-      return sendError("Missing tunnel ID", callbackId: command.callbackId,
+    guard let tunnelCnfig = command.argument(at: 0) as? [String: Any] else {
+      return sendError("Invalid CDVInvokedUrlCommand arg", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
-    DDLogInfo("\(Action.start) \(tunnelId)")
-    guard let configString = command.argument(at: 1) as? String else {
-      return sendError("Invalid configuration", callbackId: command.callbackId,
+    guard let tunnel = OutlineTunnel(tunnelCnfig) else {
+      return sendError("Invalid tunnel configuration", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
-    let tunnel = OutlineTunnel(id: tunnelId, configString: configString)
+    DDLogInfo("\(Action.start) \(tunnel.id)")
     OutlineVpn.shared.start(tunnel) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
         #if os(macOS)

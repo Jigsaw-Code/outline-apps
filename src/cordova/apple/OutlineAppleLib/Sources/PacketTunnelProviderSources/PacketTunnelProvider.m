@@ -28,7 +28,8 @@ NSString *const kActionGetTunnelId = @"getTunnelId";
 NSString *const kActionIsServerReachable = @"isServerReachable";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyTunnelId = @"tunnelId";
-NSString *const kMessageKeyTunnelConfigString = @"tunnelConfigString";
+NSString *const kMessageKeyTunnelHost = @"tunnelHost";
+NSString *const kMessageKeyTunnelProxyConfigString = @"tunnelProxyConfigString";
 NSString *const kMessageKeyErrorCode = @"errorCode";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
@@ -219,7 +220,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     self.startCompletion = callbackWrapper;
     if ([kActionRestart isEqualToString:action]) {
       self.tunnelConfig = [[OutlineTunnel alloc] initWithId:message[kMessageKeyTunnelId]
-                                               configString:message[kMessageKeyTunnelConfigString]];
+                                               host:message[kMessageKeyTunnelHost]
+                                               proxyConfigString:message[kMessageKeyTunnelProxyConfigString]];
       [self reconnectTunnel:true];
     }
   } else if ([kActionStop isEqualToString:action]) {
@@ -260,7 +262,8 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   OutlineTunnel *tunnelConfig;
   if (message != nil && !message[kMessageKeyOnDemand]) {
     tunnelConfig = [[OutlineTunnel alloc] initWithId:message[kMessageKeyTunnelId]
-                                        configString:message[kMessageKeyTunnelConfigString]];
+                                            host:message[kMessageKeyTunnelHost]
+                                            proxyConfigString:message[kMessageKeyTunnelProxyConfigString]];
   } else if (self.tunnelStore != nil) {
     DDLogInfo(@"Retrieving tunnelConfig from store.");
     tunnelConfig = [self.tunnelStore load];
@@ -272,7 +275,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
 - (ProxyClient*) getProxyClient {
   NSError *err;
-  ProxyClient* client = ProxyNewClient(self.tunnelConfig.configString, &err);
+  ProxyClient* client = ProxyNewClient(self.tunnelConfig.proxyConfigString, &err);
   if (err != nil) {
     DDLogInfo(@"Failed to construct client.");
   }
