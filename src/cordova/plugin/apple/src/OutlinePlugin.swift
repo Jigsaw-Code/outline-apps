@@ -70,11 +70,11 @@ class OutlinePlugin: CDVPlugin {
       - tunnelCnfig: [String: Any], represents a tunnel configuration
    */
   func start(_ command: CDVInvokedUrlCommand) {
-    guard let tunnelCnfig = command.argument(at: 0) as? [String: Any] else {
+    guard let tunnelConfig = command.argument(at: 0) as? [String: Any] else {
       return sendError("Invalid CDVInvokedUrlCommand arg", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
-    guard let tunnel = OutlineTunnel(tunnelCnfig) else {
+    guard let tunnel = OutlineTunnel(tunnelConfig) else {
       return sendError("Invalid tunnel configuration", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }

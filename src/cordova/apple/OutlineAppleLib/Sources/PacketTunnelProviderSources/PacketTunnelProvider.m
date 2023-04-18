@@ -28,8 +28,7 @@ NSString *const kActionGetTunnelId = @"getTunnelId";
 NSString *const kActionIsServerReachable = @"isServerReachable";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyTunnelId = @"tunnelId";
-NSString *const kMessageKeyTunnelHost = @"tunnelHost";
-NSString *const kMessageKeyTunnelProxyConfigString = @"tunnelProxyConfigString";
+NSString *const kMessageKeyTunnelConfig = @"tunnelConfig";
 NSString *const kMessageKeyErrorCode = @"errorCode";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
@@ -219,9 +218,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   if ([kActionStart isEqualToString:action] || [kActionRestart isEqualToString:action]) {
     self.startCompletion = callbackWrapper;
     if ([kActionRestart isEqualToString:action]) {
-      self.tunnelConfig = [[OutlineTunnel alloc] initWithId:message[kMessageKeyTunnelId]
-                                               host:message[kMessageKeyTunnelHost]
-                                               proxyConfigString:message[kMessageKeyTunnelProxyConfigString]];
+      self.tunnelConfig = [OutlineTunnel decode:message[kMessageKeyTunnelConfig]];
       [self reconnectTunnel:true];
     }
   } else if ([kActionStop isEqualToString:action]) {
@@ -261,9 +258,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 - (OutlineTunnel *)retrieveTunnelConfig:(NSDictionary *)message {
   OutlineTunnel *tunnelConfig;
   if (message != nil && !message[kMessageKeyOnDemand]) {
-    tunnelConfig = [[OutlineTunnel alloc] initWithId:message[kMessageKeyTunnelId]
-                                            host:message[kMessageKeyTunnelHost]
-                                            proxyConfigString:message[kMessageKeyTunnelProxyConfigString]];
+    tunnelConfig = [OutlineTunnel decode:message[kMessageKeyTunnelConfig]];
   } else if (self.tunnelStore != nil) {
     DDLogInfo(@"Retrieving tunnelConfig from store.");
     tunnelConfig = [self.tunnelStore load];

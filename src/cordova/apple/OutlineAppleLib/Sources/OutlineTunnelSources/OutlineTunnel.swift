@@ -28,46 +28,52 @@ public class OutlineTunnel: NSObject, Codable {
   }
 
   public convenience init?(_ tunnelConfig: [String: Any]?) {
-    if containsExpectedKeys(tunnelConfig)
+    if !OutlineTunnel.containsExpectedKeys(tunnelConfig) {
       return nil
-    self.init(tunnelConfig?["id"], tunnelConfig?["host"], tunnelConfig?["proxyConfigString"])
+    }
+    self.init(id: tunnelConfig?["id"] as! String,
+              host: tunnelConfig?["host"] as! String,
+              proxyConfigString: tunnelConfig?["proxyConfigString"] as! String)
+    // Storing 'tunnelConfig' as a property, for crossing app/VpnExtension layer, would
+    // break Codable compliance so we'll use encoded data instead for that purpose too
+    // (beside tunnel store).
   }
-
-  public init(id: String, host: String, configString: String) {
+  
+  public convenience init(id: String, host: String, proxyConfigString: String) {
     self.init()
     self.id = id
     self.host = host
     self.proxyConfigString = proxyConfigString
   }
   
-  func encode() -> Data? {
+  public func encode() -> Data? {
     let encoder = JSONEncoder()
 
     do {
-      let json = try encoder.encode(self)
-      return Data(json.utf8)
+      let jsonData = try encoder.encode(self)
+      return jsonData
     } catch {
       print("Failed to encode the tunnel")
       return nil
-    }    
+    }
   }
-
-  static func decode(_ encodedTunnelData: Data) -> OutlineTunnel? {
+  
+  static public func decode(_ encodedTunnelData: Data) -> OutlineTunnel? {
     let decoder = JSONDecoder()
 
     do {
-      let decodedTunnel = try decoder.decode([OutlineTunnel].self, from: encodedTunnelData)
+      let decodedTunnel = try decoder.decode(OutlineTunnel.self, from: encodedTunnelData)
       return decodedTunnel
     } catch {
-      print("Failed to decode the tunnel")
+      print("Failed to decode the tunnel config.")
       return nil
     }
   }
-
-  private func containsExpectedKeys(_ tunnelConfig: [String: Any]?) -> Bool {
-    return tunnelConfig?["id"] != nil && 
-        tunnelConfig?["host"] != nil &&
-        tunnelConfig?["proxyConfigString"] != nil
+  
+  static private func containsExpectedKeys(_ tunnelConfig: [String: Any]?) -> Bool {
+    return tunnelConfig?["id"] != nil &&
+           tunnelConfig?["host"] != nil &&
+           tunnelConfig?["proxyConfigString"] != nil
   }
 
 }

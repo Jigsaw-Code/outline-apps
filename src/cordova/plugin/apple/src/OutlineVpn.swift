@@ -42,8 +42,7 @@ class OutlineVpn: NSObject {
   private enum MessageKey {
     static let action = "action"
     static let tunnelId = "tunnelId"
-    static let tunnelHost = "tunnelHost"    
-    static let tunnelProxyConfigString = "tunnelProxyConfigString"
+    static let tunnelConfig = "tunnelConfig"
     static let errorCode = "errorCode"
     static let host = "host"
     static let port = "port"
@@ -168,11 +167,9 @@ class OutlineVpn: NSObject {
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
 
-      var config: [String: String]? = [:]
+      var config: [String: Any]? = [:]
       if !isAutoConnect {
-        config?[MessageKey.tunnelId] = tunnelId
-        config?[MessageKey.tunnelHost] = tunnel.host
-        config?[MessageKey.tunnelProxyConfigString] = tunnel.tunnelProxyConfigString
+        config?[MessageKey.tunnelConfig] = tunnel.encode()! as Any
       } else {
         // macOS app was started by launcher.
         config = [MessageKey.isOnDemand: "true"];
@@ -202,9 +199,7 @@ class OutlineVpn: NSObject {
       vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
     let message = [MessageKey.action: Action.restart,
-                   MessageKey.tunnelId: tunnel.id,
-                   MessageKey.tunnelHost: tunnel.host,
-                   MessageKey.tunnelConfigString : tunnel.tunnelProxyConfigString
+                   MessageKey.tunnelConfig : tunnel.encode()! as Any
     ] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)
