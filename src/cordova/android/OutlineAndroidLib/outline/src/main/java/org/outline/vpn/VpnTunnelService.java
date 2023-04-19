@@ -51,7 +51,7 @@ public class VpnTunnelService extends VpnService {
   private static final int NOTIFICATION_COLOR = 0x00BFA5;
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
   private static final String TUNNEL_ID_KEY = "id";
-  private static final String TUNNEL_HOST_KEY = "host";
+  private static final String TUNNEL_SERVER_NAME_KEY = "serverName";
   private static final String TUNNEL_PROXY_CONFIG_KEY = "proxyConfigString";
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
@@ -209,7 +209,7 @@ public class VpnTunnelService extends VpnService {
     final TunnelConfig tunnelConfig = new TunnelConfig();
     try {
       tunnelConfig.id = jsonTunnelConfig.getString(TUNNEL_ID_KEY);
-      tunnelConfig.host = jsonTunnelConfig.getString(TUNNEL_HOST_KEY);
+      tunnelConfig.serverName = jsonTunnelConfig.getString(TUNNEL_SERVER_NAME_KEY);
       tunnelConfig.proxyConfigString = jsonTunnelConfig.getString(TUNNEL_PROXY_CONFIG_KEY);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to parse JSON tunnel config", jsonTunnelConfig);
@@ -470,7 +470,7 @@ public class VpnTunnelService extends VpnService {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
-      tunnel.put(TUNNEL_ID_KEY, config.id).put(TUNNEL_HOST_KEY, config.host).put(TUNNEL_PROXY_CONFIG_KEY,
+      tunnel.put(TUNNEL_ID_KEY, config.id).put(TUNNEL_SERVER_NAME_KEY, config.serverName).put(TUNNEL_PROXY_CONFIG_KEY,
           config.proxyConfigString);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
@@ -577,7 +577,7 @@ public class VpnTunnelService extends VpnService {
 
   /* Returns the server's host name (IP address). */
   private String getServerName(final TunnelConfig config) {
-    return config.host;
+    return config.serverName;
   }
 
   /* Returns the application name. */

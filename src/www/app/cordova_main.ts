@@ -105,6 +105,7 @@ class CordovaTunnel implements Tunnel {
     const tunnelConfig: TunnelConfig = {
       id: this.id,
       host: proxyConfig.host,
+      serverName: proxyConfig.host, // TODO: wire the server key's name instead.
       proxyConfigString: JSON.stringify(proxyConfig),
     };
     return pluginExecWithErrorCode<void>('start', tunnelConfig);

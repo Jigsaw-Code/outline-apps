@@ -16,6 +16,6 @@ package org.outline;
 
 parcelable TunnelConfig {
   String id;
-  String host;
+  String serverName;
   String proxyConfigString;  
 }

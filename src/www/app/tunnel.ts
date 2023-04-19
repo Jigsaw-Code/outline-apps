@@ -22,7 +22,8 @@ export interface ShadowsocksSessionConfig {
 
 export interface TunnelConfig {
   id: string; // Tunnel id
-  host: string; // Proxy host for iOS, etc.
+  host: string; // Proxy host for iOS
+  serverName: string; // Proxy server name foor Android
   proxyConfigString: string; // Opaque proxy configuration
 }
 
