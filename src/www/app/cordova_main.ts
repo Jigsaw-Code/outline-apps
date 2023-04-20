@@ -97,7 +97,7 @@ class CordovaNativeNetworking implements NativeNetworking {
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 
-  start(proxyConfig: ShadowsocksSessionConfig) {
+  start(proxyConfig: ShadowsocksSessionConfig, serverName: string) {
     if (!proxyConfig) {
       throw new errors.IllegalServerConfiguration();
     }
@@ -105,7 +105,7 @@ class CordovaTunnel implements Tunnel {
     const tunnelConfig: TunnelConfig = {
       id: this.id,
       host: proxyConfig.host,
-      serverName: proxyConfig.host, // TODO: wire the server key's name instead.
+      serverName: serverName,
       proxyConfigString: JSON.stringify(proxyConfig),
     };
     return pluginExecWithErrorCode<void>('start', tunnelConfig);

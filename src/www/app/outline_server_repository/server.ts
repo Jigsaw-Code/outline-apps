@@ -102,7 +102,7 @@ export class OutlineServer implements Server {
         this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
       }
 
-      await this.tunnel.start(this.sessionConfig);
+      await this.tunnel.start(this.sessionConfig, this._name);
     } catch (e) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
