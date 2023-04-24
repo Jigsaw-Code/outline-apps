@@ -25,12 +25,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
-      
+
       - name: Install NPM Dependencies
         run: npm ci
-        
+
       - name: Run Linter
         run: npm run action lint
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Test Web App
         run: npm run action www/test
-      
+
       - uses: codecov/codecov-action@v3
         with:
           files: ./output/coverage/www/coverage-final.json
@@ -57,9 +57,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
-      
+
       - name: Install NPM Dependencies
         run: npm ci
 
@@ -74,14 +74,14 @@ jobs:
     steps:
       - name: Support longpaths
         run: git config --system core.longpaths true
-        
+
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Install NPM Dependencies
@@ -104,7 +104,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Install NPM Dependencies
@@ -136,7 +136,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Install NPM Dependencies
@@ -168,7 +168,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Install NPM Dependencies
