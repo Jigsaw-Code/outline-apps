@@ -58,8 +58,8 @@
     "web-animations-js": "^2.3.2"
   },
   "engines": {
-    "node": "^16.18.0",
-    "npm": "^8.1.0"
+    "node": "^18.16.0",
+    "npm": "^9.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -85,7 +85,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "cordova-android": "^11.0.0",
     "cordova-browser": "~6.0.0",
-    "cordova-ios": "~6.1.0",
+    "cordova-ios": "~6.3.0",
     "cordova-lib": "^11.0.0",
     "cordova-osx": "github:apache/cordova-osx",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
