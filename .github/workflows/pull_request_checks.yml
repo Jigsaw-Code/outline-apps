@@ -4,10 +4,10 @@ on:
   pull_request:
     types:
       - opened
-      
-     # This `edited` flag is why we need a separate workflow - 
-     # specifying edited here causes this job to be re-run whenever someone edits the PR title/description. 
-     
+
+     # This `edited` flag is why we need a separate workflow -
+     # specifying edited here causes this job to be re-run whenever someone edits the PR title/description.
+
      # If we had the debug builds in this file, they would run unnecessarily, costing resources.
       - edited
 
@@ -16,10 +16,10 @@ on:
 jobs:
   name_check:
     name: Pull Request Name Check
-    runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest
     permissions:
       pull-requests: read
-    env: 
+    env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Clone Repository
@@ -28,9 +28,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v2.2.0
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
-      
+
       - name: Install NPM Dependencies
         run: npm ci
 
@@ -39,11 +39,11 @@ jobs:
 
   size_label:
     name: Change Size Label
-    runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    env: 
+    env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       # size-label-action fails to work when coming from a fork:
