@@ -142,11 +142,14 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Test OutlineAppleLib
+      - name: Set up simulator
         run: |
           xcrun simctl list runtimes -v
+          xcversion simulators
           xcversion simulators --install='iOS 12.4'
-          npm run action cordova/test ios
+
+      - name: Test OutlineAppleLib
+        run: npm run action cordova/test ios
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
