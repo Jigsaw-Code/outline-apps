@@ -290,13 +290,21 @@ class OutlinePlugin: CDVPlugin {
     let fileManager = FileManager.default
     let appLibraryDir = fileManager.urls(for: .libraryDirectory, in: .userDomainMask)[0]
 
-    var uiWebViewLocalStorageDir: URL
-    if fileManager.fileExists(atPath: appLibraryDir.appendingPathComponent(
-        "WebKit/LocalStorage/\(kUIWebViewLocalStorageFilename)").relativePath) {
-      uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
-    } else {
-      uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
-    }
+    let uiWebViewLocalStorageDir: URL
+    #if targetEnvironment(macCatalyst)
+      guard let bundleID = Bundle.main.bundleIdentifier else {
+          return DDLogError("Unable to get bundleID for app.")
+      }
+      let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      uiWebViewLocalStorageDir = appSupportDir.appendingPathComponent(bundleID)
+    #else
+      if fileManager.fileExists(atPath: appLibraryDir.appendingPathComponent(
+          "WebKit/LocalStorage/\(kUIWebViewLocalStorageFilename)").relativePath) {
+        uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
+      } else {
+        uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
+      }
+    #endif
     let uiWebViewLocalStorage = uiWebViewLocalStorageDir.appendingPathComponent(kUIWebViewLocalStorageFilename)
     if !fileManager.fileExists(atPath: uiWebViewLocalStorage.relativePath) {
       return DDLogInfo("Not migrating, UIWebView local storage files missing.")
