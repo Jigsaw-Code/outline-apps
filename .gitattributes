@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.bat eol=crlf
+/src/build/** linguist-generated=false
+/tools/build/** linguist-generated=false
