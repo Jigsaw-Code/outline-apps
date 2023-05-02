@@ -130,10 +130,7 @@ jobs:
     needs: web_test
     steps:
       - name: Display XCode
-        run: |
-          xcode-select --print-path
-          xcrun simctl list runtimes -v
-          xcversion simulators
+        run: xcode-select --print-path
 
       - name: Checkout
         uses: actions/checkout@v2.3.4
