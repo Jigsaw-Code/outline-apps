@@ -55,7 +55,7 @@ export async function main(...parameters) {
     '-destination',
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`
-      : `platform=iOS Simulator,name=Any iOS Simulator Device`,
+      : `platform=iOS Simulator,OS=16.2,name=Any iOS Simulator Device`,
     '-workspace',
     path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
     '-enableCodeCoverage',
