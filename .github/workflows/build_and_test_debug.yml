@@ -130,7 +130,7 @@ jobs:
     steps:
       - name: Set up simulator
         run: |
-          xcode-select --switch /Applications/Xcode_13.1.app
+          sudo xcode-select --switch /Applications/Xcode_13.1.app
           xcversion list
           xcversion selected
           xcrun simctl list runtimes -v
