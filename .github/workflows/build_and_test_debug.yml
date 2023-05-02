@@ -127,11 +127,10 @@ jobs:
     runs-on: macos-12
     timeout-minutes: 20
     needs: web_test
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_13.1.app/Contents/Developer
     steps:
       - name: Set up simulator
         run: |
+          xcode-select --switch /Applications/Xcode_13.1.app
           xcversion list
           xcversion selected
           xcrun simctl list runtimes -v
