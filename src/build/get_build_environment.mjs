@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getVersion} from './get_version.mjs';
-import {getBuildNumber} from './get_build_number.mjs';
-
 /*
   Inputs:
-  => platform: the platform to generate the environment.json for
   => buildMode: the buildMode of binary to build, i.e. debug or release
+  => candidateId: the candidateId of the release build
+  => sentryDsn: the sentryDsn of the release build
 
   Outputs:
   => the build environment object
 */
-export async function getBuildEnvironment(platform, buildMode, sentryDsn) {
+export async function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
   if (buildMode === 'release') {
+    if (!candidateId) {
+      throw new TypeError('Release builds require candidateId, but it is not defined.');
+    }
+
     if (!sentryDsn) {
       throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
     }
@@ -40,9 +42,11 @@ export async function getBuildEnvironment(platform, buildMode, sentryDsn) {
     }
   }
 
+  const APP_BUILD_NUMBER = Date.now() / 1000 / 60 / 60;
+
   return {
     SENTRY_DSN: sentryDsn,
-    APP_VERSION: `${await getVersion(platform)}${buildMode === 'debug' ? '-debug' : ''}`,
-    APP_BUILD_NUMBER: await getBuildNumber(platform),
+    APP_VERSION: `${candidateId.replace(/-rc\.\d+/, '')} (${APP_BUILD_NUMBER})`,
+    APP_BUILD_NUMBER,
   };
 }

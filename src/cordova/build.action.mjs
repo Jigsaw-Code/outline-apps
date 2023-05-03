@@ -22,6 +22,7 @@ import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
+// import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -29,8 +30,9 @@ import {spawnStream} from '../build/spawn_stream.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, /* candidateId, */ buildMode, verbose} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
+  // const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId);
 
   await runAction('cordova/setup', ...parameters);
 
@@ -39,6 +41,8 @@ export async function main(...parameters) {
   }
 
   if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
+    // TODO: inject version and build number into Info.plist
+
     const xcodebuildBaseArguments = [
       'xcodebuild',
       'clean',
@@ -47,7 +51,7 @@ export async function main(...parameters) {
       '-scheme',
       'Outline',
       '-destination',
-      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS'
+      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
     ];
 
     if (buildMode === 'release') {
@@ -83,6 +87,7 @@ export async function main(...parameters) {
           "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
         );
       }
+      // TODO: inject version and build number into config.xml
       argv = [
         ...argv,
         '--keystore=keystore.p12',

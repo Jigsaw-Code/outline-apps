@@ -27,8 +27,8 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, sentryDsn} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
+  const {platform, buildMode, candidateId, sentryDsn} = getElectronBuildParameters(parameters);
+  const {APP_VERSION} = await getBuildEnvironment(buildMode, candidateId, sentryDsn);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
 

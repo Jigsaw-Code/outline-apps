@@ -27,6 +27,7 @@ const VALID_BUILD_MODES = ['debug', 'release'];
 export function getBuildParameters(buildParameters) {
   let {
     _: [platform],
+    candidateId,
     buildMode,
     stagingPercentage,
     sentryDsn,
@@ -51,12 +52,17 @@ export function getBuildParameters(buildParameters) {
     );
   }
 
+  if (buildMode === 'release' && !candidateId) {
+    throw new TypeError('You must specify a candidateId when building in release mode.');
+  }
+
   // set defaults
   platform ??= 'browser';
   buildMode ??= 'debug';
+  candidateId ??= '0.0.0-debug';
   stagingPercentage ??= 100;
   sentryDsn ??= process.env.SENTRY_DSN;
   verbose ??= false;
 
-  return {platform, buildMode, stagingPercentage, sentryDsn, verbose};
+  return {platform, buildMode, candidateId, stagingPercentage, sentryDsn, verbose};
 }
