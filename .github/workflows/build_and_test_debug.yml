@@ -92,12 +92,13 @@ jobs:
 
   macos_debug_build:
     name: MacOS Debug Build
-    runs-on: macos-12
+    runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_13.3.1.app/Contents/Developer
     steps:
+      - name: Display XCode
+        run: xcode-select --print-path
+
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
@@ -124,12 +125,13 @@ jobs:
 
   ios_debug_build:
     name: iOS Debug Build
-    runs-on: macos-12
+    runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_13.3.1.app/Contents/Developer
     steps:
+      - name: Display XCode
+        run: xcode-select --print-path
+
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
@@ -143,9 +145,7 @@ jobs:
         run: npm ci
 
       - name: Test OutlineAppleLib
-        run: |
-          xcversion simulators --install='iOS 12.4 Simulator'
-          npm run action cordova/test ios
+        run: npm run action cordova/test ios
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
