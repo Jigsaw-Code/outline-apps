@@ -22,7 +22,9 @@ import {runAction} from '../build/run_action.mjs';
 import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
-// import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {parseXmlFile} from '../build/parse_xml_file.mjs';
+import {writeXmlFile} from '../build/write_xml_file.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -30,9 +32,9 @@ import {spawnStream} from '../build/spawn_stream.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, /* candidateId, */ buildMode, verbose} = getCordovaBuildParameters(parameters);
+  const {platform: cordovaPlatform, candidateId, buildMode, verbose} = getCordovaBuildParameters(parameters);
   const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
-  // const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId);
+  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId);
 
   await runAction('cordova/setup', ...parameters);
 
@@ -41,7 +43,32 @@ export async function main(...parameters) {
   }
 
   if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
-    // TODO: inject version and build number into Info.plist
+    const {
+      plist: {
+        dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
+        ...rest
+      },
+    } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`);
+
+    outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
+    outlineInfoPlistValues.push(APP_VERSION, APP_BUILD_NUMBER);
+
+    await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`, {
+      plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...rest},
+    });
+
+    const {
+      plist: {
+        dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
+      },
+    } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`);
+
+    outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
+    outlineVpnExtensionPlistValues.push(APP_VERSION);
+
+    await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`, {
+      plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...rest},
+    });
 
     const xcodebuildBaseArguments = [
       'xcodebuild',
@@ -107,6 +134,8 @@ export async function main(...parameters) {
         argv,
       },
     });
+
+    // TODO: revert changed version files
   }
 }
 
