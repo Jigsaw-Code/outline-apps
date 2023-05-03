@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.bat eol=crlf
+# Allow the build folders to be searched by GitHub's T file search
+build/** linguist-generated=false
