@@ -298,6 +298,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             localize="[[localize]]"
             root-path="[[rootPath]]"
             version="[[appVersion]]"
+            build="[[appBuild]]"
           ></about-view>
           <language-view
             name="language"
@@ -520,6 +521,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         value: true,
       },
       appVersion: {
+        type: String,
+        readonly: true,
+      },
+      appBuild: {
         type: String,
         readonly: true,
       },

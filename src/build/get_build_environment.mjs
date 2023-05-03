@@ -42,11 +42,9 @@ export async function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
     }
   }
 
-  const APP_BUILD_NUMBER = Date.now() / 1000 / 60 / 60;
-
   return {
     SENTRY_DSN: sentryDsn,
-    APP_VERSION: `${candidateId.replace(/-rc\.\d+/, '')} (${APP_BUILD_NUMBER})`,
-    APP_BUILD_NUMBER,
+    APP_VERSION: candidateId.replace(/-rc\.\d+/, ''),
+    APP_BUILD_NUMBER: Date.now() / 1000 / 60 / 60,
   };
 }
