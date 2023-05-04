@@ -43,32 +43,37 @@ export async function main(...parameters) {
   }
 
   if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
-    const {
-      plist: {
-        dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
-        ...rest
-      },
-    } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`);
+    if (buildMode === 'release') {
+      await spawnStream('git', 'stash');
 
-    outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
-    outlineInfoPlistValues.push(APP_VERSION, APP_BUILD_NUMBER);
+      const {
+        plist: {
+          dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
+          ...outlineInfoRest
+        },
+      } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`);
 
-    await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`, {
-      plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...rest},
-    });
+      outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
+      outlineInfoPlistValues.push(APP_VERSION, APP_BUILD_NUMBER);
 
-    const {
-      plist: {
-        dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
-      },
-    } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`);
+      await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`, {
+        plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...outlineInfoRest},
+      });
 
-    outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
-    outlineVpnExtensionPlistValues.push(APP_VERSION);
+      const {
+        plist: {
+          dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
+          ...vpnExtensionRest
+        },
+      } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`);
 
-    await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`, {
-      plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...rest},
-    });
+      outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
+      outlineVpnExtensionPlistValues.push(APP_VERSION);
+
+      await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`, {
+        plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...vpnExtensionRest},
+      });
+    }
 
     const xcodebuildBaseArguments = [
       'xcodebuild',
@@ -114,7 +119,15 @@ export async function main(...parameters) {
           "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
         );
       }
-      // TODO: inject version and build number into config.xml
+      await spawnStream('git', 'stash');
+
+      const {widget, ...rest} = await parseXmlFile('config.xml');
+
+      widget.$.version = APP_VERSION;
+      widget.$['android-versionCode'] = APP_BUILD_NUMBER;
+
+      await writeXmlFile('config.xml', {widget, ...rest});
+
       argv = [
         ...argv,
         '--keystore=keystore.p12',
@@ -126,7 +139,7 @@ export async function main(...parameters) {
       ];
     }
 
-    return cordova.compile({
+    await cordova.compile({
       verbose,
       platforms: ['android'],
       options: {
@@ -135,7 +148,18 @@ export async function main(...parameters) {
       },
     });
 
-    // TODO: revert changed version files
+    if (buildMode === 'release') {
+      await spawnStream(
+        'git',
+        'reset',
+        'config.xml',
+        'src/cordova/apple/xcode/ios/Outline/Outline-Info.plist',
+        'src/cordova/apple/xcode/ios/Outline/VpnExtension-Info.plist',
+        'src/cordova/apple/xcode/macos/Outline/Outline-Info.plist',
+        'src/cordova/apple/xcode/macos/Outline/VpnExtension-Info.plist'
+      );
+      await spawnStream('git', 'stash', 'apply');
+    }
   }
 }
 
