@@ -15,6 +15,7 @@
 import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
+import rmfr from 'rmfr';
 
 import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
@@ -30,6 +31,8 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  */
 export async function main(...parameters) {
   const {platform, buildMode, candidateId, sentryDsn} = getBuildParameters(parameters);
+
+  await rmfr(path.resolve(getRootDir(), 'www'));
 
   // write build environment
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
