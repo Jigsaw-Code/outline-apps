@@ -19,12 +19,12 @@ import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
-import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {parseXmlFile} from '../build/parse_xml_file.mjs';
 import {writeXmlFile} from '../build/write_xml_file.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -32,135 +32,164 @@ import {writeXmlFile} from '../build/write_xml_file.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, candidateId, buildMode, verbose} = getCordovaBuildParameters(parameters);
-  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
+  const {platform, candidateId, buildMode, verbose} = getBuildParameters(parameters);
   const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId);
 
   await runAction('cordova/setup', ...parameters);
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${outlinePlatform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
-    if (buildMode === 'release') {
-      await spawnStream('git', 'stash');
-
-      const {
-        plist: {
-          dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
-          ...outlineInfoRest
-        },
-      } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`);
-
-      outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
-      outlineInfoPlistValues.push(APP_VERSION, APP_BUILD_NUMBER);
-
-      await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/Outline-Info.plist`, {
-        plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...outlineInfoRest},
-      });
-
-      const {
-        plist: {
-          dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
-          ...vpnExtensionRest
-        },
-      } = await parseXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`);
-
-      outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
-      outlineVpnExtensionPlistValues.push(APP_VERSION);
-
-      await writeXmlFile(`src/cordova/apple/xcode/${cordovaPlatform}/Outline/VpnExtension-Info.plist`, {
-        plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...vpnExtensionRest},
-      });
-    }
-
-    const xcodebuildBaseArguments = [
-      'xcodebuild',
-      'clean',
-      '-workspace',
-      path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
-      '-scheme',
-      'Outline',
-      '-destination',
-      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
-    ];
-
-    if (buildMode === 'release') {
-      return spawnStream(...xcodebuildBaseArguments, 'archive', '-configuration', 'Release');
-    }
-
-    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
-    return spawnStream(
-      ...xcodebuildBaseArguments,
-      'build',
-      '-configuration',
-      'Debug',
-      'CODE_SIGN_IDENTITY=""',
-      'CODE_SIGNING_ALLOWED="NO"'
-    );
+  if (verbose && platform === 'android') {
+    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
   }
 
-  if (cordovaPlatform === 'android') {
-    let argv = [
-      // Path is relative to /platforms/android/.
-      // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
-      '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
-    ];
+  switch (platform + buildMode) {
+    case 'android' + 'debug':
+      return androidDebug(verbose);
+    case 'android' + 'release':
+      return androidRelease(
+        APP_VERSION,
+        APP_BUILD_NUMBER,
+        process.env.ANDROID_KEY_STORE_PASSWORD,
+        process.env.ANDROID_KEY_STORE_CONTENTS,
+        verbose
+      );
+    case 'ios' + 'debug':
+    case 'macos' + 'debug':
+      return appleDebug(platform);
+    case 'ios' + 'release':
+    case 'macos' + 'release':
+      return appleRelease(platform, APP_VERSION, APP_BUILD_NUMBER);
+  }
+}
 
-    if (verbose) {
-      argv.push('--gradleArg=--info');
-      cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-    }
+async function appleDebug(platform) {
+  return spawnStream(
+    'xcodebuild',
+    'clean',
+    '-workspace',
+    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
+    '-scheme',
+    'Outline',
+    '-destination',
+    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
+    'build',
+    '-configuration',
+    'Debug',
+    'CODE_SIGN_IDENTITY=""',
+    'CODE_SIGNING_ALLOWED="NO"'
+  );
+}
 
-    if (buildMode === 'release') {
-      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
-        throw new ReferenceError(
-          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
-        );
-      }
-      await spawnStream('git', 'stash');
+async function appleRelease(platform, version, buildNumber) {
+  await spawnStream('git', 'stash');
 
-      const {widget, ...rest} = await parseXmlFile('config.xml');
+  const {
+    plist: {
+      dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
+      ...outlineInfoRest
+    },
+  } = await parseXmlFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`);
 
-      widget.$.version = APP_VERSION;
-      widget.$['android-versionCode'] = APP_BUILD_NUMBER;
+  outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
+  outlineInfoPlistValues.push(version, buildNumber);
 
-      await writeXmlFile('config.xml', {widget, ...rest});
+  await writeXmlFile(`src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`, {
+    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...outlineInfoRest},
+  });
 
-      argv = [
-        ...argv,
+  const {
+    plist: {
+      dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
+      ...vpnExtensionRest
+    },
+  } = await parseXmlFile(`src/cordova/apple/xcode/${platform}/Outline/VpnExtension-Info.plist`);
+
+  outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
+  outlineVpnExtensionPlistValues.push(version);
+
+  await writeXmlFile(`src/cordova/apple/xcode/${platform}/Outline/VpnExtension-Info.plist`, {
+    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...vpnExtensionRest},
+  });
+
+  await spawnStream(
+    'xcodebuild',
+    'clean',
+    '-workspace',
+    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
+    '-scheme',
+    'Outline',
+    '-destination',
+    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
+    'archive',
+    '-configuration',
+    'Release'
+  );
+
+  await spawnStream(
+    'git',
+    'reset',
+    `src/cordova/apple/xcode/${platform}/Outline/Outline-Info.plist`,
+    `src/cordova/apple/xcode/${platform}/Outline/VpnExtension-Info.plist`
+  );
+  await spawnStream('git', 'stash', 'apply');
+}
+
+async function androidDebug(verbose) {
+  return cordova.compile({
+    verbose,
+    platforms: ['android'],
+    options: {
+      argv: [
+        // Path is relative to /platforms/android/.
+        // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
         '--keystore=keystore.p12',
         '--alias=privatekey',
         `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
         `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
         '--',
         '--gradleArg=-PcdvBuildMultipleApks=true',
-      ];
-    }
+      ],
+    },
+  });
+}
 
-    await cordova.compile({
-      verbose,
-      platforms: ['android'],
-      options: {
-        release: buildMode === 'release',
-        argv,
-      },
-    });
-
-    if (buildMode === 'release') {
-      await spawnStream(
-        'git',
-        'reset',
-        'config.xml',
-        'src/cordova/apple/xcode/ios/Outline/Outline-Info.plist',
-        'src/cordova/apple/xcode/ios/Outline/VpnExtension-Info.plist',
-        'src/cordova/apple/xcode/macos/Outline/Outline-Info.plist',
-        'src/cordova/apple/xcode/macos/Outline/VpnExtension-Info.plist'
-      );
-      await spawnStream('git', 'stash', 'apply');
-    }
+async function androidRelease(version, buildNumber, ksPassword, ksContents, verbose) {
+  if (!(ksPassword && ksContents)) {
+    throw new ReferenceError(
+      "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+    );
   }
+
+  await spawnStream('git', 'stash');
+
+  const {widget, ...rest} = await parseXmlFile('config.xml');
+
+  widget.$.version = version;
+  widget.$['android-versionCode'] = buildNumber;
+
+  await writeXmlFile('config.xml', {widget, ...rest});
+
+  await cordova.compile({
+    verbose,
+    platforms: ['android'],
+    options: {
+      release: true,
+      argv: [
+        // Path is relative to /platforms/android/.
+        // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
+      ],
+    },
+  });
+
+  await spawnStream('git', 'reset', 'config.xml');
+  await spawnStream('git', 'stash', 'apply');
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
