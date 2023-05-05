@@ -14,7 +14,6 @@
 
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {runWebpack} from '../build/run_webpack.mjs';
@@ -41,7 +40,7 @@ export async function main(...parameters) {
   );
 
   if (platform === 'windows') {
-    let windowsEnvironment = `!define RELEASE "${await getVersion(platform)}"`;
+    let windowsEnvironment = `!define RELEASE "${APP_VERSION}"`;
 
     if (sentryDsn) {
       const {username: apiKey, pathname: projectID} = new URL(sentryDsn);

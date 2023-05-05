@@ -47,7 +47,7 @@ export const spawnStream = (command, ...parameters) =>
         resolve(result.join(''));
       } else {
         console.error(chalk.red(`ERROR: ${command} ${parameters.join(' ')} failed with code ${code}`));
-        reject(new Error(errors.join('')));
+        reject(new Error(errors.join('\n')));
       }
     });
   });
