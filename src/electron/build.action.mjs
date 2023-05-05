@@ -20,7 +20,7 @@ import fs from 'fs/promises';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
-import {getBuildEnvironment} from 'src/build/get_build_environment.mjs';
+import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
