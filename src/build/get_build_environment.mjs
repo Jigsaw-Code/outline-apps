@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const MS_PER_HOUR = 1000 * 60 * 60;
+
 /*
   Inputs:
   => buildMode: the buildMode of binary to build, i.e. debug or release
@@ -21,7 +23,7 @@
   Outputs:
   => the build environment object
 */
-export async function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
+export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
   if (buildMode === 'release') {
     if (!candidateId) {
       throw new TypeError('Release builds require candidateId, but it is not defined.');
@@ -42,9 +44,11 @@ export async function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
     }
   }
 
+  const [, appVersion] = candidateId?.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/) ?? [];
+
   return {
     SENTRY_DSN: sentryDsn,
-    APP_VERSION: candidateId.replace(/-rc\.\d+/, ''),
-    APP_BUILD_NUMBER: Date.now() / 1000 / 60 / 60,
+    APP_VERSION: appVersion,
+    APP_BUILD_NUMBER: String(Math.floor(Date.now() / MS_PER_HOUR)),
   };
 }

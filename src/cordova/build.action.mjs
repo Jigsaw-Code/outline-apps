@@ -31,7 +31,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', ...parameters);
   await runAction('cordova/setup', ...parameters);
 
   switch (platform + buildMode) {

@@ -26,7 +26,7 @@ import {parseXmlFile} from '../build/parse_xml_file.mjs';
 import {writeXmlFile} from '../build/write_xml_file.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {spawnStream} from 'src/build/spawn_stream.mjs';
+import {spawnStream} from '../build/spawn_stream.mjs';
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
@@ -38,10 +38,10 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, verbose, candidateId} = getBuildParameters(parameters);
-  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId);
+  const {platform, buildMode, verbose, candidateId, sentryDsn} = getBuildParameters(parameters);
+  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId, sentryDsn);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', ...parameters);
 
   await rmfr(path.resolve(getRootDir(), 'platforms'));
   await rmfr(path.resolve(getRootDir(), 'plugins'));
@@ -66,12 +66,15 @@ export async function main(...parameters) {
   }
 }
 
+const transformXmlFiles = async (filelist, callback) =>
+  Promise.all(filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath)))));
+
 async function androidDebug(verbose) {
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
   }
 
-  await cordova.prepare({
+  return cordova.prepare({
     platforms: ['android'],
     save: false,
     verbose,
@@ -85,12 +88,14 @@ async function androidRelease(version, buildNumber, verbose) {
     verbose,
   });
 
-  const {widget, ...rest} = await parseXmlFile('platforms/android/config.xml');
-
-  widget.$.version = version;
-  widget.$['android-versionCode'] = buildNumber;
-
-  return writeXmlFile('platforms/android/config.xml', {widget, ...rest});
+  return transformXmlFiles(
+    [path.join(getRootDir(), 'platforms', 'android', 'CordovaLib', 'AndroidManifest.xml')],
+    xml => {
+      xml.manifest.$['android:versionName'] = version;
+      xml.manifest.$['android:versionCode'] = buildNumber;
+      return xml;
+    }
+  );
 }
 
 async function appleIosDebug(verbose) {
@@ -139,33 +144,15 @@ async function appleIosRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
 
-  const {
-    plist: {
-      dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
-      ...outlineInfoRest
-    },
-  } = await parseXmlFile('platforms/ios/Outline/Outline-Info.plist');
+  return transformXmlFiles(
+    ['platforms/ios/Outline/VpnExtension-Info.plist', 'platforms/ios/Outline/VpnExtension-Info.plist'],
+    xml => {
+      xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
+      xml.plist.dict[0].string.push(version, buildNumber);
 
-  outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
-  outlineInfoPlistValues.push(version, buildNumber);
-
-  await writeXmlFile('platforms/ios/Outline/Outline-Info.plist', {
-    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...outlineInfoRest},
-  });
-
-  const {
-    plist: {
-      dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
-      ...vpnExtensionRest
-    },
-  } = await parseXmlFile('platforms/ios/Outline/VpnExtension-Info.plist');
-
-  outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
-  outlineVpnExtensionPlistValues.push(version);
-
-  return writeXmlFile('platforms/ios/Outline/VpnExtension-Info.plist', {
-    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...vpnExtensionRest},
-  });
+      return xml;
+    }
+  );
 }
 
 async function appleMacOsRelease(version, buildNumber, verbose) {
@@ -184,33 +171,15 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 
-  const {
-    plist: {
-      dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}],
-      ...outlineInfoRest
-    },
-  } = await parseXmlFile('platforms/osx/Outline/Outline-Info.plist');
+  return transformXmlFiles(
+    ['platforms/osx/Outline/VpnExtension-Info.plist', 'platforms/osx/Outline/VpnExtension-Info.plist'],
+    xml => {
+      xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
+      xml.plist.dict[0].string.push(version, buildNumber);
 
-  outlineInfoPlistKeys.push('CFBundleShortVersionString', 'CFBundleVersion');
-  outlineInfoPlistValues.push(version, buildNumber);
-
-  await writeXmlFile('platforms/osx/Outline/Outline-Info.plist', {
-    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...outlineInfoRest},
-  });
-
-  const {
-    plist: {
-      dict: [{key: outlineVpnExtensionPlistKeys, string: outlineVpnExtensionPlistValues}],
-      ...vpnExtensionRest
-    },
-  } = await parseXmlFile('platforms/osx/Outline/VpnExtension-Info.plist');
-
-  outlineVpnExtensionPlistKeys.push('CFBundleShortVersionString');
-  outlineVpnExtensionPlistValues.push(version);
-
-  return writeXmlFile('platforms/osx/Outline/VpnExtension-Info.plist', {
-    plist: {dict: [{key: outlineInfoPlistKeys, string: outlineInfoPlistValues}], ...vpnExtensionRest},
-  });
+      return xml;
+    }
+  );
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
