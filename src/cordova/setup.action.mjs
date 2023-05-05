@@ -145,7 +145,7 @@ async function appleIosRelease(version, buildNumber, verbose) {
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
 
   return transformXmlFiles(
-    ['platforms/ios/Outline/VpnExtension-Info.plist', 'platforms/ios/Outline/VpnExtension-Info.plist'],
+    ['platforms/ios/Outline/Outline-Info.plist', 'platforms/ios/Outline/VpnExtension-Info.plist'],
     xml => {
       xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
       xml.plist.dict[0].string.push(version, buildNumber);
@@ -172,7 +172,7 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 
   return transformXmlFiles(
-    ['platforms/osx/Outline/VpnExtension-Info.plist', 'platforms/osx/Outline/VpnExtension-Info.plist'],
+    ['platforms/osx/Outline/Outline-Info.plist', 'platforms/osx/Outline/VpnExtension-Info.plist'],
     xml => {
       xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
       xml.plist.dict[0].string.push(version, buildNumber);

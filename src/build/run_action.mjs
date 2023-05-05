@@ -96,6 +96,7 @@ export async function runAction(actionPath, ...parameters) {
     if (error?.message) {
       console.error(chalk.red(error.message));
     }
+
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -128,7 +129,7 @@ async function main() {
     console.info(
       chalk.gray(`
   =========================================================
-               © The Outline Authors, 2022
+               © The Outline Authors, 2023
   =========================================================
   `)
     );
