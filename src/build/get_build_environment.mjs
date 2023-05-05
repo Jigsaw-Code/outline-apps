@@ -48,7 +48,7 @@ export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
 
   return {
     SENTRY_DSN: sentryDsn,
-    APP_VERSION: appVersion,
+    APP_VERSION: buildMode === 'release' ? appVersion : `${appVersion}-${buildMode}`,
     APP_BUILD_NUMBER: String(Math.floor(Date.now() / MS_PER_HOUR)),
   };
 }

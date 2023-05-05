@@ -59,7 +59,7 @@ export function getBuildParameters(buildParameters) {
   // set defaults
   platform ??= 'browser';
   buildMode ??= 'debug';
-  candidateId ??= '0.0.0-debug';
+  candidateId ??= '0.0.0';
   stagingPercentage ??= 100;
   sentryDsn ??= process.env.SENTRY_DSN;
   verbose ??= false;

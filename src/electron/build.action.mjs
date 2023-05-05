@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
 import {runAction} from '../build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
@@ -21,12 +20,15 @@ import fs from 'fs/promises';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
+import {getBuildEnvironment} from 'src/build/get_build_environment.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
-  const version = await getVersion(platform);
+  const {platform, buildMode, stagingPercentage, publish, candidateId, sentryDsn} = getElectronBuildParameters(
+    parameters
+  );
+  const {APP_VERSION} = getBuildEnvironment(buildMode, candidateId, sentryDsn);
 
   if (buildMode === 'debug') {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
@@ -36,7 +38,7 @@ export async function main(...parameters) {
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
-    path.join(getRootDir(), 'src/electron/icons'),
+    path.join(getRootDir(), 'src', 'electron', 'icons'),
     path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
   );
 
@@ -54,7 +56,7 @@ export async function main(...parameters) {
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
-        version,
+        version: APP_VERSION,
       },
     },
   });
@@ -62,8 +64,14 @@ export async function main(...parameters) {
   if (stagingPercentage !== 100) {
     const platformSuffix = platform === 'linux' ? '-linux' : '';
 
-    await fs.appendFile(`build/dist/beta${platformSuffix}.yml`, `stagingPercentage: ${stagingPercentage}`);
-    await fs.appendFile(`build/dist/latest${platformSuffix}.yml`, `stagingPercentage: ${stagingPercentage}`);
+    await fs.appendFile(
+      path.join(getRootDir(), 'build', 'dist', `beta${platformSuffix}.yml`),
+      `stagingPercentage: ${stagingPercentage}`
+    );
+    await fs.appendFile(
+      path.join(getRootDir(), 'build', 'dist', `latest${platformSuffix}.yml`),
+      `stagingPercentage: ${stagingPercentage}`
+    );
   }
 }
 

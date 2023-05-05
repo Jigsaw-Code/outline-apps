@@ -63,6 +63,12 @@ export async function main(...parameters) {
       return appleIosRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
     case 'macos' + 'release':
       return appleMacOsRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
+    case 'browser' + 'debug':
+    default:
+      return cordova.prepare({
+        platforms: ['browser'],
+        save: false,
+      });
   }
 }
 

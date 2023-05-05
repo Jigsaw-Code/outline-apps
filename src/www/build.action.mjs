@@ -37,7 +37,7 @@ export async function main(...parameters) {
   // write build environment
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
   await fs.writeFile(
-    path.resolve(getRootDir(), 'www/environment.json'),
+    path.resolve(getRootDir(), 'www', 'environment.json'),
     JSON.stringify(await getBuildEnvironment(buildMode, candidateId, sentryDsn))
   );
 
