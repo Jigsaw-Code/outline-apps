@@ -14,6 +14,7 @@
 
 import path from 'node:path';
 import url from 'url';
+import fs from 'node:fs/promises';
 
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
@@ -22,6 +23,8 @@ import {runAction} from '../build/run_action.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {downloadHttpsFile} from '../build/download_file.mjs';
+import {unzipFile} from '../build/unzip_file.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -34,11 +37,30 @@ export async function main(...parameters) {
   await runAction('www/build', ...parameters);
   await runAction('cordova/setup', ...parameters);
 
+  if (verbose) {
+    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
+  }
+
   switch (platform + buildMode) {
     case 'android' + 'debug':
       return androidDebug(verbose);
     case 'android' + 'release':
-      return androidRelease(process.env.ANDROID_KEY_STORE_PASSWORD, process.env.ANDROID_KEY_STORE_CONTENTS, verbose);
+      if (!process.env.JAVA_HOME) {
+        throw new ReferenceError('JAVA_HOME must be defined in the environment to build an Android Release!');
+      }
+
+      if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
+        throw new ReferenceError(
+          "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
+        );
+      }
+
+      return androidRelease(
+        process.env.ANDROID_KEY_STORE_PASSWORD,
+        process.env.ANDROID_KEY_STORE_CONTENTS,
+        process.env.JAVA_HOME,
+        verbose
+      );
     case 'ios' + 'debug':
     case 'macos' + 'debug':
       return appleDebug(platform);
@@ -87,10 +109,6 @@ async function appleRelease(platform) {
 async function androidDebug(verbose) {
   console.warn(`WARNING: building "android" in [DEBUG] mode. Do not publish this build!!`);
 
-  if (verbose) {
-    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-  }
-
   return cordova.compile({
     verbose,
     platforms: ['android'],
@@ -105,18 +123,16 @@ async function androidDebug(verbose) {
   });
 }
 
-async function androidRelease(ksPassword, ksContents, verbose) {
-  if (!(ksPassword && ksContents)) {
-    throw new ReferenceError(
-      "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
-    );
-  }
+const JAVA_BUNDLETOOL_VERSION = '1.8.2';
+const JAVA_BUNDLETOOL_RESOURCE_PATH = `https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-${JAVA_BUNDLETOOL_VERSION}.jar`;
 
-  if (verbose) {
-    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-  }
+async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
+  const androidBuildPath = path.resolve(getRootDir(), 'platforms', 'android');
+  const keystorePath = path.resolve(androidBuildPath, 'keystore.p12');
 
-  return cordova.compile({
+  await fs.writeFile(keystorePath, Buffer.from(ksContents, 'base64'));
+
+  await cordova.compile({
     verbose,
     platforms: ['android'],
     options: {
@@ -126,15 +142,35 @@ async function androidRelease(ksPassword, ksContents, verbose) {
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
         '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
-        '--keystore=keystore.p12',
+        `--keystore=${keystorePath}`,
         '--alias=privatekey',
         `--storePassword=${ksPassword}`,
-        `--password=${ksContents}`,
+        `--password=${ksPassword}`,
         '--',
         '--gradleArg=-PcdvBuildMultipleApks=true',
       ],
     },
   });
+
+  const bundletoolPath = path.resolve(androidBuildPath, 'bundletool.jar');
+  await downloadHttpsFile(JAVA_BUNDLETOOL_RESOURCE_PATH, bundletoolPath);
+
+  const outputPath = path.resolve(androidBuildPath, 'Outline.apks');
+  await spawnStream(
+    path.resolve(javaPath, 'bin', 'java'),
+    '-jar',
+    bundletoolPath,
+    'build-apks',
+    `--bundle=${path.resolve(androidBuildPath, 'app', 'build', 'outputs', 'bundle', 'release', 'app-release.aab')}`,
+    `--output=${outputPath}`,
+    '--mode=universal',
+    `--ks=${keystorePath}`,
+    `--ks-pass=pass:${ksPassword}`,
+    '--ks-key-alias=privatekey',
+    `--key-pass=pass:${ksPassword}`
+  );
+
+  return unzipFile(outputPath, androidBuildPath);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

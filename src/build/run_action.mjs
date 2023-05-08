@@ -94,7 +94,7 @@ export async function runAction(actionPath, ...parameters) {
     await spawnStream(runner, ...subCommands, resolvedPath, ...parameters);
   } catch (error) {
     if (error?.message) {
-      console.error(chalk.red(error.message));
+      console.error(chalk.gray(error.message));
     }
 
     console.groupEnd();
