@@ -27,9 +27,6 @@ class OutlinePlugin: CDVPlugin {
     static let onStatusChange = "onStatusChange"
   }
 
-  public static let kAppQuitNotification = "outlinePluginAppQuitNotification"
-  public static let kVpnConnectedNotification = "outlineVpnConnected"
-  public static let kVpnDisconnectedNotification = "outlineVpnDisconnected"
   public static let kMaxBreadcrumbs: UInt = 100
 
   private var callbacks: [String: String]!
@@ -54,7 +51,7 @@ class OutlinePlugin: CDVPlugin {
       self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
       NotificationCenter.default.addObserver(
           self, selector: #selector(self.stopVpnOnAppQuit),
-          name: NSNotification.Name(rawValue: OutlinePlugin.kAppQuitNotification),
+          name: .kAppQuit,
           object: nil)
     #endif
 
@@ -83,9 +80,8 @@ class OutlinePlugin: CDVPlugin {
     }
     OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
-        #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+        #if os(macOS) || targetEnvironment(macCatalyst)
+          NotificationCenter.default.post(name: .kVpnConnected, object: nil)
         #endif
         self.sendSuccess(callbackId: command.callbackId)
       } else {
@@ -108,9 +104,8 @@ class OutlinePlugin: CDVPlugin {
     DDLogInfo("\(Action.stop) \(tunnelId)")
     OutlineVpn.shared.stop(tunnelId)
     sendSuccess(callbackId: command.callbackId)
-    #if os(macOS)
-      NotificationCenter.default.post(
-        name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+    #if os(macOS) || targetEnvironment(macCatalyst)
+      NotificationCenter.default.post(name: NSNotification.kVpnDisconnected, object: nil)
     #endif
   }
 
@@ -195,15 +190,13 @@ class OutlinePlugin: CDVPlugin {
     var tunnelStatus: Int
     switch vpnStatus {
       case .connected:
-        #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+        #if os(macOS) || targetEnvironment(macCatalyst)
+          NotificationCenter.default.post(name: .kVpnConnected, object: nil)
         #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.connected.rawValue
       case .disconnected:
-        #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+        #if os(macOS) || targetEnvironment(macCatalyst)
+          NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
         #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
       case .reasserting:

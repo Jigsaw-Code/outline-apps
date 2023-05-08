@@ -45,7 +45,8 @@
           andSelector:@selector(handleURLEvent:withReplyEvent:)
         forEventClass:kInternetEventClass
            andEventID:kAEGetURL];
-  // Don't ever show the default Cordova window, as we will display its content view in a popover.
+  // Don't ever show the default Cordova window, as we will display its content
+  // view in a popover.
   [self.window close];
 
   [NSWorkspace.sharedWorkspace.notificationCenter
@@ -111,7 +112,7 @@
   if (!self.isSystemShuttingDown) {
     // Don't post a quit notification if the system is shutting down so the VPN is not stopped
     // and it auto-connects on startup.
-    [[NSNotificationCenter defaultCenter] postNotificationName:OutlinePlugin.kAppQuitNotification
+    [[NSNotificationCenter defaultCenter] postNotificationName:.kAppQuit
                                                         object:nil];
   }
 }
