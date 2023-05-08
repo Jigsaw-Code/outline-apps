@@ -34,7 +34,7 @@ export async function main(...parameters) {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('www/build', ...parameters);
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
