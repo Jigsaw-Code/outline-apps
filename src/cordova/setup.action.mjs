@@ -72,14 +72,12 @@ export async function main(...parameters) {
   }
 }
 
-const transformXmlFiles = async (filelist, callback) =>
-  Promise.all(filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath)))));
+const transformXmlFiles = async (filelist, callback, options = {}) =>
+  Promise.all(
+    filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath, options)), options))
+  );
 
 async function androidDebug(verbose) {
-  if (verbose) {
-    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-  }
-
   return cordova.prepare({
     platforms: ['android'],
     save: false,
@@ -97,10 +95,11 @@ async function androidRelease(version, buildNumber, verbose) {
   return transformXmlFiles(
     [path.join(getRootDir(), 'platforms', 'android', 'CordovaLib', 'AndroidManifest.xml')],
     xml => {
-      xml.manifest.$['android:versionName'] = version;
-      xml.manifest.$['android:versionCode'] = buildNumber;
+      xml.manifest['@android:versionName'] = version;
+      xml.manifest['@android:versionCode'] = buildNumber;
       return xml;
-    }
+    },
+    {verbose}
   );
 }
 
@@ -136,6 +135,36 @@ async function appleMacOsDebug(verbose) {
   return spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 }
 
+const transformAppleXmlFiles = async (platform, version, buildNumber, verbose) =>
+  transformXmlFiles(
+    [`platforms/${platform}/Outline/Outline-Info.plist`, `platforms/${platform}/Outline/VpnExtension-Info.plist`],
+    xml => {
+      xml.plist.dict['#'].unshift(
+        {
+          key: 'CFBundleShortVersionString',
+        },
+        {
+          string: version,
+        },
+        {
+          key: 'CFBundleVersion',
+        },
+        {
+          string: buildNumber,
+        }
+      );
+
+      return xml;
+    },
+    {
+      dtd: {
+        pubID: '-//Apple//DTD PLIST 1.0//EN',
+        sysID: 'http://www.apple.com/DTDs/PropertyList-1.0.dtd',
+      },
+      verbose,
+    }
+  );
+
 async function appleIosRelease(version, buildNumber, verbose) {
   if (os.platform() !== 'darwin') {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
@@ -150,15 +179,7 @@ async function appleIosRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
 
-  return transformXmlFiles(
-    ['platforms/ios/Outline/Outline-Info.plist', 'platforms/ios/Outline/VpnExtension-Info.plist'],
-    xml => {
-      xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
-      xml.plist.dict[0].string.push(version, buildNumber);
-
-      return xml;
-    }
-  );
+  return transformAppleXmlFiles('ios', version, buildNumber, verbose);
 }
 
 async function appleMacOsRelease(version, buildNumber, verbose) {
@@ -177,15 +198,7 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 
-  return transformXmlFiles(
-    ['platforms/osx/Outline/Outline-Info.plist', 'platforms/osx/Outline/VpnExtension-Info.plist'],
-    xml => {
-      xml.plist.dict[0].key.push('CFBundleShortVersionString', 'CFBundleVersion');
-      xml.plist.dict[0].string.push(version, buildNumber);
-
-      return xml;
-    }
-  );
+  return transformAppleXmlFiles('osx', version, buildNumber, verbose);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

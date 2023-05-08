@@ -13,12 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import xml2js from 'xml2js';
 import fs from 'fs/promises';
+import xmlbuilder from 'xmlbuilder2';
 
-export async function writeXmlFile(filePath, data) {
-  const builder = new xml2js.Builder();
-  const xml = builder.buildObject(data);
+export async function writeXmlFile(filePath, data, {verbose = false, dtd, encoding = 'UTF-8'} = {}) {
+  const xml = xmlbuilder.create({encoding}, data);
 
-  return fs.writeFile(filePath, xml);
+  if (dtd) {
+    xml.dtd(dtd);
+  }
+
+  const xmlContents = xml.end({prettyPrint: true});
+
+  if (verbose) {
+    console.info('[writeXmlFile]', {filePath, xmlContents});
+  }
+
+  return fs.writeFile(filePath, xmlContents);
 }

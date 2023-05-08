@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import xml2js from 'xml2js';
-import fs from 'fs/promises';
+import xmlbuilder from 'xmlbuilder2';
+import fs from 'node:fs/promises';
 
-export async function parseXmlFile(filePath) {
-  return xml2js.parseStringPromise(await fs.readFile(filePath));
+export async function parseXmlFile(filePath, {verbose = false} = {}) {
+  const xmlDocument = xmlbuilder.convert(await fs.readFile(filePath, {encoding: 'utf8'}), {
+    format: 'object',
+  });
+
+  if (verbose) {
+    console.info('[parseXmlFile]', {filePath, xmlDocument: JSON.stringify(xmlDocument, null, 2)});
+  }
+
+  return xmlDocument;
 }
