@@ -24,7 +24,6 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {downloadHttpsFile} from '../build/download_file.mjs';
-import {unzipFile} from '../build/unzip_file.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -170,7 +169,7 @@ async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
     `--key-pass=pass:${ksPassword}`
   );
 
-  return unzipFile(outputPath, androidBuildPath);
+  return fs.rename(outputPath, path.resolve(androidBuildPath, 'Outline.zip'));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
