@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #import "AppDelegate.h"
-#import "Outline-Swift.h"
 #import "AppKitBridge-Bridging-Header.h"
+#import "Outline-Swift.h"
 
 #if TARGET_OS_MACCATALYST
 @import ServiceManagement;
@@ -28,34 +28,37 @@
 @synthesize window;
 
 - (id)init {
-    self = [super init];
-    return self;
+  self = [super init];
+  return self;
 }
 
 #pragma mark - Lifecycle
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:
+        (NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions {
 #if TARGET_OS_MACCATALYST
 
-    AppKitBundleLoader *bundle = [[AppKitBundleLoader alloc] init];
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSNotification.kVpnConnected
-                                                    object:nil
-                                                     queue:nil
-                                                usingBlock:^(NSNotification * _Nonnull notification) {
-        [[bundle appKitBridge] setConnectionStatus:YES];
-    }];
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSNotification.kVpnDisconnected
-                                                    object:nil
-                                                     queue:nil
-                                                usingBlock:^(NSNotification * _Nonnull notification) {
-        [[bundle appKitBridge] setConnectionStatus:NO];
-    }];
+  AppKitBundleLoader *bundle = [[AppKitBundleLoader alloc] init];
+  [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSNotification.kVpnConnected
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification *_Nonnull notification) {
+                [[bundle appKitBridge] setConnectionStatus:YES];
+              }];
+  [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSNotification.kVpnDisconnected
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification *_Nonnull notification) {
+                [[bundle appKitBridge] setConnectionStatus:NO];
+              }];
 #endif
 
-    [super application:application didFinishLaunchingWithOptions:launchOptions];
+  [super application:application didFinishLaunchingWithOptions:launchOptions];
 
-    return YES;
+  return YES;
 }
 
 @end

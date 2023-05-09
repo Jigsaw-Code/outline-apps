@@ -18,10 +18,10 @@
 @import ServiceManagement;
 @import OutlineTunnel;
 
-@interface AppDelegate()
-@property (strong, nonatomic) NSStatusItem *statusItem;
-@property (strong, nonatomic) NSPopover *popover;
-@property (strong, nonatomic) EventMonitor *eventMonitor;
+@interface AppDelegate ()
+@property(strong, nonatomic) NSStatusItem *statusItem;
+@property(strong, nonatomic) NSPopover *popover;
+@property(strong, nonatomic) EventMonitor *eventMonitor;
 @property bool isSystemShuttingDown;
 @end
 
@@ -36,7 +36,7 @@
 
 #pragma mark - Lifecycle
 
-- (void)applicationDidStartLaunching:(NSNotification*)aNotification {
+- (void)applicationDidStartLaunching:(NSNotification *)aNotification {
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
@@ -56,45 +56,52 @@
               usingBlock:^(NSNotification *_Nonnull n) {
                 self.isSystemShuttingDown = YES;
               }];
-  [NSNotificationCenter.defaultCenter addObserverForName:OutlinePlugin.kVpnConnectedNotification
-                                                  object:nil
-                                                   queue:nil
-                                              usingBlock:^(NSNotification * _Nonnull note) {
-                                                [self setAppIcon:@"StatusBarButtonImageConnected"];
-  }];
-  [NSNotificationCenter.defaultCenter addObserverForName:OutlinePlugin.kVpnDisconnectedNotification
-                                                  object:nil
-                                                   queue:nil
-                                              usingBlock:^(NSNotification * _Nonnull note) {
-                                                [self setAppIcon:@"StatusBarButtonImage"];
-                                              }];
+  [NSNotificationCenter.defaultCenter
+      addObserverForName:OutlinePlugin.kVpnConnectedNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification *_Nonnull note) {
+                [self setAppIcon:@"StatusBarButtonImageConnected"];
+              }];
+  [NSNotificationCenter.defaultCenter
+      addObserverForName:OutlinePlugin.kVpnDisconnectedNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification *_Nonnull note) {
+                [self setAppIcon:@"StatusBarButtonImage"];
+              }];
 }
 
-- (void)handleURLEvent:(NSAppleEventDescriptor*)event
-        withReplyEvent:(NSAppleEventDescriptor*)replyEvent {
-  NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+- (void)handleURLEvent:(NSAppleEventDescriptor *)event
+        withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+  NSString *url =
+      [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:CDVMacOsUrlHandler.kCDVHandleOpenURLNotification object:url];
+      postNotificationName:CDVMacOsUrlHandler.kCDVHandleOpenURLNotification
+                    object:url];
   if (!self.popover.isShown) {
     [self showPopover];
   }
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
-  self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+  self.statusItem = [[NSStatusBar systemStatusBar]
+      statusItemWithLength:NSSquareStatusItemLength];
   self.statusItem.button.action = @selector(togglePopover);
   [self setAppIcon:@"StatusBarButtonImage"];
   self.popover = [[NSPopover alloc] init];
-  self.popover.contentViewController = [[NSViewController alloc] initWithNibName:@"MainViewController"
-                                                                          bundle:[NSBundle mainBundle]];
+  self.popover.contentViewController =
+      [[NSViewController alloc] initWithNibName:@"MainViewController"
+                                         bundle:[NSBundle mainBundle]];
   self.popover.contentViewController.view = self.window.contentView;
   // Monitor clicks outside the popover in order to close it.
-  NSEventMask eventMask = NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown;
-  self.eventMonitor = [[EventMonitor alloc] initWithMask:eventMask handler:^(NSEvent* event) {
-    if (self.popover.isShown) {
-      [self closePopover];
-    }
-  }];
+  NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown;
+  self.eventMonitor = [[EventMonitor alloc] initWithMask:eventMask
+                                                 handler:^(NSEvent *event) {
+                                                   if (self.popover.isShown) {
+                                                     [self closePopover];
+                                                   }
+                                                 }];
 
   if ([self wasStartedByLauncherApp]) {
     [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
@@ -105,13 +112,13 @@
   } else {
     [self showPopover];
   }
-  [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
+  [self setAppLauncherEnabled:true]; // Enable app launcher to start on boot.
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
   if (!self.isSystemShuttingDown) {
-    // Don't post a quit notification if the system is shutting down so the VPN is not stopped
-    // and it auto-connects on startup.
+    // Don't post a quit notification if the system is shutting down so the VPN
+    // is not stopped and it auto-connects on startup.
     [[NSNotificationCenter defaultCenter] postNotificationName:.kAppQuit
                                                         object:nil];
   }
@@ -155,8 +162,9 @@
   if (launcherBundleId == nil) {
     return;
   }
-  if (!SMLoginItemSetEnabled((__bridge CFStringRef) launcherBundleId, enabled)) {
-    return NSLog(@"Failed to %@ launcher %@", enabled ? @"enable" : @"disable", launcherBundleId);
+  if (!SMLoginItemSetEnabled((__bridge CFStringRef)launcherBundleId, enabled)) {
+    return NSLog(@"Failed to %@ launcher %@", enabled ? @"enable" : @"disable",
+                 launcherBundleId);
   }
 }
 
@@ -171,14 +179,16 @@
   return [[NSString alloc] initWithFormat:@"%@.%@", bundleId, kAppLauncherName];
 }
 
-// Returns whether the app was started by the embedded launcher app by inspecting the launch event.
+// Returns whether the app was started by the embedded launcher app by
+// inspecting the launch event.
 - (bool)wasStartedByLauncherApp {
-  NSAppleEventDescriptor *descriptor = [[NSAppleEventManager sharedAppleEventManager]
-                                        currentAppleEvent];
+  NSAppleEventDescriptor *descriptor =
+      [[NSAppleEventManager sharedAppleEventManager] currentAppleEvent];
   if (descriptor == nil) {
     return false;
   }
-  NSAppleEventDescriptor *launcherDescriptor = [descriptor paramDescriptorForKeyword:keyAEPropData];
+  NSAppleEventDescriptor *launcherDescriptor =
+      [descriptor paramDescriptorForKeyword:keyAEPropData];
   if (launcherDescriptor == nil) {
     return false;
   }
