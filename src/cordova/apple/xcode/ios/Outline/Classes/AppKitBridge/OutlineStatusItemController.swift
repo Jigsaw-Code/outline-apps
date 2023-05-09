@@ -60,7 +60,19 @@ class OutlineStatusItemController: NSObject {
     }
 
     @objc func openApplication(_ sender: AnyObject?) {
-        NotificationCenter.default.post(name: .kAppOpen, object: nil)
+        NSApp.activate(ignoringOtherApps: true)
+        guard let uiWindow = self.getUiWindow() else {
+            return
+        }
+        uiWindow.makeKeyAndOrderFront(self)
     }
 
+    private func getUiWindow() -> NSWindow? {
+        for window in NSApp.windows {
+            if String(describing: window).contains("UINSWindow") {
+                return window
+            }
+        }
+        return nil
+    }
 }

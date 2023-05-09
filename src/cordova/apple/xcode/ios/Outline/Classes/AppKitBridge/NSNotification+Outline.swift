@@ -15,14 +15,12 @@
 import Foundation
 
 extension Notification.Name {
-    static let kAppOpen = Notification.Name("appOpen")
     static let kAppQuit = Notification.Name("appQuit")
     static let kVpnConnected = Notification.Name("vpnConnected")
     static let kVpnDisconnected = Notification.Name("vpnDisconnected")
 }
 
 @objc extension NSNotification {
-    public static let kAppOpen = Notification.Name.kAppOpen
     public static let kAppQuit = Notification.Name.kAppQuit
     public static let kVpnConnected = Notification.Name.kVpnConnected
     public static let kVpnDisconnected = Notification.Name.kVpnDisconnected
