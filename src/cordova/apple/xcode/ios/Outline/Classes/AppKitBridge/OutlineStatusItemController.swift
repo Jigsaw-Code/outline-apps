@@ -17,10 +17,9 @@ import AppKit
 var OutlineStatusItem = NSStatusItem()
 
 class OutlineStatusItemController: NSObject {
-
     let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
-                                              action:nil,
-                                              keyEquivalent:"")
+                                              action: nil,
+                                              keyEquivalent: "")
 
     private enum AppIconImage {
         static let statusConnected = NSImage(named: NSImage.Name("StatusBarButtonImageConnected"))!
@@ -38,13 +37,13 @@ class OutlineStatusItemController: NSObject {
         super.init()
 
         OutlineStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        self.setStatus(isConnected: false)
+        setStatus(isConnected: false)
 
         let menu = NSMenu()
-        let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication) , keyEquivalent: "o")
+        let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
         openMenuItem.target = self
         menu.addItem(openMenuItem)
-        menu.addItem(self.connectionStatusMenuItem)
+        menu.addItem(connectionStatusMenuItem)
         menu.addItem(NSMenuItem.separator())
         let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
         closeMenuItem.target = self
@@ -58,7 +57,7 @@ class OutlineStatusItemController: NSObject {
         OutlineStatusItem.button?.image = appIconImage
 
         let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
-        self.connectionStatusMenuItem.title = connectionStatusTitle
+        connectionStatusMenuItem.title = connectionStatusTitle
     }
 
     private func getUiWindow() -> NSWindow? {
@@ -70,15 +69,15 @@ class OutlineStatusItemController: NSObject {
         return nil
     }
 
-    @objc func openApplication(_ sender: AnyObject?) {
+    @objc func openApplication(_: AnyObject?) {
         NSApp.activate(ignoringOtherApps: true)
-        guard let uiWindow = self.getUiWindow() else {
+        guard let uiWindow = getUiWindow() else {
             return
         }
         uiWindow.makeKeyAndOrderFront(self)
     }
 
-    @objc func closeApplication(_ sender: AnyObject?) {
+    @objc func closeApplication(_: AnyObject?) {
         NotificationCenter.default.post(name: .kAppQuit, object: nil)
         NSApplication.shared.terminate(self)
     }

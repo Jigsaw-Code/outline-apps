@@ -20,8 +20,8 @@ extension Notification.Name {
     static let kVpnDisconnected = Notification.Name("vpnDisconnected")
 }
 
-@objc extension NSNotification {
-    public static let kAppQuit = Notification.Name.kAppQuit
-    public static let kVpnConnected = Notification.Name.kVpnConnected
-    public static let kVpnDisconnected = Notification.Name.kVpnDisconnected
+@objc public extension NSNotification {
+    static let kAppQuit = Notification.Name.kAppQuit
+    static let kVpnConnected = Notification.Name.kVpnConnected
+    static let kVpnDisconnected = Notification.Name.kVpnDisconnected
 }

@@ -13,34 +13,33 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
-import Foundation
+    import Foundation
 
-@objcMembers class AppKitBundleLoader: NSObject {
-
-    private enum BridgeBundle {
-        static let fileName = "AppKitBridge.bundle"
-    }
-
-    var appKitBridge: AppKitBridgeProtocol?
-
-    required override init() {
-        super.init()
-        self.loadBundle()
-    }
-
-    private func loadBundle() {
-        guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
-            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+    @objcMembers class AppKitBundleLoader: NSObject {
+        private enum BridgeBundle {
+            static let fileName = "AppKitBridge.bundle"
         }
-        guard let bundle = Bundle(url: bundleURL) else {
-            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+
+        var appKitBridge: AppKitBridgeProtocol?
+
+        override required init() {
+            super.init()
+            loadBundle()
         }
-        NSLog("[AppKitBundleLoader] Loaded Successfully")
-        let className = "AppKitBridge.AppKitBridge"
-        guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
-            preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
+
+        private func loadBundle() {
+            guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
+                preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+            }
+            guard let bundle = Bundle(url: bundleURL) else {
+                preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+            }
+            NSLog("[AppKitBundleLoader] Loaded Successfully")
+            let className = "AppKitBridge.AppKitBridge"
+            guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
+                preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
+            }
+            appKitBridge = appKitBridgeClass.init()
         }
-        self.appKitBridge = appKitBridgeClass.init()
     }
-}
 #endif

@@ -17,7 +17,7 @@ import AppKit
 class AppKitBridge: NSObject, AppKitBridgeProtocol {
     let statusItemController = OutlineStatusItemController()
 
-    required override init() {
+    override required init() {
         super.init()
     }
 
