@@ -49,6 +49,9 @@ class OutlinePlugin: CDVPlugin {
 
     #if os(macOS)
       self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
+    #endif
+
+    #if os(macOS) || targetEnvironment(macCatalyst)
       NotificationCenter.default.addObserver(
           self, selector: #selector(self.stopVpnOnAppQuit),
           name: .kAppQuit,

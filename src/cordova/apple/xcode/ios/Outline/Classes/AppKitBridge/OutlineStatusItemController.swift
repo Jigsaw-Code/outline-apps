@@ -46,7 +46,9 @@ class OutlineStatusItemController: NSObject {
         menu.addItem(openMenuItem)
         menu.addItem(self.connectionStatusMenuItem)
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: MenuTitle.quit, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
+        closeMenuItem.target = self
+        menu.addItem(closeMenuItem)
         OutlineStatusItem.menu = menu
     }
 
@@ -59,6 +61,15 @@ class OutlineStatusItemController: NSObject {
         self.connectionStatusMenuItem.title = connectionStatusTitle
     }
 
+    private func getUiWindow() -> NSWindow? {
+        for window in NSApp.windows {
+            if String(describing: window).contains("UINSWindow") {
+                return window
+            }
+        }
+        return nil
+    }
+
     @objc func openApplication(_ sender: AnyObject?) {
         NSApp.activate(ignoringOtherApps: true)
         guard let uiWindow = self.getUiWindow() else {
@@ -67,12 +78,8 @@ class OutlineStatusItemController: NSObject {
         uiWindow.makeKeyAndOrderFront(self)
     }
 
-    private func getUiWindow() -> NSWindow? {
-        for window in NSApp.windows {
-            if String(describing: window).contains("UINSWindow") {
-                return window
-            }
-        }
-        return nil
+    @objc func closeApplication(_ sender: AnyObject?) {
+        NotificationCenter.default.post(name: .kAppQuit, object: nil)
+        NSApplication.shared.terminate(self)
     }
 }

@@ -16,7 +16,9 @@
 #import "Outline-Swift.h"
 #import "AppKitBridge-Bridging-Header.h"
 
+#if TARGET_OS_MACCATALYST
 @import ServiceManagement;
+#endif
 
 @interface AppDelegate (Outline) <UIApplicationDelegate>
 @end
