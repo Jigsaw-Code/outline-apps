@@ -38,8 +38,8 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, verbose, candidateId, sentryDsn} = getBuildParameters(parameters);
-  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(buildMode, candidateId, sentryDsn);
+  const {platform, buildMode, verbose} = getBuildParameters(parameters);
+  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(parameters);
 
   await runAction('www/build', ...parameters);
 
@@ -135,24 +135,15 @@ async function appleMacOsDebug(verbose) {
   return spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 }
 
+const XML_VERSION_STRING_INDEX = 1;
+const XML_BUILD_NUMBER_INDEX = 3;
+
 const transformAppleXmlFiles = async (platform, version, buildNumber, verbose) =>
   transformXmlFiles(
     [`platforms/${platform}/Outline/Outline-Info.plist`, `platforms/${platform}/Outline/VpnExtension-Info.plist`],
     xml => {
-      xml.plist.dict['#'].unshift(
-        {
-          key: 'CFBundleShortVersionString',
-        },
-        {
-          string: version,
-        },
-        {
-          key: 'CFBundleVersion',
-        },
-        {
-          string: buildNumber,
-        }
-      );
+      xml.plist.dict['#'][XML_VERSION_STRING_INDEX].string = version;
+      xml.plist.dict['#'][XML_BUILD_NUMBER_INDEX].string = buildNumber;
 
       return xml;
     },

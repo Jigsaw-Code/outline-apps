@@ -25,10 +25,8 @@ import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage, publish, candidateId, sentryDsn} = getElectronBuildParameters(
-    parameters
-  );
-  const {APP_VERSION} = getBuildEnvironment(buildMode, candidateId, sentryDsn);
+  const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
+  const {APP_VERSION} = getBuildEnvironment(parameters);
 
   if (buildMode === 'debug') {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);

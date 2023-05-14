@@ -19,22 +19,20 @@ const VALID_BUILD_MODES = ['debug', 'release'];
 
 /*
   Inputs:
-  => platform: the list of action arguments passed in
+  => cliParameters: the list of action arguments passed in
 
   Outputs:
   => an object containing the specificed platform and buildMode.
 */
-export function getBuildParameters(buildParameters) {
-  let {
-    _: [platform],
-    candidateId,
-    buildMode,
-    stagingPercentage,
-    sentryDsn,
-    verbose,
-  } = minimist(buildParameters);
+export function getBuildParameters(cliArguments) {
+  const {
+    _: [platform = 'browser'],
+    buildMode = 'debug',
+    stagingPercentage = 100,
+    verbose = false,
+  } = minimist(cliArguments);
 
-  if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
+  if (stagingPercentage < 0 || stagingPercentage > 100) {
     throw new RangeError('StagingPercentage must be a number between zero and one hundred!');
   }
 
@@ -52,17 +50,5 @@ export function getBuildParameters(buildParameters) {
     );
   }
 
-  if (buildMode === 'release' && !candidateId) {
-    throw new TypeError('You must specify a candidateId when building in release mode.');
-  }
-
-  // set defaults
-  platform ??= 'browser';
-  buildMode ??= 'debug';
-  candidateId ??= '0.0.0';
-  stagingPercentage ??= 100;
-  sentryDsn ??= process.env.SENTRY_DSN;
-  verbose ??= false;
-
-  return {platform, buildMode, candidateId, stagingPercentage, sentryDsn, verbose};
+  return {platform, buildMode, stagingPercentage, verbose};
 }

@@ -30,7 +30,7 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, candidateId, sentryDsn} = getBuildParameters(parameters);
+  const {platform, buildMode} = getBuildParameters(parameters);
 
   await rmfr(path.resolve(getRootDir(), 'www'));
 
@@ -38,7 +38,7 @@ export async function main(...parameters) {
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
   await fs.writeFile(
     path.resolve(getRootDir(), 'www', 'environment.json'),
-    JSON.stringify(await getBuildEnvironment(buildMode, candidateId, sentryDsn))
+    JSON.stringify(getBuildEnvironment(parameters))
   );
 
   await runWebpack(getBrowserWebpackConfig(platform, buildMode));

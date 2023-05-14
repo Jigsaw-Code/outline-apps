@@ -12,21 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import minimist from 'minimist';
+
 const MS_PER_HOUR = 1000 * 60 * 60;
+const MATCH_INDEX = 1;
 
 /*
   Inputs:
-  => buildMode: the buildMode of binary to build, i.e. debug or release
-  => candidateId: the candidateId of the release build
-  => sentryDsn: the sentryDsn of the release build
+  => cliParameters: the list of action arguments passed in
 
   Outputs:
   => the build environment object
 */
-export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
+export function getBuildEnvironment(cliArguments) {
+  const {candidateId = 'dev/v0.0.0', buildMode = 'debug', sentryDsn = process.env.SENTRY_DSN} = minimist(cliArguments);
+
   if (buildMode === 'release') {
-    if (!candidateId) {
-      throw new TypeError('Release builds require candidateId, but it is not defined.');
+    if (candidateId === 'dev/v0.0.0') {
+      throw new TypeError('Release builds require a valid candidateId, but it is set to dev/v0.0.0.');
     }
 
     if (!sentryDsn) {
@@ -34,7 +37,7 @@ export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
     }
 
     /*
-      the SENTRY_DSN follows a stardard URL format: 
+      the SENTRY_DSN follows a stardard URL format:
       https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
     */
     try {
@@ -44,7 +47,7 @@ export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
     }
   }
 
-  const appVersion = candidateId?.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/)[1];
+  const appVersion = candidateId.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/)[MATCH_INDEX];
 
   return {
     SENTRY_DSN: sentryDsn,
