@@ -23,7 +23,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Node
         uses: actions/setup-node@v2.2.0
@@ -69,3 +69,34 @@ jobs:
               "512": "XL",
               "1024": "XXL"
             }
+  
+  translations:
+    name: (TEST) Ensure Atomic Translations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check resources/original_messages.json
+        id: changed-original-messages
+        uses: tj-actions/changed-files@v35
+        with:
+          files: resources/original_messages.json
+
+      - name: Collect src/www/messages Changes
+        if: steps.changed-original-messages.outputs.any_changed == 'true' 
+        id: changed-translated-messages
+        uses: tj-actions/changed-files@v35
+        with:
+          files: src/www/messages/*.json
+
+      - name: Check src/www/messages Changes
+        if: steps.changed-original-messages.outputs.any_changed == 'true' 
+        run: |
+          IFS=', ' read -r -a translated_messages <<< "{{ steps.changed-translated-messages.outputs.files_changed }}"
+          if [ "$(ls src/www/messages | wc -l)" != "${#translated_messages[@]}" ]; then
+            exit 1
+          fi
