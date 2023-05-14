@@ -73,9 +73,7 @@ export async function main(...parameters) {
 }
 
 const transformXmlFiles = async (filelist, callback, options = {}) =>
-  Promise.all(
-    filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath, options)), options))
-  );
+  Promise.all(filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath)), options)));
 
 async function androidDebug(verbose) {
   return cordova.prepare({
@@ -98,8 +96,7 @@ async function androidRelease(version, buildNumber, verbose) {
       xml.manifest['@android:versionName'] = version;
       xml.manifest['@android:versionCode'] = buildNumber;
       return xml;
-    },
-    {verbose}
+    }
   );
 }
 
@@ -138,7 +135,7 @@ async function appleMacOsDebug(verbose) {
 const XML_VERSION_STRING_INDEX = 1;
 const XML_BUILD_NUMBER_INDEX = 3;
 
-const transformAppleXmlFiles = async (platform, version, buildNumber, verbose) =>
+const transformAppleXmlFiles = async (platform, version, buildNumber) =>
   transformXmlFiles(
     [`platforms/${platform}/Outline/Outline-Info.plist`, `platforms/${platform}/Outline/VpnExtension-Info.plist`],
     xml => {
@@ -152,7 +149,6 @@ const transformAppleXmlFiles = async (platform, version, buildNumber, verbose) =
         pubID: '-//Apple//DTD PLIST 1.0//EN',
         sysID: 'http://www.apple.com/DTDs/PropertyList-1.0.dtd',
       },
-      verbose,
     }
   );
 
@@ -170,7 +166,7 @@ async function appleIosRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
 
-  return transformAppleXmlFiles('ios', version, buildNumber, verbose);
+  return transformAppleXmlFiles('ios', version, buildNumber);
 }
 
 async function appleMacOsRelease(version, buildNumber, verbose) {
@@ -189,7 +185,7 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 
-  return transformAppleXmlFiles('osx', version, buildNumber, verbose);
+  return transformAppleXmlFiles('osx', version, buildNumber);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

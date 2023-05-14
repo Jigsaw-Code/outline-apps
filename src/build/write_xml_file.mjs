@@ -16,18 +16,12 @@
 import fs from 'fs/promises';
 import xmlbuilder from 'xmlbuilder2';
 
-export async function writeXmlFile(filePath, data, {verbose = false, dtd, encoding = 'UTF-8'} = {}) {
+export async function writeXmlFile(filePath, data, {dtd, encoding = 'UTF-8'} = {}) {
   const xml = xmlbuilder.create({encoding}, data);
 
   if (dtd) {
     xml.dtd(dtd);
   }
 
-  const xmlContents = xml.end({prettyPrint: true});
-
-  if (verbose) {
-    console.info('[writeXmlFile]', {filePath, xmlContents});
-  }
-
-  return fs.writeFile(filePath, xmlContents);
+  return fs.writeFile(filePath, xml.end({prettyPrint: true}));
 }
