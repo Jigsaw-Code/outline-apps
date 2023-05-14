@@ -96,8 +96,8 @@ jobs:
       - name: Check src/www/messages Changes
         if: steps.changed-original-messages.outputs.any_changed == 'true' 
         run: |
-          echo "{{ steps.changed-translated-messages.outputs.files_changed }}"
-          IFS=', ' read -r -a translated_messages <<< "{{ steps.changed-translated-messages.outputs.files_changed }}"
+          echo "${{ steps.changed-translated-messages.outputs.files_changed }}"
+          IFS=', ' read -r -a translated_messages <<< "${{ steps.changed-translated-messages.outputs.files_changed }}"
           if [ "$(ls src/www/messages | wc -l | xargs)" != "${#translated_messages[@]}" ]; then
             exit 1
           fi
