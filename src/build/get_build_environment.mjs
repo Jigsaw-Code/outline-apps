@@ -44,7 +44,7 @@ export function getBuildEnvironment(buildMode, candidateId, sentryDsn) {
     }
   }
 
-  const [, appVersion] = candidateId?.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/) ?? [];
+  const appVersion = candidateId?.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/)[1];
 
   return {
     SENTRY_DSN: sentryDsn,
