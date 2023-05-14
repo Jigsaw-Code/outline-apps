@@ -71,7 +71,7 @@ jobs:
             }
   
   translations:
-    name: (TEST) Ensure Atomic Translations
+    name: '[WIP] Ensure Atomic Translations'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -96,8 +96,12 @@ jobs:
       - name: Check src/www/messages Changes
         if: steps.changed-original-messages.outputs.any_changed == 'true' 
         run: |
-          echo "${{ steps.changed-translated-messages.outputs.all_changed_files }}"
-          IFS=', ' read -r -a translated_messages <<< "${{ steps.changed-translated-messages.outputs.all_changed_files }}"
-          if [ "$(ls src/www/messages | wc -l | xargs)" != "${#translated_messages[@]}" ]; then
+          TRANSLATIONS_COUNT="$(ls src/www/messages | wc -l | xargs)"
+          IFS=' ' read -r -a TRANSLATED_MESSAGES <<< "${{ steps.changed-translated-messages.outputs.all_changed_files }}"
+          TRANSLATED_MESSAGES_COUNT="${#TRANSLATED_MESSAGES[@]}"
+          if [ "${TRANSLATED_MESSAGES_COUNT}" != "${TRANSLATIONS_COUNT}" ]; then
+            echo "Translations are not atomic. Please update all translations in a single commit."
+            echo "Changed translations: ${TRANSLATED_MESSAGES_COUNT}"
+            echo "Expected translations: ${TRANSLATIONS_COUNT}"
             exit 1
           fi
