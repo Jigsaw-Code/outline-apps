@@ -71,7 +71,7 @@ jobs:
             }
   
   translations:
-    name: '[WIP] Ensure Atomic Translations'
+    name: '[WIP] Label Missing Translations'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -106,9 +106,10 @@ jobs:
             echo "Expected translations: ${TRANSLATIONS_COUNT}"
             echo "result=true" >> "${GITHUB_OUTPUT}"
           fi
-      
+
       - name: Apply 'Missing Translations' Label
         if: steps.not-every-translation-changed.outputs.result == 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           labels: missing translations
