@@ -1,4 +1,5 @@
 {
+  "test": "hello",
   "close": {
     "message": "Close",
     "description": "The text for a button to close the current page or dialog."
