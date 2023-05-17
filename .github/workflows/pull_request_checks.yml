@@ -71,7 +71,7 @@ jobs:
             }
   
   translations:
-    name: '[WIP] Label Missing Translations'
+    name: '[WIP] Missing Translations Label'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -111,5 +111,5 @@ jobs:
         if: steps.not-every-translation-changed.outputs.result == 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: missing translations
