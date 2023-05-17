@@ -14,6 +14,7 @@
   "disconnected-server-state": "Връзката бе прекратена",
   "disconnecting-server-state": "Връзката се прекратява...",
   "email-feedback-input": "Имейл адрес (по избор)",
+  "error-details": "Подробности",
   "error-feedback-submission": "За съжаление, не можахме да изпратим отзива ви. Моля, проверете дали имате интернет връзка, и опитайте отново.",
   "error-invalid-access-key": "Невалиден ключ за достъп. Моля, опитайте отново или изпратете отзиви за помощ.",
   "error-server-already-added": "Сървърът „{serverName}“ вече бе добавен.",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "Nicht verbunden",
   "disconnecting-server-state": "Wird getrennt…",
   "email-feedback-input": "E-Mail-Adresse (optional)",
+  "error-details": "Details",
   "error-feedback-submission": "Ihr Feedback konnte nicht gesendet werden. Bitte prüfen Sie die Internetverbindung und versuchen Sie es noch einmal.",
   "error-invalid-access-key": "Ungültiger Zugriffsschlüssel. Bitte versuche es noch einmal oder sende Feedback, um Hilfe zu erhalten.",
   "error-server-already-added": "Der Server \"{serverName}\" wurde bereits hinzugefügt.",

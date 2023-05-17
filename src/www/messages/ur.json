@@ -14,6 +14,7 @@
   "disconnected-server-state": "غیر منسلک ہے",
   "disconnecting-server-state": "غیر منسلک ہو رہا ہے…",
   "email-feedback-input": "ای میل پتہ (اختیاری)",
+  "error-details": "تفصیلات",
   "error-feedback-submission": "معذرت، ہم آپ کے تاثرات جمع کرنے سے قاصر رہے۔ براہ کرم چیک کریں کہ آپ انٹرنیٹ سے منسلک ہیں اور دوبارہ کوشش کریں۔",
   "error-invalid-access-key": "رسائی کی غلط کلید۔ براہ کرم دوبارہ کوشش کریں، یا مدد کیلئے تاثرات جمع کرائیں۔",
   "error-server-already-added": "\"{serverName}\" سرور پہلے سے شامل ہے۔",

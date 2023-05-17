@@ -14,6 +14,7 @@
   "disconnected-server-state": "Koblet fra",
   "disconnecting-server-state": "Kobler fra …",
   "email-feedback-input": "E-postadresse (valgfritt)",
+  "error-details": "Detaljer",
   "error-feedback-submission": "Beklager, vi kunne ikke sende inn tilbakemeldingen din. Sjekk at du er koblet til Internett, og prøv på nytt.",
   "error-invalid-access-key": "Ugyldig tilgangsnøkkel. Prøv på nytt, eller send oss en tilbakemelding for å få hjelp.",
   "error-server-already-added": "Tjeneren «{serverName}» er allerede lagt til.",

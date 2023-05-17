@@ -14,6 +14,7 @@
   "disconnected-server-state": "Desconnectat",
   "disconnecting-server-state": "S'està desconnectant...",
   "email-feedback-input": "Adreça electrònica (opcional)",
+  "error-details": "Detalls",
   "error-feedback-submission": "No hem pogut enviar els teus comentaris. Comprova la connexió a Internet i torna-ho a provar.",
   "error-invalid-access-key": "La clau d'accés no és vàlida. Torna-ho a provar o envia comentaris per obtenir ajuda.",
   "error-server-already-added": "Ja s'ha afegit el servidor \"{serverName}\".",

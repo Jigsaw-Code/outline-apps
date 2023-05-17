@@ -14,6 +14,7 @@
   "disconnected-server-state": "இணைப்பு துண்டிக்கப்பட்டது",
   "disconnecting-server-state": "இணைப்பைத் துண்டிக்கிறது...",
   "email-feedback-input": "மின்னஞ்சல் முகவரி (விரும்பினால்)",
+  "error-details": "விவரங்கள்",
   "error-feedback-submission": "உங்கள் கருத்தைச் சமர்ப்பிக்க முடியவில்லை. இணைய இணைப்பைச் சரிபார்த்துவிட்டு மீண்டும் முயலவும்.",
   "error-invalid-access-key": "தவறான அணுகல் குறியீடு. மீண்டும் முயலவும் அல்லது கருத்தைச் சமர்ப்பித்து உதவி பெறவும்.",
   "error-server-already-added": "“{serverName}” ஏற்கெனவே சேர்க்கப்பட்டது.",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "Bağlantı kəsildi",
   "disconnecting-server-state": "Bağlantı kəsilir...",
   "email-feedback-input": "E-poçt ünvanı (istəyə görə)",
+  "error-details": "Ətraflı",
   "error-feedback-submission": "Rəyinizi göndərmək alınmadı. İnternet bağlantınızı yoxlayın və yenidən cəhd edin.",
   "error-invalid-access-key": "Yanlış giriş açarı. Yenidən sınayın və ya kömək üçün rəy göndərin.",
   "error-server-already-added": "\"{serverName}\" serveri artıq əlavə edilib.",

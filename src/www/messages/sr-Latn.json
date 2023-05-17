@@ -14,6 +14,7 @@
   "disconnected-server-state": "Veza je prekinuta",
   "disconnecting-server-state": "Veza se prekida...",
   "email-feedback-input": "Imejl adresa (opcionalno)",
+  "error-details": "Detalji",
   "error-feedback-submission": "Žao nam je, ne možemo da pošaljemo povratne informacije. Proverite da li ste povezani na internet i probajte ponovo.",
   "error-invalid-access-key": "Nevažeći ključ za pristup. Probajte ponovo ili pošaljite povratne informacije da biste dobili pomoć.",
   "error-server-already-added": "Server {serverName} je već dodat.",

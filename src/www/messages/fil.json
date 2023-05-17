@@ -14,6 +14,7 @@
   "disconnected-server-state": "Nadiskonekta",
   "disconnecting-server-state": "Dinidiskonekta...",
   "email-feedback-input": "Email address (opsyonal)",
+  "error-details": "Mga Detalye",
   "error-feedback-submission": "Paumanhin, hindi namin naisumite ang iyong feedback. Pakitingnan kung nakakonekta ka sa internet at subukan ulit.",
   "error-invalid-access-key": "Di-wastong access key. Pakisubukang muli, o magsumite ng feedback para sa tulong.",
   "error-server-already-added": "Naidagdag na ang server na “{serverName}.”",

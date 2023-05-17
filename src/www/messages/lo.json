@@ -14,6 +14,7 @@
   "disconnected-server-state": "ຕັດການເຊື່ອມຕໍ່ແລ້ວ",
   "disconnecting-server-state": "ກຳລັງຕັດການເຊື່ອມຕໍ່...",
   "email-feedback-input": "ທີ່ຢູ່ອີເມວ (ບໍ່ບັງຄັບ)",
+  "error-details": "ລາຍລະອຽດ",
   "error-feedback-submission": "ຂໍອະໄພ, ພວກເຮົາບໍ່ສາມາດສົ່ງຄຳຕິຊົມຂອງທ່ານໄດ້. ກະລຸນາກວດສອບວ່າທ່ານເຊື່ອມຕໍ່ກັບອິນເຕີເນັດແລ້ວ ແລະ ລອງໃໝ່.",
   "error-invalid-access-key": "ກະແຈການເຂົ້າເຖິງບໍ່ຖືກຕ້ອງ. ກະລຸນາລອງໃໝ່ ຫຼື ສົ່ງຄຳຕິຊົມເພື່ອຂໍຄວາມຊ່ວຍເຫຼືອ.",
   "error-server-already-added": "ເພີ່ມເຊີບເວີ “{serverName}” ແລ້ວ.",

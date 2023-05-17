@@ -14,6 +14,7 @@
   "disconnected-server-state": "Odpojené",
   "disconnecting-server-state": "Odpája sa…",
   "email-feedback-input": "E‑mailová adresa (nepovinné)",
+  "error-details": "Podrobnosti",
   "error-feedback-submission": "Ľutujeme, no nepodarilo sa nám odoslať vašu spätnú väzbu. Skontrolujte, či máte internetové pripojenie, a skúste to znova.",
   "error-invalid-access-key": "Prístupový kľúč je neplatný. Skúste to znova alebo odošlite spätnú väzbu so žiadosťou o pomoc.",
   "error-server-already-added": "Server {serverName} už bol pridaný.",

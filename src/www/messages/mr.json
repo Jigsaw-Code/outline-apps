@@ -14,6 +14,7 @@
   "disconnected-server-state": "डिस्कनेक्ट केले",
   "disconnecting-server-state": "डिस्कनेक्ट करत आहे...",
   "email-feedback-input": "ईमेल अ‍ॅड्रेस (पर्यायी)",
+  "error-details": "तपशील",
   "error-feedback-submission": "सॉरी, आम्ही तुमचा फीडबॅक सबमिट करू शकलो नाही. कृपया तुम्ही इंटरनेटशी कनेक्ट केले असल्याचे तपासा आणि पुन्हा प्रयत्न करा.",
   "error-invalid-access-key": "अवैध अ‍ॅक्सेस की. कृपया पुन्हा प्रयत्न करा किंवा मदतीसाठी फीडबॅक सबमिट करा.",
   "error-server-already-added": "“{serverName}” हा सर्व्हर आधीच जोडला.",

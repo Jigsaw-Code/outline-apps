@@ -14,6 +14,7 @@
   "disconnected-server-state": "Desconectado",
   "disconnecting-server-state": "Desconectando...",
   "email-feedback-input": "Dirección de correo electrónico (opcional)",
+  "error-details": "Detalles",
   "error-feedback-submission": "No hemos podido enviar tus comentarios. Comprueba que tienes conexión a Internet e inténtalo de nuevo.",
   "error-invalid-access-key": "Clave de acceso no válida. Inténtalo de nuevo o envíanos tus comentarios para recibir ayuda.",
   "error-server-already-added": "Ya se ha añadido el servidor \"{serverName}\".",

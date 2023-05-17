@@ -14,6 +14,7 @@
   "disconnected-server-state": "已断开连接",
   "disconnecting-server-state": "正在断开连接…",
   "email-feedback-input": "电子邮件地址（可选）",
+  "error-details": "详细信息",
   "error-feedback-submission": "抱歉，系统无法提交您的反馈。请检查您是否已连接到互联网，然后重试。",
   "error-invalid-access-key": "访问密钥无效。请重试，或提交反馈以获取帮助。",
   "error-server-already-added": "已添加“{serverName}”服务器。",

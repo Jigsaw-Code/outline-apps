@@ -14,6 +14,7 @@
   "disconnected-server-state": "Ontkoppel",
   "disconnecting-server-state": "Ontkoppel tans …",
   "email-feedback-input": "E-posadres (opsioneel)",
+  "error-details": "Besonderhede",
   "error-feedback-submission": "Jammer, ons kon nie jou terugvoer indien nie. Maak seker dat jy aan die internet gekoppel is en probeer weer.",
   "error-invalid-access-key": "Ongeldige toegangsleutel. Probeer weer, of dien terugvoer in as jy hulp nodig het.",
   "error-server-already-added": "Bediener “{serverName}” reeds bygevoeg.",

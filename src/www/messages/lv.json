@@ -14,6 +14,7 @@
   "disconnected-server-state": "Savienojums pārtraukts",
   "disconnecting-server-state": "Notiek savienojuma pārtraukšana...",
   "email-feedback-input": "E-pasta adrese (neobligāti)",
+  "error-details": "Detalizēta informācija",
   "error-feedback-submission": "Diemžēl nevarēja iesniegt atsauksmes. Lūdzu, pārbaudiet, vai ir izveidots savienojums ar internetu, un mēģiniet vēlreiz.",
   "error-invalid-access-key": "Nederīga piekļuves atslēga. Lūdzu, mēģiniet vēlreiz vai iesniedziet atsauksmes, lai saņemtu palīdzību.",
   "error-server-already-added": "Serveris “{serverName}” jau ir pievienots.",

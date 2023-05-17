@@ -14,6 +14,7 @@
   "disconnected-server-state": "Ühendus on katkestatud",
   "disconnecting-server-state": "Ühenduse katkestamine …",
   "email-feedback-input": "E-posti aadress (valikuline)",
+  "error-details": "Üksikasjad",
   "error-feedback-submission": "Me ei saa kahjuks teie tagasisidet esitada. Veenduge, et Interneti-ühendus toimiks, ja proovige uuesti.",
   "error-invalid-access-key": "Vale pääsuvõti. Proovige uuesti või esitage abi saamiseks tagasisidet.",
   "error-server-already-added": "Server „{serverName}“ on juba lisatud.",

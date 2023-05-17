@@ -14,6 +14,7 @@
   "disconnected-server-state": "Leválasztva",
   "disconnecting-server-state": "Leválasztás...",
   "email-feedback-input": "E-mail-cím (nem kötelező)",
+  "error-details": "Részletek",
   "error-feedback-submission": "Sajnos nem sikerült elküldeni a visszajelzést. Ellenőrizze, hogy van-e internetkapcsolat, és próbálkozzon újra.",
   "error-invalid-access-key": "Érvénytelen hozzáférési kulcs. Próbálkozzon újra, vagy írjon visszajelzést, ha segítségre van szüksége.",
   "error-server-already-added": "A(z) „{serverName}” szerver már hozzá van adva.",

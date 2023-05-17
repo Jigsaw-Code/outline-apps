@@ -14,6 +14,7 @@
   "disconnected-server-state": "Αποσυνδεδεμένος",
   "disconnecting-server-state": "Αποσύνδεση…",
   "email-feedback-input": "Διεύθυνση ηλεκτρονικού ταχυδρομείου (προαιρετικά)",
+  "error-details": "Λεπτομέρειες",
   "error-feedback-submission": "Λυπούμαστε, δεν είναι δυνατή η υποβολή των σχολίων σας. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο και δοκιμάστε ξανά.",
   "error-invalid-access-key": "Μη έγκυρο κλειδί πρόσβασης. Δοκιμάστε ξανά ή υποβάλετε σχόλια για βοήθεια.",
   "error-server-already-added": "Ο διακομιστής \"{serverName}\" έχει ήδη προστεθεί.",
