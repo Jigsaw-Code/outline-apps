@@ -17,13 +17,12 @@ import url from 'url';
 import rmfr from 'rmfr';
 import path from 'path';
 
+import replace from 'replace-in-file';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {parseXmlFile} from '../build/parse_xml_file.mjs';
-import {writeXmlFile} from '../build/write_xml_file.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -54,6 +53,7 @@ export async function main(...parameters) {
     case 'android' + 'debug':
       return androidDebug(verbose);
     case 'android' + 'release':
+      console.warn('NOTE: You must open the Outline.zip file after building to upload to the Play Store.');
       return androidRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
     case 'ios' + 'debug':
       return appleIosDebug(verbose);
@@ -72,9 +72,6 @@ export async function main(...parameters) {
   }
 }
 
-const transformXmlFiles = async (filelist, callback, options = {}) =>
-  Promise.all(filelist.map(async filepath => writeXmlFile(filepath, callback(await parseXmlFile(filepath)), options)));
-
 async function androidDebug(verbose) {
   return cordova.prepare({
     platforms: ['android'],
@@ -83,6 +80,16 @@ async function androidDebug(verbose) {
   });
 }
 
+const makeReplacements = async replacements => {
+  let results = [];
+
+  for (const replacement of replacements) {
+    results = [...results, ...(await replace(replacement))];
+  }
+
+  return Promise.resolve(results);
+};
+
 async function androidRelease(version, buildNumber, verbose) {
   await cordova.prepare({
     platforms: ['android'],
@@ -90,14 +97,31 @@ async function androidRelease(version, buildNumber, verbose) {
     verbose,
   });
 
-  return transformXmlFiles(
-    [path.join(getRootDir(), 'platforms', 'android', 'CordovaLib', 'AndroidManifest.xml')],
-    xml => {
-      xml.manifest['@android:versionName'] = version;
-      xml.manifest['@android:versionCode'] = buildNumber;
-      return xml;
-    }
-  );
+  const manifestXmlGlob = path.join(getRootDir(), 'platforms', 'android', '**', 'AndroidManifest.xml');
+  const configXmlGlob = path.join(getRootDir(), 'platforms', 'android', '**', 'config.xml');
+
+  return makeReplacements([
+    {
+      files: manifestXmlGlob,
+      from: ['android:versionName="1.0"', 'android:versionName="0.0.0-debug"'],
+      to: `android:versionName="${version}"`,
+    },
+    {
+      files: manifestXmlGlob,
+      from: 'android:versionCode="1"',
+      to: `android:versionCode="${buildNumber}"`,
+    },
+    {
+      files: configXmlGlob,
+      from: 'version="0.0.0-debug"',
+      to: `version="${version}"`,
+    },
+    {
+      files: configXmlGlob,
+      from: 'android-versionCode="1"',
+      to: `android-versionCode="${buildNumber}"`,
+    },
+  ]);
 }
 
 async function appleIosDebug(verbose) {
@@ -132,23 +156,17 @@ async function appleMacOsDebug(verbose) {
   return spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 }
 
-const XML_VERSION_STRING_INDEX = 1;
-const XML_BUILD_NUMBER_INDEX = 3;
-
-const transformAppleXmlFiles = async (platform, version, buildNumber) =>
-  transformXmlFiles(
-    [`platforms/${platform}/Outline/Outline-Info.plist`, `platforms/${platform}/Outline/VpnExtension-Info.plist`],
-    xml => {
-      xml.plist.dict['#'][XML_VERSION_STRING_INDEX].string = version;
-      xml.plist.dict['#'][XML_BUILD_NUMBER_INDEX].string = buildNumber;
-
-      return xml;
+const transformAppleXmlFiles = (platform, version, buildNumber) =>
+  makeReplacements(
+    {
+      files: `platforms/${platform}/Outline/*.plist`,
+      from: /<key>CFBundleShortVersionString<\/key>\s*<string>.*<\/string>/g,
+      to: `<key>CFBundleShortVersionString</key>\n  <string>${version}</string>`,
     },
     {
-      dtd: {
-        pubID: '-//Apple//DTD PLIST 1.0//EN',
-        sysID: 'http://www.apple.com/DTDs/PropertyList-1.0.dtd',
-      },
+      files: `platforms/${platform}/Outline/*.plist`,
+      from: /<key>CFBundleVersion<\/key>\s*<string>.*<\/string>/g,
+      to: `<key>CFBundleVersion</key>\n  <string>${buildNumber}</string>`,
     }
   );
 
