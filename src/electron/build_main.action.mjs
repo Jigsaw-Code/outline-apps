@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {getWebAppParametersJson} from '../www/get_web_environment.mjs';
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
@@ -27,7 +27,7 @@ const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, candidateId, sentryDsn} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = await getWebAppParametersJson(buildMode, candidateId, sentryDsn);
+  const {APP_VERSION} = getWebAppParametersJson(buildMode, candidateId, sentryDsn);
 
   await runAction('www/build', ...parameters);
 

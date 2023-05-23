@@ -20,13 +20,11 @@ import fs from 'fs/promises';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = getBuildEnvironment(parameters);
+  const {versionName, platform, buildMode, publish} = getElectronBuildParameters(parameters);
 
   if (buildMode === 'debug') {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
@@ -54,23 +52,10 @@ export async function main(...parameters) {
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
-        version: APP_VERSION,
+        version: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
       },
     },
   });
-
-  if (stagingPercentage !== 100) {
-    const platformSuffix = platform === 'linux' ? '-linux' : '';
-
-    await fs.appendFile(
-      path.join(getRootDir(), 'build', 'dist', `beta${platformSuffix}.yml`),
-      `stagingPercentage: ${stagingPercentage}`
-    );
-    await fs.appendFile(
-      path.join(getRootDir(), 'build', 'dist', `latest${platformSuffix}.yml`),
-      `stagingPercentage: ${stagingPercentage}`
-    );
-  }
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

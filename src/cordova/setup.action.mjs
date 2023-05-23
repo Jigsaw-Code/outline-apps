@@ -80,7 +80,7 @@ async function androidDebug(verbose) {
   });
 }
 
-const makeReplacements = async replacements => {
+async function makeReplacements(replacements) {
   let results = [];
 
   for (const replacement of replacements) {
@@ -88,7 +88,7 @@ const makeReplacements = async replacements => {
   }
 
   return Promise.resolve(results);
-};
+}
 
 async function androidRelease(versionName, buildNumber, verbose) {
   await cordova.prepare({
@@ -104,7 +104,7 @@ async function androidRelease(versionName, buildNumber, verbose) {
     {
       files: manifestXmlGlob,
       from: ['android:versionName="1.0"', 'android:versionName="0.0.0-debug"'],
-      to: `android:versionName="${version}"`,
+      to: `android:versionName="${versionName}"`,
     },
     {
       files: manifestXmlGlob,
@@ -114,7 +114,7 @@ async function androidRelease(versionName, buildNumber, verbose) {
     {
       files: configXmlGlob,
       from: 'version="0.0.0-debug"',
-      to: `version="${version}"`,
+      to: `version="${versionName}"`,
     },
     {
       files: configXmlGlob,
@@ -156,12 +156,12 @@ async function appleMacOsDebug(verbose) {
   return spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 }
 
-const transformAppleXmlFiles = (platform, version, buildNumber) =>
-  makeReplacements(
+function setAppleVersion(platform, versionName, buildNumber) {
+  return makeReplacements(
     {
       files: `platforms/${platform}/Outline/*.plist`,
       from: /<key>CFBundleShortVersionString<\/key>\s*<string>.*<\/string>/g,
-      to: `<key>CFBundleShortVersionString</key>\n  <string>${version}</string>`,
+      to: `<key>CFBundleShortVersionString</key>\n  <string>${versionName}</string>`,
     },
     {
       files: `platforms/${platform}/Outline/*.plist`,
@@ -169,6 +169,7 @@ const transformAppleXmlFiles = (platform, version, buildNumber) =>
       to: `<key>CFBundleVersion</key>\n  <string>${buildNumber}</string>`,
     }
   );
+}
 
 async function appleIosRelease(version, buildNumber, verbose) {
   if (os.platform() !== 'darwin') {
@@ -184,7 +185,7 @@ async function appleIosRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
 
-  return transformAppleXmlFiles('ios', version, buildNumber);
+  return setAppleVersion('ios', version, buildNumber);
 }
 
 async function appleMacOsRelease(version, buildNumber, verbose) {
@@ -203,7 +204,7 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   // TODO(daniellacosse): move this to a cordova hook
   await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
 
-  return transformAppleXmlFiles('osx', version, buildNumber);
+  return setAppleVersion('osx', version, buildNumber);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

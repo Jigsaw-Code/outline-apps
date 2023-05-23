@@ -11,11 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-import minimist from 'minimist';
-
 const MS_PER_HOUR = 1000 * 60 * 60;
-const MATCH_INDEX = 1;
 
 /*
   Inputs:
@@ -24,12 +20,10 @@ const MATCH_INDEX = 1;
   Outputs:
   => the build environment object
 */
-export function getBuildEnvironment(cliArguments) {
-  const {candidateId = 'dev/v0.0.0', buildMode = 'debug', sentryDsn = process.env.SENTRY_DSN} = minimist(cliArguments);
-
+export function getWebEnvironment(sentryDsn, buildMode, versionName) {
   if (buildMode === 'release') {
-    if (candidateId === 'dev/v0.0.0') {
-      throw new TypeError('Release builds require a valid candidateId, but it is set to dev/v0.0.0.');
+    if (versionName === '0.0.0') {
+      throw new TypeError('Release builds require a valid versionName, but it is set to 0.0.0.');
     }
 
     if (!sentryDsn) {
@@ -47,11 +41,9 @@ export function getBuildEnvironment(cliArguments) {
     }
   }
 
-  const appVersion = candidateId.match(/\/?v?([[0-9]+\.[0-9]+\.[0-9]+)/)[MATCH_INDEX];
-
   return {
     SENTRY_DSN: sentryDsn,
-    APP_VERSION: buildMode === 'release' ? appVersion : `${appVersion}-${buildMode}`,
-    APP_BUILD_NUMBER: String(Math.floor(Date.now() / MS_PER_HOUR)),
+    APP_VERSION: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+    APP_BUILD_NUMBER: Math.floor(Date.now() / MS_PER_HOUR),
   };
 }

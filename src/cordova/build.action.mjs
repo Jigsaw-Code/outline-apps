@@ -152,7 +152,7 @@ async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
   });
 
   const bundletoolPath = path.resolve(androidBuildPath, 'bundletool.jar');
-  await downloadHttpsFile(JAVA_BUNDLETOOL_RESOURCE_PATH, bundletoolPath);
+  await downloadHttpsFile(JAVA_BUNDLETOOL_RESOURCE_URL, bundletoolPath);
 
   const outputPath = path.resolve(androidBuildPath, 'Outline.apks');
   await spawnStream(

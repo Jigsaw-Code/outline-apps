@@ -28,13 +28,10 @@ export function getBuildParameters(cliArguments) {
   const {
     _: [platform = 'browser'],
     buildMode = 'debug',
-    stagingPercentage = 100,
     verbose = false,
+    versionName = '0.0.0',
+    sentryDsn = process.env.SENTRY_DSN,
   } = minimist(cliArguments);
-
-  if (stagingPercentage < 0 || stagingPercentage > 100) {
-    throw new RangeError('StagingPercentage must be a number between zero and one hundred!');
-  }
 
   if (platform && !VALID_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -50,5 +47,5 @@ export function getBuildParameters(cliArguments) {
     );
   }
 
-  return {platform, buildMode, stagingPercentage, verbose};
+  return {platform, buildMode, verbose, versionName, sentryDsn};
 }

@@ -19,7 +19,7 @@ import rmfr from 'rmfr';
 
 import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
+import {getWebEnvironment} from './get_web_environment.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
@@ -30,7 +30,7 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getBuildParameters(parameters);
+  const {sentryDsn, platform, buildMode, versionName} = getBuildParameters(parameters);
 
   await rmfr(path.resolve(getRootDir(), 'www'));
 
@@ -38,7 +38,7 @@ export async function main(...parameters) {
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
   await fs.writeFile(
     path.resolve(getRootDir(), 'www', 'environment.json'),
-    JSON.stringify(getBuildEnvironment(parameters))
+    JSON.stringify(getWebEnvironment(sentryDsn, buildMode, versionName))
   );
 
   await runWebpack(getBrowserWebpackConfig(platform, buildMode));
