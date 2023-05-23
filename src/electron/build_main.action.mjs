@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getWebAppParametersJson} from '../www/get_web_environment.mjs';
 import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
@@ -26,21 +25,20 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
-  const {platform, buildMode, candidateId, sentryDsn} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = getWebAppParametersJson(buildMode, candidateId, sentryDsn);
+  const {platform, buildMode, versionName, sentryDsn} = getElectronBuildParameters(parameters);
 
   await runAction('www/build', ...parameters);
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
-    electronMainWebpackConfigs({sentryDsn, appVersion: APP_VERSION}).map(config => ({
+    electronMainWebpackConfigs({sentryDsn, appVersion: versionName}).map(config => ({
       ...config,
       mode: getWebpackBuildMode(buildMode),
     }))
   );
 
   if (platform === 'windows') {
-    let windowsEnvironment = `!define RELEASE "${APP_VERSION}"`;
+    let windowsEnvironment = `!define RELEASE "${versionName}"`;
 
     if (sentryDsn) {
       const {username: apiKey, pathname: projectID} = new URL(sentryDsn);
