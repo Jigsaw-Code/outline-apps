@@ -123,7 +123,7 @@ async function androidDebug(verbose) {
 }
 
 const JAVA_BUNDLETOOL_VERSION = '1.8.2';
-const JAVA_BUNDLETOOL_RESOURCE_PATH = `https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-${JAVA_BUNDLETOOL_VERSION}.jar`;
+const JAVA_BUNDLETOOL_RESOURCE_URL = `https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-${JAVA_BUNDLETOOL_VERSION}.jar`;
 
 async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
   const androidBuildPath = path.resolve(getRootDir(), 'platforms', 'android');
