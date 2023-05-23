@@ -19,10 +19,11 @@ import rmfr from 'rmfr';
 
 import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getWebEnvironment} from './get_web_environment.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
+
+const MS_PER_HOUR = 1000 * 60 * 60;
 
 /**
  * @description Builds the web UI for use across both electron and cordova.
@@ -36,9 +37,34 @@ export async function main(...parameters) {
 
   // write build environment
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
+
+  if (buildMode === 'release') {
+    if (versionName === '0.0.0') {
+      throw new TypeError('Release builds require a valid versionName, but it is set to 0.0.0.');
+    }
+
+    if (!sentryDsn) {
+      throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
+    }
+
+    /*
+      the SENTRY_DSN follows a stardard URL format:
+      https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
+    */
+    try {
+      new URL(sentryDsn);
+    } catch (e) {
+      throw new TypeError(`The sentryDsn ${sentryDsn} is not a valid URL!`);
+    }
+  }
+
   await fs.writeFile(
     path.resolve(getRootDir(), 'www', 'environment.json'),
-    JSON.stringify(getWebEnvironment(sentryDsn, buildMode, versionName))
+    JSON.stringify({
+      SENTRY_DSN: sentryDsn,
+      APP_VERSION: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+      APP_BUILD_NUMBER: Math.floor(Date.now() / MS_PER_HOUR),
+    })
   );
 
   await runWebpack(getBrowserWebpackConfig(platform, buildMode));

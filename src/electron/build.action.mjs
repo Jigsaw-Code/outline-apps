@@ -52,7 +52,7 @@ export async function main(...parameters) {
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
-        version: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+        version: versionName,
       },
     },
   });

@@ -22,7 +22,6 @@ import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {getRootDir} from '../build/get_root_dir.mjs';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -37,8 +36,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, verbose} = getBuildParameters(parameters);
-  const {APP_VERSION, APP_BUILD_NUMBER} = getBuildEnvironment(parameters);
+  const {platform, buildMode, verbose, buildNumber, versionName} = getBuildParameters(parameters);
 
   await runAction('www/build', ...parameters);
 
@@ -54,15 +52,15 @@ export async function main(...parameters) {
       return androidDebug(verbose);
     case 'android' + 'release':
       console.warn('NOTE: You must open the Outline.zip file after building to upload to the Play Store.');
-      return androidRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
+      return androidRelease(versionName, buildNumber, verbose);
     case 'ios' + 'debug':
       return appleIosDebug(verbose);
     case 'macos' + 'debug':
       return appleMacOsDebug(verbose);
     case 'ios' + 'release':
-      return appleIosRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
+      return appleIosRelease(versionName, buildNumber, verbose);
     case 'macos' + 'release':
-      return appleMacOsRelease(APP_VERSION, APP_BUILD_NUMBER, verbose);
+      return appleMacOsRelease(versionName, buildNumber, verbose);
     case 'browser' + 'debug':
     default:
       return cordova.prepare({
