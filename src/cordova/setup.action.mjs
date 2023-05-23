@@ -90,7 +90,7 @@ const makeReplacements = async replacements => {
   return Promise.resolve(results);
 };
 
-async function androidRelease(version, buildNumber, verbose) {
+async function androidRelease(versionName, buildNumber, verbose) {
   await cordova.prepare({
     platforms: ['android'],
     save: false,
