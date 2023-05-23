@@ -525,7 +525,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         readonly: true,
       },
       appBuild: {
-        type: String,
+        type: Number,
         readonly: true,
       },
       page: {
