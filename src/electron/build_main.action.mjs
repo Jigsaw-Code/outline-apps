@@ -27,7 +27,7 @@ const ELECTRON_BUILD_DIR = 'build';
 
 export async function main(...parameters) {
   const {platform, buildMode, candidateId, sentryDsn} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = await getBuildEnvironment(buildMode, candidateId, sentryDsn);
+  const {APP_VERSION} = await getWebAppParametersJson(buildMode, candidateId, sentryDsn);
 
   await runAction('www/build', ...parameters);
 
