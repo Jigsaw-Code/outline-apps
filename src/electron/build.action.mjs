@@ -66,10 +66,12 @@ export async function main(...parameters) {
     targets: Platform[platform.toLocaleUpperCase()].createTarget(),
     config: {
       ...electronConfig,
-      publish: {
-        provider: autoUpdateProvider,
-        url: autoUpdateUrl,
-      },
+      publish: autoUpdateUrl
+        ? {
+            provider: autoUpdateProvider,
+            url: autoUpdateUrl,
+          }
+        : undefined,
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
