@@ -155,7 +155,7 @@ async function appleMacOsDebug(verbose) {
 }
 
 function setAppleVersion(platform, versionName, buildNumber) {
-  return makeReplacements(
+  return makeReplacements([
     {
       files: `platforms/${platform}/Outline/*.plist`,
       from: /<key>CFBundleShortVersionString<\/key>\s*<string>.*<\/string>/g,
@@ -165,8 +165,8 @@ function setAppleVersion(platform, versionName, buildNumber) {
       files: `platforms/${platform}/Outline/*.plist`,
       from: /<key>CFBundleVersion<\/key>\s*<string>.*<\/string>/g,
       to: `<key>CFBundleVersion</key>\n  <string>${buildNumber}</string>`,
-    }
-  );
+    },
+  ]);
 }
 
 async function appleIosRelease(version, buildNumber, verbose) {
