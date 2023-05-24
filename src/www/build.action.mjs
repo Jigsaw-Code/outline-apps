@@ -23,15 +23,13 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 
-const MS_PER_HOUR = 1000 * 60 * 60;
-
 /**
  * @description Builds the web UI for use across both electron and cordova.
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {sentryDsn, platform, buildMode, versionName} = getBuildParameters(parameters);
+  const {sentryDsn, platform, buildMode, versionName, buildNumber} = getBuildParameters(parameters);
 
   await rmfr(path.resolve(getRootDir(), 'www'));
 
@@ -62,8 +60,8 @@ export async function main(...parameters) {
     path.resolve(getRootDir(), 'www', 'environment.json'),
     JSON.stringify({
       SENTRY_DSN: sentryDsn,
-      APP_VERSION: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
-      APP_BUILD_NUMBER: Math.floor(Date.now() / MS_PER_HOUR),
+      APP_VERSION: versionName,
+      APP_BUILD_NUMBER: buildNumber,
     })
   );
 
