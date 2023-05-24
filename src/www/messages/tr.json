@@ -14,6 +14,7 @@
   "disconnected-server-state": "Bağlantı kesildi",
   "disconnecting-server-state": "Bağlantı kesiliyor...",
   "email-feedback-input": "E-posta adresi (isteğe bağlı)",
+  "error-details": "Ayrıntılar",
   "error-feedback-submission": "Maalesef geri bildiriminiz gönderilemedi. Lütfen internete bağlı olduğunuzdan emin olun ve tekrar deneyin.",
   "error-invalid-access-key": "Geçersiz erişim anahtarı. Lütfen tekrar deneyin veya yardım almak için geri bildirim gönderin.",
   "error-server-already-added": "\"{serverName}\" adlı sunucu zaten eklendi.",

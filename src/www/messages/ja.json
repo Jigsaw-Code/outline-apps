@@ -14,6 +14,7 @@
   "disconnected-server-state": "接続が切断されました",
   "disconnecting-server-state": "接続を切断しています...",
   "email-feedback-input": "メールアドレス（省略可）",
+  "error-details": "詳細",
   "error-feedback-submission": "フィードバックを送信できませんでした。インターネットに接続していることを確認して、もう一度お試しください。",
   "error-invalid-access-key": "アクセスキーが無効です。もう一度お試しいただくか、サポートが必要な場合はフィードバックをお送りください。",
   "error-server-already-added": "サーバー「{serverName}」はすでに追加されています。",

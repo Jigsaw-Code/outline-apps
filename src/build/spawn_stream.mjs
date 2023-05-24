@@ -20,7 +20,8 @@ import {spawn} from 'child_process';
  */
 export const spawnStream = (command, ...parameters) =>
   new Promise((resolve, reject) => {
-    const result = [];
+    const stdout = [];
+    const stderr = [];
 
     const childProcess = spawn(command, parameters, {env: process.env});
 
@@ -29,20 +30,30 @@ export const spawnStream = (command, ...parameters) =>
         .toString()
         .split('\n')
         .filter(line => line.trim())
-        .forEach(line => {
-          result.push(line);
-          callback(line);
-        });
+        .forEach(callback);
     };
 
-    childProcess.stdout.on('data', data => forEachMessageLine(data, line => console.info(line)));
-    childProcess.stderr.on('data', error => forEachMessageLine(error, line => console.error(chalk.red(line))));
+    childProcess.stdout.on('data', data =>
+      forEachMessageLine(data, line => {
+        console.info(line);
+        stdout.push(line);
+      })
+    );
+
+    childProcess.stderr.on('data', error => forEachMessageLine(error, line => stderr.push(line)));
 
     childProcess.on('close', code => {
       if (code === 0) {
-        resolve(result.join(''));
-      } else {
-        reject(childProcess);
+        return resolve(stdout.join(''));
       }
+      console.error(
+        chalk.red(
+          `ERROR(spawn_stream): ${chalk.underline(
+            [command, ...parameters].join(' ')
+          )} failed with exit code ${chalk.bold(code)}. Printing stderr:`
+        )
+      );
+      stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
+      return reject(code);
     });
   });

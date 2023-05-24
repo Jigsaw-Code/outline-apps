@@ -14,6 +14,7 @@
   "disconnected-server-state": "Ажыратылған",
   "disconnecting-server-state": "Ажыратылуда…",
   "email-feedback-input": "Электрондық мекенжай (қосымша)",
+  "error-details": "Толық мәлімет",
   "error-feedback-submission": "Пікір жіберу мүмкін емес. Құрылғының интернетке қосылғанын тексеріп, әрекетті қайталап көріңіз.",
   "error-invalid-access-key": "Рұқсат кілті жарамсыз. Әрекетті қайталап көріңіз немесе көмек қажет болса, пікір жіберіңіз.",
   "error-server-already-added": "\"{serverName}\" сервері қосылып қойған.",

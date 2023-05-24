@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
+import minimist from 'minimist';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {runAction} from '../build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
@@ -23,20 +23,36 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
 
 const ELECTRON_BUILD_DIR = 'build';
+const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
-  const {platform, buildMode, stagingPercentage, publish} = getElectronBuildParameters(parameters);
-  const version = await getVersion(platform);
+  const {platform, buildMode, versionName} = getBuildParameters(parameters);
+  const {autoUpdateProvider = 'generic', autoUpdateUrl} = minimist(parameters);
+
+  if (!ELECTRON_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `The platform "${platform}" is not a valid Electron platform. It must be one of: ${ELECTRON_PLATFORMS.join(
+        ', '
+      )}.`
+    );
+  }
 
   if (buildMode === 'debug') {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  if (buildMode === 'release' && !autoUpdateUrl) {
+    throw new TypeError(
+      "You need to add an electron-builder compliant auto-update url via an 'autoUpdateUrl' flag." +
+        'See here: https://www.electron.build/configuration/publish#publishers'
+    );
+  }
+
+  await runAction('www/build', ...parameters);
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(
-    path.join(getRootDir(), 'src/electron/icons'),
+    path.join(getRootDir(), 'src', 'electron', 'icons'),
     path.join(getRootDir(), ELECTRON_BUILD_DIR, 'icons')
   );
 
@@ -50,21 +66,19 @@ export async function main(...parameters) {
     targets: Platform[platform.toLocaleUpperCase()].createTarget(),
     config: {
       ...electronConfig,
-      publish,
+      publish: autoUpdateUrl
+        ? {
+            provider: autoUpdateProvider,
+            url: autoUpdateUrl,
+          }
+        : undefined,
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
-        version,
+        version: versionName,
       },
     },
   });
-
-  if (stagingPercentage !== 100) {
-    const platformSuffix = platform === 'linux' ? '-linux' : '';
-
-    await fs.appendFile(`build/dist/beta${platformSuffix}.yml`, `stagingPercentage: ${stagingPercentage}`);
-    await fs.appendFile(`build/dist/latest${platformSuffix}.yml`, `stagingPercentage: ${stagingPercentage}`);
-  }
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

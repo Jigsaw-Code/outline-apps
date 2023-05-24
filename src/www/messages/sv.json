@@ -14,6 +14,7 @@
   "disconnected-server-state": "Frånkopplad",
   "disconnecting-server-state": "Kopplar från …",
   "email-feedback-input": "E-postadress (valfri)",
+  "error-details": "Information",
   "error-feedback-submission": "Det gick inte att skicka din feedback. Kontrollera att du är ansluten till internet och försök igen.",
   "error-invalid-access-key": "Ogiltig åtkomstnyckel. Försök igen eller skicka in feedback om du behöver hjälp.",
   "error-server-already-added": "Servern {serverName} har redan lagts till",

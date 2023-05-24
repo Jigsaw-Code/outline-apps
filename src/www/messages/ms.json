@@ -14,6 +14,7 @@
   "disconnected-server-state": "Diputuskan sambungan",
   "disconnecting-server-state": "Sedang memutuskan sambungan...",
   "email-feedback-input": "Alamat e-mel (pilihan)",
+  "error-details": "Butiran",
   "error-feedback-submission": "Maaf, kami tidak dapat menyerahkan maklum balas anda. Sila pastikan bahawa anda disambungkan kepada Internet dan cuba lagi.",
   "error-invalid-access-key": "Kunci akses tidak sah. Sila cuba lagi, atau serahkan maklum balas untuk mendapatkan bantuan.",
   "error-server-already-added": "Pelayan “{serverName}” sudah ditambahkan.",

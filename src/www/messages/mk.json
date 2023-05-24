@@ -14,6 +14,7 @@
   "disconnected-server-state": "Не е поврзано",
   "disconnecting-server-state": "Врската се прекинува…",
   "email-feedback-input": "Адреса на е-пошта (незадолжително)",
+  "error-details": "Детали",
   "error-feedback-submission": "За жал, вашите повратни информации не можеше да се испратат. Проверете дали сте поврзани на интернет и обидете се повторно.",
   "error-invalid-access-key": "Погрешен клуч за пристап. Обидете се повторно или испратете повратни информации за помош.",
   "error-server-already-added": "Серверот „{serverName}“ е веќе додаден.",

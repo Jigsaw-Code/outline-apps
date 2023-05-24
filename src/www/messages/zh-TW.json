@@ -14,6 +14,7 @@
   "disconnected-server-state": "已中斷連線",
   "disconnecting-server-state": "正在中斷連線...",
   "email-feedback-input": "電子郵件地址 (選填)",
+  "error-details": "詳細資料",
   "error-feedback-submission": "很抱歉，我們無法提交你的意見回饋。請確認已連上網際網路，然後再試一次。",
   "error-invalid-access-key": "存取金鑰無效。請再試一次，或是提交意見回饋尋求協助。",
   "error-server-already-added": "已新增「{serverName}」伺服器。",

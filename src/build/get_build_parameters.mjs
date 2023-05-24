@@ -17,25 +17,23 @@ import minimist from 'minimist';
 const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'android', 'browser'];
 const VALID_BUILD_MODES = ['debug', 'release'];
 
+const MS_PER_HOUR = 1000 * 60 * 60;
+
 /*
   Inputs:
-  => platform: the list of action arguments passed in
+  => cliParameters: the list of action arguments passed in
 
   Outputs:
   => an object containing the specificed platform and buildMode.
 */
-export function getBuildParameters(buildParameters) {
-  let {
-    _: [platform],
-    buildMode,
-    stagingPercentage,
-    sentryDsn,
-    verbose,
-  } = minimist(buildParameters);
-
-  if ((stagingPercentage !== undefined && stagingPercentage < 0) || stagingPercentage > 100) {
-    throw new RangeError('StagingPercentage must be a number between zero and one hundred!');
-  }
+export function getBuildParameters(cliArguments) {
+  const {
+    _: [platform = 'browser'],
+    buildMode = 'debug',
+    verbose = false,
+    versionName = '0.0.0',
+    sentryDsn = process.env.SENTRY_DSN,
+  } = minimist(cliArguments);
 
   if (platform && !VALID_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -51,12 +49,12 @@ export function getBuildParameters(buildParameters) {
     );
   }
 
-  // set defaults
-  platform ??= 'browser';
-  buildMode ??= 'debug';
-  stagingPercentage ??= 100;
-  sentryDsn ??= process.env.SENTRY_DSN;
-  verbose ??= false;
-
-  return {platform, buildMode, stagingPercentage, sentryDsn, verbose};
+  return {
+    platform,
+    buildMode,
+    verbose,
+    versionName: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+    sentryDsn,
+    buildNumber: Math.floor(Date.now() / MS_PER_HOUR),
+  };
 }

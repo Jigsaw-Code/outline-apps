@@ -14,6 +14,7 @@
   "disconnected-server-state": "Отключен",
   "disconnecting-server-state": "Отключение…",
   "email-feedback-input": "Адрес электронной почты (необязательно)",
+  "error-details": "Подробности",
   "error-feedback-submission": "Не удалось отправить отзыв. Проверьте подключение к Интернету и повторите попытку.",
   "error-invalid-access-key": "Недопустимый ключ доступа. Повторите попытку или отправьте отзыв, чтобы получить помощь.",
   "error-server-already-added": "Сервер \"{serverName}\" уже добавлен.",

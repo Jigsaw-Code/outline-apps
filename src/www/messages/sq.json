@@ -14,6 +14,7 @@
   "disconnected-server-state": "Shkëputur",
   "disconnecting-server-state": "Po shkëputet...",
   "email-feedback-input": "Adresa e email-it (opsionale)",
+  "error-details": "Detajet",
   "error-feedback-submission": "Na vjen keq, por nuk mund t'i dërgonim komentet e tua. Kontrollo që je i lidhur me internetin dhe provo përsëri.",
   "error-invalid-access-key": "Çelës i pavlefshëm qasjeje. Provo përsëri ose dërgo komentet për ndihmë.",
   "error-server-already-added": "Serveri “{serverName}” është shtuar tashmë.",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "Povezava je prekinjena",
   "disconnecting-server-state": "Prekinjanje povezave …",
   "email-feedback-input": "E-poštni naslov (izbirno)",
+  "error-details": "Podrobnosti",
   "error-feedback-submission": "Vaših povratnih informacij žal ne moremo poslati. Preverite, ali imate vzpostavljeno povezavo z internetom, in poskusite znova.",
   "error-invalid-access-key": "Neveljavni ključ za dostop. Poskusite znova ali pošljite povratne informacije, da vam bomo lahko pomagali.",
   "error-server-already-added": "Strežnik »{serverName}« je že dodan.",

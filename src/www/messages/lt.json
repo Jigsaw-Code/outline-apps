@@ -14,6 +14,7 @@
   "disconnected-server-state": "Atsijungta",
   "disconnecting-server-state": "Atsijungiama...",
   "email-feedback-input": "El. pašto adresas (nebūtinas)",
+  "error-details": "Išsami informacija",
   "error-feedback-submission": "Deja, nepavyko pateikti atsiliepimo. Patikrinkite, ar esate prisijungę prie interneto, ir bandykite dar kartą.",
   "error-invalid-access-key": "Netinkamas prieigos raktas. Bandykite dar kartą arba pateikite atsiliepimą, jei reikia pagalbos.",
   "error-server-already-added": "Serveris „{serverName}“ jau pridėtas.",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "Imetenganishwa",
   "disconnecting-server-state": "Inatenganisha...",
   "email-feedback-input": "Anwani ya barua pepe (si lazima)",
+  "error-details": "Maelezo",
   "error-feedback-submission": "Samahani, hatukuweza kutuma maoni yako. Tafadhali hakikisha kuwa umeunganishwa kwenye intaneti kisha ujaribu tena.",
   "error-invalid-access-key": "Ufunguo usio sahihi. Tafadhali jaribu tena au tuma maoni ili upate usaidizi.",
   "error-server-already-added": "Seva ya “{serverName}” tayari imewekwa.",

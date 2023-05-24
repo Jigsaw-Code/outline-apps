@@ -14,6 +14,7 @@
   "disconnected-server-state": "ডিসকানেক্ট হয়ে গেছে",
   "disconnecting-server-state": "ডিসকানেক্ট করা হচ্ছে...",
   "email-feedback-input": "ইমেল আইডি (ঐচ্ছিক)",
+  "error-details": "বিবরণ",
   "error-feedback-submission": "আমরা আপনার মতামত জমা দিতে পারিনি। আপনার ডিভাইসে ইন্টারনেট কানেকশন আছে কিনা তা ভাল করে দেখে নিয়ে আবার চেষ্টা করুন।",
   "error-invalid-access-key": "'অ্যাক্সেস কী' বৈধ নয়। আবার চেষ্টা করুন অথবা সাহায্যের জন্য মতামত জমা দিন।",
   "error-server-already-added": "“{serverName}” সার্ভার আগেই যোগ করা হয়েছে।",

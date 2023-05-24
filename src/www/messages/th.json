@@ -14,6 +14,7 @@
   "disconnected-server-state": "ยกเลิกการเชื่อมต่อแล้ว",
   "disconnecting-server-state": "กำลังยกเลิกการเชื่อมต่อ...",
   "email-feedback-input": "ที่อยู่อีเมล (ไม่บังคับ)",
+  "error-details": "รายละเอียด",
   "error-feedback-submission": "ขออภัย เราส่งความคิดเห็นของคุณไม่ได้ โปรดตรวจสอบว่าคุณเชื่อมต่อกับอินเทอร์เน็ตแล้วและลองอีกครั้ง",
   "error-invalid-access-key": "คีย์การเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้งหรือส่งความคิดเห็นเพื่อขอความช่วยเหลือ",
   "error-server-already-added": "เพิ่มเซิร์ฟเวอร์ “{serverName}” แล้ว",

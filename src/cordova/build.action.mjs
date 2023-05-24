@@ -14,14 +14,16 @@
 
 import path from 'node:path';
 import url from 'url';
+import fs from 'node:fs/promises';
 
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
 import {runAction} from '../build/run_action.mjs';
-import {getCordovaBuildParameters} from './get_cordova_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {downloadHttpsFile} from '../build/download_file.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, android).
@@ -29,80 +31,145 @@ import {spawnStream} from '../build/spawn_stream.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: cordovaPlatform, buildMode, verbose} = getCordovaBuildParameters(parameters);
-  const outlinePlatform = cordovaPlatform === 'osx' ? 'macos' : cordovaPlatform;
+  const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
+  await runAction('www/build', ...parameters);
   await runAction('cordova/setup', ...parameters);
 
-  if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${outlinePlatform}" in [DEBUG] mode. Do not publish this build!!`);
+  if (verbose) {
+    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
   }
 
-  if (cordovaPlatform === 'osx' || cordovaPlatform === 'ios') {
-    const xcodebuildBaseArguments = [
-      'xcodebuild',
-      'clean',
-      '-workspace',
-      path.join(getRootDir(), 'src', 'cordova', 'apple', `${outlinePlatform}.xcworkspace`),
-      '-scheme',
-      'Outline',
-      '-destination',
-      cordovaPlatform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS'
-    ];
+  switch (platform + buildMode) {
+    case 'android' + 'debug':
+      return androidDebug(verbose);
+    case 'android' + 'release':
+      if (!process.env.JAVA_HOME) {
+        throw new ReferenceError('JAVA_HOME must be defined in the environment to build an Android Release!');
+      }
 
-    if (buildMode === 'release') {
-      return spawnStream(...xcodebuildBaseArguments, 'archive', '-configuration', 'Release');
-    }
-
-    // TODO(fortuna): Specify the -destination parameter for build. Do we need it for archive?
-    return spawnStream(
-      ...xcodebuildBaseArguments,
-      'build',
-      '-configuration',
-      'Debug',
-      'CODE_SIGN_IDENTITY=""',
-      'CODE_SIGNING_ALLOWED="NO"'
-    );
-  }
-
-  if (cordovaPlatform === 'android') {
-    let argv = [
-      // Path is relative to /platforms/android/.
-      // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
-      '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
-    ];
-
-    if (verbose) {
-      argv.push('--gradleArg=--info');
-      cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
-    }
-
-    if (buildMode === 'release') {
       if (!(process.env.ANDROID_KEY_STORE_PASSWORD && process.env.ANDROID_KEY_STORE_CONTENTS)) {
         throw new ReferenceError(
           "Both 'ANDROID_KEY_STORE_PASSWORD' and 'ANDROID_KEY_STORE_CONTENTS' must be defined in the environment to build an Android Release!"
         );
       }
-      argv = [
-        ...argv,
-        '--keystore=keystore.p12',
+
+      return androidRelease(
+        process.env.ANDROID_KEY_STORE_PASSWORD,
+        process.env.ANDROID_KEY_STORE_CONTENTS,
+        process.env.JAVA_HOME,
+        verbose
+      );
+    case 'ios' + 'debug':
+    case 'macos' + 'debug':
+      return appleDebug(platform);
+    case 'ios' + 'release':
+    case 'macos' + 'release':
+      return appleRelease(platform);
+  }
+}
+
+async function appleDebug(platform) {
+  console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+
+  return spawnStream(
+    'xcodebuild',
+    'clean',
+    '-workspace',
+    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
+    '-scheme',
+    'Outline',
+    '-destination',
+    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
+    'build',
+    '-configuration',
+    'Debug',
+    'CODE_SIGN_IDENTITY=""',
+    'CODE_SIGNING_ALLOWED="NO"'
+  );
+}
+
+async function appleRelease(platform) {
+  return spawnStream(
+    'xcodebuild',
+    'clean',
+    '-workspace',
+    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
+    '-scheme',
+    'Outline',
+    '-destination',
+    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
+    'archive',
+    '-configuration',
+    'Release'
+  );
+}
+
+async function androidDebug(verbose) {
+  console.warn(`WARNING: building "android" in [DEBUG] mode. Do not publish this build!!`);
+
+  return cordova.compile({
+    verbose,
+    platforms: ['android'],
+    options: {
+      argv: [
+        // Path is relative to /platforms/android/.
+        // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
+      ],
+    },
+  });
+}
+
+const JAVA_BUNDLETOOL_VERSION = '1.8.2';
+const JAVA_BUNDLETOOL_RESOURCE_URL = `https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-${JAVA_BUNDLETOOL_VERSION}.jar`;
+
+async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
+  const androidBuildPath = path.resolve(getRootDir(), 'platforms', 'android');
+  const keystorePath = path.resolve(androidBuildPath, 'keystore.p12');
+
+  await fs.writeFile(keystorePath, Buffer.from(ksContents, 'base64'));
+
+  await cordova.compile({
+    verbose,
+    platforms: ['android'],
+    options: {
+      release: true,
+      argv: [
+        // Path is relative to /platforms/android/.
+        // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
+        `--keystore=${keystorePath}`,
         '--alias=privatekey',
-        `--storePassword=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
-        `--password=${process.env.ANDROID_KEY_STORE_PASSWORD}`,
+        `--storePassword=${ksPassword}`,
+        `--password=${ksPassword}`,
         '--',
         '--gradleArg=-PcdvBuildMultipleApks=true',
-      ];
-    }
+      ],
+    },
+  });
 
-    return cordova.compile({
-      verbose,
-      platforms: ['android'],
-      options: {
-        release: buildMode === 'release',
-        argv,
-      },
-    });
-  }
+  const bundletoolPath = path.resolve(androidBuildPath, 'bundletool.jar');
+  await downloadHttpsFile(JAVA_BUNDLETOOL_RESOURCE_URL, bundletoolPath);
+
+  const outputPath = path.resolve(androidBuildPath, 'Outline.apks');
+  await spawnStream(
+    path.resolve(javaPath, 'bin', 'java'),
+    '-jar',
+    bundletoolPath,
+    'build-apks',
+    `--bundle=${path.resolve(androidBuildPath, 'app', 'build', 'outputs', 'bundle', 'release', 'app-release.aab')}`,
+    `--output=${outputPath}`,
+    '--mode=universal',
+    `--ks=${keystorePath}`,
+    `--ks-pass=pass:${ksPassword}`,
+    '--ks-key-alias=privatekey',
+    `--key-pass=pass:${ksPassword}`
+  );
+
+  return fs.rename(outputPath, path.resolve(androidBuildPath, 'Outline.zip'));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

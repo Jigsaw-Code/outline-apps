@@ -14,6 +14,7 @@
   "disconnected-server-state": "Odłączono",
   "disconnecting-server-state": "Odłączam...",
   "email-feedback-input": "Adres e-mail (opcjonalnie)",
+  "error-details": "Szczegóły",
   "error-feedback-submission": "Nie udało się przesłać opinii. Sprawdź połączenie z internetem i spróbuj ponownie.",
   "error-invalid-access-key": "Nieprawidłowy klucz dostępu. Spróbuj ponownie lub prześlij opinię, by uzyskać pomoc.",
   "error-server-already-added": "Dodano już serwer „{serverName}”.",

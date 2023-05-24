@@ -25,3 +25,4 @@ Outline.apks
 universal.apk
 toc.pb
 coverage
+*.env

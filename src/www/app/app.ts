@@ -104,6 +104,7 @@ export class App {
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
+    rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
 
     if (urlInterceptor) {
       this.registerUrlInterceptionListener(urlInterceptor);

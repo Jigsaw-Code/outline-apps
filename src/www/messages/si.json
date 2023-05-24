@@ -14,6 +14,7 @@
   "disconnected-server-state": "විසන්‍ධි විය",
   "disconnecting-server-state": "විසන්ධි කෙරේ...",
   "email-feedback-input": "ඉ-තැපැල් ලිපිනය (විකල්ප)",
+  "error-details": "විස්තර",
   "error-feedback-submission": "කනගාටුයි, අපට ඔබේ ප්‍රතිපෝෂණය ඉදිරිපත් කිරීමට නොහැකි විය. ඔබ අන්තර්ජාලයට සම්බන්‍ධ කර තිබේ දැයි පරීක්‍ෂා කර නැවත උත්සාහ කරන්න.",
   "error-invalid-access-key": "අවලංගු ප්‍රවේශ යතුර. නැවත උත්සාහ කරන්න, නැති නම් උදවු සඳහා ප්‍රතිපෝෂණය ඉදිරිපත් කරන්න.",
   "error-server-already-added": "“{serverName}” සේවාදායකය දැනටමත් එක් කර තිබේ.",

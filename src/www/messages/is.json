@@ -14,6 +14,7 @@
   "disconnected-server-state": "Aftengt",
   "disconnecting-server-state": "Aftengir...",
   "email-feedback-input": "Netfang (valfrjálst)",
+  "error-details": "Nánar",
   "error-feedback-submission": "Því miður tókst ekki að senda ábendinguna. Gakktu úr skugga um að nettenging sé til staðar og reyndu aftur.",
   "error-invalid-access-key": "Ógildur aðgangslykill. Reyndu aftur eða sendu okkur ábendingu ef þú þarft aðstoð.",
   "error-server-already-added": "Þjóninum „{serverName}“ hefur þegar verið bætt við",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "اتصال قطع شد",
   "disconnecting-server-state": "درحال قطع اتصال...",
   "email-feedback-input": "نشانی ایمیل (اختیاری)",
+  "error-details": "جزئیات",
   "error-feedback-submission": "متأسفیم، نتوانستیم بازخوردتان را ارسال کنیم. لطفاً بررسی کنید به اینترنت وصل باشید و دوباره امتحان کنید.",
   "error-invalid-access-key": "کلید دسترسی نامعتبر است. لطفاً دوباره امتحان کنید یا برای دریافت راهنمایی بازخورد ارسال کنید.",
   "error-server-already-added": "سرور «{serverName}» قبلاً اضافه شده است.",

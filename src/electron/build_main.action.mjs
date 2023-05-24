@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
-import {getVersion} from '../build/get_version.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {runWebpack} from '../build/run_webpack.mjs';
@@ -25,23 +23,31 @@ import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
+const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
-  const {platform, buildMode, sentryDsn} = getElectronBuildParameters(parameters);
-  const {APP_VERSION} = await getBuildEnvironment(platform, buildMode, sentryDsn);
+  const {platform, buildMode, sentryDsn, versionName} = getBuildParameters(parameters);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
+  if (!ELECTRON_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `The platform "${platform}" is not a valid Electron platform. It must be one of: ${ELECTRON_PLATFORMS.join(
+        ', '
+      )}.`
+    );
+  }
+
+  await runAction('www/build', ...parameters);
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
-    electronMainWebpackConfigs({sentryDsn, appVersion: APP_VERSION}).map(config => ({
+    electronMainWebpackConfigs({sentryDsn, appVersion: versionName}).map(config => ({
       ...config,
       mode: getWebpackBuildMode(buildMode),
     }))
   );
 
   if (platform === 'windows') {
-    let windowsEnvironment = `!define RELEASE "${await getVersion(platform)}"`;
+    let windowsEnvironment = `!define RELEASE "${versionName}"`;
 
     if (sentryDsn) {
       const {username: apiKey, pathname: projectID} = new URL(sentryDsn);

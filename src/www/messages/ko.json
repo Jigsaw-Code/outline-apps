@@ -14,6 +14,7 @@
   "disconnected-server-state": "연결 해제됨",
   "disconnecting-server-state": "연결 해제 중...",
   "email-feedback-input": "이메일 주소(선택사항)",
+  "error-details": "세부정보",
   "error-feedback-submission": "죄송합니다. 의견을 제출할 수 없습니다. 인터넷에 연결되어 있는지 확인하고 다시 시도해 보세요.",
   "error-invalid-access-key": "잘못된 액세스 키입니다. 다시 시도하거나 의견을 제출하여 도움을 받으세요.",
   "error-server-already-added": "‘{serverName}’ 서버는 이미 추가되었습니다.",

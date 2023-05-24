@@ -118,6 +118,7 @@
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
     "puppeteer": "^13.1.2",
+    "replace-in-file": "^6.3.5",
     "rimraf": "^2.7.1",
     "rmfr": "^2.0.0",
     "style-loader": "^2.0.0",
@@ -128,8 +129,7 @@
     "webpack-cli": "^4.4.0",
     "webpack-dev-server": "^4.5.0",
     "webpack-merge": "^5.8.0",
-    "webpack-shell-plugin-next": "^2.1.1",
-    "xml2js": "^0.4.17"
+    "webpack-shell-plugin-next": "^2.1.1"
   },
   "optionalDependencies": {
     "ios-deploy": "^1.11.4"

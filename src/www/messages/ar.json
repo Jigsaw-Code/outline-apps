@@ -14,6 +14,7 @@
   "disconnected-server-state": "غير متصل",
   "disconnecting-server-state": "جارٍ قطع الاتصال...",
   "email-feedback-input": "عنوان البريد الإلكتروني (اختياري)",
+  "error-details": "التفاصيل",
   "error-feedback-submission": "عُذرًا، لم نتمكّن من إرسال تعليقاتك. يُرجى التحقّق من اتصالك بالإنترنت وإعادة المحاولة.",
   "error-invalid-access-key": "مفتاح الوصول غير صالح. يُرجى إعادة المحاولة أو إرسال تعليقاتك للحصول على المساعدة.",
   "error-server-already-added": "تمت إضافة الخادم \"{serverName}\" من قبل.",

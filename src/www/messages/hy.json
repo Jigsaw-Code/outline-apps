@@ -14,6 +14,7 @@
   "disconnected-server-state": "Անջատված է",
   "disconnecting-server-state": "Անջատվում է…",
   "email-feedback-input": "Էլ․ հասցե (պարտադիր չէ)",
+  "error-details": "Մանրամասներ",
   "error-feedback-submission": "Չհաջողվեց ուղարկել կարծիքը։ Համոզվեք, որ միացած եք համացանցին, և նորից փորձեք։",
   "error-invalid-access-key": "Մուտքի բանալին անվավեր է։ Նորից փորձեք կամ կարծիք ուղարկեք, եթե օգնության կարիք ունեք։",
   "error-server-already-added": "«{serverName}» սերվերն արդեն ավելացվել է։",

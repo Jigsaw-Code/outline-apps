@@ -14,6 +14,7 @@
   "disconnected-server-state": "Deconectat",
   "disconnecting-server-state": "Se deconectează...",
   "email-feedback-input": "Adresă de e-mail (opțional)",
+  "error-details": "Detalii",
   "error-feedback-submission": "Feedbackul dvs. nu a putut fi trimis. Verificați dacă v-ați conectat la internet și încercați din nou.",
   "error-invalid-access-key": "Cheie de acces nevalidă. Încercați din nou sau trimiteți feedback pentru a primi ajutor.",
   "error-server-already-added": "Serverul „{serverName}” a fost adăugat deja.",

@@ -14,6 +14,7 @@
   "disconnected-server-state": "Салсан",
   "disconnecting-server-state": "Салгаж байна...",
   "email-feedback-input": "Имэйл хаяг (заавал биш)",
+  "error-details": "Дэлгэрэнгүй",
   "error-feedback-submission": "Уучлаарай, бид таны санал хүсэлтийг илгээж чадсангүй. Та интернэтэд холбогдсон эсэхээ шалгаад, дахин оролдоно уу.",
   "error-invalid-access-key": "Хандалтын түлхүүр буруу байна. Дахин оролдох эсвэл тусламж авах бол санал хүсэлт илгээнэ үү.",
   "error-server-already-added": "“{serverName}” серверийг аль хэдийн нэмсэн.",

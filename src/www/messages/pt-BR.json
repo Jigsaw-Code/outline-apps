@@ -14,6 +14,7 @@
   "disconnected-server-state": "Desconectado",
   "disconnecting-server-state": "Desconectando…",
   "email-feedback-input": "Endereço de e-mail (opcional)",
+  "error-details": "Detalhes",
   "error-feedback-submission": "Não foi possível enviar seu feedback. Verifique a conexão com a Internet e tente novamente.",
   "error-invalid-access-key": "Chave de acesso inválida. Tente novamente ou envie feedback para receber ajuda.",
   "error-server-already-added": "O servidor \"{serverName}\" já foi adicionado.",

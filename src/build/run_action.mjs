@@ -94,8 +94,9 @@ export async function runAction(actionPath, ...parameters) {
     await spawnStream(runner, ...subCommands, resolvedPath, ...parameters);
   } catch (error) {
     if (error?.message) {
-      console.error(chalk.red(error.message));
+      console.error(chalk.gray(error.message));
     }
+
     console.groupEnd();
     console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
 
@@ -128,7 +129,7 @@ async function main() {
     console.info(
       chalk.gray(`
   =========================================================
-               © The Outline Authors, 2022
+               © The Outline Authors, 2023
   =========================================================
   `)
     );

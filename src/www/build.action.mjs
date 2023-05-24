@@ -15,10 +15,10 @@
 import fs from 'fs/promises';
 import url from 'url';
 import path from 'path';
+import rmfr from 'rmfr';
 
 import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getBuildEnvironment} from '../build/get_build_environment.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
@@ -29,13 +29,40 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, sentryDsn} = getBuildParameters(parameters);
+  const {sentryDsn, platform, buildMode, versionName, buildNumber} = getBuildParameters(parameters);
+
+  await rmfr(path.resolve(getRootDir(), 'www'));
 
   // write build environment
   await fs.mkdir(path.resolve(getRootDir(), 'www'), {recursive: true});
+
+  if (buildMode === 'release') {
+    if (versionName === '0.0.0') {
+      throw new TypeError('Release builds require a valid versionName, but it is set to 0.0.0.');
+    }
+
+    if (!sentryDsn) {
+      throw new TypeError('Release builds require SENTRY_DSN, but it is not defined.');
+    }
+
+    /*
+      the SENTRY_DSN follows a stardard URL format:
+      https://docs.sentry.io/product/sentry-basics/dsn-explainer/#the-parts-of-the-dsn
+    */
+    try {
+      new URL(sentryDsn);
+    } catch (e) {
+      throw new TypeError(`The sentryDsn ${sentryDsn} is not a valid URL!`);
+    }
+  }
+
   await fs.writeFile(
-    path.resolve(getRootDir(), 'www/environment.json'),
-    JSON.stringify(await getBuildEnvironment(platform, buildMode, sentryDsn))
+    path.resolve(getRootDir(), 'www', 'environment.json'),
+    JSON.stringify({
+      SENTRY_DSN: sentryDsn,
+      APP_VERSION: versionName,
+      APP_BUILD_NUMBER: buildNumber,
+    })
   );
 
   await runWebpack(getBrowserWebpackConfig(platform, buildMode));
