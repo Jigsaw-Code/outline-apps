@@ -14,25 +14,11 @@
 
 import Foundation
 
-// Serializable class to wrap a tunnel's configuration.
-// Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
-// Note that this class and its non-private properties must be public in order to be visible to the ObjC
-// target of the OutlineAppleLib Swift Package.
 @objcMembers
 public class OutlineTunnel: NSObject, Codable {
   public var id: String?
   public var host: String?
-  public var port: String?
-  public var method: String?
-  public var password: String?
-  public var prefix: Data?
-  public var config: [String: String] {
-    let scalars = prefix?.map{Unicode.Scalar($0)}
-    let characters = scalars?.map{Character($0)}
-    let prefixStr = String(characters ?? [])
-    return ["host": host ?? "", "port": port ?? "", "password": password ?? "",
-            "method": method ?? "", "prefix": prefixStr]
-  }
+  public var proxyConfigString: String?
 
   @objc
   public enum TunnelStatus: Int {
@@ -41,26 +27,53 @@ public class OutlineTunnel: NSObject, Codable {
     case reconnecting = 2
   }
 
-  public convenience init(id: String, config: [String: Any]) {
+  public convenience init?(_ tunnelConfig: [String: Any]?) {
+    if !OutlineTunnel.containsExpectedKeys(tunnelConfig) {
+      return nil
+    }
+    self.init(id: tunnelConfig?["id"] as! String,
+              host: tunnelConfig?["host"] as! String,
+              proxyConfigString: tunnelConfig?["proxyConfigString"] as! String)
+    // Storing 'tunnelConfig' as a property, for crossing app/VpnExtension layer, would
+    // break Codable compliance so we'll use encoded data instead for that purpose too
+    // (beside tunnel store).
+  }
+  
+  public convenience init(id: String, host: String, proxyConfigString: String) {
     self.init()
     self.id = id
-    self.host = config["host"] as? String
-    self.password = config["password"] as? String
-    self.method = config["method"] as? String
-    if let port = config["port"] {
-      self.port = String(describing: port)  // Handle numeric values
-    }
-    if let prefix = config["prefix"] as? String {
-      self.prefix = Data(prefix.utf16.map{UInt8($0)})
-    }
+    self.host = host
+    self.proxyConfigString = proxyConfigString
   }
-
+  
   public func encode() -> Data? {
-    return try? JSONEncoder().encode(self)
-  }
+    let encoder = JSONEncoder()
 
-  public static func decode(_ jsonData: Data) -> OutlineTunnel? {
-    return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
+    do {
+      let jsonData = try encoder.encode(self)
+      return jsonData
+    } catch {
+      print("Failed to encode the tunnel")
+      return nil
+    }
+  }
+  
+  static public func decode(_ encodedTunnelData: Data) -> OutlineTunnel? {
+    let decoder = JSONDecoder()
+
+    do {
+      let decodedTunnel = try decoder.decode(OutlineTunnel.self, from: encodedTunnelData)
+      return decodedTunnel
+    } catch {
+      print("Failed to decode the tunnel config.")
+      return nil
+    }
+  }
+  
+  static private func containsExpectedKeys(_ tunnelConfig: [String: Any]?) -> Bool {
+    return tunnelConfig?["id"] != nil &&
+           tunnelConfig?["host"] != nil &&
+           tunnelConfig?["proxyConfigString"] != nil
   }
 
 }

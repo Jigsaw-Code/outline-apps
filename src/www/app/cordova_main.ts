@@ -32,7 +32,7 @@ import {main} from './main';
 import * as errors from '../model/errors';
 import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
-import {Tunnel, TunnelStatus} from './tunnel';
+import {Tunnel, TunnelConfig, TunnelStatus} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {FakeOutlineTunnel} from './fake_tunnel';
@@ -97,11 +97,18 @@ class CordovaNativeNetworking implements NativeNetworking {
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 
-  start(config: ShadowsocksSessionConfig) {
-    if (!config) {
+  start(proxyConfig: ShadowsocksSessionConfig, serverName: string) {
+    if (!proxyConfig) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, config);
+
+    const tunnelConfig: TunnelConfig = {
+      id: this.id,
+      host: proxyConfig.host,
+      serverName: serverName,
+      proxyConfigString: JSON.stringify(proxyConfig),
+    };
+    return pluginExecWithErrorCode<void>('start', tunnelConfig);
   }
 
   stop() {
