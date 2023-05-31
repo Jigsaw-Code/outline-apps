@@ -70,7 +70,7 @@ jobs:
               "1024": "XXL"
             }
   needs_test:
-    name: '[WIP] Fail if Needs Test Label'
+    name: 'Fail if Needs Test Label'
     runs-on: ubuntu-latest
     permissions:
       contents: read
