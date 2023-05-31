@@ -153,79 +153,79 @@ export class App {
     this.pullClipboardText();
   }
 
-  showLocalizedError(e?: Error, toastDuration = 10000) {
+  showLocalizedError(error?: Error, toastDuration = 10000) {
     let messageKey: string;
     let messageParams: string[] = [];
     let buttonKey: string;
     let buttonHandler: () => void;
     let buttonLink: string;
 
-    if (e instanceof errors.VpnPermissionNotGranted) {
+    if (error instanceof errors.VpnPermissionNotGranted) {
       messageKey = 'outline-plugin-error-vpn-permission-not-granted';
-    } else if (e instanceof errors.InvalidServerCredentials) {
+    } else if (error instanceof errors.InvalidServerCredentials) {
       messageKey = 'outline-plugin-error-invalid-server-credentials';
-    } else if (e instanceof errors.RemoteUdpForwardingDisabled) {
+    } else if (error instanceof errors.RemoteUdpForwardingDisabled) {
       messageKey = 'outline-plugin-error-udp-forwarding-not-enabled';
-    } else if (e instanceof errors.ServerUnreachable) {
+    } else if (error instanceof errors.ServerUnreachable) {
       messageKey = 'outline-plugin-error-server-unreachable';
-    } else if (e instanceof errors.FeedbackSubmissionError) {
+    } else if (error instanceof errors.FeedbackSubmissionError) {
       messageKey = 'error-feedback-submission';
-    } else if (e instanceof errors.ServerUrlInvalid) {
+    } else if (error instanceof errors.ServerUrlInvalid) {
       messageKey = 'error-invalid-access-key';
-    } else if (e instanceof errors.ServerIncompatible) {
+    } else if (error instanceof errors.ServerIncompatible) {
       messageKey = 'error-server-incompatible';
-    } else if (e instanceof OperationTimedOut) {
+    } else if (error instanceof OperationTimedOut) {
       messageKey = 'error-timeout';
-    } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
+    } else if (error instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
       messageKey = 'outline-plugin-error-antivirus';
       buttonKey = 'fix-this';
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
-    } else if (e instanceof errors.ConfigureSystemProxyFailure) {
+    } else if (error instanceof errors.ConfigureSystemProxyFailure) {
       messageKey = 'outline-plugin-error-routing-tables';
       buttonKey = 'feedback-page-title';
       buttonHandler = () => {
         // TODO: Drop-down has no selected item, why not?
         this.rootEl.changePage('feedback');
       };
-    } else if (e instanceof errors.NoAdminPermissions) {
+    } else if (error instanceof errors.NoAdminPermissions) {
       messageKey = 'outline-plugin-error-admin-permissions';
-    } else if (e instanceof errors.UnsupportedRoutingTable) {
+    } else if (error instanceof errors.UnsupportedRoutingTable) {
       messageKey = 'outline-plugin-error-unsupported-routing-table';
-    } else if (e instanceof errors.ServerAlreadyAdded) {
+    } else if (error instanceof errors.ServerAlreadyAdded) {
       messageKey = 'error-server-already-added';
-      messageParams = ['serverName', this.getServerDisplayName(e.server)];
-    } else if (e instanceof errors.SystemConfigurationException) {
+      messageParams = ['serverName', this.getServerDisplayName(error.server)];
+    } else if (error instanceof errors.SystemConfigurationException) {
       messageKey = 'outline-plugin-error-system-configuration';
-    } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
+    } else if (error instanceof errors.ShadowsocksUnsupportedCipher) {
       messageKey = 'error-shadowsocks-unsupported-cipher';
-      messageParams = ['cipher', e.cipher];
-    } else if (e instanceof errors.ServerAccessKeyInvalid) {
+      messageParams = ['cipher', error.cipher];
+    } else if (error instanceof errors.ServerAccessKeyInvalid) {
       messageKey = 'error-connection-configuration';
       buttonKey = 'error-details';
       buttonHandler = () => {
-        this.showErrorDetailDialog(e);
+        this.showErrorDetailDialog(error);
       };
-    } else if (e instanceof errors.SessionConfigFetchFailed) {
+    } else if (error instanceof errors.SessionConfigFetchFailed) {
       messageKey = 'error-connection-configuration-fetch';
       buttonKey = 'error-details';
       buttonHandler = () => {
-        this.showErrorDetailDialog(e);
+        this.showErrorDetailDialog(error);
       };
-    } else if (e instanceof errors.ProxyConnectionFailure) {
+    } else if (error instanceof errors.ProxyConnectionFailure) {
       messageKey = 'error-connection-proxy';
       buttonKey = 'error-details';
       buttonHandler = () => {
-        this.showErrorDetailDialog(e);
+        this.showErrorDetailDialog(error);
       };
     } else {
-      const hasErrorDetails = Boolean(e.message || e.cause);
+      const hasErrorDetails = Boolean(error.message || error.cause);
 
       messageKey = 'error-unexpected';
       buttonKey = hasErrorDetails ? 'error-details' : undefined;
       buttonHandler = hasErrorDetails
         ? () => {
-            this.showErrorDetailDialog(e);
+            this.showErrorDetailDialog(error);
           }
         : undefined;
     }
@@ -234,20 +234,14 @@ export class App {
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
       this.rootEl.async(() => {
+        const toastMessage = this.localize(messageKey, ...messageParams) ?? error.message;
         const buttonMessage = typeof buttonKey === 'string' ? this.localize(buttonKey) : undefined;
-        const hasButtonMessage = Boolean(buttonMessage);
+        const toastArguments =
+          typeof buttonMessage === 'string'
+            ? [toastMessage, toastDuration, buttonMessage, buttonHandler, buttonLink]
+            : [toastMessage, toastDuration];
 
-        if (hasButtonMessage) {
-          this.rootEl.showToast(
-            this.localize(messageKey, ...messageParams),
-            toastDuration,
-            buttonMessage,
-            buttonHandler,
-            buttonLink
-          );
-        } else {
-          this.rootEl.showToast(this.localize(messageKey, ...messageParams), toastDuration);
-        }
+        this.rootEl.showToast(...toastArguments);
       }, 500);
     }
   }
