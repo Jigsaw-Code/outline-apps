@@ -200,6 +200,24 @@ export class App {
     } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
       messageKey = 'error-shadowsocks-unsupported-cipher';
       messageParams = ['cipher', e.cipher];
+    } else if (e instanceof errors.ServerAccessKeyInvalid) {
+      messageKey = 'error-connection-configuration';
+      buttonKey = 'error-details';
+      buttonHandler = () => {
+        this.showErrorDetailDialog(e);
+      };
+    } else if (e instanceof errors.SessionConfigFetchFailed) {
+      messageKey = 'error-connection-configuration-fetch';
+      buttonKey = 'error-details';
+      buttonHandler = () => {
+        this.showErrorDetailDialog(e);
+      };
+    } else if (e instanceof errors.ProxyConnectionFailure) {
+      messageKey = 'error-connection-proxy';
+      buttonKey = 'error-details';
+      buttonHandler = () => {
+        this.showErrorDetailDialog(e);
+      };
     } else {
       const hasErrorDetails = Boolean(e.message || e.cause);
 

@@ -31,8 +31,8 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
       password: config.password.data,
       prefix: config.extra['prefix'],
     };
-  } catch (error) {
-    throw new errors.ServerAccessKeyInvalid(error.message || 'Failed to parse static access key.');
+  } catch (cause) {
+    throw new errors.ServerAccessKeyInvalid(cause.message || 'Failed to parse static access key.', {cause});
   }
 }
 
@@ -71,9 +71,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
   let response;
   try {
     response = await fetch(configLocation, {cache: 'no-store', redirect: 'follow'});
-  } catch (error) {
+  } catch (cause) {
     throw new errors.SessionConfigFetchFailed(
-      error.message || 'Failed to fetch VPN information from dynamic access key.'
+      cause.message || 'Failed to fetch VPN information from dynamic access key.',
+      {cause}
     );
   }
 
@@ -84,9 +85,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
   try {
     return staticKeyToShadowsocksSessionConfig(responseBody);
-  } catch (error) {
+  } catch (cause) {
     throw new errors.ServerAccessKeyInvalid(
-      error.message || 'Failed to parse VPN information from returned static access key.'
+      cause.message || 'Failed to parse VPN information from returned static access key.',
+      {cause}
     );
   }
 }

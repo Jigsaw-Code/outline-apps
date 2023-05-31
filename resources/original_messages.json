@@ -80,31 +80,16 @@
     "message": "Email address (optional)"
   },
   "error_connection_configuration": {
-    "message": "The configuration information for your server ($SERVER_NAME$) is incomplete or invalid. Please contact your service manager to troubleshoot this issue.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
+    "desciption": "An error message shown when the user's server configuration is invalid. The user should contact their service manager to resolve the issue.",
+    "message": "The configuration information for your server is incomplete or invalid. Please contact your service manager to troubleshoot this issue."
   },
   "error_connection_configuration_fetch": {
-    "message": "Outline failed to download the configuration information for your server ($SERVER_NAME$). Please contact your service manager to troubleshoot this issue.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
+    "description": "An error message shown when the dynamic access key given proves to be unreachable. The user should contact their service manager to resolve the issue.",
+    "message": "Outline failed to download the configuration information for your server. Please contact your service manager to troubleshoot this issue."
   },
   "error_connection_proxy": {
-    "message": "Outline could not connect to the server ($SERVER_NAME$). Review the error details to troubleshoot your connection.",
-    "placeholders": {
-      "SERVER_NAME": {
-        "content": "{serverName}",
-        "example": "My Outline Server"
-      }
-    }
+    "description": "An error message show when Outline fails to establish contact with the obfuscation proxy.",
+    "message": "Outline could not connect to the server. Review the error details to troubleshoot your connection."
   },
   "error_details": {
     "description": "Button pointing to additional details of an error shown to the user",
