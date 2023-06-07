@@ -97,11 +97,11 @@ export class OutlineServer implements Server {
   }
 
   async connect() {
-    try {
-      if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
-      }
+    if (this.type === ServerType.DYNAMIC_CONNECTION) {
+      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+    }
 
+    try {
       await this.tunnel.start(this.sessionConfig);
     } catch (cause) {
       // e originates in "native" code: either Cordova or Electron's main process.
