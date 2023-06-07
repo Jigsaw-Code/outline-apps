@@ -80,7 +80,6 @@ jobs:
       - name: Fail if Needs Test Label
         if: contains(github.event.pull_request.labels.*.name, 'need test')
         run: |
-          echo "${{ github.event.pull_request.labels.*.name }}"
           echo "This PR has the 'need test' label. Please remove it before merging."
           exit 1
 
