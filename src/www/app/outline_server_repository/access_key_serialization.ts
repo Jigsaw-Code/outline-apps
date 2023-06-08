@@ -43,7 +43,7 @@ function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSe
   const missingKeys = [];
 
   for (const [key, value] of Object.entries({method, password, server, server_port})) {
-    if (value === undefined) {
+    if (type value === `undefined`) {
       missingKeys.push(key);
     }
   }
