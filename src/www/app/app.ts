@@ -230,14 +230,8 @@ export class App {
     // Defer by 500ms so that this toast is shown after any toasts that get shown when any
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
-      this.rootEl.async(() => {
-        toastMessage = toastMessage ?? error.message;
-        const toastArguments =
-          typeof buttonMessage === 'string'
-            ? [toastMessage, toastDuration, buttonMessage, buttonHandler, buttonLink]
-            : [toastMessage, toastDuration];
-
-        this.rootEl.showToast(...toastArguments);
+      this.rootEl?.async(() => {
+        this.rootEl.showToast(toastMessage ?? error.message, toastDuration, buttonMessage, buttonHandler, buttonLink);
       }, 500);
     }
   }
