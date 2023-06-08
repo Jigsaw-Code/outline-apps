@@ -13,10 +13,10 @@
 // limitations under the License.
 
 export class CustomError extends Error {
-  constructor(message?: string) {
+  constructor(message?: string, options?: {cause?: Error}) {
     // ref:
     // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
-    super(message); // 'Error' breaks prototype chain here
+    super(message, options); // 'Error' breaks prototype chain here
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = new.target.name;
   }

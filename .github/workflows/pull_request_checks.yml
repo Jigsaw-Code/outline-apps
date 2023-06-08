@@ -69,7 +69,20 @@ jobs:
               "512": "XL",
               "1024": "XXL"
             }
-  
+  needs_test:
+    name: 'Fail if Needs Test Label'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Fail if Needs Test Label
+        if: contains(github.event.pull_request.labels.*.name, 'need test')
+        run: |
+          echo "This PR has the 'need test' label. Please remove it before merging."
+          exit 1
+
   translations:
     name: '[WIP] Missing Translations Label'
     runs-on: ubuntu-latest

@@ -13,7 +13,8 @@
     "resolveJsonModule": true,
     "rootDir": "./",
     "skipLibCheck": true,
-    "target": "es2017"
+    "target": "es2017",
+    "lib": ["es2022"]
   },
   "exclude": ["*.cjs", "*.js", "*.mjs"],
   "include": ["src"]

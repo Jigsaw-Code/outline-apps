@@ -97,19 +97,20 @@ export class OutlineServer implements Server {
   }
 
   async connect() {
-    try {
-      if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
-      }
+    if (this.type === ServerType.DYNAMIC_CONNECTION) {
+      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+    }
 
+    try {
       await this.tunnel.start(this.sessionConfig);
-    } catch (e) {
+    } catch (cause) {
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
-      if (e.errorCode) {
-        throw errors.fromErrorCode(e.errorCode);
+      if (cause.errorCode) {
+        throw errors.fromErrorCode(cause.errorCode);
       }
-      throw e;
+
+      throw new errors.ProxyConnectionFailure(`Failed to connect to server ${this.name}.`, {cause});
     }
   }
 

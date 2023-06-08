@@ -153,83 +153,85 @@ export class App {
     this.pullClipboardText();
   }
 
-  showLocalizedError(e?: Error, toastDuration = 10000) {
-    let messageKey: string;
-    let messageParams: string[] = [];
-    let buttonKey: string;
+  showLocalizedError(error?: Error, toastDuration = 10000) {
+    let toastMessage: string;
+    let buttonMessage: string;
     let buttonHandler: () => void;
     let buttonLink: string;
 
-    if (e instanceof errors.VpnPermissionNotGranted) {
-      messageKey = 'outline-plugin-error-vpn-permission-not-granted';
-    } else if (e instanceof errors.InvalidServerCredentials) {
-      messageKey = 'outline-plugin-error-invalid-server-credentials';
-    } else if (e instanceof errors.RemoteUdpForwardingDisabled) {
-      messageKey = 'outline-plugin-error-udp-forwarding-not-enabled';
-    } else if (e instanceof errors.ServerUnreachable) {
-      messageKey = 'outline-plugin-error-server-unreachable';
-    } else if (e instanceof errors.FeedbackSubmissionError) {
-      messageKey = 'error-feedback-submission';
-    } else if (e instanceof errors.ServerUrlInvalid) {
-      messageKey = 'error-invalid-access-key';
-    } else if (e instanceof errors.ServerIncompatible) {
-      messageKey = 'error-server-incompatible';
-    } else if (e instanceof OperationTimedOut) {
-      messageKey = 'error-timeout';
-    } else if (e instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
+    if (error instanceof errors.VpnPermissionNotGranted) {
+      toastMessage = this.localize('outline-plugin-error-vpn-permission-not-granted');
+    } else if (error instanceof errors.InvalidServerCredentials) {
+      toastMessage = this.localize('outline-plugin-error-invalid-server-credentials');
+    } else if (error instanceof errors.RemoteUdpForwardingDisabled) {
+      toastMessage = this.localize('outline-plugin-error-udp-forwarding-not-enabled');
+    } else if (error instanceof errors.ServerUnreachable) {
+      toastMessage = this.localize('outline-plugin-error-server-unreachable');
+    } else if (error instanceof errors.FeedbackSubmissionError) {
+      toastMessage = this.localize('error-feedback-submission');
+    } else if (error instanceof errors.ServerUrlInvalid) {
+      toastMessage = this.localize('error-invalid-access-key');
+    } else if (error instanceof errors.ServerIncompatible) {
+      toastMessage = this.localize('error-server-incompatible');
+    } else if (error instanceof OperationTimedOut) {
+      toastMessage = this.localize('error-timeout');
+    } else if (error instanceof errors.ShadowsocksStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
-      messageKey = 'outline-plugin-error-antivirus';
-      buttonKey = 'fix-this';
+      toastMessage = this.localize('outline-plugin-error-antivirus');
+      buttonMessage = this.localize('fix-this');
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
-    } else if (e instanceof errors.ConfigureSystemProxyFailure) {
-      messageKey = 'outline-plugin-error-routing-tables';
-      buttonKey = 'feedback-page-title';
+    } else if (error instanceof errors.ConfigureSystemProxyFailure) {
+      toastMessage = this.localize('outline-plugin-error-routing-tables');
+      buttonMessage = this.localize('feedback-page-title');
       buttonHandler = () => {
         // TODO: Drop-down has no selected item, why not?
         this.rootEl.changePage('feedback');
       };
-    } else if (e instanceof errors.NoAdminPermissions) {
-      messageKey = 'outline-plugin-error-admin-permissions';
-    } else if (e instanceof errors.UnsupportedRoutingTable) {
-      messageKey = 'outline-plugin-error-unsupported-routing-table';
-    } else if (e instanceof errors.ServerAlreadyAdded) {
-      messageKey = 'error-server-already-added';
-      messageParams = ['serverName', this.getServerDisplayName(e.server)];
-    } else if (e instanceof errors.SystemConfigurationException) {
-      messageKey = 'outline-plugin-error-system-configuration';
-    } else if (e instanceof errors.ShadowsocksUnsupportedCipher) {
-      messageKey = 'error-shadowsocks-unsupported-cipher';
-      messageParams = ['cipher', e.cipher];
+    } else if (error instanceof errors.NoAdminPermissions) {
+      toastMessage = this.localize('outline-plugin-error-admin-permissions');
+    } else if (error instanceof errors.UnsupportedRoutingTable) {
+      toastMessage = this.localize('outline-plugin-error-unsupported-routing-table');
+    } else if (error instanceof errors.ServerAlreadyAdded) {
+      toastMessage = this.localize('error-server-already-added', 'serverName', this.getServerDisplayName(error.server));
+    } else if (error instanceof errors.SystemConfigurationException) {
+      toastMessage = this.localize('outline-plugin-error-system-configuration');
+    } else if (error instanceof errors.ShadowsocksUnsupportedCipher) {
+      toastMessage = this.localize('error-shadowsocks-unsupported-cipher', 'cipher', error.cipher);
+    } else if (error instanceof errors.ServerAccessKeyInvalid) {
+      toastMessage = this.localize('error-connection-configuration');
+      buttonMessage = this.localize('error-details');
+      buttonHandler = () => {
+        this.showErrorDetailDialog(error);
+      };
+    } else if (error instanceof errors.SessionConfigFetchFailed) {
+      toastMessage = this.localize('error-connection-configuration-fetch');
+      buttonMessage = this.localize('error-details');
+      buttonHandler = () => {
+        this.showErrorDetailDialog(error);
+      };
+    } else if (error instanceof errors.ProxyConnectionFailure) {
+      toastMessage = this.localize('error-connection-proxy');
+      buttonMessage = this.localize('error-details');
+      buttonHandler = () => {
+        this.showErrorDetailDialog(error);
+      };
     } else {
-      const hasErrorDetails = Boolean(e.message || e.cause);
+      const hasErrorDetails = Boolean(error.message || error.cause);
+      toastMessage = this.localize('error-unexpected');
 
-      messageKey = 'error-unexpected';
-      buttonKey = hasErrorDetails ? 'error-details' : undefined;
-      buttonHandler = hasErrorDetails
-        ? () => {
-            this.showErrorDetailDialog(e);
-          }
-        : undefined;
+      if (hasErrorDetails) {
+        buttonMessage = this.localize('error-details');
+        buttonHandler = () => {
+          this.showErrorDetailDialog(error);
+        };
+      }
     }
 
     // Defer by 500ms so that this toast is shown after any toasts that get shown when any
     // currently-in-flight domain events land (e.g. fake servers added).
     if (this.rootEl && this.rootEl.async) {
-      this.rootEl.async(() => {
-        const buttonMessage = typeof buttonKey === 'string' ? this.localize(buttonKey) : undefined;
-        const hasButtonMessage = Boolean(buttonMessage);
-
-        if (hasButtonMessage) {
-          this.rootEl.showToast(
-            this.localize(messageKey, ...messageParams),
-            toastDuration,
-            buttonMessage,
-            buttonHandler,
-            buttonLink
-          );
-        } else {
-          this.rootEl.showToast(this.localize(messageKey, ...messageParams), toastDuration);
-        }
+      this.rootEl?.async(() => {
+        this.rootEl.showToast(toastMessage ?? error.message, toastDuration, buttonMessage, buttonHandler, buttonLink);
       }, 500);
     }
   }

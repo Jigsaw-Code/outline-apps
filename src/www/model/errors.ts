@@ -40,14 +40,20 @@ export class ServerUrlInvalid extends CustomError {
 }
 
 export class SessionConfigFetchFailed extends CustomError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
   }
 }
 
 export class ServerAccessKeyInvalid extends CustomError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
+  }
+}
+
+export class ProxyConnectionFailure extends CustomError {
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
   }
 }
 
