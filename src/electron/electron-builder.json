@@ -20,7 +20,8 @@
     ],
     "files": ["third_party/outline-go-tun2socks/win32"],
     "icon": "build/icons/win/icon.ico",
-    "sign": "src/electron/windows/electron_builder_signing_plugin.cjs"
+    "sign": "src/electron/windows/electron_builder_signing_plugin.cjs",
+    "signingHashAlgorithms": ["sha256"]
   },
   "nsis": {
     "perMachine": true,
