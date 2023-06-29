@@ -19,7 +19,7 @@ To build for iOS, run:
 To open the iOS project on XCode:
 
 ```sh
-  open ./platforms/ios/Outline.xcworkspace
+  open ./src/cordova/apple/ios.xcworkspace
 ```
 
 ### Adding support for your device in XCode
@@ -46,7 +46,7 @@ To build for macOS (OS X), run:
 To open the macOS project on XCode:
 
 ```sh
-  open ./platforms/osx/Outline.xcodeproj
+  open ./src/cordova/apple/macos.xcworkspace
 ```
 
 ### MacOS Development in XCode
@@ -55,7 +55,7 @@ We recommend that you develop OS X specific functionality in the `platforms/osx`
 
 To run the project in XCode:
 
-* open `platforms/osx/Outline.xcodeproj`
+* open `./src/cordova/apple/macos.xcworkspace`
 * Make sure you are logged into your Apple Developer account.  Go to Preferences → Accounts, make sure your account is set.
 * Click "Outline" in the left navigation bar:
   * Under "Signing" select "Jigsaw Operations LLC"
