@@ -11,7 +11,7 @@ let package = Package(
             targets: ["Tun2socks", "OutlineTunnel", "PacketTunnelProvider"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
+        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.7.4"),
     ],
     targets: [
         .target(

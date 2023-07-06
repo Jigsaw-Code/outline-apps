@@ -990,16 +990,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
 			requirement = {
-				kind = exactVersion;
-				version = 7.31.3;
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.31.3;
 			};
 		};
 		52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
 			requirement = {
-				kind = exactVersion;
-				version = 3.7.4;
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.7.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
