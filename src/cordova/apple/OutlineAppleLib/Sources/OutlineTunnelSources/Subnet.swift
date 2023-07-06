@@ -19,24 +19,6 @@ import Foundation
 // target of the OutlineAppleLib Swift Package.
 @objcMembers
 public class Subnet: NSObject {
-  public static let kReservedSubnets = [
-    "10.0.0.0/8",
-    "100.64.0.0/10",
-    "169.254.0.0/16",
-    "172.16.0.0/12",
-    "192.0.0.0/24",
-    "192.0.2.0/24",
-    "192.31.196.0/24",
-    "192.52.193.0/24",
-    "192.88.99.0/24",
-    "192.168.0.0/16",
-    "192.175.48.0/24",
-    "198.18.0.0/15",
-    "198.51.100.0/24",
-    "203.0.113.0/24",
-    "240.0.0.0/4"
-  ]
-
   // Parses a CIDR subnet into a Subnet object. Returns nil on failure.
   public static func parse(_ cidrSubnet: String) -> Subnet? {
     let components = cidrSubnet.components(separatedBy: "/")
@@ -49,17 +31,6 @@ public class Subnet: NSObject {
       return nil
     }
     return Subnet(address: components[0], prefix: prefix)
-  }
-
-  // Returns a list of reserved Subnets.
-  public static func getReservedSubnets() -> [Subnet] {
-    var subnets: [Subnet] = []
-    for cidrSubnet in kReservedSubnets {
-      if let subnet = self.parse(cidrSubnet) {
-        subnets.append(subnet)
-      }
-    }
-    return subnets
   }
 
   public var address: String

@@ -140,7 +140,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
                                              userInfo:nil]);
   }
 
-  [self connectTunnel:[self getTunnelNetworkSettings]
+  [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnPermissionNotGranted];
@@ -197,7 +197,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   }
   DDLogInfo(@"Received app message: %@", action);
   void (^callbackWrapper)(NSNumber *) = ^void(NSNumber *errorCode) {
-    NSString *tunnelId;
+    NSString *tunnelId = @"";
     if (self.tunnelConfig != nil) {
       tunnelId = self.tunnelConfig.id;
     }
@@ -291,33 +291,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
     }
     completionHandler(error);
   }];
-}
-
-- (NEPacketTunnelNetworkSettings *) getTunnelNetworkSettings {
-  NSString *vpnAddress = [OutlineTunnel getAddressForVpn];
-  NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[ vpnAddress ]
-                                                               subnetMasks:@[ @"255.255.255.0" ]];
-  ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
-  ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
-
-  // The remote address is not used for routing, but for display in Settings > VPN > Outline.
-  NEPacketTunnelNetworkSettings *settings =
-      [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
-  settings.IPv4Settings = ipv4Settings;
-  // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-  settings.DNSSettings = [[NEDNSSettings alloc]
-      initWithServers:@[ @"1.1.1.1", @"9.9.9.9", @"208.67.222.222", @"208.67.220.220" ]];
-  return settings;
-}
-
-- (NSArray *)getExcludedIpv4Routes {
-  NSMutableArray *excludedIpv4Routes = [[NSMutableArray alloc] init];
-  for (Subnet *subnet in [Subnet getReservedSubnets]) {
-    NEIPv4Route *route = [[NEIPv4Route alloc] initWithDestinationAddress:subnet.address
-                                                              subnetMask:subnet.mask];
-    [excludedIpv4Routes addObject:route];
-  }
-  return excludedIpv4Routes;
 }
 
 // Registers KVO for the `defaultPath` property to receive network connectivity changes.
@@ -446,7 +419,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }
   if (!configChanged && [activeHostNetworkAddress isEqualToString:self.hostNetworkAddress]) {
     // Nothing changed. Connect the tunnel with the current settings.
-    [self connectTunnel:[self getTunnelNetworkSettings]
+      [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
              completion:^(NSError *_Nullable error) {
                if (error != nil) {
                  [self cancelTunnelWithError:error];
@@ -484,7 +457,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                                 userInfo:nil]];
     return;
   }
-  [self connectTunnel:[self getTunnelNetworkSettings]
+  [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];

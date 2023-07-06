@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Foundation
+import NetworkExtension
 
 // Serializable class to wrap a tunnel's configuration.
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
@@ -64,8 +65,21 @@ public class OutlineTunnel: NSObject, Codable {
     }
 
     // Helper function that we can call from Objective-C.
-    @objc public static func getAddressForVpn() -> String {
-        return selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
+    @objc public static func getTunnelNetworkSettings(tunnelRemoteAddress: String) -> NEPacketTunnelNetworkSettings {
+        // The remote address is not used for routing, but for display in Settings > VPN > Outline.
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: tunnelRemoteAddress)
+
+        // Configure VPN address and routing.
+        let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
+        let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
+        ipv4Settings.includedRoutes = [NEIPv4Route.default()]
+        ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
+        settings.ipv4Settings = ipv4Settings
+
+        // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
+        settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
+        
+        return settings
     }
 }
 
@@ -122,4 +136,33 @@ func selectVpnAddress(interfaceAddresses: [String]) -> String {
     }
     // Select a random subnet from the remaining candidates.
     return candidates.randomElement()?.value ?? ""
+}
+
+let kExcludedSubnets = [
+  "10.0.0.0/8",
+  "100.64.0.0/10",
+  "169.254.0.0/16",
+  "172.16.0.0/12",
+  "192.0.0.0/24",
+  "192.0.2.0/24",
+  "192.31.196.0/24",
+  "192.52.193.0/24",
+  "192.88.99.0/24",
+  "192.168.0.0/16",
+  "192.175.48.0/24",
+  "198.18.0.0/15",
+  "198.51.100.0/24",
+  "203.0.113.0/24",
+  "240.0.0.0/4"
+]
+
+func getExcludedIpv4Routes() -> [NEIPv4Route] {
+    var excludedIpv4Routes = [NEIPv4Route]()
+    for cidrSubnet in kExcludedSubnets {
+        if let subnet = Subnet.parse(cidrSubnet) {
+            let route = NEIPv4Route(destinationAddress: subnet.address, subnetMask: subnet.mask)
+            excludedIpv4Routes.append(route)
+        }
+    }
+    return excludedIpv4Routes
 }
