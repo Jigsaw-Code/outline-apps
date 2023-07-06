@@ -104,7 +104,7 @@ func getNetworkInterfaceAddresses() -> [String] {
                 addresses.append(ip)
             }
         }
-        interface = interface?.pointee.ifa_next
+        interface = interface!.pointee.ifa_next
     }
     
     freeifaddrs(interfaces)
