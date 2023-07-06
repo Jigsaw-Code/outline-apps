@@ -15,6 +15,8 @@
 import Foundation
 import NetworkExtension
 
+import CocoaLumberjackSwift
+
 // Serializable class to wrap a tunnel's configuration.
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
 // Note that this class and its non-private properties must be public in order to be visible to the ObjC
@@ -89,7 +91,7 @@ func getNetworkInterfaceAddresses() -> [String] {
     var addresses = [String]()
     
     guard getifaddrs(&interfaces) == 0 else {
-        NSLog("Failed to retrieve network interface addresses")
+        DDLogError("Failed to retrieve network interface addresses")
         return addresses
     }
     
