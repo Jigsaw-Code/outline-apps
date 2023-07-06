@@ -96,7 +96,7 @@ func getNetworkInterfaceAddresses() -> [String] {
     var interface = interfaces
     while interface != nil {
         // Only consider IPv4 interfaces.
-        if interface?.pointee.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
+        if interface!.pointee.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
             let addr = interface!.pointee.ifa_addr!.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee.sin_addr }
             if let ip = String(cString: inet_ntoa(addr), encoding: .utf8) {
                 addresses.append(ip)
@@ -129,13 +129,13 @@ func selectVpnAddress(interfaceAddresses: [String]) -> String {
             }
         }
     }
-    if candidates.isEmpty {
+    guard !candidates.isEmpty else {
         // Even though there is an interface bound to the subnet candidates, the collision probability
         // with an actual address is low.
-        return kVpnSubnetCandidates.randomElement()?.value ?? ""
+        return kVpnSubnetCandidates.randomElement()!.value
     }
     // Select a random subnet from the remaining candidates.
-    return candidates.randomElement()?.value ?? ""
+    return candidates.randomElement()!.value
 }
 
 let kExcludedSubnets = [
