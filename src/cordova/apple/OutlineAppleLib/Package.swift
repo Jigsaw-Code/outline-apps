@@ -29,7 +29,9 @@ let package = Package(
         ),
         .target(
             name: "OutlineTunnel",
-            dependencies: [],
+            dependencies: [
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+            ],
             path: "Sources/OutlineTunnelSources"
         ),
         .binaryTarget(

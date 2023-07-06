@@ -15,16 +15,15 @@
 import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
-import OutlineTunnel
 
 // Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers
-class OutlineVpn: NSObject {
-  static let shared = OutlineVpn()
+public class OutlineVpn: NSObject {
+  public static let shared = OutlineVpn()
   private static let kVpnExtensionBundleId = "\(Bundle.main.bundleIdentifier!).VpnExtension"
 
-  typealias Callback = (ErrorCode) -> Void
-  typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
+  public typealias Callback = (ErrorCode) -> Void
+  public typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
 
   public private(set) var activeTunnelId: String?
   private var tunnelManager: NETunnelProviderManager?
@@ -87,7 +86,7 @@ class OutlineVpn: NSObject {
   // MARK: Interface
 
   // Starts a VPN tunnel as specified in the OutlineTunnel object.
-  func start(_ tunnel: OutlineTunnel, _ completion: @escaping (Callback)) {
+  public func start(_ tunnel: OutlineTunnel, _ completion: @escaping (Callback)) {
     guard let tunnelId = tunnel.id else {
       DDLogError("Missing tunnel ID")
       return completion(ErrorCode.illegalServerConfiguration)
@@ -108,7 +107,7 @@ class OutlineVpn: NSObject {
   }
 
   // Tears down the VPN if the tunnel with id |tunnelId| is active.
-  func stop(_ tunnelId: String) {
+  public func stop(_ tunnelId: String) {
     if !isActive(tunnelId) {
       return DDLogWarn("Cannot stop VPN, tunnel ID \(tunnelId)")
     }
@@ -116,7 +115,7 @@ class OutlineVpn: NSObject {
   }
 
   // Determines whether a server is reachable via TCP.
-  func isServerReachable(host: String, port: UInt16, _ completion: @escaping Callback) {
+  public func isServerReachable(host: String, port: UInt16, _ completion: @escaping Callback) {
     if isVpnConnected() {
       // All the device's traffic, including the Outline app, go through the VpnExtension process.
       // Performing a reachability test, opening a TCP socket to a host/port, will succeed
@@ -139,12 +138,12 @@ class OutlineVpn: NSObject {
   }
 
   // Calls |observer| when the VPN's status changes.
-  func onVpnStatusChange(_ observer: @escaping(VpnStatusObserver)) {
+  public func onVpnStatusChange(_ observer: @escaping(VpnStatusObserver)) {
     vpnStatusObserver = observer
   }
 
   // Returns whether |tunnelId| is actively proxying through the VPN.
-  func isActive(_ tunnelId: String?) -> Bool {
+  public func isActive(_ tunnelId: String?) -> Bool {
     if self.activeTunnelId == nil {
       return false
     }
