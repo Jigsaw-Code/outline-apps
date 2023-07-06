@@ -88,7 +88,7 @@ func getNetworkInterfaceAddresses() -> [String] {
     var interfaces: UnsafeMutablePointer<ifaddrs>?
     var addresses = [String]()
     
-    if getifaddrs(&interfaces) != 0 {
+    guard getifaddrs(&interfaces) == 0 else {
         NSLog("Failed to retrieve network interface addresses")
         return addresses
     }
