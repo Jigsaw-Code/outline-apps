@@ -98,7 +98,7 @@ func getNetworkInterfaceAddresses() -> [String] {
         // Only consider IPv4 interfaces.
         if interface?.pointee.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
             let addr = interface!.pointee.ifa_addr!.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee.sin_addr }
-            if let ip = String(cString: inet_ntoa(addr), encoding: .ascii) {
+            if let ip = String(cString: inet_ntoa(addr), encoding: .utf8) {
                 addresses.append(ip)
             }
         }
