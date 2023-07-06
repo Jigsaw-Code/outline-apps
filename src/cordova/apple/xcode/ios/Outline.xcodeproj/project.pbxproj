@@ -24,10 +24,8 @@
 		52CE53E7295B6A310064D03D /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52CE53E6295B6A310064D03D /* Sentry */; };
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		7213383E07114591931284F8 /* OutlineConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119806AF98394D7D8749BB30 /* OutlineConnectivity.swift */; };
 		F63DC2182970AFFA00D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2172970AFFA00D92E0A /* OutlineAppleLib */; };
 		F63DC21A2970B00100D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2192970B00100D92E0A /* OutlineAppleLib */; };
-		FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC28C297201BB4E9005FD743 /* OutlineVpn.swift */; };
 		FC8C31091FAA8032004262BE /* OutlineSentryLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */; };
 		FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 		FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
@@ -99,7 +97,6 @@
 		0168F53D3AFF46F5B346C874 /* CDVStatusBar.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVStatusBar.h; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; };
 		0207DA571B56EA530066E2B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Outline/Images.xcassets; sourceTree = SOURCE_ROOT; };
 		0394302BA6114B2AB648D4FF /* CDVStatusBar.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVStatusBar.m; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; };
-		119806AF98394D7D8749BB30 /* OutlineConnectivity.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlineConnectivity.swift; path = "cordova-plugin-outline/OutlineConnectivity.swift"; sourceTree = "<group>"; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* Outline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Outline.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,7 +124,6 @@
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		F63DC2162970AFE600D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../src/cordova/apple/OutlineAppleLib; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
-		FC28C297201BB4E9005FD743 /* OutlineVpn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineVpn.swift; path = "cordova-plugin-outline/OutlineVpn.swift"; sourceTree = "<group>"; };
 		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
 		FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OutlineSentryLogger.swift; path = "cordova-plugin-outline/OutlineSentryLogger.swift"; sourceTree = "<group>"; };
 		FC8C310A1FAA814A004262BE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -259,12 +255,10 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				FC28C297201BB4E9005FD743 /* OutlineVpn.swift */,
 				FC8C31081FAA8032004262BE /* OutlineSentryLogger.swift */,
 				0394302BA6114B2AB648D4FF /* CDVStatusBar.m */,
 				0168F53D3AFF46F5B346C874 /* CDVStatusBar.h */,
 				AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */,
-				119806AF98394D7D8749BB30 /* OutlineConnectivity.swift */,
 				91E45572BB494E9299D2DD41 /* CDVClipboard.m */,
 				936C2951B7544BC8A20B6746 /* CDVClipboard.h */,
 			);
@@ -482,14 +476,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC28C299201BB4E9005FD743 /* OutlineVpn.swift in Sources */,
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
 				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
 				FC8C31091FAA8032004262BE /* OutlineSentryLogger.swift in Sources */,
-				7213383E07114591931284F8 /* OutlineConnectivity.swift in Sources */,
 				1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
