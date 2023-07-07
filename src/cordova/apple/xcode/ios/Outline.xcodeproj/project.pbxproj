@@ -17,10 +17,8 @@
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
 		3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		3B0347611F212F6900C8EF1F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 941052A220F54953928FF2E2 /* libz.tbd */; };
 		52CBB892295BD8F200D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB891295BD8F200D0073F /* CocoaLumberjack */; };
 		52CBB894295BD8F200D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB893295BD8F200D0073F /* CocoaLumberjackSwift */; };
-		52CBB896295BD93600D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB895295BD93600D0073F /* CocoaLumberjack */; };
 		52CE53E7295B6A310064D03D /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52CE53E6295B6A310064D03D /* Sentry */; };
 		52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52E783052A5880CF00355E64 /* PacketTunnelProvider */; };
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
@@ -59,13 +57,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = C0C01EB21E3911D50056E6CB;
 			remoteInfo = Cordova;
-		};
-		FC28C2C1202913BE005FD743 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC07D0554694100DB518D;
-			remoteInfo = CordovaLib;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -150,8 +141,6 @@
 			files = (
 				FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */,
 				52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */,
-				3B0347611F212F6900C8EF1F /* libz.tbd in Frameworks */,
-				52CBB896295BD93600D0073F /* CocoaLumberjack in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,11 +324,9 @@
 			buildRules = (
 			);
 			dependencies = (
-				FC28C2C2202913BE005FD743 /* PBXTargetDependency */,
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				52CBB895295BD93600D0073F /* CocoaLumberjack */,
 				52E783052A5880CF00355E64 /* PacketTunnelProvider */,
 			);
 			productName = VpnExtension;
@@ -505,11 +492,6 @@
 			isa = PBXTargetDependency;
 			target = 3B0347471F212F0100C8EF1F /* VpnExtension */;
 			targetProxy = 3B0347511F212F0200C8EF1F /* PBXContainerItemProxy */;
-		};
-		FC28C2C2202913BE005FD743 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = CordovaLib;
-			targetProxy = FC28C2C1202913BE005FD743 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -851,11 +833,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
-		};
-		52CBB895295BD93600D0073F /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
 		};
 		52CE53E6295B6A310064D03D /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
