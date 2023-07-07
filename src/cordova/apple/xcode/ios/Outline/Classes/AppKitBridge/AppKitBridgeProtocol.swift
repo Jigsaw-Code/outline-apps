@@ -19,4 +19,6 @@ protocol AppKitBridgeProtocol: NSObjectProtocol {
     init()
 
     func setConnectionStatus(_ isConnected: Bool)
+
+    func setAppLauncherEnabled(_ isEnabled: Bool)
 }

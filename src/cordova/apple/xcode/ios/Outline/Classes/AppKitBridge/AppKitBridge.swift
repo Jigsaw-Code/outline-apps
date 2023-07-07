@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import ServiceManagement;
 
 class AppKitBridge: NSObject, AppKitBridgeProtocol {
     let statusItemController = OutlineStatusItemController()
@@ -23,5 +24,29 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
 
     @objc func setConnectionStatus(_ isConnected: Bool) {
         statusItemController.setStatus(isConnected: isConnected)
+    }
+
+    // Enables or disables the embedded app launcher as a login item.
+    @objc func setAppLauncherEnabled(_ isEnabled: Bool) {
+      guard let launcherBundleId = self.getLauncherBundleId() else {
+        return NSLog("[AppKitBridge] Unable to set launcher for missing bundle ID.")
+      }
+
+      if !SMLoginItemSetEnabled((launcherBundleId as! CFString), isEnabled) {
+        return NSLog("[AppKitBridge] Failed to set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
+      }
+
+      return NSLog("[AppKitBridge] Successfully set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
+    }
+
+    // Returns the embedded launcher application's bundle ID.
+    private func getLauncherBundleId() -> String! {
+      let kAppLauncherName:String! = "launcher"
+      let bundleId: String! = Bundle.main.bundleIdentifier
+      if bundleId == nil {
+        NSLog("[AppKitBridge] Failed to retrieve the application's bundle ID")
+        return nil
+      }
+      return String(format:"%@.%@", bundleId, kAppLauncherName)
     }
 }

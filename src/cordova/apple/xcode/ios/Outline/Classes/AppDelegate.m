@@ -64,6 +64,8 @@
               usingBlock:^(NSNotification *_Nonnull notification) {
                 [[bundle appKitBridge] setConnectionStatus:NO];
               }];
+
+    [[bundle appKitBridge] setAppLauncherEnabled:true];
 #endif
 
   [super application:application didFinishLaunchingWithOptions:launchOptions];
