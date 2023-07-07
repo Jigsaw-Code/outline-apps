@@ -39,6 +39,16 @@
         (NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions {
 #if TARGET_OS_MACCATALYST
 
+  // Configure the Catalyst window.
+  NSSet<UIScene*> *scenes = UIApplication.sharedApplication.connectedScenes;
+  for (UIScene* scene in scenes) {
+      UIWindowScene* winScene = ((UIWindowScene*)scene);
+      winScene.titlebar.titleVisibility = UITitlebarTitleVisibilityHidden;
+      winScene.titlebar.toolbar = nil;
+      winScene.sizeRestrictions.minimumSize = CGSizeMake(400, 550);
+      winScene.sizeRestrictions.maximumSize = CGSizeMake(400, 550);
+  }
+
   AppKitBundleLoader *bundle = [[AppKitBundleLoader alloc] init];
   [[NSNotificationCenter defaultCenter]
       addObserverForName:NSNotification.kVpnConnected
