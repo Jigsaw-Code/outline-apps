@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		52355CFB295B70030057557B /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52355CFA295B70030057557B /* Sentry */; };
+		52C198972A587525006E0ACE /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52C198962A587525006E0ACE /* PacketTunnelProvider */; };
 		52CBB849295BC79300D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB848295BC79300D0073F /* CocoaLumberjack */; };
 		52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */; };
 		707060AF18FFC05700755D46 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707060AE18FFC05700755D46 /* MainViewController.xib */; };
@@ -24,7 +25,6 @@
 		DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 469466FF1BDB44C081741BF5 /* CDVClipboard.m */; };
 		EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */ = {isa = PBXBuildFile; fileRef = A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */; };
 		F63DC2202970B26500D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC21F2970B26500D92E0A /* OutlineAppleLib */; };
-		F63DC2222970B27300D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2212970B27300D92E0A /* OutlineAppleLib */; };
 		F63DC2242970B27A00D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2232970B27A00D92E0A /* OutlineAppleLib */; };
 		FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0799E82037532A00A1C822 /* AppDelegate.swift */; };
 		FC0799F02037532A00A1C822 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FC0799EE2037532A00A1C822 /* Main.storyboard */; };
@@ -166,8 +166,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F63DC2222970B27300D92E0A /* OutlineAppleLib in Frameworks */,
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
+				52C198972A587525006E0ACE /* PacketTunnelProvider in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,7 +376,7 @@
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				F63DC2212970B27300D92E0A /* OutlineAppleLib */,
+				52C198962A587525006E0ACE /* PacketTunnelProvider */,
 			);
 			productName = VpnExtension;
 			productReference = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */;
@@ -1011,6 +1011,10 @@
 			package = 52355CF9295B70020057557B /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
+		52C198962A587525006E0ACE /* PacketTunnelProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PacketTunnelProvider;
+		};
 		52CBB848295BC79300D0073F /* CocoaLumberjack */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
@@ -1022,10 +1026,6 @@
 			productName = CocoaLumberjackSwift;
 		};
 		F63DC21F2970B26500D92E0A /* OutlineAppleLib */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineAppleLib;
-		};
-		F63DC2212970B27300D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
 		};
