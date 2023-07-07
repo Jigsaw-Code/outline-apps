@@ -99,7 +99,7 @@ public class OutlineVpn: NSObject {
   }
 
   // Starts the last successful VPN tunnel.
-  func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
+  @objc public func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
     // Explicitly pass an empty tunnel's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
     self.startVpn(OutlineTunnel(), isAutoConnect: true, completion)
@@ -308,7 +308,7 @@ public class OutlineVpn: NSObject {
 
   // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
   // tunnel.
-  @objc func vpnStatusChanged() {
+  func vpnStatusChanged() {
     if let vpnStatus = tunnelManager?.connection.status {
       if let tunnelId = activeTunnelId {
         if (vpnStatus == .disconnected) {

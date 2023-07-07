@@ -16,6 +16,7 @@
 #import "Outline-Swift.h"
 
 @import ServiceManagement;
+@import OutlineTunnel;
 
 @interface AppDelegate()
 @property (strong, nonatomic) NSStatusItem *statusItem;

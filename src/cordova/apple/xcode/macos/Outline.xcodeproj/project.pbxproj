@@ -10,10 +10,6 @@
 		52355CFB295B70030057557B /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52355CFA295B70030057557B /* Sentry */; };
 		52CBB849295BC79300D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB848295BC79300D0073F /* CocoaLumberjack */; };
 		52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */; };
-		52CBB84D295BC7F700D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84C295BC7F700D0073F /* CocoaLumberjack */; };
-		52CBB84F295BC7F700D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */; };
-		52CBB851295BC81900D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB850295BC81900D0073F /* CocoaLumberjack */; };
-		52CBB853295BC81900D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB852295BC81900D0073F /* CocoaLumberjackSwift */; };
 		707060AF18FFC05700755D46 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707060AE18FFC05700755D46 /* MainViewController.xib */; };
 		70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD682618FFB02D00A1EFCF /* Cocoa.framework */; };
 		70BD683118FFB02D00A1EFCF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 70BD682F18FFB02D00A1EFCF /* InfoPlist.strings */; };
@@ -43,6 +39,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5296DB072A57BBAF0009C9BB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 70BD681B18FFB02D00A1EFCF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FC0799E52037532900A1C822;
+			remoteInfo = OutlineLauncher;
+		};
 		70BD685F18FFB04300A1EFCF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */;
@@ -155,8 +158,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52CBB851295BC81900D0073F /* CocoaLumberjack in Frameworks */,
-				52CBB853295BC81900D0073F /* CocoaLumberjackSwift in Frameworks */,
 				F63DC2242970B27A00D92E0A /* OutlineAppleLib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -167,8 +168,6 @@
 			files = (
 				F63DC2222970B27300D92E0A /* OutlineAppleLib in Frameworks */,
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
-				52CBB84D295BC7F700D0073F /* CocoaLumberjack in Frameworks */,
-				52CBB84F295BC7F700D0073F /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,6 +328,7 @@
 			);
 			dependencies = (
 				70BD687118FFB19500A1EFCF /* PBXTargetDependency */,
+				5296DB082A57BBAF0009C9BB /* PBXTargetDependency */,
 				FC5FF9391F3E1E5F0032A745 /* PBXTargetDependency */,
 			);
 			name = Outline;
@@ -356,8 +356,6 @@
 			);
 			name = OutlineLauncher;
 			packageProductDependencies = (
-				52CBB850295BC81900D0073F /* CocoaLumberjack */,
-				52CBB852295BC81900D0073F /* CocoaLumberjackSwift */,
 				F63DC2232970B27A00D92E0A /* OutlineAppleLib */,
 			);
 			productName = OutlineLauncher;
@@ -378,8 +376,6 @@
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				52CBB84C295BC7F700D0073F /* CocoaLumberjack */,
-				52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */,
 				F63DC2212970B27300D92E0A /* OutlineAppleLib */,
 			);
 			productName = VpnExtension;
@@ -563,6 +559,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5296DB082A57BBAF0009C9BB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FC0799E52037532900A1C822 /* OutlineLauncher */;
+			targetProxy = 5296DB072A57BBAF0009C9BB /* PBXContainerItemProxy */;
+		};
 		70BD687118FFB19500A1EFCF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = CordovaLib;
@@ -1016,26 +1017,6 @@
 			productName = CocoaLumberjack;
 		};
 		52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
-		52CBB84C295BC7F700D0073F /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		52CBB84E295BC7F700D0073F /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
-		52CBB850295BC81900D0073F /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		52CBB852295BC81900D0073F /* CocoaLumberjackSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
