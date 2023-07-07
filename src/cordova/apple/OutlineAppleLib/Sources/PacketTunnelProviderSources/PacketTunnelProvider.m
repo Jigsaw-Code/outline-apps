@@ -34,7 +34,6 @@ NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
 NSString *const kMessageKeyOnDemand = @"is-on-demand";
 NSString *const kDefaultPathKey = @"defaultPath";
-static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
 
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
@@ -74,12 +73,6 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   [DDLog addLogger:_fileLogger];
 
   _tunnelStore = [[OutlineTunnelStore alloc] initWithAppGroup:appGroup];
-  kVpnSubnetCandidates = @{
-    @"10" : @"10.111.222.0",
-    @"172" : @"172.16.9.1",
-    @"192" : @"192.168.20.1",
-    @"169" : @"169.254.19.0"
-  };
 
   _packetQueue = dispatch_queue_create("org.outline.ios.packetqueue", DISPATCH_QUEUE_SERIAL);
 
@@ -147,7 +140,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
                                              userInfo:nil]);
   }
 
-  [self connectTunnel:[self getTunnelNetworkSettings]
+  [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnPermissionNotGranted];
@@ -204,7 +197,7 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
   }
   DDLogInfo(@"Received app message: %@", action);
   void (^callbackWrapper)(NSNumber *) = ^void(NSNumber *errorCode) {
-    NSString *tunnelId;
+    NSString *tunnelId = @"";
     if (self.tunnelConfig != nil) {
       tunnelId = self.tunnelConfig.id;
     }
@@ -298,33 +291,6 @@ static NSDictionary *kVpnSubnetCandidates;  // Subnets to bind the VPN.
     }
     completionHandler(error);
   }];
-}
-
-- (NEPacketTunnelNetworkSettings *) getTunnelNetworkSettings {
-  NSString *vpnAddress = [self selectVpnAddress];
-  NEIPv4Settings *ipv4Settings = [[NEIPv4Settings alloc] initWithAddresses:@[ vpnAddress ]
-                                                               subnetMasks:@[ @"255.255.255.0" ]];
-  ipv4Settings.includedRoutes = @[[NEIPv4Route defaultRoute]];
-  ipv4Settings.excludedRoutes = [self getExcludedIpv4Routes];
-
-  // The remote address is not used for routing, but for display in Settings > VPN > Outline.
-  NEPacketTunnelNetworkSettings *settings =
-      [[NEPacketTunnelNetworkSettings alloc] initWithTunnelRemoteAddress:self.hostNetworkAddress];
-  settings.IPv4Settings = ipv4Settings;
-  // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-  settings.DNSSettings = [[NEDNSSettings alloc]
-      initWithServers:@[ @"1.1.1.1", @"9.9.9.9", @"208.67.222.222", @"208.67.220.220" ]];
-  return settings;
-}
-
-- (NSArray *)getExcludedIpv4Routes {
-  NSMutableArray *excludedIpv4Routes = [[NSMutableArray alloc] init];
-  for (Subnet *subnet in [Subnet getReservedSubnets]) {
-    NEIPv4Route *route = [[NEIPv4Route alloc] initWithDestinationAddress:subnet.address
-                                                              subnetMask:subnet.mask];
-    [excludedIpv4Routes addObject:route];
-  }
-  return excludedIpv4Routes;
 }
 
 // Registers KVO for the `defaultPath` property to receive network connectivity changes.
@@ -435,54 +401,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   return [NSString stringWithUTF8String:networkAddress];
 }
 
-- (NSArray *)getNetworkInterfaceAddresses {
-  struct ifaddrs *interfaces = nil;
-  NSMutableArray *addresses = [NSMutableArray new];
-  if (getifaddrs(&interfaces) != 0) {
-    DDLogError(@"Failed to retrieve network interface addresses");
-    return addresses;
-  }
-  struct ifaddrs *interface = interfaces;
-  while (interface != nil) {
-    if (interface->ifa_addr->sa_family == AF_INET) {
-      // Only consider IPv4 interfaces.
-      NSString *address = [NSString
-          stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)interface->ifa_addr)->sin_addr)];
-      [addresses addObject:address];
-    }
-    interface = interface->ifa_next;
-  }
-  freeifaddrs(interfaces);
-
-  return addresses;
-}
-
-// Selects an IPv4 address for the VPN to bind to from a pool of private subnets by checking against
-// the subnets assigned to the existing network interfaces.
-- (NSString *)selectVpnAddress {
-  NSMutableDictionary *candidates =
-      [[NSMutableDictionary alloc] initWithDictionary:kVpnSubnetCandidates];
-  for (NSString *address in [self getNetworkInterfaceAddresses]) {
-    for (NSString *subnetPrefix in kVpnSubnetCandidates) {
-      if ([address hasPrefix:subnetPrefix]) {
-        // The subnet (not necessarily the address) is in use, remove it from our list.
-        [candidates removeObjectForKey:subnetPrefix];
-      }
-    }
-  }
-  if (candidates.count == 0) {
-    // Even though there is an interface bound to the subnet candidates, the collision probability
-    // with an actual address is low.
-    return [self selectRandomValueFromDictionary:kVpnSubnetCandidates];
-  }
-  // Select a random subnet from the remaining candidates.
-  return [self selectRandomValueFromDictionary:candidates];
-}
-
-- (id)selectRandomValueFromDictionary:(NSDictionary *)dict {
-  return [dict.allValues objectAtIndex:(arc4random_uniform((uint32_t)dict.count))];
-}
-
 #pragma mark - tun2socks
 
 // Restarts tun2socks if |configChanged| or the host's IP address has changed in the network.
@@ -501,7 +419,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }
   if (!configChanged && [activeHostNetworkAddress isEqualToString:self.hostNetworkAddress]) {
     // Nothing changed. Connect the tunnel with the current settings.
-    [self connectTunnel:[self getTunnelNetworkSettings]
+      [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
              completion:^(NSError *_Nullable error) {
                if (error != nil) {
                  [self cancelTunnelWithError:error];
@@ -539,7 +457,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                                 userInfo:nil]];
     return;
   }
-  [self connectTunnel:[self getTunnelNetworkSettings]
+  [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
