@@ -14,6 +14,7 @@
 
 import CocoaLumberjackSwift
 import NetworkExtension
+import Tun2socks
 
 // Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers
@@ -27,7 +28,6 @@ public class OutlineVpn: NSObject {
   public private(set) var activeTunnelId: String?
   private var tunnelManager: NETunnelProviderManager?
   private var vpnStatusObserver: VpnStatusObserver?
-  private let connectivity: OutlineConnectivity
 
   private enum Action {
     static let start = "start"
@@ -68,7 +68,6 @@ public class OutlineVpn: NSObject {
   }
 
   override private init() {
-    connectivity = OutlineConnectivity()
     super.init()
     getTunnelManager() { manager in
       guard manager != nil else {
@@ -85,24 +84,21 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   // Starts a VPN tunnel as specified in the OutlineTunnel object.
-  public func start(_ tunnel: OutlineTunnel, _ completion: @escaping (Callback)) {
-    guard let tunnelId = tunnel.id else {
-      DDLogError("Missing tunnel ID")
-      return completion(ErrorCode.illegalServerConfiguration)
-    }
-    if isActive(tunnelId) {
+  public func start(_ tunnelId: String, configJson: [String: Any], _ completion: @escaping (Callback)) {
+    guard !isActive(tunnelId) else {
       return completion(ErrorCode.noError)
-    } else if isVpnConnected() {
-      return restartVpn(tunnelId, config: tunnel.config, completion: completion)
     }
-    self.startVpn(tunnel, isAutoConnect: false, completion)
+    if isVpnConnected() {
+      return restartVpn(tunnelId, configJson: configJson, completion: completion)
+    }
+    self.startVpn(tunnelId, configJson: configJson, isAutoConnect: false, completion)
   }
 
   // Starts the last successful VPN tunnel.
   @objc public func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
     // Explicitly pass an empty tunnel's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
-    self.startVpn(OutlineTunnel(), isAutoConnect: true, completion)
+    self.startVpn(nil, configJson:nil, isAutoConnect: true, completion)
   }
 
   // Tears down the VPN if the tunnel with id |tunnelId| is active.
@@ -130,7 +126,8 @@ public class OutlineVpn: NSObject {
         completion(ErrorCode(rawValue: rawCode) ?? ErrorCode.serverUnreachable)
       }
     } else {
-      connectivity.isServerReachable(host: host, port: port) { isReachable in
+      DispatchQueue.global(qos: .background).async {
+        let isReachable = ShadowsocksCheckServerReachable(host, Int(port), nil)
         completion(isReachable ? ErrorCode.noError : ErrorCode.serverUnreachable)
       }
     }
@@ -151,9 +148,7 @@ public class OutlineVpn: NSObject {
 
   // MARK: Helpers
 
-  private func startVpn(
-      _ tunnel: OutlineTunnel, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
-    let tunnelId = tunnel.id
+  private func startVpn(_ tunnelId: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
     setupVpn() { error in
       if error != nil {
         DDLogError("Failed to setup VPN: \(String(describing: error))")
@@ -163,17 +158,18 @@ public class OutlineVpn: NSObject {
       self.sendVpnExtensionMessage(message) { response in
         self.onStartVpnExtensionMessage(response, completion: completion)
       }
-      var config: [String: String]? = nil
+      var tunnelOptions: [String: Any]? = nil
       if !isAutoConnect {
-        config = tunnel.config
-        config?[MessageKey.tunnelId] = tunnelId
+        // TODO(fortuna): put this in a subkey
+        tunnelOptions = configJson
+        tunnelOptions?[MessageKey.tunnelId] = tunnelId
       } else {
         // macOS app was started by launcher.
-        config = [MessageKey.isOnDemand: "true"];
+        tunnelOptions = [MessageKey.isOnDemand: "true"];
       }
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
-        try session.startTunnel(options: config)
+        try session.startTunnel(options: tunnelOptions)
       } catch let error as NSError  {
         DDLogError("Failed to start VPN: \(error)")
         completion(ErrorCode.vpnStartFailure)
@@ -189,13 +185,13 @@ public class OutlineVpn: NSObject {
   }
 
   // Sends message to extension to restart the tunnel without tearing down the VPN.
-  private func restartVpn(_ tunnelId: String, config: [String: String],
+  private func restartVpn(_ tunnelId: String, configJson: [String: Any],
                           completion: @escaping(Callback)) {
     if activeTunnelId != nil {
       vpnStatusObserver?(.disconnected, activeTunnelId!)
     }
     let message = [MessageKey.action: Action.restart, MessageKey.tunnelId: tunnelId,
-                   MessageKey.config:config] as [String : Any]
+                   MessageKey.config: configJson] as [String : Any]
     self.sendVpnExtensionMessage(message) { response in
       self.onStartVpnExtensionMessage(response, completion: completion)
     }
