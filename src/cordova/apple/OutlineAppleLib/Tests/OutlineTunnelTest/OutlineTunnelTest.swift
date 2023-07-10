@@ -1,6 +1,7 @@
 import XCTest
 
 import NetworkExtension
+import Tun2socks
 
 @testable import OutlineTunnel
 @testable import PacketTunnelProvider
@@ -37,4 +38,11 @@ final class OutlineTunnelTest: XCTestCase {
 
         XCTAssertEqual(["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"], settings.dnsSettings?.servers)
     }
+
+  func testReachability() {
+    // TODO(fortuna): run a local server instead.
+    XCTAssertTrue(ShadowsocksCheckServerReachable("8.8.8.8", 853, nil))
+    XCTAssertTrue(ShadowsocksCheckServerReachable("google.com", 443, nil))
+    XCTAssertFalse(ShadowsocksCheckServerReachable("nonexistent.getoutline.org", 443, nil))
+  }
 }
