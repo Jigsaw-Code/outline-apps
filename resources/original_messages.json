@@ -249,7 +249,7 @@
   },
   "outline_plugin_error_udp_forwarding_not_enabled": {
     "description": "An error message shown when the application tries to connect to a server that does not have the correct UDP forwarding configuration.",
-    "message": "It seems like this server doesn’t support UDP forwarding. If this happens again, please contact the person who gave you this access key."
+    "message": "It seems like this server doesn’t support UDP forwarding. If this happens again, please contact the person who gave you access."
   },
   "outline_plugin_error_unsupported_routing_table": {
     "description": "An error message when the application fails to connect due to another active VPN.",
