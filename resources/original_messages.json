@@ -233,7 +233,7 @@
   },
   "outline_plugin_error_invalid_server_credentials": {
     "description": "An error message when the user is trying to connect but has provided an invalid connection key.",
-    "message": "It seems like your access key is not valid. If this happens again, please contact the person who gave you this access key."
+    "message": "It seems like your access key is not valid. If this happens again, please contact the person who gave it to you."
   },
   "outline_plugin_error_routing_tables": {
     "description": "An error message when the application is not able to configure the system for proxying. A button is shown alongside this message to submit feedback.",
