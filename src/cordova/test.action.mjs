@@ -51,7 +51,7 @@ export async function main(...parameters) {
     'clean',
     'test',
     '-scheme',
-    APPLE_LIBRARY_NAME,
+    `${APPLE_LIBRARY_NAME}-Package`,
     '-destination',
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`

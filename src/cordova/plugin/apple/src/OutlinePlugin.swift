@@ -76,12 +76,12 @@ class OutlinePlugin: CDVPlugin {
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
     DDLogInfo("\(Action.start) \(tunnelId)")
-    guard let config = command.argument(at: 1) as? [String: Any], containsExpectedKeys(config) else {
+    // TODO(fortuna): Move the config validation to the config parsing code in Go.
+    guard let configJson = command.argument(at: 1) as? [String: Any], containsExpectedKeys(configJson) else {
       return sendError("Invalid configuration", callbackId: command.callbackId,
                        errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
     }
-    let tunnel = OutlineTunnel(id: tunnelId, config: config)
-    OutlineVpn.shared.start(tunnel) { errorCode in
+    OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
         #if os(macOS)
           NotificationCenter.default.post(
@@ -234,9 +234,9 @@ class OutlinePlugin: CDVPlugin {
   }
 
   // Returns whether |config| contains all the expected keys
-  private func containsExpectedKeys(_ config: [String: Any]?) -> Bool {
-    return config?["host"] != nil && config?["port"] != nil &&
-        config?["password"] != nil && config?["method"] != nil
+  private func containsExpectedKeys(_ configJson: [String: Any]?) -> Bool {
+    return configJson?["host"] != nil && configJson?["port"] != nil &&
+        configJson?["password"] != nil && configJson?["method"] != nil
   }
 
   // MARK: Callback helpers

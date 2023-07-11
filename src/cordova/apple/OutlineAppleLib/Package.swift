@@ -8,10 +8,13 @@ let package = Package(
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineTunnel", "PacketTunnelProvider"]),
+            targets: ["Tun2socks", "OutlineTunnel"]),
+        .library(
+            name: "PacketTunnelProvider",
+            targets: ["PacketTunnelProvider"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", exact: "3.7.4"),
+        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.7.4"),
     ],
     targets: [
         .target(
@@ -29,7 +32,9 @@ let package = Package(
         ),
         .target(
             name: "OutlineTunnel",
-            dependencies: [],
+            dependencies: [
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+            ],
             path: "Sources/OutlineTunnelSources"
         ),
         .binaryTarget(
