@@ -53,6 +53,14 @@ npm run action src/www/storybook
 >
 > to your shell, then try `outline www/start`!
 
+## Passing configuration flags to actions
+
+Certain actions take configuration flags - but since we're running them through `npm`, you'll have to use the `--` seperator to funnel them through to the underlying process. For example, to set up a MacOS project in release mode, you'd run:
+
+```sh
+npm run acition cordova/setup macos -- --buildMode=release
+```
+
 ## Life of a Packet
 
 [How does the Outline Client work?](docs/life_of_a_packet.md)

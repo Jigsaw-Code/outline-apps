@@ -25,6 +25,7 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 import {runAction} from '../build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
+import chalk from 'chalk';
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
@@ -141,6 +142,10 @@ async function appleMacOsDebug(verbose) {
   if (os.platform() !== 'darwin') {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
+
+  console.warn(
+    chalk.yellow('Debug mode on the MacOS client is currently broken. Try running with `--buildMode=release` instead.')
+  );
 
   await cordova.platform('add', [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {save: false});
 
