@@ -16,7 +16,6 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {Server, ServerType} from '../../model/server';
 
-import {NativeNetworking} from '../net';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
@@ -37,7 +36,6 @@ export class OutlineServer implements Server {
     public readonly type: ServerType,
     private _name: string,
     private tunnel: Tunnel,
-    private net: NativeNetworking,
     private eventQueue: events.EventQueue
   ) {
     switch (this.type) {
@@ -129,15 +127,6 @@ export class OutlineServer implements Server {
 
   checkRunning(): Promise<boolean> {
     return this.tunnel.isRunning();
-  }
-
-  // NOTE: you should only be calling this method on running servers
-  checkReachable(): Promise<boolean> {
-    if (!this.sessionConfig) {
-      return Promise.resolve(false);
-    }
-
-    return this.net.isServerReachable(this.sessionConfig.host, this.sessionConfig.port);
   }
 
   static isServerCipherSupported(cipher?: string) {

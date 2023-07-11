@@ -18,7 +18,6 @@ import {EventQueue} from '../model/events';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
-import {NativeNetworking} from './net';
 import {OutlineServerRepository} from './outline_server_repository';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {OutlinePlatform} from './platform';
@@ -52,10 +51,9 @@ function createServerRepo(
   eventQueue: EventQueue,
   storage: Storage,
   deviceSupport: boolean,
-  net: NativeNetworking,
   createTunnel: TunnelFactory
 ) {
-  const repo = new OutlineServerRepository(net, createTunnel, eventQueue, storage);
+  const repo = new OutlineServerRepository(createTunnel, eventQueue, storage);
   if (!deviceSupport) {
     console.debug('Detected development environment, using fake servers.');
     if (repo.getAll().length === 0) {
@@ -107,7 +105,6 @@ export function main(platform: OutlinePlatform) {
         eventQueue,
         window.localStorage,
         platform.hasDeviceSupport(),
-        platform.getNativeNetworking(),
         platform.getTunnelFactory()
       );
       const settings = new Settings();
