@@ -40,9 +40,9 @@ final class OutlineTunnelTest: XCTestCase {
     }
 
   func testReachability() {
-    // TODO(fortuna): run a local server instead.
-    XCTAssertTrue(ShadowsocksCheckServerReachable("8.8.8.8", 853, nil))
-    XCTAssertTrue(ShadowsocksCheckServerReachable("google.com", 443, nil))
-    XCTAssertFalse(ShadowsocksCheckServerReachable("nonexistent.getoutline.org", 443, nil))
+        // TODO(fortuna): run a local server instead.
+        XCTAssertTrue(ShadowsocksCheckServerReachable("8.8.8.8", 853, nil))
+        XCTAssertTrue(ShadowsocksCheckServerReachable("google.com", 443, nil))
+        XCTAssertFalse(ShadowsocksCheckServerReachable("nonexistent.getoutline.org", 443, nil))
   }
 }

@@ -16,7 +16,6 @@ import {InMemoryStorage} from '../../../infrastructure/memory_storage';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 
-import {FakeNativeNetworking} from '../fake_net';
 import {FakeOutlineTunnel} from '../fake_tunnel';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1, serversStorageV0ConfigToAccessKey} from '.';
@@ -50,12 +49,7 @@ describe('OutlineServerRepository', () => {
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     expect(server0?.name).toEqual(CONFIG_0_V0.name);
@@ -77,12 +71,7 @@ describe('OutlineServerRepository', () => {
         [OutlineServerRepository.SERVERS_STORAGE_KEY, JSON.stringify(storageV1)],
       ])
     );
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     const server0 = repo.getById('server-0');
     expect(server0?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     expect(server0?.name).toEqual(CONFIG_0_V0.name);
@@ -99,12 +88,7 @@ describe('OutlineServerRepository', () => {
     const storage = new InMemoryStorage(
       new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     // Trigger storage change.
     repo.forget('server-1');
     repo.undoForget('server-1');
@@ -124,12 +108,7 @@ describe('OutlineServerRepository', () => {
 
   it('add stores servers', () => {
     const storage = new InMemoryStorage();
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     const accessKey0 = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
     const accessKey1 = serversStorageV0ConfigToAccessKey(CONFIG_1_V0);
     repo.add(accessKey0);
@@ -144,12 +123,7 @@ describe('OutlineServerRepository', () => {
 
   it('add emits ServerAdded event', () => {
     const eventQueue = new EventQueue();
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      eventQueue,
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
     const accessKey = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
     repo.add(accessKey);
     let didEmitServerAddedEvent = false;
@@ -164,23 +138,13 @@ describe('OutlineServerRepository', () => {
   });
 
   it('add throws on invalid access keys', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), new InMemoryStorage());
     expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
     expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
   });
 
   it('getAll returns added servers', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), new InMemoryStorage());
     expect(repo.getAll()).toEqual([]);
     const accessKey0 = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
     const accessKey1 = serversStorageV0ConfigToAccessKey(CONFIG_1_V0);
@@ -197,12 +161,7 @@ describe('OutlineServerRepository', () => {
   });
 
   it('getById retrieves added servers', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), new InMemoryStorage());
     const accessKey = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
     repo.add(accessKey);
     const serverId = repo.getAll()[0].id;
@@ -213,12 +172,7 @@ describe('OutlineServerRepository', () => {
   });
 
   it('getById returns undefined for nonexistent servers', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), new InMemoryStorage());
     expect(repo.getById('server-does-not-exist')).toBeUndefined();
     expect(repo.getById('')).toBeUndefined();
   });
@@ -226,12 +180,7 @@ describe('OutlineServerRepository', () => {
   it('renames servers', () => {
     const NEW_SERVER_NAME = 'new server name';
     const storage = new InMemoryStorage();
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
@@ -245,12 +194,7 @@ describe('OutlineServerRepository', () => {
     const NEW_SERVER_NAME = 'new server name';
     const eventQueue = new EventQueue();
     eventQueue.subscribe(ServerAdded, () => {}); // Silence dropped event warnings.
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      eventQueue,
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
     const accessKey = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
     repo.add(accessKey);
     const server = repo.getAll()[0];
@@ -266,12 +210,7 @@ describe('OutlineServerRepository', () => {
 
   it('forgets servers', () => {
     const storage = new InMemoryStorage();
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
@@ -288,12 +227,7 @@ describe('OutlineServerRepository', () => {
   it('forget emits ServerForgotten events', () => {
     const eventQueue = new EventQueue();
     eventQueue.subscribe(ServerAdded, () => {}); // Silence dropped event warnings.
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      eventQueue,
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
@@ -309,12 +243,7 @@ describe('OutlineServerRepository', () => {
 
   it('undoes forgetting servers', () => {
     const storage = new InMemoryStorage();
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      storage
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), storage);
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
@@ -335,12 +264,7 @@ describe('OutlineServerRepository', () => {
     // Silence dropped event warnings.
     eventQueue.subscribe(ServerAdded, () => {});
     eventQueue.subscribe(ServerForgotten, () => {});
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      eventQueue,
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), eventQueue, new InMemoryStorage());
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
@@ -356,12 +280,7 @@ describe('OutlineServerRepository', () => {
   });
 
   it('validates static access keys', () => {
-    const repo = new OutlineServerRepository(
-      new FakeNativeNetworking(),
-      getFakeTunnelFactory(),
-      new EventQueue(),
-      new InMemoryStorage()
-    );
+    const repo = new OutlineServerRepository(getFakeTunnelFactory(), new EventQueue(), new InMemoryStorage());
     // Invalid access keys.
     expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
     expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);

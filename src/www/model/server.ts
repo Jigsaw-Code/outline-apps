@@ -56,9 +56,6 @@ export interface Server {
 
   // Checks whether the server is already active and in use.
   checkRunning(): Promise<boolean>;
-
-  // Checks whether the server is reachable.
-  checkReachable(): Promise<boolean>;
 }
 
 export interface ServerRepository {
