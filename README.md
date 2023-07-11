@@ -58,7 +58,7 @@ npm run action src/www/storybook
 Certain actions take configuration flags - but since we're running them through `npm`, you'll have to use the `--` seperator to funnel them through to the underlying process. For example, to set up a MacOS project in release mode, you'd run:
 
 ```sh
-npm run acition cordova/setup macos -- --buildMode=release
+SENTRY_DSN=<your sentry dsn> npm run action cordova/setup macos -- --buildMode=release --versionName=<your version name>
 ```
 
 ## Life of a Packet
