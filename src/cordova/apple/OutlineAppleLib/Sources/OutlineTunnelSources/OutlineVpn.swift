@@ -34,7 +34,6 @@ public class OutlineVpn: NSObject {
     static let restart = "restart"
     static let stop = "stop"
     static let getTunnelId = "getTunnelId"
-    static let isServerReachable = "isServerReachable"
   }
 
   private enum MessageKey {
@@ -107,30 +106,6 @@ public class OutlineVpn: NSObject {
       return DDLogWarn("Cannot stop VPN, tunnel ID \(tunnelId)")
     }
     stopVpn()
-  }
-
-  // Determines whether a server is reachable via TCP.
-  public func isServerReachable(host: String, port: UInt16, _ completion: @escaping Callback) {
-    if isVpnConnected() {
-      // All the device's traffic, including the Outline app, go through the VpnExtension process.
-      // Performing a reachability test, opening a TCP socket to a host/port, will succeed
-      // unconditionally as the request will not leave the device. Send a message to the
-      // VpnExtension process to perform the reachability test.
-      let message = [MessageKey.action: Action.isServerReachable, MessageKey.host: host,
-                     MessageKey.port: port] as [String : Any]
-      sendVpnExtensionMessage(message) { response in
-        guard response != nil else {
-          return completion(ErrorCode.serverUnreachable)
-        }
-        let rawCode = response?[MessageKey.errorCode] as? Int ?? ErrorCode.serverUnreachable.rawValue
-        completion(ErrorCode(rawValue: rawCode) ?? ErrorCode.serverUnreachable)
-      }
-    } else {
-      DispatchQueue.global(qos: .background).async {
-        let isReachable = ShadowsocksCheckServerReachable(host, Int(port), nil)
-        completion(isReachable ? ErrorCode.noError : ErrorCode.serverUnreachable)
-      }
-    }
   }
 
   // Calls |observer| when the VPN's status changes.
