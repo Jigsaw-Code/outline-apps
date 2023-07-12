@@ -49,10 +49,10 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 - (id)init {
   self = [super init];
-#if TARGET_OS_IPHONE
-  NSString *appGroup = @"group.org.outline.ios.client";
-#else
+#if (TARGET_OS_OSX || TARGET_OS_MACCATALYST)
   NSString *appGroup = @"QT8Z3Q9V3A.org.outline.macos.client";
+#else
+  NSString *appGroup = @"group.org.outline.ios.client";
 #endif
   NSURL *containerUrl = [[NSFileManager defaultManager]
                          containerURLForSecurityApplicationGroupIdentifier:appGroup];
