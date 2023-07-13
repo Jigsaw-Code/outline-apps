@@ -17,8 +17,12 @@ import Foundation
 @objc(AppKitBridgeProtocol)
 protocol AppKitBridgeProtocol: NSObjectProtocol {
     init()
+    
+    func terminate()
 
     func setConnectionStatus(_ isConnected: Bool)
 
     func setAppLauncherEnabled(_ isEnabled: Bool)
+    
+    func loadMainApp(_ launcherBundleId: String)
 }

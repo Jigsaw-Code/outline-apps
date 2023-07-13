@@ -24,11 +24,19 @@
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
 		A24A752C2A00DC12008DF945 /* AppKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24A752B2A00DC12008DF945 /* AppKitBridge.swift */; };
+		A255AB3B2A5CB38800AA726D /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A255AB3A2A5CB38800AA726D /* OutlineAppleLib */; };
 		A256E69C2A05A6FC00187F08 /* NSNotification+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */; };
 		A256E69D2A05A6FC00187F08 /* NSNotification+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */; };
+		A26D26302A1C41B1009838E0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26D262F2A1C41B1009838E0 /* AppDelegate.swift */; platformFilter = maccatalyst; };
+		A26D263D2A1C41FE009838E0 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263C2A1C41FE009838E0 /* CocoaLumberjack */; };
+		A26D263F2A1C41FE009838E0 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */; };
 		A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 		A27F43AB29F6EC43002C3678 /* www in CopyFiles */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
 		A28B19A12A05C08200528BB3 /* OutlineStatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28B19A02A05C08200528BB3 /* OutlineStatusItemController.swift */; };
+		A2A83B392A1C5B2E00755F56 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A2B8C14D2A58B70E0054487E /* AppKitBridge.bundle in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A2B8C1532A58B8A50054487E /* AppKitBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DBB2FF2A00D3900017E696 /* AppKitBridgeProtocol.swift */; };
+		A2B8C1542A58B8B30054487E /* AppKitBundleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */; };
 		A2DBB2FB2A00D2F90017E696 /* AppKitBridge.bundle in Embed App Extensions (2 items) */ = {isa = PBXBuildFile; fileRef = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A2DBB2FD2A00D36E0017E696 /* AppKitBundleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */; };
 		A2DBB3002A00D3900017E696 /* AppKitBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DBB2FF2A00D3900017E696 /* AppKitBridgeProtocol.swift */; };
@@ -68,12 +76,26 @@
 			remoteGlobalIDString = C0C01EB21E3911D50056E6CB;
 			remoteInfo = Cordova;
 		};
+		A2B8C14E2A58B70E0054487E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A2DBB2F52A00D2DD0017E696;
+			remoteInfo = AppKitBridge;
+		};
 		A2DBB3032A00D5F90017E696 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A2DBB2F52A00D2DD0017E696;
 			remoteInfo = AppKitBridge;
+		};
+		A2F6068D2A1C6D4A0039183A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A26D262C2A1C41B1009838E0;
+			remoteInfo = OutlineLauncher;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -111,6 +133,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A2A83B382A1C5B0C00755F56 /* Copy OutlineLauncher */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				A2A83B392A1C5B2E00755F56 /* OutlineLauncher.app in Copy OutlineLauncher */,
+			);
+			name = "Copy OutlineLauncher";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2B8C1502A58B70E0054487E /* Embed PlugIns */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A2B8C14D2A58B70E0054487E /* AppKitBridge.bundle in Embed PlugIns */,
+			);
+			name = "Embed PlugIns";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +184,9 @@
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		A24A752B2A00DC12008DF945 /* AppKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitBridge.swift; sourceTree = "<group>"; };
 		A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNotification+Outline.swift"; sourceTree = "<group>"; };
+		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26D262F2A1C41B1009838E0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
 		A28B19A02A05C08200528BB3 /* OutlineStatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineStatusItemController.swift; sourceTree = "<group>"; };
 		A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppKitBridge.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitBundleLoader.swift; sourceTree = "<group>"; };
@@ -180,6 +227,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A26D262A2A1C41B1009838E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A26D263F2A1C41FE009838E0 /* CocoaLumberjackSwift in Frameworks */,
+				A26D263D2A1C41FE009838E0 /* CocoaLumberjack in Frameworks */,
+				A255AB3B2A5CB38800AA726D /* OutlineAppleLib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A2DBB2F32A00D2DD0017E696 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -211,6 +268,7 @@
 				1D6058910D05DD3D006BFB54 /* Outline.app */,
 				3B0347481F212F0100C8EF1F /* VpnExtension.appex */,
 				A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */,
+				A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -229,6 +287,7 @@
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				3B0347491F212F0200C8EF1F /* VpnExtension */,
+				A26D262E2A1C41B1009838E0 /* OutlineLauncher */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -310,6 +369,15 @@
 			path = Outline/Resources/vpn;
 			sourceTree = "<group>";
 		};
+		A26D262E2A1C41B1009838E0 /* OutlineLauncher */ = {
+			isa = PBXGroup;
+			children = (
+				A26D262F2A1C41B1009838E0 /* AppDelegate.swift */,
+				A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */,
+			);
+			path = OutlineLauncher;
+			sourceTree = "<group>";
+		};
 		A28205A82A059CF1007B7FE8 /* AppKitBridge */ = {
 			isa = PBXGroup;
 			children = (
@@ -350,6 +418,7 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+				A2A83B382A1C5B0C00755F56 /* Copy OutlineLauncher */,
 				3B0347571F212F0200C8EF1F /* Embed App Extensions (2 items) */,
 				3B0347691F21321500C8EF1F /* Embed Frameworks */,
 				FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */,
@@ -357,6 +426,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				A2F6068E2A1C6D4A0039183A /* PBXTargetDependency */,
 				A2DBB3042A00D5F90017E696 /* PBXTargetDependency */,
 				301BF551109A68C00062928A /* PBXTargetDependency */,
 				3B0347521F212F0200C8EF1F /* PBXTargetDependency */,
@@ -392,6 +462,30 @@
 			productReference = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		A26D262C2A1C41B1009838E0 /* OutlineLauncher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
+			buildPhases = (
+				A26D26292A1C41B1009838E0 /* Sources */,
+				A26D262A2A1C41B1009838E0 /* Frameworks */,
+				A26D262B2A1C41B1009838E0 /* Resources */,
+				A2B8C1502A58B70E0054487E /* Embed PlugIns */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A2B8C14F2A58B70E0054487E /* PBXTargetDependency */,
+			);
+			name = OutlineLauncher;
+			packageProductDependencies = (
+				A26D263C2A1C41FE009838E0 /* CocoaLumberjack */,
+				A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */,
+				A255AB3A2A5CB38800AA726D /* OutlineAppleLib */,
+			);
+			productName = OutlineLauncher;
+			productReference = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */;
+			productType = "com.apple.product-type.application";
+		};
 		A2DBB2F52A00D2DD0017E696 /* AppKitBridge */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */;
@@ -404,6 +498,8 @@
 			dependencies = (
 			);
 			name = AppKitBridge;
+			packageProductDependencies = (
+			);
 			productName = AppKitBridge;
 			productReference = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */;
 			productType = "com.apple.product-type.bundle";
@@ -414,6 +510,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1010;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
@@ -432,6 +529,9 @@
 								enabled = 1;
 							};
 						};
+					};
+					A26D262C2A1C41B1009838E0 = {
+						CreatedOnToolsVersion = 14.3;
 					};
 					A2DBB2F52A00D2DD0017E696 = {
 						CreatedOnToolsVersion = 14.3;
@@ -465,6 +565,7 @@
 				1D6058900D05DD3D006BFB54 /* Outline */,
 				3B0347471F212F0100C8EF1F /* VpnExtension */,
 				A2DBB2F52A00D2DD0017E696 /* AppKitBridge */,
+				A26D262C2A1C41B1009838E0 /* OutlineLauncher */,
 			);
 		};
 /* End PBXProject section */
@@ -498,6 +599,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3B0347461F212F0100C8EF1F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A26D262B2A1C41B1009838E0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -548,6 +656,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A26D26292A1C41B1009838E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A26D26302A1C41B1009838E0 /* AppDelegate.swift in Sources */,
+				A2B8C1542A58B8B30054487E /* AppKitBundleLoader.swift in Sources */,
+				A2B8C1532A58B8A50054487E /* AppKitBridgeProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A2DBB2F22A00D2DD0017E696 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -572,11 +690,22 @@
 			target = 3B0347471F212F0100C8EF1F /* VpnExtension */;
 			targetProxy = 3B0347511F212F0200C8EF1F /* PBXContainerItemProxy */;
 		};
+		A2B8C14F2A58B70E0054487E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A2DBB2F52A00D2DD0017E696 /* AppKitBridge */;
+			targetProxy = A2B8C14E2A58B70E0054487E /* PBXContainerItemProxy */;
+		};
 		A2DBB3042A00D5F90017E696 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilter = maccatalyst;
 			target = A2DBB2F52A00D2DD0017E696 /* AppKitBridge */;
 			targetProxy = A2DBB3032A00D5F90017E696 /* PBXContainerItemProxy */;
+		};
+		A2F6068E2A1C6D4A0039183A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
+			target = A26D262C2A1C41B1009838E0 /* OutlineLauncher */;
+			targetProxy = A2F6068D2A1C6D4A0039183A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -787,6 +916,114 @@
 			};
 			name = Release;
 		};
+		A26D263A2A1C41B4009838E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		A26D263B2A1C41B4009838E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
 		A2DBB2F82A00D2DD0017E696 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -984,6 +1221,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A26D263A2A1C41B4009838E0 /* Debug */,
+				A26D263B2A1C41B4009838E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1039,11 +1285,29 @@
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
+		A255AB3A2A5CB38800AA726D /* OutlineAppleLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineAppleLib;
+		};
+		A26D263C2A1C41FE009838E0 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
 		52E783052A5880CF00355E64 /* PacketTunnelProvider */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PacketTunnelProvider;
 		};
 		F63DC2172970AFFA00D92E0A /* OutlineAppleLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineAppleLib;
+		};
+		F63DC2192970B00100D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
 		};
