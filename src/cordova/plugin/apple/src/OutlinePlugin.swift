@@ -31,7 +31,7 @@ class OutlinePlugin: CDVPlugin {
 
   private var callbacks: [String: String]!
 
-#if os(macOS)
+#if os(macOS) || targetEnvironment(macCatalyst)
   // cordova-osx does not support URL interception. Until it does, we have version-controlled
   // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
   private var urlHandler: CDVMacOsUrlHandler?
@@ -47,7 +47,7 @@ class OutlinePlugin: CDVPlugin {
 
     OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
 
-    #if os(macOS)
+    #if os(macOS) || targetEnvironment(macCatalyst)
       self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
     #endif
 
@@ -173,7 +173,7 @@ class OutlinePlugin: CDVPlugin {
     self.sendSuccess(true, callbackId: command.callbackId)
   }
 
-#if os(macOS)
+#if os(macOS) || targetEnvironment(macCatalyst)
   func quitApplication(_ command: CDVInvokedUrlCommand) {
     NSApplication.shared.terminate(self)
   }
