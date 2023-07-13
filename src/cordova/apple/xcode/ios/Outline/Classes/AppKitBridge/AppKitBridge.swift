@@ -13,17 +13,20 @@
 // limitations under the License.
 
 import AppKit
-import ServiceManagement;
+import ServiceManagement
 
 class AppKitBridge: NSObject, AppKitBridgeProtocol {
-    let statusItemController = OutlineStatusItemController()
+    private var statusItemController: OutlineStatusItemController?
 
     override required init() {
         super.init()
     }
 
     @objc func setConnectionStatus(_ isConnected: Bool) {
-        statusItemController.setStatus(isConnected: isConnected)
+        if statusItemController == nil { NSLog("No status item controller found. Creating one now.")
+            statusItemController = OutlineStatusItemController()
+        }
+        statusItemController!.setStatus(isConnected: isConnected)
     }
 
     // Enables or disables the embedded app launcher as a login item.

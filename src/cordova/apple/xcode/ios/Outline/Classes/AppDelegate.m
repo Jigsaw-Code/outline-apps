@@ -38,7 +38,6 @@
     didFinishLaunchingWithOptions:
         (NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions {
 #if TARGET_OS_MACCATALYST
-
   // Configure the Catalyst window.
   NSSet<UIScene*> *scenes = UIApplication.sharedApplication.connectedScenes;
   for (UIScene* scene in scenes) {
@@ -50,6 +49,8 @@
   }
 
   AppKitBundleLoader *bundle = [[AppKitBundleLoader alloc] init];
+  [[bundle appKitBridge] setConnectionStatus:false];
+
   [[NSNotificationCenter defaultCenter]
       addObserverForName:NSNotification.kVpnConnected
                   object:nil
