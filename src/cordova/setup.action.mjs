@@ -141,12 +141,6 @@ async function appleMacOsDebug(verbose) {
     throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
   }
 
-  if (os.arch() !== 'x64') {
-    console.warn(
-      'The cordova-osx platform used to build the MacOS client is deprecated, and thus has not added support for your CPU architecture. Your results may vary.'
-    );
-  }
-
   console.warn(
     chalk.yellow('Debug mode on the MacOS client is currently broken. Try running with `--buildMode=release` instead.')
   );
