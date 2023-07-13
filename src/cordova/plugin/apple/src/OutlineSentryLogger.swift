@@ -22,7 +22,7 @@ class OutlineSentryLogger: DDAbstractLogger {
 
   static let sharedInstance = OutlineSentryLogger()
 
-#if os(macOS)
+#if os(macOS) || targetEnvironment(macCatalyst)
   private static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
 #else
   private static let kAppGroup = "group.org.outline.ios.client"
