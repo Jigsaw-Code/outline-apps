@@ -99,6 +99,7 @@ log stream  --info --predicate 'senderImagePath contains "Outline.app"'
 ```
 
 In the Console app, that filter is equivalent to "`Library Path` contains `Outline.app`":
+
 <img width="1371" alt="image" src="https://github.com/Jigsaw-Code/outline-client/assets/113565/812c9e14-be11-4a64-b90f-58a4bac138b1">
 
 Tip: you can **save searches** in the Console app.
@@ -117,7 +118,7 @@ For details on Apple logging, see [Your Friend the System Log](https://developer
 ## Debugging the Vpn Extension
 The VpnExtension runs in a separate process and its output is not logged to the Xcode console. To view its log statements see the "Inspect Logs" section.
 
-To attach the debugger to the `VpnExtension`, in XCode, select Debug > Attach to Process > VpnExtension
+To attach the debugger to the `VpnExtension`, in XCode, select *Debug > Attach to Process > VpnExtension*
   * This can only be done once the VPN Extension is running (after you are connected).
   * You won't see the log messages in the Xcode console. To see the messagges, refer to the "Inspect Logs" instructions.
   * See [Debug, Profile, and Test Your App Extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionCreation.html#//apple_ref/doc/uid/TP40014214-CH5-SW8).
