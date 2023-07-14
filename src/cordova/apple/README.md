@@ -115,7 +115,7 @@ To see past logs use `log show` and the `--last` flag.
 For details on Apple logging, see [Your Friend the System Log](https://developer.apple.com/forums/thread/705868/) and [Mac Logging and the log Command: A Guide for Apple Admins](https://blog.kandji.io/mac-logging-and-the-log-command-a-guide-for-apple-admins#:~:text=The%20log%20command%20is%20built,(Press%20q%20to%20exit.)).
 
 
-## Debugging the Vpn Extension
+## Debug the Vpn Extension
 The VpnExtension runs in a separate process and its output is not logged to the Xcode console. To view its log statements see the "Inspect Logs" section.
 
 To attach the debugger to the `VpnExtension`, in XCode, select *Debug > Attach to Process > VpnExtension*
