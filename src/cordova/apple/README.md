@@ -36,7 +36,7 @@ For the **macOS** client on an **Apple Silicon** (arm64) computer:
 SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup macos -- --buildMode=release --versionName=0.0.0-dev && open ./src/cordova/apple/macos.xcworkspace
 ```
 
-> **Note**: On Apple Silicon the macOS web UI is broken in debug mode, so we need to build it in release mode. We are specifying a fake `SENTRY_DSN`, you should specify your own in your releases.
+> **Note** On Apple Silicon the macOS web UI is broken in debug mode, so we need to build it in release mode. We are specifying a fake `SENTRY_DSN`, you should specify your own in your releases.
 
 ## Set up signing
 
@@ -95,7 +95,7 @@ Changes to the [OutlineAppleLib](./OutlineAppleLib) package don't need to be cop
 The easiest way to inspect logs is to use the `log` command. To see the client app logs in real time, you can use `log stream` with a `--predicate` flag to select the messages sent by the Outline code:
 
 ```sh
-log stream  --info --predicate 'senderImagePath endswith "Outline" or senderImagePath endswith "VpnExtension"'
+log stream  --info --predicate 'senderImagePath contains "Outline.app"'
 ```
 
 In the Console app, that filter is equivalent to "Library Path" "contains" "Outline.app":
