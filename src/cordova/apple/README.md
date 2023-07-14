@@ -24,13 +24,7 @@ For the **iOS** client:
 npm run action cordova/build ios && open ./src/cordova/apple/ios.xcworkspace
 ```
 
-For the **macOS** client on an **Intel** computer:
-
-```sh
-npm run action cordova/build macos && open ./src/cordova/apple/macos.xcworkspace
-```
-
-For the **macOS** client on an **Apple Silicon** (arm64) computer:
+For the **macOS** client:
 
 ```sh
 SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup macos -- --buildMode=release --versionName=0.0.0-dev && open ./src/cordova/apple/macos.xcworkspace
