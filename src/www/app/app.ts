@@ -622,17 +622,8 @@ export class App {
   private async syncServerConnectivityState(server: Server) {
     try {
       const isRunning = await server.checkRunning();
-      if (!isRunning) {
-        this.updateServerListItem(server.id, {connectionState: ServerConnectionState.DISCONNECTED});
-        return;
-      }
-      const isReachable = await server.checkReachable();
-      if (isReachable) {
-        this.updateServerListItem(server.id, {connectionState: ServerConnectionState.CONNECTED});
-      } else {
-        console.log(`Server ${server.id} reconnecting`);
-        this.updateServerListItem(server.id, {connectionState: ServerConnectionState.RECONNECTING});
-      }
+      const connectionState = isRunning ? ServerConnectionState.CONNECTED : ServerConnectionState.DISCONNECTED;
+      this.updateServerListItem(server.id, {connectionState});
     } catch (e) {
       console.error('Failed to sync server connectivity state', e);
     }

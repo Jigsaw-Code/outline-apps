@@ -19,7 +19,6 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
 
-import {NativeNetworking} from '../net';
 import {TunnelFactory} from '../tunnel';
 
 import {OutlineServer} from './server';
@@ -109,7 +108,6 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private readonly net: NativeNetworking,
     private readonly createTunnel: TunnelFactory,
     private eventQueue: events.EventQueue,
     private storage: Storage
@@ -312,7 +310,6 @@ export class OutlineServerRepository implements ServerRepository {
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
       this.createTunnel(id),
-      this.net,
       this.eventQueue
     );
 

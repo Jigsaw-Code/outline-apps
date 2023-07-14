@@ -25,7 +25,6 @@ NSString *const kActionStart = @"start";
 NSString *const kActionRestart = @"restart";
 NSString *const kActionStop = @"stop";
 NSString *const kActionGetTunnelId = @"getTunnelId";
-NSString *const kActionIsServerReachable = @"isServerReachable";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyTunnelId = @"tunnelId";
 NSString *const kMessageKeyConfig = @"config";
@@ -226,19 +225,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
                                             error:nil];
     }
     completionHandler(response);
-  } else if ([kActionIsServerReachable isEqualToString:action]) {
-    NSString *host = message[kMessageKeyHost];
-    NSNumber *port = message[kMessageKeyPort];
-    if (!host || !port) {
-      completionHandler(nil);
-      return;
-    }
-    ErrorCode errorCode = noError;
-    if (!ShadowsocksCheckServerReachable(host, [port intValue], nil)) {
-      errorCode = serverUnreachable;
-    }
-    NSDictionary *response = @{kMessageKeyErrorCode : [NSNumber numberWithLong:errorCode]};
-    completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   }
 }
 

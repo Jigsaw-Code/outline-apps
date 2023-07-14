@@ -15,7 +15,6 @@
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineErrorReporter} from './error_reporter';
-import {NativeNetworking} from './net';
 import {TunnelFactory} from './tunnel';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -29,8 +28,6 @@ export interface OutlinePlatform {
   // Returns true iff the system has support for proxying. When this returns false, the UI should
   // assume it's running in demo mode, e.g. Electron on macOS.
   hasDeviceSupport(): boolean;
-
-  getNativeNetworking(): NativeNetworking;
 
   getTunnelFactory(): TunnelFactory;
 
