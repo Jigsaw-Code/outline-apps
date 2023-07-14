@@ -98,7 +98,7 @@ The easiest way to inspect logs is to use the `log` command. To see the client a
 log stream  --info --predicate 'senderImagePath contains "Outline.app"'
 ```
 
-In the Console app, that filter is equivalent to "Library Path" "contains" "Outline.app":
+In the Console app, that filter is equivalent to "`Library Path` contains `Outline.app`":
 <img width="1371" alt="image" src="https://github.com/Jigsaw-Code/outline-client/assets/113565/812c9e14-be11-4a64-b90f-58a4bac138b1">
 
 Tip: you can **save searches** in the Console app.
