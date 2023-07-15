@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		52355CFB295B70030057557B /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52355CFA295B70030057557B /* Sentry */; };
-		52C198972A587525006E0ACE /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52C198962A587525006E0ACE /* PacketTunnelProvider */; };
 		52CBB849295BC79300D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB848295BC79300D0073F /* CocoaLumberjack */; };
 		52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB84A295BC79300D0073F /* CocoaLumberjackSwift */; };
+		52D269482A6216CF006DD1B5 /* OutlinePacketTunnel in Frameworks */ = {isa = PBXBuildFile; productRef = 52D269472A6216CF006DD1B5 /* OutlinePacketTunnel */; };
 		707060AF18FFC05700755D46 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707060AE18FFC05700755D46 /* MainViewController.xib */; };
 		70BD682718FFB02D00A1EFCF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70BD682618FFB02D00A1EFCF /* Cocoa.framework */; };
 		70BD683118FFB02D00A1EFCF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 70BD682F18FFB02D00A1EFCF /* InfoPlist.strings */; };
@@ -167,7 +167,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC5FF9471F3E1E8B0032A745 /* NetworkExtension.framework in Frameworks */,
-				52C198972A587525006E0ACE /* PacketTunnelProvider in Frameworks */,
+				52D269482A6216CF006DD1B5 /* OutlinePacketTunnel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,7 +376,7 @@
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				52C198962A587525006E0ACE /* PacketTunnelProvider */,
+				52D269472A6216CF006DD1B5 /* OutlinePacketTunnel */,
 			);
 			productName = VpnExtension;
 			productReference = FC5FF92B1F3E1E5F0032A745 /* VpnExtension.appex */;
@@ -647,7 +647,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
@@ -699,7 +699,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"\"$(BUILD_ROOT)/../IntermediateBuildFilesPath/UninstalledProducts/include\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1007,10 +1007,6 @@
 			package = 52355CF9295B70020057557B /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
-		52C198962A587525006E0ACE /* PacketTunnelProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PacketTunnelProvider;
-		};
 		52CBB848295BC79300D0073F /* CocoaLumberjack */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
@@ -1020,6 +1016,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB847295BC79300D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
+		};
+		52D269472A6216CF006DD1B5 /* OutlinePacketTunnel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlinePacketTunnel;
 		};
 		F63DC21F2970B26500D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;

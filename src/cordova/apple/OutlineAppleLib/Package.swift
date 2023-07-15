@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "PacketTunnelProvider",
             targets: ["PacketTunnelProvider"]),
+        .library(
+            name: "OutlinePacketTunnel",
+            targets: ["OutlinePacketTunnel"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.7.4"),
@@ -31,6 +34,15 @@ let package = Package(
             ]
         ),
         .target(
+            name: "OutlinePacketTunnel",
+            dependencies: [
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                 "Tun2socks",
+                 "OutlineTunnel"
+            ],
+            path: "Sources/OutlinePacketTunnelSources"
+        ),
+        .target(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
@@ -44,6 +56,6 @@ let package = Package(
         ),
         .testTarget(
             name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel", "PacketTunnelProvider"]),
+            dependencies: ["OutlineTunnel"]),
     ]
 )

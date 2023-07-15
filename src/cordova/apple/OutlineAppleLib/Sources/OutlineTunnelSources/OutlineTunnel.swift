@@ -73,6 +73,7 @@ public class OutlineTunnel: NSObject, Codable {
 
         // Configure VPN address and routing.
         let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
+        // The addresses will show up in the profile details when the VPN is active.
         let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
         ipv4Settings.includedRoutes = [NEIPv4Route.default()]
         ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
