@@ -372,7 +372,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               [[localize('about-page-title')]]
             </paper-item>
             <paper-item name="help">
-              <a href="https://s3.amazonaws.com/outline-vpn/index.html#/support" id="helpAnchor" hidden=""></a>
+              <a href="https://support.getoutline.org" id="helpAnchor" hidden=""></a>
               <img src$="[[rootPath]]assets/icons/help.png" alt="help"  />
               [[localize('help-page-title')]]
             </paper-item>
