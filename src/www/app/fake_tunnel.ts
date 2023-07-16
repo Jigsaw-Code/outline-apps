@@ -24,12 +24,12 @@ export class FakeOutlineTunnel implements Tunnel {
 
   constructor(public readonly id: string) {}
 
-  private playBroken(hostname?: string) {
-    return hostname?.toLowerCase().includes('broken');
+  private playBroken(host?: string) {
+    return host?.includes('192.0.2.1');
   }
 
-  private playUnreachable(hostname?: string) {
-    return hostname?.toLowerCase().includes('unreachable');
+  private playUnreachable(host?: string) {
+    return host?.includes('10.0.0.24');
   }
 
   async start(config: ShadowsocksSessionConfig): Promise<void> {
