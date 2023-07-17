@@ -23,14 +23,14 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
     override required init() {
         super.init()
     }
-    
+
     @objc func terminate() {
         NSApp.terminate(self)
     }
-    
+
     @objc func setConnectionStatus(_ isConnected: Bool) {
         if statusItemController == nil {
-            NSLog("No status item controller found. Creating one now.")
+            NSLog("[AppKitBridge] No status item controller found. Creating one now.")
             statusItemController = OutlineStatusItemController()
         }
         statusItemController!.setStatus(isConnected: isConnected)
@@ -41,7 +41,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
         guard let launcherBundleId = self.getLauncherBundleId() else {
           return NSLog("[AppKitBridge] Unable to set launcher for missing bundle ID.")
         }
-       
+
       if !SMLoginItemSetEnabled((launcherBundleId as! CFString), isEnabled) {
         return NSLog("[AppKitBridge] Failed to set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
       }
@@ -49,10 +49,11 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
       return NSLog("[AppKitBridge] Successfully set enable=%@ for launcher %@.", String(isEnabled), launcherBundleId)
     }
 
+    // Loads the main application from a given launcher bundle.
     @objc func loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
         let mainAppBundleId = self.getMainBundleId(launcherBundleId)
-        
+
         NSLog("[AppKitBridge] Loading main app %@ from launcher %@.", mainAppBundleId!, launcherBundleId)
 
         let descriptor = NSAppleEventDescriptor(string: launcherBundleId)
@@ -70,7 +71,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
         }
         return String(format:"%@.%@", bundleId, AppKitBridge.kAppLauncherName)
     }
-    
+
     // Returns the main application's bundle ID from the embedded launcher bundle ID.
     private func getMainBundleId(_ launcherBundleId: String) -> String! {
         return (launcherBundleId as NSString).deletingPathExtension
