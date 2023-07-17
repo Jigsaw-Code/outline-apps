@@ -18,7 +18,6 @@ import Tun2socks
 
 // Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers
-@available(macOS 10.15, *)
 public class OutlineVpn: NSObject {
   public static let shared = OutlineVpn()
   private static let kVpnExtensionBundleId = "\(Bundle.main.bundleIdentifier!).VpnExtension"
@@ -101,7 +100,7 @@ public class OutlineVpn: NSObject {
     // TODO: Replace with something, perhaps the server name
     // This shows as "Server address" in the details of the profile.
     config.serverAddress = "Outline service \(serviceName)"
-    if #available(macOS 13.3, *) {
+    if #available(macOS 13.3, iOS 11, *) {
       config.excludeAPNs = false
       config.excludeCellularServices = false
     }

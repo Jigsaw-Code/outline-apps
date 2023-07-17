@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "OutlineAppleLib",
+    platforms: [
+       .macOS(.v10_15), .iOS(.v11),
+    ],
     products: [
         .library(
             name: "OutlineAppleLib",
@@ -28,7 +31,6 @@ let package = Package(
                  "Tun2socks",
                  "OutlineTunnel"
                 ],
-            path: "./Sources/PacketTunnelProviderSources/",
             cSettings: [
                 .headerSearchPath("Internal"),
             ]
@@ -39,15 +41,13 @@ let package = Package(
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                  "Tun2socks",
                  "OutlineTunnel"
-            ],
-            path: "Sources/OutlinePacketTunnelSources"
+            ]
         ),
         .target(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-            ],
-            path: "Sources/OutlineTunnelSources"
+            ]
         ),
         .binaryTarget(
             name: "Tun2socks",
@@ -56,6 +56,6 @@ let package = Package(
         ),
         .testTarget(
             name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel"]),
+            dependencies: ["OutlineTunnel", "OutlinePacketTunnel"]),
     ]
 )

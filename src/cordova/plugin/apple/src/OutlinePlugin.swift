@@ -84,8 +84,10 @@ class OutlinePlugin: CDVPlugin {
     OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
       if errorCode == OutlineVpn.ErrorCode.noError {
         #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+          DispatchQueue.main.async {
+            NotificationCenter.default.post(
+              name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+          }
         #endif
         self.sendSuccess(callbackId: command.callbackId)
       } else {
@@ -196,14 +198,18 @@ class OutlinePlugin: CDVPlugin {
     switch vpnStatus {
       case .connected:
         #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+          DispatchQueue.main.async {
+            NotificationCenter.default.post(
+              name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+          }
         #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.connected.rawValue
       case .disconnected:
         #if os(macOS)
-          NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+          DispatchQueue.main.async {
+            NotificationCenter.default.post(
+              name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+          }
         #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
       case .reasserting:

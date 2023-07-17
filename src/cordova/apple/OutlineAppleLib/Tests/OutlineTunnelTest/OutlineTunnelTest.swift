@@ -4,6 +4,7 @@ import NetworkExtension
 import Tun2socks
 
 @testable import OutlineTunnel
+@testable import OutlinePacketTunnel
 
 final class OutlineTunnelTest: XCTestCase {
     
@@ -37,4 +38,14 @@ final class OutlineTunnelTest: XCTestCase {
 
         XCTAssertEqual(["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"], settings.dnsSettings?.servers)
     }
+
+  func testOutlineDevice() async throws {
+      let outlineDevice = try await newOutlineDevice(transportConfig: [
+        "password": "redacted",
+        "method": "chacha20-ietf-poly1305",
+        "host": "0.0.0.0",  // redacted
+        "port": "443",
+        "prefix": ""
+      ])
+  }
 }
