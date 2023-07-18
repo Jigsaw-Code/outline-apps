@@ -21,7 +21,6 @@ import CocoaLumberjackSwift
 // Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
 // Note that this class and its non-private properties must be public in order to be visible to the ObjC
 // target of the OutlineAppleLib Swift Package.
-@objcMembers
 public class OutlineTunnel: NSObject, Codable {
     public var id: String?
     public var host: String?
@@ -37,7 +36,6 @@ public class OutlineTunnel: NSObject, Codable {
                 "method": method ?? "", "prefix": prefixStr]
     }
     
-    @objc
     public enum TunnelStatus: Int {
         case connected = 0
         case disconnected = 1
@@ -67,7 +65,7 @@ public class OutlineTunnel: NSObject, Codable {
     }
 
     // Helper function that we can call from Objective-C.
-    @objc public static func getTunnelNetworkSettings(tunnelRemoteAddress: String) -> NEPacketTunnelNetworkSettings {
+    public static func getTunnelNetworkSettings(tunnelRemoteAddress: String) -> NEPacketTunnelNetworkSettings {
         // The remote address is not used for routing, but for display in Settings > VPN > Outline.
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: tunnelRemoteAddress)
 

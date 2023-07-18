@@ -95,13 +95,7 @@
     }
   }];
 
-  if ([self wasStartedByLauncherApp]) {
-    [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
-      if (errorCode != ErrorCodeNoError) {
-        NSLog(@"Failed to auto-connect the VPN on startup.");
-      }
-    }];
-  } else {
+  if (![self wasStartedByLauncherApp]) {
     [self showPopover];
   }
   [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
