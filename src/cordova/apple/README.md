@@ -34,7 +34,7 @@ SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup maco
 
 ## Set up signing
 
-1. Make sure you are logged into your Apple Developer account. Go to **Preferences > Accounts** and make sure your account is set.
+1. In XCode, make sure you are logged into your Apple Developer account. Go to **Preferences > Accounts** and make sure your account is set.
 1. Select "Outline" in the left navigation bar.
 1. Under the "Signing & Capabilities" tab, select the "Jigsaw Operations LLC" for "Team".
 
