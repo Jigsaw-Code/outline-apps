@@ -16,7 +16,7 @@ You will need:
 
 ## Set up XCode project
 
-The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action cordova/setup $PLATFORM`, then open the `.xcworkspace` file.
+The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action cordova/setup $PLATFORM`, then open the XCode workspace file (not the project).
 
 For the **iOS** client:
 
@@ -96,10 +96,9 @@ In the Console app, select the **Action > Include Info Messages** manu, and set 
 
 <img width="1371" alt="image" src="https://github.com/Jigsaw-Code/outline-client/assets/113565/812c9e14-be11-4a64-b90f-58a4bac138b1">
 
-Tip: you can **save searches** in the Console app.
+> 💡 Tip: You can **save searches** in the MacOS Console app.
 
-
-For forther debugging, you can include relevant messages from the Network Extension subsystem:
+For further debugging, you can include relevant messages from the Network Extension subsystem:
 ```sh
 log stream  --info --predicate 'senderImagePath contains "Outline.app" or (processImagePath contains "Outline.app" and subsystem contains "com.apple.networkextension")'
 ```
@@ -120,10 +119,10 @@ XCode doesn't automatically attach to the VpnExtension because it's started on d
   - In Xcode, select **Debug > Attach to Process by PID or Name…**
   - Fill **PID or Process Name** with `VpnExtension` and press **Attach**
 
-You won't see the log messages in the Xcode console. To see the messagges, refer to the "Inspect Logs" instructions.
+You won't see the log messages in the Xcode console. To see the messagges, refer to the "[Inspect Logs](#Inspect-Logs)" instructions.
 For more info, see [Debug, Profile, and Test Your App Extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionCreation.html#//apple_ref/doc/uid/TP40014214-CH5-SW8).
 
-### Troubleshoot `VpnStartFailure`
+### Debug `VpnStartFailure`
 
 Sometimes the app will refuse to connect, with a `VpnStartFailure` error:
 
@@ -144,15 +143,21 @@ You can kill them with the [`pkill` command](https://man7.org/linux/man-pages/ma
 pkill -9 Outline VpnExtension
 ```
 
-Sometimes the processes will not die, even with `-9`. For the Outline process, you may need to kill its parent process, usually `debugserver`.
+Sometimes the processes will not die, even with `-9`. For the Outline process, you may need to kill its parent process, usually `debugserver`. 
 
-#### Ensure the extension is being loaded
+You can check running processes with the [`pgrep` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
+```sh
+pgrep Outline VpnExtension
+```
 
-The VpnExtension is an [application extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/) that handles the device’s traffic when the VPN is enabled. The system must be aware of the extension in order to invoke it. Normally, running the app is enough to trigger the registration of the VpnExtension. However, the system can get confused in a development environment, failing to register the plugin automatically.
+
+#### Ensure the right extension is being loaded
+
+The VpnExtension is an [application extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/) that handles the device’s traffic when the VPN is enabled. The system must be aware of the extension in order to invoke it. Normally, running the app is enough to trigger the registration of the VpnExtension. However, the system can get confused in a development environment, failing to register the plugin automatically, or using the extension from the production app, if you have it installed, or from a different build.
 
 In your terminal, use the `pluginkit` command to inspect the registered plugins:
 ```sh
-pluginkit -m -v | grep outline
+pluginkit -mvA | grep outline
 ```
 
 You should see an for the VpnExtension in your Xcode project, where the version and binary location match.  This should output something similar to:
@@ -161,7 +166,16 @@ You should see an for the VpnExtension in your Xcode project, where the version 
 
 Note how `VpnExtension.appex` is inside `Outline.app/`.
 
-If the VpnExtension is not listed, manually add it to the plugin list:
+It's safe to unregister all the Outline VPN Extensions, since the system will load them on demand. To do so, for each of them, call
+
+```
+plugintkit -r $APP_EXTENSION_PATH
+```
+
+Where the `$APP_EXTENSION_PATH` is the location of the `VpnExtension.appex` file from the pluginkit command.
+
+If your extenstion is still not loading, you can try to force register it:
+
 1. Determine the VpnExtension path
   1. In XCode, go to **Product > Show Build Folder in Finder**. That will open the `Build/` folder.
   1. The VpnExtension will be at `Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
@@ -184,6 +198,7 @@ If all fails, restart your device. That usually takes care of the issue.
 
 To debug the webview:
 
+1. You may need to enable the Develop menu first, by selecting **Settings > Advanced > Show Develop menu** in menu bar
 1. In your terminal, run `defaults write org.outline.osx.client WebKitDeveloperExtras -bool true`.  This is only needed once, to make the Outline webview debuggable.  You may need to re-run the whole Outline app (use Cmd+R).
 1. In the Outline Client app, right click → Inspect Context. This will open the Safari debugger
 
