@@ -29,19 +29,16 @@ class OutlinePacketTunnel: NEPacketTunnelProvider {
   }
 
   private func startTunnelAsync(options: [String : NSObject]?) async -> Error? {
-    // TODO: make config private
-    os_log(.info, log: log, "Starting tunnel with options: %@", String(describing: options))
+    os_log(.info, log: log, "Starting tunnel with options: %{private}@", String(describing: options))
 
-    guard let protocolConfig = protocolConfiguration as? NETunnelProviderProtocol else {
-      os_log(.error, log: log, "NETunnelProvider.protocolConfiguration is not NETunnelProviderProtocol")
+    guard let protocolConfig = protocolConfiguration as? NETunnelProviderProtocol,
+          let transportConfig = protocolConfig.providerConfiguration else {
+      os_log(.error, log: log, "Could not get NETunnelProviderProtocol.providerConfiguration")
       return NEVPNError(.configurationInvalid)
     }
+    // TODO: Make this private
     os_log(.info, log: log, "NETunnelProviderProtocol is %{public}@", protocolConfig.description)
 
-    guard let transportConfig = protocolConfig.providerConfiguration else {
-      os_log(.error, log: log, "providerConfiguration no found")
-      return NEVPNError(.configurationInvalid)
-    }
 
     // TODO: Investigate Connectivity Result: errorCode: 5 (serverUnreachable), error: nil, tcp: false, udp: false
     let outlineDevice: OutlineDevice
@@ -64,7 +61,7 @@ class OutlinePacketTunnel: NEPacketTunnelProvider {
     }
 
     // TODO:
-    //outlineDevice.relay(packetFlow: self.packetFlow)
+    //outlineDevice.relay(with: self.packetFlow)
 
       // - New Device: new Client/device + connectivity
       // - device.Relay()
@@ -82,6 +79,7 @@ class OutlinePacketTunnel: NEPacketTunnelProvider {
   override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
     os_log(.info, log:log, "Stopping tunnel...")
     completionHandler()
+    // Stop OnDemand? Perhaps in the caller.
   }
 
   override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
@@ -104,11 +102,11 @@ class OutlinePacketTunnel: NEPacketTunnelProvider {
 private func newGoClient(_ transportConfig: [String: Any]) throws -> ShadowsocksClient {
   // TODO(fortuna): forward config to Go without inspection.
   let ssConfig = ShadowsocksConfig()
+  // See ShadowsocksSessionConfig in tunnel.ts
   if let host = transportConfig["host"] as? String {
     ssConfig.host = host
   }
-  if let portStr = transportConfig["port"] as? String,
-     let port = Int(portStr) {
+  if let port = transportConfig["port"] as? Int {
     ssConfig.port = port
   }
   if let password = transportConfig["password"] as? String {
@@ -120,8 +118,9 @@ private func newGoClient(_ transportConfig: [String: Any]) throws -> Shadowsocks
   if let prefixStr = transportConfig["prefix"] as? String {
     ssConfig.prefix = Data(prefixStr.utf16.map{UInt8($0)})
   }
-  os_log(.info, log:log, "ssConfig is host: %{public}@, port: %{public}d, password: %{public}@, method: %{public}@",
-         ssConfig.host, ssConfig.port, ssConfig.password ,ssConfig.cipherName)
+  // TODO(fortuna): Make it private
+  os_log(.info, log:log, "ssConfig is host: %{public}@, port: %{public}@, password: %{public}@, method: %{public}@",
+         ssConfig.host, String(describing: ssConfig.port), ssConfig.password ,ssConfig.cipherName)
   var errorPtr: NSError?
   guard let client = ShadowsocksNewClient(ssConfig, &errorPtr) else {
     if let error = errorPtr {
@@ -144,7 +143,7 @@ func newOutlineDevice(transportConfig: [String: Any]) async throws -> OutlineDev
   let tcpOk = (errorCode == OutlineVpn.ErrorCode.noError ||
       errorCode == OutlineVpn.ErrorCode.udpRelayNotEnabled)
   let udpOk = errorCode == OutlineVpn.ErrorCode.noError
-  os_log(.info, log: log, "Connectivity Result: errorCode: %d, error: %{public}@, tcp: %{public}@, udp: %{public}@", errorInt, String(describing: connectivityError), String(describing: tcpOk), String(describing: udpOk))
+  os_log(.info, log: log, "Connectivity Result: errorCode: %{public}d, error: %{public}@, tcp: %{public}@, udp: %{public}@", errorInt, String(describing: connectivityError), String(describing: tcpOk), String(describing: udpOk))
   guard tcpOk else {
     throw NEVPNError(.connectionFailed)
   }
@@ -161,11 +160,47 @@ class OutlineDevice {
     self.isUdpEnabled = isUdpEnabled
   }
 
-  func relay(packetFlow: NEPacketTunnelFlow) {
+  func relay(with packetFlow: NEPacketTunnelFlow) {
+    // TODO: implement Tun2socksTunWriter interface.
     let tunWriter = makeTunWriter(packetFlow)
     var connectError: NSError?
+    // Tun2socksConnectShadowsocksTunnel sets up the packet flow from the proxy to the local system, and returns a
+    // Tun2socksOutlineTunnelProtocol object to set up the packet flow from the local system to the proxy.
+    // TODO: handle error
     self.goTunnel = Tun2socksConnectShadowsocksTunnel(
       tunWriter, self.goClient, self.isUdpEnabled, &connectError);
+    self.relayFromLocalToProxy()
+  }
+
+  private func relayFromLocalToProxy() {
+     self.packetFlow.readPacketObjects() { packets in
+       for packet in packets {
+         self.goTunnel?.write(<#T##data: Data?##Data?#>, ret0_: <#T##UnsafeMutablePointer<Int>?#>)
+       }
+//
+//    }
+    Task { [weak self] in
+      self?.relayFromLocalToProxy()
+    }
+  }
+
+  /// Updates the UDP support
+  func updateUdpSupport() async {
+    guard let goTunnel = self.goTunnel else {
+      return
+    }
+    self.isUdpEnabled = await Task.detached {
+      // This function runs the connectivity test, which takes time, so we run it detached.
+      return goTunnel.updateUDPSupport()
+    }.value
+  }
+
+  func stop() {
+    guard let goTunnel = self.goTunnel else {
+      return
+    }
+    goTunnel.disconnect()
+    self.goTunnel = nil
   }
 }
 

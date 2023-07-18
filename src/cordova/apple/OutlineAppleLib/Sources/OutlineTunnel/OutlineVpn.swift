@@ -356,6 +356,7 @@ public class OutlineVpn: NSObject {
 
   // Retrieves the active tunnel ID from the VPN extension.
   private func retrieveActiveTunnelId() {
+    // TODO(fortuna): Get the tunnel id from the running configuration.
     if tunnelManager == nil {
       return
     }
