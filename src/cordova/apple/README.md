@@ -34,7 +34,7 @@ SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup maco
 
 ## Set up signing
 
-1. Make sure you are logged into your Apple Developer account. Go to *Preferences > Accounts* and make sure your account is set.
+1. Make sure you are logged into your Apple Developer account. Go to **Preferences > Accounts** and make sure your account is set.
 1. Select "Outline" in the left navigation bar.
 1. Under the "Signing & Capabilities" tab, select the "Jigsaw Operations LLC" for "Team".
 
@@ -42,10 +42,10 @@ SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup maco
 
 ### Specify the Destination
 
-For the **macOS** client, you can run it directly on your macOS computer: *Product > Destination > My Mac*.
+For the **macOS** client, you can run it directly on your macOS computer: **Product > Destination > My Mac**.
 
 For the **iOS** client, you have a few options:
-- Run on your macOS computer: *Product > Destination > My Mac (designed for iPad)*
+- Run on your macOS computer: **Product > Destination > My Mac (designed for iPad)**
   - This is a great option for development, but only available on Apple Silicon computers.
 - Run on a physical iOS device
   - This is a great option to evaluate how it performs on a real device. You will need to enable development mode and register your device.
@@ -70,7 +70,7 @@ Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Dev
 
 ### Build and Start the App
 
-To run the app, first **clean the build** (*Product > Clean Build Folder…*), then **run** (*Product > Run*), via the menu or the play button:
+To run the app, first **clean the build** (**Product > Clean Build Folder…** (Cmd+Shift+K)), then **run** (**Product > Run** (Cmd+Run)), via the menu or the play button:
 <img width="802" alt="image" src="https://github.com/Jigsaw-Code/outline-internal-sdk/assets/113565/f3289c08-5f33-423a-a496-d5d764f4fce0">
 
 > **Warning**
@@ -92,7 +92,7 @@ The easiest way to inspect logs is to use the `log` command. To see the client a
 log stream  --info --predicate 'senderImagePath contains "Outline.app"'
 ```
 
-In the Console app, select the *Action > Include Info Messages* manu, and set the filter to "Library Path" "contains" "Outline.app":
+In the Console app, select the **Action > Include Info Messages** manu, and set the filter to "Library Path" "contains" "Outline.app":
 
 <img width="1371" alt="image" src="https://github.com/Jigsaw-Code/outline-client/assets/113565/812c9e14-be11-4a64-b90f-58a4bac138b1">
 
@@ -112,10 +112,16 @@ For details on Apple logging, see [Your Friend the System Log](https://developer
 ## Debug the Vpn Extension
 The VpnExtension runs in a separate process and its output is not logged to the Xcode console. To view its log statements see the "Inspect Logs" section.
 
-To attach the debugger to the `VpnExtension`, in XCode, select *Debug > Attach to Process > VpnExtension*
-  * This can only be done once the VPN Extension is running (after you are connected).
-  * You won't see the log messages in the Xcode console. To see the messagges, refer to the "Inspect Logs" instructions.
-  * See [Debug, Profile, and Test Your App Extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionCreation.html#//apple_ref/doc/uid/TP40014214-CH5-SW8).
+XCode doesn't automatically attach to the VpnExtension because it's started on demand by the system.
+
+- If the Vpn Extension is running:
+  - In XCode, select **Debug > Attach to Process > VpnExtension**
+- If the VpnExtension is not running:
+  - In Xcode, select **Debug > Attach to Process by PID or Name…**
+  - Fill **PID or Process Name** with `VpnExtension` and press **Attach**
+
+You won't see the log messages in the Xcode console. To see the messagges, refer to the "Inspect Logs" instructions.
+For more info, see [Debug, Profile, and Test Your App Extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionCreation.html#//apple_ref/doc/uid/TP40014214-CH5-SW8).
 
 ### Troubleshoot `VpnStartFailure`
 
@@ -157,7 +163,7 @@ Note how `VpnExtension.appex` is inside `Outline.app/`.
 
 If the VpnExtension is not listed, manually add it to the plugin list:
 1. Determine the VpnExtension path
-  1. In XCode, go to *Product > Show Build Folder in Finder*. That will open the `Build/` folder.
+  1. In XCode, go to **Product > Show Build Folder in Finder**. That will open the `Build/` folder.
   1. The VpnExtension will be at `Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
 1. Run `run pluginkit -a <your appex file>`, e.g. `pluginkit -a /Users/$USER/Library/Developer/Xcode/DerivedData/macos-bnidlwvulcdazjfxleynwzkychqi/Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
 
