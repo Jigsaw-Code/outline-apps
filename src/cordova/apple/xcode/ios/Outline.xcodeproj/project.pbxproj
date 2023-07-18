@@ -17,10 +17,10 @@
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
 		3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		52A6DB0A2A67594E0008135F /* OutlinePacketTunnel in Frameworks */ = {isa = PBXBuildFile; productRef = 52A6DB092A67594E0008135F /* OutlinePacketTunnel */; };
 		52CBB892295BD8F200D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB891295BD8F200D0073F /* CocoaLumberjack */; };
 		52CBB894295BD8F200D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB893295BD8F200D0073F /* CocoaLumberjackSwift */; };
 		52CE53E7295B6A310064D03D /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52CE53E6295B6A310064D03D /* Sentry */; };
-		52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52E783052A5880CF00355E64 /* PacketTunnelProvider */; };
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
 		F63DC2182970AFFA00D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2172970AFFA00D92E0A /* OutlineAppleLib */; };
@@ -140,7 +140,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */,
-				52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */,
+				52A6DB0A2A67594E0008135F /* OutlinePacketTunnel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,7 +327,7 @@
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				52E783052A5880CF00355E64 /* PacketTunnelProvider */,
+				52A6DB092A67594E0008135F /* OutlinePacketTunnel */,
 			);
 			productName = VpnExtension;
 			productReference = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */;
@@ -824,6 +824,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		52A6DB092A67594E0008135F /* OutlinePacketTunnel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlinePacketTunnel;
+		};
 		52CBB891295BD8F200D0073F /* CocoaLumberjack */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
@@ -838,10 +842,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
-		};
-		52E783052A5880CF00355E64 /* PacketTunnelProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PacketTunnelProvider;
 		};
 		F63DC2172970AFFA00D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
