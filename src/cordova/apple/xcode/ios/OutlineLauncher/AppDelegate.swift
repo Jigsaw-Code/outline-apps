@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Cocoa
+import NetworkExtension
 import OutlineTunnel
 import UIKit	
 
@@ -22,28 +23,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let appKitBundle = AppKitBundleLoader()
-        defer {
-            NSLog("Exiting...")
-            appKitBundle.appKitBridge!.terminate()
+        self.shouldLaunchMainApp() { shouldLaunch in
+            defer {
+                NSLog("Exiting launcher...")
+                appKitBundle.appKitBridge!.terminate()
+            }
+            if !shouldLaunch {
+                NSLog("Not launching, Outline not connected at shutdown")
+                return
+            }
+            NSLog("Outline connected at shutdown. Launching")
+    
+            guard let launcherBundleId = Bundle.main.bundleIdentifier else {
+                NSLog("Failed to retrieve the bundle ID for the launcher app.")
+                return
+            }
+            appKitBundle.appKitBridge!.loadMainApp(launcherBundleId)
         }
-
-        if !self.shouldLaunchMainApp() {
-            NSLog("Not launching, Outline not connected at shutdown")
-            return false
-        }
-        NSLog("Outline connected at shutdown. Launching")
-
-        guard let launcherBundleId = Bundle.main.bundleIdentifier else {
-            NSLog("Failed to retrieve the bundle ID for the launcher app.")
-            return false
-        }
-        appKitBundle.appKitBridge!.loadMainApp(launcherBundleId)
         return true
     }
     
     // Returns whether the launcher should launch the main app.
-    private func shouldLaunchMainApp() -> Bool {
-        let tunnelStore = OutlineTunnelStore(appGroup: AppDelegate.kAppGroup)
-        return tunnelStore.status == OutlineTunnel.TunnelStatus.connected
+    private func shouldLaunchMainApp(completion: @escaping(Bool) -> Void) {
+        NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
+            guard error == nil, managers != nil else {
+                NSLog("Failed to get tunnel manager: \(String(describing: error))")
+                return completion(false)
+            }
+            guard let manager: NETunnelProviderManager = managers!.first, managers!.count > 0 else {
+                NSLog("No tunnel managers found.")
+                return completion(false)
+            }
+            NSLog("Tunnel manager found.")
+            return completion(manager.isOnDemandEnabled)
+        }
     }
 }
