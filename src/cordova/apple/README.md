@@ -133,12 +133,7 @@ If that happens, there are some things you can try.
 
 #### Kill any leftover processes
 
-You can check running processes with the [`pgrep` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
-```sh
-pgrep Outline VpnExtension
-```
-
-You can kill them with the [`pkill` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
+You can kill the app and extension with the [`pkill` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
 ```sh
 pkill -9 Outline VpnExtension
 ```
