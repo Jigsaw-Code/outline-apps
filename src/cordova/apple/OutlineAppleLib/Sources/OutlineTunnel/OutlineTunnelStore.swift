@@ -17,7 +17,6 @@ import Foundation
 // Persistence layer for a single |OutlineTunnel| object.
 // Note that this class and its non-private properties must be public in order to be visible to the ObjC
 // target of the OutlineAppleLib Swift Package.
-@objcMembers
 public class OutlineTunnelStore: NSObject {
     // TODO(alalama): s/connection/tunnel when we update the schema.
     private static let kTunnelStoreKey = "connectionStore"

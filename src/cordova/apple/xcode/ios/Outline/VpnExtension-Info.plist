@@ -27,7 +27,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.networkextension.packet-tunnel</string>
 		<key>NSExtensionPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).OutlinePacketTunnel</string>
+		<string>OutlinePacketTunnel.OutlinePacketTunnel</string>
 	</dict>
 </dict>
 </plist>

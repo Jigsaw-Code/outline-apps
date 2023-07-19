@@ -17,7 +17,6 @@ import NetworkExtension
 import Tun2socks
 
 // Manages the system's VPN tunnel through the VpnExtension process.
-@objcMembers
 public class OutlineVpn: NSObject {
     public static let shared = OutlineVpn()
     private static let kVpnExtensionBundleId = "\(Bundle.main.bundleIdentifier!).VpnExtension"
@@ -49,7 +48,6 @@ public class OutlineVpn: NSObject {
     // This must be kept in sync with:
     //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
     //  - www/model/errors.ts
-    @objc
     public enum ErrorCode: Int {
         case noError = 0
         case undefined = 1
@@ -377,7 +375,7 @@ public class OutlineVpn: NSObject {
     
     // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
     // tunnel.
-    func vpnStatusChanged() {
+    @objc func vpnStatusChanged() {
         if let vpnStatus = tunnelManager?.connection.status {
             if let tunnelId = activeTunnelId {
                 if (vpnStatus == .disconnected) {
