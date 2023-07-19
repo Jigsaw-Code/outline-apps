@@ -169,20 +169,20 @@ class OutlineDevice {
     // TODO: handle error
     self.goTunnel = Tun2socksConnectShadowsocksTunnel(
       tunWriter, self.goClient, self.isUdpEnabled, &connectError);
-    self.relayFromLocalToProxy()
+//    self.relayFromLocalToProxy()
   }
 
-  private func relayFromLocalToProxy() {
-     self.packetFlow.readPacketObjects() { packets in
-       for packet in packets {
-         self.goTunnel?.write(<#T##data: Data?##Data?#>, ret0_: <#T##UnsafeMutablePointer<Int>?#>)
-       }
-//
+//  private func relayFromLocalToProxy() {
+//     self.packetFlow.readPacketObjects() { packets in
+//       for packet in packets {
+//         self.goTunnel?.write(<#T##data: Data?##Data?#>, ret0_: <#T##UnsafeMutablePointer<Int>?#>)
+//       }
+////
+////    }
+//    Task { [weak self] in
+//      self?.relayFromLocalToProxy()
 //    }
-    Task { [weak self] in
-      self?.relayFromLocalToProxy()
-    }
-  }
+//  }
 
   /// Updates the UDP support
   func updateUdpSupport() async {

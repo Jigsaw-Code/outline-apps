@@ -163,6 +163,7 @@ public class OutlineVpn: NSObject {
   private func startTunnel(manager: NETunnelProviderManager) async throws -> Void {
     self.tunnelManager = manager
     manager.isEnabled = true
+    // manager.isOnDemandEnabled = true
     // TODO: subscribe to changes
     try manager.connection.startVPNTunnel()
     // TODO: wait for the start to be complete
