@@ -63,12 +63,12 @@ public class OutlineTunnel: NSObject, Codable {
     public static func decode(_ jsonData: Data) -> OutlineTunnel? {
         return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
     }
-
+    
     // Helper function that we can call from Objective-C.
     public static func getTunnelNetworkSettings(tunnelRemoteAddress: String) -> NEPacketTunnelNetworkSettings {
         // The remote address is not used for routing, but for display in Settings > VPN > Outline.
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: tunnelRemoteAddress)
-
+        
         // Configure VPN address and routing.
         let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
         // The addresses will show up in the profile details when the VPN is active.
@@ -76,7 +76,7 @@ public class OutlineTunnel: NSObject, Codable {
         ipv4Settings.includedRoutes = [NEIPv4Route.default()]
         ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
         settings.ipv4Settings = ipv4Settings
-
+        
         // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
         settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
         
@@ -140,21 +140,21 @@ func selectVpnAddress(interfaceAddresses: [String]) -> String {
 }
 
 let kExcludedSubnets = [
-  "10.0.0.0/8",
-  "100.64.0.0/10",
-  "169.254.0.0/16",
-  "172.16.0.0/12",
-  "192.0.0.0/24",
-  "192.0.2.0/24",
-  "192.31.196.0/24",
-  "192.52.193.0/24",
-  "192.88.99.0/24",
-  "192.168.0.0/16",
-  "192.175.48.0/24",
-  "198.18.0.0/15",
-  "198.51.100.0/24",
-  "203.0.113.0/24",
-  "240.0.0.0/4"
+    "10.0.0.0/8",
+    "100.64.0.0/10",
+    "169.254.0.0/16",
+    "172.16.0.0/12",
+    "192.0.0.0/24",
+    "192.0.2.0/24",
+    "192.31.196.0/24",
+    "192.52.193.0/24",
+    "192.88.99.0/24",
+    "192.168.0.0/16",
+    "192.175.48.0/24",
+    "198.18.0.0/15",
+    "198.51.100.0/24",
+    "203.0.113.0/24",
+    "240.0.0.0/4"
 ]
 
 func getExcludedIpv4Routes() -> [NEIPv4Route] {

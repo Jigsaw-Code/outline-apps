@@ -19,54 +19,54 @@ import Foundation
 // target of the OutlineAppleLib Swift Package.
 @objcMembers
 public class OutlineTunnelStore: NSObject {
-  // TODO(alalama): s/connection/tunnel when we update the schema.
-  private static let kTunnelStoreKey = "connectionStore"
-  private static let kTunnelStatusKey = "connectionStatus"
-  private static let kUdpSupportKey = "udpSupport"
-
-  private let defaults: UserDefaults?
-
-  // Constructs the store with UserDefaults as the storage.
-  public required init(appGroup: String) {
-    defaults = UserDefaults(suiteName: appGroup)
-    super.init()
-  }
-
-  // Loads a previously saved tunnel from the store.
-  public func load() -> OutlineTunnel? {
-    if let encodedTunnel = defaults?.data(forKey: OutlineTunnelStore.kTunnelStoreKey) {
-      return OutlineTunnel.decode(encodedTunnel)
+    // TODO(alalama): s/connection/tunnel when we update the schema.
+    private static let kTunnelStoreKey = "connectionStore"
+    private static let kTunnelStatusKey = "connectionStatus"
+    private static let kUdpSupportKey = "udpSupport"
+    
+    private let defaults: UserDefaults?
+    
+    // Constructs the store with UserDefaults as the storage.
+    public required init(appGroup: String) {
+        defaults = UserDefaults(suiteName: appGroup)
+        super.init()
     }
-    return nil
-  }
-
-  // Writes |tunnel| to the store.
-  @discardableResult
-  public func save(_ tunnel: OutlineTunnel) -> Bool {
-    if let encodedTunnel = tunnel.encode() {
-      defaults?.set(encodedTunnel, forKey: OutlineTunnelStore.kTunnelStoreKey)
+    
+    // Loads a previously saved tunnel from the store.
+    public func load() -> OutlineTunnel? {
+        if let encodedTunnel = defaults?.data(forKey: OutlineTunnelStore.kTunnelStoreKey) {
+            return OutlineTunnel.decode(encodedTunnel)
+        }
+        return nil
     }
-    return true
-  }
-
-  public var status: OutlineTunnel.TunnelStatus {
-    get {
-      let status = defaults?.integer(forKey: OutlineTunnelStore.kTunnelStatusKey)
-          ?? OutlineTunnel.TunnelStatus.disconnected.rawValue
-      return OutlineTunnel.TunnelStatus(rawValue:status)
-          ?? OutlineTunnel.TunnelStatus.disconnected
+    
+    // Writes |tunnel| to the store.
+    @discardableResult
+    public func save(_ tunnel: OutlineTunnel) -> Bool {
+        if let encodedTunnel = tunnel.encode() {
+            defaults?.set(encodedTunnel, forKey: OutlineTunnelStore.kTunnelStoreKey)
+        }
+        return true
     }
-    set(newStatus) {
-      defaults?.set(newStatus.rawValue, forKey: OutlineTunnelStore.kTunnelStatusKey)
+    
+    public var status: OutlineTunnel.TunnelStatus {
+        get {
+            let status = defaults?.integer(forKey: OutlineTunnelStore.kTunnelStatusKey)
+            ?? OutlineTunnel.TunnelStatus.disconnected.rawValue
+            return OutlineTunnel.TunnelStatus(rawValue:status)
+            ?? OutlineTunnel.TunnelStatus.disconnected
+        }
+        set(newStatus) {
+            defaults?.set(newStatus.rawValue, forKey: OutlineTunnelStore.kTunnelStatusKey)
+        }
     }
-  }
-
-  public var isUdpSupported: Bool {
-    get {
-      return defaults?.bool(forKey: OutlineTunnelStore.kUdpSupportKey) ?? false
+    
+    public var isUdpSupported: Bool {
+        get {
+            return defaults?.bool(forKey: OutlineTunnelStore.kUdpSupportKey) ?? false
+        }
+        set(udpSupport) {
+            defaults?.set(udpSupport, forKey: OutlineTunnelStore.kUdpSupportKey)
+        }
     }
-    set(udpSupport) {
-      defaults?.set(udpSupport, forKey: OutlineTunnelStore.kUdpSupportKey)
-    }
-  }
 }

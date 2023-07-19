@@ -93,7 +93,7 @@ public class OutlineVpn: NSObject {
     
     private func startTunnel(_ tunnelId: String, name serviceName: String, config configJson: [String: Any]) async -> ErrorCode {
         DDLogInfo("OutlineVpn.start called for tunnel \(tunnelId)")
-
+        
         if self.tunnelManager?.isEnabled ?? false {
             if (tunnelId == self.activeTunnelId) {
                 // Already running
@@ -101,7 +101,7 @@ public class OutlineVpn: NSObject {
                 return ErrorCode.noError
             }
         }
-
+        
         // Get and configure manager.
         let manager : NETunnelProviderManager
         do {
@@ -114,7 +114,7 @@ public class OutlineVpn: NSObject {
         self.activeTunnelId = tunnelId
         self.tunnelManager = manager
         DDLogInfo("Active tunnel set to id \(self.activeTunnelId) and manager \(self.tunnelManager)")
-
+        
         // Start tunnel.
         do {
             // TODO: enable on demand
@@ -130,7 +130,7 @@ public class OutlineVpn: NSObject {
             DDLogError("Failed to start VPN tunnel: \(error)")
             return ErrorCode.vpnStartFailure
         }
-
+        
         return ErrorCode.noError
     }
     
@@ -157,10 +157,10 @@ public class OutlineVpn: NSObject {
         manager.isEnabled = false
         // Disable on-demand so it doesn't restart.
         // TODO: Do we need to set isOnDemandEnabled to false when we disable the vpn?
-//        manager.isOnDemandEnabled = false
+        //        manager.isOnDemandEnabled = false
         manager.saveToPreferences()
         // TODO: Do we need to call stopVPNTunnel when we set isEnabled to false?
-//        manager.connection.stopVPNTunnel()
+        //        manager.connection.stopVPNTunnel()
         //    if !isActive(tunnelId) {
         //      return DDLogWarn("Cannot stop VPN, tunnel ID \(tunnelId)")
         //    }
@@ -199,7 +199,7 @@ public class OutlineVpn: NSObject {
         let onDemandRule = NEOnDemandRuleConnect()
         onDemandRule.interfaceTypeMatch = .any
         manager.onDemandRules = [onDemandRule]
-    
+        
         let config = NETunnelProviderProtocol()
         config.providerBundleIdentifier = OutlineVpn.kVpnExtensionBundleId
         
@@ -214,7 +214,7 @@ public class OutlineVpn: NSObject {
         // TODO(fortuna): Decide whether to nest the transport config
         config.providerConfiguration = configJson
         manager.protocolConfiguration = config
-
+        
         try await manager.saveToPreferences()
         // Workaround for https://forums.developer.apple.com/thread/25928
         try await manager.loadFromPreferences()
@@ -393,7 +393,7 @@ public class OutlineVpn: NSObject {
     }
     
     // MARK: OLD CODE
-
+    
     
     // MARK: VPN extension IPC
     
