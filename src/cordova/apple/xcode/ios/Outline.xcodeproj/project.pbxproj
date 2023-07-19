@@ -1287,6 +1287,10 @@
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
+		52E783052A5880CF00355E64 /* PacketTunnelProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PacketTunnelProvider;
+		};
 		A255AB3A2A5CB38800AA726D /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
@@ -1300,10 +1304,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
-		};
-		52E783052A5880CF00355E64 /* PacketTunnelProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PacketTunnelProvider;
 		};
 		F63DC2172970AFFA00D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
