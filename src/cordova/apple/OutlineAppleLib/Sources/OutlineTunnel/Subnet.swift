@@ -17,7 +17,6 @@ import Foundation
 // Represents an IP subnetwork.
 // Note that this class and its non-private properties must be public in order to be visible to the ObjC
 // target of the OutlineAppleLib Swift Package.
-@objcMembers
 public class Subnet: NSObject {
   // Parses a CIDR subnet into a Subnet object. Returns nil on failure.
   public static func parse(_ cidrSubnet: String) -> Subnet? {
