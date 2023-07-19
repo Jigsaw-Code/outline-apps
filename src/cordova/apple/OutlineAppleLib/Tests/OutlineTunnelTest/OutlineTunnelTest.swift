@@ -25,7 +25,7 @@ final class OutlineTunnelTest: XCTestCase {
     }
     
     func testGetTunnelNetworkSettings() {
-        let settings = OutlineTunnel.getTunnelNetworkSettings(tunnelRemoteAddress: "1.2.3.4")
+        let settings = getTunnelNetworkSettings(tunnelRemoteAddress: "1.2.3.4")
         
         XCTAssertEqual("1.2.3.4", settings.tunnelRemoteAddress)
         
