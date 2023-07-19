@@ -25,13 +25,13 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                  "Tun2socks",
-                 "OutlineTunnel"
             ]
         ),
         .target(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                "OutlinePacketTunnel"
             ]
         ),
         .binaryTarget(

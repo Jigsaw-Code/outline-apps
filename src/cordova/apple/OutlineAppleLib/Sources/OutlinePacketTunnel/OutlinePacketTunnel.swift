@@ -15,10 +15,33 @@
 import os.log
 import NetworkExtension
 
-import OutlineTunnel
 import Tun2socks
 
 private let log = OSLog(subsystem: "org.getoutline.OutlinePacketTunnel", category: "vpn")
+
+public enum ConfigKeys: String {
+    case tunnelId
+    case transport
+}
+
+// This must be kept in sync with:
+//  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
+//  - www/model/errors.ts
+public enum ErrorCode: Int {
+    case noError = 0
+    case undefined = 1
+    case vpnPermissionNotGranted = 2
+    case invalidServerCredentials = 3
+    case udpRelayNotEnabled = 4
+    case serverUnreachable = 5
+    case vpnStartFailure = 6
+    case illegalServerConfiguration = 7
+    case shadowsocksStartFailure = 8
+    case configureSystemProxyFailure = 9
+    case noAdminPermissions = 10
+    case unsupportedRoutingTable = 11
+    case systemMisconfigured = 12
+}
 
 class OutlinePacketTunnel: NEPacketTunnelProvider {
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
@@ -29,18 +52,18 @@ class OutlinePacketTunnel: NEPacketTunnelProvider {
     }
     
     private func startTunnelAsync(options: [String : NSObject]?) async -> Error? {
-        os_log(.info, log: log, "Starting tunnel with options: %{private}@", String(describing: options))
+        os_log(.info, log: log, "Starting tunnel with options: %{public}@", String(describing: options))
         
         guard let protocolConfig = protocolConfiguration as? NETunnelProviderProtocol,
-              let transportConfig = protocolConfig.providerConfiguration else {
+              let providerConfig = protocolConfig.providerConfiguration,
+              let transportConfig = providerConfig[ConfigKeys.transport.rawValue] as? [String: Any] else {
             os_log(.error, log: log, "Could not get NETunnelProviderProtocol.providerConfiguration")
             return NEVPNError(.configurationInvalid)
         }
         // TODO: Make this private
         os_log(.info, log: log, "NETunnelProviderProtocol is %{public}@", protocolConfig.description)
         
-        
-        // TODO: Investigate Connectivity Result: errorCode: 5 (serverUnreachable), error: nil, tcp: false, udp: false
+
         let outlineDevice: OutlineDevice
         do {
             // TODO: decouple connectivity test and make it fail only if requested via the options.
@@ -193,15 +216,15 @@ private func newGoClient(_ transportConfig: [String: Any]) throws -> Shadowsocks
 func newOutlineDevice(transportConfig: [String: Any]) async throws -> OutlineDevice {
     let goClient = try newGoClient(transportConfig)
     
-    var errorInt = OutlineVpn.ErrorCode.noError.rawValue
+    var errorInt = ErrorCode.noError.rawValue
     var connectivityError: NSError?
     // TODO(fortuna): Should we run this on a separate thread?
     // TODO: move the check to the OutlineDevice.
     ShadowsocksCheckConnectivity(goClient, &errorInt, &connectivityError)
-    let errorCode = OutlineVpn.ErrorCode(rawValue: errorInt)
-    let tcpOk = (errorCode == OutlineVpn.ErrorCode.noError ||
-                 errorCode == OutlineVpn.ErrorCode.udpRelayNotEnabled)
-    let udpOk = errorCode == OutlineVpn.ErrorCode.noError
+    let errorCode = ErrorCode(rawValue: errorInt)
+    let tcpOk = (errorCode == ErrorCode.noError ||
+                 errorCode == ErrorCode.udpRelayNotEnabled)
+    let udpOk = errorCode == ErrorCode.noError
     os_log(.info, log: log, "Connectivity Result: errorCode: %{public}d, error: %{public}@, tcp: %{public}@, udp: %{public}@", errorInt, String(describing: connectivityError), String(describing: tcpOk), String(describing: udpOk))
     guard tcpOk else {
         throw NEVPNError(.connectionFailed)
