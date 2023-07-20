@@ -18,7 +18,7 @@ import ServiceManagement
 class AppKitBridge: NSObject, AppKitBridgeProtocol {
     private var statusItemController: OutlineStatusItemController?
     static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
-    static let kAppLauncherName = "launcher"
+    static let kAppLauncherName = "launcher3"
 
     override required init() {
         super.init()

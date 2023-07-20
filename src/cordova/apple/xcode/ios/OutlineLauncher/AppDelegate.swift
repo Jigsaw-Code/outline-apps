@@ -14,12 +14,10 @@
 
 import Cocoa
 import NetworkExtension
-import OutlineTunnel
-import UIKit	
+import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-  static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let appKitBundle = AppKitBundleLoader()
@@ -33,7 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return
             }
             NSLog("Outline connected at shutdown. Launching")
-    
+
             guard let launcherBundleId = Bundle.main.bundleIdentifier else {
                 NSLog("Failed to retrieve the bundle ID for the launcher app.")
                 return
@@ -42,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         return true
     }
-    
+
     // Returns whether the launcher should launch the main app.
     private func shouldLaunchMainApp(completion: @escaping(Bool) -> Void) {
         NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
