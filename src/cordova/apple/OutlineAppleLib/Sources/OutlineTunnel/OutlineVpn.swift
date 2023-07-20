@@ -18,6 +18,13 @@ import NetworkExtension
 import OutlinePacketTunnel
 import Tun2socks
 
+// TODO:
+// - fix moving from one to another. Log status notifications.
+// - mutex for getting manager. Actors?
+// - add relay
+// - cleanup
+// - handle state from the start
+
 // Manages the system's VPN tunnel through the VpnExtension process.
 public class OutlineVpn: NSObject {
     public static let shared = OutlineVpn()
@@ -26,7 +33,7 @@ public class OutlineVpn: NSObject {
     public typealias Callback = (OutlinePacketTunnel.ErrorCode) -> Void
     public typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
     
-    public private(set) var activeTunnelId: String?
+//    public private(set) var activeTunnelId: String?
     private var tunnelManager: NETunnelProviderManager?
     private var vpnStatusObserver: VpnStatusObserver?
     
@@ -77,26 +84,24 @@ public class OutlineVpn: NSObject {
         DDLogInfo("OutlineVpn.start called for tunnel \(tunnelId)")
         
         if self.isVpnConnected() {
-            if (tunnelId == self.activeTunnelId) {
-                // Already running
+            if (OutlineVpn.getTunnelId(manager: self.tunnelManager) == tunnelId) {
                 DDLogInfo("VPN already running. Returning.")
                 return ErrorCode.noError
             }
+            DDLogInfo("Stopping previous tunnel.")
+            self.stopTunnel(fromManager: self.tunnelManager)
         }
-        
+
         // Get and configure manager.
         let manager : NETunnelProviderManager
         do {
-            manager = try await OutlineVpn.getOutlineTunnelProviderManager()
+            manager = try await self.getTunnelManager()
             try await OutlineVpn.configureService(manager: manager, id: tunnelId, name: serviceName, config: configJson)
         } catch {
             DDLogError("Failed to set up VPN: \(error)")
             return ErrorCode.vpnPermissionNotGranted
         }
-        self.activeTunnelId = tunnelId
-        self.tunnelManager = manager
-        self.observeVpnStatusChange(of: manager.connection)
-        DDLogInfo("Active tunnel set to id \(self.activeTunnelId) and manager \(self.tunnelManager)")
+        DDLogInfo("Configured tunnel \(tunnelId) with manager \(String(describing: self.tunnelManager))")
         
         // Start tunnel.
         DDLogInfo("Enabling VPN")
@@ -106,7 +111,6 @@ public class OutlineVpn: NSObject {
             // TODO: pass an option to make connectivity failure fatal.
             try manager.connection.startVPNTunnel(options:[:])
             // TODO: wait for the start to be complete
-            // TODO: Save tunnel id in the config for auto restart
         } catch {
             DDLogError("Failed to start VPN tunnel: \(error)")
             return ErrorCode.vpnStartFailure
@@ -117,25 +121,36 @@ public class OutlineVpn: NSObject {
     
     
     // Tears down the VPN if the tunnel with id |tunnelId| is active.
-    public func stop(_ tunnelId: String) {
-        DDLogInfo("OutlineVpn.stop called for tunnel \(tunnelId). Active tunnel has id \(self.activeTunnelId) and manager \(self.tunnelManager)")
-        defer {
-            self.activeTunnelId = nil
-            self.tunnelManager = nil
-        }
-        guard tunnelId == self.activeTunnelId else {
+    public func stopTunnel(withId tunnelId: String) {
+        let activeTunnelId = OutlineVpn.getTunnelId(manager: self.tunnelManager)
+        DDLogInfo("OutlineVpn.stop called for tunnel \(tunnelId). Active tunnel has id \(activeTunnelId) and manager \(self.tunnelManager)")
+        guard tunnelId == activeTunnelId else {
             DDLogInfo("OutlineVpn.stop requested for tunnel \(tunnelId), but it's not active")
             return
         }
-        guard let manager = self.tunnelManager else {
-            DDLogInfo("OutlineVpn.stop requested for tunnel \(tunnelId), but there's no active manager")
+        self.stopTunnel(fromManager: self.tunnelManager)
+    }
+    
+    private func stopTunnel(fromManager manager: NETunnelProviderManager?) {
+        guard let manager = manager else {
+            DDLogInfo("OutlineVpn.stop requested, but there's no active manager")
             return
         }
+        let tunnelId = OutlineVpn.getTunnelId(manager: manager)
         manager.isOnDemandEnabled = false
         manager.saveToPreferences() { error in
-            DDLogError("Failed to save isOnDemandEnabled = false. You may need to manually disable it in Settings > VPN.")
+            if let error = error {
+                DDLogError("Failed to save isOnDemandEnabled = false: \(error). You may need to manually disable it in Settings > VPN.")
+            }
             manager.connection.stopVPNTunnel()
+            if tunnelId != nil {
+                self.vpnStatusObserver?(.disconnected, tunnelId!)
+            }
         }
+    }
+    
+    public func shutdown() {
+        self.stopTunnel(fromManager: self.tunnelManager)
     }
     
     // Calls |observer| when the VPN's status changes.
@@ -144,15 +159,18 @@ public class OutlineVpn: NSObject {
     }
     
     // Returns whether |tunnelId| is actively proxying through the VPN.
-    public func isActive(_ tunnelId: String?) -> Bool {
-        if self.activeTunnelId == nil {
-            return false
-        }
-        return self.activeTunnelId == tunnelId && isVpnConnected()
+    public func isActive(_ tunnelId: String) -> Bool {
+        let activeTunnelId = OutlineVpn.getTunnelId(manager: self.tunnelManager)
+        return tunnelId == activeTunnelId && isVpnConnected()
     }
     
     // MARK: Helpers
-    private static func getOutlineTunnelProviderManager() async throws -> NETunnelProviderManager {
+    private static func getTunnelId(manager: NETunnelProviderManager?) -> String? {
+        return (manager?.protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration?[OutlinePacketTunnel.ConfigKeys.tunnelId.rawValue] as? String
+    }
+    
+    // TODO: Protect this with mutext
+    private static func getFirstTunnelProviderManager() async throws -> NETunnelProviderManager {
         if let manager = try await NETunnelProviderManager.loadAllFromPreferences().first {
             DDLogInfo("OutlineVpn.getOutlineTunnelProviderManager found a manager")
             return manager
@@ -183,7 +201,6 @@ public class OutlineVpn: NSObject {
             config.excludeCellularServices = false
         }
         config.excludeLocalNetworks = true
-        // TODO(fortuna): Decide whether to nest the transport config
         config.providerConfiguration = [
             OutlinePacketTunnel.ConfigKeys.tunnelId.rawValue: tunnelId,
             OutlinePacketTunnel.ConfigKeys.transport.rawValue: configJson
@@ -195,6 +212,17 @@ public class OutlineVpn: NSObject {
         try await manager.loadFromPreferences()
     }
     
+    private func getTunnelManager() async throws -> NETunnelProviderManager {
+        if let manager = self.tunnelManager {
+            return manager
+        }
+        let manager = try await OutlineVpn.getFirstTunnelProviderManager()
+        self.tunnelManager = manager
+        self.observeVpnStatusChange(of: manager.connection)
+        return manager
+    }
+    
+    /*
     private func startVpn(_ tunnelId: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
         setupVpn() { error in
             if error != nil {
@@ -243,6 +271,7 @@ public class OutlineVpn: NSObject {
             self.onStartVpnExtensionMessage(response, completion: completion)
         }
     }
+     */
     
     // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
     // enables the existing configuration.
@@ -313,6 +342,7 @@ public class OutlineVpn: NSObject {
         }
     }
     
+    /*
     /// Retrieves the active tunnel ID from the VPN extension.
     private func retrieveActiveTunnelId() {
         // TODO(fortuna): Get the tunnel id from the running configuration.
@@ -331,6 +361,7 @@ public class OutlineVpn: NSObject {
             self.vpnStatusObserver?(.connected, self.activeTunnelId!)
         }
     }
+     */
     
     /// Returns whether the VPN is connected or (re)connecting by querying |tunnelManager|.
     private func isVpnConnected() -> Bool {
@@ -353,18 +384,11 @@ public class OutlineVpn: NSObject {
     // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
     // tunnel.
     @objc func vpnStatusChanged() {
-        if let vpnStatus = tunnelManager?.connection.status {
-            if let tunnelId = activeTunnelId {
-                if (vpnStatus == .disconnected) {
-                    activeTunnelId = nil
-                }
-                vpnStatusObserver?(vpnStatus, tunnelId)
-            } else if vpnStatus == .connected {
-                // The VPN was connected from the settings app while the UI was in the background.
-                // Retrieve the tunnel ID to update the UI.
-                retrieveActiveTunnelId()
-            }
+        guard let manager = self.tunnelManager,
+              let tunnelId = OutlineVpn.getTunnelId(manager: self.tunnelManager) else {
+            return
         }
+        self.vpnStatusObserver?(manager.connection.status, tunnelId)
     }
     
     // MARK: - OLD CODE
@@ -376,6 +400,7 @@ public class OutlineVpn: NSObject {
      Sends a message to the VPN extension if the VPN has been setup. Sets a
      callback to be invoked by the extension once the message has been processed.
      */
+    /*
     private func sendVpnExtensionMessage(_ message: [String: Any],
                                          callback: @escaping (([String: Any]?) -> Void)) {
         if tunnelManager == nil {
@@ -423,6 +448,6 @@ public class OutlineVpn: NSObject {
         }
         completion(OutlinePacketTunnel.ErrorCode(rawValue: rawErrorCode) ?? ErrorCode.noError)
     }
-    
+    */
 }
 
