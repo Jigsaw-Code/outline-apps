@@ -26,6 +26,15 @@ const ANDROID_STRINGS_FILENAME = 'strings.xml';
 const ANDROID_XML_STRING_ID_PROPERTY = '@name';
 const ANDROID_XML_TEXT_CONTENT = '#';
 
+function escapeXmlCharacters(str) {
+  return str
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
+    .replace(/</g, '\\<')
+    .replace(/>/g, '\\>;')
+    .replace(/&/g, '\\&');
+}
+
 export async function main() {
   const outputDir = path.join(getRootDir(), ANDROID_STRINGS_DIR);
   const requiredAndroidStrings = XML.create(
@@ -56,7 +65,7 @@ export async function main() {
 
       androidStrings.push({
         [ANDROID_XML_STRING_ID_PROPERTY]: requiredString[ANDROID_XML_STRING_ID_PROPERTY],
-        [ANDROID_XML_TEXT_CONTENT]: messageData[messageId] ?? fallbackContent,
+        [ANDROID_XML_TEXT_CONTENT]: escapeXmlCharacters(messageData[messageId] ?? fallbackContent),
       });
     }
 
@@ -65,7 +74,7 @@ export async function main() {
     await mkdir(localeDir, {recursive: true});
     await writeFile(
       outputPath,
-      XML.create({encoding: 'UTF-8'}, {resources: {string: androidStrings}}).end({prettyPrint: true})
+      XML.create({encoding: 'UTF-8'}, {resources: {string: androidStrings}}).end({prettyPrint: true, wellFormed: true})
     );
   }
   console.groupEnd();
