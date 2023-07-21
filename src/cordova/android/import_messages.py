@@ -13,7 +13,7 @@ Copyright 2018 The Outline Authors
  See the License for the specific language governing permissions and
  limitations under the License.
 
- Generates localized string files for native Android usage based on the front-end translations.
+ Generates localized string files for native Android and usage based on the front-end translations.
 
   Usage: python tools/l10n/import_native_android_strings.py $TRANSLATION_FILE $OUTPUT_FILE
   Example: python tools/l10n/import_native_android_strings.py www/messages/en.json
@@ -21,8 +21,14 @@ Copyright 2018 The Outline Authors
 """
 
 import json
+import os
 import sys
 
+DEFAULT_MESSAGES = {
+  "app_name": "Outline",
+  "launcher_name": "@string/app_name",
+  "activity_name": "@string/launcher_name",
+}
 # Keys to import.
 NATIVE_KEYS = [
   "connected_server_state",
@@ -31,44 +37,46 @@ NATIVE_KEYS = [
 ]
 XML_TEMPLATE = '''<?xml version='1.0' encoding='utf-8'?>
 <resources>
-\t<string name="app_name">Outline</string>
-\t<string name="launcher_name">@string/app_name</string>
-\t<string name="activity_name">@string/launcher_name</string>{0}
+{0}
 </resources>
 '''
-MESSAGE_TEMPLATE="\n\t<string name=\"{0}\">{1}</string>"
+MESSAGE_TEMPLATE="\t<string name=\"{0}\">{1}</string>"
+
 
 def read_input(filename):
   with open(filename) as f:
     return json.loads(f.read())
 
+
 def format_messages(messages_dict):
   """ Formats input messages in Polymer format to native Android format. This means replacing
       hyphens with underscores in keys and escaping apostrophes in values. """
-  formatted_messages = {}
-  for k,v in messages_dict.items():
-    formatted_messages[k.replace("-", "_")] = v.replace("'", "\\'")
-  return formatted_messages
+  for k, v in messages_dict.items():
+    yield k.replace("-", "_"), v.replace("'", "\\'")
+
 
 def write_output(output, filename):
+  directory = os.path.dirname(filename)
+  if not os.path.exists(directory):
+    os.mkdir(directory)
   with open(filename, "w+") as f:
     f.write(output)
+
 
 def main(argv):
   if len(argv) < 3:
     raise RuntimeError("Too few command-line arguments.")
   input_filename = argv[1]
   output_filename = argv[2]
-  polymer_messages = read_input(input_filename)
-  messages = format_messages(polymer_messages)
-  xml_entry_template = ''
-  xml_messages = ''
-  for k, v in messages.items():
-    if k not in NATIVE_KEYS:
-      continue
-    xml_messages += MESSAGE_TEMPLATE.format(k.encode("utf-8"), v.encode("utf-8"))
-
-  xml = XML_TEMPLATE.format(xml_messages)
+  polymer_messages = DEFAULT_MESSAGES.copy()
+  polymer_messages.update(read_input(input_filename))
+  keys_to_import = list(DEFAULT_MESSAGES.keys()) + NATIVE_KEYS
+  messages = [
+    MESSAGE_TEMPLATE.format(k, v)
+    for k, v in format_messages(polymer_messages)
+    if k in keys_to_import
+  ]
+  xml = XML_TEMPLATE.format('\n'.join(messages))
   write_output(xml, output_filename)
 
 

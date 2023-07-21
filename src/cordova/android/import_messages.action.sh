@@ -24,7 +24,7 @@ set -eu
 # Converts a Polymer locale to a native Android locale.
 function get_native_android_locale() {
   case "$1" in
-    "zh-CN" | "zh-TW" | "pt-BR" | "pt-PT") echo $1 | sed -e 's/-/-r/g';;
+    "zh-CN" | "zh-TW" | "pt-BR" | "pt-PT" | "en-GB") echo $1 | sed -e 's/-/-r/g';;
     "es-419") echo 'es';;
     "sr-Latn") echo 'b+sr+Latn';;
     *) echo "$1";;
@@ -32,13 +32,16 @@ function get_native_android_locale() {
 }
 
 TRANSLATIONS_DIR="$ROOT_DIR/www/messages"
-for TRANSLATION_FILE in "$TRANSLATIONS_DIR/*"; do
+OUTPUT_DIR="src/cordova/plugin/android/resources/strings"
+rm -rf "$OUTPUT_DIR/"*
+for TRANSLATION_FILE in "$TRANSLATIONS_DIR/"*; do
   LANG=`basename $TRANSLATION_FILE .json`
   echo "Importing ${LANG}"
   LANG=$(get_native_android_locale $LANG)
 
-  NATIVE_DIR="src/cordova/plugin/android/resources/strings/values-$LANG"
-  OUTPUT_FILE="$NATIVE_DIR/strings.xml"
-  python3 "$ROOT_DIR/src/cordova/android/import_messages.py" $TRANSLATION_FILE $OUTPUT_FILE
+  OUTPUT_FILE="$OUTPUT_DIR/values-$LANG/strings.xml"
+  python3 "$ROOT_DIR/src/cordova/android/import_messages.py" $TRANSLATION_FILE $OUTPUT_FILE 2>&1 || {
+    echo " ERROR: Failed to import ${LANG}"
+  }
 done
-
+mkdir -p "$OUTPUT_DIR/values/" && cp -r "$OUTPUT_DIR/values-en/" "$OUTPUT_DIR/values/"

@@ -3,7 +3,7 @@
 	<string name="app_name">Outline</string>
 	<string name="launcher_name">@string/app_name</string>
 	<string name="activity_name">@string/launcher_name</string>
-	<string name="reconnecting_server_state">S\'està tornant a connectar...</string>
 	<string name="connected_server_state">Connectat</string>
+	<string name="reconnecting_server_state">S\'està tornant a connectar...</string>
 	<string name="server_default_name_outline">Servidor d\'Outline</string>
 </resources>
