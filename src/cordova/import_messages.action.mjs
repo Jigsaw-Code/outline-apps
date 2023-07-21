@@ -53,7 +53,7 @@ function escapeXmlCharacters(str) {
   Outputs:
   => an object containing the specificed platform and buildMode.
 */
-export function getBuildParameters(cliArguments) {
+function getBuildParameters(cliArguments) {
   console.log(minimist(cliArguments));
   const {
     _: [platform = ''],
