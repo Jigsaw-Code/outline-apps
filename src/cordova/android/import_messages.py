@@ -29,60 +29,60 @@ import os
 import sys
 
 DEFAULT_MESSAGES = {
-  "app_name": "Outline",
-  "launcher_name": "@string/app_name",
-  "activity_name": "@string/launcher_name",
+    "app_name": "Outline",
+    "launcher_name": "@string/app_name",
+    "activity_name": "@string/launcher_name",
 }
 # Keys to import.
 NATIVE_KEYS = [
-  "connected_server_state",
-  "reconnecting_server_state",
-  "server_default_name_outline"
+    "connected_server_state",
+    "reconnecting_server_state",
+    "server_default_name_outline",
 ]
-XML_TEMPLATE = '''<?xml version='1.0' encoding='utf-8'?>
+XML_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <resources>
 {0}
 </resources>
-'''
-MESSAGE_TEMPLATE="\t<string name=\"{0}\">{1}</string>"
+"""
+MESSAGE_TEMPLATE = '\t<string name="{0}">{1}</string>'
 
 
 def read_input(filename):
-  with open(filename) as f:
-    return json.loads(f.read())
+    with open(filename) as f:
+        return json.loads(f.read())
 
 
 def format_messages(messages_dict):
-  """ Formats input messages in Polymer format to native Android format. This means replacing
-      hyphens with underscores in keys and escaping apostrophes in values. """
-  for k, v in messages_dict.items():
-    yield k.replace("-", "_"), v.replace("'", "\\'")
+    """Formats input messages in Polymer format to native Android format. This means replacing
+    hyphens with underscores in keys and escaping apostrophes in values."""
+    for k, v in messages_dict.items():
+        yield k.replace("-", "_"), v.replace("'", "\\'")
 
 
 def write_output(output, filename):
-  directory = os.path.dirname(filename)
-  if not os.path.exists(directory):
-    os.mkdir(directory)
-  with open(filename, "w+") as f:
-    f.write(output)
+    directory = os.path.dirname(filename)
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    with open(filename, "w+") as f:
+        f.write(output)
 
 
 def main(argv):
-  if len(argv) < 3:
-    raise RuntimeError("Too few command-line arguments.")
-  input_filename = argv[1]
-  output_filename = argv[2]
-  polymer_messages = DEFAULT_MESSAGES.copy()
-  polymer_messages.update(read_input(input_filename))
-  keys_to_import = list(DEFAULT_MESSAGES.keys()) + NATIVE_KEYS
-  messages = [
-    MESSAGE_TEMPLATE.format(k, v)
-    for k, v in format_messages(polymer_messages)
-    if k in keys_to_import
-  ]
-  xml = XML_TEMPLATE.format('\n'.join(messages))
-  write_output(xml, output_filename)
+    if len(argv) < 3:
+        raise RuntimeError("Too few command-line arguments.")
+    input_filename = argv[1]
+    output_filename = argv[2]
+    polymer_messages = DEFAULT_MESSAGES.copy()
+    polymer_messages.update(read_input(input_filename))
+    keys_to_import = list(DEFAULT_MESSAGES.keys()) + NATIVE_KEYS
+    messages = [
+        MESSAGE_TEMPLATE.format(k, v)
+        for k, v in format_messages(polymer_messages)
+        if k in keys_to_import
+    ]
+    xml = XML_TEMPLATE.format("\n".join(messages))
+    write_output(xml, output_filename)
 
 
 if __name__ == "__main__":
-  main(sys.argv)
+    main(sys.argv)
