@@ -13,11 +13,15 @@ Copyright 2018 The Outline Authors
  See the License for the specific language governing permissions and
  limitations under the License.
 
- Generates localized string files for native Android and usage based on the front-end translations.
+ Generates localized string files for native Android usage based on the front-end translations.
 
-  Usage: python tools/l10n/import_native_android_strings.py $TRANSLATION_FILE $OUTPUT_FILE
-  Example: python tools/l10n/import_native_android_strings.py www/messages/en.json
-            cordova-plugin-outline/android/resources/strings/values-en/strings.xml
+  Usage:
+    python src/cordova/android/import_messages.py $TRANSLATION_FILE $OUTPUT_FILE
+
+  Example:
+    python src/cordova/android/import_messages.py \
+      www/messages/en.json \
+      src/cordova/plugin/android/resources/strings/values-en/strings.xml
 """
 
 import json
