@@ -65,9 +65,7 @@ export async function main() {
     await mkdir(localeDir, {recursive: true});
     await writeFile(
       outputPath,
-      XML.create({
-        resources: {string: androidStrings},
-      }).end({prettyPrint: true})
+      XML.create({encoding: 'UTF-8'}, {resources: {string: androidStrings}}).end({prettyPrint: true})
     );
   }
   console.groupEnd();
