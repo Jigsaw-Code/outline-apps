@@ -129,7 +129,8 @@
     "webpack-cli": "^4.4.0",
     "webpack-dev-server": "^4.5.0",
     "webpack-merge": "^5.8.0",
-    "webpack-shell-plugin-next": "^2.1.1"
+    "webpack-shell-plugin-next": "^2.1.1",
+    "xmlbuilder2": "^3.1.1"
   },
   "optionalDependencies": {
     "ios-deploy": "^1.11.4"
