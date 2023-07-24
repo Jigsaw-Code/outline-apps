@@ -19,12 +19,11 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         DDLog.add(DDOSLogger.sharedInstance)
 
         let appKitBundle = AppKitBundleLoader()
-        self.shouldLaunchMainApp() { shouldLaunch in
+        shouldLaunchMainApp { shouldLaunch in
             defer {
                 DDLogInfo("Exiting launcher...")
                 appKitBundle.appKitBridge!.terminate()
@@ -45,8 +44,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // Returns whether the launcher should launch the main app.
-    private func shouldLaunchMainApp(completion: @escaping(Bool) -> Void) {
-        NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
+    private func shouldLaunchMainApp(completion: @escaping (Bool) -> Void) {
+        NETunnelProviderManager.loadAllFromPreferences { managers, error in
             guard error == nil, managers != nil else {
                 DDLogError("Failed to get tunnel manager: \(String(describing: error))")
                 return completion(false)
