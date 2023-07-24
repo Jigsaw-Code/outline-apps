@@ -15,7 +15,7 @@
 #if targetEnvironment(macCatalyst)
     import Foundation
 
-    @objcMembers class AppKitBundleLoader: NSObject {
+    class AppKitBundleLoader: NSObject {
         private enum BridgeBundle {
             static let fileName = "AppKitBridge.bundle"
         }

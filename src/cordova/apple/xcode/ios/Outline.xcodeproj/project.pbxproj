@@ -27,6 +27,7 @@
 		A255AB3B2A5CB38800AA726D /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A255AB3A2A5CB38800AA726D /* OutlineAppleLib */; };
 		A256E69C2A05A6FC00187F08 /* NSNotification+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */; };
 		A256E69D2A05A6FC00187F08 /* NSNotification+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */; };
+		A2629D8A2A6ED6B800F2650E /* OutlineCatalystApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2629D892A6ED6B800F2650E /* OutlineCatalystApp.swift */; };
 		A26D26302A1C41B1009838E0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26D262F2A1C41B1009838E0 /* AppDelegate.swift */; platformFilter = maccatalyst; };
 		A26D263D2A1C41FE009838E0 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263C2A1C41FE009838E0 /* CocoaLumberjack */; };
 		A26D263F2A1C41FE009838E0 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */; };
@@ -185,6 +186,7 @@
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		A24A752B2A00DC12008DF945 /* AppKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitBridge.swift; sourceTree = "<group>"; };
 		A256E69B2A05A6FC00187F08 /* NSNotification+Outline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNotification+Outline.swift"; sourceTree = "<group>"; };
+		A2629D892A6ED6B800F2650E /* OutlineCatalystApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineCatalystApp.swift; sourceTree = "<group>"; };
 		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A26D262F2A1C41B1009838E0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */,
 				A2727B662A6ECCFF00804594 /* AppDelegate+Outline.h */,
 				A2727B672A6ECD3B00804594 /* AppDelegate+Outline.m */,
+				A2629D892A6ED6B800F2650E /* OutlineCatalystApp.swift */,
 			);
 			name = Classes;
 			path = Outline/Classes;
@@ -642,6 +645,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				A2629D8A2A6ED6B800F2650E /* OutlineCatalystApp.swift in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
