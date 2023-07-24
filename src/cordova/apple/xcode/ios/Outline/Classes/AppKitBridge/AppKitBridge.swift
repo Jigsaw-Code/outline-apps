@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import CocoaLumberjackSwift
 import ServiceManagement
 
 class AppKitBridge: NSObject, AppKitBridgeProtocol {
@@ -30,7 +31,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
 
     @objc func setConnectionStatus(_ isConnected: Bool) {
         if statusItemController == nil {
-            NSLog("[AppKitBridge] No status item controller found. Creating one now.")
+            DDLogInfo("[AppKitBridge] No status item controller found. Creating one now.")
             statusItemController = OutlineStatusItemController()
         }
         statusItemController!.setStatus(isConnected: isConnected)
@@ -39,25 +40,27 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
     // Enables or disables the embedded app launcher as a login item.
     @objc func setAppLauncherEnabled(_ isEnabled: Bool) {
         guard let launcherBundleId = getLauncherBundleId() else {
-            return NSLog("[AppKitBridge] Unable to set launcher for missing bundle ID.")
+            return DDLogError("[AppKitBridge] Unable to set launcher for missing bundle ID.")
         }
 
         if !SMLoginItemSetEnabled(launcherBundleId as! CFString, isEnabled) {
-            return NSLog("[AppKitBridge] Failed to set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
+            return DDLogError("[AppKitBridge] Failed to set enable=\(isEnabled) for launcher \(launcherBundleId).")
         }
 
-        return NSLog("[AppKitBridge] Successfully set enable=%@ for launcher %@.", String(isEnabled), launcherBundleId)
+        return DDLogInfo("[AppKitBridge] Successfully set enable=\(isEnabled) for launcher \(launcherBundleId).")
     }
 
     // Loads the main application from a given launcher bundle.
     @objc func loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
-        let mainAppBundleId = getMainBundleId(launcherBundleId)
+        guard let mainAppBundleId = getMainBundleId(launcherBundleId) else {
+            return DDLogError("[AppKitBridge] Unable to get main application bundle ID from launcher \(launcherBundleId).")
+        }
 
-        NSLog("[AppKitBridge] Loading main app %@ from launcher %@.", mainAppBundleId!, launcherBundleId)
+        DDLogInfo("[AppKitBridge] Loading main app \(mainAppBundleId) from launcher \(launcherBundleId).")
 
         let descriptor = NSAppleEventDescriptor(string: launcherBundleId)
-        NSWorkspace.shared.launchApplication(withBundleIdentifier: mainAppBundleId!,
+        NSWorkspace.shared.launchApplication(withBundleIdentifier: mainAppBundleId,
                                              options: [.withoutActivation, .andHide],
                                              additionalEventParamDescriptor: descriptor,
                                              launchIdentifier: nil)
@@ -66,7 +69,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
     // Returns the embedded launcher application's bundle ID.
     private func getLauncherBundleId() -> String! {
         guard let bundleId = Bundle.main.bundleIdentifier else {
-            NSLog("[AppKitBridge] Failed to retrieve the application's bundle ID.")
+            DDLogError("[AppKitBridge] Failed to retrieve the application's bundle ID.")
             return nil
         }
         return String(format: "%@.%@", bundleId, AppKitBridge.kAppLauncherName)

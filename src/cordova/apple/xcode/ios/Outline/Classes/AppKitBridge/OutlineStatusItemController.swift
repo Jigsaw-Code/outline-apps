@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import CocoaLumberjackSwift
 
 var OutlineStatusItem = NSStatusItem()
 
@@ -36,7 +37,7 @@ class OutlineStatusItemController: NSObject {
     override init() {
         super.init()
 
-        NSLog("[OutlineStatusItemController] Creating status menu")
+        DDLogInfo("[OutlineStatusItemController] Creating status menu")
         OutlineStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         setStatus(isConnected: false)
 
@@ -71,7 +72,7 @@ class OutlineStatusItemController: NSObject {
     }
 
     @objc func openApplication(_: AnyObject?) {
-        NSLog("[OutlineStatusItemController] Opening application")
+        DDLogInfo("[OutlineStatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
         guard let uiWindow = getUiWindow() else {
             return
@@ -80,7 +81,7 @@ class OutlineStatusItemController: NSObject {
     }
 
     @objc func closeApplication(_: AnyObject?) {
-        NSLog("[OutlineStatusItemController] Closing application")
+        DDLogInfo("[OutlineStatusItemController] Closing application")
         NotificationCenter.default.post(name: .kAppQuit, object: nil)
         NSApplication.shared.terminate(self)
     }

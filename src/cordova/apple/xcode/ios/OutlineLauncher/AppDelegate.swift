@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Cocoa
+import CocoaLumberjack
+import CocoaLumberjackSwift
 import NetworkExtension
 import UIKit
 
@@ -20,20 +21,22 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        DDLog.add(DDOSLogger.sharedInstance)
+
         let appKitBundle = AppKitBundleLoader()
         self.shouldLaunchMainApp() { shouldLaunch in
             defer {
-                NSLog("Exiting launcher...")
+                DDLogInfo("Exiting launcher...")
                 appKitBundle.appKitBridge!.terminate()
             }
             if !shouldLaunch {
-                NSLog("Not launching, Outline not connected at shutdown")
+                DDLogInfo("Not launching, Outline not connected at shutdown")
                 return
             }
-            NSLog("Outline connected at shutdown. Launching")
+            DDLogInfo("Outline connected at shutdown. Launching")
 
             guard let launcherBundleId = Bundle.main.bundleIdentifier else {
-                NSLog("Failed to retrieve the bundle ID for the launcher app.")
+                DDLogError("Failed to retrieve the bundle ID for the launcher app.")
                 return
             }
             appKitBundle.appKitBridge!.loadMainApp(launcherBundleId)
@@ -45,14 +48,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func shouldLaunchMainApp(completion: @escaping(Bool) -> Void) {
         NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
             guard error == nil, managers != nil else {
-                NSLog("Failed to get tunnel manager: \(String(describing: error))")
+                DDLogError("Failed to get tunnel manager: \(String(describing: error))")
                 return completion(false)
             }
             guard let manager: NETunnelProviderManager = managers!.first, managers!.count > 0 else {
-                NSLog("No tunnel managers found.")
+                DDLogError("No tunnel managers found.")
                 return completion(false)
             }
-            NSLog("Tunnel manager found.")
+            DDLogInfo("Tunnel manager found.")
             return completion(manager.isOnDemandEnabled)
         }
     }

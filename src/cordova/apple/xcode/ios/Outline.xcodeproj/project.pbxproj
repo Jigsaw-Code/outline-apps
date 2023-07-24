@@ -31,6 +31,8 @@
 		A26D26302A1C41B1009838E0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26D262F2A1C41B1009838E0 /* AppDelegate.swift */; platformFilter = maccatalyst; };
 		A26D263D2A1C41FE009838E0 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263C2A1C41FE009838E0 /* CocoaLumberjack */; };
 		A26D263F2A1C41FE009838E0 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */; };
+		A26EADA42A6EE90C00EE82F8 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A26EADA32A6EE90C00EE82F8 /* CocoaLumberjack */; };
+		A26EADA62A6EE90C00EE82F8 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A26EADA52A6EE90C00EE82F8 /* CocoaLumberjackSwift */; };
 		A2727B682A6ECD3B00804594 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A2727B672A6ECD3B00804594 /* AppDelegate+Outline.m */; };
 		A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 		A27F43AB29F6EC43002C3678 /* www in CopyFiles */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
@@ -246,6 +248,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A26EADA62A6EE90C00EE82F8 /* CocoaLumberjackSwift in Frameworks */,
+				A26EADA42A6EE90C00EE82F8 /* CocoaLumberjack in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,6 +511,8 @@
 			);
 			name = AppKitBridge;
 			packageProductDependencies = (
+				A26EADA32A6EE90C00EE82F8 /* CocoaLumberjack */,
+				A26EADA52A6EE90C00EE82F8 /* CocoaLumberjackSwift */,
 			);
 			productName = AppKitBridge;
 			productReference = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */;
@@ -1313,6 +1319,16 @@
 			productName = CocoaLumberjack;
 		};
 		A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		A26EADA32A6EE90C00EE82F8 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		A26EADA52A6EE90C00EE82F8 /* CocoaLumberjackSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;

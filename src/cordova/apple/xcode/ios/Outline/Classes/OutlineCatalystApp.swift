@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
+    import CocoaLumberjack
+    import CocoaLumberjackSwift
     import Foundation
     import ServiceManagement
 
@@ -20,8 +22,8 @@
         let bundle: AppKitBundleLoader
 
         override required init() {
+            DDLog.add(DDOSLogger.sharedInstance)
             bundle = AppKitBundleLoader()
-
             super.init()
 
             configureWindow()

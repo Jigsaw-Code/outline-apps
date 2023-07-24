@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
+    import CocoaLumberjackSwift
     import Foundation
 
     class AppKitBundleLoader: NSObject {
@@ -34,7 +35,7 @@
             guard let bundle = Bundle(url: bundleURL) else {
                 preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
             }
-            NSLog("[AppKitBundleLoader] Loaded Successfully")
+            DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
             let className = "AppKitBridge.AppKitBridge"
             guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
                 preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
