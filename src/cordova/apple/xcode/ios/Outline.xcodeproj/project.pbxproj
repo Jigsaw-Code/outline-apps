@@ -30,6 +30,7 @@
 		A26D26302A1C41B1009838E0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26D262F2A1C41B1009838E0 /* AppDelegate.swift */; platformFilter = maccatalyst; };
 		A26D263D2A1C41FE009838E0 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263C2A1C41FE009838E0 /* CocoaLumberjack */; };
 		A26D263F2A1C41FE009838E0 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A26D263E2A1C41FE009838E0 /* CocoaLumberjackSwift */; };
+		A2727B682A6ECD3B00804594 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A2727B672A6ECD3B00804594 /* AppDelegate+Outline.m */; };
 		A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 		A27F43AB29F6EC43002C3678 /* www in CopyFiles */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
 		A28B19A12A05C08200528BB3 /* OutlineStatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28B19A02A05C08200528BB3 /* OutlineStatusItemController.swift */; };
@@ -187,6 +188,8 @@
 		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A26D262F2A1C41B1009838E0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
+		A2727B662A6ECCFF00804594 /* AppDelegate+Outline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+Outline.h"; sourceTree = "<group>"; };
+		A2727B672A6ECD3B00804594 /* AppDelegate+Outline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+Outline.m"; sourceTree = "<group>"; };
 		A28B19A02A05C08200528BB3 /* OutlineStatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineStatusItemController.swift; sourceTree = "<group>"; };
 		A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppKitBridge.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitBundleLoader.swift; sourceTree = "<group>"; };
@@ -257,6 +260,8 @@
 				1D3623240D0F684500981E51 /* AppDelegate.h */,
 				1D3623250D0F684500981E51 /* AppDelegate.m */,
 				A2DBB2FC2A00D36E0017E696 /* AppKitBundleLoader.swift */,
+				A2727B662A6ECCFF00804594 /* AppDelegate+Outline.h */,
+				A2727B672A6ECD3B00804594 /* AppDelegate+Outline.m */,
 			);
 			name = Classes;
 			path = Outline/Classes;
@@ -644,6 +649,7 @@
 				FC8C31091FAA8032004262BE /* OutlineSentryLogger.swift in Sources */,
 				A2DBB2FD2A00D36E0017E696 /* AppKitBundleLoader.swift in Sources */,
 				A2DBB3002A00D3900017E696 /* AppKitBridgeProtocol.swift in Sources */,
+				A2727B682A6ECD3B00804594 /* AppDelegate+Outline.m in Sources */,
 				A256E69C2A05A6FC00187F08 /* NSNotification+Outline.swift in Sources */,
 				1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */,
 			);
@@ -1308,10 +1314,6 @@
 			productName = CocoaLumberjackSwift;
 		};
 		F63DC2172970AFFA00D92E0A /* OutlineAppleLib */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineAppleLib;
-		};
-		F63DC2192970B00100D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
 		};
