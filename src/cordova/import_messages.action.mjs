@@ -67,6 +67,25 @@ function getActionParameters(cliArguments) {
   return {platform};
 }
 
+/**
+ * Retrieves the source messages in all available translations.
+ * @returns {Map<str, Object<str, str>} A map of locale->messages.
+ */
+async function loadMessages() {
+  const messages = new Map();
+
+  const messagesDir = path.join(getRootDir(), SOURCE_MESSAGES_DIR);
+  for (const messagesFilename of await readdir(messagesDir)) {
+    const lang = path.basename(messagesFilename, path.extname(messagesFilename));
+    const messagesFilepath = path.join(messagesDir, messagesFilename);
+    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
+    messages.set(lang, messageData);
+  }
+
+  return messages;
+}
+
+/** Imports and writes messages for Android. */
 async function importAndroidMessages() {
   const outputDir = path.join(getRootDir(), ANDROID_STRINGS_DIR);
   const requiredStrings = XML.create(
@@ -77,16 +96,9 @@ async function importAndroidMessages() {
   // cleared.
   await rmfr(path.join(outputDir, 'values-*'), {glob: true});
 
-  const messagesDir = path.join(getRootDir(), SOURCE_MESSAGES_DIR);
-  for (const messagesFilename of await readdir(messagesDir)) {
-    const polymerLang = path.basename(messagesFilename, path.extname(messagesFilename));
-    console.log(chalk.gray(`Importing \`${polymerLang}\``));
-
-    const androidLocale = getNativeAndroidLocale(polymerLang);
-    const localeDir = path.join(outputDir, `values-${androidLocale}`);
-
-    const messagesFilepath = path.join(messagesDir, messagesFilename);
-    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
+  for (const [lang, messageData] of await loadMessages()) {
+    console.log(chalk.gray(`Importing \`${lang}\``));
+    const androidLocale = getNativeAndroidLocale(lang);
 
     const outputStrings = [];
     for (const requiredString of requiredStrings) {
@@ -99,6 +111,7 @@ async function importAndroidMessages() {
       });
     }
 
+    const localeDir = path.join(outputDir, `values-${androidLocale}`);
     const outputPath = path.join(localeDir, ANDROID_STRINGS_FILENAME);
     console.log(chalk.gray(`Writing ${outputStrings.length} messages to \`${outputPath}\``));
     await mkdir(localeDir, {recursive: true});
@@ -109,6 +122,7 @@ async function importAndroidMessages() {
   }
 }
 
+/** Imports and writes messages for iOS. */
 async function importIosMessages() {
   const outputDir = path.join(getRootDir(), IOS_STRINGS_DIR);
   const requiredStrings = I18N.readFileSync(path.join(outputDir, 'en.lproj', IOS_STRINGS_FILENAME), {
@@ -117,18 +131,10 @@ async function importIosMessages() {
 
   // Clear all existing locales first, so languages we stop supporting get
   // cleared.
-  await rmfr(path.join(outputDir, '*.lproj'));
+  await rmfr(path.join(outputDir, '*.lproj'), {glob: true});
 
-  const messagesDir = path.join(getRootDir(), SOURCE_MESSAGES_DIR);
-  for (const messagesFilename of await readdir(messagesDir)) {
-    const polymerLang = path.basename(messagesFilename, path.extname(messagesFilename));
-    console.log(chalk.gray(`Importing \`${polymerLang}\``));
-
-    const iosLocale = polymerLang;
-    const localeDir = path.join(outputDir, `${iosLocale}.lproj`);
-
-    const messagesFilepath = path.join(messagesDir, messagesFilename);
-    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
+  for (const [lang, messageData] of await loadMessages()) {
+    console.log(chalk.gray(`Importing \`${lang}\``));
 
     const outputStrings = {};
     for (const [key, value] of Object.entries(requiredStrings)) {
@@ -137,6 +143,8 @@ async function importIosMessages() {
 
       outputStrings[key] = messageData[messageId] ?? fallbackContent;
     }
+
+    const localeDir = path.join(outputDir, `${lang}.lproj`);
     const outputPath = path.join(localeDir, IOS_STRINGS_FILENAME);
     console.log(chalk.gray(`Writing ${Object.values(outputStrings).length} messages to \`${outputPath}\``));
     await mkdir(localeDir, {recursive: true});
