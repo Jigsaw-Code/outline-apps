@@ -38,21 +38,21 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
 
     // Enables or disables the embedded app launcher as a login item.
     @objc func setAppLauncherEnabled(_ isEnabled: Bool) {
-        guard let launcherBundleId = self.getLauncherBundleId() else {
-          return NSLog("[AppKitBridge] Unable to set launcher for missing bundle ID.")
+        guard let launcherBundleId = getLauncherBundleId() else {
+            return NSLog("[AppKitBridge] Unable to set launcher for missing bundle ID.")
         }
 
-      if !SMLoginItemSetEnabled((launcherBundleId as! CFString), isEnabled) {
-        return NSLog("[AppKitBridge] Failed to set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
-      }
+        if !SMLoginItemSetEnabled(launcherBundleId as! CFString, isEnabled) {
+            return NSLog("[AppKitBridge] Failed to set enable=%@ for launcher %@", String(isEnabled), launcherBundleId)
+        }
 
-      return NSLog("[AppKitBridge] Successfully set enable=%@ for launcher %@.", String(isEnabled), launcherBundleId)
+        return NSLog("[AppKitBridge] Successfully set enable=%@ for launcher %@.", String(isEnabled), launcherBundleId)
     }
 
     // Loads the main application from a given launcher bundle.
     @objc func loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
-        let mainAppBundleId = self.getMainBundleId(launcherBundleId)
+        let mainAppBundleId = getMainBundleId(launcherBundleId)
 
         NSLog("[AppKitBridge] Loading main app %@ from launcher %@.", mainAppBundleId!, launcherBundleId)
 
@@ -69,7 +69,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
             NSLog("[AppKitBridge] Failed to retrieve the application's bundle ID.")
             return nil
         }
-        return String(format:"%@.%@", bundleId, AppKitBridge.kAppLauncherName)
+        return String(format: "%@.%@", bundleId, AppKitBridge.kAppLauncherName)
     }
 
     // Returns the main application's bundle ID from the embedded launcher bundle ID.
