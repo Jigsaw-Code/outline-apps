@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="app_name">Outline</string>
+  <string name="launcher_name">@string/app_name</string>
+  <string name="activity_name">@string/launcher_name</string>
+  <string name="connected_server_state">কানেক্ট করা আছে</string>
+  <string name="reconnecting_server_state">আবার কানেক্ট করা হচ্ছে...</string>
+  <string name="server_default_name_outline">Outline সার্ভার</string>
+</resources>

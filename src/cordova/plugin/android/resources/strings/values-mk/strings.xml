@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="app_name">Outline</string>
+  <string name="launcher_name">@string/app_name</string>
+  <string name="activity_name">@string/launcher_name</string>
+  <string name="connected_server_state">Поврзано</string>
+  <string name="reconnecting_server_state">Повторно се поврзува…</string>
+  <string name="server_default_name_outline">Сервер на Outline</string>
+</resources>

@@ -1,4 +1,4 @@
-// Copyright 2021 The Outline Authors
+// Copyright 2023 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {NativeNetworking} from './net';
-
-export class FakeNativeNetworking implements NativeNetworking {
-  async isServerReachable(hostname: string, _port: number) {
-    return !hostname.includes('unreachable');
+export const getNativeLocale = polymerLang => {
+  switch (polymerLang) {
+    case 'es-419':
+      return 'es';
+    case 'sr-Latn':
+      return 'b+sr+Latn';
+    default:
+      return polymerLang.replace('-', '-r');
   }
-}
+};

@@ -27,10 +27,8 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {SentryErrorReporter} from './error_reporter';
-import {FakeNativeNetworking} from './fake_net';
 import {main} from './main';
 import * as errors from '../model/errors';
-import {NativeNetworking} from './net';
 import {OutlinePlatform} from './platform';
 import {Tunnel, TunnelStatus} from './tunnel';
 import {AbstractUpdater} from './updater';
@@ -88,12 +86,6 @@ class CordovaErrorReporter extends SentryErrorReporter {
   }
 }
 
-class CordovaNativeNetworking implements NativeNetworking {
-  async isServerReachable(hostname: string, port: number) {
-    return await pluginExecWithErrorCode<boolean>('isServerReachable', hostname, port);
-  }
-}
-
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 
@@ -129,10 +121,6 @@ class CordovaPlatform implements OutlinePlatform {
 
   hasDeviceSupport() {
     return !CordovaPlatform.isBrowser();
-  }
-
-  getNativeNetworking() {
-    return this.hasDeviceSupport() ? new CordovaNativeNetworking() : new FakeNativeNetworking();
   }
 
   getTunnelFactory() {

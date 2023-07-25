@@ -122,19 +122,6 @@ class OutlinePlugin: CDVPlugin {
     sendSuccess(OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
   }
 
-  func isServerReachable(_ command: CDVInvokedUrlCommand) {
-    DDLogInfo("isServerReachable")
-    guard let host = command.argument(at: 0) as? String else {
-      return sendError("Missing host address" , callbackId: command.callbackId)
-    }
-    guard let port = command.argument(at: 1) as? UInt16 else {
-      return sendError("Missing host port", callbackId: command.callbackId)
-    }
-    OutlineVpn.shared.isServerReachable(host: host, port: port) { errorCode in
-      self.sendSuccess(errorCode == OutlineVpn.ErrorCode.noError, callbackId: command.callbackId)
-    }
-  }
-
   func onStatusChange(_ command: CDVInvokedUrlCommand) {
     guard let tunnelId = command.argument(at: 0) as? String else {
       return sendError("Missing tunnel ID", callbackId: command.callbackId)

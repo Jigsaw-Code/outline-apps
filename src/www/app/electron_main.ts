@@ -24,10 +24,8 @@ import {ErrorCode, OutlinePluginError} from '../model/errors';
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
 import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
-import {FakeNativeNetworking} from './fake_net';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
-import {NativeNetworking} from './net';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -102,17 +100,8 @@ class ElectronErrorReporter implements OutlineErrorReporter {
   }
 }
 
-class ElectronNativeNetworking implements NativeNetworking {
-  isServerReachable(hostname: string, port: number): Promise<boolean> {
-    return window.electron.methodChannel.invoke('is-server-reachable', {hostname, port});
-  }
-}
-
 main({
   hasDeviceSupport: () => isOsSupported,
-  getNativeNetworking: () => {
-    return isOsSupported ? new ElectronNativeNetworking() : new FakeNativeNetworking();
-  },
   getTunnelFactory: () => {
     return (id: string) => {
       return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
