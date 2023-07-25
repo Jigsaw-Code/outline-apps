@@ -386,7 +386,7 @@
   },
   "server_create_your_own_zero_state": {
     "description": "When the user has not yet added a server to the application, the main page shows this message at the bottom.",
-    "message": "Don’t have a server?$NEW_LINE$Create your own at $START_OF_LINK$our website$END_OF_LINK$.",
+    "message": "Don’t have a server?$NEW_LINE$Create your own with the $START_OF_LINK$Outline Manager$END_OF_LINK$.",
     "placeholders": {
       "END_OF_LINK": {
         "content": "{closeLink}"
