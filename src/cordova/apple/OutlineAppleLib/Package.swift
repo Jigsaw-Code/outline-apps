@@ -25,7 +25,6 @@ let package = Package(
                  "Tun2socks",
                  "OutlineTunnel"
                 ],
-            path: "./Sources/PacketTunnelProviderSources/",
             cSettings: [
                 .headerSearchPath("Internal"),
             ]
@@ -34,8 +33,7 @@ let package = Package(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-            ],
-            path: "Sources/OutlineTunnelSources"
+            ]
         ),
         .binaryTarget(
             name: "Tun2socks",
