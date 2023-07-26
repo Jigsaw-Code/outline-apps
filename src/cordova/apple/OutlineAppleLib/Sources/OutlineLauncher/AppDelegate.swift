@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if targetEnvironment(macCatalyst)
 import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
@@ -60,3 +61,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 }
+#endif
