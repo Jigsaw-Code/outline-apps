@@ -22,7 +22,7 @@ import ServiceManagement
 @objcMembers
 public class OutlineCatalystApp : NSObject {
     
-    static func initApp() {
+    public static func initApp() {
         DDLog.add(DDOSLogger.sharedInstance)
         
         let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
