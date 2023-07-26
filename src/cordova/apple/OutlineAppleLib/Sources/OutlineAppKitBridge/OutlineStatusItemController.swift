@@ -28,6 +28,7 @@ class OutlineStatusItemController: NSObject {
         static let statusDisconnected = NSImage(named: NSImage.Name("StatusBarButtonImage"))!
     }
 
+    // TODO: Internationalize these user-facing strings.
     private enum MenuTitle {
         static let open = "Open"
         static let quit = "Quit"
