@@ -12,24 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if canImport(AppKit)
 import AppKit
 import CocoaLumberjackSwift
 import ServiceManagement
+import OutlineShared
 
-class AppKitBridge: NSObject, AppKitBridgeProtocol {
+public class AppKitBridge: NSObject, AppKitBridgeProtocol {
     private var statusItemController: OutlineStatusItemController?
     static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
     static let kAppLauncherName = "launcher3"
 
-    override required init() {
+    override public required init() {
         super.init()
     }
 
-    @objc func terminate() {
+    @objc public func terminate() {
         NSApp.terminate(self)
     }
 
-    @objc func setConnectionStatus(_ isConnected: Bool) {
+    @objc public func setConnectionStatus(_ isConnected: Bool) {
         if statusItemController == nil {
             DDLogInfo("[AppKitBridge] No status item controller found. Creating one now.")
             statusItemController = OutlineStatusItemController()
@@ -38,7 +40,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
     }
 
     // Enables or disables the embedded app launcher as a login item.
-    @objc func setAppLauncherEnabled(_ isEnabled: Bool) {
+    @objc public func setAppLauncherEnabled(_ isEnabled: Bool) {
         guard let launcherBundleId = getLauncherBundleId() else {
             return DDLogError("[AppKitBridge] Unable to set launcher for missing bundle ID.")
         }
@@ -51,7 +53,7 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
     }
 
     // Loads the main application from a given launcher bundle.
-    @objc func loadMainApp(_ launcherBundleId: String) {
+    @objc public func loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
         guard let mainAppBundleId = getMainBundleId(launcherBundleId) else {
             return DDLogError("[AppKitBridge] Unable to get main application bundle ID from launcher \(launcherBundleId).")
@@ -80,3 +82,4 @@ class AppKitBridge: NSObject, AppKitBridgeProtocol {
         return (launcherBundleId as NSString).deletingPathExtension
     }
 }
+#endif

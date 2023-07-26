@@ -16,6 +16,7 @@ import CocoaLumberjack
 import CocoaLumberjackSwift
 import NetworkExtension
 import UIKit
+import OutlineCatalystApp
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

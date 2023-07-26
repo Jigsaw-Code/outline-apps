@@ -15,15 +15,17 @@
 #if targetEnvironment(macCatalyst)
     import CocoaLumberjackSwift
     import Foundation
+    import OutlineShared
 
-    class AppKitBundleLoader: NSObject {
+    public class AppKitBundleLoader: NSObject {
         private enum BridgeBundle {
             static let fileName = "AppKitBridge.bundle"
+            static let className = "OutlineAppKitBridge.AppKitBridge"
         }
 
-        var appKitBridge: AppKitBridgeProtocol?
+        public var appKitBridge: AppKitBridgeProtocol?
 
-        override required init() {
+        override public required init() {
             super.init()
             loadBundle()
         }
@@ -36,7 +38,7 @@
                 preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
             }
             DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
-            let className = "AppKitBridge.AppKitBridge"
+            let className = BridgeBundle.className
             guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
                 preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
             }

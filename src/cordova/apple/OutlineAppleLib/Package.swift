@@ -10,13 +10,48 @@ let package = Package(
             name: "OutlineAppleLib",
             targets: ["Tun2socks", "OutlineTunnel"]),
         .library(
+            name: "OutlineCatalystApp",
+            targets: ["OutlineCatalystApp"]),
+        .library(
+            name: "OutlineLauncher",
+            targets: ["OutlineLauncher"]),
+        .library(
+            name: "OutlineAppKitBridge",
+            targets: ["OutlineAppKitBridge"]),
+        .library(
             name: "PacketTunnelProvider",
             targets: ["PacketTunnelProvider"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.7.4"),
+        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "7.31.3"),
     ],
     targets: [
+        .target(name: "OutlineShared"),
+        .target(
+            name: "OutlineLauncher",
+            dependencies:
+                ["CocoaLumberjack",
+                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                 "Tun2socks",
+                 "OutlineTunnel",
+                 "OutlineCatalystApp"
+                ]
+        ),
+        .target(
+            name: "OutlineCatalystApp",
+            dependencies: [
+                "OutlineShared",
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+            ]
+        ),
+        .target(
+            name: "OutlineAppKitBridge",
+            dependencies: [
+                "OutlineShared",
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+            ]
+        ),
         .target(
             name: "PacketTunnelProvider",
             dependencies:

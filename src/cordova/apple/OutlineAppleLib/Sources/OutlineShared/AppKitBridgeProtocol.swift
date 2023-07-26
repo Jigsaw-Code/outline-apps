@@ -14,14 +14,15 @@
 
 import Foundation
 
-extension Notification.Name {
-    static let kAppQuit = Notification.Name("appQuit")
-    static let kVpnConnected = Notification.Name("vpnConnected")
-    static let kVpnDisconnected = Notification.Name("vpnDisconnected")
-}
+@objc(AppKitBridgeProtocol)
+public protocol AppKitBridgeProtocol: NSObjectProtocol {
+    init()
 
-@objc public extension NSNotification {
-    static let kAppQuit = Notification.Name.kAppQuit
-    static let kVpnConnected = Notification.Name.kVpnConnected
-    static let kVpnDisconnected = Notification.Name.kVpnDisconnected
+    func terminate()
+
+    func setConnectionStatus(_ isConnected: Bool)
+
+    func setAppLauncherEnabled(_ isEnabled: Bool)
+
+    func loadMainApp(_ launcherBundleId: String)
 }
