@@ -20,23 +20,14 @@ import ServiceManagement
 
 
 @objcMembers
-public class OutlineCatalystApp: NSObject {
-    let appKitBridge: AppKitBridgeProtocol
-
-    override public required init() {
+public class OutlineCatalystApp : NSObject {
+    
+    static func initApp() {
         DDLog.add(DDOSLogger.sharedInstance)
-        appKitBridge = createAppKitBridge()
-
-        super.init()
-
-        configureWindow()
-        configureConnectionStatusMenu()
-
-        // Enable app launcher to start on boot.
-        appKitBridge.setAppLauncherEnabled(true)
-    }
-
-    private func configureWindow() {
+        
+        let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
+        
+        // Configure the window.
         let scenes = UIApplication.shared.connectedScenes
         for scene in scenes {
             let windowScene = (scene as! UIWindowScene)
@@ -45,23 +36,24 @@ public class OutlineCatalystApp: NSObject {
             windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 550)
             windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 550)
         }
-    }
-
-    private func configureConnectionStatusMenu() {
+        
         // Initiate the connection status menu in disabled state by default.
-        self.appKitBridge.setConnectionStatus(false)
-
+        appKitBridge.setConnectionStatus(false)
+        
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            self.appKitBridge.setConnectionStatus(true)
+            appKitBridge.setConnectionStatus(true)
         }
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            self.appKitBridge.setConnectionStatus(false)
+            appKitBridge.setConnectionStatus(false)
         }
+        
+        // Enable app launcher to start on boot.
+        appKitBridge.setAppLauncherEnabled(true)
     }
 }
