@@ -21,12 +21,12 @@ import ServiceManagement
 
 @objcMembers
 public class OutlineCatalystApp : NSObject {
-    
+
     public static func initApp() {
         DDLog.add(DDOSLogger.sharedInstance)
-        
+
         let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
-        
+
         // Configure the window.
         let scenes = UIApplication.shared.connectedScenes
         for scene in scenes {
@@ -36,10 +36,10 @@ public class OutlineCatalystApp : NSObject {
             windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 550)
             windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 550)
         }
-        
+
         // Initiate the connection status menu in disabled state by default.
         appKitBridge.setConnectionStatus(false)
-        
+
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                object: nil,
                                                queue: nil)
@@ -52,7 +52,7 @@ public class OutlineCatalystApp : NSObject {
         { _ in
             appKitBridge.setConnectionStatus(false)
         }
-        
+
         // Enable app launcher to start on boot.
         appKitBridge.setAppLauncherEnabled(true)
     }

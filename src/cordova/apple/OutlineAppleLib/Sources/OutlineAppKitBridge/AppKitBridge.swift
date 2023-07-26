@@ -55,10 +55,7 @@ public class AppKitBridge: NSObject, AppKitBridgeProtocol {
     // Loads the main application from a given launcher bundle.
     @objc public func loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
-        guard let mainAppBundleId = getMainBundleId(launcherBundleId) else {
-            return DDLogError("[AppKitBridge] Unable to get main application bundle ID from launcher \(launcherBundleId).")
-        }
-
+        let mainAppBundleId = getMainBundleId(launcherBundleId)
         DDLogInfo("[AppKitBridge] Loading main app \(mainAppBundleId) from launcher \(launcherBundleId).")
 
         let descriptor = NSAppleEventDescriptor(string: launcherBundleId)
@@ -78,7 +75,7 @@ public class AppKitBridge: NSObject, AppKitBridgeProtocol {
     }
 
     // Returns the main application's bundle ID from the embedded launcher bundle ID.
-    private func getMainBundleId(_ launcherBundleId: String) -> String! {
+    private func getMainBundleId(_ launcherBundleId: String) -> String {
         return (launcherBundleId as NSString).deletingPathExtension
     }
 }

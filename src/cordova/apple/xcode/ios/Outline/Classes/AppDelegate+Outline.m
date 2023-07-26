@@ -30,7 +30,7 @@
     didFinishLaunchingWithOptions:
         (NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions {
 #if TARGET_OS_MACCATALYST
-    [[OutlineCatalystApp alloc] init];
+    [OutlineCatalystApp initApp];
 #endif
 
   [super application:application didFinishLaunchingWithOptions:launchOptions];
