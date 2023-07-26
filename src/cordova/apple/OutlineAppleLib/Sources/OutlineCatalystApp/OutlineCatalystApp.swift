@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if targetEnvironment(macCatalyst)
 import CocoaLumberjack
 import CocoaLumberjackSwift
 import Foundation
 import OutlineShared
 import ServiceManagement
-
 
 @objcMembers
 public class OutlineCatalystApp : NSObject {
@@ -57,3 +57,4 @@ public class OutlineCatalystApp : NSObject {
         appKitBridge.setAppLauncherEnabled(true)
     }
 }
+#endif
