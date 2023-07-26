@@ -16,31 +16,22 @@ import CocoaLumberjackSwift
 import Foundation
 import OutlineShared
 
-public class AppKitBundleLoader: NSObject {
-    private enum BridgeBundle {
-        static let fileName = "AppKitBridge.bundle"
-        static let className = "OutlineAppKitBridge.AppKitBridge"
-    }
+enum BridgeBundle {
+    static let fileName = "AppKitBridge.bundle"
+    static let className = "OutlineAppKitBridge.AppKitBridge"
+}
 
-    public var appKitBridge: AppKitBridgeProtocol?
-
-    override public required init() {
-        super.init()
-        loadBundle()
+public func createAppKitBridge() -> AppKitBridgeProtocol {
+    guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
+        preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
     }
-
-    private func loadBundle() {
-        guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
-            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
-        }
-        guard let bundle = Bundle(url: bundleURL) else {
-            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
-        }
-        DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
-        let className = BridgeBundle.className
-        guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
-            preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
-        }
-        appKitBridge = appKitBridgeClass.init()
+    guard let bundle = Bundle(url: bundleURL) else {
+        preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
     }
+    DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
+    let className = BridgeBundle.className
+    guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
+        preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
+    }
+    return appKitBridgeClass.init()
 }

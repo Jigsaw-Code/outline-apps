@@ -23,11 +23,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         DDLog.add(DDOSLogger.sharedInstance)
 
-        let appKitBundle = AppKitBundleLoader()
+        let appKitBridge = createAppKitBridge()
         shouldLaunchMainApp { shouldLaunch in
             defer {
                 DDLogInfo("Exiting launcher...")
-                appKitBundle.appKitBridge!.terminate()
+                appKitBridge.terminate()
             }
             if !shouldLaunch {
                 DDLogInfo("Not launching, Outline not connected at shutdown")
@@ -39,7 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 DDLogError("Failed to retrieve the bundle ID for the launcher app.")
                 return
             }
-            appKitBundle.appKitBridge!.loadMainApp(launcherBundleId)
+            appKitBridge.loadMainApp(launcherBundleId)
         }
         return true
     }

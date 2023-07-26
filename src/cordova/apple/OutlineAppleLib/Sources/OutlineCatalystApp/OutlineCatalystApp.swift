@@ -15,22 +15,25 @@
 import CocoaLumberjack
 import CocoaLumberjackSwift
 import Foundation
+import OutlineShared
 import ServiceManagement
+
 
 @objcMembers
 public class OutlineCatalystApp: NSObject {
-    let bundle: AppKitBundleLoader
+    let appKitBridge: AppKitBridgeProtocol
 
     override public required init() {
         DDLog.add(DDOSLogger.sharedInstance)
-        bundle = AppKitBundleLoader()
+        appKitBridge = createAppKitBridge()
+
         super.init()
 
         configureWindow()
         configureConnectionStatusMenu()
 
         // Enable app launcher to start on boot.
-        bundle.appKitBridge?.setAppLauncherEnabled(true)
+        appKitBridge.setAppLauncherEnabled(true)
     }
 
     private func configureWindow() {
@@ -46,19 +49,19 @@ public class OutlineCatalystApp: NSObject {
 
     private func configureConnectionStatusMenu() {
         // Initiate the connection status menu in disabled state by default.
-        bundle.appKitBridge?.setConnectionStatus(false)
+        self.appKitBridge.setConnectionStatus(false)
 
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            self.bundle.appKitBridge?.setConnectionStatus(true)
+            self.appKitBridge.setConnectionStatus(true)
         }
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            self.bundle.appKitBridge?.setConnectionStatus(false)
+            self.appKitBridge.setConnectionStatus(false)
         }
     }
 }
