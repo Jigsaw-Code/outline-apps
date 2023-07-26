@@ -81,15 +81,15 @@
   },
   "error_connection_configuration": {
     "desciption": "An error message shown when the user's server configuration is invalid. The user should contact their service manager to resolve the issue.",
-    "message": "The configuration information for your server is incomplete or invalid. Please contact the person who gave you this access key to troubleshoot this issue."
+    "message": "Invalid configuration. Screenshot the error details and send them to your access key provider."
   },
   "error_connection_configuration_fetch": {
     "description": "An error message shown when the dynamic access key given proves to be unreachable. The user should contact their service manager to resolve the issue.",
-    "message": "Outline failed to download the configuration information for your server. Please contact the person who gave you this access key to troubleshoot this issue."
+    "message": "Failed to download the server configuration. Screenshot the error details and send them to your access key provider."
   },
   "error_connection_proxy": {
     "description": "An error message show when Outline fails to establish contact with the obfuscation proxy.",
-    "message": "Outline could not connect to the server. Please check your internet connectivity, and then contact the person who gave you this access key to troubleshoot the issue."
+    "message": "Failed to connect. Please check your internet connectivity, then screenshot the error details and send them to your access key provider."
   },
   "error_details": {
     "description": "Button pointing to additional details of an error shown to the user",
