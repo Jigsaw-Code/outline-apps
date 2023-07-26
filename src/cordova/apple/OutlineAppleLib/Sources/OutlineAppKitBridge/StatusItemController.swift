@@ -15,10 +15,11 @@
 #if canImport(AppKit)
 import AppKit
 import CocoaLumberjackSwift
+import OutlineShared
 
-var OutlineStatusItem = NSStatusItem()
+var StatusItem = NSStatusItem()
 
-class OutlineStatusItemController: NSObject {
+class StatusItemController: NSObject {
     let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
                                               action: nil,
                                               keyEquivalent: "")
@@ -39,9 +40,9 @@ class OutlineStatusItemController: NSObject {
     override init() {
         super.init()
 
-        DDLogInfo("[OutlineStatusItemController] Creating status menu")
-        OutlineStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        setStatus(isConnected: false)
+        DDLogInfo("[StatusItemController] Creating status menu")
+        StatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        setStatus(status: .disconnected)
 
         let menu = NSMenu()
         let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
@@ -52,13 +53,14 @@ class OutlineStatusItemController: NSObject {
         let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
         closeMenuItem.target = self
         menu.addItem(closeMenuItem)
-        OutlineStatusItem.menu = menu
+        StatusItem.menu = menu
     }
 
-    func setStatus(isConnected: Bool) {
+    func setStatus(status: ConnectionStatus) {
+        let isConnected = status == .connected
         let appIconImage = isConnected ? AppIconImage.statusConnected : AppIconImage.statusDisconnected
         appIconImage.isTemplate = true
-        OutlineStatusItem.button?.image = appIconImage
+        StatusItem.button?.image = appIconImage
 
         let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
         connectionStatusMenuItem.title = connectionStatusTitle
@@ -74,7 +76,7 @@ class OutlineStatusItemController: NSObject {
     }
 
     @objc func openApplication(_: AnyObject?) {
-        DDLogInfo("[OutlineStatusItemController] Opening application")
+        DDLogInfo("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
         guard let uiWindow = getUiWindow() else {
             return
@@ -83,7 +85,7 @@ class OutlineStatusItemController: NSObject {
     }
 
     @objc func closeApplication(_: AnyObject?) {
-        DDLogInfo("[OutlineStatusItemController] Closing application")
+        DDLogInfo("[StatusItemController] Closing application")
         NotificationCenter.default.post(name: .kAppQuit, object: nil)
         NSApplication.shared.terminate(self)
     }

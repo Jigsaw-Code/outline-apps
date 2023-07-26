@@ -19,7 +19,7 @@ import ServiceManagement
 import OutlineShared
 
 public class AppKitBridge: NSObject, AppKitBridgeProtocol {
-    private var statusItemController: OutlineStatusItemController?
+    private var statusItemController: StatusItemController?
     static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
     static let kAppLauncherName = "launcher3"
 
@@ -31,12 +31,12 @@ public class AppKitBridge: NSObject, AppKitBridgeProtocol {
         NSApp.terminate(self)
     }
 
-    @objc public func setConnectionStatus(_ isConnected: Bool) {
+    @objc public func setConnectionStatus(_ status: ConnectionStatus) {
         if statusItemController == nil {
             DDLogInfo("[AppKitBridge] No status item controller found. Creating one now.")
-            statusItemController = OutlineStatusItemController()
+            statusItemController = StatusItemController()
         }
-        statusItemController!.setStatus(isConnected: isConnected)
+        statusItemController!.setStatus(status: status)
     }
 
     // Enables or disables the embedded app launcher as a login item.

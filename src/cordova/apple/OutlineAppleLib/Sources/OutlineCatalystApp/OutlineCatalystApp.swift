@@ -37,20 +37,20 @@ public class OutlineCatalystApp : NSObject {
             windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 550)
         }
 
-        // Initiate the connection status menu in disabled state by default.
-        appKitBridge.setConnectionStatus(false)
+        // Initiate the connection status menu in unknown state by default.
+        appKitBridge.setConnectionStatus(.unknown)
 
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            appKitBridge.setConnectionStatus(true)
+            appKitBridge.setConnectionStatus(.connected)
         }
         NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                object: nil,
                                                queue: nil)
         { _ in
-            appKitBridge.setConnectionStatus(false)
+            appKitBridge.setConnectionStatus(.disconnected)
         }
 
         // Enable app launcher to start on boot.

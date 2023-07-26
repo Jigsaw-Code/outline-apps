@@ -12,17 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
-
-@objc(AppKitBridgeProtocol)
-public protocol AppKitBridgeProtocol: NSObjectProtocol {
-    init()
-
-    func terminate()
-
-    func setConnectionStatus(_ status: ConnectionStatus)
-
-    func setAppLauncherEnabled(_ isEnabled: Bool)
-
-    func loadMainApp(_ launcherBundleId: String)
+@objc public enum ConnectionStatus: Int {
+    case unknown
+    case connected
+    case disconnected
 }
