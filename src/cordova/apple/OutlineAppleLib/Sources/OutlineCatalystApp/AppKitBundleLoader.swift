@@ -12,37 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if targetEnvironment(macCatalyst)
-    import CocoaLumberjackSwift
-    import Foundation
-    import OutlineShared
+import CocoaLumberjackSwift
+import Foundation
+import OutlineShared
 
-    public class AppKitBundleLoader: NSObject {
-        private enum BridgeBundle {
-            static let fileName = "AppKitBridge.bundle"
-            static let className = "OutlineAppKitBridge.AppKitBridge"
-        }
-
-        public var appKitBridge: AppKitBridgeProtocol?
-
-        override public required init() {
-            super.init()
-            loadBundle()
-        }
-
-        private func loadBundle() {
-            guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
-                preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
-            }
-            guard let bundle = Bundle(url: bundleURL) else {
-                preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
-            }
-            DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
-            let className = BridgeBundle.className
-            guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
-                preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
-            }
-            appKitBridge = appKitBridgeClass.init()
-        }
+public class AppKitBundleLoader: NSObject {
+    private enum BridgeBundle {
+        static let fileName = "AppKitBridge.bundle"
+        static let className = "OutlineAppKitBridge.AppKitBridge"
     }
-#endif
+
+    public var appKitBridge: AppKitBridgeProtocol?
+
+    override public required init() {
+        super.init()
+        loadBundle()
+    }
+
+    private func loadBundle() {
+        guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
+            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+        }
+        guard let bundle = Bundle(url: bundleURL) else {
+            preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+        }
+        DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
+        let className = BridgeBundle.className
+        guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
+            preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
+        }
+        appKitBridge = appKitBridgeClass.init()
+    }
+}
