@@ -105,14 +105,14 @@ Polymer({
           </div>
           <template is="dom-if" if="[[!useAltAccessMessage]]">
             <div
-             class="footer subtle"
-              inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'closeLink', '</a>')]]"
+              class="footer subtle"
+              inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>', 'closeLink', '</a>')]]"
             ></div>
           </template>
           <template is="dom-if" if="[[useAltAccessMessage]]">
             <div
               class="footer subtle"
-              inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/index.html>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
+              inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
             ></div>
           </template>
         </div>
@@ -125,11 +125,7 @@ Polymer({
         fire-event-on-hide="AutoConnectDialogDismissed"
       ></user-comms-dialog>
       <template is="dom-if" if="[[!shouldShowZeroState]]">
-        <server-list
-          id="serverList"
-          servers="[[servers]]"
-          localize="[[localize]]"
-        ></server-list>
+        <server-list id="serverList" servers="[[servers]]" localize="[[localize]]"></server-list>
       </template>
     </div>
   `,

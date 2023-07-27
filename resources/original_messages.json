@@ -81,15 +81,15 @@
   },
   "error_connection_configuration": {
     "desciption": "An error message shown when the user's server configuration is invalid. The user should contact their service manager to resolve the issue.",
-    "message": "The configuration information for your server is incomplete or invalid. Please contact your service manager to troubleshoot this issue."
+    "message": "Invalid configuration. Screenshot the error details and send them to your access key provider."
   },
   "error_connection_configuration_fetch": {
     "description": "An error message shown when the dynamic access key given proves to be unreachable. The user should contact their service manager to resolve the issue.",
-    "message": "Outline failed to download the configuration information for your server. Please contact your service manager to troubleshoot this issue."
+    "message": "Failed to download the server configuration. Screenshot the error details and send them to your access key provider."
   },
   "error_connection_proxy": {
     "description": "An error message show when Outline fails to establish contact with the obfuscation proxy.",
-    "message": "Outline could not connect to the server. Review the error details to troubleshoot your connection."
+    "message": "Failed to connect. Please check your internet connectivity, then screenshot the error details and send them to your access key provider."
   },
   "error_details": {
     "description": "Button pointing to additional details of an error shown to the user",
@@ -118,7 +118,7 @@
     "message": "Sorry, this access key is not compatible with this version of Outline."
   },
   "error_shadowsocks_unsupported_cipher": {
-    "description": "The server you requested to add uses an unsafe cipher ($CIPHER$). Please contact your server admin.",
+    "description": "The server you requested to add uses an unsafe cipher ($CIPHER$). Please contact the person who gave you this access key.",
     "message": "Shadowsocks Unsupported cipher",
     "placeholders": {
       "CIPHER": {
@@ -233,7 +233,7 @@
   },
   "outline_plugin_error_invalid_server_credentials": {
     "description": "An error message when the user is trying to connect but has provided an invalid connection key.",
-    "message": "It seems like your access key is not valid. If this happens again, please contact your server admin."
+    "message": "It seems like your access key is not valid. If this happens again, please contact the person who gave it to you."
   },
   "outline_plugin_error_routing_tables": {
     "description": "An error message when the application is not able to configure the system for proxying. A button is shown alongside this message to submit feedback.",
@@ -249,7 +249,7 @@
   },
   "outline_plugin_error_udp_forwarding_not_enabled": {
     "description": "An error message shown when the application tries to connect to a server that does not have the correct UDP forwarding configuration.",
-    "message": "It seems like this server doesn’t support UDP forwarding. If this happens again, please contact your server admin."
+    "message": "It seems like this server doesn’t support UDP forwarding. If this happens again, please contact the person who gave you access."
   },
   "outline_plugin_error_unsupported_routing_table": {
     "description": "An error message when the application fails to connect due to another active VPN.",
@@ -386,7 +386,7 @@
   },
   "server_create_your_own_zero_state": {
     "description": "When the user has not yet added a server to the application, the main page shows this message at the bottom.",
-    "message": "Don’t have a server?$NEW_LINE$Create your own at $START_OF_LINK$our website$END_OF_LINK$.",
+    "message": "Don’t have a server?$NEW_LINE$Create your own with the $START_OF_LINK$Outline Manager$END_OF_LINK$.",
     "placeholders": {
       "END_OF_LINK": {
         "content": "{closeLink}"
