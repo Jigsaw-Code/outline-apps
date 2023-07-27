@@ -46,7 +46,7 @@ public class VpnTunnel {
   private final VpnTunnelService vpnService;
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
-  private Tunnel tunnel;
+  private OutlineTunnel tunnel;
 
   /**
    * Constructor.
