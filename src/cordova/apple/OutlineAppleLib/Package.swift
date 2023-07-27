@@ -8,13 +8,14 @@ let package = Package(
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineTunnel"]),
+            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel"]),
         .library(
             name: "PacketTunnelProvider",
             targets: ["PacketTunnelProvider"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.7.4"),
+        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "7.31.3"),
     ],
     targets: [
         .target(
@@ -25,17 +26,22 @@ let package = Package(
                  "Tun2socks",
                  "OutlineTunnel"
                 ],
-            path: "./Sources/PacketTunnelProviderSources/",
             cSettings: [
                 .headerSearchPath("Internal"),
+            ]
+        ),
+        .target(
+            name: "OutlineSentryLogger",
+            dependencies: [
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                .product(name: "Sentry", package: "sentry-cocoa")
             ]
         ),
         .target(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-            ],
-            path: "Sources/OutlineTunnelSources"
+            ]
         ),
         .binaryTarget(
             name: "Tun2socks",
