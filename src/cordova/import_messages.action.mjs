@@ -28,9 +28,9 @@ const VALID_PLATFORMS = [ANDROID, IOS];
 const SOURCE_MESSAGES_DIR = 'www/messages';
 
 /**
- * Verifies and returns the specified platform.
- * @param {string[]} parameters The list of action arguments passed in
- * @returns {Object} Object containing the specificed platform.
+ * Parses and verifies the action parameters and returns the specified platform.
+ * @param {string[]} parameters The list of action arguments passed in.
+ * @returns {Object} Object containing the specified platform.
  */
 function getActionParameters(cliArguments) {
   const {
