@@ -67,10 +67,12 @@ async function loadMessages() {
 
 /**
  * Imports message translations.
- * @param {Function} getStringsFilepath A function to get a filepath to
- *     read/write strings for a given locale.
- * @param {Function} readMessages A function to read required messages.
- * @param {Function} writeMessages A function to write the output messages.
+ * @param {function(string): string} getStringsFilepath A function to get a
+ *     filepath to read/write strings for a given locale.
+ * @param {function(): Map<string, string>} readMessages A function to read
+ *     required messages.
+ * @param {function(string, Map<string, string>)} writeMessages A function to
+ *     write the output messages.
  */
 async function importMessages(getStringsFilepath, readMessages, writeMessages) {
   const requiredMessages = await readMessages();
