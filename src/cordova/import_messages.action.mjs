@@ -15,13 +15,11 @@
 import chalk from 'chalk';
 import minimist from 'minimist';
 import path from 'path';
-import rmfr from 'rmfr';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
-import {readFile, readdir, writeFile, mkdir} from 'fs/promises';
-import {getNativeLocale as getNativeAndroidLocale} from './android/get_native_locale.mjs';
-import XML from 'xmlbuilder2';
-import I18N from 'i18n-strings-files';
+import {readFile, readdir, mkdir} from 'fs/promises';
+import * as ANDROID_IMPORTER from './android/import_messages.mjs';
+import * as IOS_IMPORTER from './apple/import_messages.mjs';
 
 const ANDROID = 'android';
 const IOS = 'ios';
@@ -29,30 +27,12 @@ const VALID_PLATFORMS = [ANDROID, IOS];
 
 const SOURCE_MESSAGES_DIR = 'www/messages';
 
-const ANDROID_STRINGS_DIR = 'src/cordova/plugin/android/resources/strings/';
-const ANDROID_STRINGS_FILENAME = 'strings.xml';
-const ANDROID_XML_STRING_ID_PROPERTY = '@name';
-const ANDROID_XML_TEXT_CONTENT = '#';
-
-const IOS_STRINGS_DIR = 'src/cordova/apple/xcode/ios/Outline/Resources/';
-const IOS_STRINGS_FILENAME = 'Localizable.strings';
-
-function escapeXmlCharacters(str) {
-  return str
-    .replace(/"/g, '\\"')
-    .replace(/'/g, "\\'")
-    .replace(/</g, '\\<')
-    .replace(/>/g, '\\>;')
-    .replace(/&/g, '\\&');
-}
-
 /**
  * Verifies and returns the specified platform.
  * @param {string[]} parameters The list of action arguments passed in
  * @returns {Object} Object containing the specificed platform.
  */
 function getActionParameters(cliArguments) {
-  console.log(minimist(cliArguments));
   const {
     _: [platform = ''],
   } = minimist(cliArguments);
@@ -85,70 +65,29 @@ async function loadMessages() {
   return messages;
 }
 
-/** Imports and writes messages for Android. */
-async function importAndroidMessages() {
-  const outputDir = path.join(getRootDir(), ANDROID_STRINGS_DIR);
-  const requiredStrings = XML.create(
-    await readFile(path.join(outputDir, 'values', ANDROID_STRINGS_FILENAME), 'utf8')
-  ).end({format: 'object'}).resources.string;
+/**
+ * Imports message translations.
+ * @param {Function} getStringsFilepath A function to get a filepath to
+ *     read/write strings for a given locale.
+ * @param {Function} readMessages A function to read required messages.
+ * @param {Function} writeMessages A function to write the output messages.
+ */
+async function importMessages(getStringsFilepath, readMessages, writeMessages) {
+  const requiredMessages = await readMessages();
 
-  // Clear all existing locales first, so languages we stop supporting get
-  // cleared.
-  await rmfr(path.join(outputDir, 'values-*'), {glob: true});
+  for (const [locale, messageData] of await loadMessages()) {
+    console.log(chalk.gray(`Importing \`${locale}\``));
 
-  for (const [lang, messageData] of await loadMessages()) {
-    console.log(chalk.gray(`Importing \`${lang}\``));
-    const androidLocale = getNativeAndroidLocale(lang);
-
-    const outputStrings = [];
-    for (const requiredString of requiredStrings) {
-      const messageId = requiredString[ANDROID_XML_STRING_ID_PROPERTY].replaceAll('_', '-');
-      const fallbackContent = requiredString[ANDROID_XML_TEXT_CONTENT];
-
-      outputStrings.push({
-        [ANDROID_XML_STRING_ID_PROPERTY]: requiredString[ANDROID_XML_STRING_ID_PROPERTY],
-        [ANDROID_XML_TEXT_CONTENT]: escapeXmlCharacters(messageData[messageId] ?? fallbackContent),
-      });
-    }
-
-    const localeDir = path.join(outputDir, `values-${androidLocale}`);
-    const outputPath = path.join(localeDir, ANDROID_STRINGS_FILENAME);
-    console.log(chalk.gray(`Writing ${outputStrings.length} messages to \`${outputPath}\``));
-    await mkdir(localeDir, {recursive: true});
-    await writeFile(
-      outputPath,
-      XML.create({encoding: 'UTF-8'}, {resources: {string: outputStrings}}).end({prettyPrint: true, wellFormed: true})
-    );
-  }
-}
-
-/** Imports and writes messages for iOS. */
-async function importIosMessages() {
-  const outputDir = path.join(getRootDir(), IOS_STRINGS_DIR);
-  const requiredStrings = I18N.readFileSync(path.join(outputDir, 'en.lproj', IOS_STRINGS_FILENAME), {
-    encoding: 'UTF-8',
-  });
-
-  // Clear all existing locales first, so languages we stop supporting get
-  // cleared.
-  await rmfr(path.join(outputDir, '*.lproj'), {glob: true});
-
-  for (const [lang, messageData] of await loadMessages()) {
-    console.log(chalk.gray(`Importing \`${lang}\``));
-
-    const outputStrings = {};
-    for (const [key, value] of Object.entries(requiredStrings)) {
+    const outputMessages = {};
+    for (const [key, value] of requiredMessages.entries()) {
       const messageId = key.replaceAll('_', '-');
-      const fallbackContent = value;
-
-      outputStrings[key] = messageData[messageId] ?? fallbackContent;
+      outputMessages[key] = messageData[messageId] ?? value;
     }
 
-    const localeDir = path.join(outputDir, `${lang}.lproj`);
-    const outputPath = path.join(localeDir, IOS_STRINGS_FILENAME);
-    console.log(chalk.gray(`Writing ${Object.values(outputStrings).length} messages to \`${outputPath}\``));
-    await mkdir(localeDir, {recursive: true});
-    I18N.writeFileSync(outputPath, outputStrings, {encoding: 'UTF-8'});
+    const outputPath = getStringsFilepath(locale);
+    console.log(chalk.gray(`Writing ${Object.values(outputMessages).length} messages to \`${outputPath}\``));
+    await mkdir(path.dirname(outputPath), {recursive: true});
+    writeMessages(outputPath, outputMessages);
   }
 }
 
@@ -162,10 +101,14 @@ async function main(...parameters) {
 
   switch (platform) {
     case ANDROID:
-      await importAndroidMessages();
+      await importMessages(
+        ANDROID_IMPORTER.getStringsFilepath,
+        ANDROID_IMPORTER.readMessages,
+        ANDROID_IMPORTER.writeMessages
+      );
       break;
     case IOS:
-      await importIosMessages();
+      await importMessages(IOS_IMPORTER.getStringsFilepath, IOS_IMPORTER.readMessages, IOS_IMPORTER.writeMessages);
       break;
     default:
       throw new Error(`Message import not implemented for platform "${platform}"`);
