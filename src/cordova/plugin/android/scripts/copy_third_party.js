@@ -14,15 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const child_process = require('child_process');
+const fs = require('fs');
 
 module.exports = function(context) {
   console.log('Copying Android third party libraries...');
-  child_process.execSync('mkdir -p plugins/cordova-plugin-outline/android/libs');
-  child_process.execSync(
-    `cp third_party/outline-go-tun2socks/android/tun2socks.aar plugins/cordova-plugin-outline/android/libs/`
+  fs.mkdirSync('plugins/cordova-plugin-outline/android/libs', {recursive: true});
+  fs.copyFileSync(
+    'third_party/outline-go-tun2socks/android/tun2socks.aar',
+    'plugins/cordova-plugin-outline/android/libs/tun2socks.aar'
   );
-  child_process.execSync(
-    `cp -R third_party/outline-go-tun2socks/android/jni plugins/cordova-plugin-outline/android/libs/obj`
-  );
+  fs.cpSync('third_party/outline-go-tun2socks/android/jni', 'plugins/cordova-plugin-outline/android/libs/obj', {
+    recursive: true,
+  });
 };

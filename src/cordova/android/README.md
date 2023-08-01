@@ -11,8 +11,10 @@ The main entrypoint to Android's Java code is `cordova-plugin-outline/android/ja
 Additional requirements for Android:
 
 - [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
+  - Need to set `JAVA_HOME` environment variable
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
+  - Need to set `ANDROID_HOME` environment variable
 - Android SDK 32 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-32" "build-tools;32.0.0"`
 - [Gradle 7.3+](https://gradle.org/install/)
 
