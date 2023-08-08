@@ -417,7 +417,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3B0347541F212F0200C8EF1F /* Build configuration list for PBXNativeTarget "VpnExtension" */;
 			buildPhases = (
-				3B0347441F212F0100C8EF1F /* Sources */,
 				3B0347451F212F0100C8EF1F /* Frameworks */,
 				3B0347461F212F0100C8EF1F /* Resources */,
 			);
@@ -437,7 +436,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
 			buildPhases = (
-				A26D26292A1C41B1009838E0 /* Sources */,
 				A26D262A2A1C41B1009838E0 /* Frameworks */,
 				A26D262B2A1C41B1009838E0 /* Resources */,
 				A2B8C1502A58B70E0054487E /* Embed PlugIns */,
@@ -459,7 +457,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */;
 			buildPhases = (
-				A2DBB2F22A00D2DD0017E696 /* Sources */,
 				A2DBB2F32A00D2DD0017E696 /* Frameworks */,
 			);
 			buildRules = (
@@ -613,27 +610,6 @@
 				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
 				1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */,
 				A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3B0347441F212F0100C8EF1F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A26D26292A1C41B1009838E0 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2DBB2F22A00D2DD0017E696 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1245,10 +1221,6 @@
 		A271D41F2A7069D8009981B2 /* OutlineLauncher */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineLauncher;
-		};
-		A271D4212A706CB9009981B2 /* OutlineAppKitBridge */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineAppKitBridge;
 		};
 		A271D42F2A708278009981B2 /* CocoaLumberjack */ = {
 			isa = XCSwiftPackageProductDependency;
