@@ -16,7 +16,7 @@ import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
 import XML from 'xmlbuilder2';
 
-const STRINGS_DIR = 'src/cordova/plugin/android/resources/strings/';
+const STRINGS_DIR = ['src', 'cordova', 'plugin', 'android', 'resources', 'strings'];
 const STRINGS_FILENAME = 'strings.xml';
 const XML_STRING_ID_PROPERTY = '@name';
 const XML_TEXT_CONTENT = '#';
@@ -48,7 +48,7 @@ function getNativeLocale(polymerLang) {
  */
 export function getStringsFilepath(polymerLang) {
   const localeSuffix = polymerLang ? `-${getNativeLocale(polymerLang)}` : '';
-  return path.join(STRINGS_DIR, `values${localeSuffix}`, STRINGS_FILENAME);
+  return path.join(...STRINGS_DIR, `values${localeSuffix}`, STRINGS_FILENAME);
 }
 
 /**

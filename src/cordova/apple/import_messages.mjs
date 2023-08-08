@@ -15,7 +15,7 @@
 import path from 'path';
 import I18N from 'i18n-strings-files';
 
-const STRINGS_DIR = 'src/cordova/apple/xcode/ios/Outline/Resources/';
+const STRINGS_DIR = ['src', 'cordova', 'apple', 'xcode', 'ios', 'Outline', 'Resources'];
 const STRINGS_FILENAME = 'Localizable.strings';
 
 /**
@@ -24,7 +24,7 @@ const STRINGS_FILENAME = 'Localizable.strings';
  * @returns {string} The filepath.
  */
 export function getStringsFilepath(locale) {
-  return path.join(STRINGS_DIR, `${locale}.lproj`, STRINGS_FILENAME);
+  return path.join(...STRINGS_DIR, `${locale}.lproj`, STRINGS_FILENAME);
 }
 
 /**
