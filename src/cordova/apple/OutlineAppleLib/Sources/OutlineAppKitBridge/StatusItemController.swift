@@ -66,15 +66,6 @@ class StatusItemController: NSObject {
         connectionStatusMenuItem.title = connectionStatusTitle
     }
 
-    private func getUiWindow() -> NSWindow? {
-        for window in NSApp.windows {
-            if String(describing: window).contains("UINSWindow") {
-                return window
-            }
-        }
-        return nil
-    }
-
     @objc func openApplication(_: AnyObject?) {
         DDLogInfo("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
@@ -89,5 +80,14 @@ class StatusItemController: NSObject {
         NotificationCenter.default.post(name: .kAppQuit, object: nil)
         NSApplication.shared.terminate(self)
     }
+}
+
+private func getUiWindow() -> NSWindow? {
+    for window in NSApp.windows {
+        if String(describing: window).contains("UINSWindow") {
+            return window
+        }
+    }
+    return nil
 }
 #endif
