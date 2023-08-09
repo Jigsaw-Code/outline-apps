@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="org.outline.android.client" version="1.4.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <feature name="LocalStorage">
+        <param name="osx-package" value="CDVLocalStorage" />
+    </feature>
+    <feature name="Device">
+        <param name="ios-package" value="CDVDevice" />
+    </feature>
+    <feature name="OutlinePlugin">
+        <param name="ios-package" value="OutlinePlugin" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="Clipboard">
+        <param name="ios-package" value="CDVClipboard" />
+    </feature>
+    <name>Outline</name>
+    <description>
+        Internet without borders (powered by Shadowsocks)
+    </description>
+    <content src="index_cordova.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <icon height="16" src="resources/icons/osx/icon-16.png" width="16" />
+    <icon height="32" src="resources/icons/osx/icon-32.png" width="32" />
+    <icon height="64" src="resources/icons/osx/icon-64.png" width="64" />
+    <icon height="128" src="resources/icons/osx/icon-128.png" width="128" />
+    <icon height="256" src="resources/icons/osx/icon-256.png" width="256" />
+    <icon height="512" src="resources/icons/osx/icon-512.png" width="512" />
+    <icon height="1024" src="resources/icons/osx/icon-1024.png" width="1024" />
+    <preference name="AllowInlineMediaPlayback" value="true" />
+    <preference name="AllowWebViewNavigation" value="false" />
+    <preference name="BackupWebStorage" value="cloud" />
+    <preference name="DisallowOverscroll" value="false" />
+    <preference name="EnableViewportScale" value="false" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="true" />
+    <preference name="MediaPlaybackRequiresUserAction" value="false" />
+    <preference name="android-minSdkVersion" value="22" />
+    <preference name="android-targetSdkVersion" value="29" />
+    <preference name="AndroidLaunchMode" value="singleInstance" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    <preference name="deployment-target" value="10.11" />
+</widget>

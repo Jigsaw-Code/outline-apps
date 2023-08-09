@@ -1,0 +1,16 @@
+{
+  "singleQuote": true,
+  "bracketSpacing": false,
+  "trailingComma": "es5",
+  "arrowParens": "avoid",
+  "printWidth": 120,
+
+  "overrides": [
+    {
+      "files": "*.cjs",
+      "options": {
+        "parser": "babel"
+      }
+    }
+  ]
+}

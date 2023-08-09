@@ -1,0 +1,15 @@
+# The Android minSdk specified in the config.xml is 22, which maps to Android 5.0.
+# This is webview released with that version of Android:
+# (see: https://developer.chrome.com/docs/multidevice/webview/#what-version-of-chrome-is-it-based-on)
+android >= 36
+
+# We use Electron v19.1.
+# This is the version of Chrome it requires:
+chrome >= 102
+
+# This is the iOS deployment target specified in the config.xml:
+ios >= 11
+
+# Our MacOS project specifies 10.14 as the build target.
+# This is the corresponding Safari version:
+safari >= 14

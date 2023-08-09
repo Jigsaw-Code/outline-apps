@@ -1,0 +1,12 @@
+repositories {
+  flatDir {
+    dirs 'src/main/libs'
+  }
+}
+
+dependencies {
+  implementation 'org.outline:outline:0.0'
+  implementation(name:'tun2socks', ext:'aar')
+  implementation 'com.android.support:appcompat-v7:23.4.0'
+  implementation 'io.sentry:sentry-android:2.0.2'
+}

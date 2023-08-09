@@ -1,0 +1,8 @@
+/build
+node_modules
+
+/platforms
+/plugins
+/www
+/third_party
+/tools
