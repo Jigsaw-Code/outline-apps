@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel"]),
+            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineShared"]),
         .library(
             name: "OutlineCatalystApp",
             targets: ["OutlineCatalystApp"]),
