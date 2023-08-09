@@ -22,7 +22,6 @@
 		70BD686D18FFB0BF00A1EFCF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BD686A18FFB0BF00A1EFCF /* AppDelegate.m */; };
 		70BD686E18FFB0BF00A1EFCF /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BD686C18FFB0BF00A1EFCF /* MainViewController.m */; };
 		737FCE3329B34151A67331B4 /* OutlinePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */; };
-		A20AC8112A6EF8870082D663 /* NSNotification+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20AC8102A6EF8870082D663 /* NSNotification+Outline.swift */; };
 		DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 469466FF1BDB44C081741BF5 /* CDVClipboard.m */; };
 		EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */ = {isa = PBXBuildFile; fileRef = A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */; };
 		F63DC2202970B26500D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC21F2970B26500D92E0A /* OutlineAppleLib */; };
@@ -117,7 +116,6 @@
 		70BD686B18FFB0BF00A1EFCF /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		70BD686C18FFB0BF00A1EFCF /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		70DAA8D91908785C00AF3749 /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; path = www; sourceTree = "<group>"; };
-		A20AC8102A6EF8870082D663 /* NSNotification+Outline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNotification+Outline.swift"; sourceTree = "<group>"; };
 		A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; path = "Outline-Bridging-Header.h"; sourceTree = "<group>"; };
 		AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		F63DC21E2970B23B00D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../src/cordova/apple/OutlineAppleLib; sourceTree = "<group>"; };
@@ -275,7 +273,6 @@
 				FC7D56041F86969E00ABD5CA /* EventMonitor.swift */,
 				70BD686B18FFB0BF00A1EFCF /* MainViewController.h */,
 				70BD686C18FFB0BF00A1EFCF /* MainViewController.m */,
-				A20AC8102A6EF8870082D663 /* NSNotification+Outline.swift */,
 			);
 			name = Classes;
 			path = Outline/Classes;
@@ -531,7 +528,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				70BD683318FFB02D00A1EFCF /* main.m in Sources */,
-				A20AC8112A6EF8870082D663 /* NSNotification+Outline.swift in Sources */,
 				70BD686D18FFB0BF00A1EFCF /* AppDelegate.m in Sources */,
 				FC6E7F8E204DC1BE003CB365 /* CDVMacOsUrlHandler.swift in Sources */,
 				70BD686E18FFB0BF00A1EFCF /* MainViewController.m in Sources */,
