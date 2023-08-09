@@ -30,8 +30,6 @@ let package = Package(
             dependencies:
                 ["CocoaLumberjack",
                  .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                 "Tun2socks",
-                 "OutlineTunnel",
                  "OutlineCatalystApp"
                 ]
         ),

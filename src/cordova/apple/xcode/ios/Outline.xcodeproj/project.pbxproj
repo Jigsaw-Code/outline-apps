@@ -422,6 +422,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
 			buildPhases = (
+				A25EB8812A8437D700B92EE0 /* Sources */,
 				A26D262A2A1C41B1009838E0 /* Frameworks */,
 				A2B8C1502A58B70E0054487E /* Embed PlugIns */,
 			);
@@ -586,6 +587,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3B0347441F212F0100C8EF1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A25EB8812A8437D700B92EE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
