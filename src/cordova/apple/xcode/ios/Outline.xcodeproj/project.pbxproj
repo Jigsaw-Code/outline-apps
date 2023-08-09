@@ -102,16 +102,6 @@
 			name = "Embed App Extensions (2 items)";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3B0347691F21321500C8EF1F /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A27F43A929F6EC1C002C3678 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -390,7 +380,6 @@
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 				A2A83B382A1C5B0C00755F56 /* Copy OutlineLauncher */,
 				3B0347571F212F0200C8EF1F /* Embed App Extensions (2 items) */,
-				3B0347691F21321500C8EF1F /* Embed Frameworks */,
 				FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */,
 			);
 			buildRules = (
@@ -419,7 +408,6 @@
 			buildPhases = (
 				3B0347441F212F0100C8EF1F /* Sources */,
 				3B0347451F212F0100C8EF1F /* Frameworks */,
-				3B0347461F212F0100C8EF1F /* Resources */,
 			);
 			buildRules = (
 			);
@@ -437,9 +425,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
 			buildPhases = (
-				A26D26292A1C41B1009838E0 /* Sources */,
 				A26D262A2A1C41B1009838E0 /* Frameworks */,
-				A26D262B2A1C41B1009838E0 /* Resources */,
 				A2B8C1502A58B70E0054487E /* Embed PlugIns */,
 			);
 			buildRules = (
@@ -459,7 +445,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */;
 			buildPhases = (
-				A2DBB2F22A00D2DD0017E696 /* Sources */,
 				A2DBB2F32A00D2DD0017E696 /* Frameworks */,
 			);
 			buildRules = (
@@ -568,20 +553,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3B0347461F212F0100C8EF1F /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A26D262B2A1C41B1009838E0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -617,20 +588,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3B0347441F212F0100C8EF1F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A26D26292A1C41B1009838E0 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A2DBB2F22A00D2DD0017E696 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
