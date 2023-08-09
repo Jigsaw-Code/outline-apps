@@ -27,7 +27,6 @@
 		A271D4302A708278009981B2 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A271D42F2A708278009981B2 /* CocoaLumberjack */; };
 		A271D4322A708278009981B2 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4312A708278009981B2 /* CocoaLumberjackSwift */; };
 		A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4332A70829D009981B2 /* OutlineAppleLib */; };
-		A271D4362A7082B1009981B2 /* OutlineCatalystApp in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4352A7082B1009981B2 /* OutlineCatalystApp */; };
 		A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 		A27F43AB29F6EC43002C3678 /* www in CopyFiles */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
 		A2A83B392A1C5B2E00755F56 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -182,7 +181,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A271D4362A7082B1009981B2 /* OutlineCatalystApp in Frameworks */,
 				A271D4302A708278009981B2 /* CocoaLumberjack in Frameworks */,
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
 				FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */,
@@ -396,7 +394,6 @@
 				A271D42F2A708278009981B2 /* CocoaLumberjack */,
 				A271D4312A708278009981B2 /* CocoaLumberjackSwift */,
 				A271D4332A70829D009981B2 /* OutlineAppleLib */,
-				A271D4352A7082B1009981B2 /* OutlineCatalystApp */,
 			);
 			productName = Outline;
 			productReference = 1D6058910D05DD3D006BFB54 /* Outline.app */;
@@ -1228,10 +1225,6 @@
 		A271D4332A70829D009981B2 /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
-		};
-		A271D4352A7082B1009981B2 /* OutlineCatalystApp */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineCatalystApp;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
