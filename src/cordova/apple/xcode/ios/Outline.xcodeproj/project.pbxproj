@@ -445,6 +445,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */;
 			buildPhases = (
+				A2DBB2F22A00D2DD0017E696 /* Sources */,
 				A2DBB2F32A00D2DD0017E696 /* Frameworks */,
 			);
 			buildRules = (
@@ -588,6 +589,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3B0347441F212F0100C8EF1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2DBB2F22A00D2DD0017E696 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
