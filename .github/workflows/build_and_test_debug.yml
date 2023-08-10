@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
@@ -59,6 +60,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
@@ -83,6 +85,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
@@ -107,6 +110,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
@@ -140,6 +144,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
@@ -170,6 +175,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: ./outline_client/package-lock.json
 
       - name: Install NPM Dependencies
         run: cd outline_client && npm ci
