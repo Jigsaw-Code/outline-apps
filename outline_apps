@@ -1,1 +1,12 @@
-TODO: cli for working with the different workspaces in this repo
+#!/usr/bin/env node --trace-uncaught
+
+// TODO: cli to interact with different workspaces. bare bones for now
+const childProcess = require("child_process");
+
+const [cwd, ...args] = process.argv.slice(2);
+
+childProcess.execSync(`npm run action ${args.join(' ')}`, {
+  cwd,
+  env: process.env,
+  stdio: "inherit"
+});

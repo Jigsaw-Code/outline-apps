@@ -36,8 +36,8 @@ jobs:
 
       - name: Ensure Commitizen Format
         uses: JulienKode/pull-request-name-linter-action@98794a8b815ec05560813c42e55fd8d32d3fd248
-        widh:
-          config: ./outline_client/commitlint.config.js
+        with:
+          configuration-path: ./outline_client/commitlint.config.js
 
   size_label:
     name: Change Size Label

@@ -32,13 +32,13 @@ jobs:
         run: cd outline_client && npm ci
 
       - name: Run Linter
-        run: cd outline_client && npm run action lint
+        run: ./outline_apps outline_client lint
 
       - name: Build Web App
-        run: cd outline_client && npm run action www/build
+        run: ./outline_apps outline_client www/build
 
       - name: Test Web App
-        run: cd outline_client &&  npm run action www/test
+        run: ./outline_apps outline_client www/test
 
       - uses: codecov/codecov-action@v3
         with:
@@ -64,7 +64,7 @@ jobs:
         run: cd outline_client && npm ci
 
       - name: Build Linux Client
-        run: cd outline_client && npm run action electron/build linux
+        run: ./outline_apps outline_client electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
@@ -88,7 +88,7 @@ jobs:
         run: cd outline_client && npm ci
 
       - name: Build Windows Client
-        run: cd outline_client && npm run action electron/build windows
+        run: ./outline_apps outline_client electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -112,10 +112,10 @@ jobs:
         run: cd outline_client && npm ci
 
       - name: Test OutlineAppleLib
-        run: cd outline_client && npm run action cordova/test macos
+        run: ./outline_apps outline_client cordova/test macos
 
       - name: Build MacOS Client
-        run: cd outline_client && npm run action cordova/build macos
+        run: ./outline_apps outline_client cordova/build macos
 
       - uses: codecov/codecov-action@v3
         with:
@@ -145,10 +145,10 @@ jobs:
         run: cd outline_client && npm ci
 
       - name: Test OutlineAppleLib
-        run: cd outline_client && npm run action cordova/test ios
+        run: ./outline_apps outline_client cordova/test ios
 
       - name: Build iOS Client
-        run: cd outline_client && npm run action cordova/build ios
+        run: ./outline_apps outline_client cordova/build ios
 
       - uses: codecov/codecov-action@v3
         with:
@@ -183,4 +183,4 @@ jobs:
         run: bash ./outline_client/tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: cd outline_client && npm run action cordova/build android -- --verbose
+        run: ./outline_apps outline_client cordova/build android -- --verbose
