@@ -29,20 +29,20 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Run Linter
-        run: npm run action lint
+        run: cd outline_client && npm run action lint
 
       - name: Build Web App
-        run: npm run action www/build
+        run: cd outline_client && npm run action www/build
 
       - name: Test Web App
-        run: npm run action www/test
+        run: cd outline_client &&  npm run action www/test
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ./output/coverage/www/coverage-final.json
+          files: ./outline_client/output/coverage/www/coverage-final.json
           flags: unittests, www
 
   linux_debug_build:
@@ -61,10 +61,10 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Build Linux Client
-        run: npm run action electron/build linux
+        run: cd outline_client && npm run action electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
@@ -85,10 +85,10 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Build Windows Client
-        run: npm run action electron/build windows
+        run: cd outline_client && npm run action electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -109,18 +109,18 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Test OutlineAppleLib
-        run: npm run action cordova/test macos
+        run: cd outline_client && npm run action cordova/test macos
 
       - name: Build MacOS Client
-        run: npm run action cordova/build macos
+        run: cd outline_client && npm run action cordova/build macos
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./output/coverage/apple/macos/TestResult.xcresult
+          xcode_archive_path: ./outline_client/output/coverage/apple/macos/TestResult.xcresult
           flags: unittests, apple, macos
 
   ios_debug_build:
@@ -142,18 +142,18 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Test OutlineAppleLib
-        run: npm run action cordova/test ios
+        run: cd outline_client && npm run action cordova/test ios
 
       - name: Build iOS Client
-        run: npm run action cordova/build ios
+        run: cd outline_client && npm run action cordova/build ios
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./output/coverage/apple/ios/TestResult.xcresult
+          xcode_archive_path: ./outline_client/output/coverage/apple/ios/TestResult.xcresult
           flags: unittests, apple, ios
 
   android_debug_build:
@@ -172,7 +172,7 @@ jobs:
           cache: npm
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: cd outline_client && npm ci
 
       - name: Install Java
         uses: actions/setup-java@v1.4.3
@@ -180,7 +180,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./tools/build/setup_linux_android.sh
+        run: bash ./outline_client/tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action cordova/build android -- --verbose
+        run: cd outline_client && npm run action cordova/build android -- --verbose
