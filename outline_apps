@@ -1,4 +1,4 @@
-#!/usr/bin/env node --trace-uncaught
+#!/usr/bin/env node
 
 // TODO: cli to interact with different workspaces. bare bones for now
 const childProcess = require("child_process");
