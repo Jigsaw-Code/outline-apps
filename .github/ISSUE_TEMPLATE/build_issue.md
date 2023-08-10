@@ -11,6 +11,7 @@ assignees: ''
 A clear and concise description of what the issue is. If possible, paste the output from your terminal.
 
 **Environment**
+ - App: [e.g. Client]
  - OS: [e.g. iOS]
  - NPM version (`npm --version`)
  - Node.js version
