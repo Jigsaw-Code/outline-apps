@@ -8,6 +8,8 @@
 
 TODO: Write a project description
 
+TODO: getting started (install the CLI)
+
 ## Workspaces
 
 ### [Outline Client](outline_client/README.md)
@@ -15,9 +17,10 @@ TODO: Write a project description
 TODO: Describe the Outline Client
 
 TODO: How to clone only the Client
-```
-git clone ...
-cd outline_client
+
+```sh
+# example of what it will look like:
+outline_apps clone outline_client
 ```
 
 ### [Outline Manager](outline_server/src/server_manager/README.md)
