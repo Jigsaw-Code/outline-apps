@@ -12,82 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if canImport(AppKit)
-import AppKit
-import CocoaLumberjackSwift
-import OutlineShared
+#if os(macOS)
+    import AppKit
+    import CocoaLumberjackSwift
+    import OutlinePlugin
 
-var StatusItem = NSStatusItem()
+    var StatusItem = NSStatusItem()
 
-class StatusItemController: NSObject {
-    let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
-                                              action: nil,
-                                              keyEquivalent: "")
+    class StatusItemController: NSObject {
+        let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
+                                                  action: nil,
+                                                  keyEquivalent: "")
 
-    private enum AppIconImage {
-        static let statusConnected = NSImage(named: NSImage.Name("StatusBarButtonImageConnected"))!
-        static let statusDisconnected = NSImage(named: NSImage.Name("StatusBarButtonImage"))!
-    }
-
-    // TODO: Internationalize these user-facing strings.
-    private enum MenuTitle {
-        static let open = "Open"
-        static let quit = "Quit"
-        static let statusConnected = "Connected"
-        static let statusDisconnected = "Disconnected"
-    }
-
-    override init() {
-        super.init()
-
-        DDLogInfo("[StatusItemController] Creating status menu")
-        StatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        setStatus(status: .disconnected)
-
-        let menu = NSMenu()
-        let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
-        openMenuItem.target = self
-        menu.addItem(openMenuItem)
-        menu.addItem(connectionStatusMenuItem)
-        menu.addItem(NSMenuItem.separator())
-        let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
-        closeMenuItem.target = self
-        menu.addItem(closeMenuItem)
-        StatusItem.menu = menu
-    }
-
-    func setStatus(status: ConnectionStatus) {
-        let isConnected = status == .connected
-        let appIconImage = isConnected ? AppIconImage.statusConnected : AppIconImage.statusDisconnected
-        appIconImage.isTemplate = true
-        StatusItem.button?.image = appIconImage
-
-        let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
-        connectionStatusMenuItem.title = connectionStatusTitle
-    }
-
-    @objc func openApplication(_: AnyObject?) {
-        DDLogInfo("[StatusItemController] Opening application")
-        NSApp.activate(ignoringOtherApps: true)
-        guard let uiWindow = getUiWindow() else {
-            return
+        private enum AppIconImage {
+            static let statusConnected = NSImage(named: NSImage.Name("StatusBarButtonImageConnected"))!
+            static let statusDisconnected = NSImage(named: NSImage.Name("StatusBarButtonImage"))!
         }
-        uiWindow.makeKeyAndOrderFront(self)
-    }
 
-    @objc func closeApplication(_: AnyObject?) {
-        DDLogInfo("[StatusItemController] Closing application")
-        NotificationCenter.default.post(name: .kAppQuit, object: nil)
-        NSApplication.shared.terminate(self)
-    }
-}
+        // TODO: Internationalize these user-facing strings.
+        private enum MenuTitle {
+            static let open = "Open"
+            static let quit = "Quit"
+            static let statusConnected = "Connected"
+            static let statusDisconnected = "Disconnected"
+        }
 
-private func getUiWindow() -> NSWindow? {
-    for window in NSApp.windows {
-        if String(describing: window).contains("UINSWindow") {
-            return window
+        override init() {
+            super.init()
+
+            DDLogInfo("[StatusItemController] Creating status menu")
+            StatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+            setStatus(status: .disconnected)
+
+            let menu = NSMenu()
+            let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
+            openMenuItem.target = self
+            menu.addItem(openMenuItem)
+            menu.addItem(connectionStatusMenuItem)
+            menu.addItem(NSMenuItem.separator())
+            let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
+            closeMenuItem.target = self
+            menu.addItem(closeMenuItem)
+            StatusItem.menu = menu
+        }
+
+        func setStatus(status: ConnectionStatus) {
+            let isConnected = status == .connected
+            let appIconImage = isConnected ? AppIconImage.statusConnected : AppIconImage.statusDisconnected
+            appIconImage.isTemplate = true
+            StatusItem.button?.image = appIconImage
+
+            let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
+            connectionStatusMenuItem.title = connectionStatusTitle
+        }
+
+        @objc func openApplication(_: AnyObject?) {
+            DDLogInfo("[StatusItemController] Opening application")
+            NSApp.activate(ignoringOtherApps: true)
+            guard let uiWindow = getUiWindow() else {
+                return
+            }
+            uiWindow.makeKeyAndOrderFront(self)
+        }
+
+        @objc func closeApplication(_: AnyObject?) {
+            DDLogInfo("[StatusItemController] Closing application")
+            NotificationCenter.default.post(name: .kAppQuit, object: nil)
+            NSApplication.shared.terminate(self)
         }
     }
-    return nil
-}
+
+    private func getUiWindow() -> NSWindow? {
+        for window in NSApp.windows {
+            if String(describing: window).contains("UINSWindow") {
+                return window
+            }
+        }
+        return nil
+    }
 #endif

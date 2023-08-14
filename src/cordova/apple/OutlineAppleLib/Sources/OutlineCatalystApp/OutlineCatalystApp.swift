@@ -13,48 +13,48 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
-import CocoaLumberjack
-import CocoaLumberjackSwift
-import Foundation
-import OutlineShared
-import ServiceManagement
+    import CocoaLumberjack
+    import CocoaLumberjackSwift
+    import Foundation
+    import OutlineAppKitBridge
+    import OutlinePlugin
+    import ServiceManagement
 
-@objcMembers
-public class OutlineCatalystApp : NSObject {
+    @objcMembers
+    public class OutlineCatalystApp: NSObject {
+        public static func initApp() {
+            DDLog.add(DDOSLogger.sharedInstance)
 
-    public static func initApp() {
-        DDLog.add(DDOSLogger.sharedInstance)
+            let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
 
-        let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
+            // Configure the window.
+            let scenes = UIApplication.shared.connectedScenes
+            for scene in scenes {
+                let windowScene = (scene as! UIWindowScene)
+                windowScene.titlebar?.titleVisibility = .hidden
+                windowScene.titlebar?.toolbar = nil
+                windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 550)
+                windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 550)
+            }
 
-        // Configure the window.
-        let scenes = UIApplication.shared.connectedScenes
-        for scene in scenes {
-            let windowScene = (scene as! UIWindowScene)
-            windowScene.titlebar?.titleVisibility = .hidden
-            windowScene.titlebar?.toolbar = nil
-            windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 550)
-            windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 550)
+            // Initiate the connection status menu in unknown state by default.
+            appKitBridge.setConnectionStatus(.unknown)
+
+            NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                appKitBridge.setConnectionStatus(.connected)
+            }
+            NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                appKitBridge.setConnectionStatus(.disconnected)
+            }
+
+            // Enable app launcher to start on boot.
+            appKitBridge.setAppLauncherEnabled(true)
         }
-
-        // Initiate the connection status menu in unknown state by default.
-        appKitBridge.setConnectionStatus(.unknown)
-
-        NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
-                                               object: nil,
-                                               queue: nil)
-        { _ in
-            appKitBridge.setConnectionStatus(.connected)
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
-                                               object: nil,
-                                               queue: nil)
-        { _ in
-            appKitBridge.setConnectionStatus(.disconnected)
-        }
-
-        // Enable app launcher to start on boot.
-        appKitBridge.setAppLauncherEnabled(true)
     }
-}
 #endif

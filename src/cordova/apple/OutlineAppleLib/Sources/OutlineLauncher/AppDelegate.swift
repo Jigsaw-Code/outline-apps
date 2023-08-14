@@ -13,52 +13,52 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
-import CocoaLumberjack
-import CocoaLumberjackSwift
-import NetworkExtension
-import UIKit
-import OutlineCatalystApp
+    import CocoaLumberjack
+    import CocoaLumberjackSwift
+    import NetworkExtension
+    import OutlineCatalystApp
+    import UIKit
 
-@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        DDLog.add(DDOSLogger.sharedInstance)
+    @UIApplicationMain
+    class AppDelegate: UIResponder, UIApplicationDelegate {
+        func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+            DDLog.add(DDOSLogger.sharedInstance)
 
-        let appKitBridge = createAppKitBridge()
-        shouldLaunchMainApp { shouldLaunch in
-            defer {
-                DDLogInfo("Exiting launcher...")
-                appKitBridge.terminate()
-            }
-            if !shouldLaunch {
-                DDLogInfo("Not launching, Outline not connected at shutdown")
-                return
-            }
-            DDLogInfo("Outline connected at shutdown. Launching")
+            let appKitBridge = createAppKitBridge()
+            shouldLaunchMainApp { shouldLaunch in
+                defer {
+                    DDLogInfo("Exiting launcher...")
+                    appKitBridge.terminate()
+                }
+                if !shouldLaunch {
+                    DDLogInfo("Not launching, Outline not connected at shutdown")
+                    return
+                }
+                DDLogInfo("Outline connected at shutdown. Launching")
 
-            guard let launcherBundleId = Bundle.main.bundleIdentifier else {
-                DDLogError("Failed to retrieve the bundle ID for the launcher app.")
-                return
+                guard let launcherBundleId = Bundle.main.bundleIdentifier else {
+                    DDLogError("Failed to retrieve the bundle ID for the launcher app.")
+                    return
+                }
+                appKitBridge.loadMainApp(launcherBundleId)
             }
-            appKitBridge.loadMainApp(launcherBundleId)
+            return true
         }
-        return true
-    }
 
-    // Returns whether the launcher should launch the main app.
-    private func shouldLaunchMainApp(completion: @escaping (Bool) -> Void) {
-        NETunnelProviderManager.loadAllFromPreferences { managers, error in
-            guard error == nil, managers != nil else {
-                DDLogError("Failed to get tunnel manager: \(String(describing: error))")
-                return completion(false)
+        // Returns whether the launcher should launch the main app.
+        private func shouldLaunchMainApp(completion: @escaping (Bool) -> Void) {
+            NETunnelProviderManager.loadAllFromPreferences { managers, error in
+                guard error == nil, managers != nil else {
+                    DDLogError("Failed to get tunnel manager: \(String(describing: error))")
+                    return completion(false)
+                }
+                guard let manager: NETunnelProviderManager = managers!.first, managers!.count > 0 else {
+                    DDLogError("No tunnel managers found.")
+                    return completion(false)
+                }
+                DDLogInfo("Tunnel manager found.")
+                return completion(manager.isOnDemandEnabled)
             }
-            guard let manager: NETunnelProviderManager = managers!.first, managers!.count > 0 else {
-                DDLogError("No tunnel managers found.")
-                return completion(false)
-            }
-            DDLogInfo("Tunnel manager found.")
-            return completion(manager.isOnDemandEnabled)
         }
     }
-}
 #endif

@@ -74,24 +74,24 @@
   <platform name="ios">
     <config-file target="config.xml" parent="/*">
       <feature name="OutlinePlugin">
-        <param name="ios-package" value="OutlinePlugin" />
+        <param name="ios-package" value="CDVOutline" />
         <param name="onload" value="true" />
       </feature>
     </config-file>
 
-    <source-file src="apple/src/OutlinePlugin.swift" />
+    <source-file src="apple/src/CDVOutline.swift" />
   </platform>
 
    <!-- macOS -->
   <platform name="osx">
     <config-file target="config.xml" parent="/*">
       <feature name="OutlinePlugin">
-        <param name="ios-package" value="OutlinePlugin" />
+        <param name="ios-package" value="CDVOutline" />
         <param name="onload" value="true" />
       </feature>
     </config-file>
 
-    <source-file src="apple/src/OutlinePlugin.swift" />
+    <source-file src="apple/src/CDVOutline.swift" />
     <resource-file src="apple/src/macos/Outline-Bridging-Header.h" />
   </platform>
 </plugin>
