@@ -14,6 +14,9 @@
 
 import Foundation
 
+// TODO: Move this to a better location and clean up where notifications get
+// sent and consumed.
+
 public extension Notification.Name {
     static let kAppQuit = Notification.Name("appQuit")
     static let kVpnConnected = Notification.Name("vpnConnected")

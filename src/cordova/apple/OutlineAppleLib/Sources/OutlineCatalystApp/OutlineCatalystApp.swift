@@ -38,6 +38,7 @@
             }
 
             // Initiate the connection status menu in unknown state by default.
+            // TODO: Check status in case the the VPN is already running.
             appKitBridge.setConnectionStatus(.unknown)
 
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
