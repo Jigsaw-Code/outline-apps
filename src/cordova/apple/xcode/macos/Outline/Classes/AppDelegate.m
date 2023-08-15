@@ -16,7 +16,7 @@
 #import "Outline-Swift.h"
 
 @import ServiceManagement;
-@import OutlineNotifications;
+@import OutlineNotification;
 @import OutlineTunnel;
 
 @interface AppDelegate()

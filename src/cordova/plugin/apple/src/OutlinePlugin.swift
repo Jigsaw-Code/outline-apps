@@ -18,7 +18,7 @@ import NetworkExtension
 import Sentry
 
 import OutlineSentryLogger
-import OutlineNotifications
+import OutlineNotification
 import OutlineTunnel
 
 @objcMembers
