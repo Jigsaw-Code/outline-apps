@@ -14,7 +14,7 @@
 
 import Foundation
 
-@objc(AppKitBridgeProtocol)
+@objc
 public protocol AppKitBridgeProtocol: NSObjectProtocol {
     init()
 
