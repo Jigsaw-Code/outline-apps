@@ -7,7 +7,7 @@
         <param name="ios-package" value="CDVDevice" />
     </feature>
     <feature name="OutlinePlugin">
-        <param name="ios-package" value="OutlinePlugin" />
+        <param name="ios-package" value="CDVOutline" />
         <param name="onload" value="true" />
     </feature>
     <feature name="Clipboard">
