@@ -25,8 +25,8 @@
                                                   keyEquivalent: "")
 
         private enum AppIconImage {
-            static let statusConnected = NSImage(named: NSImage.Name("StatusBarButtonImageConnected"))!
-            static let statusDisconnected = NSImage(named: NSImage.Name("StatusBarButtonImage"))!
+            static let statusConnected = getImage(name: "status_bar_button_image_connected")
+            static let statusDisconnected = getImage(name: "status_bar_button_image")
         }
 
         // TODO: Internationalize these user-facing strings.
@@ -90,4 +90,12 @@
         }
         return nil
     }
+
+    private func getImage(name: String) -> NSImage {
+        guard let image = Bundle.module.image(forResource: NSImage.Name(name)) else {
+            fatalError("Unable to load image asset named \(name).")
+        }
+        return image
+    }
+
 #endif

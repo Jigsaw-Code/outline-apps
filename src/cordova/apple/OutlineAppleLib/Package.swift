@@ -47,7 +47,9 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlinePlugin",
-            ]
+            ],
+            //resources: [.process("Resources")]
+            resources: [.process("Assets.xcassets")]
         ),
         .target(
             name: "PacketTunnelProvider",
