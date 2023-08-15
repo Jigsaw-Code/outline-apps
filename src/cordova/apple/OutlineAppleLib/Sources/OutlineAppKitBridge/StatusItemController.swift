@@ -15,7 +15,7 @@
 #if os(macOS)
     import AppKit
     import CocoaLumberjackSwift
-    import OutlinePlugin
+    import OutlineNotifications
 
     var StatusItem = NSStatusItem()
 

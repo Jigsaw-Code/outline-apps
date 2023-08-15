@@ -7,11 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0207DA581B56EA530066E2B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Assets.xcassets */; };
 		1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 91E45572BB494E9299D2DD41 /* CDVClipboard.m */; };
 		1CE7466BA73B4CCB838EBE21 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 941052A220F54953928FF2E2 /* libz.tbd */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
-		2A617D29B96942E58B082FAC /* CDVOutline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFAFA54943F490EAF4CD5BC /* CDVOutline.swift */; };
+		2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */; };
 		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; };
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
@@ -137,6 +138,7 @@
 
 /* Begin PBXFileReference section */
 		0168F53D3AFF46F5B346C874 /* CDVStatusBar.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVStatusBar.h; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; };
+		0207DA571B56EA530066E2B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Outline/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		0394302BA6114B2AB648D4FF /* CDVStatusBar.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVStatusBar.m; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -164,8 +166,7 @@
 		A271D42C2A708240009981B2 /* AppDelegate+Outline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+Outline.m"; sourceTree = "<group>"; };
 		A271D42E2A708253009981B2 /* AppDelegate+Outline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+Outline.h"; sourceTree = "<group>"; };
 		A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppKitBridge.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		A2EDA8AC2A8AF217006E6592 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AAFAFA54943F490EAF4CD5BC /* CDVOutline.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = CDVOutline.swift; path = "cordova-plugin-outline/CDVOutline.swift"; sourceTree = "<group>"; };
+		AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
@@ -279,8 +280,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				A2EDA8AC2A8AF217006E6592 /* Assets.xcassets */,
 				FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */,
+				0207DA571B56EA530066E2B4 /* Assets.xcassets */,
 				3047A50E1AB8057F00498E2A /* config */,
 				8D1107310486CEB800E47090 /* Outline-Info.plist */,
 				6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */,
@@ -322,7 +323,7 @@
 			children = (
 				0394302BA6114B2AB648D4FF /* CDVStatusBar.m */,
 				0168F53D3AFF46F5B346C874 /* CDVStatusBar.h */,
-				AAFAFA54943F490EAF4CD5BC /* CDVOutline.swift */,
+				AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */,
 				91E45572BB494E9299D2DD41 /* CDVClipboard.m */,
 				936C2951B7544BC8A20B6746 /* CDVClipboard.h */,
 			);
@@ -546,6 +547,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */,
+				0207DA581B56EA530066E2B4 /* Assets.xcassets in Resources */,
 				6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -578,7 +580,7 @@
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
-				2A617D29B96942E58B082FAC /* CDVOutline.swift in Sources */,
+				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
 				1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */,
 				A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */,
 			);
@@ -1016,7 +1018,6 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;

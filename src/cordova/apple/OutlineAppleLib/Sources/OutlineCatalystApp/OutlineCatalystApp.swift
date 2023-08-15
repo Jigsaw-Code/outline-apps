@@ -17,7 +17,7 @@
     import CocoaLumberjackSwift
     import Foundation
     import OutlineAppKitBridge
-    import OutlinePlugin
+    import OutlineNotifications
     import ServiceManagement
 
     @objcMembers

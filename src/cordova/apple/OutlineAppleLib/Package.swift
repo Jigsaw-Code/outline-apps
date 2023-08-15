@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlinePlugin"]
+            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotifications"]
         ),
         .library(
             name: "OutlineLauncher",
@@ -46,7 +46,7 @@ let package = Package(
             name: "OutlineAppKitBridge",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "OutlinePlugin",
+                "OutlineNotifications",
             ]
         ),
         .target(
@@ -60,15 +60,7 @@ let package = Package(
                 .headerSearchPath("Internal"),
             ]
         ),
-        .target(
-            name: "OutlinePlugin",
-            dependencies: [
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                .product(name: "Sentry", package: "sentry-cocoa"),
-                "OutlineSentryLogger",
-                "OutlineTunnel",
-            ]
-        ),
+        .target(name: "OutlineNotifications"),
         .target(
             name: "OutlineSentryLogger",
             dependencies: [
