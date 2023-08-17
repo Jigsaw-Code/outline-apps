@@ -17,7 +17,6 @@ package device
 import (
 	"fmt"
 
-	"github.com/Jigsaw-Code/outline-apps/outline/config"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -37,7 +36,7 @@ type OutlineDevice struct {
 
 // NewOutlineDevice creates a new [OutlineDevice] that can relay traffic to a remote Outline server.
 func NewOutlineDevice(configJSON string) (d *OutlineDevice, err error) {
-	config, err := config.ParseConfigFromJSON(configJSON)
+	config, err := parseConfigFromJSON(configJSON)
 	if err != nil {
 		return nil, err
 	}

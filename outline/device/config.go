@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package device
 
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"strconv"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
 
 // An internal configuration data structure to be used by Outline transports.
-type TransportConfig struct {
-	Hostname  string
-	Port      int
-	CryptoKey *shadowsocks.EncryptionKey
-	Prefix    []byte
+type transportConfig struct {
+	RemoteAddress string // the remote server address of "host:port"
+	CryptoKey     *shadowsocks.EncryptionKey
+	Prefix        []byte
 }
 
 // The configuration interface between the Outline backend and Outline apps.
@@ -39,9 +40,9 @@ type configJSON struct {
 	Prefix   string `json:"prefix"`
 }
 
-// ParseConfigFromJSON parses a transport configuration string in JSON format, and returns a corresponding
+// parseConfigFromJSON parses a transport configuration string in JSON format, and returns a corresponding
 // TransportConfig. The JSON string `in` must match the ShadowsocksSessionConfig interface defined in Outline Client.
-func ParseConfigFromJSON(in string) (config *TransportConfig, err error) {
+func parseConfigFromJSON(in string) (config *transportConfig, err error) {
 	var confJson configJSON
 	if err = json.Unmarshal([]byte(in), &confJson); err != nil {
 		return nil, err
@@ -50,9 +51,8 @@ func ParseConfigFromJSON(in string) (config *TransportConfig, err error) {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
 
-	config = &TransportConfig{
-		Hostname: confJson.Host,
-		Port:     int(confJson.Port),
+	config = &transportConfig{
+		RemoteAddress: net.JoinHostPort(confJson.Host, strconv.Itoa(int(confJson.Port))),
 	}
 	if config.CryptoKey, err = shadowsocks.NewEncryptionKey(confJson.Method, confJson.Password); err != nil {
 		return nil, fmt.Errorf("invalid cipher: %w", err)

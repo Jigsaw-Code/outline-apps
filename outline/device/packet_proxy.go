@@ -17,14 +17,10 @@ package device
 import (
 	"context"
 	"fmt"
-	"net"
-	"strconv"
 
-	"github.com/Jigsaw-Code/outline-apps/outline/config"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
-	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 	"github.com/Jigsaw-Code/outline-sdk/x/connectivity"
 )
 
@@ -34,10 +30,14 @@ type outlinePacketProxy struct {
 	remotePktListener transport.PacketListener // this will be used in connectivity test
 }
 
-func newOutlinePacketProxy(config *config.TransportConfig) (proxy *outlinePacketProxy, err error) {
+func newOutlinePacketProxy(config *transportConfig) (proxy *outlinePacketProxy, err error) {
 	proxy = &outlinePacketProxy{}
 
-	if proxy.remotePktListener, proxy.remote, err = makeRemotePacketProxy(config); err != nil {
+	if proxy.remotePktListener, err = newOutlinePacketListener(config); err != nil {
+		return nil, fmt.Errorf("failed to create packet listener: %w", err)
+	}
+
+	if proxy.remote, err = network.NewPacketProxyFromPacketListener(proxy.remotePktListener); err != nil {
 		return nil, fmt.Errorf("failed to create packet proxy: %w", err)
 	}
 
@@ -49,21 +49,6 @@ func newOutlinePacketProxy(config *config.TransportConfig) (proxy *outlinePacket
 		return nil, fmt.Errorf("failed to create mutable packet proxy: %w", err)
 	}
 
-	return
-}
-
-// makeRemotePacketProxy creates a pair of [transport.PacketListener] and [network.PacketProxy] that connects to the
-// remote proxy using `config`.
-func makeRemotePacketProxy(
-	config *config.TransportConfig,
-) (pl transport.PacketListener, pp network.PacketProxy, err error) {
-	server := net.JoinHostPort(config.Hostname, strconv.Itoa(config.Port))
-	if pl, err = shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: server}, config.CryptoKey); err != nil {
-		return nil, nil, err
-	}
-	if pp, err = network.NewPacketProxyFromPacketListener(pl); err != nil {
-		return nil, nil, err
-	}
 	return
 }
 

@@ -19,14 +19,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
 
-// newOutlineStreamDialer creates a [transport.StreamDialer] that connects to the remote proxy using `config`.
-func newOutlineStreamDialer(config *transportConfig) (transport.StreamDialer, error) {
-	dialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: config.RemoteAddress}, config.CryptoKey)
-	if err != nil {
-		return nil, err
-	}
-	if len(config.Prefix) > 0 {
-		dialer.SaltGenerator = shadowsocks.NewPrefixSaltGenerator(config.Prefix)
-	}
-	return dialer, nil
+// newOutlinePacketListener creates a [transport.PacketListener] that connects to the remote proxy using `config`.
+func newOutlinePacketListener(config *transportConfig) (transport.PacketListener, error) {
+	return shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: config.RemoteAddress}, config.CryptoKey)
 }

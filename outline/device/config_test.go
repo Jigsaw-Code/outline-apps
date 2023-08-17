@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package device
 
 import (
 	"testing"
@@ -22,45 +22,39 @@ import (
 
 func Test_ParseConfigFromJSON(t *testing.T) {
 	tests := []struct {
-		name         string
-		input        string
-		expectErr    bool
-		expectHost   string
-		expectPort   int
-		expectPrefix []byte
+		name          string
+		input         string
+		expectErr     bool
+		expectAddress string
+		expectPrefix  []byte
 	}{
 		{
-			name:       "normal config",
-			input:      `{"host":"192.0.2.1","port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
-			expectHost: "192.0.2.1",
-			expectPort: 12345,
+			name:          "normal config",
+			input:         `{"host":"192.0.2.1","port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
+			expectAddress: "192.0.2.1:12345",
 		},
 		{
-			name:         "normal config with prefix",
-			input:        `{"host":"192.0.2.1","port":12345,"method":"aes-128-gcm","password":"abcd1234","prefix":"abc 123"}`,
-			expectHost:   "192.0.2.1",
-			expectPort:   12345,
-			expectPrefix: []byte("abc 123"),
+			name:          "normal config with prefix",
+			input:         `{"host":"192.0.2.1","port":12345,"method":"aes-128-gcm","password":"abcd1234","prefix":"abc 123"}`,
+			expectAddress: "192.0.2.1:12345",
+			expectPrefix:  []byte("abc 123"),
 		},
 		{
-			name:       "normal config with extra fields",
-			input:      `{"extra_field":"ignored","host":"192.0.2.1","port":12345,"method":"aes-192-gcm","password":"abcd1234"}`,
-			expectHost: "192.0.2.1",
-			expectPort: 12345,
+			name:          "normal config with extra fields",
+			input:         `{"extra_field":"ignored","host":"192.0.2.1","port":12345,"method":"aes-192-gcm","password":"abcd1234"}`,
+			expectAddress: "192.0.2.1:12345",
 		},
 		{
-			name:         "unprintable prefix",
-			input:        `{"host":"192.0.2.1","port":12345,"method":"AES-256-gcm","password":"abcd1234","prefix":"abc 123","prefix":"\u0000\u0080\u00ff"}`,
-			expectHost:   "192.0.2.1",
-			expectPort:   12345,
-			expectPrefix: []byte{0x00, 0x80, 0xff},
+			name:          "unprintable prefix",
+			input:         `{"host":"192.0.2.1","port":12345,"method":"AES-256-gcm","password":"abcd1234","prefix":"abc 123","prefix":"\u0000\u0080\u00ff"}`,
+			expectAddress: "192.0.2.1:12345",
+			expectPrefix:  []byte{0x00, 0x80, 0xff},
 		},
 		{
-			name:         "multi-byte utf-8 prefix",
-			input:        `{"host":"192.0.2.1","port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"abc 123","prefix":"` + "\xc2\x80\xc2\x81\xc3\xbd\xc3\xbf" + `"}`,
-			expectHost:   "192.0.2.1",
-			expectPort:   12345,
-			expectPrefix: []byte{0x80, 0x81, 0xfd, 0xff},
+			name:          "multi-byte utf-8 prefix",
+			input:         `{"host":"192.0.2.1","port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"abc 123","prefix":"` + "\xc2\x80\xc2\x81\xc3\xbd\xc3\xbf" + `"}`,
+			expectAddress: "192.0.2.1:12345",
+			expectPrefix:  []byte{0x80, 0x81, 0xfd, 0xff},
 		},
 		{
 			name:      "missing host",
@@ -73,10 +67,9 @@ func Test_ParseConfigFromJSON(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:       "missing method",
-			input:      `{"host":"192.0.2.1","port":12345,"password":"abcd1234"}`,
-			expectHost: "192.0.2.1",
-			expectErr:  true,
+			name:      "missing method",
+			input:     `{"host":"192.0.2.1","port":12345,"password":"abcd1234"}`,
+			expectErr: true,
 		},
 		{
 			name:      "missing password",
@@ -126,13 +119,12 @@ func Test_ParseConfigFromJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseConfigFromJSON(tt.input)
+			got, err := parseConfigFromJSON(tt.input)
 			if tt.expectErr {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, tt.expectHost, got.Hostname)
-				require.Equal(t, tt.expectPort, got.Port)
+				require.Equal(t, tt.expectAddress, got.RemoteAddress)
 				require.NotNil(t, got.CryptoKey)
 				require.Equal(t, tt.expectPrefix, got.Prefix)
 			}
