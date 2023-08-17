@@ -2,6 +2,7 @@
 /.build
 /Packages
 /*.xcodeproj
+/*.xcframework
 xcuserdata/
 DerivedData/
 .swiftpm/config/registries.json

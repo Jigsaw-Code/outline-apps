@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
+		0207DA581B56EA530066E2B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Assets.xcassets */; };
 		1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 91E45572BB494E9299D2DD41 /* CDVClipboard.m */; };
 		1CE7466BA73B4CCB838EBE21 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 941052A220F54953928FF2E2 /* libz.tbd */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
@@ -16,14 +16,22 @@
 		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; };
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
-		3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		52CBB892295BD8F200D0073F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB891295BD8F200D0073F /* CocoaLumberjack */; };
-		52CBB894295BD8F200D0073F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBB893295BD8F200D0073F /* CocoaLumberjackSwift */; };
+		3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions (2 items) */ = {isa = PBXBuildFile; fileRef = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		52CE53E7295B6A310064D03D /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 52CE53E6295B6A310064D03D /* Sentry */; };
 		52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52E783052A5880CF00355E64 /* PacketTunnelProvider */; };
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		F63DC2182970AFFA00D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2172970AFFA00D92E0A /* OutlineAppleLib */; };
+		A271D4202A7069D8009981B2 /* OutlineLauncher in Frameworks */ = {isa = PBXBuildFile; productRef = A271D41F2A7069D8009981B2 /* OutlineLauncher */; };
+		A271D4222A706CB9009981B2 /* OutlineAppKitBridge in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4212A706CB9009981B2 /* OutlineAppKitBridge */; };
+		A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A271D42C2A708240009981B2 /* AppDelegate+Outline.m */; };
+		A271D4302A708278009981B2 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A271D42F2A708278009981B2 /* CocoaLumberjack */; };
+		A271D4322A708278009981B2 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4312A708278009981B2 /* CocoaLumberjackSwift */; };
+		A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4332A70829D009981B2 /* OutlineAppleLib */; };
+		A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
+		A27F43AB29F6EC43002C3678 /* www in CopyFiles */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
+		A2A83B392A1C5B2E00755F56 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A2B8C14D2A58B70E0054487E /* AppKitBridge.bundle in Embed PlugIns */ = {isa = PBXBuildFile; fileRef = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A2DBB2FB2A00D2F90017E696 /* AppKitBridge.bundle in Embed App Extensions (2 items) */ = {isa = PBXBuildFile; fileRef = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 		FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 /* End PBXBuildFile section */
@@ -57,35 +65,80 @@
 			remoteGlobalIDString = C0C01EB21E3911D50056E6CB;
 			remoteInfo = Cordova;
 		};
+		A2B8C14E2A58B70E0054487E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A2DBB2F52A00D2DD0017E696;
+			remoteInfo = AppKitBridge;
+		};
+		A2DBB3032A00D5F90017E696 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A2DBB2F52A00D2DD0017E696;
+			remoteInfo = AppKitBridge;
+		};
+		A2F6068D2A1C6D4A0039183A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A26D262C2A1C41B1009838E0;
+			remoteInfo = OutlineLauncher;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		3B0347571F212F0200C8EF1F /* Embed App Extensions */ = {
+		3B0347571F212F0200C8EF1F /* Embed App Extensions (2 items) */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions */,
+				A2DBB2FB2A00D2F90017E696 /* AppKitBridge.bundle in Embed App Extensions (2 items) */,
+				3B0347531F212F0200C8EF1F /* VpnExtension.appex in Embed App Extensions (2 items) */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed App Extensions (2 items)";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3B0347691F21321500C8EF1F /* Embed Frameworks */ = {
+		A27F43A929F6EC1C002C3678 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 10;
+			dstSubfolderSpec = 7;
 			files = (
+				A27F43AA29F6EC43002C3678 /* config.xml in CopyFiles */,
+				A27F43AB29F6EC43002C3678 /* www in CopyFiles */,
 			);
-			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2A83B382A1C5B0C00755F56 /* Copy OutlineLauncher */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				A2A83B392A1C5B2E00755F56 /* OutlineLauncher.app in Copy OutlineLauncher */,
+			);
+			name = "Copy OutlineLauncher";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2B8C1502A58B70E0054487E /* Embed PlugIns */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A2B8C14D2A58B70E0054487E /* AppKitBridge.bundle in Embed PlugIns */,
+			);
+			name = "Embed PlugIns";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0168F53D3AFF46F5B346C874 /* CDVStatusBar.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVStatusBar.h; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; };
-		0207DA571B56EA530066E2B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Outline/Images.xcassets; sourceTree = SOURCE_ROOT; };
+		0207DA571B56EA530066E2B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Outline/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		0394302BA6114B2AB648D4FF /* CDVStatusBar.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVStatusBar.m; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -108,6 +161,11 @@
 		91E45572BB494E9299D2DD41 /* CDVClipboard.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVClipboard.m; path = "cordova-plugin-clipboard/CDVClipboard.m"; sourceTree = "<group>"; };
 		936C2951B7544BC8A20B6746 /* CDVClipboard.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVClipboard.h; path = "cordova-plugin-clipboard/CDVClipboard.h"; sourceTree = "<group>"; };
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
+		A271D42C2A708240009981B2 /* AppDelegate+Outline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+Outline.m"; sourceTree = "<group>"; };
+		A271D42E2A708253009981B2 /* AppDelegate+Outline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+Outline.h"; sourceTree = "<group>"; };
+		A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppKitBridge.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
@@ -123,12 +181,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A271D4302A708278009981B2 /* CocoaLumberjack in Frameworks */,
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
 				FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */,
-				52CBB894295BD8F200D0073F /* CocoaLumberjackSwift in Frameworks */,
+				A271D4322A708278009981B2 /* CocoaLumberjackSwift in Frameworks */,
+				A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */,
 				52CE53E7295B6A310064D03D /* Sentry in Frameworks */,
-				F63DC2182970AFFA00D92E0A /* OutlineAppleLib in Frameworks */,
-				52CBB892295BD8F200D0073F /* CocoaLumberjack in Frameworks */,
 				1CE7466BA73B4CCB838EBE21 /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -139,6 +197,22 @@
 			files = (
 				FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */,
 				52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A26D262A2A1C41B1009838E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A271D4202A7069D8009981B2 /* OutlineLauncher in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2DBB2F32A00D2DD0017E696 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A271D4222A706CB9009981B2 /* OutlineAppKitBridge in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +227,8 @@
 				302D95F014D2391D003F00A1 /* MainViewController.xib */,
 				1D3623240D0F684500981E51 /* AppDelegate.h */,
 				1D3623250D0F684500981E51 /* AppDelegate.m */,
+				A271D42C2A708240009981B2 /* AppDelegate+Outline.m */,
+				A271D42E2A708253009981B2 /* AppDelegate+Outline.h */,
 			);
 			name = Classes;
 			path = Outline/Classes;
@@ -163,6 +239,8 @@
 			children = (
 				1D6058910D05DD3D006BFB54 /* Outline.app */,
 				3B0347481F212F0100C8EF1F /* VpnExtension.appex */,
+				A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */,
+				A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -181,6 +259,7 @@
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				3B0347491F212F0200C8EF1F /* VpnExtension */,
+				A26D262E2A1C41B1009838E0 /* OutlineLauncher */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -202,7 +281,7 @@
 			isa = PBXGroup;
 			children = (
 				FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */,
-				0207DA571B56EA530066E2B4 /* Images.xcassets */,
+				0207DA571B56EA530066E2B4 /* Assets.xcassets */,
 				3047A50E1AB8057F00498E2A /* config */,
 				8D1107310486CEB800E47090 /* Outline-Info.plist */,
 				6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */,
@@ -261,6 +340,14 @@
 			path = Outline/Resources/vpn;
 			sourceTree = "<group>";
 		};
+		A26D262E2A1C41B1009838E0 /* OutlineLauncher */ = {
+			isa = PBXGroup;
+			children = (
+				A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */,
+			);
+			path = OutlineLauncher;
+			sourceTree = "<group>";
+		};
 		EB87FDF11871DA420020F90C /* Staging */ = {
 			isa = PBXGroup;
 			children = (
@@ -285,26 +372,28 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "Outline" */;
 			buildPhases = (
-				304B58A110DAC018002A0835 /* Copy www directory */,
+				A27F43A929F6EC1C002C3678 /* CopyFiles */,
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
-				3B0347571F212F0200C8EF1F /* Embed App Extensions */,
-				3B0347691F21321500C8EF1F /* Embed Frameworks */,
+				A2A83B382A1C5B0C00755F56 /* Copy OutlineLauncher */,
+				3B0347571F212F0200C8EF1F /* Embed App Extensions (2 items) */,
 				FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A2F6068E2A1C6D4A0039183A /* PBXTargetDependency */,
+				A2DBB3042A00D5F90017E696 /* PBXTargetDependency */,
 				301BF551109A68C00062928A /* PBXTargetDependency */,
 				3B0347521F212F0200C8EF1F /* PBXTargetDependency */,
 			);
 			name = Outline;
 			packageProductDependencies = (
 				52CE53E6295B6A310064D03D /* Sentry */,
-				52CBB891295BD8F200D0073F /* CocoaLumberjack */,
-				52CBB893295BD8F200D0073F /* CocoaLumberjackSwift */,
-				F63DC2172970AFFA00D92E0A /* OutlineAppleLib */,
+				A271D42F2A708278009981B2 /* CocoaLumberjack */,
+				A271D4312A708278009981B2 /* CocoaLumberjackSwift */,
+				A271D4332A70829D009981B2 /* OutlineAppleLib */,
 			);
 			productName = Outline;
 			productReference = 1D6058910D05DD3D006BFB54 /* Outline.app */;
@@ -316,7 +405,6 @@
 			buildPhases = (
 				3B0347441F212F0100C8EF1F /* Sources */,
 				3B0347451F212F0100C8EF1F /* Frameworks */,
-				3B0347461F212F0100C8EF1F /* Resources */,
 			);
 			buildRules = (
 			);
@@ -330,12 +418,53 @@
 			productReference = 3B0347481F212F0100C8EF1F /* VpnExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		A26D262C2A1C41B1009838E0 /* OutlineLauncher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
+			buildPhases = (
+				A25EB8812A8437D700B92EE0 /* Sources */,
+				A26D262A2A1C41B1009838E0 /* Frameworks */,
+				A2B8C1502A58B70E0054487E /* Embed PlugIns */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A2B8C14F2A58B70E0054487E /* PBXTargetDependency */,
+			);
+			name = OutlineLauncher;
+			packageProductDependencies = (
+				A271D41F2A7069D8009981B2 /* OutlineLauncher */,
+			);
+			productName = OutlineLauncher;
+			productReference = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A2DBB2F52A00D2DD0017E696 /* AppKitBridge */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */;
+			buildPhases = (
+				A2DBB2F22A00D2DD0017E696 /* Sources */,
+				A2DBB2F32A00D2DD0017E696 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AppKitBridge;
+			packageProductDependencies = (
+				A271D4212A706CB9009981B2 /* OutlineAppKitBridge */,
+			);
+			productName = AppKitBridge;
+			productReference = A2DBB2F62A00D2DD0017E696 /* AppKitBridge.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1010;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
@@ -354,6 +483,13 @@
 								enabled = 1;
 							};
 						};
+					};
+					A26D262C2A1C41B1009838E0 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					A2DBB2F52A00D2DD0017E696 = {
+						CreatedOnToolsVersion = 14.3;
+						LastSwiftMigration = 1430;
 					};
 				};
 			};
@@ -382,6 +518,8 @@
 			targets = (
 				1D6058900D05DD3D006BFB54 /* Outline */,
 				3B0347471F212F0100C8EF1F /* VpnExtension */,
+				A2DBB2F52A00D2DD0017E696 /* AppKitBridge */,
+				A26D262C2A1C41B1009838E0 /* OutlineLauncher */,
 			);
 		};
 /* End PBXProject section */
@@ -409,36 +547,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */,
-				0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */,
+				0207DA581B56EA530066E2B4 /* Assets.xcassets in Resources */,
 				6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3B0347461F212F0100C8EF1F /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		304B58A110DAC018002A0835 /* Copy www directory */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy www directory";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Outline/Scripts/copy-www-build-step.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -466,10 +582,25 @@
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
 				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
 				1273B4E700B84E31B2528701 /* CDVClipboard.m in Sources */,
+				A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3B0347441F212F0100C8EF1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A25EB8812A8437D700B92EE0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2DBB2F22A00D2DD0017E696 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -488,6 +619,24 @@
 			isa = PBXTargetDependency;
 			target = 3B0347471F212F0100C8EF1F /* VpnExtension */;
 			targetProxy = 3B0347511F212F0200C8EF1F /* PBXContainerItemProxy */;
+		};
+		A2B8C14F2A58B70E0054487E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
+			target = A2DBB2F52A00D2DD0017E696 /* AppKitBridge */;
+			targetProxy = A2B8C14E2A58B70E0054487E /* PBXContainerItemProxy */;
+		};
+		A2DBB3042A00D5F90017E696 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
+			target = A2DBB2F52A00D2DD0017E696 /* AppKitBridge */;
+			targetProxy = A2DBB3032A00D5F90017E696 /* PBXContainerItemProxy */;
+		};
+		A2F6068E2A1C6D4A0039183A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
+			target = A26D262C2A1C41B1009838E0 /* OutlineLauncher */;
+			targetProxy = A2F6068D2A1C6D4A0039183A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -525,13 +674,17 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = org.outline.macos.client;
 				PRODUCT_NAME = Outline;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VALIDATE_WORKSPACE = NO;
 			};
 			name = Debug;
@@ -568,12 +721,16 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = org.outline.macos.client;
 				PRODUCT_NAME = Outline;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VALIDATE_WORKSPACE = NO;
 			};
 			name = Release;
@@ -623,10 +780,12 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = org.outline.macos.client.VpnExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -673,14 +832,218 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = org.outline.ios.client.VpnExtension;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = org.outline.macos.client.VpnExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				STRIP_BITCODE_FROM_COPIED_FILES = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A26D263A2A1C41B4009838E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		A26D263B2A1C41B4009838E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		A2DBB2F82A00D2DD0017E696 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.AppKitBridge;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Outline/Classes/AppKitBridge/AppKitBridge-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Debug;
+		};
+		A2DBB2F92A00D2DD0017E696 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.AppKitBridge;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Outline/Classes/AppKitBridge/AppKitBridge-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;
 		};
@@ -720,6 +1083,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
@@ -762,6 +1126,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -785,6 +1150,24 @@
 			buildConfigurations = (
 				3B0347551F212F0200C8EF1F /* Debug */,
 				3B0347561F212F0200C8EF1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A26D263A2A1C41B4009838E0 /* Debug */,
+				A26D263B2A1C41B4009838E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A2DBB2F72A00D2DD0017E696 /* Build configuration list for PBXNativeTarget "AppKitBridge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A2DBB2F82A00D2DD0017E696 /* Debug */,
+				A2DBB2F92A00D2DD0017E696 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -820,16 +1203,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		52CBB891295BD8F200D0073F /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		52CBB893295BD8F200D0073F /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
 		52CE53E6295B6A310064D03D /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
@@ -839,7 +1212,25 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = PacketTunnelProvider;
 		};
-		F63DC2172970AFFA00D92E0A /* OutlineAppleLib */ = {
+		A271D41F2A7069D8009981B2 /* OutlineLauncher */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineLauncher;
+		};
+		A271D4212A706CB9009981B2 /* OutlineAppKitBridge */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineAppKitBridge;
+		};
+		A271D42F2A708278009981B2 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		A271D4312A708278009981B2 /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		A271D4332A70829D009981B2 /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
 		};
