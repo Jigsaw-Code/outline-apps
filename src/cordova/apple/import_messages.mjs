@@ -15,7 +15,7 @@
 import path from 'path';
 import I18N from 'i18n-strings-files';
 
-const STRINGS_DIR = ['src', 'cordova', 'apple', 'xcode', 'ios', 'Outline', 'Resources'];
+const STRINGS_DIR = ['src', 'cordova', 'apple', 'OutlineAppleLib', 'Sources', 'OutlineAppKitBridge', 'Resources', 'Strings'];
 const STRINGS_FILENAME = 'Localizable.strings';
 
 function getNativeLocale(locale) {

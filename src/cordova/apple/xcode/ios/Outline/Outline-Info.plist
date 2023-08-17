@@ -38,6 +38,8 @@
 	<string>0</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSUIElement</key>

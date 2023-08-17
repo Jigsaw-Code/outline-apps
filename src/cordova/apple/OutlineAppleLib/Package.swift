@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "OutlineAppleLib",
+    defaultLocalization: "en",
     products: [
         .library(
             name: "OutlineAppleLib",
