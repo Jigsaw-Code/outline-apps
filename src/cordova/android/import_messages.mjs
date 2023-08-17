@@ -30,14 +30,14 @@ function escapeXmlCharacters(str) {
     .replace(/&/g, '\\&');
 }
 
-function getNativeLocale(polymerLang) {
-  switch (polymerLang) {
+function getNativeLocale(locale) {
+  switch (locale) {
     case 'es-419':
       return 'es';
     case 'sr-Latn':
       return 'b+sr+Latn';
     default:
-      return polymerLang.replace('-', '-r');
+      return locale.replace('-', '-r');
   }
 }
 
@@ -46,8 +46,8 @@ function getNativeLocale(polymerLang) {
  * @param {string} locale A locale for which to get a strings filepath.
  * @returns {string} The filepath.
  */
-export function getStringsFilepath(polymerLang) {
-  const localeSuffix = polymerLang ? `-${getNativeLocale(polymerLang)}` : '';
+export function getStringsFilepath(locale) {
+  const localeSuffix = locale ? `-${getNativeLocale(locale)}` : '';
   return path.join(...STRINGS_DIR, `values${localeSuffix}`, STRINGS_FILENAME);
 }
 

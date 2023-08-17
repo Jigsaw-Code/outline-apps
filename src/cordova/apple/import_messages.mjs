@@ -18,13 +18,24 @@ import I18N from 'i18n-strings-files';
 const STRINGS_DIR = ['src', 'cordova', 'apple', 'xcode', 'ios', 'Outline', 'Resources'];
 const STRINGS_FILENAME = 'Localizable.strings';
 
+function getNativeLocale(locale) {
+  switch (locale) {
+    case 'zh-CN':
+      return 'zh-Hans';
+    case 'zh-TW':
+      return 'zh-Hant';
+    default:
+      return locale;
+  }
+}
+
 /**
  * Retrieves a filepath for a given locale to read/write strings to.
  * @param {string} locale A locale for which to get a strings filepath.
  * @returns {string} The filepath.
  */
 export function getStringsFilepath(locale) {
-  return path.join(...STRINGS_DIR, `${locale}.lproj`, STRINGS_FILENAME);
+  return path.join(...STRINGS_DIR, `${getNativeLocale(locale)}.lproj`, STRINGS_FILENAME);
 }
 
 /**
