@@ -18,29 +18,30 @@ import NetworkExtension
 import Sentry
 
 import OutlineSentryLogger
+import OutlineNotification
 import OutlineTunnel
 
 @objcMembers
 class OutlinePlugin: CDVPlugin {
-    
+
     private enum Action {
-        static let start = "start"
-        static let stop = "stop"
-        static let onStatusChange = "onStatusChange"
+      static let start = "start"
+      static let stop = "stop"
+      static let onStatusChange = "onStatusChange"
     }
-    
-    public static let kAppQuitNotification = "outlinePluginAppQuitNotification"
-    public static let kVpnConnectedNotification = "outlineVpnConnected"
-    public static let kVpnDisconnectedNotification = "outlineVpnDisconnected"
-    public static let kMaxBreadcrumbs: Int = 100
-    
+
+    public static let kMaxBreadcrumbs: UInt = 100
+
     private var sentryLogger: OutlineSentryLogger!
     private var callbacks: [String: String]!
-    
+
 #if os(macOS)
     // cordova-osx does not support URL interception. Until it does, we have version-controlled
     // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
     private var urlHandler: CDVMacOsUrlHandler?
+#endif
+#if os(macOS) || targetEnvironment(macCatalyst)
+
     private static let kPlatform = "macOS"
     private static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
 #else
@@ -51,22 +52,25 @@ class OutlinePlugin: CDVPlugin {
     override func pluginInitialize() {
         self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
         callbacks = [String: String]()
-        
+
         OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
-        
+
 #if os(macOS)
         self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
+#endif
+
+#if os(macOS) || targetEnvironment(macCatalyst)
         NotificationCenter.default.addObserver(
             self, selector: #selector(self.stopVpnOnAppQuit),
-            name: NSNotification.Name(rawValue: OutlinePlugin.kAppQuitNotification),
+            name: .kAppQuit,
             object: nil)
 #endif
-        
+
 #if os(iOS)
         self.migrateLocalStorage()
 #endif
     }
-    
+
     /**
      Starts the VPN. This method is idempotent for a given tunnel.
      - Parameters:
@@ -87,9 +91,8 @@ class OutlinePlugin: CDVPlugin {
         }
         OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
-#if os(macOS)
-                NotificationCenter.default.post(
-                    name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+#if os(macOS) || targetEnvironment(macCatalyst)
+                NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
                 self.sendSuccess(callbackId: command.callbackId)
             } else {
@@ -98,7 +101,7 @@ class OutlinePlugin: CDVPlugin {
             }
         }
     }
-    
+
     /**
      Stops the VPN. Sends an error if the given tunnel is not running.
      - Parameters:
@@ -112,12 +115,11 @@ class OutlinePlugin: CDVPlugin {
         DDLogInfo("\(Action.stop) \(tunnelId)")
         OutlineVpn.shared.stop(tunnelId)
         sendSuccess(callbackId: command.callbackId)
-#if os(macOS)
-        NotificationCenter.default.post(
-            name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+#if os(macOS) || targetEnvironment(macCatalyst)
+        NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
 #endif
     }
-    
+
     func isRunning(_ command: CDVInvokedUrlCommand) {
         guard let tunnelId = command.argument(at: 0) as? String else {
             return sendError("Missing tunnel ID", callbackId: command.callbackId)
@@ -125,7 +127,7 @@ class OutlinePlugin: CDVPlugin {
         DDLogInfo("isRunning \(tunnelId)")
         sendSuccess(OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
     }
-    
+
     func onStatusChange(_ command: CDVInvokedUrlCommand) {
         guard let tunnelId = command.argument(at: 0) as? String else {
             return sendError("Missing tunnel ID", callbackId: command.callbackId)
@@ -133,9 +135,9 @@ class OutlinePlugin: CDVPlugin {
         DDLogInfo("\(Action.onStatusChange) \(tunnelId)")
         setCallbackId(command.callbackId!, action: Action.onStatusChange, tunnelId: tunnelId)
     }
-    
+
     // MARK: Error reporting
-    
+
     func initializeErrorReporting(_ command: CDVInvokedUrlCommand) {
         DDLogInfo("initializeErrorReporting")
         guard let sentryDsn = command.argument(at: 0) as? String else {
@@ -160,7 +162,7 @@ class OutlinePlugin: CDVPlugin {
         }
         sendSuccess(true, callbackId: command.callbackId)
     }
-    
+
     func reportEvents(_ command: CDVInvokedUrlCommand) {
         var uuid: String
         if let eventId = command.argument(at: 0) as? String {
@@ -172,76 +174,74 @@ class OutlinePlugin: CDVPlugin {
         } else {
             uuid = NSUUID().uuidString
         }
-        self.sentryLogger.addVpnExtensionLogsToSentry(maxBreadcrumbsToAdd: OutlinePlugin.kMaxBreadcrumbs / 2)
+        self.sentryLogger.addVpnExtensionLogsToSentry(maxBreadcrumbsToAdd: Int(OutlinePlugin.kMaxBreadcrumbs / 2))
         SentrySDK.capture(message: "\(OutlinePlugin.kPlatform) report (\(uuid))") { scope in
             scope.setLevel(.info)
         }
         self.sendSuccess(true, callbackId: command.callbackId)
     }
-    
+
 #if os(macOS)
     func quitApplication(_ command: CDVInvokedUrlCommand) {
         NSApplication.shared.terminate(self)
     }
 #endif
-    
-    // MARK: Helpers
-    
-    @objc private func stopVpnOnAppQuit() {
-        if let activeTunnelId = OutlineVpn.shared.activeTunnelId {
-            OutlineVpn.shared.stop(activeTunnelId)
-        }
+
+  // MARK: Helpers
+
+  @objc private func stopVpnOnAppQuit() {
+    if let activeTunnelId = OutlineVpn.shared.activeTunnelId {
+      OutlineVpn.shared.stop(activeTunnelId)
     }
-    
-    // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
-    // tunnel.
-    func onVpnStatusChange(vpnStatus: NEVPNStatus, tunnelId: String) {
-        var tunnelStatus: Int
-        switch vpnStatus {
-        case .connected:
-#if os(macOS)
-            NotificationCenter.default.post(
-                name: NSNotification.Name(rawValue: OutlinePlugin.kVpnConnectedNotification), object: nil)
+  }
+
+  // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
+  // tunnel.
+  func onVpnStatusChange(vpnStatus: NEVPNStatus, tunnelId: String) {
+    var tunnelStatus: Int
+    switch vpnStatus {
+      case .connected:
+#if os(macOS) || targetEnvironment(macCatalyst)
+          NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
-            tunnelStatus = OutlineTunnel.TunnelStatus.connected.rawValue
-        case .disconnected:
-#if os(macOS)
-            NotificationCenter.default.post(
-                name: NSNotification.Name(rawValue: OutlinePlugin.kVpnDisconnectedNotification), object: nil)
+        tunnelStatus = OutlineTunnel.TunnelStatus.connected.rawValue
+      case .disconnected:
+#if os(macOS) || targetEnvironment(macCatalyst)
+            NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
 #endif
-            tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
-        case .reasserting:
-            tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
-        default:
-            return;  // Do not report transient or invalid states.
-        }
-        DDLogDebug("Calling onStatusChange (\(tunnelStatus)) for tunnel \(tunnelId)")
-        if let callbackId = getCallbackIdFor(action: Action.onStatusChange,
-                                             tunnelId: tunnelId,
-                                             keepCallback: true) {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: Int32(tunnelStatus))
-            send(pluginResult: result, callbackId: callbackId, keepCallback: true)
-        }
+        tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
+      case .reasserting:
+        tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
+      default:
+        return;  // Do not report transient or invalid states.
     }
-    
-    // Returns whether |config| contains all the expected keys
-    private func containsExpectedKeys(_ configJson: [String: Any]?) -> Bool {
-        return configJson?["host"] != nil && configJson?["port"] != nil &&
+    DDLogDebug("Calling onStatusChange (\(tunnelStatus)) for tunnel \(tunnelId)")
+    if let callbackId = getCallbackIdFor(action: Action.onStatusChange,
+                                         tunnelId: tunnelId,
+                                         keepCallback: true) {
+      let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: Int32(tunnelStatus))
+      send(pluginResult: result, callbackId: callbackId, keepCallback: true)
+    }
+  }
+
+  // Returns whether |config| contains all the expected keys
+  private func containsExpectedKeys(_ configJson: [String: Any]?) -> Bool {
+    return configJson?["host"] != nil && configJson?["port"] != nil &&
         configJson?["password"] != nil && configJson?["method"] != nil
     }
-    
+
     // MARK: Callback helpers
-    
+
     private func sendSuccess(callbackId: String, keepCallback: Bool = false) {
         let result = CDVPluginResult(status: CDVCommandStatus_OK)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
-    
+
     private func sendSuccess(_ operationResult: Bool, callbackId: String, keepCallback: Bool = false) {
         let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
-    
+
     private func sendError(_ message: String, callbackId: String,
                            errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.undefined,
                            keepCallback: Bool = false) {
@@ -250,7 +250,7 @@ class OutlinePlugin: CDVPlugin {
                                      messageAs: Int32(errorCode.rawValue))
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
-    
+
     private func send(pluginResult: CDVPluginResult?, callbackId: String, keepCallback: Bool) {
         guard let result = pluginResult else {
             return DDLogWarn("Missing plugin result");
@@ -258,13 +258,13 @@ class OutlinePlugin: CDVPlugin {
         result.setKeepCallbackAs(keepCallback)
         self.commandDelegate?.send(result, callbackId: callbackId)
     }
-    
+
     // Maps |action| and |tunnelId| to |callbackId| in the callbacks dictionary.
     private func setCallbackId(_ callbackId: String, action: String, tunnelId: String) {
         DDLogDebug("\(action):\(tunnelId):\(callbackId)")
         callbacks["\(action):\(tunnelId)"] = callbackId
     }
-    
+
     // Retrieves the callback ID for |action| and |tunnelId|. Unmaps the entry if |keepCallback|
     // is false.
     private func getCallbackIdFor(action: String, tunnelId: String?,
@@ -282,67 +282,75 @@ class OutlinePlugin: CDVPlugin {
         }
         return callbackId
     }
-    
+
     // Migrates local storage files from UIWebView to WKWebView.
     private func migrateLocalStorage() {
-        // Local storage backing files have the following naming format: $scheme_$hostname_$port.localstorage
-        // With UIWebView, the app used the file:// scheme with no hostname and any port.
-        let kUIWebViewLocalStorageFilename = "file__0.localstorage"
-        // With WKWebView, the app uses the app:// scheme with localhost as a hostname and any port.
-        let kWKWebViewLocalStorageFilename = "app_localhost_0.localstorage"
-        
-        let fileManager = FileManager.default
-        let appLibraryDir = fileManager.urls(for: .libraryDirectory, in: .userDomainMask)[0]
-        
-        var uiWebViewLocalStorageDir: URL
+      // Local storage backing files have the following naming format: $scheme_$hostname_$port.localstorage
+      // With UIWebView, the app used the file:// scheme with no hostname and any port.
+      let kUIWebViewLocalStorageFilename = "file__0.localstorage"
+      // With WKWebView, the app uses the app:// scheme with localhost as a hostname and any port.
+      let kWKWebViewLocalStorageFilename = "app_localhost_0.localstorage"
+
+      let fileManager = FileManager.default
+      let appLibraryDir = fileManager.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+
+      let uiWebViewLocalStorageDir: URL
+#if targetEnvironment(macCatalyst)
+        guard let bundleID = Bundle.main.bundleIdentifier else {
+            return DDLogError("Unable to get bundleID for app.")
+        }
+        let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        uiWebViewLocalStorageDir = appSupportDir.appendingPathComponent(bundleID)
+#else
         if fileManager.fileExists(atPath: appLibraryDir.appendingPathComponent(
             "WebKit/LocalStorage/\(kUIWebViewLocalStorageFilename)").relativePath) {
-            uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
+          uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/LocalStorage")
         } else {
-            uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
+          uiWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("Caches")
         }
-        let uiWebViewLocalStorage = uiWebViewLocalStorageDir.appendingPathComponent(kUIWebViewLocalStorageFilename)
-        if !fileManager.fileExists(atPath: uiWebViewLocalStorage.relativePath) {
-            return DDLogInfo("Not migrating, UIWebView local storage files missing.")
-        }
-        
-        let wkWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/WebsiteData/LocalStorage/")
-        let wkWebViewLocalStorage = wkWebViewLocalStorageDir.appendingPathComponent(kWKWebViewLocalStorageFilename)
-        // Only copy the local storage files if they don't exist for WKWebView.
-        if fileManager.fileExists(atPath: wkWebViewLocalStorage.relativePath) {
-            return DDLogInfo("Not migrating, WKWebView local storage files present.")
-        }
-        DDLogInfo("Migrating UIWebView local storage to WKWebView")
-        
-        // Create the WKWebView local storage directory; this is safe if the directory already exists.
-        do {
-            try fileManager.createDirectory(at: wkWebViewLocalStorageDir, withIntermediateDirectories: true)
-        } catch {
-            return DDLogError("Failed to create WKWebView local storage directory")
-        }
-        
-        // Create a tmp directory and copy onto it the local storage files.
-        guard let tmpDir = try? fileManager.url(for: .itemReplacementDirectory, in: .userDomainMask,
-                                                appropriateFor: wkWebViewLocalStorage, create: true) else {
-            return DDLogError("Failed to create tmp dir")
-        }
-        do {
-            try fileManager.copyItem(at: uiWebViewLocalStorage,
-                                     to: tmpDir.appendingPathComponent(wkWebViewLocalStorage.lastPathComponent))
-            try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-shm"),
-                                     to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-shm"))
-            try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-wal"),
-                                     to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-wal"))
-        } catch {
-            return DDLogError("Local storage migration failed.")
-        }
-        
-        // Atomically move the tmp directory to the WKWebView local storage directory.
-        guard let _ = try? fileManager.replaceItemAt(wkWebViewLocalStorageDir, withItemAt: tmpDir,
-                                                     backupItemName: nil, options: .usingNewMetadataOnly) else {
-            return DDLogError("Failed to copy tmp dir to WKWebView local storage dir")
-        }
-        
-        DDLogInfo("Local storage migration succeeded")
+#endif
+      let uiWebViewLocalStorage = uiWebViewLocalStorageDir.appendingPathComponent(kUIWebViewLocalStorageFilename)
+      if !fileManager.fileExists(atPath: uiWebViewLocalStorage.relativePath) {
+        return DDLogInfo("Not migrating, UIWebView local storage files missing.")
+      }
+
+      let wkWebViewLocalStorageDir = appLibraryDir.appendingPathComponent("WebKit/WebsiteData/LocalStorage/")
+      let wkWebViewLocalStorage = wkWebViewLocalStorageDir.appendingPathComponent(kWKWebViewLocalStorageFilename)
+      // Only copy the local storage files if they don't exist for WKWebView.
+      if fileManager.fileExists(atPath: wkWebViewLocalStorage.relativePath) {
+        return DDLogInfo("Not migrating, WKWebView local storage files present.")
+      }
+      DDLogInfo("Migrating UIWebView local storage to WKWebView")
+
+      // Create the WKWebView local storage directory; this is safe if the directory already exists.
+      do {
+        try fileManager.createDirectory(at: wkWebViewLocalStorageDir, withIntermediateDirectories: true)
+      } catch {
+        return DDLogError("Failed to create WKWebView local storage directory")
+      }
+
+      // Create a tmp directory and copy onto it the local storage files.
+      guard let tmpDir = try? fileManager.url(for: .itemReplacementDirectory, in: .userDomainMask,
+                                              appropriateFor: wkWebViewLocalStorage, create: true) else {
+        return DDLogError("Failed to create tmp dir")
+      }
+      do {
+        try fileManager.copyItem(at: uiWebViewLocalStorage,
+                                to: tmpDir.appendingPathComponent(wkWebViewLocalStorage.lastPathComponent))
+        try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-shm"),
+                                to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-shm"))
+        try fileManager.copyItem(at: URL.init(fileURLWithPath: "\(uiWebViewLocalStorage.relativePath)-wal"),
+                                to: tmpDir.appendingPathComponent("\(kWKWebViewLocalStorageFilename)-wal"))
+      } catch {
+        return DDLogError("Local storage migration failed.")
+      }
+
+      // Atomically move the tmp directory to the WKWebView local storage directory.
+      guard let _ = try? fileManager.replaceItemAt(wkWebViewLocalStorageDir, withItemAt: tmpDir,
+                                                  backupItemName: nil, options: .usingNewMetadataOnly) else {
+        return DDLogError("Failed to copy tmp dir to WKWebView local storage dir")
+      }
+
+      DDLogInfo("Local storage migration succeeded")
     }
-}
+  }
