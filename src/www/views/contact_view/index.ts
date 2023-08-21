@@ -41,14 +41,33 @@ export class ContactView extends LitElement {
     css`
       :host {
         font-family: var(--outline-font-family);
+        margin: 0 auto;
+        max-width: 400px;
+        padding: var(--outline-gutter);
+
+        --mdc-menu-item-height: auto;
       }
 
       ol {
         list-style-type: none;
       }
 
+      mwc-select {
+        width: 100%;
+      }
+
       mwc-select[hidden] {
         display: none;
+      }
+
+      mwc-list-item {
+        min-height: 48px;
+        padding-bottom: var(--outline-mini-gutter);
+        padding-top: var(--outline-mini-gutter);
+      }
+
+      mwc-list-item span {
+        white-space: normal;
       }
     }
     `,
@@ -160,10 +179,19 @@ export class ContactView extends LitElement {
     this.step = Step.EXIT;
   }
 
+  private get introTemplate(): TemplateResult {
+    return html`
+      <p>
+        Tell us how we can help. Please do not enter personal information that is not requested below.
+      </p>
+    `;
+  }
+
   private get stepTemplate(): TemplateResult {
     switch (this.step) {
       case Step.FORM: {
         return html`
+          ${this.introTemplate}
           <support-form .variant=${this.variant} .issueType=${this.selectedIssueType} @submit=${this.submitForm}>
             >
           </support-form>
@@ -181,9 +209,7 @@ export class ContactView extends LitElement {
       case Step.ISSUE_WIZARD:
       default: {
         return html`
-          <p>
-            Tell us how we can help. Please do not enter personal information that is not requested below.
-          </p>
+          ${this.introTemplate}
           <p>Do you have an open ticket for this issue?</p>
 
           <ol>
@@ -216,7 +242,9 @@ export class ContactView extends LitElement {
           >
             ${Array.from(ContactView.Issues).map(([value, label]) => {
               return html`
-                <mwc-list-item value="${value}">${label}</mwc-list-item>
+                <mwc-list-item value="${value}">
+                  <span>${label}</span>
+                </mwc-list-item>
               `;
             })}
           </mwc-select>

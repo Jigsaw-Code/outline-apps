@@ -44,6 +44,7 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
+import '../views/contact_view';
 import '../views/servers_view';
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
@@ -91,6 +92,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
         app-toolbar [main-title] {
           flex: 2 1 100%;
+          text-transform: capitalize;
         }
 
         app-toolbar img {
@@ -177,6 +179,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
         #drawer-nav paper-item {
           min-height: 32px;
+          text-transform: capitalize;
         }
 
         .first-menu-item {
@@ -291,7 +294,12 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
-          <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
+          <template is="dom-if" if="{{enableNewContactView}}">
+            <contact-view name="contact" id="contactView" localize="[[localize]]"></contact-view>
+          </template>
+          <template is="dom-if" if="{{!enableNewContactView}}">
+            <feedback-view name="feedback" id="legacyFeedbackView" localize="[[localize]]"></feedback-view>
+          </template>
           <about-view
             name="about"
             id="aboutView"
@@ -363,10 +371,18 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <paper-item name="feedback">
-              <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
-              [[localize('feedback-page-title')]]
-            </paper-item>
+            <template is="dom-if" if="{{enableNewContactView}}">
+              <paper-item name="contact">
+                <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
+                [[localize('contact-page-title')]]
+              </paper-item>
+            </template>
+            <template is="dom-if" if="{{!enableNewContactView}}">
+              <paper-item name="feedback">
+                <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
+                [[localize('feedback-page-title')]]
+              </paper-item>
+            </template>
             <paper-item name="about">
               <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
               [[localize('about-page-title')]]
@@ -579,6 +595,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
+      enableNewContactView: {
+        type: Boolean,
+        readonly: true,
+        value: false,
+      },
     };
   }
 
@@ -764,6 +785,16 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
       window.dispatchEvent(new CustomEvent('location-changed'));
+      if (this.page == 'contact') {
+        // Reset the contact form when a user navigates away from it by replacing
+        // the element with a fresh one. This is less complex than trying to reset
+        // all chosen options manually.
+        const newContactView = document.createElement('contact-view');
+        newContactView.name = 'contact';
+        newContactView.id = 'contactView';
+        newContactView.localize = this.localize;
+        this.$$('contact-view').replaceWith(newContactView);
+      }
     }
   }
 
