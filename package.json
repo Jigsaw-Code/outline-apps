@@ -19,8 +19,13 @@
   },
   "dependencies": {
     "@material/mwc-button": "^0.25.3",
+    "@material/mwc-formfield": "^0.25.3",
     "@material/mwc-icon-button": "^0.25.3",
     "@material/mwc-menu": "^0.25.3",
+    "@material/mwc-radio": "^0.25.3",
+    "@material/mwc-select": "^0.25.3",
+    "@material/mwc-textarea": "^0.25.3",
+    "@material/mwc-textfield": "^0.25.3",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/app-localize-behavior": "^3.0.1",
     "@polymer/app-route": "^3.0.2",
