@@ -29,9 +29,11 @@ const (
 
 // OutlineDevice delegates the TCP and UDP traffic from local machine to the remote Outline server.
 type OutlineDevice struct {
-	t2s network.IPDevice
-	pp  *outlinePacketProxy
-	sd  transport.StreamDialer
+	// The tun2socks IP device
+	network.IPDevice
+
+	pp *outlinePacketProxy
+	sd transport.StreamDialer
 }
 
 // NewOutlineDevice creates a new [OutlineDevice] that can relay traffic to a remote Outline server.
@@ -51,15 +53,11 @@ func NewOutlineDevice(configJSON string) (d *OutlineDevice, err error) {
 		return nil, fmt.Errorf("failed to create UDP proxy: %w", err)
 	}
 
-	if d.t2s, err = lwip2transport.ConfigureDevice(d.sd, d.pp); err != nil {
+	if d.IPDevice, err = lwip2transport.ConfigureDevice(d.sd, d.pp); err != nil {
 		return nil, fmt.Errorf("failed to configure lwIP: %w", err)
 	}
 
 	return
-}
-
-func (d *OutlineDevice) Close() error {
-	return d.t2s.Close()
 }
 
 func (d *OutlineDevice) Refresh() error {
