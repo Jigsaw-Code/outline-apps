@@ -54,6 +54,7 @@ func main() {
 		log.Fatalf("Failed to create Outline ProxyTunnel: %v", err)
 	}
 	log.Println("Outline ProxyTunnel created")
+	defer log.Println("Outline ProxyTunnel stopped")
 	defer proxy.Close() // not necessary, but no harm
 
 	dnsResolvers := strings.Split(*args.tunDNS, ",")
@@ -62,10 +63,26 @@ func main() {
 		log.Fatalf("Failed to open tun device: %v", err)
 	}
 	log.Println("Tun device opened")
+	defer log.Println("Tun device stopped")
 	defer tunDev.Close() // not necessary, but no harm
 
-	defer backend.CopyAsync(tunDev, proxy).Await()
-	defer backend.CopyAsync(proxy, tunDev).Await()
+	if err := proxy.Refresh(); err != nil {
+		log.Fatalf("Failed to connect to proxy: %v", err)
+	}
+
+	log.Println("Copying traffic from proxy to tun device...")
+	r1 := backend.CopyAsync(tunDev, proxy)
+	defer func() {
+		n, err := r1.Await()
+		log.Printf("Traffic from proxy to tun device stopped: n = %v, err = %v\n", n, err)
+	}()
+
+	log.Println("Copying traffic from tun device to proxy...")
+	r2 := backend.CopyAsync(proxy, tunDev)
+	defer func() {
+		n, err := r2.Await()
+		log.Printf("Traffic from tun device to proxy stopped: n = %v, err = %v\n", n, err)
+	}()
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
