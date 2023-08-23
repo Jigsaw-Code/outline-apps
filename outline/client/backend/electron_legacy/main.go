@@ -64,8 +64,8 @@ func main() {
 	log.Println("Tun device opened")
 	defer tunDev.Close() // not necessary, but no harm
 
-	defer backend.CopyAsync(tunDev, proxy).Wait()
-	defer backend.CopyAsync(proxy, tunDev).Wait()
+	defer backend.CopyAsync(tunDev, proxy).Await()
+	defer backend.CopyAsync(proxy, tunDev).Await()
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)

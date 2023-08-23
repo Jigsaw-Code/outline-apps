@@ -12,44 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package backend
+//go:build tools
+// +build tools
+
+// See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
+// and https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
+
+package tools
 
 import (
-	"io"
-	"sync"
+	_ "golang.org/x/mobile/cmd/gomobile"
 )
-
-type Reader interface {
-	io.Reader
-}
-
-type Writer interface {
-	io.Writer
-}
-
-type ReadWriter interface {
-	Reader
-	Writer
-}
-
-type AsyncCopyResult struct {
-	wg     sync.WaitGroup
-	copied int64
-	err    error
-}
-
-func CopyAsync(dest Writer, source Reader) *AsyncCopyResult {
-	w := &AsyncCopyResult{}
-	w.wg.Add(1)
-	go func() {
-		defer w.wg.Done()
-		buf := make([]byte, 1500)
-		w.copied, w.err = io.CopyBuffer(dest, source, buf)
-	}()
-	return w
-}
-
-func (w *AsyncCopyResult) Await() (int64, error) {
-	w.wg.Wait()
-	return w.copied, w.err
-}

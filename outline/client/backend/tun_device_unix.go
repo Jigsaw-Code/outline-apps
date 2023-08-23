@@ -15,41 +15,24 @@
 package backend
 
 import (
-	"io"
-	"sync"
+	"errors"
+	"fmt"
+	"os"
+
+	"golang.org/x/sys/unix"
 )
 
-type Reader interface {
-	io.Reader
-}
-
-type Writer interface {
-	io.Writer
-}
-
-type ReadWriter interface {
-	Reader
-	Writer
-}
-
-type AsyncCopyResult struct {
-	wg     sync.WaitGroup
-	copied int64
-	err    error
-}
-
-func CopyAsync(dest Writer, source Reader) *AsyncCopyResult {
-	w := &AsyncCopyResult{}
-	w.wg.Add(1)
-	go func() {
-		defer w.wg.Done()
-		buf := make([]byte, 1500)
-		w.copied, w.err = io.CopyBuffer(dest, source, buf)
-	}()
-	return w
-}
-
-func (w *AsyncCopyResult) Await() (int64, error) {
-	w.wg.Wait()
-	return w.copied, w.err
+func NewTunDeviceFromFD(fd int) (ReadWriter, error) {
+	if fd < 0 {
+		return nil, errors.New("fd is invalid")
+	}
+	dupFd, err := unix.Dup(fd)
+	if err != nil {
+		return nil, fmt.Errorf("failed to dup fd: %v", err)
+	}
+	f := os.NewFile(uintptr(dupFd), "")
+	if f == nil {
+		return nil, errors.New("failed to open file from fd")
+	}
+	return f, nil
 }
