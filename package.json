@@ -7,7 +7,7 @@
     "action": "node ./outline_client/src/build/run_action.mjs"
   },
   "workspaces": [
-    "outline_client/*"
+    "outline_client"
   ],
   "dependencies": {
     "node-fetch": "^3.3.2"
