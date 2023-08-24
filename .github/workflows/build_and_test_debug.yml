@@ -180,7 +180,7 @@ jobs:
       - name: Test OutlineAppleLib
         run: npm run action cordova/test maccatalyst
 
-      - name: Build MacOS Client
+      - name: Build Mac Catalyst Client
         run: npm run action cordova/build maccatalyst
 
       - uses: codecov/codecov-action@v3
