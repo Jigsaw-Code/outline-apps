@@ -156,6 +156,39 @@ jobs:
           xcode_archive_path: ./output/coverage/apple/ios/TestResult.xcresult
           flags: unittests, apple, ios
 
+  maccatalyst_debug_build:
+    name: Mac Catalyst Debug Build
+    runs-on: macos-13
+    timeout-minutes: 20
+    needs: web_test
+    steps:
+      - name: Display XCode
+        run: xcode-select --print-path
+
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Test OutlineAppleLib
+        run: npm run action cordova/test maccatalyst
+
+      - name: Build MacOS Client
+        run: npm run action cordova/build maccatalyst
+
+      - uses: codecov/codecov-action@v3
+        with:
+          xcode: true
+          xcode_archive_path: ./output/coverage/apple/maccatalyst/TestResult.xcresult
+          flags: unittests, apple, maccatalyst
+
   android_debug_build:
     name: Android Debug Build
     runs-on: ubuntu-20.04

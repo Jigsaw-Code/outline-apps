@@ -18,7 +18,7 @@ You will need:
 
 The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action cordova/setup $PLATFORM`, then open the XCode workspace file (not the project).
 
-For the **iOS** client:
+For the **iOS** client and **Mac Catalyst** client:
 
 ```sh
 npm run action cordova/build ios && open ./src/cordova/apple/ios.xcworkspace
@@ -138,7 +138,7 @@ You can kill the app and extension with the [`pkill` command](https://man7.org/l
 pkill -9 Outline VpnExtension
 ```
 
-Sometimes the processes will not die, even with `-9`. For the Outline process, you may need to kill its parent process, usually `debugserver`. 
+Sometimes the processes will not die, even with `-9`. For the Outline process, you may need to kill its parent process, usually `debugserver`.
 
 You can check running processes with the [`pgrep` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
 ```sh
@@ -185,7 +185,7 @@ You may want to also delete the VPN configurations:
 1. Press *Remove Configuration…* and confirm
 
 
-#### Restart 
+#### Restart
 
 If all fails, restart your device. That usually takes care of the issue.
 
