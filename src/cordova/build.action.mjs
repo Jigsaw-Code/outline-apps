@@ -40,7 +40,6 @@ export async function main(...parameters) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
   }
 
-  console.log('========>', platform, buildMode);
   switch (platform + buildMode) {
     case 'android' + 'debug':
       return androidDebug(verbose);
