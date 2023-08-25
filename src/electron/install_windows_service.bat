@@ -24,13 +24,13 @@ setlocal EnableDelayedExpansion
 set PWD=%~dp0%
 
 :: Stop and delete the service.
-net stop OutlineService
-sc delete OutlineService
+%SystemRoot%\System32\net stop OutlineService
+%SystemRoot%\System32\sc delete OutlineService
 
 :: Install and start the service, configuring it to restart on boot.
 :: NOTE: spaces after the arguments are necessary for a correct installation, do not remove!
-sc create OutlineService binpath= "%PWD%OutlineService.exe" displayname= "OutlineService" start= "auto"
-net start OutlineService
+%SystemRoot%\System32\sc create OutlineService binpath= "%PWD%OutlineService.exe" displayname= "OutlineService" start= "auto"
+%SystemRoot%\System32\net start OutlineService
 
 :: This is for the client: sudo-prompt discards stdout/stderr if the script
 :: exits with a non-zero return code *which will happen if any of the previous
