@@ -146,7 +146,7 @@ ${StrRep}
   installservice:
 
   nsExec::Exec install_windows_service.bat
-  
+
   nsExec::Exec "$SYSDIR\sc query OutlineService"
   Pop $0
   StrCmp $0 0 success
