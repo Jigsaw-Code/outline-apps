@@ -56,7 +56,7 @@ ${StrRep}
   File "${PROJECT_DIR}\src\electron\find_tap_device_name.bat"
 
   ; OutlineService files, stopping the service first in case it's still running.
-  nsExec::Exec "net stop OutlineService"
+  nsExec::Exec "$SYSDIR\net stop OutlineService"
   File "${PROJECT_DIR}\tools\OutlineService\OutlineService\bin\OutlineService.exe"
   File "${PROJECT_DIR}\tools\smartdnsblock\bin\smartdnsblock.exe"
   File "${PROJECT_DIR}\third_party\newtonsoft\Newtonsoft.Json.dll"
@@ -147,7 +147,7 @@ ${StrRep}
 
   nsExec::Exec install_windows_service.bat
 
-  nsExec::Exec "sc query OutlineService"
+  nsExec::Exec "$SYSDIR\sc query OutlineService"
   Pop $0
   StrCmp $0 0 success
   ; TODO: Trigger a Sentry report for service installation failure, too, and revisit
@@ -165,6 +165,6 @@ ${StrRep}
 ;       with the bundled tapinstall.exe because it can only remove *all* devices
 ;       having hwid tap0901 and these may include non-Outline devices.
 !macro customUnInstall
-  nsExec::Exec "net stop OutlineService"
-  nsExec::Exec "sc delete OutlineService"
+  nsExec::Exec "$SYSDIR\net stop OutlineService"
+  nsExec::Exec "$SYSDIR\sc delete OutlineService"
 !macroend
