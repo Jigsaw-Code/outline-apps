@@ -35,7 +35,7 @@ set ERROR_TAP_CONFIGURE_DNS=5
 set PATH=%PATH%;%SystemRoot%\system32;%SystemRoot%\system32\wbem;%SystemRoot%\system32\WindowsPowerShell/v1.0
 
 :: Check whether the device already exists.
-netsh interface show interface name=%DEVICE_NAME%
+%SystemRoot%\System32\netsh interface show interface name=%DEVICE_NAME%
 if %errorlevel% equ 0 (
   echo TAP network device already exists.
   goto :configure
@@ -63,7 +63,7 @@ echo Found TAP device name: "%TAP_NAME%"
 call :wait_for_device "%TAP_NAME%"
 
 :: Attempt to rename the device even if waiting timed out.
-netsh interface set interface name="%TAP_NAME%" newname="%DEVICE_NAME%"
+%SystemRoot%\System32\netsh interface set interface name="%TAP_NAME%" newname="%DEVICE_NAME%"
 if %errorlevel% neq 0 (
   :: Try to rename the device through powershell in case netsh failed due to not being able to "see"
   :: the device. Pipe input from /dev/null to prevent powershell from waiting forever on EOF.
@@ -89,7 +89,7 @@ call :wait_for_device "%DEVICE_NAME%"
 ::
 :: So, continue even if this command fails - and always include its output.
 echo (Re-)enabling TAP network device...
-netsh interface set interface "%DEVICE_NAME%" admin=enabled
+%SystemRoot%\System32\netsh interface set interface "%DEVICE_NAME%" admin=enabled
 :: The powershell command is used to ensure the adapter is enabled if netsh fails and leaves it in
 :: a disabled state. While no such failure has yet been observed, this command would correct it and
 :: should behave idempotently otherwise.
@@ -102,7 +102,7 @@ powershell "Enable-NetAdapter -Name \"%DEVICE_NAME%\"" <nul
 :: TODO: Actually search the system for an unused subnet or make the subnet
 ::       configurable in the Outline client.
 echo Configuring TAP device subnet...
-netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.255
+%SystemRoot%\System32\netsh interface ip set address %DEVICE_NAME% static 10.0.85.2 255.255.255.255
 if %errorlevel% neq 0 (
   echo Could not set TAP network device subnet. >&2
   exit /b %ERROR_TAP_CONFIGURE_SUBNET%
@@ -114,13 +114,13 @@ if %errorlevel% neq 0 (
 :: as it means we do not have to modify the DNS settings of any other network
 :: device in the system. Configure with Cloudflare and Quad9 resolvers
 echo Configuring primary DNS...
-netsh interface ip set dnsservers %DEVICE_NAME% static address=1.1.1.1
+%SystemRoot%\System32\netsh interface ip set dnsservers %DEVICE_NAME% static address=1.1.1.1
 if %errorlevel% neq 0 (
   echo Could not configure TAP device primary DNS. >&2
   exit /b %ERROR_TAP_CONFIGURE_DNS%
 )
 echo Configuring secondary DNS...
-netsh interface ip add dnsservers %DEVICE_NAME% 9.9.9.9 index=2
+%SystemRoot%\System32\netsh interface ip add dnsservers %DEVICE_NAME% 9.9.9.9 index=2
 if %errorlevel% neq 0 (
   echo Could not configure TAP device secondary DNS. >&2
   exit /b %ERROR_TAP_CONFIGURE_DNS%
@@ -132,14 +132,14 @@ exit /b 0
 :: Exits with a non-zero code if the operation times out.
 :wait_for_device
 echo Testing that the network device "%~1" is visible to netsh...
-netsh interface ip show interfaces | find "%~1" >nul 2>&1
+%SystemRoot%\System32\netsh interface ip show interfaces | find "%~1" >nul 2>&1
 if %errorlevel% equ 0 exit /b 0
 for /l %%N in (1, 1, 6) do (
   echo Waiting... %%N
   :: timeout doesn't like the environment created by nsExec::ExecToStack and exits with:
   :: "ERROR: Input redirection is not supported, exiting the process immediately."
   waitfor /t 10 thisisnotarealsignalname >nul 2>&1
-  netsh interface ip show interfaces | find "%~1" >nul 2>&1
+  %SystemRoot%\System32\netsh interface ip show interfaces | find "%~1" >nul 2>&1
   if !errorlevel! equ 0 exit /b 0
 )
 exit /b 1
