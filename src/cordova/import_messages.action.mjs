@@ -13,73 +13,112 @@
 // limitations under the License.
 
 import chalk from 'chalk';
+import minimist from 'minimist';
 import path from 'path';
-import rmfr from 'rmfr';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
-import {readFile, readdir, writeFile, mkdir} from 'fs/promises';
-import {getNativeLocale as getNativeAndroidLocale} from './android/get_native_locale.mjs';
-import XML from 'xmlbuilder2';
+import {readFile, readdir, mkdir} from 'fs/promises';
+import * as ANDROID_IMPORTER from './android/import_messages.mjs';
+import * as IOS_IMPORTER from './apple/import_messages.mjs';
 
-const ANDROID_STRINGS_DIR = 'src/cordova/plugin/android/resources/strings/';
-const ANDROID_STRINGS_FILENAME = 'strings.xml';
-const ANDROID_XML_STRING_ID_PROPERTY = '@name';
-const ANDROID_XML_TEXT_CONTENT = '#';
+const ANDROID = 'android';
+const IOS = 'ios';
+const VALID_PLATFORMS = [ANDROID, IOS];
 
-function escapeXmlCharacters(str) {
-  return str
-    .replace(/"/g, '\\"')
-    .replace(/'/g, "\\'")
-    .replace(/</g, '\\<')
-    .replace(/>/g, '\\>;')
-    .replace(/&/g, '\\&');
-}
+const SOURCE_MESSAGES_DIR = 'www/messages';
 
-export async function main() {
-  const outputDir = path.join(getRootDir(), ANDROID_STRINGS_DIR);
-  const requiredAndroidStrings = XML.create(
-    await readFile(path.join(outputDir, 'values', ANDROID_STRINGS_FILENAME), 'utf8')
-  ).end({format: 'object'}).resources.string;
+/**
+ * Parses and verifies the action parameters and returns the specified platform.
+ * @param {string[]} parameters The list of action arguments passed in.
+ * @returns {Object} Object containing the specified platform.
+ */
+function getActionParameters(cliArguments) {
+  const {
+    _: [platform = ''],
+  } = minimist(cliArguments);
 
-  // Clear all existing locales first, so languages we stop supporting get
-  // cleared.
-  await rmfr(path.join(outputDir, 'values-*'), {glob: true});
-
-  console.group(chalk.white(`▶ importing Android messages:`));
-
-  const messagesDir = path.join(getRootDir(), 'www/messages');
-  for (const messagesFilename of await readdir(messagesDir)) {
-    const polymerLang = path.basename(messagesFilename, path.extname(messagesFilename));
-    console.log(chalk.gray(`Importing \`${polymerLang}\``));
-
-    const androidLocale = getNativeAndroidLocale(polymerLang);
-    const localeDir = path.join(outputDir, `values-${androidLocale}`);
-
-    const messagesFilepath = path.join(messagesDir, messagesFilename);
-    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
-
-    const androidStrings = [];
-    for (const requiredString of requiredAndroidStrings) {
-      const messageId = requiredString[ANDROID_XML_STRING_ID_PROPERTY].replaceAll('_', '-');
-      const fallbackContent = requiredString[ANDROID_XML_TEXT_CONTENT];
-
-      androidStrings.push({
-        [ANDROID_XML_STRING_ID_PROPERTY]: requiredString[ANDROID_XML_STRING_ID_PROPERTY],
-        [ANDROID_XML_TEXT_CONTENT]: escapeXmlCharacters(messageData[messageId] ?? fallbackContent),
-      });
-    }
-
-    const outputPath = path.join(localeDir, ANDROID_STRINGS_FILENAME);
-    console.log(chalk.gray(`Writing ${androidStrings.length} messages to ` + `\`${outputPath}\``));
-    await mkdir(localeDir, {recursive: true});
-    await writeFile(
-      outputPath,
-      XML.create({encoding: 'UTF-8'}, {resources: {string: androidStrings}}).end({prettyPrint: true, wellFormed: true})
+  if (!VALID_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `Platform "${platform}" is not a valid target for importing messages. ` +
+        `Must be one of "${VALID_PLATFORMS.join('", "')}"`
     );
   }
+
+  return {platform};
+}
+
+/**
+ * Retrieves the source messages in all available translations.
+ * @returns {Map<str, Object<str, str>} A map of locale->messages.
+ */
+async function loadMessages() {
+  const messages = new Map();
+
+  const messagesDir = path.join(getRootDir(), SOURCE_MESSAGES_DIR);
+  for (const messagesFilename of await readdir(messagesDir)) {
+    const lang = path.basename(messagesFilename, path.extname(messagesFilename));
+    const messagesFilepath = path.join(messagesDir, messagesFilename);
+    const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
+    messages.set(lang, messageData);
+  }
+
+  return messages;
+}
+
+/**
+ * Imports message translations.
+ * @param {function(string): string} getStringsFilepath A function to get a
+ *     filepath to read/write strings for a given locale.
+ * @param {function(): Map<string, string>} readMessages A function to read
+ *     required messages.
+ * @param {function(string, Map<string, string>)} writeMessages A function to
+ *     write the output messages.
+ */
+async function importMessages(getStringsFilepath, readMessages, writeMessages) {
+  const requiredMessages = await readMessages();
+
+  for (const [locale, messageData] of await loadMessages()) {
+    console.log(chalk.gray(`Importing \`${locale}\``));
+
+    const outputMessages = {};
+    for (const [key, value] of requiredMessages.entries()) {
+      const messageId = key.replaceAll('_', '-');
+      outputMessages[key] = messageData[messageId] ?? value;
+    }
+
+    const outputPath = getStringsFilepath(locale);
+    console.log(chalk.gray(`Writing ${Object.values(outputMessages).length} messages to \`${outputPath}\``));
+    await mkdir(path.dirname(outputPath), {recursive: true});
+    writeMessages(outputPath, outputMessages);
+  }
+}
+
+/**
+ * Imports message translations for the specified Cordova project.
+ * @param {string[]} parameters The list of action arguments passed in.
+ */
+async function main(...parameters) {
+  const {platform} = getActionParameters(parameters);
+  console.group(chalk.white(`▶ importing ${platform} messages:`));
+
+  switch (platform) {
+    case ANDROID:
+      await importMessages(
+        ANDROID_IMPORTER.getStringsFilepath,
+        ANDROID_IMPORTER.readMessages,
+        ANDROID_IMPORTER.writeMessages
+      );
+      break;
+    case IOS:
+      await importMessages(IOS_IMPORTER.getStringsFilepath, IOS_IMPORTER.readMessages, IOS_IMPORTER.writeMessages);
+      break;
+    default:
+      throw new Error(`Message import not implemented for platform "${platform}"`);
+  }
+
   console.groupEnd();
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  await main();
+  await main(...process.argv.slice(2));
 }

@@ -29,12 +29,23 @@
             static let statusDisconnected = getImage(name: "status_bar_button_image")
         }
 
-        // TODO: Internationalize these user-facing strings.
         private enum MenuTitle {
-            static let open = "Open"
-            static let quit = "Quit"
-            static let statusConnected = "Connected"
-            static let statusDisconnected = "Disconnected"
+            static let open = NSLocalizedString(
+                "tray_open_window",
+                bundle: .module,
+                comment: "Tray menu entry to show the application window.")
+            static let quit = NSLocalizedString(
+                "quit",
+                bundle: .module,
+                comment: "Tray menu entry to quit the application.")
+            static let statusConnected = NSLocalizedString(
+                "connected_server_state",
+                bundle: .module,
+                comment: "Tray menu entry indicating a server is currently connected and in use.")
+            static let statusDisconnected = NSLocalizedString(
+                "disconnected_server_state",
+                bundle: .module,
+                comment: "Tray menu entry indicating no server is currently connected.")
         }
 
         override init() {
