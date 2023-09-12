@@ -32,6 +32,10 @@ export class SupportForm extends LitElement {
         font-family: var(--outline-font-family);
       }
 
+      mwc-select {
+        width: 100%;
+      }
+
       mwc-textarea,
       mwc-textfield {
         display: flex;
@@ -52,7 +56,6 @@ export class SupportForm extends LitElement {
     ['gcloud', 'Google Cloud'],
   ]);
 
-  @property() localize: (messageID: string) => string;
   @property({type: String}) type: AppType = AppType.CLIENT;
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
