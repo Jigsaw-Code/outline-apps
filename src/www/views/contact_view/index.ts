@@ -83,7 +83,6 @@ export class ContactView extends LitElement {
     [IssueType.GENERAL, 'General feedback & suggestions'],
   ]);
 
-  @property() localize: (messageID: string) => string;
   @property({type: String}) variant: AppType = AppType.CLIENT;
 
   @state() private step: Step = Step.ISSUE_WIZARD;

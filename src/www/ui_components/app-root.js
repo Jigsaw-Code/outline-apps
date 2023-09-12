@@ -295,7 +295,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
           <template is="dom-if" if="{{enableNewContactView}}">
-            <contact-view name="contact" id="contactView" localize="[[localize]]"></contact-view>
+            <contact-view name="contact" id="contactView"></contact-view>
           </template>
           <template is="dom-if" if="{{!enableNewContactView}}">
             <feedback-view name="feedback" id="legacyFeedbackView" localize="[[localize]]"></feedback-view>
