@@ -119,7 +119,7 @@ export class SupportForm extends LitElement {
 
     return html`
       <mwc-select
-        name="cloud_provider"
+        name="Cloud_Provider"
         label="Cloud provider"
         helper="Which cloud provider does this relate to?"
         helperPersistent
@@ -142,7 +142,7 @@ export class SupportForm extends LitElement {
     return this.type == AppType.CLIENT
       ? html`
           <mwc-textfield
-            name="access_key_source"
+            name="Where_did_you_get_your_access_key"
             label="Source"
             helper="Where did you get your access key?"
             helperPersistent
@@ -161,7 +161,7 @@ export class SupportForm extends LitElement {
       <form ${ref(this.formRef)} @submit=${this.submit}>
         <outline-card .type=${CardType.Elevated}>
           <mwc-textfield
-            name="email"
+            name="Email"
             type="email"
             label="Email address"
             maxLength="225"
@@ -178,7 +178,7 @@ export class SupportForm extends LitElement {
           ${this.cloudProviderInputField} ${this.accessKeySourceInputField}
 
           <mwc-textfield
-            name="subject"
+            name="Subject"
             label="Subject"
             maxLength="225"
             disabled="${this.isSubmitting || nothing}"
@@ -187,7 +187,7 @@ export class SupportForm extends LitElement {
             @blur=${this.checkFormValidity}
           ></mwc-textfield>
           <mwc-textarea
-            name="description"
+            name="Description"
             label="Description"
             helper="Please provide a detailed description of your issue."
             helperPersistent
@@ -201,8 +201,8 @@ export class SupportForm extends LitElement {
           >
           </mwc-textarea>
 
-          <input type="hidden" name="os" value="TODO" />
-          <input type="hidden" name="version" value="TODO" />
+          <input type="hidden" name="Operating_System" value="TODO" />
+          <input type="hidden" name="Outline_Manager_Client_Version" value="TODO" />
 
           <p>* = Required field</p>
 
