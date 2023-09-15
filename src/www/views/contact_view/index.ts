@@ -136,9 +136,10 @@ export class ContactView extends LitElement {
         this.step = Step.FORM;
         break;
       case IssueType.REQUIRE_ACCESS_KEY:
+        // TODO: Send users to localized support pages based on chosen language.
         this.exitTemplate = html`
           The Outline team does not distribute free or paid access keys.
-          <a href="TODO" target="_blank">
+          <a href="https://support.getoutline.org/s/article/How-do-I-get-an-access-key" target="_blank">
             Learn more about how to get an access key.
           </a>
         `;
@@ -147,7 +148,7 @@ export class ContactView extends LitElement {
       case IssueType.ADDING_SERVER:
         this.exitTemplate = html`
           The Outline team is not able to assist with adding a server. Please try the troubleshooting steps listed
-          <a href="TODO" target="_blank">
+          <a href="https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work" target="_blank">
             here
           </a>
           and then contact the person who gave you the access key to troubleshoot this issue.
@@ -158,7 +159,7 @@ export class ContactView extends LitElement {
         this.exitTemplate = html`
           The Outline team is not able to assist with connecting to a server. Please try the troubleshooting steps
           listed
-          <a href="TODO" target="_blank">
+          <a href="https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service" target="_blank">
             here
           </a>
           and then contact the person who gave you the access key to troubleshoot this issue.
@@ -173,7 +174,7 @@ export class ContactView extends LitElement {
   private submitForm(e: SubmitEvent) {
     console.log('Feedback form submitted!', e);
     this.exitTemplate = html`
-      Thank you for contacting us.
+      Thanks for helping us improve! We love hearing from you.
     `;
     this.step = Step.EXIT;
   }
@@ -186,14 +187,16 @@ export class ContactView extends LitElement {
     `;
   }
 
-  private get stepTemplate(): TemplateResult {
+  render() {
     switch (this.step) {
       case Step.FORM: {
         return html`
           ${this.introTemplate}
-          <support-form .variant=${this.variant} .issueType=${this.selectedIssueType} @submit=${this.submitForm}>
-            >
-          </support-form>
+          <support-form
+            .variant=${this.variant}
+            .issueType=${this.selectedIssueType}
+            @submit=${this.submitForm}
+          ></support-form>
         `;
       }
 
@@ -250,11 +253,5 @@ export class ContactView extends LitElement {
         `;
       }
     }
-  }
-
-  render() {
-    return html`
-      ${this.stepTemplate}
-    `;
   }
 }
