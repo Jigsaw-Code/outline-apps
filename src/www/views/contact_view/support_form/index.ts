@@ -68,11 +68,13 @@ export class SupportForm extends LitElement {
   @state() private isFormValid = false;
   @state() private isSubmitting = false;
 
+  /** Checks the entire form's validity state. */
   private checkFormValidity() {
-    const requiredFields = Array.from(this.formRef.value.querySelectorAll<FormControl>('*[name]'));
-    this.isFormValid = requiredFields.every(field => field.validity.valid);
+    const fieldNodes = this.formRef.value.querySelectorAll<FormControl>('*[name]');
+    this.isFormValid = Array.from(fieldNodes).every(field => field.validity.valid);
   }
 
+  /** Submits the form. */
   private submit(e: SubmitEvent) {
     e.preventDefault();
 
@@ -91,7 +93,7 @@ export class SupportForm extends LitElement {
     this.isSubmitting = false;
   }
 
-  get progressBar(): TemplateResult | typeof nothing {
+  private get progressBar(): TemplateResult | typeof nothing {
     return this.isSubmitting
       ? html`
           <mwc-linear-progress indeterminate></mwc-linear-progress>
@@ -99,7 +101,7 @@ export class SupportForm extends LitElement {
       : nothing;
   }
 
-  get cloudProviderInputField(): TemplateResult | typeof nothing {
+  private get cloudProviderInputField(): TemplateResult | typeof nothing {
     if (this.type != AppType.MANAGER) {
       return nothing;
     }
@@ -138,7 +140,7 @@ export class SupportForm extends LitElement {
     `;
   }
 
-  get accessKeySourceInputField(): TemplateResult | typeof nothing {
+  private get accessKeySourceInputField(): TemplateResult | typeof nothing {
     return this.type == AppType.CLIENT
       ? html`
           <mwc-textfield

@@ -89,7 +89,7 @@ export class ContactView extends LitElement {
   private selectedIssueType?: IssueType;
   private exitTemplate?: TemplateResult;
 
-  private hasOpenTicketSelection: Array<{
+  private readonly hasOpenTicketSelection: Array<{
     ref: Ref<Radio>;
     value: boolean;
     label: string;
