@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
 import minimist from 'minimist';
 import url from 'url';
 import karma from 'karma';
@@ -61,7 +60,6 @@ export async function main(...parameters) {
       throwErrors: true,
     }
   );
-  console.log(chalk.gray('▶ running karma with config:\n'), config);
   await runKarma(config);
 }
 
