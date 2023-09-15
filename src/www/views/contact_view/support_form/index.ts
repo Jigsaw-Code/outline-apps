@@ -15,14 +15,18 @@
  */
 
 import {html, css, LitElement, TemplateResult, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {createRef, Ref, ref} from 'lit/directives/ref.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import '@material/mwc-button';
+import '@material/mwc-linear-progress';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import {CardType} from '../../shared/card';
 import {IssueType} from '../issue_type';
 import {AppType} from '../app_type';
+
+type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 @customElement('support-form')
 export class SupportForm extends LitElement {
@@ -59,14 +63,42 @@ export class SupportForm extends LitElement {
   @property({type: String}) type: AppType = AppType.CLIENT;
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
+  private readonly formRef: Ref<HTMLFormElement> = createRef();
+
+  @state() private isFormValid = false;
+  @state() private isSubmitting = false;
+
+  private checkFormValidity() {
+    const requiredFields = Array.from(this.formRef.value.querySelectorAll<FormControl>('*[name]'));
+    this.isFormValid = requiredFields.every(field => field.validity.valid);
+  }
+
   private submit(e: SubmitEvent) {
     e.preventDefault();
 
-    // TODO: Send form.
+    if (!this.isFormValid) {
+      throw Error('Cannot submit invalid form.');
+    }
+
+    this.isSubmitting = true;
+    const formData = new FormData(this.formRef.value);
+    // TODO: Actually send the form data using the error reporter.
+    console.log('Submitting', Object.fromEntries(formData.entries()));
 
     const event = new CustomEvent<boolean>('submit', {detail: true});
     this.dispatchEvent(event);
+    this.formRef.value.reset();
+    this.isSubmitting = false;
   }
+
+  get progressBar(): TemplateResult | typeof nothing {
+    return this.isSubmitting
+      ? html`
+          <mwc-linear-progress indeterminate></mwc-linear-progress>
+        `
+      : nothing;
+  }
+
   get cloudProviderInputField(): TemplateResult | typeof nothing {
     if (this.type != AppType.MANAGER) {
       return nothing;
@@ -87,11 +119,14 @@ export class SupportForm extends LitElement {
 
     return html`
       <mwc-select
+        name="cloud_provider"
         label="Cloud provider"
         helper="Which cloud provider does this relate to?"
         helperPersistent
+        disabled="${this.isSubmitting || nothing}"
         required
         outlined
+        @blur=${this.checkFormValidity}
       >
         ${providers.map(
           ([value, label]) =>
@@ -107,13 +142,15 @@ export class SupportForm extends LitElement {
     return this.type == AppType.CLIENT
       ? html`
           <mwc-textfield
-            id="access_key_source"
+            name="access_key_source"
             label="Source"
             helper="Where did you get your access key?"
             helperPersistent
             maxLength="225"
+            disabled="${this.isSubmitting || nothing}"
             required
             outlined
+            @blur=${this.checkFormValidity}
           ></mwc-textfield>
         `
       : nothing;
@@ -121,10 +158,10 @@ export class SupportForm extends LitElement {
 
   render() {
     return html`
-      <form @submit=${this.submit}>
+      <form ${ref(this.formRef)} @submit=${this.submit}>
         <outline-card .type=${CardType.Elevated}>
           <mwc-textfield
-            id="email"
+            name="email"
             type="email"
             label="Email address"
             maxLength="225"
@@ -132,32 +169,51 @@ export class SupportForm extends LitElement {
             helperPersistent
             autoValidate
             validationMessage="Please provide a correct email address."
+            disabled="${this.isSubmitting || nothing}"
             required
             outlined
+            @blur=${this.checkFormValidity}
           ></mwc-textfield>
 
           ${this.cloudProviderInputField} ${this.accessKeySourceInputField}
 
-          <mwc-textfield id="subject" label="Subject" maxLength="225" required outlined></mwc-textfield>
+          <mwc-textfield
+            name="subject"
+            label="Subject"
+            maxLength="225"
+            disabled="${this.isSubmitting || nothing}"
+            required
+            outlined
+            @blur=${this.checkFormValidity}
+          ></mwc-textfield>
           <mwc-textarea
-            id="description"
+            name="description"
             label="Description"
             helper="Please provide a detailed description of your issue."
             helperPersistent
             rows="5"
             maxLength="131072"
             charCounter
+            disabled="${this.isSubmitting || nothing}"
             required
             outlined
+            @blur=${this.checkFormValidity}
           >
           </mwc-textarea>
 
-          <input type="hidden" id="os" name="os" value="TODO" />
-          <input type="hidden" id="version" name="version" value="TODO" />
+          <input type="hidden" name="os" value="TODO" />
+          <input type="hidden" name="version" value="TODO" />
 
           <p>* = Required field</p>
 
-          <mwc-button label="Submit" slot="card-actions" @click=${this.submit}></mwc-button>
+          ${this.progressBar}
+
+          <mwc-button
+            label="Submit"
+            slot="card-actions"
+            disabled="${!this.isFormValid || this.isSubmitting || nothing}"
+            @click=${this.submit}
+          ></mwc-button>
         </outline-card>
       </form>
     `;
