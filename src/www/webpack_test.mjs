@@ -20,12 +20,13 @@ export default merge(baseConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: ['@jsdevtools/coverage-istanbul-loader', TS_LOADER],
+        use: [TS_LOADER],
       },
       {
-        test: /\.m?js$/,
-        exclude: /node_modules/,
-        use: ['@jsdevtools/coverage-istanbul-loader'],
+        test: /\.m?(t|j)s$/,
+        exclude: /(node_modules|\.spec\.m?(t|j)s$)/,
+        loader: '@jsdevtools/coverage-istanbul-loader',
+        enforce: 'post',
       },
       {
         test: /\.png$/,
