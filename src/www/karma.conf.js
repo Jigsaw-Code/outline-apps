@@ -26,7 +26,7 @@ module.exports = async function(config) {
       '**/*.spec.ts': ['webpack'],
     },
     reporters: ['progress', 'coverage-istanbul'],
-    singleRun: true,
+    restartOnFileChange: true,
     webpack: testConfig.default,
     coverageIstanbulReporter: {
       reports: ['html', 'json', 'text-summary'],

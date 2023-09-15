@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import chalk from 'chalk';
+import minimist from 'minimist';
 import url from 'url';
 import karma from 'karma';
 import puppeteer from 'puppeteer';
@@ -21,11 +23,23 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
 
 /**
+ * Parses the action parameters and returns whether to run as part of CI.
+ * @param {string[]} parameters The list of action arguments passed in.
+ * @returns {Object} Object containing whether to run as part of CI.
+ */
+function getActionParameters(cliArguments) {
+  const {ci = false} = minimist(cliArguments);
+  return {ci};
+}
+
+/**
  * @description Runs the Karma tests against the web UI.
  *
  * @param {string[]} parameters
  */
-export async function main() {
+export async function main(...parameters) {
+  const {ci} = getActionParameters(parameters);
+
   const runKarma = config =>
     new Promise((resolve, reject) => {
       new karma.Server(config, exitCode => {
@@ -39,11 +53,15 @@ export async function main() {
 
   process.env.CHROMIUM_BIN = puppeteer.executablePath();
 
-  const config = await karma.config.parseConfig(path.resolve(getRootDir(), ...KARMA_CONFIG_PATH), null, {
-    promiseConfig: true,
-    throwErrors: true,
-  });
-
+  const config = await karma.config.parseConfig(
+    path.resolve(getRootDir(), ...KARMA_CONFIG_PATH),
+    {singleRun: ci},
+    {
+      promiseConfig: true,
+      throwErrors: true,
+    }
+  );
+  console.log(chalk.gray('▶ running karma with config:\n'), config);
   await runKarma(config);
 }
 
