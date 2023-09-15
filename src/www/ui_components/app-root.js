@@ -298,7 +298,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             <contact-view name="contact" id="contactView"></contact-view>
           </template>
           <template is="dom-if" if="{{!enableNewContactView}}">
-            <feedback-view name="feedback" id="legacyFeedbackView" localize="[[localize]]"></feedback-view>
+            <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
           </template>
           <about-view
             name="about"
