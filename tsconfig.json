@@ -16,6 +16,6 @@
     "target": "es2017",
     "lib": ["es2022"]
   },
-  "exclude": ["*.cjs", "*.js", "*.mjs"],
+  "exclude": ["*.cjs", "*.js", "*.mjs", "**/*.spec.ts"],
   "include": ["src"]
 }
