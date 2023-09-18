@@ -37,11 +37,16 @@ function getActionParameters(cliArguments) {
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
+  // We need to manually kill the process on SIGINT, otherwise the web server
+  // stays alive in the background.
+  process.on('SIGINT', process.exit);
+
   const {ci} = getActionParameters(parameters);
 
   const runKarma = config =>
     new Promise((resolve, reject) => {
       new karma.Server(config, exitCode => {
+        console.log('Karma exited with code:', exitCode);
         if (exitCode !== 0) {
           reject(exitCode);
         }
