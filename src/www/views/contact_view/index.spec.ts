@@ -34,7 +34,7 @@ describe('ContactView', () => {
         <contact-view></contact-view>
       `
     );
-    const issueSelector = element.shadowRoot.querySelector('mwc-select[label="Outline issue"]');
-    expect(issueSelector.hasAttribute('hidden')).toBeTrue();
+    const issueSelector = element.shadowRoot?.querySelector('mwc-select[label="Outline issue"]');
+    expect(issueSelector?.hasAttribute('hidden')).toBeTrue();
   });
 });
