@@ -1,0 +1,11 @@
+# Validate any changes to this file with:
+#   curl -X POST --data-binary @codecov.yml https://codecov.io/validate
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
