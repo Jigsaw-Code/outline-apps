@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import minimist from 'minimist';
 import url from 'url';
 import karma from 'karma';
 import puppeteer from 'puppeteer';
@@ -25,10 +26,17 @@ const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
  *
  * @param {string[]} parameters
  */
-export async function main() {
+export async function main(...parameters) {
+  // We need to manually kill the process on SIGINT, otherwise the web server
+  // stays alive in the background.
+  process.on('SIGINT', process.exit);
+
+  const {watch = false} = minimist(parameters);
+
   const runKarma = config =>
     new Promise((resolve, reject) => {
       new karma.Server(config, exitCode => {
+        console.log('Karma exited with code:', exitCode);
         if (exitCode !== 0) {
           reject(exitCode);
         }
@@ -39,11 +47,14 @@ export async function main() {
 
   process.env.CHROMIUM_BIN = puppeteer.executablePath();
 
-  const config = await karma.config.parseConfig(path.resolve(getRootDir(), ...KARMA_CONFIG_PATH), null, {
-    promiseConfig: true,
-    throwErrors: true,
-  });
-
+  const config = await karma.config.parseConfig(
+    path.resolve(getRootDir(), ...KARMA_CONFIG_PATH),
+    {singleRun: !watch},
+    {
+      promiseConfig: true,
+      throwErrors: true,
+    }
+  );
   await runKarma(config);
 }
 
