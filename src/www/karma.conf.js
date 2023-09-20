@@ -32,8 +32,5 @@ module.exports = async function(config) {
       reports: ['html', 'json', 'text-summary'],
       dir: path.join(process.env?.COVERAGE_DIR ?? __dirname, 'www'),
     },
-    esm: {
-      nodeResolve: true,
-    },
   });
 };
