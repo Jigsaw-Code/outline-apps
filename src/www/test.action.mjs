@@ -22,16 +22,6 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
 
 /**
- * Parses the action parameters and returns whether to run as part of CI.
- * @param {string[]} parameters The list of action arguments passed in.
- * @returns {Object} Object containing whether to run as part of CI.
- */
-function getActionParameters(cliArguments) {
-  const {ci = false} = minimist(cliArguments);
-  return {ci};
-}
-
-/**
  * @description Runs the Karma tests against the web UI.
  *
  * @param {string[]} parameters
@@ -41,7 +31,7 @@ export async function main(...parameters) {
   // stays alive in the background.
   process.on('SIGINT', process.exit);
 
-  const {ci} = getActionParameters(parameters);
+  const {watch = false} = minimist(parameters);
 
   const runKarma = config =>
     new Promise((resolve, reject) => {
@@ -59,7 +49,7 @@ export async function main(...parameters) {
 
   const config = await karma.config.parseConfig(
     path.resolve(getRootDir(), ...KARMA_CONFIG_PATH),
-    {singleRun: ci},
+    {singleRun: !watch},
     {
       promiseConfig: true,
       throwErrors: true,
