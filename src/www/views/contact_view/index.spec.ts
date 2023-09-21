@@ -71,32 +71,34 @@ describe('ContactView', () => {
       await nextFrame();
     });
 
-    it('"I need an access key" shows exit message', async () => {
-      const issue: HTMLElement = issueSelector.querySelector('mwc-list-item[value="require_access_key"]')!;
-      issue.click();
-      await nextFrame();
+    const conditions = [
+      {
+        testcaseName: 'I need an access key',
+        value: 'require_access_key',
+        expectedMsg: 'does not distribute free or paid access keys',
+      },
+      {
+        testcaseName: 'I am having trouble adding a server using my access key',
+        value: 'adding_server',
+        expectedMsg: 'assist with adding a server',
+      },
+      {
+        testcaseName: 'I am having trouble connecting to my Outline VPN server',
+        value: 'connecting',
+        expectedMsg: 'assist with connecting to a server',
+      },
+    ];
 
-      const exitCard = el.shadowRoot!.querySelector('outline-card')!;
-      expect(exitCard.textContent).toContain('does not distribute free or paid access keys');
-    });
+    for (const {testcaseName, value, expectedMsg} of conditions) {
+      it(`'${testcaseName}' shows exit message`, async () => {
+        const issue: HTMLElement = issueSelector.querySelector(`mwc-list-item[value="${value}"]`)!;
+        issue.click();
+        await nextFrame();
 
-    it('"I am having trouble adding a server using my access key" shows exit message', async () => {
-      const issue: HTMLElement = issueSelector.querySelector('mwc-list-item[value="adding_server"]')!;
-      issue.click();
-      await nextFrame();
-
-      const exitCard = el.shadowRoot!.querySelector('outline-card')!;
-      expect(exitCard.textContent).toContain('assist with adding a server');
-    });
-
-    it('"I am having trouble connecting to my Outline VPN server" shows exit message', async () => {
-      const issue: HTMLElement = issueSelector.querySelector('mwc-list-item[value="connecting"]')!;
-      issue.click();
-      await nextFrame();
-
-      const exitCard = el.shadowRoot!.querySelector('outline-card')!;
-      expect(exitCard.textContent).toContain('assist with connecting to a server');
-    });
+        const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+        expect(exitCard.textContent).toContain(expectedMsg);
+      });
+    }
 
     describe('"General feedback & suggestions"', () => {
       beforeEach(async () => {
