@@ -6,7 +6,7 @@ labels: 'bug'
 assignees: ''
 
 ---
-This issue tracker is for bug reports only. **If you want to request troubleshooting assistance with Outline Manager or Outline Client, please do not submit a bug here. Instead, please contact us using our [support website](https://support.getoutline.org/s/contactsupport).** Developers, please post your questions on the [SDK Discussion board](https://github.com/Jigsaw-Code/outline-sdk/discussions).
+This issue tracker is for bug reports only. **If you want to request troubleshooting assistance with Outline Manager or Outline Client, please do not submit a bug here. Instead, please contact us using our [support website](https://support.getoutline.org/s/contactsupport).** Developers using Outline SDK, please post your questions on the [SDK Discussion board](https://github.com/Jigsaw-Code/outline-sdk/discussions).
 
 **Describe the bug**
 A clear and concise description of what the bug is.
