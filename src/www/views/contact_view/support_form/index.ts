@@ -83,9 +83,10 @@ export class SupportForm extends LitElement {
     }
 
     this.isSubmitting = true;
-    const formData = new FormData(this.formRef.value);
     // TODO: Actually send the form data using the error reporter.
-    console.log('Submitting', Object.fromEntries(formData.entries()));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const formData = new FormData(this.formRef.value);
+    console.log('Submitting form data...');
 
     const event = new CustomEvent<boolean>('submit', {detail: true});
     this.dispatchEvent(event);
