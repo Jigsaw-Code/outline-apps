@@ -127,7 +127,7 @@ export class SupportForm extends LitElement {
         label="Cloud provider"
         helper="Which cloud provider does this relate to?"
         helperPersistent
-        disabled="${this.isSubmitting || nothing}"
+        .disabled="${this.isSubmitting}"
         required
         outlined
         @blur=${this.checkFormValidity}
@@ -151,7 +151,7 @@ export class SupportForm extends LitElement {
             helper="Where did you get your access key?"
             helperPersistent
             maxLength="225"
-            disabled="${this.isSubmitting || nothing}"
+            .disabled="${this.isSubmitting}"
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -173,19 +173,20 @@ export class SupportForm extends LitElement {
             helperPersistent
             autoValidate
             validationMessage="Please provide a correct email address."
-            disabled="${this.isSubmitting || nothing}"
+            .disabled="${this.isSubmitting}"
             required
             outlined
             @blur=${this.checkFormValidity}
           ></mwc-textfield>
 
-          ${this.cloudProviderInputField} ${this.accessKeySourceInputField}
+          ${this.renderCloudProviderInputField}
+          ${this.renderAccessKeySourceInputField}
 
           <mwc-textfield
             name="Subject"
             label="Subject"
             maxLength="225"
-            disabled="${this.isSubmitting || nothing}"
+            .disabled="${this.isSubmitting}"
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -198,7 +199,7 @@ export class SupportForm extends LitElement {
             rows="5"
             maxLength="131072"
             charCounter
-            disabled="${this.isSubmitting || nothing}"
+            .disabled="${this.isSubmitting}"
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -210,12 +211,12 @@ export class SupportForm extends LitElement {
 
           <p>* = Required field</p>
 
-          ${this.progressBar}
+          ${this.renderProgressBar}
 
           <mwc-button
             label="Submit"
             slot="card-actions"
-            disabled="${!this.isFormValid || this.isSubmitting || nothing}"
+            .disabled="${!this.isFormValid || this.isSubmitting}"
             @click=${this.submit}
           ></mwc-button>
         </outline-card>
