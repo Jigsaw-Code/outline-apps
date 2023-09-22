@@ -54,11 +54,12 @@ export class SupportForm extends LitElement {
     `,
   ];
 
-  private static readonly CloudProviders = new Map([
+  private static readonly CLOUD_PROVIDERS = new Map([
     ['aws', 'Amazon Web Services'],
     ['digitalocean', 'DigitalOcean'],
     ['gcloud', 'Google Cloud'],
   ]);
+  private static readonly OTHER_CLOUD_PROVIDER: [string, string] = ['other', 'Other'];
 
   @property({type: String}) type: AppType = AppType.CLIENT;
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
@@ -107,7 +108,7 @@ export class SupportForm extends LitElement {
       return nothing;
     }
 
-    const providers = Array.from(SupportForm.CloudProviders);
+    const providers = Array.from(SupportForm.CLOUD_PROVIDERS);
     /** We should sort the providers by their labels, which may be localized. */
     providers.sort(([_valueA, labelA], [_valueB, labelB]) => {
       if (labelA < labelB) {
@@ -118,7 +119,7 @@ export class SupportForm extends LitElement {
         return 1;
       }
     });
-    providers.push(['other', 'Other']);
+    providers.push(SupportForm.OTHER_CLOUD_PROVIDER);
 
     return html`
       <mwc-select
