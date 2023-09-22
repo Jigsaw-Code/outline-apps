@@ -104,7 +104,7 @@ export class SupportForm extends LitElement {
   }
 
   private get cloudProviderInputField(): TemplateResult | typeof nothing {
-    if (this.variant != AppType.MANAGER) {
+    if (this.variant !== AppType.MANAGER) {
       return nothing;
     }
 
@@ -113,7 +113,7 @@ export class SupportForm extends LitElement {
     providers.sort(([_valueA, labelA], [_valueB, labelB]) => {
       if (labelA < labelB) {
         return -1;
-      } else if (labelA == labelB) {
+      } else if (labelA === labelB) {
         return 0;
       } else {
         return 1;
@@ -143,7 +143,7 @@ export class SupportForm extends LitElement {
   }
 
   private get accessKeySourceInputField(): TemplateResult | typeof nothing {
-    return this.variant == AppType.CLIENT
+    return this.variant === AppType.CLIENT
       ? html`
           <mwc-textfield
             name="Where_did_you_get_your_access_key"
