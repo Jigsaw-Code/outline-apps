@@ -19,15 +19,25 @@
 import {html} from 'lit';
 
 import './index';
+import {AppType} from './app_type';
 
 export default {
   title: 'Contact View',
   component: 'contact-view',
-  args: {},
-  argTypes: {},
+  argTypes: {
+    variant: {
+      description: 'Style variant of the contact view.',
+      defaultValue: AppType.CLIENT,
+      options: Object.values(AppType),
+      control: {
+        type: 'radio',
+        defaultValue: AppType.CLIENT,
+      },
+    },
+  },
 };
 
-export const Example = () =>
+export const Example = ({variant}: {variant: AppType}) =>
   html`
-    <contact-view></contact-view>
+    <contact-view .variant=${variant}></contact-view>
   `;
