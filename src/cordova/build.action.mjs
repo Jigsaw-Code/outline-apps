@@ -105,7 +105,7 @@ async function appleDebug(platform) {
     'xcodebuild',
     'clean',
     ...getXcodeBuildArgs(platform),
-    'archive',
+    'build',
     '-configuration',
     'Debug',
     'CODE_SIGN_IDENTITY=""',
