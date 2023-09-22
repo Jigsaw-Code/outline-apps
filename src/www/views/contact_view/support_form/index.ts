@@ -95,7 +95,7 @@ export class SupportForm extends LitElement {
     this.isSubmitting = false;
   }
 
-  private get progressBar(): TemplateResult | typeof nothing {
+  private get renderProgressBar(): TemplateResult | typeof nothing {
     return this.isSubmitting
       ? html`
           <mwc-linear-progress indeterminate></mwc-linear-progress>
@@ -103,7 +103,7 @@ export class SupportForm extends LitElement {
       : nothing;
   }
 
-  private get cloudProviderInputField(): TemplateResult | typeof nothing {
+  private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
     if (this.variant !== AppType.MANAGER) {
       return nothing;
     }
@@ -142,7 +142,7 @@ export class SupportForm extends LitElement {
     `;
   }
 
-  private get accessKeySourceInputField(): TemplateResult | typeof nothing {
+  private get renderAccessKeySourceInputField(): TemplateResult | typeof nothing {
     return this.variant === AppType.CLIENT
       ? html`
           <mwc-textfield
@@ -179,8 +179,7 @@ export class SupportForm extends LitElement {
             @blur=${this.checkFormValidity}
           ></mwc-textfield>
 
-          ${this.renderCloudProviderInputField}
-          ${this.renderAccessKeySourceInputField}
+          ${this.renderCloudProviderInputField} ${this.renderAccessKeySourceInputField}
 
           <mwc-textfield
             name="Subject"
