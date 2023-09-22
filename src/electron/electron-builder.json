@@ -6,8 +6,8 @@
     "output": "build/dist"
   },
   "linux": {
-    {
-    "target": "AppImage",
+    "target": {
+      "target": "AppImage",
       "arch": [
         "x64",
         "arm64"
