@@ -179,7 +179,7 @@ export class ContactView extends LitElement {
     this.step = Step.EXIT;
   }
 
-  private get introTemplate(): TemplateResult {
+  private get renderIntroTemplate(): TemplateResult {
     return html`
       <p>
         Tell us how we can help. Please do not enter personal information that is not requested below.
@@ -191,7 +191,7 @@ export class ContactView extends LitElement {
     switch (this.step) {
       case Step.FORM: {
         return html`
-          ${this.introTemplate}
+          ${this.renderIntroTemplate}
           <support-form
             .variant=${this.variant}
             .issueType=${this.selectedIssueType}
@@ -211,7 +211,7 @@ export class ContactView extends LitElement {
       case Step.ISSUE_WIZARD:
       default: {
         return html`
-          ${this.introTemplate}
+          ${this.renderIntroTemplate}
           <p>Do you have an open ticket for this issue?</p>
 
           <ol>
