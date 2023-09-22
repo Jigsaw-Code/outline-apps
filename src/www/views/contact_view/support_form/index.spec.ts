@@ -16,25 +16,64 @@
 
 import {SupportForm} from './index';
 
-import {fixture, html} from '@open-wc/testing';
+import {fixture, html, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
+
+async function setValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
+  await triggerFocusFor(el);
+  el.value = value;
+  await triggerBlurFor(el);
+  el.dispatchEvent(new CustomEvent('blur'));
+}
 
 describe('SupportForm', () => {
-  it('is defined', async () => {
-    const element = await fixture(
+  let el: SupportForm;
+
+  beforeEach(async () => {
+    el = await fixture(
       html`
         <support-form></support-form>
       `
     );
-    expect(element).toBeInstanceOf(SupportForm);
+  });
+
+  it('is defined', async () => {
+    expect(el).toBeInstanceOf(SupportForm);
   });
 
   it('submit button is disabled by default', async () => {
-    const element = await fixture(
-      html`
-        <support-form></support-form>
-      `
-    );
-    const submitButton = element.shadowRoot.querySelector('mwc-button[label="Submit"]');
+    const submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
     expect(submitButton.hasAttribute('disabled')).toBeTrue();
+  });
+
+  describe('when form is valid', () => {
+    let submitButton: HTMLElement;
+
+    beforeEach(async () => {
+      const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
+      await setValue(emailInput, 'foo@bar.com');
+      const accessKeySourceInput: HTMLInputElement = el.shadowRoot!.querySelector(
+        'mwc-textfield[name="Where_did_you_get_your_access_key"'
+      )!;
+      await setValue(accessKeySourceInput, 'From a friend');
+      const subjectInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Subject"')!;
+      await setValue(subjectInput, 'Test Subject');
+      const descriptionInput: HTMLTextAreaElement = el.shadowRoot!.querySelector('mwc-textarea[name="Description"')!;
+      await setValue(descriptionInput, 'Test Description');
+
+      submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
+    });
+
+    it('submit button is enabled', async () => {
+      expect(submitButton.hasAttribute('disabled')).toBeFalse();
+    });
+
+    it('clicking submit button emits form submit success event', async () => {
+      const listener = oneEvent(el, 'submit');
+
+      submitButton.click();
+
+      const {detail} = await listener;
+      expect(detail).toBeTrue();
+    });
   });
 });
