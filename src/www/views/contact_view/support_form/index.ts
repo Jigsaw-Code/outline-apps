@@ -61,7 +61,7 @@ export class SupportForm extends LitElement {
   ]);
   private static readonly OTHER_CLOUD_PROVIDER: [string, string] = ['other', 'Other'];
 
-  @property({type: String}) type: AppType = AppType.CLIENT;
+  @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
@@ -104,7 +104,7 @@ export class SupportForm extends LitElement {
   }
 
   private get cloudProviderInputField(): TemplateResult | typeof nothing {
-    if (this.type != AppType.MANAGER) {
+    if (this.variant != AppType.MANAGER) {
       return nothing;
     }
 
@@ -143,7 +143,7 @@ export class SupportForm extends LitElement {
   }
 
   private get accessKeySourceInputField(): TemplateResult | typeof nothing {
-    return this.type == AppType.CLIENT
+    return this.variant == AppType.CLIENT
       ? html`
           <mwc-textfield
             name="Where_did_you_get_your_access_key"
