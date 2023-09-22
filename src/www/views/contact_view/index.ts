@@ -89,7 +89,7 @@ export class ContactView extends LitElement {
   private selectedIssueType?: IssueType;
   private exitTemplate?: TemplateResult;
 
-  private readonly hasOpenTicketSelection: Array<{
+  private readonly openTicketSelectionOptions: Array<{
     ref: Ref<Radio>;
     value: boolean;
     label: string;
@@ -120,7 +120,7 @@ export class ContactView extends LitElement {
       this.step = Step.EXIT;
       return;
     }
-    this.hasOpenTicketSelection.forEach(element => {
+    this.openTicketSelectionOptions.forEach(element => {
       element.ref.value.disabled = true;
     });
     this.showIssueSelector = true;
@@ -215,7 +215,7 @@ export class ContactView extends LitElement {
           <p>Do you have an open ticket for this issue?</p>
 
           <ol>
-            ${this.hasOpenTicketSelection.map(
+            ${this.openTicketSelectionOptions.map(
               element =>
                 html`
                   <li>
