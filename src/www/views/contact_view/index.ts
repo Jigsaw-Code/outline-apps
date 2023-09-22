@@ -42,10 +42,8 @@ export class ContactView extends LitElement {
       :host {
         font-family: var(--outline-font-family);
         margin: 0 auto;
-        max-width: 400px;
         padding: var(--outline-gutter);
 
-        --mdc-menu-item-height: auto;
       }
 
       ol {
@@ -61,7 +59,15 @@ export class ContactView extends LitElement {
       }
 
       mwc-list-item {
-        min-height: 48px;
+        /**
+         * The default styling of list items that wrap to 3+ lines is bad, and
+         * our items here are quite long and tend to wrap that much. To allow
+         * all lines to take up as much space as they can, we set the height to
+         * "auto", with a min-height of what the height would have been, which
+         * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
+         */
+        min-height: var(--mdc-menu-item-height);
+        --mdc-menu-item-height: auto;
         padding-bottom: var(--outline-mini-gutter);
         padding-top: var(--outline-mini-gutter);
       }
