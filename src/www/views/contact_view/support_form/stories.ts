@@ -39,5 +39,5 @@ export default {
 
 export const Example = ({variant}: {variant: AppType}) =>
   html`
-    <support-form .type=${variant}></support-form>
+    <support-form .variant=${variant}></support-form>
   `;
