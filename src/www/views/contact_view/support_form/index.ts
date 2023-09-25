@@ -16,6 +16,7 @@
 
 import {html, css, LitElement, TemplateResult, nothing} from 'lit';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
+import {live} from 'lit/directives/live.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import '@material/mwc-button';
 import '@material/mwc-linear-progress';
@@ -25,8 +26,19 @@ import '@material/mwc-textfield';
 import {CardType} from '../../shared/card';
 import {IssueType} from '../issue_type';
 import {AppType} from '../app_type';
+import {TextField} from '@material/mwc-textfield';
+import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/** Interface for tracking form data. */
+export declare interface FormValues {
+  email?: string;
+  subject?: string;
+  description?: string;
+  source?: string;
+  cloudProvider?: string;
+}
 
 @customElement('support-form')
 export class SupportForm extends LitElement {
@@ -65,6 +77,7 @@ export class SupportForm extends LitElement {
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
+  @state() private formData: FormValues = {};
 
   @state() private isFormValid = false;
   @state() private isSubmitting = false;
@@ -77,7 +90,7 @@ export class SupportForm extends LitElement {
 
   /** Resets the form. */
   private reset() {
-    this.formRef.value.reset();
+    this.formData = {};
   }
 
   /** Cancels the form. */
@@ -97,9 +110,7 @@ export class SupportForm extends LitElement {
 
     this.isSubmitting = true;
     // TODO: Actually send the form data using the error reporter.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const formData = new FormData(this.formRef.value);
-    console.log('Submitting form data...');
+    console.log('Submitting form data...', this.formData);
 
     const event = new CustomEvent<boolean>('submit', {detail: true});
     this.dispatchEvent(event);
@@ -137,6 +148,12 @@ export class SupportForm extends LitElement {
         label="Cloud provider"
         helper="Which cloud provider does this relate to?"
         helperPersistent
+        .value=${live(this.formData.cloudProvider ?? '')}
+        @selected=${(e: CustomEvent<SelectedDetail<number>>) => {
+          if (e.detail.index !== -1) {
+            this.formData.cloudProvider = providers[e.detail.index][0];
+          }
+        }}
         .disabled="${this.isSubmitting}"
         required
         outlined
@@ -161,6 +178,8 @@ export class SupportForm extends LitElement {
         label="Source"
         helper="Where did you get your access key?"
         helperPersistent
+        .value=${live(this.formData.source ?? '')}
+        @input=${(e: Event) => (this.formData.source = (e.target as TextField).value)}
         maxLength="225"
         .disabled="${this.isSubmitting}"
         required
@@ -178,9 +197,11 @@ export class SupportForm extends LitElement {
             name="Email"
             type="email"
             label="Email address"
-            maxLength="225"
             helper="Please provide an email address where we can reach you."
             helperPersistent
+            .value=${live(this.formData.email ?? '')}
+            @input=${(e: Event) => (this.formData.email = (e.target as TextField).value)}
+            maxLength="225"
             autoValidate
             validationMessage="Please provide a correct email address."
             .disabled="${this.isSubmitting}"
@@ -194,6 +215,8 @@ export class SupportForm extends LitElement {
           <mwc-textfield
             name="Subject"
             label="Subject"
+            .value=${live(this.formData.subject ?? '')}
+            @input=${(e: Event) => (this.formData.subject = (e.target as TextField).value)}
             maxLength="225"
             .disabled="${this.isSubmitting}"
             required
@@ -205,6 +228,8 @@ export class SupportForm extends LitElement {
             label="Description"
             helper="Please provide a detailed description of your issue."
             helperPersistent
+            .value=${live(this.formData.description ?? '')}
+            @input=${(e: Event) => (this.formData.description = (e.target as TextField).value)}
             rows="5"
             maxLength="131072"
             charCounter
@@ -225,6 +250,7 @@ export class SupportForm extends LitElement {
           <span slot="card-actions">
             <mwc-button label="Cancel" .disabled="${this.isSubmitting}" @click=${this.cancel}></mwc-button>
             <mwc-button
+              type="submit"
               label="Submit"
               .disabled="${!this.isFormValid || this.isSubmitting}"
               @click=${this.submit}
