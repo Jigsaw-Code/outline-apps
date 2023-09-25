@@ -119,11 +119,11 @@ export class SupportForm extends LitElement {
   }
 
   private get renderProgressBar(): TemplateResult | typeof nothing {
-    return this.isSubmitting
-      ? html`
-          <mwc-linear-progress indeterminate></mwc-linear-progress>
-        `
-      : nothing;
+    if (!this.isSubmitting) return nothing;
+
+    return html`
+      <mwc-linear-progress indeterminate></mwc-linear-progress>
+    `;
   }
 
   private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
