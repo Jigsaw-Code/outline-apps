@@ -66,6 +66,11 @@ export class SupportForm extends LitElement {
     `,
   ];
 
+  /** The default maximum character length of input fields. */
+  private static readonly DEFAULT_MAX_LENGTH_INPUT = 225;
+  /** The maximum character length of the "Description" field. */
+  private static readonly MAX_LENGTH_DESCRIPTION = 131072;
+
   private static readonly CLOUD_PROVIDERS = new Map([
     ['aws', 'Amazon Web Services'],
     ['digitalocean', 'DigitalOcean'],
@@ -180,7 +185,7 @@ export class SupportForm extends LitElement {
         helperPersistent
         .value=${live(this.formData.source ?? '')}
         @input=${(e: Event) => (this.formData.source = (e.target as TextField).value)}
-        maxLength="225"
+        .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
         .disabled="${this.isSubmitting}"
         required
         outlined
@@ -201,7 +206,7 @@ export class SupportForm extends LitElement {
             helperPersistent
             .value=${live(this.formData.email ?? '')}
             @input=${(e: Event) => (this.formData.email = (e.target as TextField).value)}
-            maxLength="225"
+            .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
             autoValidate
             validationMessage="Please provide a correct email address."
             .disabled="${this.isSubmitting}"
@@ -217,7 +222,7 @@ export class SupportForm extends LitElement {
             label="Subject"
             .value=${live(this.formData.subject ?? '')}
             @input=${(e: Event) => (this.formData.subject = (e.target as TextField).value)}
-            maxLength="225"
+            .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
             .disabled="${this.isSubmitting}"
             required
             outlined
@@ -231,8 +236,7 @@ export class SupportForm extends LitElement {
             .value=${live(this.formData.description ?? '')}
             @input=${(e: Event) => (this.formData.description = (e.target as TextField).value)}
             rows="5"
-            maxLength="131072"
-            charCounter
+            .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
             .disabled="${this.isSubmitting}"
             required
             outlined
