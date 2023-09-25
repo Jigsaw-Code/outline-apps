@@ -16,7 +16,7 @@
 
 import {SupportForm} from './index';
 
-import {fixture, html, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
+import {fixture, html, nextFrame, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
 
 async function setValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
   await triggerFocusFor(el);
@@ -68,8 +68,8 @@ describe('SupportForm', () => {
   });
 
   describe('when form is valid', () => {
-    let submitButton: HTMLElement;
     let el: SupportForm;
+    let submitButton: HTMLElement;
 
     beforeEach(async () => {
       el = await fixture(
@@ -104,11 +104,34 @@ describe('SupportForm', () => {
       const {detail} = await listener;
       expect(detail).toBeTrue();
     });
+  });
 
-    it('clicking cancel button emits form cancel event', async () => {
+  describe('clicking cancel button', () => {
+    let el: SupportForm;
+    let emailInput: HTMLInputElement;
+    let cancelButton: HTMLElement;
+
+    beforeEach(async () => {
+      el = await fixture(
+        html`
+          <support-form></support-form>
+        `
+      );
+      emailInput = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
+      await setValue(emailInput, 'foo@bar.com');
+      cancelButton = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
+    });
+
+    it('resets the form', async () => {
+      cancelButton.click();
+      await nextFrame();
+
+      expect(emailInput.value).toBe('');
+    });
+
+    it('emits form cancel event', async () => {
       const listener = oneEvent(el, 'cancel');
 
-      const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
       cancelButton.click();
 
       const {detail} = await listener;
