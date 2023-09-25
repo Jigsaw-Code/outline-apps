@@ -177,7 +177,7 @@ export class ContactView extends LitElement {
     }
   }
 
-  private submitForm(e: SubmitEvent) {
+  private submitForm(e: CustomEvent) {
     console.log('Feedback form submitted!', e);
     this.exitTemplate = html`
       Thanks for helping us improve! We love hearing from you.
@@ -201,6 +201,7 @@ export class ContactView extends LitElement {
           <support-form
             .variant=${this.variant}
             .issueType=${this.selectedIssueType}
+            @cancel=${() => (this.step = Step.ISSUE_WIZARD)}
             @submit=${this.submitForm}
           ></support-form>
         `;

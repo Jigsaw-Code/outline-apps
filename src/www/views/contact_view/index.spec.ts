@@ -121,6 +121,15 @@ describe('ContactView', () => {
         const exitCard = el.shadowRoot!.querySelector('outline-card')!;
         expect(exitCard.textContent).toContain('Thanks for helping us improve');
       });
+
+      it('shows default contact view on cancellation of support form', async () => {
+        el.shadowRoot!.querySelector('support-form')!.dispatchEvent(new CustomEvent('cancel'));
+
+        await nextFrame();
+
+        expect(el.shadowRoot?.querySelector('p')?.textContent).toContain('Tell us how we can help.');
+        expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
+      });
     });
   });
 });

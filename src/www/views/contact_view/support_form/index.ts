@@ -75,6 +75,18 @@ export class SupportForm extends LitElement {
     this.isFormValid = Array.from(fieldNodes).every(field => field.validity.valid);
   }
 
+  /** Resets the form. */
+  private reset() {
+    this.formRef.value.reset();
+  }
+
+  /** Cancels the form. */
+  private cancel() {
+    this.reset();
+    const event = new CustomEvent<boolean>('cancel', {detail: true});
+    this.dispatchEvent(event);
+  }
+
   /** Submits the form. */
   private submit(e: SubmitEvent) {
     e.preventDefault();
@@ -91,7 +103,7 @@ export class SupportForm extends LitElement {
 
     const event = new CustomEvent<boolean>('submit', {detail: true});
     this.dispatchEvent(event);
-    this.formRef.value.reset();
+    this.reset();
     this.isSubmitting = false;
   }
 
@@ -144,18 +156,18 @@ export class SupportForm extends LitElement {
     if (this.variant !== AppType.CLIENT) return nothing;
 
     return html`
-          <mwc-textfield
-            name="Where_did_you_get_your_access_key"
-            label="Source"
-            helper="Where did you get your access key?"
-            helperPersistent
-            maxLength="225"
-            .disabled="${this.isSubmitting}"
-            required
-            outlined
-            @blur=${this.checkFormValidity}
-          ></mwc-textfield>
-        `;
+      <mwc-textfield
+        name="Where_did_you_get_your_access_key"
+        label="Source"
+        helper="Where did you get your access key?"
+        helperPersistent
+        maxLength="225"
+        .disabled="${this.isSubmitting}"
+        required
+        outlined
+        @blur=${this.checkFormValidity}
+      ></mwc-textfield>
+    `;
   }
 
   render() {
@@ -210,12 +222,14 @@ export class SupportForm extends LitElement {
 
           ${this.renderProgressBar}
 
-          <mwc-button
-            label="Submit"
-            slot="card-actions"
-            .disabled="${!this.isFormValid || this.isSubmitting}"
-            @click=${this.submit}
-          ></mwc-button>
+          <span slot="card-actions">
+            <mwc-button label="Cancel" .disabled="${this.isSubmitting}" @click=${this.cancel}></mwc-button>
+            <mwc-button
+              label="Submit"
+              .disabled="${!this.isFormValid || this.isSubmitting}"
+              @click=${this.submit}
+            ></mwc-button>
+          </span>
         </outline-card>
       </form>
     `;
