@@ -294,10 +294,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
-          <template is="dom-if" if="{{enableNewContactView}}">
+          <template is="dom-if" if="{{contactViewFeatureFlag}}">
             <contact-view name="contact" id="contactView"></contact-view>
           </template>
-          <template is="dom-if" if="{{!enableNewContactView}}">
+          <template is="dom-if" if="{{!contactViewFeatureFlag}}">
             <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
           </template>
           <about-view
@@ -371,13 +371,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <template is="dom-if" if="{{enableNewContactView}}">
+            <template is="dom-if" if="{{contactViewFeatureFlag}}">
               <paper-item name="contact">
                 <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
                 [[localize('contact-page-title')]]
               </paper-item>
             </template>
-            <template is="dom-if" if="{{!enableNewContactView}}">
+            <template is="dom-if" if="{{!contactViewFeatureFlag}}">
               <paper-item name="feedback">
                 <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
                 [[localize('feedback-page-title')]]
@@ -595,7 +595,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
-      enableNewContactView: {
+      contactViewFeatureFlag: {
         type: Boolean,
         readonly: true,
         value: false,
