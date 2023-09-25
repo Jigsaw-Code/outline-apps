@@ -25,6 +25,7 @@ import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
+import {IS_ANDROID, IS_IOS, IS_LINUX, IS_MACOS, IS_WINDOWS} from './os';
 import {CardType} from '../shared/card';
 import {IssueType} from './issue_type';
 import {AppType} from './app_type';
@@ -203,6 +204,7 @@ export class ContactView extends LitElement {
     }
     const submitData = {
       ...this.formValues,
+      Operating_System: getOperatingSystemValue(),
       Outline_Manager_Client_Version: this.version,
     };
     // TODO: Actually send the form data using the error reporter.
@@ -292,4 +294,13 @@ export class ContactView extends LitElement {
       }
     }
   }
+}
+
+function getOperatingSystemValue(): string | undefined {
+  if (IS_ANDROID) return 'android';
+  if (IS_IOS) return 'ios';
+  if (IS_LINUX) return 'linux';
+  if (IS_MACOS) return 'apple';
+  if (IS_WINDOWS) return 'windows';
+  return;
 }

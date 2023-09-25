@@ -229,8 +229,6 @@ export class SupportForm extends LitElement {
           >
           </mwc-textarea>
 
-          <input type="hidden" name="Operating_System" value="TODO" />
-
           <p>* = Required field</p>
 
           <span slot="card-actions">
