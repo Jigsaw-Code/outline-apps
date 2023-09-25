@@ -66,7 +66,7 @@ export class ContactView extends LitElement {
          * "auto", with a min-height of what the height would have been, which
          * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
          */
-        min-height: var(--mdc-menu-item-height);
+        min-height: 48px;
         --mdc-menu-item-height: auto;
         padding-bottom: var(--outline-mini-gutter);
         padding-top: var(--outline-mini-gutter);
