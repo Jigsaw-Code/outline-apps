@@ -104,9 +104,7 @@ export class SupportForm extends LitElement {
   }
 
   private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
-    if (this.variant !== AppType.MANAGER) {
-      return nothing;
-    }
+    if (this.variant !== AppType.MANAGER) return nothing;
 
     const providers = Array.from(SupportForm.CLOUD_PROVIDERS);
     /** We should sort the providers by their labels, which may be localized. */
@@ -143,8 +141,9 @@ export class SupportForm extends LitElement {
   }
 
   private get renderAccessKeySourceInputField(): TemplateResult | typeof nothing {
-    return this.variant === AppType.CLIENT
-      ? html`
+    if (this.variant !== AppType.CLIENT) return nothing;
+
+    return html`
           <mwc-textfield
             name="Where_did_you_get_your_access_key"
             label="Source"
@@ -156,8 +155,7 @@ export class SupportForm extends LitElement {
             outlined
             @blur=${this.checkFormValidity}
           ></mwc-textfield>
-        `
-      : nothing;
+        `;
   }
 
   render() {
