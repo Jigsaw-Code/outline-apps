@@ -106,36 +106,34 @@ describe('SupportForm', () => {
     });
   });
 
-  describe('clicking cancel button', () => {
-    let el: SupportForm;
-    let emailInput: HTMLInputElement;
-    let cancelButton: HTMLElement;
+  it('clicking cancel button resets the form', async () => {
+    const el: SupportForm = await fixture(
+      html`
+        <support-form></support-form>
+      `
+    );
+    const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
+    await setValue(emailInput, 'foo@bar.com');
 
-    beforeEach(async () => {
-      el = await fixture(
-        html`
-          <support-form></support-form>
-        `
-      );
-      emailInput = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
-      await setValue(emailInput, 'foo@bar.com');
-      cancelButton = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
-    });
+    const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
+    cancelButton.click();
+    await nextFrame();
 
-    it('resets the form', async () => {
-      cancelButton.click();
-      await nextFrame();
+    expect(emailInput.value).toBe('');
+  });
 
-      expect(emailInput.value).toBe('');
-    });
+  it('emits form cancel event', async () => {
+    const el: SupportForm = await fixture(
+      html`
+        <support-form></support-form>
+      `
+    );
+    const listener = oneEvent(el, 'cancel');
 
-    it('emits form cancel event', async () => {
-      const listener = oneEvent(el, 'cancel');
+    const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
+    cancelButton.click();
 
-      cancelButton.click();
-
-      const {detail} = await listener;
-      expect(detail).toBeTrue();
-    });
+    const {detail} = await listener;
+    expect(detail).toBeTrue();
   });
 });
