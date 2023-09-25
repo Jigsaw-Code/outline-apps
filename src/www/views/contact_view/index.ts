@@ -177,6 +177,11 @@ export class ContactView extends LitElement {
     }
   }
 
+  private reset() {
+    this.showIssueSelector = false;
+    this.step = Step.ISSUE_WIZARD;
+  }
+
   private submitForm(e: CustomEvent) {
     console.log('Feedback form submitted!', e);
     this.exitTemplate = html`
@@ -201,7 +206,7 @@ export class ContactView extends LitElement {
           <support-form
             .variant=${this.variant}
             .issueType=${this.selectedIssueType}
-            @cancel=${() => (this.step = Step.ISSUE_WIZARD)}
+            @cancel=${this.reset}
             @submit=${this.submitForm}
           ></support-form>
         `;
