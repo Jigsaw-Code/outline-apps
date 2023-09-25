@@ -785,16 +785,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
       window.dispatchEvent(new CustomEvent('location-changed'));
-      if (this.page == 'contact') {
-        // Reset the contact form when a user navigates away from it by replacing
-        // the element with a fresh one. This is less complex than trying to reset
-        // all chosen options manually.
-        const newContactView = document.createElement('contact-view');
-        newContactView.name = 'contact';
-        newContactView.id = 'contactView';
-        newContactView.localize = this.localize;
-        this.$$('contact-view').replaceWith(newContactView);
-      }
     }
   }
 

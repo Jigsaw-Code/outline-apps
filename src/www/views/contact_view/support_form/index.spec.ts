@@ -104,5 +104,15 @@ describe('SupportForm', () => {
       const {detail} = await listener;
       expect(detail).toBeTrue();
     });
+
+    it('clicking cancel button emits form cancel event', async () => {
+      const listener = oneEvent(el, 'cancel');
+
+      const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
+      cancelButton.click();
+
+      const {detail} = await listener;
+      expect(detail).toBeTrue();
+    });
   });
 });
