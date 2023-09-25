@@ -26,7 +26,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {downloadHttpsFile} from '../build/download_file.mjs';
 
 /**
- * @description Builds the parameterized cordova binary (ios, macos, android).
+ * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
  *
  * @param {string[]} parameters
  */
@@ -62,11 +62,40 @@ export async function main(...parameters) {
       );
     case 'ios' + 'debug':
     case 'macos' + 'debug':
+    case 'maccatalyst' + 'debug':
       return appleDebug(platform);
     case 'ios' + 'release':
     case 'macos' + 'release':
+    case 'maccatalyst' + 'release':
       return appleRelease(platform);
   }
+}
+
+function getXcodeBuildArgs(platform) {
+  let destination, workspaceFilename;
+  switch (platform) {
+    case 'macos':
+      destination = 'generic/platform=macOS';
+      workspaceFilename = 'macos.xcworkspace';
+      break;
+    case 'maccatalyst':
+      destination = 'generic/platform=macOS,variant=Mac Catalyst';
+      workspaceFilename = 'ios.xcworkspace';
+      break;
+    case 'ios':
+    default:
+      destination = 'generic/platform=iOS';
+      workspaceFilename = 'ios.xcworkspace';
+      break;
+  }
+  return [
+    '-workspace',
+    path.join(getRootDir(), 'src', 'cordova', 'apple', workspaceFilename),
+    '-scheme',
+    'Outline',
+    '-destination',
+    destination,
+  ];
 }
 
 async function appleDebug(platform) {
@@ -75,12 +104,7 @@ async function appleDebug(platform) {
   return spawnStream(
     'xcodebuild',
     'clean',
-    '-workspace',
-    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
-    '-scheme',
-    'Outline',
-    '-destination',
-    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
+    ...getXcodeBuildArgs(platform),
     'build',
     '-configuration',
     'Debug',
@@ -90,19 +114,7 @@ async function appleDebug(platform) {
 }
 
 async function appleRelease(platform) {
-  return spawnStream(
-    'xcodebuild',
-    'clean',
-    '-workspace',
-    path.join(getRootDir(), 'src', 'cordova', 'apple', `${platform}.xcworkspace`),
-    '-scheme',
-    'Outline',
-    '-destination',
-    platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS',
-    'archive',
-    '-configuration',
-    'Release'
-  );
+  return spawnStream('xcodebuild', 'clean', ...getXcodeBuildArgs(platform), 'archive', '-configuration', 'Release');
 }
 
 async function androidDebug(verbose) {

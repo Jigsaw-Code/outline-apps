@@ -25,6 +25,8 @@ import {spawnStream} from '../build/spawn_stream.mjs';
 const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
+const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
+
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
  *
@@ -35,8 +37,8 @@ export async function main(...parameters) {
     _: [outlinePlatform],
   } = minimist(parameters);
 
-  if (outlinePlatform !== 'macos' && outlinePlatform !== 'ios') {
-    throw new Error('Testing is only currently supported for Apple platforms.');
+  if (!SUPPORTED_PLATFORMS.has(outlinePlatform)) {
+    throw new Error('Testing is only currently supported for platforms: ' + Array.from(SUPPORTED_PLATFORMS));
   }
 
   if (os.platform() !== 'darwin') {

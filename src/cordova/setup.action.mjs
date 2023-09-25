@@ -55,10 +55,12 @@ export async function main(...parameters) {
       console.warn('NOTE: You must open the Outline.zip file after building to upload to the Play Store.');
       return androidRelease(versionName, buildNumber, verbose);
     case 'ios' + 'debug':
+    case 'maccatalyst' + 'debug':
       return appleIosDebug(verbose);
     case 'macos' + 'debug':
       return appleMacOsDebug(verbose);
     case 'ios' + 'release':
+    case 'maccatalyst' + 'release':
       return appleIosRelease(versionName, buildNumber, verbose);
     case 'macos' + 'release':
       return appleMacOsRelease(versionName, buildNumber, verbose);
