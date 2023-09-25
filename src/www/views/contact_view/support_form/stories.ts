@@ -56,7 +56,13 @@ export const EmptyForm = ({
   onCancel: Function;
   onSubmit: Function;
 }) => html`
-  <support-form .variant=${variant} .disabled=${disabled} @cancel=${onCancel} @submit=${onSubmit}></support-form>
+  <support-form
+    .variant=${variant}
+    .disabled=${disabled}
+    version="0.0.0-debug"
+    @cancel=${onCancel}
+    @submit=${onSubmit}
+  ></support-form>
 `;
 
 export const CompleteForm = ({
@@ -82,6 +88,7 @@ export const CompleteForm = ({
       .variant=${variant}
       .disabled=${disabled}
       .values=${values}
+      version="0.0.0-debug"
       @cancel=${onCancel}
       @submit=${onSubmit}
     ></support-form>

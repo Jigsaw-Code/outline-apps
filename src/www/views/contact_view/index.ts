@@ -98,6 +98,7 @@ export class ContactView extends LitElement {
   ]);
 
   @property({type: String}) variant: AppType = AppType.CLIENT;
+  @property({type: String}) version: string;
 
   @state() private step: Step = Step.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
@@ -200,9 +201,12 @@ export class ContactView extends LitElement {
     if (!this.formRef.value.valid) {
       throw Error('Cannot submit invalid form.');
     }
-
+    const submitData = {
+      ...this.formValues,
+      Outline_Manager_Client_Version: this.version,
+    };
     // TODO: Actually send the form data using the error reporter.
-    console.log('Submitting form data...', this.formValues);
+    console.log('Submitting feedback:', submitData);
 
     this.isFormSubmitting = false;
     this.exitTemplate = html` Thanks for helping us improve! We love hearing from you. `;

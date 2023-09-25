@@ -39,5 +39,5 @@ export default {
 
 export const Example = ({variant}: {variant: AppType}) =>
   html`
-    <contact-view .variant=${variant}></contact-view>
+    <contact-view .variant=${variant} version="0.0.0-debug"></contact-view>
   `;
