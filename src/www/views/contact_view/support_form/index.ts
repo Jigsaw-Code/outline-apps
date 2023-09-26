@@ -23,7 +23,6 @@ import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import {CardType} from '../../shared/card';
-import {IssueType} from '../issue_type';
 import {AppType} from '../app_type';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
@@ -79,7 +78,6 @@ export class SupportForm extends LitElement {
 
   @property({type: Boolean}) disabled = false;
   @property({type: String}) variant: AppType = AppType.CLIENT;
-  @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
   @state() private formData: FormValues = {};
