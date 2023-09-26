@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {html, css, LitElement, TemplateResult} from 'lit';
+import {html, css, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Ref, createRef, ref} from 'lit/directives/ref.js';
+import '@material/mwc-circular-progress';
 import '@material/mwc-radio';
 import '@material/mwc-select';
 import '@material/mwc-formfield';
@@ -27,6 +28,7 @@ import './support_form';
 import {CardType} from '../shared/card';
 import {IssueType} from './issue_type';
 import {AppType} from './app_type';
+import {FormValues, SupportForm} from './support_form';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -40,10 +42,16 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
+        display: block;
         font-family: var(--outline-font-family);
-        margin: 0 auto;
         padding: var(--outline-gutter);
+      }
 
+      mwc-circular-progress {
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
       }
 
       ol {
@@ -113,6 +121,8 @@ export class ContactView extends LitElement {
   ];
 
   @state() private showIssueSelector = false;
+  private readonly formRef: Ref<SupportForm> = createRef();
+  @state() private isFormSubmitting = false;
 
   private selectHasOpenTicket(e: InputEvent) {
     const radio = e.target as Radio;
@@ -180,10 +190,17 @@ export class ContactView extends LitElement {
   private reset() {
     this.showIssueSelector = false;
     this.step = Step.ISSUE_WIZARD;
+    this.formRef.value.reset();
   }
 
   private submitForm(e: CustomEvent) {
-    console.log('Feedback form submitted!', e);
+    this.isFormSubmitting = true;
+
+    const formData: FormValues = e.detail;
+    // TODO: Actually send the form data using the error reporter.
+    console.log('Submitting form data...', formData);
+
+    this.isFormSubmitting = false;
     this.exitTemplate = html`
       Thanks for helping us improve! We love hearing from you.
     `;
@@ -198,17 +215,29 @@ export class ContactView extends LitElement {
     `;
   }
 
+  private get renderForm(): TemplateResult | typeof nothing {
+    if (this.isFormSubmitting) {
+      return html`
+        <mwc-circular-progress indeterminate></mwc-linear-progress>
+      `;
+    }
+    return html`
+      <support-form
+        ${ref(this.formRef)}
+        .variant=${this.variant}
+        .issueType=${this.selectedIssueType}
+        .disabled=${this.isFormSubmitting}
+        @cancel=${this.reset}
+        @submit=${this.submitForm}
+      ></support-form>
+    `;
+  }
+
   render() {
     switch (this.step) {
       case Step.FORM: {
         return html`
-          ${this.renderIntroTemplate}
-          <support-form
-            .variant=${this.variant}
-            .issueType=${this.selectedIssueType}
-            @cancel=${this.reset}
-            @submit=${this.submitForm}
-          ></support-form>
+          ${this.renderIntroTemplate} ${this.renderForm}
         `;
       }
 

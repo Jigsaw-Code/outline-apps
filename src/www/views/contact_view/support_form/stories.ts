@@ -34,10 +34,27 @@ export default {
         defaultValue: AppType.CLIENT,
       },
     },
+    disabled: {
+      description: 'Whether to disable the form.',
+      defaultValue: false,
+      control: 'boolean',
+    },
+    onCancel: {action: 'cancel'},
+    onSubmit: {action: 'submit'},
   },
 };
 
-export const Example = ({variant}: {variant: AppType}) =>
+export const Example = ({
+  variant,
+  disabled,
+  onCancel,
+  onSubmit,
+}: {
+  variant: AppType;
+  disabled: boolean;
+  onCancel: Function;
+  onSubmit: Function;
+}) =>
   html`
-    <support-form .variant=${variant}></support-form>
+    <support-form .variant=${variant} .disabled=${disabled} @cancel=${onCancel} @submit=${onSubmit}></support-form>
   `;

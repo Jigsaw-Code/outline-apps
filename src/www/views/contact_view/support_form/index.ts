@@ -19,7 +19,6 @@ import {createRef, Ref, ref} from 'lit/directives/ref.js';
 import {live} from 'lit/directives/live.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import '@material/mwc-button';
-import '@material/mwc-linear-progress';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
@@ -78,6 +77,7 @@ export class SupportForm extends LitElement {
   ]);
   private static readonly OTHER_CLOUD_PROVIDER: [string, string] = ['other', 'Other'];
 
+  @property({type: Boolean}) disabled = false;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: String}) issueType: IssueType = IssueType.GENERAL;
 
@@ -85,7 +85,6 @@ export class SupportForm extends LitElement {
   @state() private formData: FormValues = {};
 
   @state() private isFormValid = false;
-  @state() private isSubmitting = false;
 
   /** Checks the entire form's validity state. */
   private checkFormValidity() {
@@ -94,41 +93,29 @@ export class SupportForm extends LitElement {
   }
 
   /** Resets the form. */
-  private reset() {
+  reset() {
     this.formData = {};
   }
 
   /** Cancels the form. */
-  private cancel() {
-    this.reset();
+  private cancel(e: PointerEvent) {
+    e.stopPropagation();
+
     const event = new CustomEvent<boolean>('cancel', {detail: true});
     this.dispatchEvent(event);
   }
 
   /** Submits the form. */
-  private submit(e: SubmitEvent) {
+  private submit(e: PointerEvent) {
     e.preventDefault();
+    e.stopPropagation();
 
     if (!this.isFormValid) {
       throw Error('Cannot submit invalid form.');
     }
 
-    this.isSubmitting = true;
-    // TODO: Actually send the form data using the error reporter.
-    console.log('Submitting form data...', this.formData);
-
-    const event = new CustomEvent<boolean>('submit', {detail: true});
+    const event = new CustomEvent<FormValues>('submit', {detail: this.formData});
     this.dispatchEvent(event);
-    this.reset();
-    this.isSubmitting = false;
-  }
-
-  private get renderProgressBar(): TemplateResult | typeof nothing {
-    if (!this.isSubmitting) return nothing;
-
-    return html`
-      <mwc-linear-progress indeterminate></mwc-linear-progress>
-    `;
   }
 
   private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
@@ -159,7 +146,7 @@ export class SupportForm extends LitElement {
             this.formData.cloudProvider = providers[e.detail.index][0];
           }
         }}
-        .disabled="${this.isSubmitting}"
+        .disabled=${this.disabled}
         required
         outlined
         @blur=${this.checkFormValidity}
@@ -186,7 +173,7 @@ export class SupportForm extends LitElement {
         .value=${live(this.formData.source ?? '')}
         @input=${(e: Event) => (this.formData.source = (e.target as TextField).value)}
         .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
-        .disabled="${this.isSubmitting}"
+        .disabled=${this.disabled}
         required
         outlined
         @blur=${this.checkFormValidity}
@@ -209,7 +196,7 @@ export class SupportForm extends LitElement {
             .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
             autoValidate
             validationMessage="Please provide a correct email address."
-            .disabled="${this.isSubmitting}"
+            .disabled=${this.disabled}
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -223,7 +210,7 @@ export class SupportForm extends LitElement {
             .value=${live(this.formData.subject ?? '')}
             @input=${(e: Event) => (this.formData.subject = (e.target as TextField).value)}
             .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
-            .disabled="${this.isSubmitting}"
+            .disabled=${this.disabled}
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -237,7 +224,7 @@ export class SupportForm extends LitElement {
             @input=${(e: Event) => (this.formData.description = (e.target as TextField).value)}
             rows="5"
             .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
-            .disabled="${this.isSubmitting}"
+            .disabled=${this.disabled}
             required
             outlined
             @blur=${this.checkFormValidity}
@@ -249,14 +236,12 @@ export class SupportForm extends LitElement {
 
           <p>* = Required field</p>
 
-          ${this.renderProgressBar}
-
           <span slot="card-actions">
-            <mwc-button label="Cancel" .disabled="${this.isSubmitting}" @click=${this.cancel}></mwc-button>
+            <mwc-button label="Cancel" .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
             <mwc-button
               type="submit"
               label="Submit"
-              .disabled="${!this.isFormValid || this.isSubmitting}"
+              .disabled=${!this.isFormValid || this.disabled}
               @click=${this.submit}
             ></mwc-button>
           </span>
