@@ -225,7 +225,6 @@ export class ContactView extends LitElement {
       <support-form
         ${ref(this.formRef)}
         .variant=${this.variant}
-        .issueType=${this.selectedIssueType}
         .disabled=${this.isFormSubmitting}
         @cancel=${this.reset}
         @submit=${this.submitForm}
