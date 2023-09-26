@@ -17,16 +17,13 @@
 import {ContactView} from './index';
 
 import {fixture, html, nextFrame} from '@open-wc/testing';
+import {SupportForm} from './support_form';
 
 describe('ContactView', () => {
   let el: ContactView;
 
   beforeEach(async () => {
-    el = await fixture(
-      html`
-        <contact-view></contact-view>
-      `
-    );
+    el = await fixture(html` <contact-view></contact-view> `);
   });
 
   it('is defined', async () => {
@@ -113,7 +110,8 @@ describe('ContactView', () => {
       });
 
       it('shows "thank you" exit message on completion of support form', async () => {
-        const supportForm = el.shadowRoot!.querySelector('support-form')!;
+        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
         await nextFrame();

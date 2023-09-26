@@ -27,42 +27,26 @@ async function setValue(el: HTMLInputElement | HTMLTextAreaElement, value: strin
 
 describe('SupportForm', () => {
   it('is defined', async () => {
-    const el = await fixture(
-      html`
-        <support-form></support-form>
-      `
-    );
+    const el = await fixture(html` <support-form></support-form> `);
     expect(el).toBeInstanceOf(SupportForm);
   });
 
   it('shows correct fields for the client variant', async () => {
-    const el = await fixture(
-      html`
-        <support-form variant="client"></support-form>
-      `
-    );
+    const el = await fixture(html` <support-form variant="client"></support-form> `);
 
     expect(el.shadowRoot!.querySelector('mwc-textfield[name="Where_did_you_get_your_access_key"]')).not.toBeNull();
     expect(el.shadowRoot!.querySelector('mwc-select[name="Cloud_Provider"]')).toBeNull();
   });
 
   it('shows correct fields for the manager variant', async () => {
-    const el = await fixture(
-      html`
-        <support-form variant="manager"></support-form>
-      `
-    );
+    const el = await fixture(html` <support-form variant="manager"></support-form> `);
 
     expect(el.shadowRoot!.querySelector('mwc-textfield[name="Where_did_you_get_your_access_key"]')).toBeNull();
     expect(el.shadowRoot!.querySelector('mwc-select[name="Cloud_Provider"]')).not.toBeNull();
   });
 
   it('submit button is disabled by default', async () => {
-    const el = await fixture(
-      html`
-        <support-form></support-form>
-      `
-    );
+    const el = await fixture(html` <support-form></support-form> `);
     const submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
     expect(submitButton.hasAttribute('disabled')).toBeTrue();
   });
@@ -72,21 +56,17 @@ describe('SupportForm', () => {
     let submitButton: HTMLElement;
 
     beforeEach(async () => {
-      el = await fixture(
-        html`
-          <support-form></support-form>
-        `
-      );
+      el = await fixture(html` <support-form></support-form> `);
 
-      const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
+      const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
       await setValue(emailInput, 'foo@bar.com');
       const accessKeySourceInput: HTMLInputElement = el.shadowRoot!.querySelector(
         'mwc-textfield[name="Where_did_you_get_your_access_key"'
       )!;
       await setValue(accessKeySourceInput, 'From a friend');
-      const subjectInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Subject"')!;
+      const subjectInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
       await setValue(subjectInput, 'Test Subject');
-      const descriptionInput: HTMLTextAreaElement = el.shadowRoot!.querySelector('mwc-textarea[name="Description"')!;
+      const descriptionInput: HTMLTextAreaElement = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
       await setValue(descriptionInput, 'Test Description');
 
       submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
@@ -106,28 +86,19 @@ describe('SupportForm', () => {
     });
   });
 
-  it('clicking cancel button resets the form', async () => {
-    const el: SupportForm = await fixture(
-      html`
-        <support-form></support-form>
-      `
-    );
-    const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="Email"')!;
+  it('updating the `values` property updates the form', async () => {
+    const el: SupportForm = await fixture(html` <support-form></support-form> `);
+    const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
     await setValue(emailInput, 'foo@bar.com');
 
-    const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
-    cancelButton.click();
+    el.values = {};
     await nextFrame();
 
     expect(emailInput.value).toBe('');
   });
 
   it('emits form cancel event', async () => {
-    const el: SupportForm = await fixture(
-      html`
-        <support-form></support-form>
-      `
-    );
+    const el: SupportForm = await fixture(html` <support-form></support-form> `);
     const listener = oneEvent(el, 'cancel');
 
     const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
