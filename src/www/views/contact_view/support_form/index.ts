@@ -139,7 +139,7 @@ export class SupportForm extends LitElement {
 
     return html`
       <mwc-select
-        name="Cloud_Provider"
+        name="cloudProvider"
         label="Cloud provider"
         helper="Which cloud provider does this relate to?"
         helperPersistent
@@ -164,7 +164,7 @@ export class SupportForm extends LitElement {
 
     return html`
       <mwc-textfield
-        name="Where_did_you_get_your_access_key"
+        name="source"
         label="source"
         helper="Where did you get your access key?"
         helperPersistent

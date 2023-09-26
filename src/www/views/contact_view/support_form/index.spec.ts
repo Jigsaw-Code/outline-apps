@@ -34,15 +34,15 @@ describe('SupportForm', () => {
   it('shows correct fields for the client variant', async () => {
     const el = await fixture(html` <support-form variant="client"></support-form> `);
 
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="Where_did_you_get_your_access_key"]')).not.toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="Cloud_Provider"]')).toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-textfield[name="source"]')).not.toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).toBeNull();
   });
 
   it('shows correct fields for the manager variant', async () => {
     const el = await fixture(html` <support-form variant="manager"></support-form> `);
 
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="Where_did_you_get_your_access_key"]')).toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="Cloud_Provider"]')).not.toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-textfield[name="source"]')).toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).not.toBeNull();
   });
 
   it('submit button is disabled by default', async () => {
@@ -60,9 +60,7 @@ describe('SupportForm', () => {
 
       const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
       await setValue(emailInput, 'foo@bar.com');
-      const accessKeySourceInput: HTMLInputElement = el.shadowRoot!.querySelector(
-        'mwc-textfield[name="Where_did_you_get_your_access_key"'
-      )!;
+      const accessKeySourceInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
       await setValue(accessKeySourceInput, 'From a friend');
       const subjectInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
       await setValue(subjectInput, 'Test Subject');
