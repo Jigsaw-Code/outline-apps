@@ -121,6 +121,7 @@ export class ContactView extends LitElement {
   ];
 
   @state() private showIssueSelector = false;
+  private formValues: FormValues = {};
   private readonly formRef: Ref<SupportForm> = createRef();
   @state() private isFormSubmitting = false;
 
@@ -190,28 +191,27 @@ export class ContactView extends LitElement {
   private reset() {
     this.showIssueSelector = false;
     this.step = Step.ISSUE_WIZARD;
-    this.formRef.value.reset();
+    this.formValues = {};
   }
 
-  private submitForm(e: CustomEvent) {
+  private submitForm() {
     this.isFormSubmitting = true;
 
-    const formData: FormValues = e.detail;
+    if (!this.formRef.value.valid) {
+      throw Error('Cannot submit invalid form.');
+    }
+
     // TODO: Actually send the form data using the error reporter.
-    console.log('Submitting form data...', formData);
+    console.log('Submitting form data...', this.formValues);
 
     this.isFormSubmitting = false;
-    this.exitTemplate = html`
-      Thanks for helping us improve! We love hearing from you.
-    `;
+    this.exitTemplate = html` Thanks for helping us improve! We love hearing from you. `;
     this.step = Step.EXIT;
   }
 
   private get renderIntroTemplate(): TemplateResult {
     return html`
-      <p>
-        Tell us how we can help. Please do not enter personal information that is not requested below.
-      </p>
+      <p>Tell us how we can help. Please do not enter personal information that is not requested below.</p>
     `;
   }
 
@@ -226,6 +226,7 @@ export class ContactView extends LitElement {
         ${ref(this.formRef)}
         .variant=${this.variant}
         .disabled=${this.isFormSubmitting}
+        .values=${this.formValues}
         @cancel=${this.reset}
         @submit=${this.submitForm}
       ></support-form>
@@ -235,17 +236,11 @@ export class ContactView extends LitElement {
   render() {
     switch (this.step) {
       case Step.FORM: {
-        return html`
-          ${this.renderIntroTemplate} ${this.renderForm}
-        `;
+        return html` ${this.renderIntroTemplate} ${this.renderForm} `;
       }
 
       case Step.EXIT: {
-        return html`
-          <outline-card .type=${CardType.Elevated}>
-            ${this.exitTemplate}
-          </outline-card>
-        `;
+        return html` <outline-card .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
       }
 
       case Step.ISSUE_WIZARD:
@@ -256,21 +251,20 @@ export class ContactView extends LitElement {
 
           <ol>
             ${this.openTicketSelectionOptions.map(
-              element =>
-                html`
-                  <li>
-                    <mwc-formfield label=${element.label}>
-                      <mwc-radio
-                        name="open-ticket"
-                        .value="${element.value}"
-                        required
-                        @change=${this.selectHasOpenTicket}
-                        ${ref(element.ref)}
-                      >
-                      </mwc-radio>
-                    </mwc-formfield>
-                  </li>
-                `
+              element => html`
+                <li>
+                  <mwc-formfield label=${element.label}>
+                    <mwc-radio
+                      name="open-ticket"
+                      .value="${element.value}"
+                      required
+                      @change=${this.selectHasOpenTicket}
+                      ${ref(element.ref)}
+                    >
+                    </mwc-radio>
+                  </mwc-formfield>
+                </li>
+              `
             )}
           </ol>
 

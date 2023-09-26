@@ -20,6 +20,7 @@ import {html} from 'lit';
 
 import './index';
 import {AppType} from '../app_type';
+import {FormValues} from './index';
 
 export default {
   title: 'Contact View/Support Form',
@@ -44,7 +45,7 @@ export default {
   },
 };
 
-export const Example = ({
+export const EmptyForm = ({
   variant,
   disabled,
   onCancel,
@@ -54,7 +55,35 @@ export const Example = ({
   disabled: boolean;
   onCancel: Function;
   onSubmit: Function;
-}) =>
-  html`
-    <support-form .variant=${variant} .disabled=${disabled} @cancel=${onCancel} @submit=${onSubmit}></support-form>
+}) => html`
+  <support-form .variant=${variant} .disabled=${disabled} @cancel=${onCancel} @submit=${onSubmit}></support-form>
+`;
+
+export const CompleteForm = ({
+  variant,
+  disabled,
+  onCancel,
+  onSubmit,
+}: {
+  variant: AppType;
+  disabled: boolean;
+  onCancel: Function;
+  onSubmit: Function;
+}) => {
+  const values: FormValues = {
+    email: 'foo@bar.com',
+    subject: 'My Test Subject',
+    description: 'My Test Description',
+    source: 'a friend',
+    cloudProvider: 'digitalocean',
+  };
+  return html`
+    <support-form
+      .variant=${variant}
+      .disabled=${disabled}
+      .values=${values}
+      @cancel=${onCancel}
+      @submit=${onSubmit}
+    ></support-form>
   `;
+};

@@ -126,7 +126,7 @@
     "outline-i18n": "Jigsaw-Code/outline-i18n#v0.0.7",
     "postcss": "^7.0.39",
     "postcss-rtl": "^1.7.3",
-    "prettier": "^1.19.1",
+    "prettier": "^2.8.0",
     "pretty-quick": "^2.0.1",
     "puppeteer": "^13.1.2",
     "replace-in-file": "^6.3.5",
