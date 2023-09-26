@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import {SupportForm} from './index';
+import {TextField} from '@material/mwc-textfield';
+import {FormValues, SupportForm} from './index';
 
 import {fixture, html, nextFrame, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
 
-async function setValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
+async function setValue(el: TextField, value: string) {
   await triggerFocusFor(el);
   el.value = value;
   await triggerBlurFor(el);
@@ -45,6 +46,36 @@ describe('SupportForm', () => {
     expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).not.toBeNull();
   });
 
+  it('sets fields with provided form values', async () => {
+    const values: FormValues = {
+      email: 'foo@bar.com',
+      source: 'a friend',
+      subject: 'Test Subject',
+      description: 'Test Description',
+    };
+    const el = await fixture(html` <support-form .values=${values}></support-form> `);
+
+    const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+    expect(emailInput.value).toBe('foo@bar.com');
+    const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
+    expect(accessKeySourceInput.value).toBe('a friend');
+    const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
+    expect(subjectInput.value).toBe('Test Subject');
+    const descriptionInput: TextField = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
+    expect(descriptionInput.value).toBe('Test Description');
+  });
+
+  it('updating the `values` property updates the form', async () => {
+    const el: SupportForm = await fixture(html` <support-form></support-form> `);
+    const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+    await setValue(emailInput, 'foo@bar.com');
+
+    el.values = {};
+    await nextFrame();
+
+    expect(emailInput.value).toBe('');
+  });
+
   it('submit button is disabled by default', async () => {
     const el = await fixture(html` <support-form></support-form> `);
     const submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
@@ -58,13 +89,13 @@ describe('SupportForm', () => {
     beforeEach(async () => {
       el = await fixture(html` <support-form></support-form> `);
 
-      const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+      const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
       await setValue(emailInput, 'foo@bar.com');
-      const accessKeySourceInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
+      const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
       await setValue(accessKeySourceInput, 'From a friend');
-      const subjectInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
+      const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
       await setValue(subjectInput, 'Test Subject');
-      const descriptionInput: HTMLTextAreaElement = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
+      const descriptionInput: TextField = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
       await setValue(descriptionInput, 'Test Description');
 
       submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
@@ -82,17 +113,6 @@ describe('SupportForm', () => {
       const {detail} = await listener;
       expect(detail).toBeTrue();
     });
-  });
-
-  it('updating the `values` property updates the form', async () => {
-    const el: SupportForm = await fixture(html` <support-form></support-form> `);
-    const emailInput: HTMLInputElement = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
-    await setValue(emailInput, 'foo@bar.com');
-
-    el.values = {};
-    await nextFrame();
-
-    expect(emailInput.value).toBe('');
   });
 
   it('emits form cancel event', async () => {
