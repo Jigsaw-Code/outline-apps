@@ -98,7 +98,7 @@ jobs:
         id: changed-original-messages
         uses: tj-actions/changed-files@v35
         with:
-          files: resources/original_messages.json
+          files: src/resources/original_messages.json
 
       - name: Collect src/www/messages Changes
         if: steps.changed-original-messages.outputs.any_changed == 'true' 
