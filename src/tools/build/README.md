@@ -7,12 +7,12 @@ This approach is based on [microcontainers](https://www.iron.io/microcontainers-
 First, install Docker:
 https://docs.docker.com/engine/installation/
 
-Then, prefix your commands with: `./tools/build/build.sh`
+Then, prefix your commands with: `./src/tools/build/build.sh`
 
 So, to install dependencies and build:
 ```bash
-./tools/build/build.sh npm ci
-./tools/build/build.sh npm run build
+./src/tools/build/build.sh npm ci
+./src/tools/build/build.sh npm run build
 ```
 
 What does this script do?:
@@ -27,7 +27,7 @@ What does this script do?:
 ## Build
 
 ```bash
-npm run action tools/build/build
+npm run action src/tools/build/build
 ```
 
 ## Tag

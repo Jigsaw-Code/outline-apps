@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 # Copyright 2018 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +15,4 @@
 # limitations under the License.
 set -eux
 
-# Docker image with which to build the binary.
-readonly DOCKER_IMAGE_NAME=outline_proxy_controller-build
-docker build -t $DOCKER_IMAGE_NAME $(dirname $0)
-
-# Work in a directory which Docker on OSX will by default make available to containers.
-readonly TEMP=$(mktemp -d /tmp/temp.XXXX)
-cp -Rv tools/outline_proxy_controller/* $TEMP/
-
-# Build!
-pushd $TEMP
-docker run --rm -v $TEMP:$TEMP -w $TEMP/build $DOCKER_IMAGE_NAME sh -c 'cmake .. && make'
-popd
-
-# Copy the new binary into the repo.
-cp $TEMP/build/OutlineProxyController tools/outline_proxy_controller/dist/
+docker build -t quay.io/outline/build-android src/tools/build

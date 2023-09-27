@@ -213,7 +213,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./tools/build/setup_linux_android.sh
+        run: bash ./src/tools/build/setup_linux_android.sh
 
       - name: Build Android Client
         run: npm run action cordova/build android -- --verbose

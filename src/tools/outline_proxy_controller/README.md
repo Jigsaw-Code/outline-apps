@@ -8,9 +8,9 @@ A `systemd` daemon for Linux, like the Windows client's `OutlineService`.
 
 We provide a script to build the binary in a reproducible way:
 
-    npm run action tools/outline_proxy_controller/build
+    npm run action src/tools/outline_proxy_controller/build
 
-When successful, it will update the binary checked into `tools/outline_proxy_controller/build/OutlineProxyController`.
+When successful, it will update the binary checked into `src/tools/outline_proxy_controller/build/OutlineProxyController`.
 
 ## Run
 

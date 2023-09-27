@@ -14,11 +14,11 @@ xcuserdata/
 obj/
 packages/
 *.pdb
-tools/OutlineService/OutlineService/bin/*
-!tools/OutlineService/OutlineService/bin/*.exe
+src/tools/OutlineService/OutlineService/bin/*
+!src/tools/OutlineService/OutlineService/bin/*.exe
 *.sw?
-tools/smartdnsblock/bin/*
-!tools/smartdnsblock/bin/*.exe
+src/tools/smartdnsblock/bin/*
+!src/tools/smartdnsblock/bin/*.exe
 keystore.p12
 Outline.apk
 Outline.apks

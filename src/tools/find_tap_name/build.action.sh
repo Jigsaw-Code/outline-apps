@@ -15,6 +15,6 @@
 # limitations under the License.
 set -eux
 
-pushd "$ROOT_DIR/tools/find_tap_name/" > /dev/null
+pushd "$ROOT_DIR/src/tools/find_tap_name/" > /dev/null
 GOOS=windows; GOARCH=386; go build -o bin/386/
 GOOS=windows; GOARCH=amd64; go build -o bin/amd64/

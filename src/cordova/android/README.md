@@ -6,7 +6,7 @@ The main entrypoint to Android's Java code is `cordova-plugin-outline/android/ja
 
 ## Building the Android app
 
-> 💡 NOTE: To easiest way to get set up for Android on a new environment is to use `tools/build/setup_macos_android.sh` or `tools/build/setup_linux_android.sh`.
+> 💡 NOTE: To easiest way to get set up for Android on a new environment is to use `src/tools/build/setup_macos_android.sh` or `src/tools/build/setup_linux_android.sh`.
 
 Additional requirements for Android:
 
@@ -42,8 +42,8 @@ Cordova will generate a new Android project in the platforms/android directory. 
 
 A Docker image with all pre-requisites for Android builds is included. To build:
 
-- Install dependencies with `./tools/build/build.sh npm ci`
-- Then build with `./tools/build/build.sh npm run action gulp -- build android`
+- Install dependencies with `./src/tools/build/build.sh npm ci`
+- Then build with `./src/tools/build/build.sh npm run action gulp -- build android`
 
 ### To install the APK
 
