@@ -8,10 +8,7 @@
   "linux": {
     "target": {
       "target": "AppImage",
-      "arch": [
-        "x64",
-        "arm64"
-      ]
+      "arch": ["x64"]
     },
     "files": ["build/icons/png", "third_party/outline-go-tun2socks/linux", "tools/outline_proxy_controller/dist"],
     "icon": "build/icons/png",
