@@ -71,17 +71,17 @@ describe('ContactView', () => {
     const conditions = [
       {
         testcaseName: 'I need an access key',
-        value: 'require_access_key',
+        value: 'no-server',
         expectedMsg: 'does not distribute free or paid access keys',
       },
       {
         testcaseName: 'I am having trouble adding a server using my access key',
-        value: 'adding_server',
+        value: 'cannot-add-server',
         expectedMsg: 'assist with adding a server',
       },
       {
         testcaseName: 'I am having trouble connecting to my Outline VPN server',
-        value: 'connecting',
+        value: 'connection',
         expectedMsg: 'assist with connecting to a server',
       },
     ];

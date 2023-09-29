@@ -89,9 +89,9 @@ export class ContactView extends LitElement {
 
   private static readonly Issues = new Map([
     [IssueType.INSTALLATION, 'I am having trouble installing Outline'],
-    [IssueType.REQUIRE_ACCESS_KEY, 'I need an access key'],
+    [IssueType.NO_SERVER, 'I need an access key'],
     [IssueType.ADDING_SERVER, 'I am having trouble adding a server using my access key'],
-    [IssueType.CONNECTING, 'I am having trouble connecting to my Outline VPN server'],
+    [IssueType.CONNECTION, 'I am having trouble connecting to my Outline VPN server'],
     [IssueType.MANAGING, 'I need assistance managing my Outline VPN server or helping others connect to it'],
     [IssueType.INTERNET_SPEED, 'My internet access is slow while connected to my Outline VPN server'],
     [IssueType.GENERAL, 'General feedback & suggestions'],
@@ -152,7 +152,7 @@ export class ContactView extends LitElement {
       case IssueType.GENERAL:
         this.step = Step.FORM;
         break;
-      case IssueType.REQUIRE_ACCESS_KEY:
+      case IssueType.NO_SERVER:
         // TODO: Send users to localized support pages based on chosen language.
         this.exitTemplate = html`
           The Outline team does not distribute free or paid access keys.
@@ -172,7 +172,7 @@ export class ContactView extends LitElement {
         `;
         this.step = Step.EXIT;
         break;
-      case IssueType.CONNECTING:
+      case IssueType.CONNECTION:
         this.exitTemplate = html`
           The Outline team is not able to assist with connecting to a server. Please try the troubleshooting steps
           listed
