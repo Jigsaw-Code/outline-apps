@@ -16,7 +16,7 @@ import url from 'url';
 import electron from 'electron';
 
 import {runAction} from '../build/run_action.mjs';
-import {getElectronBuildParameters} from './get_electron_build_parameters.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 
@@ -26,7 +26,7 @@ import {spawnStream} from '../build/spawn_stream.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode} = getElectronBuildParameters(parameters);
+  const {platform, buildMode} = getBuildParameters(parameters);
 
   await runAction('www/build', platform, `--buildMode=${buildMode}`);
   await runAction('electron/build_main', ...parameters);
