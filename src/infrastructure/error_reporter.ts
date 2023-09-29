@@ -15,28 +15,35 @@
 import * as Sentry from '@sentry/browser';
 import {Integration as SentryIntegration} from '@sentry/types';
 
+export type Tags = {[id: string]: string};
+
 export interface OutlineErrorReporter {
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void>;
+  report(userFeedback: string, feedbackCategory: string, userEmail?: string, tags?: Tags): Promise<void>;
 }
 
 export class SentryErrorReporter implements OutlineErrorReporter {
-  constructor(appVersion: string, dsn: string, private tags: {[id: string]: string}) {
+  constructor(appVersion: string, dsn: string, private tags: Tags) {
     if (dsn) {
       Sentry.init({dsn, release: appVersion, integrations: getSentryBrowserIntegrations});
     }
     this.setUpUnhandledRejectionListener();
   }
 
-  async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+  async report(userFeedback: string, feedbackCategory: string, userEmail?: string, tags?: Tags): Promise<void> {
+    const combinedTags = {...this.tags, ...tags};
     Sentry.captureEvent({
       message: userFeedback,
       user: {email: userEmail},
-      tags: {category: feedbackCategory, isFeedback: Boolean(userFeedback)},
+      tags: {
+        category: feedbackCategory,
+        isFeedback: Boolean(userFeedback),
+        ...combinedTags,
+      },
     });
     Sentry.configureScope(scope => {
       scope.setUser({email: userEmail || ''});
-      if (this.tags) {
-        scope.setTags(this.tags);
+      if (combinedTags) {
+        scope.setTags(combinedTags);
       }
       scope.setTag('category', feedbackCategory);
     });

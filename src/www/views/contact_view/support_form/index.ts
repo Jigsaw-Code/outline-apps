@@ -38,6 +38,13 @@ export declare interface FormValues {
   cloudProvider?: string;
 }
 
+/** Interface for valid form data. */
+export declare interface ValidFormValues extends FormValues {
+  email: string;
+  subject: string;
+  description: string;
+}
+
 @customElement('support-form')
 export class SupportForm extends LitElement {
   static styles = [

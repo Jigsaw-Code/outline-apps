@@ -21,7 +21,7 @@ import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/ser
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from './error_reporter';
+import {OutlineErrorReporter} from '../../infrastructure/error_reporter';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -100,6 +100,7 @@ export class App {
   ) {
     this.feedbackViewEl = rootEl.$.feedbackView;
     this.localize = this.rootEl.localize.bind(this.rootEl);
+    rootEl.errorReporter = this.errorReporter;
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
@@ -134,6 +135,7 @@ export class App {
     if (this.feedbackViewEl) {
       this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
     }
+    this.rootEl.addEventListener('SupportContacted', this.supportContacted.bind(this));
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
@@ -506,6 +508,18 @@ export class App {
       this.rootEl.$.feedbackView.submitting = false;
       this.showLocalizedError(new errors.FeedbackSubmissionError());
     }
+  }
+
+  private async supportContacted(event: CustomEvent<boolean>) {
+    event.stopImmediatePropagation();
+
+    const success: boolean = event.detail;
+    if (!success) {
+      return this.showLocalizedError(new errors.FeedbackSubmissionError());
+    }
+
+    this.changeToDefaultPage();
+    this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
   }
 
   //#region EventQueue event handlers

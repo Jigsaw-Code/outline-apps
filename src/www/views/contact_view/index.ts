@@ -28,7 +28,8 @@ import './support_form';
 import {CardType} from '../shared/card';
 import {IssueType} from './issue_type';
 import {AppType} from './app_type';
-import {FormValues, SupportForm} from './support_form';
+import {FormValues, SupportForm, ValidFormValues} from './support_form';
+import {Tags, OutlineErrorReporter} from '../../../infrastructure/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -98,6 +99,7 @@ export class ContactView extends LitElement {
   ]);
 
   @property({type: String}) variant: AppType = AppType.CLIENT;
+  @property({type: Object}) errorReporter: OutlineErrorReporter;
 
   @state() private step: Step = Step.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
@@ -189,24 +191,38 @@ export class ContactView extends LitElement {
   }
 
   private reset() {
+    this.isFormSubmitting = false;
     this.showIssueSelector = false;
     this.step = Step.ISSUE_WIZARD;
     this.formValues = {};
   }
 
-  private submitForm() {
+  private async submitForm() {
     this.isFormSubmitting = true;
 
     if (!this.formRef.value.valid) {
       throw Error('Cannot submit invalid form.');
     }
 
-    // TODO: Actually send the form data using the error reporter.
-    console.log('Submitting form data...', this.formValues);
+    const {description, email, ...tags} = this.formValues as ValidFormValues;
+    let success;
+    try {
+      await this.errorReporter.report(
+        description,
+        this.selectedIssueType?.toString() ?? 'unknown',
+        email,
+        tags as unknown as Tags
+      );
+      success = true;
+    } catch (e) {
+      success = false;
+    }
 
     this.isFormSubmitting = false;
-    this.exitTemplate = html` Thanks for helping us improve! We love hearing from you. `;
-    this.step = Step.EXIT;
+    this.dispatchEvent(new CustomEvent<boolean>('SupportContacted', {bubbles: true, composed: true, detail: success}));
+    if (success) {
+      this.reset();
+    }
   }
 
   private get renderIntroTemplate(): TemplateResult {
