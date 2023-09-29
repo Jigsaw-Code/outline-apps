@@ -137,11 +137,12 @@ Polymer({
     },
   },
 
-  ready: function() {
-    var appRoot = dom(this).getOwnerRoot().host;
+  ready: function () {
+    let appRoot = dom(this).getOwnerRoot().host;
     window.addEventListener(
       'location-changed',
-      function() {
+      function () {
+        appRoot = appRoot ?? dom(this).getOwnerRoot().host;
         if (appRoot.page !== 'feedback') return;
         // Workaround:
         // https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
@@ -154,11 +155,11 @@ Polymer({
     );
   },
 
-  _emailValueChanged: function() {
+  _emailValueChanged: function () {
     this.hasEnteredEmail = !!this.$.email.value;
   },
 
-  _computeSubmitButtonLabel: function(submitting, localize) {
+  _computeSubmitButtonLabel: function (submitting, localize) {
     // If localize hasn't been defined yet, just return '' for now - Polymer will call this
     // again once localize has been defined at which point we will return the right value.
     if (!localize) return '';
@@ -168,11 +169,11 @@ Polymer({
 
   // Returns whether the window's locale is English (i.e. EN, en-US) and the user has
   // entered their email address.
-  _computeShouldShowLanguageDisclaimer: function(hasEnteredEmail) {
+  _computeShouldShowLanguageDisclaimer: function (hasEnteredEmail) {
     return !window.navigator.language.match(/^en/i) && hasEnteredEmail;
   },
 
-  getValidatedFormData: function() {
+  getValidatedFormData: function () {
     var inputs = [this.$.categoryList, this.$.feedback, this.$.email];
     for (var i = 0, input = inputs[i]; input; input = inputs[++i]) {
       if (input.validate && !input.validate()) {
@@ -189,7 +190,7 @@ Polymer({
     };
   },
 
-  resetForm: function() {
+  resetForm: function () {
     this.$.categoryList.category = 'general';
     this.$.feedback.value = '';
     this.$.email.value = '';
