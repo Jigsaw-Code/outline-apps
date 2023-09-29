@@ -1,7 +1,6 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../www/tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../build/electron",
-    "lib": ["es2022", "dom"]
+    "outDir": "../../build/electron"
   }
 }

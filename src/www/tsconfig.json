@@ -2,6 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../www",
-    "lib": ["es2022", "dom"]
+    "lib": ["es2022", "dom", "dom.iterable"]
   }
 }

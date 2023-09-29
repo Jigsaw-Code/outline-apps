@@ -46,6 +46,10 @@ export const baseConfig = {
       }),
     ],
   },
+  externals: {
+    // See https://github.com/modernweb-dev/web/issues/1908.
+    '/__web-dev-server__web-socket.js': 'commonjs __web-dev-server__web-socket.js',
+  },
 };
 
 export const browserConfig = {
