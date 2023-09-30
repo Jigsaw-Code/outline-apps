@@ -606,7 +606,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       contactViewFeatureFlag: {
         type: Boolean,
         readonly: true,
-        value: true,
+        value: false,
       },
     };
   }
