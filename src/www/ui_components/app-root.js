@@ -298,7 +298,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             <contact-view
               name="contact"
               id="contactView"
-              errorReporter="[[errorReporter]]"
+              error-reporter="[[errorReporter]]"
             ></contact-view>
           </template>
           <template is="dom-if" if="{{!contactViewFeatureFlag}}">

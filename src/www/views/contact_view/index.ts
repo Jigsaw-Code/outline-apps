@@ -99,7 +99,7 @@ export class ContactView extends LitElement {
   ]);
 
   @property({type: String}) variant: AppType = AppType.CLIENT;
-  @property({type: Object}) errorReporter: OutlineErrorReporter;
+  @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
   @state() private step: Step = Step.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
@@ -215,6 +215,7 @@ export class ContactView extends LitElement {
       );
       success = true;
     } catch (e) {
+      console.error(`Failed to send feedback report: ${e.message}`);
       success = false;
     }
 

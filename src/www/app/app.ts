@@ -100,12 +100,12 @@ export class App {
   ) {
     this.feedbackViewEl = rootEl.$.feedbackView;
     this.localize = this.rootEl.localize.bind(this.rootEl);
-    rootEl.errorReporter = this.errorReporter;
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
+    rootEl.errorReporter = this.errorReporter;
 
     if (urlInterceptor) {
       this.registerUrlInterceptionListener(urlInterceptor);
