@@ -237,7 +237,6 @@ export class SupportForm extends LitElement {
           </mwc-textarea>
 
           <p>* = ${this.localize('support-form-required-field')}</p>
-          <p>* = Required field</p>
 
           <span slot="card-actions">
             <mwc-button
