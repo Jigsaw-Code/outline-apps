@@ -90,7 +90,16 @@ export class ContactView extends LitElement {
     `,
   ];
 
-  private static readonly ISSUES = Object.values(IssueType);
+  private static readonly ISSUES: {[key in AppType]: IssueType[]} = {
+    [AppType.CLIENT]: [
+      IssueType.NO_SERVER,
+      IssueType.CANNOT_ADD_SERVER,
+      IssueType.CONNECTION,
+      IssueType.PERFORMANCE,
+      IssueType.GENERAL,
+    ],
+    [AppType.MANAGER]: [IssueType.CANNOT_ADD_SERVER, IssueType.CONNECTION, IssueType.MANAGING, IssueType.GENERAL],
+  };
 
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: String}) variant: AppType = AppType.CLIENT;
@@ -137,7 +146,7 @@ export class ContactView extends LitElement {
   }
 
   private selectIssue(e: SingleSelectedEvent) {
-    this.selectedIssueType = ContactView.ISSUES[e.detail.index];
+    this.selectedIssueType = ContactView.ISSUES[this.variant][e.detail.index];
 
     if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
       // TODO: Send users to localized support pages based on chosen language.
@@ -212,6 +221,9 @@ export class ContactView extends LitElement {
   }
 
   render() {
+    console.log(this.variant);
+    console.log(ContactView.ISSUES[this.variant]);
+
     switch (this.step) {
       case Step.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
@@ -252,7 +264,7 @@ export class ContactView extends LitElement {
             ?hidden=${!this.showIssueSelector}
             @selected="${this.selectIssue}"
           >
-            ${ContactView.ISSUES.map(value => {
+            ${ContactView.ISSUES[this.variant].map(value => {
               return html`
                 <mwc-list-item value="${value}">
                   <span>${this.localize(`contact-view-issue-${value}`)}</span>

@@ -16,7 +16,6 @@
 
 /** Supported issue types in the feedback flow. */
 export enum IssueType {
-  INSTALLATION = 'installation',
   NO_SERVER = 'no-server',
   CANNOT_ADD_SERVER = 'cannot-add-server',
   CONNECTION = 'connection',
