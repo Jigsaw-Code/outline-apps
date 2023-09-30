@@ -110,17 +110,17 @@ export class ContactView extends LitElement {
   private readonly openTicketSelectionOptions: Array<{
     ref: Ref<Radio>;
     value: boolean;
-    label: string;
+    labelMsg: string;
   }> = [
     {
       ref: createRef(),
       value: true,
-      label: 'Yes',
+      labelMsg: 'yes',
     },
     {
       ref: createRef(),
       value: false,
-      label: 'No',
+      labelMsg: 'no',
     },
   ];
 
@@ -133,7 +133,7 @@ export class ContactView extends LitElement {
     const radio = e.target as Radio;
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
-      this.exitTemplate = html`${this.localize('contact-view-open-ticket')}`;
+      this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
       this.step = Step.EXIT;
       return;
     }
@@ -195,9 +195,7 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`
-      <p>Tell us how we can help. Please do not enter personal information that is not requested below.</p>
-    `;
+    return html`<p>${this.localize('contact-view-intro')}</p>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -233,13 +231,13 @@ export class ContactView extends LitElement {
       default: {
         return html`
           ${this.renderIntroTemplate}
-          <p>Do you have an open ticket for this issue?</p>
+          <p>${this.localize('contact-view-open-ticket')}</p>
 
           <ol>
             ${this.openTicketSelectionOptions.map(
               element => html`
                 <li>
-                  <mwc-formfield label=${element.label}>
+                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
                     <mwc-radio
                       name="open-ticket"
                       .value="${element.value}"
