@@ -18,9 +18,9 @@
 export enum IssueType {
   INSTALLATION = 'installation',
   NO_SERVER = 'no-server',
-  ADDING_SERVER = 'cannot-add-server',
+  CANNOT_ADD_SERVER = 'cannot-add-server',
   CONNECTION = 'connection',
   MANAGING = 'managing',
-  INTERNET_SPEED = 'performance',
+  PERFORMANCE = 'performance',
   GENERAL = 'general',
 }

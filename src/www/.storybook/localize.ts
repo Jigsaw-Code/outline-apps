@@ -32,8 +32,6 @@ export const localize: LocalizeFunc = (messageID: string, ...formatKeyValueList:
     return `${messageID}(${JSON.stringify(formatConfigObject)})`;
   }
 
-  console.log(messageID, ...formatKeyValueList);
-
   // we support only english messages in the storybook, for now.
   // blocked on modern-web.dev adding support for addons:
   // https://github.com/modernweb-dev/web/issues/1341
