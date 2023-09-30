@@ -21,6 +21,7 @@ import {html} from 'lit';
 import './index';
 import {AppType} from '../app_type';
 import {FormValues} from './index';
+import {localize} from '../../../.storybook/localize';
 
 export default {
   title: 'Contact View/Support Form',
@@ -56,7 +57,13 @@ export const EmptyForm = ({
   onCancel: Function;
   onSubmit: Function;
 }) => html`
-  <support-form .variant=${variant} .disabled=${disabled} @cancel=${onCancel} @submit=${onSubmit}></support-form>
+  <support-form
+    .localize=${localize}
+    .variant=${variant}
+    .disabled=${disabled}
+    @cancel=${onCancel}
+    @submit=${onSubmit}
+  ></support-form>
 `;
 
 export const CompleteForm = ({
@@ -79,6 +86,7 @@ export const CompleteForm = ({
   };
   return html`
     <support-form
+      .localize=${localize}
       .variant=${variant}
       .disabled=${disabled}
       .values=${values}

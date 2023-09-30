@@ -30,6 +30,7 @@ import {IssueType} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
+import {LocalizeFunc} from 'src/infrastructure/i18n';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -98,6 +99,7 @@ export class ContactView extends LitElement {
     [IssueType.GENERAL, 'General feedback & suggestions'],
   ]);
 
+  @property({type: Function}) localize: LocalizeFunc = msg => msg;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
@@ -234,6 +236,7 @@ export class ContactView extends LitElement {
     return html`
       <support-form
         ${ref(this.formRef)}
+        .localize=${this.localize}
         .variant=${this.variant}
         .disabled=${this.isFormSubmitting}
         .values=${this.formValues}

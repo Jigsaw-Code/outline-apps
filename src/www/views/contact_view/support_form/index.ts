@@ -26,6 +26,7 @@ import {CardType} from '../../shared/card';
 import {AppType} from '../app_type';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
+import {LocalizeFunc} from 'src/infrastructure/i18n';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -45,12 +46,21 @@ export declare interface ValidFormValues extends FormValues {
   description: string;
 }
 
+declare interface CloudProviderOption {
+  value: string;
+  label: string;
+}
+
 @customElement('support-form')
 export class SupportForm extends LitElement {
   static styles = [
     css`
       :host {
         font-family: var(--outline-font-family);
+      }
+
+      outline-card {
+        min-width: 100%;
       }
 
       mwc-select {
@@ -76,13 +86,9 @@ export class SupportForm extends LitElement {
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
 
-  private static readonly CLOUD_PROVIDERS = new Map([
-    ['aws', 'Amazon Web Services'],
-    ['digitalocean', 'DigitalOcean'],
-    ['gcloud', 'Google Cloud'],
-  ]);
-  private static readonly OTHER_CLOUD_PROVIDER: [string, string] = ['other', 'Other'];
+  private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
 
+  @property({type: Function}) localize: LocalizeFunc = msg => msg;
   @property({type: Boolean}) disabled = false;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object}) values: FormValues = {};
@@ -131,9 +137,11 @@ export class SupportForm extends LitElement {
   private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
     if (this.variant !== AppType.MANAGER) return nothing;
 
-    const providers = Array.from(SupportForm.CLOUD_PROVIDERS);
+    const providers = SupportForm.CLOUD_PROVIDERS.map((provider): CloudProviderOption => {
+      return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
+    });
     /** We should sort the providers by their labels, which may be localized. */
-    providers.sort(([_valueA, labelA], [_valueB, labelB]) => {
+    providers.sort(({label: labelA}, {label: labelB}) => {
       if (labelA < labelB) {
         return -1;
       } else if (labelA === labelB) {
@@ -142,26 +150,24 @@ export class SupportForm extends LitElement {
         return 1;
       }
     });
-    providers.push(SupportForm.OTHER_CLOUD_PROVIDER);
+    providers.push({value: 'other', label: this.localize('support-form-cloud-provider-other')});
 
     return html`
       <mwc-select
         name="cloudProvider"
-        label="Cloud provider"
-        helper="Which cloud provider does this relate to?"
-        helperPersistent
+        .label=${this.localize('support-form-cloud-provider')}
         .value=${live(this.values.cloudProvider ?? '')}
         .disabled=${this.disabled}
         required
         outlined
         @selected=${(e: CustomEvent<SelectedDetail<number>>) => {
           if (e.detail.index !== -1) {
-            this.values.cloudProvider = providers[e.detail.index][0];
+            this.values.cloudProvider = providers[e.detail.index].value;
           }
         }}
         @blur=${this.checkFormValidity}
       >
-        ${providers.map(([value, label]) => html` <mwc-list-item value="${value}">${label}</mwc-list-item> `)}
+        ${providers.map(({value, label}) => html` <mwc-list-item value="${value}">${label}</mwc-list-item> `)}
       </mwc-select>
     `;
   }
@@ -172,9 +178,7 @@ export class SupportForm extends LitElement {
     return html`
       <mwc-textfield
         name="accessKeySource"
-        label="Source"
-        helper="Where did you get your access key?"
-        helperPersistent
+        .label=${this.localize('support-form-access-key-source')}
         .value=${live(this.values.accessKeySource ?? '')}
         .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
         .disabled=${this.disabled}
@@ -193,13 +197,11 @@ export class SupportForm extends LitElement {
           <mwc-textfield
             name="email"
             type="email"
-            label="Email address"
-            helper="Please provide an email address where we can reach you."
-            helperPersistent
+            .label=${this.localize('support-form-email')}
             .value=${live(this.values.email ?? '')}
             .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
             autoValidate
-            validationMessage="Please provide a correct email address."
+            .validationMessage=${this.localize('support-form-email-invalid')}
             .disabled=${this.disabled}
             required
             outlined
@@ -211,7 +213,7 @@ export class SupportForm extends LitElement {
 
           <mwc-textfield
             name="subject"
-            label="Subject"
+            .label=${this.localize('support-form-subject')}
             .value=${live(this.values.subject ?? '')}
             .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
             .disabled=${this.disabled}
@@ -222,9 +224,7 @@ export class SupportForm extends LitElement {
           ></mwc-textfield>
           <mwc-textarea
             name="description"
-            label="Description"
-            helper="Please provide a detailed description of your issue."
-            helperPersistent
+            .label=${this.localize('support-form-description')}
             .value=${live(this.values.description ?? '')}
             rows="5"
             .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
@@ -236,13 +236,18 @@ export class SupportForm extends LitElement {
           >
           </mwc-textarea>
 
+          <p>* = ${this.localize('support-form-required-field')}</p>
           <p>* = Required field</p>
 
           <span slot="card-actions">
-            <mwc-button label="Cancel" .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
+            <mwc-button
+              .label=${this.localize('support-form-cancel')}
+              .disabled=${this.disabled}
+              @click=${this.cancel}
+            ></mwc-button>
             <mwc-button
               type="submit"
-              label="Submit"
+              .label=${this.localize('support-form-submit')}
               .disabled=${!this.valid || this.disabled}
               @click=${this.submit}
             ></mwc-button>

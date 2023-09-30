@@ -20,6 +20,7 @@ import {html} from 'lit';
 
 import './index';
 import {AppType} from './app_type';
+import {localize} from '../../.storybook/localize';
 
 export default {
   title: 'Contact View',
@@ -39,10 +40,9 @@ export default {
 };
 
 export const Example = ({variant, onSupportContacted}: {variant: AppType; onSupportContacted: Function}) =>
-  html`
-    <contact-view
+  html` <contact-view
+      .localize=${localize}
       .variant=${variant}
       .errorReporter=${{report: console.log}}
       @SupportContacted=${onSupportContacted}
-    ></contact-view>
-  `;
+    ></contact-view> `;

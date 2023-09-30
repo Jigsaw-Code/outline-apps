@@ -24,6 +24,7 @@ import {Menu} from '@material/mwc-menu';
 
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
+import {LocalizeFunc} from 'src/infrastructure/i18n';
 
 const sharedCSS = css`
   /* TODO(daniellacosse): reset via postcss */
@@ -190,9 +191,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     elements: {
       metadataText: html`
         <div class="card-metadata-text">
-          <h2 class="card-metadata-server-name" id="server-name">
-            ${messages.serverName}
-          </h2>
+          <h2 class="card-metadata-server-name" id="server-name">${messages.serverName}</h2>
           <label class="card-metadata-server-address">${server.address}</label>
         </div>
       `,
@@ -231,7 +230,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localize: (messageID: string) => string;
+  @property() localize: LocalizeFunc;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -282,7 +281,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 @customElement('server-hero-card')
 export class ServerHeroCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localize: (messageID: string) => string;
+  @property() localize: LocalizeFunc;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -292,9 +291,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
     css`
       .card {
         --min-indicator-size: 192px;
-        /* 
+        /*
           TODO(daniellacosse): calc() in combination with grid in this way can be inconsistent on iOS.
-          May be resolved by autoprefixer as well.  
+          May be resolved by autoprefixer as well.
         */
         --max-indicator-size: var(--min-indicator-size);
 
@@ -348,9 +347,7 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
 
     return html`
       <div class="card">
-        <div class="card-metadata" aria-labelledby="server-name">
-          ${elements.metadataText}
-        </div>
+        <div class="card-metadata" aria-labelledby="server-name">${elements.metadataText}</div>
         ${elements.menuButton}
         <div class="card-connection-button-container">
           <server-connection-indicator

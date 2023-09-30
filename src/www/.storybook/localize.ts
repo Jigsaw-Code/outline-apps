@@ -14,17 +14,11 @@
   limitations under the License.
 */
 
+import {FormattableMessage, LocalizeFunc} from 'src/infrastructure/i18n';
 import englishMessages from '../messages/en.json';
-import IntlMessageFormat, {PrimitiveType, FormatXMLElementFn} from 'intl-messageformat';
+import IntlMessageFormat from 'intl-messageformat';
 
-type FormattableMessage =
-  | string
-  | symbol
-  | object
-  | PrimitiveType
-  | FormatXMLElementFn<symbol | object, string | symbol | object | (string | symbol | object)[]>;
-
-export const localize = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
+export const localize: LocalizeFunc = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
   const message = (englishMessages as {[messageID: string]: string})[messageID];
   const formatConfigObject: Record<string, FormattableMessage> = {};
 
@@ -37,6 +31,8 @@ export const localize = (messageID: string, ...formatKeyValueList: FormattableMe
   if (!message) {
     return `${messageID}(${JSON.stringify(formatConfigObject)})`;
   }
+
+  console.log(messageID, ...formatKeyValueList);
 
   // we support only english messages in the storybook, for now.
   // blocked on modern-web.dev adding support for addons:
