@@ -239,14 +239,10 @@ export class SupportForm extends LitElement {
           <p>* = ${this.localize('support-form-required-field')}</p>
 
           <span slot="card-actions">
-            <mwc-button
-              .label=${this.localize('support-form-cancel')}
-              .disabled=${this.disabled}
-              @click=${this.cancel}
-            ></mwc-button>
+            <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
             <mwc-button
               type="submit"
-              .label=${this.localize('support-form-submit')}
+              .label=${this.localize('submit')}
               .disabled=${!this.valid || this.disabled}
               @click=${this.submit}
             ></mwc-button>
