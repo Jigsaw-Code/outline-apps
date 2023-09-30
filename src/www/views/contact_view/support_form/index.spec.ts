@@ -35,21 +35,21 @@ describe('SupportForm', () => {
   it('shows correct fields for the client variant', async () => {
     const el = await fixture(html` <support-form variant="client"></support-form> `);
 
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="source"]')).not.toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).not.toBeNull();
     expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).toBeNull();
   });
 
   it('shows correct fields for the manager variant', async () => {
     const el = await fixture(html` <support-form variant="manager"></support-form> `);
 
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="source"]')).toBeNull();
+    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).toBeNull();
     expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).not.toBeNull();
   });
 
   it('sets fields with provided form values', async () => {
     const values: FormValues = {
       email: 'foo@bar.com',
-      source: 'a friend',
+      accessKeySource: 'a friend',
       subject: 'Test Subject',
       description: 'Test Description',
     };
@@ -57,7 +57,7 @@ describe('SupportForm', () => {
 
     const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
     expect(emailInput.value).toBe('foo@bar.com');
-    const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
+    const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"')!;
     expect(accessKeySourceInput.value).toBe('a friend');
     const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
     expect(subjectInput.value).toBe('Test Subject');
@@ -91,7 +91,7 @@ describe('SupportForm', () => {
 
       const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
       await setValue(emailInput, 'foo@bar.com');
-      const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="source"')!;
+      const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"')!;
       await setValue(accessKeySourceInput, 'From a friend');
       const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
       await setValue(subjectInput, 'Test Subject');
