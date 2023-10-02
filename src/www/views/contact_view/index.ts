@@ -205,20 +205,18 @@ export class ContactView extends LitElement {
     }
 
     const {description, email, ...tags} = this.formValues as ValidFormValues;
-    let success;
     try {
       await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {...tags});
-      success = true;
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
-      success = false;
+      this.isFormSubmitting = false;
+      this.dispatchEvent(new CustomEvent('error', {bubbles: true, composed: true}));
+      return;
     }
 
     this.isFormSubmitting = false;
-    this.dispatchEvent(new CustomEvent<boolean>('SupportContacted', {bubbles: true, composed: true, detail: success}));
-    if (success) {
-      this.reset();
-    }
+    this.dispatchEvent(new CustomEvent('success', {bubbles: true, composed: true}));
+    this.reset();
   }
 
   private get renderIntroTemplate(): TemplateResult {

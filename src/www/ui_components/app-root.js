@@ -299,6 +299,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               name="contact"
               id="contactView"
               error-reporter="[[errorReporter]]"
+              on-success="showContactSuccessToast"
+              on-error="showContactErrorToast"
             ></contact-view>
           </template>
           <template is="dom-if" if="{{!contactViewFeatureFlag}}">
@@ -606,7 +608,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       contactViewFeatureFlag: {
         type: Boolean,
         readonly: true,
-        value: false,
+        value: true,
       },
     };
   }
@@ -727,6 +729,15 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       return;
     }
     this.set('route.path', '/' + page);
+  }
+
+  showContactSuccessToast() {
+    this.changePage(this.DEFAULT_PAGE);
+    this.showToast(this.localize('feedback-thanks'));
+  }
+
+  showContactErrorToast() {
+    this.showToast(this.localize('error-feedback-submission'));
   }
 
   _callToastHandler() {
