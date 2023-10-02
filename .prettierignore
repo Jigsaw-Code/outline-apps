@@ -1,7 +1,7 @@
 .github/
 apple/
 docs/
-src/resources/
+resources/
 third_party/
 tools/
 node_modules/
