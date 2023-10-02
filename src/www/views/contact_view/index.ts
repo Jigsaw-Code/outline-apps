@@ -29,7 +29,7 @@ import {CardType} from '../shared/card';
 import {IssueType} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
-import {Tags, OutlineErrorReporter} from '../../../infrastructure/error_reporter';
+import {OutlineErrorReporter} from '../../../infrastructure/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -207,12 +207,7 @@ export class ContactView extends LitElement {
     const {description, email, ...tags} = this.formValues as ValidFormValues;
     let success;
     try {
-      await this.errorReporter.report(
-        description,
-        this.selectedIssueType?.toString() ?? 'unknown',
-        email,
-        tags as unknown as Tags
-      );
+      await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {...tags});
       success = true;
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
