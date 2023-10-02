@@ -221,9 +221,6 @@ export class ContactView extends LitElement {
   }
 
   render() {
-    console.log(this.variant);
-    console.log(ContactView.ISSUES[this.variant]);
-
     switch (this.step) {
       case Step.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
