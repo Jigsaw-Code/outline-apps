@@ -56,6 +56,18 @@ describe('ContactView', () => {
     expect(exitCard.textContent).toContain('experiencing high support volume');
   });
 
+  it('resets the view on `reset()`', async () => {
+    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[0] as HTMLElement;
+    radioButton.click();
+    await nextFrame();
+
+    el.reset();
+    await nextFrame();
+
+    const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+    expect(exitCard).toBeNull();
+  });
+
   it('shows issue selector if the user selects that they have no open tickets', async () => {
     const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
     radioButton.click();
