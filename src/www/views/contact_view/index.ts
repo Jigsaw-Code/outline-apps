@@ -210,13 +210,13 @@ export class ContactView extends LitElement {
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
       this.isFormSubmitting = false;
-      this.dispatchEvent(new CustomEvent('error', {bubbles: true, composed: true}));
+      this.dispatchEvent(new CustomEvent('error'));
       return;
     }
 
     this.isFormSubmitting = false;
-    this.dispatchEvent(new CustomEvent('success', {bubbles: true, composed: true}));
     this.reset();
+    this.dispatchEvent(new CustomEvent('success'));
   }
 
   private get renderIntroTemplate(): TemplateResult {

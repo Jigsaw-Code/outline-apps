@@ -115,19 +115,19 @@ describe('ContactView', () => {
         expect(supportForm).not.toBeNull();
       });
 
-      it('emits contact success event on completion of support form', async () => {
-        const listener = oneEvent(el, 'SupportContacted');
+      it('emits success event on completion of support form', async () => {
+        const listener = oneEvent(el, 'success');
 
         const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
         const {detail} = await listener;
-        expect(detail).toBeTrue();
+        expect(detail).toBeNull();
       });
 
-      it('emits contact failure event when feedback reporting fails', async () => {
-        const listener = oneEvent(el, 'SupportContacted');
+      it('emits failure event when feedback reporting fails', async () => {
+        const listener = oneEvent(el, 'error');
         mockErrorReporter.report.and.throwError('fail');
 
         const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
@@ -135,7 +135,7 @@ describe('ContactView', () => {
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
         const {detail} = await listener;
-        expect(detail).toBeFalse();
+        expect(detail).toBeNull();
       });
 
       it('shows default contact view on cancellation of support form', async () => {
