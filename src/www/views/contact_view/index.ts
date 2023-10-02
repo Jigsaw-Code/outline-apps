@@ -29,7 +29,7 @@ import {CardType} from '../shared/card';
 import {IssueType} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
-import {OutlineErrorReporter} from '../../../infrastructure/error_reporter';
+import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {

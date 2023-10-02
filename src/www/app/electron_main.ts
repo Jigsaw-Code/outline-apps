@@ -23,7 +23,7 @@ import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from './../../infrastructure/error_reporter';
+import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {AbstractUpdater} from './updater';

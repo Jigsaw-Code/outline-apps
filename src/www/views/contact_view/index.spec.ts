@@ -18,7 +18,7 @@ import {ContactView} from './index';
 
 import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 import {SupportForm} from './support_form';
-import {OutlineErrorReporter, SentryErrorReporter} from '../../../infrastructure/error_reporter';
+import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
 
 describe('ContactView', () => {
   let el: ContactView;
