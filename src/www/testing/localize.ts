@@ -32,8 +32,8 @@ export const localize: Localizer = (messageID: string, ...formatKeyValueList: Fo
     return `${messageID}(${JSON.stringify(formatConfigObject)})`;
   }
 
-  // we support only english messages in the storybook, for now.
-  // blocked on modern-web.dev adding support for addons:
+  // We support only english messages for now.
+  // Blocked on modern-web.dev adding support for addons:
   // https://github.com/modernweb-dev/web/issues/1341
   return String(new IntlMessageFormat(message, 'en').format(formatConfigObject));
 };

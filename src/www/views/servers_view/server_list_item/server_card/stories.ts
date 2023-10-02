@@ -19,7 +19,7 @@ import {html} from 'lit';
 
 import '../../index';
 
-import {localize} from '../../../../.storybook/localize';
+import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
 import {ServerListItemElement} from '..';
 

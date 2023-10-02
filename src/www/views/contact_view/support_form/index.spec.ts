@@ -78,7 +78,7 @@ describe('SupportForm', () => {
 
   it('submit button is disabled by default', async () => {
     const el = await fixture(html` <support-form></support-form> `);
-    const submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
+    const submitButton = el.shadowRoot!.querySelectorAll('mwc-button')[1] as HTMLElement;
     expect(submitButton.hasAttribute('disabled')).toBeTrue();
   });
 
@@ -98,7 +98,7 @@ describe('SupportForm', () => {
       const descriptionInput: TextField = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
       await setValue(descriptionInput, 'Test Description');
 
-      submitButton = el.shadowRoot!.querySelector('mwc-button[label="Submit"]')!;
+      submitButton = el.shadowRoot!.querySelectorAll('mwc-button')[1] as HTMLElement;
     });
 
     it('submit button is enabled', async () => {
@@ -119,7 +119,7 @@ describe('SupportForm', () => {
     const el: SupportForm = await fixture(html` <support-form></support-form> `);
     const listener = oneEvent(el, 'cancel');
 
-    const cancelButton: HTMLElement = el.shadowRoot!.querySelector('mwc-button[label="Cancel"]')!;
+    const cancelButton = el.shadowRoot!.querySelectorAll('mwc-button')[0] as HTMLElement;
     cancelButton.click();
 
     const {detail} = await listener;

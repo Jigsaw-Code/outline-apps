@@ -21,7 +21,7 @@ import {html} from 'lit';
 import './index';
 import {AppType} from '../app_type';
 import {FormValues} from './index';
-import {localize} from '../../../.storybook/localize';
+import {localize} from '../../../testing/localize';
 
 export default {
   title: 'Contact View/Support Form',
