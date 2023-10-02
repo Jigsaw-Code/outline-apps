@@ -183,9 +183,9 @@ export class ContactView extends LitElement {
 
   // TODO: Consider moving this functionality to a more centralized place for re-use.
   private localizeWithUrl(messageID: string, url: string): TemplateResult {
-    const beginUrl = `<a href="${url}" target="_blank">`;
-    const endUrl = '</a>';
-    return html` ${unsafeHTML(this.localize(messageID, 'beginUrl', beginUrl, 'endUrl', endUrl))} `;
+    const openLink = `<a href="${url}" target="_blank">`;
+    const closeLink = '</a>';
+    return html` ${unsafeHTML(this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink))} `;
   }
 
   private get renderIntroTemplate(): TemplateResult {
