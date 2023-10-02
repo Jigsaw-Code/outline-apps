@@ -27,7 +27,7 @@ import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
 import {CardType} from '../shared/card';
-import {IssueType} from './issue_type';
+import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
@@ -92,13 +92,6 @@ export class ContactView extends LitElement {
 
   private static readonly ISSUES = Object.values(IssueType);
 
-  /** A map of unsupported issue types to helppage URLs to redirect users to. */
-  private static readonly UNSUPPORTED_ISSUETYPES_HELPPAGES = new Map([
-    [IssueType.NO_SERVER, 'https://support.getoutline.org/s/article/How-do-I-get-an-access-key'],
-    [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
-    [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
-  ]);
-
   @property({type: Function}) localize: LocalizeFunc = msg => msg;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
@@ -146,11 +139,11 @@ export class ContactView extends LitElement {
   private selectIssue(e: SingleSelectedEvent) {
     this.selectedIssueType = ContactView.ISSUES[e.detail.index];
 
-    if (ContactView.UNSUPPORTED_ISSUETYPES_HELPPAGES.has(this.selectedIssueType)) {
+    if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
       // TODO: Send users to localized support pages based on chosen language.
       this.exitTemplate = this.localizeWithUrl(
         `contact-view-exit-${this.selectedIssueType}`,
-        ContactView.UNSUPPORTED_ISSUETYPES_HELPPAGES.get(this.selectedIssueType)
+        UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
       );
       this.step = Step.EXIT;
       return;

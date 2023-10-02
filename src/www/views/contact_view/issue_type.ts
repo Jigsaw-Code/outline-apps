@@ -24,3 +24,10 @@ export enum IssueType {
   PERFORMANCE = 'performance',
   GENERAL = 'general',
 }
+
+/** A map of unsupported issue types to helppage URLs to redirect users to. */
+export const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
+  [IssueType.NO_SERVER, 'https://support.getoutline.org/s/article/How-do-I-get-an-access-key'],
+  [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
+  [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
+]);
