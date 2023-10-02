@@ -16,7 +16,7 @@ import {html, PolymerElement} from '@polymer/polymer';
 
 import '../server_list_item/server_card';
 import {ServerListItem} from '../server_list_item';
-import {LocalizeFunc} from 'src/infrastructure/i18n';
+import {Localizer} from 'src/infrastructure/i18n';
 
 @customElement('server-list')
 export class ServerList extends PolymerElement {
@@ -58,7 +58,7 @@ export class ServerList extends PolymerElement {
   // localize() calls within the template won't be updated.
 
   // @polymer/decorators doesn't support Function constructors...
-  @property({type: Object}) localize: LocalizeFunc;
+  @property({type: Object}) localize: Localizer;
   @property({type: Array}) servers: ServerListItem[] = [];
 
   @computed('servers')

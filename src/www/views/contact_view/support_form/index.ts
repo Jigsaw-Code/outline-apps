@@ -26,7 +26,7 @@ import {CardType} from '../../shared/card';
 import {AppType} from '../app_type';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
-import {LocalizeFunc} from 'src/infrastructure/i18n';
+import {Localizer} from 'src/infrastructure/i18n';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -88,7 +88,7 @@ export class SupportForm extends LitElement {
 
   private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
 
-  @property({type: Function}) localize: LocalizeFunc = msg => msg;
+  @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object}) values: FormValues = {};

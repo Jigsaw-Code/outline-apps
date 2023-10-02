@@ -14,11 +14,11 @@
   limitations under the License.
 */
 
-import {FormattableMessage, LocalizeFunc} from 'src/infrastructure/i18n';
+import {FormattableMessage, Localizer} from 'src/infrastructure/i18n';
 import englishMessages from '../messages/en.json';
 import IntlMessageFormat from 'intl-messageformat';
 
-export const localize: LocalizeFunc = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
+export const localize: Localizer = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
   const message = (englishMessages as {[messageID: string]: string})[messageID];
   const formatConfigObject: Record<string, FormattableMessage> = {};
 

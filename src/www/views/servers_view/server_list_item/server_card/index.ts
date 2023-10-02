@@ -24,7 +24,7 @@ import {Menu} from '@material/mwc-menu';
 
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
-import {LocalizeFunc} from 'src/infrastructure/i18n';
+import {Localizer} from 'src/infrastructure/i18n';
 
 const sharedCSS = css`
   /* TODO(daniellacosse): reset via postcss */
@@ -230,7 +230,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localize: LocalizeFunc;
+  @property() localize: Localizer;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -281,7 +281,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
 @customElement('server-hero-card')
 export class ServerHeroCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
-  @property() localize: LocalizeFunc;
+  @property() localize: Localizer;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();

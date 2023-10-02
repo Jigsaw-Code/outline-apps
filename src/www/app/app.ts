@@ -27,7 +27,7 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-import {LocalizeFunc} from 'src/infrastructure/i18n';
+import {Localizer} from 'src/infrastructure/i18n';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -80,7 +80,7 @@ const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
 
 export class App {
   private feedbackViewEl: polymer.Base;
-  private localize: LocalizeFunc;
+  private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
 

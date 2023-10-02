@@ -7,6 +7,6 @@ export type FormattableMessage =
   | PrimitiveType
   | FormatXMLElementFn<symbol | object, string | symbol | object | (string | symbol | object)[]>;
 
-export interface LocalizeFunc {
+export interface Localizer {
   (messageID: string, ...formatKeyValueList: FormattableMessage[]): string;
 }
