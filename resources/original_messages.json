@@ -299,6 +299,10 @@
     "description": "The menu item text to navigate to the page showing all the software licenses used in building the app.",
     "message": "Licenses"
   },
+  "no": {
+    "description": "Negative answer to a form question.",
+    "message": "No"
+  },
   "non_system_vpn_warning_detail": {
     "description": "Further explanation message that the user needs to verify that their browser is connected through Outline. Outline is the product name and can be found in the translation glossary.",
     "message": "Most browsers connect automatically with Outline, some do not."
@@ -630,5 +634,9 @@
         "example": "1.0.2"
       }
     }
+  },
+  "yes": {
+    "description": "Affirmative answer to a form question.",
+    "message": "Yes"
   }
 }
