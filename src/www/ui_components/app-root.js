@@ -801,7 +801,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _goBack() {
-    if (this.page == 'contact') {
+    if (this.page === 'contact') {
       // TODO: Replace with `this.$.contactView` once the element is no longer inside a `dom-if`.
       this.shadowRoot.querySelector('#contactView').reset();
     }
