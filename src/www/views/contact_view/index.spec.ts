@@ -20,8 +20,10 @@ import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 import {SupportForm} from './support_form';
 import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
 import {localize} from '../../testing/localize';
+import {ListItemBase} from '@material/mwc-list/mwc-list-item-base';
+import {Select} from '@material/mwc-select';
 
-describe('ContactView', () => {
+describe('ContactView client variant', () => {
   let el: ContactView;
   let mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter>;
 
@@ -30,7 +32,9 @@ describe('ContactView', () => {
       'SentryErrorReporter',
       Object.getOwnPropertyNames(SentryErrorReporter.prototype)
     );
-    el = await fixture(html` <contact-view .localize=${localize} .errorReporter=${mockErrorReporter}></contact-view> `);
+    el = await fixture(
+      html` <contact-view .localize=${localize} variant="client" .errorReporter=${mockErrorReporter}></contact-view> `
+    );
   });
 
   it('is defined', async () => {
@@ -56,17 +60,30 @@ describe('ContactView', () => {
     expect(exitCard.textContent).toContain('experiencing high support volume');
   });
 
-  it('shows issue selector if the user selects that they have no open tickets', async () => {
-    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
-    radioButton.click();
-    await nextFrame();
+  describe('when the user selects that they have no open tickets', () => {
+    let issueSelector: Select;
 
-    const issueSelector = el.shadowRoot!.querySelector('mwc-select');
-    expect(issueSelector?.hasAttribute('hidden')).toBeFalse();
+    beforeEach(async () => {
+      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
+      radioButton.click();
+      await nextFrame();
+
+      issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
+    });
+
+    it('shows the issue selector', () => {
+      expect(issueSelector.hasAttribute('hidden')).toBeFalse();
+    });
+
+    it('shows the correct items in the selector', () => {
+      const issueItemEls = issueSelector.querySelectorAll('mwc-list-item');
+      const issueTypes = Array.from(issueItemEls).map((el: ListItemBase) => el.value);
+      expect(issueTypes).toEqual(['no-server', 'cannot-add-server', 'connection', 'performance', 'general']);
+    });
   });
 
   describe('when the user selects issue', () => {
-    let issueSelector: HTMLElement;
+    let issueSelector: Select;
 
     beforeEach(async () => {
       issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
@@ -147,6 +164,42 @@ describe('ContactView', () => {
         expect(el.shadowRoot?.querySelector('p')?.textContent).toContain('Tell us how we can help.');
         expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
       });
+    });
+  });
+});
+
+describe('ContactView manager variant', () => {
+  let el: ContactView;
+
+  describe('when the user selects that they have no open tickets', () => {
+    let issueSelector: Select;
+
+    beforeEach(async () => {
+      const mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter> = jasmine.createSpyObj(
+        'SentryErrorReporter',
+        Object.getOwnPropertyNames(SentryErrorReporter.prototype)
+      );
+      el = await fixture(
+        html`
+          <contact-view .localize=${localize} variant="manager" .errorReporter=${mockErrorReporter}></contact-view>
+        `
+      );
+
+      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
+      radioButton.click();
+      await nextFrame();
+
+      issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
+    });
+
+    it('shows the issue selector', () => {
+      expect(issueSelector.hasAttribute('hidden')).toBeFalse();
+    });
+
+    it('shows the correct items in the selector', () => {
+      const issueItemEls = issueSelector.querySelectorAll('mwc-list-item');
+      const issueTypes = Array.from(issueItemEls).map((el: ListItemBase) => el.value);
+      expect(issueTypes).toEqual(['cannot-add-server', 'connection', 'managing', 'general']);
     });
   });
 });
