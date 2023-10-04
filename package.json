@@ -124,7 +124,7 @@
     "node-fetch": "^3.3.0",
     "node-gyp": "^9.4.0",
     "outline-i18n": "Jigsaw-Code/outline-i18n#v0.0.7",
-    "postcss": "^7.0.39",
+    "postcss": "^8.4.31",
     "postcss-rtl": "^1.7.3",
     "prettier": "^2.8.0",
     "pretty-quick": "^2.0.1",
