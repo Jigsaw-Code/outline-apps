@@ -17,6 +17,7 @@
 import {html, css, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Ref, createRef, ref} from 'lit/directives/ref.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/mwc-circular-progress';
 import '@material/mwc-radio';
 import '@material/mwc-select';
@@ -26,10 +27,11 @@ import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
 import {CardType} from '../shared/card';
-import {IssueType} from './issue_type';
+import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
+import {Localizer} from 'src/infrastructure/i18n';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -88,16 +90,9 @@ export class ContactView extends LitElement {
     `,
   ];
 
-  private static readonly Issues = new Map([
-    [IssueType.INSTALLATION, 'I am having trouble installing Outline'],
-    [IssueType.NO_SERVER, 'I need an access key'],
-    [IssueType.ADDING_SERVER, 'I am having trouble adding a server using my access key'],
-    [IssueType.CONNECTION, 'I am having trouble connecting to my Outline VPN server'],
-    [IssueType.MANAGING, 'I need assistance managing my Outline VPN server or helping others connect to it'],
-    [IssueType.INTERNET_SPEED, 'My internet access is slow while connected to my Outline VPN server'],
-    [IssueType.GENERAL, 'General feedback & suggestions'],
-  ]);
+  private static readonly ISSUES = Object.values(IssueType);
 
+  @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
@@ -108,17 +103,17 @@ export class ContactView extends LitElement {
   private readonly openTicketSelectionOptions: Array<{
     ref: Ref<Radio>;
     value: boolean;
-    label: string;
+    labelMsg: string;
   }> = [
     {
       ref: createRef(),
       value: true,
-      label: 'Yes',
+      labelMsg: 'yes',
     },
     {
       ref: createRef(),
       value: false,
-      label: 'No',
+      labelMsg: 'no',
     },
   ];
 
@@ -131,11 +126,7 @@ export class ContactView extends LitElement {
     const radio = e.target as Radio;
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
-      this.exitTemplate = html`
-        We are currently experiencing high support volume and appreciate your patience. Please do not submit a new
-        request for this concern. If you have additional information to provide, please reply to the initial email about
-        this request.
-      `;
+      this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
       this.step = Step.EXIT;
       return;
     }
@@ -146,48 +137,19 @@ export class ContactView extends LitElement {
   }
 
   private selectIssue(e: SingleSelectedEvent) {
-    this.selectedIssueType = Array.from(ContactView.Issues.keys())[e.detail.index];
-    switch (this.selectedIssueType) {
-      case IssueType.INSTALLATION:
-      case IssueType.MANAGING:
-      case IssueType.INTERNET_SPEED:
-      case IssueType.GENERAL:
-        this.step = Step.FORM;
-        break;
-      case IssueType.NO_SERVER:
-        // TODO: Send users to localized support pages based on chosen language.
-        this.exitTemplate = html`
-          The Outline team does not distribute free or paid access keys.
-          <a href="https://support.getoutline.org/s/article/How-do-I-get-an-access-key" target="_blank">
-            Learn more about how to get an access key.
-          </a>
-        `;
-        this.step = Step.EXIT;
-        break;
-      case IssueType.ADDING_SERVER:
-        this.exitTemplate = html`
-          The Outline team is not able to assist with adding a server. Please try the troubleshooting steps listed
-          <a href="https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work" target="_blank">
-            here
-          </a>
-          and then contact the person who gave you the access key to troubleshoot this issue.
-        `;
-        this.step = Step.EXIT;
-        break;
-      case IssueType.CONNECTION:
-        this.exitTemplate = html`
-          The Outline team is not able to assist with connecting to a server. Please try the troubleshooting steps
-          listed
-          <a href="https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service" target="_blank">
-            here
-          </a>
-          and then contact the person who gave you the access key to troubleshoot this issue.
-        `;
-        this.step = Step.EXIT;
-        break;
-      default:
-        throw Error('Unexpected issue found');
+    this.selectedIssueType = ContactView.ISSUES[e.detail.index];
+
+    if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
+      // TODO: Send users to localized support pages based on chosen language.
+      this.exitTemplate = this.localizeWithUrl(
+        `contact-view-exit-${this.selectedIssueType}`,
+        UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
+      );
+      this.step = Step.EXIT;
+      return;
     }
+
+    this.step = Step.FORM;
   }
 
   private reset() {
@@ -219,10 +181,15 @@ export class ContactView extends LitElement {
     this.dispatchEvent(new CustomEvent('success'));
   }
 
+  // TODO: Consider moving this functionality to a more centralized place for re-use.
+  private localizeWithUrl(messageID: string, url: string): TemplateResult {
+    const openLink = `<a href="${url}" target="_blank">`;
+    const closeLink = '</a>';
+    return html` ${unsafeHTML(this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink))} `;
+  }
+
   private get renderIntroTemplate(): TemplateResult {
-    return html`
-      <p>Tell us how we can help. Please do not enter personal information that is not requested below.</p>
-    `;
+    return html`<p>${this.localize('contact-view-intro')}</p>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -234,6 +201,7 @@ export class ContactView extends LitElement {
     return html`
       <support-form
         ${ref(this.formRef)}
+        .localize=${this.localize}
         .variant=${this.variant}
         .disabled=${this.isFormSubmitting}
         .values=${this.formValues}
@@ -257,13 +225,13 @@ export class ContactView extends LitElement {
       default: {
         return html`
           ${this.renderIntroTemplate}
-          <p>Do you have an open ticket for this issue?</p>
+          <p>${this.localize('contact-view-open-ticket')}</p>
 
           <ol>
             ${this.openTicketSelectionOptions.map(
               element => html`
                 <li>
-                  <mwc-formfield label=${element.label}>
+                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
                     <mwc-radio
                       name="open-ticket"
                       .value="${element.value}"
@@ -279,17 +247,15 @@ export class ContactView extends LitElement {
           </ol>
 
           <mwc-select
-            label="Outline issue"
-            helper="What issue are you contacting us about?"
-            helperPersistent
+            .label=${this.localize('contact-view-issue')}
             outlined
             ?hidden=${!this.showIssueSelector}
             @selected="${this.selectIssue}"
           >
-            ${Array.from(ContactView.Issues).map(([value, label]) => {
+            ${ContactView.ISSUES.map(value => {
               return html`
                 <mwc-list-item value="${value}">
-                  <span>${label}</span>
+                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
                 </mwc-list-item>
               `;
             })}

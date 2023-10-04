@@ -23,6 +23,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
+import {Localizer} from 'src/infrastructure/i18n.js';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;
@@ -44,7 +45,7 @@ const oncePolymerIsReady = new Promise<void>(resolve => {
 
 // Do not call until WebComponentsReady has fired!
 function getRootEl() {
-  return (document.querySelector('app-root') as {}) as polymer.Base;
+  return document.querySelector('app-root') as {} as polymer.Base;
 }
 
 function createServerRepo(
@@ -143,7 +144,7 @@ function onUnexpectedError(error: Error) {
 }
 
 // Returns Polymer's localization function. Must be called after WebComponentsReady has fired.
-export function getLocalizationFunction() {
+export function getLocalizationFunction(): Localizer {
   const rootEl = getRootEl();
   if (!rootEl) {
     return null;

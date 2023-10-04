@@ -19,6 +19,7 @@ import {ContactView} from './index';
 import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 import {SupportForm} from './support_form';
 import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
+import {localize} from '../../testing/localize';
 
 describe('ContactView', () => {
   let el: ContactView;
@@ -29,7 +30,7 @@ describe('ContactView', () => {
       'SentryErrorReporter',
       Object.getOwnPropertyNames(SentryErrorReporter.prototype)
     );
-    el = await fixture(html` <contact-view .errorReporter=${mockErrorReporter}></contact-view> `);
+    el = await fixture(html` <contact-view .localize=${localize} .errorReporter=${mockErrorReporter}></contact-view> `);
   });
 
   it('is defined', async () => {
@@ -37,7 +38,7 @@ describe('ContactView', () => {
   });
 
   it('hides issue selector by default', async () => {
-    const issueSelector = el.shadowRoot?.querySelector('mwc-select[label="Outline issue"]');
+    const issueSelector = el.shadowRoot?.querySelector('mwc-select');
     expect(issueSelector?.hasAttribute('hidden')).toBeTrue();
   });
 
@@ -47,7 +48,7 @@ describe('ContactView', () => {
   });
 
   it('shows exit message if the user selects that they have an open ticket', async () => {
-    const radioButton = el.shadowRoot!.querySelector('mwc-formfield[label="Yes"] mwc-radio')! as HTMLElement;
+    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[0] as HTMLElement;
     radioButton.click();
     await nextFrame();
 
@@ -56,11 +57,11 @@ describe('ContactView', () => {
   });
 
   it('shows issue selector if the user selects that they have no open tickets', async () => {
-    const radioButton = el.shadowRoot!.querySelector('mwc-formfield[label="No"] mwc-radio')! as HTMLElement;
+    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
     radioButton.click();
     await nextFrame();
 
-    const issueSelector = el.shadowRoot!.querySelector('mwc-select[label="Outline issue"]');
+    const issueSelector = el.shadowRoot!.querySelector('mwc-select');
     expect(issueSelector?.hasAttribute('hidden')).toBeFalse();
   });
 
@@ -68,8 +69,8 @@ describe('ContactView', () => {
     let issueSelector: HTMLElement;
 
     beforeEach(async () => {
-      issueSelector = el.shadowRoot!.querySelector('mwc-select[label="Outline issue"]')!;
-      const radioButton: HTMLElement = el.shadowRoot!.querySelector('mwc-formfield[label="No"] mwc-radio')!;
+      issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
+      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
       radioButton.click();
       await nextFrame();
     });
