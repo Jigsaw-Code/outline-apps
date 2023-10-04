@@ -119,10 +119,6 @@
     "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
     "message": "General feedback & suggestions"
   },
-  "contact_view_issue_installation": {
-    "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
-    "message": "I am having trouble installing Outline"
-  },
   "contact_view_issue_managing": {
     "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
     "message": "I need assistance managing my Outline VPN server or helping others connect to it"
