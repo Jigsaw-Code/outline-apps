@@ -99,7 +99,7 @@ export class App {
     private quitApplication: () => void,
     document = window.document
   ) {
-    this.feedbackViewEl = rootEl.$.feedbackView;
+    this.feedbackViewEl = rootEl.shadowRoot.querySelector('#feedbackView');
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
@@ -497,15 +497,15 @@ export class App {
       return;
     }
     const {feedback, category, email} = formData;
-    this.rootEl.$.feedbackView.submitting = true;
+    this.feedbackViewEl.submitting = true;
     try {
       await this.errorReporter.report(feedback, category, email);
-      this.rootEl.$.feedbackView.submitting = false;
-      this.rootEl.$.feedbackView.resetForm();
+      this.feedbackViewEl.submitting = false;
+      this.feedbackViewEl.resetForm();
       this.changeToDefaultPage();
       this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
     } catch (e) {
-      this.rootEl.$.feedbackView.submitting = false;
+      this.feedbackViewEl.submitting = false;
       this.showLocalizedError(new errors.FeedbackSubmissionError());
     }
   }
