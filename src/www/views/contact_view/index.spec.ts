@@ -60,6 +60,18 @@ describe('ContactView client variant', () => {
     expect(exitCard.textContent).toContain('experiencing high support volume');
   });
 
+  it('resets the view on `reset()`', async () => {
+    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[0] as HTMLElement;
+    radioButton.click();
+    await nextFrame();
+
+    el.reset();
+    await nextFrame();
+
+    const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+    expect(exitCard).toBeNull();
+  });
+
   describe('when the user selects that they have no open tickets', () => {
     let issueSelector: Select;
 

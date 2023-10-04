@@ -161,7 +161,7 @@ export class ContactView extends LitElement {
     this.step = Step.FORM;
   }
 
-  private reset() {
+  reset() {
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
     this.step = Step.ISSUE_WIZARD;
