@@ -16,14 +16,20 @@
 
 import {ContactView} from './index';
 
-import {fixture, html, nextFrame} from '@open-wc/testing';
+import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 import {SupportForm} from './support_form';
+import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
 
 describe('ContactView', () => {
   let el: ContactView;
+  let mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter>;
 
   beforeEach(async () => {
-    el = await fixture(html` <contact-view></contact-view> `);
+    mockErrorReporter = jasmine.createSpyObj(
+      'SentryErrorReporter',
+      Object.getOwnPropertyNames(SentryErrorReporter.prototype)
+    );
+    el = await fixture(html` <contact-view .errorReporter=${mockErrorReporter}></contact-view> `);
   });
 
   it('is defined', async () => {
@@ -109,15 +115,27 @@ describe('ContactView', () => {
         expect(supportForm).not.toBeNull();
       });
 
-      it('shows "thank you" exit message on completion of support form', async () => {
+      it('emits success event on completion of support form', async () => {
+        const listener = oneEvent(el, 'success');
+
         const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
-        await nextFrame();
+        const {detail} = await listener;
+        expect(detail).toBeNull();
+      });
 
-        const exitCard = el.shadowRoot!.querySelector('outline-card')!;
-        expect(exitCard.textContent).toContain('Thanks for helping us improve');
+      it('emits failure event when feedback reporting fails', async () => {
+        const listener = oneEvent(el, 'error');
+        mockErrorReporter.report.and.throwError('fail');
+
+        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        supportForm.valid = true;
+        supportForm.dispatchEvent(new CustomEvent('submit'));
+
+        const {detail} = await listener;
+        expect(detail).toBeNull();
       });
 
       it('shows default contact view on cancellation of support form', async () => {

@@ -21,7 +21,7 @@ import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/ser
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from './error_reporter';
+import {OutlineErrorReporter} from '../shared/error_reporter';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -105,6 +105,7 @@ export class App {
     this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
+    rootEl.errorReporter = this.errorReporter;
 
     if (urlInterceptor) {
       this.registerUrlInterceptionListener(urlInterceptor);

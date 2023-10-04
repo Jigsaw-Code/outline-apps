@@ -23,7 +23,7 @@ import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {getSentryBrowserIntegrations, OutlineErrorReporter} from './error_reporter';
+import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {AbstractUpdater} from './updater';
@@ -94,8 +94,8 @@ class ElectronErrorReporter implements OutlineErrorReporter {
     });
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
-    Sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {category: feedbackCategory}});
+  report(userFeedback: string, feedbackCategory: string, userEmail?: string, tags?: Tags): Promise<void> {
+    Sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {...tags, category: feedbackCategory}});
     return Promise.resolve();
   }
 }

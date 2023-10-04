@@ -74,7 +74,7 @@ export const CompleteForm = ({
     email: 'foo@bar.com',
     subject: 'My Test Subject',
     description: 'My Test Description',
-    source: 'a friend',
+    accessKeySource: 'a friend',
     cloudProvider: 'digitalocean',
   };
   return html`

@@ -295,7 +295,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
           <template is="dom-if" if="{{contactViewFeatureFlag}}">
-            <contact-view name="contact" id="contactView"></contact-view>
+            <contact-view
+              name="contact"
+              id="contactView"
+              error-reporter="[[errorReporter]]"
+              on-success="showContactSuccessToast"
+              on-error="showContactErrorToast"
+            ></contact-view>
           </template>
           <template is="dom-if" if="{{!contactViewFeatureFlag}}">
             <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
@@ -544,6 +550,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: Number,
         readonly: true,
       },
+      errorReporter: {
+        type: Object,
+        readonly: true,
+      },
       page: {
         type: String,
         readonly: true,
@@ -621,7 +631,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     if (!Event.prototype.composedPath) {
       // Polyfill for composedPath. See https://dom.spec.whatwg.org/#dom-event-composedpath.
       // https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath#browser_compatibility
-      Event.prototype.composedPath = function() {
+      Event.prototype.composedPath = function () {
         if (this.path) {
           return this.path; // ShadowDOM v0 equivalent property.
         }
@@ -688,7 +698,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     if (this.$.toast.opened) {
       this.$.toast.close();
     }
-    this.async(function() {
+    this.async(function () {
       this.$.toast.text = text;
       this.$.toast.duration = duration || 3000;
 
@@ -702,7 +712,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           button._handler = buttonHandler;
         } else {
           this.toastUrl = buttonUrl;
-          button._handler = function() {
+          button._handler = function () {
             this.$.toastUrl.click();
           }.bind(this);
         }
@@ -719,6 +729,15 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       return;
     }
     this.set('route.path', '/' + page);
+  }
+
+  showContactSuccessToast() {
+    this.changePage(this.DEFAULT_PAGE);
+    this.showToast(this.localize('feedback-thanks'));
+  }
+
+  showContactErrorToast() {
+    this.showToast(this.localize('error-feedback-submission'));
   }
 
   _callToastHandler() {

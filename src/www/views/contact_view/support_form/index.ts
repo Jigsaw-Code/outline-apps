@@ -34,8 +34,15 @@ export declare interface FormValues {
   email?: string;
   subject?: string;
   description?: string;
-  source?: string;
+  accessKeySource?: string;
   cloudProvider?: string;
+}
+
+/** Interface for valid form data. */
+export declare interface ValidFormValues extends FormValues {
+  email: string;
+  subject: string;
+  description: string;
 }
 
 @customElement('support-form')
@@ -164,11 +171,11 @@ export class SupportForm extends LitElement {
 
     return html`
       <mwc-textfield
-        name="source"
-        label="source"
+        name="accessKeySource"
+        label="Source"
         helper="Where did you get your access key?"
         helperPersistent
-        .value=${live(this.values.source ?? '')}
+        .value=${live(this.values.accessKeySource ?? '')}
         .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
         .disabled=${this.disabled}
         required

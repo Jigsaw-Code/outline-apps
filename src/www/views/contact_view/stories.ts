@@ -34,10 +34,15 @@ export default {
         defaultValue: AppType.CLIENT,
       },
     },
+    onSupportContacted: {action: 'SupportContacted'},
   },
 };
 
-export const Example = ({variant}: {variant: AppType}) =>
+export const Example = ({variant, onSupportContacted}: {variant: AppType; onSupportContacted: Function}) =>
   html`
-    <contact-view .variant=${variant}></contact-view>
+    <contact-view
+      .variant=${variant}
+      .errorReporter=${{report: console.log}}
+      @SupportContacted=${onSupportContacted}
+    ></contact-view>
   `;

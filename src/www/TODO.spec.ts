@@ -27,7 +27,7 @@
 // import * as outlineIcons from './ui_components/outline-icons';
 
 import * as clipboard from './app/clipboard';
-import * as errorReporter from './app/error_reporter';
+import * as errorReporter from './shared/error_reporter';
 import * as platform from './app/platform';
 import * as tunnel from './app/tunnel';
 import * as updater from './app/updater';
