@@ -15,7 +15,7 @@
 import * as Sentry from '@sentry/browser';
 import {Integration as SentryIntegration} from '@sentry/types';
 
-export type Tags = {[id: string]: string};
+export type Tags = {[id: string]: string | boolean | number};
 
 export interface OutlineErrorReporter {
   report(userFeedback: string, feedbackCategory: string, userEmail?: string, tags?: Tags): Promise<void>;
