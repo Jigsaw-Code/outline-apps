@@ -145,6 +145,23 @@ describe('ContactView client variant', () => {
         expect(supportForm).not.toBeNull();
       });
 
+      it('reports correct values to error reporter on completion of support form', async () => {
+        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        supportForm.values.email = 'foo@bar.com';
+        supportForm.values.subject = 'Test Subject';
+        supportForm.values.accessKeySource = 'a friend';
+        supportForm.values.description = 'Test Description';
+        supportForm.valid = true;
+        supportForm.dispatchEvent(new CustomEvent('submit'));
+        await nextFrame();
+
+        expect(mockErrorReporter.report).toHaveBeenCalledWith('Test Description', 'general', 'foo@bar.com', {
+          subject: 'Test Subject',
+          accessKeySource: 'a friend',
+          isUpdatedForm: true,
+        });
+      });
+
       it('emits success event on completion of support form', async () => {
         const listener = oneEvent(el, 'success');
 
