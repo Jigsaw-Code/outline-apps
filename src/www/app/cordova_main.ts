@@ -144,9 +144,10 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getErrorReporter(env: EnvironmentVariables) {
+    const sharedTags = {'build.number': env.APP_BUILD_NUMBER};
     return this.hasDeviceSupport()
-      ? new CordovaErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {'build.number': env.APP_BUILD_NUMBER})
-      : new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', {'build.number': env.APP_BUILD_NUMBER});
+      ? new CordovaErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags)
+      : new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags);
   }
 
   getUpdater() {
