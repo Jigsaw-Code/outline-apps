@@ -65,6 +65,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       <style>
         :host {
           --app-toolbar-height: 40px;
+          --app-toolbar-gutter: 8px;
+          --app-toolbar-button-gutter: 12px;
+          --app-header-height: 56px;
+          --contact-view-gutter: calc(var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter));
+          --contact-view-max-width: 400px;
           --light-green: #2fbea5;
           --medium-green: #009688;
           --dark-green: #263238;
@@ -77,13 +82,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         }
 
         app-header {
-          height: 56px;
+          height: var(--app-header-height);
         }
 
         app-toolbar {
           height: var(--app-toolbar-height);
           color: #fff;
-          padding: 8px;
+          padding: var(--app-toolbar-gutter);
           background: var(--dark-green);
           text-align: center;
           display: flex;
@@ -103,6 +108,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         app-toolbar paper-button {
           /* make the ink color (used for tap animations) actually visible */
           --paper-icon-button-ink-color: #eff;
+          padding: var(--app-toolbar-button-gutter);
         }
 
         #app-toolbar-left,

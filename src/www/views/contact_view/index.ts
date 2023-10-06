@@ -45,9 +45,13 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
+        color: var(--outline-text-color);
         display: block;
         font-family: var(--outline-font-family);
-        padding: var(--outline-gutter);
+        margin: 0 auto;
+        max-width: var(--contact-view-max-width);
+        padding: var(--contact-view-gutter, var(--outline-gutter));
+        width: 100%;
       }
 
       mwc-circular-progress {
@@ -57,11 +61,25 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
+      h1 {
+        font-size: 1rem;
+      }
+
       ol {
         list-style-type: none;
+        padding-inline-start: 0;
       }
 
       mwc-select {
+        /**
+         * The '<app-header-layout>' restricts the stacking context, which means
+         * the select dropdown will get stacked underneath the header.
+         * See https://github.com/PolymerElements/app-layout/issues/279. Setting
+         * a maximum height will make the dropdown small enough to not run into
+         * this issue.
+         */
+        --mdc-menu-max-height: 200px;
+        --mdc-menu-max-width: var(--contact-view-max-width);
         width: 100%;
       }
 
@@ -164,6 +182,11 @@ export class ContactView extends LitElement {
   reset() {
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
+    this.openTicketSelectionOptions.forEach(element => {
+      if (!element.ref.value) return;
+      element.ref.value.checked = false;
+      element.ref.value.disabled = false;
+    });
     this.step = Step.ISSUE_WIZARD;
     this.formValues = {};
   }
@@ -201,7 +224,7 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`<p>${this.localize('contact-view-intro')}</p>`;
+    return html`<h1 class="intro">${this.localize('contact-view-intro')}</h1>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -262,6 +285,7 @@ export class ContactView extends LitElement {
             .label=${this.localize('contact-view-issue')}
             outlined
             ?hidden=${!this.showIssueSelector}
+            ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
           >
             ${ContactView.ISSUES[this.variant].map(value => {
