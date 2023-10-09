@@ -61,17 +61,22 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
-      outline-card {
-        width: 100%;
-      }
-
       h1 {
         font-size: 1rem;
         margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
       }
 
+      outline-card {
+        width: 100%;
+      }
+
+      p {
+        margin-top: .25rem;
+      }
+
       ol {
         list-style-type: none;
+        margin: .25rem 0;
         padding-inline-start: 0;
       }
 
@@ -85,6 +90,7 @@ export class ContactView extends LitElement {
          */
         --mdc-menu-max-height: 200px;
         --mdc-menu-max-width: calc(100vw - calc(var(--outline-gutter) * 4));
+        margin-top: 1rem;
         width: 100%;
       }
 
