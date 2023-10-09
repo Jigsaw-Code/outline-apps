@@ -79,7 +79,6 @@ export class ContactView extends LitElement {
          * this issue.
          */
         --mdc-menu-max-height: 200px;
-        --mdc-menu-max-width: var(--contact-view-max-width);
         width: 100%;
       }
 

@@ -64,10 +64,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     return html`
       <style>
         :host {
-          --app-toolbar-height: 40px;
-          --app-toolbar-gutter: 8px;
-          --app-toolbar-button-gutter: 12px;
-          --app-header-height: 56px;
+          --app-toolbar-height: 2.5rem;
+          --app-toolbar-gutter: .5rem;
+          --app-toolbar-button-gutter: .75rem;
+          --app-header-height: 3.5rem;
           --contact-view-gutter: calc(var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter));
           --contact-view-max-width: 400px;
           --light-green: #2fbea5;
