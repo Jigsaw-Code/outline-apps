@@ -404,9 +404,6 @@ export class App {
     } catch (e) {
       this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
       console.error(`could not connect to server ${serverId}: ${e.name}`);
-      if (!(e instanceof errors.RegularNativeError)) {
-        this.errorReporter.report(`connection failure: ${e.name}`, 'connection-failure');
-      }
       if (e instanceof errors.SystemConfigurationException) {
         if (await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'))) {
           await this.installVpnService();
