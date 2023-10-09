@@ -260,7 +260,7 @@ export class ContactView extends LitElement {
       }
 
       case Step.EXIT: {
-        return html` <outline-card .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
+        return html` <outline-card class="exit" .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
       }
 
       case Step.ISSUE_WIZARD:
