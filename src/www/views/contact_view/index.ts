@@ -179,7 +179,7 @@ export class ContactView extends LitElement {
     try {
       await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {
         ...tags,
-        isUpdatedForm: true,
+        formVersion: 2,
       });
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);

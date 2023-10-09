@@ -158,7 +158,7 @@ describe('ContactView client variant', () => {
         expect(mockErrorReporter.report).toHaveBeenCalledWith('Test Description', 'general', 'foo@bar.com', {
           subject: 'Test Subject',
           accessKeySource: 'a friend',
-          isUpdatedForm: true,
+          formVersion: 2,
         });
       });
 
