@@ -63,6 +63,7 @@ export class ContactView extends LitElement {
 
       h1 {
         font-size: 1rem;
+        margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
       }
 
       ol {
@@ -79,6 +80,7 @@ export class ContactView extends LitElement {
          * this issue.
          */
         --mdc-menu-max-height: 200px;
+        background-color: white;
         width: 100%;
       }
 
@@ -156,9 +158,6 @@ export class ContactView extends LitElement {
       this.step = Step.EXIT;
       return;
     }
-    this.openTicketSelectionOptions.forEach(element => {
-      element.ref.value.disabled = true;
-    });
     this.showIssueSelector = true;
   }
 
@@ -184,7 +183,6 @@ export class ContactView extends LitElement {
     this.openTicketSelectionOptions.forEach(element => {
       if (!element.ref.value) return;
       element.ref.value.checked = false;
-      element.ref.value.disabled = false;
     });
     this.step = Step.ISSUE_WIZARD;
     this.formValues = {};
