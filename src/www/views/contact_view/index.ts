@@ -45,9 +45,13 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
+        color: var(--outline-text-color);
         display: block;
         font-family: var(--outline-font-family);
-        padding: var(--outline-gutter);
+        margin: 0 auto;
+        max-width: var(--contact-view-max-width);
+        padding: var(--contact-view-gutter, var(--outline-gutter));
+        width: 100%;
       }
 
       mwc-circular-progress {
@@ -57,11 +61,36 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
+      h1 {
+        font-size: 1rem;
+        margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
+      }
+
+      outline-card {
+        width: 100%;
+      }
+
+      p {
+        margin-top: .25rem;
+      }
+
       ol {
         list-style-type: none;
+        margin: .25rem 0;
+        padding-inline-start: 0;
       }
 
       mwc-select {
+        /**
+         * The '<app-header-layout>' restricts the stacking context, which means
+         * the select dropdown will get stacked underneath the header.
+         * See https://github.com/PolymerElements/app-layout/issues/279. Setting
+         * a maximum height will make the dropdown small enough to not run into
+         * this issue.
+         */
+        --mdc-menu-max-height: 200px;
+        --mdc-menu-max-width: calc(100vw - calc(var(--outline-gutter) * 4));
+        margin-top: 1rem;
         width: 100%;
       }
 
@@ -139,9 +168,6 @@ export class ContactView extends LitElement {
       this.step = Step.EXIT;
       return;
     }
-    this.openTicketSelectionOptions.forEach(element => {
-      element.ref.value.disabled = true;
-    });
     this.showIssueSelector = true;
   }
 
@@ -164,6 +190,10 @@ export class ContactView extends LitElement {
   reset() {
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
+    this.openTicketSelectionOptions.forEach(element => {
+      if (!element.ref.value) return;
+      element.ref.value.checked = false;
+    });
     this.step = Step.ISSUE_WIZARD;
     this.formValues = {};
   }
@@ -201,7 +231,7 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`<p>${this.localize('contact-view-intro')}</p>`;
+    return html`<h1 class="intro">${this.localize('contact-view-intro')}</h1>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -230,48 +260,52 @@ export class ContactView extends LitElement {
       }
 
       case Step.EXIT: {
-        return html` <outline-card .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
+        return html` <outline-card class="exit" .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
       }
 
       case Step.ISSUE_WIZARD:
       default: {
         return html`
           ${this.renderIntroTemplate}
-          <p>${this.localize('contact-view-open-ticket')}</p>
 
-          <ol>
-            ${this.openTicketSelectionOptions.map(
-              element => html`
-                <li>
-                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
-                    <mwc-radio
-                      name="open-ticket"
-                      .value="${element.value}"
-                      required
-                      @change=${this.selectHasOpenTicket}
-                      ${ref(element.ref)}
-                    >
-                    </mwc-radio>
-                  </mwc-formfield>
-                </li>
-              `
-            )}
-          </ol>
+          <outline-card .type=${CardType.Elevated}>
+            <p>${this.localize('contact-view-open-ticket')}</p>
 
-          <mwc-select
-            .label=${this.localize('contact-view-issue')}
-            outlined
-            ?hidden=${!this.showIssueSelector}
-            @selected="${this.selectIssue}"
-          >
-            ${ContactView.ISSUES[this.variant].map(value => {
-              return html`
-                <mwc-list-item value="${value}">
-                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
-                </mwc-list-item>
-              `;
-            })}
-          </mwc-select>
+            <ol>
+              ${this.openTicketSelectionOptions.map(
+                element => html`
+                  <li>
+                    <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                      <mwc-radio
+                        name="open-ticket"
+                        .value="${element.value}"
+                        required
+                        @change=${this.selectHasOpenTicket}
+                        ${ref(element.ref)}
+                      >
+                      </mwc-radio>
+                    </mwc-formfield>
+                  </li>
+                `
+              )}
+            </ol>
+
+            <mwc-select
+              .label=${this.localize('contact-view-issue')}
+              outlined
+              ?hidden=${!this.showIssueSelector}
+              ?fixedMenuPosition=${true}
+              @selected="${this.selectIssue}"
+            >
+              ${ContactView.ISSUES[this.variant].map(value => {
+                return html`
+                  <mwc-list-item value="${value}">
+                    <span>${this.localize(`contact-view-issue-${value}`)}</span>
+                  </mwc-list-item>
+                `;
+              })}
+            </mwc-select>
+          </outline-card>
         `;
       }
     }

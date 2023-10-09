@@ -56,7 +56,7 @@ describe('ContactView client variant', () => {
     radioButton.click();
     await nextFrame();
 
-    const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+    const exitCard = el.shadowRoot!.querySelector('outline-card.exit')!;
     expect(exitCard.textContent).toContain('experiencing high support volume');
   });
 
@@ -68,7 +68,7 @@ describe('ContactView client variant', () => {
     el.reset();
     await nextFrame();
 
-    const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+    const exitCard = el.shadowRoot!.querySelector('outline-card.exit')!;
     expect(exitCard).toBeNull();
   });
 
@@ -128,7 +128,7 @@ describe('ContactView client variant', () => {
         issue.click();
         await nextFrame();
 
-        const exitCard = el.shadowRoot!.querySelector('outline-card')!;
+        const exitCard = el.shadowRoot!.querySelector('outline-card.exit')!;
         expect(exitCard.textContent).toContain(expectedMsg);
       });
     }
@@ -190,7 +190,7 @@ describe('ContactView client variant', () => {
 
         await nextFrame();
 
-        expect(el.shadowRoot?.querySelector('p')?.textContent).toContain('Tell us how we can help.');
+        expect(el.shadowRoot?.querySelector('h1')?.textContent).toContain('Tell us how we can help.');
         expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
       });
     });
