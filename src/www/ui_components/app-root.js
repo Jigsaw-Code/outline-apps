@@ -361,13 +361,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             </paper-icon-item>
             <template is="dom-if" if="{{contactViewFeatureFlag}}">
               <paper-icon-item name="contact">
-                <iron-icon id="feedback-icon" slot="item-icon"></iron-icon>
+                <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
                 [[localize('contact-page-title')]]
               </paper-icon-item>
             </template>
             <template is="dom-if" if="{{!contactViewFeatureFlag}}">
               <paper-icon-item name="feedback">
-                <iron-icon id="feedback-icon" slot="item-icon"></iron-icon>
+                <iron-icon id="feedback-icon" icon="feedback" slot="item-icon"></iron-icon>
                 [[localize('feedback-page-title')]]
               </paper-icon-item>
             </template>
