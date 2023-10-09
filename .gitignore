@@ -28,7 +28,6 @@ coverage
 *.env
 /build
 /bin
-intra/split/example/example
 
 # General
 .AppleDouble

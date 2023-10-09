@@ -6,7 +6,7 @@ require (
 	github.com/Jigsaw-Code/choir v1.0.1
 	github.com/Jigsaw-Code/getsni v1.0.0
 	github.com/Jigsaw-Code/outline-sdk v0.0.7
-	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20230807220427-893de7fdc6b8
+	github.com/Jigsaw-Code/outline-sdk/x v0.0.7
 	github.com/crazy-max/xgo v0.26.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/stretchr/testify v1.8.4

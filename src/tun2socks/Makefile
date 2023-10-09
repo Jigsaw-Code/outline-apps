@@ -7,18 +7,12 @@ GOBIND=env PATH="$(GOBIN):$(PATH)" "$(GOMOBILE)" bind
 IMPORT_HOST=github.com
 IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-apps/outline/tun2socks
 
-.PHONY: android apple linux windows intra clean clean-all
+.PHONY: android apple linux windows clean clean-all
 
-all: intra android linux apple windows
+all: android linux apple windows
 
 # Don't strip Android debug symbols so we can upload them to crash reporting tools.
 ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -tags android -work
-
-intra: $(BUILDDIR)/intra/tun2socks.aar
-
-$(BUILDDIR)/intra/tun2socks.aar: $(GOMOBILE)
-	mkdir -p "$(BUILDDIR)/intra"
-	$(ANDROID_BUILD_CMD) -o "$@" $(IMPORT_PATH)/intra $(IMPORT_PATH)/intra/android $(IMPORT_PATH)/intra/doh $(IMPORT_PATH)/intra/split $(IMPORT_PATH)/intra/protect
 
 android: $(BUILDDIR)/android/tun2socks.aar
 
