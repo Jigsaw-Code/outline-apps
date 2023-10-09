@@ -61,6 +61,10 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
+      outline-card {
+        width: 100%;
+      }
+
       h1 {
         font-size: 1rem;
         margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
@@ -80,7 +84,7 @@ export class ContactView extends LitElement {
          * this issue.
          */
         --mdc-menu-max-height: 200px;
-        background-color: white;
+        --mdc-menu-max-width: calc(100vw - calc(var(--outline-gutter) * 4));
         width: 100%;
       }
 
@@ -257,42 +261,45 @@ export class ContactView extends LitElement {
       default: {
         return html`
           ${this.renderIntroTemplate}
-          <p>${this.localize('contact-view-open-ticket')}</p>
 
-          <ol>
-            ${this.openTicketSelectionOptions.map(
-              element => html`
-                <li>
-                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
-                    <mwc-radio
-                      name="open-ticket"
-                      .value="${element.value}"
-                      required
-                      @change=${this.selectHasOpenTicket}
-                      ${ref(element.ref)}
-                    >
-                    </mwc-radio>
-                  </mwc-formfield>
-                </li>
-              `
-            )}
-          </ol>
+          <outline-card .type=${CardType.Elevated}>
+            <p>${this.localize('contact-view-open-ticket')}</p>
 
-          <mwc-select
-            .label=${this.localize('contact-view-issue')}
-            outlined
-            ?hidden=${!this.showIssueSelector}
-            ?fixedMenuPosition=${true}
-            @selected="${this.selectIssue}"
-          >
-            ${ContactView.ISSUES[this.variant].map(value => {
-              return html`
-                <mwc-list-item value="${value}">
-                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
-                </mwc-list-item>
-              `;
-            })}
-          </mwc-select>
+            <ol>
+              ${this.openTicketSelectionOptions.map(
+                element => html`
+                  <li>
+                    <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                      <mwc-radio
+                        name="open-ticket"
+                        .value="${element.value}"
+                        required
+                        @change=${this.selectHasOpenTicket}
+                        ${ref(element.ref)}
+                      >
+                      </mwc-radio>
+                    </mwc-formfield>
+                  </li>
+                `
+              )}
+            </ol>
+
+            <mwc-select
+              .label=${this.localize('contact-view-issue')}
+              outlined
+              ?hidden=${!this.showIssueSelector}
+              ?fixedMenuPosition=${true}
+              @selected="${this.selectIssue}"
+            >
+              ${ContactView.ISSUES[this.variant].map(value => {
+                return html`
+                  <mwc-list-item value="${value}">
+                    <span>${this.localize(`contact-view-issue-${value}`)}</span>
+                  </mwc-list-item>
+                `;
+              })}
+            </mwc-select>
+          </outline-card>
         `;
       }
     }
