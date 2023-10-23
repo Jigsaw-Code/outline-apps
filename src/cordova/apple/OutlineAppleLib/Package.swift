@@ -31,10 +31,11 @@ let package = Package(
     targets: [
         .target(
             name: "OutlineLauncher",
-            dependencies:
-            ["CocoaLumberjack",
-             .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-             "OutlineCatalystApp"]
+            dependencies: [
+                "CocoaLumberjack",
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                "OutlineCatalystApp",
+            ]
         ),
         .target(
             name: "OutlineCatalystApp",
@@ -53,11 +54,12 @@ let package = Package(
         ),
         .target(
             name: "PacketTunnelProvider",
-            dependencies:
-            ["CocoaLumberjack",
-             .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-             "Tun2socks",
-             "OutlineTunnel"],
+            dependencies: [
+                "CocoaLumberjack",
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                "Tun2socks",
+                "OutlineTunnel",
+            ],
             cSettings: [
                 .headerSearchPath("Internal"),
             ]
