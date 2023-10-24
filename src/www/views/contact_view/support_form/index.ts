@@ -55,8 +55,6 @@ export class SupportForm extends LitElement {
   static styles = [
     css`
       :host {
-        --mdc-ripple-color: none;
-        --mdc-text-field-fill-color: none;
         font-family: var(--outline-font-family);
         width: 100%;
       }

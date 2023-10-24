@@ -76,7 +76,7 @@ export class ContactView extends LitElement {
 
       ol {
         list-style-type: none;
-        margin: .25rem 0;
+        margin: 1.5rem 0;
         padding-inline-start: 0;
       }
 
@@ -90,8 +90,6 @@ export class ContactView extends LitElement {
          */
         --mdc-menu-max-height: 200px;
         --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
-        --mdc-ripple-color: none;
-        --mdc-select-fill-color: none;
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
@@ -102,6 +100,7 @@ export class ContactView extends LitElement {
       }
 
       mwc-list-item {
+        line-height: 1.25rem;
         /**
          * The default styling of list items that wrap to 3+ lines is bad, and
          * our items here are quite long and tend to wrap that much. To allow
