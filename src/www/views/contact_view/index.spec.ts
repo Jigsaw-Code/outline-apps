@@ -190,7 +190,7 @@ describe('ContactView client variant', () => {
 
         await nextFrame();
 
-        expect(el.shadowRoot?.querySelector('h1')?.textContent).toContain('Tell us how we can help.');
+        expect(el.shadowRoot?.querySelector('p.intro')?.textContent).toContain('Tell us how we can help.');
         expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
       });
     });
