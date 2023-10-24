@@ -51,7 +51,7 @@ export class ContactView extends LitElement {
         width: 100%;
       }
 
-      :host > * {
+      main {
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -255,7 +255,7 @@ export class ContactView extends LitElement {
     `;
   }
 
-  render() {
+  private get renderMainContent(): TemplateResult {
     switch (this.step) {
       case Step.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
@@ -308,5 +308,9 @@ export class ContactView extends LitElement {
         `;
       }
     }
+  }
+
+  render() {
+    return html`<main>${this.renderMainContent}</main>`;
   }
 }
