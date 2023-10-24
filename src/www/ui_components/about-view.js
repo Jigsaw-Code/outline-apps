@@ -109,7 +109,7 @@ Polymer({
       ></div>
       <div id="footer">
         <a href="https://jigsaw.google.com">
-          <img id="jigsaw-logo" src$="[[rootPath]]assets/jigsaw-logo.png" />
+          <img id="jigsaw-logo" src$="[[rootPath]]assets/jigsaw-logo.svg" />
         </a>
       </div>
     </div>
