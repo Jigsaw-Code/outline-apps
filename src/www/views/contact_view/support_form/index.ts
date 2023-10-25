@@ -22,7 +22,6 @@ import '@material/mwc-button';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
-import {CardType} from '../../shared/card';
 import {AppType} from '../app_type';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
@@ -57,10 +56,7 @@ export class SupportForm extends LitElement {
     css`
       :host {
         font-family: var(--outline-font-family);
-      }
-
-      outline-card {
-        min-width: 100%;
+        width: 100%;
       }
 
       mwc-select {
@@ -77,6 +73,11 @@ export class SupportForm extends LitElement {
         color: var(--outline-label-color);
         font-size: 0.8rem;
         text-align: end;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: end;
       }
     `,
   ];
@@ -159,7 +160,6 @@ export class SupportForm extends LitElement {
         .value=${live(this.values.cloudProvider ?? '')}
         .disabled=${this.disabled}
         required
-        outlined
         @selected=${(e: CustomEvent<SelectedDetail<number>>) => {
           if (e.detail.index !== -1) {
             this.values.cloudProvider = providers[e.detail.index].value;
@@ -183,7 +183,6 @@ export class SupportForm extends LitElement {
         .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
         .disabled=${this.disabled}
         required
-        outlined
         @input=${this.handleTextInput}
         @blur=${this.checkFormValidity}
       ></mwc-textfield>
@@ -193,61 +192,56 @@ export class SupportForm extends LitElement {
   render() {
     return html`
       <form ${ref(this.formRef)} @submit=${this.submit}>
-        <outline-card .type=${CardType.Elevated}>
-          <mwc-textfield
-            name="email"
-            type="email"
-            .label=${this.localize('support-form-email')}
-            .value=${live(this.values.email ?? '')}
-            .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
-            autoValidate
-            .validationMessage=${this.localize('support-form-email-invalid')}
-            .disabled=${this.disabled}
-            required
-            outlined
-            @input=${this.handleTextInput}
-            @blur=${this.checkFormValidity}
-          ></mwc-textfield>
+        <mwc-textfield
+          name="email"
+          type="email"
+          .label=${this.localize('support-form-email')}
+          .value=${live(this.values.email ?? '')}
+          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          autoValidate
+          .validationMessage=${this.localize('support-form-email-invalid')}
+          .disabled=${this.disabled}
+          required
+          @input=${this.handleTextInput}
+          @blur=${this.checkFormValidity}
+        ></mwc-textfield>
 
-          ${this.renderCloudProviderInputField} ${this.renderAccessKeySourceInputField}
+        ${this.renderCloudProviderInputField} ${this.renderAccessKeySourceInputField}
 
-          <mwc-textfield
-            name="subject"
-            .label=${this.localize('support-form-subject')}
-            .value=${live(this.values.subject ?? '')}
-            .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
-            .disabled=${this.disabled}
-            required
-            outlined
-            @input=${this.handleTextInput}
-            @blur=${this.checkFormValidity}
-          ></mwc-textfield>
-          <mwc-textarea
-            name="description"
-            .label=${this.localize('support-form-description')}
-            .value=${live(this.values.description ?? '')}
-            rows="5"
-            .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
-            .disabled=${this.disabled}
-            required
-            outlined
-            @input=${this.handleTextInput}
-            @blur=${this.checkFormValidity}
-          >
-          </mwc-textarea>
+        <mwc-textfield
+          name="subject"
+          .label=${this.localize('support-form-subject')}
+          .value=${live(this.values.subject ?? '')}
+          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .disabled=${this.disabled}
+          required
+          @input=${this.handleTextInput}
+          @blur=${this.checkFormValidity}
+        ></mwc-textfield>
+        <mwc-textarea
+          name="description"
+          .label=${this.localize('support-form-description')}
+          .value=${live(this.values.description ?? '')}
+          rows="5"
+          .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
+          .disabled=${this.disabled}
+          required
+          @input=${this.handleTextInput}
+          @blur=${this.checkFormValidity}
+        >
+        </mwc-textarea>
 
-          <p>* = ${this.localize('support-form-required-field')}</p>
+        <p>* = ${this.localize('support-form-required-field')}</p>
 
-          <span slot="card-actions">
-            <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
-            <mwc-button
-              type="submit"
-              .label=${this.localize('submit')}
-              .disabled=${!this.valid || this.disabled}
-              @click=${this.submit}
-            ></mwc-button>
-          </span>
-        </outline-card>
+        <span class="actions">
+          <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
+          <mwc-button
+            type="submit"
+            .label=${this.localize('submit')}
+            .disabled=${!this.valid || this.disabled}
+            @click=${this.submit}
+          ></mwc-button>
+        </span>
       </form>
     `;
   }

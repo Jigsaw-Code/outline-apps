@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+import '@material/mwc-textfield';
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {afterNextRender} from '@polymer/polymer/lib/utils/render-status.js';
@@ -21,23 +22,19 @@ import {afterNextRender} from '@polymer/polymer/lib/utils/render-status.js';
 Polymer({
   _template: html`
     <style>
-      h3 {
-        margin-bottom: 0;
-      }
-      paper-input {
+      mwc-textfield {
         margin-top: 0;
-        --paper-input-container-focus-color: var(--medium-green);
       }
     </style>
     <paper-dialog id="renameDialog" with-backdrop="">
       <h3>[[localize('server-rename')]]</h3>
-      <paper-input id="serverNameInput" always-float-label="" maxlength="100" tabindex="0"></paper-input>
+      <mwc-textfield id="serverNameInput" maxlength="100" tabindex="0"></mwc-textfield>
       <div class="buttons">
         <paper-button dialog-dismiss="">[[localize('cancel')]]</paper-button>
         <paper-button dialog-confirm="" on-tap="_saveRename">[[localize('save')]]</paper-button>
       </div>
     </paper-dialog>
-`,
+  `,
 
   is: 'server-rename-dialog',
 
@@ -50,7 +47,7 @@ Polymer({
     __serverId: String,
   },
 
-  open: function(serverName, serverId) {
+  open: function (serverName, serverId) {
     // Store the initial serverName so we can know if it changed, and
     // store the serverId so we can emit the rename request event.
     this.__serverName = serverName;
@@ -63,10 +60,10 @@ Polymer({
     });
   },
 
-  _saveRename: function() {
+  _saveRename: function () {
     const newName = this.$.serverNameInput.value;
     if (newName !== this.__serverName) {
       this.fire('RenameRequested', {serverId: this.__serverId, newName: newName});
     }
-  }
+  },
 });

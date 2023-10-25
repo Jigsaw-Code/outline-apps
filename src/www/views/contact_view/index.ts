@@ -26,7 +26,6 @@ import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
-import {CardType} from '../shared/card';
 import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
@@ -45,13 +44,18 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
+        background: #fff;
         color: var(--outline-text-color);
-        display: block;
         font-family: var(--outline-font-family);
-        margin: 0 auto;
-        max-width: var(--contact-view-max-width);
         padding: var(--contact-view-gutter, var(--outline-gutter));
         width: 100%;
+      }
+
+      main {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: var(--contact-view-max-width);
       }
 
       mwc-circular-progress {
@@ -66,17 +70,13 @@ export class ContactView extends LitElement {
         margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
       }
 
-      outline-card {
-        width: 100%;
-      }
-
       p {
         margin-top: .25rem;
       }
 
       ol {
         list-style-type: none;
-        margin: .25rem 0;
+        margin: 1.5rem 0;
         padding-inline-start: 0;
       }
 
@@ -89,8 +89,9 @@ export class ContactView extends LitElement {
          * this issue.
          */
         --mdc-menu-max-height: 200px;
-        --mdc-menu-max-width: calc(100vw - calc(var(--outline-gutter) * 4));
+        --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
         margin-top: 1rem;
+        max-width: var(--contact-view-max-width);
         width: 100%;
       }
 
@@ -99,6 +100,7 @@ export class ContactView extends LitElement {
       }
 
       mwc-list-item {
+        line-height: 1.25rem;
         /**
          * The default styling of list items that wrap to 3+ lines is bad, and
          * our items here are quite long and tend to wrap that much. To allow
@@ -231,7 +233,7 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`<h1 class="intro">${this.localize('contact-view-intro')}</h1>`;
+    return html`<p class="intro">${this.localize('contact-view-intro')}</p>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -253,14 +255,14 @@ export class ContactView extends LitElement {
     `;
   }
 
-  render() {
+  private get renderMainContent(): TemplateResult {
     switch (this.step) {
       case Step.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
       }
 
       case Step.EXIT: {
-        return html` <outline-card class="exit" .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
+        return html` <p class="exit">${this.exitTemplate}</p>`;
       }
 
       case Step.ISSUE_WIZARD:
@@ -268,46 +270,47 @@ export class ContactView extends LitElement {
         return html`
           ${this.renderIntroTemplate}
 
-          <outline-card .type=${CardType.Elevated}>
-            <p>${this.localize('contact-view-open-ticket')}</p>
+          <p>${this.localize('contact-view-open-ticket')}</p>
 
-            <ol>
-              ${this.openTicketSelectionOptions.map(
-                element => html`
-                  <li>
-                    <mwc-formfield .label=${this.localize(element.labelMsg)}>
-                      <mwc-radio
-                        name="open-ticket"
-                        .value="${element.value}"
-                        required
-                        @change=${this.selectHasOpenTicket}
-                        ${ref(element.ref)}
-                      >
-                      </mwc-radio>
-                    </mwc-formfield>
-                  </li>
-                `
-              )}
-            </ol>
+          <ol>
+            ${this.openTicketSelectionOptions.map(
+              element => html`
+                <li>
+                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                    <mwc-radio
+                      name="open-ticket"
+                      .value="${element.value}"
+                      required
+                      @change=${this.selectHasOpenTicket}
+                      ${ref(element.ref)}
+                    >
+                    </mwc-radio>
+                  </mwc-formfield>
+                </li>
+              `
+            )}
+          </ol>
 
-            <mwc-select
-              .label=${this.localize('contact-view-issue')}
-              outlined
-              ?hidden=${!this.showIssueSelector}
-              ?fixedMenuPosition=${true}
-              @selected="${this.selectIssue}"
-            >
-              ${ContactView.ISSUES[this.variant].map(value => {
-                return html`
-                  <mwc-list-item value="${value}">
-                    <span>${this.localize(`contact-view-issue-${value}`)}</span>
-                  </mwc-list-item>
-                `;
-              })}
-            </mwc-select>
-          </outline-card>
+          <mwc-select
+            .label=${this.localize('contact-view-issue')}
+            ?hidden=${!this.showIssueSelector}
+            ?fixedMenuPosition=${true}
+            @selected="${this.selectIssue}"
+          >
+            ${ContactView.ISSUES[this.variant].map(value => {
+              return html`
+                <mwc-list-item value="${value}">
+                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
+                </mwc-list-item>
+              `;
+            })}
+          </mwc-select>
         `;
       }
     }
+  }
+
+  render() {
+    return html`<main>${this.renderMainContent}</main>`;
   }
 }
