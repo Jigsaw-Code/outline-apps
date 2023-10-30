@@ -31,6 +31,7 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+import {lookupIp} from './connectivity';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
@@ -466,6 +467,12 @@ function main() {
       console.log(`connecting to ${args.id}...`);
 
       try {
+        // We must convert the host from a potential "hostname" to an "IP" address
+        // because startVpn will add a routing table entry that prefixed with this
+        // host (e.g. "<host>/32"), therefore <host> must be an IP address.
+        // TODO: make sure we resolve it in the native code
+        args.config.host = await lookupIp(args.config.host || '');
+
         await startVpn(args.config, args.id);
         console.log(`connected to ${args.id}`);
         await setupAutoLaunch(args);
