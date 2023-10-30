@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import minimist from 'minimist';
+// import minimist from 'minimist';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {runAction} from '../build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
@@ -27,7 +27,7 @@ const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
   const {platform, buildMode, versionName} = getBuildParameters(parameters);
-  const {autoUpdateProvider = 'generic', autoUpdateUrl} = minimist(parameters);
+  // const {autoUpdateProvider = 'generic', autoUpdateUrl} = minimist(parameters);
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -41,12 +41,12 @@ export async function main(...parameters) {
     console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
   }
 
-  if (buildMode === 'release' && !autoUpdateUrl) {
-    throw new TypeError(
-      "You need to add an electron-builder compliant auto-update url via an 'autoUpdateUrl' flag." +
-        'See here: https://www.electron.build/configuration/publish#publishers'
-    );
-  }
+  // if (buildMode === 'release' && !autoUpdateUrl) {
+  //   throw new TypeError(
+  //     "You need to add an electron-builder compliant auto-update url via an 'autoUpdateUrl' flag." +
+  //       'See here: https://www.electron.build/configuration/publish#publishers'
+  //   );
+  // }
 
   await runAction('www/build', ...parameters);
   await runAction('electron/build_main', ...parameters);
@@ -66,12 +66,12 @@ export async function main(...parameters) {
     targets: Platform[platform.toLocaleUpperCase()].createTarget(),
     config: {
       ...electronConfig,
-      publish: autoUpdateUrl
-        ? {
-            provider: autoUpdateProvider,
-            url: autoUpdateUrl,
-          }
-        : undefined,
+      // publish: autoUpdateUrl
+      //   ? {
+      //       provider: autoUpdateProvider,
+      //       url: autoUpdateUrl,
+      //     }
+      //   : undefined,
       generateUpdatesFilesForAllChannels: buildMode === 'release',
       extraMetadata: {
         ...electronConfig.extraMetadata,
