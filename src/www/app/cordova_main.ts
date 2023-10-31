@@ -41,11 +41,6 @@ const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
-  constructor() {
-    super();
-    document.addEventListener('resume', this.emitEvent.bind(this));
-  }
-
   getContents() {
     return new Promise<string>((resolve, reject) => {
       cordova.plugins.clipboard.paste(resolve, reject);
