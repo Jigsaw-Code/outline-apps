@@ -122,7 +122,7 @@
     "karma-webpack": "^5.0.0",
     "minimist": "^1.2.6",
     "node-fetch": "^3.3.0",
-    "node-gyp": "^9.4.0",
+    "node-gyp": "^10.0.1",
     "outline-i18n": "Jigsaw-Code/outline-i18n#v0.0.7",
     "postcss": "^7.0.39",
     "postcss-rtl": "^1.7.3",
