@@ -5,7 +5,6 @@
 *.env
 *.pdb
 *.sw?
-/bin
 /build
 /node_modules
 /output

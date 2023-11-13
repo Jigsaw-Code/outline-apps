@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import url from 'url';
-import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
@@ -28,8 +27,6 @@ export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);
 
   const outputDir = `${getRootDir()}/build/${platform}`;
-
-  await fs.mkdir(outputDir, {recursive: true});
 
   switch (platform) {
     case 'android':
@@ -60,18 +57,20 @@ export async function main(...parameters) {
     case 'windows':
       return spawnStream(
         'xgo',
+        '-x',
         '-targets=windows/386',
-        `-dest=${outputDir}/tun2socks.exe`,
-        '-pkg=outline/electron',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks'
+        `-dest=${outputDir}/tun2socks`,
+        '-pkg=src/tun2socks/outline/electron',
+        '.'
       );
     case 'linux':
       return spawnStream(
         'xgo',
+        '-x',
         '-targets=linux/amd64',
         `-dest=${outputDir}/tun2socks`,
-        '-pkg=outline/electron',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks'
+        '-pkg=src/tun2socks/outline/electron',
+        '.'
       );
   }
 }
