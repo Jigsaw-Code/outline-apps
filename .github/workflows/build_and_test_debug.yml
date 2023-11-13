@@ -63,6 +63,9 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Install Go Binary
+        run: go install github.com/crazy-max/xgo
+
       - name: Build Linux Client
         run: npm run action electron/build linux
 
@@ -87,6 +90,9 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Install Go Binary
+        run: go install github.com/crazy-max/xgo
+
       - name: Build Windows Client
         run: npm run action electron/build windows
 
@@ -110,6 +116,9 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
+
+      - name: Install Go Binary
+        run: go install golang.org/x/mobile/cmd/gomobile
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test macos
@@ -144,6 +153,9 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Install Go Binary
+        run: go install golang.org/x/mobile/cmd/gomobile
+
       - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
 
@@ -177,6 +189,9 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      - name: Install Go Binary
+        run: go install golang.org/x/mobile/cmd/gomobile
+
       - name: Test OutlineAppleLib
         run: npm run action cordova/test maccatalyst
 
@@ -206,6 +221,9 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
+
+      - name: Install Go Binary
+        run: go install golang.org/x/mobile/cmd/gomobile
 
       - name: Install Java
         uses: actions/setup-java@v1.4.3
