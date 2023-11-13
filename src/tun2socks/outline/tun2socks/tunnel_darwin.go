@@ -20,7 +20,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/src/tun2socks/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks"
 )
 
 // TunWriter is an interface that allows for outputting packets to the TUN (VPN).

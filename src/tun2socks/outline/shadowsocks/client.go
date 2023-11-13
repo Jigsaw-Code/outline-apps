@@ -25,9 +25,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/src/tun2socks/outline"
-	"github.com/Jigsaw-Code/outline-apps/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/src/tun2socks/outline/internal/utf8"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/outline"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/connectivity"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 	"github.com/eycorsican/go-tun2socks/common/log"

@@ -17,8 +17,8 @@ package tun2socks
 import (
 	"runtime/debug"
 
-	"github.com/Jigsaw-Code/outline-apps/outline/tun2socks/outline/shadowsocks"
-	"github.com/Jigsaw-Code/outline-apps/outline/tun2socks/tunnel"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-client/src/tun2socks/tunnel"
 	"github.com/eycorsican/go-tun2socks/common/log"
 )
 

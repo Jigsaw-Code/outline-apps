@@ -1,56 +1,29 @@
 .idea
+.vs/
 .vscode
 *.DS_Store
-/output
+*.env
+*.pdb
+*.sw?
+/bin
 /build
-info.txt
 /node_modules
+/output
 /platforms
 /plugins
-/www
 /third_party/Potatso/Pods
-xcuserdata/
-.vs/
-obj/
-packages/
-*.pdb
-tools/OutlineService/OutlineService/bin/*
-!tools/OutlineService/OutlineService/bin/*.exe
-*.sw?
-tools/smartdnsblock/bin/*
-!tools/smartdnsblock/bin/*.exe
+/www
+coverage
+info.txt
 keystore.p12
+obj/
 Outline.apk
 Outline.apks
-universal.apk
+packages/
 toc.pb
-coverage
-*.env
-/build
-/bin
-
-# General
-.AppleDouble
-.LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-# IDEs
-.vscode/
+tools/OutlineService/OutlineService/bin/*
+tools/smartdnsblock/bin/*
+!tools/OutlineService/OutlineService/bin/*.exe
+!tools/smartdnsblock/bin/*.exe
+universal.apk
+xcuserdata/
