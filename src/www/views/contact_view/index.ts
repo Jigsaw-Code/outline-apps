@@ -26,7 +26,6 @@ import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
-import {CardType} from '../shared/card';
 import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
@@ -45,9 +44,18 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
-        display: block;
+        background: #fff;
+        color: var(--outline-text-color);
         font-family: var(--outline-font-family);
-        padding: var(--outline-gutter);
+        padding: var(--contact-view-gutter, var(--outline-gutter));
+        width: 100%;
+      }
+
+      main {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: var(--contact-view-max-width);
       }
 
       mwc-circular-progress {
@@ -57,11 +65,33 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
+      h1 {
+        font-size: 1rem;
+        margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
+      }
+
+      p {
+        margin-top: .25rem;
+      }
+
       ol {
         list-style-type: none;
+        margin: 1.5rem 0;
+        padding-inline-start: 0;
       }
 
       mwc-select {
+        /**
+         * The '<app-header-layout>' restricts the stacking context, which means
+         * the select dropdown will get stacked underneath the header.
+         * See https://github.com/PolymerElements/app-layout/issues/279. Setting
+         * a maximum height will make the dropdown small enough to not run into
+         * this issue.
+         */
+        --mdc-menu-max-height: 200px;
+        --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
+        margin-top: 1rem;
+        max-width: var(--contact-view-max-width);
         width: 100%;
       }
 
@@ -70,6 +100,7 @@ export class ContactView extends LitElement {
       }
 
       mwc-list-item {
+        line-height: 1.25rem;
         /**
          * The default styling of list items that wrap to 3+ lines is bad, and
          * our items here are quite long and tend to wrap that much. To allow
@@ -139,9 +170,6 @@ export class ContactView extends LitElement {
       this.step = Step.EXIT;
       return;
     }
-    this.openTicketSelectionOptions.forEach(element => {
-      element.ref.value.disabled = true;
-    });
     this.showIssueSelector = true;
   }
 
@@ -164,6 +192,10 @@ export class ContactView extends LitElement {
   reset() {
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
+    this.openTicketSelectionOptions.forEach(element => {
+      if (!element.ref.value) return;
+      element.ref.value.checked = false;
+    });
     this.step = Step.ISSUE_WIZARD;
     this.formValues = {};
   }
@@ -201,7 +233,7 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`<p>${this.localize('contact-view-intro')}</p>`;
+    return html`<p class="intro">${this.localize('contact-view-intro')}</p>`;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -223,20 +255,21 @@ export class ContactView extends LitElement {
     `;
   }
 
-  render() {
+  private get renderMainContent(): TemplateResult {
     switch (this.step) {
       case Step.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
       }
 
       case Step.EXIT: {
-        return html` <outline-card .type=${CardType.Elevated}> ${this.exitTemplate} </outline-card> `;
+        return html` <p class="exit">${this.exitTemplate}</p>`;
       }
 
       case Step.ISSUE_WIZARD:
       default: {
         return html`
           ${this.renderIntroTemplate}
+
           <p>${this.localize('contact-view-open-ticket')}</p>
 
           <ol>
@@ -260,8 +293,8 @@ export class ContactView extends LitElement {
 
           <mwc-select
             .label=${this.localize('contact-view-issue')}
-            outlined
             ?hidden=${!this.showIssueSelector}
+            ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
           >
             ${ContactView.ISSUES[this.variant].map(value => {
@@ -275,5 +308,9 @@ export class ContactView extends LitElement {
         `;
       }
     }
+  }
+
+  render() {
+    return html`<main>${this.renderMainContent}</main>`;
   }
 }

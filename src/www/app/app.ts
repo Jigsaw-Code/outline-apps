@@ -154,7 +154,6 @@ export class App {
       this.displayPrivacyView();
     }
     this.displayZeroStateUi();
-    this.pullClipboardText();
   }
 
   showLocalizedError(error?: Error, toastDuration = 10000) {
@@ -300,6 +299,7 @@ export class App {
 
   private requestPromptAddServer() {
     this.rootEl.promptAddServer();
+    this.pullClipboardText();
   }
 
   // Caches an ignored server access key so we don't prompt the user to add it again.

@@ -35,16 +35,18 @@ export default {
         defaultValue: AppType.CLIENT,
       },
     },
-    onSupportContacted: {action: 'SupportContacted'},
+    onSuccess: {action: 'success'},
+    onError: {action: 'error'},
   },
 };
 
-export const Example = ({variant, onSupportContacted}: {variant: AppType; onSupportContacted: Function}) =>
+export const Example = ({variant, onSuccess, onError}: {variant: AppType; onSuccess: Function; onError: Function}) =>
   html`
     <contact-view
       .localize=${localize}
       .variant=${variant}
       .errorReporter=${{report: console.log}}
-      @SupportContacted=${onSupportContacted}
+      @success=${onSuccess}
+      @error=${onError}
     ></contact-view>
   `;
