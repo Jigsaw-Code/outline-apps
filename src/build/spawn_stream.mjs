@@ -23,7 +23,7 @@ export const spawnStream = (command, ...parameters) =>
     const stdout = [];
     const stderr = [];
 
-    console.debug(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]`);
+    console.debug(chalk.gray(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`));
     const childProcess = spawn(command, parameters, {env: process.env});
 
     const forEachMessageLine = (buffer, callback) => {

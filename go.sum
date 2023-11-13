@@ -4,6 +4,8 @@ github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20230807220427-893de7fdc6b8 h1:BxOHm
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20230807220427-893de7fdc6b8/go.mod h1:tBqJXpVm+kym+EAUdwNodcFxy872FfjVErfj8Br+gs0=
 github.com/crazy-max/xgo v0.26.0 h1:vK4OfeXJoDGvnjlzdTCgPbeWLKENbzj84DTpU/VRonM=
 github.com/crazy-max/xgo v0.26.0/go.mod h1:m/aqfKaN/cYzfw+Pzk7Mk0tkmShg3/rCS4Zdhdugi4o=
+github.com/crazy-max/xgo v0.30.0 h1:2uunjwLBrVu5LKIS1dIDXz9U5OIX4H5LEsC3P6wFTto=
+github.com/crazy-max/xgo v0.30.0/go.mod h1:m/aqfKaN/cYzfw+Pzk7Mk0tkmShg3/rCS4Zdhdugi4o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eycorsican/go-tun2socks v1.16.11 h1:+hJDNgisrYaGEqoSxhdikMgMJ4Ilfwm/IZDrWRrbaH8=

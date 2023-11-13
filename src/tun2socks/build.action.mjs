@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import url from 'url';
 import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -19,14 +20,14 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
 /**
- * @description TODO: Add description
+ * @description Builds the tun2socks library for the specified platform.
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);
 
-  const outputDir = `${getRootDir()}/build/${platform}/tun2socks`;
+  const outputDir = `${getRootDir()}/build/${platform}`;
 
   await fs.mkdir(outputDir, {recursive: true});
 
@@ -34,37 +35,25 @@ export async function main(...parameters) {
     case 'android':
       return spawnStream(
         'gomobile',
-        '-a',
+        'bind',
         '-androidapi=33',
-        '-ldflags=-w',
-        '-tags=android',
         '-target=android',
-        '-work',
-        `-o=${outputDir}`,
+        `-o=${outputDir}/tun2socks.aar`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
     case 'ios':
-      return spawnStream(
-        'gomobile',
-        '-bundleid=org.outline.tun2socks',
-        '-iosversion=13.1',
-        "-ldflags='-s -w'",
-        '-target=ios,iossimulator',
-        `-o=${outputDir}`,
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
-      );
     case 'macos':
+    case 'maccatalyst':
       process.env.MACOSX_DEPLOYMENT_TARGET = '10.14';
 
       return spawnStream(
         'gomobile',
+        'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        "-ldflags='-s -w'",
-        '-target=macos,maccatalyst',
-        `-o=${outputDir}`,
+        `-target=${platform}`,
+        `-o=${outputDir}/tun2socks.xcframework`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
@@ -72,19 +61,21 @@ export async function main(...parameters) {
       return spawnStream(
         'xgo',
         '-targets=windows/386',
-        "-ldflags='-s -w -X main.version=v1.16.11'",
-        `-dest=${outputDir}`,
+        `-dest=${outputDir}/tun2socks.exe`,
         '-pkg=outline/electron',
-        `${getRootDir()}/src/tun2socks`
+        'github.com/Jigsaw-Code/outline-client/src/tun2socks'
       );
     case 'linux':
       return spawnStream(
         'xgo',
         '-targets=linux/amd64',
-        "-ldflags='-s -w -X main.version=v1.16.11'",
-        `-dest=${outputDir}`,
+        `-dest=${outputDir}/tun2socks`,
         '-pkg=outline/electron',
-        `${getRootDir()}/src/tun2socks`
+        'github.com/Jigsaw-Code/outline-client/src/tun2socks'
       );
   }
+}
+
+if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+  await main(...process.argv.slice(2));
 }
