@@ -26,7 +26,21 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);
 
+  const binDir = `${getRootDir()}/build/bin`;
   const outputDir = `${getRootDir()}/build/${platform}`;
+
+  // install go tools locally
+  await spawnStream(
+    'go',
+    'build',
+    '-o',
+    binDir,
+    'golang.org/x/mobile/cmd/gomobile',
+    'golang.org/x/mobile/cmd/gobind',
+    'github.com/crazy-max/xgo'
+  );
+
+  process.env.PATH = `${binDir}:${process.env.PATH}`;
 
   switch (platform) {
     case 'android':

@@ -2,6 +2,8 @@
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
+You will need [Docker](https://www.docker.com/) installed to build the Electron clients.
+
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
 ```sh
