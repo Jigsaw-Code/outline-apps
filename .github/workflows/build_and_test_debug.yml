@@ -74,7 +74,7 @@ jobs:
       - name: Build Linux Client
         run: npm run action electron/build linux
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
 
   windows_debug_build:
     name: Windows Debug Build
@@ -108,7 +108,7 @@ jobs:
       - name: Build Windows Client
         run: npm run action electron/build windows
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -145,7 +145,7 @@ jobs:
       - name: Build MacOS Client
         run: npm run action cordova/build macos
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH}}
 
       - uses: codecov/codecov-action@v3
         with:
@@ -188,7 +188,7 @@ jobs:
       - name: Build iOS Client
         run: npm run action cordova/build ios
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
 
       - uses: codecov/codecov-action@v3
         with:
@@ -231,7 +231,7 @@ jobs:
       - name: Build Mac Catalyst Client
         run: npm run action cordova/build maccatalyst
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
 
       - uses: codecov/codecov-action@v3
         with:
@@ -276,4 +276,4 @@ jobs:
       - name: Build Android Client
         run: npm run action cordova/build android -- --verbose
         env:
-          PATH: ${{ github.workspace }}/bin:$PATH
+          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
