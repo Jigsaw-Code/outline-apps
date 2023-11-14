@@ -72,7 +72,7 @@ export async function main(...parameters) {
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
     case 'windows':
-      return spawnStream(
+      await spawnStream(
         'xgo',
         '-x',
         '-targets=windows/386',
@@ -80,14 +80,24 @@ export async function main(...parameters) {
         '-pkg=src/tun2socks/outline/electron',
         '.'
       );
+
+      return fs.rename(
+        `${outputDir}/tun2socks/github.com/Jigsaw-Code/outline-client-windows-386.exe`,
+        `${outputDir}/tun2socks.exe`
+      );
     case 'linux':
-      return spawnStream(
+      await spawnStream(
         'xgo',
         '-x',
         '-targets=linux/amd64',
         `-dest=${outputDir}/tun2socks`,
         '-pkg=src/tun2socks/outline/electron',
         '.'
+      );
+
+      return fs.rename(
+        `${outputDir}/tun2socks/github.com/Jigsaw-Code/outline-client-linux-amd64`,
+        `${outputDir}/tun2socks`
       );
   }
 }
