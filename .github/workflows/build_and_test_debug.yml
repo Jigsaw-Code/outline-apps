@@ -72,9 +72,7 @@ jobs:
         run: go build -o ./bin/ github.com/crazy-max/xgo
 
       - name: Build Linux Client
-        run: npm run action electron/build linux
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+        run: PATH="$(pwd)/bin:$PATH" npm run action electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
@@ -106,9 +104,7 @@ jobs:
         run: go build -o ./bin/ github.com/crazy-max/xgo
 
       - name: Build Windows Client
-        run: npm run action electron/build windows
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+        run: PATH="$(pwd)/bin:$PATH" npm run action electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -143,9 +139,7 @@ jobs:
         run: npm run action cordova/test macos
 
       - name: Build MacOS Client
-        run: npm run action cordova/build macos
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH}}
+        run: PATH="$(pwd)/bin:$PATH" npm run action cordova/build macos
 
       - uses: codecov/codecov-action@v3
         with:
@@ -186,9 +180,7 @@ jobs:
         run: npm run action cordova/test ios
 
       - name: Build iOS Client
-        run: npm run action cordova/build ios
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+        run: PATH="$(pwd)/bin:$PATH" npm run action cordova/build ios
 
       - uses: codecov/codecov-action@v3
         with:
@@ -229,9 +221,7 @@ jobs:
         run: npm run action cordova/test maccatalyst
 
       - name: Build Mac Catalyst Client
-        run: npm run action cordova/build maccatalyst
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+        run: PATH="$(pwd)/bin:$PATH" npm run action cordova/build maccatalyst
 
       - uses: codecov/codecov-action@v3
         with:
@@ -274,6 +264,4 @@ jobs:
         run: bash ./tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action cordova/build android -- --verbose
-        env:
-          PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+        run: PATH="$(pwd)/bin:$PATH" npm run action cordova/build android -- --verbose
