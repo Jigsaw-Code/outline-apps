@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
+import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
@@ -28,6 +29,8 @@ export async function main(...parameters) {
 
   const binDir = `${getRootDir()}/build/bin`;
   const outputDir = `${getRootDir()}/build/${platform}`;
+
+  await fs.mkdir(binDir, {recursive: true});
 
   // install go tools locally
   await spawnStream(
