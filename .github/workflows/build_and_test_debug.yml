@@ -68,11 +68,13 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: go install github.com/crazy-max/xgo
+      - name: Build Go Binaries
+        run: go build -o ./bin/ github.com/crazy-max/xgo
 
       - name: Build Linux Client
         run: npm run action electron/build linux
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
 
   windows_debug_build:
     name: Windows Debug Build
@@ -100,11 +102,13 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: go install github.com/crazy-max/xgo
+      - name: Build Go Binaries
+        run: go build -o ./bin/ github.com/crazy-max/xgo
 
       - name: Build Windows Client
         run: npm run action electron/build windows
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -132,16 +136,16 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile
-          gomobile init
+      - name: Build Go Binaries
+        run: go build -o ./bin/ golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test macos
 
       - name: Build MacOS Client
         run: npm run action cordova/build macos
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
 
       - uses: codecov/codecov-action@v3
         with:
@@ -175,16 +179,16 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile
-          gomobile init
+      - name: Build Go Binaries
+        run: go build -o ./bin/ golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
 
       - name: Build iOS Client
         run: npm run action cordova/build ios
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
 
       - uses: codecov/codecov-action@v3
         with:
@@ -218,16 +222,16 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile
-          gomobile init
+      - name: Build Go Binaries
+        run: go build -o ./bin/ golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test maccatalyst
 
       - name: Build Mac Catalyst Client
         run: npm run action cordova/build maccatalyst
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
 
       - uses: codecov/codecov-action@v3
         with:
@@ -258,10 +262,8 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Install Go Binary
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile
-          gomobile init
+      - name: Build Go Binaries
+        run: go build -o ./bin/ golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 
       - name: Install Java
         uses: actions/setup-java@v1.4.3
@@ -273,3 +275,5 @@ jobs:
 
       - name: Build Android Client
         run: npm run action cordova/build android -- --verbose
+        env:
+          PATH: ${{ github.workspace }}/bin:$PATH
