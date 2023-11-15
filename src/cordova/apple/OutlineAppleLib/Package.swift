@@ -48,7 +48,6 @@ let package = Package(
         .target(
             name: "OutlineAppKitBridge",
             dependencies: [
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlineNotification",
             ]
         ),

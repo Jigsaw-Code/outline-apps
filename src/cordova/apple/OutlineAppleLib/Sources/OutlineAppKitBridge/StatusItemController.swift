@@ -14,7 +14,6 @@
 
 #if os(macOS)
     import AppKit
-    import CocoaLumberjackSwift
     import OutlineNotification
 
     var StatusItem = NSStatusItem()
@@ -51,7 +50,7 @@
         override init() {
             super.init()
 
-            DDLogInfo("[StatusItemController] Creating status menu")
+            NSLog("[StatusItemController] Creating status menu")
             StatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
             setStatus(status: .disconnected)
 
@@ -78,7 +77,7 @@
         }
 
         @objc func openApplication(_: AnyObject?) {
-            DDLogInfo("[StatusItemController] Opening application")
+            NSLog("[StatusItemController] Opening application")
             NSApp.activate(ignoringOtherApps: true)
             guard let uiWindow = getUiWindow() else {
                 return
@@ -87,7 +86,7 @@
         }
 
         @objc func closeApplication(_: AnyObject?) {
-            DDLogInfo("[StatusItemController] Closing application")
+            NSLog("[StatusItemController] Closing application")
             NotificationCenter.default.post(name: .kAppQuit, object: nil)
             NSApplication.shared.terminate(self)
         }
