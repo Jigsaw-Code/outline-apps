@@ -16,7 +16,6 @@
     import CocoaLumberjack
     import CocoaLumberjackSwift
     import Foundation
-    import OutlineAppKitBridge
     import OutlineNotification
     import ServiceManagement
 
@@ -25,7 +24,7 @@
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
-            let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
+            let appKitBridge = createAppKitBridge()
 
             // Configure the window.
             let scenes = UIApplication.shared.connectedScenes
