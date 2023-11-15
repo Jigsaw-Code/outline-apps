@@ -45,12 +45,7 @@ let package = Package(
                 "OutlineNotification",
             ]
         ),
-        .target(
-            name: "OutlineAppKitBridge",
-            dependencies: [
-                "OutlineNotification",
-            ]
-        ),
+        .target(name: "OutlineAppKitBridge"),
         .target(
             name: "PacketTunnelProvider",
             dependencies: [

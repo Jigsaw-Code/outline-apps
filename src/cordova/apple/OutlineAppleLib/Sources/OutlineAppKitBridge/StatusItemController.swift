@@ -14,7 +14,6 @@
 
 #if os(macOS)
     import AppKit
-    import OutlineNotification
 
     var StatusItem = NSStatusItem()
 
@@ -87,7 +86,7 @@
 
         @objc func closeApplication(_: AnyObject?) {
             NSLog("[StatusItemController] Closing application")
-            NotificationCenter.default.post(name: .kAppQuit, object: nil)
+            NotificationCenter.default.post(name: Notification.Name("appQuit"), object: nil)
             NSApplication.shared.terminate(self)
         }
     }
