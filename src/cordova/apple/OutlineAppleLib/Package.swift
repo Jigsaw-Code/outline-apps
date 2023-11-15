@@ -40,12 +40,18 @@ let package = Package(
         .target(
             name: "OutlineCatalystApp",
             dependencies: [
-                "OutlineAppKitBridge",
+                "OutlineAppKitBridgeProtocol",
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlineNotification",
             ]
         ),
-        .target(name: "OutlineAppKitBridge"),
+        .target(name: "OutlineAppKitBridgeProtocol"),
+        .target(
+            name: "OutlineAppKitBridge",
+            dependencies: [
+                "OutlineAppKitBridgeProtocol"
+            ]
+        ),
         .target(
             name: "PacketTunnelProvider",
             dependencies: [

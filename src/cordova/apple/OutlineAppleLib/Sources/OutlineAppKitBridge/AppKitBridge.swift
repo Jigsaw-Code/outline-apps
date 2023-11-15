@@ -14,6 +14,7 @@
 
 #if os(macOS)
     import AppKit
+    import OutlineAppKitBridgeProtocol
     import ServiceManagement
 
     public class AppKitBridge: NSObject, AppKitBridgeProtocol {

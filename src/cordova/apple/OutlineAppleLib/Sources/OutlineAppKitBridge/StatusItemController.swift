@@ -14,6 +14,7 @@
 
 #if os(macOS)
     import AppKit
+    import OutlineAppKitBridgeProtocol
 
     var StatusItem = NSStatusItem()
 

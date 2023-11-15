@@ -14,7 +14,7 @@
 
 import CocoaLumberjackSwift
 import Foundation
-import OutlineAppKitBridge
+import OutlineAppKitBridgeProtocol
 
 enum BridgeBundle {
     static let fileName = "AppKitBridge.bundle"
