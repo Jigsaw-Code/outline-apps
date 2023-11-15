@@ -22,16 +22,11 @@ enum BridgeBundle {
 }
 
 public func createAppKitBridge() -> AppKitBridgeProtocol {
-    guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName) else {
-        preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
-    }
-    guard let bundle = Bundle(url: bundleURL) else {
-        preconditionFailure("[AppKitBundleLoader] \(BridgeBundle.fileName) should exist")
+    guard let bundleURL = Bundle.main.builtInPlugInsURL?.appendingPathComponent(BridgeBundle.fileName),
+          let bundle = Bundle(url: bundleURL),
+          let bridgeClass = bundle.classNamed(BridgeBundle.className) as? AppKitBridgeProtocol.Type else {
+        preconditionFailure("[AppKitBundleLoader] Failed to load AppKit bundle")
     }
     DDLogInfo("[AppKitBundleLoader] AppKit bundle loaded successfully")
-    let className = BridgeBundle.className
-    guard let appKitBridgeClass = bundle.classNamed(className) as? AppKitBridgeProtocol.Type else {
-        preconditionFailure("[AppKitBundleLoader] Cannot initialise \(className) from \(BridgeBundle.fileName)")
-    }
-    return appKitBridgeClass.init()
+    return bridgeClass.init()
 }
