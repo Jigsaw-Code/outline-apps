@@ -34,8 +34,8 @@ export async function main(...parameters) {
   const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
   await runAction('www/build', ...parameters);
-  await runAction('cordova/setup', ...parameters);
   await runAction('tun2socks/build', ...parameters);
+  await runAction('cordova/setup', ...parameters);
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));

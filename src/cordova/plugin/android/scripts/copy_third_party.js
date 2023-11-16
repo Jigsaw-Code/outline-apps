@@ -18,9 +18,9 @@ const fs = require('fs/promises');
 const path = require('node:path');
 
 const ANDROID_LIBS_FOLDER_PATH = path.join('plugins', 'cordova-plugin-outline', 'android', 'libs');
-const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('third_party', 'outline-go-tun2socks', 'android');
+const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('build', 'android');
 
-module.exports = async function(context) {
+module.exports = async function () {
   console.log('Copying Android third party libraries...');
   await fs.mkdir(ANDROID_LIBS_FOLDER_PATH, {recursive: true});
   await fs.copyFile(

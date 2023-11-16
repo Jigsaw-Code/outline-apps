@@ -47,14 +47,22 @@ export const spawnStream = (command, ...parameters) =>
       if (code === 0) {
         return resolve(stdout.join(''));
       }
+
       console.error(
         chalk.red(
           `ERROR(spawn_stream): ${chalk.underline(
             [command, ...parameters].join(' ')
-          )} failed with exit code ${chalk.bold(code)}. Printing stderr:`
+          )} failed with exit code ${chalk.bold(code)}.}`
         )
       );
-      stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
+
+      if (!(stderr.length && stderr.every(line => line))) {
+        console.error(chalk.red('No error output was given... Please fix this :('));
+      } else {
+        console.error(chalk.red('Printing stderr:'));
+        stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
+      }
+
       return reject(code);
     });
   });
