@@ -83,7 +83,7 @@ export async function main(...parameters) {
 
       return fs.rename(
         `${outputDir}/tun2socks/github.com/Jigsaw-Code/outline-client-windows-386.exe`,
-        `${outputDir}/tun2socks.exe`
+        `${outputDir}/tun2socks/tun2socks.exe`
       );
     case 'linux':
       await spawnStream(
@@ -97,7 +97,7 @@ export async function main(...parameters) {
 
       return fs.rename(
         `${outputDir}/tun2socks/github.com/Jigsaw-Code/outline-client-linux-amd64`,
-        `${outputDir}/tun2socks`
+        `${outputDir}/tun2socks/tun2socks`
       );
   }
 }
