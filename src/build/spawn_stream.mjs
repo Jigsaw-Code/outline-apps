@@ -57,9 +57,9 @@ export const spawnStream = (command, ...parameters) =>
       );
 
       if (!(stderr.length && stderr.every(line => line))) {
-        console.error(chalk.red('No error output was given... Please fix this :('));
+        console.error(chalk.bgRedBright('No error output was given... Please fix this :('));
       } else {
-        console.error(chalk.red('Printing stderr:'));
+        console.error(chalk.bgRedBright('Printing stderr:'));
         stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
       }
 

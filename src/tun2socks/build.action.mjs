@@ -95,6 +95,8 @@ export async function main(...parameters) {
         '.'
       );
 
+      await spawnStream('chown', '-R', `${process.getuid()}:${process.getgid()}`, `${outputDir}/tun2socks`);
+
       return fs.rename(
         `${outputDir}/tun2socks/github.com/Jigsaw-Code/outline-client-linux-amd64`,
         `${outputDir}/tun2socks/tun2socks`
