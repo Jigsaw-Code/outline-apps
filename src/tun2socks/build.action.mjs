@@ -48,6 +48,8 @@ export async function main(...parameters) {
 
   switch (platform) {
     case 'android':
+      process.env.GOOS = 'android';
+
       return spawnStream(
         'gomobile',
         'bind',
