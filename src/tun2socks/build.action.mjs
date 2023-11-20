@@ -14,7 +14,6 @@
 
 import url from 'url';
 import path from 'path';
-import os from 'os';
 import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -46,7 +45,7 @@ export async function main(...parameters) {
     'github.com/crazy-max/xgo'
   );
 
-  process.env.PATH = os.platform() === 'win32' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
+  // process.env.PATH = os.platform() === 'win32' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
 
   switch (platform) {
     case 'android':
