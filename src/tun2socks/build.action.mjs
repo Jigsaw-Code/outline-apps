@@ -45,7 +45,7 @@ export async function main(...parameters) {
     'github.com/crazy-max/xgo'
   );
 
-  // process.env.PATH = os.platform() === 'win32' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
+  process.env.PATH = `${binDir}:${process.env.PATH}`;
 
   switch (platform) {
     case 'android':
