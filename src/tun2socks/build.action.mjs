@@ -32,6 +32,7 @@ export async function main(...parameters) {
   const outputDir = path.join(getRootDir(), 'build', platform);
 
   await fs.mkdir(binDir, {recursive: true});
+  await fs.mkdir(outputDir, {recursive: true});
 
   // install go tools locally
   await spawnStream(
@@ -48,8 +49,6 @@ export async function main(...parameters) {
 
   switch (platform) {
     case 'android':
-      process.env.GOOS = 'android';
-
       return spawnStream(
         'gomobile',
         'bind',
@@ -75,9 +74,6 @@ export async function main(...parameters) {
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
     case 'windows':
-      process.env.GOOS = 'linux';
-      process.env.GOARCH = 'amd64';
-
       return spawnStream(
         'xgo',
         '-targets=windows/386',

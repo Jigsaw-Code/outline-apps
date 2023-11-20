@@ -73,7 +73,7 @@ jobs:
 
   windows_debug_build:
     name: Windows Debug Build
-    runs-on: windows-2019
+    runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
     steps:
@@ -216,7 +216,7 @@ jobs:
 
   android_debug_build:
     name: Android Debug Build
-    runs-on: ubuntu-20.04
+    runs-on: macos-13
     timeout-minutes: 10
     needs: web_test
     steps:
@@ -243,7 +243,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./tools/build/setup_linux_android.sh
+        run: bash ./tools/build/setup_macos_android.sh
 
       - name: Build Android Client
         run: npm run action cordova/build android -- --verbose
