@@ -75,6 +75,9 @@ export async function main(...parameters) {
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
     case 'windows':
+      process.env.GOOS = 'linux';
+      process.env.GOARCH = 'amd64';
+
       return spawnStream(
         'xgo',
         '-targets=windows/386',
