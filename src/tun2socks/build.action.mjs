@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
+import path from 'path';
 import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -27,8 +28,8 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 export async function main(...parameters) {
   const {platform} = getBuildParameters(parameters);
 
-  const binDir = `${getRootDir()}/build/bin`;
-  const outputDir = `${getRootDir()}/build/${platform}`;
+  const binDir = path.join(getRootDir(), 'build', 'bin');
+  const outputDir = path.join(getRootDir(), 'build', platform);
 
   await fs.mkdir(binDir, {recursive: true});
 
@@ -43,7 +44,7 @@ export async function main(...parameters) {
     'github.com/crazy-max/xgo'
   );
 
-  process.env.PATH = `${binDir}:${process.env.PATH}`;
+  process.env.PATH = platform === 'windows' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
 
   switch (platform) {
     case 'android':
