@@ -9,15 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
-        ),
-        .library(
-            name: "OutlineLauncher",
-            targets: ["OutlineLauncher"]
-        ),
-        .library(
-            name: "OutlineAppKitBridge",
-            targets: ["OutlineAppKitBridge"]
+            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineNotification"]
         ),
         .library(
             name: "PacketTunnelProvider",
@@ -29,29 +21,6 @@ let package = Package(
         .package(url: "https://github.com/getsentry/sentry-cocoa", from: "7.31.3"),
     ],
     targets: [
-        .target(
-            name: "OutlineLauncher",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "OutlineCatalystApp",
-            ]
-        ),
-        .target(
-            name: "OutlineCatalystApp",
-            dependencies: [
-                "OutlineAppKitBridgeProtocol",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "OutlineNotification",
-            ]
-        ),
-        .target(name: "OutlineAppKitBridgeProtocol"),
-        .target(
-            name: "OutlineAppKitBridge",
-            dependencies: [
-                "OutlineAppKitBridgeProtocol"
-            ]
-        ),
         .target(
             name: "PacketTunnelProvider",
             dependencies: [

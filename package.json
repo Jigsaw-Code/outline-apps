@@ -163,8 +163,8 @@
     "platforms": [
       "browser",
       "android",
-      "ios",
-      "osx"
+      "osx",
+      "ios"
     ]
   },
   "workspaces": [

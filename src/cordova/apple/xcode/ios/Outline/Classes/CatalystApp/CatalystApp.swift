@@ -13,18 +13,32 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
+
     import CocoaLumberjack
     import CocoaLumberjackSwift
     import Foundation
     import OutlineNotification
     import ServiceManagement
 
+    @objc
+    public enum ConnectionStatus: Int {
+        case unknown
+        case connected
+        case disconnected
+    }
+
+    extension NSObject {
+        @objc public func terminate() {}
+        @objc public func setConnectionStatus(_ status: ConnectionStatus) {}
+    }
+
     @objcMembers
     public class OutlineCatalystApp: NSObject {
+
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
-            let appKitBridge = createAppKitBridge()
+            let appKitController = loadAppKitIntegrationFramework()
 
             // Configure the window.
             let scenes = UIApplication.shared.connectedScenes
@@ -38,23 +52,44 @@
 
             // Initiate the connection status menu in unknown state by default.
             // TODO: Check status in case the the VPN is already running.
-            appKitBridge.setConnectionStatus(.unknown)
+            appKitController.setConnectionStatus(.unknown)
 
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitBridge.setConnectionStatus(.connected)
+                appKitController.setConnectionStatus(.connected)
             }
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitBridge.setConnectionStatus(.disconnected)
+                appKitController.setConnectionStatus(.disconnected)
             }
 
-            // Enable app launcher to start on boot.
-            appKitBridge.setAppLauncherEnabled(true)
+//            // Enable app launcher to start on boot.
+//            appKitController.setAppLauncherEnabled(true)
         }
     }
+
+    func loadAppKitIntegrationFramework() -> NSObject {
+        if let frameworksPath = Bundle.main.privateFrameworksPath {
+            let bundlePath = "\(frameworksPath)/AppKitIntegration.framework"
+            do {
+                try Bundle(path: bundlePath)?.loadAndReturnError()
+
+                let bundle = Bundle(path: bundlePath)!
+                NSLog("[AppKitBundleLoader] AppKit bundle loaded successfully")
+
+                if let appKitControllerClass = bundle.classNamed("AppKitIntegration.AppKitController") as? NSObject.Type {
+                    return appKitControllerClass.init()
+                }
+            }
+            catch {
+                NSLog("[AppKitBundleLoader] Error loading: \(error)")
+            }
+        }
+        preconditionFailure("[AppKitBundleLoader] Unable to load")
+    }
+
 #endif

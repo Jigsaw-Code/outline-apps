@@ -12,17 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+#import <Foundation/Foundation.h>
 
-@objc
-public protocol AppKitBridgeProtocol: NSObjectProtocol {
-    init()
+//! Project version number for AppKitIntegration.
+FOUNDATION_EXPORT double AppKitIntegrationVersionNumber;
 
-    func terminate()
-
-    func setConnectionStatus(_ status: ConnectionStatus)
-
-    func setAppLauncherEnabled(_ isEnabled: Bool)
-
-    func loadMainApp(_ launcherBundleId: String)
-}
+//! Project version string for AppKitIntegration.
+FOUNDATION_EXPORT const unsigned char AppKitIntegrationVersionString[];
