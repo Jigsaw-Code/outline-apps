@@ -20,18 +20,6 @@
     import OutlineNotification
     import ServiceManagement
 
-    @objc
-    public enum ConnectionStatus: Int {
-        case unknown
-        case connected
-        case disconnected
-    }
-
-    extension NSObject {
-        @objc public func terminate() {}
-        @objc public func setConnectionStatus(_ status: ConnectionStatus) {}
-    }
-
     @objcMembers
     public class OutlineCatalystApp: NSObject {
 
@@ -52,23 +40,23 @@
 
             // Initiate the connection status menu in unknown state by default.
             // TODO: Check status in case the the VPN is already running.
-            appKitController.setConnectionStatus(.unknown)
+            appKitController._AppKitBridge_setConnectionStatus(.unknown)
 
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitController.setConnectionStatus(.connected)
+                appKitController._AppKitBridge_setConnectionStatus(.connected)
             }
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitController.setConnectionStatus(.disconnected)
+                appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
 
 //            // Enable app launcher to start on boot.
-//            appKitController.setAppLauncherEnabled(true)
+//            appKitController._AppKitBridge_setAppLauncherEnabled(true)
         }
     }
 

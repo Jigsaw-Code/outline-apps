@@ -26,12 +26,12 @@ class AppKitController: NSObject {
     }
 
     /// Terminates the application.
-    @objc public func terminate() {
+    @objc public func _AppKitBridge_terminate() {
         NSApp.terminate(self)
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.
-    @objc public func setConnectionStatus(_ status: ConnectionStatus) {
+    @objc public func _AppKitBridge_setConnectionStatus(_ status: ConnectionStatus) {
         if statusItemController == nil {
             NSLog("[AppKitController] No status item controller found. Creating one now.")
             statusItemController = StatusItemController()
@@ -40,7 +40,7 @@ class AppKitController: NSObject {
     }
 
     /// Enables or disables the embedded app launcher as a login item.
-    @objc public func setAppLauncherEnabled(_ isEnabled: Bool) {
+    @objc public func _AppKitBridge_setAppLauncherEnabled(_ isEnabled: Bool) {
         guard let launcherBundleId = getLauncherBundleId() else {
             return NSLog("[AppKitController] Unable to set launcher for missing bundle ID.")
         }
@@ -53,7 +53,7 @@ class AppKitController: NSObject {
     }
 
     /// Loads the main application from a given launcher bundle.
-    @objc public func loadMainApp(_ launcherBundleId: String) {
+    @objc public func _AppKitBridge_loadMainApp(_ launcherBundleId: String) {
         // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
         let mainAppBundleId = getMainBundleId(launcherBundleId)
         NSLog("[AppKitController] Loading main app \(mainAppBundleId) from launcher \(launcherBundleId).")
