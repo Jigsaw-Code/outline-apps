@@ -58,7 +58,6 @@ export async function main(...parameters) {
         'gomobile',
         'bind',
         '-androidapi=33',
-        "-ldflags='-s -w'",
         `-o=${outputDir}/tun2socks.aar`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
@@ -73,7 +72,6 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        "-ldflags='-s -w'",
         `-target=${targetPlatform}`,
         `-o=${outputDir}/tun2socks.xcframework`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
