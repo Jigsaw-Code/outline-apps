@@ -58,8 +58,8 @@ export async function main(...parameters) {
         'gomobile',
         'bind',
         '-androidapi=33',
+        '-target=android',
         `-o=${outputDir}/tun2socks.aar`,
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/tunnel',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
