@@ -18,6 +18,7 @@
 #import "Outline-Swift.h"
 
 #if TARGET_OS_MACCATALYST
+@import OutlineCatalystApp;
 @import ServiceManagement;
 #endif
 

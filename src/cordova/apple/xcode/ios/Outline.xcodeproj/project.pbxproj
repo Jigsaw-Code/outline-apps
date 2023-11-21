@@ -35,7 +35,6 @@
 		A2AC1A4F2B082197004E13CB /* AppKitController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC1A4E2B082197004E13CB /* AppKitController.swift */; };
 		A2AC1A9C2B082526004E13CB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A582B082526004E13CB /* Localizable.strings */; };
 		A2AC1A9D2B082526004E13CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A9B2B082526004E13CB /* Assets.xcassets */; };
-		A2C58D172B069EE7008222FC /* CatalystApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C58D162B069EE7008222FC /* CatalystApp.swift */; };
 		A2C58D262B06A251008222FC /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A2C58D252B06A251008222FC /* CocoaLumberjack */; };
 		A2C58D282B06A251008222FC /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A2C58D272B06A251008222FC /* CocoaLumberjackSwift */; };
 		FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
@@ -238,7 +237,6 @@
 		A2AC1A992B082526004E13CB /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A2AC1A9A2B082526004E13CB /* ca */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ca; path = ca.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A2AC1A9B2B082526004E13CB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A2C58D162B069EE7008222FC /* CatalystApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalystApp.swift; sourceTree = "<group>"; };
 		AAFAFA54943F490EAF4CD5BC /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
@@ -295,7 +293,6 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				A2C58D152B069ECB008222FC /* CatalystApp */,
 				A2C58D0B2B069CC8008222FC /* AppKitBridge */,
 				302D95EE14D2391D003F00A1 /* MainViewController.h */,
 				302D95EF14D2391D003F00A1 /* MainViewController.m */,
@@ -468,14 +465,6 @@
 				A272490D2B0D20530018A598 /* AppKitIntegration.h */,
 			);
 			path = AppKitBridge;
-			sourceTree = "<group>";
-		};
-		A2C58D152B069ECB008222FC /* CatalystApp */ = {
-			isa = PBXGroup;
-			children = (
-				A2C58D162B069EE7008222FC /* CatalystApp.swift */,
-			);
-			path = CatalystApp;
 			sourceTree = "<group>";
 		};
 		A2C58D222B06A1F9008222FC /* Launcher */ = {
@@ -801,7 +790,6 @@
 			files = (
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
-				A2C58D172B069EE7008222FC /* CatalystApp.swift in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */,
 				2A617D29B96942E58B082FAC /* OutlinePlugin.swift in Sources */,
