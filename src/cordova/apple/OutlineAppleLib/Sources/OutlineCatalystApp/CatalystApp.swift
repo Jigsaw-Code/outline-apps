@@ -55,8 +55,8 @@
                 appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
 
-//            // Enable app launcher to start on boot.
-//            appKitController._AppKitBridge_setAppLauncherEnabled(true)
+           // Enable app launcher to start on boot.
+           appKitController._AppKitBridge_setAppLauncherEnabled(true)
         }
     }
 
@@ -67,17 +67,17 @@
                 try Bundle(path: bundlePath)?.loadAndReturnError()
 
                 let bundle = Bundle(path: bundlePath)!
-                NSLog("[AppKitBundleLoader] AppKit bundle loaded successfully")
+                NSLog("[CatalystApp] AppKit bundle loaded successfully")
 
                 if let appKitControllerClass = bundle.classNamed("AppKitIntegration.AppKitController") as? NSObject.Type {
                     return appKitControllerClass.init()
                 }
             }
             catch {
-                NSLog("[AppKitBundleLoader] Error loading: \(error)")
+                NSLog("[CatalystApp] Error loading: \(error)")
             }
         }
-        preconditionFailure("[AppKitBundleLoader] Unable to load")
+        preconditionFailure("[CatalystApp] Unable to load")
     }
 
 #endif
