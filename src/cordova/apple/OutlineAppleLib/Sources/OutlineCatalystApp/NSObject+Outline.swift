@@ -24,4 +24,6 @@ public enum ConnectionStatus: Int {
 public extension NSObject {
     @objc func _AppKitBridge_terminate() {}
     @objc func _AppKitBridge_setConnectionStatus(_ status: ConnectionStatus) {}
+    @objc func _AppKitBridge_setAppLauncherEnabled(_ isEnabled: Bool) {}
+    @objc func _AppKitBridge_loadMainApp(_ launcherBundleId: String) {}
 }

@@ -60,7 +60,7 @@
         }
     }
 
-    func loadAppKitIntegrationFramework() -> NSObject {
+    public func loadAppKitIntegrationFramework() -> NSObject {
         if let frameworksPath = Bundle.main.privateFrameworksPath {
             let bundlePath = "\(frameworksPath)/AppKitIntegration.framework"
             do {

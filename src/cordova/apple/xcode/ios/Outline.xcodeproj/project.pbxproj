@@ -21,9 +21,12 @@
 		52E783062A5880CF00355E64 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 52E783052A5880CF00355E64 /* PacketTunnelProvider */; };
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		A246B7D22B0700BC00ECACD5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A246B7D12B0700BC00ECACD5 /* AppDelegate.swift */; };
 		A246B7E52B07AADD00ECACD5 /* AppKitIntegration.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A25FB7DC2B0D4420009B6B5F /* AppKitIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A272490D2B0D20530018A598 /* AppKitIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A25FB7E92B0D7631009B6B5F /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A25FB7EB2B0D7772009B6B5F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */; };
+		A25FB7ED2B0D7772009B6B5F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */; };
+		A25FB7F42B0D7863009B6B5F /* OutlineLauncher in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7F32B0D7863009B6B5F /* OutlineLauncher */; };
 		A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A271D42C2A708240009981B2 /* AppDelegate+Outline.m */; };
 		A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4332A70829D009981B2 /* OutlineAppleLib */; };
 		A272490F2B0D24200018A598 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC1A502B0821A7004E13CB /* StatusItemController.swift */; };
@@ -35,8 +38,6 @@
 		A2AC1A4F2B082197004E13CB /* AppKitController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC1A4E2B082197004E13CB /* AppKitController.swift */; };
 		A2AC1A9C2B082526004E13CB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A582B082526004E13CB /* Localizable.strings */; };
 		A2AC1A9D2B082526004E13CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A9B2B082526004E13CB /* Assets.xcassets */; };
-		A2C58D262B06A251008222FC /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = A2C58D252B06A251008222FC /* CocoaLumberjack */; };
-		A2C58D282B06A251008222FC /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A2C58D272B06A251008222FC /* CocoaLumberjackSwift */; };
 		FC8C310B1FAA814A004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 		FC8C310C1FAA88FB004262BE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC8C310A1FAA814A004262BE /* NetworkExtension.framework */; };
 /* End PBXBuildFile section */
@@ -109,6 +110,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A25FB7E82B0D75CD009B6B5F /* Copy OutlineLauncher */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				A25FB7E92B0D7631009B6B5F /* OutlineLauncher.app in Copy OutlineLauncher */,
+			);
+			name = "Copy OutlineLauncher";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A27B364E2B07C3F400004A08 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -159,7 +171,6 @@
 		91E45572BB494E9299D2DD41 /* CDVClipboard.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVClipboard.m; path = "cordova-plugin-clipboard/CDVClipboard.m"; sourceTree = "<group>"; };
 		936C2951B7544BC8A20B6746 /* CDVClipboard.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVClipboard.h; path = "cordova-plugin-clipboard/CDVClipboard.h"; sourceTree = "<group>"; };
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		A246B7D12B0700BC00ECACD5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppKitIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A246B7DF2B07AACF00ECACD5 /* AppKitIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppKitIntegration.h; sourceTree = "<group>"; };
 		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -282,8 +293,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A2C58D262B06A251008222FC /* CocoaLumberjack in Frameworks */,
-				A2C58D282B06A251008222FC /* CocoaLumberjackSwift in Frameworks */,
+				A25FB7EB2B0D7772009B6B5F /* CocoaLumberjack in Frameworks */,
+				A25FB7ED2B0D7772009B6B5F /* CocoaLumberjackSwift in Frameworks */,
+				A25FB7F42B0D7863009B6B5F /* OutlineLauncher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,7 +332,6 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				A2C58D222B06A1F9008222FC /* Launcher */,
 				F6D33648296CF46200AFD613 /* Packages */,
 				3B0347431F212E6500C8EF1F /* Outline.entitlements */,
 				EB87FDF41871DAF40020F90C /* config.xml */,
@@ -467,14 +478,6 @@
 			path = AppKitBridge;
 			sourceTree = "<group>";
 		};
-		A2C58D222B06A1F9008222FC /* Launcher */ = {
-			isa = PBXGroup;
-			children = (
-				A246B7D12B0700BC00ECACD5 /* AppDelegate.swift */,
-			);
-			path = Launcher;
-			sourceTree = "<group>";
-		};
 		EB87FDF11871DA420020F90C /* Staging */ = {
 			isa = PBXGroup;
 			children = (
@@ -517,6 +520,7 @@
 				3B0347571F212F0200C8EF1F /* Embed App Extensions */,
 				A246B7E82B07AADD00ECACD5 /* Embed Frameworks */,
 				FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */,
+				A25FB7E82B0D75CD009B6B5F /* Copy OutlineLauncher */,
 			);
 			buildRules = (
 			);
@@ -590,8 +594,9 @@
 			);
 			name = OutlineLauncher;
 			packageProductDependencies = (
-				A2C58D252B06A251008222FC /* CocoaLumberjack */,
-				A2C58D272B06A251008222FC /* CocoaLumberjackSwift */,
+				A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */,
+				A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */,
+				A25FB7F32B0D7863009B6B5F /* OutlineLauncher */,
 			);
 			productName = OutlineLauncher;
 			productReference = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */;
@@ -628,6 +633,7 @@
 					};
 					A26D262C2A1C41B1009838E0 = {
 						CreatedOnToolsVersion = 14.3;
+						LastSwiftMigration = 1500;
 					};
 				};
 			};
@@ -818,7 +824,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A246B7D22B0700BC00ECACD5 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1275,6 +1280,7 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1334,6 +1340,7 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1565,6 +1572,20 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = PacketTunnelProvider;
 		};
+		A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		A25FB7F32B0D7863009B6B5F /* OutlineLauncher */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineLauncher;
+		};
 		A271D4332A70829D009981B2 /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
@@ -1575,16 +1596,6 @@
 			productName = CocoaLumberjack;
 		};
 		A27B36522B07C51500004A08 /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
-		A2C58D252B06A251008222FC /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		A2C58D272B06A251008222FC /* CocoaLumberjackSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
