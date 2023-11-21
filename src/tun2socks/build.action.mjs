@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import url from 'url';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
@@ -26,10 +27,10 @@ import {getRootDir} from '../build/get_root_dir.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform} = getBuildParameters(parameters);
+  const {platform: targetPlatform} = getBuildParameters(parameters);
 
   const binDir = path.join(getRootDir(), 'build', 'bin');
-  const outputDir = path.join(getRootDir(), 'build', platform);
+  const outputDir = path.join(getRootDir(), 'build', targetPlatform);
 
   await fs.mkdir(binDir, {recursive: true});
   await fs.mkdir(outputDir, {recursive: true});
@@ -45,10 +46,14 @@ export async function main(...parameters) {
     'github.com/crazy-max/xgo'
   );
 
-  process.env.PATH = `${binDir}:${process.env.PATH}`;
+  const hostPlatform = os.platform();
 
-  switch (platform) {
-    case 'android':
+  process.env.PATH = hostPlatform === 'win32' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
+
+  switch (targetPlatform + hostPlatform) {
+    case 'android' + 'darwin':
+    case 'android' + 'linux':
+    case 'android' + 'win32':
       return spawnStream(
         'gomobile',
         'bind',
@@ -58,9 +63,9 @@ export async function main(...parameters) {
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
-    case 'ios':
-    case 'macos':
-    case 'maccatalyst':
+    case 'ios' + 'darwin':
+    case 'macos' + 'darwin':
+    case 'maccatalyst' + 'darwin':
       process.env.MACOSX_DEPLOYMENT_TARGET = '10.14';
 
       return spawnStream(
@@ -68,12 +73,13 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        `-target=${platform}`,
+        `-target=${targetPlatform}`,
         `-o=${outputDir}/tun2socks.xcframework`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
-    case 'windows':
+    case 'windows' + 'linux':
+    case 'windows' + 'darwin':
       return spawnStream(
         'xgo',
         '-targets=windows/386',
@@ -82,7 +88,8 @@ export async function main(...parameters) {
         '-out=tun2socks.exe',
         '.'
       );
-    case 'linux':
+    case 'linux' + 'win32':
+    case 'linux' + 'darwin':
       return spawnStream(
         'xgo',
         '-targets=linux/amd64',
@@ -91,6 +98,17 @@ export async function main(...parameters) {
         '-out=tun2socks',
         '.'
       );
+    case 'windows' + 'win32':
+    case 'linux' + 'linux':
+      return spawnStream(
+        'go',
+        'build',
+        '-o',
+        `${outputDir}/tun2socks`,
+        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron'
+      );
+    default:
+      throw new Error(`Unsupported cross-compilation: ${targetPlatform} on ${hostPlatform}`);
   }
 }
 
