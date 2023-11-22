@@ -13,10 +13,10 @@
 // limitations under the License.
 
 #if targetEnvironment(macCatalyst)
+
     import CocoaLumberjack
     import CocoaLumberjackSwift
     import Foundation
-    import OutlineAppKitBridge
     import OutlineNotification
     import ServiceManagement
 
@@ -25,7 +25,7 @@
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
-            let appKitBridge: AppKitBridgeProtocol = createAppKitBridge()
+            let appKitController = loadAppKitIntegrationFramework()
 
             // Configure the window.
             let scenes = UIApplication.shared.connectedScenes
@@ -39,23 +39,43 @@
 
             // Initiate the connection status menu in unknown state by default.
             // TODO: Check status in case the the VPN is already running.
-            appKitBridge.setConnectionStatus(.unknown)
+            appKitController._AppKitBridge_setConnectionStatus(.unknown)
 
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnConnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitBridge.setConnectionStatus(.connected)
+                appKitController._AppKitBridge_setConnectionStatus(.connected)
             }
             NotificationCenter.default.addObserver(forName: NSNotification.kVpnDisconnected,
                                                    object: nil,
                                                    queue: nil)
             { _ in
-                appKitBridge.setConnectionStatus(.disconnected)
+                appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
 
             // Enable app launcher to start on boot.
-            appKitBridge.setAppLauncherEnabled(true)
+            appKitController._AppKitBridge_setAppLauncherEnabled(true)
         }
     }
+
+    public func loadAppKitIntegrationFramework() -> NSObject {
+        if let frameworksPath = Bundle.main.privateFrameworksPath {
+            let bundlePath = "\(frameworksPath)/AppKitIntegration.framework"
+            do {
+                try Bundle(path: bundlePath)?.loadAndReturnError()
+
+                let bundle = Bundle(path: bundlePath)!
+                DDLogInfo("[CatalystApp] AppKit bundle loaded successfully")
+
+                if let appKitControllerClass = bundle.classNamed("AppKitIntegration.AppKitController") as? NSObject.Type {
+                    return appKitControllerClass.init()
+                }
+            } catch {
+                DDLogInfo("[CatalystApp] Error loading: \(error)")
+            }
+        }
+        preconditionFailure("[CatalystApp] Unable to load")
+    }
+
 #endif

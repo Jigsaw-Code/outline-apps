@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@objc public enum ConnectionStatus: Int {
-    case unknown
-    case connected
-    case disconnected
-}
+#import <Foundation/Foundation.h>
+
+//! Project version number for AppKitIntegration.
+FOUNDATION_EXPORT double AppKitIntegrationVersionNumber;
+
+//! Project version string for AppKitIntegration.
+FOUNDATION_EXPORT const unsigned char AppKitIntegrationVersionString[];
