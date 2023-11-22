@@ -23,10 +23,8 @@
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
 		A246B7E52B07AADD00ECACD5 /* AppKitIntegration.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A25FB7DC2B0D4420009B6B5F /* AppKitIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A272490D2B0D20530018A598 /* AppKitIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A25FB7E92B0D7631009B6B5F /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A25FB7EB2B0D7772009B6B5F /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */; };
-		A25FB7ED2B0D7772009B6B5F /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */; };
-		A25FB7F42B0D7863009B6B5F /* OutlineLauncher in Frameworks */ = {isa = PBXBuildFile; platformFilter = maccatalyst; productRef = A25FB7F32B0D7863009B6B5F /* OutlineLauncher */; };
+		A25FB7E92B0D7631009B6B5F /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A26F9C362B0D9CA000BCD3E6 /* OutlineLauncher in Frameworks */ = {isa = PBXBuildFile; productRef = A26F9C352B0D9CA000BCD3E6 /* OutlineLauncher */; };
 		A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A271D42C2A708240009981B2 /* AppDelegate+Outline.m */; };
 		A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4332A70829D009981B2 /* OutlineAppleLib */; };
 		A272490F2B0D24200018A598 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC1A502B0821A7004E13CB /* StatusItemController.swift */; };
@@ -84,6 +82,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = A246B7DC2B07AACF00ECACD5;
 			remoteInfo = AppKitIntegration;
+		};
+		A2A3EE0D2B0DB62000F8E544 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A26D262C2A1C41B1009838E0;
+			remoteInfo = OutlineLauncher;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -172,10 +177,8 @@
 		936C2951B7544BC8A20B6746 /* CDVClipboard.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVClipboard.h; path = "cordova-plugin-clipboard/CDVClipboard.h"; sourceTree = "<group>"; };
 		941052A220F54953928FF2E2 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppKitIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A246B7DF2B07AACF00ECACD5 /* AppKitIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppKitIntegration.h; sourceTree = "<group>"; };
 		A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
-		A2702E892B055C8C00BB0E9C /* AppKitBridgeInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppKitBridgeInterface.h; sourceTree = "<group>"; };
 		A271D42C2A708240009981B2 /* AppDelegate+Outline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+Outline.m"; sourceTree = "<group>"; };
 		A271D42E2A708253009981B2 /* AppDelegate+Outline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+Outline.h"; sourceTree = "<group>"; };
 		A272490D2B0D20530018A598 /* AppKitIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppKitIntegration.h; sourceTree = "<group>"; };
@@ -282,20 +285,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A246B7DA2B07AACF00ECACD5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A26D262A2A1C41B1009838E0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A25FB7EB2B0D7772009B6B5F /* CocoaLumberjack in Frameworks */,
-				A25FB7ED2B0D7772009B6B5F /* CocoaLumberjackSwift in Frameworks */,
-				A25FB7F42B0D7863009B6B5F /* OutlineLauncher in Frameworks */,
+				A26F9C362B0D9CA000BCD3E6 /* OutlineLauncher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,8 +338,6 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				3B0347491F212F0200C8EF1F /* VpnExtension */,
 				A26D262E2A1C41B1009838E0 /* OutlineLauncher */,
-				A2702E882B055C8C00BB0E9C /* AppKitBridgeInterface */,
-				A246B7DE2B07AACF00ECACD5 /* AppKitIntegration */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -426,28 +418,12 @@
 			path = Outline/Resources/vpn;
 			sourceTree = "<group>";
 		};
-		A246B7DE2B07AACF00ECACD5 /* AppKitIntegration */ = {
-			isa = PBXGroup;
-			children = (
-				A246B7DF2B07AACF00ECACD5 /* AppKitIntegration.h */,
-			);
-			path = AppKitIntegration;
-			sourceTree = "<group>";
-		};
 		A26D262E2A1C41B1009838E0 /* OutlineLauncher */ = {
 			isa = PBXGroup;
 			children = (
 				A26D26382A1C41B4009838E0 /* OutlineLauncher.entitlements */,
 			);
 			path = OutlineLauncher;
-			sourceTree = "<group>";
-		};
-		A2702E882B055C8C00BB0E9C /* AppKitBridgeInterface */ = {
-			isa = PBXGroup;
-			children = (
-				A2702E892B055C8C00BB0E9C /* AppKitBridgeInterface.h */,
-			);
-			path = AppKitBridgeInterface;
 			sourceTree = "<group>";
 		};
 		A2AC1A562B082526004E13CB /* Resources */ = {
@@ -517,14 +493,15 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+				A25FB7E82B0D75CD009B6B5F /* Copy OutlineLauncher */,
 				3B0347571F212F0200C8EF1F /* Embed App Extensions */,
 				A246B7E82B07AADD00ECACD5 /* Embed Frameworks */,
 				FC0FFD6C1FCCE21E00EB0129 /* Remove unused framework architectures */,
-				A25FB7E82B0D75CD009B6B5F /* Copy OutlineLauncher */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A2A3EE0E2B0DB62000F8E544 /* PBXTargetDependency */,
 				301BF551109A68C00062928A /* PBXTargetDependency */,
 				3B0347521F212F0200C8EF1F /* PBXTargetDependency */,
 				A246B7E72B07AADD00ECACD5 /* PBXTargetDependency */,
@@ -565,7 +542,6 @@
 			buildPhases = (
 				A272490C2B0D20200018A598 /* Headers */,
 				A246B7D92B07AACF00ECACD5 /* Sources */,
-				A246B7DA2B07AACF00ECACD5 /* Frameworks */,
 				A246B7DB2B07AACF00ECACD5 /* Resources */,
 			);
 			buildRules = (
@@ -583,9 +559,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A26D26392A1C41B4009838E0 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
 			buildPhases = (
-				A27B364E2B07C3F400004A08 /* Embed Frameworks */,
 				A25EB8812A8437D700B92EE0 /* Sources */,
 				A26D262A2A1C41B1009838E0 /* Frameworks */,
+				A27B364E2B07C3F400004A08 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -594,9 +570,7 @@
 			);
 			name = OutlineLauncher;
 			packageProductDependencies = (
-				A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */,
-				A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */,
-				A25FB7F32B0D7863009B6B5F /* OutlineLauncher */,
+				A26F9C352B0D9CA000BCD3E6 /* OutlineLauncher */,
 			);
 			productName = OutlineLauncher;
 			productReference = A26D262D2A1C41B1009838E0 /* OutlineLauncher.app */;
@@ -852,6 +826,12 @@
 			target = A246B7DC2B07AACF00ECACD5 /* AppKitIntegration */;
 			targetProxy = A246B7FD2B07B25C00ECACD5 /* PBXContainerItemProxy */;
 		};
+		A2A3EE0E2B0DB62000F8E544 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
+			target = A26D262C2A1C41B1009838E0 /* OutlineLauncher */;
+			targetProxy = A2A3EE0D2B0DB62000F8E544 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -935,7 +915,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3047A50F1AB8059700498E2A /* build-debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -960,13 +939,6 @@
 				GCC_PREFIX_HEADER = "Outline/Outline-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = (
-					"\"$(TARGET_BUILD_DIR)/usr/local/lib/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"",
-					"\"$(BUILT_PRODUCTS_DIR)\"",
-					"$(OBJROOT)/**",
-				);
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
@@ -991,7 +963,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3047A5101AB8059700498E2A /* build-release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -1015,13 +986,6 @@
 				GCC_PREFIX_HEADER = "Outline/Outline-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = (
-					"\"$(TARGET_BUILD_DIR)/usr/local/lib/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"",
-					"\"$(BUILT_PRODUCTS_DIR)\"",
-					"$(OBJROOT)/**",
-				);
 				INFOPLIST_FILE = "Outline/Outline-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
@@ -1153,6 +1117,7 @@
 		};
 		A246B7E22B07AACF00ECACD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A50F1AB8059700498E2A /* build-debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1195,7 +1160,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -1217,6 +1182,7 @@
 		};
 		A246B7E32B07AACF00ECACD5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A5101AB8059700498E2A /* build-release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1255,7 +1221,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -1275,6 +1241,7 @@
 		};
 		A26D263A2A1C41B4009838E0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A50F1AB8059700498E2A /* build-debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1313,7 +1280,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1329,12 +1296,13 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
 		A26D263B2A1C41B4009838E0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A5101AB8059700498E2A /* build-release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1364,11 +1332,12 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_LSBackgroundOnly = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -1383,7 +1352,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
 		};
@@ -1412,7 +1381,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/**";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_THUMB_SUPPORT = NO;
@@ -1423,16 +1391,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(TARGET_BUILD_DIR)/usr/local/lib/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"",
-					"\"$(BUILT_PRODUCTS_DIR)\"",
-					"\"$(OBJROOT)\"",
-					"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
@@ -1465,7 +1425,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/**";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_THUMB_SUPPORT = NO;
@@ -1476,16 +1435,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(TARGET_BUILD_DIR)/usr/local/lib/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/include\"",
-					"\"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include\"",
-					"\"$(BUILT_PRODUCTS_DIR)\"",
-					"\"$(OBJROOT)\"",
-					"$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1572,17 +1523,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = PacketTunnelProvider;
 		};
-		A25FB7EA2B0D7772009B6B5F /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		A25FB7EC2B0D7772009B6B5F /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52CBB890295BD8F200D0073F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
-		A25FB7F32B0D7863009B6B5F /* OutlineLauncher */ = {
+		A26F9C352B0D9CA000BCD3E6 /* OutlineLauncher */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineLauncher;
 		};
