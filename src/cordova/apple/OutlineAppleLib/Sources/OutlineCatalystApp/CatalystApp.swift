@@ -22,7 +22,6 @@
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
-
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
@@ -55,8 +54,8 @@
                 appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
 
-           // Enable app launcher to start on boot.
-           appKitController._AppKitBridge_setAppLauncherEnabled(true)
+            // Enable app launcher to start on boot.
+            appKitController._AppKitBridge_setAppLauncherEnabled(true)
         }
     }
 
@@ -72,8 +71,7 @@
                 if let appKitControllerClass = bundle.classNamed("AppKitIntegration.AppKitController") as? NSObject.Type {
                     return appKitControllerClass.init()
                 }
-            }
-            catch {
+            } catch {
                 DDLogInfo("[CatalystApp] Error loading: \(error)")
             }
         }

@@ -15,7 +15,6 @@
 import AppKit
 import ServiceManagement
 
-
 class AppKitController: NSObject {
     private var statusItemController: StatusItemController?
     static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
