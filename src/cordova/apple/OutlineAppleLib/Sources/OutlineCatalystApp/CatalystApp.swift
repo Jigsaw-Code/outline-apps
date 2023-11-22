@@ -67,14 +67,14 @@
                 try Bundle(path: bundlePath)?.loadAndReturnError()
 
                 let bundle = Bundle(path: bundlePath)!
-                NSLog("[CatalystApp] AppKit bundle loaded successfully")
+                DDLogInfo("[CatalystApp] AppKit bundle loaded successfully")
 
                 if let appKitControllerClass = bundle.classNamed("AppKitIntegration.AppKitController") as? NSObject.Type {
                     return appKitControllerClass.init()
                 }
             }
             catch {
-                NSLog("[CatalystApp] Error loading: \(error)")
+                DDLogInfo("[CatalystApp] Error loading: \(error)")
             }
         }
         preconditionFailure("[CatalystApp] Unable to load")
