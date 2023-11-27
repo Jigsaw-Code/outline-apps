@@ -4,6 +4,16 @@ Unlike the Android and Apple clients, the Windows and Linux clients use the Elec
 
 You will need [Docker](https://www.docker.com/) installed to build the Electron clients.
 
+> If you can't use Docker, you can use [podman](https://podman.io) as substitute by running the following:
+
+```sh
+brew install podman
+podman machine init
+sudo ln -s $(which podman) /usr/local/bin/docker
+sudo /opt/homebrew/Cellar/podman/<podman version>/bin/podman-mac-helper install
+podman machine start
+```
+
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
 ```sh

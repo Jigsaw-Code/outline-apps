@@ -80,24 +80,28 @@ export async function main(...parameters) {
       );
     case 'windows' + 'linux':
     case 'windows' + 'darwin':
-      return spawnStream(
+      await spawnStream(
         'xgo',
         '-targets=windows/386',
-        `-dest=${outputDir}/tun2socks`,
-        '-pkg=src/tun2socks/outline/electron',
-        '-out=tun2socks.exe',
-        '.'
-      );
-    case 'linux' + 'win32':
-    case 'linux' + 'darwin':
-      return spawnStream(
-        'xgo',
-        '-targets=linux/amd64',
-        `-dest=${outputDir}/tun2socks`,
+        `-dest=${outputDir}`,
         '-pkg=src/tun2socks/outline/electron',
         '-out=tun2socks',
         '.'
       );
+
+      return spawnStream('cp', `${outputDir}/tun2socks-windows-386.exe`, `${outputDir}/tun2socks.exe`);
+    case 'linux' + 'win32':
+    case 'linux' + 'darwin':
+      await spawnStream(
+        'xgo',
+        '-targets=linux/amd64',
+        `-dest=${outputDir}`,
+        '-pkg=src/tun2socks/outline/electron',
+        '-out=tun2socks',
+        '.'
+      );
+
+      return spawnStream('cp', `${outputDir}/tun2socks-linux-amd64`, `${outputDir}/tun2socks`);
     case 'windows' + 'win32':
     case 'linux' + 'linux':
       return spawnStream(
