@@ -15,14 +15,15 @@
 import Foundation
 
 @objc
-public protocol AppKitBridgeProtocol: NSObjectProtocol {
-    init()
+public enum ConnectionStatus: Int {
+    case unknown
+    case connected
+    case disconnected
+}
 
-    func terminate()
-
-    func setConnectionStatus(_ status: ConnectionStatus)
-
-    func setAppLauncherEnabled(_ isEnabled: Bool)
-
-    func loadMainApp(_ launcherBundleId: String)
+public extension NSObject {
+    @objc func _AppKitBridge_terminate() {}
+    @objc func _AppKitBridge_setConnectionStatus(_: ConnectionStatus) {}
+    @objc func _AppKitBridge_setAppLauncherEnabled(_: Bool) {}
+    @objc func _AppKitBridge_loadMainApp(_: String) {}
 }

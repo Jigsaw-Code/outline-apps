@@ -16,10 +16,6 @@ let package = Package(
             targets: ["OutlineLauncher"]
         ),
         .library(
-            name: "OutlineAppKitBridge",
-            targets: ["OutlineAppKitBridge"]
-        ),
-        .library(
             name: "PacketTunnelProvider",
             targets: ["PacketTunnelProvider"]
         ),
@@ -31,20 +27,14 @@ let package = Package(
     targets: [
         .target(
             name: "OutlineLauncher",
-            dependencies:
-            ["CocoaLumberjack",
-             .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-             "OutlineCatalystApp"]
-        ),
-        .target(
-            name: "OutlineCatalystApp",
             dependencies: [
-                "OutlineAppKitBridge",
+                "CocoaLumberjack",
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                "OutlineCatalystApp",
             ]
         ),
         .target(
-            name: "OutlineAppKitBridge",
+            name: "OutlineCatalystApp",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlineNotification",
@@ -52,11 +42,12 @@ let package = Package(
         ),
         .target(
             name: "PacketTunnelProvider",
-            dependencies:
-            ["CocoaLumberjack",
-             .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-             "Tun2socks",
-             "OutlineTunnel"],
+            dependencies: [
+                "CocoaLumberjack",
+                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
+                "Tun2socks",
+                "OutlineTunnel",
+            ],
             cSettings: [
                 .headerSearchPath("Internal"),
             ]
