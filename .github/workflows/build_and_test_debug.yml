@@ -126,6 +126,9 @@ jobs:
         with:
           go-version: 1.18
 
+      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+        run: npm run action tun2socks/build macos
+  
       - name: Test OutlineAppleLib
         run: npm run action cordova/test macos
 
@@ -164,6 +167,9 @@ jobs:
         with:
           go-version: 1.18
 
+      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+        run: npm run action tun2socks/build ios  
+
       - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
 
@@ -201,6 +207,9 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.18
+
+      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+        run: npm run action tun2socks/build maccatalyst
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test maccatalyst
