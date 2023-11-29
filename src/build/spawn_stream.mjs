@@ -63,6 +63,6 @@ export const spawnStream = (command, ...parameters) =>
         stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
       }
 
-      return reject(code);
+      return reject(stderr.join(''));
     });
   });
