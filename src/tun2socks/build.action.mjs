@@ -30,7 +30,11 @@ export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
 
   const binDir = path.join(getRootDir(), 'build', 'bin');
-  const outputDir = path.join(getRootDir(), 'build', targetPlatform);
+  const outputDir = path.join(
+    getRootDir(),
+    'build',
+    ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
+  );
 
   await fs.mkdir(binDir, {recursive: true});
   await fs.mkdir(outputDir, {recursive: true});
@@ -73,7 +77,7 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        `-target=${targetPlatform}`,
+        `-target=ios,macos,maccatalyst`,
         `-o=${outputDir}/tun2socks.xcframework`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
