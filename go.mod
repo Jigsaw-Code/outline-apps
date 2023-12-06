@@ -1,6 +1,6 @@
 module github.com/Jigsaw-Code/outline-client
 
-go 1.18
+go 1.20
 
 require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.7

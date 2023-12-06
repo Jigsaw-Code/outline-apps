@@ -77,7 +77,7 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        `-target=ios,macos,maccatalyst`,
+        `-target=ios,iossimulator,macos,maccatalyst`,
         `-o=${outputDir}/tun2socks.xcframework`,
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
