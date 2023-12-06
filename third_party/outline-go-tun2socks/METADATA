@@ -1,0 +1,11 @@
+name: "outline-go-tun2socks"
+description: "Go network stack based on go-tun2socks and go-shadowsocks."
+
+third_party {
+  url {
+    type: GIT
+    value: "https://github.com/Jigsaw-Code/outline-go-tun2socks"
+  }
+  version: "2.2.1"
+  last_upgrade_date { year: 2022 month: 4 day: 20 }
+}
