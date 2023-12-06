@@ -23,4 +23,5 @@ package tools
 import (
 	_ "github.com/crazy-max/xgo"
 	_ "golang.org/x/mobile/cmd/gomobile"
+	_ "golang.org/x/mobile/cmd/gobind"
 )
