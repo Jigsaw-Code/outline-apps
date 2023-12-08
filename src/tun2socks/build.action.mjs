@@ -19,7 +19,6 @@ import fs from 'node:fs/promises';
 
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
 
 /**
  * @description Builds the tun2socks library for the specified platform.
@@ -29,9 +28,8 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
 
-  const binDir = path.join(getRootDir(), process.env.OUTPUT_DIR, 'bin');
+  const binDir = path.join(process.env.OUTPUT_DIR, 'bin');
   const buildDir = path.join(
-    getRootDir(),
     process.env.BUILD_DIR,
     ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
   );
