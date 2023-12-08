@@ -3,7 +3,7 @@ module github.com/Jigsaw-Code/outline-client
 go 1.20
 
 require (
-	github.com/Jigsaw-Code/outline-sdk v0.0.7
+	github.com/Jigsaw-Code/outline-sdk v0.0.9
 	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20230807220427-893de7fdc6b8
 	github.com/crazy-max/xgo v0.30.0
 	github.com/eycorsican/go-tun2socks v1.16.11

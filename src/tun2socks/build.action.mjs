@@ -29,15 +29,15 @@ import {getRootDir} from '../build/get_root_dir.mjs';
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
 
-  const binDir = path.join(getRootDir(), 'build', 'bin');
-  const outputDir = path.join(
+  const binDir = path.join(getRootDir(), process.env.OUTPUT_DIR, 'bin');
+  const buildDir = path.join(
     getRootDir(),
-    'build',
+    process.env.BUILD_DIR,
     ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
   );
 
   await fs.mkdir(binDir, {recursive: true});
-  await fs.mkdir(outputDir, {recursive: true});
+  await fs.mkdir(buildDir, {recursive: true});
 
   // install go tools locally
   await spawnStream(
@@ -63,7 +63,8 @@ export async function main(...parameters) {
         'bind',
         '-androidapi=33',
         '-target=android',
-        `-o=${outputDir}/tun2socks.aar`,
+        `-o=${buildDir}/tun2socks.aar`,
+
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
@@ -78,7 +79,8 @@ export async function main(...parameters) {
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
         `-target=ios,iossimulator,macos,maccatalyst`,
-        `-o=${outputDir}/tun2socks.xcframework`,
+        `-o=${buildDir}/tun2socks.xcframework`,
+
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
@@ -87,32 +89,37 @@ export async function main(...parameters) {
       await spawnStream(
         'xgo',
         '-targets=windows/386',
-        `-dest=${outputDir}`,
+        `-dest=${buildDir}`,
+
         '-pkg=src/tun2socks/outline/electron',
         '-out=tun2socks',
         '.'
       );
 
-      return spawnStream('cp', `${outputDir}/tun2socks-windows-386.exe`, `${outputDir}/tun2socks.exe`);
+      return spawnStream('cp', `${buildDir}/tun2socks-windows-386.exe`, `${buildDir}/tun2socks.exe`);
+
     case 'linux' + 'win32':
     case 'linux' + 'darwin':
       await spawnStream(
         'xgo',
         '-targets=linux/amd64',
-        `-dest=${outputDir}`,
+        `-dest=${buildDir}`,
+
         '-pkg=src/tun2socks/outline/electron',
         '-out=tun2socks',
         '.'
       );
 
-      return spawnStream('cp', `${outputDir}/tun2socks-linux-amd64`, `${outputDir}/tun2socks`);
+      return spawnStream('cp', `${buildDir}/tun2socks-linux-amd64`, `${buildDir}/tun2socks`);
+
     case 'windows' + 'win32':
     case 'linux' + 'linux':
       return spawnStream(
         'go',
         'build',
         '-o',
-        `${outputDir}/tun2socks`,
+        `${buildDir}/tun2socks`,
+
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron'
       );
     default:
