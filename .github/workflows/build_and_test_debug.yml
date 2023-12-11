@@ -66,7 +66,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Build Linux Client
         run: npm run action electron/build linux
@@ -95,7 +95,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Build Windows Client
         run: npm run action electron/build windows
@@ -124,7 +124,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
         run: npm run action tun2socks/build macos
@@ -165,7 +165,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
         run: npm run action tun2socks/build ios  
@@ -206,7 +206,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
         run: npm run action tun2socks/build maccatalyst
@@ -244,7 +244,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 
       - name: Install Java
         uses: actions/setup-java@v1.4.3
