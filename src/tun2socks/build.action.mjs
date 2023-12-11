@@ -67,6 +67,17 @@ export async function main(...parameters) {
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
       );
     case 'ios' + 'darwin':
+      return spawnStream(
+        'gomobile',
+        'bind',
+        '-bundleid=org.outline.tun2socks',
+        '-iosversion=12.0',
+        `-target=ios,iossimulator`,
+        `-o=${buildDir}/tun2socks.xcframework`,
+
+        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
+        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
+      );
     case 'macos' + 'darwin':
     case 'maccatalyst' + 'darwin':
       process.env.MACOSX_DEPLOYMENT_TARGET = '10.14';
@@ -76,7 +87,7 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=13.1',
-        `-target=ios,iossimulator,macos,maccatalyst`,
+        `-target=macos,maccatalyst`,
         `-o=${buildDir}/tun2socks.xcframework`,
 
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
