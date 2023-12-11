@@ -50,7 +50,7 @@ export async function main(...parameters) {
 
   const hostPlatform = os.platform();
 
-  process.env.PATH = hostPlatform === 'win32' ? `${binDir};${process.env.PATH}` : `${binDir}:${process.env.PATH}`;
+  process.env.PATH = `${binDir}${path.delimiter}${process.env.PATH}`;
 
   switch (targetPlatform + hostPlatform) {
     case 'android' + 'darwin':
