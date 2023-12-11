@@ -31,7 +31,8 @@ export async function main(...parameters) {
   const binDir = path.join(process.env.OUTPUT_DIR, 'bin');
   const buildDir = path.join(
     process.env.BUILD_DIR,
-    ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
+    ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform,
+    'tun2socks'
   );
 
   await fs.mkdir(binDir, {recursive: true});

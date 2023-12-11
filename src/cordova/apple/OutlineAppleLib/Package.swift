@@ -69,7 +69,7 @@ let package = Package(
         ),
         .binaryTarget(
             name: "Tun2socks",
-            path: "../../../../output/build/apple/tun2socks.xcframework"
+            path: "../../../../output/build/apple/tun2socks/tun2socks.xcframework"
         ),
         .testTarget(
             name: "OutlineTunnelTest",
