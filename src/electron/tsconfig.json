@@ -1,6 +1,6 @@
 {
   "extends": "../www/tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../build/electron"
+    "outDir": "../../output/build/electron"
   }
 }

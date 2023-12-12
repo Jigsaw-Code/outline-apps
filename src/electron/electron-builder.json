@@ -1,4 +1,7 @@
 {
+  "extraMetadata": {
+    "main": "output/build/electron/electron/index.js"
+  },
   "files": ["output/build", "www", "resources/tray", "!node_modules/electron"],
   "asarUnpack": ["third_party", "tools"],
   "artifactName": "Outline-Client.${ext}",

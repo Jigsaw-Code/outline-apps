@@ -14,6 +14,8 @@ sudo /opt/homebrew/Cellar/podman/<podman version>/bin/podman-mac-helper install
 podman machine start
 ```
 
+> You may run into the error: `/var/folders/<path>/xgo-cache: no such file or directory`. If so, simply create that directory with `mkdir -p /var/folders/<path>/xgo-cache` and try again.
+
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
 ```sh
