@@ -1,8 +1,5 @@
 {
-  "extraMetadata": {
-    "main": "output/build/electron/electron/index.js"
-  },
-  "files": ["output/build", "www", "resources/tray", "!node_modules/electron"],
+  "files": ["build/electron", "www", "resources/tray", "!node_modules/electron"],
   "asarUnpack": ["third_party", "tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
@@ -13,7 +10,7 @@
       "target": "AppImage",
       "arch": ["x64"]
     },
-    "files": ["output/build/icons/png", "output/build/linux", "tools/outline_proxy_controller/dist"],
+    "files": ["build/icons/png", "build/linux", "tools/outline_proxy_controller/dist"],
     "icon": "output/build/icons/png",
     "category": "Network"
   },
@@ -24,8 +21,8 @@
         "arch": "ia32"
       }
     ],
-    "files": ["output/build/windows"],
-    "icon": "output/build/icons/win/icon.ico",
+    "files": ["build/windows"],
+    "icon": "build/icons/win/icon.ico",
     "sign": "src/electron/windows/electron_builder_signing_plugin.cjs",
     "signingHashAlgorithms": ["sha256"]
   },

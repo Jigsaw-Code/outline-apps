@@ -22,7 +22,7 @@ import path from 'path';
 import url from 'url';
 import {getRootDir} from '../build/get_root_dir.mjs';
 
-const ELECTRON_BUILD_DIR = ['output', 'build', 'electron'];
+const ELECTRON_BUILD_DIR = 'build';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
@@ -57,7 +57,7 @@ export async function main(...parameters) {
       windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
     }
 
-    await fs.writeFile(path.resolve(getRootDir(), ...ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
+    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
   }
 }
 
