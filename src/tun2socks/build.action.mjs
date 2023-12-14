@@ -73,7 +73,8 @@ export async function main(...parameters) {
         'bind',
         '-bundleid=org.outline.tun2socks',
         '-iosversion=12.0',
-        `-target=ios,iossimulator`,
+        // macos is required for testing
+        `-target=macos,ios,iossimulator`,
         `-o=${buildDir}/tun2socks.xcframework`,
 
         'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
