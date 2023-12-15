@@ -107,8 +107,8 @@ export async function main(...parameters) {
         '.'
       );
 
+      // TODO: use fs.rename() instead of cp when we figure out why the permissions are wrong in the CI
       return spawnStream('cp', `${buildDir}/tun2socks-windows-386.exe`, `${buildDir}/tun2socks.exe`);
-
     case 'linux' + 'win32':
     case 'linux' + 'darwin':
       await spawnStream(
@@ -121,8 +121,8 @@ export async function main(...parameters) {
         '.'
       );
 
+      // TODO: use fs.rename() instead of cp when we figure out why the permissions are wrong in the CI
       return spawnStream('cp', `${buildDir}/tun2socks-linux-amd64`, `${buildDir}/tun2socks`);
-
     case 'windows' + 'win32':
     case 'linux' + 'linux':
       return spawnStream(
