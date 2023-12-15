@@ -164,7 +164,7 @@ Note how `VpnExtension.appex` is inside `Outline.app/`.
 It's safe to unregister all the Outline VPN Extensions, since the system will load them on demand. To do so, for each of them, call
 
 ```
-plugintkit -r $APP_EXTENSION_PATH
+pluginkit -r $APP_EXTENSION_PATH
 ```
 
 Where the `$APP_EXTENSION_PATH` is the location of the `VpnExtension.appex` file from the pluginkit command.
