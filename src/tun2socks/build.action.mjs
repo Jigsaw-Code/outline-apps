@@ -13,10 +13,6 @@
 // limitations under the License.
 
 import url from 'url';
-import os from 'node:os';
-import path from 'node:path';
-import fs from 'node:fs/promises';
-
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
@@ -26,116 +22,9 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform: targetPlatform} = getBuildParameters(parameters);
+  const {platform} = getBuildParameters(parameters);
 
-  const binDir = path.join(process.env.OUTPUT_DIR, 'bin');
-  const buildDir = path.join(
-    process.env.BUILD_DIR,
-    ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform,
-    'tun2socks'
-  );
-
-  await fs.mkdir(binDir, {recursive: true});
-  await fs.mkdir(buildDir, {recursive: true});
-
-  // install go tools locally
-  await spawnStream(
-    'go',
-    'build',
-    '-o',
-    binDir,
-    'golang.org/x/mobile/cmd/gomobile',
-    'golang.org/x/mobile/cmd/gobind',
-    'github.com/crazy-max/xgo'
-  );
-
-  const hostPlatform = os.platform();
-
-  process.env.PATH = `${binDir}${path.delimiter}${process.env.PATH}`;
-
-  switch (targetPlatform + hostPlatform) {
-    case 'android' + 'darwin':
-    case 'android' + 'linux':
-    case 'android' + 'win32':
-      return spawnStream(
-        'gomobile',
-        'bind',
-        '-androidapi=33',
-        '-target=android',
-        `-o=${buildDir}/tun2socks.aar`,
-
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
-      );
-    case 'ios' + 'darwin':
-      return spawnStream(
-        'gomobile',
-        'bind',
-        '-bundleid=org.outline.tun2socks',
-        '-iosversion=12.0',
-        // macos is required for testing
-        `-target=macos,ios,iossimulator`,
-        `-o=${buildDir}/tun2socks.xcframework`,
-
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
-      );
-    case 'macos' + 'darwin':
-    case 'maccatalyst' + 'darwin':
-      process.env.MACOSX_DEPLOYMENT_TARGET = '10.14';
-
-      return spawnStream(
-        'gomobile',
-        'bind',
-        '-bundleid=org.outline.tun2socks',
-        '-iosversion=13.1',
-        `-target=macos,maccatalyst`,
-        `-o=${buildDir}/tun2socks.xcframework`,
-
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/tun2socks',
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/shadowsocks'
-      );
-    case 'windows' + 'linux':
-    case 'windows' + 'darwin':
-      await spawnStream(
-        'xgo',
-        '-targets=windows/386',
-        `-dest=${buildDir}`,
-
-        '-pkg=src/tun2socks/outline/electron',
-        '-out=tun2socks',
-        '.'
-      );
-
-      // TODO: use fs.rename() instead of cp when we figure out why the permissions are wrong in the CI
-      return spawnStream('cp', `${buildDir}/tun2socks-windows-386.exe`, `${buildDir}/tun2socks.exe`);
-    case 'linux' + 'win32':
-    case 'linux' + 'darwin':
-      await spawnStream(
-        'xgo',
-        '-targets=linux/amd64',
-        `-dest=${buildDir}`,
-
-        '-pkg=src/tun2socks/outline/electron',
-        '-out=tun2socks',
-        '.'
-      );
-
-      // TODO: use fs.rename() instead of cp when we figure out why the permissions are wrong in the CI
-      return spawnStream('cp', `${buildDir}/tun2socks-linux-amd64`, `${buildDir}/tun2socks`);
-    case 'windows' + 'win32':
-    case 'linux' + 'linux':
-      return spawnStream(
-        'go',
-        'build',
-        '-o',
-        `${buildDir}/tun2socks`,
-
-        'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron'
-      );
-    default:
-      throw new Error(`Unsupported cross-compilation: ${targetPlatform} on ${hostPlatform}`);
-  }
+  await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(platform) ? 'apple' : platform);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
