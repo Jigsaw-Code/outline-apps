@@ -6,6 +6,10 @@ import PackageDescription
 let package = Package(
     name: "OutlineAppleLib",
     defaultLocalization: "en",
+    platforms: [
+       .iOS("13.1"),
+       .macOS(.v10_14),
+    ],
     products: [
         .library(
             name: "OutlineAppleLib",
