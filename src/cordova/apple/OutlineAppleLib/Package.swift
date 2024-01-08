@@ -7,7 +7,7 @@ let package = Package(
     name: "OutlineAppleLib",
     defaultLocalization: "en",
     platforms: [
-       .iOS("13.1"),
+       .iOS(.v11),
        .macOS(.v10_14),
     ],
     products: [
