@@ -5,11 +5,11 @@ GOMOBILE=$(GOBIN)/gomobile
 # Add GOBIN to $PATH so `gomobile` can find `gobind`.
 GOBIND=env PATH="$(GOBIN):$(PATH)" "$(GOMOBILE)" bind
 IMPORT_HOST=github.com
-IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-go-tun2socks
+IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-client/src/tun2socks
 
 .PHONY: android apple linux windows
 
-all: android linux apple windows
+all: android apple linux windows
 
 # Don't strip Android debug symbols so we can upload them to crash reporting tools.
 ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -tags android -work
