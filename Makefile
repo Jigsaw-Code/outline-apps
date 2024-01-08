@@ -11,7 +11,7 @@ IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-client
 
 all: android apple linux windows
 
-ROOT_PKG=src/tun2socks
+ROOT_PKG=$(IMPORT_PATH)/src/tun2socks
 # Don't strip Android debug symbols so we can upload them to crash reporting tools.
 ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -tags android -work
 
