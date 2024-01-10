@@ -20,6 +20,7 @@ android: $(BUILDDIR)/android/tun2socks.aar
 $(BUILDDIR)/android/tun2socks.aar: $(GOMOBILE)
 	mkdir -p "$(BUILDDIR)/android"
 	$(ANDROID_BUILD_CMD) -o "$@" $(IMPORT_PATH)/$(ROOT_PKG)/outline/tun2socks $(IMPORT_PATH)/$(ROOT_PKG)/outline/shadowsocks
+	unzip "$@" 'jni/*' -d $(BUILDDIR)/android
 
 # TODO(fortuna): -s strips symbols and is obsolete. Why are we using it?
 $(BUILDDIR)/ios/Tun2socks.xcframework: $(GOMOBILE)
