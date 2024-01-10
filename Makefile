@@ -41,7 +41,7 @@ TUN2SOCKS_VERSION=v1.16.11
 XGO_LDFLAGS='-s -w -X main.version=$(TUN2SOCKS_VERSION)'
 ELECTRON_PKG=$(ROOT_PKG)/outline/electron
 
-
+# TODO: build directly when on linux
 LINUX_BUILDDIR=$(BUILDDIR)/linux
 
 linux: $(LINUX_BUILDDIR)/tun2socks
@@ -52,7 +52,7 @@ $(LINUX_BUILDDIR)/tun2socks: $(XGO)
 	mv "$(LINUX_BUILDDIR)/$(IMPORT_PATH)-linux-amd64" "$@"
 	rm -r "$(LINUX_BUILDDIR)/$(IMPORT_HOST)"
 
-
+# TODO: build directly when on windows
 WINDOWS_BUILDDIR=$(BUILDDIR)/windows
 
 windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
