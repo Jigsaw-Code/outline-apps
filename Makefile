@@ -13,7 +13,7 @@ all: android apple linux windows
 
 ROOT_PKG=src/tun2socks
 # Don't strip Android debug symbols so we can upload them to crash reporting tools.
-ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -tags android -work
+ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -androidapi 19 -tags android -work
 
 android: $(BUILDDIR)/android/tun2socks.aar
 
