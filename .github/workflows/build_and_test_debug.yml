@@ -74,13 +74,10 @@ jobs:
 
   windows_debug_build:
     name: Windows Debug Build
-    runs-on: windows-2019
+    runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
     steps:
-      - name: Support longpaths
-        run: git config --system core.longpaths true
-
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
