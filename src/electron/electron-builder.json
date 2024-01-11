@@ -3,14 +3,14 @@
   "asarUnpack": ["third_party", "tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
-    "output": "output/build/dist"
+    "output": "build/dist"
   },
   "linux": {
     "target": {
       "target": "AppImage",
       "arch": ["x64"]
     },
-    "files": ["build/icons/png", "output/build/linux", "tools/outline_proxy_controller/dist"],
+    "files": ["build/icons/png", "third_party/outline-go-tun2socks/linux", "tools/outline_proxy_controller/dist"],
     "icon": "build/icons/png",
     "category": "Network"
   },
@@ -21,7 +21,7 @@
         "arch": "ia32"
       }
     ],
-    "files": ["output/build/windows"],
+    "files": ["third_party/outline-go-tun2socks/win32"],
     "icon": "build/icons/win/icon.ico",
     "sign": "src/electron/windows/electron_builder_signing_plugin.cjs",
     "signingHashAlgorithms": ["sha256"]

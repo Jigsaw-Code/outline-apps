@@ -141,5 +141,5 @@ async function main() {
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  await main(...process.argv.slice(2));
+  await main();
 }

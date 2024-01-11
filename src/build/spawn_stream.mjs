@@ -23,7 +23,7 @@ export const spawnStream = (command, ...parameters) =>
     const stdout = [];
     const stderr = [];
 
-    console.debug(chalk.gray(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`));
+    console.debug(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]`);
     const childProcess = spawn(command, parameters, {env: process.env});
 
     const forEachMessageLine = (buffer, callback) => {
@@ -47,22 +47,14 @@ export const spawnStream = (command, ...parameters) =>
       if (code === 0) {
         return resolve(stdout.join(''));
       }
-
       console.error(
         chalk.red(
           `ERROR(spawn_stream): ${chalk.underline(
             [command, ...parameters].join(' ')
-          )} failed with exit code ${chalk.bold(code)}.}`
+          )} failed with exit code ${chalk.bold(code)}. Printing stderr:`
         )
       );
-
-      if (!(stderr.length && stderr.every(line => line))) {
-        console.error(chalk.bgRedBright('No error output was given... Please fix this so it gives an error output :('));
-      } else {
-        console.error(chalk.bgRedBright('Printing stderr:'));
-        stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
-      }
-
-      return reject(stderr.join(''));
+      stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
+      return reject(code);
     });
   });

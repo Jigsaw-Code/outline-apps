@@ -49,7 +49,6 @@ export async function main(...parameters) {
   }
 
   await runAction('www/build', ...parameters);
-  await runAction('tun2socks/build', ...parameters);
   await runAction('electron/build_main', ...parameters);
 
   await copydir.sync(

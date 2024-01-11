@@ -14,7 +14,7 @@ To join our Outline Community, [sign up for the IFF Mattermost](https://internet
 
 ## Requirements for all builds
 
-All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.20 installed in addition to other per-platform requirements.
+All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), in addition to other per-platform requirements.
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 

@@ -13,7 +13,6 @@ on:
     branches:
       - master
 
-# TODO: run go tests
 jobs:
   web_test:
     name: Web Test
@@ -64,11 +63,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
-
       - name: Build Linux Client
         run: npm run action electron/build linux
 
@@ -92,11 +86,6 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
-
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Windows Client
         run: npm run action electron/build windows
@@ -122,14 +111,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
-
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build macos
-  
       - name: Test OutlineAppleLib
         run: npm run action cordova/test macos
 
@@ -162,14 +143,6 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
-
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
-
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build ios  
 
       - name: Test OutlineAppleLib
         run: npm run action cordova/test ios
@@ -204,14 +177,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
-
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build maccatalyst
-
       - name: Test OutlineAppleLib
         run: npm run action cordova/test maccatalyst
 
@@ -241,11 +206,6 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
-
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Install Java
         uses: actions/setup-java@v1.4.3

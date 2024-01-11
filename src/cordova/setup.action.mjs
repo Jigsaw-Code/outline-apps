@@ -40,7 +40,6 @@ export async function main(...parameters) {
   const {platform, buildMode, verbose, buildNumber, versionName} = getBuildParameters(parameters);
 
   await runAction('www/build', ...parameters);
-  await runAction('tun2socks/build', ...parameters);
 
   await rmfr(path.resolve(getRootDir(), 'platforms'));
   await rmfr(path.resolve(getRootDir(), 'plugins'));
