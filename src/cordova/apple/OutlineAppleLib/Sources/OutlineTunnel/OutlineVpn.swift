@@ -196,7 +196,7 @@ public class OutlineVpn: NSObject {
           DDLogError("Failed to save VPN configuration: \(error)")
           return completion(false)
         }
-        self.observeVpnStatusChange(manager!)
+        self.observeVpnStatusChange(manager)
         self.tunnelManager = manager
         NotificationCenter.default.post(name: .NEVPNConfigurationChange, object: nil)
         // Workaround for https://forums.developer.apple.com/thread/25928
