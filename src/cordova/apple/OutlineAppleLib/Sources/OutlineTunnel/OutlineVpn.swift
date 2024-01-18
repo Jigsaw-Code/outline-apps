@@ -124,9 +124,9 @@ public class OutlineVpn: NSObject {
   // MARK: Helpers
 
   private func startVpn(_ tunnelId: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
-    setupVpn() { error in
-      if error != nil {
-        DDLogError("Failed to setup VPN: \(String(describing: error))")
+    setupVpn() { success in
+      guard success else {
+        DDLogError("Failed to setup VPN")
         return completion(ErrorCode.vpnPermissionNotGranted);
       }
       let message = [MessageKey.action: Action.start, MessageKey.tunnelId: tunnelId ?? ""];
@@ -174,19 +174,14 @@ public class OutlineVpn: NSObject {
 
   // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
   // enables the existing configuration.
-  private func setupVpn(completion: @escaping(Error?) -> Void) {
-    NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
-      if let error = error {
-        DDLogError("Failed to load VPN configuration: \(error)")
-        return completion(error)
-      }
+  private func setupVpn(completion: @escaping(Bool) -> Void) {
+    getTunnelManager() { tunnelManager in
       var manager: NETunnelProviderManager!
-      if let managers = managers, managers.count > 0 {
-        manager = managers.first
+      if let manager = tunnelManager {
         let hasOnDemandRules = !(manager.onDemandRules?.isEmpty ?? true)
         if manager.isEnabled && hasOnDemandRules {
           self.tunnelManager = manager
-          return completion(nil)
+          return completion(true)
         }
       } else {
         let config = NETunnelProviderProtocol()
@@ -204,14 +199,18 @@ public class OutlineVpn: NSObject {
       manager.saveToPreferences() { error in
         if let error = error {
           DDLogError("Failed to save VPN configuration: \(error)")
-          return completion(error)
+          return completion(false)
         }
         self.observeVpnStatusChange(manager!)
         self.tunnelManager = manager
         NotificationCenter.default.post(name: .NEVPNConfigurationChange, object: nil)
         // Workaround for https://forums.developer.apple.com/thread/25928
         self.tunnelManager?.loadFromPreferences() { error in
-          completion(error)
+          if let error = error {
+            DDLogError("Failed to get tunnel manage: \(error)")
+            return completion(false)
+          }
+          return completion(true)
         }
       }
     }
