@@ -26,7 +26,7 @@ export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
 
   if (targetPlatform === os.platform()) {
-    return spawnStream('go', ['build', '-o', `output/build/${targetPlatformß}/tun2socks`, 'github.com/Jigsaw-Code/outline-go-tun2socks/src/tun2socks/outline']);
+    return spawnStream('go', ['build', '-o', `output/build/${targetPlatform}/tun2socks`, 'github.com/Jigsaw-Code/outline-go-tun2socks/src/tun2socks/outline']);
   }
 
   await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);
