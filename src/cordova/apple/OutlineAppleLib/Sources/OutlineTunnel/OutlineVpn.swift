@@ -178,8 +178,7 @@ public class OutlineVpn: NSObject {
     getTunnelManager() { tunnelManager in
       var manager: NETunnelProviderManager!
       if let manager = tunnelManager {
-        let hasOnDemandRules = !(manager.onDemandRules?.isEmpty ?? true)
-        if manager.isEnabled && hasOnDemandRules {
+        if manager.autoConnect {
           self.tunnelManager = manager
           return completion(true)
         }
@@ -191,11 +190,7 @@ public class OutlineVpn: NSObject {
         manager = NETunnelProviderManager()
         manager.protocolConfiguration = config
       }
-      // Set an on-demand rule to connect to any available network to implement auto-connect on boot
-      let connectRule = NEOnDemandRuleConnect()
-      connectRule.interfaceTypeMatch = .any
-      manager.onDemandRules = [connectRule]
-      manager.isEnabled = true
+      manager.autoConnect = true
       manager.saveToPreferences() { error in
         if let error = error {
           DDLogError("Failed to save VPN configuration: \(error)")
