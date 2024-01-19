@@ -22,14 +22,19 @@ public enum TunnelProviderKeys {
 public extension NETunnelProviderManager {
   // Checks if the configuration has gone stale, which means clients should discard it.
   var isStale: Bool {
-    // When moving from macOS to Mac Catalyst, we need to delete the existing profile and create a new
-    // one. We track such "stale" profiles by a version on the provider configuration.
-    if let protocolConfiguration = protocolConfiguration as? NETunnelProviderProtocol {
-        var providerConfig: [String: Any] = protocolConfiguration.providerConfiguration ?? [:]
-        let version = providerConfig[TunnelProviderKeys.keyVersion, default: 0] as! Int
-        return version != 1
-    }
-    return true
+    #if targetEnvironment(macCatalyst)
+      // When migrating from macOS to Mac Catalyst, we can't use managers created by the macOS app.
+      // Instead, we need to create a new one. We track such "stale" managers by a version on the
+      // provider configuration.
+      if let protocolConfiguration = protocolConfiguration as? NETunnelProviderProtocol {
+          var providerConfig: [String: Any] = protocolConfiguration.providerConfiguration ?? [:]
+          let version = providerConfig[TunnelProviderKeys.keyVersion, default: 0] as! Int
+          return version != 1
+      }
+      return true
+    #else
+     return false
+    #endif
   }
 
   var autoConnect: Bool {
