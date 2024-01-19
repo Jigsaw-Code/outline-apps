@@ -25,7 +25,9 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
 
-  if (targetPlatform === os.platform() && ['linux', 'windows'].includes(targetPlatform)) {
+  const currentPlatform = os.platform() === 'win32' ? 'windows' : os.platform();
+
+  if (targetPlatform === currentPlatform && ['linux', 'windows'].includes(targetPlatform)) {
     return spawnStream('go', 'build', '-o', `output/build/${targetPlatform}/tun2socks`, 'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron');
   }
 
