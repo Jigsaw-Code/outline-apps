@@ -15,7 +15,23 @@
 import Foundation
 import NetworkExtension
 
+public enum TunnelProviderKeys {
+  static let keyVersion = "version"
+}
+
 public extension NETunnelProviderManager {
+  // Checks if the configuration has gone stale, which means clients should discard it.
+  var isStale: Bool {
+    // When moving from macOS to Mac Catalyst, we need to delete the existing profile and create a new
+    // one. We track such "stale" profiles by a version on the provider configuration.
+    if let protocolConfiguration = protocolConfiguration as? NETunnelProviderProtocol {
+        var providerConfig: [String: Any] = protocolConfiguration.providerConfiguration ?? [:]
+        let version = providerConfig[TunnelProviderKeys.keyVersion, default: 0] as! Int
+        return version != 1
+    }
+    return true
+  }
+
   var autoConnect: Bool {
     get {
       let hasOnDemandRules = !(self.onDemandRules?.isEmpty ?? true)
