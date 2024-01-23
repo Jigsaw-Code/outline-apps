@@ -36,7 +36,7 @@ dependencies {
     // To make this project editable directly in the source tree, we need to load
     // tun2socks.aar from its original path in the third_party directory.  We do
     // this by relative path:
-    compileOnly fileTree(dir: '../../../../../third_party/outline-go-tun2socks/android',
+    compileOnly fileTree(dir: '../../../../../output/build/android',
             include: ['tun2socks.aar'])
     // Note: A flatDir repository might be preferable, but this is not compatible
     // with a composite build (https://github.com/gradle/gradle/issues/911).
