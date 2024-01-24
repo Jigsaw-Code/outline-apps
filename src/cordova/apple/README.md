@@ -176,6 +176,13 @@ If your extenstion is still not loading, you can try to force register it:
   1. The VpnExtension will be at `Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
 1. Run `run pluginkit -a <your appex file>`, e.g. `pluginkit -a /Users/$USER/Library/Developer/Xcode/DerivedData/macos-bnidlwvulcdazjfxleynwzkychqi/Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
 
+You may need to run the `lsregister` garbage collector to make sure old entries
+in the Launch Services database are cleared:
+
+```
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -gc
+```
+
 #### Delete the existing VPN configuration
 
 You may want to also delete the VPN configurations:
@@ -183,7 +190,6 @@ You may want to also delete the VPN configurations:
 1. Go to *VPN*
 1. Press the Info button for the Outline service
 1. Press *Remove Configuration…* and confirm
-
 
 #### Restart
 
