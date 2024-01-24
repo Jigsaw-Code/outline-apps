@@ -57,11 +57,6 @@
     <source-file
       src="android/libs/tun2socks.aar"
       target-dir="app/src/main/libs" />
-    <!-- These are JNI libraries with debug symbols required for crash reporting tools. -->
-    <source-file
-      src="android/libs/obj"
-      target-dir="app/" />
-
     <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
     <resource-file src="android/resources/bypass_subnets.xml" target="res/values/bypass_subnets.xml" />
     <resource-file src="android/resources/strings/" target="res/" />

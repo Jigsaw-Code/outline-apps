@@ -15,19 +15,17 @@
 // limitations under the License.
 
 const fs = require('fs/promises');
+// const child_process = require('child_process');
 const path = require('node:path');
 
 const ANDROID_LIBS_FOLDER_PATH = path.join('plugins', 'cordova-plugin-outline', 'android', 'libs');
 const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('output', 'build', 'android');
 
-module.exports = async function (context) {
+module.exports = async function () {
   console.log('Copying Android third party libraries...');
   await fs.mkdir(ANDROID_LIBS_FOLDER_PATH, {recursive: true});
   await fs.copyFile(
     path.join(TUN2SOCKS_ANDROID_FOLDER_PATH, 'tun2socks.aar'),
     path.join(ANDROID_LIBS_FOLDER_PATH, 'tun2socks.aar')
   );
-  await fs.cp(path.join(TUN2SOCKS_ANDROID_FOLDER_PATH, 'jni'), path.join(ANDROID_LIBS_FOLDER_PATH, 'obj'), {
-    recursive: true,
-  });
 };
