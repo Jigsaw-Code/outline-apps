@@ -150,13 +150,18 @@ const sharedCSS = css`
     content: '⚠️ ';
   }
 
-  .card-provider-message-info,
-  .card-provider-message-contact {
-    color: var(--outline-primary);
+  .card-provider-message-info {
+    color: var(--outline-medium-gray);
+    font-style: italic;
+  }
+
+  .card-provider-message-info::before {
+    content: 'ℹ ';
   }
 
   .card-provider-message-contact {
     cursor: pointer;
+    color: var(--outline-primary);
     text-decoration: underline;
   }
 `;
@@ -178,8 +183,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
 
   if (Boolean(server.message && server.contact) && !hasErrorMessage) {
     messages.providerMessageType = server.message.type;
-    messages.providerMessage = localize(server.message.content);
-    messages.providerEmail = server.contact.email;
+    messages.providerMessage = server.message.content;
+    messages.providerEmail = server.contact?.email;
   }
 
   const dispatchers = {
