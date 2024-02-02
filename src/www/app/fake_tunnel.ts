@@ -14,7 +14,8 @@
 
 import * as errors from '../model/errors';
 
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
+import {Tunnel, TunnelStatus} from './tunnel';
+import {ShadowsocksSessionConfig} from '../model/shadowsocks_session_config';
 
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between

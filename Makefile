@@ -7,7 +7,7 @@ GOBIND=env PATH="$(GOBIN):$(PATH)" "$(GOMOBILE)" bind
 IMPORT_HOST=github.com
 IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-client
 
-.PHONY: android apple linux windows
+.PHONY: android apple linux windows browser
 
 all: android apple linux windows
 
@@ -74,3 +74,6 @@ $(XGO): go.mod
 go.mod: tools.go
 	go mod tidy
 	touch go.mod
+
+browser:
+	echo 'browser environment: nothing to do'

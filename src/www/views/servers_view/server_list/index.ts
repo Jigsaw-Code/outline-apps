@@ -34,11 +34,11 @@ export class ServerList extends PolymerElement {
 
         server-row-card {
           margin: 0 auto 8px auto;
-          height: 130px;
+          height: 200px;
         }
 
         server-hero-card {
-          height: 400px;
+          height: 500px;
         }
       </style>
 

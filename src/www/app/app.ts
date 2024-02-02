@@ -589,7 +589,7 @@ export class App {
   // Helpers:
 
   private makeServerListItem(server: Server): ServerListItem {
-    return {
+    const serverListItem: ServerListItem = {
       disabled: false,
       errorMessageId: server.errorMessageId,
       isOutlineServer: server.isOutlineServer,
@@ -598,6 +598,25 @@ export class App {
       id: server.id,
       connectionState: ServerConnectionState.DISCONNECTED,
     };
+
+    if (server.sessionConfig?.extra) {
+      const extraParams = server.sessionConfig.extra;
+
+      if (['error', 'warning', 'info'].includes(extraParams.messageType) && extraParams.messageContent) {
+        serverListItem.message = {
+          type: extraParams.messageType as 'error' | 'warning' | 'info',
+          content: extraParams.messageContent,
+        };
+      }
+
+      if (extraParams.contactEmail) {
+        serverListItem.contact = {
+          email: extraParams.email,
+        };
+      }
+    }
+
+    return serverListItem;
   }
 
   private throttleServerConnectionChange(serverId: string, time: number) {

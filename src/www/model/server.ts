@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {ShadowsocksSessionConfig} from './shadowsocks_session_config';
+
 // TODO: add guidelines for this file
 
 export enum ServerType {
@@ -33,6 +35,9 @@ export interface Server {
 
   // The name of this server, as given by the user.
   name: string;
+
+  // The configuration used to connect to the server.
+  sessionConfig?: ShadowsocksSessionConfig;
 
   // The location to pull the session config from on each connection.
   sessionConfigLocation?: URL;

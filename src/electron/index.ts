@@ -25,7 +25,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 
 import * as errors from '../www/model/errors';
 
-import {ShadowsocksSessionConfig} from '../www/app/tunnel';
+import {ShadowsocksSessionConfig} from '../www/model/shadowsocks_session_config';
 import {TunnelStatus} from '../www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';

@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export interface ShadowsocksSessionConfig {
-  host?: string;
-  port?: number;
-  password?: string;
-  method?: string;
-  prefix?: string;
-}
+import {ShadowsocksSessionConfig} from '../model/shadowsocks_session_config';
 
 export const enum TunnelStatus {
   CONNECTED,

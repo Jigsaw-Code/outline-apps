@@ -123,11 +123,41 @@ const sharedCSS = css`
     grid-area: footer;
     padding: var(--outline-mini-gutter) var(--outline-gutter);
     text-align: end;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .card-error {
+  .card-footer-button {
+    align-self: end;
+  }
+
+  .card-error,
+  .card-provider-message {
+    font-family: var(--outline-font-family);
+  }
+
+  .card-error,
+  .card-provider-message-error {
     color: var(--outline-error);
-    margin: 0 var(--outline-slim-gutter);
+  }
+
+  .card-provider-message-warning {
+    color: var(--outline-warning);
+  }
+
+  .card-provider-message-warning::before {
+    content: '⚠️ ';
+  }
+
+  .card-provider-message-info,
+  .card-provider-message-contact {
+    color: var(--outline-primary);
+  }
+
+  .card-provider-message-contact {
+    cursor: pointer;
+    text-decoration: underline;
   }
 `;
 
@@ -140,12 +170,17 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     ServerConnectionState.RECONNECTING,
   ].includes(server.connectionState);
   const hasErrorMessage = Boolean(server.errorMessageId);
-
-  const messages = {
+  const messages: {[key: string]: string} = {
     serverName: server.name,
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
+
+  if (Boolean(server.message && server.contact) && !hasErrorMessage) {
+    messages.providerMessageType = server.message.type;
+    messages.providerMessage = localize(server.message.content);
+    messages.providerEmail = server.contact.email;
+  }
 
   const dispatchers = {
     beginRename: () =>
@@ -211,8 +246,17 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       `,
       footer: html`
         <footer class="card-footer">
-          <span class="card-error">${messages.error}</span>
+          <div>
+            <span class="card-error">${messages.error}</span>
+            <span class="card-provider-message card-provider-message-${messages.providerMessageType}">
+              ${messages.providerMessage}
+              <a class="card-provider-message-contact" href="mailto:${messages.providerEmail}"
+                >${messages.providerEmail}</a
+              >
+            </span>
+          </div>
           <mwc-button
+            class="card-footer-button"
             label="${messages.connectButton}"
             @click="${dispatchers.connectToggle}"
             ?disabled=${hasErrorMessage}
