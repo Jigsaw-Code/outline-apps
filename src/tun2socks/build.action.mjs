@@ -27,8 +27,18 @@ export async function main(...parameters) {
 
   const currentPlatform = os.platform() === 'win32' ? 'windows' : os.platform();
 
+  if (targetPlatform === 'browser') {
+    return;
+  }
+
   if (targetPlatform === currentPlatform && ['linux', 'windows'].includes(targetPlatform)) {
-    return spawnStream('go', 'build', '-o', `output/build/${targetPlatform}/tun2socks`, 'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron');
+    return spawnStream(
+      'go',
+      'build',
+      '-o',
+      `output/build/${targetPlatform}/tun2socks`,
+      'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron'
+    );
   }
 
   await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);

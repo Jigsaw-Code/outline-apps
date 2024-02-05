@@ -7,7 +7,7 @@ GOBIND=env PATH="$(GOBIN):$(PATH)" "$(GOMOBILE)" bind
 IMPORT_HOST=github.com
 IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-client
 
-.PHONY: android apple linux windows browser
+.PHONY: android apple linux windows
 
 all: android apple linux windows
 
@@ -34,9 +34,6 @@ apple: $(BUILDDIR)/apple/Tun2socks.xcframework
 $(BUILDDIR)/apple/Tun2socks.xcframework: $(BUILDDIR)/ios/Tun2socks.xcframework $(BUILDDIR)/macos/Tun2socks.xcframework
 	find $^ -name "Tun2socks.framework" -type d | xargs -I {} echo " -framework {} " | \
 		xargs xcrun xcodebuild -create-xcframework -output "$@"
-
-browser:
-	echo "Browser target not needed for tun2socks"
 
 XGO=$(GOBIN)/xgo
 TUN2SOCKS_VERSION=v1.16.11
