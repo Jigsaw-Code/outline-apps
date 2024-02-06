@@ -50,13 +50,13 @@ if [[ -z "${WEBPACK_MODE:-}" ]]; then
 fi
 
 # Build the Web App.
-node ../../src/build/run_action.mjs server_manager/web_app/build
+node src/build/run_action.mjs server_manager/web_app/build
 
 # Compile the Electron main process and preload to the app root folder.
 # Since Node.js on Cygwin doesn't like absolute Unix-style paths,
 # we'll use relative paths here.
-webpack --config=src/server_manager/electron_main.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
-webpack --config=src/server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+webpack --config=server_manager/electron_main.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+webpack --config=server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
 
 # Assemble everything together.
 mkdir -p "${STATIC_DIR}/server_manager"
@@ -67,10 +67,10 @@ cp -r "${BUILD_DIR}/server_manager/web_app/static" "${STATIC_DIR}/server_manager
 # in order for require() to work right in the renderer process, which
 # is loaded via a custom protocol.
 cp package-lock.json "${STATIC_DIR}"
-sed "s/0.0.0-debug/${VERSION_NAME}/g" src/server_manager/package.json > "${STATIC_DIR}/package.json"
+sed "s/0.0.0-debug/${VERSION_NAME}/g" server_manager/package.json > "${STATIC_DIR}/package.json"
 cd "${STATIC_DIR}"
 npm ci --prod --ignore-scripts
 
 # Icons.
 cd "${ROOT_DIR}"
-electron-icon-maker --input=src/server_manager/images/launcher-icon.png --output=build/server_manager/electron_app/static
+electron-icon-maker --input=server_manager/images/launcher-icon.png "--output=${BUILD_DIR}/server_manager/electron_app/static"

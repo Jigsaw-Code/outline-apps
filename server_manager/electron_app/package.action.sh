@@ -97,7 +97,7 @@ function main() {
     *) ;;
     esac
   done
-  node ../../src/build/run_action.mjs server_manager/electron_app/build --buildMode="${BUILD_MODE}" --versionName="${version_name}"
+  node src/build/run_action.mjs server_manager/electron_app/build --buildMode="${BUILD_MODE}" --versionName="${version_name}"
   package_electron
   finish_yaml_files "${staging_percentage}"
 }

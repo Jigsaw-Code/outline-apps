@@ -27,3 +27,5 @@ tools/smartdnsblock/bin/*
 !tools/smartdnsblock/bin/*.exe
 universal.apk
 xcuserdata/
+do_install_script.ts
+gcp_install_script.ts

@@ -21,7 +21,7 @@ import './ui_components/outline-step-view';
 import './ui_components/outline-region-picker-step';
 
 import {css, customElement, html, internalProperty, LitElement, property} from 'lit-element';
-import {unsafeHTML} from 'lit-html/directives/unsafe-html';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import {AppRoot} from './ui_components/app-root';
 import {BillingAccount, Project, Zone, Account} from '../model/gcp';

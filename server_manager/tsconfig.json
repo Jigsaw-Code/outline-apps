@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es2018"
+    "target": "es2018",
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true
   },
-  "extends": "../../tsconfig.json",
   "rootDir": ".",
   "include": ["**/*.ts"],
   "exclude": [

@@ -20,6 +20,8 @@ import nodeExternals from 'webpack-node-externals';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+console.log(path.resolve(__dirname, '../output/build/server_manager/electron_app/static'));
+
 export default {
   entry: path.resolve(__dirname, './electron_app/index.ts'),
   target: 'electron-main',
@@ -29,7 +31,7 @@ export default {
   },
   devtool: 'inline-source-map',
   output: {
-    path: path.resolve(__dirname, '../../build/server_manager/electron_app/static'),
+    path: path.resolve(__dirname, '../output/build/server_manager/electron_app/static'),
     filename: 'index.js',
   },
   module: {
