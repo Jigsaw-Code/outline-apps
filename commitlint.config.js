@@ -26,5 +26,10 @@ module.exports = {
         'www',
       ],
     ],
+    'type-enum': [
+      2,
+      'always',
+      ['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'proposal', 'refactor', 'revert', 'style', 'test'],
+    ],
   },
 };

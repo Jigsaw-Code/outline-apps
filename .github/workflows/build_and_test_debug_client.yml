@@ -15,9 +15,8 @@ on:
 
 # TODO: run go tests
 jobs:
-  
   web_test:
-    name: Client Web Test
+    name: Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
@@ -48,7 +47,7 @@ jobs:
           flags: unittests, www
 
   linux_debug_build:
-    name: Linux Client Debug Build
+    name: Linux Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
@@ -74,7 +73,7 @@ jobs:
         run: npm run action electron/build linux
 
   windows_debug_build:
-    name: Windows Client Debug Build
+    name: Windows Debug Build
     runs-on: windows-2019
     timeout-minutes: 10
     needs: web_test
@@ -103,7 +102,7 @@ jobs:
         run: npm run action electron/build windows
 
   macos_debug_build:
-    name: MacOS Client Debug Build
+    name: MacOS Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -144,7 +143,7 @@ jobs:
           flags: unittests, apple, macos
 
   ios_debug_build:
-    name: iOS Client Debug Build
+    name: iOS Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -185,7 +184,7 @@ jobs:
           flags: unittests, apple, ios
 
   maccatalyst_debug_build:
-    name: Mac Catalyst Client Debug Build
+    name: Mac Catalyst Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -226,7 +225,7 @@ jobs:
           flags: unittests, apple, maccatalyst
 
   android_debug_build:
-    name: Android Client Debug Build
+    name: Android Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
