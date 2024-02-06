@@ -167,6 +167,7 @@
     ]
   },
   "workspaces": [
-    "src/cordova/plugin"
+    "src/cordova/plugin",
+    "server_manager"
   ]
 }

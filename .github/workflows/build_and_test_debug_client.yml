@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test - Client
 
 concurrency:
   group: ${{ github.head_ref || github.ref }}
@@ -15,8 +15,9 @@ on:
 
 # TODO: run go tests
 jobs:
+  
   web_test:
-    name: Web Test
+    name: Client Web Test
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
@@ -47,7 +48,7 @@ jobs:
           flags: unittests, www
 
   linux_debug_build:
-    name: Linux Debug Build
+    name: Linux Client Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test
@@ -73,7 +74,7 @@ jobs:
         run: npm run action electron/build linux
 
   windows_debug_build:
-    name: Windows Debug Build
+    name: Windows Client Debug Build
     runs-on: windows-2019
     timeout-minutes: 10
     needs: web_test
@@ -102,7 +103,7 @@ jobs:
         run: npm run action electron/build windows
 
   macos_debug_build:
-    name: MacOS Debug Build
+    name: MacOS Client Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -143,7 +144,7 @@ jobs:
           flags: unittests, apple, macos
 
   ios_debug_build:
-    name: iOS Debug Build
+    name: iOS Client Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -184,7 +185,7 @@ jobs:
           flags: unittests, apple, ios
 
   maccatalyst_debug_build:
-    name: Mac Catalyst Debug Build
+    name: Mac Catalyst Client Debug Build
     runs-on: macos-13
     timeout-minutes: 20
     needs: web_test
@@ -225,7 +226,7 @@ jobs:
           flags: unittests, apple, maccatalyst
 
   android_debug_build:
-    name: Android Debug Build
+    name: Android Client Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: web_test

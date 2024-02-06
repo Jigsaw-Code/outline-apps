@@ -6,6 +6,7 @@
 *.pdb
 *.sw?
 /node_modules
+/server_manager/node_modules
 /build
 /output
 /platforms
