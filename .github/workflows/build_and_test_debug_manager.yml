@@ -1,7 +1,7 @@
 name: Build and Test - Manager
 
 concurrency:
-  group: ${{ github.head_ref || github.ref }}
+  group: '${{ github.head_ref || github.ref }} Manager'
   cancel-in-progress: true
 
 on:
