@@ -1,4 +1,4 @@
-name: Build and Test - Manager
+name: Build and Test / Manager
 
 concurrency:
   group: '${{ github.head_ref || github.ref }} Manager'
@@ -115,7 +115,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: .nvmrc
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: ./server_manager/package.json
 

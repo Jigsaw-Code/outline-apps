@@ -1,4 +1,4 @@
-name: Build and Test - Client
+name: Build and Test / Client
 
 concurrency:
   group: '${{ github.head_ref || github.ref }} Client'
@@ -59,7 +59,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: ./package-lock.json
 
@@ -242,7 +242,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: nvmrc
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: ./package-lock.json
 
