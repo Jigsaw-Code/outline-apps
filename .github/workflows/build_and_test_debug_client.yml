@@ -94,7 +94,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -124,7 +124,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -166,7 +166,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -208,7 +208,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -247,7 +247,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --ignore-scripts
+        run: npm ci --cache .npm --prefer-offlines
 
       - name: Install Go
         uses: actions/setup-go@v4

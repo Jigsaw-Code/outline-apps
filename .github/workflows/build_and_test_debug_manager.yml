@@ -29,7 +29,7 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Lint
         run: npm run lint
@@ -50,7 +50,7 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Manager Web Test
         run: npm run action server_manager/test
@@ -68,12 +68,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: .nvmrc
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --workspace=server_manager --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Build Linux Manager
         run: npm run action server_manager/electron_app/build linux
@@ -97,7 +97,7 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --workspace=server_manager --ignore-scripts
+        run: npm ci --cache .npm --prefer-offline
 
       - name: Build Windows Manager
         run: npm run action server_manager/electron_app/build windows
@@ -120,8 +120,8 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm set cache .npm && npm ci --workspace=server_manager --ignore-scripts
-
+        run: npm ci --cache .npm --prefer-offline
+ 
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
 
