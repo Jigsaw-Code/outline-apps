@@ -29,7 +29,7 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci --workspace=server_manager
+        run: npm ci
 
       - name: Lint
         run: npm run lint
@@ -50,7 +50,7 @@ jobs:
           cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci --workspace=server_manager
+        run: npm ci
 
       - name: Manager Web Test
         run: npm run action server_manager/test
