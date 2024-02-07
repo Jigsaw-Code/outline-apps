@@ -24,11 +24,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm ci --workspace=server_manager
 
       - name: Lint
         run: npm run lint
@@ -44,11 +45,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm ci --workspace=server_manager
 
       - name: Manager Web Test
         run: npm run action server_manager/test
@@ -66,36 +68,39 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: .nvmrc
           cache: npm
+          cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm ci --workspace=server_manager --prod --ignore-scripts
 
       - name: Build Linux Manager
         run: npm run action server_manager/electron_app/build linux
 
-  windows_debug_build:
-    name: Windows Debug Build
-    runs-on: windows-2019
-    needs: web_test
-    env:
-      SENTRY_DSN: debug
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
+  # TODO(daniellacosse): port bash scripts to windows so we can build the manager on windows
+  # windows_debug_build:
+  #   name: Windows Debug Build
+  #   runs-on: windows-2019
+  #   needs: web_test
+  #   env:
+  #     SENTRY_DSN: debug
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2.3.4
 
-      - name: Install Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: npm
+  #     - name: Install Node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version-file: .nvmrc
+  #         cache: npm
+  #         cache-dependency-path: ./server_manager/package.json
 
-      - name: Install NPM Dependencies
-        run: npm ci
+  #     - name: Install NPM Dependencies
+  #       run: npm ci --workspace=server_manager --prod --ignore-scripts
 
-      - name: Build Windows Manager
-        run: npm run action server_manager/electron_app/build windows
+  #     - name: Build Windows Manager
+  #       run: npm run action server_manager/electron_app/build windows
       
   mac_debug_build:
     name: MacOS Debug Build
@@ -110,11 +115,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: .nvmrc
           cache: npm
+          cache-dependency-path: ./server_manager/package.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm ci --workspace=server_manager --prod --ignore-scripts
 
       - name: Set XCode Version
         run: sudo xcode-select -switch /Applications/Xcode_13.2.app
