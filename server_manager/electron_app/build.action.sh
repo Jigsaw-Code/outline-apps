@@ -69,7 +69,6 @@ cp -r "${BUILD_DIR}/server_manager/web_app/static" "${STATIC_DIR}/server_manager
 cp package-lock.json "${STATIC_DIR}"
 sed "s/0.0.0-debug/${VERSION_NAME}/g" server_manager/package.json > "${STATIC_DIR}/package.json"
 cd "${STATIC_DIR}"
-npm ci --prod --ignore-scripts
 
 # Icons.
 cd "${ROOT_DIR}"
