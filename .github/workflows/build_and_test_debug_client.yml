@@ -31,7 +31,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm set cache .npm && npm ci
 
       - name: Run Linter
         run: npm run action lint
@@ -64,7 +64,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -94,7 +94,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -124,7 +124,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -166,7 +166,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -208,7 +208,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -247,7 +247,7 @@ jobs:
           cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci --prod --ignore-scripts
+        run: npm set cache .npm && npm ci --prod --ignore-scripts
 
       - name: Install Go
         uses: actions/setup-go@v4
