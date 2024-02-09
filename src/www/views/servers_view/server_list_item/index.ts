@@ -21,6 +21,7 @@ export enum ServerListItemEvent {
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',
   RENAME = 'ShowServerRename',
+  SHARE = 'ShareServer',
 }
 
 /**
@@ -41,6 +42,7 @@ export interface ServerListItem {
   contact?: {
     email: string;
   };
+  canShare?: boolean;
 }
 
 /**

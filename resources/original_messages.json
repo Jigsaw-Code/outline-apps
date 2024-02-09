@@ -537,6 +537,14 @@
     "description": "The success message after renaming a server in the application.",
     "message": "Server renamed"
   },
+  "server_share": {
+    "description": "The text of an option displayed in a server card's options menu to tell the application to share the server's access key with another application.",
+    "message": "Share"
+  },
+  "server_share_text": {
+    "description": "The text of a message that appears when the user clicks the Share option in a server card's options menu.",
+    "message": "This is an access key for an Outline Server. To use it, download the Outline app from the App Store or Google Play."
+  },
   "servers_menu_item": {
     "description": "The menu item text to navigate to the list of servers.",
     "message": "Servers"

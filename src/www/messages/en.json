@@ -103,6 +103,8 @@
   "server-forgotten-undo": "Server “{serverName}” has been restored.",
   "server-rename": "Rename",
   "server-rename-complete": "Server renamed",
+  "server-share": "Share",
+  "server-share-text": "This is an access key for an Outline Server. To use it, download the Outline app from the App Store or Google Play.",
   "servers-menu-item": "Servers",
   "servers-page-title": "Outline",
   "submit": "Submit",

@@ -33,6 +33,9 @@ export interface Server {
   // A type specifying the manner in which the Server connects.
   readonly type: ServerType;
 
+  // The access key used to connect to the server.
+  accessKey: string;
+
   // The name of this server, as given by the user.
   name: string;
 
