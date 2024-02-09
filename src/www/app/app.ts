@@ -130,6 +130,8 @@ export class App {
     this.rootEl.addEventListener('DisconnectPressed', this.disconnectServer.bind(this));
     this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
     this.rootEl.addEventListener('RenameRequested', this.renameServer.bind(this));
+    this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
+    this.rootEl.addEventListener('ShareServer', this.shareServer.bind(this));
     this.rootEl.addEventListener('QuitPressed', this.quitApplication.bind(this));
     this.rootEl.addEventListener('AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
     this.rootEl.addEventListener('ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
@@ -378,6 +380,23 @@ export class App {
     this.serverRepo.rename(serverId, newName);
   }
 
+  private async shareServer(event: CustomEvent) {
+    const {serverId} = event.detail;
+    const server = this.getServerByServerId(serverId);
+
+    // TODO: fallback to copying to clipboard if share is not available
+    if (!navigator.share) {
+      console.warn('Web Share API not available');
+      return;
+    }
+
+    await navigator.share({
+      title: server.name || 'Outline Server',
+      text: this.localize('share-server-text'),
+      url: server.accessKey,
+    });
+  }
+
   private async connectServer(event: CustomEvent) {
     event.stopImmediatePropagation();
 
@@ -613,6 +632,10 @@ export class App {
         serverListItem.contact = {
           email: extraParams.email,
         };
+      }
+
+      if (extraParams.share) {
+        serverListItem.canShare = true;
       }
     }
 

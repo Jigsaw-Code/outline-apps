@@ -45,6 +45,7 @@ export class OutlineServer implements Server {
         break;
       case ServerType.STATIC_CONNECTION:
       default:
+        this.accessKey = accessKey;
         this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
         break;
     }

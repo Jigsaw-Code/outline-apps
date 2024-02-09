@@ -16,7 +16,7 @@ import '@material/mwc-icon-button';
 import '@material/mwc-menu';
 import '../../server_connection_indicator';
 
-import {css, html, LitElement} from 'lit';
+import {css, html, LitElement, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
@@ -200,6 +200,10 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       element.dispatchEvent(
         new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId: server.id}, bubbles: true, composed: true})
       ),
+    share: () =>
+      element.dispatchEvent(
+        new CustomEvent(ServerListItemEvent.SHARE, {detail: {serverId: server.id}, bubbles: true, composed: true})
+      ),
     connectToggle: () =>
       element.dispatchEvent(
         new CustomEvent(isConnectedState ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
@@ -237,6 +241,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       `,
       menu: html`
         <mwc-menu ${ref(menu)} menuCorner="END">
+          ${server.canShare
+            ? html`<mwc-list-item @click="${dispatchers.share}">${localize('server-share')}</mwc-list-item>`
+            : nothing}
           <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
           <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
         </mwc-menu>
