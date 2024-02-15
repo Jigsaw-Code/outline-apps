@@ -7,6 +7,8 @@
 *.sw?
 /node_modules
 /server_manager/node_modules
+/server_manager/do_install_script.ts
+/server_manager/gcp_install_script.ts
 /build
 /output
 /platforms
@@ -27,5 +29,3 @@ tools/smartdnsblock/bin/*
 !tools/smartdnsblock/bin/*.exe
 universal.apk
 xcuserdata/
-do_install_script.ts
-gcp_install_script.ts
