@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "removeComments": false,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "rootDir": "..",
+    "lib": ["dom", "es2021"]
+  },
+  "include": ["*.ts", "../infrastructure/path_api.ts", "../types/*.d.ts"],
+  "exclude": ["node_modules"],
+  "compileOnSave": true
+}
