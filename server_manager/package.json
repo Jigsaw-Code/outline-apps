@@ -79,7 +79,7 @@
     "@types/semver": "^5.5.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
-    "electron": "19.1.9",
+    "electron": "22.3.25",
     "electron-builder": "^24.9.1",
     "electron-icon-maker": "^0.0.4",
     "electron-notarize": "^1.2.1",
