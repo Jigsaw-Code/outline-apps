@@ -1,0 +1,129 @@
+name: Build and Test / Manager
+
+concurrency:
+  group: '${{ github.head_ref || github.ref }} Manager'
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ./server_manager/package.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+      
+  web_test:
+    name: Web Test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ./server_manager/package.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Manager Web Test
+        run: npm run action server_manager/test
+      
+  linux_debug_build:
+    name: Linux Debug Build
+    runs-on: ubuntu-latest
+    needs: web_test
+    env:
+      SENTRY_DSN: debug
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ./server_manager/package.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Linux Manager
+        run: npm run action server_manager/electron_app/build linux
+
+  windows_debug_build:
+    name: Windows Debug Build
+    # TODO(daniellacosse): port bash scripts to windows so we can build the manager on windows
+    runs-on: ubuntu-latest
+    needs: web_test
+    env:
+      SENTRY_DSN: debug
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ./server_manager/package.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Windows Manager
+        run: npm run action server_manager/electron_app/build windows
+      
+  mac_debug_build:
+    name: MacOS Debug Build
+    runs-on: macos-11
+    needs: web_test
+    env:
+      SENTRY_DSN: debug
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ./server_manager/package.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+ 
+      - name: Set XCode Version
+        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
+
+      - name: Build MacOS Manager
+        run: npm run action server_manager/electron_app/build macos

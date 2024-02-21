@@ -1,7 +1,7 @@
-name: Build and Test
+name: Build and Test / Client
 
 concurrency:
-  group: ${{ github.head_ref || github.ref }}
+  group: '${{ github.head_ref || github.ref }} Client'
   cancel-in-progress: true
 
 on:
@@ -26,11 +26,12 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
-        run: npm ci
+        run: npm set cache .npm && npm ci
 
       - name: Run Linter
         run: npm run action lint
@@ -58,8 +59,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -87,8 +89,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -116,8 +119,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -157,8 +161,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -198,8 +203,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -236,8 +242,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
