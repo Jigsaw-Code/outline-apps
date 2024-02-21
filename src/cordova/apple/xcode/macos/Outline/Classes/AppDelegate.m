@@ -85,16 +85,10 @@
   self.statusItem.button.action = @selector(togglePopover);
   [self setAppIcon:@"StatusBarButtonImage"];
   self.popover = [[NSPopover alloc] init];
+  self.popover.behavior = NSPopoverBehaviorTransient;
   self.popover.contentViewController = [[NSViewController alloc] initWithNibName:@"MainViewController"
                                                                           bundle:[NSBundle mainBundle]];
   self.popover.contentViewController.view = self.window.contentView;
-  // Monitor clicks outside the popover in order to close it.
-  NSEventMask eventMask = NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown;
-  self.eventMonitor = [[EventMonitor alloc] initWithMask:eventMask handler:^(NSEvent* event) {
-    if (self.popover.isShown) {
-      [self closePopover];
-    }
-  }];
 
   if ([self wasStartedByLauncherApp]) {
     [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
