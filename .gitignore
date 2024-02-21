@@ -6,6 +6,9 @@
 *.pdb
 *.sw?
 /node_modules
+/server_manager/node_modules
+/server_manager/do_install_script.ts
+/server_manager/gcp_install_script.ts
 /build
 /output
 /platforms
