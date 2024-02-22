@@ -85,16 +85,10 @@
   self.statusItem.button.action = @selector(togglePopover);
   [self setAppIcon:@"StatusBarButtonImage"];
   self.popover = [[NSPopover alloc] init];
+  self.popover.behavior = NSPopoverBehaviorTransient;
   self.popover.contentViewController = [[NSViewController alloc] initWithNibName:@"MainViewController"
                                                                           bundle:[NSBundle mainBundle]];
   self.popover.contentViewController.view = self.window.contentView;
-  // Monitor clicks outside the popover in order to close it.
-  NSEventMask eventMask = NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown;
-  self.eventMonitor = [[EventMonitor alloc] initWithMask:eventMask handler:^(NSEvent* event) {
-    if (self.popover.isShown) {
-      [self closePopover];
-    }
-  }];
 
   if ([self wasStartedByLauncherApp]) {
     [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
@@ -103,7 +97,16 @@
       }
     }];
   } else {
-    [self showPopover];
+    // The rendering of the popover is relative to the app's status item in the status bar.
+    // Even though we've already created the status bar above, the popover is being created
+    // before the status item has been rendered in the UI. This causes the initial popover
+    // load to be "floating" and ends up aligned at the bottom of the screen. For this initial
+    // load we add a small artificial delay to prevent that from happening.
+    double delayInSeconds = 0.5;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+      [self showPopover];
+    });
   }
   [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
 }
