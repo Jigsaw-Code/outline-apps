@@ -96,14 +96,14 @@ jobs:
 
       - name: Check resources/original_messages.json
         id: changed-original-messages
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v41
         with:
           files: resources/original_messages.json
 
       - name: Collect src/www/messages Changes
         if: steps.changed-original-messages.outputs.any_changed == 'true' 
         id: changed-translated-messages
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v41
         with:
           files: src/www/messages/*.json
 
