@@ -16,7 +16,7 @@ import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
-import {ShadowsocksSessionConfig} from '../../model/shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from '../tunnel';
 
 // DON'T use these methods outside of this folder!
 
@@ -30,7 +30,6 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
       method: config.method.data,
       password: config.password.data,
       prefix: config.extra?.['prefix'],
-      extra: config.extra,
     };
   } catch (cause) {
     throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {cause});
@@ -38,7 +37,7 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
 }
 
 function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
-  const {method, password, server, server_port, prefix, extra} = JSON.parse(maybeJsonText);
+  const {method, password, server, server_port, prefix} = JSON.parse(maybeJsonText);
 
   // These are the mandatory keys.
   const missingKeys = [];
@@ -59,7 +58,6 @@ function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSe
     host: server,
     port: server_port,
     prefix,
-    extra,
   };
 }
 

@@ -14,8 +14,7 @@
 
 import * as errors from '../model/errors';
 
-import {Tunnel, TunnelStatus} from './tunnel';
-import {ShadowsocksSessionConfig} from '../model/shadowsocks_session_config';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;

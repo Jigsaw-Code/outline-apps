@@ -15,9 +15,8 @@
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {Server, ServerType} from '../../model/server';
-import {ShadowsocksSessionConfig} from '../../model/shadowsocks_session_config';
 
-import {Tunnel, TunnelStatus} from '../tunnel';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
@@ -29,7 +28,7 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  sessionConfig?: ShadowsocksSessionConfig;
+  private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
     public readonly id: string,
