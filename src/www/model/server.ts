@@ -35,7 +35,7 @@ export interface Server {
   name: string;
 
   // Error returned pertaining to the server's status
-  error: string;
+  error?: string;
 
   // The location to pull the session config from on each connection.
   sessionConfigLocation?: URL;
