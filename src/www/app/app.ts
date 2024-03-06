@@ -599,21 +599,11 @@ export class App {
       connectionState: ServerConnectionState.DISCONNECTED,
     };
 
-    if (server.sessionConfig?.extra) {
-      const extraParams = server.sessionConfig.extra;
-
-      if (['error', 'warning', 'info'].includes(extraParams.messageType) && extraParams.messageContent) {
-        serverListItem.message = {
-          type: extraParams.messageType as 'error' | 'warning' | 'info',
-          content: extraParams.messageContent,
-        };
-      }
-
-      if (extraParams.contactEmail) {
-        serverListItem.contact = {
-          email: extraParams.email,
-        };
-      }
+    if (server.error) {
+      serverListItem.message = {
+        type: 'error',
+        content: server.error,
+      };
     }
 
     return serverListItem;
