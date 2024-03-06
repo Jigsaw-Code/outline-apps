@@ -1,6 +1,6 @@
 # Outline Client
 
-![Build and Test](https://github.com/Jigsaw-Code/outline-client/actions/workflows/build_and_test_debug.yml/badge.svg?branch=master) [![Mattermost](https://badgen.net/badge/Mattermost/Outline%20Community/blue)](https://community.internetfreedomfestival.org/community/channels/outline-community) [![Reddit](https://badgen.net/badge/Reddit/r%2Foutlinevpn/orange)](https://www.reddit.com/r/outlinevpn/)
+![Build and Test](https://github.com/Jigsaw-Code/outline-client/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) [![Mattermost](https://badgen.net/badge/Mattermost/Outline%20Community/blue)](https://community.internetfreedomfestival.org/community/channels/outline-community) [![Reddit](https://badgen.net/badge/Reddit/r%2Foutlinevpn/orange)](https://www.reddit.com/r/outlinevpn/)
 
 > **Test coverage currently only tracks the Apple Libraries and core web view code:**
 >

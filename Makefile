@@ -23,7 +23,7 @@ $(BUILDDIR)/android/tun2socks.aar: $(GOMOBILE)
 
 $(BUILDDIR)/ios/Tun2socks.xcframework: $(GOMOBILE)
   # -iosversion should match what outline-client supports.
-	$(GOBIND) -iosversion=11.0 -target=ios,iossimulator -o $@ -ldflags '-w' -bundleid org.outline.tun2socks $(IMPORT_PATH)/$(ROOT_PKG)/outline/tun2socks $(IMPORT_PATH)/$(ROOT_PKG)/outline/shadowsocks
+	$(GOBIND) -iosversion=12.0 -target=ios,iossimulator -o $@ -ldflags '-w' -bundleid org.outline.tun2socks $(IMPORT_PATH)/$(ROOT_PKG)/outline/tun2socks $(IMPORT_PATH)/$(ROOT_PKG)/outline/shadowsocks
 
 $(BUILDDIR)/macos/Tun2socks.xcframework: $(GOMOBILE)
   # MACOSX_DEPLOYMENT_TARGET and -iosversion should match what outline-client supports.
