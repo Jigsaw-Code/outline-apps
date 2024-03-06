@@ -146,11 +146,6 @@
     "ios-deploy": "^1.11.4"
   },
   "main": "build/electron/electron/index.js",
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint:ts -- --fix && npm run format"
-    }
-  },
   "cordova": {
     "plugins": {
       "cordova-plugin-outline": {},
