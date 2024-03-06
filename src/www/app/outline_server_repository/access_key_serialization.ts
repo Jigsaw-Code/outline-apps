@@ -36,8 +36,14 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
-  const {method, password, server, server_port, prefix} = JSON.parse(maybeJsonText);
+function parseShadowsocksSessionConfigJson(
+  maybeJsonText: string
+): ShadowsocksSessionConfig | errors.ProviderErrorResponse | null {
+  const {method, password, server, server_port, prefix, ...rest} = JSON.parse(maybeJsonText);
+
+  if ('code' in rest && 'message' in rest) {
+    return rest as errors.ProviderErrorResponse;
+  }
 
   // These are the mandatory keys.
   const missingKeys = [];
@@ -63,7 +69,9 @@ function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSe
 
 // fetches information from a dynamic access key and attempts to parse it
 // TODO(daniellacosse): unit tests
-export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
+export async function fetchShadowsocksSessionConfig(
+  configLocation: URL
+): Promise<ShadowsocksSessionConfig | errors.ProviderErrorResponse> {
   let response;
   try {
     response = await fetch(configLocation, {cache: 'no-store', redirect: 'follow'});
@@ -76,6 +84,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
   try {
     if (responseBody.startsWith('ss://')) {
       return staticKeyToShadowsocksSessionConfig(responseBody);
+    }
+
+    if (responseBody.toLocaleUpperCase().includes('ERROR')) {
+      return {code: 0, message: responseBody, details: {}};
     }
 
     return parseShadowsocksSessionConfigJson(responseBody);

@@ -15,6 +15,12 @@
 import {Server} from './server';
 import {CustomError} from '../../infrastructure/custom_error';
 
+export interface ProviderErrorResponse<T extends object = {}> {
+  code: number;
+  message: string;
+  details: T;
+}
+
 export class ServerAlreadyAdded extends CustomError {
   constructor(public readonly server: Server) {
     super();
