@@ -36,9 +36,7 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(
-  maybeJsonText: string
-): ShadowsocksSessionConfig | null {
+function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
   const {method, password, server, server_port, prefix, error} = JSON.parse(maybeJsonText);
 
   // These are the mandatory keys.
