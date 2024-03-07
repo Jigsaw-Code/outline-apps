@@ -123,13 +123,6 @@ const sharedCSS = css`
     grid-area: footer;
     padding: var(--outline-mini-gutter) var(--outline-gutter);
     text-align: end;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .card-footer-button {
-    align-self: end;
   }
 
   .card-error {
@@ -146,9 +139,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     ServerConnectionState.RECONNECTING,
   ].includes(server.connectionState);
   const hasErrorMessage = Boolean(server.errorMessageId);
-  const messages: {[key: string]: string} = {
+  const messages = {
     serverName: server.name,
-    error: hasErrorMessage ? localize(server.errorMessageId) : server.errorMessageId,
+    error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
 
@@ -218,7 +211,6 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         <footer class="card-footer">
           <span class="card-error">${messages.error}</span>
           <mwc-button
-            class="card-footer-button"
             label="${messages.connectButton}"
             @click="${dispatchers.connectToggle}"
             ?disabled=${hasErrorMessage}
