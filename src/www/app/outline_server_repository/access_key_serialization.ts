@@ -36,8 +36,16 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
-  const {method, password, server, server_port, prefix, error} = JSON.parse(maybeJsonText);
+function parseShadowsocksSessionConfigJson(
+  maybeJsonText: string
+): ShadowsocksSessionConfig | errors.SessionConfigError | null {
+  const responseJson = JSON.parse(maybeJsonText);
+
+  if ('error' in responseJson) {
+    return responseJson.error;
+  }
+
+  const {method, password, server, server_port, prefix} = responseJson;
 
   // These are the mandatory keys.
   const missingKeys = [];
@@ -58,7 +66,6 @@ function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSe
     host: server,
     port: server_port,
     prefix,
-    error
   };
 }
 
