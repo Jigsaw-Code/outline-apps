@@ -141,6 +141,8 @@
   "geo-warsaw": "华沙",
   "geo-zurich": "苏黎世",
   "key": "密钥 {keyId}",
+  "management-api-documentation": "Server Management API 文档",
+  "manager-resources": "管理器资源",
   "manual-server-assign-firewall": "指定防火墙规则",
   "manual-server-assign-group": "分配安全组",
   "manual-server-create-firewall": "创建防火墙规则",

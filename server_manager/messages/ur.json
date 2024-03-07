@@ -141,6 +141,8 @@
   "geo-warsaw": "وارسا",
   "geo-zurich": "زیورخ",
   "key": "کلید {keyId}",
+  "management-api-documentation": "Server Management API دستاویز",
+  "manager-resources": "مینیجر کے وسائل",
   "manual-server-assign-firewall": "فائروال اصول تفویض کریں",
   "manual-server-assign-group": "سیکیورٹی گروپ تفویض کریں",
   "manual-server-create-firewall": "فائروال اصول تخلیق کریں",

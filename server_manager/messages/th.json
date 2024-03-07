@@ -141,6 +141,8 @@
   "geo-warsaw": "วอร์ซอ",
   "geo-zurich": "ซูริก",
   "key": "คีย์ {keyId}",
+  "management-api-documentation": "เอกสารประกอบของ Server Management API",
+  "manager-resources": "ทรัพยากรของผู้จัดการ",
   "manual-server-assign-firewall": "กำหนดกฎไฟร์วอลล์",
   "manual-server-assign-group": "กำหนดกลุ่มรักษาความปลอดภัย",
   "manual-server-create-firewall": "สร้างกฎไฟร์วอลล์",

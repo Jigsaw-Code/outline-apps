@@ -141,6 +141,8 @@
   "geo-warsaw": "Warskou",
   "geo-zurich": "Zürich",
   "key": "Sleutel {keyId}",
+  "management-api-documentation": "Server Management API-dokumentasie",
+  "manager-resources": "Bestuurderhulpbronne",
   "manual-server-assign-firewall": "Wys brandmuurreël toe",
   "manual-server-assign-group": "Wys sekuriteitgeroep aan",
   "manual-server-create-firewall": "Skep ’n brandmuurreël",

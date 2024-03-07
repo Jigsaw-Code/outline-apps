@@ -141,6 +141,8 @@
   "geo-warsaw": "Varsó",
   "geo-zurich": "Zürich",
   "key": "Kulcs: {keyId}",
+  "management-api-documentation": "A Server Management API dokumentációja",
+  "manager-resources": "Kezelői erőforrások",
   "manual-server-assign-firewall": "Tűzfalszabály hozzárendelése",
   "manual-server-assign-group": "Biztonsági csoport hozzárendelése",
   "manual-server-create-firewall": "Tűzfalszabály létrehozása",

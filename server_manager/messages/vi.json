@@ -141,6 +141,8 @@
   "geo-warsaw": "Warsaw",
   "geo-zurich": "Zürich",
   "key": "Khóa {keyId}",
+  "management-api-documentation": "Tài liệu về API Quản lý máy chủ",
+  "manager-resources": "Tài nguyên dành cho nhà quản lý",
   "manual-server-assign-firewall": "Gán quy tắc tường lửa",
   "manual-server-assign-group": "Gán nhóm bảo mật",
   "manual-server-create-firewall": "Tạo quy tắc cho tường lửa",

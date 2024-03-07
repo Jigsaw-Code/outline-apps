@@ -141,6 +141,8 @@
   "geo-warsaw": "ዋርሶ",
   "geo-zurich": "ዙሪክ",
   "key": "ቁልፍ {keyId}",
+  "management-api-documentation": "የአገልጋይ አስተዳደር ኤፒአይ ሰነድ",
+  "manager-resources": "የአስተዳዳሪ ንብረቶች",
   "manual-server-assign-firewall": "የፋየርዎል መመሪያዎችን ያኑሩ",
   "manual-server-assign-group": "የደኅንነት ቡድን ያኑሩ",
   "manual-server-create-firewall": "የፋይርዎል መመሪያዎችን ይፍጠሩ",

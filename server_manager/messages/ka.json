@@ -141,6 +141,8 @@
   "geo-warsaw": "ვარშავა",
   "geo-zurich": "ციურიხი",
   "key": "გასაღები {keyId}",
+  "management-api-documentation": "სერვერის მართვის API დოკუმენტაცია",
+  "manager-resources": "მენეჯერთა რესურსები",
   "manual-server-assign-firewall": "დაადგინეთ ქსელის დაცვის წესი",
   "manual-server-assign-group": "დანიშნეთ უსაფრთხოების ჯგუფი",
   "manual-server-create-firewall": "შექმენით ქსელის დაცვის წესი",

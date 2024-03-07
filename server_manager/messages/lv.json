@@ -141,6 +141,8 @@
   "geo-warsaw": "Varšava",
   "geo-zurich": "Cīrihe",
   "key": "Atslēga {keyId}",
+  "management-api-documentation": "Servera pārvaldības API dokumentācija",
+  "manager-resources": "Pārziņa resursi",
   "manual-server-assign-firewall": "Ugunsmūra kārtulas piešķiršana",
   "manual-server-assign-group": "Drošības grupas piešķiršana",
   "manual-server-create-firewall": "Ugunsmūra kārtulas izveide",

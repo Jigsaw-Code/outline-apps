@@ -141,6 +141,8 @@
   "geo-warsaw": "Varšava",
   "geo-zurich": "Zürich",
   "key": "Kľúč č. {keyId}",
+  "management-api-documentation": "Dokumentácia k rozhraniu Server Management API",
+  "manager-resources": "Zdroje správcu",
   "manual-server-assign-firewall": "Priradenie pravidla firewallu",
   "manual-server-assign-group": "Pridružiť skupinu zabezpečenia",
   "manual-server-create-firewall": "Vytvorenie pravidla firewallu",

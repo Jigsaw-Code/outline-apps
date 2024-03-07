@@ -141,6 +141,8 @@
   "geo-warsaw": "वार्सा",
   "geo-zurich": "ज्युरिक",
   "key": "की {keyId}",
+  "management-api-documentation": "Server Management API डकुमेन्ट",
+  "manager-resources": "प्रबन्धकका लागि उपलब्ध स्रोतहरू",
   "manual-server-assign-firewall": "फायरवालसम्बन्धी नियम तोक्नुहोस्",
   "manual-server-assign-group": "सुरक्षा समूह तोक्नुहोस्",
   "manual-server-create-firewall": "फायरवालसम्बन्धी नियम बनाउनुहोस्",

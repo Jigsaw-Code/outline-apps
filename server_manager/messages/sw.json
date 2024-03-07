@@ -141,6 +141,8 @@
   "geo-warsaw": "Warsaw",
   "geo-zurich": "Zürich",
   "key": "Kitufe cha {keyId}",
+  "management-api-documentation": "Hati za Server Management API",
+  "manager-resources": "Nyenzo za Msimamizi",
   "manual-server-assign-firewall": "Weka amri ya kinga mtandao",
   "manual-server-assign-group": "Weka Kikundi cha Usalama",
   "manual-server-create-firewall": "Unda amri ya kinga mtandao",
