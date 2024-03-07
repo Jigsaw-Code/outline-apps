@@ -216,9 +216,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       `,
       footer: html`
         <footer class="card-footer">
-          <div>
-            <span class="card-error">${messages.error}</span>
-          </div>
+          <span class="card-error">${messages.error}</span>
           <mwc-button
             class="card-footer-button"
             label="${messages.connectButton}"
