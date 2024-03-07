@@ -132,37 +132,8 @@ const sharedCSS = css`
     align-self: end;
   }
 
-  .card-error,
-  .card-provider-message {
-    font-family: var(--outline-font-family);
-  }
-
-  .card-error,
-  .card-provider-message-error {
+  .card-error {
     color: var(--outline-error);
-  }
-
-  .card-provider-message-warning {
-    color: var(--outline-warning);
-  }
-
-  .card-provider-message-warning::before {
-    content: '⚠️ ';
-  }
-
-  .card-provider-message-info {
-    color: var(--outline-medium-gray);
-    font-style: italic;
-  }
-
-  .card-provider-message-info::before {
-    content: 'ℹ ';
-  }
-
-  .card-provider-message-contact {
-    cursor: pointer;
-    color: var(--outline-primary);
-    text-decoration: underline;
   }
 `;
 
@@ -180,12 +151,6 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
     connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
   };
-
-  if (Boolean(server.message && server.contact) && !hasErrorMessage) {
-    messages.providerMessageType = server.message.type;
-    messages.providerMessage = server.message.content;
-    messages.providerEmail = server.contact?.email;
-  }
 
   const dispatchers = {
     beginRename: () =>
@@ -253,12 +218,6 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         <footer class="card-footer">
           <div>
             <span class="card-error">${messages.error}</span>
-            <span class="card-provider-message card-provider-message-${messages.providerMessageType}">
-              ${messages.providerMessage}
-              <a class="card-provider-message-contact" href="mailto:${messages.providerEmail}"
-                >${messages.providerEmail}</a
-              >
-            </span>
           </div>
           <mwc-button
             class="card-footer-button"
