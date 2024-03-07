@@ -141,6 +141,8 @@
   "geo-warsaw": "ວໍຊໍ",
   "geo-zurich": "ຊູຣິກ",
   "key": "ຄີ {keyId}",
+  "management-api-documentation": "ເອກະສານ API ປະກອບການຈັດການເຊີບເວີ",
+  "manager-resources": "ຊັບພະຍາກອນຜູ້ຈັດການ",
   "manual-server-assign-firewall": "ກຳນົດກົດ firewall",
   "manual-server-assign-group": "ມອບໝາຍກຸ່ມຮັກສາຄວາມປອດໄພ",
   "manual-server-create-firewall": "ສ້າງກົດ firewall",

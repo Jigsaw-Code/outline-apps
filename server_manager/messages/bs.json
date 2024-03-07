@@ -141,6 +141,8 @@
   "geo-warsaw": "Varšava",
   "geo-zurich": "Cirih",
   "key": "Ključ {keyId}",
+  "management-api-documentation": "Dokumentacija Server Management API-ja",
+  "manager-resources": "Izvori upravitelja",
   "manual-server-assign-firewall": "Dodijelite pravilo zaštitnog zida",
   "manual-server-assign-group": "Dodijelite sigurnosnu grupu",
   "manual-server-create-firewall": "Kreirajte pravilo zaštitnog zida",

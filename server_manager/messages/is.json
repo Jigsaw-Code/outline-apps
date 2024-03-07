@@ -141,6 +141,8 @@
   "geo-warsaw": "Varsjá",
   "geo-zurich": "Zürich",
   "key": "Lykill {keyId}",
+  "management-api-documentation": "Fylgiskjöl forritaskila stjórnunar þjóns",
+  "manager-resources": "Stjórnandagögn",
   "manual-server-assign-firewall": "Úthluta eldveggsreglu",
   "manual-server-assign-group": "Úthluta öryggishóp",
   "manual-server-create-firewall": "Búa til eldveggsreglu",

@@ -141,6 +141,8 @@
   "geo-warsaw": "Varsovia",
   "geo-zurich": "Zúrich",
   "key": "Clave {keyId}",
+  "management-api-documentation": "Documentación de la API de Server Management",
+  "manager-resources": "Recursos para administradores",
   "manual-server-assign-firewall": "Asignar regla de firewall",
   "manual-server-assign-group": "Asignar grupo de seguridad",
   "manual-server-create-firewall": "Crear una regla de firewall",

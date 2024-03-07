@@ -141,6 +141,8 @@
   "geo-warsaw": "Varşava",
   "geo-zurich": "Sürix",
   "key": "Açar {keyId}",
+  "management-api-documentation": "Server İdarəetmə API Sənədləri",
+  "manager-resources": "Menecer Resursları",
   "manual-server-assign-firewall": "Təhlükəsizlik divarı qaydasını təyin edin",
   "manual-server-assign-group": "Təhlükəsizlik Qrupu təyin edin",
   "manual-server-create-firewall": "Qoruyucu divar qaydası yaradın",

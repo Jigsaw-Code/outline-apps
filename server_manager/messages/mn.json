@@ -141,6 +141,8 @@
   "geo-warsaw": "Варшав",
   "geo-zurich": "Цюрих",
   "key": "{keyId} түлхүүр",
+  "management-api-documentation": "Server Management API-н баримтжуулалт",
+  "manager-resources": "Менежерийн нөөцүүд",
   "manual-server-assign-firewall": "Галт хананы дүрэм оноох",
   "manual-server-assign-group": "Аюулгүй байдлын бүлэг оноох",
   "manual-server-create-firewall": "Галт хананы дүрэм үүсгэх",

@@ -141,6 +141,8 @@
   "geo-warsaw": "Varşova",
   "geo-zurich": "Zürih",
   "key": "{keyId} kimlikli anahtar",
+  "management-api-documentation": "Server Management API Belgeleri",
+  "manager-resources": "Yönetici Kaynakları",
   "manual-server-assign-firewall": "Güvenlik duvarı kuralı atayın",
   "manual-server-assign-group": "Güvenlik Grubu Atayın",
   "manual-server-create-firewall": "Bir güvenlik duvarı kuralı oluşturun",

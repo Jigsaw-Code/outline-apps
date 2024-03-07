@@ -141,6 +141,8 @@
   "geo-warsaw": "Варшава",
   "geo-zurich": "Цюрих",
   "key": "Ключ {keyId}",
+  "management-api-documentation": "Документация по Server Management API",
+  "manager-resources": "Ресурсы менеджера",
   "manual-server-assign-firewall": "Настройте правило брандмауэра",
   "manual-server-assign-group": "Назначьте группу безопасности",
   "manual-server-create-firewall": "Создайте правило для брандмауэра",
