@@ -16,7 +16,7 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
 import {pathToEmbeddedBinary} from '../infrastructure/electron/app_paths';
-import {ShadowsocksSessionConfig} from '../www/model/shadowsocks_session_config';
+import {ShadowsocksSessionConfig} from '../www/app/tunnel';
 import {TunnelStatus} from '../www/app/tunnel';
 import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../www/model/errors';
 
