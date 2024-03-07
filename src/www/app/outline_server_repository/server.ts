@@ -28,7 +28,6 @@ export class OutlineServer implements Server {
   private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
 
   errorMessageId?: string;
-  providerErrorResponse?: errors.ProviderErrorResponse<{}>;
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
@@ -97,15 +96,11 @@ export class OutlineServer implements Server {
 
   async connect() {
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      const sessionConfigOrError = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
 
-      if ('code' in sessionConfigOrError && 'message' in sessionConfigOrError) {
-        this.providerErrorResponse = sessionConfigOrError as errors.ProviderErrorResponse;
-
-        throw new errors.SessionConfigFetchFailed('Failed to fetch VPN information from dynamic access key.');
+      if ('error' in this.sessionConfig) {
+        this.errorMessageId = this.sessionConfig.error.message;
       }
-
-      this.sessionConfig = sessionConfigOrError as ShadowsocksSessionConfig;
     }
 
     try {

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ProviderErrorResponse} from './errors';
-
 // TODO: add guidelines for this file
 
 export enum ServerType {
@@ -49,9 +47,6 @@ export interface Server {
   // The message identifier corresponding to the server error state. This identifier
   // must match one of the localized app message.
   errorMessageId?: string;
-
-  // Provider error returned pertaining to the server's status
-  providerErrorResponse?: ProviderErrorResponse;
 
   // Connects to the server, redirecting the device's traffic.
   connect(): Promise<void>;

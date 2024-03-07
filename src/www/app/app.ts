@@ -599,13 +599,6 @@ export class App {
       connectionState: ServerConnectionState.DISCONNECTED,
     };
 
-    if (server.providerErrorResponse) {
-      serverListItem.message = {
-        type: 'error',
-        content: server.providerErrorResponse.message,
-      };
-    }
-
     return serverListItem;
   }
 

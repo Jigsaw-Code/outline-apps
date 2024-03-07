@@ -15,10 +15,8 @@
 import {Server} from './server';
 import {CustomError} from '../../infrastructure/custom_error';
 
-export interface ProviderErrorResponse<T extends object = {}> {
-  code: number;
+export interface SessionConfigError {
   message: string;
-  details: T;
 }
 
 export class ServerAlreadyAdded extends CustomError {

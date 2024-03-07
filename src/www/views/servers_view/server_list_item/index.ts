@@ -34,13 +34,6 @@ export interface ServerListItem {
   id: string;
   name: string;
   connectionState: ServerConnectionState;
-  message?: {
-    type: 'error' | 'warning' | 'info';
-    content: string;
-  };
-  contact?: {
-    email: string;
-  };
 }
 
 /**
