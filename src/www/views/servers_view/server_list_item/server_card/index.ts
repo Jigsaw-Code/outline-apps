@@ -127,6 +127,7 @@ const sharedCSS = css`
 
   .card-error {
     color: var(--outline-error);
+    margin: 0 var(--outline-slim-gutter);
   }
 `;
 
@@ -139,6 +140,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     ServerConnectionState.RECONNECTING,
   ].includes(server.connectionState);
   const hasErrorMessage = Boolean(server.errorMessageId);
+
   const messages = {
     serverName: server.name,
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
