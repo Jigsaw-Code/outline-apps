@@ -66,9 +66,7 @@ function parseShadowsocksSessionConfigJson(
 
 // fetches information from a dynamic access key and attempts to parse it
 // TODO(daniellacosse): unit tests
-export async function fetchShadowsocksSessionConfig(
-  configLocation: URL
-): Promise<ShadowsocksSessionConfig> {
+export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
   let response;
   try {
     response = await fetch(configLocation, {cache: 'no-store', redirect: 'follow'});

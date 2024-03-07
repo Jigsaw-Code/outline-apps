@@ -589,7 +589,7 @@ export class App {
   // Helpers:
 
   private makeServerListItem(server: Server): ServerListItem {
-    const serverListItem: ServerListItem = {
+    return {
       disabled: false,
       errorMessageId: server.errorMessageId,
       isOutlineServer: server.isOutlineServer,
@@ -598,8 +598,6 @@ export class App {
       id: server.id,
       connectionState: ServerConnectionState.DISCONNECTED,
     };
-
-    return serverListItem;
   }
 
   private throttleServerConnectionChange(serverId: string, time: number) {
