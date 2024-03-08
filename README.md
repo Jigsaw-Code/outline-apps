@@ -6,7 +6,7 @@
 
 Outline makes it easy to create a VPN server, giving anyone access to the free and open internet.
 
-We have two core apps: [Ouline Manager](./server_manager) and [Ouline Client](./src).
+We have two core apps: [Ouline Manager](./server_manager) and [Ouline Client](./src). Go to https://getoutline.org for ready-to-use versions of both.
 
 ### Outline Manager
 
