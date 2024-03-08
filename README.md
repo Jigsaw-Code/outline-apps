@@ -16,6 +16,8 @@ The Outline Manager is a graphical user interface for managing Outline servers. 
 
 The Outline Client is a cross-platform proxy client for Windows, macOS, iOS, Android, and Linux. The Outline Client is designed for use with the server deployed with the Outline Manager, but it is also fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
+# TODO: Move this detail into its own client folder.
+
 ![Build and Test](https://github.com/Jigsaw-Code/outline-client/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/Jigsaw-Code/outline-client/branch/master/graph/badge.svg?token=gasD8v5tjn)](https://codecov.io/gh/Jigsaw-Code/outline-client)
 
 > [!NOTE]
