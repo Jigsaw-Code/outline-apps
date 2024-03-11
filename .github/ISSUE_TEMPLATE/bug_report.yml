@@ -71,6 +71,12 @@ body:
         - Windows
     validations:
       required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating System Version
+      description: The version of the operating system that you are running.
+      placeholder: "Sonoma 14.3.1"
   - type: textarea
     id: extra
     attributes:
