@@ -27,6 +27,13 @@ body:
     validations:
       required: true
   - type: textarea
+    id: use-case
+    attributes:
+      label: "What are you trying to do? What is your use case??"
+      description: "Describe the motivation or the concrete use case."
+    validations:
+      required: true
+  - type: textarea
     id: problem
     attributes:
       label: Is your feature request related to a problem? Please describe it.
@@ -38,13 +45,6 @@ body:
     attributes:
       label: Describe the solution you'd like.
       description: "A clear and concise description of what you want to happen."
-    validations:
-      required: true
-  - type: textarea
-    id: use-case
-    attributes:
-      label: "What is the motivation / use case for changing the behavior?"
-      description: "Describe the motivation or the concrete use case."
     validations:
       required: true
   - type: textarea
