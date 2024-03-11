@@ -15,10 +15,6 @@
 import {Server} from './server';
 import {CustomError} from '../../infrastructure/custom_error';
 
-export interface SessionConfigError {
-  message: string;
-}
-
 export class ServerAlreadyAdded extends CustomError {
   constructor(public readonly server: Server) {
     super();
