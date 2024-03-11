@@ -29,7 +29,7 @@ set PWD=%~dp0%
 
 :: Install and start the service, configuring it to restart on boot.
 :: NOTE: spaces after the arguments are necessary for a correct installation, do not remove!
-%SystemRoot%\System32\sc create OutlineService binpath= "%PWD%OutlineService.exe" displayname= "OutlineService" start= "auto"
+%SystemRoot%\System32\sc create OutlineService binpath= "\"%PWD%OutlineService.exe\"" displayname= "OutlineService" start= "auto"
 %SystemRoot%\System32\net start OutlineService
 
 :: This is for the client: sudo-prompt discards stdout/stderr if the script
