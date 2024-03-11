@@ -96,13 +96,7 @@ export class OutlineServer implements Server {
 
   async connect() {
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      const sessionConfigOrError = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
-
-      if ('error' in sessionConfigOrError) {
-        throw new errors.SessionConfigFetchFailed((sessionConfigOrError.error as errors.SessionConfigError).message);
-      }
-
-      this.sessionConfig = sessionConfigOrError;
+      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
     }
 
     try {

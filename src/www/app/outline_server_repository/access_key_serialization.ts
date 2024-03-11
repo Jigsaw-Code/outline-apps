@@ -36,13 +36,11 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(
-  maybeJsonText: string
-): ShadowsocksSessionConfig | errors.SessionConfigError | null {
-  const responseJson = JSON.parse(maybeJsonText);
+function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSessionConfig | null {
+  const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
-    return responseJson.error;
+    throw new errors.SessionConfigFetchFailed(responseJson.error.message);
   }
 
   const {method, password, server, server_port, prefix} = responseJson;
