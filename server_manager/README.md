@@ -1,5 +1,7 @@
 # Outline Manager
 
+![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_manager.yml/badge.svg?branch=master)
+
 ## Running
 
 To run the Outline Manager Electron app:
