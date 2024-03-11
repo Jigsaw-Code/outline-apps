@@ -77,7 +77,7 @@
   },
   "contact_view_exit_connection": {
     "description": "Message shown to users who are trying to contact support about an unsupported issue.",
-    "message": "The Outline team is not able to assist with connecting to a server. Please try the troubleshooting steps listed $START_OF_LINK$hereEND_OF_LINK and then contact the person who gave you the access key to troubleshoot this issue.",
+    "message": "The Outline team is not able to assist with connecting to a server. Please try the troubleshooting steps listed $START_OF_LINK$here$END_OF_LINK$ and then contact the person who gave you the access key to troubleshoot this issue.",
     "placeholders": {
       "END_OF_LINK": {
         "content": "{closeLink}"
@@ -89,7 +89,7 @@
   },
   "contact_view_exit_no_server": {
     "description": "Message shown to users who are trying to contact support about an unsupported issue.",
-    "message": "The Outline team does not distribute free or paid access keys. $START_OF_LINK$Learn more about how to get an access key.END_OF_LINK",
+    "message": "The Outline team does not distribute free or paid access keys. $START_OF_LINK$Learn more about how to get an access key.$END_OF_LINK$",
     "placeholders": {
       "END_OF_LINK": {
         "content": "{closeLink}"
