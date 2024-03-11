@@ -64,12 +64,11 @@ body:
       label: What operation system are you using?
       multiple: true
       options:
-        - iOS
         - Android
+        - iOS
+        - Linux
         - macOS
         - Windows
-        - Linux
-        - Other (please specify)
     validations:
       required: true
   - type: textarea
@@ -81,5 +80,5 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please submit feedback through the app and label it with this issue
-        number.
+        Once you submit this issue, please submit feedback through the app and
+        label it with this issue number.
