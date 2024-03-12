@@ -29,7 +29,7 @@ body:
   - type: textarea
     id: use-case
     attributes:
-      label: "What are you trying to do? What is your use case??"
+      label: "What are you trying to do? What is your use case?"
       description: "Describe the motivation or the concrete use case."
     validations:
       required: true
