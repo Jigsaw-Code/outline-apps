@@ -141,6 +141,8 @@
   "geo-warsaw": "ဝါဆော",
   "geo-zurich": "ဇူးရစ်ခ်",
   "key": "ကီး {keyId}",
+  "management-api-documentation": "ဆာဗာစီမံခန့်ခွဲမှု API မှတ်တမ်း",
+  "manager-resources": "မန်နေဂျာရင်းမြစ်",
   "manual-server-assign-firewall": "Firewall စည်းမျဉ်း သတ်မှတ်ပါ",
   "manual-server-assign-group": "‘လုံခြုံရေးအုပ်စု’ သတ်မှတ်ခြင်း",
   "manual-server-create-firewall": "Firewall စည်းမျဉ်း ပြုလုပ်ပါ",

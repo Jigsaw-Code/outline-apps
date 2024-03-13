@@ -141,6 +141,8 @@
   "geo-warsaw": "Varsova",
   "geo-zurich": "Zürich",
   "key": "Avain {keyId}",
+  "management-api-documentation": "Palvelimen Management API ‑tiedot",
+  "manager-resources": "Hallinnoijan materiaalit",
   "manual-server-assign-firewall": "Määritä palomuurisääntö",
   "manual-server-assign-group": "Määritä suojausryhmä",
   "manual-server-create-firewall": "Luo palomuurisääntö",

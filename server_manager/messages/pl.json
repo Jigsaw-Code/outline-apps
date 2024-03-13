@@ -141,6 +141,8 @@
   "geo-warsaw": "Warszawa",
   "geo-zurich": "Zurych",
   "key": "Klucz {keyId}",
+  "management-api-documentation": "Dokumentacja interfejsu Server Management API",
+  "manager-resources": "Zasoby dla menedżerów",
   "manual-server-assign-firewall": "Przypisz regułę zapory sieciowej",
   "manual-server-assign-group": "Przypisz grupę zabezpieczeń",
   "manual-server-create-firewall": "Utwórz regułę zapory sieciowej",

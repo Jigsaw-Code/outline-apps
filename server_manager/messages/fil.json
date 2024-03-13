@@ -141,6 +141,8 @@
   "geo-warsaw": "Warsaw",
   "geo-zurich": "Zürich",
   "key": "Key {keyId}",
+  "management-api-documentation": "Dokumentasyon ng Server Management API",
+  "manager-resources": "Mga Resource ng Manager",
   "manual-server-assign-firewall": "Magtalaga ng panuntunan sa firewall",
   "manual-server-assign-group": "Magtalaga ng Grupong Panseguridad",
   "manual-server-create-firewall": "Gumawa ng panuntunan sa firewall",

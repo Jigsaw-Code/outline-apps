@@ -141,6 +141,8 @@
   "geo-warsaw": "Varșovia",
   "geo-zurich": "Zürich",
   "key": "Cheia {keyId}",
+  "management-api-documentation": "Documentație pentru API-ul Server Management",
+  "manager-resources": "Resurse pentru manageri",
   "manual-server-assign-firewall": "Atribuiți regula de firewall",
   "manual-server-assign-group": "Atribuiți un grup de securitate",
   "manual-server-create-firewall": "Creați o regulă pentru firewall",

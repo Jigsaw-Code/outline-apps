@@ -141,6 +141,8 @@
   "geo-warsaw": "Warsaw",
   "geo-zurich": "Zürich",
   "key": "Kunci {keyId}",
+  "management-api-documentation": "Dokumentasi Server Management API",
+  "manager-resources": "Referensi Pengelola",
   "manual-server-assign-firewall": "Tetapkan aturan firewall",
   "manual-server-assign-group": "Tetapkan Grup Keamanan",
   "manual-server-create-firewall": "Buat aturan firewall",

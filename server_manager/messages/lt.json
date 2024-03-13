@@ -141,6 +141,8 @@
   "geo-warsaw": "Varšuva",
   "geo-zurich": "Ciurichas",
   "key": "Raktas: {keyId}",
+  "management-api-documentation": "Serverio valdymo API dokumentacija",
+  "manager-resources": "Valdytojo ištekliai",
   "manual-server-assign-firewall": "Priskirkite užkardos taisyklę",
   "manual-server-assign-group": "Priskirkite saugos grupes",
   "manual-server-create-firewall": "Sukurkite užkardos taisyklę",

@@ -141,6 +141,8 @@
   "geo-warsaw": "Varshavë",
   "geo-zurich": "Zyrih",
   "key": "Çelësi {keyId}",
+  "management-api-documentation": "Dokumentacioni për API-në e menaxhimit të serverit",
+  "manager-resources": "Burimet e menaxherit",
   "manual-server-assign-firewall": "Cakto rregullin e murit mbrojtës",
   "manual-server-assign-group": "Cakto grupin e sigurisë",
   "manual-server-create-firewall": "Krijo një rregull të murit mbrojtës",

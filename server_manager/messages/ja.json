@@ -141,6 +141,8 @@
   "geo-warsaw": "ワルシャワ",
   "geo-zurich": "チューリッヒ",
   "key": "キー: {keyId}",
+  "management-api-documentation": "Server Management API ドキュメント",
+  "manager-resources": "マネージャー向けリソース",
   "manual-server-assign-firewall": "ファイアウォール ルールの割り当て",
   "manual-server-assign-group": "セキュリティ グループの割り当て",
   "manual-server-create-firewall": "ファイアウォール ルールの作成",

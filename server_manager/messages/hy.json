@@ -141,6 +141,8 @@
   "geo-warsaw": "Վարշավա",
   "geo-zurich": "Ցյուրիխ",
   "key": "Բանալի {keyId}",
+  "management-api-documentation": "Server Management API-ի փաստաթղթեր",
+  "manager-resources": "Կառավարչի ռեսուրսներ",
   "manual-server-assign-firewall": "Կարգավորեք հրապատի կանոն",
   "manual-server-assign-group": "Անվտանգության խմբի նշանակում",
   "manual-server-create-firewall": "Ստեղծեք հրապատի կանոն",

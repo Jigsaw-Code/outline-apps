@@ -141,6 +141,8 @@
   "geo-warsaw": "ורשה",
   "geo-zurich": "ציריך",
   "key": "מפתח {keyId}",
+  "management-api-documentation": "תיעוד של Server Management API",
+  "manager-resources": "מקורות מידע למנהלים",
   "manual-server-assign-firewall": "הגדרת כלל לחומת האש",
   "manual-server-assign-group": "הקצאת קבוצת אבטחה",
   "manual-server-create-firewall": "יצירת כלל לחומת האש",

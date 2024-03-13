@@ -141,6 +141,8 @@
   "geo-warsaw": "Varssavi",
   "geo-zurich": "Zürich",
   "key": "Võti {keyId}",
+  "management-api-documentation": "Server Management API dokumentatsioon",
+  "manager-resources": "Halduri allikad",
   "manual-server-assign-firewall": "Tulemüüri reegli lisamine",
   "manual-server-assign-group": "Turbegrupi määramine",
   "manual-server-create-firewall": "Tulemüüri reegli loomine",

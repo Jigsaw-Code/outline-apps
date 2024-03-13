@@ -141,6 +141,8 @@
   "geo-warsaw": "வார்சா",
   "geo-zurich": "ஜூரிக்",
   "key": "{keyId} குறியீடு",
+  "management-api-documentation": "Server Management API ஆவணம்",
+  "manager-resources": "நிர்வாகி ஆதாரங்கள்",
   "manual-server-assign-firewall": "ஃபயர்வால் விதியை ஒதுக்குதல்",
   "manual-server-assign-group": "பாதுகாப்புக் குழுவை ஒதுக்குதல்",
   "manual-server-create-firewall": "ஃபயர்வால் விதியை உருவாக்குதல்",

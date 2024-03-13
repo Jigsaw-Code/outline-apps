@@ -141,6 +141,8 @@
   "geo-warsaw": "වර්සව්",
   "geo-zurich": "සූරික්",
   "key": "{keyId} යතුර",
+  "management-api-documentation": "සේවාදායක කළමනාකරණ API ලේඛනගත කිරීම",
+  "manager-resources": "කළමනාකරු සම්පත්",
   "manual-server-assign-firewall": "ගිනි පවුරු රීතිය පවරන්න",
   "manual-server-assign-group": "ආරක්‍ෂක කණ්ඩායම පවරන්න",
   "manual-server-create-firewall": "ගිනි පවුරු රීතියක් සාදන්න",

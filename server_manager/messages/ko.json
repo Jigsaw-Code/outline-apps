@@ -141,6 +141,8 @@
   "geo-warsaw": "바르샤바",
   "geo-zurich": "취리히",
   "key": "키 {keyId}",
+  "management-api-documentation": "Server Management API 문서",
+  "manager-resources": "관리자 리소스",
   "manual-server-assign-firewall": "방화벽 규칙 할당",
   "manual-server-assign-group": "보안 그룹 할당",
   "manual-server-create-firewall": "방화벽 규칙 만들기",

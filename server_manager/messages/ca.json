@@ -141,6 +141,8 @@
   "geo-warsaw": "Varsòvia",
   "geo-zurich": "Zuric",
   "key": "Clau {keyId}",
+  "management-api-documentation": "Documentació de l'API de gestió del servidor",
+  "manager-resources": "Recursos del gestor",
   "manual-server-assign-firewall": "Assigna una regla de tallafoc",
   "manual-server-assign-group": "Assigna un grup de seguretat",
   "manual-server-create-firewall": "Crea una regla de tallafoc",

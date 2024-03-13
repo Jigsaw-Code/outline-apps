@@ -141,6 +141,8 @@
   "geo-warsaw": "វ៉ាសូវី",
   "geo-zurich": "ហ្ស៊ូរិច",
   "key": "លេខ​កូដ {keyId}",
+  "management-api-documentation": "ឯកសារ Server Management API",
+  "manager-resources": "ធនធានអ្នក​គ្រប់គ្រង",
   "manual-server-assign-firewall": "កំណត់បទបញ្ជាជញ្ជាំងភ្លើង",
   "manual-server-assign-group": "កំណត់ក្រុមសន្តិសុខ",
   "manual-server-create-firewall": "បង្កើតបទបញ្ជាមួយរបស់ជញ្ជាំងភ្លើង",

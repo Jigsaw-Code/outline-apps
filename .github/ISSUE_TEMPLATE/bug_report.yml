@@ -1,0 +1,90 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill out this bug report. Your
+        contribution will help make the Outline applications better for
+        everyone.
+  - type: dropdown
+    id: app
+    attributes:
+      label: Application
+      description: Which Outline application is this in relation to?
+      options:
+        - Outline Client
+        - Outline Manager
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: The list of steps that reproduce the issue.
+      placeholder: |
+        1. Open the application
+        2. Click on the menu
+        3. Notice the crash
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      description:
+  - type: textarea
+    id: observed
+    attributes:
+      label: What actually happened?
+      description:
+  - type: input
+    id: version
+    attributes:
+      label: Outline Version
+      description: |
+        The version of the application that this issue reproduces on. You can
+        find this information on the "About" page.
+      placeholder: "1.12.2 (474739)"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: What operation system are you using?
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Linux
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating System Version
+      description: The version of the operating system that you are running.
+      placeholder: "Sonoma 14.3.1"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots and Videos
+      description: |
+        If applicable, please provide a screenshot or a video of the problem.
+  - type: markdown
+    attributes:
+      value: |
+        Once you submit this issue, please submit feedback through the app and
+        label it with this issue number.
