@@ -86,6 +86,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
     return parseShadowsocksSessionConfigJson(responseBody);
   } catch (cause) {
+    if (cause instanceof errors.SessionConfigError) {
+      throw cause;
+    }
+
     throw new errors.ServerAccessKeyInvalid('Failed to parse VPN information fetched from dynamic access key.', {
       cause,
     });
