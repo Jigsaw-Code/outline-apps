@@ -218,6 +218,8 @@ export class App {
       buttonHandler = () => {
         this.showErrorDetailDialog(error);
       };
+    } else if (error instanceof errors.SessionConfigError) {
+      toastMessage = error.message;
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');

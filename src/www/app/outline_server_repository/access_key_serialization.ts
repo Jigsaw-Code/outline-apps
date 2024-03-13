@@ -36,8 +36,14 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
   }
 }
 
-function parseShadowsocksSessionConfigJson(maybeJsonText: string): ShadowsocksSessionConfig | null {
-  const {method, password, server, server_port, prefix} = JSON.parse(maybeJsonText);
+function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSessionConfig | null {
+  const responseJson = JSON.parse(responseBody);
+
+  if ('error' in responseJson) {
+    throw new errors.SessionConfigError(responseJson.error.message);
+  }
+
+  const {method, password, server, server_port, prefix} = responseJson;
 
   // These are the mandatory keys.
   const missingKeys = [];
@@ -80,6 +86,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
     return parseShadowsocksSessionConfigJson(responseBody);
   } catch (cause) {
+    if (cause instanceof errors.SessionConfigError) {
+      throw cause;
+    }
+
     throw new errors.ServerAccessKeyInvalid('Failed to parse VPN information fetched from dynamic access key.', {
       cause,
     });
