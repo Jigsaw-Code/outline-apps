@@ -23,13 +23,13 @@ The Outline Client is a cross-platform proxy client for Windows, macOS, iOS, And
 > [!NOTE]
 > Test coverage currently only tracks the Apple Libraries and core web view code.
 
-The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
+We have two core apps: [Ouline Manager](./server_manager) and [Ouline Client](./client).
 
 To join our Outline Community, [sign up for the IFF Mattermost](https://wiki.digitalrights.community/index.php?title=IFF_Mattermost).
 
 #### Requirements for all builds
 
-All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.20 installed in addition to other per-platform requirements.
+### Outline Client
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 

@@ -50,7 +50,7 @@ if [[ -z "${WEBPACK_MODE:-}" ]]; then
 fi
 
 # Build the Web App.
-node src/build/run_action.mjs server_manager/web_app/build
+node client/src/build/run_action.mjs server_manager/web_app/build
 
 # Compile the Electron main process and preload to the app root folder.
 # Since Node.js on Cygwin doesn't like absolute Unix-style paths,

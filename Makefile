@@ -1,17 +1,17 @@
-BUILDDIR=$(CURDIR)/output/build
-GOBIN=$(CURDIR)/output/bin
+BUILDDIR=$(CURDIR)/client/output/build
+GOBIN=$(CURDIR)/client/output/bin
 
 GOMOBILE=$(GOBIN)/gomobile
 # Add GOBIN to $PATH so `gomobile` can find `gobind`.
 GOBIND=env PATH="$(GOBIN):$(PATH)" "$(GOMOBILE)" bind
 IMPORT_HOST=github.com
-IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-client
+IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-apps
 
 .PHONY: android apple linux windows browser
 
 all: android apple linux windows
 
-ROOT_PKG=src/tun2socks
+ROOT_PKG=client/src/tun2socks
 # Don't strip Android debug symbols so we can upload them to crash reporting tools.
 ANDROID_BUILD_CMD=$(GOBIND) -a -ldflags '-w' -target=android -androidapi 19 -tags android -work
 

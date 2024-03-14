@@ -15,9 +15,9 @@
 import {spawn} from 'node:child_process';
 import {resolve} from 'node:path';
 
-import {downloadHttpsFile} from '../../src/build/download_file.mjs';
-import {getFileChecksum} from '../../src/build/get_file_checksum.mjs';
-import {getRootDir} from '../../src/build/get_root_dir.mjs';
+import {downloadHttpsFile} from '../../client/src/build/download_file.mjs';
+import {getFileChecksum} from '../../client/src/build/get_file_checksum.mjs';
+import {getRootDir} from '../../client/src/build/get_root_dir.mjs';
 
 /**
  * Run jsign.jar to sign `fileToSign` with a list of cli arguments stored in `options`.
