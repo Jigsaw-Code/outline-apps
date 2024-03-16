@@ -323,7 +323,7 @@ async function installLinuxRoutingServices(): Promise<void> {
   command +=
     ' && ' +
     installationFileDescriptors
-      .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`)
+      .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | (/usr/bin/shasum -a 256 -c || /usr/bin/core_perl/shasum -a 256 -c)`)
       .join(' && ');
   command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}" "${userInfo().username}"`;
 
