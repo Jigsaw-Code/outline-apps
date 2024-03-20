@@ -45,6 +45,18 @@ A Docker image with all pre-requisites for Android builds is included. To build:
 - Install dependencies with `./tools/build/build.sh npm ci`
 - Then build with `./tools/build/build.sh npm run action gulp -- build android`
 
+### Cache gradle for faster builds
+
+If you are building often, to speed up your builds you can keep hold of the Gradle installation, so it won't be downloaded again each time. Simply export this variable before you call `build.sh` above:
+
+```bash
+export OUTLINE_BUILD_CACHE_GRADLE=1
+```
+
+This can reduce the build time by approximately 1 minute.
+
+> 💡 NOTE: This feature is not officially supported, so use it at your own risk! It is [not recommended](https://github.com/Jigsaw-Code/outline-client/pull/770#pullrequestreview-393337519) for CI/CD, or if you are changing Gradle's task inputs.
+
 ### To install the APK
 
 - Connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
