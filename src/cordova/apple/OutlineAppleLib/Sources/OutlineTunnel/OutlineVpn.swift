@@ -21,6 +21,7 @@ import Tun2socks
 public class OutlineVpn: NSObject {
   public static let shared = OutlineVpn()
   private static let kVpnExtensionBundleId = "\(Bundle.main.bundleIdentifier!).VpnExtension"
+  private static let kVpnServerAddress = "Outline"
 
   public typealias Callback = (ErrorCode) -> Void
   public typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
@@ -124,9 +125,9 @@ public class OutlineVpn: NSObject {
   // MARK: Helpers
 
   private func startVpn(_ tunnelId: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
-    setupVpn() { error in
-      if error != nil {
-        DDLogError("Failed to setup VPN: \(String(describing: error))")
+    setupVpn() { success in
+      guard success else {
+        DDLogError("Failed to setup VPN")
         return completion(ErrorCode.vpnPermissionNotGranted);
       }
       let message = [MessageKey.action: Action.start, MessageKey.tunnelId: tunnelId ?? ""];
@@ -174,45 +175,30 @@ public class OutlineVpn: NSObject {
 
   // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
   // enables the existing configuration.
-  private func setupVpn(completion: @escaping(Error?) -> Void) {
-    NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
-      if let error = error {
-        DDLogError("Failed to load VPN configuration: \(error)")
-        return completion(error)
+  private func setupVpn(completion: @escaping(Bool) -> Void) {
+    getOrCreateTunnelManager() { manager in
+      guard let manager else {
+        DDLogError("Failed to setup tunnel manager")
+        return completion(false)
       }
-      var manager: NETunnelProviderManager!
-      if let managers = managers, managers.count > 0 {
-        manager = managers.first
-        let hasOnDemandRules = !(manager.onDemandRules?.isEmpty ?? true)
-        if manager.isEnabled && hasOnDemandRules {
-          self.tunnelManager = manager
-          return completion(nil)
-        }
-      } else {
-        let config = NETunnelProviderProtocol()
-        config.providerBundleIdentifier = OutlineVpn.kVpnExtensionBundleId
-        config.serverAddress = "Outline"
 
-        manager = NETunnelProviderManager()
-        manager.protocolConfiguration = config
+      guard manager.autoConnect else {
+        manager.autoConnect = true
+        return self.saveTunnelManager(manager, completion)
       }
-      // Set an on-demand rule to connect to any available network to implement auto-connect on boot
-      let connectRule = NEOnDemandRuleConnect()
-      connectRule.interfaceTypeMatch = .any
-      manager.onDemandRules = [connectRule]
-      manager.isEnabled = true
-      manager.saveToPreferences() { error in
-        if let error = error {
-          DDLogError("Failed to save VPN configuration: \(error)")
-          return completion(error)
-        }
-        self.observeVpnStatusChange(manager!)
-        self.tunnelManager = manager
-        NotificationCenter.default.post(name: .NEVPNConfigurationChange, object: nil)
-        // Workaround for https://forums.developer.apple.com/thread/25928
-        self.tunnelManager?.loadFromPreferences() { error in
-          completion(error)
-        }
+
+      self.tunnelManager = manager
+      return completion(true)
+    }
+  }
+
+  private func getOrCreateTunnelManager(_ completion: @escaping ((NETunnelProviderManager?) -> Void)) {
+    getTunnelManager() { manager in
+      if let manager = manager {
+        return completion(manager)
+      }
+      self.createTunnelManager() { newManager in
+        return completion(newManager)
       }
     }
   }
@@ -226,6 +212,27 @@ public class OutlineVpn: NSObject {
     }
   }
 
+  // Creates the application's tunnel provider manager and saves it in the VPN preferences.
+  private func createTunnelManager(_ completion: @escaping ((NETunnelProviderManager?) -> Void)) {
+    let config = NETunnelProviderProtocol()
+    config.providerBundleIdentifier = OutlineVpn.kVpnExtensionBundleId
+    config.serverAddress = OutlineVpn.kVpnServerAddress
+    config.providerConfiguration = [TunnelProviderKeys.keyVersion: 1]
+
+    let manager = NETunnelProviderManager()
+    manager.protocolConfiguration = config
+    manager.autoConnect = true
+
+    self.saveTunnelManager(manager) { success in
+      guard success else {
+        DDLogError("Failed to create new tunnel manager")
+        return completion(nil)
+      }
+      DDLogInfo("Created new tunnel manager")
+      return completion(manager)
+    }
+  }
+
   // Retrieves the application's tunnel provider manager from the VPN preferences.
   private func getTunnelManager(_ completion: @escaping ((NETunnelProviderManager?) -> Void)) {
     NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
@@ -233,11 +240,42 @@ public class OutlineVpn: NSObject {
         completion(nil)
         return DDLogError("Failed to get tunnel manager: \(String(describing: error))")
       }
-      var manager: NETunnelProviderManager?
-      if managers!.count > 0 {
-        manager = managers!.first
+
+      DDLogInfo("Loaded \(managers!.count) tunnel managers")
+      guard managers!.count > 0 else {
+        return completion(nil)
       }
-      completion(manager)
+      let manager: NETunnelProviderManager = managers!.first!
+      if manager.isStale {
+        DDLogInfo("Removing stale tunnel manager")
+        manager.removeFromPreferences() { _ in
+          return completion(nil)
+        }
+      } else {
+        return completion(manager)
+      }
+    }
+  }
+
+  // Updates the application's tunnel provider manager in the VPN preferences.
+  private func saveTunnelManager(_ manager: NETunnelProviderManager, _ completion: @escaping ((Bool) -> Void)) {
+    manager.saveToPreferences() { error  in
+      guard error == nil else {
+        DDLogError("Failed to save VPN configuration: \(error)")
+        return completion(false)
+      }
+      self.tunnelManager = manager
+      self.observeVpnStatusChange(self.tunnelManager!)
+      NotificationCenter.default.post(name: .NEVPNConfigurationChange, object: nil)
+      // Workaround for https://forums.developer.apple.com/thread/25928
+      self.tunnelManager?.loadFromPreferences() { error in
+        if let error = error {
+          DDLogError("Failed to get tunnel manager: \(error)")
+          return completion(false)
+        }
+        DDLogInfo("Saved VPN configuration")
+        return completion(true)
+      }
     }
   }
 
