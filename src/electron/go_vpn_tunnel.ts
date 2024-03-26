@@ -221,7 +221,7 @@ class GoTun2socks {
   private readonly process: ChildProcessHelper;
 
   constructor(private readonly config: ShadowsocksSessionConfig) {
-    this.process = new ChildProcessHelper(pathToEmbeddedBinary('tun2socks'));
+    this.process = new ChildProcessHelper(pathToEmbeddedBinary('tun2socks', 'tun2socks'));
   }
 
   async start(isUdpEnabled: boolean): Promise<void> {

@@ -14,7 +14,6 @@
 
 import url from 'url';
 import os from 'os';
-import fs from 'fs';
 import {spawnStream} from '../build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
@@ -43,12 +42,6 @@ export async function main(...parameters) {
   }
 
   await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);
-
-
-  // THIS IS JUST FOR DEBUGGING
-  fs.readdir(`output/build/${targetPlatform}`, (err, files) => {
-    files.forEach(console.log);
-  })
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

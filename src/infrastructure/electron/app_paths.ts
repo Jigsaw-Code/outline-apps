@@ -42,6 +42,6 @@ export function getAppPath() {
   return electronAppPath;
 }
 
-export function pathToEmbeddedBinary(filename: string) {
-  return path.join(unpackedAppPath(), 'output', 'build', os.platform(), filename + (isWindows ? '.exe' : ''));
+export function pathToEmbeddedBinary(toolname: string, filename: string) {
+  return path.join(unpackedAppPath(), 'output', 'build', os.platform(), toolname, filename + (isWindows ? '.exe' : ''));
 }
