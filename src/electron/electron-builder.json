@@ -1,6 +1,6 @@
 {
   "files": ["build/electron", "www", "resources/tray", "!node_modules/electron"],
-  "asarUnpack": ["third_party", "tools"],
+  "asarUnpack": ["output", "tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
     "output": "output/build/dist"
