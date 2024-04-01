@@ -23,13 +23,13 @@ The Outline Client is a cross-platform proxy client for Windows, macOS, iOS, And
 > [!NOTE]
 > Test coverage currently only tracks the Apple Libraries and core web view code.
 
-The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
+We have two core apps: [Ouline Manager](./server_manager) and [Ouline Client](./client).
 
 To join our Outline Community, [sign up for the IFF Mattermost](https://wiki.digitalrights.community/index.php?title=IFF_Mattermost).
 
 #### Requirements for all builds
 
-All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.20 installed in addition to other per-platform requirements.
+### Outline Client
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
@@ -44,7 +44,7 @@ npm install
 Outline clients share the same web app across all platforms. This code is located in the src/www directory. If you are making changes to the shared web app and do not need to test platform-specific functionality, you can test in a desktop browser by running:
 
 ```sh
-npm run action src/www/start
+npm run action client/src/www/start
 ```
 
 The latter command will open a browser instance running the app. Browser platform development will use fake servers to test successful and unsuccessful connections.
@@ -52,7 +52,7 @@ The latter command will open a browser instance running the app. Browser platfor
 The app logic is located in [src/www/app](src/www/app). UI components are located in [src/www/ui_components](src/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
 
 ```sh
-npm run action src/www/storybook
+npm run action client/src/www/storybook
 ```
 
 > [!NOTE]
@@ -75,7 +75,7 @@ npm run action src/www/storybook
 Certain actions take configuration flags - but since we're running them through `npm`, you'll have to use the `--` seperator to funnel them through to the underlying process. For example, to set up a MacOS project in release mode, you'd run:
 
 ```sh
-SENTRY_DSN=<your sentry dsn> npm run action cordova/setup macos -- --buildMode=release --versionName=<your version name>
+SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --buildMode=release --versionName=<your version name>
 ```
 
 #### Life of a Packet
