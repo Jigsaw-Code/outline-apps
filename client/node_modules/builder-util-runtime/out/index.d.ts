@@ -1,0 +1,13 @@
+export { CancellationToken, CancellationError } from "./CancellationToken";
+export { HttpError, createHttpError, HttpExecutor, DownloadOptions, DigestTransform, RequestHeaders, safeGetHeader, configureRequestOptions, configureRequestOptionsFromUrl, safeStringifyJson, parseJson, configureRequestUrl, } from "./httpExecutor";
+export { CustomPublishOptions, GenericServerOptions, GithubOptions, KeygenOptions, BitbucketOptions, SnapStoreOptions, PublishConfiguration, S3Options, SpacesOptions, BaseS3Options, getS3LikeProviderBaseUrl, githubUrl, PublishProvider, AllPublishOptions, } from "./publishOptions";
+export { UpdateInfo, UpdateFileInfo, WindowsUpdateInfo, BlockMapDataHolder, PackageFileInfo, ReleaseNoteInfo } from "./updateInfo";
+export { parseDn } from "./rfc2253Parser";
+export { UUID } from "./uuid";
+export { ProgressCallbackTransform, ProgressInfo } from "./ProgressCallbackTransform";
+export { parseXml, XElement } from "./xml";
+export { BlockMap } from "./blockMapApi";
+export declare const CURRENT_APP_INSTALLER_FILE_NAME = "installer.exe";
+export declare const CURRENT_APP_PACKAGE_FILE_NAME = "package.7z";
+export declare function asArray<T>(v: null | undefined | T | Array<T>): Array<T>;
+export declare function newError(message: string, code: string): Error;

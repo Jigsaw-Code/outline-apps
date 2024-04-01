@@ -1,0 +1,1 @@
+{"version":3,"file":"start.js","sourceRoot":"","sources":["../../src/cli/start.ts"],"names":[],"mappings":";;;AAAA,gBAAgB;AAChB,SAAgB,KAAK;IACnB,OAAO,CAAC,6BAA6B,CAAC,CAAA;IACtC,OAAO,OAAO,CAAC,OAAO,EAAE,CAAA;AAC1B,CAAC;AAHD,sBAGC","sourcesContent":["/** @internal */\nexport function start() {\n  require(\"electron-webpack/dev-runner\")\n  return Promise.resolve()\n}\n"]}
