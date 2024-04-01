@@ -7,7 +7,7 @@ This document describes how to develop and debug for macOS (formerly known as OS
 You will need:
 
 - An Apple Developer Account. You will need to be invited to your developer team as well.
-- XCode 13.2+ ([download](https://developer.apple.com/xcode/))
+- XCode 15.2 ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
 > NOTE: Should you encounter issues with your build, there may be apple-specific dependencies that are out of date. Run `npm run reset` and try again!
