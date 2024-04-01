@@ -13,13 +13,13 @@
 // limitations under the License.
 
 import minimist from 'minimist';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {runAction} from '../build/run_action.mjs';
+import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
+import {runAction} from '../../client/src/build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
 import fs from 'fs/promises';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getRootDir} from '../../client/src/build/get_root_dir.mjs';
 import path from 'path';
 
 const ELECTRON_BUILD_DIR = 'build';
@@ -48,9 +48,9 @@ export async function main(...parameters) {
     );
   }
 
-  await runAction('www/build', ...parameters);
-  await runAction('tun2socks/build', ...parameters);
-  await runAction('electron/build_main', ...parameters);
+  await runAction('client/src/www/build', ...parameters);
+  await runAction('client/src/tun2socks/build', ...parameters);
+  await runAction('src/electron/build_main', ...parameters);
 
   await copydir.sync(
     path.join(getRootDir(), 'src', 'electron', 'icons'),
