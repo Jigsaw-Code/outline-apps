@@ -122,7 +122,7 @@ export class App {
     document.addEventListener('resume', this.syncConnectivityStateToServerCards.bind(this));
 
     // Register handlers for events fired by Polymer components.
-    this.rootEl.addEventListener('PromptAddServerRequested', this.requestPromptAddServer.bind(this));
+    this.rootEl.$.serversView.addEventListener('add-server', this.requestPromptAddServer.bind(this));
     this.rootEl.addEventListener('AddServerConfirmationRequested', this.requestAddServerConfirmation.bind(this));
     this.rootEl.addEventListener('AddServerRequested', this.requestAddServer.bind(this));
     this.rootEl.addEventListener('IgnoreServerRequested', this.requestIgnoreServer.bind(this));
@@ -300,7 +300,6 @@ export class App {
   }
 
   private requestPromptAddServer() {
-    this.rootEl.promptAddServer();
     this.pullClipboardText();
   }
 

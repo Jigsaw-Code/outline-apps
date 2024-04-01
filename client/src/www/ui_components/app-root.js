@@ -339,7 +339,14 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </app-header>
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-          <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
+          <servers-view
+            name="servers"
+            id="serversView"
+            servers="[[servers]]"
+            localize="[[localize]]"
+            use-alt-access-message="[[useAltAccessMessage]]"
+            on-add-server="promptAddServer"
+            ></servers-view>
           <template is="dom-if" if="{{contactViewFeatureFlag}}">
             <contact-view
               name="contact"

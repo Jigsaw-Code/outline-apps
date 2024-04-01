@@ -14,14 +14,16 @@
   limitations under the License.
 */
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import {css, html, LitElement, TemplateResult} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './server_connection_indicator';
 import './server_list';
 
 import {ServerListItem as _ServerListItem} from './server_list_item';
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
+import { Localizer } from 'src/infrastructure/i18n';
 
 export type ServerListItem = _ServerListItem;
 
@@ -29,9 +31,10 @@ export type ServerListItem = _ServerListItem;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export import ServerConnectionState = _ServerConnectionState;
 
-Polymer({
-  _template: html`
-    <style>
+@customElement('servers-view')
+export class ServerList extends LitElement {
+  static styles = [
+    css`
       :host {
         width: 100%;
         height: 100%;
@@ -41,34 +44,25 @@ Polymer({
         height: -webkit-calc(100vh - 64px);
         font-size: 14px;
         line-height: 20px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: auto;
+        max-width: 400px;
       }
       :host a {
         color: var(--medium-green);
         text-decoration: none;
       }
-      .server-list-container {
+      .server-list {
         width: 100%;
         height: 100%;
-        max-width: 400px;
         margin: auto;
       }
-      .flex-column-container {
-        margin: 0 auto;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        display: -webkit-flex;
-        -webkit-flex-wrap: wrap;
-        flex-wrap: wrap;
-        -webkit-flex-direction: column;
-        flex-direction: column;
-        -webkit-flex: 1;
-        flex: 1;
-        justify-content: center;
-      }
       .header {
-        font-size: 20px;
         color: rgba(0, 0, 0, 0.87);
+        font-size: 20px;
         line-height: 32px;
         margin-top: 34px;
       }
@@ -76,14 +70,14 @@ Polymer({
         color: rgba(0, 0, 0, 0.54);
       }
       .footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
         margin: 0;
-        padding: 24px 0 16px 0;
-        border-top-width: 1px;
-        border-top-color: rgba(0, 0, 0, 0.08);
-        border-top-style: solid;
+        padding: 24px 0 16px;
+        text-align: center;
       }
       paper-button {
         display: flex;
+        flex: 1;
         flex-direction: column;
         text-transform: none;
         outline: none; /* Remove outline for Safari. */
@@ -92,61 +86,73 @@ Polymer({
         width: 192px;
         height: 192px;
       }
-    </style>
-    <div class="server-list-container">
-      <template is="dom-if" if="[[shouldShowZeroState]]">
-        <div class="flex-column-container">
-          <div class="flex-column-container">
-            <paper-button noink="" on-tap="_requestPromptAddServer">
-              <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-              <div class="header">[[localize('server-add')]]</div>
-              <div class="subtle">[[localize('server-add-zero-state-instructions')]]</div>
-            </paper-button>
-          </div>
-          <template is="dom-if" if="[[!useAltAccessMessage]]">
-            <div
-              class="footer subtle"
-              inner-h-t-m-l="[[localize('server-create-your-own-zero-state', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>', 'closeLink', '</a>')]]"
-            ></div>
-          </template>
-          <template is="dom-if" if="[[useAltAccessMessage]]">
-            <div
-              class="footer subtle"
-              inner-h-t-m-l="[[localize('server-create-your-own-zero-state-access', 'breakLine', '<br/>', 'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>', 'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>', 'closeLink', '</a>')]]"
-            ></div>
-          </template>
-        </div>
-      </template>
+    `,
+  ];
+
+  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Boolean}) useAltAccessMessage = false;
+  @property({type: Array}) servers: ServerListItem[] = [];
+
+  get shouldShowZeroState() {
+    return this.servers ? this.servers.length === 0 : false;
+  }
+
+  private requestPromptAddServer() {
+    this.dispatchEvent(new CustomEvent('add-server', {bubbles: true, composed: true}));
+  }
+
+  private get zeroStateFooter(): TemplateResult {
+    let msg;
+    if (this.useAltAccessMessage) {
+      msg = this.localize(
+        'server-create-your-own-zero-state-access',
+        'breakLine', '<br/>',
+        'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
+        'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>',
+        'closeLink', '</a>');
+    } else {
+      msg = this.localize(
+        'server-create-your-own-zero-state',
+        'breakLine', '<br/>',
+        'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
+        'closeLink', '</a>');
+    }
+    return html ` <div class="footer subtle">${unsafeHTML(msg)}</div>`;
+  }
+
+  private get renderMainContent(): TemplateResult {
+    if (this.shouldShowZeroState) {
+      return html`
+        <paper-button
+          noink=""
+          @tap="${this.requestPromptAddServer}"
+        >
+          <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+          <div class="header">${this.localize('server-add')}</div>
+          <div class="subtle">${this.localize('server-add-zero-state-instructions')}</div>
+        </paper-button>
+        ${this.zeroStateFooter}
+      `;
+    } else {
+      return html`
+        <server-list
+          .servers=${this.servers}
+          .localize=${this.localize}
+        ></server-list>
+      `;
+    }
+  }
+
+  render() {
+    return html`
+      ${this.renderMainContent}
       <user-comms-dialog
         id="autoConnectDialog"
-        localize="[[localize]]"
+        .localize=${this.localize}
         title-localization-key="auto-connect-dialog-title"
         detail-localization-key="auto-connect-dialog-detail"
         fire-event-on-hide="AutoConnectDialogDismissed"
       ></user-comms-dialog>
-      <template is="dom-if" if="[[!shouldShowZeroState]]">
-        <server-list id="serverList" servers="[[servers]]" localize="[[localize]]"></server-list>
-      </template>
-    </div>
-  `,
-
-  is: 'servers-view',
-
-  properties: {
-    localize: Function,
-    useAltAccessMessage: Boolean,
-    servers: Array,
-    shouldShowZeroState: {
-      type: Boolean,
-      computed: '_computeShouldShowZeroState(servers)',
-    },
-  },
-
-  _computeShouldShowZeroState(servers: ServerListItem[]) {
-    return servers ? servers.length === 0 : false;
-  },
-
-  _requestPromptAddServer() {
-    this.fire('PromptAddServerRequested', {});
-  },
-});
+    `;
+  }
+}
