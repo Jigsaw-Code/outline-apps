@@ -36,7 +36,7 @@ export async function main(...parameters) {
       'go',
       'build',
       '-o',
-      `output/build/${targetPlatform}/tun2socks`,
+      `output/build/${targetPlatform}/tun2socks${targetPlatform === 'windows' ? '.exe' : ''}`,
       'github.com/Jigsaw-Code/outline-client/src/tun2socks/outline/electron'
     );
   }
