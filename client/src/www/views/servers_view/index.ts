@@ -18,6 +18,7 @@ import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import '@material/mwc-button';
 import './server_connection_indicator';
 import './server_list';
 
@@ -60,6 +61,9 @@ export class ServerList extends LitElement {
         height: 100%;
         margin: auto;
       }
+      p {
+        margin: 0;
+      }
       .header {
         color: rgba(0, 0, 0, 0.87);
         font-size: 20px;
@@ -75,14 +79,18 @@ export class ServerList extends LitElement {
         padding: 24px 0 16px;
         text-align: center;
       }
-      paper-button {
+      [role="button"] {
+        align-items: center;
         display: flex;
-        flex: 1;
         flex-direction: column;
-        text-transform: none;
+        flex: 1;
+        justify-content: center;
         outline: none; /* Remove outline for Safari. */
       }
-      paper-button server-connection-indicator {
+      [role="button"]:hover {
+        cursor: pointer;
+      }
+      server-connection-indicator {
         width: 192px;
         height: 192px;
       }
@@ -117,21 +125,18 @@ export class ServerList extends LitElement {
         'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
         'closeLink', '</a>');
     }
-    return html ` <div class="footer subtle">${unsafeHTML(msg)}</div>`;
+    return html ` <p class="footer subtle">${unsafeHTML(msg)}</p>`;
   }
 
   private get renderMainContent(): TemplateResult {
     if (this.shouldShowZeroState) {
       return html`
-        <paper-button
-          noink=""
-          @tap="${this.requestPromptAddServer}"
-        >
-          <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-          <div class="header">${this.localize('server-add')}</div>
-          <div class="subtle">${this.localize('server-add-zero-state-instructions')}</div>
-        </paper-button>
-        ${this.zeroStateFooter}
+      <div role="button" @click=${this.requestPromptAddServer}>
+        <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+        <p class="header">${this.localize('server-add')}</p>
+        <p class="subtle">${this.localize('server-add-zero-state-instructions')}</p>
+      </div>
+      ${this.zeroStateFooter}
       `;
     } else {
       return html`
