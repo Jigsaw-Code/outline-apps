@@ -1,0 +1,1 @@
+{"version":3,"file":"Commands.js","sourceRoot":"","sources":["../../../src/targets/nsis/Commands.ts"],"names":[],"mappings":"","sourcesContent":["export type Commands = {\n  OutFile: string\n  VIProductVersion?: string\n  VIAddVersionKey: Array<string>\n  Unicode: boolean\n  Icon?: string\n  SetCompress?: \"off\"\n  SetCompressor?: \"zlib\"\n}\n"]}
