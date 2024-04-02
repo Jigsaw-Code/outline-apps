@@ -439,7 +439,7 @@ export class App {
       console.error(`Failed to read auto-connect dialog status, assuming not dismissed: ${e}`);
     }
     if (!dismissed) {
-      this.rootEl.$.serversView.$.autoConnectDialog.show();
+      this.rootEl.$.autoConnectDialog.show();
     }
   }
 

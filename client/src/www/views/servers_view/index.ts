@@ -144,7 +144,7 @@ export class ServerList extends LitElement {
     return unsafeHTML(msg);
   }
 
-  private get renderMainContent(): TemplateResult {
+  render() {
     if (this.shouldShowZeroState) {
       return html`
         <button type="button" @click=${this.requestPromptAddServer}>
@@ -164,18 +164,5 @@ export class ServerList extends LitElement {
         ></server-list>
       `;
     }
-  }
-
-  render() {
-    return html`
-      ${this.renderMainContent}
-      <user-comms-dialog
-        id="autoConnectDialog"
-        .localize=${this.localize}
-        title-localization-key="auto-connect-dialog-title"
-        detail-localization-key="auto-connect-dialog-detail"
-        fire-event-on-hide="AutoConnectDialogDismissed"
-      ></user-comms-dialog>
-    `;
   }
 }
