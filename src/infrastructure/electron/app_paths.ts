@@ -43,5 +43,9 @@ export function getAppPath() {
 }
 
 export function pathToEmbeddedBinary(filename: string) {
-  return path.join(unpackedAppPath(), 'output', 'build', os.platform(), filename + (isWindows ? '.exe' : ''));
+  let osName = os.platform().toString(); /* should be either 'linux' or 'win32' */
+  if (osName === 'win32') {
+    osName = 'windows';
+  }
+  return path.join(unpackedAppPath(), 'output', 'build', osName, filename + (isWindows ? '.exe' : ''));
 }
