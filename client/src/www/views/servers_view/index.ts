@@ -43,7 +43,7 @@ export class ServerList extends LitElement {
          * Subtract |header-height| to fix iOS padding, and |server-margin| to fix scrolling in Android.
          */
         height: -webkit-calc(100vh - 64px);
-        font-size: 14px;
+        font-size: .9rem;
         line-height: 20px;
 
         display: flex;
@@ -64,16 +64,29 @@ export class ServerList extends LitElement {
       p {
         margin: 0;
       }
-      .header {
-        color: rgba(0, 0, 0, 0.87);
-        font-size: 20px;
+      header {
         line-height: 32px;
         margin-top: 34px;
+        text-align: center;
       }
-      .subtle {
+      header,
+      footer {
         color: rgba(0, 0, 0, 0.54);
       }
-      .footer {
+      h1,
+      h2 {
+        margin: 0;
+      }
+      h1 {
+        color: rgba(0, 0, 0, 0.87);
+        font-size: 1.25rem;
+        font-weight: 400;
+      }
+      h2 {
+        font-size: .9rem;
+        font-weight: initial;
+      }
+      footer {
         border-top: 1px solid rgba(0, 0, 0, 0.08);
         margin: 0;
         padding: 24px 0 16px;
@@ -109,7 +122,7 @@ export class ServerList extends LitElement {
     this.dispatchEvent(new CustomEvent('add-server', {bubbles: true, composed: true}));
   }
 
-  private get zeroStateFooter(): TemplateResult {
+  private get zeroStateContent(): TemplateResult {
     let msg;
     if (this.useAltAccessMessage) {
       msg = this.localize(
@@ -125,7 +138,7 @@ export class ServerList extends LitElement {
         'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
         'closeLink', '</a>');
     }
-    return html ` <p class="footer subtle">${unsafeHTML(msg)}</p>`;
+    return html ` ${unsafeHTML(msg)} `;
   }
 
   private get renderMainContent(): TemplateResult {
@@ -133,10 +146,12 @@ export class ServerList extends LitElement {
       return html`
       <div role="button" @click=${this.requestPromptAddServer}>
         <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-        <p class="header">${this.localize('server-add')}</p>
-        <p class="subtle">${this.localize('server-add-zero-state-instructions')}</p>
+        <header>
+          <h1>${this.localize('server-add')}</h1>
+          <h2>${this.localize('server-add-zero-state-instructions')}</h2>
+        </header>
       </div>
-      ${this.zeroStateFooter}
+      <footer>${this.zeroStateContent}</footer>
       `;
     } else {
       return html`
