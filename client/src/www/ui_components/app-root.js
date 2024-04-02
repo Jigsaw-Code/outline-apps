@@ -344,9 +344,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             id="serversView"
             servers="[[servers]]"
             localize="[[localize]]"
-            use-alt-access-message="[[useAltAccessMessage]]"
+            should-show-access-key-wiki-link="[[useAltAccessMessage]]"
             on-add-server="promptAddServer"
-            ></servers-view>
+          ></servers-view>
           <template is="dom-if" if="{{contactViewFeatureFlag}}">
             <contact-view
               name="contact"

@@ -16,7 +16,7 @@
 
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-button';
 import './server_connection_indicator';
@@ -31,6 +31,7 @@ export type ServerListItem = _ServerListItem;
 // (This value is used: it's exported.)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export import ServerConnectionState = _ServerConnectionState;
+import { DirectiveResult } from 'lit/directive';
 
 @customElement('servers-view')
 export class ServerList extends LitElement {
@@ -113,7 +114,7 @@ export class ServerList extends LitElement {
   ];
 
   @property({type: Function}) localize: Localizer = msg => msg;
-  @property({type: Boolean}) useAltAccessMessage = false;
+  @property({type: Boolean}) shouldShowAccessKeyWikiLink = false;
   @property({type: Array}) servers: ServerListItem[] = [];
 
   get shouldShowZeroState() {
@@ -124,9 +125,9 @@ export class ServerList extends LitElement {
     this.dispatchEvent(new CustomEvent('add-server', {bubbles: true, composed: true}));
   }
 
-  private get zeroStateContent(): TemplateResult {
+  private get zeroStateContent(): DirectiveResult<typeof UnsafeHTMLDirective> {
     let msg;
-    if (this.useAltAccessMessage) {
+    if (this.shouldShowAccessKeyWikiLink) {
       msg = this.localize(
         'server-create-your-own-zero-state-access',
         'breakLine', '<br/>',
@@ -140,21 +141,21 @@ export class ServerList extends LitElement {
         'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
         'closeLink', '</a>');
     }
-    return html ` ${unsafeHTML(msg)} `;
+    return unsafeHTML(msg);
   }
 
   private get renderMainContent(): TemplateResult {
     if (this.shouldShowZeroState) {
       return html`
-      <button type="button" @click=${this.requestPromptAddServer}>
-        <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
-        <header>
-          <h1>${this.localize('server-add')}</h1>
-          <h2>${this.localize('server-add-zero-state-instructions')}</h2>
-        </header>
-      </button>
-      <footer>${this.zeroStateContent}</footer>
-      `;
+        <button type="button" @click=${this.requestPromptAddServer}>
+          <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+          <header>
+            <h1>${this.localize('server-add')}</h1>
+            <h2>${this.localize('server-add-zero-state-instructions')}</h2>
+          </header>
+        </button>
+        <footer>${this.zeroStateContent}</footer>
+        `;
     } else {
       return html`
         <server-list
