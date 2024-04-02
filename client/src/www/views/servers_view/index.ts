@@ -56,25 +56,23 @@ export class ServerList extends LitElement {
         color: var(--medium-green);
         text-decoration: none;
       }
-      .server-list {
-        width: 100%;
-        height: 100%;
-        margin: auto;
-      }
-      p {
-        margin: 0;
+      section {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
       header {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        justify-content: center;
         line-height: 32px;
-        margin-top: 34px;
         text-align: center;
       }
-      header,
+      h1,
+      h2,
       footer {
         color: rgba(0, 0, 0, 0.54);
-      }
-      h1,
-      h2 {
         margin: 0;
       }
       h1 {
@@ -89,7 +87,6 @@ export class ServerList extends LitElement {
       }
       footer {
         border-top: 1px solid rgba(0, 0, 0, 0.08);
-        margin: 0;
         padding: 24px 0 16px;
         text-align: center;
       }
@@ -98,7 +95,6 @@ export class ServerList extends LitElement {
         border: 0;
         display: flex;
         flex-direction: column;
-        flex: 1;
         justify-content: center;
         outline: none; /* Remove outline for Safari. */
         padding: 0;
@@ -107,8 +103,9 @@ export class ServerList extends LitElement {
         cursor: pointer;
       }
       server-connection-indicator {
-        width: 192px;
         height: 192px;
+        margin-bottom: 34px;
+        width: 192px;
       }
     `,
   ];
@@ -147,15 +144,17 @@ export class ServerList extends LitElement {
   render() {
     if (this.shouldShowZeroState) {
       return html`
-        <button type="button" @click=${this.requestPromptAddServer}>
-          <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+        <section>
           <header>
-            <h1>${this.localize('server-add')}</h1>
-            <h2>${this.localize('server-add-zero-state-instructions')}</h2>
+            <button type="button" @click=${this.requestPromptAddServer}>
+              <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+              <h1>${this.localize('server-add')}</h1>
+              <h2>${this.localize('server-add-zero-state-instructions')}</h2>
+            </button>
           </header>
-        </button>
-        <footer>${this.zeroStateContent}</footer>
-        `;
+          <footer>${this.zeroStateContent}</footer>
+        </section>
+      `;
     } else {
       return html`
         <server-list
