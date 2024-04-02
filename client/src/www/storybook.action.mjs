@@ -20,7 +20,7 @@ import {fromRollup} from '@web/dev-server-rollup';
 import image from '@rollup/plugin-image';
 
 import path from 'path';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const WWW_PATH = ['src', 'www'];
 const STORYBOOK_PATH = [...WWW_PATH, '.storybook'];

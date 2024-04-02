@@ -16,7 +16,7 @@ import chalk from 'chalk';
 import minimist from 'minimist';
 import path from 'path';
 import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 import {readFile, readdir, mkdir} from 'fs/promises';
 import * as ANDROID_IMPORTER from './android/import_messages.mjs';
 import * as IOS_IMPORTER from './apple/import_messages.mjs';

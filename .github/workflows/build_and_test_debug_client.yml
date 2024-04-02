@@ -72,7 +72,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Linux Client
-        run: npm run action client/src/electron/build linux
+        run: npm run action src/electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
@@ -102,7 +102,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Windows Client
-        run: npm run action client/src/electron/build windows
+        run: npm run action src/electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build

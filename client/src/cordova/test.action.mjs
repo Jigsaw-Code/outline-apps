@@ -19,8 +19,8 @@ import path from 'path';
 import fs from 'fs/promises';
 import rmfr from 'rmfr';
 
-import {getRootDir} from '../build/get_root_dir.mjs';
-import {spawnStream} from '../build/spawn_stream.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
+import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 
 const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';

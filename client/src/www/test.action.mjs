@@ -17,7 +17,7 @@ import url from 'url';
 import karma from 'karma';
 import puppeteer from 'puppeteer';
 import path from 'path';
-import {getRootDir} from '../build/get_root_dir.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
 
