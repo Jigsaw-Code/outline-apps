@@ -92,15 +92,17 @@ export class ServerList extends LitElement {
         padding: 24px 0 16px;
         text-align: center;
       }
-      [role="button"] {
+      button {
         align-items: center;
+        border: 0;
         display: flex;
         flex-direction: column;
         flex: 1;
         justify-content: center;
         outline: none; /* Remove outline for Safari. */
+        padding: 0;
       }
-      [role="button"]:hover {
+      button:hover {
         cursor: pointer;
       }
       server-connection-indicator {
@@ -144,13 +146,13 @@ export class ServerList extends LitElement {
   private get renderMainContent(): TemplateResult {
     if (this.shouldShowZeroState) {
       return html`
-      <div role="button" @click=${this.requestPromptAddServer}>
+      <button type="button" @click=${this.requestPromptAddServer}>
         <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
         <header>
           <h1>${this.localize('server-add')}</h1>
           <h2>${this.localize('server-add-zero-state-instructions')}</h2>
         </header>
-      </div>
+      </button>
       <footer>${this.zeroStateContent}</footer>
       `;
     } else {
