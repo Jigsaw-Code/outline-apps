@@ -4,7 +4,7 @@
   "scripts": {
     "action:help": "npm run action list",
     "action:list": "npm run action list",
-    "action": "node ./client/src/build/run_action.mjs",
+    "action": "node ./src/build/run_action.mjs",
     "clean": "rimraf client/build client/output node_modules client/node_modules client/www client/platforms client/plugins third_party/jsign/*.jar",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
