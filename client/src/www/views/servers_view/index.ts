@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-import {css, html, LitElement, TemplateResult} from 'lit';
+import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
