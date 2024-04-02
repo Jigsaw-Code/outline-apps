@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-node client/src/build/run_action.mjs server_manager/electron_app/build "$@"
+node src/build/run_action.mjs server_manager/electron_app/build "$@"
 
 cd "${BUILD_DIR}/server_manager/electron_app/static"
 
