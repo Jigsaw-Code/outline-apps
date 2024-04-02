@@ -37,20 +37,19 @@ export class ServerList extends LitElement {
   static styles = [
     css`
       :host {
-        width: 100%;
+        display: flex;
+        flex-direction: column;
+        font-size: .9rem;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
          * Subtract |header-height| to fix iOS padding, and |server-margin| to fix scrolling in Android.
          */
         height: -webkit-calc(100vh - 64px);
-        font-size: .9rem;
-        line-height: 20px;
-
-        display: flex;
-        flex-direction: column;
         justify-content: center;
+        line-height: 1.25rem;
         margin: auto;
         max-width: 400px;
+        width: 100%;
       }
       :host a {
         color: var(--medium-green);
@@ -85,6 +84,7 @@ export class ServerList extends LitElement {
       h2 {
         font-size: .9rem;
         font-weight: initial;
+        line-height: 1.5;
       }
       footer {
         border-top: 1px solid rgba(0, 0, 0, 0.08);
