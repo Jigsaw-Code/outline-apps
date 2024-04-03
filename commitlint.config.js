@@ -6,7 +6,6 @@ module.exports = {
       'always',
       [
         'client',
-        'client/build',
         'client/cordova',
         'client/cordova/android',
         'client/cordova/apple',
@@ -24,6 +23,7 @@ module.exports = {
         'service',
         'service/linux',
         'service/windows',
+        'src/build',
         'www',
       ],
     ],
