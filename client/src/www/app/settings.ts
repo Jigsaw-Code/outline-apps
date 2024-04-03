@@ -80,3 +80,4 @@ export class Settings {
     this.storage.setItem(Settings.STORAGE_KEY, storageSettingsJson);
   }
 }
+
