@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
-import {getWebpackBuildMode} from '../../client/src/build/get_webpack_build_mode.mjs';
-import {runAction} from '../../client/src/build/run_action.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
+import {runAction} from '../build/run_action.mjs';
 import {runWebpack} from '../../client/src/build/run_webpack.mjs';
 import electronMainWebpackConfigs from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
