@@ -43,7 +43,7 @@ export async function main(...parameters) {
   }
 
   // this is so cordova doesn't complain about not being in a cordova project
-  process.env.PWD = getRootDir();
+  process.env.PWD = path.resolve(getRootDir(), 'client');
 
   switch (platform + buildMode) {
     case 'android' + 'debug':

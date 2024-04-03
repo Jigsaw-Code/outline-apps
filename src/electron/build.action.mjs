@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import minimist from 'minimist';
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
 import {runAction} from '../build/run_action.mjs';
+import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
 import electron, {Platform} from 'electron-builder';
 import copydir from 'copy-dir';
 import fs from 'fs/promises';
