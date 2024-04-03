@@ -22,5 +22,6 @@
   ],
   "devDependencies": {
     "electron-builder": "^24.13.3"
-  }
+  },
+  "main": "build/electron/electron/index.js"
 }
