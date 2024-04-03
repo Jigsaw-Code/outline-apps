@@ -190,7 +190,9 @@ Polymer({
     <paper-dialog id="serverDetectedSheet" with-backdrop no-cancel-on-outside-click>
       <div class="vertical-margin">
         <div class="title">[[localize('server-access-key-detected')]]</div>
-        <div class="faded">[[localize('server-detected')]]</div>
+        <div class="faded">
+          [[localize('server-detected')]]
+        </div>
         <div class="shadow vertical-margin">
           <paper-input value="[[accessKey]]" no-label-float="" disabled="">
             <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
@@ -227,7 +229,7 @@ Polymer({
     },
   },
 
-  ready: function () {
+  ready: function() {
     this.$.serverDetectedSheet.addEventListener('opened-changed', this._openChanged.bind(this));
     this.$.addServerSheet.addEventListener('opened-changed', this._openChanged.bind(this));
     // Workaround for --paper-input-container-input-[focus|invalid] not getting applied.
@@ -236,7 +238,7 @@ Polymer({
     this.$.accessKeyInput.addEventListener('invalid-changed', this._inputInvalidChanged.bind(this));
   },
 
-  openAddServerSheet: function () {
+  openAddServerSheet: function() {
     this.$.serverDetectedSheet.close();
     this.$.addServerSheet.open();
   },
@@ -247,16 +249,16 @@ Polymer({
     this.$.serverDetectedSheet.open();
   },
 
-  isAddingServer: function () {
+  isAddingServer: function() {
     return this.$.serverDetectedSheet.opened;
   },
 
-  close: function () {
+  close: function() {
     this.$.addServerSheet.close();
     this.$.serverDetectedSheet.close();
   },
 
-  _accessKeyChanged: function () {
+  _accessKeyChanged: function() {
     // Use debounce to detect when the user has stopped typing.
     this.debounce(
       'accessKeyChanged',
@@ -267,7 +269,7 @@ Polymer({
     );
   },
 
-  _addServerFromInput: function () {
+  _addServerFromInput: function() {
     var accessKeyInput = this.$.accessKeyInput;
     if (!this.accessKey || this.accessKey === '') {
       accessKeyInput.invalid = false;
@@ -278,12 +280,12 @@ Polymer({
     }
   },
 
-  _addDetectedServer: function () {
+  _addDetectedServer: function() {
     this.fire('AddServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
-  _ignoreDetectedServer: function () {
+  _ignoreDetectedServer: function() {
     this.fire('IgnoreServerRequested', {accessKey: this.accessKey});
     this.close();
   },

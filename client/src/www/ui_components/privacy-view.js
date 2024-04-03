@@ -137,7 +137,7 @@ Polymer({
     rootPath: String,
   },
 
-  _privacyTermsAcked: function () {
+  _privacyTermsAcked: function() {
     this.fire('PrivacyTermsAcked');
   },
 });

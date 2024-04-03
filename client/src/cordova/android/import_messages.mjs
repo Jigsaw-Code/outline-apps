@@ -22,7 +22,14 @@ const XML_STRING_ID_PROPERTY = '@name';
 const XML_TEXT_CONTENT = '#';
 
 function escapeXmlCharacters(str) {
-  return str.replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/</g, '\\<').replace(/>/g, '\\>;').replace(/&/g, '\\&').replace(/\//g, "\\\\");
+  // TODO: This is not a safe way to escape XML characters. We should do it properly.
+  return str
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
+    .replace(/</g, '\\<')
+    .replace(/>/g, '\\>;')
+    .replace(/&/g, '\\&')
+    .replace(/\//g, "\\\\");
 }
 
 function getNativeLocale(locale) {

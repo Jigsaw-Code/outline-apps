@@ -90,7 +90,7 @@ Polymer({
         <div id="title" class="highlight">[[localize(titleLocalizationKey)]]</div>
         <div id="detail">[[localize(detailLocalizationKey)]]</div>
         <div id="buttons">
-          <a hidden$="[[_shouldHideLink()]]" href$="[[linkUrl]]">
+          <a hidden\$="[[_shouldHideLink()]]" href\$="[[linkUrl]]">
             <paper-button>[[localize(linkTextLocalizationKey)]]</paper-button>
           </a>
           <paper-button class="highlight" on-tap="_dismiss"
@@ -132,22 +132,22 @@ Polymer({
     fireEventOnHide: String,
   },
 
-  show: function () {
+  show: function() {
     this.$.wrapper.classList.add('active');
   },
 
-  hide: function () {
+  hide: function() {
     this.$.wrapper.classList.remove('active');
   },
 
-  _dismiss: function () {
+  _dismiss: function() {
     this.hide();
     if (!!this.fireEventOnHide) {
       this.fire(this.fireEventOnHide);
     }
   },
 
-  _shouldHideLink: function () {
+  _shouldHideLink: function() {
     return !this.linkUrl;
   },
 });
