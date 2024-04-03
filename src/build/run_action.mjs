@@ -111,12 +111,7 @@ export async function runAction(actionPath, ...parameters) {
 }
 
 async function main() {
-  // TODO(daniellacosse): Hoist the build directory to the root of the project.
-  if (process.argv[2].startsWith('server_manager')) {
-    process.env.ROOT_DIR ??= path.resolve(getRootDir(), '..');
-  } else {
-    process.env.ROOT_DIR ??= getRootDir();
-  }
+  process.env.ROOT_DIR ??= getRootDir();
   process.env.OUTPUT_DIR ??= path.join(process.env.ROOT_DIR, 'output');
   process.env.BUILD_DIR ??= path.join(process.env.OUTPUT_DIR, 'build');
   process.env.COVERAGE_DIR ??= path.join(process.env.OUTPUT_DIR, 'coverage');

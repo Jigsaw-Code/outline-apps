@@ -22,7 +22,7 @@ import rmfr from 'rmfr';
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 
-const APPLE_ROOT = path.join(getRootDir(), 'src', 'cordova', 'apple');
+const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
 const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
