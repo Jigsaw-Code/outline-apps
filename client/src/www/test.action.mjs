@@ -19,7 +19,7 @@ import puppeteer from 'puppeteer';
 import path from 'path';
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
-const KARMA_CONFIG_PATH = ['src', 'www', 'karma.conf.js'];
+const KARMA_CONFIG_PATH = ['client', 'src', 'www', 'karma.conf.js'];
 
 /**
  * @description Runs the Karma tests against the web UI.
