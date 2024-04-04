@@ -18,7 +18,7 @@ jobs:
   web_test:
     name: Web Test
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -37,20 +37,20 @@ jobs:
         run: npm run action lint
 
       - name: Build Web App
-        run: npm run action www/build
+        run: npm run action client/src/www/build
 
       - name: Test Web App
-        run: npm run action www/test
+        run: npm run action client/src/www/test
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ./output/coverage/www/coverage-final.json
+          files: ./client/src/output/coverage/www/coverage-final.json
           flags: unittests, www
 
   linux_debug_build:
     name: Linux Debug Build
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: web_test
     steps:
       - name: Checkout
@@ -72,12 +72,12 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Linux Client
-        run: npm run action electron/build linux
+        run: npm run action src/electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
     runs-on: windows-2019
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: web_test
     steps:
       - name: Support longpaths
@@ -102,7 +102,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Windows Client
-        run: npm run action electron/build windows
+        run: npm run action src/electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build
@@ -132,18 +132,18 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build macos
+        run: npm run action client/src/tun2socks/build macos
   
       - name: Test OutlineAppleLib
-        run: npm run action cordova/test macos
+        run: npm run action client/src/cordova/test macos
 
       - name: Build MacOS Client
-        run: npm run action cordova/build macos
+        run: npm run action client/src/cordova/build macos
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./output/coverage/apple/macos/TestResult.xcresult
+          xcode_archive_path: ./client/src/output/coverage/apple/macos/TestResult.xcresult
           flags: unittests, apple, macos
 
   ios_debug_build:
@@ -174,18 +174,18 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build ios  
+        run: npm run action client/src/tun2socks/build ios  
 
       - name: Test OutlineAppleLib
-        run: npm run action cordova/test ios
+        run: npm run action client/src/cordova/test ios
 
       - name: Build iOS Client
-        run: npm run action cordova/build ios
+        run: npm run action client/src/cordova/build ios
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./output/coverage/apple/ios/TestResult.xcresult
+          xcode_archive_path: ./client/src/output/coverage/apple/ios/TestResult.xcresult
           flags: unittests, apple, ios
 
   maccatalyst_debug_build:
@@ -216,24 +216,24 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action tun2socks/build maccatalyst
+        run: npm run action client/src/tun2socks/build maccatalyst
 
       - name: Test OutlineAppleLib
-        run: npm run action cordova/test maccatalyst
+        run: npm run action client/src/cordova/test maccatalyst
 
       - name: Build Mac Catalyst Client
-        run: npm run action cordova/build maccatalyst
+        run: npm run action client/src/cordova/build maccatalyst
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./output/coverage/apple/maccatalyst/TestResult.xcresult
+          xcode_archive_path: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
           flags: unittests, apple, maccatalyst
 
   android_debug_build:
     name: Android Debug Build
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: web_test
     steps:
       - name: Checkout
@@ -260,7 +260,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./tools/build/setup_linux_android.sh
+        run: bash ./client/tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action cordova/build android -- --verbose
+        run: npm run action client/src/cordova/build android -- --verbose

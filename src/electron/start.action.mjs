@@ -15,10 +15,10 @@
 import url from 'url';
 import electron from 'electron';
 
-import {runAction} from '../build/run_action.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
-import {spawnStream} from '../build/spawn_stream.mjs';
+import {runAction} from '../../client/src/build/run_action.mjs';
+import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
+import {getRootDir} from '../../client/src/build/get_root_dir.mjs';
+import {spawnStream} from '../../client/src/build/spawn_stream.mjs';
 
 /**
  * @description Builds and starts the electron application.

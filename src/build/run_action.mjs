@@ -27,11 +27,11 @@ import {spawnStream} from './spawn_stream.mjs';
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
 
-  if (actionPath in JSON.parse(await readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+  if (actionPath in JSON.parse(await readFile(path.resolve(getRootDir(), 'package.json'))).scripts) {
     return actionPath;
   }
 
-  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
+  const roots = [getRootDir(), path.resolve(getRootDir(), '..')];
   const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {
