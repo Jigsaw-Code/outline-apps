@@ -56,10 +56,11 @@ WINDOWS_BUILDDIR=$(BUILDDIR)/windows
 windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
 
 $(WINDOWS_BUILDDIR)/tun2socks.exe:
-	mkdir -p "$(WINDOWS_BUILDDIR)/$(IMPORT_PATH)"
+	mkdir -p "$(@D)"
 	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC="x86_64-w64-mingw32-gcc" go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 $(GOMOBILE): go.mod
+	mkdir -p "$(@D)"
 	go build -o "$(@D)" golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 
 $(XGO): go.mod
