@@ -30,8 +30,8 @@ export class Settings {
   private readonly settings = new Map<string, string>();
 
   constructor(
-    private storage: Storage = window.localStorage,
-    private validKeys: string[] = Object.values(SettingsKey)
+      private storage: Storage = window.localStorage,
+      private validKeys: string[] = Object.values(SettingsKey)
   ) {
     this.loadSettings();
   }

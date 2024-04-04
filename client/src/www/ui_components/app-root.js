@@ -805,7 +805,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   _computeLanguage(availableLanguages, defaultLanguage) {
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
-    const bestMatchingLanguage = OutlineI18n.getBestMatchingLanguage(Object.keys(availableLanguages));
+    const bestMatchingLanguage = getBestMatchingLanguage(Object.keys(availableLanguages));
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
   }
 

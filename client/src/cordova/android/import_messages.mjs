@@ -28,8 +28,7 @@ function escapeXmlCharacters(str) {
     .replace(/'/g, "\\'")
     .replace(/</g, '\\<')
     .replace(/>/g, '\\>;')
-    .replace(/&/g, '\\&')
-    .replace(/\//g, "\\\\");
+    .replace(/&/g, '\\&');
 }
 
 function getNativeLocale(locale) {

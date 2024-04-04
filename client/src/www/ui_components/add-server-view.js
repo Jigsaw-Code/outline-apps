@@ -243,7 +243,7 @@ Polymer({
     this.$.addServerSheet.open();
   },
 
-  openAddServerConfirmationSheet: function (accessKey) {
+  openAddServerConfirmationSheet: function(accessKey) {
     this.$.addServerSheet.close();
     this.accessKey = accessKey;
     this.$.serverDetectedSheet.open();
@@ -291,7 +291,7 @@ Polymer({
   },
 
   // Event listeners
-  _openChanged: function (event) {
+  _openChanged: function(event) {
     var dialog = event.target;
     if (dialog.opened) {
       // Scroll the page to the bottom to prevent the dialog from moving when the keyboard
@@ -306,7 +306,7 @@ Polymer({
     }
   },
 
-  _inputFocusChanged: function (event) {
+  _inputFocusChanged: function(event) {
     var input = event.target;
     if (input.focused) {
       this.$.accessKeyInput.label = '';
@@ -316,7 +316,7 @@ Polymer({
     input.toggleClass('input-focus', input.focused);
   },
 
-  _inputInvalidChanged: function (event) {
+  _inputInvalidChanged: function(event) {
     var input = event.target;
     input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
@@ -326,7 +326,7 @@ Polymer({
     }
   },
 
-  _disallowScroll: function (event) {
+  _disallowScroll: function(event) {
     event.preventDefault();
   },
 
