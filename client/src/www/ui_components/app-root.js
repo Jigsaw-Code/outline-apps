@@ -80,21 +80,19 @@ function getBrowserLanguages() {
   return [navigator.language];
 }
 
-window.OutlineI18n = {
-  getBestMatchingLanguage(available) {
-    const lookUpAvailable = makeLookUpLanguage(available);
-    for (const candidate of getBrowserLanguages()) {
-      const parts = candidate.split('-');
-      while (parts.length) {
-        const joined = parts.join('-');
-        const closest = lookUpAvailable(joined);
-        if (closest) {
-          return closest;
-        }
-        parts.pop();
+function getBestMatchingLanguage(available) {
+  const lookUpAvailable = makeLookUpLanguage(available);
+  for (const candidate of getBrowserLanguages()) {
+    const parts = candidate.split('-');
+    while (parts.length) {
+      const joined = parts.join('-');
+      const closest = lookUpAvailable(joined);
+      if (closest) {
+        return closest;
       }
+      parts.pop();
     }
-  },
+  }
 };
 
 // Workaround:
