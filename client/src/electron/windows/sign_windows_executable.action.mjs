@@ -20,7 +20,7 @@ import {format} from 'util';
 
 import minimist from 'minimist';
 
-import {jsign} from '../../../third_party/jsign/index.mjs';
+import {jsign} from '../../../../third_party/jsign/index.mjs';
 
 /**
  * Get the parent folder path of this script.

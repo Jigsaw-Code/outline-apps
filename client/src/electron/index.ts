@@ -25,14 +25,13 @@ import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeIma
 import {autoUpdater} from 'electron-updater';
 
 
+import {TunnelStatus, ShadowsocksSessionConfig} from '../www/app/tunnel';
+import * as errors from '../www/model/errors';
 import {lookupIp} from './connectivity';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
-import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
-import * as errors from '../../client/src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:

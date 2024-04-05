@@ -20,9 +20,9 @@ import * as path from 'path';
 import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
-import {pathToEmbeddedOutlineService} from '../../client/infrastructure/electron/app_paths';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
-import {ErrorCode, SystemConfigurationException} from '../../client/src/www/model/errors';
+import {pathToEmbeddedOutlineService} from '../../infrastructure/electron/app_paths';
+import {TunnelStatus} from '../www/app/tunnel';
+import {ErrorCode, SystemConfigurationException} from '../www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
