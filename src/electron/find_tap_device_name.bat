@@ -17,6 +17,12 @@
 :: Exits with a non-zero exit code on failure.
 :: Usage example: find_tap_device_name.bat TAP_NAME
 
+:: Some history:
+:: We used to use a Go binary for this to improve the name detection:
+:: https://github.com/Jigsaw-Code/outline-apps/pull/711
+:: It was later replaced by this script "following reports that the Go binaries fail to run on some environments":
+:: https://github.com/Jigsaw-Code/outline-apps/pull/756
+
 @echo off
 :: See https://ss64.com/nt/delayedexpansion.html
 setlocal enabledelayedexpansion
