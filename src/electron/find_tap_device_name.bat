@@ -15,7 +15,7 @@
 :: Queries the registry in order to retrieve the most recently installed TAP network adapter's name.
 :: Accepts a single argument, the name of an environment variable to store the adapter's name.
 :: Exits with a non-zero exit code on failure.
-:: Usage example: find_tap_name.bat TAP_NAME
+:: Usage example: find_tap_device_name.bat TAP_NAME
 
 @echo off
 :: See https://ss64.com/nt/delayedexpansion.html
