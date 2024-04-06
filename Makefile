@@ -44,11 +44,9 @@ LINUX_BUILDDIR=$(BUILDDIR)/linux
 
 linux: $(LINUX_BUILDDIR)/tun2socks
 
-$(LINUX_BUILDDIR)/tun2socks: $(XGO)
-	mkdir -p "$(LINUX_BUILDDIR)/$(IMPORT_PATH)"
-	$(XGO) -ldflags $(XGO_LDFLAGS) --targets=linux/amd64 -dest "$(LINUX_BUILDDIR)" -pkg $(ELECTRON_PKG) .
-	mv "$(LINUX_BUILDDIR)/$(IMPORT_PATH)-linux-amd64" "$@"
-	rm -r "$(LINUX_BUILDDIR)/$(IMPORT_HOST)"
+$(LINUX_BUILDDIR)/tun2socks:
+	mkdir -p "$(@D)"
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-linux-musl-gcc go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 # TODO: build directly when on windows
 WINDOWS_BUILDDIR=$(BUILDDIR)/windows
@@ -57,7 +55,7 @@ windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
 
 $(WINDOWS_BUILDDIR)/tun2socks.exe:
 	mkdir -p "$(@D)"
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC="x86_64-w64-mingw32-gcc" go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 $(GOMOBILE): go.mod
 	mkdir -p "$(@D)"
