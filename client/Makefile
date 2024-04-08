@@ -11,7 +11,7 @@ IMPORT_PATH=$(IMPORT_HOST)/Jigsaw-Code/outline-apps
 
 all: android apple linux windows
 
-ROOT_PKG=client/src/tun2socks
+ROOT_PKG=client/src/backend
 
 android: $(BUILDDIR)/android/tun2socks.aar
 

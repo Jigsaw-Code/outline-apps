@@ -25,8 +25,8 @@ import (
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/tunnel"
+	"github.com/Jigsaw-Code/outline-apps/client/src/backend/outline/connectivity"
+	"github.com/Jigsaw-Code/outline-apps/client/src/backend/tunnel"
 )
 
 // Tunnel represents a tunnel from a TUN device to a server.
