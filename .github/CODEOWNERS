@@ -1,8 +1,8 @@
 *       @Jigsaw-Code/outline-dev
 
-/src/tun2socks/   @Jigsaw-Code/outline-networking-owners
-/src/cordova/plugin/  @Jigsaw-Code/outline-networking-owners
-/third_party/         @Jigsaw-Code/outline-networking-owners
-/tools/               @Jigsaw-Code/outline-networking-owners
+/client/tools/               @Jigsaw-Code/outline-networking-owners
+/client/src/backend/         @Jigsaw-Code/outline-networking-owners
+/client/src/cordova/plugin/  @Jigsaw-Code/outline-networking-owners
+/client/src/www/model/       @fortuna 
 
-/src/www/model/           @fortuna 
+/third_party/         @Jigsaw-Code/outline-networking-owners
