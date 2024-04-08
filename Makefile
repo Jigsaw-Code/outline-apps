@@ -37,7 +37,7 @@ $(BUILDDIR)/apple/Tun2socks.xcframework: $(BUILDDIR)/ios/Tun2socks.xcframework $
 XGO=$(GOBIN)/xgo
 TUN2SOCKS_VERSION=v1.16.11
 XGO_LDFLAGS='-w -X main.version=$(TUN2SOCKS_VERSION)'
-ELECTRON_PKG="./client/src/tun2socks/outline/electron"
+ELECTRON_PKG="./client/src/backend/outline/electron"
 
 # TODO: build directly when on linux
 LINUX_BUILDDIR=$(BUILDDIR)/linux
