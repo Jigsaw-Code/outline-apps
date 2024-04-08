@@ -485,6 +485,24 @@
       }
     }
   },
+  "server_create_your_own_zero_state_access": {
+    "description": "When the user has not yet added a server to the application, the main page shows this message at the bottom.",
+    "message": "Don’t have a server?$NEW_LINE$Create your own at $START_OF_LINK$our website$END_OF_LINK$ or$NEW_LINE$request an $START_OF_LINK2$access key$END_OF_LINK$.",
+    "placeholders": {
+      "END_OF_LINK": {
+        "content": "{closeLink}"
+      },
+      "NEW_LINE": {
+        "content": "<br>"
+      },
+      "START_OF_LINK": {
+        "content": "{openLink}"
+      },
+      "START_OF_LINK2": {
+        "content": "{openLink2}"
+      }
+    }
+  },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
     "message": "Proxy Server"

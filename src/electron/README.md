@@ -1,4 +1,4 @@
-## Electron Development Instructions
+# Electron Development Instructions
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
@@ -7,7 +7,6 @@ You will need [Docker](https://www.docker.com/) installed to build the Electron 
 > If you can't use Docker, you can use [podman](https://podman.io) as substitute by running the following (for macOS):
 
 ```sh
-brew install podman
 podman machine init
 sudo ln -s $(which podman) /usr/local/bin/docker
 sudo /opt/homebrew/Cellar/podman/<podman version>/bin/podman-mac-helper install
@@ -28,7 +27,27 @@ To run the Electron clients, run:
 npm run action electron/start [windows|linux]
 ```
 
-### Windows
+## Windows
+
+To build for Windows on a macOS, you need to first install [MinGW-w64](https://www.mingw-w64.org/) v11.0.1+.
+
+With [MacPorts](https://www.mingw-w64.org/downloads/#macports) (official channel):
+
+```sh
+sudo port install x86_64-w64-mingw32-gcc @11.0.1
+```
+
+With Homebrew (unofficial, how to ensure consistent version?):
+
+```sh
+brew install mingw-w64
+```
+
+You can also build it on Ubuntu. To install MinGW-w64:
+
+```sh
+apt update && apt install -y gcc-mingw-w64-x86-64
+```
 
 To build the _release_ version of Windows installer, you'll also need:
 
