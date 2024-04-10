@@ -55,7 +55,7 @@ windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
 
 $(WINDOWS_BUILDDIR)/tun2socks.exe:
 	mkdir -p "$(@D)"
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -trimpath -ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' go build -trimpath -ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 $(GOMOBILE): go.mod
 	mkdir -p "$(@D)"

@@ -20,7 +20,7 @@ To build the app for a platform target on a different host target, you will need
 
 [Install zig](https://ziglang.org/learn/getting-started/#installing-zig) and make sure it's in the PATH.
 
-You can download the binary tarball, or use a package manager, like Homebrew:
+You can download the binary tarball, or [use a package manager](https://github.com/ziglang/zig/wiki/Install-Zig-from-a-Package-Manager), like Homebrew:
 
 ```sh
 brew install zig 
