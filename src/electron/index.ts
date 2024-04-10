@@ -145,7 +145,7 @@ function setupWindow(): void {
     mainWindow.setIcon(path.join(app.getAppPath(), 'build', 'icons', 'png', '64x64.png'));
   }
 
-  const pathToIndexHtml = path.join(app.getAppPath(), 'www', 'index_electron.html');
+  const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'www', 'index_electron.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.
