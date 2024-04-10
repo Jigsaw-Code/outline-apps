@@ -1,20 +1,6 @@
-## Electron Development Instructions
+# Electron Development Instructions
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
-
-You will need [Docker](https://www.docker.com/) installed to build the Electron clients.
-
-> If you can't use Docker, you can use [podman](https://podman.io) as substitute by running the following (for macOS):
-
-```sh
-brew install podman
-podman machine init
-sudo ln -s $(which podman) /usr/local/bin/docker
-sudo /opt/homebrew/Cellar/podman/<podman version>/bin/podman-mac-helper install
-podman machine start
-```
-
-> You may run into the error: `/var/folders/<path>/xgo-cache: no such file or directory`. If so, simply create that directory with `mkdir -p /var/folders/<path>/xgo-cache` and try again.
 
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
@@ -28,8 +14,21 @@ To run the Electron clients, run:
 npm run action electron/start [windows|linux]
 ```
 
-### Windows
+## Cross-Compiling
+
+To build the app for a platform target on a different host target, you will need a cross-compiler. We use [zig to cross-compile with cgo](https://dev.to/kristoff/zig-makes-go-cross-compilation-just-work-29ho).
+
+[Install zig](https://ziglang.org/learn/getting-started/#installing-zig) and make sure it's in the PATH.
+
+You can download the binary tarball, or [use a package manager](https://github.com/ziglang/zig/wiki/Install-Zig-from-a-Package-Manager), like Homebrew:
+
+```sh
+brew install zig 
+```
+
+## Release
 
 To build the _release_ version of Windows installer, you'll also need:
 
 - [Java 8+ Runtime](https://www.java.com/en/download/). This is required for the cross-platform Windows executable signing tool [Jsign](https://ebourg.github.io/jsign/). If you don't need to sign the executables, feel free to skip this.
+
