@@ -339,7 +339,14 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </app-header>
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
-          <servers-view name="servers" id="serversView" servers="[[servers]]" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]""></servers-view>
+          <servers-view
+            name="servers"
+            id="serversView"
+            servers="[[servers]]"
+            localize="[[localize]]"
+            should-show-access-key-wiki-link="[[useAltAccessMessage]]"
+            on-add-server="promptAddServer"
+          ></servers-view>
           <template is="dom-if" if="{{contactViewFeatureFlag}}">
             <contact-view
               name="contact"
@@ -490,6 +497,14 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         root-path="[[rootPath]]"
         localize="[[localize]]"
       ></server-rename-dialog>
+
+      <user-comms-dialog
+        id="autoConnectDialog"
+        localize="[[localize]]"
+        title-localization-key="auto-connect-dialog-title"
+        detail-localization-key="auto-connect-dialog-detail"
+        fire-event-on-hide="AutoConnectDialogDismissed"
+      ></user-comms-dialog>
     `;
   }
 
