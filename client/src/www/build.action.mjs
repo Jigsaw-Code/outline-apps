@@ -56,8 +56,10 @@ export async function main(...parameters) {
     }
   }
 
+  await fs.mkdir(path.resolve(getRootDir(), 'client', 'www'), {recursive: true});
+
   await fs.writeFile(
-    path.resolve(getRootDir(), 'www', 'environment.json'),
+    path.resolve(getRootDir(), 'client', 'www', 'environment.json'),
     JSON.stringify({
       SENTRY_DSN: sentryDsn,
       APP_VERSION: versionName,
