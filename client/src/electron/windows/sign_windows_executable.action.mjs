@@ -179,7 +179,7 @@ async function main() {
 }
 
 // Call this script through CLI to sign a Windows executable:
-//   npm run action src/electron/windows/sign_windows_executable --
+//   npm run action client/src/electron/windows/sign_windows_executable --
 //     --target <exe-path-to-sign>
 //     --algorithm <sha1|sha256>
 //     --certtype <none|pfx|digicert-usb|gcp-hsm>
