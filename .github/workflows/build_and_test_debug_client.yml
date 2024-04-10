@@ -131,7 +131,7 @@ jobs:
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
 
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+      - name: Build Tun2Socks Backend (required for Test OutlineAppleLib)
         run: npm run action client/src/backend/build macos
   
       - name: Test OutlineAppleLib
@@ -173,7 +173,7 @@ jobs:
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
 
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+      - name: Build Tun2Socks Backend (required for Test OutlineAppleLib)
         run: npm run action client/src/backend/build ios  
 
       - name: Test OutlineAppleLib
@@ -215,7 +215,7 @@ jobs:
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
 
-      - name: Build Tun2Socks (required for Test OutlineAppleLib)
+      - name: Build Tun2Socks Backend (required for Test OutlineAppleLib)
         run: npm run action client/src/backend/build maccatalyst
 
       - name: Test OutlineAppleLib
