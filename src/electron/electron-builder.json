@@ -1,5 +1,5 @@
 {
-  "files": ["build/electron", "www", "resources/tray", "!node_modules/electron"],
+  "files": ["build/electron", "www", "client/resources/tray", "!node_modules/electron"],
   "asarUnpack": ["output", "tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
