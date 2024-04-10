@@ -46,7 +46,7 @@ linux: $(LINUX_BUILDDIR)/tun2socks
 
 $(LINUX_BUILDDIR)/tun2socks:
 	mkdir -p "$(@D)"
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build --trimpath --ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build -trimpath -ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 # TODO: build directly when on windows
 WINDOWS_BUILDDIR=$(BUILDDIR)/windows
@@ -55,7 +55,7 @@ windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
 
 $(WINDOWS_BUILDDIR)/tun2socks.exe:
 	mkdir -p "$(@D)"
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build --trimpath --ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -trimpath -ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 $(GOMOBILE): go.mod
 	mkdir -p "$(@D)"
