@@ -223,7 +223,7 @@ function updateTray(status: TunnelStatus) {
 }
 
 function createTrayIconImage(imageName: string) {
-  const image = nativeImage.createFromPath(path.join(app.getAppPath(), 'resources', 'tray', imageName));
+  const image = nativeImage.createFromPath(path.join(app.getAppPath(), 'client', 'resources', 'tray', imageName));
   if (image.isEmpty()) {
     throw new Error(`cannot find ${imageName} tray icon image`);
   }
