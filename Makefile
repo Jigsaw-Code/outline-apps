@@ -34,9 +34,8 @@ $(BUILDDIR)/apple/Tun2socks.xcframework: $(BUILDDIR)/ios/Tun2socks.xcframework $
 	find $^ -name "Tun2socks.framework" -type d | xargs -I {} echo " -framework {} " | \
 		xargs xcrun xcodebuild -create-xcframework -output "$@"
 
-XGO=$(GOBIN)/xgo
 TUN2SOCKS_VERSION=v1.16.11
-XGO_LDFLAGS='-w -X main.version=$(TUN2SOCKS_VERSION)'
+LDFLAGS='-static -w -X main.version=$(TUN2SOCKS_VERSION)'
 ELECTRON_PKG="./client/src/tun2socks/outline/electron"
 
 # TODO: build directly when on linux
@@ -46,7 +45,7 @@ linux: $(LINUX_BUILDDIR)/tun2socks
 
 $(LINUX_BUILDDIR)/tun2socks:
 	mkdir -p "$(@D)"
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-linux-musl-gcc go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-linux-musl-gcc go build --ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 # TODO: build directly when on windows
 WINDOWS_BUILDDIR=$(BUILDDIR)/windows
@@ -55,14 +54,11 @@ windows: $(WINDOWS_BUILDDIR)/tun2socks.exe
 
 $(WINDOWS_BUILDDIR)/tun2socks.exe:
 	mkdir -p "$(@D)"
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build --ldflags=--extldflags=$(XGO_LDFLAGS) -o "$@" $(ELECTRON_PKG)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build --ldflags=--extldflags=$(LDFLAGS) -o "$@" $(ELECTRON_PKG)
 
 $(GOMOBILE): go.mod
 	mkdir -p "$(@D)"
 	go build -o "$(@D)" golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
-
-$(XGO): go.mod
-	env GOBIN="$(GOBIN)" go install github.com/crazy-max/xgo
 
 go.mod: tools.go
 	go mod tidy
