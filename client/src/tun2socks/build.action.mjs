@@ -41,7 +41,8 @@ export async function main(...parameters) {
     );
   }
 
-  await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);
+  const taskName = ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
+  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:tun2socks:${taskName}`);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

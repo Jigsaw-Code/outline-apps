@@ -1,0 +1,4 @@
+version: '3'
+
+includes:
+  client:tun2socks: ./client/src/tun2socks/Taskfile.yml
