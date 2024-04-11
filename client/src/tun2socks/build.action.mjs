@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
+import os from 'os';
 import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
