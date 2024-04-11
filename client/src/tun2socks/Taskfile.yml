@@ -17,7 +17,7 @@ vars:
 
 tasks:
   windows:
-    desc: "Build tun2socks binary for Windows"
+    desc: "Build the tun2socks binary for Windows"
     vars:
       TARGET_DIR: "{{.OUT_DIR}}/windows"
     cmds:
