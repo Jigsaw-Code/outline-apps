@@ -14,8 +14,8 @@
 
 import url from 'url';
 import os from 'os';
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {spawnStream} from '../../src/build/spawn_stream.mjs';
+import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
 
 /**
  * @description Builds the tun2socks library for the specified platform.
@@ -37,11 +37,12 @@ export async function main(...parameters) {
       'build',
       '-o',
       `output/build/${targetPlatform}/tun2socks${targetPlatform === 'windows' ? '.exe' : ''}`,
-      'github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/electron'
+      'github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/electron'
     );
   }
 
-  await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);
+  const taskName = ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
+  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `tun2socks:${taskName}`);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

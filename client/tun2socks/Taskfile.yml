@@ -1,0 +1,88 @@
+version: '3'
+
+run: when_changed
+
+vars:
+  # This needs to be updated if the file moves.
+  REPO_ROOT:
+    sh: "readlink -f {{.TASKFILE_DIR}}/../.."
+  OUT_DIR: "{{.REPO_ROOT}}/output/client/tun2socks"
+  BIN_DIR: "{{.OUT_DIR}}/build"
+  VERSION: "v1.16.11"
+  # -w disable DWARF generation
+  LD_FLAGS: "-static -w -X main.version={{.VERSION}}"
+  ELECTRON_MAIN_PKG: "{{.TASKFILE_DIR}}/outline/electron"
+  MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
+  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags '-w'"
+
+tasks:
+  windows:
+    desc: "Build tun2socks binary for Windows"
+    vars:
+      TARGET_DIR: "{{.OUT_DIR}}/windows"
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      - GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' go build -trimpath -ldflags=--extldflags='{{.LD_FLAGS}}' -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
+
+  linux:
+    desc: "Build the tun2socks binary for Linux"
+    vars:
+      TARGET_DIR: '{{.OUT_DIR}}/linux'
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      - GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build -trimpath -ldflags=--extldflags='{{.LD_FLAGS}}' -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
+
+  android:
+    desc: "Build the tun2socks.aar library for Android"
+    vars:
+      TARGET_DIR: "{{.OUT_DIR}}/android"
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      # -androidapi should match the minSdkVersion that the Android client supports.
+      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi 22 -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+    deps: ["gomobile"]
+
+  ios:
+    desc: "Build the Tun2socks.xcframework library for iOS"
+    vars:
+      TARGET_DIR: '{{.OUT_DIR}}/ios'
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      # -iosversion should match the target version that the iOS client supports.
+      - "{{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator -iosversion=12.0 -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+    deps: ["gomobile"]
+
+  macos:
+    desc: "Build the Tun2socks.xcframework library for macOS"
+    vars:
+      TARGET_DIR: '{{.OUT_DIR}}/macos'
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      # MACOSX_DEPLOYMENT_TARGET and -iosversion should match the versions that the macOS client supports.
+      - export MACOSX_DEPLOYMENT_TARGET=10.14; {{.GOMOBILE_BIND_CMD}} -target=macos,maccatalyst -iosversion=13.1 -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
+    deps: ["gomobile"]
+
+  apple:
+    desc: "Build combined Tun2socks.xcframework library for Apple platforms"
+    vars:
+      TARGET_DIR: '{{.OUT_DIR}}/apple'
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      - |
+        find '{{.OUT_DIR}}/macos/Tun2socks.xcframework' '{{.OUT_DIR}}/ios/Tun2socks.xcframework' -name "Tun2socks.framework" -type d |
+        xargs -I {} echo " -framework {} " |
+        xargs xcrun xcodebuild -create-xcframework -output '{{.TARGET_DIR}}/Tun2socks.xcframework'
+    deps: ["ios", "macos"]
+
+  gomobile:
+    desc: "Build Go Mobile"
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}"
+      - go build -o "{{.BIN_DIR}}" golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
+    sources: ["{{.REPO_ROOT}}/go.sum"]
+    generates: ["{{.BIN_DIR}}/gomobile", "{{.BIN_DIR}}/gobind"]
+
+  clean:
+    cmds:
+      - rm -r "{{.REPO_ROOT}}/output/client/tun2socks" .task
+      - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'

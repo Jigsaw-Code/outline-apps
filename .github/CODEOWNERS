@@ -1,6 +1,6 @@
 *       @Jigsaw-Code/outline-dev
 
-/src/tun2socks/   @Jigsaw-Code/outline-networking-owners
+/client/tun2socks/   @Jigsaw-Code/outline-networking-owners
 /src/cordova/plugin/  @Jigsaw-Code/outline-networking-owners
 /third_party/         @Jigsaw-Code/outline-networking-owners
 /tools/               @Jigsaw-Code/outline-networking-owners
