@@ -9,11 +9,14 @@ vars:
     sh: "readlink -f '{{.TASKFILE_DIR}}/../../output/build'"
   BIN_DIR: "{{.OUT_DIR}}/build"
   VERSION: "v1.16.11"
-  # -w disable DWARF generation
-  LD_FLAGS: "-static -w -X main.version={{.VERSION}}"
+  # Linker flags: https://pkg.go.dev/cmd/link
+  # -s Omit the symbol table and debug information.
+  # -w Omit the DWARF symbol table.
+  # -X Set the value of the string variable.
+  ELECTRON_BUILD_FLAGS: -trimpath -ldflags="-s -w -X=main.version={{.VERSION}}"
   ELECTRON_MAIN_PKG: "{{.TASKFILE_DIR}}/outline/electron"
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
-  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags '-w'"
+  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
 
 tasks:
   windows:
@@ -22,7 +25,10 @@ tasks:
       TARGET_DIR: "{{.OUT_DIR}}/windows"
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' go build -trimpath -ldflags=--extldflags='{{.LD_FLAGS}}' -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
+      - cmd: go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
+        platforms: [windows]
+      - cmd: GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
+        platforms: [darwin, linux]
 
   linux:
     desc: "Build the tun2socks binary for Linux"
@@ -30,12 +36,20 @@ tasks:
       TARGET_DIR: '{{.OUT_DIR}}/linux'
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build -trimpath -ldflags=--extldflags='{{.LD_FLAGS}}' -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
+      - cmd: go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
+        platforms: [linux]
+      - cmd: GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
+        platforms: [darwin, windows]
 
   android:
     desc: "Build the tun2socks.aar library for Android"
     vars:
       TARGET_DIR: "{{.OUT_DIR}}/android"
+    preconditions:
+      - sh: '[[ -d "$ANDROID_HOME" ]]'
+        msg: "Must set ANDROID_HOME"
+      - sh: '[[ -d "$ANDROID_NDK" ]]'
+        msg: "Must set ANDROID_NDK"
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
       # -androidapi should match the minSdkVersion that the Android client supports.
