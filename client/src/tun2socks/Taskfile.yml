@@ -5,8 +5,7 @@ run: when_changed
 vars:
   # This needs to be updated if the file moves.
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
-  OUT_DIR: 
-    sh: "readlink -f '{{.TASKFILE_DIR}}/../../output/build'"
+  OUT_DIR: '{{joinPath .TASKFILE_DIR "../../output/build"}}'
   BIN_DIR: "{{.OUT_DIR}}/build"
   VERSION: "v1.16.11"
   # Linker flags: https://pkg.go.dev/cmd/link
