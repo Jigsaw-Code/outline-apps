@@ -24,10 +24,8 @@ tasks:
       TARGET_DIR: "{{.OUT_DIR}}/windows"
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - cmd: go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
-        platforms: [windows]
-      - cmd: GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
-        platforms: [darwin, linux]
+      - |
+        {{if ne OS "windows"}}GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' {{end}}go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
 
   linux:
     desc: "Build the tun2socks binary for Linux"
@@ -35,10 +33,8 @@ tasks:
       TARGET_DIR: '{{.OUT_DIR}}/linux'
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - cmd: go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
-        platforms: [linux]
-      - cmd: GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
-        platforms: [darwin, windows]
+      - |
+        {{if ne OS "linux"}}GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' {{end}}go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
 
   android:
     desc: "Build the tun2socks.aar library for Android"

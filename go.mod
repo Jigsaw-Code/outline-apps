@@ -2,8 +2,6 @@ module github.com/Jigsaw-Code/outline-apps
 
 go 1.21
 
-toolchain go1.22.1
-
 require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854
 	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20240223000159-142376ee10ea
