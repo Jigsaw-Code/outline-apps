@@ -17,9 +17,10 @@
 const fs = require('fs/promises');
 // const child_process = require('child_process');
 const path = require('node:path');
+import {getRootDir} from '../../../../../../src/build/get_root_dir.mjs';
 
 const ANDROID_LIBS_FOLDER_PATH = path.join('plugins', 'cordova-plugin-outline', 'android', 'libs');
-const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('output', 'build', 'android');
+const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join(getRootDir(), 'output', 'client', 'tun2socks', 'android');
 
 module.exports = async function () {
   console.log('Copying Android third party libraries...');
