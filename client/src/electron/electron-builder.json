@@ -3,7 +3,8 @@
   "asarUnpack": ["client/output", "client/tools"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
-    "output": "client/output/build/dist"
+    "output": "client/output/build/dist",
+    "buildResources": "client/build"
   },
   "linux": {
     "target": {
