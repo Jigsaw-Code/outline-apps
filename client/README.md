@@ -1,16 +1,14 @@
 # Outline Client
 
-![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master)
+![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/Jigsaw-Code/outline-apps/graph/badge.svg?token=gasD8v5tjn)](https://codecov.io/gh/Jigsaw-Code/outline-apps)
 
-> **Test coverage currently only tracks the Apple Libraries and core web view code:**
->
-> [![codecov](https://codecov.io/gh/Jigsaw-Code/outline-apps/branch/master/graph/badge.svg?token=gasD8v5tjn)](https://codecov.io/gh/Jigsaw-Code/outline-apps)
+> [!NOTE]
+> Test coverage currently only tracks the Apple Libraries and core web view code.
 
 The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS. The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
 The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
 
-To join our Outline Community, [sign up for the IFF Mattermost](https://internetfreedomfestival.org/wiki/index.php/IFF_Mattermost).
 
 ## Requirements for all builds
 
@@ -40,7 +38,11 @@ The app logic is located in [src/www/app](src/www/app). UI components are locate
 npm run action client/src/www/storybook
 ```
 
-> 💡 NOTE: every script in this repository can be run with `npm run action` -
+> [!NOTE]
+> The `src` part of the path is optional. `npm run action www/start` resolves to the same script.
+
+> [!NOTE]
+> Every script in this repository can be run with `npm run action` -
 > for a CLI-like experience, add something like
 >
 > ```sh
