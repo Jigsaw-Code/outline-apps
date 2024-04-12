@@ -5,7 +5,7 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rimraf client/build client/output node_modules client/node_modules client/www client/platforms client/plugins third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
+    "clean": "rimraf client/build client/output node_modules client/node_modules client/www client/platforms client/plugins server_manager/node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts,mjs client/src",
