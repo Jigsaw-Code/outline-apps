@@ -107,5 +107,5 @@ tasks:
 
   clean:
     cmds:
-      - rm -r '{{.OUT_DIR}}'
+      - rm -rf '{{.OUT_DIR}}'
       - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
