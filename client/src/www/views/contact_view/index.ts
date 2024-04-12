@@ -29,7 +29,6 @@ import {Ref, createRef, ref} from 'lit/directives/ref.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './support_form';
-import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
 
@@ -39,6 +38,22 @@ enum Step {
   FORM, // The contact form.
   EXIT, // Final message to show, if any.
 }
+
+/** Supported issue types in the feedback flow. */
+enum IssueType {
+  NO_SERVER = 'no-server',
+  CANNOT_ADD_SERVER = 'cannot-add-server',
+  CONNECTION = 'connection',
+  PERFORMANCE = 'performance',
+  GENERAL = 'general',
+}
+
+/** A map of unsupported issue types to helppage URLs to redirect users to. */
+const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
+  [IssueType.NO_SERVER, 'https://support.getoutline.org/s/article/How-do-I-get-an-access-key'],
+  [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
+  [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
+]);
 
 @customElement('contact-view')
 export class ContactView extends LitElement {
