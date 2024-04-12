@@ -19,13 +19,14 @@ tasks:
       TUN2SOCKS_VERSION: "v1.16.11"
       OUTPUT: '{{.OUT_DIR}}/{{.TARGET_OS}}/tun2socks{{if eq .TARGET_OS "windows"}}.exe{{end}}'
     cmds:
+      - echo "{{.OS}}"
       - rm -rf "{{dir .OUTPUT}}" && mkdir -p "{{dir .OUTPUT}}"
       # Linker flags: https://pkg.go.dev/cmd/link
       # -s Omit the symbol table and debug information.
       # -w Omit the DWARF symbol table.
       # -X Set the value of the string variable.
       - |
-        {{if ne .OS .TARGET_OS -}}
+        {{if ne OS TARGET_OS -}}
           GOOS={{.TARGET_OS}} GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-{{.TARGET_OS}}'
         {{- end}} \
         go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
