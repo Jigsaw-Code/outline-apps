@@ -25,7 +25,7 @@ import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_repo
 import {localize} from '../../testing/localize';
 
 
-describe('ContactView client variant', () => {
+describe('ContactView', () => {
   let el: ContactView;
   let mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter>;
 
@@ -35,7 +35,7 @@ describe('ContactView client variant', () => {
       Object.getOwnPropertyNames(SentryErrorReporter.prototype)
     );
     el = await fixture(
-      html` <contact-view .localize=${localize} variant="client" .errorReporter=${mockErrorReporter}></contact-view> `
+      html` <contact-view .localize=${localize} .errorReporter=${mockErrorReporter}></contact-view> `
     );
   });
 
@@ -195,42 +195,6 @@ describe('ContactView client variant', () => {
         expect(el.shadowRoot?.querySelector('p.intro')?.textContent).toContain('Tell us how we can help.');
         expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
       });
-    });
-  });
-});
-
-describe('ContactView manager variant', () => {
-  let el: ContactView;
-
-  describe('when the user selects that they have no open tickets', () => {
-    let issueSelector: Select;
-
-    beforeEach(async () => {
-      const mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter> = jasmine.createSpyObj(
-        'SentryErrorReporter',
-        Object.getOwnPropertyNames(SentryErrorReporter.prototype)
-      );
-      el = await fixture(
-        html`
-          <contact-view .localize=${localize} variant="manager" .errorReporter=${mockErrorReporter}></contact-view>
-        `
-      );
-
-      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
-      radioButton.click();
-      await nextFrame();
-
-      issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
-    });
-
-    it('shows the issue selector', () => {
-      expect(issueSelector.hasAttribute('hidden')).toBeFalse();
-    });
-
-    it('shows the correct items in the selector', () => {
-      const issueItemEls = issueSelector.querySelectorAll('mwc-list-item');
-      const issueTypes = Array.from(issueItemEls).map((el: ListItemBase) => el.value);
-      expect(issueTypes).toEqual(['cannot-add-server', 'connection', 'managing', 'general']);
     });
   });
 });

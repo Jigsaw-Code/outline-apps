@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {TextField} from '@material/mwc-textfield';
 import '@material/mwc-button';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
-
 import {Localizer} from '@outline/infrastructure/i18n';
-import {html, css, LitElement, TemplateResult, nothing, PropertyValues} from 'lit';
+import {html, css, LitElement, PropertyValues} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
-
-import {AppType} from '../app_type';
 
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -38,7 +34,6 @@ export declare interface FormValues {
   subject?: string;
   description?: string;
   accessKeySource?: string;
-  cloudProvider?: string;
 }
 
 /** Interface for valid form data. */
@@ -46,11 +41,7 @@ export declare interface ValidFormValues extends FormValues {
   email: string;
   subject: string;
   description: string;
-}
-
-declare interface CloudProviderOption {
-  value: string;
-  label: string;
+  accessKeySource: string;
 }
 
 @customElement('support-form')
@@ -90,11 +81,8 @@ export class SupportForm extends LitElement {
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
 
-  private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
-
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
-  @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object}) values: FormValues = {};
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
@@ -138,60 +126,6 @@ export class SupportForm extends LitElement {
     this.checkFormValidity();
   }
 
-  private get renderCloudProviderInputField(): TemplateResult | typeof nothing {
-    if (this.variant !== AppType.MANAGER) return nothing;
-
-    const providers = SupportForm.CLOUD_PROVIDERS.map((provider): CloudProviderOption => {
-      return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
-    });
-    /** We should sort the providers by their labels, which may be localized. */
-    providers.sort(({label: labelA}, {label: labelB}) => {
-      if (labelA < labelB) {
-        return -1;
-      } else if (labelA === labelB) {
-        return 0;
-      } else {
-        return 1;
-      }
-    });
-    providers.push({value: 'other', label: this.localize('support-form-cloud-provider-other')});
-
-    return html`
-      <mwc-select
-        name="cloudProvider"
-        .label=${this.localize('support-form-cloud-provider')}
-        .value=${live(this.values.cloudProvider ?? '')}
-        .disabled=${this.disabled}
-        required
-        @selected=${(e: CustomEvent<SelectedDetail<number>>) => {
-          if (e.detail.index !== -1) {
-            this.values.cloudProvider = providers[e.detail.index].value;
-          }
-        }}
-        @blur=${this.checkFormValidity}
-      >
-        ${providers.map(({value, label}) => html` <mwc-list-item value="${value}">${label}</mwc-list-item> `)}
-      </mwc-select>
-    `;
-  }
-
-  private get renderAccessKeySourceInputField(): TemplateResult | typeof nothing {
-    if (this.variant !== AppType.CLIENT) return nothing;
-
-    return html`
-      <mwc-textfield
-        name="accessKeySource"
-        .label=${this.localize('support-form-access-key-source')}
-        .value=${live(this.values.accessKeySource ?? '')}
-        .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
-        .disabled=${this.disabled}
-        required
-        @input=${this.handleTextInput}
-        @blur=${this.checkFormValidity}
-      ></mwc-textfield>
-    `;
-  }
-
   render() {
     return html`
       <form ${ref(this.formRef)} @submit=${this.submit}>
@@ -209,7 +143,16 @@ export class SupportForm extends LitElement {
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
 
-        ${this.renderCloudProviderInputField} ${this.renderAccessKeySourceInputField}
+        <mwc-textfield
+          name="accessKeySource"
+          .label=${this.localize('support-form-access-key-source')}
+          .value=${live(this.values.accessKeySource ?? '')}
+          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .disabled=${this.disabled}
+          required
+          @input=${this.handleTextInput}
+          @blur=${this.checkFormValidity}
+        ></mwc-textfield>
 
         <mwc-textfield
           name="subject"

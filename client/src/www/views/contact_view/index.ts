@@ -29,7 +29,6 @@ import {Ref, createRef, ref} from 'lit/directives/ref.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './support_form';
-import {AppType} from './app_type';
 import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
@@ -123,19 +122,15 @@ export class ContactView extends LitElement {
     `,
   ];
 
-  private static readonly ISSUES: {[key in AppType]: IssueType[]} = {
-    [AppType.CLIENT]: [
-      IssueType.NO_SERVER,
-      IssueType.CANNOT_ADD_SERVER,
-      IssueType.CONNECTION,
-      IssueType.PERFORMANCE,
-      IssueType.GENERAL,
-    ],
-    [AppType.MANAGER]: [IssueType.CANNOT_ADD_SERVER, IssueType.CONNECTION, IssueType.MANAGING, IssueType.GENERAL],
-  };
+  private static readonly ISSUES: IssueType[] = [
+    IssueType.NO_SERVER,
+    IssueType.CANNOT_ADD_SERVER,
+    IssueType.CONNECTION,
+    IssueType.PERFORMANCE,
+    IssueType.GENERAL,
+  ];
 
   @property({type: Function}) localize: Localizer = msg => msg;
-  @property({type: String}) variant: AppType = AppType.CLIENT;
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
   @state() private step: Step = Step.ISSUE_WIZARD;
@@ -176,7 +171,7 @@ export class ContactView extends LitElement {
   }
 
   private selectIssue(e: SingleSelectedEvent) {
-    this.selectedIssueType = ContactView.ISSUES[this.variant][e.detail.index];
+    this.selectedIssueType = ContactView.ISSUES[e.detail.index];
 
     if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
       // TODO: Send users to localized support pages based on chosen language.
@@ -248,7 +243,6 @@ export class ContactView extends LitElement {
       <support-form
         ${ref(this.formRef)}
         .localize=${this.localize}
-        .variant=${this.variant}
         .disabled=${this.isFormSubmitting}
         .values=${this.formValues}
         @cancel=${this.reset}
@@ -299,7 +293,7 @@ export class ContactView extends LitElement {
             ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
           >
-            ${ContactView.ISSUES[this.variant].map(value => {
+            ${ContactView.ISSUES.map(value => {
               return html`
                 <mwc-list-item value="${value}">
                   <span>${this.localize(`contact-view-issue-${value}`)}</span>

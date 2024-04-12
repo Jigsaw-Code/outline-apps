@@ -19,7 +19,6 @@ export enum IssueType {
   NO_SERVER = 'no-server',
   CANNOT_ADD_SERVER = 'cannot-add-server',
   CONNECTION = 'connection',
-  MANAGING = 'managing',
   PERFORMANCE = 'performance',
   GENERAL = 'general',
 }
