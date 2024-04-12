@@ -15,4 +15,4 @@
 # limitations under the License.
 
 npm run action server_manager/web_app/build_install_script
-karma start "${ROOT_DIR}/src/server_manager/web_app/karma.conf.js"
+karma start "${ROOT_DIR}/server_manager/web_app/karma.conf.js"
