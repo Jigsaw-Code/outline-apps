@@ -11,3 +11,5 @@ tasks:
   clean:
     deps:
       - client:tun2socks:clean
+    cmds:
+      - rm -rf .task
