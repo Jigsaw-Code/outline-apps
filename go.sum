@@ -4,8 +4,6 @@ github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20240223000159-142376ee10ea h1:SAzKK
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20240223000159-142376ee10ea/go.mod h1:lYYruRIG1B5nVqkGQZajQK5jS2BIkMaEBM7yjzl5fIo=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
-github.com/crazy-max/xgo v0.30.0 h1:2uunjwLBrVu5LKIS1dIDXz9U5OIX4H5LEsC3P6wFTto=
-github.com/crazy-max/xgo v0.30.0/go.mod h1:m/aqfKaN/cYzfw+Pzk7Mk0tkmShg3/rCS4Zdhdugi4o=
 github.com/creack/pty v1.1.21 h1:1/QdRyBaHHJP61QkWMXlOIBfsgdDeeKfK8SYVUWJKf0=
 github.com/creack/pty v1.1.21/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr4O4=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

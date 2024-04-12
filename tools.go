@@ -21,7 +21,6 @@
 package tools
 
 import (
-	_ "github.com/crazy-max/xgo"
 	_ "github.com/go-task/task/v3/cmd/task"
 	_ "golang.org/x/mobile/cmd/gobind"
 	_ "golang.org/x/mobile/cmd/gomobile"

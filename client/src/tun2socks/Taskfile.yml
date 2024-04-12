@@ -2,8 +2,9 @@ version: '3'
 
 vars:
   # This needs to be updated if the file moves.
+  REPO_ROOT: '{{joinPath .TASKFILE_DIR "../../.."}}'
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
-  OUT_DIR: '{{joinPath .TASKFILE_DIR "../../output/build"}}'
+  OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
   BIN_DIR: "{{.OUT_DIR}}/build"
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
   GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
@@ -24,7 +25,9 @@ tasks:
       # -w Omit the DWARF symbol table.
       # -X Set the value of the string variable.
       - |
-        {{if ne OS "{{.TARGET_OS}}"}}GOOS={{.TARGET_OS}} GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-{{.TARGET_OS}}'{{end}} \
+        {{if ne OS "{{.TARGET_OS}}" -}}
+          GOOS={{.TARGET_OS}} GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-{{.TARGET_OS}}'
+        {{- end}} \
         go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
 
   windows:
@@ -39,6 +42,8 @@ tasks:
     desc: "Build the tun2socks.aar library for Android"
     vars:
       TARGET_DIR: "{{.OUT_DIR}}/android"
+      # ANDROID_API must match the minSdkVersion that the Android client supports.
+      ANDROID_API: 22
     preconditions:
       - sh: '[[ -d "$ANDROID_HOME" ]]'
         msg: "Must set ANDROID_HOME"
@@ -46,8 +51,7 @@ tasks:
         msg: "Must set ANDROID_NDK"
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      # -androidapi should match the minSdkVersion that the Android client supports.
-      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi 22 -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
     deps: ["gomobile"]
 
   ios-only:
@@ -55,10 +59,11 @@ tasks:
     internal: true
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/ios'
+      # TARGET_IOS_VERSION must match the target version that the iOS client supports.
+      TARGET_IOS_VERSION: 12.0
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      # -iosversion should match the target version that the iOS client supports.
-      - "{{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator -iosversion=12.0 -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+      - "{{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
     deps: ["gomobile"]
 
   macos-only:
@@ -66,10 +71,13 @@ tasks:
     internal: true
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/macos'
+      # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
+      MACOSX_DEPLOYMENT_TARGET: 10.14
+      # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and >= the iOS TARGET_IOS_VERSION.
+      TARGET_IOS_VERSION: 13.1
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      # MACOSX_DEPLOYMENT_TARGET and -iosversion should match the versions that the macOS client supports.
-      - export MACOSX_DEPLOYMENT_TARGET=10.14; {{.GOMOBILE_BIND_CMD}} -target=macos,maccatalyst -iosversion=13.1 -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
+      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
     deps: ["gomobile"]
 
   apple:
@@ -99,5 +107,5 @@ tasks:
 
   clean:
     cmds:
-      - rm -r "{{.REPO_ROOT}}/output/client/tun2socks" .task
+      - rm -r '{{.OUT_DIR}}'
       - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
