@@ -1,7 +1,5 @@
 version: '3'
 
-run: when_changed
-
 vars:
   # This needs to be updated if the file moves.
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.

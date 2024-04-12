@@ -1,4 +1,8 @@
 version: '3'
 
+set: [pipefail]
+
+run: when_changed
+
 includes:
   client:tun2socks: ./client/src/tun2socks/Taskfile.yml
