@@ -23,13 +23,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
  */
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
-
-  if (targetPlatform === 'browser') {
-    return;
-  }
-
-  const taskName = ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform
-  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:tun2socks:${taskName}`);
+  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:tun2socks:${targetPlatform}`);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

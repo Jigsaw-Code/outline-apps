@@ -51,8 +51,9 @@ tasks:
       - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi 22 -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
     deps: ["gomobile"]
 
-  ios:
-    desc: "Build the Tun2socks.xcframework library for iOS"
+  ios-only:
+    desc: "Build the Tun2socks.xcframework library for iOS only"
+    internal: true
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/ios'
     cmds:
@@ -61,8 +62,9 @@ tasks:
       - "{{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator -iosversion=12.0 -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
     deps: ["gomobile"]
 
-  macos:
-    desc: "Build the Tun2socks.xcframework library for macOS"
+  macos-only:
+    desc: "Build the Tun2socks.xcframework library for macOS only"
+    internal: true
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/macos'
     cmds:
@@ -73,6 +75,7 @@ tasks:
 
   apple:
     desc: "Build combined Tun2socks.xcframework library for Apple platforms"
+    aliases: [ios, macos, maccatalyst]
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/apple'
     cmds:
@@ -81,10 +84,14 @@ tasks:
         find '{{.OUT_DIR}}/macos/Tun2socks.xcframework' '{{.OUT_DIR}}/ios/Tun2socks.xcframework' -name "Tun2socks.framework" -type d |
         xargs -I {} echo " -framework {} " |
         xargs xcrun xcodebuild -create-xcframework -output '{{.TARGET_DIR}}/Tun2socks.xcframework'
-    deps: ["ios", "macos"]
+    deps: ["ios-only", "macos-only"]
 
+  browser:
+    desc: "Placeholder for the browser build. Does nothing"
+  
   gomobile:
     desc: "Build Go Mobile"
+    internal: true
     cmds:
       - mkdir -p "{{.BIN_DIR}}"
       - go build -o "{{.BIN_DIR}}" golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
