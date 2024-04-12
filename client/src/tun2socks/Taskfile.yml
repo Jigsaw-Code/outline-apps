@@ -5,34 +5,35 @@ vars:
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
   OUT_DIR: '{{joinPath .TASKFILE_DIR "../../output/build"}}'
   BIN_DIR: "{{.OUT_DIR}}/build"
-  VERSION: "v1.16.11"
-  # Linker flags: https://pkg.go.dev/cmd/link
-  # -s Omit the symbol table and debug information.
-  # -w Omit the DWARF symbol table.
-  # -X Set the value of the string variable.
-  ELECTRON_BUILD_FLAGS: -trimpath -ldflags="-s -w -X=main.version={{.VERSION}}"
-  ELECTRON_MAIN_PKG: "{{.TASKFILE_DIR}}/outline/electron"
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
   GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
 
 tasks:
+  electron:
+    desc: "Build the tun2socks binary for Electron platforms"
+    internal: true
+    requires: {vars: [TARGET_OS]}
+    vars:
+      # TODO(fortuna): remove this, it's not really needed since we don't release it separately anymore.
+      TUN2SOCKS_VERSION: "v1.16.11"
+      OUTPUT: '{{.OUT_DIR}}/{{.TARGET_OS}}/tun2socks{{if eq .TARGET_OS "windows"}}.exe{{end}}'
+    cmds:
+      - rm -rf "{{dir .OUTPUT}}" && mkdir -p "{{dir .OUTPUT}}"
+      # Linker flags: https://pkg.go.dev/cmd/link
+      # -s Omit the symbol table and debug information.
+      # -w Omit the DWARF symbol table.
+      # -X Set the value of the string variable.
+      - |
+        {{if ne OS "{{.TARGET_OS}}"}}GOOS={{.TARGET_OS}} GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-{{.TARGET_OS}}'{{end}} \
+        go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
+
   windows:
     desc: "Build the tun2socks binary for Windows"
-    vars:
-      TARGET_DIR: "{{.OUT_DIR}}/windows"
-    cmds:
-      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - |
-        {{if ne OS "windows"}}GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-windows' {{end}}go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks.exe' '{{.ELECTRON_MAIN_PKG}}'
+    cmds: [{task: electron, vars: {TARGET_OS: "windows"}}]
 
   linux:
     desc: "Build the tun2socks binary for Linux"
-    vars:
-      TARGET_DIR: '{{.OUT_DIR}}/linux'
-    cmds:
-      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - |
-        {{if ne OS "linux"}}GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC='zig cc -target x86_64-linux' {{end}}go build {{.ELECTRON_BUILD_FLAGS}} -o '{{.TARGET_DIR}}/tun2socks' '{{.ELECTRON_MAIN_PKG}}'
+    cmds: [{task: electron, vars: {TARGET_OS: "linux"}}]
 
   android:
     desc: "Build the tun2socks.aar library for Android"
