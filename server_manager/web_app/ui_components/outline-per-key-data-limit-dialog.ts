@@ -25,7 +25,8 @@ import '@polymer/paper-listbox/paper-listbox';
 import {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import {PaperInputElement} from '@polymer/paper-input/paper-input';
 import {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox';
-import {css, customElement, html, state, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 
 import {
   bytesToDisplayDataAmount,

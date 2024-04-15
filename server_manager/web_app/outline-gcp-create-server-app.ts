@@ -20,7 +20,8 @@ import '@polymer/paper-item/paper-item';
 import './ui_components/outline-step-view';
 import './ui_components/outline-region-picker-step';
 
-import {css, customElement, html, state, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import {AppRoot} from './ui_components/app-root';
