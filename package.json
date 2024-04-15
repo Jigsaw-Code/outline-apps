@@ -22,6 +22,8 @@
   ],
   "devDependencies": {
     "@types/node-fetch": "^2.6.7",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
     "electron-builder": "^24.13.3",
     "jasmine": "^5.1.0",
     "node-fetch": "^2.6.7"
