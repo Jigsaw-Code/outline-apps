@@ -39,9 +39,6 @@ npm run action client/src/www/storybook
 ```
 
 > [!NOTE]
-> The `src` part of the path is optional. `npm run action www/start` resolves to the same script.
-
-> [!NOTE]
 > Every script in this repository can be run with `npm run action` -
 > for a CLI-like experience, add something like
 >
