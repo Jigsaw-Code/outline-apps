@@ -20,7 +20,7 @@ import '@polymer/paper-item/paper-item';
 import './ui_components/outline-step-view';
 import './ui_components/outline-region-picker-step';
 
-import {css, customElement, html, internalProperty, LitElement, property} from 'lit-element';
+import {css, customElement, html, state, LitElement, property} from 'lit-element';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import {AppRoot} from './ui_components/app-root';
@@ -35,10 +35,10 @@ import {CloudLocation} from '../model/location';
 export class GcpCreateServerApp extends LitElement {
   @property({type: Function}) localize: (msgId: string, ...params: string[]) => string;
   @property({type: String}) language: string;
-  @internalProperty() private currentPage = '';
-  @internalProperty() private selectedProjectId = '';
-  @internalProperty() private selectedBillingAccountId = '';
-  @internalProperty() private isProjectBeingCreated = false;
+  @state() private currentPage = '';
+  @state() private selectedProjectId = '';
+  @state() private selectedBillingAccountId = '';
+  @state() private isProjectBeingCreated = false;
 
   private account: GcpAccount;
   private project: Project;
