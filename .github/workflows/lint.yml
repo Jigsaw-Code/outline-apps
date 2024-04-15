@@ -26,7 +26,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: ./server_manager/package.json
+          cache-dependency-path: ./package-lock.json
 
       - name: Install NPM Dependencies
         run: npm ci
