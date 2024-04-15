@@ -22,9 +22,10 @@ const baseConfig = makeConfig({
 });
 
 const filePatterns = [
-  '**/*.spec.ts',
-  // We need to test data_formatting in a browser context
-  'web_app/data_formatting.spec.ts',
+  {
+    pattern: 'web_app/**/*.spec.ts',
+    watched: true
+  },
   {
     pattern: 'images/*',
     watched: false,
@@ -32,11 +33,6 @@ const filePatterns = [
     served: true
   }
 ];
-
-let preprocessors = {};
-for (const pattern of filePatterns) {
-  preprocessors[pattern] = ['webpack'];
-}
 
 module.exports = function (config) {
   config.set({
@@ -46,12 +42,12 @@ module.exports = function (config) {
     proxies: {
       '/images/': '/base/images/'
     },
-    preprocessors,
+    preprocessors: { './web_app/**/*.spec.ts': ['webpack'] },
     reporters: ['progress'],
     colors: true,
     logLevel: config.LOG_INFO,
     browsers: ['ChromiumHeadless'],
-    singleRun: true,
+    //singleRun: true,
     concurrency: Infinity,
     webpack: {
       module: baseConfig.module,

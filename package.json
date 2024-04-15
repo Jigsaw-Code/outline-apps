@@ -21,7 +21,10 @@
     "client"
   ],
   "devDependencies": {
-    "electron-builder": "^24.13.3"
+    "@types/node-fetch": "^2.6.7",
+    "electron-builder": "^24.13.3",
+    "jasmine": "^5.1.0",
+    "node-fetch": "^2.6.7"
   },
   "main": "build/electron/electron/index.js"
 }

@@ -102,7 +102,7 @@ describe('App', () => {
     await manualServerRepo.addServer({certSha256: 'cert', apiUrl: 'fake-manual-server-api-url-2'});
     localStorage.setItem('lastDisplayedServer', LAST_DISPLAYED_SERVER_ID);
     const appRoot = document.getElementById('appRoot') as AppRoot;
-    const app = createTestApp(appRoot, null, manualServerRepo);
+    const app = createTestApp(appRoot, undefined, manualServerRepo);
     await app.start();
     expect(appRoot.currentPage).toEqual('serverView');
     expect(appRoot.selectedServerId).toEqual(lastDisplayedServer.getManagementApiUrl());
@@ -125,7 +125,7 @@ describe('App', () => {
     const fakeAccount = new FakeDigitalOceanAccount();
     const server = await fakeAccount.createServer(new Region('_fake-region-id'));
     const cloudAccounts = new FakeCloudAccounts(fakeAccount);
-    const app = createTestApp(appRoot, cloudAccounts, null);
+    const app = createTestApp(appRoot, cloudAccounts);
     // Sets last displayed server.
     localStorage.setItem(LAST_DISPLAYED_SERVER_STORAGE_KEY, server.getId());
     await app.start();
