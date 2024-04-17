@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {Server} from './server';
-import {CustomError} from '../../infrastructure/custom_error';
+import {CustomError} from '../../../infrastructure/custom_error';
 
 export class ServerAlreadyAdded extends CustomError {
   constructor(public readonly server: Server) {
