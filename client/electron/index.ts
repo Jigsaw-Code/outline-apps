@@ -23,10 +23,10 @@ import * as process from 'process';
 import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
-import * as errors from '../../client/src/www/model/errors';
+import * as errors from '../../client/www/model/errors';
 
-import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
+import {ShadowsocksSessionConfig} from '../../client/www/app/tunnel';
+import {TunnelStatus} from '../../client/www/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';

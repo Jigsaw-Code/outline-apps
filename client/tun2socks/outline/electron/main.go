@@ -24,10 +24,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/neterrors"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/shadowsocks"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/tun2socks"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/internal/utf8"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/tun2socks"
 	"github.com/eycorsican/go-tun2socks/common/log"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"

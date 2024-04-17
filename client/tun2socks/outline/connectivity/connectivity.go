@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline"
+	"github.com/Jigsaw-Code/outline-apps/client/tun2socks/outline/neterrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 

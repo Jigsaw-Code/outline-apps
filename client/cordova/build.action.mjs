@@ -19,10 +19,10 @@ import fs from 'node:fs/promises';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '../../src/build/run_action.mjs';
-import {getRootDir} from '../../src/build/get_root_dir.mjs';
-import {spawnStream} from '../../src/build/spawn_stream.mjs';
-import {downloadHttpsFile} from '../../src/build/download_file.mjs';
+import {runAction} from '..//src/build/run_action.mjs';
+import {getRootDir} from '..//src/build/get_root_dir.mjs';
+import {spawnStream} from '..//src/build/spawn_stream.mjs';
+import {downloadHttpsFile} from '..//src/build/download_file.mjs';
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
@@ -34,9 +34,9 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
-  await runAction('client/src/www/build', ...parameters);
-  await runAction('client/src/tun2socks/build', ...parameters);
-  await runAction('client/src/cordova/setup', ...parameters);
+  await runAction('client/www/build', ...parameters);
+  await runAction('client/tun2socks/build', ...parameters);
+  await runAction('client/cordova/setup', ...parameters);
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
@@ -132,7 +132,7 @@ async function androidDebug(verbose) {
       argv: [
         // Path is relative to /platforms/android/.
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
-        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        '--gradleArg=--include-build=..//cordova/android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
       ],
     },
@@ -156,7 +156,7 @@ async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
       argv: [
         // Path is relative to /platforms/android/.
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
-        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        '--gradleArg=--include-build=..//cordova/android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
         `--keystore=${keystorePath}`,
         '--alias=privatekey',

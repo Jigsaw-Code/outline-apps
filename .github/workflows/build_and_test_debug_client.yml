@@ -37,14 +37,14 @@ jobs:
         run: npm run action lint
 
       - name: Build Web App
-        run: npm run action client/src/www/build
+        run: npm run action client/www/build
 
       - name: Test Web App
-        run: npm run action client/src/www/test
+        run: npm run action client/www/test
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ./client/src/output/coverage/www/coverage-final.json
+          files: ./client/output/coverage/www/coverage-final.json
           flags: unittests, www
 
   linux_debug_build:
@@ -132,18 +132,18 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action client/src/tun2socks/build macos
+        run: npm run action client/tun2socks/build macos
   
       - name: Test OutlineAppleLib
-        run: npm run action client/src/cordova/test macos
+        run: npm run action client/cordova/test macos
 
       - name: Build MacOS Client
-        run: npm run action client/src/cordova/build macos
+        run: npm run action client/cordova/build macos
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/macos/TestResult.xcresult
+          xcode_archive_path: ./client/output/coverage/apple/macos/TestResult.xcresult
           flags: unittests, apple, macos
 
   ios_debug_build:
@@ -174,18 +174,18 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action client/src/tun2socks/build ios  
+        run: npm run action client/tun2socks/build ios  
 
       - name: Test OutlineAppleLib
-        run: npm run action client/src/cordova/test ios
+        run: npm run action client/cordova/test ios
 
       - name: Build iOS Client
-        run: npm run action client/src/cordova/build ios
+        run: npm run action client/cordova/build ios
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/ios/TestResult.xcresult
+          xcode_archive_path: ./client/output/coverage/apple/ios/TestResult.xcresult
           flags: unittests, apple, ios
 
   maccatalyst_debug_build:
@@ -216,18 +216,18 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action client/src/tun2socks/build maccatalyst
+        run: npm run action client/tun2socks/build maccatalyst
 
       - name: Test OutlineAppleLib
-        run: npm run action client/src/cordova/test maccatalyst
+        run: npm run action client/cordova/test maccatalyst
 
       - name: Build Mac Catalyst Client
-        run: npm run action client/src/cordova/build maccatalyst
+        run: npm run action client/cordova/build maccatalyst
 
       - uses: codecov/codecov-action@v3
         with:
           xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
+          xcode_archive_path: ./client/output/coverage/apple/maccatalyst/TestResult.xcresult
           flags: unittests, apple, maccatalyst
 
   android_debug_build:
@@ -263,4 +263,4 @@ jobs:
         run: bash ./client/tools/build/setup_linux_android.sh
 
       - name: Build Android Client
-        run: npm run action client/src/cordova/build android -- --verbose
+        run: npm run action client/cordova/build android -- --verbose

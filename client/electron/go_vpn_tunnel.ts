@@ -15,10 +15,10 @@
 import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
-import {pathToEmbeddedBinary} from '../../client/src/infrastructure/electron/app_paths';
-import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
-import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/src/www/model/errors';
+import {pathToEmbeddedBinary} from '../../client/infrastructure/electron/app_paths';
+import {ShadowsocksSessionConfig} from '../../client/www/app/tunnel';
+import {TunnelStatus} from '../../client/www/app/tunnel';
+import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/www/model/errors';
 
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';

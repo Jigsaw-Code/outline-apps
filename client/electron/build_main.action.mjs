@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import {runAction} from '../build/run_action.mjs';
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
-import {getWebpackBuildMode} from '../../client/src/build/get_webpack_build_mode.mjs';
-import {runWebpack} from '../../client/src/build/run_webpack.mjs';
+import {getBuildParameters} from '../../client/build/get_build_parameters.mjs';
+import {getWebpackBuildMode} from '../../client/build/get_webpack_build_mode.mjs';
+import {runWebpack} from '../../client/build/run_webpack.mjs';
 import electronMainWebpackConfigs from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
@@ -36,7 +36,7 @@ export async function main(...parameters) {
     );
   }
 
-  await runAction('client/src/www/build', ...parameters);
+  await runAction('client/www/build', ...parameters);
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
