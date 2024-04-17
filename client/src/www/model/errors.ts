@@ -46,8 +46,8 @@ export class SessionConfigFetchFailed extends CustomError {
 }
 
 export class SessionConfigError extends CustomError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
   }
 }
 

@@ -220,6 +220,13 @@ export class App {
       };
     } else if (error instanceof errors.SessionConfigError) {
       toastMessage = error.message;
+
+      if (error.cause) {
+        buttonMessage = this.localize('error-details');
+        buttonHandler = () => {
+          this.showErrorDetailDialog(error);
+        };
+      }
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
