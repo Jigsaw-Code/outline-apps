@@ -14,7 +14,7 @@
 import {Ref} from 'lit/directives/ref';
 import {Menu} from '@material/mwc-menu';
 import {ServerConnectionState} from '../server_connection_indicator';
-import {Localizer} from 'src/infrastructure/i18n';
+import {Localizer} from '../../../../../infrastructure/i18n';
 
 export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',
