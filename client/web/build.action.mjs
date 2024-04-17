@@ -19,7 +19,7 @@ import rmfr from 'rmfr';
 
 import {runWebpack} from '../build/run_webpack.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getRootDir} from '../..//src/build/get_root_dir.mjs';
+import {getRootDir} from '../../src/build/get_root_dir.mjs';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
 

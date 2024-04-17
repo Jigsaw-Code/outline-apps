@@ -19,10 +19,10 @@ import fs from 'node:fs/promises';
 import cordovaLib from 'cordova-lib';
 const {cordova} = cordovaLib;
 
-import {runAction} from '..//src/build/run_action.mjs';
-import {getRootDir} from '..//src/build/get_root_dir.mjs';
-import {spawnStream} from '..//src/build/spawn_stream.mjs';
-import {downloadHttpsFile} from '..//src/build/download_file.mjs';
+import {runAction} from '../src/build/run_action.mjs';
+import {getRootDir} from '../src/build/get_root_dir.mjs';
+import {spawnStream} from '../src/build/spawn_stream.mjs';
+import {downloadHttpsFile} from '../src/build/download_file.mjs';
 
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
