@@ -23,10 +23,10 @@ import * as process from 'process';
 import * as url from 'url';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 
-import * as errors from '../../client/www/model/errors';
+import * as errors from '../../client/web/model/errors';
 
-import {ShadowsocksSessionConfig} from '../../client/www/app/tunnel';
-import {TunnelStatus} from '../../client/www/app/tunnel';
+import {ShadowsocksSessionConfig} from '../../client/web/app/tunnel';
+import {TunnelStatus} from '../../client/web/app/tunnel';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
@@ -145,7 +145,7 @@ function setupWindow(): void {
     mainWindow.setIcon(path.join(app.getAppPath(), 'build', 'icons', 'png', '64x64.png'));
   }
 
-  const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'www', 'index_electron.html');
+  const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'web', 'index_electron.html');
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.

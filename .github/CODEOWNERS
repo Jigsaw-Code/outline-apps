@@ -5,4 +5,4 @@
 /third_party/         @Jigsaw-Code/outline-networking-owners
 /tools/               @Jigsaw-Code/outline-networking-owners
 
-/src/www/model/           @fortuna 
+/web/model/           @fortuna 

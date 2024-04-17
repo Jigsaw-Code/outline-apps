@@ -23,7 +23,7 @@ import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
  * @description Starts the web app for development.
  */
 export async function main() {
-  await runAction('client/www/build', 'browser');
+  await runAction('client/web/build', 'browser');
 
   // TODO(daniellacosse): Browser-only webpack setup that's extended both by electron and cordova.
   // Currently, only the cordova web build works in standalone mode.

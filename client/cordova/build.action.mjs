@@ -34,7 +34,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
-  await runAction('client/www/build', ...parameters);
+  await runAction('client/web/build', ...parameters);
   await runAction('client/tun2socks/build', ...parameters);
   await runAction('client/cordova/setup', ...parameters);
 
@@ -95,7 +95,7 @@ function getXcodeBuildArgs(platform) {
   }
   return [
     '-workspace',
-    path.join(getRootDir(), 'client', 'src', 'cordova', 'apple', workspaceFilename),
+    path.join(getRootDir(), 'client', 'cordova', 'apple', workspaceFilename),
     '-scheme',
     'Outline',
     '-destination',

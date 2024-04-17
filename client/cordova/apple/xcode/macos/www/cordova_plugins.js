@@ -2,7 +2,7 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
   module.exports = [
     {
       "id": "cordova-plugin-clipboard.Clipboard",
-      "file": "plugins/cordova-plugin-clipboard/www/clipboard.js",
+      "file": "plugins/cordova-plugin-clipboard/web/clipboard.js",
       "pluginId": "cordova-plugin-clipboard",
       "clobbers": [
         "cordova.plugins.clipboard"
@@ -10,7 +10,7 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
     },
     {
       "id": "cordova-webintent.WebIntent",
-      "file": "plugins/cordova-webintent/www/webintent.js",
+      "file": "plugins/cordova-webintent/web/webintent.js",
       "pluginId": "cordova-webintent",
       "clobbers": [
         "WebIntent"

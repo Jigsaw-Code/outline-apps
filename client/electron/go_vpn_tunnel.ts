@@ -16,9 +16,9 @@ import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
 import {pathToEmbeddedBinary} from '../../client/infrastructure/electron/app_paths';
-import {ShadowsocksSessionConfig} from '../../client/www/app/tunnel';
-import {TunnelStatus} from '../../client/www/app/tunnel';
-import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/www/model/errors';
+import {ShadowsocksSessionConfig} from '../../client/web/app/tunnel';
+import {TunnelStatus} from '../../client/web/app/tunnel';
+import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/web/model/errors';
 
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';

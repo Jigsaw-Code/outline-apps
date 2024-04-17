@@ -36,7 +36,7 @@ export async function main(...parameters) {
     );
   }
 
-  await runAction('client/www/build', ...parameters);
+  await runAction('client/web/build', ...parameters);
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(

@@ -37,14 +37,14 @@ jobs:
         run: npm run action lint
 
       - name: Build Web App
-        run: npm run action client/www/build
+        run: npm run action client/web/build
 
       - name: Test Web App
-        run: npm run action client/www/test
+        run: npm run action client/web/test
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ./client/output/coverage/www/coverage-final.json
+          files: ./client/output/coverage/web/coverage-final.json
           flags: unittests, www
 
   linux_debug_build:

@@ -48,7 +48,7 @@ export async function main(...parameters) {
     );
   }
 
-  await runAction('client/www/build', ...parameters);
+  await runAction('client/web/build', ...parameters);
   await runAction('client/tun2socks/build', ...parameters);
   await runAction('src/electron/build_main', ...parameters);
 

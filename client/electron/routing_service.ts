@@ -20,8 +20,8 @@ import * as path from 'path';
 import * as sudo from 'sudo-prompt';
 
 import {getAppPath} from '../../client/infrastructure/electron/app_paths';
-import {TunnelStatus} from '../../client/www/app/tunnel';
-import {ErrorCode, SystemConfigurationException} from '../../client/www/model/errors';
+import {TunnelStatus} from '../../client/web/app/tunnel';
+import {ErrorCode, SystemConfigurationException} from '../../client/web/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
