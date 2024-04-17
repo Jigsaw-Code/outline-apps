@@ -43,8 +43,8 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
-import '../views/contact_view';
-import '../views/servers_view';
+import '../views/contact_view/index.js';
+import '../views/servers_view/index.js';
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
 
