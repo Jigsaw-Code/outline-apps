@@ -16,7 +16,8 @@ import '@polymer/polymer/polymer-legacy';
 import '@polymer/iron-pages/iron-pages';
 import './outline-step-view';
 
-import {css, customElement, html, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {COMMON_STYLES} from '../ui_components/cloud-install-styles';
 
 @customElement('outline-gcp-oauth-step')

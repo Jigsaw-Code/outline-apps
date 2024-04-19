@@ -15,7 +15,7 @@
 */
 
 import {html} from '@polymer/polymer/lib/utils/html-tag';
-import {unsafeCSS} from 'lit-element';
+import {unsafeCSS} from 'lit';
 
 // Polymer style module to share styles between steps
 // https://polymer-library.polymer-project.org/3.0/docs/devguide/style-shadow-dom#share-styles-between-elements

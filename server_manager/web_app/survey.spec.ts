@@ -17,7 +17,7 @@ import {InMemoryStorage} from '../infrastructure/memory_storage';
 import {OutlineSurveys} from './survey';
 
 describe('Surveys', () => {
-  it('presents data limits surveys with the correct arguments', async done => {
+  it('presents data limits surveys with the correct arguments', async () => {
     const view = new FakeSurveyDialog();
     const storage = new InMemoryStorage();
     const surveys = new OutlineSurveys(view, storage, 0);
@@ -33,10 +33,9 @@ describe('Surveys', () => {
     expect(view.surveyLink).toEqual(
       'https://docs.google.com/forms/d/e/1FAIpQLSc2ZNx0C1a-alFlXLxhJ8jWk-WgcxqKilFoQ5ToI8HBOK9qRA/viewform'
     );
-    done();
   });
 
-  it('presents data limits surveys after the default prompt impression delay', async done => {
+  it('presents data limits surveys after the default prompt impression delay', async () => {
     const TEST_PROMPT_IMPRESSION_DELAY_MS = 750;
     const view = new FakeSurveyDialog();
     const storage = new InMemoryStorage();
@@ -51,10 +50,9 @@ describe('Surveys', () => {
     await surveys.presentDataLimitsDisabledSurvey();
     delay = Date.now() - start;
     expect(delay).toBeGreaterThanOrEqual(TEST_PROMPT_IMPRESSION_DELAY_MS);
-    done();
   });
 
-  it('presents data limits surveys once', async done => {
+  it('presents data limits surveys once', async () => {
     const view = new FakeSurveyDialog();
     const storage = new InMemoryStorage();
     const surveys = new OutlineSurveys(view, storage, 0);
@@ -69,10 +67,9 @@ describe('Surveys', () => {
     expect(view.open).not.toHaveBeenCalled();
     await surveys.presentDataLimitsDisabledSurvey();
     expect(view.open).not.toHaveBeenCalled();
-    done();
   });
 
-  it('does not present data limits surveys after availability date', async done => {
+  it('does not present data limits surveys after availability date', async () => {
     const view = new FakeSurveyDialog();
     const storage = new InMemoryStorage();
     const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
@@ -83,7 +80,6 @@ describe('Surveys', () => {
     expect(view.open).not.toHaveBeenCalled();
     await surveys.presentDataLimitsDisabledSurvey();
     expect(view.open).not.toHaveBeenCalled();
-    done();
   });
 });
 

@@ -14,7 +14,8 @@
 
 import './outline-server-view';
 
-import {customElement, html, LitElement, property} from 'lit-element';
+import {html, LitElement} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 
 import type {DisplayCloudId} from './cloud-assets';
