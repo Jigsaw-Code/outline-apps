@@ -92,7 +92,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-webpack": "^5.0.0",
     "node-jq": "^1.11.2",
-    "postcss": "^7.0.29",
+    "postcss": "^8.4.31",
     "postcss-rtl": "^1.7.3",
     "posthtml-postcss": "^0.2.6",
     "puppeteer": "^13.6.0",
