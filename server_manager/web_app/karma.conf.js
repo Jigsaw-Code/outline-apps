@@ -21,22 +21,28 @@ const baseConfig = makeConfig({
   defaultMode: 'development',
 });
 
-const test_patterns = [
-  '**/*.spec.ts',
-  // We need to test data_formatting in a browser context
-  './data_formatting.spec.ts',
+const filePatterns = [
+  {
+    pattern: 'web_app/**/*.spec.ts',
+    watched: true
+  },
+  {
+    pattern: 'images/*',
+    watched: false,
+    included: false,
+    served: true
+  }
 ];
-
-let preprocessors = {};
-for (const pattern of test_patterns) {
-  preprocessors[pattern] = ['webpack'];
-}
 
 module.exports = function (config) {
   config.set({
+    basePath: '../',
     frameworks: ['jasmine'],
-    files: test_patterns,
-    preprocessors,
+    files: filePatterns,
+    proxies: {
+      '/images/': '/base/images/'
+    },
+    preprocessors: { './web_app/**/*.spec.ts': ['webpack'] },
     reporters: ['progress'],
     colors: true,
     logLevel: config.LOG_INFO,

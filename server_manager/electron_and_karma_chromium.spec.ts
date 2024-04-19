@@ -21,7 +21,7 @@ import fetch from 'node-fetch';
 import {config} from './package.json';
 
 describe('Karma', () => {
-  it('uses the correct Chromium version', async done => {
+  it('uses the correct Chromium version', async () => {
     // ChromiumDash is a service maintained by the Chrome team which serves metadata about current
     // and legacy Chrome versions.
     const electronChromiumVersionInfo = <{chromium_main_branch_position?: number}>(
@@ -31,6 +31,5 @@ describe('Karma', () => {
     );
     const electronChromeRevision = electronChromiumVersionInfo.chromium_main_branch_position;
     expect(electronChromeRevision).toEqual(config.PUPPETEER_CHROMIUM_REVISION);
-    done();
   });
 });

@@ -20,4 +20,4 @@ rm -rf "${BUILD_DIR}/server_manager/web_app"
 
 node src/build/run_action.mjs server_manager/web_app/build_install_script
 
-webpack-dev-server --config=src/server_manager/browser.webpack.js --open
+webpack-dev-server --config=server_manager/browser.webpack.js --open

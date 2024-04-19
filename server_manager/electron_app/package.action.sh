@@ -18,7 +18,7 @@ set -eu
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_DIR="${BUILD_DIR}/server_manager/electron_app/static"
 BUILD_MODE=debug
-PLATFORM= 
+PLATFORM=
 
 function package_electron() {
   declare -a electron_builder_cmd=(
@@ -54,7 +54,7 @@ function finish_yaml_files() {
   declare -r staging_percentage="${1?Staging percentage missing}"
 
   local release_channel
-  release_channel=$(node_modules/node-jq/bin/jq -r '.version' src/server_manager/package.json | cut -s -d'-' -f2)
+  release_channel=$(node_modules/node-jq/bin/jq -r '.version' server_manager/package.json | cut -s -d'-' -f2)
   # If this isn't an alpha or beta build, `cut -s` will return an empty string
   if [[ -z "${release_channel}" ]]; then
     release_channel=latest

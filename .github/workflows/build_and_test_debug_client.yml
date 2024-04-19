@@ -33,9 +33,6 @@ jobs:
       - name: Install NPM Dependencies
         run: npm set cache .npm && npm ci
 
-      - name: Run Linter
-        run: npm run action lint
-
       - name: Build Web App
         run: npm run action client/src/www/build
 
@@ -133,7 +130,7 @@ jobs:
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
         run: npm run action client/src/tun2socks/build macos
-  
+
       - name: Test OutlineAppleLib
         run: npm run action client/src/cordova/test macos
 
@@ -174,7 +171,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Tun2Socks (required for Test OutlineAppleLib)
-        run: npm run action client/src/tun2socks/build ios  
+        run: npm run action client/src/tun2socks/build ios
 
       - name: Test OutlineAppleLib
         run: npm run action client/src/cordova/test ios

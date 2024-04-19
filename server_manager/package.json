@@ -9,11 +9,11 @@
     "email": "info@getoutline.org"
   },
   "build": {
-    "afterSign": "src/server_manager/electron_app/release/notarize.js",
+    "afterSign": "server_manager/electron_app/release/notarize.js",
     "mac": {
       "hardenedRuntime": true,
-      "entitlements": "src/server_manager/electron_app/release/macos.entitlements",
-      "entitlementsInherit": "src/server_manager/electron_app/release/macos.entitlements"
+      "entitlements": "server_manager/electron_app/release/macos.entitlements",
+      "entitlementsInherit": "server_manager/electron_app/release/macos.entitlements"
     }
   },
   "dependencies": {
@@ -50,7 +50,6 @@
     "intl-messageformat": "^7.8.4",
     "jsonic": "^0.3.1",
     "lit": "^3.1.2",
-    "lit-element": "^2.5.1",
     "node-forge": "^1.3.1",
     "request": "^2.88.2",
     "web-animations-js": "^2.3.2"
@@ -90,7 +89,7 @@
     "html-webpack-plugin": "^5.5.3",
     "karma": "^6.3.16",
     "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^4.0.1",
+    "karma-jasmine": "^5.1.0",
     "karma-webpack": "^5.0.0",
     "node-jq": "^1.11.2",
     "postcss": "^7.0.29",
