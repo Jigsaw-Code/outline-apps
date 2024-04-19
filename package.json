@@ -18,7 +18,8 @@
   "private": true,
   "workspaces": [
     "server_manager",
-    "client"
+    "client",
+    "infrastructure"
   ],
   "devDependencies": {
     "@types/node-fetch": "^2.6.7",
