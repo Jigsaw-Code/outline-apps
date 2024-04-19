@@ -142,7 +142,7 @@ function setupWindow(): void {
   // The ideal solution would be: either electron-builder supports the app icon; or we add
   // dpi-aware features to this app.
   if (isLinux) {
-    mainWindow.setIcon(path.join(app.getAppPath(), 'build', 'icons', 'png', '64x64.png'));
+    mainWindow.setIcon(path.join(app.getAppPath(), 'output', 'client', 'electron', 'icons', 'png', '64x64.png'));
   }
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'www', 'index_electron.html');

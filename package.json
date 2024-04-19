@@ -28,6 +28,5 @@
     "electron-builder": "^24.13.3",
     "eslint-plugin-import": "^2.29.1",
     "node-fetch": "^2.6.7"
-  },
-  "main": "client/build/electron/electron/index.js"
+  }
 }

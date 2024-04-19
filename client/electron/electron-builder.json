@@ -1,34 +1,54 @@
 {
-  "files": ["client/build/electron", "client/www", "client/resources/tray", "!node_modules/electron"],
-  "asarUnpack": ["client/output", "client/tools"],
   "artifactName": "Outline-Client.${ext}",
+  "asarUnpack": [
+    "output/client/electron"
+  ],
   "directories": {
-    "output": "client/output/build/dist",
-    "buildResources": "client/build"
+    "buildResources": "output/client/electron",
+    "output": "output/client/electron/build"
   },
+  "extraMetadata": {
+    "main": "output/client/electron/index.js"
+  },
+  "files": [
+    "output/client/electron",
+    "client/www",
+    "client/resources/tray",
+    "!node_modules/electron"
+  ],
   "linux": {
-    "target": {
-      "target": "AppImage",
-      "arch": ["x64"]
-    },
-    "files": ["client/build/icons/png", "client/output/build/linux", "client/tools/outline_proxy_controller/dist"],
-    "icon": "client/build/icons/png",
-    "category": "Network"
-  },
-  "win": {
-    "target": [
-      {
-        "target": "nsis",
-        "arch": "ia32"
-      }
+    "category": "Network",
+    "files": [
+      "output/client/electron/icons/png",
+      "output/client/electron/linux",
+      "client/linux_proxy_controller/dist"
     ],
-    "files": ["client/output/build/windows"],
-    "icon": "client/build/icons/win/icon.ico",
-    "sign": "client/src/electron/windows/electron_builder_signing_plugin.cjs",
-    "signingHashAlgorithms": ["sha256"]
+    "icon": "output/client/electron/icons/png",
+    "target": {
+      "arch": [
+        "x64"
+      ],
+      "target": "AppImage"
+    }
   },
   "nsis": {
-    "perMachine": true,
-    "include": "client/src/electron/custom_install_steps.nsh"
+    "include": "client/electron/custom_install_steps.nsh",
+    "perMachine": true
+  },
+  "win": {
+    "files": [
+      "output/client/electron/windows"
+    ],
+    "icon": "output/client/electron/icons/win/icon.ico",
+    "sign": "client/electron/windows/electron_builder_signing_plugin.cjs",
+    "signingHashAlgorithms": [
+      "sha256"
+    ],
+    "target": [
+      {
+        "arch": "ia32",
+        "target": "nsis"
+      }
+    ]
   }
 }

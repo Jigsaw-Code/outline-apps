@@ -20,11 +20,11 @@ import copydir from 'copy-dir';
 import electron, {Platform} from 'electron-builder';
 import minimist from 'minimist';
 
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getRootDir} from '../../src/build/get_root_dir.mjs';
+import {runAction} from '../../src/build/run_action.mjs';
+import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
 
-const ELECTRON_BUILD_DIR = 'build';
+const ELECTRON_BUILD_DIR = 'output';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
@@ -51,16 +51,18 @@ export async function main(...parameters) {
   }
 
   await runAction('client/src/www/build', ...parameters);
-  // await runAction('client/src/tun2socks/build', ...parameters);
-  await runAction('client/src/electron/build_main', ...parameters);
+  await runAction('client/src/tun2socks/build', ...parameters);
+  await runAction('client/electron/build_main', ...parameters);
+
+  await fs.mkdir(path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron'), {recursive: true});
 
   await copydir.sync(
-    path.join(getRootDir(), 'client', 'src', 'electron', 'icons'),
-    path.join(getRootDir(), 'client', ELECTRON_BUILD_DIR, 'icons')
+    path.join(getRootDir(), 'client', 'electron', 'icons'),
+    path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron', 'icons')
   );
 
   const electronConfig = JSON.parse(
-    await fs.readFile(path.resolve(getRootDir(), 'client', 'src', 'electron', 'electron-builder.json'))
+    await fs.readFile(path.resolve(getRootDir(), 'client', 'electron', 'electron-builder.json'))
   );
 
   // build electron binary
