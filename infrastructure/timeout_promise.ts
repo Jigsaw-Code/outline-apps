@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {CustomError} from 'outline-infrastructure';
+import {CustomError} from './custom_error';
 
 export class OperationTimedOut extends CustomError {
   constructor(public readonly timeoutMs: number, public readonly operationName: string) {

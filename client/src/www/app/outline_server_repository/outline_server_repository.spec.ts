@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {InMemoryStorage} from '../../../../infrastructure/memory_storage';
+import {InMemoryStorage} from 'outline-infrastructure/memory_storage';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 

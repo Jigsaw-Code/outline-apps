@@ -15,7 +15,7 @@
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';
-import {OperationTimedOut} from '../../../infrastructure/timeout_promise';
+import {OperationTimedOut} from 'outline-infrastructure/timeout_promise';
 import {ServerListItem, ServerConnectionState} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
@@ -27,7 +27,7 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-import {Localizer} from '../../../infrastructure/i18n';
+import {Localizer} from 'outline-infrastructure/i18n';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',

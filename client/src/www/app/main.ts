@@ -23,7 +23,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
-import {Localizer} from '../../../infrastructure/i18n.js';
+import {Localizer} from 'outline-infrastructure/i18n';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;

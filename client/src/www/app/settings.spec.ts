@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {InMemoryStorage} from '../../../infrastructure/memory_storage';
+import {InMemoryStorage} from 'outline-infrastructure/memory_storage';
 
 import {Settings, SettingsKey} from './settings';
 

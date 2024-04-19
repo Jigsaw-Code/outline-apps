@@ -24,7 +24,7 @@ import {Menu} from '@material/mwc-menu';
 
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
-import {Localizer} from '../../../../../../infrastructure/i18n';
+import {Localizer} from 'outline-infrastructure/i18n';
 
 const sharedCSS = css`
   /* TODO(daniellacosse): reset via postcss */
