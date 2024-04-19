@@ -1,10 +1,6 @@
 {
   "extends": "../src/www/tsconfig.json",
   "compilerOptions": {
-    "outDir": "../build/electron",
-    "paths": {
-      // without this, import 'electron' resolves to ./client/electron/index.ts
-      "electron": ["./node_modules/electron/index.js"]
-    }
+    "outDir": "../build/electron"
   }
 }
