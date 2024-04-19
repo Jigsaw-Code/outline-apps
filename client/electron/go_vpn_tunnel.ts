@@ -19,9 +19,9 @@ import {powerMonitor} from 'electron';
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {pathToEmbeddedTun2socksBinary} from '../../infrastructure/electron/app_paths';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../www/app/tunnel';
-import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../www/model/errors';
+import {pathToEmbeddedTun2socksBinary} from '../infrastructure/electron/app_paths';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
+import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
