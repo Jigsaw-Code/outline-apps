@@ -11,17 +11,17 @@
     "main": "output/client/electron/index.js"
   },
   "files": [
-    "output/client/electron",
     "client/www",
     "client/resources/tray",
+    "output/client/electron",
     "!node_modules/electron"
   ],
   "linux": {
     "category": "Network",
     "files": [
+      "client/linux_proxy_controller/dist",
       "output/client/electron/icons/png",
-      "output/client/electron/linux",
-      "client/linux_proxy_controller/dist"
+      "output/client/electron/linux"
     ],
     "icon": "output/client/electron/icons/png",
     "target": {
