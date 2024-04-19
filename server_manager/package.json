@@ -110,5 +110,8 @@
     "supports-color": "3.1.2",
     "type-detect": "1.0.0"
   },
-  "license": "Apache"
+  "license": "Apache",
+  "scripts": {
+    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts"
+  }
 }
