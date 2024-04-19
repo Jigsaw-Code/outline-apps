@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
+export * from "./crypto";
 export * from "./custom_error";
+export * from "./hex_encoding";
 export * from "./i18n";
+export * from "./index";
 export * from "./memory_storage";
+export * from "./path_api";
+export * from "./sentry";
+export * from "./sleep";
 export * from "./timeout_promise";
+export * from "./value_stream";
