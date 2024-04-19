@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "target": "es2022",
     "removeComments": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
@@ -10,7 +9,9 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "noUnusedLocals": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "target": "es2018",
+    "lib": ["dom", "es2022"]
   },
   "rootDir": ".",
   "include": ["**/*.ts"],
