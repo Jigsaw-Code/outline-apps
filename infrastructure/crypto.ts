@@ -15,7 +15,7 @@
 import * as forge from 'node-forge';
 
 // Keys are in OpenSSH format
-export class KeyPair {
+export interface KeyPair {
   public: string;
   private: string;
 }

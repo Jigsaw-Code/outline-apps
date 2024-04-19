@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {DigitalOceanSession, DropletInfo, RestApiSession} from '../cloud/digitalocean_api';
-import * as crypto from '../infrastructure/crypto';
+import * as crypto from 'outline-infrastructure/crypto';
 import * as do_install_script from '../install_scripts/do_install_script';
 import * as digitalocean from '../model/digitalocean';
 import * as server from '../model/server';

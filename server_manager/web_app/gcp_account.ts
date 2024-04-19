@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as gcp_api from '../cloud/gcp_api';
-import {sleep} from '../infrastructure/sleep';
+import {sleep} from 'outline-infrastructure/sleep';
 import {SCRIPT} from '../install_scripts/gcp_install_script';
 import * as gcp from '../model/gcp';
 import {BillingAccount, Project} from '../model/gcp';

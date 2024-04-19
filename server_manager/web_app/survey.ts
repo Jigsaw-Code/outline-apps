@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {sleep} from '../infrastructure/sleep';
+import {sleep} from 'outline-infrastructure/sleep';
 import {Surveys} from '../model/survey';
 
 export const DEFAULT_PROMPT_IMPRESSION_DELAY_MS = 3000;

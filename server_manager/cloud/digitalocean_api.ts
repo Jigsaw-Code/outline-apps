@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../infrastructure/custom_error';
+import {CustomError} from 'outline-infrastructure/custom_error';
 
 export interface DigitalOceanDropletSpecification {
   installCommand: string;
@@ -65,7 +65,7 @@ export type RegionInfo = Readonly<{
 
 // Marker class for errors due to network or authentication.
 // See below for more details on when this is raised.
-export class XhrError extends errors.CustomError {
+export class XhrError extends CustomError {
   constructor() {
     // No message because XMLHttpRequest.onerror provides no useful info.
     super();

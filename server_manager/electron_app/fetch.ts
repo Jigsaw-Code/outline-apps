@@ -18,7 +18,7 @@ import {urlToHttpOptions} from 'url';
 
 import type {IncomingMessage} from 'http';
 
-import type {HttpRequest, HttpResponse} from '../infrastructure/path_api';
+import type {HttpRequest, HttpResponse} from 'outline-infrastructure/path_api';
 
 export const fetchWithPin = async (req: HttpRequest, fingerprint: string): Promise<HttpResponse> => {
   const response = await new Promise<IncomingMessage>((resolve, reject) => {

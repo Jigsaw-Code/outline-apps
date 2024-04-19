@@ -18,7 +18,7 @@ import {Breadcrumb} from '@sentry/electron';
 
 import * as digitalocean_oauth from './digitalocean_oauth';
 import * as gcp_oauth from './gcp_oauth';
-import {HttpRequest, HttpResponse} from '../infrastructure/path_api';
+import type {HttpRequest, HttpResponse} from 'outline-infrastructure/path_api';
 import {redactManagerUrl} from './util';
 
 // This file is run in the renderer process *before* nodeIntegration is disabled.

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Fetcher, PathApiClient} from '../infrastructure/path_api';
+import {Fetcher, PathApiClient} from 'outline-infrastructure/path_api';
 
 async function fetchWrapper(request: HttpRequest): Promise<HttpResponse> {
   const response = await fetch(request.url, request);
