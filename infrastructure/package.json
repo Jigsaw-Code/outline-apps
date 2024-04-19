@@ -12,6 +12,7 @@
     "build": "tsc --build ./tsconfig.json"
   },
   "devDependencies": {
+    "intl-messageformat": "^10.5.11",
     "typescript": "^5.4.5"
   }
 }
