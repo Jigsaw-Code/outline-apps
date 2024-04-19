@@ -3,6 +3,7 @@
     "removeComments": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "module": "commonjs",
     "moduleResolution": "Node",
     "sourceMap": true,
     "experimentalDecorators": true,
@@ -10,7 +11,7 @@
     "resolveJsonModule": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "target": "es2018",
+    "target": "es2021",
     "lib": ["dom", "es2022"]
   },
   "rootDir": ".",
