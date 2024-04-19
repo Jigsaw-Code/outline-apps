@@ -40,7 +40,7 @@ function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSes
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
-    throw new errors.SessionConfigError(responseJson.error.message, { cause: responseJson.error.cause });
+    throw new errors.SessionConfigError(responseJson.error.message, { cause: responseJson.error.details });
   }
 
   const {method, password, server, server_port, prefix} = responseJson;
