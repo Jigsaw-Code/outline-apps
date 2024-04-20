@@ -7,7 +7,6 @@ node_modules
 *.env
 *.pdb
 *.sw?
-/infrastructure/dist
 /server_manager/node_modules
 /server_manager/install_scripts/do_install_script.ts
 /server_manager/install_scripts/gcp_install_script.ts
