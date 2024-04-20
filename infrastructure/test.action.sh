@@ -21,7 +21,7 @@ rm -rf "${TEST_DIR}"
 
 # Use commonjs modules, jasmine runs in node.
 tsc -p "${ROOT_DIR}/infrastructure" --outDir "${TEST_DIR}" --module commonjs
-jasmine --config="${ROOT_DIR}/jasmine.json"
+jasmine "output/build/js/**/*.spec.js"
 karma start "${ROOT_DIR}/infrastructure/karma.conf.js"
 
 rm -rf "${TEST_DIR}"
