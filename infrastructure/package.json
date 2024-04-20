@@ -9,6 +9,7 @@
     "dist"
   ],
   "scripts": {
+    "build": "tsc --build ./tsconfig.prod.json",
     "clean": "rm -rf node_modules dist"
   },
   "devDependencies": {
