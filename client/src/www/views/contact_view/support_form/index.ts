@@ -25,7 +25,7 @@ import '@material/mwc-textfield';
 import {AppType} from '../app_type';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
-import {Localizer} from 'outline-infrastructure/i18n';
+import {Localizer} from '@outline/infrastructure/i18n';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 

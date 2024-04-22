@@ -45,7 +45,7 @@
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-updater": "^5.0.5",
     "lit": "^2.2.2",
-    "outline-infrastructure": "file:../infrastructure",
+    "@outline/infrastructure": "file:../infrastructure",
     "ShadowsocksConfig": "github:Jigsaw-Code/outline-shadowsocksconfig#v0.2.1",
     "socks": "^1.1.10",
     "sudo-prompt": "^9.2.1",

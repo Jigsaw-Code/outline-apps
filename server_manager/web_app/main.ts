@@ -14,7 +14,7 @@
 
 import './ui_components/app-root';
 
-import * as i18n from 'outline-infrastructure/i18n';
+import * as i18n from '@outline/infrastructure/i18n';
 
 import {App} from './app';
 import {CloudAccounts} from './cloud_accounts';

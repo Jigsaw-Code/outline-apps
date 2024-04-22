@@ -30,7 +30,7 @@ import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
-import {Localizer} from 'outline-infrastructure/i18n';
+import {Localizer} from '@outline/infrastructure/i18n';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {

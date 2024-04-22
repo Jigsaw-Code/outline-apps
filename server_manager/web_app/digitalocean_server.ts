@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import {DigitalOceanSession, DropletInfo} from '../cloud/digitalocean_api';
-import {hexToString} from 'outline-infrastructure/hex_encoding';
-import {sleep} from 'outline-infrastructure/sleep';
-import {ValueStream} from 'outline-infrastructure/value_stream';
+import {hexToString} from '@outline/infrastructure/hex_encoding';
+import {sleep} from '@outline/infrastructure/sleep';
+import {ValueStream} from '@outline/infrastructure/value_stream';
 import {Region} from '../model/digitalocean';
 import * as server from '../model/server';
 import {makePathApiClient} from './fetcher';

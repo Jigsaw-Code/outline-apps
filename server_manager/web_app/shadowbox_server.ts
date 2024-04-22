@@ -15,7 +15,7 @@
 import * as semver from 'semver';
 
 import * as server from '../model/server';
-import {PathApiClient} from 'outline-infrastructure/path_api';
+import {PathApiClient} from '@outline/infrastructure/path_api';
 
 interface AccessKeyJson {
   id: string;

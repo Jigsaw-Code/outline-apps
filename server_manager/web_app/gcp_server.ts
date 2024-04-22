@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import * as gcp_api from '../cloud/gcp_api';
-import {sleep} from 'outline-infrastructure/sleep';
-import {ValueStream} from 'outline-infrastructure/value_stream';
+import {sleep} from '@outline/infrastructure/sleep';
+import {ValueStream} from '@outline/infrastructure/value_stream';
 import {Zone} from '../model/gcp';
 import * as server from '../model/server';
 import {DataAmount, ManagedServerHost, MonetaryCost} from '../model/server';
