@@ -13,11 +13,12 @@
 // limitations under the License.
 
 import url from 'url';
+
 import webpack from 'webpack';
 import WebpackServer from 'webpack-dev-server';
 
-import {runAction} from '../../../src/build/run_action.mjs';
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
+import {runAction} from '../../../src/build/run_action.mjs';
 
 /**
  * @description Starts the web app for development.
