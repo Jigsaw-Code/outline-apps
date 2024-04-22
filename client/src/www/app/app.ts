@@ -220,6 +220,8 @@ export class App {
       };
     } else if (error instanceof errors.SessionConfigError) {
       toastMessage = error.message;
+    } else if (error instanceof errors.SessionProviderError) {
+      return alert(error.message);
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');

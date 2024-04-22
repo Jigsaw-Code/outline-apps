@@ -51,6 +51,12 @@ export class SessionConfigError extends CustomError {
   }
 }
 
+export class SessionProviderError extends CustomError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class ServerAccessKeyInvalid extends CustomError {
   constructor(message: string, options?: {cause?: Error}) {
     super(message, options);
