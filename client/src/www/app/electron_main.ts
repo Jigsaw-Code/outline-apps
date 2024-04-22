@@ -19,16 +19,16 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as Sentry from '@sentry/electron/renderer';
 
-import {ErrorCode, OutlinePluginError} from '../model/errors';
 
 import {AbstractClipboard} from './clipboard';
 import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
+import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';

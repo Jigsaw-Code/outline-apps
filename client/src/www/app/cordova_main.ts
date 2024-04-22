@@ -26,16 +26,16 @@ import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {SentryErrorReporter, Tags} from '../shared/error_reporter';
+import {FakeOutlineTunnel} from './fake_tunnel';
 import {main} from './main';
-import * as errors from '../model/errors';
 import {OutlinePlatform} from './platform';
 import {Tunnel, TunnelStatus} from './tunnel';
+import {ShadowsocksSessionConfig} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
-import {FakeOutlineTunnel} from './fake_tunnel';
-import {ShadowsocksSessionConfig} from './tunnel';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
+import * as errors from '../model/errors';
+import {SentryErrorReporter, Tags} from '../shared/error_reporter';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 

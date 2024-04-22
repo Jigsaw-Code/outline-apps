@@ -27,13 +27,12 @@
 // import * as outlineIcons from './ui_components/outline-icons';
 
 import * as clipboard from './app/clipboard';
-import * as errorReporter from './shared/error_reporter';
 import * as platform from './app/platform';
 import * as tunnel from './app/tunnel';
 import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
-
+import * as errorReporter from './shared/error_reporter';
 import * as aboutView from './ui_components/about-view';
 import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';

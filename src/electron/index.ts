@@ -14,24 +14,25 @@
 
 // Directly import @sentry/electron main process code.
 // See: https://docs.sentry.io/platforms/javascript/guides/electron/#webpack-configuration
-import * as Sentry from '@sentry/electron/main';
-import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
-import {autoUpdater} from 'electron-updater';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
+
+import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
+import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
+import {autoUpdater} from 'electron-updater';
 
-import * as errors from '../../client/src/www/model/errors';
 
-import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
+import {lookupIp} from './connectivity';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {lookupIp} from './connectivity';
+import {TunnelStatus} from '../../client/src/www/app/tunnel';
+import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
+import * as errors from '../../client/src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:

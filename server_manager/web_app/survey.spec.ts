@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {OutlineSurveys} from './survey';
 import {InMemoryStorage} from '../infrastructure/memory_storage';
 
-import {OutlineSurveys} from './survey';
 
 describe('Surveys', () => {
   it('presents data limits surveys with the correct arguments', async () => {

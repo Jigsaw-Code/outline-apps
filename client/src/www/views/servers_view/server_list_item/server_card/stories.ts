@@ -19,9 +19,9 @@ import {html} from 'lit';
 
 import '../../index';
 
+import {ServerListItemElement} from '..';
 import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
-import {ServerListItemElement} from '..';
 
 export default {
   title: 'Servers View/Server List Item',

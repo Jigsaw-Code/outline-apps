@@ -14,7 +14,6 @@
   limitations under the License.
 */
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn';
-
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 Polymer({
   _template: html`

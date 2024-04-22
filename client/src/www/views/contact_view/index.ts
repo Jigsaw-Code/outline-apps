@@ -26,11 +26,11 @@ import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 
 import './support_form';
-import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {AppType} from './app_type';
+import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
-import {OutlineErrorReporter} from '../../shared/error_reporter';
 import {Localizer} from '../../../../infrastructure/i18n';
+import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {

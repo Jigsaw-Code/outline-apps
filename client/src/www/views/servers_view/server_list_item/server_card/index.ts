@@ -16,15 +16,15 @@ import '@material/mwc-icon-button';
 import '@material/mwc-menu';
 import '../../server_connection_indicator';
 
+import {Menu} from '@material/mwc-menu';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
-import {Menu} from '@material/mwc-menu';
 
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
-import {ServerConnectionState} from '../../server_connection_indicator';
 import {Localizer} from '../../../../../../infrastructure/i18n';
+import {ServerConnectionState} from '../../server_connection_indicator';
 
 const sharedCSS = css`
   /* TODO(daniellacosse): reset via postcss */

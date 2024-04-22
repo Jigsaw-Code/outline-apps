@@ -60,6 +60,21 @@
         ]
       }
     ],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal"
+        ],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
     "no-prototype-builtins": "off",
     "prefer-const": "error",
     "@typescript-eslint/ban-types": "off",

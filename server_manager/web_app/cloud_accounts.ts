@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as accounts from '../model/accounts';
-import * as digitalocean from '../model/digitalocean';
-import * as gcp from '../model/gcp';
 import {DigitalOceanAccount} from './digitalocean_account';
 import {GcpAccount} from './gcp_account';
 import {ShadowboxSettings} from './server_install';
+import * as accounts from '../model/accounts';
+import * as digitalocean from '../model/digitalocean';
+import * as gcp from '../model/gcp';
 
 type DigitalOceanAccountJson = {
   accessToken: string;

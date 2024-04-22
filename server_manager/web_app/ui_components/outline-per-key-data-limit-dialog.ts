@@ -28,6 +28,7 @@ import {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox';
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+import {COMMON_STYLES} from './cloud-install-styles';
 import {
   bytesToDisplayDataAmount,
   DisplayDataAmount,
@@ -35,7 +36,6 @@ import {
   formatBytesParts,
 } from '../data_formatting';
 
-import {COMMON_STYLES} from './cloud-install-styles';
 
 /**
  * A floating window representing settings specific to individual access keys. Its state is
