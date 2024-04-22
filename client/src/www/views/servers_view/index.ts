@@ -24,7 +24,7 @@ import './server_list';
 
 import {ServerListItem as _ServerListItem} from './server_list_item';
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
-import { Localizer } from 'src/infrastructure/i18n';
+import { Localizer } from '../../../../infrastructure/i18n';
 
 export type ServerListItem = _ServerListItem;
 

@@ -66,8 +66,6 @@
     "@types/node": "^14.14.7",
     "@types/polymer": "^1.2.9",
     "@types/uuidv4": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.32.0",
     "@web/dev-server": "^0.1.35",
     "@web/dev-server-esbuild": "^0.3.3",
     "@web/dev-server-storybook": "^0.5.4",
@@ -143,5 +141,8 @@
       "ios",
       "osx"
     ]
+  },
+  "scripts": {
+    "clean": "rm -rf build output node_modules www platforms plugins"
   }
 }

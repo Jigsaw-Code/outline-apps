@@ -17,10 +17,6 @@ import {makePathApiClient} from './fetcher';
 describe('makePathApiClient', () => {
   const api = makePathApiClient('https://api.github.com/repos/Jigsaw-Code/');
 
-  if (process?.versions?.node) {
-    // This test relies on fetch(), which doesn't exist in Node (yet).
-    return;
-  }
   it('GET', async () => {
     const response = await api.request<{name: string}>('outline-server');
     expect(response.name).toEqual('outline-server');

@@ -15,7 +15,7 @@
 import '@polymer/iron-icon/iron-icon';
 import '@polymer/iron-icons/iron-icons';
 
-import {css, html, LitElement, PropertyDeclarations} from 'lit-element';
+import {css, html, LitElement, PropertyDeclarations} from 'lit';
 
 export class SortSpan extends LitElement {
   static get styles() {
