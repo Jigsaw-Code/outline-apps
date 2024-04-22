@@ -23,7 +23,7 @@ npm run action server_manager/web_app/build_install_script
 
 # Use commonjs modules, jasmine runs in node.
 tsc -p "${ROOT_DIR}/server_manager" --outDir "${TEST_DIR}" --module commonjs
-jasmine "output/build/js/**/*.spec.js"
+jasmine "output/build/js/**/*.spec.js" "!output/build/js/server_manager/web_app/**/*"
 
 npm run action server_manager/web_app/test
 
