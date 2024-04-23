@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {runAction} from '../build/run_action.mjs';
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
-import {getWebpackBuildMode} from '../../client/src/build/get_webpack_build_mode.mjs';
-import {runWebpack} from '../../client/src/build/run_webpack.mjs';
-import electronMainWebpackConfigs from './webpack_electron_main.mjs';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
+
+import electronMainWebpackConfigs from './webpack_electron_main.mjs';
+import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
+import {getWebpackBuildMode} from '../../client/src/build/get_webpack_build_mode.mjs';
+import {runWebpack} from '../../client/src/build/run_webpack.mjs';
 import {getRootDir} from '../build/get_root_dir.mjs';
+import {runAction} from '../build/run_action.mjs';
 
 const ELECTRON_BUILD_DIR = 'build';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];

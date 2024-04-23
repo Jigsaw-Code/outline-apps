@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {app} from 'electron';
 import * as os from 'os';
 import * as path from 'path';
+
+import {app} from 'electron';
 
 const isWindows = os.platform() === 'win32';
 

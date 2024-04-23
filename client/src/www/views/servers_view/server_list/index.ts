@@ -15,8 +15,8 @@ import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import '../server_list_item/server_card';
-import {ServerListItem} from '../server_list_item';
 import {Localizer} from '../../../../../infrastructure/i18n';
+import {ServerListItem} from '../server_list_item';
 
 @customElement('server-list')
 export class ServerList extends LitElement {

@@ -34,18 +34,17 @@ import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
 import {html, PolymerElement} from '@polymer/polymer';
-import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
-
-import * as formatting from '../data_formatting';
-import {getShortName} from '../location_formatting';
-import {getCloudIcon} from './cloud-assets';
-
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
-import type {CloudLocation} from '../../model/location';
-import type {AccessKeyId} from '../../model/server';
+import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
+
+import {getCloudIcon} from './cloud-assets';
 import type {OutlineHelpBubble} from './outline-help-bubble';
 import type {OutlineServerSettings} from './outline-server-settings';
+import type {CloudLocation} from '../../model/location';
+import type {AccessKeyId} from '../../model/server';
+import * as formatting from '../data_formatting';
+import {getShortName} from '../location_formatting';
 
 export const MY_CONNECTION_USER_ID = '0';
 

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Settings, SettingsKey} from './settings';
 import {InMemoryStorage} from '../../../infrastructure/memory_storage';
 
-import {Settings, SettingsKey} from './settings';
 
 const FAKE_SETTINGS_KEYS = ['key', 'key1', 'key2'];
 

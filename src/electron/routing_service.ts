@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {createHash} from 'node:crypto';
-import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
+import {createHash} from 'node:crypto';
 import {platform, userInfo} from 'os';
 import * as path from 'path';
+
+import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
 import {getAppPath} from '../../client/infrastructure/electron/app_paths';

@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../model/errors';
-import * as events from '../model/events';
-import {Server} from '../model/server';
-import {OperationTimedOut} from '../../../infrastructure/timeout_promise';
-import {ServerListItem, ServerConnectionState} from '../views/servers_view';
-import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from '../shared/error_reporter';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {Localizer} from '../../../infrastructure/i18n';
+import {OperationTimedOut} from '../../../infrastructure/timeout_promise';
+import * as errors from '../model/errors';
+import * as events from '../model/events';
+import {Server} from '../model/server';
+import {OutlineErrorReporter} from '../shared/error_reporter';
+import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',

@@ -19,8 +19,8 @@ import './index';
 
 import {html} from 'lit';
 
-import {localize} from '../../../testing/localize';
 import {ServerList} from './index';
+import {localize} from '../../../testing/localize';
 import {ServerConnectionState} from '../server_connection_indicator';
 
 export default {
