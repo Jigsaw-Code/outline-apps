@@ -81,11 +81,6 @@ export class ContactView extends LitElement {
         transform: translate(-50%, -50%);
       }
 
-      h1 {
-        font-size: 1rem;
-        margin-bottom: var(--contact-view-gutter, var(--outline-gutter));
-      }
-
       p {
         margin-top: .25rem;
       }

@@ -27,11 +27,13 @@ import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 import { OutlineFeedbackDialog } from './outline-feedback-dialog';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
+import '@polymer/paper-button/paper-button';
 
 import './outline-support-form';
-import {FormValues, SupportForm, ValidFormValues} from './outline-support-form';
+import {FormValues, OutlineSupportForm, ValidFormValues} from './outline-support-form';
 //import {OutlineErrorReporter} from '../../shared/error_reporter';
 import {Localizer} from '@outline/infrastructure/i18n';
+import { COMMON_STYLES } from './cloud-install-styles';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum Step {
@@ -58,18 +60,13 @@ const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
 export class OutlineContactUsDialog extends LitElement implements OutlineFeedbackDialog {
   static get styles() {
     return [
+      COMMON_STYLES,
       css`
         :host {
-          background: #fff;
-          color: var(--outline-text-color);
-          font-family: var(--outline-font-family);
-          padding: var(--contact-view-gutter, var(--outline-gutter));
-          width: 100%;
+          --mdc-theme-primary: var(--primary-green);
         }
 
         paper-dialog {
-          height: 60%;
-          text-align: center;
           width: 80%;
         }
 
@@ -77,7 +74,6 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
           display: block;
           margin-left: auto;
           margin-right: auto;
-          max-width: var(--contact-view-max-width);
         }
 
         mwc-circular-progress {
@@ -85,11 +81,6 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
           position: absolute;
           top: 50%;
           transform: translate(-50%, -50%);
-        }
-
-        h1 {
-          font-size: 1rem;
-          margin-bottom: var(--outline-gutter);
         }
 
         p {
@@ -181,7 +172,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
 
   @state() private showIssueSelector = false;
   private formValues: FormValues = {};
-  private readonly formRef: Ref<SupportForm> = createRef();
+  private readonly formRef: Ref<OutlineSupportForm> = createRef();
   @state() private isFormSubmitting = false;
 
   private selectHasOpenTicket(e: InputEvent) {
@@ -257,14 +248,10 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    const titleMsg = this.installationFailed
-    ? this.localize('feedback-title-install')
-    : this.localize('nav-contact-us');
     const introMsg = this.installationFailed
       ? this.localize('feedback-explanation-install')
       : this.localize('contact-view-intro');
     return html`
-      <h1>${titleMsg}</h1>
       <p class="intro">${introMsg}</p>
     `;
   }
@@ -343,32 +330,32 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
   }
 
   render() {
+    const titleMsg = this.installationFailed
+      ? this.localize('feedback-title-install')
+      : this.localize('nav-contact-us');
     return html`
       <paper-dialog ${ref(this.dialogRef)} modal="">
+        <h2>${titleMsg}</h2>
         <main>${this.renderMainContent}</main>
-        <p class="buttons">
-          <paper-button dialog-dismiss="">${this.localize('cancel')}</paper-button>
-        </p>
+        ${this.step === Step.FORM
+            ? nothing
+            : html`
+            <p class="buttons">
+              <paper-button dialog-dismiss="">${this.localize('cancel')}</paper-button>
+            </p>
+        `}
       </paper-dialog>
     `;
   }
 
   open(prepopulatedMessage: string, showInstallationFailed: boolean) {
-    this.reset();
-    console.log(prepopulatedMessage, showInstallationFailed);
-    // // The localized category doesn't get displayed the first time opening the
-    // // dialog (or after updating language) because the selected list item won't
-    // // notice the localization change.
-    // // This is a known issue and here is a workaround (force the selected item change):
-    // //   https://github.com/PolymerElements/paper-dropdown-menu/issues/159#issuecomment-229958448
-    // this.$.feedbackCategoryListbox.selected = undefined;
-
     // Clear all fields, in case feedback had already been entered.
+    this.reset();
+
     this.installationFailed = showInstallationFailed;
-    // this.$.userFeedback.invalid = false;
+    console.log(prepopulatedMessage, showInstallationFailed);
     // this.$.userFeedback.value = prepopulatedMessage || '';
-    // this.$.userEmail.value = '';
-    // this.$.cloudProviderListbox.selected = undefined;
+
     this.dialogRef.value?.open();
   }
 }

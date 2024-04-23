@@ -25,6 +25,7 @@ import '@material/mwc-textfield';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {Localizer} from '@outline/infrastructure/i18n';
+import { COMMON_STYLES } from './cloud-install-styles';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -48,13 +49,13 @@ declare interface CloudProviderOption {
   label: string;
 }
 
-@customElement('support-form')
-export class SupportForm extends LitElement {
+@customElement('outline-support-form')
+export class OutlineSupportForm extends LitElement {
   static styles = [
+    COMMON_STYLES,
     css`
       :host {
-        font-family: var(--outline-font-family);
-        width: 100%;
+        --mdc-theme-primary: var(--primary-green);
       }
 
       mwc-select {
@@ -64,11 +65,11 @@ export class SupportForm extends LitElement {
       mwc-textarea,
       mwc-textfield {
         display: flex;
-        margin: var(--outline-slim-gutter) 0;
+        margin: 0.75rem 0;
       }
 
       p {
-        color: var(--outline-label-color);
+        color: hsl(0, 0%, 45%);
         font-size: 0.8rem;
         text-align: end;
       }
@@ -133,7 +134,7 @@ export class SupportForm extends LitElement {
   }
 
   render() {
-    const providers = SupportForm.CLOUD_PROVIDERS.map((provider): CloudProviderOption => {
+    const providers = OutlineSupportForm.CLOUD_PROVIDERS.map((provider): CloudProviderOption => {
       return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
     });
     /** We should sort the providers by their labels, which may be localized. */
@@ -155,7 +156,7 @@ export class SupportForm extends LitElement {
           type="email"
           .label=${this.localize('support-form-email')}
           .value=${live(this.values.email ?? '')}
-          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .maxLength=${OutlineSupportForm.DEFAULT_MAX_LENGTH_INPUT}
           autoValidate
           .validationMessage=${this.localize('support-form-email-invalid')}
           .disabled=${this.disabled}
@@ -184,7 +185,7 @@ export class SupportForm extends LitElement {
           name="subject"
           .label=${this.localize('support-form-subject')}
           .value=${live(this.values.subject ?? '')}
-          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .maxLength=${OutlineSupportForm.DEFAULT_MAX_LENGTH_INPUT}
           .disabled=${this.disabled}
           required
           @input=${this.handleTextInput}
@@ -195,7 +196,7 @@ export class SupportForm extends LitElement {
           .label=${this.localize('support-form-description')}
           .value=${live(this.values.description ?? '')}
           rows="5"
-          .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
+          .maxLength=${OutlineSupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required
           @input=${this.handleTextInput}
