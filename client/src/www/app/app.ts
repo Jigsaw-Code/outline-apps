@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Localizer} from '@outline/infrastructure/i18n';
+import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
+
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineServerRepository} from './outline_server_repository';
@@ -19,8 +22,6 @@ import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-import {Localizer} from '@outline/infrastructure/i18n';
-import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server} from '../model/server';

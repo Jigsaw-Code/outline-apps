@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {CustomError} from '@outline/infrastructure/custom_error';
+import * as path_api from '@outline/infrastructure/path_api';
+import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
 import * as semver from 'semver';
 
@@ -23,9 +26,6 @@ import type {FeedbackDetail} from './ui_components/outline-feedback-dialog';
 import type {DisplayAccessKey, ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
-import {CustomError} from '../infrastructure/custom_error';
-import * as path_api from '@outline/infrastructure/path_api';
-import {sleep} from '@outline/infrastructure/sleep';
 import * as accounts from '../model/accounts';
 import * as digitalocean from '../model/digitalocean';
 import * as gcp from '../model/gcp';

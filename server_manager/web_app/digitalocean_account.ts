@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as crypto from '@outline/infrastructure/crypto';
+
 import {DigitalOceanServer} from './digitalocean_server';
 import {getShellExportCommands, ShadowboxSettings} from './server_install';
 import {DigitalOceanSession, DropletInfo, RestApiSession} from '../cloud/digitalocean_api';
-import * as crypto from '@outline/infrastructure/crypto';
 import * as do_install_script from '../install_scripts/do_install_script';
 import * as digitalocean from '../model/digitalocean';
 import * as server from '../model/server';

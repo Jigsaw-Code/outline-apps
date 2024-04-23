@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {sleep} from '@outline/infrastructure/sleep';
+
 import {Surveys} from '../model/survey';
 
 export const DEFAULT_PROMPT_IMPRESSION_DELAY_MS = 3000;

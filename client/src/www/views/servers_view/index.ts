@@ -16,16 +16,17 @@
 
 import '@material/mwc-button';
 
+import { Localizer } from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import { DirectiveResult } from 'lit/directive';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
+
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import './server_connection_indicator';
 import './server_list';
 import {ServerListItem as _ServerListItem} from './server_list_item';
-import { Localizer } from '@outline/infrastructure/i18n';
 
 export type ServerListItem = _ServerListItem;
 

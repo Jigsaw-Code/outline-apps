@@ -15,12 +15,13 @@
 import './ui_components/app-root';
 
 
+import * as i18n from '@outline/infrastructure/i18n';
+
 import {App} from './app';
 import {CloudAccounts} from './cloud_accounts';
 import {ManualServerRepository} from './manual_server';
 import {AppRoot} from './ui_components/app-root';
 import {LanguageDef} from './ui_components/outline-language-picker';
-import * as i18n from '@outline/infrastructure/i18n';
 
 const SUPPORTED_LANGUAGES: {[key: string]: LanguageDef} = {
   af: {id: 'af', name: 'Afrikaans', dir: 'ltr'},

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {PathApiClient} from '@outline/infrastructure/path_api';
 import * as semver from 'semver';
 
-import {PathApiClient} from '@outline/infrastructure/path_api';
 import * as server from '../model/server';
 
 interface AccessKeyJson {

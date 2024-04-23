@@ -21,12 +21,12 @@ import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 
+import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, TemplateResult, nothing, PropertyValues} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
-import {Localizer} from '@outline/infrastructure/i18n';
 import {AppType} from '../app_type';
 
 

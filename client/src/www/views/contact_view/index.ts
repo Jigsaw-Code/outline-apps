@@ -22,6 +22,7 @@ import '@material/mwc-radio';
 import '@material/mwc-select';
 import '@material/mwc-formfield';
 
+import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Ref, createRef, ref} from 'lit/directives/ref.js';
@@ -31,7 +32,6 @@ import './support_form';
 import {AppType} from './app_type';
 import {IssueType, UNSUPPORTED_ISSUE_TYPE_HELPPAGES} from './issue_type';
 import {FormValues, SupportForm, ValidFormValues} from './support_form';
-import {Localizer} from '@outline/infrastructure/i18n';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */

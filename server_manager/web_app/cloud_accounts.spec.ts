@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {CloudAccounts} from './cloud_accounts';
 import {InMemoryStorage} from '@outline/infrastructure/memory_storage';
+
+import {CloudAccounts} from './cloud_accounts';
 
 
 describe('CloudAccounts', () => {
