@@ -30,7 +30,7 @@
  */
 async function electronBuilderEntryPoint(configuration) {
   const {runAction} = await import('../../../src/build/run_action.mjs');
-  await runAction('client/src/electron/windows/sign_windows_executable',
+  await runAction('client/electron/windows/sign_windows_executable',
     '--target', configuration.path,
     '--algorithm', configuration.hash);
 }
