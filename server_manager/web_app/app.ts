@@ -22,7 +22,6 @@ import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
-import type {FeedbackDetail} from './ui_components/outline-feedback-dialog';
 import type {DisplayAccessKey, ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
@@ -238,6 +237,7 @@ export class App {
           manualServerEntryEl.clear();
         })
         .catch((e: Error) => {
+          console.log(e);
           // Remove the progress indicator.
           manualServerEntryEl.showConnection = false;
           // Display either error dialog or feedback depending on error type.
@@ -265,21 +265,6 @@ export class App {
 
     appRoot.addEventListener('DisableMetricsRequested', (_: CustomEvent) => {
       this.setMetricsEnabled(false);
-    });
-
-    appRoot.addEventListener('SubmitFeedback', (event: CustomEvent) => {
-      const detail: FeedbackDetail = event.detail;
-      try {
-        Sentry.captureEvent({
-          message: detail.userFeedback,
-          user: {email: detail.userEmail},
-          tags: {category: detail.feedbackCategory, cloudProvider: detail.cloudProvider},
-        });
-        appRoot.showNotification(appRoot.localize('notification-feedback-thanks'));
-      } catch (e) {
-        console.error(`Failed to submit feedback: ${e}`);
-        appRoot.showError(appRoot.localize('error-feedback'));
-      }
     });
 
     appRoot.addEventListener('SetLanguageRequested', (event: CustomEvent) => {
@@ -1152,7 +1137,7 @@ export class App {
       // Remove inaccessible manual server from local storage if it was just created.
       manualServer.forget();
       console.error('Manual server installed but unreachable.');
-      throw new UnreachableServerError();
+      throw new Error('foobar');
     }
   }
 

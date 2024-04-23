@@ -28,6 +28,7 @@ import '@polymer/paper-listbox/paper-listbox';
 import '@polymer/paper-menu-button/paper-menu-button';
 import './cloud-install-styles';
 import './outline-about-dialog';
+import './outline-contact-us-dialog';
 import './outline-do-oauth-step';
 import './outline-gcp-oauth-step';
 import '../outline-gcp-create-server-app';
@@ -412,7 +413,12 @@ export class AppRoot extends polymerElementWithLocalize {
               </a>
             </if-messages>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
-            <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
+            <template is="dom-if" if="{{contactViewFeatureFlag}}">
+              <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
+            </template>
+            <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+              <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
+            </template>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
             <span on-tap="aboutTapped">[[localize('nav-about')]]</span>
             <div id="links-footer">
@@ -467,7 +473,17 @@ export class AppRoot extends polymerElementWithLocalize {
 
       <!-- Modal dialogs must be outside the app container; otherwise the backdrop covers them.  -->
       <outline-survey-dialog id="surveyDialog" localize="[[localize]]"></outline-survey-dialog>
-      <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>
+      <template is="dom-if" if="{{contactViewFeatureFlag}}">
+        <outline-contact-us-dialog
+          id="feedbackDialog"
+          localize="[[localize]]"
+          on-success="showContactSuccessToast"
+          on-error="showContactErrorToast"
+        ></outline-contact-view>
+      </template>
+      <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+        <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>
+      </template>
       <outline-about-dialog id="aboutDialog" outline-version="[[outlineVersion]]" localize="[[localize]]"></outline-about-dialog>
       <outline-modal-dialog id="modalDialog"></outline-modal-dialog>
       <outline-share-dialog id="shareDialog" localize="[[localize]]"></outline-share-dialog>
@@ -688,6 +704,10 @@ export class AppRoot extends polymerElementWithLocalize {
       },
       shouldShowSideBar: {type: Boolean},
       showManagerResourcesLink: {type: Boolean},
+      contactViewFeatureFlag: {
+        type: Boolean,
+        value: true,
+      },
     };
   }
 
@@ -967,7 +987,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   submitFeedbackTapped() {
-    (this.$.feedbackDialog as OutlineFeedbackDialog).open();
+    (this.shadowRoot.querySelector('#feedbackDialog') as OutlineFeedbackDialog).open();
     this.maybeCloseDrawer();
   }
 
@@ -985,7 +1005,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   openManualInstallFeedback(prepopulatedMessage: string) {
-    (this.$.feedbackDialog as OutlineFeedbackDialog).open(prepopulatedMessage, true);
+    (this.shadowRoot.querySelector('#feedbackDialog') as OutlineFeedbackDialog).open(prepopulatedMessage, true);
   }
 
   openShareDialog(accessKey: string, s3Url: string) {
@@ -1053,6 +1073,14 @@ export class AppRoot extends polymerElementWithLocalize {
     };
     xhr.open('GET', '/ui_components/licenses/licenses.txt', true);
     xhr.send();
+  }
+
+  showContactSuccessToast() {
+    this.showNotification(this.localize('notification-feedback-thanks'));
+  }
+
+  showContactErrorToast() {
+    this.showError(this.localize('error-feedback'));
   }
 
   _computeShouldShowSideBar() {
