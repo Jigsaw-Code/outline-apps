@@ -15,6 +15,7 @@
 import '../ui_components/app-root.js';
 
 
+import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
@@ -23,7 +24,6 @@ import {OutlineServerRepository} from './outline_server_repository';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {TunnelFactory} from './tunnel';
-import {Localizer} from '../../../infrastructure/i18n.js';
 import {EventQueue} from '../model/events';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.

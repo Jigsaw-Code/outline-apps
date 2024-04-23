@@ -13,7 +13,7 @@
 // limitations under the License.
 
 export class InMemoryStorage implements Storage {
-  readonly length: number;
+  readonly length = 0;
   [key: string]: {};
   [index: number]: string;
 

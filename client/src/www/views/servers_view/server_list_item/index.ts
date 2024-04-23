@@ -13,9 +13,9 @@
 
 import {Menu} from '@material/mwc-menu';
 
+import {type Localizer} from '@outline/infrastructure/i18n';
 import {Ref} from 'lit/directives/ref';
 
-import {Localizer} from '../../../../../infrastructure/i18n';
 import {ServerConnectionState} from '../server_connection_indicator';
 
 export enum ServerListItemEvent {

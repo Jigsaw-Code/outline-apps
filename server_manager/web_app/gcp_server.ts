@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {sleep} from '@outline/infrastructure/sleep';
+import {ValueStream} from '@outline/infrastructure/value_stream';
+
 import {makePathApiClient} from './fetcher';
 import {ShadowboxServer} from './shadowbox_server';
 import * as gcp_api from '../cloud/gcp_api';
-import {sleep} from '../infrastructure/sleep';
-import {ValueStream} from '../infrastructure/value_stream';
 import {Zone} from '../model/gcp';
 import * as server from '../model/server';
 import {DataAmount, ManagedServerHost, MonetaryCost} from '../model/server';

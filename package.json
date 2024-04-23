@@ -17,6 +17,7 @@
   },
   "private": true,
   "workspaces": [
+    "infrastructure",
     "server_manager",
     "client"
   ],
@@ -26,7 +27,6 @@
     "@typescript-eslint/parser": "^7.7.0",
     "electron-builder": "^24.13.3",
     "eslint-plugin-import": "^2.29.1",
-    "jasmine": "^5.1.0",
     "node-fetch": "^2.6.7"
   },
   "main": "build/electron/electron/index.js"

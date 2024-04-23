@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {hexToString} from '@outline/infrastructure/hex_encoding';
+
 import {makePathApiClient} from './fetcher';
 import {ShadowboxServer} from './shadowbox_server';
-import {hexToString} from '../infrastructure/hex_encoding';
 import * as server from '../model/server';
 
 

@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {PrimitiveType, FormatXMLElementFn} from 'intl-messageformat';
+
+export type FormattableMessage =
+  | string
+  | symbol
+  | object
+  | PrimitiveType
+  | FormatXMLElementFn<symbol | object, string | symbol | object | (string | symbol | object)[]>;
+
+export interface Localizer {
+  (messageID: string, ...formatKeyValueList: FormattableMessage[]): string;
+}
+
 export class LanguageCode {
   private language: string;
   private normalizedLanguage: string;
@@ -32,7 +45,7 @@ export class LanguageCode {
 }
 
 export class LanguageMatcher {
-  constructor(private supportedLanguages: LanguageCode[], private defaultLanguage: LanguageCode = undefined) {}
+  constructor(private supportedLanguages: LanguageCode[], private defaultLanguage?: LanguageCode) {}
 
   // Goes over each user language, trying to find the supported language that matches
   // the best. We'll trim variants of the user and supported languages in order to find
