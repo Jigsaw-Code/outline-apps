@@ -13,19 +13,21 @@
 // limitations under the License.
 
 import os from 'os';
-import url from 'url';
-import rmfr from 'rmfr';
 import path from 'path';
+import url from 'url';
 
-import replace from 'replace-in-file';
+import chalk from 'chalk';
 import cordovaLib from 'cordova-lib';
+import replace from 'replace-in-file';
+import rmfr from 'rmfr';
+
 const {cordova} = cordovaLib;
 
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 import {runAction} from '../../../src/build/run_action.mjs';
 import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import chalk from 'chalk';
+
 
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 

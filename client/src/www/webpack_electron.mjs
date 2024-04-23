@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import path from 'path';
+
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
-import {baseConfig, browserConfig, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 import {merge} from 'webpack-merge';
+
+import {baseConfig, browserConfig, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 
 export default merge(baseConfig, browserConfig, {
   entry: [path.resolve(__dirname, 'app', 'electron_main.ts')],

@@ -14,10 +14,11 @@
 
 import {constants} from 'fs';
 import {access} from 'fs/promises';
-import minimist from 'minimist';
 import {dirname, resolve} from 'path';
 import {fileURLToPath, pathToFileURL} from 'url';
 import {format} from 'util';
+
+import minimist from 'minimist';
 
 import {jsign} from '../../../third_party/jsign/index.mjs';
 

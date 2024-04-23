@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
 import {existsSync} from 'fs';
 import {readFile} from 'fs/promises';
 import path from 'path';
 import url from 'url';
+
+import chalk from 'chalk';
 
 import {getRootDir} from './get_root_dir.mjs';
 import {spawnStream} from './spawn_stream.mjs';

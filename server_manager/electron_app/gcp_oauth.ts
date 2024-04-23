@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {AddressInfo} from 'net';
+
 import * as electron from 'electron';
 import * as express from 'express';
 import {OAuth2Client} from 'google-auth-library';
-import {AddressInfo} from 'net';
 
 // Note: For native apps, the "client secret" is not actually a secret.
 // See https://developers.google.com/identity/protocols/oauth2/native-app.

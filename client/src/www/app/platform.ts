@@ -14,11 +14,11 @@
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from '../shared/error_reporter';
 import {TunnelFactory} from './tunnel';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
+import {OutlineErrorReporter} from '../shared/error_reporter';
 
 // Provides platform-specific dependencies.
 // TODO: Remove one of hasDeviceSupport and getServerFactory; they're almost the same

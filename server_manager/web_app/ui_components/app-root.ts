@@ -44,32 +44,32 @@ import './outline-tos-view';
 
 import './if_messages';
 
-import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior';
-import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class';
-import {html} from '@polymer/polymer/lib/utils/html-tag';
-import {PolymerElement} from '@polymer/polymer/polymer-element';
-import {DisplayCloudId} from './cloud-assets';
-
-import type {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import type {AppDrawerElement} from '@polymer/app-layout/app-drawer/app-drawer';
 import type {AppDrawerLayoutElement} from '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
+import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior';
 import type {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import type {PaperToastElement} from '@polymer/paper-toast/paper-toast';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
-import type {OutlineRegionPicker} from './outline-region-picker-step';
-import type {OutlineDoOauthStep} from './outline-do-oauth-step';
-import type {GcpConnectAccountApp} from './outline-gcp-oauth-step';
-import type {GcpCreateServerApp} from '../outline-gcp-create-server-app';
-import type {OutlineServerList, ServerViewListEntry} from './outline-server-list';
-import type {OutlineManualServerEntry} from './outline-manual-server-entry';
-import type {OutlinePerKeyDataLimitDialog} from './outline-per-key-data-limit-dialog';
-import type {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class';
+import type {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {html} from '@polymer/polymer/lib/utils/html-tag';
+import {PolymerElement} from '@polymer/polymer/polymer-element';
+
+import {DisplayCloudId} from './cloud-assets';
 import type {OutlineAboutDialog} from './outline-about-dialog';
-import type {OutlineShareDialog} from './outline-share-dialog';
+import type {OutlineDoOauthStep} from './outline-do-oauth-step';
+import type {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import type {GcpConnectAccountApp} from './outline-gcp-oauth-step';
+import type {LanguageDef} from './outline-language-picker';
+import type {OutlineManualServerEntry} from './outline-manual-server-entry';
 import type {OutlineMetricsOptionDialog} from './outline-metrics-option-dialog';
 import type {OutlineModalDialog} from './outline-modal-dialog';
+import type {OutlinePerKeyDataLimitDialog} from './outline-per-key-data-limit-dialog';
+import type {OutlineRegionPicker} from './outline-region-picker-step';
+import type {OutlineServerList, ServerViewListEntry} from './outline-server-list';
 import type {ServerView} from './outline-server-view';
-import type {LanguageDef} from './outline-language-picker';
+import type {OutlineShareDialog} from './outline-share-dialog';
+import type {GcpCreateServerApp} from '../outline-gcp-create-server-app';
 
 const TOS_ACK_LOCAL_STORAGE_KEY = 'tos-ack';
 

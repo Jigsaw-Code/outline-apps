@@ -26,8 +26,8 @@ import './outline-validated-input';
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn';
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 
-import {formatBytesParts} from '../data_formatting';
 import {getCloudName, getCloudIcon} from './cloud-assets';
+import {formatBytesParts} from '../data_formatting';
 import {getShortName} from '../location_formatting';
 
 export interface OutlineServerSettings extends Element {

@@ -14,13 +14,13 @@
 
 import './ui_components/app-root';
 
-import * as accounts from '../model/accounts';
-import * as server from '../model/server';
 
 import {App, LAST_DISPLAYED_SERVER_STORAGE_KEY} from './app';
 import {FakeCloudAccounts, FakeDigitalOceanAccount, FakeManualServerRepository} from './testing/models';
 import {AppRoot} from './ui_components/app-root';
+import * as accounts from '../model/accounts';
 import {Region} from '../model/digitalocean';
+import * as server from '../model/server';
 
 // Define functions from preload.ts.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

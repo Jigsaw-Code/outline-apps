@@ -11,10 +11,12 @@
   limitations under the License.
 */
 
-import {Ref} from 'lit/directives/ref';
 import {Menu} from '@material/mwc-menu';
+
+import {Ref} from 'lit/directives/ref';
+
+import {type Localizer} from '@outline/infrastructure/i18n';
 import {ServerConnectionState} from '../server_connection_indicator';
-import {Localizer} from '@outline/infrastructure/i18n';
 
 export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',

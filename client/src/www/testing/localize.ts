@@ -14,9 +14,10 @@
   limitations under the License.
 */
 
+import IntlMessageFormat from 'intl-messageformat';
+
 import type {FormattableMessage, Localizer} from '@outline/infrastructure/i18n';
 import englishMessages from '../messages/en.json';
-import IntlMessageFormat from 'intl-messageformat';
 
 export const localize: Localizer = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
   const message = (englishMessages as {[messageID: string]: string})[messageID];

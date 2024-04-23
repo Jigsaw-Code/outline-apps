@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as path from 'path';
+import {URL, URLSearchParams} from 'url';
+
 import * as Sentry from '@sentry/electron/main';
 import * as dotenv from 'dotenv';
 import * as electron from 'electron';
 import {autoUpdater} from 'electron-updater';
-import * as path from 'path';
-import {URL, URLSearchParams} from 'url';
 
-import type {HttpRequest, HttpResponse} from '@outline/infrastructure/path_api';
 import {fetchWithPin} from './fetch';
 import * as menu from './menu';
+import type {HttpRequest, HttpResponse} from '@outline/infrastructure/path_api';
 
 // Injected by webpack during build
 declare const SENTRY_DSN: string | undefined;

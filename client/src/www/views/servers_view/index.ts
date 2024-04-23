@@ -14,16 +14,17 @@
   limitations under the License.
 */
 
+import '@material/mwc-button';
+
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import { DirectiveResult } from 'lit/directive';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
-import '@material/mwc-button';
+import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import './server_connection_indicator';
 import './server_list';
-
 import {ServerListItem as _ServerListItem} from './server_list_item';
-import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import { Localizer } from '@outline/infrastructure/i18n';
 
 export type ServerListItem = _ServerListItem;
@@ -31,7 +32,6 @@ export type ServerListItem = _ServerListItem;
 // (This value is used: it's exported.)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export import ServerConnectionState = _ServerConnectionState;
-import { DirectiveResult } from 'lit/directive';
 
 @customElement('servers-view')
 export class ServerList extends LitElement {

@@ -15,14 +15,13 @@
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
+import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {OutlineServer} from './server';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
-
 import {TunnelFactory} from '../tunnel';
 
-import {OutlineServer} from './server';
-import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 
 // TODO(daniellacosse): write unit tests for these functions
 

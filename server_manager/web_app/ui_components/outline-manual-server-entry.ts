@@ -26,11 +26,11 @@ import './outline-cloud-instructions-view';
 import './outline-step-view';
 import './style.css';
 
+import type {IronCollapseElement} from '@polymer/iron-collapse/iron-collapse';
+import type {IronIconElement} from '@polymer/iron-icon/iron-icon';
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn';
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 
-import type {IronCollapseElement} from '@polymer/iron-collapse/iron-collapse';
-import type {IronIconElement} from '@polymer/iron-icon/iron-icon';
 
 export interface OutlineManualServerEntry extends Element {
   clear(): void;

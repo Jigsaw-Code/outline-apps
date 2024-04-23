@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {Clipboard} from 'electron';
+
 import {ElectronRendererMethodChannel} from './preload';
 
 // This file can be referenced in electron renderer scripts. It defines
