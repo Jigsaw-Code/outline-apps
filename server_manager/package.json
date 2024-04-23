@@ -1,5 +1,5 @@
 {
-  "name": "outline-manager",
+  "name": "@outline/server_manager",
   "productName": "Outline Manager",
   "version": "0.0.0-debug",
   "description": "Create and manage access to Outline servers",
