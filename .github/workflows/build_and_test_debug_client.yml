@@ -257,7 +257,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./client/tools/build/setup_linux_android.sh
+        run: bash ./.github/scripts/android_setup_ci.sh
 
       - name: Build Android Client
         run: npm run action client/src/cordova/build android -- --verbose
