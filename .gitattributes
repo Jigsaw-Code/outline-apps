@@ -7,8 +7,8 @@
 *.nsh eol=crlf
 
 # Tap Driver Installation Script
-third_party/tap-windows6/bin/*.inf eol=crlf
-third_party/tap-windows6/bin/*.h eol=crlf
+third_party/tap-windows6/bin/**/*.inf eol=crlf
+third_party/tap-windows6/bin/**/*.h eol=crlf
 
 # Allow the build folders to be searched by GitHub's T file search
 build/** linguist-generated=false
