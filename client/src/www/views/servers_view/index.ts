@@ -22,7 +22,6 @@ import {customElement, property} from 'lit/decorators.js';
 import { DirectiveResult } from 'lit/directive';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
-
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import './server_connection_indicator';
 import './server_list';
