@@ -11,11 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import {createRequire} from 'module';
 import path from 'path';
+import {fileURLToPath} from 'url';
+
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {fileURLToPath} from 'url';
-import {createRequire} from 'module';
 
 export const require = createRequire(import.meta.url);
 export const __filename = fileURLToPath(import.meta.url);

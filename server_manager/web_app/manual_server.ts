@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {hexToString} from '../infrastructure/hex_encoding';
-import * as server from '../model/server';
-import {makePathApiClient} from './fetcher';
+import {hexToString} from '@outline/infrastructure/hex_encoding';
 
+import {makePathApiClient} from './fetcher';
 import {ShadowboxServer} from './shadowbox_server';
+import * as server from '../model/server';
+
 
 class ManualServer extends ShadowboxServer implements server.ManualServer {
   constructor(id: string, private manualServerConfig: server.ManualServerConfig, private forgetCallback: Function) {

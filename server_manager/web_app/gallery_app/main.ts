@@ -31,9 +31,9 @@ import {customElement, property} from 'lit/decorators.js';
 
 import * as gcp from '../../model/gcp';
 import {FakeManagedServer, FakeGcpAccount} from '../testing/models';
-import {OutlinePerKeyDataLimitDialog} from '../ui_components/outline-per-key-data-limit-dialog';
-import {COMMON_STYLES} from '../ui_components/cloud-install-styles';
 import {DisplayCloudId} from '../ui_components/cloud-assets';
+import {COMMON_STYLES} from '../ui_components/cloud-install-styles';
+import {OutlinePerKeyDataLimitDialog} from '../ui_components/outline-per-key-data-limit-dialog';
 
 const FAKE_SERVER = new FakeManagedServer('fake-id', true);
 

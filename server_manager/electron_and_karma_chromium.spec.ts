@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {version as electronVersion} from 'electron/package.json';
 import {electronToChromium} from 'electron-to-chromium';
 // Since we aren't in the electron process, process.versions.electron isn't defined.
-import {version as electronVersion} from 'electron/package.json';
 // TODO(update-to-esm): we can only use node-fetch@2 now because the latest node-fetch requires ESM
 import fetch from 'node-fetch';
 

@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# Copyright 2018 The Outline Authors
+# Copyright 2024 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,15 +16,11 @@
 
 set -e
 
-readonly TEST_DIR="${BUILD_DIR}/js/server_manager/"
+readonly TEST_DIR="${BUILD_DIR}/js/infrastructure/"
 rm -rf "${TEST_DIR}"
 
-npm run action server_manager/web_app/build_install_script
-
 # Use commonjs modules, jasmine runs in node.
-tsc -p "${ROOT_DIR}/server_manager" --outDir "${TEST_DIR}" --module commonjs
-jasmine "output/build/js/**/*.spec.js" "!output/build/js/server_manager/web_app/**/*"
-
-npm run action server_manager/web_app/test
+tsc -p "${ROOT_DIR}/infrastructure" --outDir "${TEST_DIR}" --module commonjs
+jasmine "output/build/js/**/*.spec.js"
 
 rm -rf "${TEST_DIR}"

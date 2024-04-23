@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
 import {spawn} from 'child_process';
+
+import chalk from 'chalk';
 
 /**
  * @description promisifies the child process (for supporting legacy bash actions!)

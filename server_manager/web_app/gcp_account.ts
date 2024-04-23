@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {sleep} from '@outline/infrastructure/sleep';
+
+import {GcpServer} from './gcp_server';
+import * as server_install from './server_install';
 import * as gcp_api from '../cloud/gcp_api';
-import {sleep} from '../infrastructure/sleep';
 import {SCRIPT} from '../install_scripts/gcp_install_script';
 import * as gcp from '../model/gcp';
 import {BillingAccount, Project} from '../model/gcp';
 import * as server from '../model/server';
 
-import {GcpServer} from './gcp_server';
-import * as server_install from './server_install';
 
 /** Returns a unique, RFC1035-style name as required by GCE. */
 function makeGcpInstanceName(): string {

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es2022",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "rootDir": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["*.ts"]
+}

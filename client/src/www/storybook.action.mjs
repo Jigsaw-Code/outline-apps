@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import path from 'path';
 import url from 'url';
+
+import image from '@rollup/plugin-image';
 import {startDevServer} from '@web/dev-server';
 import {esbuildPlugin} from '@web/dev-server-esbuild';
-import {storybookPlugin} from '@web/dev-server-storybook';
 import {fromRollup} from '@web/dev-server-rollup';
-import image from '@rollup/plugin-image';
+import {storybookPlugin} from '@web/dev-server-storybook';
 
-import path from 'path';
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const WWW_PATH = ['src', 'www'];

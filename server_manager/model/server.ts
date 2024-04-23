@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {CustomError} from '../infrastructure/custom_error';
+import {CustomError} from '@outline/infrastructure/custom_error';
+
 import {CloudLocation} from './location';
 
 export interface Server {

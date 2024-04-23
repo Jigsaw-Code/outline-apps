@@ -14,6 +14,7 @@
 
 import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
+
 import XML from 'xmlbuilder2';
 
 const STRINGS_DIR = ['src', 'cordova', 'plugin', 'android', 'resources', 'strings'];

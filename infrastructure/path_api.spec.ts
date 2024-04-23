@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {PathApiClient} from './path_api';
+import {type HttpRequest, type HttpResponse, PathApiClient} from './path_api';
 
 describe('PathApi', () => {
   // Mock fetcher
-  let lastRequest: HttpRequest;
-  let nextResponse: Promise<HttpResponse>;
+  let lastRequest: HttpRequest | undefined;
+  let nextResponse: Promise<HttpResponse> | undefined;
 
-  const fetcher = (request: HttpRequest) => {
+  const fetcher = (request: HttpRequest): Promise<HttpResponse> => {
     lastRequest = request;
-    return nextResponse;
+    return nextResponse!;
   };
 
   beforeEach(() => {

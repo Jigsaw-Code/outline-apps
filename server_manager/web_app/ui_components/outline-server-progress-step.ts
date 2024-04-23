@@ -19,6 +19,7 @@ import './outline-progress-spinner';
 import './outline-step-view';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+
 import {COMMON_STYLES} from './cloud-install-styles';
 
 @customElement('outline-server-progress-step')
