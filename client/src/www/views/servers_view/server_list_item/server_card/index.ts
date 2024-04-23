@@ -11,17 +11,17 @@
   limitations under the License.
 */
 
+import {Menu} from '@material/mwc-menu';
 import '@material/mwc-button';
 import '@material/mwc-icon-button';
 import '@material/mwc-menu';
-import '../../server_connection_indicator';
 
-import {Menu} from '@material/mwc-menu';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
 
+import '../../server_connection_indicator';
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {Localizer} from '../../../../../../infrastructure/i18n';
 import {ServerConnectionState} from '../../server_connection_indicator';

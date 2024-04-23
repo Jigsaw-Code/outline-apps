@@ -16,6 +16,7 @@
 
 import {ListItemBase} from '@material/mwc-list/mwc-list-item-base';
 import {Select} from '@material/mwc-select';
+
 import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 
 import {ContactView} from './index';

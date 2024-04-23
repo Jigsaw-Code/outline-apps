@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-import {html, css, LitElement, TemplateResult, nothing} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
-import {Ref, createRef, ref} from 'lit/directives/ref.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+
+import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
+import {Radio} from '@material/mwc-radio';
 import '@material/mwc-circular-progress';
 import '@material/mwc-radio';
 import '@material/mwc-select';
 import '@material/mwc-formfield';
-import {Radio} from '@material/mwc-radio';
-import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
+
+import {html, css, LitElement, TemplateResult, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Ref, createRef, ref} from 'lit/directives/ref.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './support_form';
 import {AppType} from './app_type';

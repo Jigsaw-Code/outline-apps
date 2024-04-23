@@ -18,10 +18,8 @@
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
-
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
-
 import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
@@ -29,8 +27,7 @@ import {EnvironmentVariables} from './environment';
 import {FakeOutlineTunnel} from './fake_tunnel';
 import {main} from './main';
 import {OutlinePlatform} from './platform';
-import {Tunnel, TunnelStatus} from './tunnel';
-import {ShadowsocksSessionConfig} from './tunnel';
+import {Tunnel, TunnelStatus,ShadowsocksSessionConfig} from './tunnel';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';

@@ -12,6 +12,7 @@
 */
 
 import {Menu} from '@material/mwc-menu';
+
 import {Ref} from 'lit/directives/ref';
 
 import {Localizer} from '../../../../../infrastructure/i18n';

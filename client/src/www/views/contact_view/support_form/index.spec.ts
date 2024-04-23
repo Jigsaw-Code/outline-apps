@@ -15,6 +15,7 @@
  */
 
 import {TextField} from '@material/mwc-textfield';
+
 import {fixture, html, nextFrame, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
 
 import {FormValues, SupportForm} from './index';

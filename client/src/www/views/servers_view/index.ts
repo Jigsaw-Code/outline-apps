@@ -14,16 +14,16 @@
   limitations under the License.
 */
 
+import '@material/mwc-button';
+
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import { DirectiveResult } from 'lit/directive';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
-import '@material/mwc-button';
+import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import './server_connection_indicator';
 import './server_list';
-
-import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
 import {ServerListItem as _ServerListItem} from './server_list_item';
 import { Localizer } from '../../../../infrastructure/i18n';
 
