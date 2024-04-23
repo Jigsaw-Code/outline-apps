@@ -1,8 +1,5 @@
 {
   "artifactName": "Outline-Client.${ext}",
-  "asarUnpack": [
-    "output/client/electron"
-  ],
   "directories": {
     "buildResources": "output/client/electron",
     "output": "output/client/electron/build"
