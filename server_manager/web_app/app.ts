@@ -237,7 +237,6 @@ export class App {
           manualServerEntryEl.clear();
         })
         .catch((e: Error) => {
-          console.log(e);
           // Remove the progress indicator.
           manualServerEntryEl.showConnection = false;
           // Display either error dialog or feedback depending on error type.
@@ -265,6 +264,21 @@ export class App {
 
     appRoot.addEventListener('DisableMetricsRequested', (_: CustomEvent) => {
       this.setMetricsEnabled(false);
+    });
+
+    appRoot.addEventListener('SubmitFeedback', (event: CustomEvent) => {
+      const detail: FeedbackDetail = event.detail;
+      try {
+        Sentry.captureEvent({
+          message: detail.userFeedback,
+          user: {email: detail.userEmail},
+          tags: {category: detail.feedbackCategory, cloudProvider: detail.cloudProvider},
+        });
+        appRoot.showNotification(appRoot.localize('notification-feedback-thanks'));
+      } catch (e) {
+        console.error(`Failed to submit feedback: ${e}`);
+        appRoot.showError(appRoot.localize('error-feedback'));
+      }
     });
 
     appRoot.addEventListener('SetLanguageRequested', (event: CustomEvent) => {
