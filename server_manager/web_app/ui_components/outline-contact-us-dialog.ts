@@ -28,6 +28,7 @@ import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 import { OutlineFeedbackDialog } from './outline-feedback-dialog';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
 import '@polymer/paper-button/paper-button';
+import * as Sentry from '@sentry/electron/renderer';
 
 import './outline-support-form';
 import {FormValues, OutlineSupportForm, ValidFormValues} from './outline-support-form';
@@ -222,12 +223,16 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
 
     const {description, email, ...tags} = this.formValues as ValidFormValues;
     try {
-      // TODO
-      console.log(description, email, tags);
-      // await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {
-      //   ...tags,
-      //   formVersion: 2,
-      // });
+      Sentry.captureEvent({
+        message: description,
+        user: {email},
+        tags: {
+          category: this.selectedIssueType?.toString() ?? 'unknown',
+          isFeedback: true,
+          formVersion: 2,
+          ...tags
+        },
+      });
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
       this.isFormSubmitting = false;
@@ -237,6 +242,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
 
     this.isFormSubmitting = false;
     this.reset();
+    this.close();
     this.dispatchEvent(new CustomEvent('success'));
   }
 
@@ -357,5 +363,9 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     // this.$.userFeedback.value = prepopulatedMessage || '';
 
     this.dialogRef.value?.open();
+  }
+
+  close() {
+    this.dialogRef.value?.close();
   }
 }
