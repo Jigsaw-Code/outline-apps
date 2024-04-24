@@ -22,6 +22,7 @@ import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
+import { FeedbackDetail } from './ui_components/outline-feedback-dialog';
 import type {DisplayAccessKey, ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
@@ -30,7 +31,6 @@ import * as digitalocean from '../model/digitalocean';
 import * as gcp from '../model/gcp';
 import type {CloudLocation} from '../model/location';
 import * as server_model from '../model/server';
-import { FeedbackDetail } from './ui_components/outline-feedback-dialog';
 
 
 // The Outline DigitalOcean team's referral code:
@@ -1152,7 +1152,7 @@ export class App {
       // Remove inaccessible manual server from local storage if it was just created.
       manualServer.forget();
       console.error('Manual server installed but unreachable.');
-      throw new Error('foobar');
+      throw new UnreachableServerError();
     }
   }
 

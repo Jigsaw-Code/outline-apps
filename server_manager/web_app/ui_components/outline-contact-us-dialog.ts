@@ -204,6 +204,9 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
   }
 
   reset() {
+    if (this.installationFailed) {
+      this.close();
+    }
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
     this.openTicketSelectionOptions.forEach(element => {
@@ -359,8 +362,13 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     this.reset();
 
     this.installationFailed = showInstallationFailed;
-    console.log(prepopulatedMessage, showInstallationFailed);
-    // this.$.userFeedback.value = prepopulatedMessage || '';
+    if (this.installationFailed) {
+      // We go straight to the form and bypass the wizard in the case of a failed
+      // installation.
+      this.step = Step.FORM;
+      this.selectedIssueType = IssueType.GENERAL;
+      this.formValues.description = prepopulatedMessage;
+    }
 
     this.dialogRef.value?.open();
   }
