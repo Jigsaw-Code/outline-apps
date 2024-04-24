@@ -1,6 +1,6 @@
 {
   "files": ["build/electron", "client/www", "client/resources/tray", "!node_modules/electron"],
-  "asarUnpack": ["client", "tools"],
+  "asarUnpack": ["client"],
   "artifactName": "Outline-Client.${ext}",
   "directories": {
     "output": "output/build/dist"
@@ -10,7 +10,7 @@
       "target": "AppImage",
       "arch": ["x64"]
     },
-    "files": ["build/icons/png", "client/output/build/linux", "tools/outline_proxy_controller/dist"],
+    "files": ["build/icons/png", "client/output/build/linux", "client/tools/outline_proxy_controller/dist"],
     "icon": "build/icons/png",
     "category": "Network"
   },

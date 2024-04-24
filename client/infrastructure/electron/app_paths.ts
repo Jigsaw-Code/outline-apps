@@ -43,9 +43,22 @@ export function getAppPath() {
   return electronAppPath;
 }
 
-export function pathToEmbeddedBinary(filename: string) {
+export function pathToEmbeddedTun2socksBinary() {
   return path.join(
     unpackedAppPath(), 'client', 'output', 'build',
     (isWindows ? 'windows' : 'linux'),
-    filename + (isWindows ? '.exe' : ''));
+    'tun2socks' + (isWindows ? '.exe' : ''));
+}
+
+/**
+ * Get the parent directory path containing the background service binaries.
+ * On Windows, this folder contains `OutlineService.exe`.
+ * While on Linux this folder contains `outline_proxy_controller`.
+ * @returns A string representing the path of the directory that contains service binaries.
+ */
+export function pathToEmbeddedOutlineService() {
+  if (isWindows) {
+    return getAppPath();
+  }
+  return path.join(unpackedAppPath(), 'client', 'tools', 'outline_proxy_controller', 'dist');
 }
