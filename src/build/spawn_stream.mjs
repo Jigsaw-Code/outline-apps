@@ -27,11 +27,12 @@ function newChildProcessOutputPipeTransform(callback) {
   // If our transform is called twice with 'abc' and then 'def\n', we need to output
   // only one line 'abcdef\n' instead of two 'abc\n', 'def\n'.
   // This is used to store the unfinished line we received before.
-  var pendingLine = '';
+  let pendingLine = '';
 
   return new Transform({
     // transform will be called whenever the upstream source pushes data to us
     transform(chunk, encoding, done) {
+      // encoding will always be 'buffer'
       const lines = chunk.toString().split('\n');
       const lastLine = lines.pop();
       if (lines.length > 0) {
