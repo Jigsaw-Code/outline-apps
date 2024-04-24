@@ -210,7 +210,7 @@ export class OutlineSupportForm extends LitElement {
           <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
           <mwc-button
             type="submit"
-            .label=${this.localize('submit')}
+            .label=${this.localize('feedback-submit')}
             .disabled=${!this.valid || this.disabled}
             @click=${this.submit}
           ></mwc-button>
