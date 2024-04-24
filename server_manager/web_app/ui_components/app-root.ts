@@ -479,7 +479,7 @@ export class AppRoot extends polymerElementWithLocalize {
           localize="[[localize]]"
           on-success="showContactSuccessToast"
           on-error="showContactErrorToast"
-        ></outline-contact-view>
+        ></outline-contact-us-dialog>
       </template>
       <template is="dom-if" if="{{!contactViewFeatureFlag}}">
         <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>

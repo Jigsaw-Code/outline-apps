@@ -30,6 +30,7 @@ import * as digitalocean from '../model/digitalocean';
 import * as gcp from '../model/gcp';
 import type {CloudLocation} from '../model/location';
 import * as server_model from '../model/server';
+import { FeedbackDetail } from './ui_components/outline-feedback-dialog';
 
 
 // The Outline DigitalOcean team's referral code:

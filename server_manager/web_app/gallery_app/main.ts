@@ -13,15 +13,15 @@
 // limitations under the License.
 
 import '../ui_components/outline-about-dialog';
-import '../ui_components/outline-contact-dialog';
+import '../ui_components/outline-contact-us-dialog';
 import '../ui_components/outline-do-oauth-step';
 import '../ui_components/outline-gcp-oauth-step';
-import '../ui_components/outline-gcp-create-server-app';
 import '../ui_components/outline-server-view';
 import '../ui_components/outline-share-dialog';
 import '../ui_components/outline-sort-span';
 import '../ui_components/outline-survey-dialog';
 import '../ui_components/outline-per-key-data-limit-dialog';
+import '../outline-gcp-create-server-app';
 import '@polymer/paper-checkbox/paper-checkbox';
 import '@polymer/paper-dialog/paper-dialog';
 
@@ -259,16 +259,12 @@ export class TestApp extends LitElement {
       </div>
 
       <div class="widget">
-        <h2>outline-contact-view</h2>
-        <button @tap=${() => this.select('#contactDialog').open()}>
+        <h2>outline-contact-us-dialog</h2>
+        <button @tap=${() => this.select('outline-contact-us-dialog').open()}>
           Open Dialog
         </button>
-        <paper-dialog id="contactDialog" modal="">
-          <outline-contact-view
-            .localize=${this.localize}
-            dir=${this.dir}
-          ></outline-contact-view>
-      </paper-dialog>
+        <outline-contact-us-dialog .localize=${this.localize} dir=${this.dir}
+        ></outline-contact-us-dialog>
       </div>
 
       <div class="widget">
