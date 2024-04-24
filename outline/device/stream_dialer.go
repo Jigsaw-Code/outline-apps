@@ -15,13 +15,17 @@
 package device
 
 import (
+	"net"
+
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
 
 // newOutlineStreamDialer creates a [transport.StreamDialer] that connects to the remote proxy using `config`.
 func newOutlineStreamDialer(config *transportConfig) (transport.StreamDialer, error) {
-	dialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: config.RemoteAddress}, config.CryptoKey)
+	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be
+	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
+	dialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: config.RemoteAddress, Dialer: net.Dialer{KeepAlive: -1}}, config.CryptoKey)
 	if err != nil {
 		return nil, err
 	}
