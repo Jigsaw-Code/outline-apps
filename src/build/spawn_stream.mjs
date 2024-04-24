@@ -12,9 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Transform} from 'node:stream';
 import {spawn} from 'child_process';
 
 import chalk from 'chalk';
+
+/**
+ * Create a Stream Transform that splits the child processes' stdout/stderr into lines,
+ * and passes each line to the callback function.
+ * @param {function(string): void} callback The consumer of each line.
+ * @returns {Transform} A Stream Transform that splits the source into lines.
+ */
+function newChildProcessOutputPipeTransform(callback) {
+  // If our transform is called twice with 'abc' and then 'def\n', we need to output
+  // only one line 'abcdef\n' instead of two 'abc\n', 'def\n'.
+  // This is used to store the unfinished line we received before.
+  var pendingLine = '';
+
+  return new Transform({
+    // transform will be called whenever the upstream source pushes data to us
+    transform(chunk, encoding, done) {
+      const lines = chunk.toString().split('\n');
+      const lastLine = lines.pop();
+      if (lines.length > 0) {
+        const firstLine = lines.shift();
+        callback(pendingLine + firstLine);
+        pendingLine = '';
+        lines.forEach(callback);
+      }
+      pendingLine += lastLine;
+      done();
+    },
+
+    // flush will be called by destroy()
+    flush(done) {
+      if (pendingLine) {
+        callback(pendingLine);
+        pendingLine = '';
+      }
+      done();
+    },
+  });
+}
 
 /**
  * @description promisifies the child process (for supporting legacy bash actions!)
@@ -25,26 +64,24 @@ export const spawnStream = (command, ...parameters) =>
     const stderr = [];
 
     console.debug(chalk.gray(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`));
-    const childProcess = spawn(command, parameters, {env: process.env});
+    const childProcess = spawn(command, parameters, {env: process.env, stdio: ['inherit', 'pipe', 'pipe']});
 
-    const forEachMessageLine = (buffer, callback) => {
-      buffer
-        .toString()
-        .split('\n')
-        .filter(line => line.trim())
-        .forEach(callback);
-    };
+    const stdOutPipe = newChildProcessOutputPipeTransform(line => {
+      console.info(line);
+      stdout.push(line);
+    });
+    childProcess.stdout.pipe(stdOutPipe);
 
-    childProcess.stdout.on('data', data =>
-      forEachMessageLine(data, line => {
-        console.info(line);
-        stdout.push(line);
-      })
-    );
-
-    childProcess.stderr.on('data', error => forEachMessageLine(error, line => stderr.push(line)));
+    const stdErrPipe = newChildProcessOutputPipeTransform(line => {
+      console.error(line);
+      stderr.push(line);
+    });
+    childProcess.stderr.pipe(stdErrPipe);
 
     childProcess.on('close', code => {
+      stdOutPipe.destroy();
+      stdErrPipe.destroy();
+
       if (code === 0) {
         return resolve(stdout.join(''));
       }
