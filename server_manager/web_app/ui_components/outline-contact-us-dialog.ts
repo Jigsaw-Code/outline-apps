@@ -37,7 +37,7 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import { COMMON_STYLES } from './cloud-install-styles';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
-enum Step {
+enum ProgressStep {
   ISSUE_WIZARD, // Step to ask for their specific issue.
   FORM, // The contact form.
   EXIT, // Final message to show, if any.
@@ -95,17 +95,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
         }
 
         mwc-select {
-          /**
-           * The '<app-header-layout>' restricts the stacking context, which means
-           * the select dropdown will get stacked underneath the header.
-           * See https://github.com/PolymerElements/app-layout/issues/279. Setting
-           * a maximum height will make the dropdown small enough to not run into
-           * this issue.
-           */
-          --mdc-menu-max-height: 200px;
-          --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
           margin-top: 1rem;
-          max-width: var(--contact-view-max-width);
           width: 100%;
         }
 
@@ -131,6 +121,10 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
         mwc-list-item span {
           white-space: normal;
         }
+
+        fieldset {
+          border: none;
+        }
       }
     `,
     ];
@@ -150,7 +144,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
 
   @state() private installationFailed = false;
 
-  @state() private step: Step = Step.ISSUE_WIZARD;
+  @state() private currentStep: ProgressStep = ProgressStep.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
   private exitTemplate?: TemplateResult;
 
@@ -181,7 +175,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
       this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
-      this.step = Step.EXIT;
+      this.currentStep = ProgressStep.EXIT;
       return;
     }
     this.showIssueSelector = true;
@@ -196,11 +190,11 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
         `contact-view-exit-${this.selectedIssueType}`,
         UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
       );
-      this.step = Step.EXIT;
+      this.currentStep = ProgressStep.EXIT;
       return;
     }
 
-    this.step = Step.FORM;
+    this.currentStep = ProgressStep.FORM;
   }
 
   reset() {
@@ -213,7 +207,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
       if (!element.ref.value) return;
       element.ref.value.checked = false;
     });
-    this.step = Step.ISSUE_WIZARD;
+    this.currentStep = ProgressStep.ISSUE_WIZARD;
     this.formValues = {};
   }
 
@@ -284,16 +278,16 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
   }
 
   private get renderMainContent(): TemplateResult {
-    switch (this.step) {
-      case Step.FORM: {
+    switch (this.currentStep) {
+      case ProgressStep.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
       }
 
-      case Step.EXIT: {
+      case ProgressStep.EXIT: {
         return html` <p class="exit">${this.exitTemplate}</p>`;
       }
 
-      case Step.ISSUE_WIZARD:
+      case ProgressStep.ISSUE_WIZARD:
       default: {
         return html`
           ${this.renderIntroTemplate}
@@ -346,12 +340,12 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
       <paper-dialog ${ref(this.dialogRef)} modal="">
         <h2>${titleMsg}</h2>
         <main>${this.renderMainContent}</main>
-        ${this.step === Step.FORM
+        ${this.currentStep === ProgressStep.FORM
             ? nothing
             : html`
-            <p class="buttons">
+            <fieldset class="buttons">
               <paper-button dialog-dismiss="">${this.localize('cancel')}</paper-button>
-            </p>
+            </fieldset>
         `}
       </paper-dialog>
     `;
@@ -365,7 +359,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     if (this.installationFailed) {
       // We go straight to the form and bypass the wizard in the case of a failed
       // installation.
-      this.step = Step.FORM;
+      this.currentStep = Step.FORM;
       this.selectedIssueType = IssueType.GENERAL;
       this.formValues.description = prepopulatedMessage;
     }

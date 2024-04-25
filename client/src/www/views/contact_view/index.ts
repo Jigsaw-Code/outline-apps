@@ -33,7 +33,7 @@ import {FormValues, SupportForm, ValidFormValues} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
-enum Step {
+enum ProgressStep {
   ISSUE_WIZARD, // Step to ask for their specific issue.
   FORM, // The contact form.
   EXIT, // Final message to show, if any.
@@ -143,7 +143,7 @@ export class ContactView extends LitElement {
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
-  @state() private step: Step = Step.ISSUE_WIZARD;
+  @state() private currentStep: ProgressStep = ProgressStep.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
   private exitTemplate?: TemplateResult;
 
@@ -174,7 +174,7 @@ export class ContactView extends LitElement {
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
       this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
-      this.step = Step.EXIT;
+      this.currentStep = ProgressStep.EXIT;
       return;
     }
     this.showIssueSelector = true;
@@ -189,11 +189,11 @@ export class ContactView extends LitElement {
         `contact-view-exit-${this.selectedIssueType}`,
         UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
       );
-      this.step = Step.EXIT;
+      this.currentStep = ProgressStep.EXIT;
       return;
     }
 
-    this.step = Step.FORM;
+    this.currentStep = ProgressStep.FORM;
   }
 
   reset() {
@@ -203,7 +203,7 @@ export class ContactView extends LitElement {
       if (!element.ref.value) return;
       element.ref.value.checked = false;
     });
-    this.step = Step.ISSUE_WIZARD;
+    this.currentStep = ProgressStep.ISSUE_WIZARD;
     this.formValues = {};
   }
 
@@ -262,16 +262,16 @@ export class ContactView extends LitElement {
   }
 
   private get renderMainContent(): TemplateResult {
-    switch (this.step) {
-      case Step.FORM: {
+    switch (this.currentStep) {
+      case ProgressStep.FORM: {
         return html` ${this.renderIntroTemplate} ${this.renderForm} `;
       }
 
-      case Step.EXIT: {
+      case ProgressStep.EXIT: {
         return html` <p class="exit">${this.exitTemplate}</p>`;
       }
 
-      case Step.ISSUE_WIZARD:
+      case ProgressStep.ISSUE_WIZARD:
       default: {
         return html`
           ${this.renderIntroTemplate}

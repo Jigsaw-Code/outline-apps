@@ -81,6 +81,8 @@ export class SupportForm extends LitElement {
   private static readonly DEFAULT_MAX_LENGTH_INPUT = 225;
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
+  /** The number of visible text lines for the "Description" field. */
+  private static readonly MAX_ROWS_DESCRIPTION = 5;
 
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
@@ -169,7 +171,7 @@ export class SupportForm extends LitElement {
           name="description"
           .label=${this.localize('support-form-description')}
           .value=${live(this.values.description ?? '')}
-          rows="5"
+          .rows=${SupportForm.MAX_ROWS_DESCRIPTION}
           .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required

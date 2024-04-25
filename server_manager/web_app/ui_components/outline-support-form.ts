@@ -85,6 +85,8 @@ export class OutlineSupportForm extends LitElement {
   private static readonly DEFAULT_MAX_LENGTH_INPUT = 225;
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
+  /** The number of visible text lines for the "Description" field. */
+  private static readonly MAX_ROWS_DESCRIPTION = 10;
 
   private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
 
@@ -134,19 +136,12 @@ export class OutlineSupportForm extends LitElement {
   }
 
   render() {
-    const providers = OutlineSupportForm.CLOUD_PROVIDERS.map((provider): CloudProviderOption => {
-      return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
-    });
+    const providers = OutlineSupportForm.CLOUD_PROVIDERS
+      .map((provider): CloudProviderOption => {
+        return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
+      })
     /** We should sort the providers by their labels, which may be localized. */
-    providers.sort(({label: labelA}, {label: labelB}) => {
-      if (labelA < labelB) {
-        return -1;
-      } else if (labelA === labelB) {
-        return 0;
-      } else {
-        return 1;
-      }
-    });
+    providers.sort((a, b) => a.label.localeCompare(b.label));
     providers.push({value: 'other', label: this.localize('support-form-cloud-provider-other')});
 
     return html`
@@ -195,7 +190,7 @@ export class OutlineSupportForm extends LitElement {
           name="description"
           .label=${this.localize('support-form-description')}
           .value=${live(this.values.description ?? '')}
-          rows="5"
+          .rows=${OutlineSupportForm.MAX_ROWS_DESCRIPTION}
           .maxLength=${OutlineSupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required
