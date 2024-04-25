@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import {ContactView} from './index';
+import {ListItemBase} from '@material/mwc-list/mwc-list-item-base';
+import {Select} from '@material/mwc-select';
 
 import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
+
+import {ContactView} from './index';
 import {SupportForm} from './support_form';
 import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
 import {localize} from '../../testing/localize';
-import {ListItemBase} from '@material/mwc-list/mwc-list-item-base';
-import {Select} from '@material/mwc-select';
+
 
 describe('ContactView client variant', () => {
   let el: ContactView;

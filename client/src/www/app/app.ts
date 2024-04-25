@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../model/errors';
-import * as events from '../model/events';
-import {Server} from '../model/server';
-import {OperationTimedOut} from '../../infrastructure/timeout_promise';
-import {ServerListItem, ServerConnectionState} from '../views/servers_view';
-import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
+import {Localizer} from '@outline/infrastructure/i18n';
+import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineErrorReporter} from '../shared/error_reporter';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-import {Localizer} from 'src/infrastructure/i18n';
+import * as errors from '../model/errors';
+import * as events from '../model/events';
+import {Server} from '../model/server';
+import {OutlineErrorReporter} from '../shared/error_reporter';
+import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -122,7 +122,7 @@ export class App {
     document.addEventListener('resume', this.syncConnectivityStateToServerCards.bind(this));
 
     // Register handlers for events fired by Polymer components.
-    this.rootEl.addEventListener('PromptAddServerRequested', this.requestPromptAddServer.bind(this));
+    this.rootEl.$.serversView.addEventListener('add-server', this.requestPromptAddServer.bind(this));
     this.rootEl.addEventListener('AddServerConfirmationRequested', this.requestAddServerConfirmation.bind(this));
     this.rootEl.addEventListener('AddServerRequested', this.requestAddServer.bind(this));
     this.rootEl.addEventListener('IgnoreServerRequested', this.requestIgnoreServer.bind(this));
@@ -300,7 +300,6 @@ export class App {
   }
 
   private requestPromptAddServer() {
-    this.rootEl.promptAddServer();
     this.pullClipboardText();
   }
 
@@ -440,7 +439,7 @@ export class App {
       console.error(`Failed to read auto-connect dialog status, assuming not dismissed: ${e}`);
     }
     if (!dismissed) {
-      this.rootEl.$.serversView.$.autoConnectDialog.show();
+      this.rootEl.$.autoConnectDialog.show();
     }
   }
 

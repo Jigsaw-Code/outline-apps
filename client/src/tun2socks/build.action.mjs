@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import url from 'url';
-import os from 'os';
+
 import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
@@ -24,24 +24,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
  */
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
-
-  const currentPlatform = os.platform() === 'win32' ? 'windows' : os.platform();
-
-  if (targetPlatform === 'browser') {
-    return;
-  }
-
-  if (targetPlatform === currentPlatform && ['linux', 'windows'].includes(targetPlatform)) {
-    return spawnStream(
-      'go',
-      'build',
-      '-o',
-      `output/build/${targetPlatform}/tun2socks${targetPlatform === 'windows' ? '.exe' : ''}`,
-      'github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/electron'
-    );
-  }
-
-  await spawnStream('make', ['ios', 'macos', 'maccatalyst'].includes(targetPlatform) ? 'apple' : targetPlatform);
+  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:tun2socks:${targetPlatform}`);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {

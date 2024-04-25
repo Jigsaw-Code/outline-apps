@@ -13,12 +13,14 @@
 // limitations under the License.
 
 import * as crypto from 'crypto';
-import * as tls from 'tls';
 import * as https from 'https';
+import {AddressInfo} from 'net';
+import * as tls from 'tls';
+
 import * as forge from 'node-forge';
 
 import {fetchWithPin} from './fetch';
-import {AddressInfo} from 'net';
+
 
 describe('fetchWithPin', () => {
   it('throws on pin mismatch (remote)', async () => {

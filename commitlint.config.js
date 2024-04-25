@@ -16,6 +16,7 @@ module.exports = {
         'client/electron/windows',
         'devtools',
         'docs',
+        'infrastructure',
         'manager',
         'manager/linux',
         'manager/mac',

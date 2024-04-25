@@ -17,7 +17,9 @@ import '@polymer/paper-progress/paper-progress';
 import '@polymer/paper-button/paper-button';
 import './outline-progress-spinner';
 import './outline-step-view';
-import {css, customElement, html, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+
 import {COMMON_STYLES} from './cloud-install-styles';
 
 @customElement('outline-server-progress-step')

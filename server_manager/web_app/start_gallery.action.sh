@@ -16,4 +16,4 @@
 
 set -eu
 
-webpack-dev-server --config=src/server_manager/gallery.webpack.js --open
+webpack-dev-server --config=server_manager/gallery.webpack.js --open

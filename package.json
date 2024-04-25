@@ -5,10 +5,10 @@
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./src/build/run_action.mjs",
-    "clean": "rimraf client/build client/output node_modules client/node_modules client/www client/platforms client/plugins third_party/jsign/*.jar",
+    "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
     "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint:ts": "eslint --ext ts,mjs client/src",
+    "lint:ts": "eslint --ext ts,mjs client",
     "lint": "npm run lint:ts",
     "reset": "npm run clean && npm ci"
   },
@@ -17,11 +17,17 @@
   },
   "private": true,
   "workspaces": [
+    "infrastructure",
     "server_manager",
     "client"
   ],
   "devDependencies": {
-    "electron-builder": "^24.13.3"
+    "@types/node-fetch": "^2.6.7",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "electron-builder": "^24.13.3",
+    "eslint-plugin-import": "^2.29.1",
+    "node-fetch": "^2.6.7"
   },
   "main": "build/electron/electron/index.js"
 }

@@ -14,7 +14,7 @@
 
 import * as dns from 'dns';
 
-import {timeoutPromise} from '../../client/src/infrastructure/timeout_promise';
+import {timeoutPromise} from '@outline/infrastructure/timeout_promise';
 import * as errors from '../../client/src/www/model/errors';
 
 const DNS_LOOKUP_TIMEOUT_MS = 10000;

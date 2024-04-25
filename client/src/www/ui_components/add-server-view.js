@@ -128,7 +128,7 @@ Polymer({
         color: var(--error-color);
         --paper-input-container-input-color: var(--error-color);
       }
-      #add-server-button {
+      #addServerButton {
         background-color: var(--dark-green);
         color: #fff;
         padding: 0 20px;
@@ -200,7 +200,7 @@ Polymer({
         </div>
         <div class="button-container">
           <paper-button class="faded" on-tap="_ignoreDetectedServer">[[localize('server-add-ignore')]]</paper-button>
-          <paper-button id="add-server-button" on-tap="_addDetectedServer">[[localize('server-add')]]</paper-button>
+          <paper-button id="addServerButton" on-tap="_addDetectedServer">[[localize('server-add')]]</paper-button>
         </div>
       </div>
     </paper-dialog>
@@ -278,6 +278,9 @@ Polymer({
     if (accessKeyInput.validate()) {
       this.fire('AddServerConfirmationRequested', {accessKey: this.accessKey});
     }
+
+    // On MacOS, the button doesn't render until focused. This is likely due to the fact that we're still using a deprecated web view
+    this.$.addServerButton.focus();
   },
 
   _addDetectedServer: function() {

@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {InMemoryStorage} from '../../../infrastructure/memory_storage';
-import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
-import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
-
-import {FakeOutlineTunnel} from '../fake_tunnel';
+import {InMemoryStorage} from '@outline/infrastructure/memory_storage';
+import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1, serversStorageV0ConfigToAccessKey} from '.';
 import {OutlineServer} from './server';
-import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
+import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
+import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
+import {FakeOutlineTunnel} from '../fake_tunnel';
+
+
 
 // TODO(alalama): unit tests for OutlineServer.
 

@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import path from 'path';
+
 import CopyPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
-import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 import {merge} from 'webpack-merge';
 
+import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const BABEL_LOADER = {

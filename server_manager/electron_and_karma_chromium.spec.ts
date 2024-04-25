@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {version as electronVersion} from 'electron/package.json';
 import {electronToChromium} from 'electron-to-chromium';
 // Since we aren't in the electron process, process.versions.electron isn't defined.
-import {version as electronVersion} from 'electron/package.json';
 // TODO(update-to-esm): we can only use node-fetch@2 now because the latest node-fetch requires ESM
 import fetch from 'node-fetch';
 
 import {config} from './package.json';
 
 describe('Karma', () => {
-  it('uses the correct Chromium version', async done => {
+  it('uses the correct Chromium version', async () => {
     // ChromiumDash is a service maintained by the Chrome team which serves metadata about current
     // and legacy Chrome versions.
     const electronChromiumVersionInfo = <{chromium_main_branch_position?: number}>(
@@ -31,6 +31,5 @@ describe('Karma', () => {
     );
     const electronChromeRevision = electronChromiumVersionInfo.chromium_main_branch_position;
     expect(electronChromeRevision).toEqual(config.PUPPETEER_CHROMIUM_REVISION);
-    done();
   });
 });

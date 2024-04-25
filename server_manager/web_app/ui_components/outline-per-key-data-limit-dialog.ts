@@ -25,8 +25,10 @@ import '@polymer/paper-listbox/paper-listbox';
 import {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import {PaperInputElement} from '@polymer/paper-input/paper-input';
 import {PaperListboxElement} from '@polymer/paper-listbox/paper-listbox';
-import {css, customElement, html, internalProperty, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 
+import {COMMON_STYLES} from './cloud-install-styles';
 import {
   bytesToDisplayDataAmount,
   DisplayDataAmount,
@@ -34,7 +36,6 @@ import {
   formatBytesParts,
 } from '../data_formatting';
 
-import {COMMON_STYLES} from './cloud-install-styles';
 
 /**
  * A floating window representing settings specific to individual access keys. Its state is
@@ -132,21 +133,21 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
   /**
    * @member _keyName The displayed name of the UI access key representing the key we're working on.
    */
-  @internalProperty() _keyName = '';
+  @state() _keyName = '';
   /**
    * @member _activeDataLimitBytes The data limit, if it exists, on the access key we're working on.
    */
-  @internalProperty() _initialDataLimitBytes: number = undefined;
+  @state() _initialDataLimitBytes: number = undefined;
   /**
    * @member _showDataLimit Whether the menu for inputting the data limit should be shown.
    * Controlled by the checkbox.
    */
-  @internalProperty() _showDataLimit = false;
+  @state() _showDataLimit = false;
   /**
    * @member _enableSave Whether the save button is enabled.  Controlled by the validator on the
    * input.
    */
-  @internalProperty() _enableSave = false;
+  @state() _enableSave = false;
 
   /**
    * @member language The ISO 3166-1 alpha-2 language code used for i18n.

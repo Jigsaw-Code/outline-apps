@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-import {html, css, LitElement, TemplateResult, nothing, PropertyValues} from 'lit';
-import {createRef, Ref, ref} from 'lit/directives/ref.js';
-import {live} from 'lit/directives/live.js';
-import {customElement, property, state} from 'lit/decorators.js';
+import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
+import {TextField} from '@material/mwc-textfield';
 import '@material/mwc-button';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
+
+import {Localizer} from '@outline/infrastructure/i18n';
+import {html, css, LitElement, TemplateResult, nothing, PropertyValues} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {live} from 'lit/directives/live.js';
+import {createRef, Ref, ref} from 'lit/directives/ref.js';
+
 import {AppType} from '../app_type';
-import {TextField} from '@material/mwc-textfield';
-import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
-import {Localizer} from 'src/infrastructure/i18n';
+
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 

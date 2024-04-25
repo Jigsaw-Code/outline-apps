@@ -13,15 +13,15 @@
 // limitations under the License.
 
 import fs from 'fs/promises';
-import url from 'url';
 import path from 'path';
+import url from 'url';
+
 import rmfr from 'rmfr';
 
-import {runWebpack} from '../build/run_webpack.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {runWebpack} from '../build/run_webpack.mjs';
 
 /**
  * @description Builds the web UI for use across both electron and cordova.
@@ -56,8 +56,10 @@ export async function main(...parameters) {
     }
   }
 
+  await fs.mkdir(path.resolve(getRootDir(), 'client', 'www'), {recursive: true});
+
   await fs.writeFile(
-    path.resolve(getRootDir(), 'www', 'environment.json'),
+    path.resolve(getRootDir(), 'client', 'www', 'environment.json'),
     JSON.stringify({
       SENTRY_DSN: sentryDsn,
       APP_VERSION: versionName,

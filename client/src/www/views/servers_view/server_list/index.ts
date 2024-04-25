@@ -11,12 +11,12 @@
   limitations under the License.
 */
 
+import {Localizer} from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import '../server_list_item/server_card';
 import {ServerListItem} from '../server_list_item';
-import {Localizer} from 'src/infrastructure/i18n';
 
 @customElement('server-list')
 export class ServerList extends LitElement {

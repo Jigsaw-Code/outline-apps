@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
-import minimist from 'minimist';
+import {readFile, readdir, mkdir} from 'fs/promises';
 import path from 'path';
 import url from 'url';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {readFile, readdir, mkdir} from 'fs/promises';
+
+import chalk from 'chalk';
+import minimist from 'minimist';
+
 import * as ANDROID_IMPORTER from './android/import_messages.mjs';
 import * as IOS_IMPORTER from './apple/import_messages.mjs';
+import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const ANDROID = 'android';
 const IOS = 'ios';

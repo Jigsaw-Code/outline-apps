@@ -20,25 +20,26 @@ import '@polymer/paper-item/paper-item';
 import './ui_components/outline-step-view';
 import './ui_components/outline-region-picker-step';
 
-import {css, customElement, html, internalProperty, LitElement, property} from 'lit-element';
+import {css, html, LitElement} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {AppRoot} from './ui_components/app-root';
-import {BillingAccount, Project, Zone, Account} from '../model/gcp';
 import {GcpAccount, isInFreeTier} from './gcp_account';
+import {filterOptions, getShortName} from './location_formatting';
+import {AppRoot} from './ui_components/app-root';
 import {COMMON_STYLES} from './ui_components/cloud-install-styles';
 import {OutlineRegionPicker} from './ui_components/outline-region-picker-step';
-import {filterOptions, getShortName} from './location_formatting';
+import {BillingAccount, Project, Zone, Account} from '../model/gcp';
 import {CloudLocation} from '../model/location';
 
 @customElement('outline-gcp-create-server-app')
 export class GcpCreateServerApp extends LitElement {
   @property({type: Function}) localize: (msgId: string, ...params: string[]) => string;
   @property({type: String}) language: string;
-  @internalProperty() private currentPage = '';
-  @internalProperty() private selectedProjectId = '';
-  @internalProperty() private selectedBillingAccountId = '';
-  @internalProperty() private isProjectBeingCreated = false;
+  @state() private currentPage = '';
+  @state() private selectedProjectId = '';
+  @state() private selectedBillingAccountId = '';
+  @state() private isProjectBeingCreated = false;
 
   private account: GcpAccount;
   private project: Project;
