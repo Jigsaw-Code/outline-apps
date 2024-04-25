@@ -359,7 +359,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     if (this.installationFailed) {
       // We go straight to the form and bypass the wizard in the case of a failed
       // installation.
-      this.currentStep = Step.FORM;
+      this.currentStep = ProgressStep.FORM;
       this.selectedIssueType = IssueType.GENERAL;
       this.formValues.description = prepopulatedMessage;
     }
