@@ -81,7 +81,9 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 		return nil, fmt.Errorf("failed to create Shadowsocks cipher: %w", err)
 	}
 
-	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress}, cryptoKey)
+	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be
+	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
+	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: net.Dialer{KeepAlive: -1}}, cryptoKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
 	}
