@@ -1,6 +1,6 @@
 {
-  "name": "outline-client",
-  "version": "0.0.0",
+  "name": "@outline/client",
+  "version": "0.0.0-debug",
   "comments": {
     "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
     "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
