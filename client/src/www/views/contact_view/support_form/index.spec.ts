@@ -34,20 +34,6 @@ describe('SupportForm', () => {
     expect(el).toBeInstanceOf(SupportForm);
   });
 
-  it('shows correct fields for the client variant', async () => {
-    const el = await fixture(html` <support-form variant="client"></support-form> `);
-
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).not.toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).toBeNull();
-  });
-
-  it('shows correct fields for the manager variant', async () => {
-    const el = await fixture(html` <support-form variant="manager"></support-form> `);
-
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).not.toBeNull();
-  });
-
   it('sets fields with provided form values', async () => {
     const values: FormValues = {
       email: 'foo@bar.com',

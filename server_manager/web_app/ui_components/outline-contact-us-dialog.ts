@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 The Outline Authors
+ * Copyright 2024 The Outline Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-
-import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
-import {Radio} from '@material/mwc-radio';
-import '@material/mwc-circular-progress';
-import '@material/mwc-radio';
-import '@material/mwc-select';
-import '@material/mwc-formfield';
-
-import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Ref, createRef, ref} from 'lit/directives/ref.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import '@material/mwc-circular-progress';
+import '@material/mwc-radio';
+import '@material/mwc-select';
+import '@material/mwc-formfield';
+import '@polymer/paper-dialog/paper-dialog';
+import {Radio} from '@material/mwc-radio';
+import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
+import { OutlineFeedbackDialog } from './outline-feedback-dialog';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
+import '@polymer/paper-button/paper-button';
+import * as Sentry from '@sentry/electron/renderer';
 
-import './support_form';
-import {FormValues, SupportForm, ValidFormValues} from './support_form';
-import {OutlineErrorReporter} from '../../shared/error_reporter';
+import './outline-support-form';
+import {FormValues, OutlineSupportForm, ValidFormValues} from './outline-support-form';
+//import {OutlineErrorReporter} from '../../shared/error_reporter';
+import {Localizer} from '@outline/infrastructure/i18n';
+import { COMMON_STYLES } from './cloud-install-styles';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum ProgressStep {
@@ -41,107 +45,104 @@ enum ProgressStep {
 
 /** Supported issue types in the feedback flow. */
 enum IssueType {
-  NO_SERVER = 'no-server',
   CANNOT_ADD_SERVER = 'cannot-add-server',
   CONNECTION = 'connection',
-  PERFORMANCE = 'performance',
+  MANAGING = 'managing',
   GENERAL = 'general',
 }
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
 const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
-  [IssueType.NO_SERVER, 'https://support.getoutline.org/s/article/How-do-I-get-an-access-key'],
   [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
   [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
 ]);
 
-@customElement('contact-view')
-export class ContactView extends LitElement {
-  static styles = [
-    css`
-      :host {
-        background: #fff;
-        color: var(--outline-text-color);
-        font-family: var(--outline-font-family);
-        padding: var(--contact-view-gutter, var(--outline-gutter));
-        width: 100%;
-      }
+@customElement('outline-contact-us-dialog')
+export class OutlineContactUsDialog extends LitElement implements OutlineFeedbackDialog {
+  static get styles() {
+    return [
+      COMMON_STYLES,
+      css`
+        :host {
+          --mdc-theme-primary: var(--primary-green);
+        }
 
-      main {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        max-width: var(--contact-view-max-width);
-      }
+        paper-dialog {
+          width: 80%;
+        }
 
-      mwc-circular-progress {
-        left: 50%;
-        position: absolute;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
+        main {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
 
-      p {
-        margin-top: .25rem;
-      }
+        mwc-circular-progress {
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
 
-      ol {
-        list-style-type: none;
-        margin: 1.5rem 0;
-        padding-inline-start: 0;
-      }
+        p {
+          margin-top: .25rem;
+        }
 
-      mwc-select {
-        /**
-         * The '<app-header-layout>' restricts the stacking context, which means
-         * the select dropdown will get stacked underneath the header.
-         * See https://github.com/PolymerElements/app-layout/issues/279. Setting
-         * a maximum height will make the dropdown small enough to not run into
-         * this issue.
-         */
-        --mdc-menu-max-height: 200px;
-        --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
-        margin-top: 1rem;
-        max-width: var(--contact-view-max-width);
-        width: 100%;
-      }
+        ol {
+          list-style-type: none;
+          margin: 1.5rem 0;
+          padding-inline-start: 0;
+        }
 
-      mwc-select[hidden] {
-        display: none;
-      }
+        mwc-select {
+          margin-top: 1rem;
+          width: 100%;
+        }
 
-      mwc-list-item {
-        line-height: 1.25rem;
-        /**
-         * The default styling of list items that wrap to 3+ lines is bad, and
-         * our items here are quite long and tend to wrap that much. To allow
-         * all lines to take up as much space as they can, we set the height to
-         * "auto", with a min-height of what the height would have been, which
-         * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
-         */
-        min-height: 48px;
-        --mdc-menu-item-height: auto;
-        padding-bottom: var(--outline-mini-gutter);
-        padding-top: var(--outline-mini-gutter);
-      }
+        mwc-select[hidden] {
+          display: none;
+        }
 
-      mwc-list-item span {
-        white-space: normal;
+        mwc-list-item {
+          line-height: 1.25rem;
+          /**
+           * The default styling of list items that wrap to 3+ lines is bad, and
+           * our items here are quite long and tend to wrap that much. To allow
+           * all lines to take up as much space as they can, we set the height to
+           * "auto", with a min-height of what the height would have been, which
+           * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
+           */
+          min-height: 48px;
+          --mdc-menu-item-height: auto;
+          padding-bottom: var(--outline-mini-gutter);
+          padding-top: var(--outline-mini-gutter);
+        }
+
+        mwc-list-item span {
+          white-space: normal;
+        }
+
+        fieldset {
+          border: none;
+        }
       }
-    }
     `,
-  ];
+    ];
+  }
+
+  private readonly dialogRef: Ref<PaperDialogElement> = createRef();
 
   private static readonly ISSUES: IssueType[] = [
-    IssueType.NO_SERVER,
     IssueType.CANNOT_ADD_SERVER,
     IssueType.CONNECTION,
-    IssueType.PERFORMANCE,
-    IssueType.GENERAL,
+    IssueType.MANAGING,
+    IssueType.GENERAL
   ];
 
+
   @property({type: Function}) localize: Localizer = msg => msg;
-  @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
+
+  @state() private installationFailed = false;
 
   @state() private currentStep: ProgressStep = ProgressStep.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
@@ -166,7 +167,7 @@ export class ContactView extends LitElement {
 
   @state() private showIssueSelector = false;
   private formValues: FormValues = {};
-  private readonly formRef: Ref<SupportForm> = createRef();
+  private readonly formRef: Ref<OutlineSupportForm> = createRef();
   @state() private isFormSubmitting = false;
 
   private selectHasOpenTicket(e: InputEvent) {
@@ -181,7 +182,7 @@ export class ContactView extends LitElement {
   }
 
   private selectIssue(e: SingleSelectedEvent) {
-    this.selectedIssueType = ContactView.ISSUES[e.detail.index];
+    this.selectedIssueType = OutlineContactUsDialog.ISSUES[e.detail.index];
 
     if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
       // TODO: Send users to localized support pages based on chosen language.
@@ -197,6 +198,9 @@ export class ContactView extends LitElement {
   }
 
   reset() {
+    if (this.installationFailed) {
+      this.close();
+    }
     this.isFormSubmitting = false;
     this.showIssueSelector = false;
     this.openTicketSelectionOptions.forEach(element => {
@@ -216,9 +220,15 @@ export class ContactView extends LitElement {
 
     const {description, email, ...tags} = this.formValues as ValidFormValues;
     try {
-      await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {
-        ...tags,
-        formVersion: 2,
+      Sentry.captureEvent({
+        message: description,
+        user: {email},
+        tags: {
+          category: this.selectedIssueType?.toString() ?? 'unknown',
+          isFeedback: true,
+          formVersion: 2,
+          ...tags
+        },
       });
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
@@ -229,6 +239,7 @@ export class ContactView extends LitElement {
 
     this.isFormSubmitting = false;
     this.reset();
+    this.close();
     this.dispatchEvent(new CustomEvent('success'));
   }
 
@@ -240,7 +251,12 @@ export class ContactView extends LitElement {
   }
 
   private get renderIntroTemplate(): TemplateResult {
-    return html`<p class="intro">${this.localize('contact-view-intro')}</p>`;
+    const introMsg = this.installationFailed
+      ? this.localize('feedback-explanation-install')
+      : this.localize('contact-view-intro');
+    return html`
+      <p class="intro">${introMsg}</p>
+    `;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -250,14 +266,14 @@ export class ContactView extends LitElement {
       `;
     }
     return html`
-      <support-form
+      <outline-support-form
         ${ref(this.formRef)}
         .localize=${this.localize}
         .disabled=${this.isFormSubmitting}
         .values=${this.formValues}
         @cancel=${this.reset}
         @submit=${this.submitForm}
-      ></support-form>
+      ></outline-support-form>
     `;
   }
 
@@ -303,7 +319,7 @@ export class ContactView extends LitElement {
             ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
           >
-            ${ContactView.ISSUES.map(value => {
+            ${OutlineContactUsDialog.ISSUES.map(value => {
               return html`
                 <mwc-list-item value="${value}">
                   <span>${this.localize(`contact-view-issue-${value}`)}</span>
@@ -317,6 +333,41 @@ export class ContactView extends LitElement {
   }
 
   render() {
-    return html`<main>${this.renderMainContent}</main>`;
+    const titleMsg = this.installationFailed
+      ? this.localize('feedback-title-install')
+      : this.localize('nav-contact-us');
+    return html`
+      <paper-dialog ${ref(this.dialogRef)} modal="">
+        <h2>${titleMsg}</h2>
+        <main>${this.renderMainContent}</main>
+        ${this.currentStep === ProgressStep.FORM
+            ? nothing
+            : html`
+            <fieldset class="buttons">
+              <paper-button dialog-dismiss="">${this.localize('cancel')}</paper-button>
+            </fieldset>
+        `}
+      </paper-dialog>
+    `;
+  }
+
+  open(prepopulatedMessage: string, showInstallationFailed: boolean) {
+    // Clear all fields, in case feedback had already been entered.
+    this.reset();
+
+    this.installationFailed = showInstallationFailed;
+    if (this.installationFailed) {
+      // We go straight to the form and bypass the wizard in the case of a failed
+      // installation.
+      this.currentStep = ProgressStep.FORM;
+      this.selectedIssueType = IssueType.GENERAL;
+      this.formValues.description = prepopulatedMessage;
+    }
+
+    this.dialogRef.value?.open();
+  }
+
+  close() {
+    this.dialogRef.value?.close();
   }
 }

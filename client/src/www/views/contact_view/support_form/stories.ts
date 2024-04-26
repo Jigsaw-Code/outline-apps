@@ -21,21 +21,11 @@ import {html} from 'lit';
 import './index';
 import {FormValues} from './index';
 import {localize} from '../../../testing/localize';
-import {AppType} from '../app_type';
 
 export default {
   title: 'Contact View/Support Form',
   component: 'support-form',
   argTypes: {
-    variant: {
-      description: 'Style variant of the support form.',
-      defaultValue: AppType.CLIENT,
-      options: Object.values(AppType),
-      control: {
-        type: 'radio',
-        defaultValue: AppType.CLIENT,
-      },
-    },
     disabled: {
       description: 'Whether to disable the form.',
       defaultValue: false,
@@ -47,19 +37,16 @@ export default {
 };
 
 export const EmptyForm = ({
-  variant,
   disabled,
   onCancel,
   onSubmit,
 }: {
-  variant: AppType;
   disabled: boolean;
   onCancel: Function;
   onSubmit: Function;
 }) => html`
   <support-form
     .localize=${localize}
-    .variant=${variant}
     .disabled=${disabled}
     @cancel=${onCancel}
     @submit=${onSubmit}
@@ -67,12 +54,10 @@ export const EmptyForm = ({
 `;
 
 export const CompleteForm = ({
-  variant,
   disabled,
   onCancel,
   onSubmit,
 }: {
-  variant: AppType;
   disabled: boolean;
   onCancel: Function;
   onSubmit: Function;
@@ -82,12 +67,10 @@ export const CompleteForm = ({
     subject: 'My Test Subject',
     description: 'My Test Description',
     accessKeySource: 'a friend',
-    cloudProvider: 'digitalocean',
   };
   return html`
     <support-form
       .localize=${localize}
-      .variant=${variant}
       .disabled=${disabled}
       .values=${values}
       @cancel=${onCancel}
