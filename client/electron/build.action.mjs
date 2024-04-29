@@ -56,11 +56,6 @@ export async function main(...parameters) {
 
   await fs.mkdir(path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron'), {recursive: true});
 
-  await copydir.sync(
-    path.join(getRootDir(), 'client', 'electron', 'icons'),
-    path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron', 'icons')
-  );
-
   const electronConfig = JSON.parse(
     await fs.readFile(path.resolve(getRootDir(), 'client', 'electron', 'electron-builder.json'))
   );
