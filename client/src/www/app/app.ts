@@ -224,7 +224,7 @@ export class App {
       toastMessage = error.message;
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
-        this.showErrorDetailDialog(error);
+        this.showErrorDetailsDialog(error.details);
       };
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
@@ -587,15 +587,13 @@ export class App {
       message += error.cause.toString();
     }
 
-    // Temporarily use window.alert here
     return alert(message);
   }
 
-  private showErrorDetailDialog(error: errors.SessionProviderError) {
-    if (!error.details) return;
+  private showErrorDetailsDialog(details: string) {
+    if (!details) return;
     
-    // Temporarily use window.alert here
-    return alert(error.details);
+    return alert(details);
   }
 
   //#endregion UI dialogs
