@@ -53,7 +53,7 @@ export class SessionConfigError extends CustomError {
 }
 
 export class SessionProviderError extends CustomError {
-  details: string | undefined;
+  private readonly details: string | undefined;
 
   constructor(message: string, options?: {details?: string}) {
     super(message);
