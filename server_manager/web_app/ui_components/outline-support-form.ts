@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import {TextField} from '@material/mwc-textfield';
-
+import {html, css, LitElement, PropertyValues} from 'lit';
+import {createRef, Ref, ref} from 'lit/directives/ref.js';
+import {live} from 'lit/directives/live.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import '@material/mwc-button';
 import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
+import {TextField} from '@material/mwc-textfield';
+import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {Localizer} from '@outline/infrastructure/i18n';
-import {html, css, LitElement, PropertyValues} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
-import {live} from 'lit/directives/live.js';
-import {createRef, Ref, ref} from 'lit/directives/ref.js';
-
+import { COMMON_STYLES } from './cloud-install-styles';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -34,7 +34,7 @@ export declare interface FormValues {
   email?: string;
   subject?: string;
   description?: string;
-  accessKeySource?: string;
+  cloudProvider?: string;
 }
 
 /** Interface for valid form data. */
@@ -42,16 +42,20 @@ export declare interface ValidFormValues extends FormValues {
   email: string;
   subject: string;
   description: string;
-  accessKeySource: string;
 }
 
-@customElement('support-form')
-export class SupportForm extends LitElement {
+declare interface CloudProviderOption {
+  value: string;
+  label: string;
+}
+
+@customElement('outline-support-form')
+export class OutlineSupportForm extends LitElement {
   static styles = [
+    COMMON_STYLES,
     css`
       :host {
-        font-family: var(--outline-font-family);
-        width: 100%;
+        --mdc-theme-primary: var(--primary-green);
       }
 
       mwc-select {
@@ -61,11 +65,11 @@ export class SupportForm extends LitElement {
       mwc-textarea,
       mwc-textfield {
         display: flex;
-        margin: var(--outline-slim-gutter) 0;
+        margin: 0.75rem 0;
       }
 
       p {
-        color: var(--outline-label-color);
+        color: hsl(0, 0%, 45%);
         font-size: 0.8rem;
         text-align: end;
       }
@@ -82,7 +86,9 @@ export class SupportForm extends LitElement {
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
   /** The number of visible text lines for the "Description" field. */
-  private static readonly MAX_ROWS_DESCRIPTION = 5;
+  private static readonly MAX_ROWS_DESCRIPTION = 10;
+
+  private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
 
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
@@ -130,6 +136,14 @@ export class SupportForm extends LitElement {
   }
 
   render() {
+    const providers = OutlineSupportForm.CLOUD_PROVIDERS
+      .map((provider): CloudProviderOption => {
+        return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
+      })
+    /** We should sort the providers by their labels, which may be localized. */
+    providers.sort((a, b) => a.label.localeCompare(b.label));
+    providers.push({value: 'other', label: this.localize('feedback-other')});
+
     return html`
       <form ${ref(this.formRef)} @submit=${this.submit}>
         <mwc-textfield
@@ -137,7 +151,7 @@ export class SupportForm extends LitElement {
           type="email"
           .label=${this.localize('support-form-email')}
           .value=${live(this.values.email ?? '')}
-          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .maxLength=${OutlineSupportForm.DEFAULT_MAX_LENGTH_INPUT}
           autoValidate
           .validationMessage=${this.localize('support-form-email-invalid')}
           .disabled=${this.disabled}
@@ -146,22 +160,27 @@ export class SupportForm extends LitElement {
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
 
-        <mwc-textfield
-          name="accessKeySource"
-          .label=${this.localize('support-form-access-key-source')}
-          .value=${live(this.values.accessKeySource ?? '')}
-          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+        <mwc-select
+          name="cloudProvider"
+          .label=${this.localize('support-form-cloud-provider')}
+          .value=${live(this.values.cloudProvider ?? '')}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @selected=${(e: CustomEvent<SelectedDetail<number>>) => {
+            if (e.detail.index !== -1) {
+              this.values.cloudProvider = providers[e.detail.index].value;
+            }
+          }}
           @blur=${this.checkFormValidity}
-        ></mwc-textfield>
+        >
+          ${providers.map(({value, label}) => html` <mwc-list-item value="${value}">${label}</mwc-list-item> `)}
+        </mwc-select>
 
         <mwc-textfield
           name="subject"
           .label=${this.localize('support-form-subject')}
           .value=${live(this.values.subject ?? '')}
-          .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
+          .maxLength=${OutlineSupportForm.DEFAULT_MAX_LENGTH_INPUT}
           .disabled=${this.disabled}
           required
           @input=${this.handleTextInput}
@@ -171,8 +190,8 @@ export class SupportForm extends LitElement {
           name="description"
           .label=${this.localize('support-form-description')}
           .value=${live(this.values.description ?? '')}
-          .rows=${SupportForm.MAX_ROWS_DESCRIPTION}
-          .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
+          .rows=${OutlineSupportForm.MAX_ROWS_DESCRIPTION}
+          .maxLength=${OutlineSupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required
           @input=${this.handleTextInput}
@@ -186,7 +205,7 @@ export class SupportForm extends LitElement {
           <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
           <mwc-button
             type="submit"
-            .label=${this.localize('submit')}
+            .label=${this.localize('feedback-submit')}
             .disabled=${!this.valid || this.disabled}
             @click=${this.submit}
           ></mwc-button>

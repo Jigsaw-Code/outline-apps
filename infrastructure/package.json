@@ -1,6 +1,6 @@
 {
   "name": "@outline/infrastructure",
-  "version": "0.0.0",
+  "version": "0.0.0-debug",
   "private": true,
   "description": "Shared infrastructure code.",
   "scripts": {

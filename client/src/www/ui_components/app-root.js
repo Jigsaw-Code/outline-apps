@@ -352,7 +352,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               name="contact"
               id="contactView"
               localize="[[localize]]"
-              variant="client"
               error-reporter="[[errorReporter]]"
               on-success="showContactSuccessToast"
               on-error="showContactErrorToast"
