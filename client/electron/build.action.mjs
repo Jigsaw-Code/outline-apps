@@ -16,7 +16,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
-import copydir from 'copy-dir';
 import electron, {Platform} from 'electron-builder';
 import minimist from 'minimist';
 

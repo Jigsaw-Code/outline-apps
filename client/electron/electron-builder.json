@@ -12,7 +12,7 @@
     "client/www",
     "client/resources/tray",
     "output/client/electron",
-    "!node_modules/electron"
+    "!output/client/electron/build"
   ],
   "linux": {
     "category": "Network",

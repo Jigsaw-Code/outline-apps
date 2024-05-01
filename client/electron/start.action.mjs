@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import path from 'path';
 import url from 'url';
 
 import electron from 'electron';
 
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
-import {spawnStream} from '../../../sßrc/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getRootDir} from '../../src/build/get_root_dir.mjs';
+import {runAction} from '../../src/build/run_action.mjs';
+import {spawnStream} from '../../src/build/spawn_stream.mjs';
+import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
 
 /**
  * @description Builds and starts the electron application.
@@ -29,13 +30,13 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  await runAction('www/build', platform, `--buildMode=${buildMode}`);
-  await runAction('electron/build_main', ...parameters);
-  await runAction('electron/build', platform, `--buildMode=${buildMode}`);
+  await runAction('client/src/www/build', platform, `--buildMode=${buildMode}`);
+  await runAction('client/electron/build_main', ...parameters);
+  await runAction('client/electron/build', platform, `--buildMode=${buildMode}`);
 
   process.env.OUTLINE_DEBUG = buildMode === 'debug';
 
-  await spawnStream(electron, getRootDir());
+  await spawnStream(electron, path.join(getRootDir(), 'output', 'client', 'electron'));
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
