@@ -1361,10 +1361,6 @@
     "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
     "message": "Google Cloud"
   },
-  "support_form_cloud_provider_other": {
-    "description": "Item in a dropdown menu to select an unknown cloud provider that the user is contacting support about.",
-    "message": "Other"
-  },
   "support_form_cloud_provider": {
     "description": "Label of a Contact Support form input field.",
     "message": "Cloud Provider"
