@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {hexToString} from '@outline/infrastructure/hex_encoding';
+import {sleep} from '@outline/infrastructure/sleep';
+import {ValueStream} from '@outline/infrastructure/value_stream';
+
+import {makePathApiClient} from './fetcher';
+import {ShadowboxServer} from './shadowbox_server';
 import {DigitalOceanSession, DropletInfo} from '../cloud/digitalocean_api';
-import {hexToString} from '../infrastructure/hex_encoding';
-import {sleep} from '../infrastructure/sleep';
-import {ValueStream} from '../infrastructure/value_stream';
 import {Region} from '../model/digitalocean';
 import * as server from '../model/server';
-import {makePathApiClient} from './fetcher';
 
-import {ShadowboxServer} from './shadowbox_server';
 
 // Prefix used in key-value tags.
 const KEY_VALUE_TAG = 'kv';

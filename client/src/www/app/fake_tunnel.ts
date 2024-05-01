@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 import * as errors from '../model/errors';
 
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between

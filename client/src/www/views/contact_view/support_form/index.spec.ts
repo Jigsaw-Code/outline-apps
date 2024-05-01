@@ -15,9 +15,11 @@
  */
 
 import {TextField} from '@material/mwc-textfield';
-import {FormValues, SupportForm} from './index';
 
 import {fixture, html, nextFrame, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
+
+import {FormValues, SupportForm} from './index';
+
 
 async function setValue(el: TextField, value: string) {
   await triggerFocusFor(el);
@@ -30,20 +32,6 @@ describe('SupportForm', () => {
   it('is defined', async () => {
     const el = await fixture(html` <support-form></support-form> `);
     expect(el).toBeInstanceOf(SupportForm);
-  });
-
-  it('shows correct fields for the client variant', async () => {
-    const el = await fixture(html` <support-form variant="client"></support-form> `);
-
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).not.toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).toBeNull();
-  });
-
-  it('shows correct fields for the manager variant', async () => {
-    const el = await fixture(html` <support-form variant="manager"></support-form> `);
-
-    expect(el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"]')).toBeNull();
-    expect(el.shadowRoot!.querySelector('mwc-select[name="cloudProvider"]')).not.toBeNull();
   });
 
   it('sets fields with provided form values', async () => {

@@ -119,13 +119,14 @@ export class PathApiClient {
     try {
       response = await this.fetcher(request);
     } catch (e) {
-      throw new ServerApiError(`API request to ${path} failed due to network error: ${e.message}`);
+      const msg = e instanceof Error ? e.message : 'unknown';
+      throw new ServerApiError(`API request to ${path} failed due to network error: ${msg}`);
     }
     if (response.status < 200 || response.status >= 300) {
       throw new ServerApiError(`API request to ${path} failed with status ${response.status}`, response);
     }
     if (!response.body) {
-      return;
+      return undefined as T;
     }
     // Assume JSON and unsafe cast to `T`.
     return JSON.parse(response.body);

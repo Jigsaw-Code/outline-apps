@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as location from '../model/location';
 import {filterOptions, getShortName, localizeCountry} from './location_formatting';
+import * as location from '../model/location';
 
 describe('getShortName', () => {
   it('basic case', () => {

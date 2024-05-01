@@ -28,6 +28,7 @@ import '@polymer/paper-listbox/paper-listbox';
 import '@polymer/paper-menu-button/paper-menu-button';
 import './cloud-install-styles';
 import './outline-about-dialog';
+import './outline-contact-us-dialog';
 import './outline-do-oauth-step';
 import './outline-gcp-oauth-step';
 import '../outline-gcp-create-server-app';
@@ -44,32 +45,32 @@ import './outline-tos-view';
 
 import './if_messages';
 
-import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior';
-import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class';
-import {html} from '@polymer/polymer/lib/utils/html-tag';
-import {PolymerElement} from '@polymer/polymer/polymer-element';
-import {DisplayCloudId} from './cloud-assets';
-
-import type {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import type {AppDrawerElement} from '@polymer/app-layout/app-drawer/app-drawer';
 import type {AppDrawerLayoutElement} from '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
+import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior';
 import type {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import type {PaperToastElement} from '@polymer/paper-toast/paper-toast';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
-import type {OutlineRegionPicker} from './outline-region-picker-step';
-import type {OutlineDoOauthStep} from './outline-do-oauth-step';
-import type {GcpConnectAccountApp} from './outline-gcp-oauth-step';
-import type {GcpCreateServerApp} from '../outline-gcp-create-server-app';
-import type {OutlineServerList, ServerViewListEntry} from './outline-server-list';
-import type {OutlineManualServerEntry} from './outline-manual-server-entry';
-import type {OutlinePerKeyDataLimitDialog} from './outline-per-key-data-limit-dialog';
-import type {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class';
+import type {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {html} from '@polymer/polymer/lib/utils/html-tag';
+import {PolymerElement} from '@polymer/polymer/polymer-element';
+
+import {DisplayCloudId} from './cloud-assets';
 import type {OutlineAboutDialog} from './outline-about-dialog';
-import type {OutlineShareDialog} from './outline-share-dialog';
+import type {OutlineDoOauthStep} from './outline-do-oauth-step';
+import type {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import type {GcpConnectAccountApp} from './outline-gcp-oauth-step';
+import type {LanguageDef} from './outline-language-picker';
+import type {OutlineManualServerEntry} from './outline-manual-server-entry';
 import type {OutlineMetricsOptionDialog} from './outline-metrics-option-dialog';
 import type {OutlineModalDialog} from './outline-modal-dialog';
+import type {OutlinePerKeyDataLimitDialog} from './outline-per-key-data-limit-dialog';
+import type {OutlineRegionPicker} from './outline-region-picker-step';
+import type {OutlineServerList, ServerViewListEntry} from './outline-server-list';
 import type {ServerView} from './outline-server-view';
-import type {LanguageDef} from './outline-language-picker';
+import type {OutlineShareDialog} from './outline-share-dialog';
+import type {GcpCreateServerApp} from '../outline-gcp-create-server-app';
 
 const TOS_ACK_LOCAL_STORAGE_KEY = 'tos-ack';
 
@@ -412,7 +413,12 @@ export class AppRoot extends polymerElementWithLocalize {
               </a>
             </if-messages>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
-            <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
+            <template is="dom-if" if="{{contactViewFeatureFlag}}">
+              <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
+            </template>
+            <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+              <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
+            </template>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
             <span on-tap="aboutTapped">[[localize('nav-about')]]</span>
             <div id="links-footer">
@@ -467,7 +473,17 @@ export class AppRoot extends polymerElementWithLocalize {
 
       <!-- Modal dialogs must be outside the app container; otherwise the backdrop covers them.  -->
       <outline-survey-dialog id="surveyDialog" localize="[[localize]]"></outline-survey-dialog>
-      <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>
+      <template is="dom-if" if="{{contactViewFeatureFlag}}">
+        <outline-contact-us-dialog
+          id="feedbackDialog"
+          localize="[[localize]]"
+          on-success="showContactSuccessToast"
+          on-error="showContactErrorToast"
+        ></outline-contact-us-dialog>
+      </template>
+      <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+        <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>
+      </template>
       <outline-about-dialog id="aboutDialog" outline-version="[[outlineVersion]]" localize="[[localize]]"></outline-about-dialog>
       <outline-modal-dialog id="modalDialog"></outline-modal-dialog>
       <outline-share-dialog id="shareDialog" localize="[[localize]]"></outline-share-dialog>
@@ -688,6 +704,10 @@ export class AppRoot extends polymerElementWithLocalize {
       },
       shouldShowSideBar: {type: Boolean},
       showManagerResourcesLink: {type: Boolean},
+      contactViewFeatureFlag: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -967,7 +987,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   submitFeedbackTapped() {
-    (this.$.feedbackDialog as OutlineFeedbackDialog).open();
+    (this.shadowRoot.querySelector('#feedbackDialog') as OutlineFeedbackDialog).open();
     this.maybeCloseDrawer();
   }
 
@@ -985,7 +1005,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   openManualInstallFeedback(prepopulatedMessage: string) {
-    (this.$.feedbackDialog as OutlineFeedbackDialog).open(prepopulatedMessage, true);
+    (this.shadowRoot.querySelector('#feedbackDialog') as OutlineFeedbackDialog).open(prepopulatedMessage, true);
   }
 
   openShareDialog(accessKey: string, s3Url: string) {
@@ -1053,6 +1073,14 @@ export class AppRoot extends polymerElementWithLocalize {
     };
     xhr.open('GET', '/ui_components/licenses/licenses.txt', true);
     xhr.send();
+  }
+
+  showContactSuccessToast() {
+    this.showNotification(this.localize('notification-feedback-thanks'));
+  }
+
+  showContactErrorToast() {
+    this.showError(this.localize('error-feedback'));
   }
 
   _computeShouldShowSideBar() {

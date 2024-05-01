@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {createHash} from 'node:crypto';
-import * as fsextra from 'fs-extra';
 import {createConnection, Socket} from 'net';
+import {createHash} from 'node:crypto';
 import {platform, userInfo} from 'os';
 import * as path from 'path';
+
+import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
-import {getAppPath} from '../../client/infrastructure/electron/app_paths';
+import {pathToEmbeddedOutlineService} from '../../client/infrastructure/electron/app_paths';
 import {TunnelStatus} from '../../client/src/www/app/tunnel';
 import {ErrorCode, SystemConfigurationException} from '../../client/src/www/model/errors';
 
@@ -66,7 +67,7 @@ enum RoutingServiceStatusCode {
 //  - Linux: systemctl start|stop outline_proxy_controller.service
 //  - Windows: net start|stop OutlineService
 export class RoutingDaemon {
-  private socket: Socket | undefined;
+  private socket: Socket | null | undefined;
 
   private stopping = false;
 
@@ -181,7 +182,7 @@ export class RoutingDaemon {
 
   private async writeReset() {
     return new Promise<void>((resolve, reject) => {
-      const written = this.socket.write(
+      const written = this.socket?.write(
         JSON.stringify({action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
         err => {
           if (err) {
@@ -261,12 +262,11 @@ function installWindowsRoutingServices(): Promise<void> {
   //   build/windows
   //
   // Surrounding quotes important, consider "c:\program files"!
-  const script = `"${path.join(getAppPath(), WINDOWS_INSTALLER_FILENAME)}"`;
+  const script = `"${path.join(pathToEmbeddedOutlineService(), WINDOWS_INSTALLER_FILENAME)}"`;
   return executeCommandAsRoot(script);
 }
 
 async function installLinuxRoutingServices(): Promise<void> {
-  const OUTLINE_PROXY_CONTROLLER_PATH = path.join('tools', 'outline_proxy_controller', 'dist');
   const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
   const installationFileDescriptors: Array<{filename: string; executable: boolean; sha256: string}> = [
     {filename: LINUX_INSTALLER_FILENAME, executable: true, sha256: ''},
@@ -275,7 +275,7 @@ async function installLinuxRoutingServices(): Promise<void> {
   ];
 
   // These Linux service files are located in a mounted folder of the AppImage, typically
-  // located at /tmp/.mount_Outlinxxxxxx/resources/. These files can only be acceeded by
+  // located at /tmp/.mount_Outlinxxxxxx/resources/. These files can only be accessed by
   // the user who launched Outline.AppImage, so even root cannot access the files or folders.
   // Therefore we have to copy these files to a normal temporary folder, and execute them
   // as root.
@@ -289,7 +289,7 @@ async function installLinuxRoutingServices(): Promise<void> {
   // - https://github.com/AppImage/AppImageKit/issues/146
   // - https://xwartz.gitbooks.io/electron-gitbook/content/en/tutorial/application-packaging.html
   const tmp = await fsextra.mkdtemp('/tmp/');
-  const srcFolderPath = path.join(getAppPath(), OUTLINE_PROXY_CONTROLLER_PATH);
+  const srcFolderPath = pathToEmbeddedOutlineService();
 
   console.log(`copying service installation files to ${tmp}`);
   for (const descriptor of installationFileDescriptors) {

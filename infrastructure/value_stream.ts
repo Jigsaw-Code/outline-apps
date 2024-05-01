@@ -20,7 +20,7 @@
  * guaranteed to see the last value in a series of updates.
  */
 export class ValueStream<T> {
-  private wakers: Array<(closed: boolean) => void> = [];
+  private wakers: Array<(closed: boolean) => void> | null = [];
   constructor(private value: T) {}
 
   get(): T {
@@ -28,7 +28,7 @@ export class ValueStream<T> {
   }
 
   set(newValue: T) {
-    if (this.isClosed()) {
+    if (this.wakers === null) {
       throw new Error('Cannot change a closed value stream');
     }
     this.value = newValue;
@@ -38,7 +38,7 @@ export class ValueStream<T> {
   }
 
   close() {
-    if (this.isClosed()) {
+    if (this.wakers === null) {
       return;
     }
     const finalWakers = this.wakers;
@@ -51,10 +51,12 @@ export class ValueStream<T> {
   }
 
   private nextChange(): Promise<boolean> {
-    if (this.isClosed()) {
-      return Promise.resolve(true);
-    }
-    return new Promise<boolean>(resolve => this.wakers.push(resolve));
+    return new Promise<boolean>(resolve => {
+      if (this.wakers === null) {
+        return resolve(true);
+      }
+      return this.wakers.push(resolve)
+    });
   }
 
   async *watch(): AsyncGenerator<T, void> {

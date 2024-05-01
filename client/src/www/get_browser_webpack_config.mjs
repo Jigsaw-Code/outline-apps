@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import electronConfig from './webpack_electron.mjs';
 import cordovaConfig from './webpack_cordova.mjs';
+import electronConfig from './webpack_electron.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 
 /*

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {CustomError} from '@outline/infrastructure/custom_error';
+
 import {Server} from './server';
-import {CustomError} from '../../../infrastructure/custom_error';
 
 export class ServerAlreadyAdded extends CustomError {
   constructor(public readonly server: Server) {

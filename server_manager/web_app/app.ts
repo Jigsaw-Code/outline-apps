@@ -12,27 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {CustomError} from '@outline/infrastructure/custom_error';
+import * as path_api from '@outline/infrastructure/path_api';
+import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
 import * as semver from 'semver';
-
-import * as digitalocean_api from '../cloud/digitalocean_api';
-import * as path_api from '../infrastructure/path_api';
-import {sleep} from '../infrastructure/sleep';
-import * as accounts from '../model/accounts';
-import * as digitalocean from '../model/digitalocean';
-import * as gcp from '../model/gcp';
-import * as server_model from '../model/server';
 
 import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
-import {HttpError} from '../cloud/gcp_api';
-
-import type {CloudLocation} from '../model/location';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
-import type {FeedbackDetail} from './ui_components/outline-feedback-dialog';
+import { FeedbackDetail } from './ui_components/outline-feedback-dialog';
 import type {DisplayAccessKey, ServerView} from './ui_components/outline-server-view';
-import {CustomError} from '../infrastructure/custom_error';
+import * as digitalocean_api from '../cloud/digitalocean_api';
+import {HttpError} from '../cloud/gcp_api';
+import * as accounts from '../model/accounts';
+import * as digitalocean from '../model/digitalocean';
+import * as gcp from '../model/gcp';
+import type {CloudLocation} from '../model/location';
+import * as server_model from '../model/server';
+
 
 // The Outline DigitalOcean team's referral code:
 //   https://www.digitalocean.com/help/referral-program/

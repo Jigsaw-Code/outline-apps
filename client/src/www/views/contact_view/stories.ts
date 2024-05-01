@@ -19,32 +19,21 @@
 import {html} from 'lit';
 
 import './index';
-import {AppType} from './app_type';
 import {localize} from '../../testing/localize';
 
 export default {
   title: 'Contact View',
   component: 'contact-view',
   argTypes: {
-    variant: {
-      description: 'Style variant of the contact view.',
-      defaultValue: AppType.CLIENT,
-      options: Object.values(AppType),
-      control: {
-        type: 'radio',
-        defaultValue: AppType.CLIENT,
-      },
-    },
     onSuccess: {action: 'success'},
     onError: {action: 'error'},
   },
 };
 
-export const Example = ({variant, onSuccess, onError}: {variant: AppType; onSuccess: Function; onError: Function}) =>
+export const Example = ({onSuccess, onError}: {onSuccess: Function; onError: Function}) =>
   html`
     <contact-view
       .localize=${localize}
-      .variant=${variant}
       .errorReporter=${{report: console.log}}
       @success=${onSuccess}
       @error=${onError}

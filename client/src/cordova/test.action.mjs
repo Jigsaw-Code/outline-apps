@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from 'url';
-import os from 'os';
-import minimist from 'minimist';
-import path from 'path';
 import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import url from 'url';
+
+import minimist from 'minimist';
 import rmfr from 'rmfr';
 
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';

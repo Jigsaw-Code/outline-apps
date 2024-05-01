@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {powerMonitor} from 'electron';
 import {platform} from 'os';
 
-import {pathToEmbeddedBinary} from '../../client/infrastructure/electron/app_paths';
-import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
-import {TunnelStatus} from '../../client/src/www/app/tunnel';
-import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/src/www/model/errors';
+import {powerMonitor} from 'electron';
 
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
+import {pathToEmbeddedTun2socksBinary} from '../../client/infrastructure/electron/app_paths';
+import {ShadowsocksSessionConfig} from '../../client/src/www/app/tunnel';
+import {TunnelStatus} from '../../client/src/www/app/tunnel';
+import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../../client/src/www/model/errors';
+
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -221,7 +222,7 @@ class GoTun2socks {
   private readonly process: ChildProcessHelper;
 
   constructor(private readonly config: ShadowsocksSessionConfig) {
-    this.process = new ChildProcessHelper(pathToEmbeddedBinary('tun2socks'));
+    this.process = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   }
 
   async start(isUdpEnabled: boolean): Promise<void> {
@@ -258,7 +259,7 @@ class GoTun2socks {
         if (data?.toString().includes('tun2socks running')) {
           console.debug('tun2socks started');
           autoRestart = true;
-          this.process.onStdErr = null;
+          this.process.onStdErr = undefined;
         }
       };
       try {

@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import minimist from 'minimist';
-import {runAction} from '../build/run_action.mjs';
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
-import electron, {Platform} from 'electron-builder';
-import copydir from 'copy-dir';
 import fs from 'fs/promises';
-import url from 'url';
-import {getRootDir} from '../build/get_root_dir.mjs';
 import path from 'path';
+import url from 'url';
+
+import copydir from 'copy-dir';
+import electron, {Platform} from 'electron-builder';
+import minimist from 'minimist';
+
+import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
+import {getRootDir} from '../build/get_root_dir.mjs';
+import {runAction} from '../build/run_action.mjs';
+
+
+
 
 const ELECTRON_BUILD_DIR = 'build';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];

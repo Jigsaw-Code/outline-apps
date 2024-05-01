@@ -18,12 +18,12 @@ import '@polymer/neon-animation/animations/slide-from-bottom-animation';
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-dialog/paper-dialog';
 
+import type {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
+import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 import {PolymerElement} from '@polymer/polymer/polymer-element';
 
-import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
-import type {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 
 class OutlineSurveyDialog extends DirMixin(PolymerElement) {
   static get template() {
