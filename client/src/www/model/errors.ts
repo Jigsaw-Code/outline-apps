@@ -47,8 +47,18 @@ export class SessionConfigFetchFailed extends CustomError {
 }
 
 export class SessionConfigError extends CustomError {
-  constructor(message: string) {
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
+  }
+}
+
+export class SessionProviderError extends CustomError {
+  readonly details: string | undefined;
+
+  constructor(message: string, details?: string) {
     super(message);
+
+    this.details = details;
   }
 }
 
