@@ -204,22 +204,30 @@ export class App {
       toastMessage = this.localize('error-connection-configuration');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
-        this.showErrorDetailDialog(error);
+        this.showErrorCauseDialog(error);
       };
     } else if (error instanceof errors.SessionConfigFetchFailed) {
       toastMessage = this.localize('error-connection-configuration-fetch');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
-        this.showErrorDetailDialog(error);
+        this.showErrorCauseDialog(error);
       };
     } else if (error instanceof errors.ProxyConnectionFailure) {
       toastMessage = this.localize('error-connection-proxy');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
-        this.showErrorDetailDialog(error);
+        this.showErrorCauseDialog(error);
       };
     } else if (error instanceof errors.SessionConfigError) {
       toastMessage = error.message;
+    } else if (error instanceof errors.SessionProviderError) {
+      toastMessage = error.message;
+      buttonMessage = this.localize('error-details');
+
+      console.log(error, error.message, error.details);
+      buttonHandler = () => {
+        this.showErrorDetailsDialog(error.details);
+      };
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
@@ -227,7 +235,7 @@ export class App {
       if (hasErrorDetails) {
         buttonMessage = this.localize('error-details');
         buttonHandler = () => {
-          this.showErrorDetailDialog(error);
+          this.showErrorCauseDialog(error);
         };
       }
     }
@@ -573,7 +581,7 @@ export class App {
     return new Promise<boolean>(resolve => resolve(confirm(message)));
   }
 
-  private showErrorDetailDialog(error: Error) {
+  private showErrorCauseDialog(error: Error) {
     let message = error.toString();
 
     if (error.cause) {
@@ -581,8 +589,13 @@ export class App {
       message += error.cause.toString();
     }
 
-    // Temporarily use window.alert here
     return alert(message);
+  }
+
+  private showErrorDetailsDialog(details: string) {
+    if (!details) return;
+    
+    return alert(details);
   }
 
   //#endregion UI dialogs
