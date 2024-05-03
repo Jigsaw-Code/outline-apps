@@ -142,7 +142,7 @@ export class OutlineSupportForm extends LitElement {
       })
     /** We should sort the providers by their labels, which may be localized. */
     providers.sort((a, b) => a.label.localeCompare(b.label));
-    providers.push({value: 'other', label: this.localize('support-form-cloud-provider-other')});
+    providers.push({value: 'other', label: this.localize('feedback-other')});
 
     return html`
       <form ${ref(this.formRef)} @submit=${this.submit}>
