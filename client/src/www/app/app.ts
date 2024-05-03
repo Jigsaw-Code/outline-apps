@@ -223,6 +223,8 @@ export class App {
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
       buttonMessage = this.localize('error-details');
+
+      console.log(error, error.message, error.details);
       buttonHandler = () => {
         this.showErrorDetailsDialog(error.details);
       };

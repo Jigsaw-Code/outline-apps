@@ -39,7 +39,7 @@ function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSes
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
-    throw new errors.SessionProviderError(responseJson.error.message, { details: responseJson.error.details });
+    throw new errors.SessionProviderError(responseJson.error.message, responseJson.error.details);
   }
 
   const {method, password, server, server_port, prefix} = responseJson;
@@ -85,7 +85,7 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
     return parseShadowsocksSessionConfigJson(responseBody);
   } catch (cause) {
-    if (cause instanceof errors.SessionConfigError) {
+    if (cause instanceof errors.SessionProviderError) {
       throw cause;
     }
 
