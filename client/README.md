@@ -60,11 +60,11 @@ SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --
 
 ## Life of a Packet
 
-[How does the Outline Client work?](docs/life_of_a_packet.md)
+[How does the Outline Client work?](/docs/life_of_a_packet.md)
 
 ## Accepting a server invite
 
-[Looking for instructions on how to accept a server invite?](docs/invitation_instructions.md)
+[Looking for instructions on how to accept a server invite?](/docs/invitation_instructions.md)
 
 ## Platform-specific development
 
