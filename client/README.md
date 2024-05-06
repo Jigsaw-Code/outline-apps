@@ -69,7 +69,7 @@ Each platform is handled differently:
 
 1. [Developing for Apple **(MacOS and iOS)**](src/cordova/apple)
 2. [Developing for **Android**](src/cordova/android)
-3. [Developing for Electron **(Windows and Linux)**](src/electron)
+3. [Developing for Electron **(Windows and Linux)**](electron)
 
 ## Error reporting
 
