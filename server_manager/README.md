@@ -1,4 +1,4 @@
-# <img alt="Outline Manager Logo" src="../docs/resources/logo_manager.png" title="Outline Manager" width="24">&nbsp;&nbsp;Outline Manager
+# <img alt="Outline Manager Logo" src="../docs/resources/logo_manager.png" title="Outline Manager" width="32">&nbsp;&nbsp;Outline Manager
 
 ![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_manager.yml/badge.svg?branch=master)
 

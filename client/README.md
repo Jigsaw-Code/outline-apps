@@ -1,4 +1,4 @@
-# <img alt="Outline Client Logo" src="../docs/resources/logo_client.png" title="Outline Client" width="24">&nbsp;&nbsp;Outline Client
+# <img alt="Outline Client Logo" src="../docs/resources/logo_client.png" title="Outline Client" width="32">&nbsp;&nbsp;Outline Client
 
 ![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) 
 
