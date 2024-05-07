@@ -57,7 +57,7 @@ jobs:
       - name: Build Linux Manager
         run: npm run action server_manager/electron_app/build linux
 
-      # Since Linux doesn't require signing to run, we can use it to smoke test the package action
+      # Since Linux doesn't require signing, we can use it to smoke test the package action
       - name: Package Linux Manager
         run: npm run action server_manager/electron_app/package linux -- --buildMode=release --versionName=1.0.0
 
