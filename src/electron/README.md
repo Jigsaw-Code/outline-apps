@@ -5,13 +5,13 @@ Unlike the Android and Apple clients, the Windows and Linux clients use the Elec
 To build the Electron clients, run (it will also package an installer executable into `build/dist`):
 
 ```sh
-npm run action electron/build [windows|linux]
+npm run action client/electron/build [windows|linux]
 ```
 
 To run the Electron clients, run:
 
 ```sh
-npm run action electron/start [windows|linux]
+npm run action client/electron/start [windows|linux]
 ```
 
 ## Cross-Compiling

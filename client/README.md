@@ -1,9 +1,6 @@
 # Outline Client
 
-![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/Jigsaw-Code/outline-apps/graph/badge.svg?token=gasD8v5tjn)](https://codecov.io/gh/Jigsaw-Code/outline-apps)
-
-> [!NOTE]
-> Test coverage currently only tracks the Apple Libraries and core web view code.
+![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) 
 
 The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS. The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
