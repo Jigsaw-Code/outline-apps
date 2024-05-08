@@ -1,6 +1,0 @@
-{
-  "extends": "../../client/src/www/tsconfig.json",
-  "compilerOptions": {
-    "outDir": "../../build/electron"
-  }
-}

@@ -2,7 +2,7 @@
 
 Unlike the Android and Apple clients, the Windows and Linux clients use the Electron framework, rather than Cordova.
 
-To build the Electron clients, run (it will also package an installer executable into `build/dist`):
+To build the Electron clients, run (it will also package an installer executable into `output/client/electron/build`):
 
 ```sh
 npm run action client/electron/build [windows|linux]

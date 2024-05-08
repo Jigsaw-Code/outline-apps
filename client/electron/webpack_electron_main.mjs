@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 
 export default ({sentryDsn, appVersion}) => [
   {
-    entry: './src/electron/index.ts',
+    entry: './client/electron/index.ts',
     target: 'electron-main',
     node: {
       __dirname: false,
@@ -50,11 +50,11 @@ export default ({sentryDsn, appVersion}) => [
     ],
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, '..', '..', 'build', 'electron', 'electron'),
+      path: path.resolve(__dirname, '..', '..', 'output', 'client', 'electron'),
     },
   },
   {
-    entry: './src/electron/preload.ts',
+    entry: './client/electron/preload.ts',
     target: 'electron-preload',
     devtool: 'inline-source-map',
     module: {
@@ -71,7 +71,7 @@ export default ({sentryDsn, appVersion}) => [
     },
     output: {
       filename: 'preload.js',
-      path: path.resolve(__dirname, '..', '..', 'build', 'electron', 'electron'),
+      path: path.resolve(__dirname, '..', '..', 'output', 'client', 'electron'),
     },
   },
 ];
