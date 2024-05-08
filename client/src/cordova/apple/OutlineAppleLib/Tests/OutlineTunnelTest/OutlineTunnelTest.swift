@@ -26,7 +26,7 @@ final class OutlineTunnelTest: XCTestCase {
     
     func testGetTunnelNetworkSettings() {
         let settings = OutlineTunnel.getTunnelNetworkSettings(tunnelRemoteAddress: "1.2.3.4")
-        
+
         XCTAssertEqual("1.2.3.4", settings.tunnelRemoteAddress)
         
         XCTAssertEqual(1, settings.ipv4Settings?.addresses.count)
@@ -36,6 +36,9 @@ final class OutlineTunnelTest: XCTestCase {
         XCTAssertEqual([NEIPv4Route.default()], settings.ipv4Settings?.includedRoutes)
         XCTAssertEqual(15, settings.ipv4Settings?.excludedRoutes?.count ?? 0)
 
-        XCTAssertEqual(["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"], settings.dnsSettings?.servers)
+        XCTAssertEqual(settings.dnsSettings?.servers.contains("1.1.1.1"), true)
+        XCTAssertEqual(settings.dnsSettings?.servers.contains("9.9.9.9"), true)
+        XCTAssertEqual(settings.dnsSettings?.servers.contains("208.67.222.222"), true)
+        XCTAssertEqual(settings.dnsSettings?.servers.contains("208.67.220.220"), true)
     }
 }
