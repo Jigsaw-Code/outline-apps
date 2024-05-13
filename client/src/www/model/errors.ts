@@ -74,12 +74,6 @@ export class ProxyConnectionFailure extends CustomError {
   }
 }
 
-export class FeedbackSubmissionError extends CustomError {
-  constructor() {
-    super();
-  }
-}
-
 // Error thrown by "native" code.
 //
 // TODO: Rename this class, "plugin" is a poor name since the Electron apps do not have plugins.

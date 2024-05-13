@@ -79,7 +79,6 @@ export function isOutlineAccessKey(url: string): boolean {
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
 
 export class App {
-  private feedbackViewEl: polymer.Base;
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
@@ -99,7 +98,6 @@ export class App {
     private quitApplication: () => void,
     document = window.document
   ) {
-    this.feedbackViewEl = rootEl.shadowRoot.querySelector('#feedbackView');
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
@@ -133,9 +131,6 @@ export class App {
     this.rootEl.addEventListener('QuitPressed', this.quitApplication.bind(this));
     this.rootEl.addEventListener('AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
     this.rootEl.addEventListener('ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
-    if (this.feedbackViewEl) {
-      this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
-    }
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
@@ -170,8 +165,6 @@ export class App {
       toastMessage = this.localize('outline-plugin-error-udp-forwarding-not-enabled');
     } else if (error instanceof errors.ServerUnreachable) {
       toastMessage = this.localize('outline-plugin-error-server-unreachable');
-    } else if (error instanceof errors.FeedbackSubmissionError) {
-      toastMessage = this.localize('error-feedback-submission');
     } else if (error instanceof errors.ServerUrlInvalid) {
       toastMessage = this.localize('error-invalid-access-key');
     } else if (error instanceof errors.ServerIncompatible) {
@@ -185,10 +178,10 @@ export class App {
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
     } else if (error instanceof errors.ConfigureSystemProxyFailure) {
       toastMessage = this.localize('outline-plugin-error-routing-tables');
-      buttonMessage = this.localize('feedback-page-title');
+      buttonMessage = this.localize('contact-page-title');
       buttonHandler = () => {
         // TODO: Drop-down has no selected item, why not?
-        this.rootEl.changePage('feedback');
+        this.rootEl.changePage('contact');
       };
     } else if (error instanceof errors.NoAdminPermissions) {
       toastMessage = this.localize('outline-plugin-error-admin-permissions');
@@ -497,25 +490,6 @@ export class App {
     }
   }
 
-  private async submitFeedback() {
-    const formData = this.feedbackViewEl.getValidatedFormData();
-    if (!formData) {
-      return;
-    }
-    const {feedback, category, email} = formData;
-    this.feedbackViewEl.submitting = true;
-    try {
-      await this.errorReporter.report(feedback, category, email);
-      this.feedbackViewEl.submitting = false;
-      this.feedbackViewEl.resetForm();
-      this.changeToDefaultPage();
-      this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-    } catch (e) {
-      this.feedbackViewEl.submitting = false;
-      this.showLocalizedError(new errors.FeedbackSubmissionError());
-    }
-  }
-
   //#region EventQueue event handlers
 
   private onServerConnected(event: events.ServerConnected): void {
@@ -594,7 +568,7 @@ export class App {
 
   private showErrorDetailsDialog(details: string) {
     if (!details) return;
-    
+
     return alert(details);
   }
 
