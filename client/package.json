@@ -143,6 +143,6 @@
     ]
   },
   "scripts": {
-    "clean": "rm -rf build output node_modules www platforms plugins"
+    "clean": "rm -rf output node_modules www platforms plugins"
   }
 }

@@ -17,13 +17,13 @@ import path from 'path';
 import url from 'url';
 
 import electronMainWebpackConfigs from './webpack_electron_main.mjs';
-import {getBuildParameters} from '../../client/src/build/get_build_parameters.mjs';
-import {getWebpackBuildMode} from '../../client/src/build/get_webpack_build_mode.mjs';
-import {runWebpack} from '../../client/src/build/run_webpack.mjs';
-import {getRootDir} from '../build/get_root_dir.mjs';
-import {runAction} from '../build/run_action.mjs';
+import {getRootDir} from '../../src/build/get_root_dir.mjs';
+import {runAction} from '../../src/build/run_action.mjs';
+import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
+import {getWebpackBuildMode} from '../src/build/get_webpack_build_mode.mjs';
+import {runWebpack} from '../src/build/run_webpack.mjs';
 
-const ELECTRON_BUILD_DIR = 'build';
+const ELECTRON_BUILD_DIR = 'output';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
@@ -58,7 +58,7 @@ export async function main(...parameters) {
       windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
     }
 
-    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'env.nsh'), windowsEnvironment);
+    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron', 'env.nsh'), windowsEnvironment);
   }
 }
 
