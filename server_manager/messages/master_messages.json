@@ -893,6 +893,10 @@
     "message": "Terms",
     "description": "This string appears in an application drawer as a navigation link. Clicking it opens Outline's terms of service in the browser."
   },
+  "no": {
+    "description": "Negative answer to a form question.",
+    "message": "No"
+  },
   "notification_app_update": {
     "message": "An updated version of the Outline Manager has been downloaded. It will be installed when you restart the application.",
     "description": "This string appears in a transient notification toast. It is shown when an update to the application is ready to install."
@@ -1412,5 +1416,9 @@
         "content": "{openLink}"
       }
     }
+  },
+  "yes": {
+    "description": "Affirmative answer to a form question.",
+    "message": "Yes"
   }
 }
