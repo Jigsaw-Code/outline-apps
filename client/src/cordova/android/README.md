@@ -23,13 +23,13 @@ Additional requirements for Android:
 To build for android, run:
 
 ```sh
-  npm run action cordova/build android
+  npm run action client/src/cordova/build android
 ```
 
 We also support passing a `--verbose` option on cordova android:
 
 ```sh
-  npm run action cordova/build android -- --verbose
+  npm run action client/src/cordova/build android -- --verbose
 ```
 
 Make sure to rebuild after modifying platform dependent files!
@@ -48,7 +48,7 @@ A Docker image with all pre-requisites for Android builds is included. To build:
 ### To install the APK
 
 - Connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
-- Build the app, with `npm run action cordova/build android`
+- Build the app, with `npm run action client/src/cordova/build android`
 - From the project root, run: `adb install -r -d platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk`
 
 ### To debug the web app on Android
