@@ -28,34 +28,34 @@
           // Similar to above but for src/www/model, but you can use files from both the
           // src/www/model and src/www/infrastructure paths.
           {
-            "target": "./client/src/wwwmodel",
+            "target": "./client/src/www/model",
             "from": ".",
-            "except": ["./client/src/wwwmodel", "./src/infrastructure", "./node_modules"]
+            "except": ["./client/src/www/model", "./src/infrastructure", "./node_modules"]
           },
           // Prevents the internals of the outline_server_repository from being used publicly in the app.
           {
-            "target": "./client/src/wwwapp/*.ts",
-            "from": "./client/src/wwwapp/outline_server_repository/server.ts"
+            "target": "./client/src/www/app/*.ts",
+            "from": "./client/src/www/app/outline_server_repository/server.ts"
           },
           {
-            "target": "./client/src/wwwapp/*.ts",
-            "from": "./client/src/wwwapp/outline_server_repository/access_key_serialization.ts"
+            "target": "./client/src/www/app/*.ts",
+            "from": "./client/src/www/app/outline_server_repository/access_key_serialization.ts"
           },
           {
-            "target": "./client/src/wwwviews",
-            "from": "./client/src/wwwmodel"
+            "target": "./client/src/www/views",
+            "from": "./client/src/www/model"
           },
           {
-            "target": "./client/src/wwwui_components",
-            "from": "./client/src/wwwmodel"
+            "target": "./client/src/www/ui_components",
+            "from": "./client/src/www/model"
           },
           {
-            "target": "./client/src/wwwviews",
-            "from": "./client/src/wwwapp"
+            "target": "./client/src/www/views",
+            "from": "./client/src/www/app"
           },
           {
-            "target": "./client/src/wwwui_components",
-            "from": "./client/src/wwwapp"
+            "target": "./client/src/www/ui_components",
+            "from": "./client/src/www/app"
           }
         ]
       }
@@ -117,7 +117,7 @@
     },
     // No need to check browser compatibility for electron files
     {
-      "files": ["./client/src/wwwapp/electron_main.ts"],
+      "files": ["./client/src/www/app/electron_main.ts"],
       "rules": {
         "compat/compat": "off"
       }
