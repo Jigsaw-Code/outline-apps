@@ -17,20 +17,20 @@
       "error",
       {
         "zones": [
-          // This means that in the src/infrastructure folder,
+          // This means that in the /infrastructure folder,
           // you can't import any code,
-          // with the exception of other files within the src/infrastructure folder.
+          // with the exception of other files within the /infrastructure folder.
           {
-            "target": "./src/infrastructure",
+            "target": "./infrastructure",
             "from": ".",
-            "except": ["./src/infrastructure", "./node_modules"]
+            "except": ["./infrastructure", "./node_modules"]
           },
           // Similar to above but for src/www/model, but you can use files from both the
           // src/www/model and src/www/infrastructure paths.
           {
             "target": "./client/src/www/model",
             "from": ".",
-            "except": ["./client/src/www/model", "./src/infrastructure", "./node_modules"]
+            "except": ["./client/src/www/model", "./infrastructure", "./node_modules"]
           },
           // Prevents the internals of the outline_server_repository from being used publicly in the app.
           {
