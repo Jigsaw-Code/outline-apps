@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -992,7 +992,7 @@
 			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 3.7.4;
+				minimumVersion = 3.8.5;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

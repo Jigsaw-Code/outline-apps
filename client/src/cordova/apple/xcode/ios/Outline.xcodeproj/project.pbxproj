@@ -1504,7 +1504,7 @@
 			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 3.7.4;
+				minimumVersion = 3.8.5;
 			};
 		};
 		52CE53E5295B6A310064D03D /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
