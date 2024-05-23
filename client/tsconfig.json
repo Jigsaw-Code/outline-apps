@@ -17,5 +17,5 @@
     "lib": ["es2022"]
   },
   "exclude": ["*.cjs", "*.js", "*.mjs", "**/*.spec.ts"],
-  "include": ["src", "infrastructure"]
+  "include": ["src"]
 }

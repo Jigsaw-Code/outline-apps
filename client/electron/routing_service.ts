@@ -20,7 +20,7 @@ import * as path from 'path';
 import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
-import {pathToEmbeddedOutlineService} from '../infrastructure/electron/app_paths';
+import {pathToEmbeddedOutlineService} from './app_paths';
 import {TunnelStatus} from '../src/www/app/tunnel';
 import {ErrorCode, SystemConfigurationException} from '../src/www/model/errors';
 
