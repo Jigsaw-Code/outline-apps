@@ -65,6 +65,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
       css`
         :host {
           --mdc-theme-primary: var(--primary-green);
+          --mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.54);
         }
 
         paper-dialog {
