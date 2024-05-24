@@ -177,6 +177,7 @@
   "nav-licenses": "Licencat",
   "nav-privacy": "Privatësia",
   "nav-terms": "Kushtet",
+  "no": "Jo",
   "no-data-limit": "Asnjë",
   "notification-app-update": "Një version i përditësuar i Outline Manager është shkarkuar. Ai do të instalohet kur ta rinisësh aplikacionin.",
   "notification-feedback-thanks": "Faleminderit që na ndihmon të përmirësohemi! Na pëlqen shumë të mësojmë nga ti.",
@@ -294,5 +295,6 @@
   "survey-decline": "Refuzo",
   "survey-disclaimer": "Duke klikuar te \"Vazhdo\", do të dërgohesh te një anketë e shkurtër te \"Formularët e Google\". Ne rekomandojmë që ta plotësosh anketën ndërkohë që je i lidhur me Outline.",
   "survey-go-to-survey": "Shko tek anketa",
-  "terms-of-service": "Unë i kam lexuar dhe i kam kuptuar {openLink}Kushtet e shërbimit të Outline{closeLink}"
+  "terms-of-service": "Unë i kam lexuar dhe i kam kuptuar {openLink}Kushtet e shërbimit të Outline{closeLink}",
+  "yes": "Po"
 }

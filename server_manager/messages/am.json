@@ -177,6 +177,7 @@
   "nav-licenses": "ፈቃዶች",
   "nav-privacy": "ግላዊነት",
   "nav-terms": "ውሎች",
+  "no": "አይ",
   "no-data-limit": "ምንም",
   "notification-app-update": "Outline (አውትላይን) ማስተካከያ የተሻሻለው ቅፅ ወርዷል። መተግበሪያውን ዘግተው ሲከፍቱት ይጫናል።",
   "notification-feedback-thanks": "እንድንሻሻል ስለሚረዱን እናመሰግናለን! አስተያየትዎን መስማት ያስደስታል።",
@@ -294,5 +295,6 @@
   "survey-decline": "አትቀበል",
   "survey-disclaimer": "ቀጥል የሚለውን ጠቅ በማድረግ Google ቅጾች ላይ ወዳለ አጭር የዳሰሳ ጥናት ይላካሉ። ከOutline ጋር እንደተገናኙ የዳሰሳ ጥናቱን እንዲወስዱ እንመክራለን።",
   "survey-go-to-survey": "ወደ የዳሰሳ ጥናት ሂድ",
-  "terms-of-service": "የ{openLink}Outline (አውትላይን) መመሪያዎችን አንብቤ ተረድቻለሁ{closeLink}"
+  "terms-of-service": "የ{openLink}Outline (አውትላይን) መመሪያዎችን አንብቤ ተረድቻለሁ{closeLink}",
+  "yes": "አዎ"
 }

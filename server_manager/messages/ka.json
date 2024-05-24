@@ -177,6 +177,7 @@
   "nav-licenses": "ლიცენზიები",
   "nav-privacy": "კონფიდენციალურობა",
   "nav-terms": "პირობები",
+  "no": "არა",
   "no-data-limit": "არცერთი",
   "notification-app-update": "Outline Manager-ის განახლებული ვერსია ჩამოტვირთულია. ის დაინსტალირდება აპლიკაციის გადატვირთვისას.",
   "notification-feedback-thanks": "გმადლობთ გაუმჯობესებაში დახმარებისთვის! გვიყვარს თქვენი აზრის მოსმენა.",
@@ -294,5 +295,6 @@
   "survey-decline": "უარყოფა",
   "survey-disclaimer": "გაგრძელებაზე დაწკაპუნებით თქვენ გამოგეგზავნებათ მოკლე გამოკითხვა Google Forms-ის შესახებ. ჩვენ გირჩევთ, მიიღოთ მონაწილეობა გამოკითხვაში Outline-ის შესახებ.",
   "survey-go-to-survey": "გამოკითხვაზე გადასვლა",
-  "terms-of-service": "მე წავიკითხე და გავიგე {openLink}Outline-ის მომსახურების პირობები{closeLink}"
+  "terms-of-service": "მე წავიკითხე და გავიგე {openLink}Outline-ის მომსახურების პირობები{closeLink}",
+  "yes": "დიახ"
 }

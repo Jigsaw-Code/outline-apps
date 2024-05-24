@@ -177,6 +177,7 @@
   "nav-licenses": "Llicències",
   "nav-privacy": "Privadesa",
   "nav-terms": "Condicions",
+  "no": "No",
   "no-data-limit": "Cap",
   "notification-app-update": "S'ha baixat una versió actualitzada del Gestor d'Outline. S'instal·larà quan reiniciïs l'aplicació.",
   "notification-feedback-thanks": "Gràcies per ajudar-nos a millorar! Apreciem molt els teus comentaris.",
@@ -294,5 +295,6 @@
   "survey-decline": "Rebutja",
   "survey-disclaimer": "En fer clic a l'opció per continuar, se't dirigirà a una enquesta breu a Formularis de Google. Et recomanem que hi contestis mentre estàs connectat a Outline.",
   "survey-go-to-survey": "Ves a l'enquesta",
-  "terms-of-service": "He llegit i entenc les {openLink}condicions del servei d'Outline{closeLink}"
+  "terms-of-service": "He llegit i entenc les {openLink}condicions del servei d'Outline{closeLink}",
+  "yes": "Sí"
 }

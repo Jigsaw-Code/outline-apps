@@ -177,6 +177,7 @@
   "nav-licenses": "Lisanslar",
   "nav-privacy": "Gizlilik",
   "nav-terms": "Şartlar",
+  "no": "Hayır",
   "no-data-limit": "Yok",
   "notification-app-update": "Outline Manager'ın güncel bir sürümü indirildi. Uygulamayı yeniden başlattığınızda güncel sürüm yüklenecek.",
   "notification-feedback-thanks": "Hizmetimizi iyileştirmemize yardımcı olduğunuz için teşekkürler! Sizlerden geri bildirim almayı seviyoruz.",
@@ -294,5 +295,6 @@
   "survey-decline": "Reddet",
   "survey-disclaimer": "Devam'ı tıkladığınızda Google Formlar'daki kısa bir ankete yönlendirileceksiniz. Anketi, Outline'a bağlıyken doldurmanız önerilir.",
   "survey-go-to-survey": "Ankete git",
-  "terms-of-service": "{openLink}Outline Hizmet Şartları{closeLink}'nı okuyup anladım"
+  "terms-of-service": "{openLink}Outline Hizmet Şartları{closeLink}'nı okuyup anladım",
+  "yes": "Evet"
 }

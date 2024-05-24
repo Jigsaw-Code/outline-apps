@@ -177,6 +177,7 @@
   "nav-licenses": "Licence",
   "nav-privacy": "Privatnost",
   "nav-terms": "Uslovi",
+  "no": "Ne",
   "no-data-limit": "Bez ograničenja",
   "notification-app-update": "Preuzeta je ažurirana verzija Outline Managera. Instalirat će se kada ponovo pokrenete ovu aplikaciju.",
   "notification-feedback-thanks": "Hvala vam što nam pomažete da se poboljšamo! Volimo čuti vaše mišljenje.",
@@ -294,5 +295,6 @@
   "survey-decline": "Odbij",
   "survey-disclaimer": "Ako kliknete na Nastavi bit ćete preusmjereni na kratku anketu na Google Formsu. Preporučujemo vam da popunite anketu dok ste povezani na Outline.",
   "survey-go-to-survey": "Idi na anketu",
-  "terms-of-service": "Pročitao/la sam i razumijem {openLink}Uslove korištenja usluge Outline{closeLink}"
+  "terms-of-service": "Pročitao/la sam i razumijem {openLink}Uslove korištenja usluge Outline{closeLink}",
+  "yes": "Da"
 }

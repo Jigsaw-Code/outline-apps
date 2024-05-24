@@ -177,6 +177,7 @@
   "nav-licenses": "مجوزها",
   "nav-privacy": "حریم خصوصی",
   "nav-terms": "شرایط",
+  "no": "نه",
   "no-data-limit": "بدون محدودیت",
   "notification-app-update": "نسخه به‌روزی از «مدیر Outline» بارگیری شد. بعد از اینکه برنامه را بازراه‌اندازی کنید، نصب می‌شود.",
   "notification-feedback-thanks": "متشکریم که به پیشرفت ما کمک کردید! خوشحال می‌شویم با ما در ارتباط باشید.",
@@ -294,5 +295,6 @@
   "survey-decline": "رد کردن",
   "survey-disclaimer": "با کلیک کردن روی «ادامه دادن»، به نظرسنجی کوتاهی در «فرم‌نگار Google» فرستاده می‌شوید. توصیه می‌کنیم هنگام اتصال به Outline در نظرسنجی شرکت کنید.",
   "survey-go-to-survey": "رفتن به نظرسنجی",
-  "terms-of-service": "{openLink}شرایط خدمات Outline{closeLink} را خوانده و درک کرده‌ام"
+  "terms-of-service": "{openLink}شرایط خدمات Outline{closeLink} را خوانده و درک کرده‌ام",
+  "yes": "بله"
 }

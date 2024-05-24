@@ -177,6 +177,7 @@
   "nav-licenses": "Lisensies",
   "nav-privacy": "Privaatheid",
   "nav-terms": "Bepalings",
+  "no": "Nee",
   "no-data-limit": "Geen",
   "notification-app-update": "’n Opgedateerde weergawe van Outline Manager is afgelaai. Dit sal geïnstalleer word wanneer jy die app herbegin.",
   "notification-feedback-thanks": "Dankie dat jy ons help om beter te word! Ons hoor graag van jou.",
@@ -294,5 +295,6 @@
   "survey-decline": "Wys af",
   "survey-disclaimer": "As jy “voortgaan” klik, sal jy na ’n kort opname oor Google Vorms geneem word. Ons beveel aan dat jy die opname doen terwyl jy aan Outline gekoppel is.",
   "survey-go-to-survey": "Gaan na opname",
-  "terms-of-service": "Ek het {openLink}Outline se diensbelalings{closeLink} gelees en verstaan dit"
+  "terms-of-service": "Ek het {openLink}Outline se diensbelalings{closeLink} gelees en verstaan dit",
+  "yes": "Ja"
 }

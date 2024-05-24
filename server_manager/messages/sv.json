@@ -177,6 +177,7 @@
   "nav-licenses": "Licenser",
   "nav-privacy": "Integritet",
   "nav-terms": "Villkor",
+  "no": "Nej",
   "no-data-limit": "Ingen",
   "notification-app-update": "En uppdaterad version av Outline Manager har laddats ned. Den installeras när du startar om appen.",
   "notification-feedback-thanks": "Tack för att du hjälper oss att bli bättre! Vi uppskattar din feedback.",
@@ -294,5 +295,6 @@
   "survey-decline": "Avvisa",
   "survey-disclaimer": "Genom att klicka på att fortsätta skickas du till en kort undersökning om Google Formulär. Vi rekommenderar att du svarar på undersökningen när du är ansluten till Outline.",
   "survey-go-to-survey": "Öppna enkäten",
-  "terms-of-service": "Jag har läst och förstått {openLink}användarvillkoren för Outline{closeLink}"
+  "terms-of-service": "Jag har läst och förstått {openLink}användarvillkoren för Outline{closeLink}",
+  "yes": "Ja"
 }

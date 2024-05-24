@@ -177,6 +177,7 @@
   "nav-licenses": "Litsentsid",
   "nav-privacy": "Privaatsus",
   "nav-terms": "Tingimused",
+  "no": "Ei",
   "no-data-limit": "Puudub",
   "notification-app-update": "Outline Manageri värskendatud versioon on alla laaditud. See installitakse rakenduse taaskäivitamisel.",
   "notification-feedback-thanks": "Täname, et aitate meil paremaks saada! Meil on hea meel teilt tagasisidet saada.",
@@ -294,5 +295,6 @@
   "survey-decline": "Keeldu",
   "survey-disclaimer": "Kui klõpsate käsul Jätka, suunatakse teid lühikese küsitluse juurde teenuses Google'i vormid. Soovitame küsitlusele vastata ajal, mil olete Outline'iga ühendatud.",
   "survey-go-to-survey": "Ava küsitlus",
-  "terms-of-service": "Olen lugenud {openLink}Outline'i teenusetingimusi{closeLink} ja nõustun nendega"
+  "terms-of-service": "Olen lugenud {openLink}Outline'i teenusetingimusi{closeLink} ja nõustun nendega",
+  "yes": "Jah"
 }

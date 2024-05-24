@@ -177,6 +177,7 @@
   "nav-licenses": "Licencias",
   "nav-privacy": "Privacidad",
   "nav-terms": "Términos",
+  "no": "No",
   "no-data-limit": "Ninguno",
   "notification-app-update": "Se ha descargado una versión actualizada del Administrador de Outline. Se instalará cuando reinicies la aplicación.",
   "notification-feedback-thanks": "¡Gracias por ayudarnos a mejorar! Nos encanta tener noticias tuyas.",
@@ -294,5 +295,6 @@
   "survey-decline": "Rechazar",
   "survey-disclaimer": "Al hacer clic en Continuar, aceptas recibir una breve encuesta de Formularios de Google. Te recomendamos que la hagas cuando estés conectado a Outline.",
   "survey-go-to-survey": "Ir a la encuesta",
-  "terms-of-service": "He leído y entiendo los {openLink}términos del servicio de Outline{closeLink}"
+  "terms-of-service": "He leído y entiendo los {openLink}términos del servicio de Outline{closeLink}",
+  "yes": "Sí"
 }

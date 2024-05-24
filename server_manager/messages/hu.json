@@ -177,6 +177,7 @@
   "nav-licenses": "Licencek",
   "nav-privacy": "Adatvédelem",
   "nav-terms": "Feltételek",
+  "no": "Nem",
   "no-data-limit": "Nincs",
   "notification-app-update": "Letöltöttük az Outline Manager egy újabb verzióját. Az alkalmazás újraindításakor a rendszer telepíti.",
   "notification-feedback-thanks": "Köszönjük, hogy segít a fejlesztésben! Örömmel vettük üzenetét.",
@@ -294,5 +295,6 @@
   "survey-decline": "Elutasítás",
   "survey-disclaimer": "Amikor a folytatás gombra kattint, megnyílik egy rövid felmérés a Google Űrlapokban. Azt javasoljuk, hogy úgy töltse ki a felmérést, hogy fennáll a kapcsolat az Outline-nal.",
   "survey-go-to-survey": "Felmérés megnyitása",
-  "terms-of-service": "Elolvastam és megértettem az {openLink}Outline Általános Szerződési Feltételeit{closeLink}."
+  "terms-of-service": "Elolvastam és megértettem az {openLink}Outline Általános Szerződési Feltételeit{closeLink}.",
+  "yes": "Igen"
 }

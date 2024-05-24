@@ -177,6 +177,7 @@
   "nav-licenses": "라이선스",
   "nav-privacy": "개인정보처리방침",
   "nav-terms": "약관",
+  "no": "아니요",
   "no-data-limit": "없음",
   "notification-app-update": "Outline Manager의 업데이트 버전이 다운로드되었습니다. 애플리케이션을 다시 시작하면 설치됩니다.",
   "notification-feedback-thanks": "제품을 개선하는 데 도움을 주셔서 감사합니다. Outline에서는 여러분의 의견을 소중하게 활용합니다.",
@@ -294,5 +295,6 @@
   "survey-decline": "거부",
   "survey-disclaimer": "계속을 클릭하면 Google Forms를 통해 간단한 설문조사에 참여하게 됩니다. Outline에 연결된 상태에서 설문조사를 진행하는 것이 좋습니다.",
   "survey-go-to-survey": "설문조사로 이동",
-  "terms-of-service": "{openLink}Outline 서비스 약관{closeLink}을 읽고 숙지했습니다."
+  "terms-of-service": "{openLink}Outline 서비스 약관{closeLink}을 읽고 숙지했습니다.",
+  "yes": "예"
 }

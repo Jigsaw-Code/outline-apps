@@ -177,6 +177,7 @@
   "nav-licenses": "Mga Lisensya",
   "nav-privacy": "Privacy",
   "nav-terms": "Mga Tuntunin",
+  "no": "Hindi",
   "no-data-limit": "Wala",
   "notification-app-update": "Na-download ang na-update na bersyon ng Outline Manager. Ii-install ito kapag ni-restart mo ang application.",
   "notification-feedback-thanks": "Salamat sa pagtulong sa aming humusay! Gusto naming may naririnig mula sa iyo.",
@@ -294,5 +295,6 @@
   "survey-decline": "Tanggihan",
   "survey-disclaimer": "Sa pamamagitan ng pag-click sa magpatuloy, dadalhin ka sa maikling survey sa Google Forms. Inirerekomenda naming sagutan ang survey habang nakakonekta sa Outline.",
   "survey-go-to-survey": "Pumunta sa survey",
-  "terms-of-service": "Nabasa at naunawaan ko ang {openLink}Mga Tuntunin ng Serbisyo ng Outline{closeLink}"
+  "terms-of-service": "Nabasa at naunawaan ko ang {openLink}Mga Tuntunin ng Serbisyo ng Outline{closeLink}",
+  "yes": "Oo"
 }

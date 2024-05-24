@@ -177,6 +177,7 @@
   "nav-licenses": "Licencje",
   "nav-privacy": "Prywatność",
   "nav-terms": "Warunki",
+  "no": "Nie",
   "no-data-limit": "Brak",
   "notification-app-update": "Pobrano aktualizację aplikacji Outline Manager. Zostanie ona zainstalowana po ponownym uruchomieniu tej aplikacji.",
   "notification-feedback-thanks": "Dziękujemy za pomoc w ulepszaniu aplikacji. Cieszy nas każda opinia.",
@@ -294,5 +295,6 @@
   "survey-decline": "Zamknij",
   "survey-disclaimer": "Gdy przejdziesz dalej, wyświetli się krótka ankieta w Formularzach Google. Zalecamy wypełnienie ankiety po połączeniu z Outline.",
   "survey-go-to-survey": "Otwórz ankietę",
-  "terms-of-service": "Znam i rozumiem {openLink}Warunki korzystania z Outline{closeLink}"
+  "terms-of-service": "Znam i rozumiem {openLink}Warunki korzystania z Outline{closeLink}",
+  "yes": "Tak"
 }

@@ -177,6 +177,7 @@
   "nav-licenses": "Licence",
   "nav-privacy": "Privatnost",
   "nav-terms": "Uvjeti",
+  "no": "Ne",
   "no-data-limit": "Nema",
   "notification-app-update": "Preuzeta je ažurirana verzija upravitelja Outlinea. Instalirat će se kada ponovno pokrenete aplikaciju.",
   "notification-feedback-thanks": "Hvala vam što ste nam pomogli da se poboljšamo! Volimo čuti vaše mišljenje.",
@@ -294,5 +295,6 @@
   "survey-decline": "Odbij",
   "survey-disclaimer": "Ako kliknete opciju Nastavi, otvorit će se kratka anketa na Google obrascima. Preporučujemo da ispunite anketu dok ste povezani s Outlineom.",
   "survey-go-to-survey": "Prijeđi na anketu",
-  "terms-of-service": "Pročitao/la sam i razumijem {openLink}Uvjete pružanja usluge za Outline{closeLink}"
+  "terms-of-service": "Pročitao/la sam i razumijem {openLink}Uvjete pružanja usluge za Outline{closeLink}",
+  "yes": "Da"
 }

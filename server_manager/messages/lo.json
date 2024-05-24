@@ -177,6 +177,7 @@
   "nav-licenses": "ໃບອະນຸຍາດ",
   "nav-privacy": "ຄວາມເປັນສ່ວນຕົວ",
   "nav-terms": "ຂໍ້ກຳນົດ",
+  "no": "ບໍ່",
   "no-data-limit": "ບໍ່ມີ",
   "notification-app-update": "ດາວໂຫຼດຕົວຈັດການ Outline ເວີຊັນອັບເດດແລ້ວ. ມັນຈະຖືກຕິດຕັ້ງເມື່ອທ່ານຣີສະຕາດແອັບພລິເຄຊັນ.",
   "notification-feedback-thanks": "ຂໍຂອບໃຈທີ່ຊ່ວຍພວກເຮົາປັບປຸງ! ພວກເຮົາຍິນດີຮັບຟັງຄຳເຫັນຈາກທ່ານ.",
@@ -294,5 +295,6 @@
   "survey-decline": "ປະຕິເສດ",
   "survey-disclaimer": "ໂດຍການຄລິກສືບຕໍ່ ລະບົບຈະພາທ່ານໄປຫາແບບສຳຫຼວດສັ້ນໆຢູ່ Google Forms. ພວກເຮົາຂໍແນະນຳໃຫ້ເຮັດແບບສຳຫຼວດໃນຂະນະທີ່ເຊື່ອມຕໍ່ກັບ Outline.",
   "survey-go-to-survey": "ເຂົ້າໄປເຮັດແບບສຳຫຼວດ",
-  "terms-of-service": "ຂ້ອຍໄດ້ອ່ານ ແລະ ເຂົ້າໃຈ {openLink}ຂໍ້ກຳນົດບໍລິການຂອງ Outline{closeLink} ແລ້ວ"
+  "terms-of-service": "ຂ້ອຍໄດ້ອ່ານ ແລະ ເຂົ້າໃຈ {openLink}ຂໍ້ກຳນົດບໍລິການຂອງ Outline{closeLink} ແລ້ວ",
+  "yes": "ຕົກລົງ"
 }

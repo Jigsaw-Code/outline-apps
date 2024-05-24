@@ -177,6 +177,7 @@
   "nav-licenses": "लाइसेंस",
   "nav-privacy": "निजता",
   "nav-terms": "शर्तें",
+  "no": "नहीं",
   "no-data-limit": "कोई सीमा नहीं",
   "notification-app-update": "Outline Manager का एक अपडेट किया वर्शन डाउनलोड किया गया है. ऐप्लिकेशन को रीस्टार्ट करने पर यह इंस्टॉल हो जाएगा.",
   "notification-feedback-thanks": "हमें बेहतर बनाने में मदद करने के लिए धन्यवाद! हमें आपसे जुड़े रहना अच्छा लगता है.",
@@ -294,5 +295,6 @@
   "survey-decline": "अस्वीकार करें",
   "survey-disclaimer": "अगर आप 'जारी रखें' पर क्लिक करेंगे, आपको Google Forms पर छोटा सा सर्वे दिखेगा. हमारा सुझाव है कि Outline से कनेक्ट होने पर सर्वे को पूरा करें.",
   "survey-go-to-survey": "सर्वे पर जाएं",
-  "terms-of-service": "मैंने {openLink}Outline सेवा की शर्तें{closeLink} पढ़ और समझ ली हैं"
+  "terms-of-service": "मैंने {openLink}Outline सेवा की शर्तें{closeLink} पढ़ और समझ ली हैं",
+  "yes": "हां"
 }

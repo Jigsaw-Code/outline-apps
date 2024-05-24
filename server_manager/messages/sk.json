@@ -177,6 +177,7 @@
   "nav-licenses": "Licencie",
   "nav-privacy": "Ochrana súkromia",
   "nav-terms": "Zmluvné podmienky",
+  "no": "Nie",
   "no-data-limit": "Žiadny",
   "notification-app-update": "Bola stiahnutá aktualizovaná verzia Správcu Outline. Bude nainštalovaná, keď aplikáciu reštartujete.",
   "notification-feedback-thanks": "Ďakujeme, že nám pomáhate zlepšovať sa! Oceňujeme vašu spätnú väzbu.",
@@ -294,5 +295,6 @@
   "survey-decline": "Odmietnuť",
   "survey-disclaimer": "Kliknutím na Pokračovať prejdete na krátky prieskum vo Formulároch Google. Pri jeho vypĺňaní odporúčame pripojiť sa k službe Outline.",
   "survey-go-to-survey": "Prejsť na prieskum",
-  "terms-of-service": "Mám prečítané {openLink}zmluvné podmienky služby Outline{closeLink} a rozumiem im"
+  "terms-of-service": "Mám prečítané {openLink}zmluvné podmienky služby Outline{closeLink} a rozumiem im",
+  "yes": "Áno"
 }

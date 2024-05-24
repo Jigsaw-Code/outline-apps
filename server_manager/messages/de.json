@@ -177,6 +177,7 @@
   "nav-licenses": "Lizenzen",
   "nav-privacy": "Datenschutz",
   "nav-terms": "Nutzungsbedingungen",
+  "no": "Nein",
   "no-data-limit": "–",
   "notification-app-update": "Eine aktualisierte Version des Outline-Managers wurde heruntergeladen. Sie wird beim nächsten Neustart der Anwendung installiert.",
   "notification-feedback-thanks": "Vielen Dank, dass Sie uns helfen, Outline zu verbessern.",
@@ -294,5 +295,6 @@
   "survey-decline": "Nein, danke",
   "survey-disclaimer": "Wenn Sie auf \"Weiter\" (Continue) klicken, gelangen Sie zu einer kurzen Umfrage in Google Formulare. Wir empfehlen Ihnen, die Fragen zu beantworten, während eine Verbindung zu Outline besteht.",
   "survey-go-to-survey": "Zur Umfrage",
-  "terms-of-service": "Ich habe die {openLink}Nutzungsbedingungen von Outline{closeLink} gelesen und verstanden"
+  "terms-of-service": "Ich habe die {openLink}Nutzungsbedingungen von Outline{closeLink} gelesen und verstanden",
+  "yes": "Ja"
 }

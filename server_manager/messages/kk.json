@@ -177,6 +177,7 @@
   "nav-licenses": "Лицензиялар",
   "nav-privacy": "Құпиялық",
   "nav-terms": "Шарттар",
+  "no": "Жоқ",
   "no-data-limit": "Жоқ",
   "notification-app-update": "Outline менеджерінің жаңартылған нұсқасы жүктеп алынды. Аталған нұсқа қолданбаны қайта қосқан кезде орнатылады.",
   "notification-feedback-thanks": "Жақсартуға көмектескеніңіз үшін рақмет! Біз үшін сіздің пікіріңіз маңызды.",
@@ -294,5 +295,6 @@
   "survey-decline": "Қабылдамау",
   "survey-disclaimer": "Жалғастыру арқылы сіз Google Forms-да қысқаша сауалнама толтыратын бетке өтесіз. Outline-мен байланыс орнатылған кезде, сауалнаманы толтырғаныңыз жөн.",
   "survey-go-to-survey": "Сауалнамаға өту",
-  "terms-of-service": "{openLink}Outline Қызмет көрсету шарттарын{closeLink} оқыдым және түсіндім."
+  "terms-of-service": "{openLink}Outline Қызмет көрсету шарттарын{closeLink} оқыдым және түсіндім.",
+  "yes": "Иә"
 }

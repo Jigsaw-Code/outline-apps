@@ -177,6 +177,7 @@
   "nav-licenses": "Licence",
   "nav-privacy": "Ochrana soukromí",
   "nav-terms": "Podmínky",
+  "no": "Ne",
   "no-data-limit": "Žádný",
   "notification-app-update": "Byla stažena aktualizovaná verze aplikace Správce Outline. Bude nainstalována, až aplikaci restartujete.",
   "notification-feedback-thanks": "Děkujeme, že nám pomáháte se zlepšovat! Jsme rádi, že nám píšete.",
@@ -294,5 +295,6 @@
   "survey-decline": "Odmítnout",
   "survey-disclaimer": "Kliknutím na Pokračovat přejdete na krátký průzkum ve Formulářích Google. Doporučujeme dotazník vyplňovat, když jste připojeni k Outline.",
   "survey-go-to-survey": "Přejít na dotazník",
-  "terms-of-service": "Přečetl(a) jsem si {openLink}smluvní podmínky služby Outline{closeLink} a jsem s nimi srozuměn(a)"
+  "terms-of-service": "Přečetl(a) jsem si {openLink}smluvní podmínky služby Outline{closeLink} a jsem s nimi srozuměn(a)",
+  "yes": "Ano"
 }

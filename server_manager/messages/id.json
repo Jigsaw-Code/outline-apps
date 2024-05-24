@@ -177,6 +177,7 @@
   "nav-licenses": "Lisensi",
   "nav-privacy": "Privasi",
   "nav-terms": "Persyaratan",
+  "no": "Tidak",
   "no-data-limit": "Tidak Ada",
   "notification-app-update": "Versi terbaru Outline Manager telah didownload. Versi ini akan diinstal saat Anda memulai ulang aplikasi.",
   "notification-feedback-thanks": "Terima kasih atas bantuan Anda dalam upaya penyempurnaan kami. Senang sekali bisa mendengar pendapat Anda.",
@@ -294,5 +295,6 @@
   "survey-decline": "Tolak",
   "survey-disclaimer": "Dengan mengklik lanjutkan, Anda akan diarahkan ke survei singkat di Google Formulir. Sebaiknya ikuti survei saat terhubung ke Outline.",
   "survey-go-to-survey": "Buka survei",
-  "terms-of-service": "Saya telah membaca dan memahami {openLink}Persyaratan Layanan Outline{closeLink}"
+  "terms-of-service": "Saya telah membaca dan memahami {openLink}Persyaratan Layanan Outline{closeLink}",
+  "yes": "Ya"
 }

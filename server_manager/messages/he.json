@@ -177,6 +177,7 @@
   "nav-licenses": "רישיונות",
   "nav-privacy": "פרטיות",
   "nav-terms": "תנאים",
+  "no": "לא",
   "no-data-limit": "ללא",
   "notification-app-update": "הורדנו למכשיר שלך גרסה חדשה של מנהל Outline. היא תותקן כשהאפליקציה תופעל מחדש.",
   "notification-feedback-thanks": "תודה על כך שעזרת לנו להשתפר! אנחנו תמיד שמחים לקבל משוב.",
@@ -294,5 +295,6 @@
   "survey-decline": "אני לא רוצה לענות",
   "survey-disclaimer": "לחיצה על 'למענה על הסקר' תוביל אותך לסקר קצר ב-Google Forms. מומלץ לענות על הסקר בזמן שמחוברים ל-Outline.",
   "survey-go-to-survey": "למענה על הסקר",
-  "terms-of-service": "קראתי והבנתי את {openLink}התנאים וההגבלות של Outline{closeLink}"
+  "terms-of-service": "קראתי והבנתי את {openLink}התנאים וההגבלות של Outline{closeLink}",
+  "yes": "כן"
 }

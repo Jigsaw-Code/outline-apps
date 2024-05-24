@@ -177,6 +177,7 @@
   "nav-licenses": "Lisenssit",
   "nav-privacy": "Tietosuoja",
   "nav-terms": "Ehdot",
+  "no": "Ei",
   "no-data-limit": "Ei mitään",
   "notification-app-update": "Päivitetty versio Outline Managerista on ladattu. Se asennetaan, kun käynnistät sovelluksen uudelleen.",
   "notification-feedback-thanks": "Kiitos, että autat parantamaan palvelua ja lähetät palautetta.",
@@ -294,5 +295,6 @@
   "survey-decline": "Hylkää",
   "survey-disclaimer": "Kun valitset Jatka, sinulle lähetetään lyhyt Google Forms ‑kysely. Suosittelemme, että vastaat kyselyyn Outline-yhteyden aikana.",
   "survey-go-to-survey": "Siirry kyselyyn",
-  "terms-of-service": "Olen lukenut ja ymmärtänyt {openLink}Outlinen käyttöehdot{closeLink}"
+  "terms-of-service": "Olen lukenut ja ymmärtänyt {openLink}Outlinen käyttöehdot{closeLink}",
+  "yes": "Kyllä"
 }

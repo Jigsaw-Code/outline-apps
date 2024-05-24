@@ -177,6 +177,7 @@
   "nav-licenses": "Lisenziyalar",
   "nav-privacy": "Məxfilik",
   "nav-terms": "Şərtlər",
+  "no": "Xeyr",
   "no-data-limit": "Heç biri",
   "notification-app-update": "Güncəllənmiş Outline Manager versiyası endirilib. Tətbiqi yenidən başlatdıqda quraşdırılacaq.",
   "notification-feedback-thanks": "Təkmilləşdirməyə kömək etdiyiniz üçün təşəkkürlər! Rəyiniz bizim üçün maraqlıdır.",
@@ -294,5 +295,6 @@
   "survey-decline": "İmtina edin",
   "survey-disclaimer": "Davam etmək düyməsini klikləməklə Google Forma haqqında qısa sorğuya yönləndiriləcəksiniz. Sorğuda Outline'a qoşulu olarkən iştirak etməyinizi məsləhət görürük.",
   "survey-go-to-survey": "Sorğuya keçin",
-  "terms-of-service": "{openLink}Outline Xidmət Şərtlərini{closeLink} oxudum və anladım"
+  "terms-of-service": "{openLink}Outline Xidmət Şərtlərini{closeLink} oxudum və anladım",
+  "yes": "Bəli"
 }

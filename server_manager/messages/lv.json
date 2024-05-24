@@ -177,6 +177,7 @@
   "nav-licenses": "Licences",
   "nav-privacy": "Konfidencialitāte",
   "nav-terms": "Noteikumi",
+  "no": "Nē",
   "no-data-limit": "Nav",
   "notification-app-update": "Tika lejupielādēta lietojumprogrammas Outline pārvaldnieks atjaunināta versija. Tā tiks instalēta, kad restartēsiet lietojumprogrammu.",
   "notification-feedback-thanks": "Paldies, ka palīdzat mums veikt uzlabojumus! Mēs priecājamies saņemt jūsu atsauksmes.",
@@ -294,5 +295,6 @@
   "survey-decline": "Noraidīt",
   "survey-disclaimer": "Noklikšķinot uz “Turpināt”, tiksiet novirzīts uz īsu aptauju Google veidlapās. Ieteicams aizpildīt aptauju, kamēr ir izveidots savienojums ar Outline.",
   "survey-go-to-survey": "Pāriet uz aptauju",
-  "terms-of-service": "Esmu izlasījis un saprotu {openLink}Outline pakalpojumu sniegšanas noteikumus{closeLink}."
+  "terms-of-service": "Esmu izlasījis un saprotu {openLink}Outline pakalpojumu sniegšanas noteikumus{closeLink}.",
+  "yes": "Jā"
 }

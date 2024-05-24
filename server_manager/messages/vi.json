@@ -177,6 +177,7 @@
   "nav-licenses": "Giấy phép",
   "nav-privacy": "Quyền riêng tư",
   "nav-terms": "Điều khoản",
+  "no": "Không",
   "no-data-limit": "Không có",
   "notification-app-update": "Đã tải phiên bản cập nhật của ứng dụng Quản lý Outline xuống. Hệ thống sẽ cài đặt phiên bản cập nhật này khi bạn khởi động lại ứng dụng.",
   "notification-feedback-thanks": "Cảm ơn bạn đã giúp chúng tôi cải thiện sản phẩm! Chúng tôi rất vui khi nhận được phản hồi của bạn.",
@@ -294,5 +295,6 @@
   "survey-decline": "Từ chối",
   "survey-disclaimer": "Khi nhấp vào nút Tiếp tục, bạn sẽ nhận được một bản khảo sát ngắn trên Google Biểu mẫu. Bạn nên thực hiện bản khảo sát này khi đã kết nối với Outline.",
   "survey-go-to-survey": "Chuyển đến bản khảo sát",
-  "terms-of-service": "Tôi đã đọc và hiểu {openLink}Điều khoản dịch vụ của Outline{closeLink}"
+  "terms-of-service": "Tôi đã đọc và hiểu {openLink}Điều khoản dịch vụ của Outline{closeLink}",
+  "yes": "Có"
 }

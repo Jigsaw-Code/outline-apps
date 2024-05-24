@@ -177,6 +177,7 @@
   "nav-licenses": "التراخيص",
   "nav-privacy": "الخصوصية",
   "nav-terms": "البنود",
+  "no": "لا",
   "no-data-limit": "لا شيء",
   "notification-app-update": "تم تنزيل إصدار محدَّث من تطبيق \"مدير Outline\". سيتم تثبيته عند إعادة فتح التطبيق.",
   "notification-feedback-thanks": "شكرًا لك على مساعدتنا على التحسّن. يُسعدنا التواصل معك.",
@@ -294,5 +295,6 @@
   "survey-decline": "رفض",
   "survey-disclaimer": "من خلال النقر على \"متابعة\"، سيتم نقلك إلى استطلاع قصير حول \"نماذج Google\". ننصحك بالإجابة على أسئلة الاستطلاع أثناء ربط خادمك بتطبيق Outline.",
   "survey-go-to-survey": "الانتقال إلى الاستطلاع",
-  "terms-of-service": "لقد قرأت {openLink}بنود خدمة Outline{closeLink} وفهمتها"
+  "terms-of-service": "لقد قرأت {openLink}بنود خدمة Outline{closeLink} وفهمتها",
+  "yes": "نعم"
 }

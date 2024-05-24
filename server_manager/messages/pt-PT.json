@@ -177,6 +177,7 @@
   "nav-licenses": "Licenças",
   "nav-privacy": "Privacidade",
   "nav-terms": "Termos",
+  "no": "Não",
   "no-data-limit": "Nenhum",
   "notification-app-update": "Foi transferida uma versão atualizada do Gestor Outline. Será instalada quando reiniciar a aplicação.",
   "notification-feedback-thanks": "Obrigado por nos ajudar a melhorar! Agradecemos a sua opinião.",
@@ -294,5 +295,6 @@
   "survey-decline": "Recusar",
   "survey-disclaimer": "Ao clicar em Continuar, será redirecionado para um pequeno inquérito sobre o Google Forms. Recomendamos que responda ao inquérito enquanto está ligado ao Outline.",
   "survey-go-to-survey": "Ir para o inquérito",
-  "terms-of-service": "Li e compreendi os {openLink}Termos de Utilização do Outline{closeLink}"
+  "terms-of-service": "Li e compreendi os {openLink}Termos de Utilização do Outline{closeLink}",
+  "yes": "Sim"
 }

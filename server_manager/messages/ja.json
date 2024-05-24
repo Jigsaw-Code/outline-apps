@@ -177,6 +177,7 @@
   "nav-licenses": "ライセンス",
   "nav-privacy": "プライバシー",
   "nav-terms": "利用規約",
+  "no": "いいえ",
   "no-data-limit": "なし",
   "notification-app-update": "最新バージョンの Outline マネージャーをダウンロードしました。アプリケーションを再起動するとインストールされます。",
   "notification-feedback-thanks": "フィードバックをお送りいただきありがとうございます。Google のサービス向上にご協力いただき感謝いたします。",
@@ -294,5 +295,6 @@
   "survey-decline": "回答しない",
   "survey-disclaimer": "[続行（Continue）] をクリックすると、Google フォームの簡単なアンケートが送信されます。Outline に接続した状態でアンケートにご協力くださいますようお願いいたします。",
   "survey-go-to-survey": "アンケートに回答する",
-  "terms-of-service": "{openLink}Outline 利用規約{closeLink}を読み、内容を理解しました"
+  "terms-of-service": "{openLink}Outline 利用規約{closeLink}を読み、内容を理解しました",
+  "yes": "はい"
 }

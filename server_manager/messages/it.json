@@ -177,6 +177,7 @@
   "nav-licenses": "Licenze",
   "nav-privacy": "Privacy",
   "nav-terms": "Termini di servizio",
+  "no": "No",
   "no-data-limit": "Nessuno",
   "notification-app-update": "È stata scaricata una versione aggiornata di Outline Manager. Verrà installata al riavvio dell'applicazione.",
   "notification-feedback-thanks": "Grazie per averci aiutato a migliorare i nostri servizi. La tua opinione è importante per noi.",
@@ -294,5 +295,6 @@
   "survey-decline": "Rifiuta",
   "survey-disclaimer": "Facendo clic su Continua verrai indirizzato a un breve sondaggio relativo a Moduli Google. Consigliamo di fare il sondaggio mentre sei connesso a Outline.",
   "survey-go-to-survey": "Vai al sondaggio",
-  "terms-of-service": "Ho letto e compreso i {openLink}Termini di servizio di Outline{closeLink}"
+  "terms-of-service": "Ho letto e compreso i {openLink}Termini di servizio di Outline{closeLink}",
+  "yes": "Sì"
 }

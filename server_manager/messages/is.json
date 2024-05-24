@@ -177,6 +177,7 @@
   "nav-licenses": "Leyfi",
   "nav-privacy": "Persónuvernd",
   "nav-terms": "Skilmálar",
+  "no": "Nei",
   "no-data-limit": "Ekkert",
   "notification-app-update": "Uppfærð útgáfa af Outline Manager var sótt. Hún verður sett upp þegar þú endurræsir forritið.",
   "notification-feedback-thanks": "Takk fyrir að hjálpa okkur að bæta þjónustuna! Við elskum að heyra frá þér.",
@@ -294,5 +295,6 @@
   "survey-decline": "Hafna",
   "survey-disclaimer": "Ef þú smellir á „Halda áfram (Continue)“ verður þér beint á stutta könnun í Google-eyðublöðum. Við mælum með að svara könnuninni á meðan þú ert tengd(ur) við Outline.",
   "survey-go-to-survey": "Opna könnun",
-  "terms-of-service": "Ég hef lesið og skil {openLink}þjónustuskilmála Outline{closeLink}"
+  "terms-of-service": "Ég hef lesið og skil {openLink}þjónustuskilmála Outline{closeLink}",
+  "yes": "Já"
 }

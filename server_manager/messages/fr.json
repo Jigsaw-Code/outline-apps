@@ -177,6 +177,7 @@
   "nav-licenses": "Licences",
   "nav-privacy": "Confidentialité",
   "nav-terms": "Conditions",
+  "no": "Non",
   "no-data-limit": "Aucune",
   "notification-app-update": "Une nouvelle version d'Outline Manager a été téléchargée. Elle sera installée au redémarrage de l'application.",
   "notification-feedback-thanks": "Merci de nous aider à améliorer notre produit ! Votre avis nous intéresse.",
@@ -294,5 +295,6 @@
   "survey-decline": "Refuser",
   "survey-disclaimer": "Cliquez sur \"Continuer\" pour être redirigé vers une rapide enquête dans Google Forms. Nous recommandons que vous soyez connecté à Outline lorsque vous y répondez.",
   "survey-go-to-survey": "Accéder à l'enquête",
-  "terms-of-service": "J'ai lu et compris les {openLink}Conditions d'utilisation d'Outline{closeLink}"
+  "terms-of-service": "J'ai lu et compris les {openLink}Conditions d'utilisation d'Outline{closeLink}",
+  "yes": "Oui"
 }

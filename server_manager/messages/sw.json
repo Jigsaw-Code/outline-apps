@@ -177,6 +177,7 @@
   "nav-licenses": "Leseni",
   "nav-privacy": "Faragha",
   "nav-terms": "Sheria na Masharti",
+  "no": "Hapana",
   "no-data-limit": "Hamna",
   "notification-app-update": "Toleo lililosasishwa la Outline Manager limepakuliwa. Litasakinishwa utakapozima kisha uwashe upya programu.",
   "notification-feedback-thanks": "Asante kwa kutusaidia kuboresha huduma! Tungependa kusikia kutoka kwako.",
@@ -294,5 +295,6 @@
   "survey-decline": "Kataa",
   "survey-disclaimer": "Kwa kubofya endelea utaelekezwa kwenye utafiti mfupi katika Fomu za Google. Tunapendekeza ufanye utafiti ukiwa umeunganishwa kwenye Outline.",
   "survey-go-to-survey": "Nenda kwenye utafiti",
-  "terms-of-service": "Nimesoma na kuelewa {openLink}Sheria na Masharti ya Outline{closeLink}"
+  "terms-of-service": "Nimesoma na kuelewa {openLink}Sheria na Masharti ya Outline{closeLink}",
+  "yes": "Ndiyo"
 }

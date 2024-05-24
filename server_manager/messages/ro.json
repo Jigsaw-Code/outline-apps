@@ -177,6 +177,7 @@
   "nav-licenses": "Licențe",
   "nav-privacy": "Confidențialitate",
   "nav-terms": "Termeni",
+  "no": "Nu",
   "no-data-limit": "Fără",
   "notification-app-update": "A fost descărcată o versiune actualizată a aplicației Outline Manager. Aceasta va fi instalată când reporniți aplicația.",
   "notification-feedback-thanks": "Vă mulțumim că ne ajutați să îmbunătățim produsul! Opinia dvs. este importantă pentru noi.",
@@ -294,5 +295,6 @@
   "survey-decline": "Refuzați",
   "survey-disclaimer": "Dacă dați clic pe Continuați, veți fi direcționat(ă) către un sondaj scurt despre Formulare Google. Vă recomandăm să completați sondajul fiind conectat(ă) la Outline.",
   "survey-go-to-survey": "Accesați sondajul",
-  "terms-of-service": "Am citit și am înțeles {openLink}Termenii și condițiile Outline{closeLink}"
+  "terms-of-service": "Am citit și am înțeles {openLink}Termenii și condițiile Outline{closeLink}",
+  "yes": "Da"
 }

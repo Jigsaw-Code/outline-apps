@@ -177,6 +177,7 @@
   "nav-licenses": "Licence",
   "nav-privacy": "Zasebnost",
   "nav-terms": "Pogoji",
+  "no": "Ne",
   "no-data-limit": "Brez",
   "notification-app-update": "Posodobljena različica Upravitelja za Outline je prenesena. Nameščena bo ob vnovičnem zagonu aplikacije.",
   "notification-feedback-thanks": "Hvala, da nam pomagate pri izboljševanju. Cenimo vaše mnenje.",
@@ -294,5 +295,6 @@
   "survey-decline": "Zavrni",
   "survey-disclaimer": "Če kliknete gumb za nadaljevanje, boste preusmerjeni v kratko anketo v Google Obrazcih. Priporočamo, da anketo izpolnete, ko ste povezani s strežnikom Outline.",
   "survey-go-to-survey": "V anketo",
-  "terms-of-service": "Prebral(-a) sem {openLink}pogoje storitve Outline{closeLink} in jih razumem"
+  "terms-of-service": "Prebral(-a) sem {openLink}pogoje storitve Outline{closeLink} in jih razumem",
+  "yes": "Da"
 }

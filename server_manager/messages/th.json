@@ -177,6 +177,7 @@
   "nav-licenses": "ใบอนุญาต",
   "nav-privacy": "ความเป็นส่วนตัว",
   "nav-terms": "ข้อกำหนด",
+  "no": "ไม่ได้",
   "no-data-limit": "ไม่มี",
   "notification-app-update": "ดาวน์โหลด Outline Manager เวอร์ชันอัปเดตแล้ว และจะติดตั้งเมื่อคุณรีสตาร์ทแอปพลิเคชัน",
   "notification-feedback-thanks": "ขอขอบคุณที่ช่วยเราปรับปรุงบริการ! เรายินดีรับฟังความคิดเห็นจากคุณ",
@@ -294,5 +295,6 @@
   "survey-decline": "ปฏิเสธ",
   "survey-disclaimer": "เมื่อคลิกต่อไป ระบบจะนำคุณไปยังแบบสำรวจสั้นๆ ใน Google ฟอร์ม เราขอแนะนำให้ทำแบบสำรวจในขณะที่เชื่อมต่อกับ Outline",
   "survey-go-to-survey": "ทำแบบสำรวจ",
-  "terms-of-service": "ฉันได้อ่านและเข้าใจ{openLink}ข้อกำหนดในการให้บริการของ Outline{closeLink} แล้ว"
+  "terms-of-service": "ฉันได้อ่านและเข้าใจ{openLink}ข้อกำหนดในการให้บริการของ Outline{closeLink} แล้ว",
+  "yes": "ใช่"
 }

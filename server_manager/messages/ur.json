@@ -177,6 +177,7 @@
   "nav-licenses": "لائسنسز",
   "nav-privacy": "رازداری",
   "nav-terms": "شرائط",
+  "no": "نہیں",
   "no-data-limit": "کوئی نہیں",
   "notification-app-update": "Outline مینیجر کا اپ ڈیٹ کردہ ورژن ڈاؤن لوڈ کیا جا چکا ہے۔ جب آپ ایپلیکیشن کو ری سٹارٹ کریں گے تو یہ انسٹال ہو جائے گا۔",
   "notification-feedback-thanks": "بہتر بنانے میں مدد کرنے کا شکریہ! آپ کی رائے جان کر ہمیں خوشی ہوتی ہے۔",
@@ -294,5 +295,6 @@
   "survey-decline": "مسترد کریں",
   "survey-disclaimer": "'جاری رکھیں' پر کلک کر کے، آپ Google Forms پر ایک مختصر سروے کو بھیجیں گے۔ ہم اس بات کی تجویز کرتے ہیں کہ Outline سے منسلک ہونے پر سروے کو پورا کریں۔",
   "survey-go-to-survey": "سروے پر جائيں",
-  "terms-of-service": "میں نے {openLink}Outline سروس کی شرائط{closeLink} کو پڑھ اور سمجھ لیا ہے"
+  "terms-of-service": "میں نے {openLink}Outline سروس کی شرائط{closeLink} کو پڑھ اور سمجھ لیا ہے",
+  "yes": "ہاں"
 }

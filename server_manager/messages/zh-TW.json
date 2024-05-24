@@ -177,6 +177,7 @@
   "nav-licenses": "授權",
   "nav-privacy": "隱私權",
   "nav-terms": "條款",
+  "no": "沒有",
   "no-data-limit": "無",
   "notification-app-update": "已下載最新版本的 Outline Manager。系統會在你重新啟動應用程式時安裝新版本。",
   "notification-feedback-thanks": "感謝你協助我們改善服務！歡迎隨時提供意見給我們。",
@@ -294,5 +295,6 @@
   "survey-decline": "拒絕",
   "survey-disclaimer": "只要按一下 [繼續]，系統就會在 Google 表單中開啟一份簡短的問卷調查。我們建議在與 Outline 連線的情況下填寫這份問卷調查。",
   "survey-go-to-survey": "前往問卷調查",
-  "terms-of-service": "我已詳閱並瞭解《{openLink}Outline 服務條款{closeLink}》"
+  "terms-of-service": "我已詳閱並瞭解《{openLink}Outline 服務條款{closeLink}》",
+  "yes": "有"
 }

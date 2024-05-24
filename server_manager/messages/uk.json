@@ -177,6 +177,7 @@
   "nav-licenses": "Ліцензії",
   "nav-privacy": "Конфіденційність",
   "nav-terms": "Умови",
+  "no": "Ні",
   "no-data-limit": "Немає",
   "notification-app-update": "Завантажено оновлену версію Диспетчера Outline. Її буде встановлено, коли ви перезапустите додаток.",
   "notification-feedback-thanks": "Дякуємо, що допомагаєте нам ставати кращими. Ми цінуємо ваш відгук.",
@@ -294,5 +295,6 @@
   "survey-decline": "Відхилити",
   "survey-disclaimer": "Продовживши, ви перейдете до короткого опитування в Google Формах. Опитування рекомендується проходити, підключившись до Outline.",
   "survey-go-to-survey": "Перейти до опитування",
-  "terms-of-service": "Я знаю та розумію {openLink}Умови використання Outline{closeLink}"
+  "terms-of-service": "Я знаю та розумію {openLink}Умови використання Outline{closeLink}",
+  "yes": "Так"
 }

@@ -177,6 +177,7 @@
   "nav-licenses": "Licencijos",
   "nav-privacy": "Privatumas",
   "nav-terms": "Sąlygos",
+  "no": "Ne",
   "no-data-limit": "Nėra",
   "notification-app-update": "Atsiųsta atnaujinta „Outline Manager“ versija. Ji bus įdiegta, kai iš naujo paleisite programą.",
   "notification-feedback-thanks": "Dėkojame, kad padedate tobulinti produktą! Labai laukiame jūsų atsiliepimų.",
@@ -294,5 +295,6 @@
   "survey-decline": "Atmesti",
   "survey-disclaimer": "Spustelėję „Tęsti“ būsite nukreipti į trumpą apklausą „Google“ formose. Apklausą užpildyti rekomenduojame prisijungus prie „Outline“.",
   "survey-go-to-survey": "Eiti į apklausą",
-  "terms-of-service": "Perskaičiau ir supratau {openLink}„Outline“ paslaugų teikimo sąlygas{closeLink}"
+  "terms-of-service": "Perskaičiau ir supratau {openLink}„Outline“ paslaugų teikimo sąlygas{closeLink}",
+  "yes": "Taip"
 }

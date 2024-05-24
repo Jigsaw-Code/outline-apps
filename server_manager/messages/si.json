@@ -177,6 +177,7 @@
   "nav-licenses": "බලපත්‍ර",
   "nav-privacy": "පෞද්ගලිකත්වය",
   "nav-terms": "නියම",
+  "no": "නැහැ",
   "no-data-limit": "කිසිවක් නැත",
   "notification-app-update": "Outline Manager හි යාවත්කාලීන කරන ලද අනුවාදයක් බා ගෙන ඇත. ඔබ යෙදුම යළි ආරම්භ කරන විට එය ස්ථාපන කරනු ලැබේ.",
   "notification-feedback-thanks": "අපට වැඩිදියුණු කිරීමට උදවු කිරීම වෙනුවෙන් ස්තුතියි! අපි ඔබෙන් සවන් දීමට කැමතියි.",
@@ -294,5 +295,6 @@
   "survey-decline": "ප්‍රතික්‍ෂේප කරන්න",
   "survey-disclaimer": "ඉදිරියට යන්න ක්ලික් කිරීමෙන් ඔබට Google පෝරම මත කෙටි සමීක්‍ෂණයක් එවනු ලැබේ. Outline වෙත සම්බන්‍ධ කර ඇති විට සමීක්‍ෂණයට සහභාගී වීම අපි නිර්දේශ කරමු.",
   "survey-go-to-survey": "සමීක්‍ෂණයට යන්න",
-  "terms-of-service": "මම {openLink}Outline සේවා නියම{closeLink} කියවා තේරුම් ගත්තෙමි"
+  "terms-of-service": "මම {openLink}Outline සේවා නියම{closeLink} කියවා තේරුම් ගත්තෙමි",
+  "yes": "ඔව්"
 }

@@ -177,6 +177,7 @@
   "nav-licenses": "许可",
   "nav-privacy": "隐私权",
   "nav-terms": "条款",
+  "no": "否",
   "no-data-limit": "无",
   "notification-app-update": "已下载 Outline 管理器的更新版本。系统会在您重启该应用时安装此版本。",
   "notification-feedback-thanks": "感谢您帮助我们改进产品！欢迎您随时提供反馈。",
@@ -294,5 +295,6 @@
   "survey-decline": "拒绝",
   "survey-disclaimer": "点击“继续”后，您将转到 Google 表单并需要填写一份简短的调查问卷。我们建议您在连接到 Outline 的同时填写调查问卷。",
   "survey-go-to-survey": "转到调查问卷",
-  "terms-of-service": "我已阅读并理解了 {openLink}Outline 服务条款{closeLink}"
+  "terms-of-service": "我已阅读并理解了 {openLink}Outline 服务条款{closeLink}",
+  "yes": "是"
 }
