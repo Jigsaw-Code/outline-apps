@@ -51,7 +51,7 @@ npm run action server_manager/electron_app/build ${PLATFORM} -- --buildMode=[deb
 
 Where `${PLATFORM}` is one of `linux`, `macos`, `windows`.
 
-The per-platform standalone apps will be at `build/electron_app/static/dist`.
+The per-platform standalone apps will be at `output/build/server_manager/electron_app/static/dist`.
 
 - Windows: zip files. Only generated if you have [wine](https://www.winehq.org/download) installed.
 - Linux: tar.gz files.
