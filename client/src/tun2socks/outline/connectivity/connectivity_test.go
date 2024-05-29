@@ -79,7 +79,7 @@ type fakeSSClient struct {
 	failUDP            bool
 }
 
-func (c *fakeSSClient) Dial(_ context.Context, raddr string) (transport.StreamConn, error) {
+func (c *fakeSSClient) DialStream(_ context.Context, raddr string) (transport.StreamConn, error) {
 	if c.failReachability {
 		return nil, &net.OpError{}
 	}
