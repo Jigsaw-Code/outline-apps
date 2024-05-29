@@ -57,7 +57,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Test Tun2socks Backend
-        run: go test -v -race -bench=. -benchtime=100ms ./client/...
+        run: go test -race -bench=. -benchtime=100ms ./client/...
 
   linux_debug_build:
     name: Linux Debug Build
