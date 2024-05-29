@@ -1,4 +1,5 @@
 {
+  "productName": "outline-client",
   "artifactName": "Outline-Client.${ext}",
   "asarUnpack": [ "client" ],
   "directories": {
