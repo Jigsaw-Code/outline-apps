@@ -60,16 +60,25 @@ func parseConfigFromJSON(in string) (*configJSON, error) {
 // Returns nil if it is valid; or a [platerrors.PlatformError].
 func validateConfig(host string, port int, cipher, password string) error {
 	if len(host) == 0 {
-		return platerrors.New(platerrors.IllegalConfigHost, "host name or IP must not be nil")
+		return newConfigErrorWithDetails("host name or IP is not valid", "host", host, "not nil", nil)
 	}
 	if port <= 0 || port > 65535 {
-		return platerrors.New(platerrors.IllegalConfigPort, "port must be within range [1..65535]")
+		return newConfigErrorWithDetails("port is not valid", "port", port, "within range [1..65535]", nil)
 	}
 	if len(cipher) == 0 {
-		return platerrors.New(platerrors.IllegalConfigCipher, "cipher method must not be nil")
+		return newConfigErrorWithDetails("cipher method is not valid", "cipher", cipher, "not nil", nil)
 	}
 	if len(password) == 0 {
-		return platerrors.New(platerrors.IllegalConfigPassword, "password must not be nil")
+		return newConfigErrorWithDetails("password is not valid", "password", password, "not nil", nil)
 	}
 	return nil
+}
+
+// newConfigErrorWithDetails creates a TypeScript parsable SSIllegalConfig error with detailed information.
+func newConfigErrorWithDetails(msg, field string, got interface{}, expect string, cause error) *platerrors.PlatformError {
+	return platerrors.NewWithDetailsCause(platerrors.SSIllegalConfig, msg, platerrors.ErrorDetails{
+		"field":  field,
+		"got":    got,
+		"expect": expect,
+	}, cause)
 }

@@ -20,6 +20,9 @@ import (
 	"strings"
 )
 
+// ErrorDetails represents a structured technical details type in a [PlatformError].
+type ErrorDetails = map[string]interface{}
+
 // PlatformError can be used to communicate error details from Go to TypeScript.
 // It contains details of errors that originate from the native network code.
 //
@@ -31,9 +34,10 @@ import (
 // and Apple's NSError.localizedDescription through gomobile.
 // It can also be written to stderr for Electron apps or included in responses from a REST API.
 type PlatformError struct {
-	Code             ErrorCode
-	Message, Details string
-	Cause            error
+	Code    ErrorCode
+	Message string
+	Details ErrorDetails
+	Cause   error
 }
 
 var _ error = (*PlatformError)(nil)
@@ -47,7 +51,7 @@ func New(code ErrorCode, message string) *PlatformError {
 }
 
 // NewWithDetails creates a [PlatformError] with a specific error code, message and details string.
-func NewWithDetails(code ErrorCode, message, details string) *PlatformError {
+func NewWithDetails(code ErrorCode, message string, details ErrorDetails) *PlatformError {
 	return &PlatformError{
 		Code:    code,
 		Message: message,
@@ -65,7 +69,7 @@ func NewWithCause(code ErrorCode, message string, cause error) *PlatformError {
 }
 
 // NewWithDetailsCause creates a [PlatformError] with an error code, message, details, and cause.
-func NewWithDetailsCause(code ErrorCode, message, details string, cause error) *PlatformError {
+func NewWithDetailsCause(code ErrorCode, message string, details ErrorDetails, cause error) *PlatformError {
 	return &PlatformError{
 		Code:    code,
 		Message: message,
@@ -79,14 +83,14 @@ func NewWithDetailsCause(code ErrorCode, message, details string, cause error) *
 // The resulting JSON can be used to reconstruct the error in TypeScript.
 func (e *PlatformError) Error() string {
 	if e == nil {
-		return formatInvalidLogicErrJSON("nil error", "")
+		return formatInvalidLogicErrJSON("nil error")
 	}
 	if e.Code == "" {
-		return formatInvalidLogicErrJSON("empty error code", "")
+		return formatInvalidLogicErrJSON("empty error code")
 	}
 	errJson, err := json.Marshal(convertToPlatformErrJSON(e))
 	if err != nil {
-		return formatInvalidLogicErrJSON("JSON marshal failure", err.Error())
+		return formatInvalidLogicErrJSON("JSON marshal failure: " + err.Error())
 	}
 	return string(errJson)
 }
@@ -99,9 +103,9 @@ func (e *PlatformError) Unwrap() error {
 // formatInvalidLogicErrJSON creates a JSON string with ErrorCodeGoInvalidLogic, the msg
 // and the details. Please note that msg and details should not contain double quotes.
 // The returned JSON string is compatible with the JSON returned by [PlatformError].Error().
-func formatInvalidLogicErrJSON(msg, details string) string {
+func formatInvalidLogicErrJSON(msg string) string {
 	rmEscapes := strings.NewReplacer("\\", "", "\"", "")
 	return fmt.Sprintf(
-		`{"code":"%s","message":"%s","details":"%s"}`,
-		InvalidLogic, rmEscapes.Replace(msg), rmEscapes.Replace(details))
+		`{"code":"%s","message":"%s"}`,
+		InvalidLogic, rmEscapes.Replace(msg))
 }

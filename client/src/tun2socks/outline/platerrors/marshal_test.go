@@ -80,24 +80,24 @@ func TestPlatformErrorMarshal(t *testing.T) {
 	}{
 		{
 			name: "Single",
-			in:   &PlatformError{Code: "ERR_TEST", Message: "test msg", Details: "test details"},
-			want: &platformErrJSON{Code: "ERR_TEST", Message: "test msg", Details: "test details"},
+			in:   &PlatformError{Code: "ERR_TEST", Message: "test msg", Details: ErrorDetails{"test": "details"}},
+			want: &platformErrJSON{Code: "ERR_TEST", Message: "test msg", Details: makeMapWithPairs("test", "details")},
 		},
 		{
 			name: "Nested",
 			in: &PlatformError{
-				Code: "ERR_TEST", Message: "test msg", Details: "test details",
-				Cause: &PlatformError{Code: "ERR_INNER", Message: "inner msg", Details: "inner details"}},
+				Code: "ERR_TEST", Message: "test msg", Details: ErrorDetails{"test": "details"},
+				Cause: &PlatformError{Code: "ERR_INNER", Message: "inner msg", Details: ErrorDetails{"inner": 999}}},
 			want: &platformErrJSON{
-				Code: "ERR_TEST", Message: "test msg", Details: "test details",
-				Cause: &platformErrJSON{Code: "ERR_INNER", Message: "inner msg", Details: "inner details"}},
+				Code: "ERR_TEST", Message: "test msg", Details: makeMapWithPairs("test", "details"),
+				Cause: &platformErrJSON{Code: "ERR_INNER", Message: "inner msg", Details: makeMapWithPairs("inner", 999)}},
 		},
 		{
 			name: "NestedGoError",
 			in: &PlatformError{
-				Code: "ERR_TEST", Message: "test msg", Details: "test details", Cause: errors.New("inner go err")},
+				Code: "ERR_TEST", Message: "test msg", Details: ErrorDetails{"test": "details"}, Cause: errors.New("inner go err")},
 			want: &platformErrJSON{
-				Code: "ERR_TEST", Message: "test msg", Details: "test details",
+				Code: "ERR_TEST", Message: "test msg", Details: makeMapWithPairs("test", "details"),
 				Cause: &platformErrJSON{Code: string(GoError), Message: "inner go err"}},
 		},
 	}
@@ -109,4 +109,19 @@ func TestPlatformErrorMarshal(t *testing.T) {
 			require.Equal(t, tc.want, got)
 		})
 	}
+}
+
+// Test helpers
+
+func makeMapWithPairs(kv ...interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	var key string
+	for i, vv := range kv {
+		if i%2 == 0 {
+			key, _ = vv.(string)
+		} else if len(key) > 0 {
+			res[key] = vv
+		}
+	}
+	return res
 }

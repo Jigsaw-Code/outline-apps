@@ -35,16 +35,35 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 		},
 		{
 			name: "Full",
-			in:   NewWithDetails("ERR_FULL", "full err", "full details"),
-			want: `{"code":"ERR_FULL","message":"full err","details":"full details"}`,
+			in:   NewWithDetails("ERR_FULL", "full err", ErrorDetails{"full": "details"}),
+			want: `{"code":"ERR_FULL","message":"full err","details":{"full":"details"}}`,
 		},
 		{
 			name: "Nested",
 			in: NewWithCause("ERR_LVL2", "msg lvl2",
-				NewWithDetailsCause("ERR_LVL1", "msg lvl1", "details here", errors.New("go err lvl0"))),
+				NewWithDetailsCause("ERR_LVL1", "msg lvl1", ErrorDetails{"details": "here"}, errors.New("go err lvl0"))),
 			want: `{"code":"ERR_LVL2","message":"msg lvl2",` +
-				`"cause":{"code":"ERR_LVL1","message":"msg lvl1","details":"details here",` +
+				`"cause":{"code":"ERR_LVL1","message":"msg lvl1","details":{"details":"here"},` +
 				`"cause":{"code":"ERR_GOLANG_ERROR","message":"go err lvl0"}}}`,
+		},
+		{
+			name: "Details",
+			in: NewWithDetails("ERR_DETAILS", "test details types", ErrorDetails{
+				"arr":     []interface{}{246, "lol", false},
+				"boolean": true,
+				"int":     1357,
+				"nil":     nil,
+				"obj":     map[string]interface{}{"3": 14, "pi": "day", "true": false},
+				"str":     "is good",
+			}),
+			want: `{"code":"ERR_DETAILS","message":"test details types","details":{` +
+				`"arr":[246,"lol",false],` +
+				`"boolean":true,` +
+				`"int":1357,` +
+				`"nil":null,` +
+				`"obj":{"3":14,"pi":"day","true":false},` +
+				`"str":"is good"` +
+				`}}`,
 		},
 	}
 
@@ -67,13 +86,13 @@ func TestPlatformErrorWrapsCause(t *testing.T) {
 
 func TestNilError(t *testing.T) {
 	got := (*PlatformError)(nil).Error()
-	want := `{"code":"ERR_INVALID_LOGIC","message":"nil error","details":""}`
+	want := `{"code":"ERR_INVALID_LOGIC","message":"nil error"}`
 	require.Equal(t, want, got)
 }
 
 func TestInvalidErrorCode(t *testing.T) {
 	got := (&PlatformError{}).Error()
-	want := `{"code":"ERR_INVALID_LOGIC","message":"empty error code","details":""}`
+	want := `{"code":"ERR_INVALID_LOGIC","message":"empty error code"}`
 	require.Equal(t, want, got)
 }
 
@@ -86,15 +105,14 @@ func TestJSONMarshalError(t *testing.T) {
 	require.Nil(t, errJson)
 	require.Error(t, err)
 
-	got := formatInvalidLogicErrJSON("JSON marshal failure", err.Error())
-	want := `{"code":"ERR_INVALID_LOGIC","message":"JSON marshal failure",` +
-		`"details":"json: unsupported value: encountered a cycle via *platerrors.platformErrJSON"}`
+	got := formatInvalidLogicErrJSON("JSON marshal failure: " + err.Error())
+	want := `{"code":"ERR_INVALID_LOGIC","message":` +
+		`"JSON marshal failure: json: unsupported value: encountered a cycle via *platerrors.platformErrJSON"}`
 	require.Equal(t, want, got)
 }
 
 func TestEscapeInFormatInvalidLogicErrJSON(t *testing.T) {
-	got := formatInvalidLogicErrJSON("Msg with quote \" and backslash \\", "Detail with backslash \\ and quote \"")
-	want := `{"code":"ERR_INVALID_LOGIC","message":"Msg with quote  and backslash ",` +
-		`"details":"Detail with backslash  and quote "}`
+	got := formatInvalidLogicErrJSON("Msg with quote \" and backslash \\")
+	want := `{"code":"ERR_INVALID_LOGIC","message":"Msg with quote  and backslash "}`
 	require.Equal(t, want, got)
 }

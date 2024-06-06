@@ -56,7 +56,7 @@ func NewClientFromJSON(configJSON string) (*Client, error) {
 	var prefixBytes []byte = nil
 	if len(config.Prefix) > 0 {
 		if p, err := utf8.DecodeUTF8CodepointsToRawBytes(config.Prefix); err != nil {
-			return nil, platerrors.NewWithCause(platerrors.IllegalConfigPrefix, "failed to decode prefix string", err)
+			return nil, newConfigErrorWithDetails("prefix is not valid", "prefix", config.Prefix, "string in utf-8", err)
 		} else {
 			prefixBytes = p
 		}
@@ -78,7 +78,8 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 
 	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.IllegalConfigCipher, "failed to create Shadowsocks cipher", err)
+		return nil, newConfigErrorWithDetails("cipher&password pair is not valid",
+			"cipher|password", cipherName+"|"+password, "valid combination", err)
 	}
 
 	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be

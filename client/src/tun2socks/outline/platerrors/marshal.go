@@ -16,10 +16,10 @@ package platerrors
 
 // platformErrJson is the JSON representation of a [PlatformError].
 type platformErrJSON struct {
-	Code    string           `json:"code"`
-	Message string           `json:"message"`
-	Details string           `json:"details,omitempty"`
-	Cause   *platformErrJSON `json:"cause,omitempty"`
+	Code    string                 `json:"code"`
+	Message string                 `json:"message"`
+	Details map[string]interface{} `json:"details,omitempty"`
+	Cause   *platformErrJSON       `json:"cause,omitempty"`
 }
 
 // convertToPlatformErrJSON converts an error into a platformErrJSON.
