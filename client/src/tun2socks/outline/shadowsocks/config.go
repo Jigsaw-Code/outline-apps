@@ -16,7 +16,8 @@ package shadowsocks
 
 import (
 	"encoding/json"
-	"fmt"
+
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 )
 
 // Config represents a (legacy) shadowsocks server configuration. You can use
@@ -56,19 +57,19 @@ func parseConfigFromJSON(in string) (*configJSON, error) {
 // validateConfig validates whether a Shadowsocks server configuration is valid
 // (it won't do any connectivity tests)
 //
-// Returns nil if it is valid; or an error message.
+// Returns nil if it is valid; or a [platerrors.PlatformError].
 func validateConfig(host string, port int, cipher, password string) error {
 	if len(host) == 0 {
-		return fmt.Errorf("must provide a host name or IP address")
+		return platerrors.New(platerrors.IllegalConfigHost, "host name or IP must not be nil")
 	}
 	if port <= 0 || port > 65535 {
-		return fmt.Errorf("port must be within range [1..65535]")
+		return platerrors.New(platerrors.IllegalConfigPort, "port must be within range [1..65535]")
 	}
 	if len(cipher) == 0 {
-		return fmt.Errorf("must provide an encryption cipher method")
+		return platerrors.New(platerrors.IllegalConfigCipher, "cipher method must not be nil")
 	}
 	if len(password) == 0 {
-		return fmt.Errorf("must provide a password")
+		return platerrors.New(platerrors.IllegalConfigPassword, "password must not be nil")
 	}
 	return nil
 }

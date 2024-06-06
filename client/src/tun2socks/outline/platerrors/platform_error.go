@@ -17,30 +17,14 @@ package platerrors
 import (
 	"encoding/json"
 	"fmt"
-)
-
-// ErrorCode can be used to identify the specific type of a [PlatformError].
-// All possible ErrorCodes are defined as constants in this package.
-// You can reliably use these values in TypeScript to check for specific errors.
-type ErrorCode string
-
-const (
-	// ErrorCodeGoError represents a general error in Go that is not a [PlatformError].
-	// It is typically the last error in the chain of the causes in a [PlatformError].
-	// This error code is for internal use only. You should not use it to create a [PlatformError]
-	// in your Go code.
-	ErrorCodeGoError ErrorCode = "ERR_GOLANG_ERROR"
-
-	// ErrorCodeGoInvalidLogic indicates a development mistake that should be identified and
-	// corrected during the development process. It should not be expected to occur in production.
-	ErrorCodeGoInvalidLogic ErrorCode = "ERR_GOLANG_INVALID_LOGIC"
+	"strings"
 )
 
 // PlatformError can be used to communicate error details from Go to TypeScript.
 // It contains details of errors that originate from the native network code.
 //
 // The error might be caused by another PlatformError or a general Go error.
-// A general Go error will be converted to a JSON of [ErrorCodeGoError] with the
+// A general Go error will be converted to a JSON of [GoError] with the
 // corresponding error message; and no more wrapped errors will be parsed.
 //
 // Behind the scenes, the error's JSON string can be accessed by Java's Exception.getMessage()
@@ -53,6 +37,42 @@ type PlatformError struct {
 }
 
 var _ error = (*PlatformError)(nil)
+
+// New creates a [PlatformError] with a specific error code and message.
+func New(code ErrorCode, message string) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+	}
+}
+
+// NewWithDetails creates a [PlatformError] with a specific error code, message and details string.
+func NewWithDetails(code ErrorCode, message, details string) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+		Details: details,
+	}
+}
+
+// NewWithCause creates a [PlatformError] with a specific error code, message, and cause.
+func NewWithCause(code ErrorCode, message string, cause error) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// NewWithDetailsCause creates a [PlatformError] with an error code, message, details, and cause.
+func NewWithDetailsCause(code ErrorCode, message, details string, cause error) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+		Details: details,
+		Cause:   cause,
+	}
+}
 
 // Error returns a JSON string containing the error details and all its underlying causes,
 // until it finds a cause that is not a [PlatformError].
@@ -80,7 +100,8 @@ func (e *PlatformError) Unwrap() error {
 // and the details. Please note that msg and details should not contain double quotes.
 // The returned JSON string is compatible with the JSON returned by [PlatformError].Error().
 func formatInvalidLogicErrJSON(msg, details string) string {
+	rmEscapes := strings.NewReplacer("\\", "", "\"", "")
 	return fmt.Sprintf(
 		`{"code":"%s","message":"%s","details":"%s"}`,
-		ErrorCodeGoInvalidLogic, msg, details)
+		InvalidLogic, rmEscapes.Replace(msg), rmEscapes.Replace(details))
 }

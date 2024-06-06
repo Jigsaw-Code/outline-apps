@@ -36,28 +36,28 @@ func TestGoErrorMarshal(t *testing.T) {
 		{
 			name: "General",
 			in:   errors.New("a test error obj"),
-			want: &platformErrJSON{Code: string(ErrorCodeGoError), Message: "a test error obj"},
+			want: &platformErrJSON{Code: string(GoError), Message: "a test error obj"},
 		},
 		{
 			name: "Joined",
 			in:   errors.Join(errors.New("test err 1"), errors.New("test err 2")),
-			want: &platformErrJSON{Code: string(ErrorCodeGoError), Message: "test err 1\ntest err 2"},
+			want: &platformErrJSON{Code: string(GoError), Message: "test err 1\ntest err 2"},
 		},
 		{
 			name: "Formatted",
 			in:   fmt.Errorf("out err: %w", errors.New("inner err")),
-			want: &platformErrJSON{Code: string(ErrorCodeGoError), Message: "out err: inner err"},
+			want: &platformErrJSON{Code: string(GoError), Message: "out err: inner err"},
 		},
 		{
 			name: "MultipleFormatted",
 			in:   fmt.Errorf("lvl3 err: %w %w", errors.New("lvl2 err1"), fmt.Errorf("lvl2 err2: %w", errors.New("lvl1 err"))),
-			want: &platformErrJSON{Code: string(ErrorCodeGoError), Message: "lvl3 err: lvl2 err1 lvl2 err2: lvl1 err"},
+			want: &platformErrJSON{Code: string(GoError), Message: "lvl3 err: lvl2 err1 lvl2 err2: lvl1 err"},
 		},
 		{
 			name: "WrappedPlatformError",
 			in:   fmt.Errorf("should not unwrap: %w", &PlatformError{Code: "ERR_NO_UNWRAP", Message: "Don't unwrap"}),
 			want: &platformErrJSON{
-				Code:    string(ErrorCodeGoError),
+				Code:    string(GoError),
 				Message: `should not unwrap: {"code":"ERR_NO_UNWRAP","message":"Don't unwrap"}`},
 		},
 	}
@@ -98,7 +98,7 @@ func TestPlatformErrorMarshal(t *testing.T) {
 				Code: "ERR_TEST", Message: "test msg", Details: "test details", Cause: errors.New("inner go err")},
 			want: &platformErrJSON{
 				Code: "ERR_TEST", Message: "test msg", Details: "test details",
-				Cause: &platformErrJSON{Code: string(ErrorCodeGoError), Message: "inner go err"}},
+				Cause: &platformErrJSON{Code: string(GoError), Message: "inner go err"}},
 		},
 	}
 
