@@ -34,6 +34,11 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 			want: `{"code":"ERR_SIMPLE","message":"simple err"}`,
 		},
 		{
+			name: "EmptyDetails",
+			in:   NewWithDetails("ERR_EMPTY_DETAILS", "empty details", ErrorDetails{}),
+			want: `{"code":"ERR_EMPTY_DETAILS","message":"empty details"}`,
+		},
+		{
 			name: "Full",
 			in:   NewWithDetails("ERR_FULL", "full err", ErrorDetails{"full": "details"}),
 			want: `{"code":"ERR_FULL","message":"full err","details":{"full":"details"}}`,
