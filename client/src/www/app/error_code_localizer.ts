@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Localizer } from '@outline/infrastructure/i18n';
+import {Localizer} from '@outline/infrastructure/i18n';
 
-import { ErrorCode, ServerUnreachable } from '../model/platform_error';
+import {ErrorCode, ServerUnreachable} from '../model/platform_error';
 
-const errCodeMapping = new Map<string, string>([
-  [ServerUnreachable, 'outline-plugin-error-server-unreachable'],
-]);
+const errCodeMapping = new Map<string, string>([[ServerUnreachable, 'outline-plugin-error-server-unreachable']]);
 
 export function localizeErrorCode(code: ErrorCode, localize: Localizer): string {
   return localize(errCodeMapping.get(code) || 'error-unexpected');

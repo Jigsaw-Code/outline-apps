@@ -19,7 +19,6 @@ import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
-
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
