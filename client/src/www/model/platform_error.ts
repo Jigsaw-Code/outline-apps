@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { CustomError } from '@outline/infrastructure/custom_error';
+import {CustomError} from '@outline/infrastructure/custom_error';
 
 //////
 // This file defines types and constants corresponding to the backend Go's `platerrors` package.
@@ -27,7 +27,7 @@ import { CustomError } from '@outline/infrastructure/custom_error';
  * @returns {PlatformError} A non-null instance of PlatformError.
  */
 function newInvalidJSONPlatformError(message: string, rawJSONObj: any): PlatformError {
-  return new PlatformError(InvalidLogic, message, { details: { 'json': rawJSONObj } });
+  return new PlatformError(InvalidLogic, message, {details: {json: rawJSONObj}});
 }
 
 /**
@@ -40,7 +40,7 @@ function newInvalidJSONPlatformError(message: string, rawJSONObj: any): Platform
  */
 function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
   if (!rawObj) {
-    return newInvalidJSONPlatformError("error JSON is falsy", rawObj);
+    return newInvalidJSONPlatformError('error JSON is falsy', rawObj);
   }
 
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
@@ -55,7 +55,7 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
     return newInvalidJSONPlatformError('`message` is not string in error JSON', rawObj);
   }
 
-  let options: { details?: object, cause?: Error } = null;
+  let options: {details?: object; cause?: Error} = null;
   if ('details' in rawObj || 'cause' in rawObj) {
     options = {};
     if ('details' in rawObj && typeof rawObj.details === 'object' && rawObj.details) {
@@ -79,14 +79,16 @@ export class PlatformError extends CustomError {
    * Constructs a new PlatformError instance with the specified parameters.
    * @param {ErrorCode} code An ErrorCode representing the category of this error.
    * @param {string} message A user-readable string of this error.
-   * @param options An object containing the optional details and cause. 
+   * @param options An object containing the optional details and cause.
    */
-  constructor(public readonly code: ErrorCode,
+  constructor(
+    public readonly code: ErrorCode,
     message: string,
     options?: {
-      details?: object,
-      cause?: Error,
-    }) {
+      details?: object;
+      cause?: Error;
+    }
+  ) {
     super(message, options);
     this.details = options?.details;
   }
@@ -104,10 +106,10 @@ export class PlatformError extends CustomError {
     try {
       rawObj = JSON.parse(rawJSON);
     } catch {
-      return newInvalidJSONPlatformError("invalid error JSON string", rawJSON);
+      return newInvalidJSONPlatformError('invalid error JSON string', rawJSON);
     }
     if (typeof rawObj !== 'object') {
-      return newInvalidJSONPlatformError("error JSON is not an object", rawObj);
+      return newInvalidJSONPlatformError('error JSON is not an object', rawObj);
     }
     return convertRawErrorObjectToPlatformError(rawObj);
   }
@@ -117,19 +119,19 @@ export class PlatformError extends CustomError {
    * @returns {string} A user friendly string representing this error.
    */
   public toString(): string {
-    let result = this.code + "\n" + this.message;
+    let result = this.code + '\n' + this.message;
     if (this.details) {
-      result += "\nDetails: ";
+      result += '\nDetails: ';
       try {
         result += JSON.stringify(this.details, null, 2);
       } catch {
-        result += "<Unable To Show>";
+        result += '<Unable To Show>';
       }
     }
     if (this.cause) {
       const subStr = this.cause.toString();
       // Indent and append
-      result += "\nCaused by:\n" + subStr.replace(/^/gm, '  ');
+      result += '\nCaused by:\n' + subStr.replace(/^/gm, '  ');
     }
     return result;
   }
@@ -146,5 +148,5 @@ export class PlatformError extends CustomError {
  */
 export type ErrorCode = string;
 
-export const InvalidLogic: ErrorCode = "ERR_INVALID_LOGIC";
-export const ServerUnreachable: ErrorCode = "ERR_SERVER_UNREACHABLE";
+export const InvalidLogic: ErrorCode = 'ERR_INVALID_LOGIC';
+export const ServerUnreachable: ErrorCode = 'ERR_SERVER_UNREACHABLE';
