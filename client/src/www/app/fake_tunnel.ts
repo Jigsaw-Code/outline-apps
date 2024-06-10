@@ -15,6 +15,8 @@
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 import * as errors from '../model/errors';
 
+export const FakeBrokenHostName = '192.0.2.1';
+export const FakeUnreachableHostName = '10.0.0.24';
 
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
@@ -25,11 +27,11 @@ export class FakeOutlineTunnel implements Tunnel {
   constructor(public readonly id: string) {}
 
   private playBroken(hostname?: string) {
-    return hostname?.toLowerCase().includes('broken');
+    return hostname === FakeBrokenHostName;
   }
 
   private playUnreachable(hostname?: string) {
-    return hostname?.toLowerCase().includes('unreachable');
+    return hostname === FakeUnreachableHostName;
   }
 
   async start(config: ShadowsocksSessionConfig): Promise<void> {

@@ -31,7 +31,7 @@ const BABEL_LOADER = {
 export default merge(baseConfig, browserConfig, {
   devServer: {
     open: '/index_cordova.html',
-    static: path.resolve(getRootDir(), 'platforms', 'browser', 'www'),
+    static: path.resolve(getRootDir(), 'client', 'platforms', 'browser', 'www'),
   },
   entry: [path.resolve(__dirname, 'app', 'cordova_main.ts')],
   target: ['web', 'es5'],
