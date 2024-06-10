@@ -26,7 +26,7 @@ import {CustomError} from '@outline/infrastructure/custom_error';
  * @param rawJSONObj The invalid JSON object that will be included as the details of the result.
  * @returns {PlatformError} A non-null instance of PlatformError.
  */
-function newInvalidJSONPlatformError(message: string, rawJSONObj: any): PlatformError {
+function newInvalidJSONPlatformError(message: string, rawJSONObj: object | string): PlatformError {
   return new PlatformError(InvalidLogic, message, {details: {json: rawJSONObj}});
 }
 
@@ -109,7 +109,7 @@ export class PlatformError extends CustomError {
       return newInvalidJSONPlatformError('invalid error JSON string', rawJSON);
     }
     if (typeof rawObj !== 'object') {
-      return newInvalidJSONPlatformError('error JSON is not an object', rawObj);
+      return newInvalidJSONPlatformError('error JSON is not an object', rawJSON);
     }
     return convertRawErrorObjectToPlatformError(rawObj);
   }
