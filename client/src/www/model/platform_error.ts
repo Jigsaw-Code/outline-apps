@@ -149,4 +149,8 @@ export class PlatformError extends CustomError {
 export type ErrorCode = string;
 
 export const InvalidLogic: ErrorCode = 'ERR_INVALID_LOGIC';
-export const ServerUnreachable: ErrorCode = 'ERR_SERVER_UNREACHABLE';
+
+export const FetchConfigFailure: ErrorCode = 'ERR_FETCH_REMOTE_CONFIG_FAILURE';
+export const IllegalConfig: ErrorCode = 'ERR_ILLEGAL_CONFIG';
+
+export const ProxyServerUnreachable: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';

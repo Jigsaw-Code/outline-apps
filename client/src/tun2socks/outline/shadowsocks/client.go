@@ -42,7 +42,7 @@ type Client outline.Client
 // Deprecated: Please use NewClientFromJSON.
 func NewClient(config *Config) (*Client, error) {
 	if config == nil {
-		return nil, platerrors.New(platerrors.IllegalArgument, "Shadowsocks config must not be nil")
+		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be provided", ".", config, "not nil", nil)
 	}
 	return newShadowsocksClient(config.Host, config.Port, config.CipherName, config.Password, config.Prefix)
 }
@@ -51,12 +51,12 @@ func NewClient(config *Config) (*Client, error) {
 func NewClientFromJSON(configJSON string) (*Client, error) {
 	config, err := parseConfigFromJSON(configJSON)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.IllegalJSONString, "failed to parse Shadowsocks config", err)
+		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be a valid JSON string", ".", configJSON, "JSON string", err)
 	}
 	var prefixBytes []byte = nil
 	if len(config.Prefix) > 0 {
 		if p, err := utf8.DecodeUTF8CodepointsToRawBytes(config.Prefix); err != nil {
-			return nil, newConfigErrorWithDetails("prefix is not valid", "prefix", config.Prefix, "string in utf-8", err)
+			return nil, newIllegalConfigErrorWithDetails("prefix is not valid", "prefix", config.Prefix, "string in utf-8", err)
 		} else {
 			prefixBytes = p
 		}
@@ -78,7 +78,7 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 
 	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
 	if err != nil {
-		return nil, newConfigErrorWithDetails("cipher&password pair is not valid",
+		return nil, newIllegalConfigErrorWithDetails("cipher&password pair is not valid",
 			"cipher|password", cipherName+"|"+password, "valid combination", err)
 	}
 
@@ -86,7 +86,8 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
 	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: net.Dialer{KeepAlive: -1}}, cryptoKey)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.SSStreamDialerFailed, "failed to create StreamDialer", err)
+		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create TCP traffic handler",
+			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"}, err)
 	}
 	if len(prefix) > 0 {
 		log.Debugf("Using salt prefix: %s", string(prefix))
@@ -95,7 +96,8 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 
 	packetListener, err := shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: proxyAddress}, cryptoKey)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.SSPacketListenerFailed, "failed to create PacketListener", err)
+		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create UDP traffic handler",
+			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"}, err)
 	}
 
 	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil

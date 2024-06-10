@@ -17,7 +17,7 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {localizeErrorCode} from './error_code_localizer';
+import {localizeErrorCode} from './error_localizer';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';

@@ -19,7 +19,9 @@ package platerrors
 // You can reliably use these values in TypeScript to check for specific errors.
 type ErrorCode string
 
+//////////
 // Internal error codes
+//////////
 
 const (
 	// GoError represents a general error in Go that is not a [PlatformError].
@@ -35,56 +37,45 @@ const (
 	InvalidLogic ErrorCode = "ERR_INVALID_LOGIC"
 )
 
-// Common error codes
-
-const (
-	// IllegalArgument indicates that the caller (usually from TypeScript code) passed an
-	// illegal argument to a native Go function.
-	IllegalArgument ErrorCode = "ERR_ILLEGAL_ARGUMENT"
-
-	// IllegalJSONString means that a string is not a valid JSON string.
-	IllegalJSONString ErrorCode = "ERR_ILLEGAL_JSON_STRING"
-)
-
-// Common network error codes
+//////////
+// Common error codes - network
+//////////
 
 const (
 	// ResolveIPFailed means that we failed to resolve the IP address of a hostname.
-	ResolveIPFailed ErrorCode = "ERR_NET_RESOLVE_IP"
+	ResolveIPFailed ErrorCode = "ERR_RESOLVE_IP_FAILURE"
+)
 
-	// ServerUnreachable means we failed to establish a connection to a remote server.
-	ServerUnreachable ErrorCode = "ERR_SERVER_UNREACHABLE"
+//////////
+// Common error codes - I/O device
+//////////
+
+const (
+	// SetupTrafficHandlerFailed means we failed to setup the traffic handler for a protocol.
+	SetupTrafficHandlerFailed ErrorCode = "ERR_TRAFFIC_HANDLER_SETUP_FAILURE"
+)
+
+//////////
+// Business logic error codes - proxy server
+//////////
+
+const (
+	// ProxyServerUnreachable means we failed to establish a connection to a remote server.
+	ProxyServerUnreachable ErrorCode = "ERR_PROXY_SERVER_UNREACHABLE"
 
 	// Unauthenticated indicates that the client failed to communicate with a remote server
 	// due to the lack of valid authentication credentials.
 	Unauthenticated ErrorCode = "ERR_CLIENT_UNAUTHENTICATED"
 )
 
-// Shadowsocks network error codes
+//////////
+// Business logic error codes - config
+//////////
 
 const (
-	// SSIllegalConfig indicates an invalid config to connect to a Shadowsocks server.
-	SSIllegalConfig ErrorCode = "ERR_SHADOWSOCKS_ILLEGAL_CONFIG"
+	// FetchConfigFailed means we failed to fetch a config from a remote location.
+	FetchConfigFailed ErrorCode = "ERR_FETCH_REMOTE_CONFIG_FAILURE"
 
-	// SSStreamDialerFailed means we failed to create a Shadowsocks StreamDialer.
-	SSStreamDialerFailed ErrorCode = "ERR_SHADOWSOCKS_NEW_STREAM_DIALER"
-
-	// SSPacketListenerFailed means we failed to create a Shadowsocks PacketListener.
-	SSPacketListenerFailed ErrorCode = "ERR_SHADOWSOCKS_NEW_PACKET_LISTENER"
-
-	// SSTCPConnectFailed means we failed to do a TCP connectivity test against the Shadowsocks server.
-	SSTCPConnectFailed ErrorCode = "ERR_SHADOWSOCKS_TCP_CONNECT"
-
-	// SSUDPUnsupported indicates that a Shadowsocks server does not support UDP.
-	SSUDPUnsupported ErrorCode = "ERR_SHADOWSOCKS_UDP_NOT_SUPPORTED"
-)
-
-// I/O device error codes
-
-const (
-	// OpenTunDeviceFailed means we failed to open a specific tun/tap device.
-	OpenTunDeviceFailed ErrorCode = "ERR_OPEN_TUN"
-
-	// DeviceCopyDataFailed means we failed to copy data from one device to another.
-	DeviceCopyDataFailed ErrorCode = "ERR_IO_COPY_DATA"
+	// IllegalConfig indicates an invalid config to connect to a remote server.
+	IllegalConfig ErrorCode = "ERR_ILLEGAL_CONFIG"
 )
