@@ -27,7 +27,6 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
@@ -53,13 +52,9 @@ func NewClientFromJSON(configJSON string) (*Client, error) {
 	if err != nil {
 		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be a valid JSON string", ".", configJSON, "JSON string", err)
 	}
-	var prefixBytes []byte = nil
-	if len(config.Prefix) > 0 {
-		if p, err := utf8.DecodeUTF8CodepointsToRawBytes(config.Prefix); err != nil {
-			return nil, newIllegalConfigErrorWithDetails("prefix is not valid", "prefix", config.Prefix, "string in utf-8", err)
-		} else {
-			prefixBytes = p
-		}
+	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
+	if err != nil {
+		return nil, err
 	}
 	return newShadowsocksClient(config.Host, int(config.Port), config.Method, config.Password, prefixBytes)
 }

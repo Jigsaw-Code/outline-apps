@@ -17,6 +17,7 @@ package shadowsocks
 import (
 	"encoding/json"
 
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 )
 
@@ -31,6 +32,16 @@ type Config struct {
 	Password   string
 	CipherName string
 	Prefix     []byte
+}
+
+func ParseConfigPrefixFromString(raw string) (p []byte, err error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	if p, err = utf8.DecodeUTF8CodepointsToRawBytes(raw); err != nil {
+		return nil, newIllegalConfigErrorWithDetails("prefix is not valid", "prefix", raw, "string in utf-8", err)
+	}
+	return
 }
 
 // An internal data structure to be used by JSON deserialization.
