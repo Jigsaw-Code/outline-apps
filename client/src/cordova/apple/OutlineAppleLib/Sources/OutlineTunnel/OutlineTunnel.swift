@@ -70,6 +70,8 @@ public class OutlineTunnel: NSObject, Codable {
     @objc public static func getTunnelNetworkSettings(tunnelRemoteAddress: String) -> NEPacketTunnelNetworkSettings {
         // The remote address is not used for routing, but for display in Settings > VPN > Outline.
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: tunnelRemoteAddress)
+        var dnsList = ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"]
+        dnsList.shuffle()
 
         // Configure VPN address and routing.
         let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
@@ -79,8 +81,8 @@ public class OutlineTunnel: NSObject, Codable {
         settings.ipv4Settings = ipv4Settings
 
         // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-        settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
-        
+        settings.dnsSettings = NEDNSSettings(servers: dnsList)
+
         return settings
     }
 }
