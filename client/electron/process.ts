@@ -20,8 +20,8 @@ import process from 'node:process';
  * A child process is terminated abnormally, caused by a non-zero exit code.
  */
 export class ProcessTerminatedExitCodeError extends Error {
-  constructor(public readonly exitCode: number) {
-    super(`Process terminated by non-zero exit code: ${exitCode}`);
+  constructor(public readonly exitCode: number, public readonly errJSON: string) {
+    super(`Process terminated by non-zero exit code: ${exitCode}, caused by ${errJSON}`);
   }
 }
 
@@ -42,7 +42,7 @@ export class ProcessTerminatedSignalError extends Error {
 //       found).
 export class ChildProcessHelper {
   private readonly processName: string;
-  private childProcess?: ChildProcess = null;
+  private childProcess?: ChildProcess | null = null;
   private waitProcessToExit?: Promise<void>;
 
   /**
@@ -50,7 +50,7 @@ export class ChildProcessHelper {
    */
   public isDebugModeEnabled = false;
 
-  private stdErrListener?: (data?: string | Buffer) => void;
+  private stdOutListener?: ((data?: string | Buffer) => void) | null;
 
   constructor(private readonly path: string) {
     this.processName = basename(this.path);
@@ -71,6 +71,7 @@ export class ChildProcessHelper {
     }
     this.childProcess = spawn(this.path, args);
     return (this.waitProcessToExit = new Promise((resolve, reject) => {
+      let stdErrJSON = '';
       const onExit = (code?: number, signal?: string) => {
         if (this.childProcess) {
           this.childProcess.removeAllListeners();
@@ -85,33 +86,37 @@ export class ChildProcessHelper {
         if (code === 0) {
           resolve();
         } else if (code) {
-          reject(new ProcessTerminatedExitCodeError(code));
+          reject(new ProcessTerminatedExitCodeError(code, stdErrJSON));
         } else {
-          reject(new ProcessTerminatedSignalError(signal));
+          reject(new ProcessTerminatedSignalError(signal ?? 'unknown'));
         }
       };
 
-      const onStdErr = (data?: string | Buffer) => {
+      const onStdOut = (data?: string | Buffer) => {
         if (this.isDebugModeEnabled) {
-          console.error(`[STDERR - ${this.processName}]: ${data}`);
+          console.info(`[${this.processName} - STDOUT]: ${data}`);
         }
-        if (this.stdErrListener) {
-          this.stdErrListener(data);
-        }
+        this.stdOutListener?.(data);
       };
-      this.childProcess.stderr.on('data', onStdErr.bind(this));
+      this.childProcess!.stdout?.on('data', onStdOut.bind(this));
+      this.childProcess!.stderr?.on('data', (data?: string | Buffer) => {
+        if (this.isDebugModeEnabled) {
+          console.error(`[${this.processName} - STDERR]: ${data}`);
+        }
+        stdErrJSON += data?.toString() ?? '';
+      });
 
       if (this.isDebugModeEnabled) {
         // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
         // send web traffic information to Sentry.
-        this.childProcess.stdout.pipe(process.stdout);
-        this.childProcess.stderr.pipe(process.stderr);
+        this.childProcess!.stdout?.pipe(process.stdout);
+        this.childProcess!.stderr?.pipe(process.stderr);
       }
 
       // We have to listen for both events: error means the process could not be launched and in that
       // case exit will not be invoked.
-      this.childProcess.on('error', onExit.bind(this));
-      this.childProcess.on('exit', onExit.bind(this));
+      this.childProcess!.on('error', onExit.bind(this));
+      this.childProcess!.on('exit', onExit.bind(this));
     }));
   }
 
@@ -121,25 +126,25 @@ export class ChildProcessHelper {
    * If the process does not exist normally (i.e., exit code !== 0 or received a signal), it will
    * throw either `ProcessTerminatedExitCodeError` or `ProcessTerminatedSignalError`.
    */
-  stop(): Promise<void> {
+  async stop(): Promise<void> {
     if (!this.childProcess) {
       // Never started.
       return;
     }
     this.childProcess.kill();
-    return this.waitProcessToExit;
+    return await this.waitProcessToExit;
   }
 
-  set onStdErr(listener: ((data?: string | Buffer) => void) | undefined) {
-    this.stdErrListener = listener;
-    if (!this.stdErrListener && !this.isDebugModeEnabled) {
-      this.childProcess?.stderr.removeAllListeners();
+  set onStdOut(listener: ((data?: string | Buffer) => void) | null) {
+    this.stdOutListener = listener;
+    if (!this.stdOutListener && !this.isDebugModeEnabled) {
+      this.childProcess?.stdout?.removeAllListeners();
     }
   }
 }
 
 function logExit(processName: string, exitCode?: number, signal?: string) {
-  const prefix = `[EXIT - ${processName}]: `;
+  const prefix = `[${processName} - EXIT]: `;
   if (exitCode !== null) {
     const log = exitCode === 0 ? console.log : console.error;
     log(`${prefix}Exited with code ${exitCode}`);

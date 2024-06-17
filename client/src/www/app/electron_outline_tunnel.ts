@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
-import * as errors from '../model/errors';
-
+import {PlatformError} from '../model/platform_error';
+import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
@@ -41,9 +40,9 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    const err = await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
-    if (err != errors.ErrorCode.NO_ERROR) {
-      throw new errors.OutlinePluginError(err);
+    const errJSON: string | null = await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
+    if (errJSON) {
+      throw PlatformError.parseJSON(errJSON);
     }
     this.running = true;
   }
