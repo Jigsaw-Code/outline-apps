@@ -21,7 +21,7 @@ import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSig
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
 import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
-import {ErrorCode, fromErrorCode, UnexpectedPluginError} from '../src/www/model/errors';
+import {ErrorCode, UnexpectedPluginError} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -216,6 +216,9 @@ export class GoVpnTunnel implements VpnTunnel {
 // outline-go-tun2socks is a Go program that processes IP traffic from a TUN/TAP device
 // and relays it to a Shadowsocks proxy server.
 class GoTun2socks {
+  // Resolved when Tun2socks prints "tun2socks running" to stdout
+  // Call `monitorStarted` to set this field
+  private whenStarted: Promise<void>;
   private stopRequested = false;
   private readonly process: ChildProcessHelper;
 
@@ -252,43 +255,44 @@ class GoTun2socks {
       args.push('-dnsFallback');
     }
 
-    return new Promise(async (startSucceeded, startFailed) => {
-      console.debug('[tun2socks] - starting to route network traffic ...');
-      let launched = false;
-      this.stopRequested = false;
-      let autoRestart = false;
+    const whenProcessEnded = this.launchWithAutoRestart(args);
 
-      do {
-        if (autoRestart) {
-          console.warn('[tun2socks] - exited unexpectedly; restarting...');
+    // Either started successfully, or terminated exceptionally
+    return Promise.race([this.whenStarted, whenProcessEnded]);
+  }
+
+  private monitorStarted(): Promise<void> {
+    return (this.whenStarted = new Promise(resolve => {
+      this.process.onStdOut = (data?: string | Buffer) => {
+        if (data?.toString().includes('tun2socks running')) {
+          console.debug('[tun2socks] - started');
+          this.process.onStdOut = null;
+          resolve();
         }
-        autoRestart = false;
-        this.process.onStdOut = (data?: string | Buffer) => {
-          if (data?.toString().includes('tun2socks running')) {
-            console.debug('[tun2socks] - started');
-            autoRestart = true;
-            this.process.onStdOut = null;
-            if (!launched) {
-              startSucceeded();
-              launched = true;
-            }
-          }
-        };
-        try {
-          await this.process.launch(args);
-          console.info('[tun2socks] - exited with no errors');
-        } catch (e) {
-          console.error('[tun2socks] - terminated due to: ', e);
-          if (!launched) {
-            if (e instanceof ProcessTerminatedExitCodeError) {
-              startFailed(new Error(e.errJSON));
-            } else {
-              startFailed(e);
-            }
-          }
+      };
+    }));
+  }
+
+  private async launchWithAutoRestart(args: string[]): Promise<void> {
+    console.debug('[tun2socks] - starting to route network traffic ...');
+    let restarting = false;
+    do {
+      if (restarting) {
+        console.warn('[tun2socks] - exited unexpectedly; restarting...');
+      }
+      restarting = false;
+      this.monitorStarted().then(() => (restarting = true));
+      try {
+        await this.process.launch(args);
+        console.info('[tun2socks] - exited with no errors');
+      } catch (e) {
+        console.error('[tun2socks] - terminated due to: ', e);
+        if (e instanceof ProcessTerminatedExitCodeError) {
+          throw new Error(e.errJSON);
         }
-      } while (!this.stopRequested && autoRestart);
-    });
+        throw e;
+      }
+    } while (!this.stopRequested && restarting);
   }
 
   stop() {
