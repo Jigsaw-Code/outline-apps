@@ -14,6 +14,11 @@
 
 package platerrors
 
+//////////
+// Error code definitions that will be shared across language boundaries.
+// Update corresponding values in "platform_error.ts" when modifying.
+//////////
+
 // ErrorCode can be used to identify the specific type of a [PlatformError].
 // All possible ErrorCodes are defined as constants in this package.
 // You can reliably use these values in TypeScript to check for specific errors.
@@ -74,7 +79,7 @@ const (
 
 const (
 	// FetchConfigFailed means we failed to fetch a config from a remote location.
-	FetchConfigFailed ErrorCode = "ERR_FETCH_REMOTE_CONFIG_FAILURE"
+	FetchConfigFailed ErrorCode = "ERR_FETCH_CONFIG_FAILURE"
 
 	// IllegalConfig indicates an invalid config to connect to a remote server.
 	IllegalConfig ErrorCode = "ERR_ILLEGAL_CONFIG"

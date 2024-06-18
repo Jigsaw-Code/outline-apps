@@ -92,15 +92,10 @@ export class ChildProcessHelper {
         }
       };
 
-      const onStdOut = (data?: string | Buffer) => {
-        if (this.isDebugModeEnabled) {
-          console.info(`[${this.processName} - STDOUT]: ${data}`);
-        }
-        this.stdOutListener?.(data);
-      };
-      this.childProcess!.stdout?.on('data', onStdOut.bind(this));
+      this.childProcess!.stdout?.on('data', data => this.stdOutListener?.(data));
       this.childProcess!.stderr?.on('data', (data?: string | Buffer) => {
         if (this.isDebugModeEnabled) {
+          // This will be captured by Sentry
           console.error(`[${this.processName} - STDERR]: ${data}`);
         }
         stdErrJSON += data?.toString() ?? '';

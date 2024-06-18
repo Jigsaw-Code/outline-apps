@@ -27,7 +27,7 @@ import {CustomError} from '@outline/infrastructure/custom_error';
  * @returns {PlatformError} A non-null instance of PlatformError.
  */
 function newInvalidJSONPlatformError(message: string, rawJSONObj: object | string): PlatformError {
-  return new PlatformError(InvalidLogic, message, {details: {json: rawJSONObj}});
+  return new PlatformError(InternalError, message, {details: {json: rawJSONObj}});
 }
 
 /**
@@ -148,9 +148,9 @@ export class PlatformError extends CustomError {
  */
 export type ErrorCode = string;
 
-export const InvalidLogic: ErrorCode = 'ERR_INVALID_LOGIC';
+export const InternalError: ErrorCode = 'ERR_INTERNAL_ERROR';
 
-export const FetchConfigFailure: ErrorCode = 'ERR_FETCH_REMOTE_CONFIG_FAILURE';
+export const FetchConfigFailed: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
 export const IllegalConfig: ErrorCode = 'ERR_ILLEGAL_CONFIG';
 
 export const ProxyServerUnreachable: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
