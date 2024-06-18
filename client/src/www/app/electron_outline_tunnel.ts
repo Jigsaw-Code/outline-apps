@@ -21,7 +21,7 @@ export class ElectronOutlineTunnel implements Tunnel {
 
   private running = false;
 
-  constructor(public readonly id: string) {
+  constructor(readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     window.electron.methodChannel.on(`proxy-connected-${this.id}`, () => {

@@ -17,13 +17,13 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import {Server} from './server';
 
 export class ServerAlreadyAdded extends CustomError {
-  constructor(public readonly server: Server) {
+  constructor(readonly server: Server) {
     super();
   }
 }
 
 export class ShadowsocksUnsupportedCipher extends CustomError {
-  constructor(public readonly cipher: string) {
+  constructor(readonly cipher: string) {
     super();
   }
 }
@@ -78,7 +78,7 @@ export class ProxyConnectionFailure extends CustomError {
 //
 // TODO: Rename this class, "plugin" is a poor name since the Electron apps do not have plugins.
 export class OutlinePluginError extends CustomError {
-  constructor(public readonly errorCode: ErrorCode) {
+  constructor(readonly errorCode: ErrorCode) {
     super();
   }
 }

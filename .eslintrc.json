@@ -86,6 +86,12 @@
     "no-prototype-builtins": "off",
     "prefer-const": "error",
     "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "no-public"
+      }
+    ],
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-explicit-any": "error",

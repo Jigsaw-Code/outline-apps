@@ -20,7 +20,7 @@ import process from 'node:process';
  * A child process is terminated abnormally, caused by a non-zero exit code.
  */
 export class ProcessTerminatedExitCodeError extends Error {
-  constructor(public readonly exitCode: number) {
+  constructor(readonly exitCode: number) {
     super(`Process terminated by non-zero exit code: ${exitCode}`);
   }
 }
@@ -29,7 +29,7 @@ export class ProcessTerminatedExitCodeError extends Error {
  * A child process is terminated abnormally, caused by a signal string.
  */
 export class ProcessTerminatedSignalError extends Error {
-  constructor(public readonly signal: string) {
+  constructor(readonly signal: string) {
     super(`Process terminated by signal: ${signal}`);
   }
 }
@@ -48,7 +48,7 @@ export class ChildProcessHelper {
   /**
    * Whether to enable verbose logging for the process.  Must be called before launch().
    */
-  public isDebugModeEnabled = false;
+  isDebugModeEnabled = false;
 
   private stdErrListener?: (data?: string | Buffer) => void;
 

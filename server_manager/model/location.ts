@@ -29,7 +29,7 @@
  * When the key and value are equal, this indicates that they are redundant.
  */
 export class GeoLocation {
-  constructor(public readonly id: string, public readonly countryCode: string) {}
+  constructor(readonly id: string, public readonly countryCode: string) {}
 
   countryIsRedundant(): boolean {
     return this.countryCode === this.id;
