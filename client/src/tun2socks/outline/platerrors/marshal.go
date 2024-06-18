@@ -33,7 +33,7 @@ func convertToPlatformErrJSON(e error) *platformErrJSON {
 		// We simply return a single JSON object without recursively parsing the wrapped errors,
 		// as they don't provide any additional information beyond the already included error message.
 		return &platformErrJSON{
-			Code:    string(GoError),
+			Code:    string(InternalError),
 			Message: e.Error(),
 		}
 	}

@@ -49,7 +49,7 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 				NewWithDetailsCause("ERR_LVL1", "msg lvl1", ErrorDetails{"details": "here"}, errors.New("go err lvl0"))),
 			want: `{"code":"ERR_LVL2","message":"msg lvl2",` +
 				`"cause":{"code":"ERR_LVL1","message":"msg lvl1","details":{"details":"here"},` +
-				`"cause":{"code":"ERR_GOLANG_ERROR","message":"go err lvl0"}}}`,
+				`"cause":{"code":"ERR_INTERNAL_ERROR","message":"go err lvl0"}}}`,
 		},
 		{
 			name: "Details",
@@ -91,13 +91,13 @@ func TestPlatformErrorWrapsCause(t *testing.T) {
 
 func TestNilError(t *testing.T) {
 	got := (*PlatformError)(nil).Error()
-	want := `{"code":"ERR_INVALID_LOGIC","message":"nil error"}`
+	want := `{"code":"ERR_INTERNAL_ERROR","message":"nil error"}`
 	require.Equal(t, want, got)
 }
 
 func TestInvalidErrorCode(t *testing.T) {
 	got := (&PlatformError{}).Error()
-	want := `{"code":"ERR_INVALID_LOGIC","message":"empty error code"}`
+	want := `{"code":"ERR_INTERNAL_ERROR","message":"empty error code"}`
 	require.Equal(t, want, got)
 }
 
@@ -110,14 +110,14 @@ func TestJSONMarshalError(t *testing.T) {
 	require.Nil(t, errJson)
 	require.Error(t, err)
 
-	got := formatInvalidLogicErrJSON("JSON marshal failure: " + err.Error())
-	want := `{"code":"ERR_INVALID_LOGIC","message":` +
+	got := formatInternalErrorJSON("JSON marshal failure: " + err.Error())
+	want := `{"code":"ERR_INTERNAL_ERROR","message":` +
 		`"JSON marshal failure: json: unsupported value: encountered a cycle via *platerrors.platformErrJSON"}`
 	require.Equal(t, want, got)
 }
 
 func TestEscapeInFormatInvalidLogicErrJSON(t *testing.T) {
-	got := formatInvalidLogicErrJSON("Msg with quote \" and backslash \\")
-	want := `{"code":"ERR_INVALID_LOGIC","message":"Msg with quote  and backslash "}`
+	got := formatInternalErrorJSON("Msg with quote \" and backslash \\")
+	want := `{"code":"ERR_INTERNAL_ERROR","message":"Msg with quote  and backslash "}`
 	require.Equal(t, want, got)
 }

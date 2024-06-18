@@ -20,30 +20,12 @@ package platerrors
 type ErrorCode string
 
 //////////
-// Internal error codes
-//////////
-
-const (
-	// GoError represents a general error in Go that is not a [PlatformError].
-	// It is typically the last error in the chain of the causes in a [PlatformError].
-	// This error code is for internal use only. You should not use it to create a [PlatformError]
-	// in your Go code.
-	GoError ErrorCode = "ERR_GOLANG_ERROR"
-
-	// InvalidLogic indicates a development mistake that should be identified and
-	// corrected during the development process. It should not be expected to occur in production.
-	// Typically this error code is for internal use only. You should not use it to create a
-	// [PlatformError] in your Go code.
-	InvalidLogic ErrorCode = "ERR_INVALID_LOGIC"
-)
-
-//////////
 // Common error codes - general
 //////////
 
 const (
-	// InternalError represents a general unknown internal service error.
-	InternalError ErrorCode = "ERR_UNKNOWN_INTERNAL_ERROR"
+	// InternalError represents a general internal service error.
+	InternalError ErrorCode = "ERR_INTERNAL_ERROR"
 )
 
 //////////
