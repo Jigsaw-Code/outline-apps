@@ -20,48 +20,56 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 //////
 
 /**
- * Creates a new {@link PlatformError} of {@link InvalidLogic} representing that we failed to parse
- * PlatformError JSON string, typically this is a development error.
- * @param message The message that will be included in the result.
- * @param rawJSONObj The invalid JSON object that will be included as the details of the result.
- * @returns {PlatformError} A non-null instance of PlatformError.
+ * Creates a new {@link PlatformError} instance with the error code set to {@link INTERNAL_ERROR}.
+ * @param cause An optional cause of this error.
+ * @returns A non-null instance of {@link PlatformError}.
  */
-function newInvalidJSONPlatformError(message: string, rawJSONObj: object | string): PlatformError {
-  return new PlatformError(InternalError, message, {details: {json: rawJSONObj}});
+function createInternalError(cause?: unknown): PlatformError {
+  const MESSAGE = 'Internal service error';
+
+  if (typeof cause === 'undefined' || cause === null) {
+    return new PlatformError(INTERNAL_ERROR, MESSAGE);
+  } else if (cause instanceof Error) {
+    return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause});
+  }
+
+  // Use String(cause) instead of cause.toString() or new String(cause) to cover
+  // primitive types and Symbols.
+  return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause: new Error(String(cause))});
 }
 
 /**
  * Recursively validates and parses a {@link rawObj} into a {@link PlatformError}.
- *
- * If {@link rawObj} is invalid, a {@link newInvalidJSONPlatformError} will be returned.
- * Otherwise, we will return the parsed {@link PlatformError}.
  * @param {object} rawObj Any object that is returned by JSON.parse.
  * @returns {PlatformError} A non-null instance of PlatformError.
+ * @throws {Error} Will be thrown when {@link rawObj} is invalid.
  */
 function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
-  if (!rawObj) {
-    return newInvalidJSONPlatformError('error JSON is falsy', rawObj);
-  }
-
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
-    return newInvalidJSONPlatformError('`code` is not string in error JSON', rawObj);
+    throw new Error('code is invalid');
   }
   const code = rawObj.code.trim();
   if (!code) {
-    return newInvalidJSONPlatformError('`code` is empty in error JSON', rawObj);
+    throw new Error('code is empty');
   }
-
   if (!('message' in rawObj) || typeof rawObj.message !== 'string') {
-    return newInvalidJSONPlatformError('`message` is not string in error JSON', rawObj);
+    throw new Error('message is invalid');
   }
 
-  let options: {details?: object; cause?: Error} = null;
-  if ('details' in rawObj || 'cause' in rawObj) {
-    options = {};
-    if ('details' in rawObj && typeof rawObj.details === 'object' && rawObj.details) {
-      options.details = rawObj.details;
+  let options: {details?: ErrorDetails; cause?: Error} = {};
+  if ('details' in rawObj) {
+    if (typeof rawObj.details !== 'object') {
+      throw new Error('details is invalid');
     }
-    if ('cause' in rawObj && typeof rawObj.cause === 'object' && rawObj.cause) {
+    if (rawObj.details) {
+      options.details = <ErrorDetails>rawObj.details;
+    }
+  }
+  if ('cause' in rawObj) {
+    if (typeof rawObj.cause !== 'object') {
+      throw new Error('cause is invalid');
+    }
+    if (rawObj.cause) {
       options.cause = convertRawErrorObjectToPlatformError(rawObj.cause);
     }
   }
@@ -70,10 +78,16 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
 }
 
 /**
+ * ErrorDetails represents the details map of a {@link PlatformError}.
+ * The keys in this map are strings, and the values can be of any data type.
+ */
+export type ErrorDetails = {[key: string]: unknown};
+
+/**
  * PlatformError is used to communicate error details from Go to TypeScript.
  */
 export class PlatformError extends CustomError {
-  public readonly details: object = null;
+  readonly details?: ErrorDetails = null;
 
   /**
    * Constructs a new PlatformError instance with the specified parameters.
@@ -82,10 +96,10 @@ export class PlatformError extends CustomError {
    * @param options An object containing the optional details and cause.
    */
   constructor(
-    public readonly code: ErrorCode,
+    readonly code: ErrorCode,
     message: string,
     options?: {
-      details?: object;
+      details?: ErrorDetails;
       cause?: Error;
     }
   ) {
@@ -94,31 +108,67 @@ export class PlatformError extends CustomError {
   }
 
   /**
-   * Parses a JSON string into a {@link PlatformError}.
+   * Parses a cross-component-boundary error object into a {@link PlatformError}.
    *
-   * If {@link rawJSON} is invalid, it returns a PlatformError of {@link InvalidLogic} with the
-   * original JSON in its details.
-   * @param {string} rawJSON The JSON string to parse.
-   * @returns {PlatformError} A non-null PlatformError object.
+   * The error object can be one of the following types:
+   * - A raw JSON string representation of a PlatformError.
+   * - An Error whose message is a raw JSON string representation of a PlatformError.
+   * - Otherwise, an {@link INTERNAL_ERROR} {@link PlatformError} with {@link errObj} as its cause
+   *   will be returned.
+   *
+   * @param errObj The error object to be parsed.
+   * @returns A non-null PlatformError object.
+   *
+   * @example
+   * try {
+   *   // cordova plugin calls or electron IPC calls
+   * } catch (e) {
+   *   throw new PlatformError.parseFrom(e);
+   * }
    */
-  static parseJSON(rawJSON: string): PlatformError {
-    let rawObj: unknown;
+  static parseFrom(errObj: string | Error | unknown): PlatformError {
+    if (typeof errObj === 'undefined' || errObj === null) {
+      return createInternalError();
+    }
+    if (errObj instanceof PlatformError) {
+      return errObj;
+    }
+
+    let rawJSON: string;
+    let rawObj: object;
+    if (typeof errObj === 'string') {
+      rawJSON = errObj;
+    } else if (errObj instanceof Error) {
+      rawJSON = errObj.message;
+    } else if (typeof errObj === 'object') {
+      rawObj = errObj;
+    } else {
+      return createInternalError(errObj);
+    }
+
+    if (rawJSON) {
+      try {
+        rawObj = JSON.parse(rawJSON);
+      } catch {
+        return createInternalError(errObj);
+      }
+    }
+
+    if (typeof rawObj !== 'object' || !rawObj) {
+      return createInternalError(errObj);
+    }
     try {
-      rawObj = JSON.parse(rawJSON);
+      return convertRawErrorObjectToPlatformError(rawObj);
     } catch {
-      return newInvalidJSONPlatformError('invalid error JSON string', rawJSON);
+      return createInternalError(errObj);
     }
-    if (typeof rawObj !== 'object') {
-      return newInvalidJSONPlatformError('error JSON is not an object', rawJSON);
-    }
-    return convertRawErrorObjectToPlatformError(rawObj);
   }
 
   /**
    * Returns a user readable string of this error with all details and causes.
    * @returns {string} A user friendly string representing this error.
    */
-  public toString(): string {
+  toString(): string {
     let result = this.code + '\n' + this.message;
     if (this.details) {
       result += '\nDetails: ';
@@ -129,9 +179,8 @@ export class PlatformError extends CustomError {
       }
     }
     if (this.cause) {
-      const subStr = this.cause.toString();
       // Indent and append
-      result += '\nCaused by:\n' + subStr.replace(/^/gm, '  ');
+      result += '\nCaused by:\n' + String(this.cause).replace(/^/gm, '  ');
     }
     return result;
   }
@@ -148,9 +197,9 @@ export class PlatformError extends CustomError {
  */
 export type ErrorCode = string;
 
-export const InternalError: ErrorCode = 'ERR_INTERNAL_ERROR';
+export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
 
-export const FetchConfigFailed: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
-export const IllegalConfig: ErrorCode = 'ERR_ILLEGAL_CONFIG';
+export const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
+export const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
 
-export const ProxyServerUnreachable: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
+export const PROXY_SERVER_UNREACHABLE: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';

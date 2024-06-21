@@ -450,11 +450,17 @@ function main() {
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  // Connects to the specified server.
+  // Connects to a proxy server specified by a config.
+  //
+  // If any issues occur, an Error will be thrown, which you can try-catch around
+  // `ipcRenderer.invoke`. But you should avoid depending on the specific error type.
+  // Instead, you should use its message property (which would probably be a JSON representation
+  // of a PlatformError). See https://github.com/electron/electron/issues/24427.
+  //
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<string | null> => {
+    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
@@ -480,16 +486,11 @@ function main() {
         tunnelStore.save(args).catch(() => {
           console.error('Failed to store tunnel.');
         });
-
-        return null;
       } catch (e) {
-        console.error(`could not connect: ${e.name} (${e.message})`);
+        console.error('could not connect:', e);
         // clean up the state, no need to await because stopVpn might throw another error which can be ignored
         stopVpn();
-        if (!(e?.message ?? '')) {
-          return `unexpected error of type ${e.name}`;
-        }
-        return e.message;
+        throw e;
       }
     }
   );

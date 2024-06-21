@@ -276,23 +276,25 @@ class GoTun2socks {
   private async launchWithAutoRestart(args: string[]): Promise<void> {
     console.debug('[tun2socks] - starting to route network traffic ...');
     let restarting = false;
+    let lastError: Error | null = null;
     do {
       if (restarting) {
-        console.warn('[tun2socks] - exited unexpectedly; restarting...');
+        console.warn('[tun2socks] - exited unexpectedly; restarting ...');
       }
       restarting = false;
       this.monitorStarted().then(() => (restarting = true));
       try {
+        lastError = null;
         await this.process.launch(args);
         console.info('[tun2socks] - exited with no errors');
       } catch (e) {
-        console.error('[tun2socks] - terminated due to: ', e);
-        if (e instanceof ProcessTerminatedExitCodeError) {
-          throw new Error(e.errJSON);
-        }
-        throw e;
+        console.error('[tun2socks] - terminated due to:', e);
+        lastError = e;
       }
     } while (!this.stopRequested && restarting);
+    if (lastError) {
+      throw lastError;
+    }
   }
 
   stop() {
@@ -336,13 +338,12 @@ async function checkConnectivity(tun2socks: GoTun2socks) {
     await tun2socks.checkConnectivity();
     return true;
   } catch (e) {
-    console.error(`connectivity check error: ${e}`);
+    console.error('connectivity check error:', e);
     if (e instanceof ProcessTerminatedExitCodeError) {
       if (e.exitCode === ErrorCode.UDP_RELAY_NOT_ENABLED) {
         return false;
       }
-      throw new Error(e.errJSON);
     }
-    throw new UnexpectedPluginError();
+    throw e;
   }
 }

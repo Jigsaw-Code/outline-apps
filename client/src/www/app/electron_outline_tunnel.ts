@@ -40,11 +40,12 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    const errJSON: string | null = await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
-    if (errJSON) {
-      throw PlatformError.parseJSON(errJSON);
+    try {
+      await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
+      this.running = true;
+    } catch (e) {
+      throw PlatformError.parseFrom(e);
     }
-    this.running = true;
   }
 
   async stop() {
