@@ -52,13 +52,14 @@ export class ElectronRendererMethodChannel {
       await ipcRenderer.invoke(ipcName, ...args);
     } catch (e) {
       // Normalize the error message to what's being thrown in the IPC itself
-      //   e.message == "Error invoking remote method 'xxx': Error: <actual message>"
+      //   e.message == "Error invoking remote method 'xxx': <error name>: <actual message>"
       // https://github.com/electron/electron/blob/v31.0.0/lib/renderer/api/ipc-renderer.ts#L22
       if (typeof e?.message === 'string') {
-        const errPrefix = `'${ipcName}': Error: `;
-        const prefixIndex = e.message.indexOf(errPrefix);
-        if (prefixIndex >= 0) {
-          e.message = e.message.substring(prefixIndex + errPrefix.length);
+        const errPattern = new RegExp(`'${ipcName}':\\s*(?<name>[^:]+):\\s*(?<message>.*)`, 's');
+        const groups = e.message.match(errPattern)?.groups;
+        if (typeof groups?.['name'] === 'string' && typeof groups?.['message'] === 'string') {
+          e.name = groups['name'];
+          e.message = groups['message'];
         }
       }
       throw e;
