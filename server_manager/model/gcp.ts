@@ -49,7 +49,7 @@ export class Zone implements location.CloudLocation {
   };
 
   /** ID is a GCP Zone ID like "us-central1-a". */
-  constructor(public readonly id: string) {}
+  constructor(readonly id: string) {}
 
   /** Returns a region ID like "us-central1". */
   get regionId(): string {

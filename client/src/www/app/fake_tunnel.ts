@@ -24,7 +24,7 @@ export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 export class FakeOutlineTunnel implements Tunnel {
   private running = false;
 
-  constructor(public readonly id: string) {}
+  constructor(readonly id: string) {}
 
   private playBroken(hostname?: string) {
     return hostname === FAKE_BROKEN_HOSTNAME;

@@ -215,11 +215,11 @@ export class RoutingDaemon {
     return this.writeReset();
   }
 
-  public get onceDisconnected() {
+  get onceDisconnected() {
     return this.disconnected;
   }
 
-  public set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
+  set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
     this.networkChangeListener = newListener;
   }
 }

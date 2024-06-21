@@ -48,7 +48,7 @@ export class ChildProcessHelper {
   /**
    * Whether to enable verbose logging for the process.  Must be called before launch().
    */
-  public isDebugModeEnabled = false;
+  isDebugModeEnabled = false;
 
   private stdOutListener?: ((data?: string | Buffer) => void) | null;
 
