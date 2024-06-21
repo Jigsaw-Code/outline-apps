@@ -14,10 +14,11 @@
 
 import {CustomError} from '@outline/infrastructure/custom_error';
 
-//////
-// This file defines types and constants corresponding to the backend Go's `platerrors` package.
-// It will be used to receive native errors from Go, eventually replacing the older NativeError type.
-//////
+/**
+ * @fileoverview This file defines types and constants corresponding to the backend Go's
+ * `platerrors` package. It will be used to receive native errors from Go, eventually replacing
+ * the older NativeError type.
+ */
 
 /**
  * Creates a new {@link PlatformError} instance with the error code set to {@link INTERNAL_ERROR}.
@@ -56,7 +57,7 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
     throw new Error('message is invalid');
   }
 
-  let options: {details?: ErrorDetails; cause?: Error} = {};
+  const options: {details?: ErrorDetails; cause?: Error} = {};
   if ('details' in rawObj) {
     if (typeof rawObj.details !== 'object') {
       throw new Error('details is invalid');

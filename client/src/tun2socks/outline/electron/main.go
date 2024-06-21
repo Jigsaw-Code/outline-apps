@@ -136,6 +136,7 @@ func main() {
 		}
 	}()
 
+	// This message is used in TypeScript to determine whether tun2socks has been started successfully
 	logger.Info("tun2socks running...")
 
 	osSignals := make(chan os.Signal, 1)

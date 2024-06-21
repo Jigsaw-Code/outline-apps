@@ -21,7 +21,7 @@ import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSig
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
 import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
-import {ErrorCode, UnexpectedPluginError} from '../src/www/model/errors';
+import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -228,7 +228,7 @@ class GoTun2socks {
 
   /**
    * Starts tun2socks process, and waits for it to launch successfully.
-   * Success is confirmed when the phrase "tun2socks started" is detected in the `stdout`.
+   * Success is confirmed when the phrase "tun2socks running" is detected in the `stdout`.
    * Otherwise, an error containing a JSON-formatted message will be thrown.
    * @param isUdpEnabled Indicates whether the remote Shadowsocks server supports UDP.
    */

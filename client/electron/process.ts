@@ -42,7 +42,7 @@ export class ProcessTerminatedSignalError extends Error {
 //       found).
 export class ChildProcessHelper {
   private readonly processName: string;
-  private childProcess?: ChildProcess | null = null;
+  private childProcess?: ChildProcess;
   private waitProcessToExit?: Promise<void>;
 
   /**
@@ -75,7 +75,7 @@ export class ChildProcessHelper {
       const onExit = (code?: number, signal?: string) => {
         if (this.childProcess) {
           this.childProcess.removeAllListeners();
-          this.childProcess = null;
+          this.childProcess = undefined;
         } else {
           // When listening to both the 'exit' and 'error' events, guard against accidentally
           // invoking handler functions multiple times.
@@ -92,8 +92,8 @@ export class ChildProcessHelper {
         }
       };
 
-      this.childProcess!.stdout?.on('data', data => this.stdOutListener?.(data));
-      this.childProcess!.stderr?.on('data', (data?: string | Buffer) => {
+      this.childProcess?.stdout?.on('data', data => this.stdOutListener?.(data));
+      this.childProcess?.stderr?.on('data', (data?: string | Buffer) => {
         if (this.isDebugModeEnabled) {
           // This will be captured by Sentry
           console.error(`[${this.processName} - STDERR]: ${data}`);
@@ -104,14 +104,14 @@ export class ChildProcessHelper {
       if (this.isDebugModeEnabled) {
         // Redirect subprocess output while bypassing the Node console.  This makes sure we don't
         // send web traffic information to Sentry.
-        this.childProcess!.stdout?.pipe(process.stdout);
-        this.childProcess!.stderr?.pipe(process.stderr);
+        this.childProcess?.stdout?.pipe(process.stdout);
+        this.childProcess?.stderr?.pipe(process.stderr);
       }
 
       // We have to listen for both events: error means the process could not be launched and in that
       // case exit will not be invoked.
-      this.childProcess!.on('error', onExit.bind(this));
-      this.childProcess!.on('exit', onExit.bind(this));
+      this.childProcess?.on('error', onExit.bind(this));
+      this.childProcess?.on('exit', onExit.bind(this));
     }));
   }
 
