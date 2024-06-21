@@ -66,7 +66,7 @@ export class PathApiClient {
    * @param base A valid URL
    * @param fingerprint A SHA-256 hash of the expected leaf certificate, in binary encoding.
    */
-  constructor(public readonly base: string, public readonly fetcher: Fetcher) {}
+  constructor(readonly base: string, public readonly fetcher: Fetcher) {}
 
   /**
    * Makes a request relative to the base URL with a JSON body.

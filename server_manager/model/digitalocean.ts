@@ -28,7 +28,7 @@ export class Region implements location.CloudLocation {
     syd: location.SYDNEY,
     tor: location.TORONTO,
   };
-  constructor(public readonly id: string) {}
+  constructor(readonly id: string) {}
 
   get location(): location.GeoLocation {
     return Region.LOCATION_MAP[this.id.substring(0, 3).toLowerCase()];

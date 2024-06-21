@@ -75,7 +75,7 @@ class ElectronUpdater extends AbstractUpdater {
 }
 
 class ElectronVpnInstaller implements VpnInstaller {
-  public async installVpn(): Promise<void> {
+  async installVpn(): Promise<void> {
     const err = await window.electron.methodChannel.invoke('install-outline-services');
 
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:

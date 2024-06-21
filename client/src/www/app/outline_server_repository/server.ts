@@ -30,9 +30,9 @@ export class OutlineServer implements Server {
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
-    public readonly id: string,
-    public readonly accessKey: string,
-    public readonly type: ServerType,
+    readonly id: string,
+    readonly accessKey: string,
+    readonly type: ServerType,
     private _name: string,
     private tunnel: Tunnel,
     private eventQueue: events.EventQueue

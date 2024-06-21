@@ -39,21 +39,21 @@ export class ElectronRendererMethodChannel {
    * We need to have a namespace due to security consideration:
    *   - https://www.electronjs.org/docs/latest/tutorial/context-isolation#security-considerations
    */
-  public constructor(private readonly namespace: string) {}
+  constructor(private readonly namespace: string) {}
 
-  public readonly send = (channel: string, ...args: unknown[]): void =>
+  readonly send = (channel: string, ...args: unknown[]): void =>
     ipcRenderer.send(`${this.namespace}-${channel}`, ...args);
 
   // TODO: replace the `any` with a better type once we unify the IPC call framework
   /* eslint-disable  @typescript-eslint/no-explicit-any */
-  public readonly invoke = (channel: string, ...args: unknown[]): Promise<any> =>
+  readonly invoke = (channel: string, ...args: unknown[]): Promise<any> =>
     ipcRenderer.invoke(`${this.namespace}-${channel}`, ...args);
 
-  public readonly on = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+  readonly on = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
     ipcRenderer.on(`${this.namespace}-${channel}`, listener);
   };
 
-  public readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+  readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
     ipcRenderer.once(`${this.namespace}-${channel}`, listener);
   };
 }
