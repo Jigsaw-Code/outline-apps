@@ -95,6 +95,40 @@ namespace OutlineService
             "203.0.113.0/24",
             "240.0.0.0/4"
         };
+        private static string[] ALLOW_DOMAINS = {
+            "195.201.201.32",
+            "whatismyip.com",
+            "88.208.29.20",
+            "64.38.230.2",
+            "104.19.242.83",
+            "104.19.241.83",
+            "chaturbate.com",
+            "stripchat.com",
+            "ru.stripchat.com",
+            "ru.strip.chat",
+            "ru.strip.chat.global",
+            "facebook.com",
+            "facebook.net",
+            "graphql.instagram.com",
+            "graph.instagram.com",
+            "connect.facebook.net",
+            "play.google.com",
+            "openwrt.org",
+            "apple.com",
+            "developer.apple.com",
+            "securemetrics.apple.com",
+            "securemvt.apple.com",
+            "appstoreconnect.apple.com",
+            "support.apple.com",
+            "instagram.com",
+            "facebook.com",
+            "developers.facebook.com",
+            "static.xx.fbcdn.net",
+            "connect.facebook.com",
+            "icloud.com",
+            "setup.icloud.com",
+            "appleid.cdn-apple.com"
+        };
         private const string CMD_NETSH = "netsh";
         private const string CMD_ROUTE = "route";
 
