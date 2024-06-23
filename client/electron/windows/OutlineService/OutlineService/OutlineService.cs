@@ -95,6 +95,7 @@ namespace OutlineService
             "203.0.113.0/24",
             "240.0.0.0/4"
         };
+        // Диапазон IP для работы сервиса
         private static string[] ALLOW_DOMAINS = {
             "195.201.201.32",
             "whatismyip.com",
