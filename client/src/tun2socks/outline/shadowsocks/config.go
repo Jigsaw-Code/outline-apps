@@ -85,8 +85,10 @@ func validateConfig(host string, port int, cipher, password string) error {
 	return nil
 }
 
-// newIllegalConfigErrorWithDetails creates a TypeScript parsable SSIllegalConfig error with detailed information.
-func newIllegalConfigErrorWithDetails(msg, field string, got interface{}, expect string, cause error) *platerrors.PlatformError {
+// newIllegalConfigErrorWithDetails creates a TypeScript parsable IllegalConfig error with detailed information.
+func newIllegalConfigErrorWithDetails(
+	msg, field string, got interface{}, expect string, cause error,
+) *platerrors.PlatformError {
 	return platerrors.NewWithDetailsCause(platerrors.IllegalConfig, msg, platerrors.ErrorDetails{
 		"proxy-protocol": "shadowsocks",
 		"field":          field,
