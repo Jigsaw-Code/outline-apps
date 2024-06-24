@@ -87,6 +87,8 @@ export class OutlinePluginError extends CustomError {
 // Bifurcates into two subclasses:
 //  - "expected" errors originating in native code, e.g. incorrect password
 //  - "unexpected" errors originating in native code, e.g. unhandled routing table
+//
+// NativeError is being replaced by PlatformError. Please use PlatformError for new code.
 export class NativeError extends CustomError {}
 export class RegularNativeError extends NativeError {}
 export class RedFlagNativeError extends NativeError {}

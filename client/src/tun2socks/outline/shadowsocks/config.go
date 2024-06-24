@@ -16,7 +16,8 @@ package shadowsocks
 
 import (
 	"encoding/json"
-	"fmt"
+
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 )
 
 // Config represents a (legacy) shadowsocks server configuration. You can use
@@ -56,19 +57,29 @@ func parseConfigFromJSON(in string) (*configJSON, error) {
 // validateConfig validates whether a Shadowsocks server configuration is valid
 // (it won't do any connectivity tests)
 //
-// Returns nil if it is valid; or an error message.
+// Returns nil if it is valid; or a [platerrors.PlatformError].
 func validateConfig(host string, port int, cipher, password string) error {
 	if len(host) == 0 {
-		return fmt.Errorf("must provide a host name or IP address")
+		return newIllegalConfigErrorWithDetails("host name or IP is not valid", "host", host, "not nil", nil)
 	}
 	if port <= 0 || port > 65535 {
-		return fmt.Errorf("port must be within range [1..65535]")
+		return newIllegalConfigErrorWithDetails("port is not valid", "port", port, "within range [1..65535]", nil)
 	}
 	if len(cipher) == 0 {
-		return fmt.Errorf("must provide an encryption cipher method")
+		return newIllegalConfigErrorWithDetails("cipher method is not valid", "cipher", cipher, "not nil", nil)
 	}
 	if len(password) == 0 {
-		return fmt.Errorf("must provide a password")
+		return newIllegalConfigErrorWithDetails("password is not valid", "password", password, "not nil", nil)
 	}
 	return nil
+}
+
+// newIllegalConfigErrorWithDetails creates a TypeScript parsable SSIllegalConfig error with detailed information.
+func newIllegalConfigErrorWithDetails(msg, field string, got interface{}, expect string, cause error) *platerrors.PlatformError {
+	return platerrors.NewWithDetailsCause(platerrors.IllegalConfig, msg, platerrors.ErrorDetails{
+		"proxy-protocol": "shadowsocks",
+		"field":          field,
+		"got":            got,
+		"expect":         expect,
+	}, cause)
 }
