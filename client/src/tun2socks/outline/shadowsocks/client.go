@@ -27,7 +27,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 	"github.com/eycorsican/go-tun2socks/common/log"
@@ -41,51 +41,48 @@ type Client outline.Client
 // Deprecated: Please use NewClientFromJSON.
 func NewClient(config *Config) (*Client, error) {
 	if config == nil {
-		return nil, fmt.Errorf("shadowsocks configuration is required")
+		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be provided", ".", config, "not nil", nil)
 	}
 	return newShadowsocksClient(config.Host, config.Port, config.CipherName, config.Password, config.Prefix)
 }
 
-// NewClientFromJSON creates a new Shadowsocks client from a JSON formatted
-// configuration.
+// NewClientFromJSON creates a new Shadowsocks client from a JSON formatted configuration.
 func NewClientFromJSON(configJSON string) (*Client, error) {
 	config, err := parseConfigFromJSON(configJSON)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse Shadowsocks configuration JSON: %w", err)
+		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be a valid JSON string", ".", configJSON, "JSON string", err)
 	}
-	var prefixBytes []byte = nil
-	if len(config.Prefix) > 0 {
-		if p, err := utf8.DecodeUTF8CodepointsToRawBytes(config.Prefix); err != nil {
-			return nil, fmt.Errorf("failed to parse prefix string: %w", err)
-		} else {
-			prefixBytes = p
-		}
+	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
+	if err != nil {
+		return nil, err
 	}
 	return newShadowsocksClient(config.Host, int(config.Port), config.Method, config.Password, prefixBytes)
 }
 
 func newShadowsocksClient(host string, port int, cipherName, password string, prefix []byte) (*Client, error) {
 	if err := validateConfig(host, port, cipherName, password); err != nil {
-		return nil, fmt.Errorf("invalid Shadowsocks configuration: %w", err)
+		return nil, err
 	}
 
 	// TODO: consider using net.LookupIP to get a list of IPs, and add logic for optimal selection.
 	proxyIP, err := net.ResolveIPAddr("ip", host)
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve proxy address: %w", err)
+		return nil, platerrors.NewWithCause(platerrors.ResolveIPFailed, "failed to resolve ip of the proxy host", err)
 	}
 	proxyAddress := net.JoinHostPort(proxyIP.String(), fmt.Sprint(port))
 
 	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Shadowsocks cipher: %w", err)
+		return nil, newIllegalConfigErrorWithDetails("cipher&password pair is not valid",
+			"cipher|password", cipherName+"|"+password, "valid combination", err)
 	}
 
 	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be
 	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
 	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: net.Dialer{KeepAlive: -1}}, cryptoKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
+		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create TCP traffic handler",
+			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"}, err)
 	}
 	if len(prefix) > 0 {
 		log.Debugf("Using salt prefix: %s", string(prefix))
@@ -94,7 +91,8 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 
 	packetListener, err := shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: proxyAddress}, cryptoKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create PacketListener: %w", err)
+		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create UDP traffic handler",
+			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"}, err)
 	}
 
 	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil

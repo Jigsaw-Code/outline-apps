@@ -17,6 +17,7 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
+import {localizeErrorCode} from './error_localizer';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -24,9 +25,10 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
+import {PlatformError} from '../model/platform_error';
 import {Server} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
-import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
@@ -221,6 +223,10 @@ export class App {
       buttonHandler = () => {
         this.showErrorDetailsDialog(error.details);
       };
+    } else if (error instanceof PlatformError) {
+      toastMessage = localizeErrorCode(error.code, this.localize);
+      buttonMessage = this.localize('error-details');
+      buttonHandler = () => this.showErrorDetailsDialog(error.toString());
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
@@ -405,7 +411,7 @@ export class App {
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
-      console.error(`could not connect to server ${serverId}: ${e.name}`);
+      console.error(`could not connect to server ${serverId}: ${e}`);
       if (e instanceof errors.SystemConfigurationException) {
         if (await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'))) {
           await this.installVpnService();
