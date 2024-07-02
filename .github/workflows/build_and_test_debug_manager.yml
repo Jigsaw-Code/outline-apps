@@ -101,8 +101,5 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Set XCode Version
-        run: sudo xcode-select -switch /Applications/Xcode_13.2.app
-
       - name: Build MacOS Manager
         run: npm run action server_manager/electron_app/build macos
