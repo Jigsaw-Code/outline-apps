@@ -26,7 +26,7 @@ export interface VpnInstaller {
  * An VPN installer which does nothing to the OS.
  */
 export class NoOpVpnInstaller implements VpnInstaller {
-  public installVpn(): Promise<void> {
+  installVpn(): Promise<void> {
     return Promise.resolve();
   }
 }

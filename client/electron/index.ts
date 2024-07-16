@@ -24,7 +24,7 @@ import autoLaunch = require('auto-launch'); // tslint:disable-line
 import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
 import {autoUpdater} from 'electron-updater';
 
-import {lookupIp} from "./connectivity";
+import {lookupIp} from './connectivity';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
@@ -142,7 +142,7 @@ function setupWindow(): void {
   // The ideal solution would be: either electron-builder supports the app icon; or we add
   // dpi-aware features to this app.
   if (isLinux) {
-    mainWindow.setIcon(path.join(app.getAppPath(), 'output', 'client', 'electron', 'icons', 'png', '64x64.png'));
+    mainWindow.setIcon(path.join(app.getAppPath(), 'client', 'electron', 'icons', 'png', '64x64.png'));
   }
 
   const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'www', 'index_electron.html');
@@ -450,11 +450,17 @@ function main() {
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  // Connects to the specified server.
+  // Connects to a proxy server specified by a config.
+  //
+  // If any issues occur, an Error will be thrown, which you can try-catch around
+  // `ipcRenderer.invoke`. But you should avoid depending on the specific error type.
+  // Instead, you should use its message property (which would probably be a JSON representation
+  // of a PlatformError). See https://github.com/electron/electron/issues/24427.
+  //
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<errors.ErrorCode> => {
+    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
@@ -480,13 +486,11 @@ function main() {
         tunnelStore.save(args).catch(() => {
           console.error('Failed to store tunnel.');
         });
-
-        return errors.ErrorCode.NO_ERROR;
       } catch (e) {
-        console.error(`could not connect: ${e.name} (${e.message})`);
+        console.error('could not connect:', e);
         // clean up the state, no need to await because stopVpn might throw another error which can be ignored
         stopVpn();
-        return errors.toErrorCode(e);
+        throw e;
       }
     }
   );

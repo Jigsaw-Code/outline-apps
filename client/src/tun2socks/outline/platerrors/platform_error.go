@@ -83,14 +83,14 @@ func NewWithDetailsCause(code ErrorCode, message string, details ErrorDetails, c
 // The resulting JSON can be used to reconstruct the error in TypeScript.
 func (e *PlatformError) Error() string {
 	if e == nil {
-		return formatInvalidLogicErrJSON("nil error")
+		return formatInternalErrorJSON("nil error")
 	}
 	if e.Code == "" {
-		return formatInvalidLogicErrJSON("empty error code")
+		return formatInternalErrorJSON("empty error code")
 	}
 	errJson, err := json.Marshal(convertToPlatformErrJSON(e))
 	if err != nil {
-		return formatInvalidLogicErrJSON("JSON marshal failure: " + err.Error())
+		return formatInternalErrorJSON("JSON marshal failure: " + err.Error())
 	}
 	return string(errJson)
 }
@@ -100,12 +100,12 @@ func (e *PlatformError) Unwrap() error {
 	return e.Cause
 }
 
-// formatInvalidLogicErrJSON creates a JSON string with ErrorCodeGoInvalidLogic, the msg
-// and the details. Please note that msg and details should not contain double quotes.
+// formatInternalErrorJSON creates a JSON string with ErrorCode InternalError and the msg.
+// Please note that msg should not contain double quotes.
 // The returned JSON string is compatible with the JSON returned by [PlatformError].Error().
-func formatInvalidLogicErrJSON(msg string) string {
+func formatInternalErrorJSON(msg string) string {
 	rmEscapes := strings.NewReplacer("\\", "", "\"", "")
 	return fmt.Sprintf(
 		`{"code":"%s","message":"%s"}`,
-		InvalidLogic, rmEscapes.Replace(msg))
+		InternalError, rmEscapes.Replace(msg))
 }

@@ -17,6 +17,7 @@ package shadowsocks
 import (
 	"encoding/json"
 
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 )
 
@@ -31,6 +32,16 @@ type Config struct {
 	Password   string
 	CipherName string
 	Prefix     []byte
+}
+
+func ParseConfigPrefixFromString(raw string) (p []byte, err error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	if p, err = utf8.DecodeUTF8CodepointsToRawBytes(raw); err != nil {
+		return nil, newIllegalConfigErrorWithDetails("prefix is not valid", "prefix", raw, "string in utf-8", err)
+	}
+	return
 }
 
 // An internal data structure to be used by JSON deserialization.
@@ -74,8 +85,10 @@ func validateConfig(host string, port int, cipher, password string) error {
 	return nil
 }
 
-// newIllegalConfigErrorWithDetails creates a TypeScript parsable SSIllegalConfig error with detailed information.
-func newIllegalConfigErrorWithDetails(msg, field string, got interface{}, expect string, cause error) *platerrors.PlatformError {
+// newIllegalConfigErrorWithDetails creates a TypeScript parsable IllegalConfig error with detailed information.
+func newIllegalConfigErrorWithDetails(
+	msg, field string, got interface{}, expect string, cause error,
+) *platerrors.PlatformError {
 	return platerrors.NewWithDetailsCause(platerrors.IllegalConfig, msg, platerrors.ErrorDetails{
 		"proxy-protocol": "shadowsocks",
 		"field":          field,

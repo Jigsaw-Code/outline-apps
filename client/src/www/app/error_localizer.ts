@@ -14,12 +14,12 @@
 
 import {Localizer} from '@outline/infrastructure/i18n';
 
-import {ErrorCode, FetchConfigFailure, IllegalConfig, ProxyServerUnreachable} from '../model/platform_error';
+import {ErrorCode, FETCH_CONFIG_FAILED, ILLEGAL_CONFIG, PROXY_SERVER_UNREACHABLE} from '../model/platform_error';
 
-const errCodeMapping = new Map<string, string>([
-  [ProxyServerUnreachable, 'outline-plugin-error-server-unreachable'],
-  [IllegalConfig, 'error-connection-configuration'],
-  [FetchConfigFailure, 'error-connection-configuration-fetch'],
+const errCodeMapping = new Map<ErrorCode, string>([
+  [PROXY_SERVER_UNREACHABLE, 'outline-plugin-error-server-unreachable'],
+  [ILLEGAL_CONFIG, 'error-connection-configuration'],
+  [FETCH_CONFIG_FAILED, 'error-connection-configuration-fetch'],
 ]);
 
 export function localizeErrorCode(code: ErrorCode, localize: Localizer): string {

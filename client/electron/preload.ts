@@ -39,21 +39,38 @@ export class ElectronRendererMethodChannel {
    * We need to have a namespace due to security consideration:
    *   - https://www.electronjs.org/docs/latest/tutorial/context-isolation#security-considerations
    */
-  public constructor(private readonly namespace: string) {}
+  constructor(private readonly namespace: string) {}
 
-  public readonly send = (channel: string, ...args: unknown[]): void =>
+  readonly send = (channel: string, ...args: unknown[]): void =>
     ipcRenderer.send(`${this.namespace}-${channel}`, ...args);
 
   // TODO: replace the `any` with a better type once we unify the IPC call framework
   /* eslint-disable  @typescript-eslint/no-explicit-any */
-  public readonly invoke = (channel: string, ...args: unknown[]): Promise<any> =>
-    ipcRenderer.invoke(`${this.namespace}-${channel}`, ...args);
+  readonly invoke = async (channel: string, ...args: unknown[]): Promise<any> => {
+    const ipcName = `${this.namespace}-${channel}`;
+    try {
+      await ipcRenderer.invoke(ipcName, ...args);
+    } catch (e) {
+      // Normalize the error message to what's being thrown in the IPC itself
+      //   e.message == "Error invoking remote method 'xxx': <error name>: <actual message>"
+      // https://github.com/electron/electron/blob/v31.0.0/lib/renderer/api/ipc-renderer.ts#L22
+      if (typeof e?.message === 'string') {
+        const errPattern = new RegExp(`'${ipcName}':\\s*(?<name>[^:]+):\\s*(?<message>.*)`, 's');
+        const groups = e.message.match(errPattern)?.groups;
+        if (typeof groups?.['name'] === 'string' && typeof groups?.['message'] === 'string') {
+          e.name = groups['name'];
+          e.message = groups['message'];
+        }
+      }
+      throw e;
+    }
+  };
 
-  public readonly on = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+  readonly on = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
     ipcRenderer.on(`${this.namespace}-${channel}`, listener);
   };
 
-  public readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
+  readonly once = (channel: string, listener: (e: IpcRendererEvent, ...args: unknown[]) => void): void => {
     ipcRenderer.once(`${this.namespace}-${channel}`, listener);
   };
 }
