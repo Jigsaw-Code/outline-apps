@@ -268,7 +268,7 @@ public class OutlinePlugin extends CordovaPlugin {
       LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION.value;
     }
-    return vpnTunnelService.startTunnel(tunnelConfig);
+    return vpnTunnelService.startTunnel(tunnelConfig, serverName);
   }
 
   // Returns whether the VPN service is running a particular tunnel instance.

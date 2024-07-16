@@ -52,6 +52,7 @@ public class VpnTunnelService extends VpnService {
   private static final String NOTIFICATION_CHANNEL_ID = "outline-vpn";
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
+  private static final String TUNNEL_SERVER_NAME = "serverName";
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
 
@@ -111,8 +112,8 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public int startTunnel(TunnelConfig config) {
-      return VpnTunnelService.this.startTunnel(config).value;
+    public int startTunnel(TunnelConfig config, String serverName) {
+      return VpnTunnelService.this.startTunnel(config, serverName).value;
     }
 
     @Override
@@ -244,12 +245,12 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private ErrorCode startTunnel(final TunnelConfig config) {
-    return startTunnel(config, false);
+  private ErrorCode startTunnel(final TunnelConfig config, final String serverName) {
+    return startTunnel(config, serverName, false);
   }
 
   private synchronized ErrorCode startTunnel(
-      final TunnelConfig config, boolean isAutoStart) {
+      final TunnelConfig config, final String serverName, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s.", config.id));
     if (config.id == null || config.proxy == null) {
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
@@ -319,7 +320,7 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return ErrorCode.VPN_START_FAILURE;
     }
-    startForegroundWithNotification(config);
+    startForegroundWithNotification(serverName);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
     return ErrorCode.NO_ERROR;
   }
@@ -488,17 +489,18 @@ public class VpnTunnelService extends VpnService {
     try {
       final String tunnelId = tunnel.getString(TUNNEL_ID_KEY);
       final JSONObject jsonConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
+      final String serverName = tunnel.getServerName(TUNNEL_SERVER_NAME);
       final TunnelConfig config = makeTunnelConfig(tunnelId, jsonConfig);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
-      startForegroundWithNotification(config);
+      startForegroundWithNotification(serverName);
       startTunnel(config, true);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON tunnel data", e);
     }
   }
 
-  private void storeActiveTunnel(final TunnelConfig config, boolean isUdpSupported) {
+  private void storeActiveTunnel(final TunnelConfig config, final String serverName, boolean isUdpSupported) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
@@ -517,7 +519,8 @@ public class VpnTunnelService extends VpnService {
         proxyConfig.put("prefix", new String(chars));
       }
 
-      tunnel.put(TUNNEL_ID_KEY, config.id).put(TUNNEL_CONFIG_KEY, proxyConfig);
+      tunnel.put(TUNNEL_ID_KEY, config.id).put(
+        TUNNEL_CONFIG_KEY, proxyConfig).put(TUNNEL_SERVER_NAME, serverName);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
@@ -539,12 +542,12 @@ public class VpnTunnelService extends VpnService {
   // Foreground service & notifications
 
   /* Starts the service in the foreground and displays a persistent notification. */
-  private void startForegroundWithNotification(final TunnelConfig config) {
+  private void startForegroundWithNotification(final String serverName) {
     try {
       if (notificationBuilder == null) {
         // Cache the notification builder so we can update the existing notification - creating a
         // new notification has the side effect of resetting the tunnel timer.
-        notificationBuilder = getNotificationBuilder(config);
+        notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
       startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
@@ -571,8 +574,8 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Returns a notification builder with the provided server configuration.  */
-  private Notification.Builder getNotificationBuilder(final TunnelConfig config) throws Exception {
+  /* Returns a notification builder with the provided server name.  */
+  private Notification.Builder getNotificationBuilder(final String serverName) throws Exception {
     Intent launchIntent = new Intent(this, getPackageMainActivityClass());
     PendingIntent mainActivityIntent =
         PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -592,7 +595,7 @@ public class VpnTunnelService extends VpnService {
     } catch (Exception e) {
       LOG.warning("Failed to retrieve the resource ID for the notification icon.");
     }
-    return builder.setContentTitle(getServerName(config))
+    return builder.setContentTitle(serverName)
         .setColor(NOTIFICATION_COLOR)
         .setVisibility(Notification.VISIBILITY_SECRET) // Don't display in lock screen
         .setContentIntent(mainActivityIntent)
