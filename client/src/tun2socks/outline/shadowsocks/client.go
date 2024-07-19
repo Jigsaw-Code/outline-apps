@@ -22,7 +22,6 @@ package shadowsocks
 import (
 	"fmt"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
@@ -124,15 +123,4 @@ const reachabilityTimeout = 10 * time.Second
 func CheckConnectivity(client *Client) (int, error) {
 	errCode, err := connectivity.CheckConnectivity((*outline.Client)(client))
 	return errCode.Number(), err
-}
-
-// CheckServerReachable determines whether the server at `host:port` is reachable over TCP.
-// Returns an error if the server is unreachable.
-func CheckServerReachable(host string, port int) error {
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), reachabilityTimeout)
-	if err != nil {
-		return err
-	}
-	conn.Close()
-	return nil
 }
