@@ -54,44 +54,18 @@ tasks:
       - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
     deps: ["gomobile"]
 
-  ios-only:
-    desc: "Build the Tun2socks.xcframework library for iOS only"
-    internal: true
-    vars:
-      TARGET_DIR: '{{.OUT_DIR}}/ios'
-      # TARGET_IOS_VERSION must match the target version that the iOS client supports.
-      TARGET_IOS_VERSION: 12.0
-    cmds:
-      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - "{{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
-    deps: ["gomobile"]
-
-  macos-only:
-    desc: "Build the Tun2socks.xcframework library for macOS only"
-    internal: true
-    vars:
-      TARGET_DIR: '{{.OUT_DIR}}/macos'
-      # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
-      MACOSX_DEPLOYMENT_TARGET: 10.14
-      # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and >= the iOS TARGET_IOS_VERSION.
-      TARGET_IOS_VERSION: 13.1
-    cmds:
-      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
-    deps: ["gomobile"]
-
   apple:
     desc: "Build combined Tun2socks.xcframework library for Apple platforms"
     aliases: [ios, macos, maccatalyst]
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/apple'
+      # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
+      MACOSX_DEPLOYMENT_TARGET: 10.14
+      # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and match the version set in the XCode project.
+      TARGET_IOS_VERSION: 13.1
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - |
-        find '{{.OUT_DIR}}/macos/Tun2socks.xcframework' '{{.OUT_DIR}}/ios/Tun2socks.xcframework' -name "Tun2socks.framework" -type d |
-        xargs -I {} echo " -framework {} " |
-        xargs xcrun xcodebuild -create-xcframework -output '{{.TARGET_DIR}}/Tun2socks.xcframework'
-    deps: ["ios-only", "macos-only"]
+      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
 
   browser:
     desc: "Placeholder for the browser build. Does nothing"
