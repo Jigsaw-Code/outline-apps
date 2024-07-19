@@ -32,9 +32,9 @@ interface IVpnTunnelService {
    *
    * @param config tunnel configuration parameters.
    * @param isAutoStart boolean whether the tunnel was started without user intervention.
-   * @return error code as defined in OutlinePlugin.ErrorCode.
+   * @return a JSON string representing a PlatformError. Null or empty means there are no errors.
    */
-  int startTunnel(in TunnelConfig config);
+  String startTunnel(in TunnelConfig config);
 
   /**
    * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, shadowsocks, and

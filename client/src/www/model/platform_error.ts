@@ -124,7 +124,7 @@ export class PlatformError extends CustomError {
    * try {
    *   // cordova plugin calls or electron IPC calls
    * } catch (e) {
-   *   throw new PlatformError.parseFrom(e);
+   *   throw PlatformError.parseFrom(e);
    * }
    */
   static parseFrom(errObj: string | Error | unknown): PlatformError {

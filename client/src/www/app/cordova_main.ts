@@ -32,6 +32,7 @@ import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
+import {PlatformError} from '../model/platform_error';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
 
 const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
@@ -55,8 +56,8 @@ function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
 async function pluginExecWithErrorCode<T>(cmd: string, ...args: unknown[]): Promise<T> {
   try {
     return await pluginExec<T>(cmd, ...args);
-  } catch (errorCode) {
-    throw errors.fromErrorCode(errorCode);
+  } catch (e) {
+    throw PlatformError.parseFrom(e);
   }
 }
 

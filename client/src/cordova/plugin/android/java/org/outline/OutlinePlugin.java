@@ -192,8 +192,7 @@ public class OutlinePlugin extends CordovaPlugin {
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
           final JSONObject config = args.getJSONObject(1);
-          int errorCode = startVpnTunnel(tunnelId, config);
-          sendErrorCode(callback, errorCode);
+          sendActionResult(callback, startVpnTunnel(tunnelId, config));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -259,14 +258,14 @@ public class OutlinePlugin extends CordovaPlugin {
     startVpnRequest = null;
   }
 
-  private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
+  private String startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
     final TunnelConfig tunnelConfig;
     try {
       tunnelConfig = VpnTunnelService.makeTunnelConfig(tunnelId, config);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION.value;
+      return e.getMessage();
     }
     return vpnTunnelService.startTunnel(tunnelConfig);
   }
@@ -324,11 +323,28 @@ public class OutlinePlugin extends CordovaPlugin {
     return this.cordova.getActivity().getApplicationContext();
   }
 
+  /**
+   * @deprecated Prefer sendActionResult.
+   */
   private void sendErrorCode(final CallbackContext callback, int errorCode) {
     if (errorCode == ErrorCode.NO_ERROR.value) {
       callback.success();
     } else {
       callback.error(errorCode);
+    }
+  }
+
+  /**
+   * Sends an action result represented by a nullable error string back to callback.
+   * A null or empty error string means success, otherwise it means failure.
+   * @param callback The Cordova callback receiving the result.
+   * @param err A nullable error string.
+   */
+  private void sendActionResult(final CallbackContext callback, String err) {
+    if (err == null || err.isBlank()) {
+      callback.success();
+    } else {
+      callback.error(err);
     }
   }
 }

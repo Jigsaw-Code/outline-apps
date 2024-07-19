@@ -60,7 +60,7 @@ type outlinetunnel struct {
 // `tunWriter` is used to output packets back to the TUN device.  OutlineTunnel.Disconnect() will close `tunWriter`.
 func newTunnel(streamDialer transport.StreamDialer, packetDialer transport.PacketListener, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
 	if tunWriter == nil {
-		return nil, errors.New("Must provide a TUN writer")
+		return nil, errors.New("must provide a TUN writer")
 	}
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tunWriter.Write(data)

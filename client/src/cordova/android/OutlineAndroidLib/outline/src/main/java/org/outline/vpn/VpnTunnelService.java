@@ -111,8 +111,8 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public int startTunnel(TunnelConfig config) {
-      return VpnTunnelService.this.startTunnel(config).value;
+    public String startTunnel(TunnelConfig config) {
+      return VpnTunnelService.this.startTunnel(config);
     }
 
     @Override
@@ -244,15 +244,15 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private ErrorCode startTunnel(final TunnelConfig config) {
+  private String startTunnel(final TunnelConfig config) {
     return startTunnel(config, false);
   }
 
-  private synchronized ErrorCode startTunnel(
+  private synchronized String startTunnel(
       final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s.", config.id));
     if (config.id == null || config.proxy == null) {
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return "ILLEGAL_SERVER_CONFIGURATION";
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {
@@ -277,9 +277,9 @@ public class VpnTunnelService extends VpnService {
     try {
       client = new shadowsocks.Client(configCopy);
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Invalid configuration", e);
+      LOG.log(Level.WARNING, "shadowsocks.Client initialization failed", e);
       tearDownActiveTunnel();
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return e.getMessage();
     }
 
     ErrorCode errorCode = ErrorCode.NO_ERROR;
@@ -291,11 +291,11 @@ public class VpnTunnelService extends VpnService {
         if (!(errorCode == ErrorCode.NO_ERROR
                 || errorCode == ErrorCode.UDP_RELAY_NOT_ENABLED)) {
           tearDownActiveTunnel();
-          return errorCode;
+          return "Unexpected check connectivity error code: " + errorCode;
         }
       } catch (Exception e) {
         tearDownActiveTunnel();
-        return ErrorCode.SHADOWSOCKS_START_FAILURE;
+        return e.getMessage();
       }
     }
     tunnelConfig = config;
@@ -305,7 +305,7 @@ public class VpnTunnelService extends VpnService {
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         tearDownActiveTunnel();
-        return ErrorCode.VPN_START_FAILURE;
+        return "VPN_START_FAILURE";
       }
       startNetworkConnectivityMonitor();
     }
@@ -317,11 +317,11 @@ public class VpnTunnelService extends VpnService {
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();
-      return ErrorCode.VPN_START_FAILURE;
+      return e.getMessage();
     }
     startForegroundWithNotification(config);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
-    return ErrorCode.NO_ERROR;
+    return "";
   }
 
   private synchronized ErrorCode stopTunnel(final String tunnelId) {
