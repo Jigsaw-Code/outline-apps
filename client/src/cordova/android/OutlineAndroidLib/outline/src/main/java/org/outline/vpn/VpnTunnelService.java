@@ -489,7 +489,7 @@ public class VpnTunnelService extends VpnService {
     try {
       final String tunnelId = tunnel.getString(TUNNEL_ID_KEY);
       final JSONObject jsonConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
-      final String serverName = tunnel.getJSONObject(TUNNEL_SERVER_NAME);
+      final String serverName = tunnel.getString(TUNNEL_SERVER_NAME);
       final TunnelConfig config = makeTunnelConfig(tunnelId, jsonConfig);
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
