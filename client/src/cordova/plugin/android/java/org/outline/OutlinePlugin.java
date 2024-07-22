@@ -54,7 +54,6 @@ public class OutlinePlugin extends CordovaPlugin {
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
-    IS_REACHABLE("isServerReachable"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -205,10 +204,6 @@ public class OutlinePlugin extends CordovaPlugin {
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
 
           // Static actions
-        } else if (Action.IS_REACHABLE.is(action)) {
-          boolean isReachable =
-              this.vpnTunnelService.isServerReachable(args.getString(0), args.getInt(1));
-          callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
           // Treat failures to initialize error reporting as unexpected by propagating exceptions.
