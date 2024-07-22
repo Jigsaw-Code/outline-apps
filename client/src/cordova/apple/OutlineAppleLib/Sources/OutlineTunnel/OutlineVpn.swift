@@ -14,7 +14,6 @@
 
 import CocoaLumberjackSwift
 import NetworkExtension
-import Tun2socks
 
 // Manages the system's VPN tunnel through the VpnExtension process.
 @objcMembers

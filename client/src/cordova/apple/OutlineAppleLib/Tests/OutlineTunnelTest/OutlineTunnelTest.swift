@@ -1,7 +1,6 @@
 import XCTest
 
 import NetworkExtension
-import Tun2socks
 
 @testable import OutlineTunnel
 
