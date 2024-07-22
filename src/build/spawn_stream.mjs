@@ -35,7 +35,7 @@ function newChildProcessOutputPipeTransform(callback) {
       // encoding will always be 'buffer'
       const lines = chunk.toString().split('\n');
       const lastLine = lines.pop();
-      if (lines.length > 0) {
+      if (lines.length) {
         const firstLine = lines.shift();
         callback(pendingLine + firstLine);
         pendingLine = '';
