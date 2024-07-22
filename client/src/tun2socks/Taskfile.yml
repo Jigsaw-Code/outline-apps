@@ -5,7 +5,7 @@ vars:
   REPO_ROOT: '{{joinPath .TASKFILE_DIR "../../.."}}'
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
   OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
-  BIN_DIR: "{{.OUT_DIR}}/build"
+  BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
   GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
 
