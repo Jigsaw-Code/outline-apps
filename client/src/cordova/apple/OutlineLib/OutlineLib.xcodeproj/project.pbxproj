@@ -3,12 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		522C98BC2B0D67AF00E6E4A9 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 522C98BB2B0D67AF00E6E4A9 /* PacketTunnelProvider */; };
 		52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
+		5260B06A2C4F114000CDF289 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 5260B0692C4F114000CDF289 /* PacketTunnelProvider */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,7 +25,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */,
-				522C98BC2B0D67AF00E6E4A9 /* PacketTunnelProvider in Frameworks */,
+				5260B06A2C4F114000CDF289 /* PacketTunnelProvider in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,10 +81,11 @@
 			buildRules = (
 			);
 			dependencies = (
+				5260B0842C4F18B200CDF289 /* PBXTargetDependency */,
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				522C98BB2B0D67AF00E6E4A9 /* PacketTunnelProvider */,
+				5260B0692C4F114000CDF289 /* PacketTunnelProvider */,
 			);
 			productName = VpnExtension;
 			productReference = 52334EAC2B0D58AD00817E56 /* VpnExtension.appex */;
@@ -184,8 +185,8 @@
 			);
 			mainGroup = 52334DE02B0D56D600817E56;
 			packageReferences = (
-				52334EB92B0D59FA00817E56 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 				52334EFA2B0D619D00817E56 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				5260B0682C4F114000CDF289 /* XCLocalSwiftPackageReference "../OutlineAppleLib" */,
 			);
 			productRefGroup = 52334DEB2B0D56D600817E56 /* Products */;
 			projectDirPath = "";
@@ -215,6 +216,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5260B0842C4F18B200CDF289 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 5260B0832C4F18B200CDF289 /* PacketTunnelProvider */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		52334DFC2B0D56D600817E56 /* Debug */ = {
@@ -270,9 +278,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -330,9 +338,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -344,6 +352,7 @@
 		52334EB62B0D58AD00817E56 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = VpnExtension/VpnExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -364,8 +373,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -375,6 +386,7 @@
 		52334EB72B0D58AD00817E56 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = VpnExtension/VpnExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -395,8 +407,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -427,28 +441,32 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		52334EB92B0D59FA00817E56 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.8.2;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		5260B0682C4F114000CDF289 /* XCLocalSwiftPackageReference "../OutlineAppleLib" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../OutlineAppleLib;
 		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
 		52334EFA2B0D619D00817E56 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 7.31.3;
+				minimumVersion = 8.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		522C98BB2B0D67AF00E6E4A9 /* PacketTunnelProvider */ = {
+		5260B0692C4F114000CDF289 /* PacketTunnelProvider */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = PacketTunnelProvider;
+		};
+		5260B0832C4F18B200CDF289 /* PacketTunnelProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5260B0682C4F114000CDF289 /* XCLocalSwiftPackageReference "../OutlineAppleLib" */;
 			productName = PacketTunnelProvider;
 		};
 /* End XCSwiftPackageProductDependency section */
