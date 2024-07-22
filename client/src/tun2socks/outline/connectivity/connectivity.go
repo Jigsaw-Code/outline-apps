@@ -16,13 +16,12 @@ package connectivity
 
 import (
 	"context"
-	"errors"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -34,54 +33,49 @@ const (
 	bufferLength        = 512
 )
 
-// authenticationError is used to signal failed authentication to the Shadowsocks proxy.
-type authenticationError struct {
-	error
-}
+// Status indicates if a proxy server can handle traffic of TCP, UDP, or both.
+// It is a bitwise combination of [TCPConnected] and [UDPConnected].
+type Status int
 
-// reachabilityError is used to signal an unreachable proxy.
-type reachabilityError struct {
-	error
-}
+const (
+	// TCPConnected indicates the proxy server can handle TCP traffic.
+	TCPConnected Status = 1 << iota
+
+	// UDPConnected indicates the proxy server can handle UDP traffic.
+	UDPConnected
+)
 
 // CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
-// the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
-// error code to return accounting for transient network failures.
-// Returns an error if an unexpected error ocurrs.
-func CheckConnectivity(client *outline.Client) (neterrors.Error, error) {
+// the current network.
+// Parallelizes the execution of TCP and UDP checks, and reports the [Status].
+// There's no error if the server at least supports TCP.
+// A [platerrors.PlatformError] will be returned if the server doesn't support TCP,
+// or if any other unexpected issues occur (such as invalid credential).
+func CheckConnectivity(client *outline.Client) (Status, error) {
 	// Start asynchronous UDP support check.
-	udpChan := make(chan error)
+	udpChan := make(chan bool)
 	go func() {
 		resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
 		udpChan <- CheckUDPConnectivityWithDNS(client, resolverAddr)
 	}()
 	// Check whether the proxy is reachable and that the client is able to authenticate to the proxy
-	tcpErr := CheckTCPConnectivityWithHTTP(client, "http://example.com")
+	tcpErr := checkTCPConnectivityWithHTTP(client, "http://example.com")
 	if tcpErr == nil {
-		udpErr := <-udpChan
-		if udpErr == nil {
-			return neterrors.NoError, nil
+		if udpSupported := <-udpChan; udpSupported {
+			return TCPConnected | UDPConnected, nil
 		}
-		return neterrors.UDPConnectivity, nil
+		return TCPConnected, nil
 	}
-	var authErr *authenticationError
-	var reachabilityErr *reachabilityError
-	if errors.As(tcpErr, &authErr) {
-		return neterrors.AuthenticationFailure, nil
-	} else if errors.As(tcpErr, &reachabilityErr) {
-		return neterrors.Unreachable, nil
-	}
-	// The error is not related to the connectivity checks.
-	return neterrors.Unexpected, tcpErr
+	return 0, tcpErr
 }
 
 // CheckUDPConnectivityWithDNS determines whether the Shadowsocks proxy represented by `client` and
 // the network support UDP traffic by issuing a DNS query though a resolver at `resolverAddr`.
-// Returns nil on success or an error on failure.
-func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr net.Addr) error {
+// Returns true on success or false on failure.
+func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr net.Addr) bool {
 	conn, err := client.ListenPacket(context.Background())
 	if err != nil {
-		return err
+		return false
 	}
 	defer conn.Close()
 	buf := make([]byte, bufferLength)
@@ -98,22 +92,23 @@ func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr n
 		if addr.String() != resolverAddr.String() {
 			continue // Ensure we got a response from the resolver.
 		}
-		return nil
+		return true
 	}
-	return errors.New("UDP connectivity check timed out")
+	return false
 }
 
-// CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
+// checkTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
 // client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
-// be of the form: http://[host](:[port])(/[path]). Returns nil on success, error if `targetURL` is
-// invalid, AuthenticationError or ReachabilityError on connectivity failure.
-func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL string) error {
+// be of the form: http://[host](:[port])(/[path]).
+// Returns nil on success, or a [platerrors.PlatformError] if `targetURL` is invalid, authentication
+// failed or unreachable.
+func checkTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL string) error {
 	deadline := time.Now().Add(tcpTimeout)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	req, err := http.NewRequest("HEAD", targetURL, nil)
 	if err != nil {
-		return err
+		return platerrors.NewWithCause(platerrors.InternalError, "failed to create HTTP HEAD request", err)
 	}
 	targetAddr := req.Host
 	if !hasPort(targetAddr) {
@@ -121,17 +116,20 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 	}
 	conn, err := dialer.DialStream(ctx, targetAddr)
 	if err != nil {
-		return &reachabilityError{err}
+		return platerrors.NewWithDetailsCause(platerrors.ProxyServerUnreachable,
+			"failed to connect to remote server", platerrors.ErrorDetails{"address": targetAddr}, err)
 	}
 	defer conn.Close()
 	conn.SetDeadline(deadline)
 	err = req.Write(conn)
 	if err != nil {
-		return &authenticationError{err}
+		return platerrors.NewWithDetailsCause(platerrors.Unauthenticated,
+			"invalid server credentials", platerrors.ErrorDetails{"address": targetAddr}, err)
 	}
 	n, err := conn.Read(make([]byte, bufferLength))
 	if n == 0 && err != nil {
-		return &authenticationError{err}
+		return platerrors.NewWithDetailsCause(platerrors.Unauthenticated,
+			"failed to read HTTP response from server", platerrors.ErrorDetails{"address": targetAddr}, err)
 	}
 	return nil
 }

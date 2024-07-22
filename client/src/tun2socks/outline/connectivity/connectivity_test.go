@@ -18,33 +18,30 @@ import (
 	"context"
 	"errors"
 	"net"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckUDPConnectivityWithDNS_Success(t *testing.T) {
 	client := &fakeSSClient{}
-	err := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
+	udpSupported := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
+	require.True(t, udpSupported)
 }
 
 func TestCheckUDPConnectivityWithDNS_Fail(t *testing.T) {
 	client := &fakeSSClient{failUDP: true}
-	err := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
-	if err == nil {
-		t.Fail()
-	}
+	udpSupported := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
+	require.False(t, udpSupported)
 }
 
 func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 	client := &fakeSSClient{}
-	err := CheckTCPConnectivityWithHTTP(client, "")
+	err := checkTCPConnectivityWithHTTP(client, "")
 	if err != nil {
 		t.Fail()
 	}
@@ -52,24 +49,22 @@ func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 
 func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 	client := &fakeSSClient{failReachability: true}
-	err := CheckTCPConnectivityWithHTTP(client, "")
-	if err == nil {
-		t.Fail()
-	}
-	if _, ok := err.(*reachabilityError); !ok {
-		t.Fatalf("Expected reachability error, got: %v", reflect.TypeOf(err))
-	}
+	err := checkTCPConnectivityWithHTTP(client, "")
+	require.Error(t, err)
+
+	perr := &platerrors.PlatformError{}
+	require.ErrorAs(t, err, &perr)
+	require.Equal(t, platerrors.ProxyServerUnreachable, perr.Code)
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailAuthentication(t *testing.T) {
 	client := &fakeSSClient{failAuthentication: true}
-	err := CheckTCPConnectivityWithHTTP(client, "")
-	if err == nil {
-		t.Fail()
-	}
-	if _, ok := err.(*authenticationError); !ok {
-		t.Fatalf("Expected authentication error, got: %v", reflect.TypeOf(err))
-	}
+	err := checkTCPConnectivityWithHTTP(client, "")
+	require.Error(t, err)
+
+	perr := &platerrors.PlatformError{}
+	require.ErrorAs(t, err, &perr)
+	require.Equal(t, platerrors.Unauthenticated, perr.Code)
 }
 
 // Fake shadowsocks.Client that can be configured to return failing UDP and TCP connections.

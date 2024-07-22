@@ -22,7 +22,6 @@ package shadowsocks
 import (
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
@@ -98,6 +97,7 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 }
 
 // Error number constants exported through gomobile
+// Must be kept in sync with definitions in .../www/model/errors.ts
 const (
 	NoError                     = 0
 	Unexpected                  = 1
@@ -114,13 +114,18 @@ const (
 	SystemMisconfigured         = 12 // Electron only
 )
 
-const reachabilityTimeout = 10 * time.Second
+// Connectivity status flags exported through gomobile
+const (
+	TCPConnected = int(connectivity.TCPConnected)
+	UDPConnected = int(connectivity.UDPConnected)
+)
 
 // CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
-// the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
-// error code to return accounting for transient network failures.
-// Returns an error if an unexpected error ocurrs.
+// the current network. Parallelizes the execution of TCP and UDP checks, and returns an integer
+// representing the [connectivity.Status].
+// There's no error if the server at least supports TCP.
+// A [platerrors.PlatformError] will be returned if the server doesn't support TCP.
 func CheckConnectivity(client *Client) (int, error) {
-	errCode, err := connectivity.CheckConnectivity((*outline.Client)(client))
-	return errCode.Number(), err
+	status, err := connectivity.CheckConnectivity((*outline.Client)(client))
+	return int(status), err
 }
