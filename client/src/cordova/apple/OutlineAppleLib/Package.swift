@@ -80,7 +80,7 @@ let package = Package(
         ),
         .testTarget(
             name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel", "PacketTunnelProvider"]
+            dependencies: ["OutlineTunnel"]
         ),
     ]
 )
