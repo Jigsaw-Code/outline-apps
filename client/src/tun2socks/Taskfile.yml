@@ -52,6 +52,7 @@ tasks:
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
       - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+    deps: ["gomobile"]
 
   apple:
     desc: "Build combined Tun2socks.xcframework library for Apple platforms"
