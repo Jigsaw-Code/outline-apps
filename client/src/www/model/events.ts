@@ -20,31 +20,31 @@ export interface OutlineEvent {}
 export type OutlineEventListener<T extends OutlineEvent> = (event: T) => void;
 
 export class ServerAdded implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerForgotten implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerForgetUndone implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerRenamed implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerConnected implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerDisconnected implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 export class ServerReconnecting implements OutlineEvent {
-  constructor(public readonly server: Server) {}
+  constructor(readonly server: Server) {}
 }
 
 // Simple publisher-subscriber queue.

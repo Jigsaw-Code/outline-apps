@@ -14,12 +14,12 @@
 
 import '../ui_components/app-root.js';
 
-
 import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME} from './fake_tunnel';
 import {OutlineServerRepository} from './outline_server_repository';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
@@ -72,7 +72,7 @@ function createServerRepo(
       repo.add(
         SIP002_URI.stringify(
           makeConfig({
-            host: '192.0.2.1',
+            host: FAKE_BROKEN_HOSTNAME,
             port: 123,
             method: 'chacha20-ietf-poly1305',
             tag: 'Fake Broken Server',
@@ -82,7 +82,7 @@ function createServerRepo(
       repo.add(
         SIP002_URI.stringify(
           makeConfig({
-            host: '10.0.0.24',
+            host: FAKE_UNREACHABLE_HOSTNAME,
             port: 123,
             method: 'chacha20-ietf-poly1305',
             tag: 'Fake Unreachable Server',

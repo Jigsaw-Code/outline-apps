@@ -2,19 +2,17 @@
 
 This document describes how to develop and debug for Android.
 
-The main entrypoint to Android's Java code is `cordova-plugin-outline/android/java/org/outline/OutlinePlugin.java`
+The main entrypoint to Android's Java code is `client/src/cordova/plugin/android/java/org/outline/OutlinePlugin.java`
 
 ## Building the Android app
-
-> 💡 NOTE: To easiest way to get set up for Android on a new environment is to use `tools/build/setup_macos_android.sh` or `tools/build/setup_linux_android.sh`.
 
 Additional requirements for Android:
 
 - [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
-  - Set `JAVA_HOME` environment variable if you are building on Windows
+  - Set `JAVA_HOME` environment variable if you have multiple JDK versions installed
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
-  - Set `ANDROID_HOME` environment variable
+  - Set `ANDROID_HOME` (e.g., `$HOME/Android/sdk`) and `ANDROID_NDK` (e.g., `$ANDROID_HOME/ndk`) environment variables
 - Android SDK 32 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-32" "build-tools;32.0.0"`
 - [Gradle 7.3+](https://gradle.org/install/)
 
@@ -23,33 +21,26 @@ Additional requirements for Android:
 To build for android, run:
 
 ```sh
-  npm run action cordova/build android
+  npm run action client/src/cordova/build android
 ```
 
 We also support passing a `--verbose` option on cordova android:
 
 ```sh
-  npm run action cordova/build android -- --verbose
+  npm run action client/src/cordova/build android -- --verbose
 ```
 
 Make sure to rebuild after modifying platform dependent files!
 
 > 💡 NOTE: If this command ever gives you unexpected Cordova errors, try runnning `npm run reset` first.
 
-Cordova will generate a new Android project in the platforms/android directory. Install the built apk by `platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk` (You will need to find the corresponding `<processor>` architecture if you choose to install the apk on a device).
-
-### Building for Android with Docker
-
-A Docker image with all pre-requisites for Android builds is included. To build:
-
-- Install dependencies with `./tools/build/build.sh npm ci`
-- Then build with `./tools/build/build.sh npm run action gulp -- build android`
+Cordova will generate a new Android project in the `client/platforms/android` directory. You can find the built apk at: `client/platforms/android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ### To install the APK
 
 - Connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
-- Build the app, with `npm run action cordova/build android`
-- From the project root, run: `adb install -r -d platforms/android/app/build/outputs/apk/<processor>/debug/app-<processor>-debug.apk`
+- Build the app, with `npm run action client/src/cordova/build android`
+- From the project root, run: `adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk`
 
 ### To debug the web app on Android
 
@@ -65,7 +56,7 @@ Run Outline on your phone with [USB debugging enabled](https://developer.android
 
 Using Android Studio
 
-- Open existing project → `<root_project_dir>/platforms/android`
+- Open existing project → `<root_project_dir>/client/platforms/android`
 - Click on "Android Monitor" at the bottom
 - Make sure `org.outline.android.client` is selected from the middle menu (it should not say "no debuggable processes")
 

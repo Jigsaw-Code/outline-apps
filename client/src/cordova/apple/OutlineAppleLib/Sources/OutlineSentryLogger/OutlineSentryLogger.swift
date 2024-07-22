@@ -43,7 +43,7 @@ public class OutlineSentryLogger: DDAbstractLogger {
         let breadcrumb = Breadcrumb(level: ddLogLevelToSentryLevel(logMessage.level), category:"App")
         breadcrumb.message = logMessage.message
         breadcrumb.timestamp = logMessage.timestamp
-        SentrySDK.addBreadcrumb(crumb: breadcrumb)
+        SentrySDK.addBreadcrumb(breadcrumb)
     }
     
     private func ddLogLevelToSentryLevel(_ level: DDLogLevel) -> SentryLevel {
@@ -88,7 +88,7 @@ public class OutlineSentryLogger: DDAbstractLogger {
                         let breadcrumb = Breadcrumb(level: .info, category: "VpnExtension")
                         breadcrumb.timestamp = dateFormatter.date(from: timestamp)
                         breadcrumb.message = message
-                        SentrySDK.addBreadcrumb(crumb: breadcrumb)
+                        SentrySDK.addBreadcrumb(breadcrumb)
                         numBreadcrumbsAdded += 1
                     }
                 }

@@ -38,7 +38,6 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
 import './about-view.js';
 import './add-server-view.js';
-import './feedback-view.js';
 import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
@@ -191,7 +190,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         /* rtl:end:ignore */
 
         /* Manually reverse icons that require mirroring in RTL languages. */
-        :host(:dir(rtl)) #feedback-icon,
         :host(:dir(rtl)) #backBtn {
           transform: scaleX(-1);
         }
@@ -347,19 +345,14 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             should-show-access-key-wiki-link="[[useAltAccessMessage]]"
             on-add-server="promptAddServer"
           ></servers-view>
-          <template is="dom-if" if="{{contactViewFeatureFlag}}">
-            <contact-view
-              name="contact"
-              id="contactView"
-              localize="[[localize]]"
-              error-reporter="[[errorReporter]]"
-              on-success="showContactSuccessToast"
-              on-error="showContactErrorToast"
-            ></contact-view>
-          </template>
-          <template is="dom-if" if="{{!contactViewFeatureFlag}}">
-            <feedback-view name="feedback" id="feedbackView" localize="[[localize]]"></feedback-view>
-          </template>
+          <contact-view
+            name="contact"
+            id="contactView"
+            localize="[[localize]]"
+            error-reporter="[[errorReporter]]"
+            on-success="showContactSuccessToast"
+            on-error="showContactErrorToast"
+          ></contact-view>
           <about-view
             name="about"
             id="aboutView"
@@ -431,18 +424,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
-            <template is="dom-if" if="{{contactViewFeatureFlag}}">
-              <paper-item name="contact">
-                <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
-                [[localize('contact-page-title')]]
-              </paper-item>
-            </template>
-            <template is="dom-if" if="{{!contactViewFeatureFlag}}">
-              <paper-item name="feedback">
-                <img src$="[[rootPath]]assets/icons/feedback.png" alt="feedback"  />
-                [[localize('feedback-page-title')]]
-              </paper-item>
-            </template>
+            <paper-item name="contact">
+              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
+              [[localize('contact-page-title')]]
+            </paper-item>
             <paper-item name="about">
               <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
               [[localize('about-page-title')]]
@@ -667,11 +652,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
-      contactViewFeatureFlag: {
-        type: Boolean,
-        readonly: true,
-        value: true,
-      },
     };
   }
 
@@ -862,8 +842,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   _goBack() {
     if (this.page === 'contact') {
-      // TODO: Replace with `this.$.contactView` once the element is no longer inside a `dom-if`.
-      this.shadowRoot.querySelector('#contactView').reset();
+      this.$.contactView.reset();
     }
 
     // If there is a navigation on the webview's history stack, pop it off to go back.

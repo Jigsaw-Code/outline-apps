@@ -72,4 +72,4 @@ cd "${STATIC_DIR}"
 
 # Icons.
 cd "${ROOT_DIR}"
-electron-icon-maker --input=server_manager/images/launcher-icon.png "--output=${BUILD_DIR}/server_manager/electron_app/static"
+cp -r server_manager/electron_app/icons/ "${BUILD_DIR}/server_manager/electron_app/static/icons/"

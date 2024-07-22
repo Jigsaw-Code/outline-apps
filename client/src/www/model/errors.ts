@@ -17,13 +17,13 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import {Server} from './server';
 
 export class ServerAlreadyAdded extends CustomError {
-  constructor(public readonly server: Server) {
+  constructor(readonly server: Server) {
     super();
   }
 }
 
 export class ShadowsocksUnsupportedCipher extends CustomError {
-  constructor(public readonly cipher: string) {
+  constructor(readonly cipher: string) {
     super();
   }
 }
@@ -47,8 +47,18 @@ export class SessionConfigFetchFailed extends CustomError {
 }
 
 export class SessionConfigError extends CustomError {
-  constructor(message: string) {
+  constructor(message: string, options?: {cause?: Error}) {
+    super(message, options);
+  }
+}
+
+export class SessionProviderError extends CustomError {
+  readonly details: string | undefined;
+
+  constructor(message: string, details?: string) {
     super(message);
+
+    this.details = details;
   }
 }
 
@@ -64,17 +74,11 @@ export class ProxyConnectionFailure extends CustomError {
   }
 }
 
-export class FeedbackSubmissionError extends CustomError {
-  constructor() {
-    super();
-  }
-}
-
 // Error thrown by "native" code.
 //
 // TODO: Rename this class, "plugin" is a poor name since the Electron apps do not have plugins.
 export class OutlinePluginError extends CustomError {
-  constructor(public readonly errorCode: ErrorCode) {
+  constructor(readonly errorCode: ErrorCode) {
     super();
   }
 }
@@ -83,6 +87,8 @@ export class OutlinePluginError extends CustomError {
 // Bifurcates into two subclasses:
 //  - "expected" errors originating in native code, e.g. incorrect password
 //  - "unexpected" errors originating in native code, e.g. unhandled routing table
+//
+// NativeError is being replaced by PlatformError. Please use PlatformError for new code.
 export class NativeError extends CustomError {}
 export class RegularNativeError extends NativeError {}
 export class RedFlagNativeError extends NativeError {}

@@ -30,8 +30,6 @@
 
     <!-- Android -->
     <platform name="android">
-        <preference name="SplashMaintainAspectRatio" value="true" />
-
         <icon density="ldpi" src="resources/icons/android/icon_mdpi.png" />
         <icon density="mdpi" src="resources/icons/android/icon_mdpi.png" />
         <icon density="hdpi" src="resources/icons/android/icon_hdpi.png" />
@@ -39,12 +37,8 @@
         <icon density="xxhdpi" src="resources/icons/android/icon_xxhdpi.png" />
         <icon density="xxxhdpi" src="resources/icons/android/icon_xxxhdpi.png" />
 
-        <splash density="ldpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
-        <splash density="mdpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
-        <splash density="hdpi" src="resources/splashscreen/android/splashscreen_hdpi.png" />
-        <splash density="xhdpi" src="resources/splashscreen/android/splashscreen_xhdpi.png" />
-        <splash density="xxhdpi" src="resources/splashscreen/android/splashscreen_xxhdpi.png" />
-        <splash density="xxxhdpi" src="resources/splashscreen/android/splashscreen_xxxhdpi.png" />
+        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="resources/splashscreen/android/splash_screen_icon_xxxhdpi.png" />
+        <preference name="AndroidWindowSplashScreenBackground" value="#263237" />
 
         <preference name="AndroidInsecureFileModeEnabled" value="true" />
 

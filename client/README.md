@@ -1,11 +1,8 @@
-# Outline Client
+# <img alt="Outline Client Logo" src="../docs/resources/logo_client.png" title="Outline Client" width="32">&nbsp;&nbsp;Outline Client
 
-![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/Jigsaw-Code/outline-apps/graph/badge.svg?token=gasD8v5tjn)](https://codecov.io/gh/Jigsaw-Code/outline-apps)
+![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_client.yml/badge.svg?branch=master) 
 
-> [!NOTE]
-> Test coverage currently only tracks the Apple Libraries and core web view code.
-
-The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and ChromeOS. The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
+The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, iOS, Android, and Debian-based Linux. The Outline Client is designed for use with the [Outline Server](https://github.com/Jigsaw-Code/outline-server) software, but it is fully compatible with any [Shadowsocks](https://shadowsocks.org/) server.
 
 The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
 
@@ -60,11 +57,11 @@ SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --
 
 ## Life of a Packet
 
-[How does the Outline Client work?](docs/life_of_a_packet.md)
+[How does the Outline Client work?](/docs/life_of_a_packet.md)
 
 ## Accepting a server invite
 
-[Looking for instructions on how to accept a server invite?](docs/invitation_instructions.md)
+[Looking for instructions on how to accept a server invite?](/docs/invitation_instructions.md)
 
 ## Platform-specific development
 
@@ -72,7 +69,7 @@ Each platform is handled differently:
 
 1. [Developing for Apple **(MacOS and iOS)**](src/cordova/apple)
 2. [Developing for **Android**](src/cordova/android)
-3. [Developing for Electron **(Windows and Linux)**](src/electron)
+3. [Developing for Electron **(Windows and Linux)**](electron)
 
 ## Error reporting
 
