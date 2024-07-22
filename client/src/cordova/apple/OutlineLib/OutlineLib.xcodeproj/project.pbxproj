@@ -7,11 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		522987052C4F273E009EE577 /* PacketTunnelProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 522987042C4F273E009EE577 /* PacketTunnelProvider.m */; };
+		522987082C4F278E009EE577 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 522987072C4F278E009EE577 /* CocoaLumberjack */; };
+		5229870C2C4F2850009EE577 /* OutlineTunnel in Frameworks */ = {isa = PBXBuildFile; productRef = 5229870B2C4F2850009EE577 /* OutlineTunnel */; };
+		5229870E2C4F2873009EE577 /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; };
+		5229870F2C4F2873009EE577 /* Tun2socks.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
-		5260B06A2C4F114000CDF289 /* PacketTunnelProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 5260B0692C4F114000CDF289 /* PacketTunnelProvider */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		522987102C4F2873009EE577 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5229870F2C4F2873009EE577 /* Tun2socks.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		522987032C4F273E009EE577 /* PacketTunnelProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PacketTunnelProvider.h; sourceTree = "<group>"; };
+		522987042C4F273E009EE577 /* PacketTunnelProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PacketTunnelProvider.m; sourceTree = "<group>"; };
+		5229870D2C4F2873009EE577 /* Tun2socks.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Tun2socks.xcframework; path = ../../../../output/build/apple/Tun2socks.xcframework; sourceTree = "<group>"; };
 		522C98B62B0D673200E6E4A9 /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../OutlineAppleLib; sourceTree = "<group>"; };
 		52334EAC2B0D58AD00817E56 /* VpnExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VpnExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -24,14 +45,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5229870E2C4F2873009EE577 /* Tun2socks.xcframework in Frameworks */,
+				522987082C4F278E009EE577 /* CocoaLumberjack in Frameworks */,
 				52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */,
-				5260B06A2C4F114000CDF289 /* PacketTunnelProvider in Frameworks */,
+				5229870C2C4F2850009EE577 /* OutlineTunnel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		522987022C4F26D4009EE577 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				522987032C4F273E009EE577 /* PacketTunnelProvider.h */,
+				522987042C4F273E009EE577 /* PacketTunnelProvider.m */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
 		52334DE02B0D56D600817E56 = {
 			isa = PBXGroup;
 			children = (
@@ -53,6 +85,7 @@
 		52334EAD2B0D58AD00817E56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5229870D2C4F2873009EE577 /* Tun2socks.xcframework */,
 				52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */,
 			);
 			name = Frameworks;
@@ -61,6 +94,7 @@
 		52334EB02B0D58AD00817E56 /* VpnExtension */ = {
 			isa = PBXGroup;
 			children = (
+				522987022C4F26D4009EE577 /* Sources */,
 				52334EB32B0D58AD00817E56 /* Info.plist */,
 				52334EB42B0D58AD00817E56 /* VpnExtension.entitlements */,
 			);
@@ -77,6 +111,7 @@
 				52334EA82B0D58AD00817E56 /* Sources */,
 				52334EA92B0D58AD00817E56 /* Frameworks */,
 				52334EAA2B0D58AD00817E56 /* Resources */,
+				522987102C4F2873009EE577 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -85,7 +120,8 @@
 			);
 			name = VpnExtension;
 			packageProductDependencies = (
-				5260B0692C4F114000CDF289 /* PacketTunnelProvider */,
+				522987072C4F278E009EE577 /* CocoaLumberjack */,
+				5229870B2C4F2850009EE577 /* OutlineTunnel */,
 			);
 			productName = VpnExtension;
 			productReference = 52334EAC2B0D58AD00817E56 /* VpnExtension.appex */;
@@ -187,6 +223,7 @@
 			packageReferences = (
 				52334EFA2B0D619D00817E56 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				5260B0682C4F114000CDF289 /* XCLocalSwiftPackageReference "../OutlineAppleLib" */,
+				522987062C4F278E009EE577 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 			);
 			productRefGroup = 52334DEB2B0D56D600817E56 /* Products */;
 			projectDirPath = "";
@@ -212,6 +249,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				522987052C4F273E009EE577 /* PacketTunnelProvider.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -449,6 +487,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		522987062C4F278E009EE577 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.8.5;
+			};
+		};
 		52334EFA2B0D619D00817E56 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
@@ -460,9 +506,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5260B0692C4F114000CDF289 /* PacketTunnelProvider */ = {
+		522987072C4F278E009EE577 /* CocoaLumberjack */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = PacketTunnelProvider;
+			package = 522987062C4F278E009EE577 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		5229870B2C4F2850009EE577 /* OutlineTunnel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineTunnel;
 		};
 		5260B0832C4F18B200CDF289 /* PacketTunnelProvider */ = {
 			isa = XCSwiftPackageProductDependency;

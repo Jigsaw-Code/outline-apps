@@ -18,13 +18,14 @@ let package = Package(
             name: "OutlineAppleLib",
             targets: ["OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
         ),
+        // Expose OutlineTunnel so the VpnExtension can use it.
+        .library(
+            name: "OutlineTunnel",
+            targets: ["OutlineTunnel"]
+        ),
         .library(
             name: "OutlineLauncher",
             targets: ["OutlineLauncher"]
-        ),
-        .library(
-            name: "PacketTunnelProvider",
-            targets: ["PacketTunnelProvider"]
         ),
     ],
     dependencies: [
@@ -47,18 +48,6 @@ let package = Package(
                 "OutlineNotification",
             ]
         ),
-        .target(
-            name: "PacketTunnelProvider",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "Tun2socks",
-                "OutlineTunnel",
-            ],
-            cSettings: [
-                .headerSearchPath("Internal"),
-            ]
-        ),
         .target(name: "OutlineNotification"),
         .target(
             name: "OutlineSentryLogger",
@@ -72,10 +61,6 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
             ]
-        ),
-        .binaryTarget(
-            name: "Tun2socks",
-            path: "../../../../output/build/apple/Tun2socks.xcframework"
         ),
         .testTarget(
             name: "OutlineTunnelTest",
