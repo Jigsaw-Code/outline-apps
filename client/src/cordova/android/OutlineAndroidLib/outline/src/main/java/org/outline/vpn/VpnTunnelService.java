@@ -126,11 +126,6 @@ public class VpnTunnelService extends VpnService {
     }
 
     @Override
-    public boolean isServerReachable(String host, int port) {
-      return VpnTunnelService.this.isServerReachable(host, port);
-    }
-
-    @Override
     public void initErrorReporting(String apiKey) {
       VpnTunnelService.this.initErrorReporting(apiKey);
     }
@@ -337,15 +332,6 @@ public class VpnTunnelService extends VpnService {
       return false;
     }
     return tunnelConfig.id.equals(tunnelId);
-  }
-
-  private boolean isServerReachable(final String host, final int port) {
-    try {
-      Shadowsocks.checkServerReachable(host, port);
-    } catch (Exception e) {
-      return false;
-    }
-    return true;
   }
 
   /* Helper method to tear down an active tunnel. */
