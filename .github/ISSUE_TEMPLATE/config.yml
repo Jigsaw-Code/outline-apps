@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Customer Support
+    url: https://support.getoutline.org/s/contactsupport
+    about: Please request troubleshooting assistance with Outline Manager or Outline Client here.
+  - name: Outline SDK Discussion Board
+    url: https://github.com/Jigsaw-Code/outline-sdk/discussions
+    about: Developers using Outline SDK, please post your questions here.
+  - name: Outline Community
+    url: https://community.internetfreedomfestival.org/community/channels/outline-community
+    about: Join our Outline Community on Mattermost.
+  - name: r/OutlineVPN
+    url: https://www.reddit.com/r/outlinevpn/
+    about: Join our Outline Community on Reddit.

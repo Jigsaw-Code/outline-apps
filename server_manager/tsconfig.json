@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "target": "es2021",
+    "lib": ["dom", "es2022"]
+  },
+  "rootDir": ".",
+  "include": ["**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "web_app/gallery_app",
+    // FIXME: these tests fail with a runtime error because app.ts depends on
+    // polymer, which targets the browser and uses ES6 imports.
+    "web_app/app.spec.ts"
+  ]
+}

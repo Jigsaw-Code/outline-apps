@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import url from 'url';
-import * as globby from 'globby';
-import path from 'path';
 import fs from 'fs/promises';
+import path from 'path';
+import url from 'url';
+
+import * as globby from 'globby';
+
 import {getRootDir} from './src/build/get_root_dir.mjs';
 
 /**

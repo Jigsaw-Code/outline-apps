@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
 import {spawn} from 'child_process';
+
+import chalk from 'chalk';
 
 /**
  * @description promisifies the child process (for supporting legacy bash actions!)
@@ -23,7 +24,7 @@ export const spawnStream = (command, ...parameters) =>
     const stdout = [];
     const stderr = [];
 
-    console.debug(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]`);
+    console.debug(chalk.gray(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`));
     const childProcess = spawn(command, parameters, {env: process.env});
 
     const forEachMessageLine = (buffer, callback) => {
@@ -47,14 +48,22 @@ export const spawnStream = (command, ...parameters) =>
       if (code === 0) {
         return resolve(stdout.join(''));
       }
+
       console.error(
         chalk.red(
           `ERROR(spawn_stream): ${chalk.underline(
             [command, ...parameters].join(' ')
-          )} failed with exit code ${chalk.bold(code)}. Printing stderr:`
+          )} failed with exit code ${chalk.bold(code)}.}`
         )
       );
-      stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
-      return reject(code);
+
+      if (!(stderr.length && stderr.every(line => line))) {
+        console.error(chalk.bgRedBright('No error output was given... Please fix this so it gives an error output :('));
+      } else {
+        console.error(chalk.bgRedBright('Printing stderr:'));
+        stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));
+      }
+
+      return reject(stderr.join(''));
     });
   });

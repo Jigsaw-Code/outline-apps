@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import chalk from 'chalk';
 import {existsSync} from 'fs';
 import {readFile} from 'fs/promises';
 import path from 'path';
 import url from 'url';
+
+import chalk from 'chalk';
 
 import {getRootDir} from './get_root_dir.mjs';
 import {spawnStream} from './spawn_stream.mjs';
@@ -27,11 +28,11 @@ import {spawnStream} from './spawn_stream.mjs';
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
 
-  if (actionPath in JSON.parse(await readFile(path.join(getRootDir(), 'package.json'))).scripts) {
+  if (actionPath in JSON.parse(await readFile(path.resolve(getRootDir(), 'package.json'))).scripts) {
     return actionPath;
   }
 
-  const roots = [getRootDir(), path.join(getRootDir(), 'src')];
+  const roots = [getRootDir(), path.resolve(getRootDir(), '..')];
   const extensions = ['sh', 'mjs'];
 
   for (const root of roots) {
@@ -141,5 +142,5 @@ async function main() {
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
-  await main();
+  await main(...process.argv.slice(2));
 }

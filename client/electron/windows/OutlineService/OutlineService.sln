@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlineService", "OutlineService\OutlineService.csproj", "{F39A4491-9868-4A71-9BE1-980FADE10AC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Debug|Any CPU.ActiveCfg = Release|x86
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Debug|Any CPU.Build.0 = Release|x86
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Debug|x86.ActiveCfg = Release|x86
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Debug|x86.Build.0 = Release|x86
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Release|x86.ActiveCfg = Release|x86
+		{F39A4491-9868-4A71-9BE1-980FADE10AC9}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {55663288-4604-4D50-8D4A-7222B9A2B6BF}
+	EndGlobalSection
+EndGlobal
