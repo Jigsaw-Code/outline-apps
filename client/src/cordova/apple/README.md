@@ -167,6 +167,8 @@ It's safe to unregister all the Outline VPN Extensions, since the system will lo
 pluginkit -r $APP_EXTENSION_PATH
 ```
 
+Make sure that you list the registered plugins again after unregistering them, since they may fallback to other versions of it, which you may also need to unregister.
+
 Where the `$APP_EXTENSION_PATH` is the location of the `VpnExtension.appex` file from the pluginkit command.
 
 If your extenstion is still not loading, you can try to force register it:

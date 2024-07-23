@@ -10,21 +10,22 @@ let package = Package(
         // CocoaLumberjack 3.8.0 dropped support for iOS < 11 and macOS < 10.13.
         // See https://github.com/CocoaLumberjack/CocoaLumberjack/releases/tag/3.8.0.
         // These cannot be upgraded without also upgrading the entire project.
-       .iOS(.v11),
+       .iOS(.v13),
        .macOS(.v10_14),
     ],
     products: [
         .library(
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
+            targets: ["OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
+        ),
+        // Expose OutlineTunnel so the VpnExtension can use it.
+        .library(
+            name: "OutlineTunnel",
+            targets: ["OutlineTunnel"]
         ),
         .library(
             name: "OutlineLauncher",
             targets: ["OutlineLauncher"]
-        ),
-        .library(
-            name: "PacketTunnelProvider",
-            targets: ["PacketTunnelProvider"]
         ),
     ],
     dependencies: [
@@ -47,18 +48,6 @@ let package = Package(
                 "OutlineNotification",
             ]
         ),
-        .target(
-            name: "PacketTunnelProvider",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "Tun2socks",
-                "OutlineTunnel",
-            ],
-            cSettings: [
-                .headerSearchPath("Internal"),
-            ]
-        ),
         .target(name: "OutlineNotification"),
         .target(
             name: "OutlineSentryLogger",
@@ -71,16 +60,11 @@ let package = Package(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "Tun2socks",
             ]
-        ),
-        .binaryTarget(
-            name: "Tun2socks",
-            path: "../../../../output/build/apple/Tun2socks.xcframework"
         ),
         .testTarget(
             name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel", "PacketTunnelProvider"]
+            dependencies: ["OutlineTunnel"]
         ),
     ]
 )
