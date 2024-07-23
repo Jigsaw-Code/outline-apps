@@ -175,7 +175,6 @@
 		3047A5111AB8059700498E2A /* build.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = build.xcconfig; path = cordova/build.xcconfig; sourceTree = SOURCE_ROOT; };
 		32CA4F630368D1EE00C91783 /* Outline-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Outline-Prefix.pch"; sourceTree = "<group>"; };
 		3B0347431F212E6500C8EF1F /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Outline.entitlements; path = Outline/Outline.entitlements; sourceTree = "<group>"; };
-		3B03475B1F212F2D00C8EF1F /* VpnExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = VpnExtension.entitlements; path = Outline/VpnExtension.entitlements; sourceTree = SOURCE_ROOT; };
 		5260B0572C4F09FB00CDF289 /* OutlineLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OutlineLib.xcodeproj; path = ../../src/cordova/apple/OutlineLib/OutlineLib.xcodeproj; sourceTree = "<group>"; };
 		65A9AC9B2BEC091700C5899F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = Outline/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
@@ -264,7 +263,6 @@
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		F63DC2162970AFE600D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../src/cordova/apple/OutlineAppleLib; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
-		FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "VpnExtension-Info.plist"; path = "Outline/VpnExtension-Info.plist"; sourceTree = SOURCE_ROOT; };
 		FC8C310A1FAA814A004262BE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -335,7 +333,6 @@
 				307C750510C5A3420062BCA9 /* Plugins */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
-				3B0347491F212F0200C8EF1F /* VpnExtension */,
 				A26D262E2A1C41B1009838E0 /* OutlineLauncher */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -357,7 +354,6 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FC55AB411F4F960A0056F12C /* VpnExtension-Info.plist */,
 				0207DA571B56EA530066E2B4 /* Assets.xcassets */,
 				3047A50E1AB8057F00498E2A /* config */,
 				8D1107310486CEB800E47090 /* Outline-Info.plist */,
@@ -407,15 +403,6 @@
 			name = Plugins;
 			path = Outline/Plugins;
 			sourceTree = SOURCE_ROOT;
-		};
-		3B0347491F212F0200C8EF1F /* VpnExtension */ = {
-			isa = PBXGroup;
-			children = (
-				3B03475B1F212F2D00C8EF1F /* VpnExtension.entitlements */,
-			);
-			name = VpnExtension;
-			path = Outline/Resources/vpn;
-			sourceTree = "<group>";
 		};
 		5260B0582C4F09FB00CDF289 /* Products */ = {
 			isa = PBXGroup;
