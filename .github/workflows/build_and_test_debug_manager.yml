@@ -58,7 +58,7 @@ jobs:
         run: npm run action server_manager/electron_app/build linux
 
       # Since Linux doesn't require signing, we can use it to smoke test the package action
-      - name: Package Linux Manager
+      - name: Smoke Test Linux Manager Package
         run: npm run action server_manager/electron_app/package linux -- --buildMode=release --versionName=1.0.0
 
   windows_debug_build:
