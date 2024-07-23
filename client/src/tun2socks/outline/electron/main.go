@@ -18,17 +18,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/shadowsocks"
 	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/tun2socks"
-	"github.com/eycorsican/go-tun2socks/common/log"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
@@ -40,6 +40,8 @@ const (
 	udpTimeout = 30 * time.Second
 	persistTun = true // Linux: persist the TUN interface after the last open file descriptor is closed.
 )
+
+var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 var args struct {
 	tunAddr *string
@@ -63,8 +65,13 @@ var args struct {
 	version           *bool
 }
 var version string // Populated at build time through `-X main.version=...`
-var lwipWriter io.Writer
 
+// This app sets up a local network stack to handle requests from a tun device.
+//
+// If the app runs successfully, it exits with code 0.
+// If there's an error, it exits with code 1 and prints a detailed error message in JSON format to stderr.
+//
+// The app also prints logs, but these are not meant to be read by the parent process.
 func main() {
 	args.tunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface IP address")
 	args.tunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
@@ -93,25 +100,18 @@ func main() {
 
 	client, err := newShadowsocksClientFromArgs()
 	if err != nil {
-		log.Errorf("Failed to create Shadowsocks client: %v", err)
-		os.Exit(neterrors.IllegalConfiguration.Number())
+		printErrorAndExit(err, 1)
 	}
 
 	if *args.checkConnectivity {
-		connErrCode, err := shadowsocks.CheckConnectivity(client)
-		log.Debugf("Connectivity checks error code: %v", connErrCode)
-		if err != nil {
-			log.Errorf("Failed to perform connectivity checks: %v", err)
-		}
-		os.Exit(connErrCode)
+		checkConnectivityAndExit(client)
 	}
 
 	// Open TUN device
 	dnsResolvers := strings.Split(*args.tunDNS, ",")
 	tunDevice, err := tun.OpenTunDevice(*args.tunName, *args.tunAddr, *args.tunGw, *args.tunMask, dnsResolvers, persistTun)
 	if err != nil {
-		log.Errorf("Failed to open TUN device: %v", err)
-		os.Exit(neterrors.SystemMisconfigured.Number())
+		printErrorAndExit(platerrors.NewWithCause(platerrors.SetupSystemVPNFailed, "failed to open TUN device", err), 1)
 	}
 	// Output packets to TUN device
 	core.RegisterOutputFn(tunDevice.Write)
@@ -120,7 +120,7 @@ func main() {
 	core.RegisterTCPConnHandler(tun2socks.NewTCPHandler(client))
 	if *args.dnsFallback {
 		// UDP connectivity not supported, fall back to DNS over TCP.
-		log.Debugf("Registering DNS fallback UDP handler")
+		logger.Debug("Registering DNS fallback UDP handler")
 		core.RegisterUDPConnHandler(dnsfallback.NewUDPHandler())
 	} else {
 		core.RegisterUDPConnHandler(tun2socks.NewUDPHandler(client, udpTimeout))
@@ -131,34 +131,41 @@ func main() {
 	go func() {
 		_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
 		if err != nil {
-			log.Errorf("Failed to write data to network stack: %v", err)
-			os.Exit(neterrors.Unexpected.Number())
+			printErrorAndExit(platerrors.NewWithCause(platerrors.DataTransmissionFailed,
+				"failed to write data to network stack", err), 1)
 		}
 	}()
 
-	log.Infof("tun2socks running...")
+	// This message is used in TypeScript to determine whether tun2socks has been started successfully
+	logger.Info("tun2socks running...")
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGHUP)
 	sig := <-osSignals
-	log.Debugf("Received signal: %v", sig)
+	logger.Debug("Received signal", sig)
 }
 
 func setLogLevel(level string) {
+	slvl := slog.LevelInfo
 	switch strings.ToLower(level) {
 	case "debug":
-		log.SetLevel(log.DEBUG)
+		slvl = slog.LevelDebug
 	case "info":
-		log.SetLevel(log.INFO)
+		slvl = slog.LevelInfo
 	case "warn":
-		log.SetLevel(log.WARN)
+		slvl = slog.LevelWarn
 	case "error":
-		log.SetLevel(log.ERROR)
+		slvl = slog.LevelError
 	case "none":
-		log.SetLevel(log.NONE)
-	default:
-		log.SetLevel(log.INFO)
+		logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelError}))
+		return
 	}
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slvl}))
+}
+
+func printErrorAndExit(err error, exitCode int) {
+	fmt.Fprintln(os.Stderr, err.Error())
+	os.Exit(exitCode)
 }
 
 // newShadowsocksClientFromArgs creates a new shadowsocks.Client instance
@@ -174,13 +181,33 @@ func newShadowsocksClientFromArgs() (*shadowsocks.Client, error) {
 			CipherName: *args.proxyCipher,
 			Password:   *args.proxyPassword,
 		}
-		if prefixStr := *args.proxyPrefix; len(prefixStr) > 0 {
-			if p, err := utf8.DecodeUTF8CodepointsToRawBytes(prefixStr); err != nil {
-				return nil, fmt.Errorf("Failed to parse prefix string: %w", err)
-			} else {
-				config.Prefix = p
-			}
+		prefixBytes, err := shadowsocks.ParseConfigPrefixFromString(*args.proxyPrefix)
+		if err != nil {
+			return nil, err
 		}
+		config.Prefix = prefixBytes
 		return shadowsocks.NewClient(&config)
 	}
+}
+
+// checkConnectivity checks whether the remote Shadowsocks server supports TCP or UDP,
+// and converts the neterrors to a PlatformError.
+// TODO: remove this function once we migrated CheckConnectivity to return a PlatformError.
+func checkConnectivityAndExit(c *shadowsocks.Client) {
+	connErrCode, err := shadowsocks.CheckConnectivity(c)
+	if err != nil {
+		printErrorAndExit(platerrors.NewWithCause(platerrors.InternalError, "failed to check connectivity", err), 1)
+	}
+	switch connErrCode {
+	case neterrors.NoError.Number():
+		os.Exit(0)
+	case neterrors.AuthenticationFailure.Number():
+		printErrorAndExit(platerrors.New(platerrors.Unauthenticated, "authentication failed"), 1)
+	case neterrors.Unreachable.Number():
+		printErrorAndExit(platerrors.New(platerrors.ProxyServerUnreachable, "cannot connect to Shadowsocks server"), 1)
+	case neterrors.UDPConnectivity.Number():
+		printErrorAndExit(platerrors.New(platerrors.ProxyServerUDPUnsupported, "Shadowsocks server does not support UDP"),
+			neterrors.UDPConnectivity.Number())
+	}
+	printErrorAndExit(platerrors.New(platerrors.InternalError, "failed to check connectivity"), 1)
 }

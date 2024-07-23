@@ -17,6 +17,7 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
+import {localizeErrorCode} from './error_localizer';
 import {OutlineServerRepository} from './outline_server_repository';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -24,9 +25,10 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
+import {PlatformError} from '../model/platform_error';
 import {Server} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
-import {ServerListItem, ServerConnectionState} from '../views/servers_view';
+import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
@@ -79,7 +81,6 @@ export function isOutlineAccessKey(url: string): boolean {
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
 
 export class App {
-  private feedbackViewEl: polymer.Base;
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
@@ -99,7 +100,6 @@ export class App {
     private quitApplication: () => void,
     document = window.document
   ) {
-    this.feedbackViewEl = rootEl.shadowRoot.querySelector('#feedbackView');
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
@@ -133,9 +133,6 @@ export class App {
     this.rootEl.addEventListener('QuitPressed', this.quitApplication.bind(this));
     this.rootEl.addEventListener('AutoConnectDialogDismissed', this.autoConnectDialogDismissed.bind(this));
     this.rootEl.addEventListener('ShowServerRename', this.rootEl.showServerRename.bind(this.rootEl));
-    if (this.feedbackViewEl) {
-      this.feedbackViewEl.$.submitButton.addEventListener('tap', this.submitFeedback.bind(this));
-    }
     this.rootEl.addEventListener('PrivacyTermsAcked', this.ackPrivacyTerms.bind(this));
     this.rootEl.addEventListener('SetLanguageRequested', this.setAppLanguage.bind(this));
 
@@ -170,8 +167,6 @@ export class App {
       toastMessage = this.localize('outline-plugin-error-udp-forwarding-not-enabled');
     } else if (error instanceof errors.ServerUnreachable) {
       toastMessage = this.localize('outline-plugin-error-server-unreachable');
-    } else if (error instanceof errors.FeedbackSubmissionError) {
-      toastMessage = this.localize('error-feedback-submission');
     } else if (error instanceof errors.ServerUrlInvalid) {
       toastMessage = this.localize('error-invalid-access-key');
     } else if (error instanceof errors.ServerIncompatible) {
@@ -185,10 +180,10 @@ export class App {
       buttonLink = 'https://s3.amazonaws.com/outline-vpn/index.html#/en/support/antivirusBlock';
     } else if (error instanceof errors.ConfigureSystemProxyFailure) {
       toastMessage = this.localize('outline-plugin-error-routing-tables');
-      buttonMessage = this.localize('feedback-page-title');
+      buttonMessage = this.localize('contact-page-title');
       buttonHandler = () => {
         // TODO: Drop-down has no selected item, why not?
-        this.rootEl.changePage('feedback');
+        this.rootEl.changePage('contact');
       };
     } else if (error instanceof errors.NoAdminPermissions) {
       toastMessage = this.localize('outline-plugin-error-admin-permissions');
@@ -228,6 +223,10 @@ export class App {
       buttonHandler = () => {
         this.showErrorDetailsDialog(error.details);
       };
+    } else if (error instanceof PlatformError) {
+      toastMessage = localizeErrorCode(error.code, this.localize);
+      buttonMessage = this.localize('error-details');
+      buttonHandler = () => this.showErrorDetailsDialog(error.toString());
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
@@ -412,7 +411,7 @@ export class App {
       this.maybeShowAutoConnectDialog();
     } catch (e) {
       this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTED});
-      console.error(`could not connect to server ${serverId}: ${e.name}`);
+      console.error(`could not connect to server ${serverId}: ${e}`);
       if (e instanceof errors.SystemConfigurationException) {
         if (await this.showConfirmationDialog(this.localize('outline-services-installation-confirmation'))) {
           await this.installVpnService();
@@ -497,25 +496,6 @@ export class App {
     }
   }
 
-  private async submitFeedback() {
-    const formData = this.feedbackViewEl.getValidatedFormData();
-    if (!formData) {
-      return;
-    }
-    const {feedback, category, email} = formData;
-    this.feedbackViewEl.submitting = true;
-    try {
-      await this.errorReporter.report(feedback, category, email);
-      this.feedbackViewEl.submitting = false;
-      this.feedbackViewEl.resetForm();
-      this.changeToDefaultPage();
-      this.rootEl.showToast(this.rootEl.localize('feedback-thanks'));
-    } catch (e) {
-      this.feedbackViewEl.submitting = false;
-      this.showLocalizedError(new errors.FeedbackSubmissionError());
-    }
-  }
-
   //#region EventQueue event handlers
 
   private onServerConnected(event: events.ServerConnected): void {
@@ -594,7 +574,7 @@ export class App {
 
   private showErrorDetailsDialog(details: string) {
     if (!details) return;
-    
+
     return alert(details);
   }
 

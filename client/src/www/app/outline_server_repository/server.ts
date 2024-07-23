@@ -15,9 +15,9 @@
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
+import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
-
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -30,9 +30,9 @@ export class OutlineServer implements Server {
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
-    public readonly id: string,
-    public readonly accessKey: string,
-    public readonly type: ServerType,
+    readonly id: string,
+    readonly accessKey: string,
+    readonly type: ServerType,
     private _name: string,
     private tunnel: Tunnel,
     private eventQueue: events.EventQueue
@@ -101,6 +101,11 @@ export class OutlineServer implements Server {
     try {
       await this.tunnel.start(this.sessionConfig);
     } catch (cause) {
+      // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
+      if (cause instanceof PlatformError) {
+        throw cause;
+      }
+
       // e originates in "native" code: either Cordova or Electron's main process.
       // Because of this, we cannot assume "instanceof OutlinePluginError" will work.
       if (cause.errorCode) {

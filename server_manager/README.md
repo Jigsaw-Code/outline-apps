@@ -1,4 +1,4 @@
-# Outline Manager
+# <img alt="Outline Manager Logo" src="../docs/resources/logo_manager.png" title="Outline Manager" width="32">&nbsp;&nbsp;Outline Manager
 
 ![Build and Test](https://github.com/Jigsaw-Code/outline-apps/actions/workflows/build_and_test_debug_manager.yml/badge.svg?branch=master)
 
@@ -51,7 +51,7 @@ npm run action server_manager/electron_app/build ${PLATFORM} -- --buildMode=[deb
 
 Where `${PLATFORM}` is one of `linux`, `macos`, `windows`.
 
-The per-platform standalone apps will be at `build/electron_app/static/dist`.
+The per-platform standalone apps will be at `output/build/server_manager/electron_app/static/dist`.
 
 - Windows: zip files. Only generated if you have [wine](https://www.winehq.org/download) installed.
 - Linux: tar.gz files.

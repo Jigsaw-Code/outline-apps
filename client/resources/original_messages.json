@@ -217,54 +217,6 @@
     "description": "An error message shown when the cause is not really known.",
     "message": "Sorry, an unexpected error occurred. Quitting and restarting may help. If this happens again, please submit feedback."
   },
-  "feedback_cannot_add_server": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not being able to import a server into the application.",
-    "message": "Can't add a server"
-  },
-  "feedback_connection": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to problems connecting to a server.",
-    "message": "Can't connect to my server"
-  },
-  "feedback_general": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is general feedback, not related to performance or connection issues.",
-    "message": "General Feedback"
-  },
-  "feedback_input": {
-    "description": "The hint text for a textbox in which the user can type their feedback for the app developers.",
-    "message": "Your feedback"
-  },
-  "feedback_language_disclaimer": {
-    "description": "Text displayed below a feedback form explaining that the support team can only respond to feedback in English.",
-    "message": "Please note that our team is only able to answer feedback in English."
-  },
-  "feedback_no_server": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for feedback related to not having a server to connect.",
-    "message": "Don't have a server"
-  },
-  "feedback_page_title": {
-    "description": "The menu item text and title of a page for a user to send feedback to the app’s developers.",
-    "message": "Submit Feedback"
-  },
-  "feedback_performance": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for performance feedback, for example, the speed of connection.",
-    "message": "Outline is slow"
-  },
-  "feedback_privacy": {
-    "description": "Text appearing above a feedback form explaining the feedback process. Includes a link to the Data Collection Policy as marked by the start and end of link. Outline is the product name and can be found in the translation glossary.",
-    "message": "Your feedback, your email address (if provided), and additional information referred to in the $START_OF_LINK$Data Collection Policy$END_OF_LINK$ will be sent to the Outline team. Please do not include personal information in your feedback.",
-    "placeholders": {
-      "END_OF_LINK": {
-        "content": "{privacyPolicyLinkClose}"
-      },
-      "START_OF_LINK": {
-        "content": "{privacyPolicyLinkOpen}"
-      }
-    }
-  },
-  "feedback_suggestion": {
-    "description": "This is one of the feedback categories the user can select in a drop-down when sending a feedback to the app developers. This is for suggestions, for example, feature requests.",
-    "message": "Suggestions"
-  },
   "feedback_thanks": {
     "description": "A message saying thank you after submitting user feedback.",
     "message": "Thanks for helping us improve! We love hearing from you."

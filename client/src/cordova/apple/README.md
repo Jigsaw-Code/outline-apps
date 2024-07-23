@@ -16,18 +16,18 @@ You will need:
 
 ## Set up XCode project
 
-The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action cordova/setup $PLATFORM`, then open the XCode workspace file (not the project).
+The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action client/src/cordova/setup $PLATFORM`, then open the XCode workspace file (not the project).
 
 For the **iOS** client and **Mac Catalyst** client:
 
 ```sh
-npm run action cordova/build ios && open ./src/cordova/apple/ios.xcworkspace
+npm run action client/src/cordova/build ios && open ./client/src/cordova/apple/ios.xcworkspace
 ```
 
 For the **macOS** client:
 
 ```sh
-SENTRY_DSN=https://public@sentry.example.com/1 npm run action cordova/setup macos -- --buildMode=release --versionName=0.0.0-dev && open ./src/cordova/apple/macos.xcworkspace
+SENTRY_DSN=https://public@sentry.example.com/1 npm run action client/src/cordova/setup macos -- --buildMode=release --versionName=0.0.0-dev && open ./client/src/cordova/apple/macos.xcworkspace
 ```
 
 > **Note** On Apple Silicon the macOS web UI is broken in debug mode, so we need to build it in release mode. We are specifying a fake `SENTRY_DSN`, you should specify your own in your releases.

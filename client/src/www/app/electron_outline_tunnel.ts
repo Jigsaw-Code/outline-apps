@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
-import * as errors from '../model/errors';
-
+import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
+import {PlatformError} from '../model/platform_error';
 
 export class ElectronOutlineTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;
 
-  constructor(public readonly id: string) {
+  constructor(readonly id: string) {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     window.electron.methodChannel.on(`proxy-connected-${this.id}`, () => {
@@ -41,11 +40,12 @@ export class ElectronOutlineTunnel implements Tunnel {
       this.handleStatusChange(TunnelStatus.DISCONNECTED);
     });
 
-    const err = await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
-    if (err != errors.ErrorCode.NO_ERROR) {
-      throw new errors.OutlinePluginError(err);
+    try {
+      await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
+      this.running = true;
+    } catch (e) {
+      throw PlatformError.parseFrom(e);
     }
-    this.running = true;
   }
 
   async stop() {

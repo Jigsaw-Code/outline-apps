@@ -101,8 +101,8 @@ interface OutlineServerJson {
 // Maintains a persisted set of servers and liaises with the core.
 export class OutlineServerRepository implements ServerRepository {
   // Name by which servers are saved to storage.
-  public static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
-  public static readonly SERVERS_STORAGE_KEY = 'servers_v1';
+  static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
+  static readonly SERVERS_STORAGE_KEY = 'servers_v1';
   private serverById!: Map<string, OutlineServer>;
   private lastForgottenServer: OutlineServer | null = null;
 

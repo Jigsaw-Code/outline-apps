@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path="../../../../src/electron/preload.d.ts" />
+/// <reference path="../../../electron/preload.d.ts" />
 
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
@@ -75,7 +75,7 @@ class ElectronUpdater extends AbstractUpdater {
 }
 
 class ElectronVpnInstaller implements VpnInstaller {
-  public async installVpn(): Promise<void> {
+  async installVpn(): Promise<void> {
     const err = await window.electron.methodChannel.invoke('install-outline-services');
 
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:

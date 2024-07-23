@@ -13,7 +13,6 @@ on:
     branches:
       - master
 
-# TODO: run go tests
 jobs:
   web_test:
     name: Web Test
@@ -44,11 +43,27 @@ jobs:
           files: ./client/src/output/coverage/www/coverage-final.json
           flags: unittests, www
 
+  backend_test:
+    name: Go Backend Test
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: '${{ github.workspace }}/go.mod'
+
+      - name: Test Tun2socks Backend
+        run: go test -race -bench=. -benchtime=100ms ./client/...
+
   linux_debug_build:
     name: Linux Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -69,13 +84,13 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Linux Client
-        run: npm run action src/electron/build linux
+        run: npm run action client/electron/build linux
 
   windows_debug_build:
     name: Windows Debug Build
     runs-on: windows-2019
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Support longpaths
         run: git config --system core.longpaths true
@@ -99,13 +114,13 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Windows Client
-        run: npm run action src/electron/build windows
+        run: npm run action client/electron/build windows
 
   macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-13
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Display XCode
         run: xcode-select --print-path
@@ -147,7 +162,7 @@ jobs:
     name: iOS Debug Build
     runs-on: macos-13
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Display XCode
         run: xcode-select --print-path
@@ -189,7 +204,7 @@ jobs:
     name: Mac Catalyst Debug Build
     runs-on: macos-13
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Display XCode
         run: xcode-select --print-path
@@ -231,7 +246,7 @@ jobs:
     name: Android Debug Build
     runs-on: ubuntu-20.04
     timeout-minutes: 20
-    needs: web_test
+    needs: [web_test, backend_test]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -257,7 +272,7 @@ jobs:
           java-version: 11
 
       - name: Setup Android
-        run: bash ./client/tools/build/setup_linux_android.sh
+        run: bash ./.github/scripts/android_setup_ci.sh
 
       - name: Build Android Client
         run: npm run action client/src/cordova/build android -- --verbose
