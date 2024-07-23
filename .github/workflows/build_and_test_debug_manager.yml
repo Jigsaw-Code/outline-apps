@@ -12,6 +12,8 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - cron: "0 13 * * *"  # Run daily at 1PM UTC.
 
 jobs:
   web_test:
@@ -56,6 +58,10 @@ jobs:
 
       - name: Build Linux Manager
         run: npm run action server_manager/electron_app/build linux
+
+      # Since Linux doesn't require signing, we can use it to smoke test the package action
+      - name: Smoke Test Linux Manager Package
+        run: npm run action server_manager/electron_app/package linux -- --buildMode=release --versionName=1.0.0
 
   windows_debug_build:
     name: Windows Debug Build
