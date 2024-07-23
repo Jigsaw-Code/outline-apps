@@ -70,6 +70,13 @@
 } */
 
 @font-face {
+  font-family: "Jigsaw Sans";
+  font-style: normal;
+  font-weight: 500;
+  src: url(./assets/jigsaw_sans_medium.woff2) format("woff2");
+}
+
+@font-face {
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: normal;

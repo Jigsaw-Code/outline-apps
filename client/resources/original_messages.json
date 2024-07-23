@@ -27,6 +27,10 @@
     "description": "The title of a page giving details about the app.",
     "message": "About"
   },
+  "app_header_title": {
+    "description": "The 'Outline' that appears in the header of the application.",
+    "message": "Outline"
+  },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
     "message": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device."
