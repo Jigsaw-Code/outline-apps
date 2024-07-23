@@ -14,14 +14,6 @@ on:
       - master
 
 jobs:
-  licenses:
-    name: Check licenses
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check licenses
-        # We allow only "notice" type of licenses.
-        run: go run github.com/google/go-licenses check --ignore=golang.org/x --allowed_licenses=Apache-2.0,Apache-3,BSD-3-Clause,BSD-4-Clause,CC0-1.0,MIT ./...
-
   web_test:
     name: Web Test
     runs-on: ubuntu-20.04
@@ -63,6 +55,13 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
+
+      - name: Build Tun2socks Backend
+        run: go build -v ./...
+
+      - name: Check licenses
+        # We allow only "notice" type of licenses.
+        run: go run github.com/google/go-licenses check --ignore=golang.org/x --allowed_licenses=Apache-2.0,Apache-3,BSD-3-Clause,BSD-4-Clause,CC0-1.0,MIT ./...
 
       - name: Test Tun2socks Backend
         run: go test -race -bench=. -benchtime=100ms ./client/...
