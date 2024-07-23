@@ -12,6 +12,8 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - cron: "0 13 * * *"  # Run daily at 1PM UTC.
 
 jobs:
   web_test:
