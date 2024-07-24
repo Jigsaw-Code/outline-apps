@@ -39,7 +39,7 @@ import './outline-per-key-data-limit-dialog';
 import './outline-language-picker';
 import './outline-manual-server-entry';
 import './outline-modal-dialog';
-import './outline-region-picker-step';
+import './outline-server-setup-step';
 import './outline-server-list';
 import './outline-tos-view';
 
@@ -66,8 +66,8 @@ import type {OutlineManualServerEntry} from './outline-manual-server-entry';
 import type {OutlineMetricsOptionDialog} from './outline-metrics-option-dialog';
 import type {OutlineModalDialog} from './outline-modal-dialog';
 import type {OutlinePerKeyDataLimitDialog} from './outline-per-key-data-limit-dialog';
-import type {OutlineRegionPicker} from './outline-region-picker-step';
 import type {OutlineServerList, ServerViewListEntry} from './outline-server-list';
+import type {OutlineServerSetup} from './outline-server-setup-step';
 import type {ServerView} from './outline-server-view';
 import type {OutlineShareDialog} from './outline-share-dialog';
 import type {GcpCreateServerApp} from '../outline-gcp-create-server-app';
@@ -444,7 +444,7 @@ export class AppRoot extends polymerElementWithLocalize {
               <outline-gcp-create-server-app id="gcpCreateServer" localize="[[localize]]" language="[[language]]"></outline-gcp-create-server-app>
               <outline-manual-server-entry id="manualEntry" localize="[[localize]]"></outline-manual-server-entry>
               <!-- TODO: Move to a new outline-do-oauth-step. -->
-              <outline-region-picker-step id="regionPicker" localize="[[localize]]" language="[[language]]"></outline-region-picker-step>
+              <outline-setup-step id="serverSetup" localize="[[localize]]" language="[[language]]"></outline-setup-step>
               <outline-server-list id="serverView" server-list="[[_serverViewList(serverList)]]" selected-server-id="[[selectedServerId]]" language="[[language]]" localize="[[localize]]"></outline-server-list>
               </div>
             </iron-pages>
@@ -826,11 +826,11 @@ export class AppRoot extends polymerElementWithLocalize {
     return this.$.gcpCreateServer as GcpCreateServerApp;
   }
 
-  getAndShowRegionPicker(): OutlineRegionPicker {
-    this.currentPage = 'regionPicker';
-    const regionPicker = this.$.regionPicker as OutlineRegionPicker;
-    regionPicker.reset();
-    return regionPicker;
+  getAndShowServerSetup(): OutlineServerSetup {
+    this.currentPage = 'serverSetup';
+    const serverSetup = this.$.serverSetup as OutlineServerSetup;
+    serverSetup.reset();
+    return serverSetup;
   }
 
   getManualServerEntry() {
