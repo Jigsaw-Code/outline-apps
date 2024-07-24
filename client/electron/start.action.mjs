@@ -20,7 +20,7 @@ import electron from 'electron';
 import {getRootDir} from '../../src/build/get_root_dir.mjs';
 import {runAction} from '../../src/build/run_action.mjs';
 import {spawnStream} from '../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 /**
  * @description Builds and starts the electron application.
