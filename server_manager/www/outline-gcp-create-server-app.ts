@@ -240,7 +240,7 @@ export class GcpCreateServerApp extends LitElement {
       id="regionPicker"
       .localize=${this.localize}
       .language=${this.language}
-      @RegionSelected="${this.onRegionSelected}"
+      @SetUpServerRequested="${this.onSetUpRequested}"
     >
     </outline-region-picker-step>`;
   }
@@ -386,14 +386,14 @@ export class GcpCreateServerApp extends LitElement {
     this.selectedBillingAccountId = event.detail.value;
   }
 
-  private async onRegionSelected(event: CustomEvent) {
+  private async onSetUpRequested(event: CustomEvent) {
     event.stopPropagation();
 
     this.regionPicker.isServerBeingCreated = true;
     const zone = event.detail.selectedLocation as Zone;
     const name = this.makeLocalizedServerName(zone);
     const server = await this.account.createServer(this.project.id, name, zone);
-    const params = {bubbles: true, composed: true, detail: {server}};
+    const params = {bubbles: true, composed: true, detail: {server, metricsEnabled: event.detail.metricsEnabled}};
     const serverCreatedEvent = new CustomEvent('GcpServerCreated', params);
     this.dispatchEvent(serverCreatedEvent);
   }

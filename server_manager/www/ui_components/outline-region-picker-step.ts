@@ -277,7 +277,7 @@ export class OutlineServerSetup extends LitElement {
       composed: true,
       detail: {selectedLocation: selectedOption.cloudLocation, metricsEnabled: this.metricsEnabled},
     };
-    const customEvent = new CustomEvent('RegionSelected', params);
+    const customEvent = new CustomEvent('SetUpServerRequested', params);
     this.dispatchEvent(customEvent);
   }
 }

@@ -726,7 +726,7 @@ export class AppRoot extends polymerElementWithLocalize {
   constructor() {
     super();
 
-    this.addEventListener('RegionSelected', this.handleRegionSelected);
+    this.addEventListener('SetUpServerRequested', this.handleSetUpServerRequested);
     this.addEventListener('SetUpGenericCloudProviderRequested', this.handleSetUpGenericCloudProviderRequested);
     this.addEventListener('SetUpAwsRequested', this.handleSetUpAwsRequested);
     this.addEventListener('SetUpGcpRequested', this.handleSetUpGcpRequested);
@@ -855,8 +855,8 @@ export class AppRoot extends polymerElementWithLocalize {
     return serverList.getServerView(displayServerId);
   }
 
-  handleRegionSelected(e: CustomEvent) {
-    this.fire('SetUpDigitalOceanServerRequested', {region: e.detail.selectedLocation});
+  handleSetUpServerRequested(e: CustomEvent) {
+    this.fire('SetUpDigitalOceanServerRequested', {region: e.detail.selectedLocation, metrics: e.detail.metricsEnabled});
   }
 
   handleSetUpGenericCloudProviderRequested() {
