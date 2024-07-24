@@ -31,7 +31,13 @@ export async function main() {
   }
 
   for (const actionPath of await globby.default(['**/*.action.sh', '**/*.action.mjs'])) {
-    console.info(actionPath.match(/(.+)\.action/)[1]);
+    const action = actionPath.match(/(.+)\.action/)[1];
+
+    if (action.includes("node_modules")) {
+      continue;
+    }
+
+    console.info(action);
   }
 }
 
