@@ -328,7 +328,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               </paper-button>
             </div>
             <div main-title="" class$="[[page]]">
-              <h1 hidden$="[[!shouldShowAppLogo]]">[[localize('app-header-title')]]</h1>
+              <h1 hidden$="[[!shouldShowAppLogo]]">Outline</h1>
               <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
             </div>
             <div id="app-toolbar-right">
