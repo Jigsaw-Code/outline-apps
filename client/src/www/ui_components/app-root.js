@@ -125,10 +125,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         }
 
         app-header h1 {
-          margin: 0;
-          font-size: 1.5rem;
           font-family: Jigsaw Sans;
+          font-size: 1.5rem;
           font-weight: 500;
+          margin: 0;
         }
 
         app-toolbar {
