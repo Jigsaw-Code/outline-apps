@@ -21,7 +21,7 @@ import minimist from 'minimist';
 
 import {getRootDir} from '../../src/build/get_root_dir.mjs';
 import {runAction} from '../../src/build/run_action.mjs';
-import {getBuildParameters} from '../src/build/get_build_parameters.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 const ELECTRON_BUILD_DIR = 'output';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];

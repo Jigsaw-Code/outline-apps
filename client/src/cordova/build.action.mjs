@@ -23,7 +23,7 @@ import {downloadHttpsFile} from '../../../src/build/download_file.mjs';
 import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 import {runAction} from '../../../src/build/run_action.mjs';
 import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
