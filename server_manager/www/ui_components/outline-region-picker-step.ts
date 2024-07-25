@@ -16,7 +16,6 @@
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-progress/paper-progress';
 import '@material/mwc-checkbox';
-import '@material/mwc-icon';
 import './outline-step-view';
 
 import {css, html, LitElement} from 'lit';
@@ -154,8 +153,10 @@ export class OutlineServerSetup extends LitElement {
           padding-top: 12px;
           width: 100%;
         }
-        .callout mwc-icon {
+        .callout iron-icon {
+          --iron-icon-fill-color: white;
           margin-top: 12px;
+          width: 48px;
         }
         .callout-content {
           display: flex;
@@ -218,7 +219,7 @@ export class OutlineServerSetup extends LitElement {
           </div>
           <div class="card-content-row">
             <div class="callout">
-              <mwc-icon>📊</mwc-icon>
+              <iron-icon icon="editor:insert-chart"></iron-icon>
               <div class="callout-content">
                 <label>
                   <mwc-checkbox .checked="${this.metricsEnabled}" @change="${this._metricsToggle}"></mwc-checkbox>

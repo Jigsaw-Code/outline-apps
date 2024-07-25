@@ -21,7 +21,6 @@
     "@material/mwc-checkbox": "^0.27.0",
     "@material/mwc-circular-progress": "^0.27.0",
     "@material/mwc-formfield": "^0.27.0",
-    "@material/mwc-icon": "^0.27.0",
     "@material/mwc-list": "^0.27.0",
     "@material/mwc-menu": "^0.27.0",
     "@material/mwc-radio": "^0.27.0",
