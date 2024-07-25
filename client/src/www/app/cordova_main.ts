@@ -81,11 +81,11 @@ class CordovaErrorReporter extends SentryErrorReporter {
 class CordovaTunnel implements Tunnel {
   constructor(public id: string) {}
 
-  start(config: ShadowsocksSessionConfig) {
+  start(config: ShadowsocksSessionConfig, serverName: string) {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, config);
+    return pluginExecWithErrorCode<void>('start', this.id, config, serverName);
   }
 
   stop() {

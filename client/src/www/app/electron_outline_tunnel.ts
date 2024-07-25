@@ -31,7 +31,8 @@ export class ElectronOutlineTunnel implements Tunnel {
     });
   }
 
-  async start(config: ShadowsocksSessionConfig) {
+  async start(config: ShadowsocksSessionConfig, serverName: string) {
+    // TODO: pipe serverName to iOS plugin.
     if (this.running) {
       return Promise.resolve();
     }

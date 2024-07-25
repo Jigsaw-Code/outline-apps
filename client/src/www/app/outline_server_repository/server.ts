@@ -99,7 +99,7 @@ export class OutlineServer implements Server {
     }
 
     try {
-      await this.tunnel.start(this.sessionConfig);
+      await this.tunnel.start(this.sessionConfig, this._name);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
