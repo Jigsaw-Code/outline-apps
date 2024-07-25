@@ -74,7 +74,7 @@
         withReplyEvent:(NSAppleEventDescriptor*)replyEvent {
   NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:CDVMacOsUrlHandler.kCDVHandleOpenURLNotification object:url];
+      postNotificationName:NSNotification.kHandleUrl object:url];
   if (!self.popover.isShown) {
     [self showPopover];
   }
