@@ -14,7 +14,8 @@
 
 import url from 'url';
 
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
+
 import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 
 /**

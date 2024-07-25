@@ -18,7 +18,7 @@ import url from 'url';
 
 import * as globby from 'globby';
 
-import {getRootDir} from './src/build/get_root_dir.mjs';
+import {getRootDir} from './infrastructure/build/get_root_dir.mjs';
 
 /**
  * @description returns a list of all valid actions to run

@@ -16,9 +16,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+
 import electronMainWebpackConfigs from './webpack_electron_main.mjs';
-import {getRootDir} from '../../src/build/get_root_dir.mjs';
-import {runAction} from '../../src/build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 import {getWebpackBuildMode} from '../build/get_webpack_build_mode.mjs';
 import {runWebpack} from '../build/run_webpack.mjs';
