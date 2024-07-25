@@ -33,8 +33,8 @@ export interface RegionPickerOption extends CloudLocationOption {
   markedBestValue?: boolean;
 }
 
-@customElement('outline-setup-step')
-export class OutlineServerSetup extends LitElement {
+@customElement('outline-region-picker-step')
+export class OutlineRegionPicker extends LitElement {
   @property({type: Array}) options: RegionPickerOption[] = [];
   @property({type: Number}) selectedIndex = -1;
   @property({type: Boolean}) metricsEnabled = false;
@@ -278,7 +278,7 @@ export class OutlineServerSetup extends LitElement {
       composed: true,
       detail: {selectedLocation: selectedOption.cloudLocation, metricsEnabled: this.metricsEnabled},
     };
-    const customEvent = new CustomEvent('SetUpServerRequested', params);
+    const customEvent = new CustomEvent('RegionSelected', params);
     this.dispatchEvent(customEvent);
   }
 }

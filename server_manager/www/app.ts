@@ -749,11 +749,11 @@ export class App {
     }
 
     try {
-      const serverSetup = this.appRoot.getAndShowServerSetup();
+      const regionPicker = this.appRoot.getAndShowRegionPicker();
       const map = await this.digitalOceanRetry(() => {
         return this.digitalOceanAccount.listLocations();
       });
-      serverSetup.options = filterOptions(map);
+      regionPicker.options = filterOptions(map);
     } catch (e) {
       console.error(`Failed to get list of available regions: ${e}`);
       this.appRoot.showError(this.appRoot.localize('error-do-regions'));

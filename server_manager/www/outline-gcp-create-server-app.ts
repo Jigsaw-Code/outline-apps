@@ -18,7 +18,7 @@ import '@polymer/paper-input/paper-input';
 import '@polymer/paper-item/paper-item';
 
 import './ui_components/outline-step-view';
-import './ui_components/outline-server-setup-step';
+import './ui_components/outline-region-picker-step';
 
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
@@ -28,7 +28,7 @@ import {GcpAccount, isInFreeTier} from './gcp_account';
 import {filterOptions, getShortName} from './location_formatting';
 import {AppRoot} from './ui_components/app-root';
 import {COMMON_STYLES} from './ui_components/cloud-install-styles';
-import {OutlineServerSetup} from './ui_components/outline-server-setup-step';
+import {OutlineRegionPicker} from './ui_components/outline-region-picker-step';
 import {BillingAccount, Project, Zone, Account} from '../model/gcp';
 import {CloudLocation} from '../model/location';
 
@@ -44,7 +44,7 @@ export class GcpCreateServerApp extends LitElement {
   private account: GcpAccount;
   private project: Project;
   private billingAccounts: BillingAccount[] = [];
-  private regionPicker: OutlineServerSetup;
+  private regionPicker: OutlineRegionPicker;
   private billingAccountsRefreshLoop: number = null;
 
   static get styles() {
@@ -240,7 +240,7 @@ export class GcpCreateServerApp extends LitElement {
       id="regionPicker"
       .localize=${this.localize}
       .language=${this.language}
-      @SetUpServerRequested="${this.onSetUpRequested}"
+      @RegionSelected="${this.onRegionSelected}"
     >
     </outline-region-picker-step>`;
   }
@@ -372,7 +372,7 @@ export class GcpCreateServerApp extends LitElement {
     // Note: This relies on a side effect of the previous call to `await`.
     // `this.regionPicker` is null after `this.currentPage`, and is only populated
     // asynchronously.
-    this.regionPicker = this.shadowRoot.querySelector('#regionPicker') as OutlineServerSetup;
+    this.regionPicker = this.shadowRoot.querySelector('#regionPicker') as OutlineRegionPicker;
     this.regionPicker.options = filterOptions(zoneOptions).map(option => ({
       markedBestValue: isInFreeTier(option.cloudLocation),
       ...option,
@@ -386,7 +386,7 @@ export class GcpCreateServerApp extends LitElement {
     this.selectedBillingAccountId = event.detail.value;
   }
 
-  private async onSetUpRequested(event: CustomEvent) {
+  private async onRegionSelected(event: CustomEvent) {
     event.stopPropagation();
 
     this.regionPicker.isServerBeingCreated = true;
