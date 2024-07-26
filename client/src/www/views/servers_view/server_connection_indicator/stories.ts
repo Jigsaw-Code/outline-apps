@@ -20,7 +20,7 @@ import {html} from 'lit';
 import {ServerConnectionIndicator, ServerConnectionState} from './index';
 
 export default {
-  title: 'Servers View/Server Connection Indicator',
+  title: 'Client/Servers View/Server Connection Indicator',
   component: 'server-connection-indicator',
   args: {
     connectionState: ServerConnectionState.DISCONNECTED,
