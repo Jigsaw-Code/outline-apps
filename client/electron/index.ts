@@ -29,8 +29,7 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig} from '../src/www/app/outline_server_repository/tunnel';
-import {TunnelStatus} from '../src/www/app/outline_server_repository/tunnel';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/server';
 import * as errors from '../src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
