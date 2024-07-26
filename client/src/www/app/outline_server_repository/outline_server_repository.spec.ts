@@ -17,11 +17,11 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1, serversStorageV0ConfigToAccessKey} from '.';
 import {OutlineServer} from './server';
-import {useFakeRepository} from './server.fake';
+import {useFakeServer} from './server.fake';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 
-useFakeRepository();
+useFakeServer();
 
 // TODO(alalama): unit tests for OutlineServer.
 
