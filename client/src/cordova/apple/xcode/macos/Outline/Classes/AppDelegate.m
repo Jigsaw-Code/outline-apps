@@ -22,7 +22,6 @@
 @interface AppDelegate()
 @property (strong, nonatomic) NSStatusItem *statusItem;
 @property (strong, nonatomic) NSPopover *popover;
-@property (strong, nonatomic) EventMonitor *eventMonitor;
 @property bool isSystemShuttingDown;
 @end
 
@@ -132,14 +131,12 @@
 
 - (void)closePopover {
   [self.popover close];
-  [self.eventMonitor stop];
 }
 
 - (void)showPopover {
   [self.popover showRelativeToRect:self.statusItem.button.bounds
                             ofView:self.statusItem.button
                      preferredEdge:NSRectEdgeMinY];
-  [self.eventMonitor start];
   // Activate the application in order to focus the popover.
   [[NSRunningApplication currentApplication]
       activateWithOptions:NSApplicationActivateIgnoringOtherApps];
