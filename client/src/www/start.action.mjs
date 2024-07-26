@@ -14,11 +14,11 @@
 
 import url from 'url';
 
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import webpack from 'webpack';
 import WebpackServer from 'webpack-dev-server';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
 
 /**
  * @description Starts the web app for development.

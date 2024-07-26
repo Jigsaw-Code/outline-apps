@@ -15,11 +15,11 @@
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import electron from 'electron';
 
-import {getRootDir} from '../../src/build/get_root_dir.mjs';
-import {runAction} from '../../src/build/run_action.mjs';
-import {spawnStream} from '../../src/build/spawn_stream.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 /**

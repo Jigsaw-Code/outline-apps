@@ -19,7 +19,7 @@ set -eu
 readonly OUT_DIR="${BUILD_DIR}/server_manager/web_app"
 rm -rf "${OUT_DIR}"
 
-node src/build/run_action.mjs server_manager/web_app/build_install_script
+node infrastructure/build/run_action.mjs server_manager/web_app/build_install_script
 
 # Node.js on Cygwin doesn't like absolute Unix-style paths.
 # So, we use a relative path as input to webpack.
