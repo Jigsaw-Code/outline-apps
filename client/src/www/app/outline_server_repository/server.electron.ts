@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
-import {PlatformError} from '../model/platform_error';
+import {ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus} from './server';
+import {PlatformError} from '../../model/platform_error';
 
-export class ElectronOutlineTunnel implements Tunnel {
+export class ElectronTunnel implements PlatformTunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;

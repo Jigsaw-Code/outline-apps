@@ -14,8 +14,8 @@
 
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
+import {ShadowsocksSessionConfig} from './server';
 import * as errors from '../../model/errors';
-import {ShadowsocksSessionConfig} from '../tunnel';
 
 // DON'T use these methods outside of this folder!
 

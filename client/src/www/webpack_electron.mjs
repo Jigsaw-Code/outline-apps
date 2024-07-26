@@ -20,7 +20,7 @@ import {merge} from 'webpack-merge';
 import {baseConfig, browserConfig, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
 
 export default merge(baseConfig, browserConfig, {
-  entry: [path.resolve(__dirname, 'app', 'electron_main.ts')],
+  entry: [path.resolve(__dirname, 'app', 'main.electron.ts')],
   target: 'electron-renderer',
   module: {
     rules: [

@@ -24,17 +24,18 @@ import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {FakeOutlineTunnel} from './fake_tunnel';
 import {main} from './main';
+import {OutlineServerRepository} from './outline_server_repository';
+import {CordovaTunnel} from './outline_server_repository/server.cordova';
 import {OutlinePlatform} from './platform';
-import {Tunnel, TunnelStatus,ShadowsocksSessionConfig} from './tunnel';
+import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
-import * as errors from '../model/errors';
+import {EventQueue} from '../model/events';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
 
-const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
+const hasDeviceSupport = cordova.platformId !== 'browser';
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -42,21 +43,6 @@ class CordovaClipboard extends AbstractClipboard {
     return new Promise<string>((resolve, reject) => {
       cordova.plugins.clipboard.paste(resolve, reject);
     });
-  }
-}
-
-// Helper function to call the Outline Cordova plugin.
-function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, cmd, args);
-  });
-}
-
-async function pluginExecWithErrorCode<T>(cmd: string, ...args: unknown[]): Promise<T> {
-  try {
-    return await pluginExec<T>(cmd, ...args);
-  } catch (errorCode) {
-    throw errors.fromErrorCode(errorCode);
   }
 }
 
@@ -78,47 +64,15 @@ class CordovaErrorReporter extends SentryErrorReporter {
   }
 }
 
-class CordovaTunnel implements Tunnel {
-  constructor(public id: string) {}
-
-  start(config: ShadowsocksSessionConfig) {
-    if (!config) {
-      throw new errors.IllegalServerConfiguration();
-    }
-    return pluginExecWithErrorCode<void>('start', this.id, config);
-  }
-
-  stop() {
-    return pluginExecWithErrorCode<void>('stop', this.id);
-  }
-
-  isRunning() {
-    return pluginExecWithErrorCode<boolean>('isRunning', this.id);
-  }
-
-  onStatusChange(listener: (status: TunnelStatus) => void): void {
-    const onError = (err: unknown) => {
-      console.warn('failed to execute status change listener', err);
-    };
-    // Can't use `pluginExec` because Cordova needs to call the listener multiple times.
-    cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
-  }
-}
-
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
-  private static isBrowser() {
-    return cordova.platformId === 'browser';
-  }
-
-  hasDeviceSupport() {
-    return !CordovaPlatform.isBrowser();
-  }
-
-  getTunnelFactory() {
-    return (id: string) => {
-      return this.hasDeviceSupport() ? new CordovaTunnel(id) : new FakeOutlineTunnel(id);
-    };
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
+    if (hasDeviceSupport) {
+      return new OutlineServerRepository((id: string) => {
+        return new CordovaTunnel(id);
+      }, eventQueue, window.localStorage);
+    }
+    return undefined;
   }
 
   getUrlInterceptor() {
@@ -137,7 +91,7 @@ class CordovaPlatform implements OutlinePlatform {
 
   getErrorReporter(env: EnvironmentVariables) {
     const sharedTags = {'build.number': env.APP_BUILD_NUMBER};
-    return this.hasDeviceSupport()
+    return hasDeviceSupport
       ? new CordovaErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags)
       : new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags);
   }
