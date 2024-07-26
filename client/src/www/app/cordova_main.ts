@@ -87,8 +87,7 @@ class CordovaTunnel implements Tunnel {
     }
     if (cordova.platformId === 'android') {
       return pluginExecWithErrorCode<void>('start', this.id, config, serverName);
-    } else
-    {
+    } else {
       // TODO: implement serverName in iOS.
       return pluginExecWithErrorCode<void>('start', this.id, config);
     }
