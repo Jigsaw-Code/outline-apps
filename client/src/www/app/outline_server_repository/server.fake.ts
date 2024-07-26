@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as outline_server_repository from '.';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
+import {setTunnelFactory, Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './server';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
@@ -21,7 +20,7 @@ export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 
 // This function must be called to use the fake implementation.
 export function useFakeRepository() {
-  outline_server_repository.setTunnelFactory(
+  setTunnelFactory(
     (tunnelId: string): Tunnel => {
       return new FakeTunnel(tunnelId);
     }

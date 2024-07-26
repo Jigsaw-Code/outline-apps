@@ -13,13 +13,22 @@
 // limitations under the License.
 
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
+
+// This allows for injection of the platform-specific tunnel implementation.
+let createTunnel: TunnelFactory = (_) => {
+  throw new Error("must set outline_server_repository.createTunnel");
+}
+
+// This must be set before the OutlineServerRepository can be used.
+export function setTunnelFactory(tunnelFactory: TunnelFactory) {
+  createTunnel = tunnelFactory;
+}
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
@@ -28,15 +37,16 @@ export class OutlineServer implements Server {
 
   errorMessageId?: string;
   private sessionConfig?: ShadowsocksSessionConfig;
+  private tunnel: Tunnel;
 
   constructor(
     readonly id: string,
     readonly accessKey: string,
     readonly type: ServerType,
     private _name: string,
-    private tunnel: Tunnel,
     private eventQueue: events.EventQueue
   ) {
+
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
         this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
@@ -47,6 +57,7 @@ export class OutlineServer implements Server {
         break;
     }
 
+    this.tunnel = createTunnel(id);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -136,4 +147,43 @@ export class OutlineServer implements Server {
   static isServerCipherSupported(cipher?: string) {
     return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }
+}
+
+
+export interface ShadowsocksSessionConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  prefix?: string;
+}
+
+export const enum TunnelStatus {
+  CONNECTED,
+  DISCONNECTED,
+  RECONNECTING,
+}
+
+export type TunnelFactory = (id: string) => Tunnel;
+
+// Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
+// functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
+export interface Tunnel {
+  // Unique instance identifier.
+  readonly id: string;
+
+  // Connects a VPN, routing all device traffic to a Shadowsocks server as dictated by `config`.
+  // If there is another running instance, broadcasts a disconnect event and stops the active
+  // tunnel. In such case, restarts tunneling while preserving the VPN.
+  // Throws OutlinePluginError.
+  start(config: ShadowsocksSessionConfig): Promise<void>;
+
+  // Stops the tunnel and VPN service.
+  stop(): Promise<void>;
+
+  // Returns whether the tunnel instance is active.
+  isRunning(): Promise<boolean>;
+
+  // Sets a listener, to be called when the tunnel status changes.
+  onStatusChange(listener: (status: TunnelStatus) => void): void;
 }

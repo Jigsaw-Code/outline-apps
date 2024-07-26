@@ -25,7 +25,7 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
-import {useCordovaTunnel} from './outline_server_repository/configure.cordova';
+import {useCordovaTunnel} from './outline_server_repository/server.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';

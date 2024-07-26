@@ -17,23 +17,12 @@ import uuidv4 from 'uuidv4';
 
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import {OutlineServer} from './server';
-import {TunnelFactory} from './tunnel';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
 
 
 // TODO(daniellacosse): write unit tests for these functions
-
-// This allows for injection of the platform-specific tunnel implementation.
-let createTunnel: TunnelFactory = (_) => {
-  throw new Error("must set outline_server_repository.createTunnel");
-}
-
-// This must be set before the OutlineServerRepository can be used.
-export function setTunnelFactory(tunnelFactory: TunnelFactory) {
-  createTunnel = tunnelFactory;
-}
 
 // Compares access keys proxying parameters.
 function staticKeysMatch(a: string, b: string): boolean {
@@ -317,7 +306,6 @@ export class OutlineServerRepository implements ServerRepository {
       accessKey,
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
-      createTunnel(id),
       this.eventQueue
     );
 
