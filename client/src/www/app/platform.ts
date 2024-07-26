@@ -22,9 +22,7 @@ import {EventQueue} from '../model/events';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 
 // Provides platform-specific dependencies.
-// TODO: Remove one of hasDeviceSupport and getServerFactory; they're almost the same
-//       thing and currently hasDeviceSupport is only used to populate the server list when running
-//       in demo mode.
+// TODO(fortuna): pick platform-specific implementations at build time instead.
 export interface OutlinePlatform {
   // Creates the OutlineServerRepository for this platform. Returns undefined if the platform is not supported.
   newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined;
