@@ -12,3 +12,5 @@ node_modules
 /server_manager/install_scripts/gcp_install_script.ts
 /output
 /build
+
+*storybook.log

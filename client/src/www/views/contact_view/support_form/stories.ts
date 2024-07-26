@@ -23,7 +23,7 @@ import {FormValues} from './index';
 import {localize} from '../../../testing/localize';
 
 export default {
-  title: 'Contact View/Support Form',
+  title: 'Client/Contact View/Support Form',
   component: 'support-form',
   argTypes: {
     disabled: {
