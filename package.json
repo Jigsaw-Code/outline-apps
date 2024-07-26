@@ -11,8 +11,7 @@
     "lint:ts": "eslint --ext ts,mjs client",
     "lint": "npm run lint:ts",
     "reset": "npm run clean && npm ci",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "storybook": "storybook dev -p 6006"
   },
   "engines": {
     "node": "18.x.x"
