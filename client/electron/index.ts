@@ -246,7 +246,7 @@ function interceptShadowsocksLink(argv: string[]) {
         if (mainWindow) {
           // The system adds a trailing slash to the intercepted URL (before the fragment).
           // Remove it before sending to the UI.
-          url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
+          url = `${protocol}${url.substring(protocol.length).replace(/\/$/g, '')}`;
           // TODO: refactor channel name and namespace to a constant
           mainWindow.webContents.send('outline-ipc-add-server', url);
         } else {
