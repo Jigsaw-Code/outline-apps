@@ -66,13 +66,13 @@ class CordovaErrorReporter extends SentryErrorReporter {
 
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
-  newServerRepo(eventQueue: EventQueue): OutlineServerRepository {
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
     if (hasDeviceSupport) {
       return new OutlineServerRepository((id: string) => {
         return new CordovaTunnel(id);
       }, eventQueue, window.localStorage);
     }
-    throw new Error(`Platform ${cordova.platformId} not supported for OutlineServerRepository`)
+    return undefined;
   }
 
   getUrlInterceptor() {

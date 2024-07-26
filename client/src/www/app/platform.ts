@@ -26,7 +26,8 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 //       thing and currently hasDeviceSupport is only used to populate the server list when running
 //       in demo mode.
 export interface OutlinePlatform {
-  newServerRepo(eventQueue: EventQueue): OutlineServerRepository;
+  // Creates the OutlineServerRepository for this platform. Returns undefined if the platform is not supported.
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

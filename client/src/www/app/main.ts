@@ -48,51 +48,50 @@ function getRootEl() {
   return document.querySelector('app-root') as {} as polymer.Base;
 }
 
-function createServerRepo(
-  platform: OutlinePlatform,
-  eventQueue: EventQueue,
-) {
-  try {
-    return platform.newServerRepo(eventQueue);
-  } catch {
-    console.debug('Platform not supported, using fake servers.');
-    const repo = new OutlineServerRepository((id: string) => {
-      return new FakeTunnel(id);
-    }, eventQueue, window.localStorage)
-    if (repo.getAll().length === 0) {
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: '127.0.0.1',
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Working Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_BROKEN_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Broken Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_UNREACHABLE_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Unreachable Server',
-          })
-        )
-      );
-    }
+function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
+  let repo = platform.newServerRepo(eventQueue);
+  if (repo) {
     return repo;
   }
+  console.debug('Platform not supported, using fake servers.');
+
+  repo = new OutlineServerRepository((id: string) => {
+    return new FakeTunnel(id);
+  }, eventQueue, window.localStorage)
+
+  if (repo.getAll().length === 0) {
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: '127.0.0.1',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Working Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_BROKEN_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Broken Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_UNREACHABLE_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Unreachable Server',
+        })
+      )
+    );
+  }
+  return repo;
 }
 
 export function main(platform: OutlinePlatform) {

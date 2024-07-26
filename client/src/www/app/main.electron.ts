@@ -101,13 +101,13 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  newServerRepo(eventQueue: EventQueue): OutlineServerRepository {
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
     if (isOsSupported) {
       return new OutlineServerRepository((id: string) => {
         return new ElectronTunnel(id);
       }, eventQueue, window.localStorage);
     }
-    throw new Error(`Platform ${window.electron.os.platform} not supported for OutlineServerRepository`)
+    return undefined;
   },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),
