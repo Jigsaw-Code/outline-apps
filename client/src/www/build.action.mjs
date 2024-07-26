@@ -16,10 +16,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import rmfr from 'rmfr';
 
 import {getBrowserWebpackConfig} from './get_browser_webpack_config.mjs';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 import {runWebpack} from '../../build/run_webpack.mjs';
 
