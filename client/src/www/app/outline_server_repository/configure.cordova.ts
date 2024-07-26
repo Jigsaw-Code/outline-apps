@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import * as outline_server_repository from '.';
-import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
-import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from '../tunnel';
+import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
 import * as errors from '../../model/errors';
+import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
 // This function must be called to use the Cordova implementation.
 export function useCordovaTunnel() {

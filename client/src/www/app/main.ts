@@ -20,9 +20,9 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {App} from './app';
 import {onceEnvVars} from './environment';
 import {OutlineServerRepository} from './outline_server_repository';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, useFakeRepository} from './outline_server_repository/configure.fake.js';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, useFakeRepository} from './outline_server_repository/configure.fake.js';
 import {EventQueue} from '../model/events';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.

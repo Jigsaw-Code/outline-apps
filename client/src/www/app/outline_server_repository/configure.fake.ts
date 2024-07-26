@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as outline_server_repository from '.';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';

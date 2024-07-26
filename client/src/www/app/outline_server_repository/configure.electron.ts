@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as outline_server_repository from '.';
-import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from '../tunnel';
+import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
 import {PlatformError} from '../../model/platform_error';
 
 // This function must be called to use the Electron implementation.

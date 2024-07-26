@@ -17,10 +17,10 @@ import uuidv4 from 'uuidv4';
 
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import {OutlineServer} from './server';
+import {TunnelFactory} from './tunnel';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
-import {TunnelFactory} from '../tunnel';
 
 
 // TODO(daniellacosse): write unit tests for these functions

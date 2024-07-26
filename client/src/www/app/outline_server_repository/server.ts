@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
