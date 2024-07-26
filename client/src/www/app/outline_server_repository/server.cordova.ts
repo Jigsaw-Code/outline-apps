@@ -12,20 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {setTunnelFactory, ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './server';
+import {ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus} from './server';
 import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
-// This function must be called to use the Cordova implementation.
-export function useCordovaServer() {
-  setTunnelFactory(
-    (tunnelId: string): Tunnel => {
-      return new CordovaTunnel(tunnelId);
-    }
-  )
-}
-
-class CordovaTunnel implements Tunnel {
+export class CordovaTunnel implements PlatformTunnel {
   constructor(public id: string) {}
 
   start(config: ShadowsocksSessionConfig) {

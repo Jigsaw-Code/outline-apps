@@ -14,9 +14,11 @@
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
+import {OutlineServerRepository} from './outline_server_repository';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
+import {EventQueue} from '../model/events';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 
 // Provides platform-specific dependencies.
@@ -24,6 +26,8 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 //       thing and currently hasDeviceSupport is only used to populate the server list when running
 //       in demo mode.
 export interface OutlinePlatform {
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository;
+
   getUrlInterceptor(): UrlInterceptor | undefined;
 
   getClipboard(): Clipboard;

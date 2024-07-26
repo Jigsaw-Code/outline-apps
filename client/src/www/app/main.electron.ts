@@ -19,24 +19,20 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as Sentry from '@sentry/electron/renderer';
 
-
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
-import {useElectronServer} from './outline_server_repository/server.electron';
+import {OutlineServerRepository} from './outline_server_repository';
+import {ElectronTunnel} from './outline_server_repository/server.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {EventQueue} from '../model/events';
 import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
 const isOsSupported = isWindows || isLinux;
-
-// Configures the implementation for the OutlineServerRepository.
-if (isOsSupported) {
-  useElectronServer();
-}
 
 const interceptor = new UrlInterceptor();
 window.electron.methodChannel.on('add-server', (_: Event, url: string) => {
@@ -105,6 +101,14 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository {
+    if (isOsSupported) {
+      return new OutlineServerRepository((id: string) => {
+        return new ElectronTunnel(id);
+      }, eventQueue, window.localStorage);
+    }
+    throw new Error(`Platform ${window.electron.os.platform} not supported for OutlineServerRepository`)
+  },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),
   getErrorReporter: _ => new ElectronErrorReporter(),

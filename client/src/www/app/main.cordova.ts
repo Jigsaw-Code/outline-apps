@@ -25,21 +25,17 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
-import {useCordovaServer} from './outline_server_repository/server.cordova';
+import {OutlineServerRepository} from './outline_server_repository';
+import {CordovaTunnel} from './outline_server_repository/server.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
+import {EventQueue} from '../model/events';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
 
-
 const hasDeviceSupport = cordova.platformId !== 'browser';
-
-// Configures the implementation for the OutlineServerRepository.
-if (hasDeviceSupport) {
-  useCordovaServer();
-}
 
 // Pushes a clipboard event whenever the app is brought to the foreground.
 class CordovaClipboard extends AbstractClipboard {
@@ -70,8 +66,13 @@ class CordovaErrorReporter extends SentryErrorReporter {
 
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
-  private static isBrowser() {
-    return cordova.platformId === 'browser';
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository {
+    if (hasDeviceSupport) {
+      return new OutlineServerRepository((id: string) => {
+        return new CordovaTunnel(id);
+      }, eventQueue, window.localStorage);
+    }
+    throw new Error(`Platform ${cordova.platformId} not supported for OutlineServerRepository`)
   }
 
   getUrlInterceptor() {

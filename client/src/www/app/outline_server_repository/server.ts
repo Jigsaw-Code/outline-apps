@@ -20,16 +20,6 @@ import {Server, ServerType} from '../../model/server';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
-// This allows for injection of the platform-specific tunnel implementation.
-let createTunnel: TunnelFactory = (_) => {
-  throw new Error("must set outline_server_repository.createTunnel");
-}
-
-// This must be set before the OutlineServerRepository can be used.
-export function setTunnelFactory(tunnelFactory: TunnelFactory) {
-  createTunnel = tunnelFactory;
-}
-
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
@@ -37,16 +27,15 @@ export class OutlineServer implements Server {
 
   errorMessageId?: string;
   private sessionConfig?: ShadowsocksSessionConfig;
-  private tunnel: Tunnel;
 
   constructor(
+    private tunnel: PlatformTunnel,
     readonly id: string,
     readonly accessKey: string,
     readonly type: ServerType,
     private _name: string,
     private eventQueue: events.EventQueue
   ) {
-
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
         this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
@@ -57,7 +46,6 @@ export class OutlineServer implements Server {
         break;
     }
 
-    this.tunnel = createTunnel(id);
     this.tunnel.onStatusChange((status: TunnelStatus) => {
       let statusEvent: events.OutlineEvent;
       switch (status) {
@@ -164,11 +152,11 @@ export const enum TunnelStatus {
   RECONNECTING,
 }
 
-export type TunnelFactory = (id: string) => Tunnel;
+export type TunnelFactory = (id: string) => PlatformTunnel;
 
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
 // functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
-export interface Tunnel {
+export interface PlatformTunnel {
   // Unique instance identifier.
   readonly id: string;
 
