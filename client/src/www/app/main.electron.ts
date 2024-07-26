@@ -21,9 +21,8 @@ import * as Sentry from '@sentry/electron/renderer';
 
 
 import {AbstractClipboard} from './clipboard';
-import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
+import {useElectronRepository} from './outline_server_repository/configure.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -33,6 +32,11 @@ import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../share
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
 const isOsSupported = isWindows || isLinux;
+
+// Configures the implementation for the OutlineServerRepository.
+if (isOsSupported) {
+  useElectronRepository();
+}
 
 const interceptor = new UrlInterceptor();
 window.electron.methodChannel.on('add-server', (_: Event, url: string) => {
@@ -101,12 +105,6 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  hasDeviceSupport: () => isOsSupported,
-  getTunnelFactory: () => {
-    return (id: string) => {
-      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
-    };
-  },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),
   getErrorReporter: _ => new ElectronErrorReporter(),

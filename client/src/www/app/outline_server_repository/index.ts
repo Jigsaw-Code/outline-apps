@@ -25,6 +25,16 @@ import {TunnelFactory} from '../tunnel';
 
 // TODO(daniellacosse): write unit tests for these functions
 
+// This allows for injection of the platform-specific tunnel implementation.
+let createTunnel: TunnelFactory = (_) => {
+  throw new Error("must set outline_server_repository.createTunnel");
+}
+
+// This must be set before the OutlineServerRepository can be used.
+export function setTunnelFactory(tunnelFactory: TunnelFactory) {
+  createTunnel = tunnelFactory;
+}
+
 // Compares access keys proxying parameters.
 function staticKeysMatch(a: string, b: string): boolean {
   try {
@@ -107,7 +117,6 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private readonly createTunnel: TunnelFactory,
     private eventQueue: events.EventQueue,
     private storage: Storage
   ) {
@@ -308,7 +317,7 @@ export class OutlineServerRepository implements ServerRepository {
       accessKey,
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
-      this.createTunnel(id),
+      createTunnel(id),
       this.eventQueue
     );
 

@@ -33,7 +33,7 @@ export default merge(baseConfig, browserConfig, {
     open: '/index_cordova.html',
     static: path.resolve(getRootDir(), 'client', 'platforms', 'browser', 'www'),
   },
-  entry: [path.resolve(__dirname, 'app', 'cordova_main.ts')],
+  entry: [path.resolve(__dirname, 'app', 'main.cordova.ts')],
   target: ['web', 'es5'],
   module: {
     rules: [

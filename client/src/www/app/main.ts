@@ -19,11 +19,10 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME} from './fake_tunnel';
 import {OutlineServerRepository} from './outline_server_repository';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {TunnelFactory} from './tunnel';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, useFakeRepository} from './outline_server_repository/configure.fake.js';
 import {EventQueue} from '../model/events';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
@@ -52,12 +51,13 @@ function getRootEl() {
 function createServerRepo(
   eventQueue: EventQueue,
   storage: Storage,
-  deviceSupport: boolean,
-  createTunnel: TunnelFactory
 ) {
-  const repo = new OutlineServerRepository(createTunnel, eventQueue, storage);
-  if (!deviceSupport) {
+  try {
+    return new OutlineServerRepository(eventQueue, storage);
+  } catch {
     console.debug('Detected development environment, using fake servers.');
+    useFakeRepository();
+    const repo = new OutlineServerRepository(eventQueue, storage);
     if (repo.getAll().length === 0) {
       repo.add(
         SIP002_URI.stringify(
@@ -90,8 +90,8 @@ function createServerRepo(
         )
       );
     }
+    return repo;
   }
-  return repo;
 }
 
 export function main(platform: OutlinePlatform) {
@@ -106,8 +106,6 @@ export function main(platform: OutlinePlatform) {
       const serverRepo = createServerRepo(
         eventQueue,
         window.localStorage,
-        platform.hasDeviceSupport(),
-        platform.getTunnelFactory()
       );
       const settings = new Settings();
       new App(

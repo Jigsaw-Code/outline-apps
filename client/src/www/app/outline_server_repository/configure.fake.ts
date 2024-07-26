@@ -12,16 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from './tunnel';
-import * as errors from '../model/errors';
+import * as outline_server_repository from '.';
+import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
+import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
 export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 
+// This function must be called to use the fake implementation.
+export function useFakeRepository() {
+  outline_server_repository.setTunnelFactory(
+    (tunnelId: string): Tunnel => {
+      return new FakeTunnel(tunnelId);
+    }
+  )
+}
+
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
 // servers in the server list will not work as expected.
-export class FakeOutlineTunnel implements Tunnel {
+class FakeTunnel implements Tunnel {
   private running = false;
 
   constructor(readonly id: string) {}

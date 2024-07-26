@@ -12,10 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from './tunnel';
-import {PlatformError} from '../model/platform_error';
+import * as outline_server_repository from '.';
+import {ShadowsocksSessionConfig, Tunnel, TunnelStatus} from '../tunnel';
+import {PlatformError} from '../../model/platform_error';
 
-export class ElectronOutlineTunnel implements Tunnel {
+// This function must be called to use the Electron implementation.
+export function useElectronRepository() {
+  outline_server_repository.setTunnelFactory(
+    (tunnelId: string): Tunnel => {
+      return new ElectronTunnel(tunnelId);
+    }
+  )
+}
+
+class ElectronTunnel implements Tunnel {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;
