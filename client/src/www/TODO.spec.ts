@@ -27,8 +27,8 @@
 // import * as outlineIcons from './ui_components/outline-icons';
 
 import * as clipboard from './app/clipboard';
-import * as platform from './app/platform';
 import * as server from './app/outline_server_repository/server';
+import * as platform from './app/platform';
 import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
