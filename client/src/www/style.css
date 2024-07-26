@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+ html {
+   background: #efefef;
+ }
+
  body {
   /*
     We're not properly CSS resetting - this is to prevent
