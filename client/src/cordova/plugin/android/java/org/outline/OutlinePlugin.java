@@ -192,7 +192,8 @@ public class OutlinePlugin extends CordovaPlugin {
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
           final JSONObject config = args.getJSONObject(1);
-          int errorCode = startVpnTunnel(tunnelId, config);
+          final String serverName = args.getString(2);
+          int errorCode = startVpnTunnel(tunnelId, config, serverName);
           sendErrorCode(callback, errorCode);
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
@@ -259,7 +260,7 @@ public class OutlinePlugin extends CordovaPlugin {
     startVpnRequest = null;
   }
 
-  private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
+  private int startVpnTunnel(final String tunnelId, final JSONObject config, final String serverName) throws Exception {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
     final TunnelConfig tunnelConfig;
     try {
