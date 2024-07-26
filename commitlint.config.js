@@ -25,6 +25,7 @@ module.exports = {
         'service/linux',
         'service/windows',
         'src/build',
+        'storybook',
         'www',
       ],
     ],
