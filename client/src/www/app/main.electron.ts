@@ -22,7 +22,7 @@ import * as Sentry from '@sentry/electron/renderer';
 
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
-import {useElectronRepository} from './outline_server_repository/server.electron';
+import {useElectronServer} from './outline_server_repository/server.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -35,7 +35,7 @@ const isOsSupported = isWindows || isLinux;
 
 // Configures the implementation for the OutlineServerRepository.
 if (isOsSupported) {
-  useElectronRepository();
+  useElectronServer();
 }
 
 const interceptor = new UrlInterceptor();

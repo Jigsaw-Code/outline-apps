@@ -17,7 +17,7 @@ import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
 // This function must be called to use the Cordova implementation.
-export function useCordovaTunnel() {
+export function useCordovaServer() {
   setTunnelFactory(
     (tunnelId: string): Tunnel => {
       return new CordovaTunnel(tunnelId);

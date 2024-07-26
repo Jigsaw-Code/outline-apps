@@ -25,7 +25,7 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
-import {useCordovaTunnel} from './outline_server_repository/server.cordova';
+import {useCordovaServer} from './outline_server_repository/server.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
@@ -38,7 +38,7 @@ const hasDeviceSupport = cordova.platformId !== 'browser';
 
 // Configures the implementation for the OutlineServerRepository.
 if (hasDeviceSupport) {
-  useCordovaTunnel();
+  useCordovaServer();
 }
 
 // Pushes a clipboard event whenever the app is brought to the foreground.

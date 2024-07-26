@@ -19,7 +19,7 @@ export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
 export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 
 // This function must be called to use the fake implementation.
-export function useFakeRepository() {
+export function useFakeServer() {
   setTunnelFactory(
     (tunnelId: string): Tunnel => {
       return new FakeTunnel(tunnelId);

@@ -16,7 +16,7 @@ import {setTunnelFactory, ShadowsocksSessionConfig, Tunnel, TunnelStatus} from '
 import {PlatformError} from '../../model/platform_error';
 
 // This function must be called to use the Electron implementation.
-export function useElectronRepository() {
+export function useElectronServer() {
   setTunnelFactory(
     (tunnelId: string): Tunnel => {
       return new ElectronTunnel(tunnelId);

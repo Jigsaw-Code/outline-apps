@@ -20,7 +20,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {App} from './app';
 import {onceEnvVars} from './environment';
 import {OutlineServerRepository} from './outline_server_repository';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, useFakeRepository} from './outline_server_repository/server.fake';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, useFakeServer} from './outline_server_repository/server.fake';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
@@ -56,7 +56,7 @@ function createServerRepo(
     return new OutlineServerRepository(eventQueue, storage);
   } catch {
     console.debug('Detected development environment, using fake servers.');
-    useFakeRepository();
+    useFakeServer();
     const repo = new OutlineServerRepository(eventQueue, storage);
     if (repo.getAll().length === 0) {
       repo.add(
