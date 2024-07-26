@@ -16,11 +16,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import electron, {Platform} from 'electron-builder';
 import minimist from 'minimist';
 
-import {getRootDir} from '../../src/build/get_root_dir.mjs';
-import {runAction} from '../../src/build/run_action.mjs';
 import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 const ELECTRON_BUILD_DIR = 'output';

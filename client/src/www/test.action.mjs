@@ -15,12 +15,10 @@
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import karma from 'karma';
 import minimist from 'minimist';
 import puppeteer from 'puppeteer';
-
-
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const KARMA_CONFIG_PATH = ['client', 'src', 'www', 'karma.conf.js'];
 

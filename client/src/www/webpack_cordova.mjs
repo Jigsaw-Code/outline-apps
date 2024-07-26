@@ -13,13 +13,13 @@
 // limitations under the License.
 import path from 'path';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import CopyPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import {merge} from 'webpack-merge';
 
 import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const BABEL_LOADER = {
   loader: 'babel-loader',
