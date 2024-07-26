@@ -28,7 +28,7 @@
 
 import * as clipboard from './app/clipboard';
 import * as platform from './app/platform';
-import * as tunnel from './app/tunnel';
+import * as server from './app/outline_server_repository/server';
 import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
@@ -55,7 +55,7 @@ describe('TODOs', () => {
     expect(platform).toBeDefined();
     expect(privacyView).toBeDefined();
     expect(serverRenameDialog).toBeDefined();
-    expect(tunnel).toBeDefined();
+    expect(server).toBeDefined();
     expect(updater).toBeDefined();
     expect(urlInterceptor).toBeDefined();
     expect(userCommsDialog).toBeDefined();
