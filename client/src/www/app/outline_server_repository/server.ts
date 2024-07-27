@@ -98,7 +98,7 @@ export class OutlineServer implements Server {
     }
 
     try {
-      await this.tunnel.start(this.sessionConfig);
+      await this.tunnel.start(this.name, this.sessionConfig);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -164,7 +164,7 @@ export interface PlatformTunnel {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(config: ShadowsocksSessionConfig): Promise<void>;
+  start(name: string, config: ShadowsocksSessionConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(): Promise<void>;

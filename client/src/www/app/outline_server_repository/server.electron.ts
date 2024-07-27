@@ -31,7 +31,7 @@ export class ElectronTunnel implements PlatformTunnel {
     });
   }
 
-  async start(config: ShadowsocksSessionConfig) {
+  async start(name: string, config: ShadowsocksSessionConfig) {
     if (this.running) {
       return Promise.resolve();
     }
@@ -41,7 +41,7 @@ export class ElectronTunnel implements PlatformTunnel {
     });
 
     try {
-      await window.electron.methodChannel.invoke('start-proxying', {config, id: this.id});
+      await window.electron.methodChannel.invoke('start-proxying', {id: this.id, serviceName: name, config});
       this.running = true;
     } catch (e) {
       throw PlatformError.parseFrom(e);
