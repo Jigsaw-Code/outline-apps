@@ -38,12 +38,13 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  */
 export async function main(...parameters) {
   const {platform, buildMode, verbose, buildNumber, versionName} = getBuildParameters(parameters);
-
+  
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/src/tun2socks/build', ...parameters);
-
-  await rmfr(path.resolve(getRootDir(), 'platforms'));
-  await rmfr(path.resolve(getRootDir(), 'plugins'));
+  
+  const CORDOVA_PROJECT_DIR =  path.resolve(getRootDir(), 'client');
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'platforms'));
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'plugins'));
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));

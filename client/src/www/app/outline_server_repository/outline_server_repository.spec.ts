@@ -313,5 +313,5 @@ describe('OutlineServerRepository', () => {
 function newTestRepo(eventQueue: EventQueue, storage: Storage): OutlineServerRepository {
   return new OutlineServerRepository((id) => {
     return new FakeTunnel(id);
-  }, eventQueue, storage);
+  }, eventQueue, storage, (_) => {return "Outline Server";});
 }
