@@ -212,7 +212,7 @@ export class GcpAccount implements gcp.Account {
   }
 
   /** @see {@link Account#createServer}. */
-  async createServer(projectId: string, name: string, zone: gcp.Zone): Promise<server.ManagedServer> {
+  async createServer(projectId: string, name: string, zone: gcp.Zone, metricsEnabled: boolean): Promise<server.ManagedServer> {
     // TODO: Move this to project setup.
     await this.createFirewallIfNeeded(projectId);
 
@@ -252,7 +252,7 @@ export class GcpAccount implements gcp.Account {
           },
           {
             key: 'user-data',
-            value: this.getInstallScript(name),
+            value: this.getInstallScript(name, metricsEnabled),
           },
         ],
       },

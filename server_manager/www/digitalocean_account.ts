@@ -89,7 +89,7 @@ export class DigitalOceanAccount implements digitalocean.Account {
     console.time('activeServer');
     console.time('servingServer');
     const keyPair = await crypto.generateKeyPair();
-    const installCommand = getInstallScript(this.digitalOcean.accessToken, name, this.shadowboxSettings);
+    const installCommand = getInstallScript(this.digitalOcean.accessToken, name, metricsEnabled, this.shadowboxSettings);
 
     // You can find the API slugs at https://slugs.do-api.dev/.
     const dropletSpec = {

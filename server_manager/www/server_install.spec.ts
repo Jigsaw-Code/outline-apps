@@ -23,11 +23,12 @@ describe('getShellExportCommands', () => {
       watchtowerRefreshSeconds: 999,
     };
     const serverName = 'Outline Server Foo';
-    expect(getShellExportCommands(settings, serverName)).toEqual(
+    expect(getShellExportCommands(settings, serverName, false)).toEqual(
       "export SB_IMAGE='foo'\n" +
         "export WATCHTOWER_REFRESH_SECONDS='999'\n" +
         "export SENTRY_API_URL='https://sentry.example/'\n" +
         "export SB_METRICS_URL='https://metrics.example/'\n" +
+        "export SB_METRICS_ENABLED=false\n" +
         'export SB_DEFAULT_SERVER_NAME="$(printf \'Outline Server Foo\')"\n'
     );
   });
@@ -38,7 +39,7 @@ describe('getShellExportCommands', () => {
       metricsUrl: '',
     };
     const serverName = '';
-    expect(getShellExportCommands(settings, serverName)).toEqual('export SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
+    expect(getShellExportCommands(settings, serverName, false)).toEqual('"export SB_METRICS_ENABLED=false\nexport SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
   });
 
   it('server name escaping', () => {
@@ -47,8 +48,8 @@ describe('getShellExportCommands', () => {
       metricsUrl: null,
     };
     const serverName = 'Outline Server فرانكفورت';
-    expect(getShellExportCommands(settings, serverName)).toEqual(
-      'export SB_DEFAULT_SERVER_NAME="$(printf \'Outline Server \\u0641\\u0631\\u0627\\u0646\\u0643\\u0641\\u0648\\u0631\\u062a\')"\n'
+    expect(getShellExportCommands(settings, serverName, false)).toEqual(
+      '"export SB_METRICS_ENABLED=false\nexport SB_DEFAULT_SERVER_NAME="$(printf \'Outline Server \\u0641\\u0631\\u0627\\u0646\\u0643\\u0641\\u0648\\u0631\\u062a\')"\n'
     );
   });
 });
