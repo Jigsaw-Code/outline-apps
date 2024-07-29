@@ -277,18 +277,14 @@ public class VpnTunnelService extends VpnService {
       return e.getMessage();
     }
 
-    ErrorCode errorCode = ErrorCode.NO_ERROR;
+    boolean udpSupported = false;
     if (!isAutoStart) {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        errorCode = checkServerConnectivity(client);
-        if (!(errorCode == ErrorCode.NO_ERROR
-                || errorCode == ErrorCode.UDP_RELAY_NOT_ENABLED)) {
-          tearDownActiveTunnel();
-          return "Unexpected check connectivity error code: " + errorCode;
-        }
+        udpSupported = checkUDPConnectivity(client);
       } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Connectivity checks failed", e);
         tearDownActiveTunnel();
         return e.getMessage();
       }
@@ -306,7 +302,7 @@ public class VpnTunnelService extends VpnService {
     }
 
     final boolean remoteUdpForwardingEnabled =
-        isAutoStart ? tunnelStore.isUdpSupported() : errorCode == ErrorCode.NO_ERROR;
+        isAutoStart ? tunnelStore.isUdpSupported() : udpSupported;
     try {
       vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
     } catch (Exception e) {
@@ -349,21 +345,22 @@ public class VpnTunnelService extends VpnService {
     vpnTunnel.tearDownVpn();
   }
 
-  // Shadowsocks
-
-  private ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
-    try {
-      long errorCode = Shadowsocks.checkConnectivity(client);
-      ErrorCode result = ErrorCode.values()[(int) errorCode];
-      LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
-      return result;
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Connectivity checks failed", e);
-    }
-    return ErrorCode.UNEXPECTED;
-  }
-
   // Connectivity
+
+  /**
+   * Checks if the given client can handle UDP traffic.
+   * It returns true if the client supports both TCP and UDP, and false if it only supports TCP.
+   * If the client doesn't support TCP at all, an exception is thrown.
+   * @param client The shadowsocks client to check.
+   * @return true if the client supports both TCP and UDP, false if only supports TCP.
+   * @throws Exception when the client doesn't support TCP.
+   *         The exception message contains a PlatformError in JSON format.
+   */
+  private boolean checkUDPConnectivity(final shadowsocks.Client client) throws Exception {
+    long status = Shadowsocks.checkConnectivity(client);
+    LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %d", status));
+    return (status & Shadowsocks.UDPConnected) == Shadowsocks.UDPConnected;
+  }
 
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     private ConnectivityManager connectivityManager;

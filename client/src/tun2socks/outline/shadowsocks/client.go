@@ -114,7 +114,7 @@ const (
 	SystemMisconfigured         = 12 // Electron only
 )
 
-// Connectivity status flags exported through gomobile
+// Connectivity status flags returned by CheckConnectivity
 const (
 	TCPConnected = int(connectivity.TCPConnected)
 	UDPConnected = int(connectivity.UDPConnected)

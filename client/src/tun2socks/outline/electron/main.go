@@ -112,7 +112,15 @@ func main() {
 	}
 
 	if *args.checkConnectivity {
-		checkConnectivityAndExit(client)
+		status, err := shadowsocks.CheckConnectivity(client)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+		if status&int(connectivity.UDPConnected) == 0 {
+			// The client should not use the following error, it should only depend on the exit code
+			printErrorAndExit(errors.New("udp not supported"), exitCodeNoUDPConnectivity)
+		}
+		os.Exit(exitCodeSuccess)
 	}
 
 	// Open TUN device
@@ -197,18 +205,4 @@ func newShadowsocksClientFromArgs() (*shadowsocks.Client, error) {
 		config.Prefix = prefixBytes
 		return shadowsocks.NewClient(&config)
 	}
-}
-
-// checkConnectivity checks whether the remote Shadowsocks server supports TCP or UDP,
-// and returns the status through exit code and stderr.
-func checkConnectivityAndExit(c *shadowsocks.Client) {
-	status, err := shadowsocks.CheckConnectivity(c)
-	if err != nil {
-		printErrorAndExit(err, exitCodeFailure)
-	}
-	if status&int(connectivity.UDPConnected) == 0 {
-		// The client should not use the following error, it should only depend on the exit code
-		printErrorAndExit(errors.New("udp not supported"), exitCodeNoUDPConnectivity)
-	}
-	os.Exit(exitCodeSuccess)
 }
