@@ -161,12 +161,8 @@ export class App {
       this.appRoot.getAndShowGcpCreateServerApp().start(this.gcpAccount);
     });
     appRoot.addEventListener('GcpServerCreated', (event: CustomEvent) => {
-      const { server, metricsEnabled } = event.detail;
-      this.addServer(this.gcpAccount.getId(), server, progress => {
-        if (progress !== 1.0) return;
-
-        server.setMetricsEnabled(metricsEnabled);
-      });
+      const { server } = event.detail;
+      this.addServer(this.gcpAccount.getId(), server);
       this.showServer(server);
     });
     appRoot.addEventListener('DigitalOceanSignOutRequested', (_: CustomEvent) => {
@@ -455,7 +451,7 @@ export class App {
     return name;
   }
 
-  private addServer(accountId: string, server: server_model.Server, callback?: (progress: number) => void): void {
+  private addServer(accountId: string, server: server_model.Server): void {
     console.log('Loading server', server);
     this.idServerMap.set(server.getId(), server);
     const serverEntry = this.makeServerListEntry(accountId, server);
@@ -471,8 +467,8 @@ export class App {
       if (isManagedServer(server)) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          for await (const progress of server.monitorInstallProgress()) {
-            callback(progress);
+          for await (const _ of server.monitorInstallProgress()) {
+            /* empty */
           }
         } catch (error) {
           if (error instanceof server_model.ServerInstallCanceledError) {
@@ -762,18 +758,14 @@ export class App {
 
   // Returns a promise which fulfills once the DigitalOcean droplet is created.
   // Shadowbox may not be fully installed once this promise is fulfilled.
-  async createDigitalOceanServer(region: digitalocean.Region, metrics: boolean): Promise<void> {
+  async createDigitalOceanServer(region: digitalocean.Region): Promise<void> {
     let server: server_model.Server;
     try {
       const serverName = this.makeLocalizedServerName(region);
       server = await this.digitalOceanRetry(() => {
         return this.digitalOceanAccount.createServer(region, serverName);
       });
-      this.addServer(this.digitalOceanAccount.getId(), server, progress => {
-        if (progress !== 1.0) return;
-          
-        server.setMetricsEnabled(metrics);
-      });
+      this.addServer(this.digitalOceanAccount.getId(), server);
       this.showServer(server);
     } catch (error) {
       console.error('Error from createDigitalOceanServer', error);

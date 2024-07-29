@@ -856,7 +856,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   handleRegionSelected(e: CustomEvent) {
-    this.fire('SetUpDigitalOceanServerRequested', {region: e.detail.selectedLocation, metrics: e.detail.metricsEnabled});
+    this.fire('SetUpDigitalOceanServerRequested', {region: e.detail.selectedLocation, metricsEnabled: e.detail.metricsEnabled});
   }
 
   handleSetUpGenericCloudProviderRequested() {
