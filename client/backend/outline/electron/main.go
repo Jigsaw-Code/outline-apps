@@ -25,10 +25,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/neterrors"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/shadowsocks"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/tun2socks"
+	"github.com/Jigsaw-Code/outline-apps/client/backend/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/backend/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/backend/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-apps/client/backend/outline/tun2socks"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"

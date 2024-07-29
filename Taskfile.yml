@@ -5,11 +5,11 @@ set: [pipefail]
 run: when_changed
 
 includes:
-  client:tun2socks: ./client/src/tun2socks/Taskfile.yml
+  client:backend: ./client/backend/Taskfile.yml
 
 tasks:
   clean:
     deps:
-      - client:tun2socks:clean
+      - client:backend:clean
     cmds:
       - rm -rf .task

@@ -14,8 +14,8 @@
 
 import url from 'url';
 
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import {spawnStream} from '../../src/build/spawn_stream.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 /**
  * @description Builds the tun2socks library for the specified platform.
@@ -24,7 +24,7 @@ import {getBuildParameters} from '../../build/get_build_parameters.mjs';
  */
 export async function main(...parameters) {
   const {platform: targetPlatform} = getBuildParameters(parameters);
-  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:tun2socks:${targetPlatform}`);
+  await spawnStream('go', 'run', 'github.com/go-task/task/v3/cmd/task', '-v', `client:backend:${targetPlatform}`);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
