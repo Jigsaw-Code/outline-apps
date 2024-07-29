@@ -57,11 +57,11 @@ jobs:
         run: npm ci
 
       - name: Build Linux Manager
-        run: npm run action server_manager/electron_app/build linux
+        run: npm run action server_manager/electron/build linux
 
       # Since Linux doesn't require signing, we can use it to smoke test the package action
       - name: Smoke Test Linux Manager Package
-        run: npm run action server_manager/electron_app/package linux -- --buildMode=release --versionName=1.0.0
+        run: npm run action server_manager/electron/package linux -- --buildMode=release --versionName=1.0.0
 
   windows_debug_build:
     name: Windows Debug Build
@@ -85,7 +85,7 @@ jobs:
         run: npm ci
 
       - name: Build Windows Manager
-        run: npm run action server_manager/electron_app/build windows
+        run: npm run action server_manager/electron/build windows
 
   mac_debug_build:
     name: MacOS Debug Build
@@ -108,4 +108,4 @@ jobs:
         run: npm ci
 
       - name: Build MacOS Manager
-        run: npm run action server_manager/electron_app/build macos
+        run: npm run action server_manager/electron/build macos

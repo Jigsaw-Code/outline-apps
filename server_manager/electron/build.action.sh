@@ -16,7 +16,7 @@
 set -eu
 
 # Electron app root folder
-readonly STATIC_DIR="${BUILD_DIR}/server_manager/electron_app/static"
+readonly STATIC_DIR="${BUILD_DIR}/server_manager/electron/static"
 rm -rf "${STATIC_DIR}"
 mkdir -p "${STATIC_DIR}"
 
@@ -72,4 +72,4 @@ cd "${STATIC_DIR}"
 
 # Icons.
 cd "${ROOT_DIR}"
-cp -r server_manager/electron_app/icons/ "${BUILD_DIR}/server_manager/electron_app/static/icons/"
+cp -r server_manager/electron/icons/ "${BUILD_DIR}/server_manager/electron/static/icons/"
