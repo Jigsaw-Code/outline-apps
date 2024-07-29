@@ -296,7 +296,7 @@ export class GcpAccount implements gcp.Account {
     }
   }
 
-  private getInstallScript(serverName: string): string {
-    return '#!/bin/bash -eu\n' + server_install.getShellExportCommands(this.shadowboxSettings, serverName) + SCRIPT;
+  private getInstallScript(serverName: string, metricsEnabled: boolean): string {
+    return '#!/bin/bash -eu\n' + server_install.getShellExportCommands(this.shadowboxSettings, serverName, metricsEnabled) + SCRIPT;
   }
 }

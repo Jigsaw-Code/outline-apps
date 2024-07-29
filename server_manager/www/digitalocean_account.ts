@@ -154,12 +154,12 @@ function sanitizeDigitalOceanToken(input: string): string {
 }
 
 // cloudFunctions needs to define cloud::public_ip and cloud::add_tag.
-function getInstallScript(accessToken: string, name: string, shadowboxSettings: ShadowboxSettings): string {
+function getInstallScript(accessToken: string, name: string, metricsEnabled: boolean, shadowboxSettings: ShadowboxSettings): string {
   const sanitizedAccessToken = sanitizeDigitalOceanToken(accessToken);
   return (
     '#!/bin/bash -eu\n' +
     `export DO_ACCESS_TOKEN='${sanitizedAccessToken}'\n` +
-    getShellExportCommands(shadowboxSettings, name) +
+    getShellExportCommands(shadowboxSettings, name, metricsEnabled) +
     do_install_script.SCRIPT
   );
 }
