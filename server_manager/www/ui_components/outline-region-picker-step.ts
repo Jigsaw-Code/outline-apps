@@ -17,6 +17,7 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-progress/paper-progress';
 import '@material/mwc-checkbox';
 import './outline-step-view';
+import './if_messages';
 
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
@@ -218,17 +219,19 @@ export class OutlineRegionPicker extends LitElement {
             })}
           </div>
           <div class="card-content-row">
-            <div class="callout">
-              <iron-icon icon="editor:insert-chart"></iron-icon>
-              <div class="callout-content">
-                <label>
-                  <mwc-checkbox .checked="${this.metricsEnabled}" @change="${this._metricsToggle}"></mwc-checkbox>
-                  ${this.localize('metrics-setup-title')}
-                </label>
-                <p>${this.localize('metrics-setup-description')}</p>
-                <a>${this.localize('metrics-setup-learn-more')}</a>
+            <if-messages message-ids="metrics-setup-title, metrics-setup-description, metrics-setup-learn-more"  .localize=${this.localize}>
+              <div class="callout">
+                <iron-icon icon="editor:insert-chart"></iron-icon>
+                <div class="callout-content">
+                  <label>
+                    <mwc-checkbox .checked="${this.metricsEnabled}" @change="${this._metricsToggle}"></mwc-checkbox>
+                    ${this.localize('metrics-setup-title')}
+                  </label>
+                  <p>${this.localize('metrics-setup-description')}</p>
+                  <a>${this.localize('metrics-setup-learn-more')}</a>
+                </div>
               </div>
-            </div>
+            </if-messages>
           </div>
           <div class="card-content-row">
             <paper-button
