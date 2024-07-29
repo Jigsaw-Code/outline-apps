@@ -16,11 +16,10 @@ import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
-import {OutlineServer} from './server';
+import {OutlineServer, PlatformTunnel} from './server';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
-import {TunnelFactory} from '../tunnel';
 
 
 // TODO(daniellacosse): write unit tests for these functions
@@ -107,7 +106,7 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private readonly createTunnel: TunnelFactory,
+    private newTunnel: (id: string) => PlatformTunnel,
     private eventQueue: events.EventQueue,
     private storage: Storage
   ) {
@@ -304,11 +303,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private createServer(id: string, accessKey: string, name?: string): OutlineServer {
     const server = new OutlineServer(
+      this.newTunnel(id),
       id,
       accessKey,
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
-      this.createTunnel(id),
       this.eventQueue
     );
 

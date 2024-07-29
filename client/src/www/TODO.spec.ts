@@ -15,11 +15,11 @@
 */
 
 // TODO(daniellacosse): requires electron context (should be somewhere in src/electron)
-// import * as electronMain from './app/electron_main';
+// import * as electronMain from './app/main.electron';
 // import * as electronOutlineTunnel from './app/electron_outline_tunnel';
 
 // TODO(daniellacosse): requires cordova context (should be somewhere in src/cordova)
-// import * as cordovaMain from './app/cordova_main';
+// import * as cordovaMain from './app/main.cordova';
 
 // TODO(daniellacosse): these modules have side effects, causing them to fail when we import into the test. They need to be encapsulated.
 // import * as main from './app/main';
@@ -27,8 +27,8 @@
 // import * as outlineIcons from './ui_components/outline-icons';
 
 import * as clipboard from './app/clipboard';
+import * as server from './app/outline_server_repository/server';
 import * as platform from './app/platform';
-import * as tunnel from './app/tunnel';
 import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
@@ -55,7 +55,7 @@ describe('TODOs', () => {
     expect(platform).toBeDefined();
     expect(privacyView).toBeDefined();
     expect(serverRenameDialog).toBeDefined();
-    expect(tunnel).toBeDefined();
+    expect(server).toBeDefined();
     expect(updater).toBeDefined();
     expect(urlInterceptor).toBeDefined();
     expect(userCommsDialog).toBeDefined();

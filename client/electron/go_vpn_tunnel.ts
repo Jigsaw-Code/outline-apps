@@ -20,13 +20,13 @@ import {pathToEmbeddedTun2socksBinary} from './app_paths';
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/server';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
 
 // Reference to tun2socks's outline/electron/main.go
-const exitCodeNoUDPConnectivity = 4
+const exitCodeNoUDPConnectivity = 4;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';

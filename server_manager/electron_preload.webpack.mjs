@@ -20,11 +20,11 @@ import nodeExternals from 'webpack-node-externals';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
-  entry: path.resolve(__dirname, './electron_app/preload.ts'),
+  entry: path.resolve(__dirname, './electron/preload.ts'),
   target: 'electron-preload',
   devtool: 'inline-source-map',
   output: {
-    path: path.resolve(__dirname, '../output/build/server_manager/electron_app/static'),
+    path: path.resolve(__dirname, '../output/build/server_manager/electron/static'),
     filename: 'preload.js',
   },
   module: {

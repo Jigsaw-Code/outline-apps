@@ -19,15 +19,15 @@ import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
 import * as Sentry from '@sentry/electron/renderer';
 
-
 import {AbstractClipboard} from './clipboard';
-import {ElectronOutlineTunnel} from './electron_outline_tunnel';
-import {FakeOutlineTunnel} from './fake_tunnel';
 import {getLocalizationFunction, main} from './main';
+import {OutlineServerRepository} from './outline_server_repository';
+import {ElectronTunnel} from './outline_server_repository/server.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {EventQueue} from '../model/events';
 import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
 
 const isWindows = window.electron.os.platform === 'win32';
@@ -101,11 +101,13 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  hasDeviceSupport: () => isOsSupported,
-  getTunnelFactory: () => {
-    return (id: string) => {
-      return isOsSupported ? new ElectronOutlineTunnel(id) : new FakeOutlineTunnel(id);
-    };
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
+    if (isOsSupported) {
+      return new OutlineServerRepository((id: string) => {
+        return new ElectronTunnel(id);
+      }, eventQueue, window.localStorage);
+    }
+    return undefined;
   },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),

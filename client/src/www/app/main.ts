@@ -19,11 +19,10 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME} from './fake_tunnel';
 import {OutlineServerRepository} from './outline_server_repository';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, FakeTunnel} from './outline_server_repository/server.fake';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {TunnelFactory} from './tunnel';
 import {EventQueue} from '../model/events';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
@@ -49,47 +48,48 @@ function getRootEl() {
   return document.querySelector('app-root') as {} as polymer.Base;
 }
 
-function createServerRepo(
-  eventQueue: EventQueue,
-  storage: Storage,
-  deviceSupport: boolean,
-  createTunnel: TunnelFactory
-) {
-  const repo = new OutlineServerRepository(createTunnel, eventQueue, storage);
-  if (!deviceSupport) {
-    console.debug('Detected development environment, using fake servers.');
-    if (repo.getAll().length === 0) {
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: '127.0.0.1',
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Working Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_BROKEN_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Broken Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_UNREACHABLE_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Unreachable Server',
-          })
-        )
-      );
-    }
+function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
+  let repo = platform.newServerRepo(eventQueue);
+  if (repo) {
+    return repo;
+  }
+  console.debug('Platform not supported, using fake servers.');
+
+  repo = new OutlineServerRepository((id: string) => {
+    return new FakeTunnel(id);
+  }, eventQueue, window.localStorage)
+
+  if (repo.getAll().length === 0) {
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: '127.0.0.1',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Working Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_BROKEN_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Broken Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_UNREACHABLE_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Unreachable Server',
+        })
+      )
+    );
   }
   return repo;
 }
@@ -104,10 +104,8 @@ export function main(platform: OutlinePlatform) {
 
       const eventQueue = new EventQueue();
       const serverRepo = createServerRepo(
+        platform,
         eventQueue,
-        window.localStorage,
-        platform.hasDeviceSupport(),
-        platform.getTunnelFactory()
       );
       const settings = new Settings();
       new App(

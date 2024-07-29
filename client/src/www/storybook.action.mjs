@@ -15,13 +15,12 @@
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import image from '@rollup/plugin-image';
 import {startDevServer} from '@web/dev-server';
 import {esbuildPlugin} from '@web/dev-server-esbuild';
 import {fromRollup} from '@web/dev-server-rollup';
 import {storybookPlugin} from '@web/dev-server-storybook';
-
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const WWW_PATH = ['src', 'www'];
 const STORYBOOK_PATH = [...WWW_PATH, '.storybook'];

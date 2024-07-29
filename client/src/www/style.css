@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+ html {
+   background: #efefef;
+ }
+
  body {
   /*
     We're not properly CSS resetting - this is to prevent
@@ -68,6 +72,13 @@
     --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;  
   }
 } */
+
+@font-face {
+  font-family: "Jigsaw Sans";
+  font-style: normal;
+  font-weight: 500;
+  src: url(./assets/jigsaw_sans_medium.woff2) format("woff2");
+}
 
 @font-face {
   font-family: 'Material Icons';

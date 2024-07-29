@@ -13,7 +13,7 @@
   },
   "win": {
     "icon": "icons/win/icon.ico",
-    "sign": "server_manager/electron_app/windows/electron_builder_signing_plugin.cjs",
+    "sign": "server_manager/electron/windows/electron_builder_signing_plugin.cjs",
     "signingHashAlgorithms": ["sha256"],
     "target": [
       {
@@ -24,8 +24,8 @@
   },
   "mac": {
     "hardenedRuntime": true,
-    "entitlements": "server_manager/electron_app/release/macos.entitlements",
-    "entitlementsInherit": "server_manager/electron_app/release/macos.entitlements",
+    "entitlements": "server_manager/electron/release/macos.entitlements",
+    "entitlementsInherit": "server_manager/electron/release/macos.entitlements",
     "icon": "icons/mac/icon.icns",
     "target": [
       {

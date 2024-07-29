@@ -24,7 +24,7 @@ import {localize} from '../../../testing/localize';
 import {ServerConnectionState} from '../server_connection_indicator';
 
 export default {
-  title: 'Servers View/Server List',
+  title: 'Client/Servers View/Server List',
   component: 'server-list',
   args: {
     servers: [

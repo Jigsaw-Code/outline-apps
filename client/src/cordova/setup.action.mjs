@@ -16,19 +16,17 @@ import os from 'os';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import chalk from 'chalk';
 import cordovaLib from 'cordova-lib';
 import replace from 'replace-in-file';
 import rmfr from 'rmfr';
 
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+
 const {cordova} = cordovaLib;
-
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-
-
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**

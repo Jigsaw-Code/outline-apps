@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-node src/build/run_action.mjs server_manager/electron_app/build "$@"
+node infrastructure/build/run_action.mjs server_manager/electron/build "$@"
 
-cd "${BUILD_DIR}/server_manager/electron_app/static"
+cd "${BUILD_DIR}/server_manager/electron/static"
 
 OUTLINE_DEBUG='true' \
   SB_METRICS_URL='https://dev.metrics.getoutline.org' \
