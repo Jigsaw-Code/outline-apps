@@ -392,8 +392,8 @@ export class GcpCreateServerApp extends LitElement {
     this.regionPicker.isServerBeingCreated = true;
     const zone = event.detail.selectedLocation as Zone;
     const name = this.makeLocalizedServerName(zone);
-    const server = await this.account.createServer(this.project.id, name, zone);
-    const params = {bubbles: true, composed: true, detail: {server, metricsEnabled: event.detail.metricsEnabled}};
+    const server = await this.account.createServer(this.project.id, name, zone, event.detail.metricsEnabled);
+    const params = {bubbles: true, composed: true, detail: {server}};
     const serverCreatedEvent = new CustomEvent('GcpServerCreated', params);
     this.dispatchEvent(serverCreatedEvent);
   }
