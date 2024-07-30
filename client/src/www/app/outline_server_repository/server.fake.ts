@@ -34,7 +34,7 @@ export class FakeTunnel implements PlatformTunnel {
     return hostname === FAKE_UNREACHABLE_HOSTNAME;
   }
 
-  async start(_name: string, config: ShadowsocksSessionConfig): Promise<void> {
+  async start(_unusedName: string, config: ShadowsocksSessionConfig): Promise<void> {
     if (this.running) {
       return;
     }
