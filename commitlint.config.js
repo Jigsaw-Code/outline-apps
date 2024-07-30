@@ -14,6 +14,8 @@ module.exports = {
         'client/electron',
         'client/electron/linux',
         'client/electron/windows',
+        'client/go',
+        'client/www',
         'devtools',
         'docs',
         'infrastructure',
@@ -22,11 +24,7 @@ module.exports = {
         'manager/linux',
         'manager/mac',
         'manager/windows',
-        'service',
-        'service/linux',
-        'service/windows',
-        'storybook',
-        'www',
+        'storybook'
       ],
     ],
     'type-enum': [
