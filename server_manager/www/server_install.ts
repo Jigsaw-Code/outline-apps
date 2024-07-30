@@ -20,12 +20,13 @@ export interface ShadowboxSettings {
   watchtowerRefreshSeconds?: number;
 }
 
-export function getShellExportCommands(settings: ShadowboxSettings, serverName: string): string {
+export function getShellExportCommands(settings: ShadowboxSettings, serverName: string, metricsEnabled: boolean): string {
   const variables: {[name: string]: string | number} = {
     SB_IMAGE: settings.imageId,
     WATCHTOWER_REFRESH_SECONDS: settings.watchtowerRefreshSeconds,
     SENTRY_API_URL: settings.sentryApiUrl,
     SB_METRICS_URL: settings.metricsUrl,
+    SB_METRICS_ENABLED: String(metricsEnabled)
   };
   const lines: string[] = [];
   for (const name in variables) {
