@@ -16,8 +16,14 @@
 
 set -eu
 
-rm -rf "${BUILD_DIR}/server_manager/web_app"
+readonly OUT_DIR="${BUILD_DIR}/server_manager/www"
+rm -rf "${OUT_DIR}"
 
-node infrastructure/build/run_action.mjs server_manager/web_app/build_install_script
+node infrastructure/build/run_action.mjs server_manager/www/build_install_script
 
-webpack-dev-server --config=server_manager/browser.webpack.js --open
+# Node.js on Cygwin doesn't like absolute Unix-style paths.
+# So, we use a relative path as input to webpack.
+pushd "${ROOT_DIR}" > /dev/null
+# Notice that we forward the build environment if defined.
+webpack --config=server_manager/electron_renderer.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+popd > /dev/null

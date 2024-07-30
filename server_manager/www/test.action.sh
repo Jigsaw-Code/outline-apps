@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/bash -eu
 #
-# Copyright 2018 The Outline Authors
+# Copyright 2020 The Outline Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu
+set -e
 
-readonly OUT_DIR="${BUILD_DIR}/server_manager/web_app"
-rm -rf "${OUT_DIR}"
-
-node infrastructure/build/run_action.mjs server_manager/web_app/build_install_script
-
-# Node.js on Cygwin doesn't like absolute Unix-style paths.
-# So, we use a relative path as input to webpack.
-pushd "${ROOT_DIR}" > /dev/null
-# Notice that we forward the build environment if defined.
-webpack --config=server_manager/electron_renderer.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
-popd > /dev/null
+npm run action server_manager/www/build_install_script
+karma start "${ROOT_DIR}/server_manager/www/karma.conf.js"
