@@ -17,8 +17,7 @@ module.exports = {
         'manager',
         'manager/linux',
         'manager/macos',
-        'manager/windows',
-        'storybook'
+        'manager/windows'
       ],
     ],
     'type-enum': [
