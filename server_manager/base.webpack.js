@@ -18,7 +18,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const OUTPUT_BASE = path.resolve(__dirname, '../output/build/server_manager/web_app/static');
+const OUTPUT_BASE = path.resolve(__dirname, '../output/build/server_manager/www/static');
 
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'css-in-js-rtl-loader.js');
 
@@ -29,7 +29,7 @@ exports.makeConfig = options => {
     mode: options.defaultMode,
     entry: [
       require.resolve('@webcomponents/webcomponentsjs/webcomponents-loader.js'),
-      path.resolve(__dirname, './web_app/ui_components/style.css'),
+      path.resolve(__dirname, './www/ui_components/style.css'),
       options.main,
     ],
     target: options.target,
