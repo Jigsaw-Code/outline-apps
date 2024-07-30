@@ -24,6 +24,9 @@ module.exports = {
         'manager/linux',
         'manager/mac',
         'manager/windows',
+        'service',
+        'service/linux',
+        'service/windows',
         'storybook'
       ],
     ],
