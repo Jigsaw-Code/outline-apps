@@ -5,4 +5,4 @@ export default {
   title: 'Manager/TODO',
 };
 
-export const Example = () => html`TODO: Migrate the gallery app to storybook!`;
+export const Example = () => html`TODO: Write our first manager story!`;
