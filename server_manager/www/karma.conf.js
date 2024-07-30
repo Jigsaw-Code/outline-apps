@@ -23,7 +23,7 @@ const baseConfig = makeConfig({
 
 const filePatterns = [
   {
-    pattern: 'web_app/**/*.spec.ts',
+    pattern: 'www/**/*.spec.ts',
     watched: true
   },
   {
@@ -42,7 +42,7 @@ module.exports = function (config) {
     proxies: {
       '/images/': '/base/images/'
     },
-    preprocessors: { './web_app/**/*.spec.ts': ['webpack'] },
+    preprocessors: { './www/**/*.spec.ts': ['webpack'] },
     reporters: ['progress'],
     colors: true,
     logLevel: config.LOG_INFO,

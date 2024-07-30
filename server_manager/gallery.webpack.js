@@ -19,8 +19,8 @@ const path = require('path');
 const {makeConfig} = require('./base.webpack.js');
 
 module.exports = makeConfig({
-  main: path.resolve(__dirname, './web_app/gallery_app/main.ts'),
+  main: path.resolve(__dirname, './www/gallery_app/main.ts'),
   target: 'web',
   defaultMode: 'development',
-  template: path.resolve(__dirname, './web_app/gallery_app/index.html'),
+  template: path.resolve(__dirname, './www/gallery_app/index.html'),
 });
