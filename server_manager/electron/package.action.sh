@@ -16,14 +16,15 @@
 set -eu
 
 SCRIPT_DIR="$(dirname "$0")"
-PROJECT_DIR="${BUILD_DIR}/server_manager/electron/static"
+ELECTRON_BUILD_DIR="${BUILD_DIR}/server_manager/electron"
+PROJECT_DIR="${ELECTRON_BUILD_DIR}/static"
 BUILD_MODE=debug
 PLATFORM=
 
 function package_electron() {
   declare -a electron_builder_cmd=(
     electron-builder
-    --projectDir="${PROJECT_DIR}"
+    --projectDir="${ELECTRON_BUILD_DIR}/${PLATFORM}"
     --config="${SCRIPT_DIR}/electron_builder.json"
     --publish=never
   )
@@ -59,15 +60,15 @@ function finish_yaml_files() {
   if [[ -z "${release_channel}" ]]; then
     release_channel=latest
   fi
-  echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/${release_channel}${PLATFORM}.yml"
+  echo "stagingPercentage: ${staging_percentage}" >> "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/${release_channel}${PLATFORM}.yml"
 
   # If we cut a staged mainline release, beta testers will take the update as well.
   if [[ "${release_channel}" == "latest" ]]; then
-    echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/beta${PLATFORM}.yml"
+    echo "stagingPercentage: ${staging_percentage}" >> "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/beta${PLATFORM}.yml"
   fi
 
   # We don't support alpha releases
-  rm -f "${PROJECT_DIR}/dist/alpha${PLATFORM}.yml"
+  rm -f "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/alpha${PLATFORM}.yml"
 }
 
 function main() {
@@ -98,6 +99,7 @@ function main() {
     esac
   done
   node infrastructure/build/run_action.mjs server_manager/electron/build --buildMode="${BUILD_MODE}" --versionName="${version_name}"
+  cp -r "${PROJECT_DIR}" "${ELECTRON_BUILD_DIR}/${PLATFORM}"
   package_electron
   finish_yaml_files "${staging_percentage}"
 }
