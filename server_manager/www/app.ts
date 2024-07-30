@@ -759,10 +759,9 @@ export class App {
   // Returns a promise which fulfills once the DigitalOcean droplet is created.
   // Shadowbox may not be fully installed once this promise is fulfilled.
   async createDigitalOceanServer(region: digitalocean.Region, metricsEnabled: boolean): Promise<void> {
-    let server: server_model.Server;
     try {
       const serverName = this.makeLocalizedServerName(region);
-      server = await this.digitalOceanRetry(() => {
+      const server = await this.digitalOceanRetry(() => {
         return this.digitalOceanAccount.createServer(region, serverName, metricsEnabled);
       });
       this.addServer(this.digitalOceanAccount.getId(), server);
