@@ -161,7 +161,7 @@ export class App {
       this.appRoot.getAndShowGcpCreateServerApp().start(this.gcpAccount);
     });
     appRoot.addEventListener('GcpServerCreated', (event: CustomEvent) => {
-      const server = event.detail.server;
+      const { server } = event.detail;
       this.addServer(this.gcpAccount.getId(), server);
       this.showServer(server);
     });
@@ -175,7 +175,7 @@ export class App {
     });
 
     appRoot.addEventListener('SetUpDigitalOceanServerRequested', (event: CustomEvent) => {
-      this.createDigitalOceanServer(event.detail.region);
+      this.createDigitalOceanServer(event.detail.region, event.detail.metricsEnabled);
     });
 
     appRoot.addEventListener('DeleteServerRequested', (event: CustomEvent) => {
@@ -758,11 +758,11 @@ export class App {
 
   // Returns a promise which fulfills once the DigitalOcean droplet is created.
   // Shadowbox may not be fully installed once this promise is fulfilled.
-  public async createDigitalOceanServer(region: digitalocean.Region): Promise<void> {
+  async createDigitalOceanServer(region: digitalocean.Region, metricsEnabled: boolean): Promise<void> {
     try {
       const serverName = this.makeLocalizedServerName(region);
       const server = await this.digitalOceanRetry(() => {
-        return this.digitalOceanAccount.createServer(region, serverName);
+        return this.digitalOceanAccount.createServer(region, serverName, metricsEnabled);
       });
       this.addServer(this.digitalOceanAccount.getId(), server);
       this.showServer(server);
