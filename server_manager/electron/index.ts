@@ -36,7 +36,7 @@ dotenv.config({path: path.join(__dirname, '.env')});
 
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const IMAGES_BASENAME = `${path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'server_manager', 'web_app')}`;
+const IMAGES_BASENAME = `${path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'server_manager', 'www')}`;
 
 if (typeof SENTRY_DSN !== 'undefined' && SENTRY_DSN) {
   Sentry.init({
@@ -69,7 +69,7 @@ function createMainWindow() {
     minWidth: 600,
     minHeight: 768,
     maximizable: false,
-    icon: path.join(__dirname, 'server_manager', 'web_app', 'images', 'launcher-icon.png'),
+    icon: path.join(__dirname, 'server_manager', 'www', 'images', 'launcher-icon.png'),
     webPreferences: {
       devTools: debugMode,
       nodeIntegration: false,
@@ -218,7 +218,7 @@ function main() {
     // the user's filesystem. Hostnames are ignored.
     const registered = electron.protocol.registerFileProtocol('outline', (request, callback) => {
       const appPath = new URL(request.url).pathname;
-      const filesystemPath = path.join(__dirname, 'server_manager/web_app', appPath);
+      const filesystemPath = path.join(__dirname, 'server_manager/www', appPath);
       callback(filesystemPath);
     });
     if (!registered) {
