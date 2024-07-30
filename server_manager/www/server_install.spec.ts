@@ -42,6 +42,15 @@ describe('getShellExportCommands', () => {
     expect(getShellExportCommands(settings, serverName, false)).toEqual('export SB_METRICS_ENABLED=\'false\'\nexport SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
   });
 
+  it('metricsEnabled', () => {
+    const settings: ShadowboxSettings = {
+      imageId: null,
+      metricsUrl: ''
+    };
+    const serverName = '';
+    expect(getShellExportCommands(settings, serverName, true)).toEqual('export SB_METRICS_ENABLED=\'true\'\nexport SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
+  });
+
   it('server name escaping', () => {
     const settings: ShadowboxSettings = {
       imageId: '',
