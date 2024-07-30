@@ -24,7 +24,7 @@ export default {
   target: 'electron-preload',
   devtool: 'inline-source-map',
   output: {
-    path: path.resolve(__dirname, '../output/build/server_manager/electron/static'),
+    path: path.resolve(__dirname, '../output/build/server_manager/electron/unpacked'),
     filename: 'preload.js',
   },
   module: {

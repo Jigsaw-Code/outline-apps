@@ -16,7 +16,7 @@ import * as crypto from '@outline/infrastructure/crypto';
 
 import {DigitalOceanServer} from './digitalocean_server';
 import {getShellExportCommands, ShadowboxSettings} from './server_install';
-import * as do_install_script from '../../output/build/server_manager/www/sh/do_install_script';
+import * as do_install_script from '../../output/build/server_manager/install_scripts/do_install_script';
 import {DigitalOceanSession, DropletInfo, RestApiSession} from '../cloud/digitalocean_api';
 import * as digitalocean from '../model/digitalocean';
 import * as server from '../model/server';

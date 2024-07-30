@@ -16,7 +16,7 @@
 set -eu
 
 # Electron app root folder
-readonly STATIC_DIR="${BUILD_DIR}/server_manager/electron/static"
+readonly STATIC_DIR="${BUILD_DIR}/server_manager/electron/unpacked"
 rm -rf "${STATIC_DIR}"
 mkdir -p "${STATIC_DIR}"
 
@@ -59,8 +59,8 @@ webpack --config=server_manager/electron_main.webpack.mjs ${WEBPACK_MODE:+--mode
 webpack --config=server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
 
 # Assemble everything together.
-mkdir -p "${STATIC_DIR}/server_manager"
-cp -r "${BUILD_DIR}/server_manager/www/static" "${STATIC_DIR}/server_manager/www/"
+mkdir -p "${STATIC_DIR}"
+cp -r "${BUILD_DIR}/server_manager/www" "${STATIC_DIR}/"
 
 # Electron requires a package.json file for the app's name, etc.
 # We also need to install NPMs at this location for require()
@@ -72,4 +72,4 @@ cd "${STATIC_DIR}"
 
 # Icons.
 cd "${ROOT_DIR}"
-cp -r server_manager/electron/icons/ "${BUILD_DIR}/server_manager/electron/static/icons/"
+cp -r server_manager/electron/icons/ "${BUILD_DIR}/server_manager/electron/unpacked/icons/"

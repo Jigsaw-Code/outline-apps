@@ -18,7 +18,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const OUTPUT_BASE = path.resolve(__dirname, '../output/build/server_manager/www/static');
+const OUTPUT_BASE = path.resolve(__dirname, '../output/build/server_manager/www');
 
 const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'css-in-js-rtl-loader.js');
 

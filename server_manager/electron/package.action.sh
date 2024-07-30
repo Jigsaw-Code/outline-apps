@@ -17,7 +17,7 @@ set -eu
 
 SCRIPT_DIR="$(dirname "$0")"
 ELECTRON_BUILD_DIR="${BUILD_DIR}/server_manager/electron"
-PROJECT_DIR="${ELECTRON_BUILD_DIR}/static"
+PROJECT_DIR="${ELECTRON_BUILD_DIR}/unpacked"
 BUILD_MODE=debug
 PLATFORM=
 
