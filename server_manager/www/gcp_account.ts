@@ -16,8 +16,8 @@ import {sleep} from '@outline/infrastructure/sleep';
 
 import {GcpServer} from './gcp_server';
 import * as server_install from './server_install';
+import {SCRIPT} from '../../output/build/server_manager/www/sh/do_install_script';
 import * as gcp_api from '../cloud/gcp_api';
-import {SCRIPT} from '../install_scripts/gcp_install_script';
 import * as gcp from '../model/gcp';
 import {BillingAccount, Project} from '../model/gcp';
 import * as server from '../model/server';

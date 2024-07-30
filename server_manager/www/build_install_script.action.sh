@@ -30,7 +30,7 @@ tar --create --gzip -f "${OUT_DIR}/gcp_scripts.tgz" ./install_server.sh ./gcp_in
 # So, we use a relative path as input.
 cd "${ROOT_DIR}"
 node server_manager/install_scripts/build_do_install_script_ts.node.js \
-    "${BUILD_DIR}/server_manager/www/sh/do_scripts.tgz" > "${ROOT_DIR}/server_manager/install_scripts/do_install_script.ts"
+    "${BUILD_DIR}/server_manager/www/sh/do_scripts.tgz" > "${BUILD_DIR}/server_manager/www/sh/do_install_script.ts"
 node server_manager/install_scripts/build_gcp_install_script_ts.node.js \
-    "${BUILD_DIR}/server_manager/www/sh/gcp_scripts.tgz" > "${ROOT_DIR}/server_manager/install_scripts/gcp_install_script.ts"
+    "${BUILD_DIR}/server_manager/www/sh/gcp_scripts.tgz" > "${BUILD_DIR}/server_manager/www/sh/gcp_install_script.ts"
 popd > /dev/null
