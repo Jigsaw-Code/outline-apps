@@ -35,11 +35,6 @@ class OutlinePlugin: CDVPlugin {
     private var sentryLogger: OutlineSentryLogger!
     private var callbacks: [String: String]!
 
-#if os(macOS)
-    // cordova-osx does not support URL interception. Until it does, we have version-controlled
-    // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
-    private var urlHandler: CDVMacOsUrlHandler?
-#endif
 #if os(macOS) || targetEnvironment(macCatalyst)
 
     private static let kPlatform = "macOS"
@@ -56,7 +51,12 @@ class OutlinePlugin: CDVPlugin {
         OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
 
 #if os(macOS)
-        self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
+        // cordova-osx does not support URL interception. Until it does, we have version-controlled
+        // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(self.handleOpenUrl),
+            name: .kHandleUrl,
+            object: nil)
 #endif
 
 #if os(macOS) || targetEnvironment(macCatalyst)
@@ -83,13 +83,17 @@ class OutlinePlugin: CDVPlugin {
             return sendError("Missing tunnel ID", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-        DDLogInfo("\(Action.start) \(tunnelId)")
+        guard let name = command.argument(at: 1) as? String else {
+            return sendError("Missing service name", callbackId: command.callbackId,
+                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+        }
+        DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
         // TODO(fortuna): Move the config validation to the config parsing code in Go.
-        guard let configJson = command.argument(at: 1) as? [String: Any], containsExpectedKeys(configJson) else {
+        guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
             return sendError("Invalid configuration", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-        OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
+      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)
@@ -188,6 +192,35 @@ class OutlinePlugin: CDVPlugin {
 #endif
 
   // MARK: Helpers
+
+#if os(macOS)
+  @objc private func handleOpenUrl(_ notification: Notification) {
+    guard let url = notification.object as? String else {
+      return NSLog("Received non-String object.");
+    }
+    NSLog("Intercepted URL.");
+    guard let urlJson = try? JSONEncoder().encode(url),
+          let encodedUrl = String(data: urlJson, encoding: .utf8) else {
+         return NSLog("Failed to JS-encode intercepted URL")
+    }
+    DispatchQueue.global(qos: .background).async {
+      while (self.webView.isLoading) {
+        // Wait until the page is loaded in case the app launched with the intercepted URL.
+        Thread.sleep(forTimeInterval: 0.5)
+      }
+      DispatchQueue.main.async {
+        let handleOpenUrlJs = """
+        document.addEventListener('deviceready', function() {
+            if (typeof handleOpenURL === 'function') {
+                handleOpenURL(\(encodedUrl));
+            }
+        });
+        """
+        self.webView.stringByEvaluatingJavaScript(from: handleOpenUrlJs)
+      }
+    }
+  }
+#endif
 
   @objc private func stopVpnOnAppQuit() {
     if let activeTunnelId = OutlineVpn.shared.activeTunnelId {

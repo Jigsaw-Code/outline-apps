@@ -50,7 +50,7 @@ Run Outline on your phone with [USB debugging enabled](https://developer.android
 - Find Outline
 - Click inspect
 - Open the Console
-- Note that all TypeScript code is browserified in a single cordova_main.js
+- Note that all TypeScript code is browserified in a single main.cordova.js
 
 ### To debug Java code
 

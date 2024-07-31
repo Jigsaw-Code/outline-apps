@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {Localizer} from '@outline/infrastructure/i18n';
+
 import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
+
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -30,12 +32,13 @@ export class OutlineServer implements Server {
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
+    private tunnel: PlatformTunnel,
     readonly id: string,
     readonly accessKey: string,
     readonly type: ServerType,
     private _name: string,
-    private tunnel: Tunnel,
-    private eventQueue: events.EventQueue
+    eventQueue: events.EventQueue,
+    localize: Localizer,
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
@@ -45,6 +48,15 @@ export class OutlineServer implements Server {
       default:
         this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
         break;
+    }
+    if (!_name) {
+      if (this.sessionConfigLocation) {
+        this._name = this.sessionConfigLocation.port === '443'
+          ? this.sessionConfigLocation.hostname
+          : `${this.sessionConfigLocation.hostname}:${this.sessionConfigLocation.port}`;
+      } else {
+        this._name = localize(this.accessKey.includes('outline=1') ? 'server-default-name-outline' : 'server-default-name');
+      }
     }
 
     this.tunnel.onStatusChange((status: TunnelStatus) => {
@@ -89,17 +101,13 @@ export class OutlineServer implements Server {
     return new URL(this.accessKey);
   }
 
-  get isOutlineServer() {
-    return this.accessKey.includes('outline=1');
-  }
-
   async connect() {
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
       this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
     }
 
     try {
-      await this.tunnel.start(this.sessionConfig);
+      await this.tunnel.start(this.name, this.sessionConfig);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -136,4 +144,43 @@ export class OutlineServer implements Server {
   static isServerCipherSupported(cipher?: string) {
     return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
   }
+}
+
+
+export interface ShadowsocksSessionConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  method?: string;
+  prefix?: string;
+}
+
+export const enum TunnelStatus {
+  CONNECTED,
+  DISCONNECTED,
+  RECONNECTING,
+}
+
+export type TunnelFactory = (id: string) => PlatformTunnel;
+
+// Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
+// functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
+export interface PlatformTunnel {
+  // Unique instance identifier.
+  readonly id: string;
+
+  // Connects a VPN, routing all device traffic to a Shadowsocks server as dictated by `config`.
+  // If there is another running instance, broadcasts a disconnect event and stops the active
+  // tunnel. In such case, restarts tunneling while preserving the VPN.
+  // Throws OutlinePluginError.
+  start(name: string, config: ShadowsocksSessionConfig): Promise<void>;
+
+  // Stops the tunnel and VPN service.
+  stop(): Promise<void>;
+
+  // Returns whether the tunnel instance is active.
+  isRunning(): Promise<boolean>;
+
+  // Sets a listener, to be called when the tunnel status changes.
+  onStatusChange(listener: (status: TunnelStatus) => void): void;
 }

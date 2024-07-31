@@ -1,10 +1,8 @@
 import XCTest
 
 import NetworkExtension
-import Tun2socks
 
 @testable import OutlineTunnel
-@testable import PacketTunnelProvider
 
 final class OutlineTunnelTest: XCTestCase {
     

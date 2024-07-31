@@ -9,15 +9,16 @@
     "email": "info@getoutline.org"
   },
   "build": {
-    "afterSign": "server_manager/electron_app/release/notarize.js",
+    "afterSign": "server_manager/electron/release/notarize.js",
     "mac": {
       "hardenedRuntime": true,
-      "entitlements": "server_manager/electron_app/release/macos.entitlements",
-      "entitlementsInherit": "server_manager/electron_app/release/macos.entitlements"
+      "entitlements": "server_manager/electron/release/macos.entitlements",
+      "entitlementsInherit": "server_manager/electron/release/macos.entitlements"
     }
   },
   "dependencies": {
     "@material/mwc-button": "^0.27.0",
+    "@material/mwc-checkbox": "^0.27.0",
     "@material/mwc-circular-progress": "^0.27.0",
     "@material/mwc-formfield": "^0.27.0",
     "@material/mwc-list": "^0.27.0",

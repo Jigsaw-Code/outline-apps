@@ -29,8 +29,7 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig} from '../src/www/app/tunnel';
-import {TunnelStatus} from '../src/www/app/tunnel';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/server';
 import * as errors from '../src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
@@ -247,7 +246,7 @@ function interceptShadowsocksLink(argv: string[]) {
         if (mainWindow) {
           // The system adds a trailing slash to the intercepted URL (before the fragment).
           // Remove it before sending to the UI.
-          url = `${protocol}${url.substr(protocol.length).replace(/\//g, '')}`;
+          url = `${protocol}${url.substring(protocol.length).replace(/\/$/g, '')}`;
           // TODO: refactor channel name and namespace to a constant
           mainWindow.webContents.send('outline-ipc-add-server', url);
         } else {
@@ -460,7 +459,7 @@ function main() {
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<void> => {
+    async (_, args: {id: string, name: string, config: ShadowsocksSessionConfig}): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
@@ -470,7 +469,7 @@ function main() {
         await currentTunnel.onceDisconnected;
       }
 
-      console.log(`connecting to ${args.id}...`);
+      console.log(`connecting to ${args.name} (${args.id})...`);
 
       try {
         // We must convert the host from a potential "hostname" to an "IP" address
@@ -480,7 +479,7 @@ function main() {
         args.config.host = await lookupIp(args.config.host || '');
 
         await startVpn(args.config, args.id);
-        console.log(`connected to ${args.id}`);
+        console.log(`connected to ${args.name} (${args.id})`);
         await setupAutoLaunch(args);
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
         tunnelStore.save(args).catch(() => {
