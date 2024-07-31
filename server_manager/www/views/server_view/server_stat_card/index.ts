@@ -1,5 +1,5 @@
 /*
-  Copyright 2021 The Outline Authors
+  Copyright 2024 The Outline Authors
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -18,14 +18,14 @@ import {customElement, property} from 'lit/decorators.js';
 
 @customElement('server-stat-card')
 export class ServerStatCard extends LitElement {
+  @property({type: Number}) value: number;
+  @property({type: String}) icon: string;
+  @property({type: String}) name: string;
+  @property({type: String}) units: string;
+
   static styles = [
     css`
       :host {
-        /* TODO: hoist these variables */
-        --server-stat-card-background: #2e3a3f;
-        --server-stat-card-foreground: rgba(255, 255, 255, 0.54);
-        --server-stat-card-highlight: #ffffff;
-
         background: var(--server-stat-card-background);
         border-radius: 0.25rem;
         box-sizing: border-box;
@@ -44,25 +44,20 @@ export class ServerStatCard extends LitElement {
         font-family: "Roboto", sans-serif;
       }
 
-      .stat-card-data-value, 
       .stat-card-data,
+      .stat-card-data-value, 
       .stat-card-icon,
       .stat-card-name {
         color: var(--server-stat-card-foreground);
       }
 
       .stat-card-data-value {
+        color: var(--server-stat-card-highlight);
         font-size: 3rem;
         font-weight: 300;
-        color: var(--server-stat-card-highlight);
       }
     `,
   ];
-
-  @property({type: Number}) value: number;
-  @property({type: String}) icon: string;
-  @property({type: String}) name: string;
-  @property({type: String}) units: string;
 
   render() {
     return html`
