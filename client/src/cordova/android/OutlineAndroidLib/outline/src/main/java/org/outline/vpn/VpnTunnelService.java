@@ -112,8 +112,8 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public int startTunnel(TunnelConfig config, String serverName) {
-      return VpnTunnelService.this.startTunnel(config, serverName).value;
+    public int startTunnel(String serverName, TunnelConfig config) {
+      return VpnTunnelService.this.startTunnel(serverName, config).value;
     }
 
     @Override
@@ -245,7 +245,7 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private ErrorCode startTunnel(final TunnelConfig config, final String serverName) {
+  private ErrorCode startTunnel(final String serverName, final TunnelConfig config) {
     return startTunnel(config, serverName, false);
   }
 

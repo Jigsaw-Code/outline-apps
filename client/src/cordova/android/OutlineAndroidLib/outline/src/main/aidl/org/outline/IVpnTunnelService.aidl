@@ -30,12 +30,12 @@ interface IVpnTunnelService {
    * extra with the result of the operation, as defined in OutlinePlugin.ErrorCode. Displays a
    * persistent notification for the duration of the tunnel.
    *
+   * @param serverName the server to which this tunnel connects.
    * @param config tunnel configuration parameters.
-   * @serverName the server to which this tunnel connects.
    * @param isAutoStart boolean whether the tunnel was started without user intervention.
    * @return error code as defined in OutlinePlugin.ErrorCode.
    */
-  int startTunnel(in TunnelConfig config, String serverName);
+  int startTunnel(String serverName, in TunnelConfig config);
 
   /**
    * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, shadowsocks, and
