@@ -23,8 +23,12 @@ export class CordovaTunnel implements PlatformTunnel {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, name, config);
-  }
+    if (cordova.platformId === 'android') {
+      return pluginExecWithErrorCode<void>('start', this.id, name, config);
+    } else {
+      // TODO: implement serverName in iOS.
+      return pluginExecWithErrorCode<void>('start', this.id, config);
+    }  }
 
   stop() {
     return pluginExecWithErrorCode<void>('stop', this.id);
