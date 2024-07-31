@@ -41,9 +41,10 @@ export async function main(...parameters) {
 
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/go/build', ...parameters);
-
-  await rmfr(path.resolve(getRootDir(), 'platforms'));
-  await rmfr(path.resolve(getRootDir(), 'plugins'));
+  
+  const CORDOVA_PROJECT_DIR =  path.resolve(getRootDir(), 'client');
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'platforms'));
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'plugins'));
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
