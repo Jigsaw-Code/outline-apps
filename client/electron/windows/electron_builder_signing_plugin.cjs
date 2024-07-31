@@ -29,7 +29,7 @@
  * @param {Object} configuration.options a duplication of electron-builder.json
  */
 async function electronBuilderEntryPoint(configuration) {
-  const {runAction} = await import('../../../src/build/run_action.mjs');
+  const {runAction} = await import('../../../infrastructure/build/run_action.mjs');
   await runAction('client/electron/windows/sign_windows_executable',
     '--target', configuration.path,
     '--algorithm', configuration.hash);

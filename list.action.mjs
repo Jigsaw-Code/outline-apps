@@ -18,7 +18,7 @@ import url from 'url';
 
 import * as globby from 'globby';
 
-import {getRootDir} from './src/build/get_root_dir.mjs';
+import {getRootDir} from './infrastructure/build/get_root_dir.mjs';
 
 /**
  * @description returns a list of all valid actions to run
@@ -31,7 +31,13 @@ export async function main() {
   }
 
   for (const actionPath of await globby.default(['**/*.action.sh', '**/*.action.mjs'])) {
-    console.info(actionPath.match(/(.+)\.action/)[1]);
+    const action = actionPath.match(/(.+)\.action/)[1];
+
+    if (action.includes("node_modules")) {
+      continue;
+    }
+
+    console.info(action);
   }
 }
 

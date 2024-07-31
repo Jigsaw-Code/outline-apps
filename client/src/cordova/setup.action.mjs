@@ -16,19 +16,17 @@ import os from 'os';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import chalk from 'chalk';
 import cordovaLib from 'cordova-lib';
 import replace from 'replace-in-file';
 import rmfr from 'rmfr';
 
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+
 const {cordova} = cordovaLib;
-
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-
-
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**
@@ -43,9 +41,10 @@ export async function main(...parameters) {
 
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/src/tun2socks/build', ...parameters);
-
-  await rmfr(path.resolve(getRootDir(), 'platforms'));
-  await rmfr(path.resolve(getRootDir(), 'plugins'));
+  
+  const CORDOVA_PROJECT_DIR =  path.resolve(getRootDir(), 'client');
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'platforms'));
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'plugins'));
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));

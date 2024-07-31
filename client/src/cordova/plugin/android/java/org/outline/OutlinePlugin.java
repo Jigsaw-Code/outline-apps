@@ -54,7 +54,6 @@ public class OutlinePlugin extends CordovaPlugin {
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
-    IS_REACHABLE("isServerReachable"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -191,8 +190,9 @@ public class OutlinePlugin extends CordovaPlugin {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
-          final JSONObject config = args.getJSONObject(1);
-          int errorCode = startVpnTunnel(tunnelId, config);
+          final String serverName = args.getString(1);
+          final JSONObject config = args.getJSONObject(2);
+          int errorCode = startVpnTunnel(tunnelId, config, serverName);
           sendErrorCode(callback, errorCode);
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
@@ -205,10 +205,6 @@ public class OutlinePlugin extends CordovaPlugin {
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
 
           // Static actions
-        } else if (Action.IS_REACHABLE.is(action)) {
-          boolean isReachable =
-              this.vpnTunnelService.isServerReachable(args.getString(0), args.getInt(1));
-          callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
           // Treat failures to initialize error reporting as unexpected by propagating exceptions.
@@ -259,7 +255,7 @@ public class OutlinePlugin extends CordovaPlugin {
     startVpnRequest = null;
   }
 
-  private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
+  private int startVpnTunnel(final String tunnelId, final JSONObject config, final String serverName) throws Exception {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
     final TunnelConfig tunnelConfig;
     try {

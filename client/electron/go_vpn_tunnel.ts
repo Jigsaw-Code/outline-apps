@@ -20,7 +20,7 @@ import {pathToEmbeddedTun2socksBinary} from './app_paths';
 import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/server';
 import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
