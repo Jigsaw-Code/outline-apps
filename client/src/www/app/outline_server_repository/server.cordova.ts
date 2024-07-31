@@ -19,11 +19,11 @@ import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 export class CordovaTunnel implements PlatformTunnel {
   constructor(public id: string) {}
 
-  start(config: ShadowsocksSessionConfig) {
+  start(name: string, config: ShadowsocksSessionConfig) {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, config);
+    return pluginExecWithErrorCode<void>('start', this.id, name, config);
   }
 
   stop() {
