@@ -15,7 +15,9 @@
 */
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-progress/paper-progress';
+import '@material/mwc-checkbox';
 import './outline-step-view';
+import './if_messages';
 
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
@@ -36,6 +38,7 @@ export interface RegionPickerOption extends CloudLocationOption {
 export class OutlineRegionPicker extends LitElement {
   @property({type: Array}) options: RegionPickerOption[] = [];
   @property({type: Number}) selectedIndex = -1;
+  @property({type: Boolean}) metricsEnabled = false;
   @property({type: Boolean}) isServerBeingCreated = false;
   @property({type: Function}) localize: (msgId: string, ...params: string[]) => string;
   @property({type: String}) language: string;
@@ -133,7 +136,47 @@ export class OutlineRegionPicker extends LitElement {
         .card-content {
           display: flex;
           flex-flow: wrap;
-          padding-top: 24px;
+        }
+        .card-content-row {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: space-between;
+          padding: 12px 0;
+          width: 100%;
+        }
+        .callout {
+          background: var(--background-contrast-color);
+          border-radius: 4px;
+          box-sizing: border-box;
+          display: flex;
+          gap: 24px;
+          padding: 24px;
+          padding-top: 12px;
+          width: 100%;
+        }
+        .callout iron-icon {
+          --iron-icon-fill-color: white;
+          margin-top: 12px;
+          width: 48px;
+        }
+        .callout-content {
+          display: flex;
+          flex-flow: column wrap;
+          gap: 12px;
+        }
+        .callout-content label {
+          --mdc-checkbox-unchecked-color: var(--light-gray);
+          color: var(--light-gray);
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          margin-left: -16px;
+        }
+        .callout-content p {
+          color: var(--light-gray);
+          font-size: 12px;
+          line-height: 16px;
+          margin: 0;
         }
         label.city-button {
           padding: 28px 8px 11px 8px;
@@ -147,41 +190,58 @@ export class OutlineRegionPicker extends LitElement {
       <outline-step-view display-action="">
         <span slot="step-title">${this.localize('region-title')}</span>
         <span slot="step-description">${this.localize('region-description')}</span>
-        <span slot="step-action">
-          <paper-button
-            id="createServerButton"
-            @tap="${this._handleCreateServerTap}"
-            ?disabled="${!this._isCreateButtonEnabled(this.isServerBeingCreated, this.selectedIndex)}"
-          >
-            ${this.localize('region-setup')}
-          </paper-button>
-        </span>
         <div class="card-content" id="cityContainer">
-          ${this.options.map((option, index) => {
-            return html` <input
-                type="radio"
-                id="card-${index}"
-                name="city"
-                value="${index}"
-                ?disabled="${!option.available}"
-                .checked="${this.selectedIndex === index}"
-                @change="${this._locationSelected}"
-              />
-              <label for="card-${index}" class="city-button">
-                <div class="flag-overlay">
-                  <img class="flag" src="${this._flagImage(option)}" />
+          <div class="card-content-row">
+            ${this.options.map((option, index) => {
+              return html` <input
+                  type="radio"
+                  id="card-${index}"
+                  name="city"
+                  value="${index}"
+                  ?disabled="${!option.available}"
+                  .checked="${this.selectedIndex === index}"
+                  @change="${this._locationSelected}"
+                />
+                <label for="card-${index}" class="city-button">
+                  <div class="flag-overlay">
+                    <img class="flag" src="${this._flagImage(option)}" />
+                  </div>
+                  <div class="geo-name">${getShortName(option.cloudLocation, this.localize)}</div>
+                  <div class="country-name">
+                    ${option.cloudLocation.location?.countryIsRedundant()
+                      ? ''
+                      : localizeCountry(option.cloudLocation.location, this.language)}
+                  </div>
+                  ${option.markedBestValue
+                    ? html`<div class="best-value-label">${this.localize('region-best-value')}</div>`
+                    : ''}
+                </label>`;
+            })}
+          </div>
+          <div class="card-content-row">
+            <if-messages message-ids="metrics-setup-title, metrics-setup-description, metrics-setup-learn-more"  .localize=${this.localize}>
+              <div class="callout">
+                <iron-icon icon="editor:insert-chart"></iron-icon>
+                <div class="callout-content">
+                  <label>
+                    <mwc-checkbox .checked="${this.metricsEnabled}" @change="${this._metricsToggle}"></mwc-checkbox>
+                    ${this.localize('metrics-setup-title')}
+                  </label>
+                  <p>${this.localize('metrics-setup-description')}</p>
+                  <a>${this.localize('metrics-setup-learn-more')}</a>
                 </div>
-                <div class="geo-name">${getShortName(option.cloudLocation, this.localize)}</div>
-                <div class="country-name">
-                  ${option.cloudLocation.location?.countryIsRedundant()
-                    ? ''
-                    : localizeCountry(option.cloudLocation.location, this.language)}
-                </div>
-                ${option.markedBestValue
-                  ? html`<div class="best-value-label">${this.localize('region-best-value')}</div>`
-                  : ''}
-              </label>`;
-          })}
+              </div>
+            </if-messages>
+          </div>
+          <div class="card-content-row">
+            <paper-button
+              id="createServerButton"
+              @tap="${this._handleCreateServerTap}"
+              ?disabled="${!this._isCreateButtonEnabled(this.isServerBeingCreated, this.selectedIndex)}"
+            >
+              ${this.localize('region-setup')}
+            </paper-button>
+          </div>
         </div>
         ${this.isServerBeingCreated ? html`<paper-progress indeterminate="" class="slow"></paper-progress>` : ''}
       </outline-step-view>
@@ -202,6 +262,11 @@ export class OutlineRegionPicker extends LitElement {
     this.selectedIndex = Number.parseInt(inputEl.value, 10);
   }
 
+  _metricsToggle(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    this.metricsEnabled = checkbox.checked;
+  }
+
   _flagImage(item: CloudLocationOption): string {
     const countryCode = item.cloudLocation.location?.countryCode?.toLowerCase();
     const fileName = countryCode ? `${countryCode}.svg` : 'unknown.png';
@@ -214,7 +279,7 @@ export class OutlineRegionPicker extends LitElement {
     const params = {
       bubbles: true,
       composed: true,
-      detail: {selectedLocation: selectedOption.cloudLocation},
+      detail: {selectedLocation: selectedOption.cloudLocation, metricsEnabled: this.metricsEnabled},
     };
     const customEvent = new CustomEvent('RegionSelected', params);
     this.dispatchEvent(customEvent);

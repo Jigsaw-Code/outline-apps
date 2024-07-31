@@ -85,11 +85,11 @@ export class DigitalOceanAccount implements digitalocean.Account {
   }
 
   // Creates a server and returning it when it becomes active.
-  async createServer(region: digitalocean.Region, name: string): Promise<server.ManagedServer> {
+  async createServer(region: digitalocean.Region, name: string, metricsEnabled: boolean): Promise<server.ManagedServer> {
     console.time('activeServer');
     console.time('servingServer');
     const keyPair = await crypto.generateKeyPair();
-    const installCommand = getInstallScript(this.digitalOcean.accessToken, name, this.shadowboxSettings);
+    const installCommand = getInstallScript(this.digitalOcean.accessToken, name, metricsEnabled, this.shadowboxSettings);
 
     // You can find the API slugs at https://slugs.do-api.dev/.
     const dropletSpec = {
@@ -154,12 +154,12 @@ function sanitizeDigitalOceanToken(input: string): string {
 }
 
 // cloudFunctions needs to define cloud::public_ip and cloud::add_tag.
-function getInstallScript(accessToken: string, name: string, shadowboxSettings: ShadowboxSettings): string {
+function getInstallScript(accessToken: string, name: string, metricsEnabled: boolean, shadowboxSettings: ShadowboxSettings): string {
   const sanitizedAccessToken = sanitizeDigitalOceanToken(accessToken);
   return (
     '#!/bin/bash -eu\n' +
     `export DO_ACCESS_TOKEN='${sanitizedAccessToken}'\n` +
-    getShellExportCommands(shadowboxSettings, name) +
+    getShellExportCommands(shadowboxSettings, name, metricsEnabled) +
     do_install_script.SCRIPT
   );
 }

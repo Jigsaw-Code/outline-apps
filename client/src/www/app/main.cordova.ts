@@ -18,6 +18,7 @@
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+import {Localizer} from '@outline/infrastructure/i18n';
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
 setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
 import * as Sentry from '@sentry/browser';
@@ -66,11 +67,11 @@ class CordovaErrorReporter extends SentryErrorReporter {
 
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
-  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
+  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
     if (hasDeviceSupport) {
       return new OutlineServerRepository((id: string) => {
         return new CordovaTunnel(id);
-      }, eventQueue, window.localStorage);
+      }, eventQueue, window.localStorage, localize);
     }
     return undefined;
   }
