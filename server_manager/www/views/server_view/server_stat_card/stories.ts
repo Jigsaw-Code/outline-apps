@@ -4,7 +4,7 @@ import './index';
 import {ServerStatCard} from './index';
 
 export default {
-  title: 'Manager/Server View/Server Stats Card',
+  title: 'Manager/Server View/Server Stat Card',
   component: 'server-stats-card',
   args: {
     icon: "swap_horiz",
