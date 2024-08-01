@@ -50,11 +50,6 @@ import type {AppDrawerLayoutElement} from '@polymer/app-layout/app-drawer-layout
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior';
 import type {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import type {PaperToastElement} from '@polymer/paper-toast/paper-toast';
-import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
-import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class';
-import type {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
-import {html} from '@polymer/polymer/lib/utils/html-tag';
-import {PolymerElement} from '@polymer/polymer/polymer-element';
 
 import {DisplayCloudId} from './cloud-assets';
 import type {OutlineAboutDialog} from './outline-about-dialog';

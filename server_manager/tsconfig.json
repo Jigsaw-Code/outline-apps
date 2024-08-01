@@ -7,6 +7,7 @@
     "moduleResolution": "Node",
     "sourceMap": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "allowJs": true,
     "resolveJsonModule": true,
     "noUnusedLocals": true,

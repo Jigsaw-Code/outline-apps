@@ -15,7 +15,7 @@
 import {AddressInfo} from 'net';
 
 import * as electron from 'electron';
-import * as express from 'express';
+import express from 'express';
 import {OAuth2Client} from 'google-auth-library';
 
 // Note: For native apps, the "client secret" is not actually a secret.
