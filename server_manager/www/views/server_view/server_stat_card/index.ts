@@ -26,10 +26,10 @@ export class ServerStatCard extends LitElement {
   static styles = [
     css`
       :host {
-        background: var(--server-stat-card-background);
+        background: var(--server-background);
         border-radius: 0.25rem;
         box-sizing: border-box;
-        container-name: stat-card-height stat-card-width;
+        container-name: conceal-name conceal-units;
         container-type: size;
         display: flex;
         flex-direction: column;
@@ -41,34 +41,34 @@ export class ServerStatCard extends LitElement {
         width: 100%;
       }
 
-      .stat-card-data,
-      .stat-card-data-value, 
-      .stat-card-name {
+      .data,
+      .data-value, 
+      .name {
         all: initial;
         font-family: "Roboto", sans-serif;
       }
 
-      .stat-card-data,
-      .stat-card-data-value, 
-      .stat-card-icon,
-      .stat-card-name {
-        color: var(--server-stat-card-foreground);
+      mwc-icon,
+      .data,
+      .data-value, 
+      .name {
+        color: var(--server-foreground);
       }
 
-      .stat-card-data-value {
-        color: var(--server-stat-card-highlight);
+      .data-value {
+        color: var(--server-highlight);
         font-size: 3rem;
         font-weight: 300;
       }
 
-      @container stat-card-height (max-height: 150px) {
-        .stat-card-name {
+      @container conceal-name (max-height: 150px) {
+        .name {
           display: none;
         }
       }
 
-      @container stat-card-width (max-width: 150px) {
-        .stat-card-data-units {
+      @container conceal-units (max-width: 150px) {
+        .data-units {
           display: none;
         }
       }
@@ -77,13 +77,13 @@ export class ServerStatCard extends LitElement {
 
   render() {
     return html`
-      <mwc-icon class="stat-card-icon">${this.icon}</mwc-icon>
-      <p class="stat-card-data">
-        <span class="stat-card-data-value">${this.value}</span>
-        <span class="stat-card-data-units">${this.units}</span>
+      <mwc-icon class="icon">${this.icon}</mwc-icon>
+      <p class="data">
+        <span class="data-value">${this.value}</span>
+        <span class="data-units">${this.units}</span>
       </p>
-      <p class="stat-card-name">
+      <p class="name">
         ${this.name}
-      </p>`
+      </p>`;
   }
 }
