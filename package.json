@@ -2,6 +2,7 @@
   "name": "outline-apps",
   "productName": "Outline",
   "scripts": {
+    "addlicense": "go install github.com/google/addlicense@latest && ~/go/bin/addlicense -c \"The Outline Authors\" -l apache .",
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./infrastructure/build/run_action.mjs",
@@ -10,8 +11,7 @@
     "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
     "lint:ts": "eslint --ext ts,mjs client",
     "lint": "npm run lint:ts",
-    "reset": "npm run clean && npm ci",
-    "storybook": "storybook dev -p 6006"
+    "reset": "npm run clean && npm ci"
   },
   "engines": {
     "node": "18.x.x"
