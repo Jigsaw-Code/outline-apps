@@ -29,10 +29,14 @@ export class ServerStatCard extends LitElement {
         background: var(--server-stat-card-background);
         border-radius: 0.25rem;
         box-sizing: border-box;
+        container-name: stat-card-height stat-card-width;
+        container-type: size;
         display: flex;
         flex-direction: column;
+        gap: 0.25rem;
         height: 100%;
         justify-content: space-between;
+        overflow: hidden;
         padding: 2rem;
         width: 100%;
       }
@@ -56,6 +60,18 @@ export class ServerStatCard extends LitElement {
         font-size: 3rem;
         font-weight: 300;
       }
+
+      @container stat-card-height (max-height: 150px) {
+        .stat-card-name {
+          display: none;
+        }
+      }
+
+      @container stat-card-width (max-width: 150px) {
+        .stat-card-data-units {
+          display: none;
+        }
+      }
     `,
   ];
 
@@ -63,7 +79,8 @@ export class ServerStatCard extends LitElement {
     return html`
       <mwc-icon class="stat-card-icon">${this.icon}</mwc-icon>
       <p class="stat-card-data">
-        <span class="stat-card-data-value">${this.value}</span> ${this.units}
+        <span class="stat-card-data-value">${this.value}</span>
+        <span class="stat-card-data-units">${this.units}</span>
       </p>
       <p class="stat-card-name">
         ${this.name}
