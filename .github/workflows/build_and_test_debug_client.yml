@@ -118,6 +118,25 @@ jobs:
       - name: Build Windows Client
         run: npm run action client/electron/build windows
 
+  macos_test_build:
+    name: MacOS Test Build (Personal)
+    runs-on: macos-13
+    timeout-minutes: 20
+    steps:
+      - name: Display XCode
+        run: xcode-select --print-path
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: '${{ github.workspace }}/go.mod'
+
+      - name: Build Static Library
+        run: go build -buildmode=c-archive -o hello.a golang.org/x/mobile/example/basic
+      
+      - name: Build XCFramework
+        run: xcodebuild -create-xcframework -library hello.a -output hello.xcframework
+
   macos_debug_build:
     name: MacOS Debug Build
     runs-on: macos-13
