@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   # This needs to be updated if the file moves.
-  REPO_ROOT: '{{joinPath .TASKFILE_DIR "../../.."}}'
+  REPO_ROOT: '{{joinPath .TASKFILE_DIR "../.."}}'
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
   OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
   BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
