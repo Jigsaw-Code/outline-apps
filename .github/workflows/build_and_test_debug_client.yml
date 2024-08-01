@@ -126,10 +126,13 @@ jobs:
       - name: Display XCode
         run: xcode-select --print-path
 
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: '^1.21.6'
+          go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Build Static Library
         run: go build -buildmode=c-archive -o hello.a golang.org/x/mobile/example/basic
