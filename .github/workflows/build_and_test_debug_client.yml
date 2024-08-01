@@ -129,7 +129,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: '${{ github.workspace }}/go.mod'
+          go-version: '^1.21.6'
 
       - name: Build Static Library
         run: go build -buildmode=c-archive -o hello.a golang.org/x/mobile/example/basic
