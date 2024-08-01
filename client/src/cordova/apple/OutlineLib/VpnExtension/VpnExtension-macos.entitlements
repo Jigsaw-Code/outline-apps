@@ -10,6 +10,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
+		<string>$(TeamIdentifierPrefix)org.outline.macos.client</string>
 		<string>group.org.outline.ios.client</string>
 	</array>
 	<key>com.apple.security.network.client</key>
