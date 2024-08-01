@@ -17,9 +17,8 @@ package tun2socks
 import (
 	"runtime/debug"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/shadowsocks"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/tunnel"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 	"github.com/eycorsican/go-tun2socks/common/log"
 )
 
@@ -44,11 +43,11 @@ func init() {
 func ConnectShadowsocksTunnel(fd int, client *shadowsocks.Client, isUDPEnabled bool) (Tunnel, error) {
 	tun, err := tunnel.MakeTunFile(fd)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.SetupSystemVPNFailed, "failed to create TUN device", err)
+		return nil, err
 	}
 	t, err := newTunnel(client, client, isUDPEnabled, tun)
 	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.SetupTrafficHandlerFailed, "failed to setup TCP/UDP handler", err)
+		return nil, err
 	}
 	go tunnel.ProcessInputPackets(t, tun)
 	return t, nil

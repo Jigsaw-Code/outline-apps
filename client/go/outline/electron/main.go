@@ -15,7 +15,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -26,10 +25,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/shadowsocks"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/tun2socks"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
@@ -40,13 +39,6 @@ const (
 	mtu        = 1500
 	udpTimeout = 30 * time.Second
 	persistTun = true // Linux: persist the TUN interface after the last open file descriptor is closed.
-)
-
-// tun2socks exit codes. Must be kept in sync with definitions in "go_vpn_tunnel.ts"
-const (
-	exitCodeSuccess           = 0
-	exitCodeFailure           = 1
-	exitCodeNoUDPConnectivity = 4
 )
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -101,34 +93,25 @@ func main() {
 
 	if *args.version {
 		fmt.Println(version)
-		os.Exit(exitCodeSuccess)
+		os.Exit(0)
 	}
 
 	setLogLevel(*args.logLevel)
 
 	client, err := newShadowsocksClientFromArgs()
 	if err != nil {
-		printErrorAndExit(err, exitCodeFailure)
+		printErrorAndExit(err, 1)
 	}
 
 	if *args.checkConnectivity {
-		status, err := shadowsocks.CheckConnectivity(client)
-		if err != nil {
-			printErrorAndExit(err, exitCodeFailure)
-		}
-		if status&int(connectivity.UDPConnected) == 0 {
-			// The client should not use the following error, it should only depend on the exit code
-			printErrorAndExit(errors.New("udp not supported"), exitCodeNoUDPConnectivity)
-		}
-		os.Exit(exitCodeSuccess)
+		checkConnectivityAndExit(client)
 	}
 
 	// Open TUN device
 	dnsResolvers := strings.Split(*args.tunDNS, ",")
 	tunDevice, err := tun.OpenTunDevice(*args.tunName, *args.tunAddr, *args.tunGw, *args.tunMask, dnsResolvers, persistTun)
 	if err != nil {
-		printErrorAndExit(platerrors.NewWithCause(platerrors.SetupSystemVPNFailed,
-			"failed to open TUN device", err), exitCodeFailure)
+		printErrorAndExit(platerrors.NewWithCause(platerrors.SetupSystemVPNFailed, "failed to open TUN device", err), 1)
 	}
 	// Output packets to TUN device
 	core.RegisterOutputFn(tunDevice.Write)
@@ -149,7 +132,7 @@ func main() {
 		_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
 		if err != nil {
 			printErrorAndExit(platerrors.NewWithCause(platerrors.DataTransmissionFailed,
-				"failed to write data to network stack", err), exitCodeFailure)
+				"failed to write data to network stack", err), 1)
 		}
 	}()
 
@@ -205,4 +188,26 @@ func newShadowsocksClientFromArgs() (*shadowsocks.Client, error) {
 		config.Prefix = prefixBytes
 		return shadowsocks.NewClient(&config)
 	}
+}
+
+// checkConnectivity checks whether the remote Shadowsocks server supports TCP or UDP,
+// and converts the neterrors to a PlatformError.
+// TODO: remove this function once we migrated CheckConnectivity to return a PlatformError.
+func checkConnectivityAndExit(c *shadowsocks.Client) {
+	connErrCode, err := shadowsocks.CheckConnectivity(c)
+	if err != nil {
+		printErrorAndExit(platerrors.NewWithCause(platerrors.InternalError, "failed to check connectivity", err), 1)
+	}
+	switch connErrCode {
+	case neterrors.NoError.Number():
+		os.Exit(0)
+	case neterrors.AuthenticationFailure.Number():
+		printErrorAndExit(platerrors.New(platerrors.Unauthenticated, "authentication failed"), 1)
+	case neterrors.Unreachable.Number():
+		printErrorAndExit(platerrors.New(platerrors.ProxyServerUnreachable, "cannot connect to Shadowsocks server"), 1)
+	case neterrors.UDPConnectivity.Number():
+		printErrorAndExit(platerrors.New(platerrors.ProxyServerUDPUnsupported, "Shadowsocks server does not support UDP"),
+			neterrors.UDPConnectivity.Number())
+	}
+	printErrorAndExit(platerrors.New(platerrors.InternalError, "failed to check connectivity"), 1)
 }
