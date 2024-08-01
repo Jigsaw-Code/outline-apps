@@ -16,7 +16,7 @@ import url from 'url';
 
 import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 
-import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import {getBuildParameters} from '../build/get_build_parameters.mjs';
 
 /**
  * @description Builds the tun2socks library for the specified platform.
