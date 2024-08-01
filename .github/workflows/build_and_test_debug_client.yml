@@ -137,6 +137,12 @@ jobs:
       - name: Build Static Library
         run: go build -buildmode=c-archive -o hello.a golang.org/x/mobile/example/basic
 
+      - name: Show Library File
+        run: file hello.a
+    
+      - name: Show Library Info
+        run: lipo -info hello.a
+
       - name: Show Library Bytes
         run: hexdump -n512 -C hello.a
       
@@ -161,7 +167,13 @@ jobs:
 
       - name: Build Static Library
         run: go build -buildmode=c-archive -o hello.a golang.org/x/mobile/example/basic
-
+    
+      - name: Show Library File
+        run: file hello.a
+    
+      - name: Show Library Info
+        run: lipo -info hello.a
+    
       - name: Show Library Bytes
         run: hexdump -n512 -C hello.a
       
