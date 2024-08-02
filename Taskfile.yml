@@ -27,3 +27,8 @@ tasks:
       - client:tun2socks:clean
     cmds:
       - rm -rf .task
+
+  addlicense:
+    desc: Add missing license headers
+    cmds:
+      - go run github.com/google/addlicense@latest -c "The Outline Authors" -l apache -ignore 'output/**' -ignore 'node_modules/**' .

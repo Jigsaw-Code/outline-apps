@@ -1,3 +1,6 @@
+// swift-tools-version: 5.6
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
 // Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,9 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-// swift-tools-version: 5.6
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
