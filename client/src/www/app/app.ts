@@ -499,22 +499,22 @@ export class App {
   //#region EventQueue event handlers
 
   private onServerConnected(event: events.ServerConnected): void {
-    console.debug(`server ${event.server.id} connected`);
-    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.CONNECTED});
+    console.debug(`server ${event.serverId} connected`);
+    this.updateServerListItem(event.serverId, {connectionState: ServerConnectionState.CONNECTED});
   }
 
   private onServerDisconnected(event: events.ServerDisconnected): void {
-    console.debug(`server ${event.server.id} disconnected`);
+    console.debug(`server ${event.serverId} disconnected`);
     try {
-      this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.DISCONNECTED});
+      this.updateServerListItem(event.serverId, {connectionState: ServerConnectionState.DISCONNECTED});
     } catch (e) {
       console.warn('server card not found after disconnection event, assuming forgotten');
     }
   }
 
   private onServerReconnecting(event: events.ServerReconnecting): void {
-    console.debug(`server ${event.server.id} reconnecting`);
-    this.updateServerListItem(event.server.id, {connectionState: ServerConnectionState.RECONNECTING});
+    console.debug(`server ${event.serverId} reconnecting`);
+    this.updateServerListItem(event.serverId, {connectionState: ServerConnectionState.RECONNECTING});
   }
 
   private onServerAdded(event: events.ServerAdded) {

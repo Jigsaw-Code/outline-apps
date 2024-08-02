@@ -14,28 +14,30 @@
 
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
-import {ShadowsocksSessionConfig} from './server';
+import { SessionConfig } from './vpn';
 import * as errors from '../../model/errors';
 
 // DON'T use these methods outside of this folder!
 
 // Parses an access key string into a ShadowsocksConfig object.
-export function staticKeyToShadowsocksSessionConfig(staticKey: string): ShadowsocksSessionConfig {
+export function staticKeyToSessionConfig(staticKey: string): SessionConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(staticKey);
     return {
-      host: config.host.data,
-      port: config.port.data,
-      method: config.method.data,
-      password: config.password.data,
-      prefix: config.extra?.['prefix'],
+      transport: {
+        host: config.host.data,
+        port: config.port.data,
+        method: config.method.data,
+        password: config.password.data,
+        prefix: config.extra?.['prefix'],
+      }
     };
   } catch (cause) {
     throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {cause});
   }
 }
 
-function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSessionConfig | null {
+function parseDynamicKeyJson(responseBody: string): SessionConfig | null {
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
@@ -58,17 +60,19 @@ function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSes
   }
 
   return {
-    method,
-    password,
-    host: server,
-    port: server_port,
-    prefix,
+    transport: {
+      method,
+      password,
+      host: server,
+      port: server_port,
+      prefix,
+    }
   };
 }
 
 // fetches information from a dynamic access key and attempts to parse it
 // TODO(daniellacosse): unit tests
-export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
+export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<SessionConfig> {
   let response;
   try {
     response = await fetch(configLocation, {cache: 'no-store', redirect: 'follow'});
@@ -80,10 +84,10 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
 
   try {
     if (responseBody.startsWith('ss://')) {
-      return staticKeyToShadowsocksSessionConfig(responseBody);
+      return staticKeyToSessionConfig(responseBody);
     }
 
-    return parseShadowsocksSessionConfigJson(responseBody);
+    return parseDynamicKeyJson(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;

@@ -16,8 +16,9 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
-import {OutlineServer, PlatformTunnel} from './server';
+import {staticKeyToSessionConfig} from './access_key_serialization';
+import {OutlineServer} from './server';
+import { TunnelStatus, VpnApi } from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
@@ -28,15 +29,9 @@ import {ServerRepository, ServerType} from '../../model/server';
 // Compares access keys proxying parameters.
 function staticKeysMatch(a: string, b: string): boolean {
   try {
-    const l = staticKeyToShadowsocksSessionConfig(a);
-    const r = staticKeyToShadowsocksSessionConfig(b);
-    return (
-      l.host === r.host &&
-      l.port === r.port &&
-      l.password === r.password &&
-      l.method === r.method &&
-      l.prefix == r.prefix
-    );
+    const l = staticKeyToSessionConfig(a);
+    const r = staticKeyToSessionConfig(b);
+    return JSON.stringify(l) === JSON.stringify(r);
   } catch (e) {
     console.debug(`failed to parse access key for comparison`);
   }
@@ -107,12 +102,30 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private newTunnel: (id: string) => PlatformTunnel,
+    private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
     private localize: Localizer,
   ) {
     this.loadServers();
+    vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
+      let statusEvent: events.OutlineEvent;
+      switch (status) {
+        case TunnelStatus.CONNECTED:
+          statusEvent = new events.ServerConnected(id);
+          break;
+        case TunnelStatus.DISCONNECTED:
+          statusEvent = new events.ServerDisconnected(id);
+          break;
+        case TunnelStatus.RECONNECTING:
+          statusEvent = new events.ServerReconnecting(id);
+          break;
+        default:
+          console.warn(`Received unknown tunnel status ${status} for tunnel ${id}`);
+          return;
+      }
+      eventQueue.enqueue(statusEvent);
+    });
   }
 
   getAll() {
@@ -305,12 +318,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private createServer(id: string, accessKey: string, name?: string): OutlineServer {
     const server = new OutlineServer(
-      this.newTunnel(id),
+      this.vpnApi,
       id,
+      name,
       accessKey,
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
-      name,
-      this.eventQueue,
       this.localize
     );
 

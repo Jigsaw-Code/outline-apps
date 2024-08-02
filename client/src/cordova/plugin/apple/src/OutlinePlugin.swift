@@ -33,7 +33,7 @@ class OutlinePlugin: CDVPlugin {
     public static let kMaxBreadcrumbs: UInt = 100
 
     private var sentryLogger: OutlineSentryLogger!
-    private var callbacks: [String: String]!
+    private var statusCallbackId: String?
 
 #if os(macOS) || targetEnvironment(macCatalyst)
     private static let kPlatform = "macOS"
@@ -44,8 +44,6 @@ class OutlinePlugin: CDVPlugin {
 
     override func pluginInitialize() {
         self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
-        callbacks = [String: String]()
-
         OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
 
 #if os(macOS)
@@ -91,7 +89,7 @@ class OutlinePlugin: CDVPlugin {
             return sendError("Invalid configuration", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
+        OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)
@@ -131,11 +129,13 @@ class OutlinePlugin: CDVPlugin {
     }
 
     func onStatusChange(_ command: CDVInvokedUrlCommand) {
-        guard let tunnelId = command.argument(at: 0) as? String else {
-            return sendError("Missing tunnel ID", callbackId: command.callbackId)
+        if let currentCallbackId = self.statusCallbackId {
+            self.removeCallback(withId: currentCallbackId)
+            self.statusCallbackId = nil
         }
-        DDLogInfo("\(Action.onStatusChange) \(tunnelId)")
-        setCallbackId(command.callbackId!, action: Action.onStatusChange, tunnelId: tunnelId)
+        if let newCallbackId = command.callbackId {
+            self.statusCallbackId = newCallbackId
+        }
     }
 
     // MARK: Error reporting
@@ -229,6 +229,10 @@ class OutlinePlugin: CDVPlugin {
   // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
   // tunnel.
   func onVpnStatusChange(vpnStatus: NEVPNStatus, tunnelId: String) {
+    guard let callbackId = self.statusCallbackId else {
+      // No status change callback registered.
+      return
+    }
     var tunnelStatus: Int
     switch vpnStatus {
       case .connected:
@@ -247,19 +251,19 @@ class OutlinePlugin: CDVPlugin {
         return;  // Do not report transient or invalid states.
     }
     DDLogDebug("Calling onStatusChange (\(tunnelStatus)) for tunnel \(tunnelId)")
-    if let callbackId = getCallbackIdFor(action: Action.onStatusChange,
-                                         tunnelId: tunnelId,
-                                         keepCallback: true) {
-      let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: Int32(tunnelStatus))
-      send(pluginResult: result, callbackId: callbackId, keepCallback: true)
-    }
+
+    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["id": tunnelId, "status": Int32(tunnelStatus)])
+    send(pluginResult: result, callbackId: callbackId, keepCallback: true)
   }
 
   // Returns whether |config| contains all the expected keys
   private func containsExpectedKeys(_ configJson: [String: Any]?) -> Bool {
-    return configJson?["host"] != nil && configJson?["port"] != nil &&
-        configJson?["password"] != nil && configJson?["method"] != nil
+    guard let transportConfig = configJson?["transport"] as? [String: Any] else {
+      return false
     }
+    return transportConfig["host"] != nil && transportConfig["port"] != nil &&
+        transportConfig["password"] != nil && transportConfig["method"] != nil
+  }
 
     // MARK: Callback helpers
 
@@ -290,28 +294,13 @@ class OutlinePlugin: CDVPlugin {
         self.commandDelegate?.send(result, callbackId: callbackId)
     }
 
-    // Maps |action| and |tunnelId| to |callbackId| in the callbacks dictionary.
-    private func setCallbackId(_ callbackId: String, action: String, tunnelId: String) {
-        DDLogDebug("\(action):\(tunnelId):\(callbackId)")
-        callbacks["\(action):\(tunnelId)"] = callbackId
-    }
-
-    // Retrieves the callback ID for |action| and |tunnelId|. Unmaps the entry if |keepCallback|
-    // is false.
-    private func getCallbackIdFor(action: String, tunnelId: String?,
-                                  keepCallback: Bool = false) -> String? {
-        guard let tunnelId = tunnelId else {
-            return nil
+    // Unregister callback with Cordova.
+    private func removeCallback(withId callbackId: String) {
+        guard let result = CDVPluginResult(status: CDVCommandStatus_NO_RESULT) else {
+            return DDLogWarn("Missing plugin result for callback \(callbackId)");
         }
-        let key = "\(action):\(tunnelId)"
-        guard let callbackId = callbacks[key] else {
-            DDLogWarn("Callback id not found for action \(action) and tunnel \(tunnelId)")
-            return nil
-        }
-        if (!keepCallback) {
-            callbacks.removeValue(forKey: key)
-        }
-        return callbackId
+        result.setKeepCallbackAs(false)
+        self.commandDelegate?.send(result, callbackId: callbackId)
     }
 
     // Migrates local storage files from UIWebView to WKWebView.

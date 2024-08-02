@@ -23,13 +23,14 @@ import * as Sentry from '@sentry/electron/renderer';
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
 import {OutlineServerRepository} from './outline_server_repository';
-import {ElectronTunnel} from './outline_server_repository/server.electron';
+import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
 import {EventQueue} from '../model/events';
 import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
+import { VpnApi } from './outline_server_repository/vpn';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
@@ -102,11 +103,9 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
+  getVpnApi(): VpnApi | undefined {
     if (isOsSupported) {
-      return new OutlineServerRepository((id: string) => {
-        return new ElectronTunnel(id);
-      }, eventQueue, window.localStorage, localize);
+      return new ElectronVpnApi();
     }
     return undefined;
   },

@@ -16,18 +16,16 @@ import {Localizer} from '@outline/infrastructure/i18n';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {OutlineServerRepository} from './outline_server_repository';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
-import {EventQueue} from '../model/events';
 import {OutlineErrorReporter} from '../shared/error_reporter';
+import { VpnApi } from './outline_server_repository/vpn';
 
 // Provides platform-specific dependencies.
 // TODO(fortuna): pick platform-specific implementations at build time instead.
 export interface OutlinePlatform {
-  // Creates the OutlineServerRepository for this platform. Returns undefined if the platform is not supported.
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined;
+  getVpnApi(): VpnApi | undefined;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

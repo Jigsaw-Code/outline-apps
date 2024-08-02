@@ -86,10 +86,13 @@ public class OutlineVpn: NSObject {
     guard !isActive(tunnelId) else {
       return completion(ErrorCode.noError)
     }
-    if isVpnConnected() {
-      return restartVpn(tunnelId, configJson: configJson, completion: completion)
+    guard let transportConfig = configJson["transport"] as? [String: Any] else {
+      return completion(ErrorCode.illegalServerConfiguration)
     }
-    self.startVpn(tunnelId, withName: name, configJson: configJson, isAutoConnect: false, completion)
+    if isVpnConnected() {
+      return restartVpn(tunnelId, configJson: transportConfig, completion: completion)
+    }
+    self.startVpn(tunnelId, withName: name, configJson: transportConfig, isAutoConnect: false, completion)
   }
 
   // Starts the last successful VPN tunnel.
@@ -284,17 +287,18 @@ public class OutlineVpn: NSObject {
   // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
   // tunnel.
   func vpnStatusChanged() {
-    if let vpnStatus = tunnelManager?.connection.status {
-      if let tunnelId = activeTunnelId {
-        if (vpnStatus == .disconnected) {
-          activeTunnelId = nil
-        }
-        vpnStatusObserver?(vpnStatus, tunnelId)
-      } else if vpnStatus == .connected {
-        // The VPN was connected from the settings app while the UI was in the background.
-        // Retrieve the tunnel ID to update the UI.
-        retrieveActiveTunnelId()
+    guard let vpnStatus = tunnelManager?.connection.status else {
+      return
+    }
+    if let tunnelId = activeTunnelId {
+      if (vpnStatus == .disconnected) {
+        activeTunnelId = nil
       }
+      vpnStatusObserver?(vpnStatus, tunnelId)
+    } else if vpnStatus == .connected {
+      // The VPN was connected from the settings app while the UI was in the background.
+      // Retrieve the tunnel ID to update the UI.
+      retrieveActiveTunnelId()
     }
   }
 
@@ -306,7 +310,7 @@ public class OutlineVpn: NSObject {
    */
   private func sendVpnExtensionMessage(_ message: [String: Any],
                                        callback: @escaping (([String: Any]?) -> Void)) {
-    if tunnelManager == nil {
+    if self.tunnelManager == nil {
       return DDLogError("Cannot set an extension callback without a tunnel manager")
     }
     var data: Data
@@ -330,7 +334,7 @@ public class OutlineVpn: NSObject {
       }
       callback(nil)
     }
-    let session: NETunnelProviderSession = tunnelManager?.connection as! NETunnelProviderSession
+    let session: NETunnelProviderSession = self.tunnelManager?.connection as! NETunnelProviderSession
     do {
       try session.sendProviderMessage(data, responseHandler: completionHandler)
     } catch {

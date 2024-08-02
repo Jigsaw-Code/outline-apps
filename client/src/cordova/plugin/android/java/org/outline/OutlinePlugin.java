@@ -101,8 +101,8 @@ public class OutlinePlugin extends CordovaPlugin {
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
   private StartVpnRequest startVpnRequest;
-  // Tunnel status change callback by tunnel ID.
-  private final Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
+  // Cordova callback to call to report status updates.
+  private CallbackContext statusCallback;
 
   // Connection to the VPN service.
   private final ServiceConnection vpnServiceConnection = new ServiceConnection() {
@@ -159,9 +159,16 @@ public class OutlinePlugin extends CordovaPlugin {
     LOG.fine(String.format(Locale.ROOT, "Received action: %s", action));
 
     if (Action.ON_STATUS_CHANGE.is(action)) {
+      if (this.statusCallback != null) {
+        // Unregister previous callback.
+        PluginResult result = new PluginResult(PluginResult.Status.NO_ERROR);
+        result.setKeepCallback(false);
+        callback.sendPluginResult(result);
+        // Remove callback.
+        this.statusCallback = null
+      }
       // Store the callback so we can execute it asynchronously.
-      final String tunnelId = args.getString(0);
-      tunnelStatusListeners.put(tunnelId, callbackContext);
+      this.statusCallback = callbackContext;
       return true;
     }
 
@@ -308,6 +315,7 @@ public class OutlinePlugin extends CordovaPlugin {
       int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
       LOG.fine(String.format(Locale.ROOT, "VPN connectivity changed: %s, %d", tunnelId, status));
 
+      // TODO(fortuna): return the tunnelId here.
       PluginResult result = new PluginResult(PluginResult.Status.OK, status);
       // Keep the tunnel status callback so it can be called multiple times.
       result.setKeepCallback(true);

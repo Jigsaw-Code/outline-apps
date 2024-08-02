@@ -17,7 +17,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {OutlineServerRepository, ServersStorageV0, ServersStorageV1, serversStorageV0ConfigToAccessKey} from '.';
 import {OutlineServer} from './server';
-import {FakeTunnel} from './server.fake';
+import {FakeVpnApi} from './vpn.fake';
 import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
 import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
 
@@ -311,7 +311,5 @@ describe('OutlineServerRepository', () => {
 });
 
 function newTestRepo(eventQueue: EventQueue, storage: Storage): OutlineServerRepository {
-  return new OutlineServerRepository((id) => {
-    return new FakeTunnel(id);
-  }, eventQueue, storage, (_) => {return "Outline Server";});
+  return new OutlineServerRepository(new FakeVpnApi(), eventQueue, storage, (_) => {return "Outline Server";});
 }
