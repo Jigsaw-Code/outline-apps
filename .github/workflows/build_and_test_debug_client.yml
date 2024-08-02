@@ -168,10 +168,9 @@ jobs:
       - name: Build MacOS Client
         run: npm run action client/src/cordova/build macos
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/macos/TestResult.xcresult
+          file: ./client/src/output/coverage/apple/macos/TestResult.xcresult
           flags: unittests, apple, macos
 
   ios_debug_build:
@@ -210,10 +209,9 @@ jobs:
       - name: Build iOS Client
         run: npm run action client/src/cordova/build ios
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/ios/TestResult.xcresult
+          file: ./client/src/output/coverage/apple/ios/TestResult.xcresult
           flags: unittests, apple, ios
 
   maccatalyst_debug_build:
@@ -252,10 +250,9 @@ jobs:
       - name: Build Mac Catalyst Client
         run: npm run action client/src/cordova/build maccatalyst
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
+          file: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
           flags: unittests, apple, maccatalyst
 
   android_debug_build:
