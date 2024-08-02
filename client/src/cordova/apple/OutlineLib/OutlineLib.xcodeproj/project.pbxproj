@@ -22,7 +22,6 @@
 		52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		52334EB32B0D58AD00817E56 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		52334EB42B0D58AD00817E56 /* VpnExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
-		524B56C52C5C33E800A8EF2C /* VpnExtension-macos.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = "VpnExtension-macos.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,7 +77,6 @@
 		52334EB02B0D58AD00817E56 /* VpnExtension */ = {
 			isa = PBXGroup;
 			children = (
-				524B56C52C5C33E800A8EF2C /* VpnExtension-macos.entitlements */,
 				522987022C4F26D4009EE577 /* Sources */,
 				52334EB32B0D58AD00817E56 /* Info.plist */,
 				52334EB42B0D58AD00817E56 /* VpnExtension.entitlements */,
@@ -375,7 +373,6 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = VpnExtension/VpnExtension.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "VpnExtension/VpnExtension-macos.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
@@ -410,7 +407,6 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = VpnExtension/VpnExtension.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "VpnExtension/VpnExtension-macos.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
