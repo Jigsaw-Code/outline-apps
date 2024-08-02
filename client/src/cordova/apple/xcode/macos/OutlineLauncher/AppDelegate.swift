@@ -18,7 +18,7 @@ import OutlineTunnel
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
-  static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
+  static let kAppGroup = "group.org.getoutline.client"
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
    defer {
