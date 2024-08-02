@@ -1,6 +1,7 @@
 {
   "extends": "./node_modules/gts/",
   "parserOptions": {
+    "ecmaVersion": "latest",
     "sourceType": "module"
   },
   "plugins": ["compat", "import"],
