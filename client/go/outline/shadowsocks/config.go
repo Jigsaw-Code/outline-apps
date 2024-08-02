@@ -17,8 +17,8 @@ package shadowsocks
 import (
 	"encoding/json"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/internal/utf8"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/internal/utf8"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
 // Config represents a (legacy) shadowsocks server configuration. You can use

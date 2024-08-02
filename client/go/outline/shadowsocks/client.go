@@ -24,9 +24,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/connectivity"
-	"github.com/Jigsaw-Code/outline-apps/client/src/tun2socks/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 	"github.com/eycorsican/go-tun2socks/common/log"
