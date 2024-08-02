@@ -21,9 +21,21 @@ import * as express from 'express';
 import * as request from 'request';
 
 const REGISTERED_REDIRECTS: Array<{clientId: string; port: number}> = [
-  {clientId: '7f84935771d49c2331e1cfb60c7827e20eaf128103435d82ad20b3c53253b721', port: 55189},
-  {clientId: '4af51205e8d0d8f4a5b84a6b5ca9ea7124f914a5621b6a731ce433c2c7db533b', port: 60434},
-  {clientId: '706928a1c91cbd646c4e0d744c8cbdfbf555a944b821ac7812a7314a4649683a', port: 61437},
+  {
+    clientId:
+      '7f84935771d49c2331e1cfb60c7827e20eaf128103435d82ad20b3c53253b721',
+    port: 55189,
+  },
+  {
+    clientId:
+      '4af51205e8d0d8f4a5b84a6b5ca9ea7124f914a5621b6a731ce433c2c7db533b',
+    port: 60434,
+  },
+  {
+    clientId:
+      '706928a1c91cbd646c4e0d744c8cbdfbf555a944b821ac7812a7314a4649683a',
+    port: 61437,
+  },
 ];
 
 const CALLBACK_SERVER_CLOSE_TIMEOUT = 30000; // 30 seconds
@@ -41,7 +53,10 @@ interface ServerError extends Error {
 
 // Makes server listen on each of the listed ports until there's one open.
 // Returns the index of the port used.
-function listenOnFirstPort(server: http.Server, portList: number[]): Promise<number> {
+function listenOnFirstPort(
+  server: http.Server,
+  portList: number[]
+): Promise<number> {
   let portIdx = 0;
   return new Promise((resolve, reject) => {
     server.once('listening', () => {
@@ -62,7 +77,11 @@ function listenOnFirstPort(server: http.Server, portList: number[]): Promise<num
       server.close();
       reject(error);
     });
-    server.listen({host: 'localhost', port: portList[portIdx], exclusive: true});
+    server.listen({
+      host: 'localhost',
+      port: portList[portIdx],
+      exclusive: true,
+    });
   });
 }
 
@@ -155,38 +174,46 @@ export function runOauth(): OauthSession {
     rejectWrapper.reject = reject;
     // This is the POST endpoint that receives the access token and redirects to either DigitalOcean
     // for the user to complete their account creation, or to a page that closes the window.
-    app.post('/', express.urlencoded({type: '*/*', extended: false}), (request, response) => {
-      const params = new URLSearchParams(request.body.params);
-      if (params.get('error')) {
-        response.status(400).send(closeWindowHtml('Authentication failed'));
-        reject(new Error(`DigitalOcean OAuth error: ${params.get('error_description')}`));
-        return;
+    app.post(
+      '/',
+      express.urlencoded({type: '*/*', extended: false}),
+      (request, response) => {
+        const params = new URLSearchParams(request.body.params);
+        if (params.get('error')) {
+          response.status(400).send(closeWindowHtml('Authentication failed'));
+          reject(
+            new Error(
+              `DigitalOcean OAuth error: ${params.get('error_description')}`
+            )
+          );
+          return;
+        }
+        const requestSecret = params.get('state');
+        if (requestSecret !== secret) {
+          response.status(400).send(closeWindowHtml('Authentication failed'));
+          reject(new Error(`Expected secret ${secret}. Got ${requestSecret}`));
+          return;
+        }
+        const accessToken = params.get('access_token');
+        if (accessToken) {
+          getAccount(accessToken)
+            .then(account => {
+              if (account.status === 'active') {
+                response.send(closeWindowHtml('Authentication successful'));
+              } else {
+                response.redirect('https://cloud.digitalocean.com');
+              }
+              // OAuth token exchange with DigitalOcean is now done.
+              server.close();
+              resolve(accessToken);
+            })
+            .catch(reject);
+        } else {
+          response.status(400).send(closeWindowHtml('Authentication failed'));
+          reject(new Error('No access_token on OAuth response'));
+        }
       }
-      const requestSecret = params.get('state');
-      if (requestSecret !== secret) {
-        response.status(400).send(closeWindowHtml('Authentication failed'));
-        reject(new Error(`Expected secret ${secret}. Got ${requestSecret}`));
-        return;
-      }
-      const accessToken = params.get('access_token');
-      if (accessToken) {
-        getAccount(accessToken)
-          .then(account => {
-            if (account.status === 'active') {
-              response.send(closeWindowHtml('Authentication successful'));
-            } else {
-              response.redirect('https://cloud.digitalocean.com');
-            }
-            // OAuth token exchange with DigitalOcean is now done.
-            server.close();
-            resolve(accessToken);
-          })
-          .catch(reject);
-      } else {
-        response.status(400).send(closeWindowHtml('Authentication failed'));
-        reject(new Error('No access_token on OAuth response'));
-      }
-    });
+    );
 
     // Unfortunately DigitalOcean matches the port in the redirect url against the registered ones.
     // We registered the application 3 times with different ports, so we have fallbacks in case
@@ -198,7 +225,9 @@ export function runOauth(): OauthSession {
       .then(index => {
         const {port, clientId} = REGISTERED_REDIRECTS[index];
         const address = server.address() as AddressInfo;
-        console.log(`OAuth target listening on ${address.address}:${address.port}`);
+        console.log(
+          `OAuth target listening on ${address.address}:${address.port}`
+        );
 
         const oauthUrl = `https://cloud.digitalocean.com/v1/oauth/authorize?client_id=${encodeURIComponent(
           clientId

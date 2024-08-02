@@ -23,7 +23,10 @@ export function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
   });
 }
 
-export async function pluginExecWithErrorCode<T>(cmd: string, ...args: unknown[]): Promise<T> {
+export async function pluginExecWithErrorCode<T>(
+  cmd: string,
+  ...args: unknown[]
+): Promise<T> {
   try {
     return await pluginExec<T>(cmd, ...args);
   } catch (errorCode) {

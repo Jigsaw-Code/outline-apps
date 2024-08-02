@@ -52,27 +52,24 @@ Polymer({
   ready: function () {
     // This complexity is to avoid unconditionally loading the (huge) license
     // text at startup.
-    var appRoot = dom(this).getOwnerRoot().host;
-    window.addEventListener(
-      'location-changed',
-      function () {
-        if (this._licensesLoaded || appRoot.page !== 'licenses') {
-          return;
-        }
+    const appRoot = dom(this).getOwnerRoot().host;
+    globalThis.addEventListener('location-changed', () => {
+      if (this._licensesLoaded || appRoot.page !== 'licenses') {
+        return;
+      }
 
-        var xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-          this.$.licensesText.innerText = xhr.responseText;
-          this._licensesLoaded = true;
-        };
-        xhr.onerror = () => {
-          console.error('could not load license.txt');
-        };
-        // This path works in both Cordova and Electron.
-        // Do *not* add a leading slash.
-        xhr.open('GET', 'ui_components/licenses/licenses.txt', true);
-        xhr.send();
-      }.bind(this)
-    );
+      const xhr = new globalThis.XMLHttpRequest();
+      xhr.onload = () => {
+        this.$.licensesText.innerText = xhr.responseText;
+        this._licensesLoaded = true;
+      };
+      xhr.onerror = () => {
+        console.error('could not load license.txt');
+      };
+      // This path works in both Cordova and Electron.
+      // Do *not* add a leading slash.
+      xhr.open('GET', 'ui_components/licenses/licenses.txt', true);
+      xhr.send();
+    });
   },
 });

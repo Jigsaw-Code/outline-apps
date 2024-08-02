@@ -27,7 +27,10 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 // TODO(fortuna): pick platform-specific implementations at build time instead.
 export interface OutlinePlatform {
   // Creates the OutlineServerRepository for this platform. Returns undefined if the platform is not supported.
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined;
+  newServerRepo(
+    eventQueue: EventQueue,
+    localize: Localizer
+  ): OutlineServerRepository | undefined;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

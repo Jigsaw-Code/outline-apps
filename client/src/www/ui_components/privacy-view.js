@@ -121,9 +121,13 @@ Polymer({
           <p class="faded">[[localize('privacy-text')]]</p>
           <div id="button-container">
             <a href="https://support.getoutline.org/s/article/Data-collection">
-              <paper-button class="faded">[[localize('learn-more')]]</paper-button>
+              <paper-button class="faded"
+                >[[localize('learn-more')]]</paper-button
+              >
             </a>
-            <paper-button on-tap="_privacyTermsAcked">[[localize('got-it')]]</paper-button>
+            <paper-button on-tap="_privacyTermsAcked"
+              >[[localize('got-it')]]</paper-button
+            >
           </div>
         </div>
       </div>
@@ -137,7 +141,7 @@ Polymer({
     rootPath: String,
   },
 
-  _privacyTermsAcked: function() {
+  _privacyTermsAcked: function () {
     this.fire('PrivacyTermsAcked');
   },
 });

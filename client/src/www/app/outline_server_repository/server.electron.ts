@@ -41,7 +41,11 @@ export class ElectronTunnel implements PlatformTunnel {
     });
 
     try {
-      await window.electron.methodChannel.invoke('start-proxying', {id: this.id, serviceName: name, config});
+      await window.electron.methodChannel.invoke('start-proxying', {
+        id: this.id,
+        serviceName: name,
+        config,
+      });
       this.running = true;
     } catch (e) {
       throw PlatformError.parseFrom(e);
@@ -74,7 +78,9 @@ export class ElectronTunnel implements PlatformTunnel {
     if (this.statusChangeListener) {
       this.statusChangeListener(status);
     } else {
-      console.error(`${this.id} status changed to ${status} but no listener set`);
+      console.error(
+        `${this.id} status changed to ${status} but no listener set`
+      );
     }
   }
 }

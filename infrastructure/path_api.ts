@@ -40,7 +40,10 @@ export type Fetcher = (request: HttpRequest) => Promise<HttpResponse>;
 
 // Thrown when an API request fails.
 export class ServerApiError extends CustomError {
-  constructor(message: string, public readonly response?: HttpResponse) {
+  constructor(
+    message: string,
+    public readonly response?: HttpResponse
+  ) {
     super(message);
   }
 
@@ -66,7 +69,10 @@ export class PathApiClient {
    * @param base A valid URL
    * @param fingerprint A SHA-256 hash of the expected leaf certificate, in binary encoding.
    */
-  constructor(readonly base: string, public readonly fetcher: Fetcher) {}
+  constructor(
+    readonly base: string,
+    public readonly fetcher: Fetcher
+  ) {}
 
   /**
    * Makes a request relative to the base URL with a JSON body.
@@ -88,9 +94,18 @@ export class PathApiClient {
    * @param params Form data to send
    * @returns Response body (JSON or void)
    */
-  async requestForm<T>(path: string, method: string, params: Record<string, string>): Promise<T> {
+  async requestForm<T>(
+    path: string,
+    method: string,
+    params: Record<string, string>
+  ): Promise<T> {
     const body = new URLSearchParams(params);
-    return this.request(path, method, 'application/x-www-form-urlencoded', body.toString());
+    return this.request(
+      path,
+      method,
+      'application/x-www-form-urlencoded',
+      body.toString()
+    );
   }
 
   /**
@@ -102,7 +117,12 @@ export class PathApiClient {
    * @param body Request body
    * @returns Response body (JSON or void)
    */
-  async request<T>(path: string, method = 'GET', contentType?: string, body?: string): Promise<T> {
+  async request<T>(
+    path: string,
+    method = 'GET',
+    contentType?: string,
+    body?: string
+  ): Promise<T> {
     let base = this.base;
     if (!base.endsWith('/')) {
       base += '/';
@@ -120,10 +140,15 @@ export class PathApiClient {
       response = await this.fetcher(request);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'unknown';
-      throw new ServerApiError(`API request to ${path} failed due to network error: ${msg}`);
+      throw new ServerApiError(
+        `API request to ${path} failed due to network error: ${msg}`
+      );
     }
     if (response.status < 200 || response.status >= 300) {
-      throw new ServerApiError(`API request to ${path} failed with status ${response.status}`, response);
+      throw new ServerApiError(
+        `API request to ${path} failed with status ${response.status}`,
+        response
+      );
     }
     if (!response.body) {
       return undefined as T;

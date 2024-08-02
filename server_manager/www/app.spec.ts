@@ -14,9 +14,12 @@
 
 import './ui_components/app-root';
 
-
 import {App, LAST_DISPLAYED_SERVER_STORAGE_KEY} from './app';
-import {FakeCloudAccounts, FakeDigitalOceanAccount, FakeManualServerRepository} from './testing/models';
+import {
+  FakeCloudAccounts,
+  FakeDigitalOceanAccount,
+  FakeManualServerRepository,
+} from './testing/models';
 import {AppRoot} from './ui_components/app-root';
 import * as accounts from '../model/accounts';
 import {Region} from '../model/digitalocean';
@@ -47,7 +50,9 @@ describe('App', () => {
     const app = createTestApp(appRoot);
     await app.start();
     expect(appRoot.currentPage).toEqual('intro');
-    await expectAsync(app.createManualServer('bad input')).toBeRejectedWithError();
+    await expectAsync(
+      app.createManualServer('bad input')
+    ).toBeRejectedWithError();
   });
 
   it('creates a manual server with valid input', async () => {
@@ -56,7 +61,9 @@ describe('App', () => {
     const app = createTestApp(appRoot);
     await app.start();
     expect(appRoot.currentPage).toEqual('intro');
-    await app.createManualServer(JSON.stringify({certSha256: 'cert', apiUrl: 'url'}));
+    await app.createManualServer(
+      JSON.stringify({certSha256: 'cert', apiUrl: 'url'})
+    );
     expect(appRoot.currentPage).toEqual('serverView');
   });
 
@@ -67,8 +74,14 @@ describe('App', () => {
     const cloudAccounts = new FakeCloudAccounts(fakeAccount);
 
     const manualServerRepo = new FakeManualServerRepository();
-    await manualServerRepo.addServer({certSha256: 'cert', apiUrl: 'fake-manual-server-api-url-1'});
-    await manualServerRepo.addServer({certSha256: 'cert', apiUrl: 'fake-manual-server-api-url-2'});
+    await manualServerRepo.addServer({
+      certSha256: 'cert',
+      apiUrl: 'fake-manual-server-api-url-1',
+    });
+    await manualServerRepo.addServer({
+      certSha256: 'cert',
+      apiUrl: 'fake-manual-server-api-url-2',
+    });
 
     const appRoot = document.getElementById('appRoot') as AppRoot;
     expect(appRoot.serverList.length).toEqual(0);
@@ -86,10 +99,18 @@ describe('App', () => {
     console.log(`managedServers.length: ${managedServers.length}`);
     console.log(`manualServers.length: ${manualServers.length}`);
 
-    expect(serverList.length).toEqual(manualServers.length + managedServers.length);
-    expect(serverList).toContain(jasmine.objectContaining({id: 'fake-manual-server-api-url-1'}));
-    expect(serverList).toContain(jasmine.objectContaining({id: 'fake-manual-server-api-url-2'}));
-    expect(serverList).toContain(jasmine.objectContaining({id: '_fake-region-id'}));
+    expect(serverList.length).toEqual(
+      manualServers.length + managedServers.length
+    );
+    expect(serverList).toContain(
+      jasmine.objectContaining({id: 'fake-manual-server-api-url-1'})
+    );
+    expect(serverList).toContain(
+      jasmine.objectContaining({id: 'fake-manual-server-api-url-2'})
+    );
+    expect(serverList).toContain(
+      jasmine.objectContaining({id: '_fake-region-id'})
+    );
   });
 
   it('initially shows the last selected server', async () => {
@@ -99,13 +120,18 @@ describe('App', () => {
       certSha256: 'cert',
       apiUrl: LAST_DISPLAYED_SERVER_ID,
     });
-    await manualServerRepo.addServer({certSha256: 'cert', apiUrl: 'fake-manual-server-api-url-2'});
+    await manualServerRepo.addServer({
+      certSha256: 'cert',
+      apiUrl: 'fake-manual-server-api-url-2',
+    });
     localStorage.setItem('lastDisplayedServer', LAST_DISPLAYED_SERVER_ID);
     const appRoot = document.getElementById('appRoot') as AppRoot;
     const app = createTestApp(appRoot, undefined, manualServerRepo);
     await app.start();
     expect(appRoot.currentPage).toEqual('serverView');
-    expect(appRoot.selectedServerId).toEqual(lastDisplayedServer.getManagementApiUrl());
+    expect(appRoot.selectedServerId).toEqual(
+      lastDisplayedServer.getManagementApiUrl()
+    );
   });
 
   it('shows progress screen once DigitalOcean droplets are created', async () => {
@@ -123,7 +149,9 @@ describe('App', () => {
   it('shows progress screen when starting with DigitalOcean servers still being created', async () => {
     const appRoot = document.getElementById('appRoot') as AppRoot;
     const fakeAccount = new FakeDigitalOceanAccount();
-    const server = await fakeAccount.createServer(new Region('_fake-region-id'));
+    const server = await fakeAccount.createServer(
+      new Region('_fake-region-id')
+    );
     const cloudAccounts = new FakeCloudAccounts(fakeAccount);
     const app = createTestApp(appRoot, cloudAccounts);
     // Sets last displayed server.

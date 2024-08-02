@@ -34,7 +34,10 @@ export class FakeTunnel implements PlatformTunnel {
     return hostname === FAKE_UNREACHABLE_HOSTNAME;
   }
 
-  async start(_unusedName: string, config: ShadowsocksSessionConfig): Promise<void> {
+  async start(
+    _unusedName: string,
+    config: ShadowsocksSessionConfig
+  ): Promise<void> {
     if (this.running) {
       return;
     }
@@ -42,7 +45,9 @@ export class FakeTunnel implements PlatformTunnel {
     if (this.playUnreachable(config.host)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
     } else if (this.playBroken(config.host)) {
-      throw new errors.OutlinePluginError(errors.ErrorCode.SHADOWSOCKS_START_FAILURE);
+      throw new errors.OutlinePluginError(
+        errors.ErrorCode.SHADOWSOCKS_START_FAILURE
+      );
     }
 
     this.running = true;

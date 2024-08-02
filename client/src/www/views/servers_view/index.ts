@@ -16,10 +16,10 @@
 
 import '@material/mwc-button';
 
-import { Localizer } from '@outline/infrastructure/i18n';
+import {Localizer} from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import { DirectiveResult } from 'lit/directive';
+import {DirectiveResult} from 'lit/directive';
 import {unsafeHTML, UnsafeHTMLDirective} from 'lit/directives/unsafe-html.js';
 
 import {ServerConnectionState as _ServerConnectionState} from './server_connection_indicator';
@@ -28,10 +28,7 @@ import './server_list';
 import {ServerListItem as _ServerListItem} from './server_list_item';
 
 export type ServerListItem = _ServerListItem;
-
-// (This value is used: it's exported.)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export import ServerConnectionState = _ServerConnectionState;
+export const ServerConnectionState = _ServerConnectionState;
 
 @customElement('servers-view')
 export class ServerList extends LitElement {
@@ -40,7 +37,7 @@ export class ServerList extends LitElement {
       :host {
         display: flex;
         flex-direction: column;
-        font-size: .9rem;
+        font-size: 0.9rem;
         height: 100%;
         /* Use vh, as % does not work in iOS. |header-height|+|server-margin| = 64px.
          * Subtract |header-height| to fix iOS padding, and |server-margin| to fix scrolling in Android.
@@ -81,7 +78,7 @@ export class ServerList extends LitElement {
         font-weight: 400;
       }
       h2 {
-        font-size: .9rem;
+        font-size: 0.9rem;
         font-weight: initial;
         line-height: 1.5;
       }
@@ -119,7 +116,9 @@ export class ServerList extends LitElement {
   }
 
   private requestPromptAddServer() {
-    this.dispatchEvent(new CustomEvent('add-server', {bubbles: true, composed: true}));
+    this.dispatchEvent(
+      new CustomEvent('add-server', {bubbles: true, composed: true})
+    );
   }
 
   private get zeroStateContent(): DirectiveResult<typeof UnsafeHTMLDirective> {
@@ -127,16 +126,25 @@ export class ServerList extends LitElement {
     if (this.shouldShowAccessKeyWikiLink) {
       msg = this.localize(
         'server-create-your-own-zero-state-access',
-        'breakLine', '<br/>',
-        'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
-        'openLink2', '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>',
-        'closeLink', '</a>');
+        'breakLine',
+        '<br/>',
+        'openLink',
+        '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
+        'openLink2',
+        '<a href=https://www.reddit.com/r/outlinevpn/wiki/index/outline_vpn_access_keys/>',
+        'closeLink',
+        '</a>'
+      );
     } else {
       msg = this.localize(
         'server-create-your-own-zero-state',
-        'breakLine', '<br/>',
-        'openLink', '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
-        'closeLink', '</a>');
+        'breakLine',
+        '<br/>',
+        'openLink',
+        '<a href=https://s3.amazonaws.com/outline-vpn/get-started/index.html#step-1>',
+        'closeLink',
+        '</a>'
+      );
     }
     return unsafeHTML(msg);
   }
@@ -147,7 +155,9 @@ export class ServerList extends LitElement {
         <section>
           <header>
             <button type="button" @click=${this.requestPromptAddServer}>
-              <server-connection-indicator connection-state="disconnected"></server-connection-indicator>
+              <server-connection-indicator
+                connection-state="disconnected"
+              ></server-connection-indicator>
               <h1>${this.localize('server-add')}</h1>
               <h2>${this.localize('server-add-zero-state-instructions')}</h2>
             </button>

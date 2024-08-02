@@ -13,10 +13,9 @@
 // limitations under the License.
 
 const path = require('path');
+const testConfig = require('./webpack_test.mjs');
 
-module.exports = async function(config) {
-  const testConfig = await import('./webpack_test.mjs');
-
+module.exports = async function (config) {
   config.set({
     browsers: ['ChromiumHeadless'],
     colors: true,
@@ -30,7 +29,7 @@ module.exports = async function(config) {
     webpack: testConfig.default,
     coverageIstanbulReporter: {
       reports: ['html', 'json', 'text-summary'],
-      dir: path.join(process.env?.COVERAGE_DIR ?? __dirname, 'www'),
+      dir: path.join(process.env.COVERAGE_DIR || __dirname, 'www'),
     },
   });
 };

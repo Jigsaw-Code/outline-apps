@@ -48,11 +48,18 @@ export class ServerList extends LitElement {
 
   render() {
     if (this.hasSingleServer) {
-      return html`<server-hero-card .localize=${this.localize} .server=${this.servers[0]}></server-hero-card>`;
+      return html`<server-hero-card
+        .localize=${this.localize}
+        .server=${this.servers[0]}
+      ></server-hero-card>`;
     } else {
       return html`
         ${this.servers.map(
-          server => html`<server-row-card .localize=${this.localize} .server=${server}></server-row-card>`
+          server =>
+            html`<server-row-card
+              .localize=${this.localize}
+              .server=${server}
+            ></server-row-card>`
         )}
       `;
     }

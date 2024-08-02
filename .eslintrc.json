@@ -1,132 +1,34 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "node": true
-  },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:import/typescript"],
-  "parser": "@typescript-eslint/parser",
+  "extends": "./node_modules/gts/",
   "parserOptions": {
-    "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "compat", "import"],
   "rules": {
-    "compat/compat": "error",
-    "import/no-restricted-paths": [
-      "error",
-      {
-        "zones": [
-          // This means that in the /infrastructure folder,
-          // you can't import any code,
-          // with the exception of other files within the /infrastructure folder.
-          {
-            "target": "./infrastructure",
-            "from": ".",
-            "except": ["./infrastructure", "./node_modules"]
-          },
-          // Similar to above but for src/www/model, but you can use files from both the
-          // src/www/model and src/www/infrastructure paths.
-          {
-            "target": "./client/src/www/model",
-            "from": ".",
-            "except": ["./client/src/www/model", "./infrastructure", "./node_modules"]
-          },
-          // Prevents the internals of the outline_server_repository from being used publicly in the app.
-          {
-            "target": "./client/src/www/app/*.ts",
-            "from": "./client/src/www/app/outline_server_repository/server.ts"
-          },
-          {
-            "target": "./client/src/www/app/*.ts",
-            "from": "./client/src/www/app/outline_server_repository/access_key_serialization.ts"
-          },
-          {
-            "target": "./client/src/www/views",
-            "from": "./client/src/www/model"
-          },
-          {
-            "target": "./client/src/www/ui_components",
-            "from": "./client/src/www/model"
-          },
-          {
-            "target": "./client/src/www/views",
-            "from": "./client/src/www/app"
-          },
-          {
-            "target": "./client/src/www/ui_components",
-            "from": "./client/src/www/app"
-          }
-        ]
-      }
-    ],
-    "import/order": [
-      "error",
-      {
-        "groups": [
-          "builtin",
-          "external",
-          "internal"
-        ],
-        "pathGroups": [
-          {
-            "pattern": "@material/**",
-            "group": "external",
-            "position": "before"
-          }
-        ],
-        "pathGroupsExcludedImportTypes": ["@material/**"],
-        "newlines-between": "always",
-        "alphabetize": {
-          "order": "asc",
-          "caseInsensitive": true
-        }
-      }
-    ],
-    "no-prototype-builtins": "off",
-    "prefer-const": "error",
-    "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/explicit-member-accessibility": [
-      "error",
-      {
-        "accessibility": "no-public"
-      }
-    ],
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_"
-      }
-    ],
-    "@typescript-eslint/triple-slash-reference": "off"
-  },
-  "overrides": [
-    {
-      "files": ["*.spec.ts"],
-      "rules": {
-        "@typescript-eslint/no-explicit-any": "off"
-      }
-    },
-    // Turn off type-specific linting for pure javascript files.
-    {
-      "files": ["*.js", "*.mjs", "*.cjs"],
-      "extends": ["eslint:recommended"],
-      "rules": {
-        "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/no-var-requires": "off"
-      }
-    },
-    // No need to check browser compatibility for electron files
-    {
-      "files": ["./client/src/www/app/electron_main.ts"],
-      "rules": {
-        "compat/compat": "off"
-      }
-    }
-  ]
+    "n/no-unsupported-features/node-builtins": ["error", {
+      "version": ">=18.0.0",
+      "ignores": []
+    }],
+    "n/no-unsupported-features/es-builtins": ["error", {
+      "version": ">=18.0.0",
+      "ignores": []
+    }],
+    "n/no-unsupported-features/es-syntax": ["error", {
+      "version": ">=18.0.0",
+      "ignores": []
+    }],
+    "@typescript-eslint/no-unused-vars": ["error", {
+      "varsIgnorePattern": "^_",
+      "argsIgnorePattern": "^_"
+    }],
+    "no-unused-vars": ["error", {
+      "varsIgnorePattern": "^_",
+      "argsIgnorePattern": "^_"
+    }],
+    "n/no-unpublished-import": ["error", {
+      "allowModules": ["electron", "electron-notarize", "electron-to-chromium", "@open-wc/testing", "@babel/polyfill"]
+    }],
+    "n/no-unpublished-require": ["error", {
+      "allowModules": ["webpack", "puppeteer", "postcss", "postcss-rtl", "electron-notarize", "copy-webpack-plugin", "html-webpack-plugin"]
+    }]
+  }
 }

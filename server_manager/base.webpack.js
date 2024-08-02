@@ -18,11 +18,19 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const OUTPUT_BASE = path.resolve(__dirname, '../output/build/server_manager/www/static');
+const OUTPUT_BASE = path.resolve(
+  __dirname,
+  '../output/build/server_manager/www/static'
+);
 
-const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'css-in-js-rtl-loader.js');
+const GENERATE_CSS_RTL_LOADER = path.resolve(
+  __dirname,
+  'css-in-js-rtl-loader.js'
+);
 
-const CIRCLE_FLAGS_PATH = path.dirname(require.resolve('circle-flags/package.json'));
+const CIRCLE_FLAGS_PATH = path.dirname(
+  require.resolve('circle-flags/package.json')
+);
 
 exports.makeConfig = options => {
   return {
@@ -62,13 +70,19 @@ exports.makeConfig = options => {
     resolve: {extensions: ['.tsx', '.ts', '.js']},
     plugins: [
       new webpack.DefinePlugin({
-        'outline.gcpAuthEnabled': JSON.stringify(process.env.GCP_AUTH_ENABLED !== 'false'),
+        'outline.gcpAuthEnabled': JSON.stringify(
+          process.env.GCP_AUTH_ENABLED !== 'false'
+        ),
         // Statically link the Roboto font, rather than link to fonts.googleapis.com
         'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
       }),
       new CopyPlugin({
         patterns: [
-          {from: `${CIRCLE_FLAGS_PATH}/flags`, to: 'images/flags', context: __dirname},
+          {
+            from: `${CIRCLE_FLAGS_PATH}/flags`,
+            to: 'images/flags',
+            context: __dirname,
+          },
           {from: 'images', to: 'images', context: __dirname}, // Overwrite any colliding flags.
           {from: 'messages', to: 'messages', context: __dirname},
         ],

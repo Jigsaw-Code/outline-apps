@@ -29,7 +29,11 @@ export function lookupIp(hostname: string): Promise<string> {
     new Promise<string>((fulfill, reject) => {
       dns.lookup(hostname, 4, (e, address) => {
         if (e) {
-          return reject(new errors.ServerUnreachable('could not resolve proxy server hostname'));
+          return reject(
+            new errors.ServerUnreachable(
+              'could not resolve proxy server hostname'
+            )
+          );
         }
         fulfill(address);
       });

@@ -124,18 +124,32 @@ Polymer({
         style="-webkit-text-size-adjust: 100%;"
         inner-h-t-m-l="[[localize('share-invite-html')]]"
       ></div>
-      <div id="copyInvitationIndicator" hidden="">[[localize('share-invite-copied')]]</div>
+      <div id="copyInvitationIndicator" hidden="">
+        [[localize('share-invite-copied')]]
+      </div>
       <div class="button-row">
-        <paper-button id="copyButton" on-tap="copyInvite">[[localize('share-invite-copy')]]</paper-button>
+        <paper-button id="copyButton" on-tap="copyInvite"
+          >[[localize('share-invite-copy')]]</paper-button
+        >
       </div>
 
-      <div contenteditable="" id="selectableAccessKey" style="-webkit-text-size-adjust: 100%;">
+      <div
+        contenteditable=""
+        id="selectableAccessKey"
+        style="-webkit-text-size-adjust: 100%;"
+      >
         <pre><a href="[[accessKey]]">[[accessKey]]</a></pre>
       </div>
-      <div id="copyAccessKeyIndicator" hidden="">[[localize('share-invite-access-key-copied')]]</div>
+      <div id="copyAccessKeyIndicator" hidden="">
+        [[localize('share-invite-access-key-copied')]]
+      </div>
       <div class="button-row">
-        <paper-button id="copyButton" on-tap="copyAccessKey">[[localize('share-invite-copy-access-key')]]</paper-button>
-        <paper-button id="doneButton" dialog-confirm="">[[localize('done')]]</paper-button>
+        <paper-button id="copyButton" on-tap="copyAccessKey"
+          >[[localize('share-invite-copy-access-key')]]</paper-button
+        >
+        <paper-button id="doneButton" dialog-confirm=""
+          >[[localize('done')]]</paper-button
+        >
       </div>
     </paper-dialog>
   `,

@@ -39,6 +39,8 @@ export class CordovaTunnel implements PlatformTunnel {
       console.warn('failed to execute status change listener', err);
     };
     // Can't use `pluginExec` because Cordova needs to call the listener multiple times.
-    cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
+    cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [
+      this.id,
+    ]);
   }
 }

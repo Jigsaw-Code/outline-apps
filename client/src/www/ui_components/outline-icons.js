@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-const $_documentContainer = document.createElement('template');
+const $_documentContainer = globalThis.document.createElement('template');
 
 $_documentContainer.innerHTML = `<iron-iconset-svg name="outline-icons" size="24">
   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
@@ -26,5 +26,4 @@ $_documentContainer.innerHTML = `<iron-iconset-svg name="outline-icons" size="24
   </svg>
 </iron-iconset-svg>`;
 
-document.head.appendChild($_documentContainer.content);
-;
+globalThis.document.head.appendChild($_documentContainer.content);

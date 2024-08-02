@@ -26,7 +26,6 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
-
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 /** Interface for tracking form data. */
@@ -101,7 +100,8 @@ export class SupportForm extends LitElement {
 
   /** Checks the entire form's validity state. */
   private checkFormValidity() {
-    const fieldNodes = this.formRef.value.querySelectorAll<FormControl>('*[name]');
+    const fieldNodes =
+      this.formRef.value.querySelectorAll<FormControl>('*[name]');
     this.valid = Array.from(fieldNodes).every(field => field.validity.valid);
   }
 
@@ -123,7 +123,8 @@ export class SupportForm extends LitElement {
   }
 
   private handleTextInput(e: Event) {
-    const key: keyof FormValues = (e.target as TextField).name as keyof FormValues;
+    const key: keyof FormValues = (e.target as TextField)
+      .name as keyof FormValues;
     const value = (e.target as TextField).value;
     this.values[key] = value;
     this.checkFormValidity();
@@ -183,7 +184,11 @@ export class SupportForm extends LitElement {
         <p>* = ${this.localize('support-form-required-field')}</p>
 
         <span class="actions">
-          <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
+          <mwc-button
+            .label=${this.localize('cancel')}
+            .disabled=${this.disabled}
+            @click=${this.cancel}
+          ></mwc-button>
           <mwc-button
             type="submit"
             .label=${this.localize('submit')}

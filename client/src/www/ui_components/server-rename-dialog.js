@@ -28,10 +28,16 @@ Polymer({
     </style>
     <paper-dialog id="renameDialog" with-backdrop="">
       <h3>[[localize('server-rename')]]</h3>
-      <mwc-textfield id="serverNameInput" maxlength="100" tabindex="0"></mwc-textfield>
+      <mwc-textfield
+        id="serverNameInput"
+        maxlength="100"
+        tabindex="0"
+      ></mwc-textfield>
       <div class="buttons">
         <paper-button dialog-dismiss="">[[localize('cancel')]]</paper-button>
-        <paper-button dialog-confirm="" on-tap="_saveRename">[[localize('save')]]</paper-button>
+        <paper-button dialog-confirm="" on-tap="_saveRename"
+          >[[localize('save')]]</paper-button
+        >
       </div>
     </paper-dialog>
   `,
@@ -63,7 +69,10 @@ Polymer({
   _saveRename: function () {
     const newName = this.$.serverNameInput.value;
     if (newName !== this.__serverName) {
-      this.fire('RenameRequested', {serverId: this.__serverId, newName: newName});
+      this.fire('RenameRequested', {
+        serverId: this.__serverId,
+        newName: newName,
+      });
     }
   },
 });

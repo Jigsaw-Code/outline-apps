@@ -30,12 +30,17 @@ export default {
   },
 };
 
-export const Example = ({onSuccess, onError}: {onSuccess: Function; onError: Function}) =>
-  html`
-    <contact-view
-      .localize=${localize}
-      .errorReporter=${{report: console.log}}
-      @success=${onSuccess}
-      @error=${onError}
-    ></contact-view>
-  `;
+export const Example = ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: Function;
+  onError: Function;
+}) => html`
+  <contact-view
+    .localize=${localize}
+    .errorReporter=${{report: console.log}}
+    @success=${onSuccess}
+    @error=${onError}
+  ></contact-view>
+`;

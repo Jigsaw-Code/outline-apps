@@ -20,7 +20,10 @@ import process from 'node:process';
  * A child process is terminated abnormally, caused by a non-zero exit code.
  */
 export class ProcessTerminatedExitCodeError extends Error {
-  constructor(readonly exitCode: number, errJSON: string) {
+  constructor(
+    readonly exitCode: number,
+    errJSON: string
+  ) {
     super(errJSON);
   }
 }
@@ -67,7 +70,9 @@ export class ChildProcessHelper {
    */
   async launch(args: string[]): Promise<void> {
     if (this.childProcess) {
-      throw new Error(`subprocess ${this.processName} has already been launched`);
+      throw new Error(
+        `subprocess ${this.processName} has already been launched`
+      );
     }
     this.childProcess = spawn(this.path, args);
     return (this.waitProcessToExit = new Promise((resolve, reject) => {
@@ -92,7 +97,9 @@ export class ChildProcessHelper {
         }
       };
 
-      this.childProcess?.stdout?.on('data', data => this.stdOutListener?.(data));
+      this.childProcess?.stdout?.on('data', data =>
+        this.stdOutListener?.(data)
+      );
       this.childProcess?.stderr?.on('data', (data?: string | Buffer) => {
         if (this.isDebugModeEnabled) {
           // This will be captured by Sentry

@@ -143,7 +143,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const messages = {
     serverName: server.name,
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
-    connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
+    connectButton: localize(
+      isConnectedState ? 'disconnect-button-label' : 'connect-button-label'
+    ),
   };
 
   const dispatchers = {
@@ -157,15 +159,24 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       ),
     forget: () =>
       element.dispatchEvent(
-        new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId: server.id}, bubbles: true, composed: true})
-      ),
-    connectToggle: () =>
-      element.dispatchEvent(
-        new CustomEvent(isConnectedState ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
+        new CustomEvent(ServerListItemEvent.FORGET, {
           detail: {serverId: server.id},
           bubbles: true,
           composed: true,
         })
+      ),
+    connectToggle: () =>
+      element.dispatchEvent(
+        new CustomEvent(
+          isConnectedState
+            ? ServerListItemEvent.DISCONNECT
+            : ServerListItemEvent.CONNECT,
+          {
+            detail: {serverId: server.id},
+            bubbles: true,
+            composed: true,
+          }
+        )
       ),
   };
 
@@ -190,14 +201,20 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     elements: {
       metadataText: html`
         <div class="card-metadata-text">
-          <h2 class="card-metadata-server-name" id="server-name">${messages.serverName}</h2>
+          <h2 class="card-metadata-server-name" id="server-name">
+            ${messages.serverName}
+          </h2>
           <label class="card-metadata-server-address">${server.address}</label>
         </div>
       `,
       menu: html`
         <mwc-menu ${ref(menu)} menuCorner="END">
-          <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
-          <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
+          <mwc-list-item @click="${dispatchers.beginRename}"
+            >${localize('server-rename')}</mwc-list-item
+          >
+          <mwc-list-item @click="${dispatchers.forget}"
+            >${localize('server-forget')}</mwc-list-item
+          >
         </mwc-menu>
       `,
       menuButton: html`
@@ -238,9 +255,13 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     sharedCSS,
     css`
       .card {
-        --min-indicator-size: calc(var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size));
+        --min-indicator-size: calc(
+          var(--server-name-size) + var(--outline-mini-gutter) +
+            var(--server-address-size)
+        );
         --max-indicator-size: calc(
-          var(--outline-slim-gutter) + var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size) +
+          var(--outline-slim-gutter) + var(--server-name-size) +
+            var(--outline-mini-gutter) + var(--server-address-size) +
             var(--outline-slim-gutter)
         );
 
@@ -264,7 +285,9 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     return html`
       <div class="card">
         <div class="card-metadata" aria-labelledby="server-name">
-          <server-connection-indicator connection-state="${this.server.connectionState}"></server-connection-indicator>
+          <server-connection-indicator
+            connection-state="${this.server.connectionState}"
+          ></server-connection-indicator>
           ${elements.metadataText}
         </div>
         ${elements.menuButton} ${elements.footer}
@@ -278,7 +301,10 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
  * Display a featured Server in a showcase.
  */
 @customElement('server-hero-card')
-export class ServerHeroCard extends LitElement implements ServerListItemElement {
+export class ServerHeroCard
+  extends LitElement
+  implements ServerListItemElement
+{
   @property() server: ServerListItem;
   @property() localize: Localizer;
 
@@ -334,7 +360,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
   render() {
     const {elements, dispatchers, messages} = getSharedComponents(this);
 
-    const connectionStatusText = this.localize(`${this.server.connectionState}-server-state`);
+    const connectionStatusText = this.localize(
+      `${this.server.connectionState}-server-state`
+    );
     const connectToggleKeyboardDispatcher = (event: KeyboardEvent) => {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -346,7 +374,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
 
     return html`
       <div class="card">
-        <div class="card-metadata" aria-labelledby="server-name">${elements.metadataText}</div>
+        <div class="card-metadata" aria-labelledby="server-name">
+          ${elements.metadataText}
+        </div>
         ${elements.menuButton}
         <div class="card-connection-button-container">
           <server-connection-indicator
@@ -358,7 +388,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
             tabindex="0"
             title="${connectionStatusText}"
           ></server-connection-indicator>
-          <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>
+          <label class="card-connection-label" for="${messages.connectButton}"
+            >${connectionStatusText}</label
+          >
         </div>
         ${elements.footer}
       </div>

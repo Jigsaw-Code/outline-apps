@@ -187,20 +187,26 @@ Polymer({
     <!-- no-cancel-on-outside-click prevents the dialog appearing for only
          an instant when the user clicks on some other part of the window.
          This is a real problem on desktop. -->
-    <paper-dialog id="serverDetectedSheet" with-backdrop no-cancel-on-outside-click>
+    <paper-dialog
+      id="serverDetectedSheet"
+      with-backdrop
+      no-cancel-on-outside-click
+    >
       <div class="vertical-margin">
         <div class="title">[[localize('server-access-key-detected')]]</div>
-        <div class="faded">
-          [[localize('server-detected')]]
-        </div>
+        <div class="faded">[[localize('server-detected')]]</div>
         <div class="shadow vertical-margin">
           <paper-input value="[[accessKey]]" no-label-float="" disabled="">
             <iron-icon icon="communication:vpn-key" slot="suffix"></iron-icon>
           </paper-input>
         </div>
         <div class="button-container">
-          <paper-button class="faded" on-tap="_ignoreDetectedServer">[[localize('server-add-ignore')]]</paper-button>
-          <paper-button id="addServerButton" on-tap="_addDetectedServer">[[localize('server-add')]]</paper-button>
+          <paper-button class="faded" on-tap="_ignoreDetectedServer"
+            >[[localize('server-add-ignore')]]</paper-button
+          >
+          <paper-button id="addServerButton" on-tap="_addDetectedServer"
+            >[[localize('server-add')]]</paper-button
+          >
         </div>
       </div>
     </paper-dialog>
@@ -221,44 +227,58 @@ Polymer({
     },
     shouldShowNormalAccessMessage: {
       type: Boolean,
-      computed: '_computeShouldShowNormalAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
+      computed:
+        '_computeShouldShowNormalAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
     },
     shouldShowAltAccessMessage: {
       type: Boolean,
-      computed: '_computeShouldShowAltAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
+      computed:
+        '_computeShouldShowAltAccessMessage(useAltAccessMessage, invalidAccessKeyInput)',
     },
   },
 
-  ready: function() {
-    this.$.serverDetectedSheet.addEventListener('opened-changed', this._openChanged.bind(this));
-    this.$.addServerSheet.addEventListener('opened-changed', this._openChanged.bind(this));
+  ready: function () {
+    this.$.serverDetectedSheet.addEventListener(
+      'opened-changed',
+      this._openChanged.bind(this)
+    );
+    this.$.addServerSheet.addEventListener(
+      'opened-changed',
+      this._openChanged.bind(this)
+    );
     // Workaround for --paper-input-container-input-[focus|invalid] not getting applied.
     // See https://github.com/PolymerElements/paper-input/issues/546.
-    this.$.accessKeyInput.addEventListener('focused-changed', this._inputFocusChanged.bind(this));
-    this.$.accessKeyInput.addEventListener('invalid-changed', this._inputInvalidChanged.bind(this));
+    this.$.accessKeyInput.addEventListener(
+      'focused-changed',
+      this._inputFocusChanged.bind(this)
+    );
+    this.$.accessKeyInput.addEventListener(
+      'invalid-changed',
+      this._inputInvalidChanged.bind(this)
+    );
   },
 
-  openAddServerSheet: function() {
+  openAddServerSheet: function () {
     this.$.serverDetectedSheet.close();
     this.$.addServerSheet.open();
   },
 
-  openAddServerConfirmationSheet: function(accessKey) {
+  openAddServerConfirmationSheet: function (accessKey) {
     this.$.addServerSheet.close();
     this.accessKey = accessKey;
     this.$.serverDetectedSheet.open();
   },
 
-  isAddingServer: function() {
+  isAddingServer: function () {
     return this.$.serverDetectedSheet.opened;
   },
 
-  close: function() {
+  close: function () {
     this.$.addServerSheet.close();
     this.$.serverDetectedSheet.close();
   },
 
-  _accessKeyChanged: function() {
+  _accessKeyChanged: function () {
     // Use debounce to detect when the user has stopped typing.
     this.debounce(
       'accessKeyChanged',
@@ -269,8 +289,8 @@ Polymer({
     );
   },
 
-  _addServerFromInput: function() {
-    var accessKeyInput = this.$.accessKeyInput;
+  _addServerFromInput: function () {
+    const accessKeyInput = this.$.accessKeyInput;
     if (!this.accessKey || this.accessKey === '') {
       accessKeyInput.invalid = false;
       return;
@@ -283,44 +303,60 @@ Polymer({
     this.$.addServerButton.focus();
   },
 
-  _addDetectedServer: function() {
+  _addDetectedServer: function () {
     this.fire('AddServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
-  _ignoreDetectedServer: function() {
+  _ignoreDetectedServer: function () {
     this.fire('IgnoreServerRequested', {accessKey: this.accessKey});
     this.close();
   },
 
   // Event listeners
-  _openChanged: function(event) {
-    var dialog = event.target;
+  _openChanged: function (event) {
+    const dialog = event.target;
     if (dialog.opened) {
       // Scroll the page to the bottom to prevent the dialog from moving when the keyboard
       // appears. Also disallow scrolling to prevent the dialog from sliding under the keyboard.
       // See https://github.com/PolymerElements/iron-overlay-behavior/issues/140.
-      window.scrollTo(0, document.body.scrollHeight);
-      document.body.addEventListener('touchmove', this._disallowScroll, {passive: false});
+      globalThis.scrollTo(0, globalThis.document.body.scrollHeight);
+      globalThis.document.body.addEventListener(
+        'touchmove',
+        this._disallowScroll,
+        {
+          passive: false,
+        }
+      );
     } else {
       // Restore scrolling and reset state.
-      document.body.removeEventListener('touchmove', this._disallowScroll, {passive: false});
+      globalThis.document.body.removeEventListener(
+        'touchmove',
+        this._disallowScroll,
+        {
+          passive: false,
+        }
+      );
       this.accessKey = '';
     }
   },
 
-  _inputFocusChanged: function(event) {
-    var input = event.target;
+  _inputFocusChanged: function (event) {
+    const input = event.target;
     if (input.focused) {
       this.$.accessKeyInput.label = '';
     } else {
-      this.$.accessKeyInput.label = this.localize('server-access-key-label', 'ssProtocol', 'ss://');
+      this.$.accessKeyInput.label = this.localize(
+        'server-access-key-label',
+        'ssProtocol',
+        'ss://'
+      );
     }
     input.toggleClass('input-focus', input.focused);
   },
 
-  _inputInvalidChanged: function(event) {
-    var input = event.target;
+  _inputInvalidChanged: function (event) {
+    const input = event.target;
     input.toggleClass('input-invalid', input.invalid);
     if (input.invalid) {
       this.invalidAccessKeyInput = input.invalid;
@@ -329,15 +365,21 @@ Polymer({
     }
   },
 
-  _disallowScroll: function(event) {
+  _disallowScroll: function (event) {
     event.preventDefault();
   },
 
-  _computeShouldShowNormalAccessMessage(useAltAccessMessage, invalidAccessKeyInput) {
+  _computeShouldShowNormalAccessMessage(
+    useAltAccessMessage,
+    invalidAccessKeyInput
+  ) {
     return !useAltAccessMessage && !invalidAccessKeyInput;
   },
 
-  _computeShouldShowAltAccessMessage(useAltAccessMessage, invalidAccessKeyInput) {
+  _computeShouldShowAltAccessMessage(
+    useAltAccessMessage,
+    invalidAccessKeyInput
+  ) {
     return useAltAccessMessage && !invalidAccessKeyInput;
   },
 });

@@ -14,19 +14,26 @@
 
 import {Localizer} from '@outline/infrastructure/i18n';
 
-import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {
+  fetchShadowsocksSessionConfig,
+  staticKeyToShadowsocksSessionConfig,
+} from './access_key_serialization';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+  private static readonly SUPPORTED_CIPHERS = [
+    'chacha20-ietf-poly1305',
+    'aes-128-gcm',
+    'aes-192-gcm',
+    'aes-256-gcm',
+  ];
 
   errorMessageId?: string;
   private sessionConfig?: ShadowsocksSessionConfig;
@@ -38,7 +45,7 @@ export class OutlineServer implements Server {
     readonly type: ServerType,
     private _name: string,
     eventQueue: events.EventQueue,
-    localize: Localizer,
+    localize: Localizer
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
@@ -51,11 +58,16 @@ export class OutlineServer implements Server {
     }
     if (!_name) {
       if (this.sessionConfigLocation) {
-        this._name = this.sessionConfigLocation.port === '443'
-          ? this.sessionConfigLocation.hostname
-          : `${this.sessionConfigLocation.hostname}:${this.sessionConfigLocation.port}`;
+        this._name =
+          this.sessionConfigLocation.port === '443'
+            ? this.sessionConfigLocation.hostname
+            : `${this.sessionConfigLocation.hostname}:${this.sessionConfigLocation.port}`;
       } else {
-        this._name = localize(this.accessKey.includes('outline=1') ? 'server-default-name-outline' : 'server-default-name');
+        this._name = localize(
+          this.accessKey.includes('outline=1')
+            ? 'server-default-name-outline'
+            : 'server-default-name'
+        );
       }
     }
 
@@ -103,7 +115,9 @@ export class OutlineServer implements Server {
 
   async connect() {
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+      this.sessionConfig = await fetchShadowsocksSessionConfig(
+        this.sessionConfigLocation
+      );
     }
 
     try {
@@ -120,7 +134,10 @@ export class OutlineServer implements Server {
         throw errors.fromErrorCode(cause.errorCode);
       }
 
-      throw new errors.ProxyConnectionFailure(`Failed to connect to server ${this.name}.`, {cause});
+      throw new errors.ProxyConnectionFailure(
+        `Failed to connect to server ${this.name}.`,
+        {cause}
+      );
     }
   }
 
@@ -142,10 +159,11 @@ export class OutlineServer implements Server {
   }
 
   static isServerCipherSupported(cipher?: string) {
-    return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
+    return (
+      cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher)
+    );
   }
 }
-
 
 export interface ShadowsocksSessionConfig {
   host?: string;

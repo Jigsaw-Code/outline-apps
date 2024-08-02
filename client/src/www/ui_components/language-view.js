@@ -41,7 +41,7 @@ class OutlineLanguageView extends DirMixin(PolymerElement) {
           --paper-item-selected: {
             color: var(--medium-green);
             font-weight: normal;
-          }
+          };
         }
         .language-name {
           text-align: left;
@@ -58,7 +58,10 @@ class OutlineLanguageView extends DirMixin(PolymerElement) {
           <template is="dom-repeat" items="{{languages}}" as="lang">
             <paper-item class="language-item" value="{{lang.id}}">
               <span class="language-name">{{lang.name}}</span>
-              <iron-icon icon="check" hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
+              <iron-icon
+                icon="check"
+                hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"
+              ></iron-icon>
             </paper-item>
           </template>
         </paper-listbox>
@@ -85,11 +88,13 @@ class OutlineLanguageView extends DirMixin(PolymerElement) {
     const languageCode = event.detail.value;
     const params = {bubbles: true, composed: true, detail: {languageCode}};
     this.language = languageCode;
-    this.dispatchEvent(new CustomEvent('SetLanguageRequested', params));
+    this.dispatchEvent(
+      new globalThis.CustomEvent('SetLanguageRequested', params)
+    );
   }
 
   _shouldHideCheckmark(selectedLanguage, languageCode) {
     return selectedLanguage !== languageCode;
   }
 }
-customElements.define(OutlineLanguageView.is, OutlineLanguageView);
+globalThis.customElements.define(OutlineLanguageView.is, OutlineLanguageView);

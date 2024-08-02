@@ -25,16 +25,20 @@ import '@material/mwc-formfield';
 import '@polymer/paper-dialog/paper-dialog';
 import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
-import { OutlineFeedbackDialog } from './outline-feedback-dialog';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
+import {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import '@polymer/paper-button/paper-button';
 import * as Sentry from '@sentry/electron/renderer';
 
 import './outline-support-form';
-import {FormValues, OutlineSupportForm, ValidFormValues} from './outline-support-form';
+import {
+  FormValues,
+  OutlineSupportForm,
+  ValidFormValues,
+} from './outline-support-form';
 //import {OutlineErrorReporter} from '../../shared/error_reporter';
 import {Localizer} from '@outline/infrastructure/i18n';
-import { COMMON_STYLES } from './cloud-install-styles';
+import {COMMON_STYLES} from './cloud-install-styles';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum ProgressStep {
@@ -53,12 +57,21 @@ enum IssueType {
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
 const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
-  [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
-  [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
+  [
+    IssueType.CANNOT_ADD_SERVER,
+    'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work',
+  ],
+  [
+    IssueType.CONNECTION,
+    'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service',
+  ],
 ]);
 
 @customElement('outline-contact-us-dialog')
-export class OutlineContactUsDialog extends LitElement implements OutlineFeedbackDialog {
+export class OutlineContactUsDialog
+  extends LitElement
+  implements OutlineFeedbackDialog
+{
   static get styles() {
     return [
       COMMON_STYLES,
@@ -137,9 +150,8 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     IssueType.CANNOT_ADD_SERVER,
     IssueType.CONNECTION,
     IssueType.MANAGING,
-    IssueType.GENERAL
+    IssueType.GENERAL,
   ];
-
 
   @property({type: Function}) localize: Localizer = msg => msg;
 
@@ -175,7 +187,9 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
     const radio = e.target as Radio;
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
-      this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
+      this.exitTemplate = html`${this.localize(
+        'contact-view-exit-open-ticket'
+      )}`;
       this.currentStep = ProgressStep.EXIT;
       return;
     }
@@ -228,7 +242,7 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
           category: this.selectedIssueType?.toString() ?? 'unknown',
           isFeedback: true,
           formVersion: 2,
-          ...tags
+          ...tags,
         },
       });
     } catch (e) {
@@ -248,16 +262,18 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
   private localizeWithUrl(messageID: string, url: string): TemplateResult {
     const openLink = `<a href="${url}" target="_blank">`;
     const closeLink = '</a>';
-    return html` ${unsafeHTML(this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink))} `;
+    return html`
+      ${unsafeHTML(
+        this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink)
+      )}
+    `;
   }
 
   private get renderIntroTemplate(): TemplateResult {
     const introMsg = this.installationFailed
       ? this.localize('feedback-explanation-install')
       : this.localize('contact-view-intro');
-    return html`
-      <p class="intro">${introMsg}</p>
-    `;
+    return html` <p class="intro">${introMsg}</p> `;
   }
 
   private get renderForm(): TemplateResult | typeof nothing {
@@ -342,12 +358,14 @@ export class OutlineContactUsDialog extends LitElement implements OutlineFeedbac
         <h2>${titleMsg}</h2>
         <main>${this.renderMainContent}</main>
         ${this.currentStep === ProgressStep.FORM
-            ? nothing
-            : html`
-            <fieldset class="buttons">
-              <paper-button dialog-dismiss="">${this.localize('cancel')}</paper-button>
-            </fieldset>
-        `}
+          ? nothing
+          : html`
+              <fieldset class="buttons">
+                <paper-button dialog-dismiss=""
+                  >${this.localize('cancel')}</paper-button
+                >
+              </fieldset>
+            `}
       </paper-dialog>
     `;
   }

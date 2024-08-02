@@ -25,7 +25,7 @@ import '@material/mwc-textfield';
 import {TextField} from '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {Localizer} from '@outline/infrastructure/i18n';
-import { COMMON_STYLES } from './cloud-install-styles';
+import {COMMON_STYLES} from './cloud-install-styles';
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -107,7 +107,8 @@ export class OutlineSupportForm extends LitElement {
 
   /** Checks the entire form's validity state. */
   private checkFormValidity() {
-    const fieldNodes = this.formRef.value.querySelectorAll<FormControl>('*[name]');
+    const fieldNodes =
+      this.formRef.value.querySelectorAll<FormControl>('*[name]');
     this.valid = Array.from(fieldNodes).every(field => field.validity.valid);
   }
 
@@ -129,17 +130,22 @@ export class OutlineSupportForm extends LitElement {
   }
 
   private handleTextInput(e: Event) {
-    const key: keyof FormValues = (e.target as TextField).name as keyof FormValues;
+    const key: keyof FormValues = (e.target as TextField)
+      .name as keyof FormValues;
     const value = (e.target as TextField).value;
     this.values[key] = value;
     this.checkFormValidity();
   }
 
   render() {
-    const providers = OutlineSupportForm.CLOUD_PROVIDERS
-      .map((provider): CloudProviderOption => {
-        return {value: provider, label: this.localize(`support-form-cloud-provider-${provider}`)};
-      })
+    const providers = OutlineSupportForm.CLOUD_PROVIDERS.map(
+      (provider): CloudProviderOption => {
+        return {
+          value: provider,
+          label: this.localize(`support-form-cloud-provider-${provider}`),
+        };
+      }
+    );
     /** We should sort the providers by their labels, which may be localized. */
     providers.sort((a, b) => a.label.localeCompare(b.label));
     providers.push({value: 'other', label: this.localize('feedback-other')});
@@ -173,7 +179,11 @@ export class OutlineSupportForm extends LitElement {
           }}
           @blur=${this.checkFormValidity}
         >
-          ${providers.map(({value, label}) => html` <mwc-list-item value="${value}">${label}</mwc-list-item> `)}
+          ${providers.map(
+            ({value, label}) => html`
+              <mwc-list-item value="${value}">${label}</mwc-list-item>
+            `
+          )}
         </mwc-select>
 
         <mwc-textfield
@@ -202,7 +212,11 @@ export class OutlineSupportForm extends LitElement {
         <p>* = ${this.localize('support-form-required-field')}</p>
 
         <span class="actions">
-          <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
+          <mwc-button
+            .label=${this.localize('cancel')}
+            .disabled=${this.disabled}
+            @click=${this.cancel}
+          ></mwc-button>
           <mwc-button
             type="submit"
             .label=${this.localize('feedback-submit')}
