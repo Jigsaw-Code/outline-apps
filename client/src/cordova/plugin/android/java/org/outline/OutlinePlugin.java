@@ -190,7 +190,9 @@ public class OutlinePlugin extends CordovaPlugin {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
-          final JSONObject config = args.getJSONObject(1);
+          // TODO(fortuna): use serviceName.
+          // final String name = args.getString(1);
+          final JSONObject config = args.getJSONObject(2);
           sendActionResult(callback, startVpnTunnel(tunnelId, config));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
