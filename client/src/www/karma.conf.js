@@ -14,9 +14,9 @@
 
 const path = require('path');
 
-const testConfig = require('./webpack_test.mjs');
-
 module.exports = async function (config) {
+  const testConfig = await import('./webpack_test.mjs');
+
   config.set({
     browsers: ['ChromiumHeadless'],
     colors: true,
