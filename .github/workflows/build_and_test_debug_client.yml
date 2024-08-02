@@ -54,11 +54,6 @@ jobs:
       - name: Test Web App
         run: npm run action client/src/www/test
 
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ./client/src/output/coverage/www/coverage-final.json
-          flags: unittests, www
-
   backend_test:
     name: Go Backend Test
     runs-on: ubuntu-20.04
@@ -168,11 +163,6 @@ jobs:
       - name: Build MacOS Client
         run: npm run action client/src/cordova/build macos
 
-      - uses: codecov/codecov-action@v4
-        with:
-          file: ./client/src/output/coverage/apple/macos/TestResult.xcresult
-          flags: unittests, apple, macos
-
   ios_debug_build:
     name: iOS Debug Build
     runs-on: macos-13
@@ -209,11 +199,6 @@ jobs:
       - name: Build iOS Client
         run: npm run action client/src/cordova/build ios
 
-      - uses: codecov/codecov-action@v4
-        with:
-          file: ./client/src/output/coverage/apple/ios/TestResult.xcresult
-          flags: unittests, apple, ios
-
   maccatalyst_debug_build:
     name: Mac Catalyst Debug Build
     runs-on: macos-13
@@ -249,11 +234,6 @@ jobs:
 
       - name: Build Mac Catalyst Client
         run: npm run action client/src/cordova/build maccatalyst
-
-      - uses: codecov/codecov-action@v4
-        with:
-          file: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
-          flags: unittests, apple, maccatalyst
 
   android_debug_build:
     name: Android Debug Build
