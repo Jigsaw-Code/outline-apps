@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-import {html, css, LitElement, TemplateResult, nothing} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
-import {Ref, createRef, ref} from 'lit/directives/ref.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/mwc-circular-progress';
 import '@material/mwc-radio';
 import '@material/mwc-select';
 import '@material/mwc-formfield';
 import '@polymer/paper-dialog/paper-dialog';
-import {Radio} from '@material/mwc-radio';
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
-import {OutlineFeedbackDialog} from './outline-feedback-dialog';
+import {Radio} from '@material/mwc-radio';
+
+import {Localizer} from '@outline/infrastructure/i18n';
 import {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog';
 import '@polymer/paper-button/paper-button';
 import * as Sentry from '@sentry/electron/renderer';
+import {html, css, LitElement, TemplateResult, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Ref, createRef, ref} from 'lit/directives/ref.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import {COMMON_STYLES} from './cloud-install-styles';
+import {OutlineFeedbackDialog} from './outline-feedback-dialog';
 import './outline-support-form';
 import {
   FormValues,
   OutlineSupportForm,
   ValidFormValues,
 } from './outline-support-form';
-//import {OutlineErrorReporter} from '../../shared/error_reporter';
-import {Localizer} from '@outline/infrastructure/i18n';
-import {COMMON_STYLES} from './cloud-install-styles';
+// import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum ProgressStep {

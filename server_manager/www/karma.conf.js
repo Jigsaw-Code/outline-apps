@@ -14,6 +14,7 @@
 // limitations under the License.
 
 const webpack = require('webpack');
+
 const {makeConfig} = require('../base.webpack.js');
 process.env.CHROMIUM_BIN = require('puppeteer').executablePath();
 

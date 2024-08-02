@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {contextBridge, ipcRenderer} from 'electron';
 import '@sentry/electron/preload';
 import type {HttpRequest, HttpResponse} from '@outline/infrastructure/path_api';
 import {Breadcrumb} from '@sentry/electron';
+import {contextBridge, ipcRenderer} from 'electron';
 
 import * as digitalocean_oauth from './digitalocean_oauth';
 import * as gcp_oauth from './gcp_oauth';

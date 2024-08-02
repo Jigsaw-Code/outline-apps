@@ -43,7 +43,6 @@
     "@sentry/types": "^8.22.0",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
-    "browserslist": "^4.20.3",
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-updater": "^5.0.5",
