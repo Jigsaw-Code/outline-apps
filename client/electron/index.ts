@@ -459,7 +459,7 @@ function main() {
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {id: string, name: string, config: ShadowsocksSessionConfig}): Promise<void> => {
+    async (_, args: {config: ShadowsocksSessionConfig; id: string}): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
@@ -469,7 +469,7 @@ function main() {
         await currentTunnel.onceDisconnected;
       }
 
-      console.log(`connecting to ${args.name} (${args.id})...`);
+      console.log(`connecting to ${args.id}...`);
 
       try {
         // We must convert the host from a potential "hostname" to an "IP" address
@@ -479,7 +479,7 @@ function main() {
         args.config.host = await lookupIp(args.config.host || '');
 
         await startVpn(args.config, args.id);
-        console.log(`connected to ${args.name} (${args.id})`);
+        console.log(`connected to ${args.id}`);
         await setupAutoLaunch(args);
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
         tunnelStore.save(args).catch(() => {

@@ -99,9 +99,8 @@ export interface Account {
    * @param projectId - The GCP project ID.
    * @param name - The name to be given to the server.
    * @param zone - The GCP zone to create the server in.
-   * @param metricsEnabled - Whether to enable metrics collection.
    */
-  createServer(projectId: string, name: string, zone: Zone, metricsEnabled: boolean): Promise<ManagedServer>;
+  createServer(projectId: string, name: string, zone: Zone): Promise<ManagedServer>;
 
   /**
    * Lists the Outline servers in a given GCP project.

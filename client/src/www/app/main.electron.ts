@@ -17,7 +17,6 @@
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import {Localizer} from '@outline/infrastructure/i18n';
 import * as Sentry from '@sentry/electron/renderer';
 
 import {AbstractClipboard} from './clipboard';
@@ -102,11 +101,11 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined {
     if (isOsSupported) {
       return new OutlineServerRepository((id: string) => {
         return new ElectronTunnel(id);
-      }, eventQueue, window.localStorage, localize);
+      }, eventQueue, window.localStorage);
     }
     return undefined;
   },

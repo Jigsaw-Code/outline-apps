@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
@@ -109,8 +108,7 @@ export class OutlineServerRepository implements ServerRepository {
   constructor(
     private newTunnel: (id: string) => PlatformTunnel,
     private eventQueue: events.EventQueue,
-    private storage: Storage,
-    private localize: Localizer,
+    private storage: Storage
   ) {
     this.loadServers();
   }
@@ -310,8 +308,7 @@ export class OutlineServerRepository implements ServerRepository {
       accessKey,
       isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
-      this.eventQueue,
-      this.localize
+      this.eventQueue
     );
 
     try {

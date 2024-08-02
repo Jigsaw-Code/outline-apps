@@ -49,7 +49,11 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 - (id)init {
   self = [super init];
-  NSString *appGroup = @"group.org.getoutline.client";
+#if (TARGET_OS_OSX || TARGET_OS_MACCATALYST)
+  NSString *appGroup = @"QT8Z3Q9V3A.org.outline.macos.client";
+#else
+  NSString *appGroup = @"group.org.outline.ios.client";
+#endif
   NSURL *containerUrl = [[NSFileManager defaultManager]
                          containerURLForSecurityApplicationGroupIdentifier:appGroup];
   NSString *logsDirectory = [[containerUrl path] stringByAppendingPathComponent:@"Logs"];
@@ -61,7 +65,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
   _tunnelStore = [[OutlineTunnelStore alloc] initWithAppGroup:appGroup];
 
-  _packetQueue = dispatch_queue_create("org.getoutline.packetqueue", DISPATCH_QUEUE_SERIAL);
+  _packetQueue = dispatch_queue_create("org.outline.ios.packetqueue", DISPATCH_QUEUE_SERIAL);
 
   return self;
 }
@@ -182,6 +186,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
     DDLogError(@"Missing action key in app message");
     return completionHandler(nil);
   }
+  DDLogInfo(@"Received app message: %@", action);
   void (^callbackWrapper)(NSNumber *) = ^void(NSNumber *errorCode) {
     NSString *tunnelId = @"";
     if (self.tunnelConfig != nil) {
@@ -192,7 +197,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
       kMessageKeyErrorCode : errorCode,
       kMessageKeyTunnelId : tunnelId
     };
-    DDLogDebug(@"Received app message: %@, response: %@", action, response);
     completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   };
   if ([kActionStart isEqualToString:action] || [kActionRestart isEqualToString:action]) {

@@ -297,7 +297,6 @@ function write_config() {
     config+=("\"name\": \"$(escape_json_string "${SB_DEFAULT_SERVER_NAME}")\"")   
   fi
   config+=("\"hostname\": \"$(escape_json_string "${PUBLIC_HOSTNAME}")\"")
-  config+=("\"metricsEnabled\": ${SB_METRICS_ENABLED:-false}")
   echo "{$(join , "${config[@]}")}" > "${STATE_DIR}/shadowbox_server_config.json"
 }
 

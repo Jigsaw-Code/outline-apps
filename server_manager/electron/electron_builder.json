@@ -1,5 +1,5 @@
 {
-  "asarUnpack": ["server_manager/www/images"],
+  "asarUnpack": ["server_manager/web_app/images"],
   "artifactName": "Outline-Manager.${ext}",
   "linux": {
     "icon": "icons/png",

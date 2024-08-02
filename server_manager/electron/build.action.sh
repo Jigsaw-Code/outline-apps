@@ -50,7 +50,7 @@ if [[ -z "${WEBPACK_MODE:-}" ]]; then
 fi
 
 # Build the Web App.
-node infrastructure/build/run_action.mjs server_manager/www/build
+node infrastructure/build/run_action.mjs server_manager/web_app/build
 
 # Compile the Electron main process and preload to the app root folder.
 # Since Node.js on Cygwin doesn't like absolute Unix-style paths,
@@ -60,7 +60,7 @@ webpack --config=server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--m
 
 # Assemble everything together.
 mkdir -p "${STATIC_DIR}/server_manager"
-cp -r "${BUILD_DIR}/server_manager/www/static" "${STATIC_DIR}/server_manager/www/"
+cp -r "${BUILD_DIR}/server_manager/web_app/static" "${STATIC_DIR}/server_manager/web_app/"
 
 # Electron requires a package.json file for the app's name, etc.
 # We also need to install NPMs at this location for require()

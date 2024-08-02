@@ -49,8 +49,7 @@ function getRootEl() {
 }
 
 function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
-  const localize = getLocalizationFunction();
-  let repo = platform.newServerRepo(eventQueue, localize);
+  let repo = platform.newServerRepo(eventQueue);
   if (repo) {
     return repo;
   }
@@ -58,7 +57,7 @@ function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
 
   repo = new OutlineServerRepository((id: string) => {
     return new FakeTunnel(id);
-  }, eventQueue, window.localStorage, localize)
+  }, eventQueue, window.localStorage)
 
   if (repo.getAll().length === 0) {
     repo.add(

@@ -40,11 +40,10 @@ export async function main(...parameters) {
   const {platform, buildMode, verbose, buildNumber, versionName} = getBuildParameters(parameters);
 
   await runAction('client/src/www/build', ...parameters);
-  await runAction('client/go/build', ...parameters);
-  
-  const CORDOVA_PROJECT_DIR =  path.resolve(getRootDir(), 'client');
-  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'platforms'));
-  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'plugins'));
+  await runAction('client/src/tun2socks/build', ...parameters);
+
+  await rmfr(path.resolve(getRootDir(), 'platforms'));
+  await rmfr(path.resolve(getRootDir(), 'plugins'));
 
   if (verbose) {
     cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Localizer} from '@outline/infrastructure/i18n';
-
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {OutlineServerRepository} from './outline_server_repository';
@@ -27,7 +25,7 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 // TODO(fortuna): pick platform-specific implementations at build time instead.
 export interface OutlinePlatform {
   // Creates the OutlineServerRepository for this platform. Returns undefined if the platform is not supported.
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined;
+  newServerRepo(eventQueue: EventQueue): OutlineServerRepository | undefined;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

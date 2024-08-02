@@ -36,11 +36,13 @@ class OutlinePlugin: CDVPlugin {
     private var callbacks: [String: String]!
 
 #if os(macOS) || targetEnvironment(macCatalyst)
+
     private static let kPlatform = "macOS"
+    private static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
 #else
     private static let kPlatform = "iOS"
+    private static let kAppGroup = "group.org.outline.ios.client"
 #endif
-    private static let kAppGroup = "group.org.getoutline.client"
 
     override func pluginInitialize() {
         self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
@@ -81,17 +83,13 @@ class OutlinePlugin: CDVPlugin {
             return sendError("Missing tunnel ID", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-        guard let name = command.argument(at: 1) as? String else {
-            return sendError("Missing service name", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
-        }
-        DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
+        DDLogInfo("\(Action.start) \(tunnelId)")
         // TODO(fortuna): Move the config validation to the config parsing code in Go.
-        guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
+        guard let configJson = command.argument(at: 1) as? [String: Any], containsExpectedKeys(configJson) else {
             return sendError("Invalid configuration", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
+        OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)

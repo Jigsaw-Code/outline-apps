@@ -40,6 +40,10 @@ export interface Server {
   // The address of the service.
   address: string;
 
+  // Whether this is an Outline server (access key ends in 'outline=1').
+  // Used to provide a default name to the server card.
+  isOutlineServer: boolean;
+
   // The message identifier corresponding to the server error state. This identifier
   // must match one of the localized app message.
   errorMessageId?: string;

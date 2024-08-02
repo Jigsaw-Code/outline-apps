@@ -10,7 +10,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.org.getoutline.client</string>
+		<string>group.org.outline.ios.client</string>
 	</array>
 	<key>com.apple.security.network.client</key>
 	<true/>

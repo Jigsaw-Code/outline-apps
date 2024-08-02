@@ -19,12 +19,12 @@ set -e
 readonly TEST_DIR="${BUILD_DIR}/js/server_manager/"
 rm -rf "${TEST_DIR}"
 
-npm run action server_manager/www/build_install_script
+npm run action server_manager/web_app/build_install_script
 
 # Use commonjs modules, jasmine runs in node.
 tsc -p "${ROOT_DIR}/server_manager" --outDir "${TEST_DIR}" --module commonjs
-jasmine "output/build/js/**/*.spec.js" "!output/build/js/server_manager/www/**/*"
+jasmine "output/build/js/**/*.spec.js" "!output/build/js/server_manager/web_app/**/*"
 
-npm run action server_manager/www/test
+npm run action server_manager/web_app/test
 
 rm -rf "${TEST_DIR}"

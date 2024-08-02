@@ -66,5 +66,5 @@ export interface Account {
   listLocations(): Promise<Readonly<RegionOption[]>>;
   // Creates a server and returning it when it becomes active (i.e. the server has
   // created, not necessarily once shadowbox installation has finished).
-  createServer(region: Region, name: string, metricsEnabled: boolean): Promise<ManagedServer>;
+  createServer(region: Region, name: string): Promise<ManagedServer>;
 }

@@ -18,8 +18,9 @@
   "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
+    "web_app/gallery_app",
     // FIXME: these tests fail with a runtime error because app.ts depends on
     // polymer, which targets the browser and uses ES6 imports.
-    "www/app.spec.ts"
+    "web_app/app.spec.ts"
   ]
 }

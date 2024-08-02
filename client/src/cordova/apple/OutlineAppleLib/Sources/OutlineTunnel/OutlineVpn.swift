@@ -82,21 +82,21 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   // Starts a VPN tunnel as specified in the OutlineTunnel object.
-  public func start(_ tunnelId: String, name: String?, configJson: [String: Any], _ completion: @escaping (Callback)) {
+  public func start(_ tunnelId: String, configJson: [String: Any], _ completion: @escaping (Callback)) {
     guard !isActive(tunnelId) else {
       return completion(ErrorCode.noError)
     }
     if isVpnConnected() {
       return restartVpn(tunnelId, configJson: configJson, completion: completion)
     }
-    self.startVpn(tunnelId, withName: name, configJson: configJson, isAutoConnect: false, completion)
+    self.startVpn(tunnelId, configJson: configJson, isAutoConnect: false, completion)
   }
 
   // Starts the last successful VPN tunnel.
   @objc public func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
     // Explicitly pass an empty tunnel's configuration, so the VpnExtension process retrieves
     // the last configuration from disk.
-    self.startVpn(nil, withName: nil, configJson:nil, isAutoConnect: true, completion)
+    self.startVpn(nil, configJson:nil, isAutoConnect: true, completion)
   }
 
   // Tears down the VPN if the tunnel with id |tunnelId| is active.
@@ -122,9 +122,8 @@ public class OutlineVpn: NSObject {
 
   // MARK: Helpers
 
-  private func startVpn(_ tunnelId: String?, withName optionalName: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
-    // TODO(fortuna): Use localized name.
-    setupVpn(withName: optionalName ?? "Outline Server") { error in
+  private func startVpn(_ tunnelId: String?, configJson: [String: Any]?, isAutoConnect: Bool, _ completion: @escaping(Callback)) {
+    setupVpn() { error in
       if error != nil {
         DDLogError("Failed to setup VPN: \(String(describing: error))")
         return completion(ErrorCode.vpnPermissionNotGranted);
@@ -174,7 +173,7 @@ public class OutlineVpn: NSObject {
 
   // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
   // enables the existing configuration.
-  private func setupVpn(withName name:String, completion: @escaping(Error?) -> Void) {
+  private func setupVpn(completion: @escaping(Error?) -> Void) {
     NETunnelProviderManager.loadAllFromPreferences() { (managers, error) in
       if let error = error {
         DDLogError("Failed to load VPN configuration: \(error)")
@@ -183,8 +182,6 @@ public class OutlineVpn: NSObject {
       var manager: NETunnelProviderManager!
       if let managers = managers, managers.count > 0 {
         manager = managers.first
-        // TODO: dedupe this with the call below.
-        manager.localizedDescription = name
         let hasOnDemandRules = !(manager.onDemandRules?.isEmpty ?? true)
         if manager.isEnabled && hasOnDemandRules {
           self.tunnelManager = manager
@@ -192,12 +189,10 @@ public class OutlineVpn: NSObject {
         }
       } else {
         let config = NETunnelProviderProtocol()
-        // TODO(fortuna): set to something meaningful if we can.
-        config.serverAddress = "Outline"
         config.providerBundleIdentifier = OutlineVpn.kVpnExtensionBundleId
+        config.serverAddress = "Outline"
 
         manager = NETunnelProviderManager()
-        manager.localizedDescription = name
         manager.protocolConfiguration = config
       }
       // Set an on-demand rule to connect to any available network to implement auto-connect on boot
