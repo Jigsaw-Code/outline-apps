@@ -17,17 +17,35 @@
 // any more. We have to inject key features into the global window object
 // in preload: https://www.electronjs.org/docs/latest/tutorial/tutorial-preload.
 
-// Please also update preload.d.ts whenever you changed this file.
-
 import * as os from 'node:os';
 
 import {
+  Clipboard,
   clipboard,
   contextBridge,
   ipcRenderer,
   IpcRendererEvent,
 } from 'electron';
 import '@sentry/electron/preload';
+
+export interface NativeOsApi {
+  platform: string;
+}
+
+export interface ElectronApi {
+  readonly os: NativeOsApi;
+  readonly clipboard: Clipboard;
+  readonly methodChannel: ElectronRendererMethodChannel;
+}
+
+declare global {
+  interface Window {
+    /**
+     * All electron or node features exposed to electron's renderer process.
+     */
+    electron: ElectronApi;
+  }
+}
 
 /**
  * The method channel for sending messages through electron's IPC.

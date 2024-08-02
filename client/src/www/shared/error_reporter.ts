@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import * as Sentry from '@sentry/browser';
-import {Integration as SentryIntegration} from '@sentry/types';
+
+type SentryIntegration = typeof Sentry.Integrations.Breadcrumbs;
 
 export type Tags = {[id: string]: string | boolean | number};
 
@@ -102,7 +103,8 @@ export function getSentryBrowserIntegrations(
     history: false,
     sentry: false,
     xhr: false,
-  });
+  }) as unknown as SentryIntegration;
+
   integrations.push(breadcrumbsIntegration);
   return integrations;
 }

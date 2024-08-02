@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import '../types/webintents.d.ts';
+/// <reference types='../types/webintents.d.ts'/>
 
 export class UrlInterceptor {
   protected launchUrl?: string;

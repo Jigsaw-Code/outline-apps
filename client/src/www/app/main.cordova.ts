@@ -13,8 +13,8 @@
 // limitations under the License.
 
 /// <reference types='cordova'/>
+/// <reference types='../types/webintents.d.ts'/>
 
-import '../types/webintents.d.ts';
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
