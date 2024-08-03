@@ -1,3 +1,17 @@
+# Copyright 2024 The Outline Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 name: Build and Test / Client
 
 concurrency:
@@ -40,10 +54,10 @@ jobs:
       - name: Test Web App
         run: npm run action client/src/www/test
 
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ./client/src/output/coverage/www/coverage-final.json
-          flags: unittests, www
+      # - uses: codecov/codecov-action@v3
+      #   with:
+      #     files: ./client/src/output/coverage/www/coverage-final.json
+      #     flags: unittests, www
 
   backend_test:
     name: Go Backend Test
@@ -154,11 +168,10 @@ jobs:
       - name: Build MacOS Client
         run: npm run action client/src/cordova/build macos
 
-      - uses: codecov/codecov-action@v3
-        with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/macos/TestResult.xcresult
-          flags: unittests, apple, macos
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     file: ./client/src/output/coverage/apple/macos/TestResult.xcresult
+      #     flags: unittests, apple, macos
 
   ios_debug_build:
     name: iOS Debug Build
@@ -196,11 +209,10 @@ jobs:
       - name: Build iOS Client
         run: npm run action client/src/cordova/build ios
 
-      - uses: codecov/codecov-action@v3
-        with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/ios/TestResult.xcresult
-          flags: unittests, apple, ios
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     file: ./client/src/output/coverage/apple/ios/TestResult.xcresult
+      #     flags: unittests, apple, ios
 
   maccatalyst_debug_build:
     name: Mac Catalyst Debug Build
@@ -238,11 +250,10 @@ jobs:
       - name: Build Mac Catalyst Client
         run: npm run action client/src/cordova/build maccatalyst
 
-      - uses: codecov/codecov-action@v3
-        with:
-          xcode: true
-          xcode_archive_path: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
-          flags: unittests, apple, maccatalyst
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     file: ./client/src/output/coverage/apple/maccatalyst/TestResult.xcresult
+      #     flags: unittests, apple, maccatalyst
 
   android_debug_build:
     name: Android Debug Build
