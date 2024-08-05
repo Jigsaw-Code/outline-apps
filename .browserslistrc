@@ -1,6 +1,7 @@
-# The Android minSdk specified in the config.xml is 22, which maps to Android 5.0.
-# This is webview released with that version of Android
-android 127
+# The Android minSdk specified in the config.xml is 26, which maps to Android 8.0.
+# This is webview released with that version of Android:
+# (see: https://android-system-webview.en.uptodown.com/android/versions)
+android 120
 
 # We use Electron v19.1.
 # This is the version of Chrome it requires:
