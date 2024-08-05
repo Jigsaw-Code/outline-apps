@@ -42,8 +42,13 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
+
+// TODO(daniellacosse): Remove these once we have a better way to import views.
+// eslint-disable-next-line n/no-missing-import
 import '../views/contact_view';
+// eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
+
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
 
