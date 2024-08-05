@@ -86,21 +86,32 @@ export class CloudAccounts implements accounts.CloudAccounts {
 
   /** Loads the saved cloud accounts from disk. */
   private load(): void {
-    const digitalOceanAccountJsonString = this.storage.getItem(this.DIGITALOCEAN_ACCOUNT_STORAGE_KEY);
+    const digitalOceanAccountJsonString = this.storage.getItem(
+      this.DIGITALOCEAN_ACCOUNT_STORAGE_KEY
+    );
     if (!digitalOceanAccountJsonString) {
       const digitalOceanToken = this.loadLegacyDigitalOceanToken();
       if (digitalOceanToken) {
-        this.digitalOceanAccount = this.createDigitalOceanAccount(digitalOceanToken);
+        this.digitalOceanAccount =
+          this.createDigitalOceanAccount(digitalOceanToken);
         this.save();
       }
     } else {
-      const digitalOceanAccountJson: DigitalOceanAccountJson = JSON.parse(digitalOceanAccountJsonString);
-      this.digitalOceanAccount = this.createDigitalOceanAccount(digitalOceanAccountJson.accessToken);
+      const digitalOceanAccountJson: DigitalOceanAccountJson = JSON.parse(
+        digitalOceanAccountJsonString
+      );
+      this.digitalOceanAccount = this.createDigitalOceanAccount(
+        digitalOceanAccountJson.accessToken
+      );
     }
 
-    const gcpAccountJsonString = this.storage.getItem(this.GCP_ACCOUNT_STORAGE_KEY);
+    const gcpAccountJsonString = this.storage.getItem(
+      this.GCP_ACCOUNT_STORAGE_KEY
+    );
     if (gcpAccountJsonString) {
-      const gcpAccountJson: GcpAccountJson = JSON.parse(this.storage.getItem(this.GCP_ACCOUNT_STORAGE_KEY));
+      const gcpAccountJson: GcpAccountJson = JSON.parse(
+        this.storage.getItem(this.GCP_ACCOUNT_STORAGE_KEY)
+      );
       this.gcpAccount = this.createGcpAccount(gcpAccountJson.refreshToken);
     }
   }
@@ -120,7 +131,12 @@ export class CloudAccounts implements accounts.CloudAccounts {
   }
 
   private createDigitalOceanAccount(accessToken: string): DigitalOceanAccount {
-    return new DigitalOceanAccount('do', accessToken, this.shadowboxSettings, this.isDebugMode);
+    return new DigitalOceanAccount(
+      'do',
+      accessToken,
+      this.shadowboxSettings,
+      this.isDebugMode
+    );
   }
 
   private createGcpAccount(refreshToken: string): GcpAccount {
@@ -131,7 +147,10 @@ export class CloudAccounts implements accounts.CloudAccounts {
     if (this.digitalOceanAccount) {
       const accessToken = this.digitalOceanAccount.getAccessToken();
       const digitalOceanAccountJson: DigitalOceanAccountJson = {accessToken};
-      this.storage.setItem(this.DIGITALOCEAN_ACCOUNT_STORAGE_KEY, JSON.stringify(digitalOceanAccountJson));
+      this.storage.setItem(
+        this.DIGITALOCEAN_ACCOUNT_STORAGE_KEY,
+        JSON.stringify(digitalOceanAccountJson)
+      );
       this.saveLegacyDigitalOceanToken(accessToken);
     } else {
       this.storage.removeItem(this.DIGITALOCEAN_ACCOUNT_STORAGE_KEY);
@@ -140,7 +159,10 @@ export class CloudAccounts implements accounts.CloudAccounts {
     if (this.gcpAccount) {
       const refreshToken = this.gcpAccount.getRefreshToken();
       const gcpAccountJson: GcpAccountJson = {refreshToken};
-      this.storage.setItem(this.GCP_ACCOUNT_STORAGE_KEY, JSON.stringify(gcpAccountJson));
+      this.storage.setItem(
+        this.GCP_ACCOUNT_STORAGE_KEY,
+        JSON.stringify(gcpAccountJson)
+      );
     } else {
       this.storage.removeItem(this.GCP_ACCOUNT_STORAGE_KEY);
     }

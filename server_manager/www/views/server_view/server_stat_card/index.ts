@@ -45,15 +45,15 @@ export class ServerStatCard extends LitElement {
       }
 
       .data,
-      .data-value, 
+      .data-value,
       .name {
         all: initial;
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
       }
 
       mwc-icon,
       .data,
-      .data-value, 
+      .data-value,
       .name {
         color: var(--server-foreground);
       }
@@ -79,14 +79,11 @@ export class ServerStatCard extends LitElement {
   ];
 
   render() {
-    return html`
-      <mwc-icon class="icon">${this.icon}</mwc-icon>
+    return html` <mwc-icon class="icon">${this.icon}</mwc-icon>
       <p class="data">
         <span class="data-value">${this.value}</span>
         <span class="data-units">${this.units}</span>
       </p>
-      <p class="name">
-        ${this.name}
-      </p>`;
+      <p class="name">${this.name}</p>`;
   }
 }

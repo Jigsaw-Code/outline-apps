@@ -35,7 +35,10 @@ describe('formatBytesParts', () => {
       expect(russian.unit).toEqual('кБ');
       expect(russian.value).toEqual('3');
 
-      const simplifiedChinese = formatting.formatBytesParts(1.5 * 10 ** 9, 'zh-CN');
+      const simplifiedChinese = formatting.formatBytesParts(
+        1.5 * 10 ** 9,
+        'zh-CN'
+      );
       expect(simplifiedChinese.unit).toEqual('GB');
       expect(simplifiedChinese.value).toEqual('1.5');
 
@@ -72,9 +75,15 @@ function makeDisplayDataAmount(value: number, unit: 'MB' | 'GB') {
 
 describe('displayDataAmountToBytes', () => {
   it('correctly converts DisplayDataAmounts to byte values', () => {
-    expect(formatting.displayDataAmountToBytes(makeDisplayDataAmount(1, 'MB'))).toEqual(10 ** 6);
-    expect(formatting.displayDataAmountToBytes(makeDisplayDataAmount(20, 'GB'))).toEqual(2 * 10 ** 10);
-    expect(formatting.displayDataAmountToBytes(makeDisplayDataAmount(0, 'MB'))).toEqual(0);
+    expect(
+      formatting.displayDataAmountToBytes(makeDisplayDataAmount(1, 'MB'))
+    ).toEqual(10 ** 6);
+    expect(
+      formatting.displayDataAmountToBytes(makeDisplayDataAmount(20, 'GB'))
+    ).toEqual(2 * 10 ** 10);
+    expect(
+      formatting.displayDataAmountToBytes(makeDisplayDataAmount(0, 'MB'))
+    ).toEqual(0);
   });
   it('handles null input', () => {
     expect(formatting.displayDataAmountToBytes(null)).toBeNull();
@@ -83,9 +92,15 @@ describe('displayDataAmountToBytes', () => {
 
 describe('bytesToDisplayDataAmount', () => {
   it('correctly converts byte values to DisplayDataAmounts', () => {
-    expect(formatting.bytesToDisplayDataAmount(10 ** 6)).toEqual(makeDisplayDataAmount(1, 'MB'));
-    expect(formatting.bytesToDisplayDataAmount(3 * 10 ** 9)).toEqual(makeDisplayDataAmount(3, 'GB'));
-    expect(formatting.bytesToDisplayDataAmount(7 * 10 ** 5)).toEqual(makeDisplayDataAmount(0, 'MB'));
+    expect(formatting.bytesToDisplayDataAmount(10 ** 6)).toEqual(
+      makeDisplayDataAmount(1, 'MB')
+    );
+    expect(formatting.bytesToDisplayDataAmount(3 * 10 ** 9)).toEqual(
+      makeDisplayDataAmount(3, 'GB')
+    );
+    expect(formatting.bytesToDisplayDataAmount(7 * 10 ** 5)).toEqual(
+      makeDisplayDataAmount(0, 'MB')
+    );
   });
   it('handles null and undefined input', () => {
     expect(formatting.bytesToDisplayDataAmount(null)).toBeNull();

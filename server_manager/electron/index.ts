@@ -56,7 +56,7 @@ if (typeof SENTRY_DSN !== 'undefined' && SENTRY_DSN) {
 }
 
 // To clearly identify app restarts in Sentry.
-console.info(`Outline Manager is starting`);
+console.info('Outline Manager is starting');
 
 interface IpcEvent {
   returnValue: {};
@@ -69,7 +69,13 @@ function createMainWindow() {
     minWidth: 600,
     minHeight: 768,
     maximizable: false,
-    icon: path.join(__dirname, 'server_manager', 'www', 'images', 'launcher-icon.png'),
+    icon: path.join(
+      __dirname,
+      'server_manager',
+      'www',
+      'images',
+      'launcher-icon.png'
+    ),
     webPreferences: {
       devTools: debugMode,
       nodeIntegration: false,
@@ -83,7 +89,11 @@ function createMainWindow() {
   const handleNavigation = (url: string) => {
     try {
       const parsed: URL = new URL(url);
-      if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'macappstore:') {
+      if (
+        parsed.protocol === 'http:' ||
+        parsed.protocol === 'https:' ||
+        parsed.protocol === 'macappstore:'
+      ) {
         shell.openExternal(url);
       } else {
         console.warn(`Refusing to open URL with protocol "${parsed.protocol}"`);
@@ -117,7 +127,9 @@ function getWebAppUrl() {
   // Set queryParams from environment variables.
   if (process.env.SB_IMAGE) {
     queryParams.set('image', process.env.SB_IMAGE);
-    console.log(`Will install Shadowbox from ${process.env.SB_IMAGE} Docker image`);
+    console.log(
+      `Will install Shadowbox from ${process.env.SB_IMAGE} Docker image`
+    );
   }
   if (process.env.SB_METRICS_URL) {
     queryParams.set('metricsUrl', process.env.SB_METRICS_URL);
@@ -152,13 +164,17 @@ function workaroundDigitalOceanApiCors() {
       callback: (response: electron.HeadersReceivedResponse) => void
     ) => {
       if (details.method === 'OPTIONS') {
-        details.responseHeaders['access-control-allow-origin'] = ['outline://web_app'];
+        details.responseHeaders['access-control-allow-origin'] = [
+          'outline://web_app',
+        ];
         if (details.statusCode === 403) {
           details.statusCode = 200;
           details.statusLine = 'HTTP/1.1 200';
           details.responseHeaders['status'] = ['200'];
           details.responseHeaders['access-control-allow-headers'] = ['*'];
-          details.responseHeaders['access-control-allow-credentials'] = ['true'];
+          details.responseHeaders['access-control-allow-credentials'] = [
+            'true',
+          ];
           details.responseHeaders['access-control-allow-methods'] = [
             'GET',
             'POST',
@@ -189,7 +205,9 @@ function main() {
   app.userAgentFallback = `OutlineManager/${electron.app.getVersion()} ${app.userAgentFallback}`;
 
   // Mark secure to avoid mixed content warnings when loading DigitalOcean pages via https://.
-  electron.protocol.registerSchemesAsPrivileged([{scheme: 'outline', privileges: {standard: true, secure: true}}]);
+  electron.protocol.registerSchemesAsPrivileged([
+    {scheme: 'outline', privileges: {standard: true, secure: true}},
+  ]);
 
   if (!app.requestSingleInstanceLock()) {
     console.log('another instance is running - exiting');
@@ -208,7 +226,9 @@ function main() {
   app.on('ready', () => {
     const menuTemplate = menu.getMenuTemplate(debugMode);
     if (menuTemplate.length > 0) {
-      electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate(menuTemplate));
+      electron.Menu.setApplicationMenu(
+        electron.Menu.buildFromTemplate(menuTemplate)
+      );
     }
 
     workaroundDigitalOceanApiCors();
@@ -216,11 +236,18 @@ function main() {
     // Register a custom protocol so we can use absolute paths in the web app.
     // This also acts as a kind of chroot for the web app, so it cannot access
     // the user's filesystem. Hostnames are ignored.
-    const registered = electron.protocol.registerFileProtocol('outline', (request, callback) => {
-      const appPath = new URL(request.url).pathname;
-      const filesystemPath = path.join(__dirname, 'server_manager/www', appPath);
-      callback(filesystemPath);
-    });
+    const registered = electron.protocol.registerFileProtocol(
+      'outline',
+      (request, callback) => {
+        const appPath = new URL(request.url).pathname;
+        const filesystemPath = path.join(
+          __dirname,
+          'server_manager/www',
+          appPath
+        );
+        callback(filesystemPath);
+      }
+    );
     if (!registered) {
       throw new Error('Failed to register outline protocol');
     }
@@ -237,8 +264,11 @@ function main() {
   // Proxy for fetch calls that require fingerprint pinning.
   ipcMain.handle(
     'fetch-with-pin',
-    (event: Electron.IpcMainInvokeEvent, req: HttpRequest, fingerprint: string): Promise<HttpResponse> =>
-      fetchWithPin(req, fingerprint)
+    (
+      event: Electron.IpcMainInvokeEvent,
+      req: HttpRequest,
+      fingerprint: string
+    ): Promise<HttpResponse> => fetchWithPin(req, fingerprint)
   );
 
   // Restores the mainWindow if minimized and brings it into focus.

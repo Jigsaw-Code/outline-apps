@@ -77,7 +77,9 @@ Polymer({
       <div class="header">
         <div class="title">[[title]]</div>
         <div class="showme" on-tap="_openImage">
-          [[localize('manual-server-show-me')]]<iron-icon icon="open-in-new"></iron-icon>
+          [[localize('manual-server-show-me')]]<iron-icon
+            icon="open-in-new"
+          ></iron-icon>
         </div>
       </div>
       <div class="thumbnail overlay" on-tap="_openImage">

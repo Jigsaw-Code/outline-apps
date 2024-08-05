@@ -50,7 +50,11 @@ export class OutlineSurveys implements Surveys {
 
   // Displays a survey dialog for`surveyId` with title `surveyTitle` and a link to `surveyLink`
   // after `promptImpressionDelayMs` has elapsed. Rate-limits the survey to once per user.
-  private async presentSurvey(surveyId: string, surveyTitle: string, surveyLink: string) {
+  private async presentSurvey(
+    surveyId: string,
+    surveyTitle: string,
+    surveyLink: string
+  ) {
     if (this.storage.getItem(surveyId)) {
       return;
     }

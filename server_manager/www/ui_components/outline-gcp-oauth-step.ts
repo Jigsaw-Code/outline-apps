@@ -54,7 +54,10 @@ export class GcpConnectAccountApp extends LitElement {
           margin: 24px 0;
           padding: 24px;
           background: var(--background-contrast-color);
-          box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+          box-shadow:
+            0 0 2px 0 rgba(0, 0, 0, 0.14),
+            0 2px 2px 0 rgba(0, 0, 0, 0.12),
+            0 1px 3px 0 rgba(0, 0, 0, 0.2);
           border-radius: 2px;
         }
         @media (min-width: 1025px) {
@@ -90,13 +93,17 @@ export class GcpConnectAccountApp extends LitElement {
   render() {
     return html` <outline-step-view id="connectAccount">
       <span slot="step-title">${this.localize('gcp-oauth-connect-title')}</span>
-      <span slot="step-description">${this.localize('oauth-connect-description')}</span>
+      <span slot="step-description"
+        >${this.localize('oauth-connect-description')}</span
+      >
       <paper-card class="card">
         <div class="container">
           <img src="images/gcp-logo.svg" />
           <p>${this.localize('oauth-connect-tag')}</p>
         </div>
-        <paper-button @tap="${this.onCancelTapped}">${this.localize('cancel')}</paper-button>
+        <paper-button @tap="${this.onCancelTapped}"
+          >${this.localize('cancel')}</paper-button
+        >
       </paper-card>
     </outline-step-view>`;
   }
