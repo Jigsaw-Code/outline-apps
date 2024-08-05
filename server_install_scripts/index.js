@@ -1,0 +1,2 @@
+export * as DigitalOceanInstallScript from '../output/build/server_install_scripts/do_install_script.ts';
+export * as GCPInstallScript from '../output/build/server_install_scripts/gcp_install_script.ts';

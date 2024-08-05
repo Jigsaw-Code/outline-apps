@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import {sleep} from '@outline/infrastructure/sleep';
+import { GCPInstallScript } from '@outline/server_install_scripts';
 
 import {GcpServer} from './gcp_server';
 import * as server_install from './server_install';
 import * as gcp_api from '../cloud/gcp_api';
-import {SCRIPT} from '../install_scripts/gcp_install_script';
 import * as gcp from '../model/gcp';
 import {BillingAccount, Project} from '../model/gcp';
 import * as server from '../model/server';
@@ -297,6 +297,6 @@ export class GcpAccount implements gcp.Account {
   }
 
   private getInstallScript(serverName: string, metricsEnabled: boolean): string {
-    return '#!/bin/bash -eu\n' + server_install.getShellExportCommands(this.shadowboxSettings, serverName, metricsEnabled) + SCRIPT;
+    return '#!/bin/bash -eu\n' + server_install.getShellExportCommands(this.shadowboxSettings, serverName, metricsEnabled) + GCPInstallScript.SCRIPT;
   }
 }

@@ -19,6 +19,7 @@
   "private": true,
   "workspaces": [
     "infrastructure",
+    "server_install_scripts",
     "server_manager",
     "client"
   ],

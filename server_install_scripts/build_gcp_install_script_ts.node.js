@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-'use strict';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fs = require('fs');
+import fs from 'fs';
 
 const tarballBinary = fs.readFileSync(process.argv[2]);
 const base64Tarball = tarballBinary.toString('base64');

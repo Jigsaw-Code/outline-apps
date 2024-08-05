@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import * as crypto from '@outline/infrastructure/crypto';
+import { DigitalOceanInstallScript } from '@outline/server_install_scripts';
 
 import {DigitalOceanServer} from './digitalocean_server';
 import {getShellExportCommands, ShadowboxSettings} from './server_install';
 import {DigitalOceanSession, DropletInfo, RestApiSession} from '../cloud/digitalocean_api';
-import * as do_install_script from '../install_scripts/do_install_script';
 import * as digitalocean from '../model/digitalocean';
 import * as server from '../model/server';
 
@@ -160,6 +160,6 @@ function getInstallScript(accessToken: string, name: string, metricsEnabled: boo
     '#!/bin/bash -eu\n' +
     `export DO_ACCESS_TOKEN='${sanitizedAccessToken}'\n` +
     getShellExportCommands(shadowboxSettings, name, metricsEnabled) +
-    do_install_script.SCRIPT
+    DigitalOceanInstallScript.SCRIPT
   );
 }

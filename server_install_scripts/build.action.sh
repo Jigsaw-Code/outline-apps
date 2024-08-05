@@ -16,21 +16,21 @@
 
 set -eu
 
-readonly OUT_DIR="${BUILD_DIR}/server_manager/www/sh/"
+readonly OUT_DIR="${BUILD_DIR}/server_install_scripts/"
 rm -rf "${OUT_DIR}"
 
 # Create do_install_script.ts, which has a variable with the content of do_install_server.sh.
 mkdir -p "${OUT_DIR}"
 
-pushd "${ROOT_DIR}/server_manager/install_scripts" > /dev/null
+pushd "${ROOT_DIR}/server_install_scripts" > /dev/null
 tar --create --gzip -f "${OUT_DIR}/do_scripts.tgz" ./install_server.sh ./do_install_server.sh
 tar --create --gzip -f "${OUT_DIR}/gcp_scripts.tgz" ./install_server.sh ./gcp_install_server.sh
 
 # Node.js on Cygwin doesn't like absolute Unix-style paths.
 # So, we use a relative path as input.
 cd "${ROOT_DIR}"
-node server_manager/install_scripts/build_do_install_script_ts.node.js \
-    "${BUILD_DIR}/server_manager/www/sh/do_scripts.tgz" > "${ROOT_DIR}/server_manager/install_scripts/do_install_script.ts"
-node server_manager/install_scripts/build_gcp_install_script_ts.node.js \
-    "${BUILD_DIR}/server_manager/www/sh/gcp_scripts.tgz" > "${ROOT_DIR}/server_manager/install_scripts/gcp_install_script.ts"
+node server_install_scripts/build_do_install_script_ts.node.js \
+    "${BUILD_DIR}/server_install_scripts/do_scripts.tgz" > "${BUILD_DIR}/server_install_scripts/do_install_script.ts"
+node server_install_scripts/build_gcp_install_script_ts.node.js \
+    "${BUILD_DIR}/server_install_scripts/gcp_scripts.tgz" > "${BUILD_DIR}/server_install_scripts/gcp_install_script.ts"
 popd > /dev/null

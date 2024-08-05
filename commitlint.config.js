@@ -30,6 +30,7 @@ module.exports = {
         'devtools',
         'docs',
         'infrastructure',
+        'install_scripts',
         'manager',
         'manager/linux',
         'manager/macos',

@@ -29,6 +29,7 @@
     "@material/mwc-textarea": "^0.27.0",
     "@material/mwc-textfield": "^0.27.0",
     "@outline/infrastructure": "file:../infrastructure",
+    "@outline/server_install_scripts": "file:../server_install_scripts",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/app-localize-behavior": "^3.0.1",
     "@polymer/font-roboto": "^3.0.2",

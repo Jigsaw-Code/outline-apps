@@ -1,0 +1,9 @@
+{
+  "name": "@outline/server_install_scripts",
+  "type": "module",
+  "browser": "./index.js",
+  "version": "0.0.0-debug",
+  "scripts": {
+    "clean": "echo 'Nothing to clean'"
+  }
+}
