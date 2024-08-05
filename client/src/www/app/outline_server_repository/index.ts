@@ -17,7 +17,8 @@ import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
-import {OutlineServer, PlatformTunnel} from './server';
+import {OutlineServer} from './server';
+import { PlatformTunnel } from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus} from './server';
+import { ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus } from './vpn';
 import {PlatformError} from '../../model/platform_error';
 
 export class ElectronTunnel implements PlatformTunnel {
