@@ -1,3 +1,4 @@
+# browserslist only has data for latest chrome android: https://github.com/Fyrd/caniuse/issues/2413#issuecomment-206673558
 android 127
 
 # We use Electron v19.1.
