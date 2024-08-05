@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { PlatformTunnel, TunnelStatus, ShadowsocksSessionConfig } from './vpn';
+import { VpnApi, TunnelStatus, ShadowsocksSessionConfig } from './vpn';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
@@ -21,7 +21,7 @@ export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 // Fake Tunnel implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
 // servers in the server list will not work as expected.
-export class FakeTunnel implements PlatformTunnel {
+export class FakeVpnApi implements VpnApi {
   private running = false;
 
   constructor(readonly id: string) {}

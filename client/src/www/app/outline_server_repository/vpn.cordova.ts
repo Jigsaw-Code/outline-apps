@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus } from './vpn';
+import { ShadowsocksSessionConfig, VpnApi, TunnelStatus } from './vpn';
 import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
-export class CordovaTunnel implements PlatformTunnel {
+export class CordovaVpnApi implements VpnApi {
   constructor(public id: string) {}
 
   start(name: string, config: ShadowsocksSessionConfig) {

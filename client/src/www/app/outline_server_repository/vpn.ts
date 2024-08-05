@@ -26,11 +26,11 @@ export const enum TunnelStatus {
   RECONNECTING
 }
 
-export type TunnelFactory = (id: string) => PlatformTunnel;
+export type TunnelFactory = (id: string) => VpnApi;
 // Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
 // functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
 
-export interface PlatformTunnel {
+export interface VpnApi {
   // Unique instance identifier.
   readonly id: string;
 

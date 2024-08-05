@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus } from './vpn';
+import { ShadowsocksSessionConfig, VpnApi, TunnelStatus } from './vpn';
 import {PlatformError} from '../../model/platform_error';
 
-export class ElectronTunnel implements PlatformTunnel {
+export class ElectronVpnApi implements VpnApi {
   private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
 
   private running = false;

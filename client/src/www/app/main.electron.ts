@@ -23,7 +23,7 @@ import * as Sentry from '@sentry/electron/renderer';
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
 import {OutlineServerRepository} from './outline_server_repository';
-import {ElectronTunnel} from './outline_server_repository/server.electron';
+import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -105,7 +105,7 @@ main({
   newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
     if (isOsSupported) {
       return new OutlineServerRepository((id: string) => {
-        return new ElectronTunnel(id);
+        return new ElectronVpnApi(id);
       }, eventQueue, window.localStorage, localize);
     }
     return undefined;

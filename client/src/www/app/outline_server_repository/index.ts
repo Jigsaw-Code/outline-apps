@@ -18,7 +18,7 @@ import uuidv4 from 'uuidv4';
 
 import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import {OutlineServer} from './server';
-import { PlatformTunnel } from './vpn';
+import { VpnApi } from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
@@ -108,7 +108,7 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private newTunnel: (id: string) => PlatformTunnel,
+    private newTunnel: (id: string) => VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
     private localize: Localizer,

@@ -27,7 +27,7 @@ import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
 import {OutlineServerRepository} from './outline_server_repository';
-import {CordovaTunnel} from './outline_server_repository/vpn.cordova';
+import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
@@ -70,7 +70,7 @@ class CordovaPlatform implements OutlinePlatform {
   newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
     if (hasDeviceSupport) {
       return new OutlineServerRepository((id: string) => {
-        return new CordovaTunnel(id);
+        return new CordovaVpnApi(id);
       }, eventQueue, window.localStorage, localize);
     }
     return undefined;

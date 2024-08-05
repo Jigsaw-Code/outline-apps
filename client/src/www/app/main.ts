@@ -20,7 +20,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import {App} from './app';
 import {onceEnvVars} from './environment';
 import {OutlineServerRepository} from './outline_server_repository';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, FakeTunnel} from './outline_server_repository/vpn.fake.js';
+import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME, FakeVpnApi} from './outline_server_repository/vpn.fake.js';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
@@ -57,7 +57,7 @@ function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
   console.debug('Platform not supported, using fake servers.');
 
   repo = new OutlineServerRepository((id: string) => {
-    return new FakeTunnel(id);
+    return new FakeVpnApi(id);
   }, eventQueue, window.localStorage, localize)
 
   if (repo.getAll().length === 0) {
