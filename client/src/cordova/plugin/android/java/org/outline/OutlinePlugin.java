@@ -256,7 +256,7 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   private int startVpnTunnel(final String tunnelId, final JSONObject config, final String serverName) throws Exception {
-    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
+    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
     final TunnelConfig tunnelConfig;
     try {
       tunnelConfig = VpnTunnelService.makeTunnelConfig(tunnelId, config);

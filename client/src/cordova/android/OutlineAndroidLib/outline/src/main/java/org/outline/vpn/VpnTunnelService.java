@@ -246,7 +246,7 @@ public class VpnTunnelService extends VpnService {
 
   private synchronized ErrorCode startTunnel(
       final TunnelConfig config, final String serverName, boolean isAutoStart) {
-    LOG.info(String.format(Locale.ROOT, "Starting tunnel %s.", config.id));
+    LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, serverName));
     if (config.id == null || config.proxy == null) {
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
     }
@@ -536,6 +536,7 @@ public class VpnTunnelService extends VpnService {
         notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
+      notificationBuilder.setOngoing(true);
       startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
@@ -608,21 +609,6 @@ public class VpnTunnelService extends VpnService {
   /* Retrieves the ID for a resource. This is equivalent to using the generated R class. */
   public int getResourceId(final String name, final String type) {
     return getResources().getIdentifier(name, type, getPackageName());
-  }
-
-  /* Returns the server's name from |serverConfig|. If the name is not present, it falls back to the
-   * host name (IP address), or the application name if neither can be retrieved. */
-  private String getServerName(final TunnelConfig config) {
-    try {
-      String serverName = config.name;
-      if (serverName == null || serverName.equals("")) {
-        serverName = config.proxy.host;
-      }
-      return serverName;
-    } catch (Exception e) {
-      LOG.severe("Failed to get name property from server config.");
-    }
-    return getStringResource("server_default_name_outline");
   }
 
   /* Returns the application name. */
