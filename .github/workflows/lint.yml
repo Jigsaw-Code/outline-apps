@@ -56,4 +56,4 @@ jobs:
             *.mjs
 
       - name: Lint
-        run: npm run lint ${{ steps.changed-files.outputs.all_changed_files }}
+        run: npx gts lint ${{ steps.changed-files.outputs.all_changed_files }}
