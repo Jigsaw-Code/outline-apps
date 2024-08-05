@@ -15,7 +15,7 @@
 import {CustomError} from './custom_error';
 
 export class OperationTimedOut extends CustomError {
-  constructor(readonly timeoutMs: number, public readonly operationName: string) {
+  constructor(readonly timeoutMs: number, readonly operationName: string) {
     super(`${operationName} timed out after ${timeoutMs} ms`);
   }
 }

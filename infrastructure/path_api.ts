@@ -40,7 +40,7 @@ export type Fetcher = (request: HttpRequest) => Promise<HttpResponse>;
 
 // Thrown when an API request fails.
 export class ServerApiError extends CustomError {
-  constructor(message: string, public readonly response?: HttpResponse) {
+  constructor(message: string, readonly response?: HttpResponse) {
     super(message);
   }
 
@@ -66,7 +66,7 @@ export class PathApiClient {
    * @param base A valid URL
    * @param fingerprint A SHA-256 hash of the expected leaf certificate, in binary encoding.
    */
-  constructor(readonly base: string, public readonly fetcher: Fetcher) {}
+  constructor(readonly base: string, readonly fetcher: Fetcher) {}
 
   /**
    * Makes a request relative to the base URL with a JSON body.

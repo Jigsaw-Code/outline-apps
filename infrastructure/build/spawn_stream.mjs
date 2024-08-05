@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Transform} from 'node:stream';
 import {spawn} from 'child_process';
+import {Transform} from 'node:stream';
 
 import chalk from 'chalk';
 
