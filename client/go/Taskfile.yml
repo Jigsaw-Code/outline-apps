@@ -57,7 +57,7 @@ tasks:
     vars:
       TARGET_DIR: "{{.OUT_DIR}}/android"
       # ANDROID_API must match the minSdkVersion that the Android client supports.
-      ANDROID_API: 22
+      ANDROID_API: 26
     preconditions:
       - sh: '[[ -d "$ANDROID_HOME" ]]'
         msg: "Must set ANDROID_HOME"
