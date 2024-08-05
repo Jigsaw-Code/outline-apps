@@ -73,7 +73,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 - (void)startTunnelWithOptions:(NSDictionary *)options
              completionHandler:(void (^)(NSError *))completionHandler {
-  DDLogInfo(@"Starting tunnel");
+  DDLogDebug(@"PacketTunnelProvider starting with options: %@", options);
   if (options == nil) {
     DDLogWarn(@"Received a connect request from preferences");
     NSString *msg = NSLocalizedStringWithDefaultValue(
@@ -157,7 +157,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
            completionHandler:(void (^)(void))completionHandler {
-  DDLogInfo(@"Stopping tunnel");
+  DDLogDebug(@"PacketTunnelProvider stop requested");
   self.tunnelStore.status = TunnelStatusDisconnected;
   [self stopListeningForNetworkChanges];
   [self.tunnel disconnect];
@@ -171,7 +171,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 // Expects |messageData| to be JSON encoded.
 - (void)handleAppMessage:(NSData *)messageData completionHandler:(void (^)(NSData *))completionHandler {
   if (messageData == nil) {
-    DDLogError(@"Received nil message from app");
+    DDLogError(@"PacketTunnelProvider received nil message from app");
     return;
   }
   NSDictionary *message = [NSJSONSerialization JSONObjectWithData:messageData options:kNilOptions error:nil];
@@ -182,6 +182,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
     DDLogError(@"Missing message completion handler");
     return;
   }
+  DDLogDebug(@"PacketTunnelProvider received app message: %@", message);
   NSString *action = message[kMessageKeyAction];
   if (action == nil) {
     DDLogError(@"Missing action key in app message");
@@ -197,7 +198,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
       kMessageKeyErrorCode : errorCode,
       kMessageKeyTunnelId : tunnelId
     };
-    DDLogDebug(@"Received app message: %@, response: %@", action, response);
+    DDLogDebug(@"PacketTunnelProvider response for action %@: %@", action, response);
     completionHandler([NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:nil]);
   };
   if ([kActionStart isEqualToString:action] || [kActionRestart isEqualToString:action]) {
