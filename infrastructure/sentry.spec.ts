@@ -16,7 +16,11 @@ import * as sentry from './sentry';
 
 describe('getSentryApiUrl', () => {
   it('returns the right URL', () => {
-    const url = sentry.getSentryApiUrl('https://_key_@_org_.ingest.sentry.io/_project_');
-    expect(url).toEqual('https://_org_.ingest.sentry.io/api/_project_/store/?sentry_version=7&sentry_key=_key_');
+    const url = sentry.getSentryApiUrl(
+      'https://_key_@_org_.ingest.sentry.io/_project_'
+    );
+    expect(url).toEqual(
+      'https://_org_.ingest.sentry.io/api/_project_/store/?sentry_version=7&sentry_key=_key_'
+    );
   });
 });

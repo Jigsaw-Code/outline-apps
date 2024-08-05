@@ -15,16 +15,26 @@
 import {CustomError} from './custom_error';
 
 export class OperationTimedOut extends CustomError {
-  constructor(readonly timeoutMs: number, readonly operationName: string) {
+  constructor(
+    readonly timeoutMs: number,
+    readonly operationName: string
+  ) {
     super(`${operationName} timed out after ${timeoutMs} ms`);
   }
 }
 
-export function timeoutPromise<T>(promise: Promise<T>, timeoutDuration: number, timeoutName: string): Promise<T> {
+export function timeoutPromise<T>(
+  promise: Promise<T>,
+  timeoutDuration: number,
+  timeoutName: string
+): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new OperationTimedOut(timeoutDuration, timeoutName)), timeoutDuration)
+      setTimeout(
+        () => reject(new OperationTimedOut(timeoutDuration, timeoutName)),
+        timeoutDuration
+      )
     ),
   ]);
 }

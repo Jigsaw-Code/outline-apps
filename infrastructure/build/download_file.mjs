@@ -27,7 +27,9 @@ import fetch from 'node-fetch';
 export async function downloadHttpsFile(fileUrl, filepath) {
   const response = await fetch(fileUrl);
   if (!response.ok) {
-    throw new Error(`failed to download "${fileUrl}": ${response.status} ${response.statusText}`);
+    throw new Error(
+      `failed to download "${fileUrl}": ${response.status} ${response.statusText}`
+    );
   }
   const target = createWriteStream(filepath);
   await pipeline(response.body, target);
