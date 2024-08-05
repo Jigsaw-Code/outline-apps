@@ -536,7 +536,6 @@ public class VpnTunnelService extends VpnService {
         notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
-      notificationBuilder.setOngoing(true);
       startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
