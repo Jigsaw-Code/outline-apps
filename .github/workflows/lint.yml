@@ -44,6 +44,10 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint ${{ steps.changed-files.outputs.all_changed_files }}
