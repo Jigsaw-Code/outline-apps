@@ -133,6 +133,7 @@ public class OutlinePlugin extends CordovaPlugin {
     broadcastFilter.addAction(VpnTunnelService.STATUS_BROADCAST_KEY);
     broadcastFilter.addCategory(context.getPackageName());
     context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter, context.RECEIVER_NOT_EXPORTED);
+
     context.bindService(new Intent(context, VpnTunnelService.class), vpnServiceConnection,
         Context.BIND_AUTO_CREATE);
   }
