@@ -26,26 +26,20 @@ export const enum TunnelStatus {
   RECONNECTING
 }
 
-export type TunnelFactory = (id: string) => VpnApi;
-// Represents a VPN tunnel to a Shadowsocks proxy server. Implementations provide native tunneling
-// functionality through cordova.plugins.oultine.Tunnel and ElectronOutlineTunnel.
-
+// VpnApi is how we talk to the platform-specific VPN API.
 export interface VpnApi {
-  // Unique instance identifier.
-  readonly id: string;
-
-  // Connects a VPN, routing all device traffic to a Shadowsocks server as dictated by `config`.
+  // Connects a VPN, routing all device traffic as described in the SessionConfig.
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // Throws OutlinePluginError.
-  start(name: string, config: ShadowsocksSessionConfig): Promise<void>;
+  start(id: string, name: string, config: ShadowsocksSessionConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
-  stop(): Promise<void>;
+  stop(id: string): Promise<void>;
 
   // Returns whether the tunnel instance is active.
-  isRunning(): Promise<boolean>;
+  isRunning(id: string): Promise<boolean>;
 
   // Sets a listener, to be called when the tunnel status changes.
-  onStatusChange(listener: (status: TunnelStatus) => void): void;
+  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void;
 }

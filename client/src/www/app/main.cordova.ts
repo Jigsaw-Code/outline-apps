@@ -35,6 +35,7 @@ import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 import {EventQueue} from '../model/events';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
+import { VpnApi } from './outline_server_repository/vpn';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
 
@@ -67,11 +68,9 @@ class CordovaErrorReporter extends SentryErrorReporter {
 
 // This class should only be instantiated after Cordova fires the deviceready event.
 class CordovaPlatform implements OutlinePlatform {
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
+  getVpnApi(): VpnApi | undefined {
     if (hasDeviceSupport) {
-      return new OutlineServerRepository((id: string) => {
-        return new CordovaVpnApi(id);
-      }, eventQueue, window.localStorage, localize);
+      return new CordovaVpnApi();
     }
     return undefined;
   }

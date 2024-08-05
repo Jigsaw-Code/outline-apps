@@ -18,13 +18,13 @@ import * as errors from '../../model/errors';
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
 export const FAKE_UNREACHABLE_HOSTNAME = '10.0.0.24';
 
-// Fake Tunnel implementation for demoing and testing.
+// Fake VPN API implementation for demoing and testing.
 // Note that because this implementation does not emit disconnection events, "switching" between
 // servers in the server list will not work as expected.
 export class FakeVpnApi implements VpnApi {
   private running = false;
 
-  constructor(readonly id: string) {}
+  constructor() {}
 
   private playBroken(hostname?: string) {
     return hostname === FAKE_BROKEN_HOSTNAME;
@@ -34,7 +34,7 @@ export class FakeVpnApi implements VpnApi {
     return hostname === FAKE_UNREACHABLE_HOSTNAME;
   }
 
-  async start(_unusedName: string, config: ShadowsocksSessionConfig): Promise<void> {
+  async start(_id: string, _name: string, config: ShadowsocksSessionConfig): Promise<void> {
     if (this.running) {
       return;
     }
@@ -48,18 +48,18 @@ export class FakeVpnApi implements VpnApi {
     this.running = true;
   }
 
-  async stop(): Promise<void> {
+  async stop(_id: string): Promise<void> {
     if (!this.running) {
       return;
     }
     this.running = false;
   }
 
-  async isRunning(): Promise<boolean> {
+  async isRunning(_id: string): Promise<boolean> {
     return this.running;
   }
 
-  onStatusChange(_listener: (status: TunnelStatus) => void): void {
+  onStatusChange(_listener: (id: string, status: TunnelStatus) => void): void {
     // NOOP
   }
 }

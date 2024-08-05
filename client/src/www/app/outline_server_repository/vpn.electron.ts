@@ -12,69 +12,64 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ShadowsocksSessionConfig, VpnApi, TunnelStatus } from './vpn';
+import { TunnelStatus } from './vpn';
+import { ShadowsocksSessionConfig } from './vpn';
+import { VpnApi } from './vpn';
 import {PlatformError} from '../../model/platform_error';
+import { IpcRendererEvent } from 'electron/main';
 
 export class ElectronVpnApi implements VpnApi {
-  private statusChangeListener: ((status: TunnelStatus) => void) | null = null;
+  private statusChangeListener: ((id: string, status: TunnelStatus) => void) | null = null;
 
-  private running = false;
+  private runningServerId: string | undefined;
 
-  constructor(readonly id: string) {
+  constructor() {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
-    window.electron.methodChannel.on(`proxy-connected-${this.id}`, () => {
-      this.handleStatusChange(TunnelStatus.CONNECTED);
-    });
-    window.electron.methodChannel.on(`proxy-reconnecting-${this.id}`, () => {
-      this.handleStatusChange(TunnelStatus.RECONNECTING);
+    window.electron.methodChannel.on(`proxy-status`, (event: IpcRendererEvent, serverId: string, status: TunnelStatus) => {
+      if (status === TunnelStatus.CONNECTED) {
+        this.runningServerId = serverId;
+      }
+      if (status === TunnelStatus.DISCONNECTED) {
+        this.runningServerId = undefined;
+      }
+      if (this.statusChangeListener) {
+        this.statusChangeListener(serverId, status);
+      } else {
+        console.error(`${serverId} status changed to ${status} but no listener set`);
+      }
     });
   }
 
-  async start(name: string, config: ShadowsocksSessionConfig) {
-    if (this.running) {
+  async start(id: string, name: string, config: ShadowsocksSessionConfig) {
+    if (this.runningServerId == id) {
       return Promise.resolve();
     }
 
-    window.electron.methodChannel.once(`proxy-disconnected-${this.id}`, () => {
-      this.handleStatusChange(TunnelStatus.DISCONNECTED);
-    });
-
     try {
-      await window.electron.methodChannel.invoke('start-proxying', {id: this.id, serviceName: name, config});
-      this.running = true;
+      await window.electron.methodChannel.invoke('start-proxying', {id: id, name: name, config});
     } catch (e) {
       throw PlatformError.parseFrom(e);
     }
   }
 
-  async stop() {
-    if (!this.running) {
+  async stop(id: string) {
+    if (this.runningServerId != id) {
       return;
     }
 
     try {
       await window.electron.methodChannel.invoke('stop-proxying');
-      this.running = false;
     } catch (e) {
       console.error(`Failed to stop tunnel ${e}`);
     }
   }
 
-  async isRunning(): Promise<boolean> {
-    return this.running;
+  async isRunning(id: string): Promise<boolean> {
+    return this.runningServerId === id;
   }
 
-  onStatusChange(listener: (status: TunnelStatus) => void): void {
+  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
     this.statusChangeListener = listener;
-  }
-
-  private handleStatusChange(status: TunnelStatus) {
-    this.running = status === TunnelStatus.CONNECTED;
-    if (this.statusChangeListener) {
-      this.statusChangeListener(status);
-    } else {
-      console.error(`${this.id} status changed to ${status} but no listener set`);
-    }
   }
 }

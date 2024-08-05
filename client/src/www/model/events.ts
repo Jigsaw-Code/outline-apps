@@ -36,15 +36,15 @@ export class ServerRenamed implements OutlineEvent {
 }
 
 export class ServerConnected implements OutlineEvent {
-  constructor(readonly server: Server) {}
+  constructor(readonly serverId: string) {}
 }
 
 export class ServerDisconnected implements OutlineEvent {
-  constructor(readonly server: Server) {}
+  constructor(readonly serverId: string) {}
 }
 
 export class ServerReconnecting implements OutlineEvent {
-  constructor(readonly server: Server) {}
+  constructor(readonly serverId: string) {}
 }
 
 // Simple publisher-subscriber queue.

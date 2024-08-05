@@ -30,6 +30,7 @@ import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
 import {EventQueue} from '../model/events';
 import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
+import { VpnApi } from './outline_server_repository/vpn';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
@@ -102,13 +103,10 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 main({
-  newServerRepo(eventQueue: EventQueue, localize: Localizer): OutlineServerRepository | undefined {
+  getVpnApi(): VpnApi | undefined {
     if (isOsSupported) {
-      return new OutlineServerRepository((id: string) => {
-        return new ElectronVpnApi(id);
-      }, eventQueue, window.localStorage, localize);
+      return new ElectronVpnApi();
     }
-    return undefined;
   },
   getUrlInterceptor: () => interceptor,
   getClipboard: () => new ElectronClipboard(),

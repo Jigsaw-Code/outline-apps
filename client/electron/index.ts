@@ -29,7 +29,7 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/server';
+import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import * as errors from '../src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
@@ -348,25 +348,10 @@ async function stopVpn() {
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
-  let statusString;
-  switch (status) {
-    case TunnelStatus.CONNECTED:
-      statusString = 'connected';
-      break;
-    case TunnelStatus.DISCONNECTED:
-      statusString = 'disconnected';
-      break;
-    case TunnelStatus.RECONNECTING:
-      statusString = 'reconnecting';
-      break;
-    default:
-      console.error(`Cannot send unknown proxy status: ${status}`);
-      return;
-  }
   // TODO: refactor channel name and namespace to a constant
-  const event = `outline-ipc-proxy-${statusString}-${tunnelId}`;
+  const event = `outline-ipc-proxy-status`;
   if (mainWindow) {
-    mainWindow.webContents.send(event);
+    mainWindow.webContents.send(event, tunnelId, status);
   } else {
     console.warn(`received ${event} event but no mainWindow to notify`);
   }
