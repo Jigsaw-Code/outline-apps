@@ -1,13 +1,13 @@
 # browserslist only has data for latest chrome android: https://github.com/Fyrd/caniuse/issues/2413#issuecomment-206673558
-android 127
+android >= 127
 
 # We use Electron v19.1.
 # This is the version of Chrome it requires:
-chrome 102
+chrome >= 102
 
 # This is the iOS deployment target specified in the config.xml:
-ios 13
+ios >= 13
 
 # Our MacOS project specifies 10.14 as the build target.
 # This is the corresponding Safari version:
-safari 14
+safari >= 14
