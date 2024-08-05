@@ -1,12 +1,14 @@
-# browserslist only has data for latest chrome android: https://github.com/Fyrd/caniuse/issues/2413#issuecomment-206673558
-android >= 127
+# The Android minSdk specified in the config.xml is 26, which maps to Android 8.0.
+# This is webview released with that version of Android:
+# (see: https://android-system-webview.en.uptodown.com/android/versions)
+android >= 120
 
 # We use Electron v19.1.
 # This is the version of Chrome it requires:
 chrome >= 102
 
 # This is the iOS deployment target specified in the config.xml:
-ios >= 13
+ios >= 11
 
 # Our MacOS project specifies 10.14 as the build target.
 # This is the corresponding Safari version:
