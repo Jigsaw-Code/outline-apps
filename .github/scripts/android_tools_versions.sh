@@ -18,7 +18,7 @@
 #   https://developer.android.com/studio/releases/build-tools.html
 # To find the latest version's label:
 #   sdkmanager --list|grep build-tools
-readonly OUTLINE_ANDROID_BUILD_TOOLS_VERSION='32.0.0'
+readonly OUTLINE_ANDROID_BUILD_TOOLS_VERSION='34.0.0'
 
 # NDK (side by side) version must be kept in sync with the default build tools NDK version.
 readonly OUTLINE_ANDROID_NDK_VERSION='25.1.8937393'

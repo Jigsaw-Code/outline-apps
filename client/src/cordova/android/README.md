@@ -13,7 +13,7 @@ Additional requirements for Android:
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
   - Set `ANDROID_HOME` (e.g., `$HOME/Android/sdk`) and `ANDROID_NDK` (e.g., `$ANDROID_HOME/ndk`) environment variables
-- Android SDK 32 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-32" "build-tools;32.0.0"`
+- Android SDK 34 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
 - [Gradle 7.3+](https://gradle.org/install/)
 
 [Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code.
