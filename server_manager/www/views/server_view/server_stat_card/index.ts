@@ -29,10 +29,10 @@ export class ServerStatCard extends LitElement {
   static styles = [
     css`
       :host {
-        background: var(--server-background);
+        background: var(--server-stat-card-background);
         border-radius: 0.25rem;
         box-sizing: border-box;
-        container-name: conceal-name conceal-units;
+        container-name: conceal-name conceal-data-units;
         container-type: size;
         display: flex;
         flex-direction: column;
@@ -55,11 +55,11 @@ export class ServerStatCard extends LitElement {
       .data,
       .data-value,
       .name {
-        color: var(--server-foreground);
+        color: var(--server-stat-card-foreground);
       }
 
       .data-value {
-        color: var(--server-highlight);
+        color: var(--server-stat-card-highlight);
         font-size: 3rem;
         font-weight: 300;
       }
@@ -70,7 +70,7 @@ export class ServerStatCard extends LitElement {
         }
       }
 
-      @container conceal-units (max-width: 150px) {
+      @container conceal-data-units (max-width: 150px) {
         .data-units {
           display: none;
         }
@@ -79,7 +79,7 @@ export class ServerStatCard extends LitElement {
   ];
 
   render() {
-    return html` <mwc-icon class="icon">${this.icon}</mwc-icon>
+    return html`<mwc-icon class="icon">${this.icon}</mwc-icon>
       <p class="data">
         <span class="data-value">${this.value}</span>
         <span class="data-units">${this.units}</span>
