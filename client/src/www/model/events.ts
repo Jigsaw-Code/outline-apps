@@ -39,6 +39,10 @@ export class ServerConnected implements OutlineEvent {
   constructor(readonly serverId: string) {}
 }
 
+export class ServerDisconnecting implements OutlineEvent {
+  constructor(readonly serverId: string) {}
+}
+
 export class ServerDisconnected implements OutlineEvent {
   constructor(readonly serverId: string) {}
 }

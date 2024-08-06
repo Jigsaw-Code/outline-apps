@@ -123,6 +123,9 @@ export class OutlineServerRepository implements ServerRepository {
         case TunnelStatus.CONNECTED:
           statusEvent = new events.ServerConnected(id);
           break;
+        case TunnelStatus.DISCONNECTING:
+          statusEvent = new events.ServerDisconnecting(id);
+          break;
         case TunnelStatus.DISCONNECTED:
           statusEvent = new events.ServerDisconnected(id);
           break;

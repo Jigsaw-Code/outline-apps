@@ -142,6 +142,7 @@ export class App {
     this.eventQueue.subscribe(events.ServerRenamed, this.onServerRenamed.bind(this));
     this.eventQueue.subscribe(events.ServerForgetUndone, this.onServerForgetUndone.bind(this));
     this.eventQueue.subscribe(events.ServerConnected, this.onServerConnected.bind(this));
+    this.eventQueue.subscribe(events.ServerDisconnecting, this.onServerDisconnecting.bind(this));
     this.eventQueue.subscribe(events.ServerDisconnected, this.onServerDisconnected.bind(this));
     this.eventQueue.subscribe(events.ServerReconnecting, this.onServerReconnecting.bind(this));
 
@@ -510,6 +511,11 @@ export class App {
     } catch (e) {
       console.warn('server card not found after disconnection event, assuming forgotten');
     }
+  }
+
+  private onServerDisconnecting(event: events.ServerReconnecting): void {
+    console.debug(`server ${event.serverId} disconnecting`);
+    this.updateServerListItem(event.serverId, {connectionState: ServerConnectionState.DISCONNECTING});
   }
 
   private onServerReconnecting(event: events.ServerReconnecting): void {

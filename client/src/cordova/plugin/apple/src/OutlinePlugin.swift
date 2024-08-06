@@ -251,7 +251,7 @@ class OutlinePlugin: CDVPlugin {
 #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
       case .disconnecting:
-        tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
+        tunnelStatus = OutlineTunnel.TunnelStatus.disconnecting.rawValue
       case .reasserting:
         tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
       case .connecting:

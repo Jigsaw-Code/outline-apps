@@ -23,7 +23,8 @@ export interface ShadowsocksSessionConfig {
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,
-  RECONNECTING
+  RECONNECTING,
+  DISCONNECTING,
 }
 
 // VpnApi is how we talk to the platform-specific VPN API.
