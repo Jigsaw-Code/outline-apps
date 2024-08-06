@@ -306,10 +306,19 @@ public class OutlinePlugin extends CordovaPlugin {
       int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
       LOG.fine(String.format(Locale.ROOT, "VPN connectivity changed: %s, %d", tunnelId, status));
 
-      PluginResult result = new PluginResult(PluginResult.Status.OK, tunnelId, status);
+      JSONObject jsonResponse = new JSONObject();
+      try {
+        jsonResponse.put("id", tunnelId);
+        jsonResponse.put("status", status);
+      } catch (JSONException e) {
+        LOG.warning("Failed to build JSON response");
+        return;
+      }
+
+      PluginResult result = new PluginResult(PluginResult.Status.OK, jsonResponse);
       // Keep the tunnel status callback so it can be called multiple times.
       result.setKeepCallback(true);
-      callback.sendPluginResult(result);
+      outlinePlugin.statusCallback.sendPluginResult(result);
     }
   };
 
