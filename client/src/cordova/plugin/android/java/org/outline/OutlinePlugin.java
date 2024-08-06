@@ -102,7 +102,7 @@ public class OutlinePlugin extends CordovaPlugin {
   private String errorReportingApiKey;
   private StartVpnRequest startVpnRequest;
   // Tunnel status change callback.
-  private CallbackContext statusCallback
+  private CallbackContext statusCallback;
 
   // Connection to the VPN service.
   private final ServiceConnection vpnServiceConnection = new ServiceConnection() {
