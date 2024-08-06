@@ -15,11 +15,11 @@
 package tun2socks
 
 import (
-	"errors"
 	"io"
 	"runtime/debug"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/shadowsocks"
 )
 
@@ -52,9 +52,13 @@ func init() {
 // Sets an error if the tunnel fails to connect.
 func ConnectShadowsocksTunnel(tunWriter TunWriter, client *shadowsocks.Client, isUDPEnabled bool) (Tunnel, error) {
 	if tunWriter == nil {
-		return nil, errors.New("must provide a TunWriter")
+		return nil, platerrors.New(platerrors.InternalError, "must provide a TunWriter")
 	} else if client == nil {
-		return nil, errors.New("must provide a client")
+		return nil, platerrors.New(platerrors.InternalError, "must provide a client")
 	}
-	return newTunnel(client, client, isUDPEnabled, tunWriter)
+	t, err := newTunnel(client, client, isUDPEnabled, tunWriter)
+	if err != nil {
+		return nil, platerrors.NewWithCause(platerrors.SetupTrafficHandlerFailed, "failed to setup TCP/UDP handler", err)
+	}
+	return t, nil
 }

@@ -78,28 +78,24 @@ class OutlinePlugin: CDVPlugin {
      */
     func start(_ command: CDVInvokedUrlCommand) {
         guard let tunnelId = command.argument(at: 0) as? String else {
-            return sendError("Missing tunnel ID", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+            return sendError("Missing tunnel ID", callbackId: command.callbackId)
         }
         guard let name = command.argument(at: 1) as? String else {
-            return sendError("Missing service name", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+            return sendError("Missing service name", callbackId: command.callbackId)
         }
         DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
         // TODO(fortuna): Move the config validation to the config parsing code in Go.
         guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
-            return sendError("Invalid configuration", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+            return sendError("Invalid configuration", callbackId: command.callbackId)
         }
-      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
+        OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
                 self.sendSuccess(callbackId: command.callbackId)
             } else {
-                self.sendError("Failed to start VPN", callbackId: command.callbackId,
-                               errorCode: errorCode)
+                self.sendError("Failed to start VPN, err=\(errorCode)", callbackId: command.callbackId)
             }
         }
     }
@@ -126,7 +122,7 @@ class OutlinePlugin: CDVPlugin {
         guard let tunnelId = command.argument(at: 0) as? String else {
             return sendError("Missing tunnel ID", callbackId: command.callbackId)
         }
-        DDLogInfo("isRunning \(tunnelId)")
+        DDLogInfo("isRunning \(tunnelId) ?")
         sendSuccess(OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
     }
 
@@ -264,21 +260,20 @@ class OutlinePlugin: CDVPlugin {
     // MARK: Callback helpers
 
     private func sendSuccess(callbackId: String, keepCallback: Bool = false) {
+        DDLogInfo("CordovaPlugin Success")
         let result = CDVPluginResult(status: CDVCommandStatus_OK)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
 
     private func sendSuccess(_ operationResult: Bool, callbackId: String, keepCallback: Bool = false) {
+        DDLogInfo("CordovaPlugin Success: \(operationResult)")
         let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
 
-    private func sendError(_ message: String, callbackId: String,
-                           errorCode: OutlineVpn.ErrorCode = OutlineVpn.ErrorCode.undefined,
-                           keepCallback: Bool = false) {
-        DDLogError(message)
-        let result = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                     messageAs: Int32(errorCode.rawValue))
+    private func sendError(_ message: String, callbackId: String, keepCallback: Bool = false) {
+        DDLogError("CordovaPlugin Error: \(message)")
+        let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: message)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
 
