@@ -44,6 +44,17 @@ jobs:
 
       - name: Install NPM Dependencies
         run: npm ci
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.ts
+            **/*.js
+            **/*.cjs
+            **/*.mjs
 
       - name: Lint
-        run: npm run lint
+        if: ${{ steps.changed-files.outputs.all_changed_files_count > 0 }}
+        run: npx gts lint ${{ steps.changed-files.outputs.all_changed_files }}
