@@ -19,7 +19,7 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-import { ShadowsocksSessionConfig, VpnApi, TunnelStatus } from './vpn';
+import {ShadowsocksSessionConfig, VpnApi, TunnelStatus} from './vpn';
 
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
