@@ -51,6 +51,7 @@
     "@polymer/paper-tabs": "^3.1.0",
     "@polymer/paper-toast": "^3.0.1",
     "@polymer/paper-tooltip": "^3.0.1",
+    "@polymer/polymer": "^3.5.1",
     "@sentry/electron": "^4.17.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "circle-flags": "github:HatScripts/circle-flags",
