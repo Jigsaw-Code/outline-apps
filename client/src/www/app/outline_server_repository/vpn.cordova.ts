@@ -41,6 +41,7 @@ export class CordovaVpnApi implements VpnApi {
     const callback = (data: any) => {
       listener(data.id, data.status)
     }
-    cordova.exec(callback, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange');
+    console.debug('CordovaVpnApi: registering onStatusChange callback');
+    cordova.exec(callback, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', []);
   }
 }

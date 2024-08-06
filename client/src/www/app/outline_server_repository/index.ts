@@ -113,8 +113,11 @@ export class OutlineServerRepository implements ServerRepository {
     private storage: Storage,
     private localize: Localizer,
   ) {
+    console.debug('OutlineServerRepository is initializing');
     this.loadServers();
+    console.debug('OutlineServerRepository loaded servers');
     vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
+      console.debug(`OutlineServerRepository received status update for server ${id}: ${status}`)
       let statusEvent: events.OutlineEvent;
       switch (status) {
         case TunnelStatus.CONNECTED:
@@ -132,6 +135,7 @@ export class OutlineServerRepository implements ServerRepository {
       }
       eventQueue.enqueue(statusEvent);
     });
+    console.debug('OutlineServerRepository registered server status callback');
   }
 
   getAll() {
