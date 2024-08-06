@@ -9,8 +9,8 @@
     "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
     "format:all": "gts fix",
     "lint:all": "gts lint",
-    "storybook": "storybook dev -p 6006",
-    "reset": "npm run clean && npm ci"
+    "reset": "npm run clean && npm ci",
+    "storybook": "storybook dev -p 6006"
   },
   "engines": {
     "node": "18.x.x"
