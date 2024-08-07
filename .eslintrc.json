@@ -95,7 +95,7 @@
       "argsIgnorePattern": "^_"
     }],
     "n/no-unpublished-import": ["error", {
-      "allowModules": ["electron", "electron-notarize", "electron-to-chromium", "@open-wc/testing", "@babel/polyfill"]
+      "allowModules": ["webpack", "webpack-node-externals", "electron", "electron-notarize", "electron-to-chromium", "@open-wc/testing", "@babel/polyfill"]
     }],
     "n/no-unpublished-require": ["error", {
       "allowModules": ["webpack", "puppeteer", "postcss", "postcss-rtl", "electron-notarize", "copy-webpack-plugin", "html-webpack-plugin"]
