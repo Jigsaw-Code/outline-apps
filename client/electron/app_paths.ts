@@ -46,6 +46,7 @@ export function getAppPath() {
 export function pathToEmbeddedTun2socksBinary() {
   return path.join(
     unpackedAppPath(),
+    '..',
     'output',
     'build',
     'client',
