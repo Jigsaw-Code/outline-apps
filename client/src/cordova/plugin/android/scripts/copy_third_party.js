@@ -23,6 +23,7 @@ const ANDROID_LIBS_FOLDER_PATH = path.join(
   'libs'
 );
 const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join(
+  '..',
   'output',
   'build',
   'client',
