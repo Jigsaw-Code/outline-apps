@@ -16,15 +16,15 @@
 set -eu
 
 SCRIPT_DIR="$(dirname "$0")"
-ELECTRON_BUILD_DIR="${BUILD_DIR}/server_manager/electron"
-PROJECT_DIR="${ELECTRON_BUILD_DIR}/unpacked"
+PROJECT_DIR=
 BUILD_MODE=debug
 PLATFORM=
+PLATFORM_DIR=
 
 function package_electron() {
   declare -a electron_builder_cmd=(
     electron-builder
-    --projectDir="${ELECTRON_BUILD_DIR}/${PLATFORM}"
+    --projectDir="${PROJECT_DIR}"
     --config="${SCRIPT_DIR}/electron_builder.json"
     --publish=never
   )
@@ -60,15 +60,15 @@ function finish_yaml_files() {
   if [[ -z "${release_channel}" ]]; then
     release_channel=latest
   fi
-  echo "stagingPercentage: ${staging_percentage}" >> "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/${release_channel}${PLATFORM}.yml"
+  echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/${release_channel}-${PLATFORM}.yml"
 
   # If we cut a staged mainline release, beta testers will take the update as well.
   if [[ "${release_channel}" == "latest" ]]; then
-    echo "stagingPercentage: ${staging_percentage}" >> "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/beta${PLATFORM}.yml"
+    echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/beta-${PLATFORM}.yml"
   fi
 
   # We don't support alpha releases
-  rm -f "${ELECTRON_BUILD_DIR}/${PLATFORM}/dist/alpha${PLATFORM}.yml"
+  rm -f "${PROJECT_DIR}/dist/alpha-${PLATFORM}.yml"
 }
 
 function main() {
@@ -76,6 +76,8 @@ function main() {
   declare version_name='0.0.0-debug'
 
   PLATFORM="${1?Platform missing}"
+  PLATFORM_DIR="${BUILD_DIR}/server_manager/${PLATFORM}"
+  PROJECT_DIR="${PLATFORM_DIR}/unpacked"
 
   for i in "$@"; do
     case "${i}" in
@@ -98,10 +100,10 @@ function main() {
     *) ;;
     esac
   done
-  node infrastructure/build/run_action.mjs server_manager/electron/build --buildMode="${BUILD_MODE}" --versionName="${version_name}"
-  cp -r "${PROJECT_DIR}" "${ELECTRON_BUILD_DIR}/${PLATFORM}"
+  node infrastructure/build/run_action.mjs server_manager/electron/build "${PLATFORM}" --buildMode="${BUILD_MODE}" --versionName="${version_name}"
   package_electron
   finish_yaml_files "${staging_percentage}"
+  cp -r "${PROJECT_DIR}/dist" "${PLATFORM_DIR}/dist"
 }
 
 main "$@"

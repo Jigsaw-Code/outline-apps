@@ -16,7 +16,9 @@
 
 set -eu
 
-readonly OUT_DIR="${BUILD_DIR}/server_manager/www"
+PLATFORM="${1?Platform missing}"
+
+readonly OUT_DIR="${BUILD_DIR}/server_manager/www/${PLATFORM}"
 rm -rf "${OUT_DIR}"
 
 node infrastructure/build/run_action.mjs server_manager/install_scripts/build
@@ -25,5 +27,5 @@ node infrastructure/build/run_action.mjs server_manager/install_scripts/build
 # So, we use a relative path as input to webpack.
 pushd "${ROOT_DIR}" > /dev/null
 # Notice that we forward the build environment if defined.
-webpack --config=server_manager/electron_renderer.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+PLATFORM="${PLATFORM}" webpack --config=server_manager/electron_renderer.webpack.js ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
 popd > /dev/null
