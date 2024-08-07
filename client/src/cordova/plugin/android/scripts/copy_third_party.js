@@ -19,7 +19,7 @@ const fs = require('fs/promises');
 const path = require('node:path');
 
 const ANDROID_LIBS_FOLDER_PATH = path.join('plugins', 'cordova-plugin-outline', 'android', 'libs');
-const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('output', 'build', 'android');
+const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('output', 'build', 'client', 'android');
 
 module.exports = async function () {
   console.log('Copying Android third party libraries...');

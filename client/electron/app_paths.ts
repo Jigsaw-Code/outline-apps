@@ -45,7 +45,7 @@ export function getAppPath() {
 
 export function pathToEmbeddedTun2socksBinary() {
   return path.join(
-    unpackedAppPath(), 'client', 'output', 'build',
+    unpackedAppPath(), 'output', 'build', 'client',
     (isWindows ? 'windows' : 'linux'),
     'tun2socks' + (isWindows ? '.exe' : ''));
 }
