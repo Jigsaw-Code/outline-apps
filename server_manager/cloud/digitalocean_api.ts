@@ -112,9 +112,16 @@ export class RestApiSession implements DigitalOceanSession {
     // Register a key with DigitalOcean, so the user will not get a potentially
     // confusing email with their droplet password, which could get mistaken for
     // an invite.
-    return this.registerKey_(dropletName, publicKeyForSSH).then((keyId: number) => {
-      return this.makeCreateDropletRequest(dropletName, region, keyId, dropletSpec);
-    });
+    return this.registerKey_(dropletName, publicKeyForSSH).then(
+      (keyId: number) => {
+        return this.makeCreateDropletRequest(
+          dropletName,
+          region,
+          keyId,
+          dropletSpec
+        );
+      }
+    );
   }
 
   private makeCreateDropletRequest(
@@ -129,7 +136,9 @@ export class RestApiSession implements DigitalOceanSession {
     return new Promise((fulfill, reject) => {
       const makeRequestRecursive = () => {
         ++requestCount;
-        console.info(`Requesting droplet creation ${requestCount}/${MAX_REQUESTS}`);
+        console.info(
+          `Requesting droplet creation ${requestCount}/${MAX_REQUESTS}`
+        );
         // See https://docs.digitalocean.com/reference/api/api-reference/#operation/droplets_create
         this.request<{droplet: DropletInfo}>('POST', 'droplets', {
           name: dropletName,
@@ -146,7 +155,10 @@ export class RestApiSession implements DigitalOceanSession {
         })
           .then(fulfill)
           .catch(e => {
-            if (e.message.toLowerCase().indexOf('finalizing') >= 0 && requestCount < MAX_REQUESTS) {
+            if (
+              e.message.toLowerCase().indexOf('finalizing') >= 0 &&
+              requestCount < MAX_REQUESTS
+            ) {
               // DigitalOcean is still validating this account and may take
               // up to 30 seconds.  We can retry more frequently to see when
               // this error goes away.
@@ -167,13 +179,18 @@ export class RestApiSession implements DigitalOceanSession {
 
   public getRegionInfo(): Promise<RegionInfo[]> {
     console.info('Requesting region info');
-    return this.request<{regions: RegionInfo[]}>('GET', 'regions').then(response => {
-      return response.regions;
-    });
+    return this.request<{regions: RegionInfo[]}>('GET', 'regions').then(
+      response => {
+        return response.regions;
+      }
+    );
   }
 
   // Registers a SSH key with DigitalOcean.
-  private registerKey_(keyName: string, publicKeyForSSH: string): Promise<number> {
+  private registerKey_(
+    keyName: string,
+    publicKeyForSSH: string
+  ): Promise<number> {
     console.info('Requesting key registration');
     return this.request<{ssh_key: {id: number}}>('POST', 'account/keys', {
       name: keyName,
@@ -185,7 +202,10 @@ export class RestApiSession implements DigitalOceanSession {
 
   public getDroplet(dropletId: number): Promise<DropletInfo> {
     console.info('Requesting droplet');
-    return this.request<{droplet: DropletInfo}>('GET', 'droplets/' + dropletId).then(response => {
+    return this.request<{droplet: DropletInfo}>(
+      'GET',
+      'droplets/' + dropletId
+    ).then(response => {
       return response.droplet;
     });
   }
@@ -199,24 +219,32 @@ export class RestApiSession implements DigitalOceanSession {
   public getDropletsByTag(tag: string): Promise<DropletInfo[]> {
     console.info('Requesting droplet by tag');
     // TODO Add proper pagination support. Going with 100 for now to extend the default of 20, and confirm UI works
-    return this.request<{droplets: DropletInfo[]}>('GET', `droplets?per_page=100&tag_name=${encodeURI(tag)}`).then(
-      response => {
-        return response.droplets;
-      }
-    );
+    return this.request<{droplets: DropletInfo[]}>(
+      'GET',
+      `droplets?per_page=100&tag_name=${encodeURI(tag)}`
+    ).then(response => {
+      return response.droplets;
+    });
   }
 
   public getDroplets(): Promise<DropletInfo[]> {
     console.info('Requesting droplets');
     // TODO Add proper pagination support. Going with 100 for now to extend the default of 20, and confirm UI works
-    return this.request<{droplets: DropletInfo[]}>('GET', 'droplets?per_page=100').then(response => {
+    return this.request<{droplets: DropletInfo[]}>(
+      'GET',
+      'droplets?per_page=100'
+    ).then(response => {
       return response.droplets;
     });
   }
 
   // Makes an XHR request to DigitalOcean's API, returns a promise which fulfills
   // with the parsed object if successful.
-  private request<T>(method: string, actionPath: string, data?: {}): Promise<T> {
+  private request<T>(
+    method: string,
+    actionPath: string,
+    data?: {}
+  ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open(method, `https://api.digitalocean.com/v2/${actionPath}`);
@@ -235,8 +263,14 @@ export class RestApiSession implements DigitalOceanSession {
         } else {
           // this.response is a JSON object, whose message is an error string.
           const responseJson = JSON.parse(xhr.response);
-          console.error(`DigitalOcean request failed with status ${xhr.status}`);
-          reject(new Error(`XHR ${responseJson.id} failed with ${xhr.status}: ${responseJson.message}`));
+          console.error(
+            `DigitalOcean request failed with status ${xhr.status}`
+          );
+          reject(
+            new Error(
+              `XHR ${responseJson.id} failed with ${xhr.status}: ${responseJson.message}`
+            )
+          );
         }
       };
       xhr.onerror = () => {

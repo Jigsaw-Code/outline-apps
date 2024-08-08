@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {contextBridge, ipcRenderer} from 'electron';
 import '@sentry/electron/preload';
 import type {HttpRequest, HttpResponse} from '@outline/infrastructure/path_api';
 import {Breadcrumb} from '@sentry/electron';
+import {contextBridge, ipcRenderer} from 'electron';
 
 import * as digitalocean_oauth from './digitalocean_oauth';
 import * as gcp_oauth from './gcp_oauth';
@@ -31,18 +31,25 @@ import {redactManagerUrl} from './util';
 // Redact PII from the renderer process requests.
 // We are importing `node:url` package in `redactManagerUrl`, which is only
 // available in preload or main process.
-contextBridge.exposeInMainWorld('redactSentryBreadcrumbUrl', (breadcrumb: Breadcrumb) => {
-  // Redact PII from fetch requests.
-  if (breadcrumb.category === 'fetch' && breadcrumb.data && breadcrumb.data.url) {
-    try {
-      breadcrumb.data.url = `(redacted)/${redactManagerUrl(breadcrumb.data.url)}`;
-    } catch (e) {
-      // NOTE: cannot log this failure to console if console breadcrumbs are enabled
-      breadcrumb.data.url = `(error redacting)`;
+contextBridge.exposeInMainWorld(
+  'redactSentryBreadcrumbUrl',
+  (breadcrumb: Breadcrumb) => {
+    // Redact PII from fetch requests.
+    if (
+      breadcrumb.category === 'fetch' &&
+      breadcrumb.data &&
+      breadcrumb.data.url
+    ) {
+      try {
+        breadcrumb.data.url = `(redacted)/${redactManagerUrl(breadcrumb.data.url)}`;
+      } catch (e) {
+        // NOTE: cannot log this failure to console if console breadcrumbs are enabled
+        breadcrumb.data.url = '(error redacting)';
+      }
     }
+    return breadcrumb;
   }
-  return breadcrumb;
-});
+);
 
 contextBridge.exposeInMainWorld(
   'fetchWithPin',
@@ -54,11 +61,17 @@ contextBridge.exposeInMainWorld('openImage', (basename: string) => {
   ipcRenderer.send('open-image', basename);
 });
 
-contextBridge.exposeInMainWorld('onUpdateDownloaded', (callback: () => void) => {
-  ipcRenderer.on('update-downloaded', callback);
-});
+contextBridge.exposeInMainWorld(
+  'onUpdateDownloaded',
+  (callback: () => void) => {
+    ipcRenderer.on('update-downloaded', callback);
+  }
+);
 
-contextBridge.exposeInMainWorld('runDigitalOceanOauth', digitalocean_oauth.runOauth);
+contextBridge.exposeInMainWorld(
+  'runDigitalOceanOauth',
+  digitalocean_oauth.runOauth
+);
 
 contextBridge.exposeInMainWorld('runGcpOauth', gcp_oauth.runOauth);
 

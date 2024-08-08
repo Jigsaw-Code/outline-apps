@@ -15,12 +15,17 @@
 // Functions made available to the renderer process via preload.ts.
 
 type SentryBreadcrumb = import('@sentry/electron').Breadcrumb;
-declare function redactSentryBreadcrumbUrl(breadcrumb: SentryBreadcrumb): SentryBreadcrumb;
+declare function redactSentryBreadcrumbUrl(
+  breadcrumb: SentryBreadcrumb
+): SentryBreadcrumb;
 
 type HttpRequest = import('@outline/infrastructure/path_api').HttpRequest;
 type HttpResponse = import('@outline/infrastructure/path_api').HttpResponse;
 
-declare function fetchWithPin(request: HttpRequest, fingerprint: string): Promise<HttpResponse>;
+declare function fetchWithPin(
+  request: HttpRequest,
+  fingerprint: string
+): Promise<HttpResponse>;
 declare function openImage(basename: string): void;
 declare function onUpdateDownloaded(callback: () => void): void;
 

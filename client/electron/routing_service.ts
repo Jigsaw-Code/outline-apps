@@ -21,12 +21,14 @@ import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
 import {pathToEmbeddedOutlineService} from './app_paths';
-import {TunnelStatus} from '../src/www/app/outline_server_repository/server';
+import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode, SystemConfigurationException} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
-const SERVICE_NAME = isWindows ? '\\\\.\\pipe\\OutlineServicePipe' : '/var/run/outline_controller';
+const SERVICE_NAME = isWindows
+  ? '\\\\.\\pipe\\OutlineServicePipe'
+  : '/var/run/outline_controller';
 
 interface RoutingServiceRequest {
   action: string;
@@ -79,7 +81,10 @@ export class RoutingDaemon {
 
   private networkChangeListener?: (status: TunnelStatus) => void;
 
-  constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
+  constructor(
+    private proxyAddress: string,
+    private isAutoConnect: boolean
+  ) {}
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
@@ -106,7 +111,13 @@ export class RoutingDaemon {
             //       performed when the user clicks "CONNECT" should detect when
             //       the system is offline and that, currently, is pretty much
             //       the only time the routing service will fail.
-            reject(new Error(message ? message.errorMessage : 'empty routing service response'));
+            reject(
+              new Error(
+                message
+                  ? message.errorMessage
+                  : 'empty routing service response'
+              )
+            );
             newSocket.end();
             return;
           }
@@ -119,7 +130,11 @@ export class RoutingDaemon {
           if (this.stopping) {
             cleanup();
             newSocket.destroy();
-            reject(new SystemConfigurationException('routing daemon service stopped before started'));
+            reject(
+              new SystemConfigurationException(
+                'routing daemon service stopped before started'
+              )
+            );
           } else {
             fulfill();
           }
@@ -128,7 +143,10 @@ export class RoutingDaemon {
         newSocket.write(
           JSON.stringify({
             action: RoutingServiceAction.CONFIGURE_ROUTING,
-            parameters: {proxyIp: this.proxyAddress, isAutoConnect: this.isAutoConnect},
+            parameters: {
+              proxyIp: this.proxyAddress,
+              isAutoConnect: this.isAutoConnect,
+            },
           } as RoutingServiceRequest)
         );
       }));
@@ -136,7 +154,9 @@ export class RoutingDaemon {
       const initialErrorHandler = (err: Error) => {
         console.error('Routing daemon socket setup failed', err);
         this.socket = null;
-        reject(new SystemConfigurationException('routing daemon is not running'));
+        reject(
+          new SystemConfigurationException('routing daemon is not running')
+        );
       };
       newSocket.once('error', initialErrorHandler);
     });
@@ -160,13 +180,17 @@ export class RoutingDaemon {
         }
         break;
       default:
-        console.error(`unexpected message from background service: ${data.toString()}`);
+        console.error(
+          `unexpected message from background service: ${data.toString()}`
+        );
     }
   }
 
   // Parses JSON `data` as a `RoutingServiceResponse`. Logs the error and returns undefined on
   // failure.
-  private parseRoutingServiceResponse(data: Buffer): RoutingServiceResponse | undefined {
+  private parseRoutingServiceResponse(
+    data: Buffer
+  ): RoutingServiceResponse | undefined {
     if (!data) {
       console.error('received empty response from routing service');
       return undefined;
@@ -175,7 +199,9 @@ export class RoutingDaemon {
     try {
       response = JSON.parse(data.toString());
     } catch (error) {
-      console.error(`failed to parse routing service response: ${data.toString()}`);
+      console.error(
+        `failed to parse routing service response: ${data.toString()}`
+      );
     }
     return response;
   }
@@ -183,7 +209,10 @@ export class RoutingDaemon {
   private async writeReset() {
     return new Promise<void>((resolve, reject) => {
       const written = this.socket?.write(
-        JSON.stringify({action: RoutingServiceAction.RESET_ROUTING, parameters: {}} as RoutingServiceRequest),
+        JSON.stringify({
+          action: RoutingServiceAction.RESET_ROUTING,
+          parameters: {},
+        } as RoutingServiceRequest),
         err => {
           if (err) {
             reject(err);
@@ -219,7 +248,9 @@ export class RoutingDaemon {
     return this.disconnected;
   }
 
-  set onNetworkChange(newListener: ((status: TunnelStatus) => void) | undefined) {
+  set onNetworkChange(
+    newListener: ((status: TunnelStatus) => void) | undefined
+  ) {
     this.networkChangeListener = newListener;
   }
 }
@@ -268,10 +299,18 @@ function installWindowsRoutingServices(): Promise<void> {
 
 async function installLinuxRoutingServices(): Promise<void> {
   const LINUX_INSTALLER_FILENAME = 'install_linux_service.sh';
-  const installationFileDescriptors: Array<{filename: string; executable: boolean; sha256: string}> = [
+  const installationFileDescriptors: Array<{
+    filename: string;
+    executable: boolean;
+    sha256: string;
+  }> = [
     {filename: LINUX_INSTALLER_FILENAME, executable: true, sha256: ''},
     {filename: 'OutlineProxyController', executable: true, sha256: ''},
-    {filename: 'outline_proxy_controller.service', executable: false, sha256: ''},
+    {
+      filename: 'outline_proxy_controller.service',
+      executable: false,
+      sha256: '',
+    },
   ];
 
   // These Linux service files are located in a mounted folder of the AppImage, typically
@@ -296,9 +335,7 @@ async function installLinuxRoutingServices(): Promise<void> {
     const src = path.join(srcFolderPath, descriptor.filename);
 
     const srcContent = await fsextra.readFile(src);
-    descriptor.sha256 = createHash('sha256')
-      .update(srcContent)
-      .digest('hex');
+    descriptor.sha256 = createHash('sha256').update(srcContent).digest('hex');
 
     const dest = path.join(tmp, descriptor.filename);
     await fsextra.copy(src, dest, {overwrite: true});
@@ -323,7 +360,10 @@ async function installLinuxRoutingServices(): Promise<void> {
   command +=
     ' && ' +
     installationFileDescriptors
-      .map(({filename, sha256}) => `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`)
+      .map(
+        ({filename, sha256}) =>
+          `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`
+      )
       .join(' && ');
   command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}" "${userInfo().username}"`;
 

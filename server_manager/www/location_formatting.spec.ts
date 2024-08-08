@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {filterOptions, getShortName, localizeCountry} from './location_formatting';
+import {
+  filterOptions,
+  getShortName,
+  localizeCountry,
+} from './location_formatting';
 import * as location from '../model/location';
 
 describe('getShortName', () => {
@@ -61,11 +65,15 @@ describe('localizeCountry', () => {
   }
 
   it('basic case', () => {
-    expect(localizeCountry(location.NEW_YORK_CITY, 'en')).toEqual('United States');
+    expect(localizeCountry(location.NEW_YORK_CITY, 'en')).toEqual(
+      'United States'
+    );
   });
 
   it('other language', () => {
-    expect(localizeCountry(location.NEW_YORK_CITY, 'es')).toEqual('Estados Unidos');
+    expect(localizeCountry(location.NEW_YORK_CITY, 'es')).toEqual(
+      'Estados Unidos'
+    );
   });
 
   it('city-state is localized', () => {
@@ -132,7 +140,12 @@ describe('filterOptions', () => {
       available: false,
     };
 
-    const filtered = filterOptions([unrecognized, unavailable, unrecognizedAndUnavailable, available]);
+    const filtered = filterOptions([
+      unrecognized,
+      unavailable,
+      unrecognizedAndUnavailable,
+      available,
+    ]);
     expect(filtered).toEqual([unavailable, available, unrecognized]);
   });
 

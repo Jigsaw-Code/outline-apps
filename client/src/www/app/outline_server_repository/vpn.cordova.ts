@@ -12,33 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ShadowsocksSessionConfig, PlatformTunnel, TunnelStatus} from './server';
+import {ShadowsocksSessionConfig, VpnApi, TunnelStatus} from './vpn';
 import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
-export class CordovaTunnel implements PlatformTunnel {
-  constructor(public id: string) {}
+export class CordovaVpnApi implements VpnApi {
+  constructor() {}
 
-  start(name: string, config: ShadowsocksSessionConfig) {
+  start(id: string, name: string, config: ShadowsocksSessionConfig) {
     if (!config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', this.id, name, config);
+    return pluginExecWithErrorCode<void>('start', id, name, config);
   }
 
-  stop() {
-    return pluginExecWithErrorCode<void>('stop', this.id);
+  stop(id: string) {
+    return pluginExecWithErrorCode<void>('stop', id);
   }
 
-  isRunning() {
-    return pluginExecWithErrorCode<boolean>('isRunning', this.id);
+  isRunning(id: string) {
+    return pluginExecWithErrorCode<boolean>('isRunning', id);
   }
 
-  onStatusChange(listener: (status: TunnelStatus) => void): void {
+  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
     const onError = (err: unknown) => {
       console.warn('failed to execute status change listener', err);
     };
-    // Can't use `pluginExec` because Cordova needs to call the listener multiple times.
-    cordova.exec(listener, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', [this.id]);
+    const callback = (data: {id: string; status: TunnelStatus}) => {
+      listener(data.id, data.status);
+    };
+    console.debug('CordovaVpnApi: registering onStatusChange callback');
+    cordova.exec(callback, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', []);
   }
 }

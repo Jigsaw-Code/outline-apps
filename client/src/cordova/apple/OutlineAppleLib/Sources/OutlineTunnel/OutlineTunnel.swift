@@ -42,6 +42,7 @@ public class OutlineTunnel: NSObject, Codable {
         case connected = 0
         case disconnected = 1
         case reconnecting = 2
+        case disconnecting = 3
     }
     
     public convenience init(id: String, config: [String: Any]) {
