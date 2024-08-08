@@ -34,7 +34,7 @@ export class CordovaVpnApi implements VpnApi {
     return pluginExecWithErrorCode<boolean>('isRunning', id);
   }
 
-   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
+  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
     const onError = (err: unknown) => {
       console.warn('failed to execute status change listener', err);
     };
