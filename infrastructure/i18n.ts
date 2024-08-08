@@ -19,7 +19,10 @@ export type FormattableMessage =
   | symbol
   | object
   | PrimitiveType
-  | FormatXMLElementFn<symbol | object, string | symbol | object | (string | symbol | object)[]>;
+  | FormatXMLElementFn<
+      symbol | object,
+      string | symbol | object | (string | symbol | object)[]
+    >;
 
 export interface Localizer {
   (messageID: string, ...formatKeyValueList: FormattableMessage[]): string;
@@ -45,17 +48,23 @@ export class LanguageCode {
 }
 
 export class LanguageMatcher {
-  constructor(private supportedLanguages: LanguageCode[], private defaultLanguage?: LanguageCode) {}
+  constructor(
+    private supportedLanguages: LanguageCode[],
+    private defaultLanguage?: LanguageCode
+  ) {}
 
   // Goes over each user language, trying to find the supported language that matches
   // the best. We'll trim variants of the user and supported languages in order to find
   // a match, but the language base is guaranteed to match.
-  getBestSupportedLanguage(userLanguages: LanguageCode[]): LanguageCode | undefined {
+  getBestSupportedLanguage(
+    userLanguages: LanguageCode[]
+  ): LanguageCode | undefined {
     for (const userLanguage of userLanguages) {
       const parts = userLanguage.split();
       while (parts.length > 0) {
         const trimmedUserLanguage = new LanguageCode(parts.join('-'));
-        const supportedLanguage = this.getSupportedLanguage(trimmedUserLanguage);
+        const supportedLanguage =
+          this.getSupportedLanguage(trimmedUserLanguage);
         if (supportedLanguage) {
           return supportedLanguage;
         }
@@ -67,7 +76,9 @@ export class LanguageMatcher {
 
   // Returns the closest supported language that matches the user language.
   // We make sure the language matches, but the variant may differ.
-  private getSupportedLanguage(userLanguage: LanguageCode): LanguageCode | undefined {
+  private getSupportedLanguage(
+    userLanguage: LanguageCode
+  ): LanguageCode | undefined {
     for (const supportedLanguage of this.supportedLanguages) {
       const parts = supportedLanguage.split();
       while (parts.length > 0) {

@@ -16,11 +16,14 @@ import * as crypto from '@outline/infrastructure/crypto';
 
 import {DigitalOceanServer} from './digitalocean_server';
 import {getShellExportCommands, ShadowboxSettings} from './server_install';
-import {DigitalOceanSession, DropletInfo, RestApiSession} from '../cloud/digitalocean_api';
+import {
+  DigitalOceanSession,
+  DropletInfo,
+  RestApiSession,
+} from '../cloud/digitalocean_api';
 import * as do_install_script from '../install_scripts/do_install_script';
 import * as digitalocean from '../model/digitalocean';
 import * as server from '../model/server';
-
 
 // Tag used to mark Shadowbox Droplets.
 const SHADOWBOX_TAG = 'shadowbox';
@@ -48,11 +51,17 @@ export class DigitalOceanAccount implements digitalocean.Account {
   }
 
   async getStatus(): Promise<digitalocean.Status> {
-    const [account, droplets] = await Promise.all([this.digitalOcean.getAccount(), this.digitalOcean.getDroplets()]);
+    const [account, droplets] = await Promise.all([
+      this.digitalOcean.getAccount(),
+      this.digitalOcean.getDroplets(),
+    ]);
     const needsEmailVerification = !account.email_verified;
     // If the account is locked for no discernible reason, and there are no droplets,
     // assume the billing info is missing.
-    const needsBillingInfo = account.status === 'locked' && !needsEmailVerification && droplets.length == 0;
+    const needsBillingInfo =
+      account.status === 'locked' &&
+      !needsEmailVerification &&
+      droplets.length === 0;
     const hasReachedLimit = droplets.length >= account.droplet_limit;
     let warning: string;
     if (account.status !== 'active') {
@@ -85,11 +94,20 @@ export class DigitalOceanAccount implements digitalocean.Account {
   }
 
   // Creates a server and returning it when it becomes active.
-  async createServer(region: digitalocean.Region, name: string, metricsEnabled: boolean): Promise<server.ManagedServer> {
+  async createServer(
+    region: digitalocean.Region,
+    name: string,
+    metricsEnabled: boolean
+  ): Promise<server.ManagedServer> {
     console.time('activeServer');
     console.time('servingServer');
     const keyPair = await crypto.generateKeyPair();
-    const installCommand = getInstallScript(this.digitalOcean.accessToken, name, metricsEnabled, this.shadowboxSettings);
+    const installCommand = getInstallScript(
+      this.digitalOcean.accessToken,
+      name,
+      metricsEnabled,
+      this.shadowboxSettings
+    );
 
     // You can find the API slugs at https://slugs.do-api.dev/.
     const dropletSpec = {
@@ -105,8 +123,16 @@ export class DigitalOceanAccount implements digitalocean.Account {
           'Use "ssh -i keyfile root@[ip_address]" to connect to the machine'
       );
     }
-    const response = await this.digitalOcean.createDroplet(name, region.id, keyPair.public, dropletSpec);
-    const server = this.createDigitalOceanServer(this.digitalOcean, response.droplet);
+    const response = await this.digitalOcean.createDroplet(
+      name,
+      region.id,
+      keyPair.public,
+      dropletSpec
+    );
+    const server = this.createDigitalOceanServer(
+      this.digitalOcean,
+      response.droplet
+    );
     server.onceDropletActive
       .then(async () => {
         console.timeEnd('activeServer');
@@ -137,8 +163,15 @@ export class DigitalOceanAccount implements digitalocean.Account {
   }
 
   // Creates a DigitalOceanServer object and adds it to the in-memory server list.
-  private createDigitalOceanServer(digitalOcean: DigitalOceanSession, dropletInfo: DropletInfo) {
-    const server = new DigitalOceanServer(`${this.id}:${dropletInfo.id}`, digitalOcean, dropletInfo);
+  private createDigitalOceanServer(
+    digitalOcean: DigitalOceanSession,
+    dropletInfo: DropletInfo
+  ) {
+    const server = new DigitalOceanServer(
+      `${this.id}:${dropletInfo.id}`,
+      digitalOcean,
+      dropletInfo
+    );
     this.servers.push(server);
     return server;
   }
@@ -154,7 +187,12 @@ function sanitizeDigitalOceanToken(input: string): string {
 }
 
 // cloudFunctions needs to define cloud::public_ip and cloud::add_tag.
-function getInstallScript(accessToken: string, name: string, metricsEnabled: boolean, shadowboxSettings: ShadowboxSettings): string {
+function getInstallScript(
+  accessToken: string,
+  name: string,
+  metricsEnabled: boolean,
+  shadowboxSettings: ShadowboxSettings
+): string {
   const sanitizedAccessToken = sanitizeDigitalOceanToken(accessToken);
   return (
     '#!/bin/bash -eu\n' +

@@ -18,12 +18,17 @@ import {makePathApiClient} from './fetcher';
 import {ShadowboxServer} from './shadowbox_server';
 import * as server from '../model/server';
 
-
 class ManualServer extends ShadowboxServer implements server.ManualServer {
-  constructor(id: string, private manualServerConfig: server.ManualServerConfig, private forgetCallback: Function) {
+  constructor(
+    id: string,
+    private manualServerConfig: server.ManualServerConfig,
+    private forgetCallback: Function
+  ) {
     super(id);
     const fingerprint = hexToString(manualServerConfig.certSha256 ?? '');
-    this.setManagementApi(makePathApiClient(manualServerConfig.apiUrl, fingerprint));
+    this.setManagementApi(
+      makePathApiClient(manualServerConfig.apiUrl, fingerprint)
+    );
   }
 
   getCertificateFingerprint() {
@@ -58,8 +63,12 @@ export class ManualServerRepository implements server.ManualServerRepository {
     return Promise.resolve(this.servers);
   }
 
-  findServer(config: server.ManualServerConfig): server.ManualServer | undefined {
-    return this.servers.find(server => server.getManagementApiUrl() === config.apiUrl);
+  findServer(
+    config: server.ManualServerConfig
+  ): server.ManualServer | undefined {
+    return this.servers.find(
+      server => server.getManagementApiUrl() === config.apiUrl
+    );
   }
 
   private loadServers() {
@@ -68,9 +77,11 @@ export class ManualServerRepository implements server.ManualServerRepository {
     if (serversJson) {
       try {
         const serverConfigs = JSON.parse(serversJson);
-        this.servers = serverConfigs.map((config: server.ManualServerConfig) => {
-          return this.createServer(config);
-        });
+        this.servers = serverConfigs.map(
+          (config: server.ManualServerConfig) => {
+            return this.createServer(config);
+          }
+        );
       } catch (e) {
         console.error('Error creating manual servers from localStorage');
       }
@@ -78,9 +89,14 @@ export class ManualServerRepository implements server.ManualServerRepository {
   }
 
   private storeServers() {
-    const serverConfigs: server.ManualServerConfig[] = this.servers.map(server => {
-      return {apiUrl: server.getManagementApiUrl(), certSha256: server.getCertificateFingerprint()};
-    });
+    const serverConfigs: server.ManualServerConfig[] = this.servers.map(
+      server => {
+        return {
+          apiUrl: server.getManagementApiUrl(),
+          certSha256: server.getCertificateFingerprint(),
+        };
+      }
+    );
     localStorage.setItem(this.storageKey, JSON.stringify(serverConfigs));
   }
 

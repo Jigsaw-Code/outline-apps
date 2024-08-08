@@ -17,7 +17,9 @@ import * as electron from 'electron';
 // We only want a menu if we're running on macOS or in debug mode, or both.
 // Note that when invoked via the electron command line tool, default_app
 // adds a menu. We can't disable that.
-export function getMenuTemplate(debugMode: boolean): Electron.MenuItemConstructorOptions[] {
+export function getMenuTemplate(
+  debugMode: boolean
+): Electron.MenuItemConstructorOptions[] {
   const template: Electron.MenuItemConstructorOptions[] = [];
 
   if (process.platform === 'darwin') {
@@ -45,7 +47,11 @@ export function getMenuTemplate(debugMode: boolean): Electron.MenuItemConstructo
   if (debugMode) {
     template.push({
       label: 'Developer',
-      submenu: electron.Menu.buildFromTemplate([{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}]),
+      submenu: electron.Menu.buildFromTemplate([
+        {role: 'reload'},
+        {role: 'forceReload'},
+        {role: 'toggleDevTools'},
+      ]),
     });
   }
 

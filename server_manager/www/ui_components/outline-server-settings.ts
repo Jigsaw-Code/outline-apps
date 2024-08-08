@@ -218,7 +218,10 @@ Polymer({
           </div>
         </div>
         <div class="setting card-section">
-          <iron-icon class="setting-icon" icon="outline-iconset:outline"></iron-icon>
+          <iron-icon
+            class="setting-icon"
+            icon="outline-iconset:outline"
+          ></iron-icon>
           <div>
             <h3>[[localize('settings-server-info')]]</h3>
             <!-- TODO: consider making this an outline-validated-input -->
@@ -261,7 +264,10 @@ Polymer({
               always-float-label=""
               maxlength="100"
             ></paper-input>
-            <if-messages message-ids="management-api-documentation" localize="[[localize]]">
+            <if-messages
+              message-ids="management-api-documentation"
+              localize="[[localize]]"
+            >
               <a
                 class="management-api-documentation-link"
                 href="https://github.com/Jigsaw-Code/outline-server/tree/master/src/shadowbox#access-keys-management-api"
@@ -297,8 +303,14 @@ Polymer({
           </div>
         </div>
         <!-- Data limits -->
-        <div class="setting card-section" hidden$="[[!supportsDefaultDataLimit]]">
-          <iron-icon class="setting-icon" icon="icons:perm-data-setting"></iron-icon>
+        <div
+          class="setting card-section"
+          hidden$="[[!supportsDefaultDataLimit]]"
+        >
+          <iron-icon
+            class="setting-icon"
+            icon="icons:perm-data-setting"
+          ></iron-icon>
           <div id="data-limits-container">
             <div class="selection-container">
               <div class="content">
@@ -314,18 +326,28 @@ Polymer({
                   attr-for-selected="name"
                   on-selected-changed="_defaultDataLimitEnabledChanged"
                 >
-                  <paper-item name="enabled">[[localize('enabled')]]</paper-item>
-                  <paper-item name="disabled">[[localize('disabled')]]</paper-item>
+                  <paper-item name="enabled"
+                    >[[localize('enabled')]]</paper-item
+                  >
+                  <paper-item name="disabled"
+                    >[[localize('disabled')]]</paper-item
+                  >
                 </paper-listbox>
               </paper-dropdown-menu>
             </div>
-            <div class="sub-section data-limits-disclaimer" hidden$="[[!showFeatureMetricsDisclaimer]]">
+            <div
+              class="sub-section data-limits-disclaimer"
+              hidden$="[[!showFeatureMetricsDisclaimer]]"
+            >
               <iron-icon icon="icons:error-outline"></iron-icon>
               <p
                 inner-h-t-m-l="[[localize('data-limits-disclaimer', 'openLink', '<a href=https://support.getoutline.org/s/article/Data-collection>', 'closeLink', '</a>')]]"
               ></p>
             </div>
-            <div class="data-limits-input" hidden$="[[!isDefaultDataLimitEnabled]]">
+            <div
+              class="data-limits-input"
+              hidden$="[[!isDefaultDataLimitEnabled]]"
+            >
               <paper-input
                 id="defaultDataLimitInput"
                 value="[[defaultDataLimit.value]]"
@@ -346,15 +368,25 @@ Polymer({
                   attr-for-selected="name"
                   on-selected-changed="_requestSetDefaultDataLimit"
                 >
-                  <paper-item name="MB">[[_getInternationalizedUnit(1000000, language)]]</paper-item>
-                  <paper-item name="GB">[[_getInternationalizedUnit(1000000000, language)]]</paper-item>
+                  <paper-item name="MB"
+                    >[[_getInternationalizedUnit(1000000,
+                    language)]]</paper-item
+                  >
+                  <paper-item name="GB"
+                    >[[_getInternationalizedUnit(1000000000,
+                    language)]]</paper-item
+                  >
                 </paper-listbox>
               </paper-dropdown-menu>
             </div>
           </div>
         </div>
         <!-- Experiments -->
-        <div id="experiments" class="setting card-section" hidden$="[[!shouldShowExperiments]]">
+        <div
+          id="experiments"
+          class="setting card-section"
+          hidden$="[[!shouldShowExperiments]]"
+        >
           <iron-icon class="setting-icon" icon="icons:build"></iron-icon>
           <div>
             <h3>[[localize('experiments')]]</h3>
@@ -369,10 +401,16 @@ Polymer({
         </div>
         <!-- Metrics controls -->
         <div class="setting card-section">
-          <iron-icon class="setting-icon" icon="editor:insert-chart"></iron-icon>
+          <iron-icon
+            class="setting-icon"
+            icon="editor:insert-chart"
+          ></iron-icon>
           <div>
             <div class="selection-container">
-              <paper-checkbox checked="{{metricsEnabled}}" on-change="_metricsEnabledChanged"></paper-checkbox>
+              <paper-checkbox
+                checked="{{metricsEnabled}}"
+                on-change="_metricsEnabledChanged"
+              ></paper-checkbox>
               <h3>[[localize('settings-metrics-header')]]</h3>
             </div>
             <p
@@ -439,7 +477,9 @@ Polymer({
   },
 
   _metricsEnabledChanged() {
-    const metricsSignal = this.metricsEnabled ? 'EnableMetricsRequested' : 'DisableMetricsRequested';
+    const metricsSignal = this.metricsEnabled
+      ? 'EnableMetricsRequested'
+      : 'DisableMetricsRequested';
     this.fire(metricsSignal);
   },
 
@@ -483,7 +523,11 @@ Polymer({
 
   _validatePort(value: string) {
     const port = Number(value);
-    const valid = !Number.isNaN(port) && port >= 1 && port <= 65535 && Number.isInteger(port);
+    const valid =
+      !Number.isNaN(port) &&
+      port >= 1 &&
+      port <= 65535 &&
+      Number.isInteger(port);
     return valid ? '' : this.localize('error-keys-port-bad-input');
   },
 
@@ -496,6 +540,10 @@ Polymer({
   },
 
   _formatDate(language: string, date: Date) {
-    return date.toLocaleString(language, {year: 'numeric', month: 'long', day: 'numeric'});
+    return date.toLocaleString(language, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   },
 });

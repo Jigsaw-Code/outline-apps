@@ -54,10 +54,16 @@ const DO_CARD_HTML = html`
   </style>
   <div id="digital-ocean" class="card" on-tap="connectToDigitalOceanTapped">
     <div class="card-header">
-      <div class="tag" hidden$="[[_computeIsAccountConnected(digitalOceanAccountName)]]">
+      <div
+        class="tag"
+        hidden$="[[_computeIsAccountConnected(digitalOceanAccountName)]]"
+      >
         [[localize('setup-recommended')]]
       </div>
-      <div class="email" hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]">
+      <div
+        class="email"
+        hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]"
+      >
         [[digitalOceanAccountName]]
       </div>
       <img src="images/do_white_logo.svg" />
@@ -71,14 +77,20 @@ const DO_CARD_HTML = html`
           <li>[[localize('setup-do-data')]]</li>
           <li>[[localize('setup-cancel')]]</li>
         </ul>
-        <p hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]">[[localize('setup-do-create')]]</p>
+        <p hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]">
+          [[localize('setup-do-create')]]
+        </p>
       </div>
     </div>
     <div class="card-footer">
-      <paper-button class="primary" hidden$="[[_computeIsAccountConnected(digitalOceanAccountName)]]"
+      <paper-button
+        class="primary"
+        hidden$="[[_computeIsAccountConnected(digitalOceanAccountName)]]"
         >[[localize('setup-action')]]</paper-button
       >
-      <paper-button class="primary" hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]"
+      <paper-button
+        class="primary"
+        hidden$="[[!_computeIsAccountConnected(digitalOceanAccountName)]]"
         >[[localize('setup-create')]]</paper-button
       >
     </div>
@@ -121,8 +133,15 @@ const GCP_CARD_HTML = html`
   </style>
   <div id="gcp" class="card" hidden$="[[!_showNewGcpFlow(gcpAccountName)]]">
     <div class="card-header">
-      <div class="tag" hidden$="[[_computeIsAccountConnected(gcpAccountName)]]">[[localize('setup-recommended')]]</div>
-      <div class="email" hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]">[[gcpAccountName]]</div>
+      <div class="tag" hidden$="[[_computeIsAccountConnected(gcpAccountName)]]">
+        [[localize('setup-recommended')]]
+      </div>
+      <div
+        class="email"
+        hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]"
+      >
+        [[gcpAccountName]]
+      </div>
       <img src="images/gcp-logo.svg" />
     </div>
     <div class="card-title">Google Cloud Platform</div>
@@ -143,14 +162,20 @@ const GCP_CARD_HTML = html`
           ></li>
           <li>[[localize('setup-cancel')]]</li>
         </ul>
-        <p hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]">[[localize('setup-gcp-create')]]</p>
+        <p hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]">
+          [[localize('setup-gcp-create')]]
+        </p>
       </div>
     </div>
     <div class="card-footer" on-tap="setUpGcpTapped">
-      <paper-button class="primary" hidden$="[[_computeIsAccountConnected(gcpAccountName)]]"
+      <paper-button
+        class="primary"
+        hidden$="[[_computeIsAccountConnected(gcpAccountName)]]"
         >[[localize('setup-action')]]</paper-button
       >
-      <paper-button class="primary" hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]"
+      <paper-button
+        class="primary"
+        hidden$="[[!_computeIsAccountConnected(gcpAccountName)]]"
         >[[localize('setup-create')]]</paper-button
       >
     </div>
@@ -160,7 +185,12 @@ const GCP_CARD_HTML = html`
 // TODO: Delete this card once we have full confidence in the new GCP flow.
 const GCP_LEGACY_CARD_HTML = html`
   ${GCP_STYLES}
-  <div id="gcp" class="card" on-tap="setUpGcpAdvancedTapped" hidden$="[[_showNewGcpFlow(gcpAccountName)]]">
+  <div
+    id="gcp"
+    class="card"
+    on-tap="setUpGcpAdvancedTapped"
+    hidden$="[[_showNewGcpFlow(gcpAccountName)]]"
+  >
     <div class="card-header">
       <div class="tag">[[localize('setup-advanced')]]</div>
       <img src="images/gcp-logo.svg" />
@@ -212,7 +242,9 @@ const AWS_CARD_HTML = html`
       </div>
     </div>
     <div class="card-footer">
-      <paper-button on-tap="setUpAwsTapped" class="primary">[[localize('setup-action')]]</paper-button>
+      <paper-button on-tap="setUpAwsTapped" class="primary"
+        >[[localize('setup-action')]]</paper-button
+      >
     </div>
   </div>
 `;
@@ -247,7 +279,9 @@ const MANUAL_CARD_HTML = html`
       </div>
     </div>
     <div class="card-footer">
-      <paper-button on-tap="setUpGenericCloudProviderTapped">[[localize('setup-action')]]</paper-button>
+      <paper-button on-tap="setUpGenericCloudProviderTapped"
+        >[[localize('setup-action')]]</paper-button
+      >
     </div>
   </div>
 `;
@@ -281,14 +315,22 @@ Polymer({
         transition: 135ms;
         /* Whole card is clickable. */
         cursor: pointer;
-        box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.02), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+        box-shadow:
+          0 3px 1px -2px rgba(0, 0, 0, 0.02),
+          0 2px 2px 0 rgba(0, 0, 0, 0.14),
+          0 1px 5px 0 rgba(0, 0, 0, 0.12);
       }
       /* Card shadows (common to all cards). */
       .card:hover {
-        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.1), 0 1px 10px 0 rgba(0, 0, 0, 0.2);
+        box-shadow:
+          0 2px 4px -1px rgba(0, 0, 0, 0.2),
+          0 4px 5px 0 rgba(0, 0, 0, 0.1),
+          0 1px 10px 0 rgba(0, 0, 0, 0.2);
       }
       .card:active {
-        box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14),
+        box-shadow:
+          0 5px 5px -3px rgba(0, 0, 0, 0.2),
+          0 8px 10px 1px rgba(0, 0, 0, 0.14),
           0 3px 14px 2px rgba(0, 0, 0, 0.12);
       }
       /* Non-DigitalOcean card background colours (get darker, inactive -> active). */
@@ -356,7 +398,8 @@ Polymer({
       <span slot="step-description">[[localize('setup-description')]]</span>
 
       <div class="container">
-        ${DO_CARD_HTML} ${GCP_CARD_HTML} ${GCP_LEGACY_CARD_HTML} ${AWS_CARD_HTML} ${MANUAL_CARD_HTML}
+        ${DO_CARD_HTML} ${GCP_CARD_HTML} ${GCP_LEGACY_CARD_HTML}
+        ${AWS_CARD_HTML} ${MANUAL_CARD_HTML}
       </div>
     </outline-step-view>
   `,
@@ -377,9 +420,12 @@ Polymer({
     },
   },
 
-  _openLinkFreeTier: '<a href="https://cloud.google.com/free/docs/gcp-free-tier#compute">',
-  _openLinkIpPrice: '<a href="https://cloud.google.com/vpc/network-pricing#ipaddress">',
-  _openLinkFreeTrial: '<a href="https://cloud.google.com/free/docs/gcp-free-tier/#free-trial">',
+  _openLinkFreeTier:
+    '<a href="https://cloud.google.com/free/docs/gcp-free-tier#compute">',
+  _openLinkIpPrice:
+    '<a href="https://cloud.google.com/vpc/network-pricing#ipaddress">',
+  _openLinkFreeTrial:
+    '<a href="https://cloud.google.com/free/docs/gcp-free-tier/#free-trial">',
   _closeLink: '<iron-icon icon=open-in-new></iron-icon></a>',
 
   _computeIsAccountConnected(accountName: string) {
@@ -387,7 +433,9 @@ Polymer({
   },
 
   _showNewGcpFlow(gcpAccountName: string) {
-    return outline.gcpAuthEnabled || this._computeIsAccountConnected(gcpAccountName);
+    return (
+      outline.gcpAuthEnabled || this._computeIsAccountConnected(gcpAccountName)
+    );
   },
 
   connectToDigitalOceanTapped() {

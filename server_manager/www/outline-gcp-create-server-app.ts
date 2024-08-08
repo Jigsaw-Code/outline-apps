@@ -34,7 +34,10 @@ import {CloudLocation} from '../model/location';
 
 @customElement('outline-gcp-create-server-app')
 export class GcpCreateServerApp extends LitElement {
-  @property({type: Function}) localize: (msgId: string, ...params: string[]) => string;
+  @property({type: Function}) localize: (
+    msgId: string,
+    ...params: string[]
+  ) => string;
   @property({type: String}) language: string;
   @state() private currentPage = '';
   @state() private selectedProjectId = '';
@@ -70,7 +73,10 @@ export class GcpCreateServerApp extends LitElement {
           justify-content: space-between;
           margin: 24px 0;
           background: var(--background-contrast-color);
-          box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+          box-shadow:
+            0 0 2px 0 rgba(0, 0, 0, 0.14),
+            0 2px 2px 0 rgba(0, 0, 0, 0.12),
+            0 1px 3px 0 rgba(0, 0, 0, 0.2);
           border-radius: 2px;
         }
         .section {
@@ -158,17 +164,38 @@ export class GcpCreateServerApp extends LitElement {
     return html` <outline-step-view id="billingAccountSetup" display-action="">
       <span slot="step-title">${this.localize('gcp-billing-title')}</span>
       <span slot="step-description">
-        ${unsafeHTML(this.localize('gcp-billing-description', 'openLink', openLink, 'closeLink', closeLink))}
+        ${unsafeHTML(
+          this.localize(
+            'gcp-billing-description',
+            'openLink',
+            openLink,
+            'closeLink',
+            closeLink
+          )
+        )}
       </span>
       <span slot="step-action">
-        <paper-button id="billingPageAction" @tap="${this.handleBillingVerificationNextTap}">
+        <paper-button
+          id="billingPageAction"
+          @tap="${this.handleBillingVerificationNextTap}"
+        >
           ${this.localize('gcp-billing-action')}
         </paper-button>
       </span>
       <paper-card class="card">
         <div class="container">
           <img src="images/do_oauth_billing.svg" />
-          <p>${unsafeHTML(this.localize('gcp-billing-body', 'openLink', openLink, 'closeLink', closeLink))}</p>
+          <p>
+            ${unsafeHTML(
+              this.localize(
+                'gcp-billing-body',
+                'openLink',
+                openLink,
+                'closeLink',
+                closeLink
+              )
+            )}
+          </p>
         </div>
         <paper-progress indeterminate></paper-progress>
       </paper-card>
@@ -179,7 +206,8 @@ export class GcpCreateServerApp extends LitElement {
     return html` <outline-step-view id="projectSetup" display-action="">
       <span slot="step-title">Create your Google Cloud Platform project.</span>
       <span slot="step-description"
-        >This will create a new project on your GCP account to hold your Outline servers.</span
+        >This will create a new project on your GCP account to hold your Outline
+        servers.</span
       >
       <span slot="step-action">
         ${this.isProjectBeingCreated
@@ -188,7 +216,10 @@ export class GcpCreateServerApp extends LitElement {
           : html`<paper-button
               id="createServerButton"
               @tap="${this.handleProjectSetupNextTap}"
-              ?disabled="${!this.isProjectSetupNextEnabled(this.selectedProjectId, this.selectedBillingAccountId)}"
+              ?disabled="${!this.isProjectSetupNextEnabled(
+                this.selectedProjectId,
+                this.selectedBillingAccountId
+              )}"
             >
               CREATE PROJECT
             </paper-button>`}
@@ -214,10 +245,16 @@ export class GcpCreateServerApp extends LitElement {
       <div class="section">
         <div class="section-header">
           <span class="stepcircle">2</span>
-          <div class="instructions">Choose your preferred billing method for this project</div>
+          <div class="instructions">
+            Choose your preferred billing method for this project
+          </div>
         </div>
         <div class="section-content">
-          <paper-dropdown-menu id="billingAccount" no-label-float="" horizontal-align="left">
+          <paper-dropdown-menu
+            id="billingAccount"
+            no-label-float=""
+            horizontal-align="left"
+          >
             <paper-listbox
               slot="dropdown-content"
               selected="${this.selectedBillingAccountId}"
@@ -225,13 +262,17 @@ export class GcpCreateServerApp extends LitElement {
               @selected-changed="${this.onBillingAccountSelected}"
             >
               ${this.billingAccounts.map(billingAccount => {
-                return html`<paper-item name="${billingAccount.id}">${billingAccount.name}</paper-item>`;
+                return html`<paper-item name="${billingAccount.id}"
+                  >${billingAccount.name}</paper-item
+                >`;
               })}
             </paper-listbox>
           </paper-dropdown-menu>
         </div>
       </div>
-      ${this.isProjectBeingCreated ? html`<paper-progress indeterminate="" class="slow"></paper-progress>` : ''}
+      ${this.isProjectBeingCreated
+        ? html`<paper-progress indeterminate="" class="slow"></paper-progress>`
+        : ''}
     </outline-step-view>`;
   }
 
@@ -277,7 +318,9 @@ export class GcpCreateServerApp extends LitElement {
   }
 
   private async isProjectHealthy(): Promise<boolean> {
-    return this.project ? await this.account.isProjectHealthy(this.project.id) : false;
+    return this.project
+      ? await this.account.isProjectHealthy(this.project.id)
+      : false;
   }
 
   disconnectedCallback() {
@@ -340,7 +383,10 @@ export class GcpCreateServerApp extends LitElement {
     this.currentPage = 'projectSetup';
   }
 
-  private isProjectSetupNextEnabled(projectId: string, billingAccountId: string): boolean {
+  private isProjectSetupNextEnabled(
+    projectId: string,
+    billingAccountId: string
+  ): boolean {
     // TODO: Proper validation
     return projectId !== '' && billingAccountId !== '';
   }
@@ -349,9 +395,15 @@ export class GcpCreateServerApp extends LitElement {
     this.isProjectBeingCreated = true;
     try {
       if (!this.project) {
-        this.project = await this.account.createProject(this.selectedProjectId, this.selectedBillingAccountId);
+        this.project = await this.account.createProject(
+          this.selectedProjectId,
+          this.selectedBillingAccountId
+        );
       } else {
-        await this.account.repairProject(this.project.id, this.selectedBillingAccountId);
+        await this.account.repairProject(
+          this.project.id,
+          this.selectedBillingAccountId
+        );
       }
       this.showRegionPicker();
     } catch (e) {
@@ -362,7 +414,9 @@ export class GcpCreateServerApp extends LitElement {
   }
 
   private async showRegionPicker(): Promise<void> {
-    const isProjectHealthy = await this.account.isProjectHealthy(this.project.id);
+    const isProjectHealthy = await this.account.isProjectHealthy(
+      this.project.id
+    );
     if (!isProjectHealthy) {
       return this.showProjectSetup();
     }
@@ -372,7 +426,9 @@ export class GcpCreateServerApp extends LitElement {
     // Note: This relies on a side effect of the previous call to `await`.
     // `this.regionPicker` is null after `this.currentPage`, and is only populated
     // asynchronously.
-    this.regionPicker = this.shadowRoot.querySelector('#regionPicker') as OutlineRegionPicker;
+    this.regionPicker = this.shadowRoot.querySelector(
+      '#regionPicker'
+    ) as OutlineRegionPicker;
     this.regionPicker.options = filterOptions(zoneOptions).map(option => ({
       markedBestValue: isInFreeTier(option.cloudLocation),
       ...option,
@@ -392,7 +448,12 @@ export class GcpCreateServerApp extends LitElement {
     this.regionPicker.isServerBeingCreated = true;
     const zone = event.detail.selectedLocation as Zone;
     const name = this.makeLocalizedServerName(zone);
-    const server = await this.account.createServer(this.project.id, name, zone, event.detail.metricsEnabled);
+    const server = await this.account.createServer(
+      this.project.id,
+      name,
+      zone,
+      event.detail.metricsEnabled
+    );
     const params = {bubbles: true, composed: true, detail: {server}};
     const serverCreatedEvent = new CustomEvent('GcpServerCreated', params);
     this.dispatchEvent(serverCreatedEvent);

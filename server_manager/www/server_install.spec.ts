@@ -39,16 +39,20 @@ describe('getShellExportCommands', () => {
       metricsUrl: '',
     };
     const serverName = '';
-    expect(getShellExportCommands(settings, serverName, false)).toEqual('export SB_METRICS_ENABLED=\'false\'\nexport SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
+    expect(getShellExportCommands(settings, serverName, false)).toEqual(
+      "export SB_METRICS_ENABLED='false'\nexport SB_DEFAULT_SERVER_NAME=\"$(printf '')\"\n"
+    );
   });
 
   it('metricsEnabled', () => {
     const settings: ShadowboxSettings = {
       imageId: null,
-      metricsUrl: ''
+      metricsUrl: '',
     };
     const serverName = '';
-    expect(getShellExportCommands(settings, serverName, true)).toEqual('export SB_METRICS_ENABLED=\'true\'\nexport SB_DEFAULT_SERVER_NAME="$(printf \'\')"\n');
+    expect(getShellExportCommands(settings, serverName, true)).toEqual(
+      "export SB_METRICS_ENABLED='true'\nexport SB_DEFAULT_SERVER_NAME=\"$(printf '')\"\n"
+    );
   });
 
   it('server name escaping', () => {
@@ -58,7 +62,7 @@ describe('getShellExportCommands', () => {
     };
     const serverName = 'Outline Server فرانكفورت';
     expect(getShellExportCommands(settings, serverName, false)).toEqual(
-      'export SB_METRICS_ENABLED=\'false\'\nexport SB_DEFAULT_SERVER_NAME="$(printf \'Outline Server \\u0641\\u0631\\u0627\\u0646\\u0643\\u0641\\u0648\\u0631\\u062a\')"\n'
+      "export SB_METRICS_ENABLED='false'\nexport SB_DEFAULT_SERVER_NAME=\"$(printf 'Outline Server \\u0641\\u0631\\u0627\\u0646\\u0643\\u0641\\u0648\\u0631\\u062a')\"\n"
     );
   });
 });

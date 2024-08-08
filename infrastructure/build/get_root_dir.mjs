@@ -16,7 +16,11 @@ import path from 'path';
 import url from 'url';
 
 // WARNING: if you move this file, you MUST update this file path
-const ROOT_DIR = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '..', '..');
+const ROOT_DIR = path.resolve(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+  '..',
+  '..'
+);
 
 export function getRootDir() {
   return ROOT_DIR;

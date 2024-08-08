@@ -44,7 +44,9 @@ describe('PathApi', () => {
   it('PUT form data', async () => {
     const response = {status: 200, body: '{"asdf": true}'};
     nextResponse = Promise.resolve(response);
-    expect(await api.requestForm('bar', 'PUT', {name: 'value'})).toEqual({asdf: true});
+    expect(await api.requestForm('bar', 'PUT', {name: 'value'})).toEqual({
+      asdf: true,
+    });
     expect(lastRequest).toEqual({
       url: 'https://asdf.test/foo/bar',
       method: 'PUT',
@@ -56,7 +58,9 @@ describe('PathApi', () => {
   it('POST JSON data', async () => {
     const response = {status: 200, body: '{"asdf": true}'};
     nextResponse = Promise.resolve(response);
-    expect(await api.requestJson('bar', 'POST', {key: 'value'})).toEqual({asdf: true});
+    expect(await api.requestJson('bar', 'POST', {key: 'value'})).toEqual({
+      asdf: true,
+    });
     expect(lastRequest).toEqual({
       url: 'https://asdf.test/foo/bar',
       method: 'POST',

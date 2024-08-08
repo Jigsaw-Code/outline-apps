@@ -40,8 +40,13 @@ Polymer({
         inner-h-t-m-l="[[localize('metrics-description', 'openLink', '<a class=link href=https://support.getoutline.org/s/article/Data-collection>', 'closeLink', '</a>')]]"
       ></p>
       <div class="buttons">
-        <paper-button dialog-dismiss="" on-tap="disableMetricsRequested">[[localize('metrics-skip')]]</paper-button>
-        <paper-button autofocus="" dialog-dismiss="" on-tap="enableMetricsRequested"
+        <paper-button dialog-dismiss="" on-tap="disableMetricsRequested"
+          >[[localize('metrics-skip')]]</paper-button
+        >
+        <paper-button
+          autofocus=""
+          dialog-dismiss=""
+          on-tap="enableMetricsRequested"
           >[[localize('metrics-share')]]</paper-button
         >
       </div>

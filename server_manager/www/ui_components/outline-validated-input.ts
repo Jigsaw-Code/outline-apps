@@ -94,10 +94,20 @@ Polymer({
         always-float-label=""
       >
       </paper-input>
-      <paper-button id="cancelButton" hidden$="[[!_showButtons]]" disabled$="[[!_enableButtons]]" on-tap="_cancel">
+      <paper-button
+        id="cancelButton"
+        hidden$="[[!_showButtons]]"
+        disabled$="[[!_enableButtons]]"
+        on-tap="_cancel"
+      >
         [[localize('cancel')]]
       </paper-button>
-      <paper-button id="saveButton" hidden$="[[!_showButtons]]" disabled$="[[!_enableButtons]]" on-tap="_save">
+      <paper-button
+        id="saveButton"
+        hidden$="[[!_showButtons]]"
+        disabled$="[[!_enableButtons]]"
+        on-tap="_save"
+      >
         [[localize('save')]]
       </paper-button>
     </div>
