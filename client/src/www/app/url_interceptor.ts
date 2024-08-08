@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../types/webintents.d.ts'/>
 
 export class UrlInterceptor {

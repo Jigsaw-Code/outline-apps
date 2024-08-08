@@ -86,6 +86,9 @@
     "n/no-unsupported-features/es-syntax": ["error", {
       "version": ">=18.0.0"
     }],
+    "n/no-unpublished-import": ["error", {
+        "allowModules": ["electron"]
+    }],
     "@typescript-eslint/no-unused-vars": ["error", {
       "varsIgnorePattern": "^_",
       "argsIgnorePattern": "^_"
