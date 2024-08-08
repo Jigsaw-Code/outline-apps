@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Transform} from 'node:stream';
 import {spawn} from 'child_process';
+import {Transform} from 'node:stream';
 
 import chalk from 'chalk';
 
@@ -64,8 +64,15 @@ export const spawnStream = (command, ...parameters) =>
     const stdout = [];
     const stderr = [];
 
-    console.debug(chalk.gray(`Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`));
-    const childProcess = spawn(command, parameters, {env: process.env, stdio: ['inherit', 'pipe', 'pipe']});
+    console.debug(
+      chalk.gray(
+        `Running [${[command, ...parameters.map(e => `'${e}'`)].join(' ')}]...`
+      )
+    );
+    const childProcess = spawn(command, parameters, {
+      env: process.env,
+      stdio: ['inherit', 'pipe', 'pipe'],
+    });
 
     const stdOutPipe = newChildProcessOutputPipeTransform(line => {
       console.info(line);
@@ -96,7 +103,11 @@ export const spawnStream = (command, ...parameters) =>
       );
 
       if (!(stderr.length && stderr.every(line => line))) {
-        console.error(chalk.bgRedBright('No error output was given... Please fix this so it gives an error output :('));
+        console.error(
+          chalk.bgRedBright(
+            'No error output was given... Please fix this so it gives an error output :('
+          )
+        );
       } else {
         console.error(chalk.bgRedBright('Printing stderr:'));
         stderr.forEach(error => console.error(chalk.rgb(128, 64, 64)(error)));

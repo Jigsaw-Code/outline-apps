@@ -28,7 +28,11 @@ import {spawnStream} from './spawn_stream.mjs';
 const resolveActionPath = async actionPath => {
   if (!actionPath) return '';
 
-  if (actionPath in JSON.parse(await readFile(path.resolve(getRootDir(), 'package.json'))).scripts) {
+  if (
+    actionPath in
+    JSON.parse(await readFile(path.resolve(getRootDir(), 'package.json')))
+      .scripts
+  ) {
     return actionPath;
   }
 
@@ -61,7 +65,10 @@ const resolveActionPath = async actionPath => {
 export async function runAction(actionPath, ...parameters) {
   const resolvedPath = await resolveActionPath(actionPath);
   if (!resolvedPath) {
-    console.info(chalk.red(`Could not find an action at path:`), chalk.red.bold(`"${actionPath}"`));
+    console.info(
+      chalk.red('Could not find an action at path:'),
+      chalk.red.bold(`"${actionPath}"`)
+    );
     console.info();
     console.info(chalk.yellow.bold('Please provide a valid action to run.'));
     console.info();
@@ -89,7 +96,7 @@ export async function runAction(actionPath, ...parameters) {
   }
 
   console.group(chalk.yellow.bold(`▶ action(${actionPath}):`));
-  const startTime = performance.now();
+  const startTime = globalThis.performance.now();
 
   try {
     await spawnStream(runner, ...subCommands, resolvedPath, ...parameters);
@@ -99,15 +106,23 @@ export async function runAction(actionPath, ...parameters) {
     }
 
     console.groupEnd();
-    console.error(chalk.red.bold(`▶ action(${actionPath}):`), chalk.red(`❌ Failed.`));
+    console.error(
+      chalk.red.bold(`▶ action(${actionPath}):`),
+      chalk.red('❌ Failed.')
+    );
 
-    process.exit(1);
+    globalThis.process.exit(1);
   }
 
   console.groupEnd();
   console.info(
     chalk.green.bold(`▶ action(${actionPath}):`),
-    chalk.green(`🎉 Success!`, chalk.italic.gray(`(${Math.floor(performance.now() - startTime)}ms)`))
+    chalk.green(
+      '🎉 Success!',
+      chalk.italic.gray(
+        `(${Math.floor(globalThis.performance.now() - startTime)}ms)`
+      )
+    )
   );
 }
 
