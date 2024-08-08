@@ -34,7 +34,10 @@ module.exports = function loader(content, _map, _meta) {
   const callback = this.async();
   const styleRe = RegExp(/(<style[^>]*>)(\s*[^<\s](.*\n)*?\s*)(<\/style>)/gm);
   try {
-    const newContent = content.replace(styleRe, (match, g1, g2, g3, g4) => `${g1}${generateRtlCss(g2)}${g4}`);
+    const newContent = content.replace(
+      styleRe,
+      (match, g1, g2, g3, g4) => `${g1}${generateRtlCss(g2)}${g4}`
+    );
     callback(null, newContent);
   } catch (e) {
     console.warn(e.toString());

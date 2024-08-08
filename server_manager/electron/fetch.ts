@@ -17,10 +17,12 @@ import * as https from 'https';
 import {TLSSocket} from 'tls';
 import {urlToHttpOptions} from 'url';
 
-
 import type {HttpRequest, HttpResponse} from '@outline/infrastructure/path_api';
 
-export const fetchWithPin = async (req: HttpRequest, fingerprint: string): Promise<HttpResponse> => {
+export const fetchWithPin = async (
+  req: HttpRequest,
+  fingerprint: string
+): Promise<HttpResponse> => {
   const response = await new Promise<IncomingMessage>((resolve, reject) => {
     const options: https.RequestOptions = {
       ...urlToHttpOptions(new URL(req.url)),
@@ -38,7 +40,12 @@ export const fetchWithPin = async (req: HttpRequest, fingerprint: string): Promi
         const sha2hex = certificate.fingerprint256.replace(/:/g, '');
         const sha2binary = Buffer.from(sha2hex, 'hex').toString('binary');
         if (sha2binary !== fingerprint) {
-          request.emit('error', new Error(`Fingerprint mismatch: expected ${fingerprint}, not ${sha2binary}`));
+          request.emit(
+            'error',
+            new Error(
+              `Fingerprint mismatch: expected ${fingerprint}, not ${sha2binary}`
+            )
+          );
           request.destroy();
           return;
         }

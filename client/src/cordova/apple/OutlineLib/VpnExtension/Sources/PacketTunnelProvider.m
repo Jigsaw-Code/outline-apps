@@ -20,7 +20,12 @@
 @import OutlineTunnel;
 @import Tun2socks;
 
+#ifdef DEBUG
+const DDLogLevel ddLogLevel = DDLogLevelDebug;
+#else
 const DDLogLevel ddLogLevel = DDLogLevelInfo;
+#endif
+
 NSString *const kActionStart = @"start";
 NSString *const kActionRestart = @"restart";
 NSString *const kActionStop = @"stop";

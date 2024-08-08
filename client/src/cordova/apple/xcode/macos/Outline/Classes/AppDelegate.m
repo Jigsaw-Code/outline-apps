@@ -18,6 +18,13 @@
 @import ServiceManagement;
 @import OutlineNotification;
 @import OutlineTunnel;
+@import CocoaLumberjack;
+
+#ifdef DEBUG
+const DDLogLevel ddLogLevel = DDLogLevelDebug;
+#else
+const DDLogLevel ddLogLevel = DDLogLevelInfo;
+#endif
 
 @interface AppDelegate()
 @property (strong, nonatomic) NSStatusItem *statusItem;
@@ -57,13 +64,13 @@
               }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnConnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImageConnected"];
   }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnDisconnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImage"];
                                               }];

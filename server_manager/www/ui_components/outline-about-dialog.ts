@@ -72,7 +72,10 @@ Polymer({
       <div>
         <img id="outlineLogo" src="images/manager-about-logo2x.png" />
       </div>
-      <p id="version" inner-h-t-m-l="[[localize('about-version', 'version', outlineVersion)]]"></p>
+      <p
+        id="version"
+        inner-h-t-m-l="[[localize('about-version', 'version', outlineVersion)]]"
+      ></p>
       <p
         inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"
       >
@@ -84,7 +87,9 @@ Polymer({
         </a>
       </p>
       <div class="buttons">
-        <paper-button dialog-dismiss="" autofocus="">[[localize('close')]]</paper-button>
+        <paper-button dialog-dismiss="" autofocus=""
+          >[[localize('close')]]</paper-button
+        >
       </div>
     </paper-dialog>
   `,

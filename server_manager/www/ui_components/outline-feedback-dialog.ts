@@ -78,7 +78,7 @@ Polymer({
       paper-textarea {
         --iron-autogrow-textarea: {
           background: #eee;
-        }
+        };
       }
       #feedbackExplanation {
         display: none;
@@ -103,7 +103,11 @@ Polymer({
           horizontal-align="left"
           on-selected-item-changed="feedbackCategoryChanged"
         >
-          <paper-listbox id="feedbackCategoryListbox" slot="dropdown-content" class="dropdown-content">
+          <paper-listbox
+            id="feedbackCategoryListbox"
+            slot="dropdown-content"
+            class="dropdown-content"
+          >
             <paper-item>[[localize('feedback-general')]]</paper-item>
             <paper-item>[[localize('feedback-install')]]</paper-item>
             <paper-item>[[localize('feedback-connection')]]</paper-item>
@@ -119,7 +123,11 @@ Polymer({
           hidden$="[[!shouldShowCloudProvider]]"
           error-message="[[localize('feedback-cloud-provider-error')]]"
         >
-          <paper-listbox id="cloudProviderListbox" slot="dropdown-content" class="dropdown-content">
+          <paper-listbox
+            id="cloudProviderListbox"
+            slot="dropdown-content"
+            class="dropdown-content"
+          >
             <paper-item>DigitalOcean</paper-item>
             <paper-item>Amazon Web Services</paper-item>
             <paper-item>Google Cloud Platform</paper-item>
@@ -132,7 +140,9 @@ Polymer({
           placeholder="[[localize('feedback-email')]]"
           on-value-changed="userEmailValueChanged"
         ></paper-input>
-        <p class="disclaimer" hidden$="[[!shouldShowLanguageDisclaimer]]">[[localize('feedback-disclaimer')]]</p>
+        <p class="disclaimer" hidden$="[[!shouldShowLanguageDisclaimer]]">
+          [[localize('feedback-disclaimer')]]
+        </p>
         <paper-textarea
           id="userFeedback"
           type="text"
@@ -149,7 +159,9 @@ Polymer({
       <!-- end of #feedbackWrapper -->
       <p class="buttons">
         <paper-button dialog-dismiss="">[[localize('cancel')]]</paper-button>
-        <paper-button autofocus="" on-tap="submitTappedHandler">[[localize('feedback-submit')]]</paper-button>
+        <paper-button autofocus="" on-tap="submitTappedHandler"
+          >[[localize('feedback-submit')]]</paper-button
+        >
       </p>
     </paper-dialog>
   `,
@@ -202,7 +214,8 @@ Polymer({
       this.title = this.localize('feedback-title-install');
       this.feedbackExplanation = this.localize('feedback-explanation-install');
       this.$.dialog.classList.add('installationFailed');
-      this.$.feedbackCategoryListbox.selected = this.feedbackCategories.INSTALLATION;
+      this.$.feedbackCategoryListbox.selected =
+        this.feedbackCategories.INSTALLATION;
     } else {
       this.title = this.localize('feedback-title-generic');
       this.feedbackExplanation = '';

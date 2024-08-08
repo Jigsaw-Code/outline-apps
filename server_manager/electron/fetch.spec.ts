@@ -21,11 +21,16 @@ import * as forge from 'node-forge';
 
 import {fetchWithPin} from './fetch';
 
-
 describe('fetchWithPin', () => {
   it('throws on pin mismatch (remote)', async () => {
-    const result = fetchWithPin({url: 'https://www.gstatic.com/', method: 'GET'}, 'incorrect fingerprint');
-    await expectAsync(result).toBeRejectedWithError(Error, /Fingerprint mismatch/);
+    const result = fetchWithPin(
+      {url: 'https://www.gstatic.com/', method: 'GET'},
+      'incorrect fingerprint'
+    );
+    await expectAsync(result).toBeRejectedWithError(
+      Error,
+      /Fingerprint mismatch/
+    );
   });
 
   // Make a certificate.
@@ -41,7 +46,10 @@ describe('fetchWithPin', () => {
   // Compute the certificate fingerprint.
   const certDer = forge.pki.pemToDer(certPem);
   const sha256 = crypto.createHash('sha256');
-  const certSha256 = sha256.update(certDer.data, 'binary').digest().toString('binary');
+  const certSha256 = sha256
+    .update(certDer.data, 'binary')
+    .digest()
+    .toString('binary');
 
   it('throws on pin mismatch (local)', async () => {
     const server = tls.createServer({key: keyPem, cert: certPem});
@@ -56,10 +64,15 @@ describe('fetchWithPin', () => {
     // Fail if the TLS handshake completes.
     server.on('secureConnection', fail);
 
-    const clientClosed = new Promise(fulfill => server.on('connection', socket => socket.on('close', fulfill)));
+    const clientClosed = new Promise(fulfill =>
+      server.on('connection', socket => socket.on('close', fulfill))
+    );
 
     const result = fetchWithPin(req, 'incorrect fingerprint');
-    await expectAsync(result).toBeRejectedWithError(Error, /Fingerprint mismatch/);
+    await expectAsync(result).toBeRejectedWithError(
+      Error,
+      /Fingerprint mismatch/
+    );
 
     // Don't stop the test until the client has closed the TCP socket.
     await clientClosed;

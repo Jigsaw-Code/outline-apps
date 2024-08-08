@@ -15,7 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {ShadowsocksSessionConfig} from '../src/www/app/outline_server_repository/server';
+import {ShadowsocksSessionConfig} from '../src/www/app/outline_server_repository/vpn';
 
 // Format to store a tunnel configuration.
 export interface SerializableTunnel {

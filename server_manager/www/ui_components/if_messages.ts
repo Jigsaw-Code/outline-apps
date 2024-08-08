@@ -25,7 +25,10 @@ export class IfMessages extends LitElement {
     converter: (value: string) => value.split(/,\s*/),
   })
   messageIDs: string[] = [];
-  @property({type: Function, attribute: 'localize'}) localize: (msgId: string, ...params: string[]) => string;
+  @property({type: Function, attribute: 'localize'}) localize: (
+    msgId: string,
+    ...params: string[]
+  ) => string;
 
   render() {
     if (
