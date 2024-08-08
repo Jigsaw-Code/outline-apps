@@ -38,6 +38,9 @@ function makeFetcher(fingerprint?: string): Fetcher {
  * @param fingerprint A SHA-256 hash of the expected leaf certificate, in binary encoding.
  * @returns A fully initialized API client.
  */
-export function makePathApiClient(base: string, fingerprint?: string): PathApiClient {
+export function makePathApiClient(
+  base: string,
+  fingerprint?: string
+): PathApiClient {
   return new PathApiClient(base, makeFetcher(fingerprint));
 }

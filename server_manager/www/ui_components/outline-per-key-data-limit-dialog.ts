@@ -36,7 +36,6 @@ import {
   formatBytesParts,
 } from '../data_formatting';
 
-
 /**
  * A floating window representing settings specific to individual access keys. Its state is
  * dynamically set when opened using the open() method instead of with any in-HTML attributes.
@@ -176,22 +175,42 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
           }
         }
       </style>
-      <paper-dialog id="container" @opened-changed=${this._onDialogOpenedChanged}>
+      <paper-dialog
+        id="container"
+        @opened-changed=${this._onDialogOpenedChanged}
+      >
         <div id="headerSection">
-          <iron-icon id="dataLimitIcon" icon="icons:perm-data-setting"></iron-icon>
-          <h3>${this.localize('per-key-data-limit-dialog-title', 'keyName', this._keyName)}</h3>
+          <iron-icon
+            id="dataLimitIcon"
+            icon="icons:perm-data-setting"
+          ></iron-icon>
+          <h3>
+            ${this.localize(
+              'per-key-data-limit-dialog-title',
+              'keyName',
+              this._keyName
+            )}
+          </h3>
         </div>
         <div id="menuSection">
-          <paper-checkbox ?checked=${this._showDataLimit} @tap=${this._setCustomLimitTapped}>
+          <paper-checkbox
+            ?checked=${this._showDataLimit}
+            @tap=${this._setCustomLimitTapped}
+          >
             ${this.localize('per-key-data-limit-dialog-set-custom')}
           </paper-checkbox>
           ${this._showDataLimit ? this.renderDataLimit() : ''}
         </div>
         <div id="buttonsSection">
-          <paper-button id="save" ?disabled=${!this._enableSave} @tap=${this._onSaveButtonTapped}
+          <paper-button
+            id="save"
+            ?disabled=${!this._enableSave}
+            @tap=${this._onSaveButtonTapped}
             >${this.localize('save')}</paper-button
           >
-          <paper-button @tap=${this.close}>${this.localize('cancel')}</paper-button>
+          <paper-button @tap=${this.close}
+            >${this.localize('cancel')}</paper-button
+          >
         </div>
       </paper-dialog>
     `;
@@ -221,8 +240,12 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
             attr-for-selected="name"
             selected="${this._initialUnit()}"
           >
-            <paper-item name="GB">${this._getInternationalizedUnit(1000000000)}</paper-item>
-            <paper-item name="MB">${this._getInternationalizedUnit(1000000)}</paper-item>
+            <paper-item name="GB"
+              >${this._getInternationalizedUnit(1000000000)}</paper-item
+            >
+            <paper-item name="MB"
+              >${this._getInternationalizedUnit(1000000)}</paper-item
+            >
           </paper-listbox>
         </paper-dropdown-menu>
       </div>
@@ -242,7 +265,9 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
   }
 
   private _dataLimitUnit(): 'GB' | 'MB' {
-    return this._queryAs<PaperListboxElement>('#unitsListbox').selected as 'GB' | 'MB';
+    return this._queryAs<PaperListboxElement>('#unitsListbox').selected as
+      | 'GB'
+      | 'MB';
   }
 
   private _getInternationalizedUnit(bytes: number) {
@@ -254,7 +279,10 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
   }
 
   private _initialValue() {
-    return bytesToDisplayDataAmount(this._initialDataLimitBytes)?.value.toString() || '';
+    return (
+      bytesToDisplayDataAmount(this._initialDataLimitBytes)?.value.toString() ||
+      ''
+    );
   }
 
   private async _setCustomLimitTapped() {
@@ -276,7 +304,9 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
     }
     const result =
       change === Change.SET
-        ? await this._onDataLimitSet(displayDataAmountToBytes(this.inputDataLimit()))
+        ? await this._onDataLimitSet(
+            displayDataAmountToBytes(this.inputDataLimit())
+          )
         : await this._onDataLimitRemoved();
     if (result) {
       this.close();
@@ -309,7 +339,9 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
    * The current data limit as input by the user, but not necessarily as saved.
    */
   public inputDataLimit(): DisplayDataAmount {
-    return this._showDataLimit ? {unit: this._dataLimitUnit(), value: this._dataLimitValue()} : null;
+    return this._showDataLimit
+      ? {unit: this._dataLimitUnit(), value: this._dataLimitValue()}
+      : null;
   }
 
   /**
@@ -337,7 +369,9 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
     this._onDataLimitSet = onDataLimitSet;
     this._onDataLimitRemoved = onDataLimitRemoved;
 
-    this._queryAs<PaperListboxElement>('#unitsListbox')?.select(this._initialUnit());
+    this._queryAs<PaperListboxElement>('#unitsListbox')?.select(
+      this._initialUnit()
+    );
     this._setSaveButtonDisabledState();
     this._queryAs<PaperDialogElement>('#container').open();
   }

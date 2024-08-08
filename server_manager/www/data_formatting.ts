@@ -21,7 +21,8 @@ const GIGABYTE = 10 ** 9;
 const MEGABYTE = 10 ** 6;
 const KILOBYTE = 10 ** 3;
 
-const inWebApp = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+const inWebApp =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined';
 interface FormatParams {
   value: number;
   unit: 'terabyte' | 'gigabyte' | 'megabyte' | 'kilobyte' | 'byte';
@@ -65,14 +66,22 @@ interface DataAmountParts {
  * @param {number} numBytes An amount of data to format.
  * @param {string} language The ISO language code for the lanugage to translate to, eg 'en'.
  */
-export function formatBytesParts(numBytes: number, language: string): DataAmountParts {
+export function formatBytesParts(
+  numBytes: number,
+  language: string
+): DataAmountParts {
   if (!inWebApp) {
-    throw new Error("formatBytesParts only works in web app code. Node usage isn't supported.");
+    throw new Error(
+      "formatBytesParts only works in web app code. Node usage isn't supported."
+    );
   }
   const params = getDataFormattingParams(numBytes);
-  const parts = makeDataAmountFormatter(language, params).formatToParts(params.value);
+  const parts = makeDataAmountFormatter(language, params).formatToParts(
+    params.value
+  );
   // Cast away the type since `tsc` mistakenly omits the possibility for a 'unit' part
-  const isUnit = (part: Intl.NumberFormatPart) => (part as {type: string}).type === 'unit';
+  const isUnit = (part: Intl.NumberFormatPart) =>
+    (part as {type: string}).type === 'unit';
   const unitText = parts.find(isUnit).value;
   return {
     value: parts
@@ -96,7 +105,9 @@ export function formatBytesParts(numBytes: number, language: string): DataAmount
  */
 export function formatBytes(numBytes: number, language: string): string {
   if (!inWebApp) {
-    throw new Error("formatBytes only works in web app code. Node usage isn't supported.");
+    throw new Error(
+      "formatBytes only works in web app code. Node usage isn't supported."
+    );
   }
   const params = getDataFormattingParams(numBytes);
   return makeDataAmountFormatter(language, params).format(params.value);
@@ -113,7 +124,9 @@ export interface DisplayDataAmount {
  * @param dataAmount
  * @returns The number of bytes represented by dataAmount
  */
-export function displayDataAmountToBytes(dataAmount: DisplayDataAmount): number {
+export function displayDataAmountToBytes(
+  dataAmount: DisplayDataAmount
+): number {
   if (!dataAmount) {
     return null;
   }

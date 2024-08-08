@@ -13,7 +13,10 @@
 // limitations under the License.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).fetchWithPin = (_request: HttpRequest, _fingerprint: string) => {
+(window as any).fetchWithPin = (
+  _request: HttpRequest,
+  _fingerprint: string
+) => {
   return Promise.reject(new Error('Fingerprint pins are not supported'));
 };
 
@@ -24,7 +27,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).onUpdateDownloaded = (_callback: () => void) => {
-  console.info(`Requested registration of callbak for update download`);
+  console.info('Requested registration of callbak for update download');
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +36,10 @@
   const rejectWrapper = {reject: (_error: Error) => {}};
   const result = new Promise((resolve, reject) => {
     rejectWrapper.reject = reject;
-    window.open('https://cloud.digitalocean.com/account/api/tokens/new', 'noopener,noreferrer');
+    window.open(
+      'https://cloud.digitalocean.com/account/api/tokens/new',
+      'noopener,noreferrer'
+    );
     const apiToken = window.prompt('Please enter your DigitalOcean API token');
     if (apiToken) {
       resolve(apiToken);
@@ -56,7 +62,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).bringToFront = () => {
-  console.info(`Requested bringToFront`);
+  console.info('Requested bringToFront');
 };
 
 import './main';

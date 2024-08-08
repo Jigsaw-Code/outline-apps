@@ -42,7 +42,9 @@ Polymer({
       <div>[[text]]</div>
       <p class="buttons">
         <template is="dom-repeat" items="{{buttons}}">
-          <paper-button dialog-dismiss="" on-tap="buttonTapped">[[item]]</paper-button>
+          <paper-button dialog-dismiss="" on-tap="buttonTapped"
+            >[[item]]</paper-button
+          >
         </template>
       </p>
     </paper-dialog>

@@ -24,7 +24,6 @@ import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 import {PolymerElement} from '@polymer/polymer/polymer-element';
 
-
 class OutlineSurveyDialog extends DirMixin(PolymerElement) {
   static get template() {
     return html`
@@ -89,7 +88,9 @@ class OutlineSurveyDialog extends DirMixin(PolymerElement) {
           <div id="content">
             <h3>[[title]]</h3>
             <div id="button-container">
-              <paper-button dialog-dismiss="" noink=""> [[localize('survey-decline')]] </paper-button>
+              <paper-button dialog-dismiss="" noink="">
+                [[localize('survey-decline')]]
+              </paper-button>
               <paper-button dialog-confirm="" autofocus="" noink="">
                 <a href="[[surveyLink]]">[[localize('survey-go-to-survey')]]</a>
               </paper-button>

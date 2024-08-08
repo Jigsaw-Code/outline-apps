@@ -14,7 +14,6 @@
 
 import './ui_components/app-root';
 
-
 import * as i18n from '@outline/infrastructure/i18n';
 
 import {App} from './app';
@@ -93,14 +92,19 @@ const SUPPORTED_LANGUAGES: {[key: string]: LanguageDef} = {
 };
 
 function getLanguageToUse(): i18n.LanguageCode {
-  const supportedLanguages = i18n.languageList(Object.keys(SUPPORTED_LANGUAGES));
+  const supportedLanguages = i18n.languageList(
+    Object.keys(SUPPORTED_LANGUAGES)
+  );
   const preferredLanguages = i18n.getBrowserLanguages();
   const overrideLanguage = window.localStorage.getItem('overrideLanguage');
   if (overrideLanguage) {
     preferredLanguages.unshift(new i18n.LanguageCode(overrideLanguage));
   }
   const defaultLanguage = new i18n.LanguageCode('en');
-  return new i18n.LanguageMatcher(supportedLanguages, defaultLanguage).getBestSupportedLanguage(preferredLanguages);
+  return new i18n.LanguageMatcher(
+    supportedLanguages,
+    defaultLanguage
+  ).getBestSupportedLanguage(preferredLanguages);
 }
 
 function sortLanguageDefsByName(languageDefs: LanguageDef[]) {
@@ -135,5 +139,10 @@ document.addEventListener('WebComponentsReady', () => {
   const filteredLanguageDefs = Object.values(SUPPORTED_LANGUAGES);
   appRoot.supportedLanguages = sortLanguageDefsByName(filteredLanguageDefs);
   appRoot.setLanguage(language.string(), languageDirection);
-  new App(appRoot, version, new ManualServerRepository('manualServers'), cloudAccounts).start();
+  new App(
+    appRoot,
+    version,
+    new ManualServerRepository('manualServers'),
+    cloudAccounts
+  ).start();
 });

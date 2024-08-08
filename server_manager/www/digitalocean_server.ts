@@ -22,7 +22,6 @@ import {DigitalOceanSession, DropletInfo} from '../cloud/digitalocean_api';
 import {Region} from '../model/digitalocean';
 import * as server from '../model/server';
 
-
 // Prefix used in key-value tags.
 const KEY_VALUE_TAG = 'kv';
 // The tag that appears at the beginning of installation.
@@ -78,10 +77,17 @@ function getCompletionFraction(state: InstallState): number {
 }
 
 function isFinal(state: InstallState): boolean {
-  return state === InstallState.COMPLETED || state === InstallState.FAILED || state === InstallState.CANCELED;
+  return (
+    state === InstallState.COMPLETED ||
+    state === InstallState.FAILED ||
+    state === InstallState.CANCELED
+  );
 }
 
-export class DigitalOceanServer extends ShadowboxServer implements server.ManagedServer {
+export class DigitalOceanServer
+  extends ShadowboxServer
+  implements server.ManagedServer
+{
   private onDropletActive: () => void;
   readonly onceDropletActive = new Promise<void>(fulfill => {
     this.onDropletActive = fulfill;
@@ -89,7 +95,11 @@ export class DigitalOceanServer extends ShadowboxServer implements server.Manage
   private installState = new ValueStream<InstallState>(InstallState.UNKNOWN);
   private readonly startTimestamp = Date.now();
 
-  constructor(id: string, private digitalOcean: DigitalOceanSession, private dropletInfo: DropletInfo) {
+  constructor(
+    id: string,
+    private digitalOcean: DigitalOceanSession,
+    private dropletInfo: DropletInfo
+  ) {
     // Consider passing a RestEndpoint object to the parent constructor,
     // to better encapsulate the management api address logic.
     super(id);
@@ -178,7 +188,9 @@ export class DigitalOceanServer extends ShadowboxServer implements server.Manage
       // these methods throw exceptions if the fields are unavailable.
       const certificateFingerprint = this.getCertificateFingerprint();
       const apiAddress = this.getManagementApiAddress();
-      this.setManagementApi(makePathApiClient(apiAddress, certificateFingerprint));
+      this.setManagementApi(
+        makePathApiClient(apiAddress, certificateFingerprint)
+      );
       return true;
     } catch (e) {
       // Install state not yet ready.
@@ -188,7 +200,9 @@ export class DigitalOceanServer extends ShadowboxServer implements server.Manage
 
   // Refreshes the state from DigitalOcean API.
   private async refreshDropletInfo(): Promise<void> {
-    const newDropletInfo = await this.digitalOcean.getDroplet(this.dropletInfo.id);
+    const newDropletInfo = await this.digitalOcean.getDroplet(
+      this.dropletInfo.id
+    );
     const oldDropletInfo = this.dropletInfo;
     this.dropletInfo = newDropletInfo;
     if (newDropletInfo.status !== oldDropletInfo.status) {
@@ -267,7 +281,11 @@ export class DigitalOceanServer extends ShadowboxServer implements server.Manage
   getHost(): DigitalOceanHost {
     // Construct a new DigitalOceanHost object, to be sure it has the latest
     // session and droplet info.
-    return new DigitalOceanHost(this.digitalOcean, this.dropletInfo, this.onDelete.bind(this));
+    return new DigitalOceanHost(
+      this.digitalOcean,
+      this.dropletInfo,
+      this.onDelete.bind(this)
+    );
   }
 
   // Callback to be invoked once server is deleted.
