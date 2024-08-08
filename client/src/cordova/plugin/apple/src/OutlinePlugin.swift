@@ -88,14 +88,15 @@ class OutlinePlugin: CDVPlugin {
         guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
             return sendError("Invalid configuration", callbackId: command.callbackId)
         }
-        OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
-            if errorCode == OutlineVpn.ErrorCode.noError {
+        OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errMsg in
+            let error = errMsg ?? ""
+            if error.isEmpty {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
                 self.sendSuccess(callbackId: command.callbackId)
             } else {
-                self.sendError("Failed to start VPN, err=\(errorCode)", callbackId: command.callbackId)
+                self.sendError(error, callbackId: command.callbackId)
             }
         }
     }

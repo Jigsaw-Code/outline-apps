@@ -28,7 +28,7 @@ NSString *const kActionGetTunnelId = @"getTunnelId";
 NSString *const kMessageKeyAction = @"action";
 NSString *const kMessageKeyTunnelId = @"tunnelId";
 NSString *const kMessageKeyConfig = @"config";
-NSString *const kMessageKeyErrorCode = @"errorCode";
+NSString *const kMessageKeyError = @"error";
 NSString *const kMessageKeyHost = @"host";
 NSString *const kMessageKeyPort = @"port";
 NSString *const kMessageKeyOnDemand = @"is-on-demand";
@@ -37,8 +37,11 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
 @property id<Tun2socksTunnel> tunnel;
-@property (nonatomic, copy) void (^startCompletion)(NSNumber *);
-@property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
+
+// result callbacks for 'start' and 'stop', accepts a nullable error string
+@property (nonatomic, copy) void (^startCompletion)(NSString * _Nullable);
+@property (nonatomic, copy) void (^stopCompletion)(NSString * _Nullable);
+
 @property (nonatomic) DDFileLogger *fileLogger;
 @property(nonatomic) OutlineTunnel *tunnelConfig;
 @property(nonatomic) OutlineTunnelStore *tunnelStore;
@@ -95,10 +98,16 @@ NSString *const kDefaultPathKey = @"defaultPath";
   self.tunnelConfig = tunnelConfig;
 
   // Compute the IP address of the host in the active network.
-  self.hostNetworkAddress =
-      [self getNetworkIpAddress:[self.tunnelConfig.config[@"host"] UTF8String]];
+  NSString *hostname = self.tunnelConfig.config[@"host"];
+  if (hostname == nil || hostname.length == 0) {
+    [self execAppCallbackForAction:kActionStart errorString:@"host is empty"];
+    return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                 code:NEVPNErrorConfigurationInvalid
+                                             userInfo:nil]);
+  }
+  self.hostNetworkAddress = [self getNetworkIpAddress:[hostname UTF8String]];
   if (self.hostNetworkAddress == nil) {
-    [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
+    [self execAppCallbackForAction:kActionStart errorString:@"Failed to resolve IP of host"];
     return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
                                                  code:NEVPNErrorConfigurationReadWriteFailed
                                              userInfo:nil]);
@@ -110,33 +119,38 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // network unusable with no indication to the user. By bypassing the checks, the network would
   // still be unusable, but at least the user will have a visual indication that Outline is the
   // culprit and can explicitly disconnect.
-  long errorCode = noError;
+  bool supportUDP = true;
   if (!isOnDemand) {
-    ShadowsocksClient* client = [self getClient];
-    if (client == nil) {
+    NSError *err = nil;
+    ShadowsocksClient* client = [self getClientWithError:&err];
+    if (err != nil) {
+      [self execAppCallbackForAction:kActionStart errorString:err.localizedDescription];
       return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
                                                    code:NEVPNErrorConfigurationInvalid
                                                userInfo:nil]);
     }
-    ShadowsocksCheckConnectivity(client, &errorCode, nil);
-  }
-  if (errorCode != noError && errorCode != udpRelayNotEnabled) {
-    [self execAppCallbackForAction:kActionStart errorCode:errorCode];
-    return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
-                                                 code:NEVPNErrorConnectionFailed
-                                             userInfo:nil]);
+
+    long connStatus;
+    ShadowsocksCheckConnectivity(client, &connStatus, &err);
+    if (err != nil) {
+      [self execAppCallbackForAction:kActionStart errorString:err.localizedDescription];
+      return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
+                                                   code:NEVPNErrorConfigurationInvalid
+                                               userInfo:nil]);
+    }
+    supportUDP = ((connStatus & ShadowsocksUDPConnected) == ShadowsocksUDPConnected);
   }
 
   [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
-               [self execAppCallbackForAction:kActionStart errorCode:vpnPermissionNotGranted];
+               [self execAppCallbackForAction:kActionStart errorString:@"VPN permission is not granted"];
                return completionHandler(error);
              }
-             BOOL isUdpSupported =
-                 isOnDemand ? self.tunnelStore.isUdpSupported : errorCode == noError;
-             if (![self startTun2Socks:isUdpSupported]) {
-               [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
+             BOOL isUdpSupported = isOnDemand ? self.tunnelStore.isUdpSupported : supportUDP;
+             [self startTun2SocksWithUDPSupported:isUdpSupported error:&error];
+             if (error != nil) {
+               [self execAppCallbackForAction:kActionStart errorString:error.localizedDescription];
                return completionHandler([NSError errorWithDomain:NEVPNErrorDomain
                                                             code:NEVPNErrorConnectionFailed
                                                         userInfo:nil]);
@@ -145,7 +159,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
              [self.tunnelStore save:tunnelConfig];
              self.tunnelStore.isUdpSupported = isUdpSupported;
              self.tunnelStore.status = TunnelStatusConnected;
-             [self execAppCallbackForAction:kActionStart errorCode:noError];
+             [self execAppCallbackForAction:kActionStart errorString:nil];
              completionHandler(nil);
            }];
 }
@@ -157,7 +171,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   [self stopListeningForNetworkChanges];
   [self.tunnel disconnect];
   [self cancelTunnelWithError:nil];
-  [self execAppCallbackForAction:kActionStop errorCode:noError];
+  [self execAppCallbackForAction:kActionStop errorString:nil];
   completionHandler();
 }
 
@@ -182,14 +196,14 @@ NSString *const kDefaultPathKey = @"defaultPath";
     DDLogError(@"Missing action key in app message");
     return completionHandler(nil);
   }
-  void (^callbackWrapper)(NSNumber *) = ^void(NSNumber *errorCode) {
+  void (^callbackWrapper)(NSString * _Nullable) = ^void(NSString * _Nullable errMsg) {
     NSString *tunnelId = @"";
     if (self.tunnelConfig != nil) {
       tunnelId = self.tunnelConfig.id;
     }
     NSDictionary *response = @{
       kMessageKeyAction : action,
-      kMessageKeyErrorCode : errorCode,
+      kMessageKeyError : errMsg ?: [NSNull null],
       kMessageKeyTunnelId : tunnelId
     };
     DDLogDebug(@"Received app message: %@, response: %@", action, response);
@@ -236,17 +250,17 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 # pragma mark - Network
 
-- (ShadowsocksClient*) getClient {
+- (ShadowsocksClient*) getClientWithError:(NSError * _Nullable *)err {
   ShadowsocksConfig* config = [[ShadowsocksConfig alloc] init];
   config.host = self.hostNetworkAddress;
   config.port = [self.tunnelConfig.port intValue];
   config.password = self.tunnelConfig.password;
   config.cipherName = self.tunnelConfig.method;
   config.prefix = self.tunnelConfig.prefix;
-  NSError *err;
-  ShadowsocksClient* client = ShadowsocksNewClient(config, &err);
-  if (err != nil) {
-    DDLogInfo(@"Failed to construct client.");
+
+  ShadowsocksClient* client = ShadowsocksNewClient(config, err);
+  if (err != nil && *err != nil) {
+    DDLogError(@"Failed to construct client: %@", *err);
   }
   return client;
 }
@@ -381,14 +395,14 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 - (void)reconnectTunnel:(bool)configChanged {
   if (!self.tunnelConfig || !self.tunnel) {
     DDLogError(@"Failed to reconnect tunnel, missing tunnel configuration.");
-    [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
+    [self execAppCallbackForAction:kActionStart errorString:@"Missing tunnel configuration for reconnection"];
     return;
   }
   const char *hostAddress = (const char *)[self.tunnelConfig.config[@"host"] UTF8String];
   NSString *activeHostNetworkAddress = [self getNetworkIpAddress:hostAddress];
   if (!activeHostNetworkAddress) {
     DDLogError(@"Failed to retrieve the remote host IP address in the network");
-    [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
+    [self execAppCallbackForAction:kActionStart errorString:@"Failed to resolve IP of host"];
     return;
   }
   if (!configChanged && [activeHostNetworkAddress isEqualToString:self.hostNetworkAddress]) {
@@ -404,43 +418,49 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 
   DDLogInfo(@"Configuration or host IP address changed with the network. Reconnecting tunnel.");
   self.hostNetworkAddress = activeHostNetworkAddress;
-  ShadowsocksClient* client = [self getClient];
-  if (client == nil) {
-    [self execAppCallbackForAction:kActionStart errorCode:illegalServerConfiguration];
+
+  NSError *err;
+  ShadowsocksClient* client = [self getClientWithError:&err];
+  if (err != nil) {
+    [self execAppCallbackForAction:kActionStart errorString:err.localizedDescription];
     [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
                                                     code:NEVPNErrorConfigurationInvalid
                                                 userInfo:nil]];
     return;
   }
-  long errorCode = noError;
-  ShadowsocksCheckConnectivity(client, &errorCode, nil);
-  if (errorCode != noError && errorCode != udpRelayNotEnabled) {
+
+  long connStatus;
+  ShadowsocksCheckConnectivity(client, &connStatus, &err);
+  if (err != nil) {
     DDLogError(@"Connectivity checks failed. Tearing down VPN");
-    [self execAppCallbackForAction:kActionStart errorCode:errorCode];
+    [self execAppCallbackForAction:kActionStart errorString:err.localizedDescription];
     [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
                                                     code:NEVPNErrorConnectionFailed
                                                 userInfo:nil]];
     return;
   }
-  BOOL isUdpSupported = errorCode == noError;
-  if (![self startTun2Socks:isUdpSupported]) {
+
+  BOOL isUDPSupported = ((connStatus & ShadowsocksUDPConnected) == ShadowsocksUDPConnected);
+  [self startTun2SocksWithUDPSupported:isUDPSupported error:&err];
+  if (err != nil) {
     DDLogError(@"Failed to reconnect tunnel. Tearing down VPN");
-    [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
+    [self execAppCallbackForAction:kActionStart errorString:err.localizedDescription];
     [self cancelTunnelWithError:[NSError errorWithDomain:NEVPNErrorDomain
                                                     code:NEVPNErrorConnectionFailed
                                                 userInfo:nil]];
     return;
   }
+
   [self connectTunnel:[OutlineTunnel getTunnelNetworkSettingsWithTunnelRemoteAddress:self.hostNetworkAddress]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
-               [self execAppCallbackForAction:kActionStart errorCode:vpnStartFailure];
+               [self execAppCallbackForAction:kActionStart errorString:error.localizedDescription];
                [self cancelTunnelWithError:error];
                return;
              }
-             self.tunnelStore.isUdpSupported = isUdpSupported;
+             self.tunnelStore.isUdpSupported = isUDPSupported;
              [self.tunnelStore save:self.tunnelConfig];
-             [self execAppCallbackForAction:kActionStart errorCode:noError];
+             [self execAppCallbackForAction:kActionStart errorString:nil];
            }];
 }
 
@@ -468,43 +488,41 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }];
 }
 
-- (BOOL)startTun2Socks:(BOOL)isUdpSupported {
+- (void)startTun2SocksWithUDPSupported:(BOOL)isUdpSupported error:(NSError * _Nullable *)err {
   BOOL isRestart = self.tunnel != nil && self.tunnel.isConnected;
   if (isRestart) {
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  ShadowsocksClient* client = [self getClient];
-  if (client == nil) {
-    return NO;
+  ShadowsocksClient* client = [self getClientWithError:err];
+  if (err != nil && *err != nil) {
+    DDLogError(@"Failed to get tun2socks client: %@", *err);
+    return;
   }
-  NSError* err;
-  self.tunnel = Tun2socksConnectShadowsocksTunnel(
-      weakSelf, client, isUdpSupported, &err);
-  if (err != nil) {
-    DDLogError(@"Failed to start tun2socks: %@", err);
-    return NO;
+  self.tunnel = Tun2socksConnectShadowsocksTunnel(weakSelf, client, isUdpSupported, err);
+  if (err != nil && *err != nil) {
+    DDLogError(@"Failed to start tun2socks: %@", *err);
+    return;
   }
   if (!isRestart) {
     dispatch_async(self.packetQueue, ^{
       [weakSelf processPackets];
     });
   }
-  return YES;
+  DDLogInfo(@"tun2socks started");
 }
 
 # pragma mark - App IPC
 
-// Executes a callback stored in |callbackMap| for the given |action|. |errorCode| is passed to the
-// app to indicate the operation success.
+// Executes the callback (|startCompletion| or |stopCompletion|) for the given |action|.
+// Sends |errorString| (usually a JSON PlatformError) to the app to show the operation result, nil means success.
 // Callbacks are only executed once to prevent a bad access exception (EXC_BAD_ACCESS).
-- (void)execAppCallbackForAction:(NSString *)action errorCode:(ErrorCode)code {
-  NSNumber *errorCode = [NSNumber numberWithInt:(int)code];
+- (void)execAppCallbackForAction:(NSString *)action errorString:(NSString * _Nullable)errMsg {
   if ([kActionStart isEqualToString:action] && self.startCompletion != nil) {
-    self.startCompletion(errorCode);
+    self.startCompletion(errMsg);
     self.startCompletion = nil;
   } else if ([kActionStop isEqualToString:action] && self.stopCompletion != nil) {
-    self.stopCompletion(errorCode);
+    self.stopCompletion(errMsg);
     self.stopCompletion = nil;
   } else {
     DDLogWarn(@"No callback for action %@", action);
