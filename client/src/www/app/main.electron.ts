@@ -17,20 +17,21 @@
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 
-import {Localizer} from '@outline/infrastructure/i18n';
 import * as Sentry from '@sentry/electron/renderer';
 
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
-import {OutlineServerRepository} from './outline_server_repository';
+import {VpnApi} from './outline_server_repository/vpn';
 import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
-import {EventQueue} from '../model/events';
-import {getSentryBrowserIntegrations, OutlineErrorReporter, Tags} from '../shared/error_reporter';
-import { VpnApi } from './outline_server_repository/vpn';
+import {
+  getSentryBrowserIntegrations,
+  OutlineErrorReporter,
+  Tags,
+} from '../shared/error_reporter';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
@@ -41,25 +42,34 @@ window.electron.methodChannel.on('add-server', (_: Event, url: string) => {
   interceptor.executeListeners(url);
 });
 
-window.electron.methodChannel.on('localization-request', (_: Event, localizationKeys: string[]) => {
-  const localize = getLocalizationFunction();
-  if (!localize) {
-    console.error('Localization function not available.');
-    window.electron.methodChannel.send('localization-response', null);
-    return;
+window.electron.methodChannel.on(
+  'localization-request',
+  (_: Event, localizationKeys: string[]) => {
+    const localize = getLocalizationFunction();
+    if (!localize) {
+      console.error('Localization function not available.');
+      window.electron.methodChannel.send('localization-response', null);
+      return;
+    }
+    const localizationResult: {[key: string]: string} = {};
+    for (const key of localizationKeys) {
+      localizationResult[key] = localize(key);
+    }
+    window.electron.methodChannel.send(
+      'localization-response',
+      localizationResult
+    );
   }
-  const localizationResult: {[key: string]: string} = {};
-  for (const key of localizationKeys) {
-    localizationResult[key] = localize(key);
-  }
-  window.electron.methodChannel.send('localization-response', localizationResult);
-});
+);
 
 // Pushes a clipboard event whenever the app window receives focus.
 class ElectronClipboard extends AbstractClipboard {
   constructor() {
     super();
-    window.electron.methodChannel.on('push-clipboard', this.emitEvent.bind(this));
+    window.electron.methodChannel.on(
+      'push-clipboard',
+      this.emitEvent.bind(this)
+    );
   }
 
   getContents() {
@@ -72,13 +82,18 @@ class ElectronClipboard extends AbstractClipboard {
 class ElectronUpdater extends AbstractUpdater {
   constructor() {
     super();
-    window.electron.methodChannel.on('update-downloaded', this.emitEvent.bind(this));
+    window.electron.methodChannel.on(
+      'update-downloaded',
+      this.emitEvent.bind(this)
+    );
   }
 }
 
 class ElectronVpnInstaller implements VpnInstaller {
   async installVpn(): Promise<void> {
-    const err = await window.electron.methodChannel.invoke('install-outline-services');
+    const err = await window.electron.methodChannel.invoke(
+      'install-outline-services'
+    );
 
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:
     // https://github.com/electron/electron/issues/24427
@@ -96,8 +111,17 @@ class ElectronErrorReporter implements OutlineErrorReporter {
     });
   }
 
-  report(userFeedback: string, feedbackCategory: string, userEmail?: string, tags?: Tags): Promise<void> {
-    Sentry.captureEvent({message: userFeedback, user: {email: userEmail}, tags: {...tags, category: feedbackCategory}});
+  report(
+    userFeedback: string,
+    feedbackCategory: string,
+    userEmail?: string,
+    tags?: Tags
+  ): Promise<void> {
+    Sentry.captureEvent({
+      message: userFeedback,
+      user: {email: userEmail},
+      tags: {...tags, category: feedbackCategory},
+    });
     return Promise.resolve();
   }
 }

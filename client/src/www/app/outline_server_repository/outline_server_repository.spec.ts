@@ -15,11 +15,26 @@
 import {InMemoryStorage} from '@outline/infrastructure/memory_storage';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
-import {OutlineServerRepository, ServersStorageV0, ServersStorageV1, serversStorageV0ConfigToAccessKey} from '.';
+import {
+  OutlineServerRepository,
+  ServersStorageV0,
+  ServersStorageV1,
+  serversStorageV0ConfigToAccessKey,
+} from '.';
 import {OutlineServer} from './server';
 import {FakeVpnApi} from './vpn.fake';
-import {ServerIncompatible, ServerUrlInvalid, ShadowsocksUnsupportedCipher} from '../../model/errors';
-import {EventQueue, ServerAdded, ServerForgetUndone, ServerForgotten, ServerRenamed} from '../../model/events';
+import {
+  ServerIncompatible,
+  ServerUrlInvalid,
+  ShadowsocksUnsupportedCipher,
+} from '../../model/errors';
+import {
+  EventQueue,
+  ServerAdded,
+  ServerForgetUndone,
+  ServerForgotten,
+  ServerRenamed,
+} from '../../model/events';
 
 // TODO(alalama): unit tests for OutlineServer.
 
@@ -46,36 +61,66 @@ describe('OutlineServerRepository', () => {
       'server-1': CONFIG_1_V0,
     };
     const storage = new InMemoryStorage(
-      new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
+      new Map([
+        [
+          OutlineServerRepository.SERVERS_STORAGE_KEY_V0,
+          JSON.stringify(storageV0),
+        ],
+      ])
     );
     const repo = newTestRepo(new EventQueue(), storage);
     const server0 = repo.getById('server-0');
-    expect(server0?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
+    expect(server0?.accessKey).toEqual(
+      serversStorageV0ConfigToAccessKey(CONFIG_0_V0)
+    );
     expect(server0?.name).toEqual(CONFIG_0_V0.name);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
+    expect(server1?.accessKey).toEqual(
+      serversStorageV0ConfigToAccessKey(CONFIG_1_V0)
+    );
     expect(server1?.name).toEqual(CONFIG_1_V0.name);
   });
 
   it('loads V1 servers', () => {
     // Store V0 servers with different ids.
-    const storageV0: ServersStorageV0 = {'v0-server-0': CONFIG_0_V0, 'v0-server-1': CONFIG_1_V0};
+    const storageV0: ServersStorageV0 = {
+      'v0-server-0': CONFIG_0_V0,
+      'v0-server-1': CONFIG_1_V0,
+    };
     const storageV1: ServersStorageV1 = [
-      {id: 'server-0', name: 'fake server 0', accessKey: serversStorageV0ConfigToAccessKey(CONFIG_0_V0)},
-      {id: 'server-1', name: 'renamed server', accessKey: serversStorageV0ConfigToAccessKey(CONFIG_1_V0)},
+      {
+        id: 'server-0',
+        name: 'fake server 0',
+        accessKey: serversStorageV0ConfigToAccessKey(CONFIG_0_V0),
+      },
+      {
+        id: 'server-1',
+        name: 'renamed server',
+        accessKey: serversStorageV0ConfigToAccessKey(CONFIG_1_V0),
+      },
     ];
     const storage = new InMemoryStorage(
       new Map([
-        [OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)],
-        [OutlineServerRepository.SERVERS_STORAGE_KEY, JSON.stringify(storageV1)],
+        [
+          OutlineServerRepository.SERVERS_STORAGE_KEY_V0,
+          JSON.stringify(storageV0),
+        ],
+        [
+          OutlineServerRepository.SERVERS_STORAGE_KEY,
+          JSON.stringify(storageV1),
+        ],
       ])
     );
     const repo = newTestRepo(new EventQueue(), storage);
     const server0 = repo.getById('server-0');
-    expect(server0?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
+    expect(server0?.accessKey).toEqual(
+      serversStorageV0ConfigToAccessKey(CONFIG_0_V0)
+    );
     expect(server0?.name).toEqual(CONFIG_0_V0.name);
     const server1 = repo.getById('server-1');
-    expect(server1?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
+    expect(server1?.accessKey).toEqual(
+      serversStorageV0ConfigToAccessKey(CONFIG_1_V0)
+    );
     expect(server1?.name).toEqual('renamed server');
   });
 
@@ -85,14 +130,21 @@ describe('OutlineServerRepository', () => {
       'server-1': {...CONFIG_1_V0, name: CONFIG_1_V0.name},
     };
     const storage = new InMemoryStorage(
-      new Map([[OutlineServerRepository.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
+      new Map([
+        [
+          OutlineServerRepository.SERVERS_STORAGE_KEY_V0,
+          JSON.stringify(storageV0),
+        ],
+      ])
     );
     const repo = newTestRepo(new EventQueue(), storage);
     // Trigger storage change.
     repo.forget('server-1');
     repo.undoForget('server-1');
 
-    const serversJson = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversJson = JSON.parse(
+      storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)
+    );
     expect(serversJson).toContain({
       id: 'server-0',
       name: 'fake server 0',
@@ -112,7 +164,9 @@ describe('OutlineServerRepository', () => {
     const accessKey1 = serversStorageV0ConfigToAccessKey(CONFIG_1_V0);
     repo.add(accessKey0);
     repo.add(accessKey1);
-    const servers: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const servers: ServersStorageV1 = JSON.parse(
+      storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)
+    );
     expect(servers.length).toEqual(2);
     expect(servers[0].accessKey).toEqual(accessKey0);
     expect(servers[0].name).toEqual(CONFIG_0_V0.name);
@@ -184,7 +238,9 @@ describe('OutlineServerRepository', () => {
     const server = repo.getAll()[0];
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
-    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(
+      storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)
+    );
     const serverNames = serversStorage.map(s => s.name);
     expect(serverNames).toContain(NEW_SERVER_NAME);
   });
@@ -218,7 +274,9 @@ describe('OutlineServerRepository', () => {
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(1);
     expect(serverIds).not.toContain(forgottenServerId);
-    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(
+      storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)
+    );
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).not.toContain(forgottenServerId);
   });
@@ -253,7 +311,9 @@ describe('OutlineServerRepository', () => {
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(2);
     expect(serverIds).toContain(forgottenServerId);
-    const serversStorage: ServersStorageV1 = JSON.parse(storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY));
+    const serversStorage: ServersStorageV1 = JSON.parse(
+      storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)
+    );
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).toContain(forgottenServerId);
   });
@@ -282,7 +342,9 @@ describe('OutlineServerRepository', () => {
     const repo = newTestRepo(new EventQueue(), new InMemoryStorage());
     // Invalid access keys.
     expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(
+      ServerUrlInvalid
+    );
     // IPv6 host.
     expect(() =>
       repo.validateAccessKey(
@@ -299,17 +361,41 @@ describe('OutlineServerRepository', () => {
     // Unsupported ciphers.
     expect(() =>
       repo.validateAccessKey(
-        SIP002_URI.stringify(makeConfig({host: '127.0.0.1', port: 443, password: 'test', method: 'aes-256-ctr'}))
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '127.0.0.1',
+            port: 443,
+            password: 'test',
+            method: 'aes-256-ctr',
+          })
+        )
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
     expect(() =>
       repo.validateAccessKey(
-        SIP002_URI.stringify(makeConfig({host: '127.0.0.1', port: 443, password: 'test', method: 'chacha20'}))
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '127.0.0.1',
+            port: 443,
+            password: 'test',
+            method: 'chacha20',
+          })
+        )
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
   });
 });
 
-function newTestRepo(eventQueue: EventQueue, storage: Storage): OutlineServerRepository {
-  return new OutlineServerRepository(new FakeVpnApi(), eventQueue, storage, (_) => {return "Outline Server";});
+function newTestRepo(
+  eventQueue: EventQueue,
+  storage: Storage
+): OutlineServerRepository {
+  return new OutlineServerRepository(
+    new FakeVpnApi(),
+    eventQueue,
+    storage,
+    _ => {
+      return 'Outline Server';
+    }
+  );
 }

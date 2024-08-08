@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ShadowsocksSessionConfig, VpnApi, TunnelStatus } from './vpn';
+import {ShadowsocksSessionConfig, VpnApi, TunnelStatus} from './vpn';
 import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
@@ -34,13 +34,13 @@ export class CordovaVpnApi implements VpnApi {
     return pluginExecWithErrorCode<boolean>('isRunning', id);
   }
 
-  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
+   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
     const onError = (err: unknown) => {
       console.warn('failed to execute status change listener', err);
     };
-    const callback = (data: any) => {
-      listener(data.id, data.status)
-    }
+    const callback = (data: {id: string; status: TunnelStatus}) => {
+      listener(data.id, data.status);
+    };
     console.debug('CordovaVpnApi: registering onStatusChange callback');
     cordova.exec(callback, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', []);
   }

@@ -12,49 +12,61 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { TunnelStatus } from './vpn';
-import { ShadowsocksSessionConfig } from './vpn';
-import { VpnApi } from './vpn';
+import {IpcRendererEvent} from 'electron/main';
+
+import {TunnelStatus} from './vpn';
+import {ShadowsocksSessionConfig} from './vpn';
+import {VpnApi} from './vpn';
 import {PlatformError} from '../../model/platform_error';
-import { IpcRendererEvent } from 'electron/main';
 
 export class ElectronVpnApi implements VpnApi {
-  private statusChangeListener: ((id: string, status: TunnelStatus) => void) | null = null;
+  private statusChangeListener:
+    | ((id: string, status: TunnelStatus) => void)
+    | null = null;
 
   private runningServerId: string | undefined;
 
   constructor() {
     // This event is received when the proxy connects. It is mainly used for signaling the UI that
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
-    window.electron.methodChannel.on(`proxy-status`, (event: IpcRendererEvent, serverId: string, status: TunnelStatus) => {
-      if (status === TunnelStatus.CONNECTED) {
-        this.runningServerId = serverId;
+    window.electron.methodChannel.on(
+      'proxy-status',
+      (event: IpcRendererEvent, serverId: string, status: TunnelStatus) => {
+        if (status === TunnelStatus.CONNECTED) {
+          this.runningServerId = serverId;
+        }
+        if (status === TunnelStatus.DISCONNECTED) {
+          this.runningServerId = undefined;
+        }
+        if (this.statusChangeListener) {
+          this.statusChangeListener(serverId, status);
+        } else {
+          console.error(
+            `${serverId} status changed to ${status} but no listener set`
+          );
+        }
       }
-      if (status === TunnelStatus.DISCONNECTED) {
-        this.runningServerId = undefined;
-      }
-      if (this.statusChangeListener) {
-        this.statusChangeListener(serverId, status);
-      } else {
-        console.error(`${serverId} status changed to ${status} but no listener set`);
-      }
-    });
+    );
   }
 
   async start(id: string, name: string, config: ShadowsocksSessionConfig) {
-    if (this.runningServerId == id) {
+    if (this.runningServerId === id) {
       return Promise.resolve();
     }
 
     try {
-      await window.electron.methodChannel.invoke('start-proxying', {id: id, name: name, config});
+      await window.electron.methodChannel.invoke('start-proxying', {
+        id: id,
+        name: name,
+        config,
+      });
     } catch (e) {
       throw PlatformError.parseFrom(e);
     }
   }
 
   async stop(id: string) {
-    if (this.runningServerId != id) {
+    if (this.runningServerId !== id) {
       return;
     }
 

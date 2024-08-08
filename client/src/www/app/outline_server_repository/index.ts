@@ -23,7 +23,6 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
 
-
 // TODO(daniellacosse): write unit tests for these functions
 
 // Compares access keys proxying parameters.
@@ -36,10 +35,10 @@ function staticKeysMatch(a: string, b: string): boolean {
       l.port === r.port &&
       l.password === r.password &&
       l.method === r.method &&
-      l.prefix == r.prefix
+      l.prefix === r.prefix
     );
   } catch (e) {
-    console.debug(`failed to parse access key for comparison`);
+    console.debug('failed to parse access key for comparison');
   }
   return false;
 }
@@ -78,7 +77,9 @@ export interface ServersStorageV0 {
 }
 
 // Enccodes a V0 storage configuration into an access key string.
-export function serversStorageV0ConfigToAccessKey(config: ServersStorageV0Config): string {
+export function serversStorageV0ConfigToAccessKey(
+  config: ServersStorageV0Config
+): string {
   return SIP002_URI.stringify(
     makeConfig({
       host: config.host,
@@ -111,13 +112,15 @@ export class OutlineServerRepository implements ServerRepository {
     private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
-    private localize: Localizer,
+    private localize: Localizer
   ) {
     console.debug('OutlineServerRepository is initializing');
     this.loadServers();
     console.debug('OutlineServerRepository loaded servers');
     vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
-      console.debug(`OutlineServerRepository received status update for server ${id}: ${status}`)
+      console.debug(
+        `OutlineServerRepository received status update for server ${id}: ${status}`
+      );
       let statusEvent: events.OutlineEvent;
       switch (status) {
         case TunnelStatus.CONNECTED:
@@ -133,7 +136,9 @@ export class OutlineServerRepository implements ServerRepository {
           statusEvent = new events.ServerReconnecting(id);
           break;
         default:
-          console.warn(`Received unknown tunnel status ${status} for tunnel ${id}`);
+          console.warn(
+            `Received unknown tunnel status ${status} for tunnel ${id}`
+          );
           return;
       }
       eventQueue.enqueue(statusEvent);
@@ -195,12 +200,19 @@ export class OutlineServerRepository implements ServerRepository {
       console.warn('No forgotten server to unforget');
       return;
     } else if (this.lastForgottenServer.id !== serverId) {
-      console.warn('id of forgotten server', this.lastForgottenServer, 'does not match', serverId);
+      console.warn(
+        'id of forgotten server',
+        this.lastForgottenServer,
+        'does not match',
+        serverId
+      );
       return;
     }
     this.serverById.set(this.lastForgottenServer.id, this.lastForgottenServer);
     this.storeServers();
-    this.eventQueue.enqueue(new events.ServerForgetUndone(this.lastForgottenServer));
+    this.eventQueue.enqueue(
+      new events.ServerForgetUndone(this.lastForgottenServer)
+    );
     this.lastForgottenServer = null;
   }
 
@@ -226,19 +238,26 @@ export class OutlineServerRepository implements ServerRepository {
     try {
       config = SHADOWSOCKS_URI.parse(staticKey);
     } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
+      throw new errors.ServerUrlInvalid(
+        error.message || 'failed to parse access key'
+      );
     }
     if (config.host.isIPv6) {
       throw new errors.ServerIncompatible('unsupported IPv6 host address');
     }
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
+      throw new errors.ShadowsocksUnsupportedCipher(
+        config.method.data || 'unknown'
+      );
     }
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (server.type === ServerType.DYNAMIC_CONNECTION && accessKey === server.accessKey) {
+      if (
+        server.type === ServerType.DYNAMIC_CONNECTION &&
+        accessKey === server.accessKey
+      ) {
         return server;
       }
 
@@ -274,9 +293,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private loadServersV0() {
     this.serverById = new Map<string, OutlineServer>();
-    const serversJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY_V0);
+    const serversJson = this.storage.getItem(
+      OutlineServerRepository.SERVERS_STORAGE_KEY_V0
+    );
     if (!serversJson) {
-      console.debug(`no V0 servers found in storage`);
+      console.debug('no V0 servers found in storage');
       return;
     }
     let configById: ServersStorageV0 = {};
@@ -303,9 +324,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private loadServersV1() {
     this.serverById = new Map<string, OutlineServer>();
-    const serversStorageJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
+    const serversStorageJson = this.storage.getItem(
+      OutlineServerRepository.SERVERS_STORAGE_KEY
+    );
     if (!serversStorageJson) {
-      console.debug(`no servers found in storage`);
+      console.debug('no servers found in storage');
       return;
     }
     let serversJson: ServersStorageV1 = [];
@@ -325,17 +348,27 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private loadServer(serverJson: OutlineServerJson) {
-    const server = this.createServer(serverJson.id, serverJson.accessKey, serverJson.name);
+    const server = this.createServer(
+      serverJson.id,
+      serverJson.accessKey,
+      serverJson.name
+    );
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(id: string, accessKey: string, name?: string): OutlineServer {
+  private createServer(
+    id: string,
+    accessKey: string,
+    name?: string
+  ): OutlineServer {
     const server = new OutlineServer(
       this.vpnApi,
       id,
       name,
       accessKey,
-      isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
+      isDynamicAccessKey(accessKey)
+        ? ServerType.DYNAMIC_CONNECTION
+        : ServerType.STATIC_CONNECTION,
       this.localize
     );
 

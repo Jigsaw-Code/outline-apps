@@ -33,7 +33,11 @@ export interface VpnApi {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // @throws {OutlinePluginError}
-  start(id: string, name: string, config: ShadowsocksSessionConfig): Promise<void>;
+  start(
+    id: string,
+    name: string,
+    config: ShadowsocksSessionConfig
+  ): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(id: string): Promise<void>;

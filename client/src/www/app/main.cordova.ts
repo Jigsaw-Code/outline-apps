@@ -18,24 +18,23 @@
 import '@babel/polyfill';
 import 'web-animations-js/web-animations-next-lite.min.js';
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
-import {Localizer} from '@outline/infrastructure/i18n';
 import {setRootPath} from '@polymer/polymer/lib/utils/settings.js';
-setRootPath(location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1));
+setRootPath(
+  location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1)
+);
 import * as Sentry from '@sentry/browser';
 
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
-import {OutlineServerRepository} from './outline_server_repository';
+import {VpnApi} from './outline_server_repository/vpn';
 import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
-import {EventQueue} from '../model/events';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
-import { VpnApi } from './outline_server_repository/vpn';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
 
@@ -58,7 +57,11 @@ class CordovaErrorReporter extends SentryErrorReporter {
     pluginExec<void>('initializeErrorReporting', dsn).catch(console.error);
   }
 
-  async report(userFeedback: string, feedbackCategory: string, userEmail?: string): Promise<void> {
+  async report(
+    userFeedback: string,
+    feedbackCategory: string,
+    userEmail?: string
+  ): Promise<void> {
     await super.report(userFeedback, feedbackCategory, userEmail);
     // Sends previously captured logs and events to the error reporting framework.
     // Associates the report to the provided unique identifier.
@@ -92,8 +95,16 @@ class CordovaPlatform implements OutlinePlatform {
   getErrorReporter(env: EnvironmentVariables) {
     const sharedTags = {'build.number': env.APP_BUILD_NUMBER};
     return hasDeviceSupport
-      ? new CordovaErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags)
-      : new SentryErrorReporter(env.APP_VERSION, env.SENTRY_DSN || '', sharedTags);
+      ? new CordovaErrorReporter(
+          env.APP_VERSION,
+          env.SENTRY_DSN || '',
+          sharedTags
+        )
+      : new SentryErrorReporter(
+          env.APP_VERSION,
+          env.SENTRY_DSN || '',
+          sharedTags
+        );
   }
 
   getUpdater() {

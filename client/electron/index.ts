@@ -21,7 +21,16 @@ import * as url from 'url';
 
 import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
-import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, nativeImage, shell, Tray} from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  MenuItemConstructorOptions,
+  nativeImage,
+  shell,
+  Tray,
+} from 'electron';
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
@@ -29,7 +38,10 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, SerializableTunnel} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
+import {
+  ShadowsocksSessionConfig,
+  TunnelStatus,
+} from '../src/www/app/outline_server_repository/vpn';
 import * as errors from '../src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
@@ -96,7 +108,11 @@ function setupMenu(): void {
       Menu.buildFromTemplate([
         {
           label: 'Developer',
-          submenu: Menu.buildFromTemplate([{role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}]),
+          submenu: Menu.buildFromTemplate([
+            {role: 'reload'},
+            {role: 'forceReload'},
+            {role: 'toggleDevTools'},
+          ]),
         },
       ])
     );
@@ -141,10 +157,24 @@ function setupWindow(): void {
   // The ideal solution would be: either electron-builder supports the app icon; or we add
   // dpi-aware features to this app.
   if (isLinux) {
-    mainWindow.setIcon(path.join(app.getAppPath(), 'client', 'electron', 'icons', 'png', '64x64.png'));
+    mainWindow.setIcon(
+      path.join(
+        app.getAppPath(),
+        'client',
+        'electron',
+        'icons',
+        'png',
+        '64x64.png'
+      )
+    );
   }
 
-  const pathToIndexHtml = path.join(app.getAppPath(), 'client', 'www', 'index_electron.html');
+  const pathToIndexHtml = path.join(
+    app.getAppPath(),
+    'client',
+    'www',
+    'index_electron.html'
+  );
   const webAppUrl = new url.URL(`file://${pathToIndexHtml}`);
 
   // Debug mode, etc.
@@ -180,7 +210,10 @@ function setupWindow(): void {
   // TODO: is this the most appropriate event?
   mainWindow.webContents.on('did-finish-load', () => {
     // TODO: refactor channel name and namespace to a constant
-    mainWindow.webContents.send('outline-ipc-localization-request', Object.keys(localizedStrings));
+    mainWindow.webContents.send(
+      'outline-ipc-localization-request',
+      Object.keys(localizedStrings)
+    );
     interceptShadowsocksLink(process.argv);
   });
 
@@ -204,7 +237,9 @@ function setupWindow(): void {
 
 function updateTray(status: TunnelStatus) {
   const isConnected = status === TunnelStatus.CONNECTED;
-  tray.setImage(isConnected ? TRAY_ICON_IMAGES.connected : TRAY_ICON_IMAGES.disconnected);
+  tray.setImage(
+    isConnected ? TRAY_ICON_IMAGES.connected : TRAY_ICON_IMAGES.disconnected
+  );
   // Retrieve localized strings, falling back to the pre-populated English default.
   const statusString = isConnected
     ? localizedStrings['connected-server-state']
@@ -216,13 +251,21 @@ function updateTray(status: TunnelStatus) {
   ];
   if (isLinux) {
     // Because the click event is never fired on Linux, we need an explicit open option.
-    menuTemplate = [{label: localizedStrings['tray-open-window'], click: () => mainWindow.show()}, ...menuTemplate];
+    menuTemplate = [
+      {
+        label: localizedStrings['tray-open-window'],
+        click: () => mainWindow.show(),
+      },
+      ...menuTemplate,
+    ];
   }
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
 function createTrayIconImage(imageName: string) {
-  const image = nativeImage.createFromPath(path.join(app.getAppPath(), 'client', 'resources', 'tray', imageName));
+  const image = nativeImage.createFromPath(
+    path.join(app.getAppPath(), 'client', 'resources', 'tray', imageName)
+  );
   if (image.isEmpty()) {
     throw new Error(`cannot find ${imageName} tray icon image`);
   }
@@ -296,7 +339,10 @@ async function tearDownAutoLaunch() {
 
 // Factory function to create a VPNTunnel instance backed by a network statck
 // specified at build time.
-function createVpnTunnel(config: ShadowsocksSessionConfig, isAutoConnect: boolean): VpnTunnel {
+function createVpnTunnel(
+  config: ShadowsocksSessionConfig,
+  isAutoConnect: boolean
+): VpnTunnel {
   const routing = new RoutingDaemon(config.host || '', isAutoConnect);
   const tunnel = new GoVpnTunnel(routing, config);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
@@ -304,7 +350,11 @@ function createVpnTunnel(config: ShadowsocksSessionConfig, isAutoConnect: boolea
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
-async function startVpn(config: ShadowsocksSessionConfig, id: string, isAutoConnect = false) {
+async function startVpn(
+  config: ShadowsocksSessionConfig,
+  id: string,
+  isAutoConnect = false
+) {
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -349,7 +399,7 @@ async function stopVpn() {
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
   // TODO: refactor channel name and namespace to a constant
-  const event = `outline-ipc-proxy-status`;
+  const event = 'outline-ipc-proxy-status';
   if (mainWindow) {
     mainWindow.webContents.send(event, tunnelId, status);
   } else {
@@ -362,7 +412,7 @@ function checkForUpdates() {
   try {
     autoUpdater.checkForUpdates();
   } catch (e) {
-    console.error(`Failed to check for updates`, e);
+    console.error('Failed to check for updates', e);
   }
 }
 
@@ -395,11 +445,13 @@ function main() {
     } catch (e) {
       // No tunnel at shutdown, or failure - either way, no need to start.
       // TODO: Instead of quitting, how about creating the system tray icon?
-      console.warn(`Could not load active tunnel: `, e);
+      console.warn('Could not load active tunnel: ', e);
       await tunnelStore.clear();
     }
     if (tunnelAtShutdown) {
-      console.info(`was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`);
+      console.info(
+        `was connected at shutdown, reconnecting to ${tunnelAtShutdown.id}`
+      );
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
         await startVpn(tunnelAtShutdown.config, tunnelAtShutdown.id, true);
@@ -444,7 +496,10 @@ function main() {
   // TODO: refactor channel name and namespace to a constant
   ipcMain.handle(
     'outline-ipc-start-proxying',
-    async (_, args: {id: string, name: string, config: ShadowsocksSessionConfig}): Promise<void> => {
+    async (
+      _,
+      args: {id: string; name: string; config: ShadowsocksSessionConfig}
+    ): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
       //       this).
@@ -503,12 +558,15 @@ function main() {
   ipcMain.on('outline-ipc-quit-app', quitApp);
 
   // TODO: refactor channel name and namespace to a constant
-  ipcMain.on('outline-ipc-localization-response', (_, localizationResult: {[key: string]: string}) => {
-    if (localizationResult) {
-      localizedStrings = localizationResult;
+  ipcMain.on(
+    'outline-ipc-localization-response',
+    (_, localizationResult: {[key: string]: string}) => {
+      if (localizationResult) {
+        localizedStrings = localizationResult;
+      }
+      updateTray(TunnelStatus.DISCONNECTED);
     }
-    updateTray(TunnelStatus.DISCONNECTED);
-  });
+  );
 
   // Notify the UI of updates.
   autoUpdater.on('update-downloaded', () => {
