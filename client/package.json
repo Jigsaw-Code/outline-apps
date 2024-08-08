@@ -63,7 +63,6 @@
     "@open-wc/testing": "^3.2.0",
     "@open-wc/testing-karma": "^4.0.9",
     "@rollup/plugin-image": "^2.1.1",
-    "@sentry/types": "^8.24.0",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
     "@types/jasmine": "^4.3.6",
