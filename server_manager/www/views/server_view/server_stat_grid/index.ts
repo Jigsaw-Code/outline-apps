@@ -18,13 +18,15 @@ import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
 
-import { ServerStatCard } from '../server_stat_card';
+import {ServerStatCard} from '../server_stat_card';
 
-@customElement("server-stat-grid")
+@customElement('server-stat-grid')
 export class ServerStatGrid extends LitElement {
-  @property({ type: Array }) stats: Array<ServerStatCard & { column: string; row: string; }>;
-  @property({ type: Number }) columns: number;
-  @property({ type: Number }) rows: number;
+  @property({type: Array}) stats: Array<
+    ServerStatCard & {column: string; row: string}
+  >;
+  @property({type: Number}) columns: number;
+  @property({type: Number}) rows: number;
 
   static styles = [
     css`
@@ -43,19 +45,31 @@ export class ServerStatGrid extends LitElement {
 
   render() {
     return html`
-      <article style=${styleMap({
-        gridTemplateColumns: `repeat(${this.columns}, 1fr)`,
-        gridTemplateRows: `repeat(${this.rows}, 1fr)`
-      })}>
-        ${this.stats.map(({ name, value, units, icon, column: gridColumn, row: gridRow }) => html`
-          <server-stat-card
-            style=${styleMap({ gridColumn, gridRow })}
-            .name=${name}
-            .value=${value}
-            .units=${units}
-            .icon=${icon}>
-          </server-stat-card>
-        `)}
+      <article
+        style=${styleMap({
+          gridTemplateColumns: `repeat(${this.columns}, 1fr)`,
+          gridTemplateRows: `repeat(${this.rows}, 1fr)`,
+        })}
+      >
+        ${this.stats.map(
+          ({
+            name,
+            value,
+            units,
+            icon,
+            column: gridColumn,
+            row: gridRow,
+          }) => html`
+            <server-stat-card
+              style=${styleMap({gridColumn, gridRow})}
+              .name=${name}
+              .value=${value}
+              .units=${units}
+              .icon=${icon}
+            >
+            </server-stat-card>
+          `
+        )}
       </article>
     `;
   }

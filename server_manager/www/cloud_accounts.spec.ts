@@ -16,7 +16,6 @@ import {InMemoryStorage} from '@outline/infrastructure/memory_storage';
 
 import {CloudAccounts} from './cloud_accounts';
 
-
 describe('CloudAccounts', () => {
   it('get account methods return null when no cloud accounts are connected', () => {
     const cloudAccounts = createCloudAccount();
@@ -25,7 +24,10 @@ describe('CloudAccounts', () => {
   });
 
   it('load connects account that exist in local storage', () => {
-    const storage = createInMemoryStorage('fake-access-token', 'fake-refresh-token');
+    const storage = createInMemoryStorage(
+      'fake-access-token',
+      'fake-refresh-token'
+    );
     const cloudAccounts = createCloudAccount(storage);
     expect(cloudAccounts.getDigitalOceanAccount()).not.toBeNull();
     expect(cloudAccounts.getGcpAccount()).not.toBeNull();
@@ -44,7 +46,10 @@ describe('CloudAccounts', () => {
   });
 
   it('removes account when disconnect is invoked', () => {
-    const storage = createInMemoryStorage('fake-access-token', 'fake-refresh-token');
+    const storage = createInMemoryStorage(
+      'fake-access-token',
+      'fake-refresh-token'
+    );
     const cloudAccounts = createCloudAccount(storage);
 
     expect(cloudAccounts.getDigitalOceanAccount()).not.toBeNull();
@@ -81,19 +86,32 @@ describe('CloudAccounts', () => {
     storage.setItem('LastDOToken', 'legacy-digitalocean-access-token');
     const cloudAccounts = createCloudAccount(storage);
 
-    expect(storage.getItem('LastDOToken')).toEqual('legacy-digitalocean-access-token');
+    expect(storage.getItem('LastDOToken')).toEqual(
+      'legacy-digitalocean-access-token'
+    );
     cloudAccounts.connectDigitalOceanAccount('new-digitalocean-access-token');
-    expect(storage.getItem('LastDOToken')).toEqual('new-digitalocean-access-token');
+    expect(storage.getItem('LastDOToken')).toEqual(
+      'new-digitalocean-access-token'
+    );
   });
 });
 
-function createInMemoryStorage(digitalOceanAccessToken?: string, gcpRefreshToken?: string): Storage {
+function createInMemoryStorage(
+  digitalOceanAccessToken?: string,
+  gcpRefreshToken?: string
+): Storage {
   const storage = new InMemoryStorage();
   if (digitalOceanAccessToken) {
-    storage.setItem('accounts.digitalocean', JSON.stringify({accessToken: digitalOceanAccessToken}));
+    storage.setItem(
+      'accounts.digitalocean',
+      JSON.stringify({accessToken: digitalOceanAccessToken})
+    );
   }
   if (gcpRefreshToken) {
-    storage.setItem('accounts.gcp', JSON.stringify({refreshToken: gcpRefreshToken}));
+    storage.setItem(
+      'accounts.gcp',
+      JSON.stringify({refreshToken: gcpRefreshToken})
+    );
   }
   return storage;
 }

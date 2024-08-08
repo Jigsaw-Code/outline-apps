@@ -101,8 +101,8 @@ public class OutlinePlugin extends CordovaPlugin {
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
   private StartVpnRequest startVpnRequest;
-  // Tunnel status change callback by tunnel ID.
-  private final Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
+  // Tunnel status change callback.
+  private CallbackContext statusCallback;
 
   // Connection to the VPN service.
   private final ServiceConnection vpnServiceConnection = new ServiceConnection() {
@@ -132,7 +132,7 @@ public class OutlinePlugin extends CordovaPlugin {
     IntentFilter broadcastFilter = new IntentFilter();
     broadcastFilter.addAction(VpnTunnelService.STATUS_BROADCAST_KEY);
     broadcastFilter.addCategory(context.getPackageName());
-    context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter);
+    context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter, context.RECEIVER_NOT_EXPORTED);
 
     context.bindService(new Intent(context, VpnTunnelService.class), vpnServiceConnection,
         Context.BIND_AUTO_CREATE);
@@ -159,9 +159,8 @@ public class OutlinePlugin extends CordovaPlugin {
     LOG.fine(String.format(Locale.ROOT, "Received action: %s", action));
 
     if (Action.ON_STATUS_CHANGE.is(action)) {
-      // Store the callback so we can execute it asynchronously.
-      final String tunnelId = args.getString(0);
-      tunnelStatusListeners.put(tunnelId, callbackContext);
+      this.statusCallback = callbackContext;
+      // TODO(fortuna): unregister original with Cordova.
       return true;
     }
 
@@ -298,19 +297,27 @@ public class OutlinePlugin extends CordovaPlugin {
         LOG.warning("Tunnel status broadcast missing tunnel ID");
         return;
       }
-      CallbackContext callback = outlinePlugin.tunnelStatusListeners.get(tunnelId);
-      if (callback == null) {
+      if (outlinePlugin.statusCallback == null) {
         LOG.warning(String.format(
-            Locale.ROOT, "Failed to retrieve status listener for tunnel ID %s", tunnelId));
+            Locale.ROOT, "No status callback registered with the Android OutlinePlugin"));
         return;
       }
       int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
       LOG.fine(String.format(Locale.ROOT, "VPN connectivity changed: %s, %d", tunnelId, status));
 
-      PluginResult result = new PluginResult(PluginResult.Status.OK, status);
+      JSONObject jsonResponse = new JSONObject();
+      try {
+        jsonResponse.put("id", tunnelId);
+        jsonResponse.put("status", status);
+      } catch (JSONException e) {
+        LOG.warning("Failed to build JSON response");
+        return;
+      }
+
+      PluginResult result = new PluginResult(PluginResult.Status.OK, jsonResponse);
       // Keep the tunnel status callback so it can be called multiple times.
       result.setKeepCallback(true);
-      callback.sendPluginResult(result);
+      outlinePlugin.statusCallback.sendPluginResult(result);
     }
   };
 

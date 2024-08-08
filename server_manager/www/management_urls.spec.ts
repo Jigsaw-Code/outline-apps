@@ -16,43 +16,57 @@ import {parseManualServerConfig} from './management_urls';
 
 describe('parseManualServerConfig', () => {
   it('basic case', () => {
-    const result = parseManualServerConfig('{"apiUrl":"http://abc.com/xyz", "certSha256":"1234567"}');
+    const result = parseManualServerConfig(
+      '{"apiUrl":"http://abc.com/xyz", "certSha256":"1234567"}'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('ignores missing outer braces', () => {
-    const result = parseManualServerConfig('"apiUrl":"http://abc.com/xyz", "certSha256":"1234567"');
+    const result = parseManualServerConfig(
+      '"apiUrl":"http://abc.com/xyz", "certSha256":"1234567"'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('ignores missing quotes on key names', () => {
-    const result = parseManualServerConfig('apiUrl:"http://abc.com/xyz", "certSha256":"1234567"');
+    const result = parseManualServerConfig(
+      'apiUrl:"http://abc.com/xyz", "certSha256":"1234567"'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('ignores missing quotes on values', () => {
-    const result = parseManualServerConfig('"apiUrl":http://abc.com/xyz, "certSha256":"1234567"');
+    const result = parseManualServerConfig(
+      '"apiUrl":http://abc.com/xyz, "certSha256":"1234567"'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('ignores content outside of braces', () => {
-    const result = parseManualServerConfig('working... {"apiUrl":http://abc.com/xyz, "certSha256":"1234567"} ALL DONE');
+    const result = parseManualServerConfig(
+      'working... {"apiUrl":http://abc.com/xyz, "certSha256":"1234567"} ALL DONE'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('strips whitespace', () => {
-    const result = parseManualServerConfig('{"apiUrl":http://abc.com/xyz, "certSha256":"123   4567"}');
+    const result = parseManualServerConfig(
+      '{"apiUrl":http://abc.com/xyz, "certSha256":"123   4567"}'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });
 
   it('strips newlines', () => {
-    const result = parseManualServerConfig('{"apiUrl":http://abc.com/xyz, "certSha256":"123\n4567"}');
+    const result = parseManualServerConfig(
+      '{"apiUrl":http://abc.com/xyz, "certSha256":"123\n4567"}'
+    );
     expect(result.apiUrl).toEqual('http://abc.com/xyz');
     expect(result.certSha256).toEqual('1234567');
   });

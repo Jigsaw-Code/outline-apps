@@ -40,7 +40,10 @@ export class OutlineRegionPicker extends LitElement {
   @property({type: Number}) selectedIndex = -1;
   @property({type: Boolean}) metricsEnabled = false;
   @property({type: Boolean}) isServerBeingCreated = false;
-  @property({type: Function}) localize: (msgId: string, ...params: string[]) => string;
+  @property({type: Function}) localize: (
+    msgId: string,
+    ...params: string[]
+  ) => string;
   @property({type: String}) language: string;
 
   static get styles() {
@@ -52,7 +55,10 @@ export class OutlineRegionPicker extends LitElement {
         }
         input[type='radio']:checked + label.city-button {
           background-color: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+          box-shadow:
+            0 0 2px 0 rgba(0, 0, 0, 0.14),
+            0 2px 2px 0 rgba(0, 0, 0, 0.12),
+            0 1px 3px 0 rgba(0, 0, 0, 0.2);
           border-radius: 4px;
           border: 2px solid var(--primary-green);
         }
@@ -71,7 +77,10 @@ export class OutlineRegionPicker extends LitElement {
           cursor: pointer;
           transition: 0.5s;
           background: var(--background-contrast-color);
-          box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+          box-shadow:
+            0 0 2px 0 rgba(0, 0, 0, 0.14),
+            0 2px 2px 0 rgba(0, 0, 0, 0.12),
+            0 1px 3px 0 rgba(0, 0, 0, 0.2);
           border-radius: 4px;
         }
         input[type='radio']:disabled + label.city-button {
@@ -116,7 +125,11 @@ export class OutlineRegionPicker extends LitElement {
           width: 100%;
           height: 100%;
           border-radius: inherit;
-          background: linear-gradient(to right, rgba(20, 20, 20, 0.2) 0%, rgba(0, 0, 0, 0) 100%);
+          background: linear-gradient(
+            to right,
+            rgba(20, 20, 20, 0.2) 0%,
+            rgba(0, 0, 0, 0) 100%
+          );
         }
         .best-value-label {
           background-color: var(--primary-green);
@@ -189,7 +202,9 @@ export class OutlineRegionPicker extends LitElement {
     return html`
       <outline-step-view display-action="">
         <span slot="step-title">${this.localize('region-title')}</span>
-        <span slot="step-description">${this.localize('region-description')}</span>
+        <span slot="step-description"
+          >${this.localize('region-description')}</span
+        >
         <div class="card-content" id="cityContainer">
           <div class="card-content-row">
             ${this.options.map((option, index) => {
@@ -206,25 +221,38 @@ export class OutlineRegionPicker extends LitElement {
                   <div class="flag-overlay">
                     <img class="flag" src="${this._flagImage(option)}" />
                   </div>
-                  <div class="geo-name">${getShortName(option.cloudLocation, this.localize)}</div>
+                  <div class="geo-name">
+                    ${getShortName(option.cloudLocation, this.localize)}
+                  </div>
                   <div class="country-name">
                     ${option.cloudLocation.location?.countryIsRedundant()
                       ? ''
-                      : localizeCountry(option.cloudLocation.location, this.language)}
+                      : localizeCountry(
+                          option.cloudLocation.location,
+                          this.language
+                        )}
                   </div>
                   ${option.markedBestValue
-                    ? html`<div class="best-value-label">${this.localize('region-best-value')}</div>`
+                    ? html`<div class="best-value-label">
+                        ${this.localize('region-best-value')}
+                      </div>`
                     : ''}
                 </label>`;
             })}
           </div>
           <div class="card-content-row">
-            <if-messages message-ids="metrics-setup-title, metrics-setup-description, metrics-setup-learn-more"  .localize=${this.localize}>
+            <if-messages
+              message-ids="metrics-setup-title, metrics-setup-description, metrics-setup-learn-more"
+              .localize=${this.localize}
+            >
               <div class="callout">
                 <iron-icon icon="editor:insert-chart"></iron-icon>
                 <div class="callout-content">
                   <label>
-                    <mwc-checkbox .checked="${this.metricsEnabled}" @change="${this._metricsToggle}"></mwc-checkbox>
+                    <mwc-checkbox
+                      .checked="${this.metricsEnabled}"
+                      @change="${this._metricsToggle}"
+                    ></mwc-checkbox>
                     ${this.localize('metrics-setup-title')}
                   </label>
                   <p>${this.localize('metrics-setup-description')}</p>
@@ -237,13 +265,21 @@ export class OutlineRegionPicker extends LitElement {
             <paper-button
               id="createServerButton"
               @tap="${this._handleCreateServerTap}"
-              ?disabled="${!this._isCreateButtonEnabled(this.isServerBeingCreated, this.selectedIndex)}"
+              ?disabled="${!this._isCreateButtonEnabled(
+                this.isServerBeingCreated,
+                this.selectedIndex
+              )}"
             >
               ${this.localize('region-setup')}
             </paper-button>
           </div>
         </div>
-        ${this.isServerBeingCreated ? html`<paper-progress indeterminate="" class="slow"></paper-progress>` : ''}
+        ${this.isServerBeingCreated
+          ? html`<paper-progress
+              indeterminate=""
+              class="slow"
+            ></paper-progress>`
+          : ''}
       </outline-step-view>
     `;
   }
@@ -253,7 +289,10 @@ export class OutlineRegionPicker extends LitElement {
     this.selectedIndex = -1;
   }
 
-  _isCreateButtonEnabled(isCreatingServer: boolean, selectedIndex: number): boolean {
+  _isCreateButtonEnabled(
+    isCreatingServer: boolean,
+    selectedIndex: number
+  ): boolean {
     return !isCreatingServer && selectedIndex >= 0;
   }
 
@@ -279,7 +318,10 @@ export class OutlineRegionPicker extends LitElement {
     const params = {
       bubbles: true,
       composed: true,
-      detail: {selectedLocation: selectedOption.cloudLocation, metricsEnabled: this.metricsEnabled},
+      detail: {
+        selectedLocation: selectedOption.cloudLocation,
+        metricsEnabled: this.metricsEnabled,
+      },
     };
     const customEvent = new CustomEvent('RegionSelected', params);
     this.dispatchEvent(customEvent);

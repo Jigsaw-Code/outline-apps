@@ -31,7 +31,6 @@ import type {IronIconElement} from '@polymer/iron-icon/iron-icon';
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn';
 import {html} from '@polymer/polymer/lib/utils/html-tag';
 
-
 export interface OutlineManualServerEntry extends Element {
   clear(): void;
   retryTapped(): void;
@@ -199,7 +198,10 @@ Polymer({
     </style>
     <outline-step-view>
       <span slot="step-title">[[localize('manual-server-title')]]</span>
-      <span slot="step-description">[[localize('manual-server-description', 'cloudProvider', cloudProviderName)]]</span>
+      <span slot="step-description"
+        >[[localize('manual-server-description', 'cloudProvider',
+        cloudProviderName)]]</span
+      >
 
       <div class="card">
         <!-- GCP -->
@@ -210,7 +212,11 @@ Polymer({
           hidden$="[[!isCloudProviderGcp]]"
         >
           <div id="gcp-tag">[[localize('experimental')]]</div>
-          <a>[[localize('setup-gcp-promo')]]<iron-icon icon="open-in-new"></iron-icon></a>
+          <a
+            >[[localize('setup-gcp-promo')]]<iron-icon
+              icon="open-in-new"
+            ></iron-icon
+          ></a>
         </div>
         <div class="section" hidden$="[[!isCloudProviderGcp]]">
           <div class="section-header">
@@ -220,10 +226,16 @@ Polymer({
             <div class="drop-down" on-tap="_toggleGcpCreateServerDropDown">
               <img src="images/gcp-logo.svg" />
               <span>[[localize('manual-server-instructions')]]</span>
-              <iron-icon id="gcpCreateServerDropDownIcon" icon="arrow-drop-down"></iron-icon>
+              <iron-icon
+                id="gcpCreateServerDropDownIcon"
+                icon="arrow-drop-down"
+              ></iron-icon>
             </div>
           </div>
-          <iron-collapse id="gcpCreateServerDropDown" class="instructions-collapse">
+          <iron-collapse
+            id="gcpCreateServerDropDown"
+            class="instructions-collapse"
+          >
             <div class="section-content-instructions">
               <outline-cloud-instructions-view
                 title="[[localize('gcp-create-project')]]"
@@ -285,11 +297,16 @@ Polymer({
         <div class="section" hidden$="[[!isCloudProviderAws]]">
           <div class="section-header">
             <span class="stepcircle">1</span>
-            <div class="instructions">[[localize('manual-server-firewall')]]</div>
+            <div class="instructions">
+              [[localize('manual-server-firewall')]]
+            </div>
             <div class="drop-down" on-tap="_toggleAwsDropDown">
               <img id="aws-logo" src="images/aws-logo.svg" />
               <span>[[localize('manual-server-instructions')]]</span>
-              <iron-icon id="awsDropDownIcon" icon="arrow-drop-down"></iron-icon>
+              <iron-icon
+                id="awsDropDownIcon"
+                icon="arrow-drop-down"
+              ></iron-icon>
             </div>
           </div>
           <iron-collapse id="awsDropDown" class="instructions-collapse">
@@ -318,7 +335,9 @@ Polymer({
         <div class="section">
           <div class="section-header">
             <span class="stepcircle">[[installScriptStepNumber]]</span>
-            <div class="instructions">[[localize('manual-server-install-run')]]</div>
+            <div class="instructions">
+              [[localize('manual-server-install-run')]]
+            </div>
           </div>
           <div class="section-content">
             <div id="command">
@@ -331,7 +350,9 @@ Polymer({
         <div class="section">
           <div class="section-header">
             <span class="stepcircle">[[pasteJsonStepNumber]]</span>
-            <div class="instructions">[[localize('manual-server-install-paste')]]</div>
+            <div class="instructions">
+              [[localize('manual-server-install-paste')]]
+            </div>
           </div>
           <div class="section-content">
             <paper-textarea
@@ -347,12 +368,25 @@ Polymer({
           </div>
         </div>
         <div id="button-row">
-          <paper-button id="cancelButton" on-tap="cancelTapped" class="secondary">[[localize('cancel')]]</paper-button>
-          <paper-button id="doneButton" on-tap="doneTapped" class="primary" disabled$="[[!enableDoneButton]]"
+          <paper-button
+            id="cancelButton"
+            on-tap="cancelTapped"
+            class="secondary"
+            >[[localize('cancel')]]</paper-button
+          >
+          <paper-button
+            id="doneButton"
+            on-tap="doneTapped"
+            class="primary"
+            disabled$="[[!enableDoneButton]]"
             >[[localize('done')]]</paper-button
           >
         </div>
-        <paper-progress hidden$="[[!showConnection]]" indeterminate="" class="slow"></paper-progress>
+        <paper-progress
+          hidden$="[[!showConnection]]"
+          indeterminate=""
+          class="slow"
+        ></paper-progress>
       </div>
     </outline-step-view>
   `,
@@ -426,7 +460,9 @@ Polymer({
   clear() {
     this.$.serverConfig.value = '';
     this.showConnection = false;
-    for (const dropdown of this.root.querySelectorAll('.instructions-collapse')) {
+    for (const dropdown of this.root.querySelectorAll(
+      '.instructions-collapse'
+    )) {
       dropdown.hide();
     }
   },
@@ -467,15 +503,24 @@ Polymer({
   },
 
   _toggleGcpFirewallDropDown() {
-    this._toggleDropDown(this.$.gcpFirewallDropDown, this.$.gcpFirewallDropDownIcon);
+    this._toggleDropDown(
+      this.$.gcpFirewallDropDown,
+      this.$.gcpFirewallDropDownIcon
+    );
   },
 
   _toggleGcpCreateServerDropDown() {
-    this._toggleDropDown(this.$.gcpCreateServerDropDown, this.$.gcpCreateServerDropDownIcon);
+    this._toggleDropDown(
+      this.$.gcpCreateServerDropDown,
+      this.$.gcpCreateServerDropDownIcon
+    );
   },
 
   _toggleGcpCreateProjectDropDown() {
-    this._toggleDropDown(this.$.gcpCreateProjectDropDown, this.$.gcpCreateProjectDropDownIcon);
+    this._toggleDropDown(
+      this.$.gcpCreateProjectDropDown,
+      this.$.gcpCreateProjectDropDownIcon
+    );
   },
 
   _toggleDropDown(dropDown: IronCollapseElement, icon: IronIconElement) {

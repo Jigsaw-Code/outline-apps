@@ -20,13 +20,17 @@ export interface ShadowboxSettings {
   watchtowerRefreshSeconds?: number;
 }
 
-export function getShellExportCommands(settings: ShadowboxSettings, serverName: string, metricsEnabled: boolean): string {
+export function getShellExportCommands(
+  settings: ShadowboxSettings,
+  serverName: string,
+  metricsEnabled: boolean
+): string {
   const variables: {[name: string]: string | number} = {
     SB_IMAGE: settings.imageId,
     WATCHTOWER_REFRESH_SECONDS: settings.watchtowerRefreshSeconds,
     SENTRY_API_URL: settings.sentryApiUrl,
     SB_METRICS_URL: settings.metricsUrl,
-    SB_METRICS_ENABLED: String(metricsEnabled)
+    SB_METRICS_ENABLED: String(metricsEnabled),
   };
   const lines: string[] = [];
   for (const name in variables) {
@@ -34,7 +38,9 @@ export function getShellExportCommands(settings: ShadowboxSettings, serverName: 
       lines.push(`export ${name}='${variables[name]}'`);
     }
   }
-  lines.push(`export SB_DEFAULT_SERVER_NAME="$(printf '${bashEscape(serverName)}')"`);
+  lines.push(
+    `export SB_DEFAULT_SERVER_NAME="$(printf '${bashEscape(serverName)}')"`
+  );
   return lines.join('\n') + '\n';
 }
 
@@ -42,5 +48,8 @@ function bashEscape(s: string): string {
   // Replace each non-ASCII character with a unicode escape sequence that
   // is understood by bash.  This avoids an apparent bug in DigitalOcean's
   // handling of unicode characters in the user_data value.
-  return s.replace(/\P{ASCII}/gu, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+  return s.replace(
+    /\P{ASCII}/gu,
+    c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')
+  );
 }

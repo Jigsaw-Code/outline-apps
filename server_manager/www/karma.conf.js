@@ -14,6 +14,7 @@
 // limitations under the License.
 
 const webpack = require('webpack');
+
 const {makeConfig} = require('../base.webpack.js');
 process.env.CHROMIUM_BIN = require('puppeteer').executablePath();
 
@@ -24,14 +25,14 @@ const baseConfig = makeConfig({
 const filePatterns = [
   {
     pattern: 'www/**/*.spec.ts',
-    watched: true
+    watched: true,
   },
   {
     pattern: 'images/*',
     watched: false,
     included: false,
-    served: true
-  }
+    served: true,
+  },
 ];
 
 module.exports = function (config) {
@@ -40,9 +41,9 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
     files: filePatterns,
     proxies: {
-      '/images/': '/base/images/'
+      '/images/': '/base/images/',
     },
-    preprocessors: { './www/**/*.spec.ts': ['webpack'] },
+    preprocessors: {'./www/**/*.spec.ts': ['webpack']},
     reporters: ['progress'],
     colors: true,
     logLevel: config.LOG_INFO,
