@@ -16,7 +16,6 @@ import {InMemoryStorage} from '@outline/infrastructure/memory_storage';
 
 import {OutlineSurveys} from './survey';
 
-
 describe('Surveys', () => {
   it('presents data limits surveys with the correct arguments', async () => {
     const view = new FakeSurveyDialog();
@@ -40,7 +39,11 @@ describe('Surveys', () => {
     const TEST_PROMPT_IMPRESSION_DELAY_MS = 750;
     const view = new FakeSurveyDialog();
     const storage = new InMemoryStorage();
-    const surveys = new OutlineSurveys(view, storage, TEST_PROMPT_IMPRESSION_DELAY_MS);
+    const surveys = new OutlineSurveys(
+      view,
+      storage,
+      TEST_PROMPT_IMPRESSION_DELAY_MS
+    );
 
     let start = Date.now();
     await surveys.presentDataLimitsEnabledSurvey();

@@ -65,26 +65,39 @@ export class ShadowboxServer implements server.Server {
   }
 
   getAccessKey(accessKeyId: server.AccessKeyId): Promise<server.AccessKey> {
-    return this.api.request<AccessKeyJson>('access-keys/' + accessKeyId).then(response => {
-      return makeAccessKeyModel(response);
-    });
+    return this.api
+      .request<AccessKeyJson>('access-keys/' + accessKeyId)
+      .then(response => {
+        return makeAccessKeyModel(response);
+      });
   }
 
   listAccessKeys(): Promise<server.AccessKey[]> {
     console.info('Listing access keys');
-    return this.api.request<{accessKeys: AccessKeyJson[]}>('access-keys').then(response => {
-      return response.accessKeys.map(makeAccessKeyModel);
-    });
+    return this.api
+      .request<{accessKeys: AccessKeyJson[]}>('access-keys')
+      .then(response => {
+        return response.accessKeys.map(makeAccessKeyModel);
+      });
   }
 
   async addAccessKey(): Promise<server.AccessKey> {
     console.info('Adding access key');
-    return makeAccessKeyModel(await this.api.request<AccessKeyJson>('access-keys', 'POST'));
+    return makeAccessKeyModel(
+      await this.api.request<AccessKeyJson>('access-keys', 'POST')
+    );
   }
 
-  renameAccessKey(accessKeyId: server.AccessKeyId, name: string): Promise<void> {
+  renameAccessKey(
+    accessKeyId: server.AccessKeyId,
+    name: string
+  ): Promise<void> {
     console.info('Renaming access key');
-    return this.api.requestForm<void>('access-keys/' + accessKeyId + '/name', 'PUT', {name});
+    return this.api.requestForm<void>(
+      'access-keys/' + accessKeyId + '/name',
+      'PUT',
+      {name}
+    );
   }
 
   removeAccessKey(accessKeyId: server.AccessKeyId): Promise<void> {
@@ -94,12 +107,14 @@ export class ShadowboxServer implements server.Server {
 
   async setDefaultDataLimit(limit: server.DataLimit): Promise<void> {
     console.info(`Setting server default data limit: ${JSON.stringify(limit)}`);
-    await this.api.requestJson<void>(this.getDefaultDataLimitPath(), 'PUT', {limit});
+    await this.api.requestJson<void>(this.getDefaultDataLimitPath(), 'PUT', {
+      limit,
+    });
     this.serverConfig.accessKeyDataLimit = limit;
   }
 
   async removeDefaultDataLimit(): Promise<void> {
-    console.info(`Removing server default data limit`);
+    console.info('Removing server default data limit');
     await this.api.request<void>(this.getDefaultDataLimitPath(), 'DELETE');
     delete this.serverConfig.accessKeyDataLimit;
   }
@@ -117,9 +132,16 @@ export class ShadowboxServer implements server.Server {
     return 'experimental/access-key-data-limit';
   }
 
-  async setAccessKeyDataLimit(keyId: server.AccessKeyId, limit: server.DataLimit): Promise<void> {
-    console.info(`Setting data limit of ${limit.bytes} bytes for access key ${keyId}`);
-    await this.api.requestJson<void>(`access-keys/${keyId}/data-limit`, 'PUT', {limit});
+  async setAccessKeyDataLimit(
+    keyId: server.AccessKeyId,
+    limit: server.DataLimit
+  ): Promise<void> {
+    console.info(
+      `Setting data limit of ${limit.bytes} bytes for access key ${keyId}`
+    );
+    await this.api.requestJson<void>(`access-keys/${keyId}/data-limit`, 'PUT', {
+      limit,
+    });
   }
 
   async removeAccessKeyDataLimit(keyId: server.AccessKeyId): Promise<void> {
@@ -128,9 +150,12 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getDataUsage(): Promise<server.BytesByAccessKey> {
-    const jsonResponse = await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
+    const jsonResponse =
+      await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
     const usageMap = new Map<server.AccessKeyId, number>();
-    for (const [accessKeyId, bytes] of Object.entries(jsonResponse.bytesTransferredByUserId)) {
+    for (const [accessKeyId, bytes] of Object.entries(
+      jsonResponse.bytesTransferredByUserId
+    )) {
       usageMap.set(accessKeyId, bytes ?? 0);
     }
     return usageMap;
@@ -157,7 +182,9 @@ export class ShadowboxServer implements server.Server {
   async setMetricsEnabled(metricsEnabled: boolean): Promise<void> {
     const action = metricsEnabled ? 'Enabling' : 'Disabling';
     console.info(`${action} metrics`);
-    await this.api.requestJson<void>('metrics/enabled', 'PUT', {metricsEnabled});
+    await this.api.requestJson<void>('metrics/enabled', 'PUT', {
+      metricsEnabled,
+    });
     this.serverConfig.metricsEnabled = metricsEnabled;
   }
 
@@ -192,13 +219,18 @@ export class ShadowboxServer implements server.Server {
   async setHostnameForAccessKeys(hostname: string): Promise<void> {
     console.info(`setHostname ${hostname}`);
     this.serverConfig.hostnameForAccessKeys = hostname;
-    await this.api.requestJson<void>('server/hostname-for-access-keys', 'PUT', {hostname});
+    await this.api.requestJson<void>('server/hostname-for-access-keys', 'PUT', {
+      hostname,
+    });
     this.serverConfig.hostnameForAccessKeys = hostname;
   }
 
   getHostnameForAccessKeys(): string {
     try {
-      return this.serverConfig?.hostnameForAccessKeys ?? new URL(this.api.base).hostname;
+      return (
+        this.serverConfig?.hostnameForAccessKeys ??
+        new URL(this.api.base).hostname
+      );
     } catch (e) {
       return '';
     }
@@ -217,7 +249,9 @@ export class ShadowboxServer implements server.Server {
 
   async setPortForNewAccessKeys(newPort: number): Promise<void> {
     console.info(`setPortForNewAccessKeys: ${newPort}`);
-    await this.api.requestJson<void>('server/port-for-new-access-keys', 'PUT', {port: newPort});
+    await this.api.requestJson<void>('server/port-for-new-access-keys', 'PUT', {
+      port: newPort,
+    });
     this.serverConfig.portForNewAccessKeys = newPort;
   }
 

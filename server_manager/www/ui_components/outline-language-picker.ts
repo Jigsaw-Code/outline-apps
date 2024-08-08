@@ -35,7 +35,7 @@ export class OutlineLanguagePicker extends PolymerElement {
           --paper-input-container-input: {
             color: var(--medium-gray);
             font-size: 14px;
-          }
+          };
         }
         .language-item {
           display: flex;
@@ -45,7 +45,7 @@ export class OutlineLanguagePicker extends PolymerElement {
           --paper-item-selected: {
             color: var(--primary-green);
             font-weight: normal;
-          }
+          };
         }
         .language-name {
           flex-grow: 1;
@@ -61,7 +61,10 @@ export class OutlineLanguagePicker extends PolymerElement {
           <template is="dom-repeat" items="{{languages}}" as="lang">
             <paper-item class="language-item" value="{{lang.id}}">
               <span class="language-name">{{lang.name}}</span>
-              <iron-icon icon="check" hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"></iron-icon>
+              <iron-icon
+                icon="check"
+                hidden$="{{_shouldHideCheckmark(selectedLanguage, lang.id)}}"
+              ></iron-icon>
             </paper-item>
           </template>
         </paper-listbox>
@@ -88,9 +91,15 @@ export class OutlineLanguagePicker extends PolymerElement {
 
   _languageChanged(event: CustomEvent) {
     const languageCode = event.detail.value;
-    const languageDir = this.languages.find(lang => lang.id === languageCode).dir;
+    const languageDir = this.languages.find(
+      lang => lang.id === languageCode
+    ).dir;
 
-    const params = {bubbles: true, composed: true, detail: {languageCode, languageDir}};
+    const params = {
+      bubbles: true,
+      composed: true,
+      detail: {languageCode, languageDir},
+    };
     const customEvent = new CustomEvent('SetLanguageRequested', params);
     this.dispatchEvent(customEvent);
   }

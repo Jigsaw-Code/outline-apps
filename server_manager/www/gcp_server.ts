@@ -22,7 +22,6 @@ import {Zone} from '../model/gcp';
 import * as server from '../model/server';
 import {DataAmount, ManagedServerHost, MonetaryCost} from '../model/server';
 
-
 enum InstallState {
   // Unknown state - server request may still be pending.
   UNKNOWN = 0,
@@ -64,7 +63,11 @@ function getCompletionFraction(state: InstallState): number {
 }
 
 function isFinal(state: InstallState): boolean {
-  return state === InstallState.COMPLETED || state === InstallState.FAILED || state === InstallState.CANCELED;
+  return (
+    state === InstallState.COMPLETED ||
+    state === InstallState.FAILED ||
+    state === InstallState.CANCELED
+  );
 }
 
 export class GcpServer extends ShadowboxServer implements server.ManagedServer {
@@ -72,7 +75,9 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
 
   private readonly instanceReadiness: Promise<void>;
   private readonly gcpHost: GcpHost;
-  private readonly installState = new ValueStream<InstallState>(InstallState.UNKNOWN);
+  private readonly installState = new ValueStream<InstallState>(
+    InstallState.UNKNOWN
+  );
 
   constructor(
     id: string,
@@ -103,7 +108,13 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
         this.setInstallState(InstallState.FAILED);
         throw e;
       });
-    this.gcpHost = new GcpHost(locator, gcpInstanceName, this.instanceReadiness, apiClient, this.onDelete.bind(this));
+    this.gcpHost = new GcpHost(
+      locator,
+      gcpInstanceName,
+      this.instanceReadiness,
+      apiClient,
+      this.onDelete.bind(this)
+    );
   }
 
   private getRegionLocator(): gcp_api.RegionLocator {
@@ -116,7 +127,10 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
   private async hasStaticIp(): Promise<boolean> {
     try {
       // By convention, the static IP for an Outline instance uses the instance's name.
-      await this.apiClient.getStaticIp(this.getRegionLocator(), this.gcpInstanceName);
+      await this.apiClient.getStaticIp(
+        this.getRegionLocator(),
+        this.gcpInstanceName
+      );
       return true;
     } catch (e) {
       if (is404(e)) {
@@ -136,10 +150,15 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
       description: instance.description,
       address: ipAddress,
     };
-    const createStaticIpOperation = await this.apiClient.createStaticIp(this.getRegionLocator(), createStaticIpData);
+    const createStaticIpOperation = await this.apiClient.createStaticIp(
+      this.getRegionLocator(),
+      createStaticIpData
+    );
     const operationErrors = createStaticIpOperation.error?.errors;
     if (operationErrors) {
-      throw new server.ServerInstallFailedError(`Firewall creation failed: ${operationErrors}`);
+      throw new server.ServerInstallFailedError(
+        `Firewall creation failed: ${operationErrors}`
+      );
     }
   }
 
@@ -163,7 +182,10 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
   private async pollInstallState(): Promise<void> {
     while (!this.installState.isClosed()) {
       const outlineGuestAttributes = await this.getOutlineGuestAttributes();
-      if (outlineGuestAttributes.has('apiUrl') && outlineGuestAttributes.has('certSha256')) {
+      if (
+        outlineGuestAttributes.has('apiUrl') &&
+        outlineGuestAttributes.has('certSha256')
+      ) {
         const certSha256 = outlineGuestAttributes.get('certSha256');
         const apiUrl = outlineGuestAttributes.get('apiUrl');
         this.setManagementApi(makePathApiClient(apiUrl, atob(certSha256)));
@@ -184,7 +206,10 @@ export class GcpServer extends ShadowboxServer implements server.ManagedServer {
 
   private async getOutlineGuestAttributes(): Promise<Map<string, string>> {
     const result = new Map<string, string>();
-    const guestAttributes = await this.apiClient.getGuestAttributes(this.locator, 'outline/');
+    const guestAttributes = await this.apiClient.getGuestAttributes(
+      this.locator,
+      'outline/'
+    );
     const attributes = guestAttributes?.queryValue?.items ?? [];
     attributes.forEach(entry => {
       result.set(entry.key, entry.value);
@@ -236,10 +261,16 @@ class GcpHost implements server.ManagedServerHost {
       this.apiClient.deleteStaticIp(regionLocator, this.gcpInstanceName),
       'Deleted server did not have a static IP'
     );
-    await this.waitForDelete(this.apiClient.deleteInstance(this.locator), 'No instance for deleted server');
+    await this.waitForDelete(
+      this.apiClient.deleteInstance(this.locator),
+      'No instance for deleted server'
+    );
   }
 
-  private async waitForDelete(deletion: Promise<gcp_api.ComputeEngineOperation>, msg404: string): Promise<void> {
+  private async waitForDelete(
+    deletion: Promise<gcp_api.ComputeEngineOperation>,
+    msg404: string
+  ): Promise<void> {
     try {
       await deletion;
       // We assume that deletion will eventually succeed once the operation has

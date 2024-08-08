@@ -61,9 +61,13 @@ Polymer({
       <div class="step-header">
         <div class="step-text">
           <div class="step-title"><slot name="step-title"></slot></div>
-          <div class="step-description"><slot name="step-description"></slot></div>
+          <div class="step-description">
+            <slot name="step-description"></slot>
+          </div>
         </div>
-        <div class="step-action" hidden$="[[!displayAction]]"><slot name="step-action"></slot></div>
+        <div class="step-action" hidden$="[[!displayAction]]">
+          <slot name="step-action"></slot>
+        </div>
       </div>
       <slot></slot>
     </div>

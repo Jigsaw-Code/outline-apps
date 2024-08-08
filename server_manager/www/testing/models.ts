@@ -80,7 +80,11 @@ export class FakeGcpAccount implements gcp.Account {
   getRefreshToken(): string {
     return this.refreshToken;
   }
-  createServer(_projectId: string, _name: string, _zone: gcp.Zone): Promise<server.ManagedServer> {
+  createServer(
+    _projectId: string,
+    _name: string,
+    _zone: gcp.Zone
+  ): Promise<server.ManagedServer> {
     return undefined;
   }
   async listLocations(_projectId: string): Promise<Readonly<gcp.ZoneOption[]>> {
@@ -89,7 +93,10 @@ export class FakeGcpAccount implements gcp.Account {
   async listServers(_projectId: string): Promise<server.ManagedServer[]> {
     return [];
   }
-  async createProject(_id: string, _billingAccountId: string): Promise<gcp.Project> {
+  async createProject(
+    _id: string,
+    _billingAccountId: string
+  ): Promise<gcp.Project> {
     return {
       id: 'project-id',
       name: 'project-name',
@@ -156,10 +163,14 @@ export class FakeServer implements server.Server {
     return Promise.reject(new Error('FakeServer.addAccessKey not implemented'));
   }
   renameAccessKey(_accessKeyId: server.AccessKeyId, _name: string) {
-    return Promise.reject(new Error('FakeServer.renameAccessKey not implemented'));
+    return Promise.reject(
+      new Error('FakeServer.renameAccessKey not implemented')
+    );
   }
   removeAccessKey(_accessKeyId: server.AccessKeyId) {
-    return Promise.reject(new Error('FakeServer.removeAccessKey not implemented'));
+    return Promise.reject(
+      new Error('FakeServer.removeAccessKey not implemented')
+    );
   }
   setHostnameForAccessKeys(_hostname: string) {
     return Promise.reject(new Error('FakeServer.setHostname not implemented'));
@@ -174,16 +185,27 @@ export class FakeServer implements server.Server {
     return undefined;
   }
   setPortForNewAccessKeys(): Promise<void> {
-    return Promise.reject(new Error('FakeServer.setPortForNewAccessKeys not implemented'));
+    return Promise.reject(
+      new Error('FakeServer.setPortForNewAccessKeys not implemented')
+    );
   }
-  setAccessKeyDataLimit(_accessKeyId: string, _limit: server.DataLimit): Promise<void> {
-    return Promise.reject(new Error('FakeServer.setAccessKeyDataLimit not implemented'));
+  setAccessKeyDataLimit(
+    _accessKeyId: string,
+    _limit: server.DataLimit
+  ): Promise<void> {
+    return Promise.reject(
+      new Error('FakeServer.setAccessKeyDataLimit not implemented')
+    );
   }
   removeAccessKeyDataLimit(_accessKeyId: string): Promise<void> {
-    return Promise.reject(new Error('FakeServer.removeAccessKeyDataLimit not implemented'));
+    return Promise.reject(
+      new Error('FakeServer.removeAccessKeyDataLimit not implemented')
+    );
   }
   setDefaultDataLimit(_limit: server.DataLimit): Promise<void> {
-    return Promise.reject(new Error('FakeServer.setDefaultDataLimit not implemented'));
+    return Promise.reject(
+      new Error('FakeServer.setDefaultDataLimit not implemented')
+    );
   }
   removeDefaultDataLimit(): Promise<void> {
     return Promise.resolve();
@@ -193,7 +215,10 @@ export class FakeServer implements server.Server {
   }
 }
 
-export class FakeManualServer extends FakeServer implements server.ManualServer {
+export class FakeManualServer
+  extends FakeServer
+  implements server.ManualServer
+{
   constructor(public manualServerConfig: server.ManualServerConfig) {
     super(manualServerConfig.apiUrl);
   }
@@ -208,7 +233,9 @@ export class FakeManualServer extends FakeServer implements server.ManualServer 
   }
 }
 
-export class FakeManualServerRepository implements server.ManualServerRepository {
+export class FakeManualServerRepository
+  implements server.ManualServerRepository
+{
   private servers: server.ManualServer[] = [];
 
   addServer(config: server.ManualServerConfig) {
@@ -218,7 +245,9 @@ export class FakeManualServerRepository implements server.ManualServerRepository
   }
 
   findServer(config: server.ManualServerConfig) {
-    return this.servers.find(server => server.getManagementApiUrl() === config.apiUrl);
+    return this.servers.find(
+      server => server.getManagementApiUrl() === config.apiUrl
+    );
   }
 
   listServers() {
@@ -226,8 +255,14 @@ export class FakeManualServerRepository implements server.ManualServerRepository
   }
 }
 
-export class FakeManagedServer extends FakeServer implements server.ManagedServer {
-  constructor(id: string, private isInstalled = true) {
+export class FakeManagedServer
+  extends FakeServer
+  implements server.ManagedServer
+{
+  constructor(
+    id: string,
+    private isInstalled = true
+  ) {
     super(id);
   }
   async *monitorInstallProgress() {
@@ -249,7 +284,10 @@ export class FakeManagedServer extends FakeServer implements server.ManagedServe
 }
 
 export class FakeCloudAccounts implements accounts.CloudAccounts {
-  constructor(private digitalOceanAccount: digitalocean.Account = null, private gcpAccount: gcp.Account = null) {}
+  constructor(
+    private digitalOceanAccount: digitalocean.Account = null,
+    private gcpAccount: gcp.Account = null
+  ) {}
 
   connectDigitalOceanAccount(accessToken: string): digitalocean.Account {
     this.digitalOceanAccount = new FakeDigitalOceanAccount(accessToken);

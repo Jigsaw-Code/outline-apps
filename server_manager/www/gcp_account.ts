@@ -22,7 +22,6 @@ import * as gcp from '../model/gcp';
 import {BillingAccount, Project} from '../model/gcp';
 import * as server from '../model/server';
 
-
 /** Returns a unique, RFC1035-style name as required by GCE. */
 function makeGcpInstanceName(): string {
   function pad2(val: number) {
@@ -41,7 +40,11 @@ function makeGcpInstanceName(): string {
 
 // Regions where the first f1-micro instance is free.
 // See https://cloud.google.com/free/docs/gcp-free-tier/#compute
-const FREE_TIER_REGIONS = new Set<string>(['us-west1', 'us-central1', 'us-east1']);
+const FREE_TIER_REGIONS = new Set<string>([
+  'us-west1',
+  'us-central1',
+  'us-east1',
+]);
 
 export function isInFreeTier(zone: gcp.Zone): boolean {
   return FREE_TIER_REGIONS.has(zone.regionId);
@@ -86,14 +89,25 @@ export class GcpAccount implements gcp.Account {
   async listServers(projectId: string): Promise<server.ManagedServer[]> {
     const result: GcpServer[] = [];
     const filter = 'labels.outline=true';
-    const listAllInstancesResponse = await this.apiClient.listAllInstances(projectId, filter);
+    const listAllInstancesResponse = await this.apiClient.listAllInstances(
+      projectId,
+      filter
+    );
     const instanceMap = listAllInstancesResponse?.items ?? {};
     Object.values(instanceMap).forEach(({instances}) => {
       instances?.forEach(instance => {
         const {zoneId} = gcp_api.parseZoneUrl(instance.zone);
         const locator = {projectId, zoneId, instanceId: instance.id};
         const id = `${this.id}:${instance.id}`;
-        result.push(new GcpServer(id, locator, instance.name, Promise.resolve(), this.apiClient));
+        result.push(
+          new GcpServer(
+            id,
+            locator,
+            instance.name,
+            Promise.resolve(),
+            this.apiClient
+          )
+        );
       });
     });
     return result;
@@ -125,7 +139,10 @@ export class GcpAccount implements gcp.Account {
   }
 
   /** @see {@link Account#createProject}. */
-  async createProject(projectId: string, billingAccountId: string): Promise<Project> {
+  async createProject(
+    projectId: string,
+    billingAccountId: string
+  ): Promise<Project> {
     // Create GCP project
     const createProjectData = {
       projectId,
@@ -134,11 +151,14 @@ export class GcpAccount implements gcp.Account {
         outline: 'true',
       },
     };
-    const createProjectResponse = await this.apiClient.createProject(createProjectData);
+    const createProjectResponse =
+      await this.apiClient.createProject(createProjectData);
     let createProjectOperation = null;
     while (!createProjectOperation?.done) {
       await sleep(2 * 1000);
-      createProjectOperation = await this.apiClient.resourceManagerOperationGet(createProjectResponse.name);
+      createProjectOperation = await this.apiClient.resourceManagerOperationGet(
+        createProjectResponse.name
+      );
     }
     if (createProjectOperation.error) {
       // TODO: Throw error. The project wasn't created so we should have nothing to delete.
@@ -153,14 +173,18 @@ export class GcpAccount implements gcp.Account {
   }
 
   async isProjectHealthy(projectId: string): Promise<boolean> {
-    const projectBillingInfo = await this.apiClient.getProjectBillingInfo(projectId);
+    const projectBillingInfo =
+      await this.apiClient.getProjectBillingInfo(projectId);
     if (!projectBillingInfo.billingEnabled) {
       return false;
     }
 
-    const listEnabledServicesResponse = await this.apiClient.listEnabledServices(projectId);
+    const listEnabledServicesResponse =
+      await this.apiClient.listEnabledServices(projectId);
     for (const requiredService of GcpAccount.REQUIRED_GCP_SERVICES) {
-      const found = listEnabledServicesResponse.services.find(service => service.config.name === requiredService);
+      const found = listEnabledServicesResponse.services.find(
+        service => service.config.name === requiredService
+      );
       if (!found) {
         return false;
       }
@@ -169,7 +193,10 @@ export class GcpAccount implements gcp.Account {
     return true;
   }
 
-  async repairProject(projectId: string, billingAccountId: string): Promise<void> {
+  async repairProject(
+    projectId: string,
+    billingAccountId: string
+  ): Promise<void> {
     return await this.configureProject(projectId, billingAccountId);
   }
 
@@ -180,7 +207,9 @@ export class GcpAccount implements gcp.Account {
       return response.billingAccounts
         .filter(billingAccount => billingAccount.open)
         .map(billingAccount => ({
-          id: billingAccount.name.substring(billingAccount.name.lastIndexOf('/') + 1),
+          id: billingAccount.name.substring(
+            billingAccount.name.lastIndexOf('/') + 1
+          ),
           name: billingAccount.displayName,
         }));
     }
@@ -189,8 +218,14 @@ export class GcpAccount implements gcp.Account {
 
   private async createFirewallIfNeeded(projectId: string): Promise<void> {
     // Configure Outline firewall
-    const getFirewallResponse = await this.apiClient.listFirewalls(projectId, GcpAccount.OUTLINE_FIREWALL_NAME);
-    if (!getFirewallResponse?.items || getFirewallResponse?.items?.length === 0) {
+    const getFirewallResponse = await this.apiClient.listFirewalls(
+      projectId,
+      GcpAccount.OUTLINE_FIREWALL_NAME
+    );
+    if (
+      !getFirewallResponse?.items ||
+      getFirewallResponse?.items?.length === 0
+    ) {
       const createFirewallData = {
         name: GcpAccount.OUTLINE_FIREWALL_NAME,
         direction: 'INGRESS',
@@ -203,16 +238,26 @@ export class GcpAccount implements gcp.Account {
         ],
         sourceRanges: ['0.0.0.0/0'],
       };
-      const createFirewallOperation = await this.apiClient.createFirewall(projectId, createFirewallData);
+      const createFirewallOperation = await this.apiClient.createFirewall(
+        projectId,
+        createFirewallData
+      );
       const errors = createFirewallOperation.error?.errors;
       if (errors) {
-        throw new server.ServerInstallFailedError(`Firewall creation failed: ${errors}`);
+        throw new server.ServerInstallFailedError(
+          `Firewall creation failed: ${errors}`
+        );
       }
     }
   }
 
   /** @see {@link Account#createServer}. */
-  async createServer(projectId: string, name: string, zone: gcp.Zone, metricsEnabled: boolean): Promise<server.ManagedServer> {
+  async createServer(
+    projectId: string,
+    name: string,
+    zone: gcp.Zone,
+    metricsEnabled: boolean
+  ): Promise<server.ManagedServer> {
     // TODO: Move this to project setup.
     await this.createFirewallIfNeeded(projectId);
 
@@ -226,7 +271,8 @@ export class GcpAccount implements gcp.Account {
         {
           boot: true,
           initializeParams: {
-            sourceImage: 'projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts',
+            sourceImage:
+              'projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts',
           },
         },
       ],
@@ -258,45 +304,81 @@ export class GcpAccount implements gcp.Account {
       },
     };
     const zoneLocator = {projectId, zoneId: zone.id};
-    const createInstanceOperation = await this.apiClient.createInstance(zoneLocator, createInstanceData);
+    const createInstanceOperation = await this.apiClient.createInstance(
+      zoneLocator,
+      createInstanceData
+    );
     const errors = createInstanceOperation.error?.errors;
     if (errors) {
-      throw new server.ServerInstallFailedError(`Instance creation failed: ${errors}`);
+      throw new server.ServerInstallFailedError(
+        `Instance creation failed: ${errors}`
+      );
     }
 
     const instanceId = createInstanceOperation.targetId;
     const instanceLocator = {instanceId, ...zoneLocator};
-    const instanceCreation = this.apiClient.computeEngineOperationZoneWait(zoneLocator, createInstanceOperation.name);
+    const instanceCreation = this.apiClient.computeEngineOperationZoneWait(
+      zoneLocator,
+      createInstanceOperation.name
+    );
 
     const id = `${this.id}:${instanceId}`;
-    return new GcpServer(id, instanceLocator, gcpInstanceName, instanceCreation, this.apiClient);
+    return new GcpServer(
+      id,
+      instanceLocator,
+      gcpInstanceName,
+      instanceCreation,
+      this.apiClient
+    );
   }
 
-  private async configureProject(projectId: string, billingAccountId: string): Promise<void> {
+  private async configureProject(
+    projectId: string,
+    billingAccountId: string
+  ): Promise<void> {
     // Link billing account
     const updateProjectBillingInfoData = {
       name: `projects/${projectId}/billingInfo`,
       projectId,
       billingAccountName: `billingAccounts/${billingAccountId}`,
     };
-    await this.apiClient.updateProjectBillingInfo(projectId, updateProjectBillingInfoData);
+    await this.apiClient.updateProjectBillingInfo(
+      projectId,
+      updateProjectBillingInfoData
+    );
 
     // Enable APIs
     const enableServicesData = {
       serviceIds: GcpAccount.REQUIRED_GCP_SERVICES,
     };
-    const enableServicesResponse = await this.apiClient.enableServices(projectId, enableServicesData);
+    const enableServicesResponse = await this.apiClient.enableServices(
+      projectId,
+      enableServicesData
+    );
     let enableServicesOperation = null;
     while (!enableServicesOperation?.done) {
       await sleep(2 * 1000);
-      enableServicesOperation = await this.apiClient.serviceUsageOperationGet(enableServicesResponse.name);
+      enableServicesOperation = await this.apiClient.serviceUsageOperationGet(
+        enableServicesResponse.name
+      );
     }
     if (enableServicesResponse.error) {
       // TODO: Throw error.
     }
   }
 
-  private getInstallScript(serverName: string, metricsEnabled: boolean): string {
-    return '#!/bin/bash -eu\n' + server_install.getShellExportCommands(this.shadowboxSettings, serverName, metricsEnabled) + SCRIPT;
+  private getInstallScript(
+    serverName: string,
+    metricsEnabled: boolean
+  ): string {
+    return (
+      '#!/bin/bash -eu\n' +
+      server_install.getShellExportCommands(
+        this.shadowboxSettings,
+        serverName,
+        metricsEnabled
+      ) +
+      SCRIPT
+    );
   }
 }

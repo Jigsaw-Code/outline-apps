@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {CloudLocation, CloudLocationOption, GeoLocation} from '../model/location';
+import {
+  CloudLocation,
+  CloudLocationOption,
+  GeoLocation,
+} from '../model/location';
 
 /**
  * Returns the localized place name, or the data center ID if the location is
  * unknown.
  */
-export function getShortName(cloudLocation: CloudLocation, localize: (id: string) => string): string {
+export function getShortName(
+  cloudLocation: CloudLocation,
+  localize: (id: string) => string
+): string {
   if (!cloudLocation) {
     return '';
   }
@@ -32,13 +39,18 @@ export function getShortName(cloudLocation: CloudLocation, localize: (id: string
  * Returns the localized country name, or "" if the country is unknown or
  * unnecessary.
  */
-export function localizeCountry(geoLocation: GeoLocation, language: string): string {
+export function localizeCountry(
+  geoLocation: GeoLocation,
+  language: string
+): string {
   if (!geoLocation) {
     return '';
   }
   // TODO: Remove typecast after https://github.com/microsoft/TypeScript/pull/44022
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const displayName = new (Intl as any).DisplayNames([language], {type: 'region'});
+  const displayName = new (Intl as any).DisplayNames([language], {
+    type: 'region',
+  });
   return displayName.of(geoLocation.countryCode);
 }
 
@@ -48,7 +60,9 @@ export function localizeCountry(geoLocation: GeoLocation, language: string): str
  * options are preferred within each location.  Available options with unknown
  * GeoLocation (e.g. newly added zones) are placed at the end of the array.
  */
-export function filterOptions<T extends CloudLocationOption>(options: readonly T[]): T[] {
+export function filterOptions<T extends CloudLocationOption>(
+  options: readonly T[]
+): T[] {
   // Contains one available datacenter ID for each GeoLocation, or null if
   // there are datacenters for that GeoLocation but none are available.
   const map = new Map<string, T>();

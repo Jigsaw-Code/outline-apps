@@ -37,7 +37,10 @@ export class OutlineServerProgressStep extends LitElement {
         }
         .card {
           margin-top: 72px;
-          box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+          box-shadow:
+            0 0 2px 0 rgba(0, 0, 0, 0.14),
+            0 2px 2px 0 rgba(0, 0, 0, 0.12),
+            0 1px 3px 0 rgba(0, 0, 0, 0.2);
           border-radius: 2px;
           color: var(--light-gray);
           background: var(--background-contrast-color);
@@ -69,22 +72,35 @@ export class OutlineServerProgressStep extends LitElement {
   override render() {
     return html` <outline-step-view display-action="">
       <span slot="step-title">${this.localize('setup-do-title')}</span>
-      <span slot="step-description">${this.localize('setup-do-description')}</span>
+      <span slot="step-description"
+        >${this.localize('setup-do-description')}</span
+      >
       <span slot="step-action">
-        <paper-button id="cancelButton" @tap="${this.handleCancelTapped}"> ${this.localize('cancel')} </paper-button>
+        <paper-button id="cancelButton" @tap="${this.handleCancelTapped}">
+          ${this.localize('cancel')}
+        </paper-button>
       </span>
       <div class="card">
         <outline-progress-spinner></outline-progress-spinner>
         <div class="servername">
           <p>${this.serverName}</p>
         </div>
-        <paper-progress id="bar" class="transiting" value="${100 * this.progress}"></paper-progress>
+        <paper-progress
+          id="bar"
+          class="transiting"
+          value="${100 * this.progress}"
+        ></paper-progress>
       </div>
     </outline-step-view>`;
   }
 
   private handleCancelTapped() {
     // Set event options required to escape the shadow DOM.
-    this.dispatchEvent(new CustomEvent('CancelServerCreationRequested', {bubbles: true, composed: true}));
+    this.dispatchEvent(
+      new CustomEvent('CancelServerCreationRequested', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
