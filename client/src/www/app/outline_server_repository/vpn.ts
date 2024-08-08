@@ -32,7 +32,7 @@ export interface VpnApi {
   // Connects a VPN, routing all device traffic as described in the SessionConfig.
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
-  // Throws OutlinePluginError.
+  // @throws {OutlinePluginError}
   start(id: string, name: string, config: ShadowsocksSessionConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
