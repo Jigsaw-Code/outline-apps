@@ -26,5 +26,16 @@
   </head>
   <body unresolved>
     <app-root></app-root>
+
+    <script>
+      try {
+        const reloadSocket = new WebSocket("ws://localhost:35729");
+
+        reloadSocket.onopen = () => console.log("LiveReload connected~");
+        reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
+      } catch (e) {
+        // nevermind
+      }
+    </script>
   </body>
 </html>
