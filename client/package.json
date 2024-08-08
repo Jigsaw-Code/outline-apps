@@ -45,7 +45,7 @@
     "auto-launch": "^5.0.5",
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
-    "electron-updater": "^5.0.5",
+    "electron-updater": "^6.3.0",
     "fs-extra": "^11.2.0",
     "lit": "^2.2.2",
     "ShadowsocksConfig": "github:Jigsaw-Code/outline-shadowsocksconfig#v0.2.1",
