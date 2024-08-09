@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference path='../types/webintents.d.ts'/>
+/// <reference types='../types/webintents.d.ts'/>
+
+type Listener = (url: string) => void;
 
 export class UrlInterceptor {
   protected launchUrl?: string;
-  private listeners: Array<(url: string) => void> = [];
+  private listeners: Array<Listener> = [];
 
-  registerListener(listener: (url: string) => void) {
+  registerListener(listener: Listener) {
     this.listeners.push(listener);
     if (this.launchUrl) {
       listener(this.launchUrl);
