@@ -28,10 +28,12 @@ import {
   ShadowsocksSessionConfig,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
-import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
+
+// Reference to tun2socks's outline/electron/main.go
+const exitCodeNoUDPConnectivity = 4;
 
 const TUN2SOCKS_TAP_DEVICE_NAME = isLinux ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
@@ -320,7 +322,7 @@ class GoTun2socks {
   }
 
   /**
-   * Checks connectivity and exits with an error code as defined in `errors.ErrorCode`.
+   * Checks connectivity and exits with one of error codes: 0, `exitCodeNoUDPConnectivity` or 1.
    * If exit code is not zero, a `ProcessTerminatedExitCodeError` might be thrown.
    * -tun* and -dnsFallback options have no effect on this mode.
    */
@@ -357,7 +359,7 @@ async function checkConnectivity(tun2socks: GoTun2socks) {
   } catch (e) {
     console.error('connectivity check error:', e);
     if (e instanceof ProcessTerminatedExitCodeError) {
-      if (e.exitCode === ErrorCode.UDP_RELAY_NOT_ENABLED) {
+      if (e.exitCode === exitCodeNoUDPConnectivity) {
         return false;
       }
     }

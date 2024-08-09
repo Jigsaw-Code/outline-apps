@@ -97,9 +97,9 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
   self.popover.contentViewController.view = self.window.contentView;
 
   if ([self wasStartedByLauncherApp]) {
-    [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
-      if (errorCode != ErrorCodeNoError) {
-        NSLog(@"Failed to auto-connect the VPN on startup.");
+    [OutlineVpn.shared startLastSuccessfulTunnel:^(NSString * _Nullable errMsg) {
+      if (errMsg != nil && errMsg.length > 0) {
+        NSLog(@"Failed to auto-connect the VPN on startup: %@", errMsg);
       }
     }];
   } else {

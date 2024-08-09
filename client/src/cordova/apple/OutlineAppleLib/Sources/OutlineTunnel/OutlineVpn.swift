@@ -21,7 +21,7 @@ public class OutlineVpn: NSObject {
   public static let shared = OutlineVpn()
   private static let kVpnExtensionBundleId = "\(Bundle.main.bundleIdentifier!).VpnExtension"
 
-  public typealias Callback = (ErrorCode) -> Void
+  public typealias Callback = (String?) -> Void
   public typealias VpnStatusObserver = (NEVPNStatus, String) -> Void
 
   private var tunnelManager: NETunnelProviderManager?
@@ -38,30 +38,10 @@ public class OutlineVpn: NSObject {
     static let action = "action"
     static let tunnelId = "tunnelId"
     static let config = "config"
-    static let errorCode = "errorCode"
+    static let error = "error"
     static let host = "host"
     static let port = "port"
     static let isOnDemand = "is-on-demand"
-  }
-
-  // This must be kept in sync with:
-  //  - cordova-plugin-outline/apple/vpn/PacketTunnelProvider.h#NS_ENUM
-  //  - www/model/errors.ts
-  @objc
-  public enum ErrorCode: Int {
-    case noError = 0
-    case undefined = 1
-    case vpnPermissionNotGranted = 2
-    case invalidServerCredentials = 3
-    case udpRelayNotEnabled = 4
-    case serverUnreachable = 5
-    case vpnStartFailure = 6
-    case illegalServerConfiguration = 7
-    case shadowsocksStartFailure = 8
-    case configureSystemProxyFailure = 9
-    case noAdminPermissions = 10
-    case unsupportedRoutingTable = 11
-    case systemMisconfigured = 12
   }
 
   override private init() {
@@ -90,7 +70,7 @@ public class OutlineVpn: NSObject {
     Task {
       if isActiveSession(self.tunnelManager?.connection) {
         if getTunnelId(forManager: self.tunnelManager) == tunnelId {
-          return completion(ErrorCode.noError)
+          return completion("")
         } else {
           await self.stopActiveVpn()
         }
@@ -142,7 +122,7 @@ public class OutlineVpn: NSObject {
     setupVpn(withId: tunnelId, withName: optionalName ?? "Outline Server") { error in
       if error != nil {
         DDLogError("Failed to setup VPN: \(String(describing: error))")
-        return completion(ErrorCode.vpnPermissionNotGranted);
+        return completion("VPN permission is not granted");
       }
       let message = [MessageKey.action: Action.start, MessageKey.tunnelId: tunnelId];
       self.sendVpnExtensionMessage(message) { response in
@@ -160,9 +140,9 @@ public class OutlineVpn: NSObject {
       let session = self.tunnelManager?.connection as! NETunnelProviderSession
       do {
         try session.startTunnel(options: tunnelOptions)
-      } catch let error as NSError  {
+      } catch let error as NSError {
         DDLogError("Failed to start VPN: \(error)")
-        completion(ErrorCode.vpnStartFailure)
+        completion(error.localizedDescription)
       }
     }
   }

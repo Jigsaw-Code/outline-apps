@@ -60,7 +60,7 @@ type outlinetunnel struct {
 // `tunWriter` is used to output packets back to the TUN device.  OutlineTunnel.Disconnect() will close `tunWriter`.
 func newTunnel(streamDialer transport.StreamDialer, packetDialer transport.PacketListener, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
 	if tunWriter == nil {
-		return nil, errors.New("Must provide a TUN writer")
+		return nil, errors.New("must provide a TUN writer")
 	}
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tunWriter.Write(data)
@@ -74,7 +74,7 @@ func newTunnel(streamDialer transport.StreamDialer, packetDialer transport.Packe
 
 func (t *outlinetunnel) UpdateUDPSupport() bool {
 	resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
-	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.packetDialer, resolverAddr) == nil
+	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.packetDialer, resolverAddr)
 	if t.isUDPEnabled != isUDPEnabled {
 		t.isUDPEnabled = isUDPEnabled
 		t.lwipStack.Close() // Close existing connections to avoid using the previous handlers.

@@ -68,9 +68,6 @@ const (
 	// Unauthenticated indicates that the client failed to communicate with a remote server
 	// due to the lack of valid authentication credentials.
 	Unauthenticated ErrorCode = "ERR_CLIENT_UNAUTHENTICATED"
-
-	// ProxyServerUDPUnsupported means the remote proxy doesn't support relaying UDP traffic.
-	ProxyServerUDPUnsupported ErrorCode = "ERR_PROXY_SERVER_UDP_NOT_SUPPORTED"
 )
 
 //////////
