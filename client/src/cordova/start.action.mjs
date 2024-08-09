@@ -72,10 +72,10 @@ export async function main(...parameters) {
 
     await runAction('client/src/www/build', ...parameters);
 
-    console.log('Copying www folder to platforms/osx/www...');
-    fs.copySync(
+    await fs.copy(
       path.join(getRootDir(), 'client/www'),
-      path.join(getRootDir(), 'client/platforms/osx/www')
+      // TODO: find way to programmatically get this path
+      path.join('/Users/daniellacosse/Library/Developer/Xcode/DerivedData/macos-XXXXXXX/Build/Products/Debug/Outline.app/Contents/Resources/www'),
     );
 
     return true;
