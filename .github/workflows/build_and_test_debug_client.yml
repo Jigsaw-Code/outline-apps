@@ -72,10 +72,6 @@ jobs:
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
 
-      - name: Check licenses
-        # We allow only "notice" type of licenses.
-        run: go run github.com/google/go-licenses check --ignore=golang.org/x --allowed_licenses=Apache-2.0,Apache-3,BSD-3-Clause,BSD-4-Clause,CC0-1.0,MIT ./...
-
       - name: Test Go Backend
         run: go test -race -bench=. -benchtime=100ms ./client/...
 

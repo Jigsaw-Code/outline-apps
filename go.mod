@@ -6,6 +6,7 @@ require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
+	github.com/google/addlicense v1.1.1
 	github.com/google/go-licenses v1.6.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/mobile v0.0.0-20240716161057-1ad2df20a8b6
@@ -14,6 +15,7 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
