@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import os from 'os';
 import path from 'path';
 import url from 'url';
 
 import {createReloadServer} from '@outline/infrastructure/build/create_reload_server.mjs';
 import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import {runAction} from '@outline/infrastructure/build/run_action.mjs';
-import cordovaLib from 'cordova-lib';
+import chalk from 'chalk';
 import {hashElement} from 'folder-hash';
 import * as fs from 'fs-extra';
-const {cordova} = cordovaLib;
 
-import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+const DERIVED_DATA_PATH = '~/Library/Developer/Xcode/DerivedData';
+const OUTLINE_APP_WWW_PATH = 'Build/Products/Debug/Outline.app/Contents/Resources/www';
 
 const getUIHash = async () => {
   const hashResult = await hashElement(
@@ -41,22 +42,29 @@ const getUIHash = async () => {
  *
  * @param {string[]} parameters
  */
-export async function main(...parameters) {
-  const {platform, verbose} = getBuildParameters(parameters);
+export async function main() {
+  console.warn(
+    chalk.yellow(
+      'This action only works for the MacOS platform. Ignoring all inputs.'
+    )
+  );
 
-  if (platform !== 'macos') {
-    throw new Error('Only macos platform is currently supported');
+  if (os.platform() !== 'darwin') {
+    throw new Error('You must be on MacOS to develop for MacOS.');
   }
+
+  const parameters = {
+    platform: 'macos',
+    buildMode: 'release',
+    sentryDsn: 'https://public@sentry.example.com/1',
+    versionName: '0.0.0-dev',
+  };
 
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/go/build', ...parameters);
   await runAction('client/src/cordova/setup', ...parameters);
 
-  if (verbose) {
-    cordova.on('verbose', message =>
-      console.debug(`[cordova:verbose] ${message}`)
-    );
-  }
+  // TODO: use xcodebuild to launch the app
 
   let previousUIHashResult = await getUIHash();
 
@@ -74,8 +82,8 @@ export async function main(...parameters) {
 
     await fs.copy(
       path.join(getRootDir(), 'client/www'),
-      // TODO: find way to programmatically get this path
-      '/Users/daniellacosse/Library/Developer/Xcode/DerivedData/macos-XXXXXXX/Build/Products/Debug/Outline.app/Contents/Resources/www'
+      // TODO: find a way to programmatically get this folder
+      path.join(DERIVED_DATA_PATH, 'macos-XXXXXXX', OUTLINE_APP_WWW_PATH)
     );
 
     return true;
