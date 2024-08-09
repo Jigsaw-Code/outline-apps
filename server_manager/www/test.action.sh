@@ -16,5 +16,5 @@
 
 set -e
 
-npm run action server_manager/www/build_install_script
+npm run action server_manager/install_scripts/build
 karma start "${ROOT_DIR}/server_manager/www/karma.conf.js"

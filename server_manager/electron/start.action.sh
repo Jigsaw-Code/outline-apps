@@ -16,7 +16,7 @@
 
 node infrastructure/build/run_action.mjs server_manager/electron/build "$@"
 
-cd "${BUILD_DIR}/server_manager/electron/static"
+cd "${BUILD_DIR}/server_manager/electron/unpacked"
 
 OUTLINE_DEBUG='true' \
   SB_METRICS_URL='https://dev.metrics.getoutline.org' \
