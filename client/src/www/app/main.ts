@@ -19,11 +19,14 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
-import {FAKE_BROKEN_HOSTNAME, FAKE_UNREACHABLE_HOSTNAME} from './fake_tunnel';
 import {OutlineServerRepository} from './outline_server_repository';
+import {
+  FAKE_BROKEN_HOSTNAME,
+  FAKE_UNREACHABLE_HOSTNAME,
+  FakeVpnApi,
+} from './outline_server_repository/vpn.fake';
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
-import {TunnelFactory} from './tunnel';
 import {EventQueue} from '../model/events';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
@@ -49,47 +52,57 @@ function getRootEl() {
   return document.querySelector('app-root') as {} as polymer.Base;
 }
 
-function createServerRepo(
-  eventQueue: EventQueue,
-  storage: Storage,
-  deviceSupport: boolean,
-  createTunnel: TunnelFactory
-) {
-  const repo = new OutlineServerRepository(createTunnel, eventQueue, storage);
-  if (!deviceSupport) {
-    console.debug('Detected development environment, using fake servers.');
-    if (repo.getAll().length === 0) {
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: '127.0.0.1',
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Working Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_BROKEN_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Broken Server',
-          })
-        )
-      );
-      repo.add(
-        SIP002_URI.stringify(
-          makeConfig({
-            host: FAKE_UNREACHABLE_HOSTNAME,
-            port: 123,
-            method: 'chacha20-ietf-poly1305',
-            tag: 'Fake Unreachable Server',
-          })
-        )
-      );
-    }
+function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
+  const localize = getLocalizationFunction();
+  const vpnApi = platform.getVpnApi();
+  if (vpnApi) {
+    return new OutlineServerRepository(
+      vpnApi,
+      eventQueue,
+      window.localStorage,
+      localize
+    );
+  }
+
+  console.debug('Platform not supported, using fake servers.');
+  const repo = new OutlineServerRepository(
+    new FakeVpnApi(),
+    eventQueue,
+    window.localStorage,
+    localize
+  );
+
+  if (repo.getAll().length === 0) {
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: '127.0.0.1',
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Working Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_BROKEN_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Broken Server',
+        })
+      )
+    );
+    repo.add(
+      SIP002_URI.stringify(
+        makeConfig({
+          host: FAKE_UNREACHABLE_HOSTNAME,
+          port: 123,
+          method: 'chacha20-ietf-poly1305',
+          tag: 'Fake Unreachable Server',
+        })
+      )
+    );
   }
   return repo;
 }
@@ -103,12 +116,7 @@ export function main(platform: OutlinePlatform) {
       const debugMode = queryParams.get('debug') === 'true';
 
       const eventQueue = new EventQueue();
-      const serverRepo = createServerRepo(
-        eventQueue,
-        window.localStorage,
-        platform.hasDeviceSupport(),
-        platform.getTunnelFactory()
-      );
+      const serverRepo = createServerRepo(platform, eventQueue);
       const settings = new Settings();
       new App(
         eventQueue,
@@ -139,7 +147,9 @@ function onUnexpectedError(error: Error) {
   } else {
     // Something went terribly wrong (i.e. Polymer failed to initialize). Provide some messaging to
     // the user, even if we are not able to display it in a toast or localize it.
-    alert(`An unexpected error occurred. Please contact support@getoutline.org for assistance.`);
+    alert(
+      'An unexpected error occurred. Please contact support@getoutline.org for assistance.'
+    );
   }
   console.error(error);
 }

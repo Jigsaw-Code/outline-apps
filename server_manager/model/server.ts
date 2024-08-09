@@ -63,7 +63,10 @@ export interface Server {
 
   // Sets the custom data limit for a specific key. This limit overrides the server default limit
   // if it exists. Forces enforcement of the chosen key's data limit.
-  setAccessKeyDataLimit(accessKeyId: AccessKeyId, limit: DataLimit): Promise<void>;
+  setAccessKeyDataLimit(
+    accessKeyId: AccessKeyId,
+    limit: DataLimit
+  ): Promise<void>;
 
   // Removes the custom data limit for a specific key.  The key is still bound by the server default
   // limit if it exists. Forces enforcement of the chosen key's data limit.

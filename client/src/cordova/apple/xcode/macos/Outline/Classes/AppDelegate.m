@@ -18,11 +18,17 @@
 @import ServiceManagement;
 @import OutlineNotification;
 @import OutlineTunnel;
+@import CocoaLumberjack;
+
+#ifdef DEBUG
+const DDLogLevel ddLogLevel = DDLogLevelDebug;
+#else
+const DDLogLevel ddLogLevel = DDLogLevelInfo;
+#endif
 
 @interface AppDelegate()
 @property (strong, nonatomic) NSStatusItem *statusItem;
 @property (strong, nonatomic) NSPopover *popover;
-@property (strong, nonatomic) EventMonitor *eventMonitor;
 @property bool isSystemShuttingDown;
 @end
 
@@ -58,13 +64,13 @@
               }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnConnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImageConnected"];
   }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnDisconnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImage"];
                                               }];
@@ -74,7 +80,7 @@
         withReplyEvent:(NSAppleEventDescriptor*)replyEvent {
   NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:CDVMacOsUrlHandler.kCDVHandleOpenURLNotification object:url];
+      postNotificationName:NSNotification.kHandleUrl object:url];
   if (!self.popover.isShown) {
     [self showPopover];
   }
@@ -132,14 +138,12 @@
 
 - (void)closePopover {
   [self.popover close];
-  [self.eventMonitor stop];
 }
 
 - (void)showPopover {
   [self.popover showRelativeToRect:self.statusItem.button.bounds
                             ofView:self.statusItem.button
                      preferredEdge:NSRectEdgeMinY];
-  [self.eventMonitor start];
   // Activate the application in order to focus the popover.
   [[NSRunningApplication currentApplication]
       activateWithOptions:NSApplicationActivateIgnoringOtherApps];

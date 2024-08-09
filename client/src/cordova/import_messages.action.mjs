@@ -16,12 +16,12 @@ import {readFile, readdir, mkdir} from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import chalk from 'chalk';
 import minimist from 'minimist';
 
 import * as ANDROID_IMPORTER from './android/import_messages.mjs';
 import * as IOS_IMPORTER from './apple/import_messages.mjs';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
 
 const ANDROID = 'android';
 const IOS = 'ios';

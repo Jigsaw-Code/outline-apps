@@ -124,6 +124,13 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           height: var(--app-header-height);
         }
 
+        app-header h1 {
+          font-family: Jigsaw Sans;
+          font-size: 1.5rem;
+          font-weight: 500;
+          margin: 0;
+        }
+
         app-toolbar {
           height: var(--app-toolbar-height);
           color: #fff;
@@ -321,7 +328,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               </paper-button>
             </div>
             <div main-title="" class$="[[page]]">
-              <img src$="[[rootPath]]assets/outline-client-logo.png" hidden$="[[!shouldShowAppLogo]]" />
+              <h1 hidden$="[[!shouldShowAppLogo]]">Outline</h1>
               <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
             </div>
             <div id="app-toolbar-right">

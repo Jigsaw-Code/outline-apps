@@ -12,30 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {fetchShadowsocksSessionConfig, staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
+import {Localizer} from '@outline/infrastructure/i18n';
+
+import {
+  fetchShadowsocksSessionConfig,
+  staticKeyToShadowsocksSessionConfig,
+} from './access_key_serialization';
+import {ShadowsocksSessionConfig, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
-import * as events from '../../model/events';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-import {Tunnel, TunnelStatus, ShadowsocksSessionConfig} from '../tunnel';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
   // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
   // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = ['chacha20-ietf-poly1305', 'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm'];
+  private static readonly SUPPORTED_CIPHERS = [
+    'chacha20-ietf-poly1305',
+    'aes-128-gcm',
+    'aes-192-gcm',
+    'aes-256-gcm',
+  ];
 
   errorMessageId?: string;
   private sessionConfig?: ShadowsocksSessionConfig;
 
   constructor(
+    private vpnApi: VpnApi,
     readonly id: string,
+    private _name: string,
     readonly accessKey: string,
     readonly type: ServerType,
-    private _name: string,
-    private tunnel: Tunnel,
-    private eventQueue: events.EventQueue
+    localize: Localizer
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
@@ -46,25 +55,20 @@ export class OutlineServer implements Server {
         this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
         break;
     }
-
-    this.tunnel.onStatusChange((status: TunnelStatus) => {
-      let statusEvent: events.OutlineEvent;
-      switch (status) {
-        case TunnelStatus.CONNECTED:
-          statusEvent = new events.ServerConnected(this);
-          break;
-        case TunnelStatus.DISCONNECTED:
-          statusEvent = new events.ServerDisconnected(this);
-          break;
-        case TunnelStatus.RECONNECTING:
-          statusEvent = new events.ServerReconnecting(this);
-          break;
-        default:
-          console.warn(`Received unknown tunnel status ${status}`);
-          return;
+    if (!_name) {
+      if (this.sessionConfigLocation) {
+        this._name =
+          this.sessionConfigLocation.port === '443'
+            ? this.sessionConfigLocation.hostname
+            : `${this.sessionConfigLocation.hostname}:${this.sessionConfigLocation.port}`;
+      } else {
+        this._name = localize(
+          this.accessKey.includes('outline=1')
+            ? 'server-default-name-outline'
+            : 'server-default-name'
+        );
       }
-      eventQueue.enqueue(statusEvent);
-    });
+    }
   }
 
   get name() {
@@ -89,17 +93,15 @@ export class OutlineServer implements Server {
     return new URL(this.accessKey);
   }
 
-  get isOutlineServer() {
-    return this.accessKey.includes('outline=1');
-  }
-
   async connect() {
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      this.sessionConfig = await fetchShadowsocksSessionConfig(this.sessionConfigLocation);
+      this.sessionConfig = await fetchShadowsocksSessionConfig(
+        this.sessionConfigLocation
+      );
     }
 
     try {
-      await this.tunnel.start(this.sessionConfig);
+      await this.vpnApi.start(this.id, this.name, this.sessionConfig);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -112,13 +114,16 @@ export class OutlineServer implements Server {
         throw errors.fromErrorCode(cause.errorCode);
       }
 
-      throw new errors.ProxyConnectionFailure(`Failed to connect to server ${this.name}.`, {cause});
+      throw new errors.ProxyConnectionFailure(
+        `Failed to connect to server ${this.name}.`,
+        {cause}
+      );
     }
   }
 
   async disconnect() {
     try {
-      await this.tunnel.stop();
+      await this.vpnApi.stop(this.id);
 
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
         this.sessionConfig = undefined;
@@ -130,10 +135,12 @@ export class OutlineServer implements Server {
   }
 
   checkRunning(): Promise<boolean> {
-    return this.tunnel.isRunning();
+    return this.vpnApi.isRunning(this.id);
   }
 
   static isServerCipherSupported(cipher?: string) {
-    return cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher);
+    return (
+      cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher)
+    );
   }
 }

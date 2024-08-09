@@ -22,7 +22,7 @@ import './index';
 import {localize} from '../../testing/localize';
 
 export default {
-  title: 'Contact View',
+  title: 'Client/Contact View',
   component: 'contact-view',
   argTypes: {
     onSuccess: {action: 'success'},

@@ -845,6 +845,18 @@
       }
     }
   },
+  "metrics_setup_description": {
+    "message": "Share anonymized metrics to help improve the reliability and performance of Outline, for you and those you share a server with. You can update these preferences any time in the server settings tab.",
+    "description": "This string appears as a paragraph in a dialog that prompts the user to share server metrics. It provides information about the purpose of metrics sharing."
+  },
+  "metrics_setup_learn_more": {
+    "message": "Learn more",
+    "description": "This string appears as a link in a dialog that prompts the user to share server metrics. Clicking it opens a browser tab with more information about metrics sharing."
+  },
+  "metrics_setup_title": {
+    "message": "Share anonymous metrics for this server",
+    "description": "This string appears as the header of a dialog that prompts the user to share server metrics."
+  },
   "metrics_share": {
     "message": "Share metrics",
     "description": "This string appears as a button of a dialog that prompts the user to share server metrics. Clicking it enables server metrics reporting."

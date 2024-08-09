@@ -14,22 +14,16 @@
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {TunnelFactory} from './tunnel';
+import {VpnApi} from './outline_server_repository/vpn';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 
 // Provides platform-specific dependencies.
-// TODO: Remove one of hasDeviceSupport and getServerFactory; they're almost the same
-//       thing and currently hasDeviceSupport is only used to populate the server list when running
-//       in demo mode.
+// TODO(fortuna): pick platform-specific implementations at build time instead.
 export interface OutlinePlatform {
-  // Returns true iff the system has support for proxying. When this returns false, the UI should
-  // assume it's running in demo mode, e.g. Electron on macOS.
-  hasDeviceSupport(): boolean;
-
-  getTunnelFactory(): TunnelFactory;
+  getVpnApi(): VpnApi | undefined;
 
   getUrlInterceptor(): UrlInterceptor | undefined;
 

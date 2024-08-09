@@ -17,11 +17,11 @@ import os from 'os';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import minimist from 'minimist';
 import rmfr from 'rmfr';
 
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
 
 const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
 const APPLE_LIBRARY_NAME = 'OutlineAppleLib';

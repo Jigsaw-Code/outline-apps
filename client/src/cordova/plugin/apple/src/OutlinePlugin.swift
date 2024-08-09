@@ -33,30 +33,26 @@ class OutlinePlugin: CDVPlugin {
     public static let kMaxBreadcrumbs: UInt = 100
 
     private var sentryLogger: OutlineSentryLogger!
-    private var callbacks: [String: String]!
+    private var statusCallbackId: String?
 
-#if os(macOS)
-    // cordova-osx does not support URL interception. Until it does, we have version-controlled
-    // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
-    private var urlHandler: CDVMacOsUrlHandler?
-#endif
 #if os(macOS) || targetEnvironment(macCatalyst)
-
     private static let kPlatform = "macOS"
-    private static let kAppGroup = "QT8Z3Q9V3A.org.outline.macos.client"
 #else
     private static let kPlatform = "iOS"
-    private static let kAppGroup = "group.org.outline.ios.client"
 #endif
+    private static let kAppGroup = "group.org.getoutline.client"
 
     override func pluginInitialize() {
         self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
-        callbacks = [String: String]()
-
         OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
 
 #if os(macOS)
-        self.urlHandler = CDVMacOsUrlHandler.init(self.webView)
+        // cordova-osx does not support URL interception. Until it does, we have version-controlled
+        // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(self.handleOpenUrl),
+            name: .kHandleUrl,
+            object: nil)
 #endif
 
 #if os(macOS) || targetEnvironment(macCatalyst)
@@ -83,13 +79,17 @@ class OutlinePlugin: CDVPlugin {
             return sendError("Missing tunnel ID", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-        DDLogInfo("\(Action.start) \(tunnelId)")
+        guard let name = command.argument(at: 1) as? String else {
+            return sendError("Missing service name", callbackId: command.callbackId,
+                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+        }
+        DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
         // TODO(fortuna): Move the config validation to the config parsing code in Go.
-        guard let configJson = command.argument(at: 1) as? [String: Any], containsExpectedKeys(configJson) else {
+        guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
             return sendError("Invalid configuration", callbackId: command.callbackId,
                              errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
         }
-        OutlineVpn.shared.start(tunnelId, configJson:configJson) { errorCode in
+      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
             if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
                 NotificationCenter.default.post(name: .kVpnConnected, object: nil)
@@ -113,11 +113,14 @@ class OutlinePlugin: CDVPlugin {
             return sendError("Missing tunnel ID", callbackId: command.callbackId)
         }
         DDLogInfo("\(Action.stop) \(tunnelId)")
-        OutlineVpn.shared.stop(tunnelId)
-        sendSuccess(callbackId: command.callbackId)
-#if os(macOS) || targetEnvironment(macCatalyst)
-        NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
-#endif
+        Task {
+          await OutlineVpn.shared.stop(tunnelId)
+          sendSuccess(callbackId: command.callbackId)
+  #if os(macOS) || targetEnvironment(macCatalyst)
+          NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
+  #endif
+        }
+
     }
 
     func isRunning(_ command: CDVInvokedUrlCommand) {
@@ -129,11 +132,14 @@ class OutlinePlugin: CDVPlugin {
     }
 
     func onStatusChange(_ command: CDVInvokedUrlCommand) {
-        guard let tunnelId = command.argument(at: 0) as? String else {
-            return sendError("Missing tunnel ID", callbackId: command.callbackId)
+        DDLogInfo("OutlinePlugin: registering status callback")
+        if let currentCallbackId = self.statusCallbackId {
+            self.removeCallback(withId: currentCallbackId)
+            self.statusCallbackId = nil
         }
-        DDLogInfo("\(Action.onStatusChange) \(tunnelId)")
-        setCallbackId(command.callbackId!, action: Action.onStatusChange, tunnelId: tunnelId)
+        if let newCallbackId = command.callbackId {
+            self.statusCallbackId = newCallbackId
+        }
     }
 
     // MARK: Error reporting
@@ -189,15 +195,49 @@ class OutlinePlugin: CDVPlugin {
 
   // MARK: Helpers
 
+#if os(macOS)
+  @objc private func handleOpenUrl(_ notification: Notification) {
+    guard let url = notification.object as? String else {
+      return NSLog("Received non-String object.");
+    }
+    NSLog("Intercepted URL.");
+    guard let urlJson = try? JSONEncoder().encode(url),
+          let encodedUrl = String(data: urlJson, encoding: .utf8) else {
+         return NSLog("Failed to JS-encode intercepted URL")
+    }
+    DispatchQueue.global(qos: .background).async {
+      while (self.webView.isLoading) {
+        // Wait until the page is loaded in case the app launched with the intercepted URL.
+        Thread.sleep(forTimeInterval: 0.5)
+      }
+      DispatchQueue.main.async {
+        let handleOpenUrlJs = """
+        document.addEventListener('deviceready', function() {
+            if (typeof handleOpenURL === 'function') {
+                handleOpenURL(\(encodedUrl));
+            }
+        });
+        """
+        self.webView.stringByEvaluatingJavaScript(from: handleOpenUrlJs)
+      }
+    }
+  }
+#endif
+
   @objc private func stopVpnOnAppQuit() {
-    if let activeTunnelId = OutlineVpn.shared.activeTunnelId {
-      OutlineVpn.shared.stop(activeTunnelId)
+    Task {
+      await OutlineVpn.shared.stopActiveVpn()
     }
   }
 
   // Receives NEVPNStatusDidChange notifications. Calls onTunnelStatusChange for the active
   // tunnel.
   func onVpnStatusChange(vpnStatus: NEVPNStatus, tunnelId: String) {
+    DDLogDebug("OutlinePlugin received onStatusChange (\(String(describing: vpnStatus))) for tunnel \(tunnelId)")
+    guard let callbackId = self.statusCallbackId else {
+      // No status change callback registered.
+      return
+    }
     var tunnelStatus: Int
     switch vpnStatus {
       case .connected:
@@ -210,18 +250,17 @@ class OutlinePlugin: CDVPlugin {
             NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
 #endif
         tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
+      case .disconnecting:
+        tunnelStatus = OutlineTunnel.TunnelStatus.disconnecting.rawValue
       case .reasserting:
+        tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
+      case .connecting:
         tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
       default:
         return;  // Do not report transient or invalid states.
     }
-    DDLogDebug("Calling onStatusChange (\(tunnelStatus)) for tunnel \(tunnelId)")
-    if let callbackId = getCallbackIdFor(action: Action.onStatusChange,
-                                         tunnelId: tunnelId,
-                                         keepCallback: true) {
-      let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: Int32(tunnelStatus))
-      send(pluginResult: result, callbackId: callbackId, keepCallback: true)
-    }
+    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["id": tunnelId, "status": Int32(tunnelStatus)])
+    send(pluginResult: result, callbackId: callbackId, keepCallback: true)
   }
 
   // Returns whether |config| contains all the expected keys
@@ -259,28 +298,12 @@ class OutlinePlugin: CDVPlugin {
         self.commandDelegate?.send(result, callbackId: callbackId)
     }
 
-    // Maps |action| and |tunnelId| to |callbackId| in the callbacks dictionary.
-    private func setCallbackId(_ callbackId: String, action: String, tunnelId: String) {
-        DDLogDebug("\(action):\(tunnelId):\(callbackId)")
-        callbacks["\(action):\(tunnelId)"] = callbackId
-    }
-
-    // Retrieves the callback ID for |action| and |tunnelId|. Unmaps the entry if |keepCallback|
-    // is false.
-    private func getCallbackIdFor(action: String, tunnelId: String?,
-                                  keepCallback: Bool = false) -> String? {
-        guard let tunnelId = tunnelId else {
-            return nil
+    private func removeCallback(withId callbackId: String) {
+        guard let result = CDVPluginResult(status: CDVCommandStatus_NO_RESULT) else {
+            return DDLogWarn("Missing plugin result for callback \(callbackId)");
         }
-        let key = "\(action):\(tunnelId)"
-        guard let callbackId = callbacks[key] else {
-            DDLogWarn("Callback id not found for action \(action) and tunnel \(tunnelId)")
-            return nil
-        }
-        if (!keepCallback) {
-            callbacks.removeValue(forKey: key)
-        }
-        return callbackId
+        result.setKeepCallbackAs(false)
+        self.commandDelegate?.send(result, callbackId: callbackId)
     }
 
     // Migrates local storage files from UIWebView to WKWebView.

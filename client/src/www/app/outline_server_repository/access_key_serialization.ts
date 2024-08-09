@@ -14,13 +14,15 @@
 
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
+import {ShadowsocksSessionConfig} from './vpn';
 import * as errors from '../../model/errors';
-import {ShadowsocksSessionConfig} from '../tunnel';
 
 // DON'T use these methods outside of this folder!
 
 // Parses an access key string into a ShadowsocksConfig object.
-export function staticKeyToShadowsocksSessionConfig(staticKey: string): ShadowsocksSessionConfig {
+export function staticKeyToShadowsocksSessionConfig(
+  staticKey: string
+): ShadowsocksSessionConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(staticKey);
     return {
@@ -31,15 +33,22 @@ export function staticKeyToShadowsocksSessionConfig(staticKey: string): Shadowso
       prefix: config.extra?.['prefix'],
     };
   } catch (cause) {
-    throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {cause});
+    throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {
+      cause,
+    });
   }
 }
 
-function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSessionConfig | null {
+function parseShadowsocksSessionConfigJson(
+  responseBody: string
+): ShadowsocksSessionConfig | null {
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
-    throw new errors.SessionProviderError(responseJson.error.message, responseJson.error.details);
+    throw new errors.SessionProviderError(
+      responseJson.error.message,
+      responseJson.error.details
+    );
   }
 
   const {method, password, server, server_port, prefix} = responseJson;
@@ -47,7 +56,12 @@ function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSes
   // These are the mandatory keys.
   const missingKeys = [];
 
-  for (const [key, value] of Object.entries({method, password, server, server_port})) {
+  for (const [key, value] of Object.entries({
+    method,
+    password,
+    server,
+    server_port,
+  })) {
     if (typeof value === 'undefined') {
       missingKeys.push(key);
     }
@@ -68,12 +82,20 @@ function parseShadowsocksSessionConfigJson(responseBody: string): ShadowsocksSes
 
 // fetches information from a dynamic access key and attempts to parse it
 // TODO(daniellacosse): unit tests
-export async function fetchShadowsocksSessionConfig(configLocation: URL): Promise<ShadowsocksSessionConfig> {
+export async function fetchShadowsocksSessionConfig(
+  configLocation: URL
+): Promise<ShadowsocksSessionConfig> {
   let response;
   try {
-    response = await fetch(configLocation, {cache: 'no-store', redirect: 'follow'});
+    response = await fetch(configLocation, {
+      cache: 'no-store',
+      redirect: 'follow',
+    });
   } catch (cause) {
-    throw new errors.SessionConfigFetchFailed('Failed to fetch VPN information from dynamic access key.', {cause});
+    throw new errors.SessionConfigFetchFailed(
+      'Failed to fetch VPN information from dynamic access key.',
+      {cause}
+    );
   }
 
   const responseBody = (await response.text()).trim();
@@ -89,8 +111,11 @@ export async function fetchShadowsocksSessionConfig(configLocation: URL): Promis
       throw cause;
     }
 
-    throw new errors.ServerAccessKeyInvalid('Failed to parse VPN information fetched from dynamic access key.', {
-      cause,
-    });
+    throw new errors.ServerAccessKeyInvalid(
+      'Failed to parse VPN information fetched from dynamic access key.',
+      {
+        cause,
+      }
+    );
   }
 }

@@ -17,10 +17,17 @@ import {platform} from 'os';
 import {powerMonitor} from 'electron';
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
-import {ChildProcessHelper, ProcessTerminatedExitCodeError, ProcessTerminatedSignalError} from './process';
+import {
+  ChildProcessHelper,
+  ProcessTerminatedExitCodeError,
+  ProcessTerminatedSignalError,
+} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {ShadowsocksSessionConfig, TunnelStatus} from '../src/www/app/tunnel';
+import {
+  ShadowsocksSessionConfig,
+  TunnelStatus,
+} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
@@ -61,7 +68,10 @@ export class GoVpnTunnel implements VpnTunnel {
 
   private reconnectedListener?: () => void;
 
-  constructor(private readonly routing: RoutingDaemon, private config: ShadowsocksSessionConfig) {
+  constructor(
+    private readonly routing: RoutingDaemon,
+    private config: ShadowsocksSessionConfig
+  ) {
     this.tun2socks = new GoTun2socks(config);
     this.connectivityChecker = new GoTun2socks(config);
 
@@ -104,7 +114,10 @@ export class GoVpnTunnel implements VpnTunnel {
     console.log(`UDP support: ${this.isUdpEnabled}`);
 
     console.log('starting routing daemon');
-    await Promise.all([this.tun2socks.start(this.isUdpEnabled), this.routing.start()]);
+    await Promise.all([
+      this.tun2socks.start(this.isUdpEnabled),
+      this.routing.start(),
+    ]);
   }
 
   networkChanged(status: TunnelStatus) {
@@ -121,7 +134,9 @@ export class GoVpnTunnel implements VpnTunnel {
         this.reconnectingListener();
       }
     } else {
-      console.error(`unknown network change status ${status} from routing daemon`);
+      console.error(
+        `unknown network change status ${status} from routing daemon`
+      );
     }
   }
 
@@ -134,7 +149,9 @@ export class GoVpnTunnel implements VpnTunnel {
   private async resumeListener() {
     if (this.disconnected) {
       // NOTE: Cannot remove resume listeners - Electron bug?
-      console.error('resume event invoked but this tunnel is terminated - doing nothing');
+      console.error(
+        'resume event invoked but this tunnel is terminated - doing nothing'
+      );
       return;
     }
 

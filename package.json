@@ -2,15 +2,15 @@
   "name": "outline-apps",
   "productName": "Outline",
   "scripts": {
+    "addlicense": "go run github.com/go-task/task/v3/cmd/task addlicense",
     "action:help": "npm run action list",
     "action:list": "npm run action list",
-    "action": "node ./src/build/run_action.mjs",
+    "action": "node ./infrastructure/build/run_action.mjs",
     "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
-    "format:all": "prettier --write \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "format": "pretty-quick --staged --pattern \"**/*.{cjs,mjs,html,js,json,md,ts}\"",
-    "lint:ts": "eslint --ext ts,mjs client",
-    "lint": "npm run lint:ts",
-    "reset": "npm run clean && npm ci"
+    "format:all": "gts fix",
+    "lint:all": "gts lint",
+    "reset": "npm run clean && npm ci",
+    "storybook": "storybook dev -p 6006"
   },
   "engines": {
     "node": "18.x.x"
@@ -22,12 +22,26 @@
     "client"
   ],
   "devDependencies": {
+    "@storybook/addon-essentials": "^8.2.6",
+    "@storybook/addon-links": "^8.2.6",
+    "@storybook/blocks": "^8.2.6",
+    "@storybook/test": "^8.2.6",
+    "@storybook/web-components": "^8.2.6",
+    "@storybook/web-components-vite": "^8.2.6",
     "@types/node-fetch": "^2.6.7",
     "@typescript-eslint/eslint-plugin": "^7.7.0",
     "@typescript-eslint/parser": "^7.7.0",
+    "browserslist": "^4.23.3",
     "chalk": "^5.3.0",
     "electron-builder": "^24.13.3",
+    "eslint-plugin-compat": "^6.0.0",
     "eslint-plugin-import": "^2.29.1",
-    "node-fetch": "^2.6.7"
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-storybook": "^0.8.0",
+    "gts": "^5.3.1",
+    "lit": "^3.1.4",
+    "node-fetch": "^2.6.7",
+    "storybook": "^8.2.6",
+    "typescript": "^5.4.5"
   }
 }
