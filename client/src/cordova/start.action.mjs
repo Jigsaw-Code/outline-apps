@@ -20,7 +20,7 @@ import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import cordovaLib from 'cordova-lib';
 import {hashElement} from 'folder-hash';
-import * as fs from "fs-extra";
+import * as fs from 'fs-extra';
 const {cordova} = cordovaLib;
 
 import {getBuildParameters} from '../../build/get_build_parameters.mjs';
@@ -75,7 +75,7 @@ export async function main(...parameters) {
     await fs.copy(
       path.join(getRootDir(), 'client/www'),
       // TODO: find way to programmatically get this path
-      path.join('/Users/daniellacosse/Library/Developer/Xcode/DerivedData/macos-XXXXXXX/Build/Products/Debug/Outline.app/Contents/Resources/www'),
+      '/Users/daniellacosse/Library/Developer/Xcode/DerivedData/macos-XXXXXXX/Build/Products/Debug/Outline.app/Contents/Resources/www'
     );
 
     return true;
