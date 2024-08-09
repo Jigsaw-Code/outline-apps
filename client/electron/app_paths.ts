@@ -45,9 +45,13 @@ export function getAppPath() {
 
 export function pathToEmbeddedTun2socksBinary() {
   return path.join(
-    unpackedAppPath(), 'client', 'output', 'build',
-    (isWindows ? 'windows' : 'linux'),
-    'tun2socks' + (isWindows ? '.exe' : ''));
+    unpackedAppPath(),
+    'output',
+    'build',
+    'client',
+    isWindows ? 'windows' : 'linux',
+    'tun2socks' + (isWindows ? '.exe' : '')
+  );
 }
 
 /**
@@ -60,5 +64,11 @@ export function pathToEmbeddedOutlineService() {
   if (isWindows) {
     return getAppPath();
   }
-  return path.join(unpackedAppPath(), 'client', 'tools', 'outline_proxy_controller', 'dist');
+  return path.join(
+    unpackedAppPath(),
+    'client',
+    'tools',
+    'outline_proxy_controller',
+    'dist'
+  );
 }
