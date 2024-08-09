@@ -19,12 +19,15 @@ import url from 'url';
 import {createReloadServer} from '@outline/infrastructure/build/create_reload_server.mjs';
 import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import chalk from 'chalk';
 import {hashElement} from 'folder-hash';
 import * as fs from 'fs-extra';
 
-const DERIVED_DATA_PATH = '~/Library/Developer/Xcode/DerivedData';
-const OUTLINE_APP_WWW_PATH = 'Build/Products/Debug/Outline.app/Contents/Resources/www';
+const OUTPUT_PATH = 'output/build/client/macos';
+const OUTLINE_APP_PATH = 'Debug/Outline.app';
+const OUTLINE_APP_WWW_PATH = 'Contents/Resources/www';
+const RELOAD_SERVER_PORT = 35729;
 
 const getUIHash = async () => {
   const hashResult = await hashElement(
@@ -53,22 +56,34 @@ export async function main() {
     throw new Error('You must be on MacOS to develop for MacOS.');
   }
 
-  const parameters = {
-    platform: 'macos',
-    buildMode: 'release',
-    sentryDsn: 'https://public@sentry.example.com/1',
-    versionName: '0.0.0-dev',
-  };
+  const parameters = [
+    'macos',
+    '--buildMode=release',
+    '--sentryDsn=https://public@sentry.example.com/1',
+    '--versionName=0.0.0-dev',
+  ];
 
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/go/build', ...parameters);
   await runAction('client/src/cordova/setup', ...parameters);
 
-  // TODO: use xcodebuild to launch the app
+  await spawnStream(
+    'xcodebuild',
+    '-scheme',
+    'Outline',
+    '-workspace',
+    path.join(getRootDir(), 'client/src/cordova/apple/macos.xcworkspace'),
+    `SYMROOT=${path.join(getRootDir(), OUTPUT_PATH)}`
+  );
+
+  await spawnStream(
+    'open',
+    path.join(getRootDir(), OUTPUT_PATH, OUTLINE_APP_PATH)
+  );
 
   let previousUIHashResult = await getUIHash();
 
-  console.log('Starting reload server @ port 35729...');
+  console.log(`Starting reload server @ port ${RELOAD_SERVER_PORT}...`);
   createReloadServer(async () => {
     const currentUIHashResult = await getUIHash();
 
@@ -82,12 +97,11 @@ export async function main() {
 
     await fs.copy(
       path.join(getRootDir(), 'client/www'),
-      // TODO: find a way to programmatically get this folder
-      path.join(DERIVED_DATA_PATH, 'macos-XXXXXXX', OUTLINE_APP_WWW_PATH)
+      path.join(OUTPUT_PATH, OUTLINE_APP_PATH, OUTLINE_APP_WWW_PATH)
     );
 
     return true;
-  }).listen(35729);
+  }).listen(RELOAD_SERVER_PORT);
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
