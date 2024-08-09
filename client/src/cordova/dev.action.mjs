@@ -56,6 +56,7 @@ export async function main() {
     throw new Error('You must be on MacOS to develop for MacOS.');
   }
 
+  // TODO: respect the parameters passed to the action once the debug macos build is working
   const parameters = [
     'macos',
     '--buildMode=release',
