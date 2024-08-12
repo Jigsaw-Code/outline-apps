@@ -149,7 +149,7 @@
   },
   "scripts": {
     "clean": "rm -rf output node_modules www platforms plugins",
-    "generate-license-file": "npm ci && npx generate-license-file && ./client/src/www/ui_components/licenses/third_party.sh >> ./client/src/www/ui_components/licenses/licenses.txt"
+    "generate-license-file": "npm ci && npx generate-license-file && ./src/www/ui_components/licenses/third_party.sh >> ./src/www/ui_components/licenses/licenses.txt"
 
   }
 }

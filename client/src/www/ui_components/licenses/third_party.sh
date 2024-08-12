@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Mimics the output of "yarn licenses generate-disclaimer"
-# for the packages in /third_party.
+# Mimics the output of "npx generate-license-file" for packages in /third_party.
 
 set -eu
 
