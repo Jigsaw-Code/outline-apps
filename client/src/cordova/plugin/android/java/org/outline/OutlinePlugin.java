@@ -71,6 +71,7 @@ public class OutlinePlugin extends CordovaPlugin {
     }
 
     public final String value;
+
     Action(final String value) {
       this.value = value;
     }
@@ -81,10 +82,12 @@ public class OutlinePlugin extends CordovaPlugin {
     }
   }
 
-  // Encapsulates parameters to start the VPN asynchronously after requesting user permission.
+  // Encapsulates parameters to start the VPN asynchronously after requesting user
+  // permission.
   private static class StartVpnRequest {
     public final JSONArray args;
     public final CallbackContext callback;
+
     public StartVpnRequest(JSONArray args, CallbackContext callback) {
       this.args = args;
       this.callback = callback;
@@ -93,10 +96,13 @@ public class OutlinePlugin extends CordovaPlugin {
 
   private static final int REQUEST_CODE_PREPARE_VPN = 100;
 
-  // AIDL interface for VpnTunnelService, which is bound for the lifetime of this class.
+  // AIDL interface for VpnTunnelService, which is bound for the lifetime of this
+  // class.
   // The VpnTunnelService runs in a sub process and is thread-safe.
-  // A race condition may occur when calling methods on this instance if the service unbinds.
-  // We catch any exceptions, which should generally be transient and recoverable, and report them
+  // A race condition may occur when calling methods on this instance if the
+  // service unbinds.
+  // We catch any exceptions, which should generally be transient and recoverable,
+  // and report them
   // to the WebView.
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
@@ -115,7 +121,8 @@ public class OutlinePlugin extends CordovaPlugin {
     @Override
     public void onServiceDisconnected(ComponentName className) {
       LOG.warning("VPN service disconnected");
-      // Rebind the service so the VPN automatically reconnects if the service process crashed.
+      // Rebind the service so the VPN automatically reconnects if the service process
+      // crashed.
       Context context = getBaseContext();
       Intent rebind = new Intent(context, VpnTunnelService.class);
       rebind.putExtra(VpnServiceStarter.AUTOSTART_EXTRA, true);
@@ -165,7 +172,8 @@ public class OutlinePlugin extends CordovaPlugin {
     }
 
     if (Action.START.is(action)) {
-      // Prepare the VPN before spawning a new thread. Fall through if it's already prepared.
+      // Prepare the VPN before spawning a new thread. Fall through if it's already
+      // prepared.
       try {
         if (!prepareVpnService()) {
           startVpnRequest = new StartVpnRequest(args, callbackContext);
@@ -189,10 +197,9 @@ public class OutlinePlugin extends CordovaPlugin {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
-          // TODO(fortuna): use serviceName.
-          // final String name = args.getString(1);
+          final String serverName = args.getString(1);
           final JSONObject config = args.getJSONObject(2);
-          sendActionResult(callback, startVpnTunnel(tunnelId, config));
+          sendActionResult(callback, startVpnTunnel(tunnelId, config, serverName));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -206,7 +213,8 @@ public class OutlinePlugin extends CordovaPlugin {
           // Static actions
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
-          // Treat failures to initialize error reporting as unexpected by propagating exceptions.
+          // Treat failures to initialize error reporting as unexpected by propagating
+          // exceptions.
           SentryErrorReporter.init(getBaseContext(), errorReportingApiKey);
           vpnTunnelService.initErrorReporting(errorReportingApiKey);
           callback.success();
@@ -226,7 +234,8 @@ public class OutlinePlugin extends CordovaPlugin {
     });
   }
 
-  // Requests user permission to connect the VPN. Returns true if permission was previously granted,
+  // Requests user permission to connect the VPN. Returns true if permission was
+  // previously granted,
   // and false if the OS prompt will be displayed.
   private boolean prepareVpnService() throws ActivityNotFoundException {
     LOG.fine("Preparing VPN.");
@@ -254,8 +263,9 @@ public class OutlinePlugin extends CordovaPlugin {
     startVpnRequest = null;
   }
 
-  private String startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
-    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
+  private String startVpnTunnel(final String tunnelId, final JSONObject config, final String serverName)
+      throws Exception {
+    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
     final TunnelConfig tunnelConfig;
     try {
       tunnelConfig = VpnTunnelService.makeTunnelConfig(tunnelId, config);
@@ -263,7 +273,7 @@ public class OutlinePlugin extends CordovaPlugin {
       LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
       return e.getMessage();
     }
-    return vpnTunnelService.startTunnel(tunnelConfig);
+    return vpnTunnelService.startTunnel(serverName, tunnelConfig);
   }
 
   // Returns whether the VPN service is running a particular tunnel instance.
@@ -279,10 +289,10 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // Broadcasts
 
-  private VpnTunnelBroadcastReceiver vpnTunnelBroadcastReceiver =
-      new VpnTunnelBroadcastReceiver(OutlinePlugin.this);
+  private VpnTunnelBroadcastReceiver vpnTunnelBroadcastReceiver = new VpnTunnelBroadcastReceiver(OutlinePlugin.this);
 
-  // Receiver to forward VPN service broadcasts to the WebView when the tunnel status changes.
+  // Receiver to forward VPN service broadcasts to the WebView when the tunnel
+  // status changes.
   private static class VpnTunnelBroadcastReceiver extends BroadcastReceiver {
     private final OutlinePlugin outlinePlugin;
 
@@ -339,10 +349,12 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   /**
-   * Sends an action result represented by a nullable error string back to callback.
+   * Sends an action result represented by a nullable error string back to
+   * callback.
    * A null or empty error string means success, otherwise it means failure.
+   * 
    * @param callback The Cordova callback receiving the result.
-   * @param err A nullable error string.
+   * @param err      A nullable error string.
    */
   private void sendActionResult(final CallbackContext callback, String err) {
     if (err == null || err.isBlank()) {
