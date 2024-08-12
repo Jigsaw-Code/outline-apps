@@ -40,8 +40,8 @@ jobs:
         go-version-file: '${{ github.workspace }}/go.mod'
 
     - name: Check license headers
-      run: go run github.com/google/addlicense -check -l apache -c 'The Outline Authors' -ignore "third_party/**" -v .
+      run: go run github.com/go-task/task/v3/cmd/task addlicense -- -check
 
-    - name: Check Go licenses
+    - name: Check Go dependency tree licenses
       # We allow only "notice" type of licenses.
       run: go run github.com/google/go-licenses@latest check --ignore=golang.org/x --allowed_licenses=Apache-2.0,Apache-3,BSD-3-Clause,BSD-4-Clause,CC0-1.0,ISC,MIT ./...
