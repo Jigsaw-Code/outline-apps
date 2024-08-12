@@ -24,6 +24,8 @@ import chalk from 'chalk';
 import {hashElement} from 'folder-hash';
 import * as fs from 'fs-extra';
 
+import {makeReplacements} from '../../build/make_replacements.mjs';
+
 const OUTPUT_PATH = 'output/build/client/macos';
 const OUTLINE_APP_PATH = 'Debug/Outline.app';
 const OUTLINE_APP_WWW_PATH = 'Contents/Resources/www';
@@ -67,6 +69,28 @@ export async function main() {
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/go/build', ...parameters);
   await runAction('client/src/cordova/setup', ...parameters);
+
+  await makeReplacements([
+    {
+      files: path.join(
+        getRootDir(),
+        'client/platforms/osx/wvw/index_cordova.html'
+      ),
+      from: '<app-root></app-root>',
+      to: `<app-root></app-root>
+
+    <script>
+      try {
+        const reloadSocket = new WebSocket("ws://localhost:35729");
+
+        reloadSocket.onopen = () => console.log("LiveReload connected~");
+        reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
+      } catch (e) {
+        // nevermind
+      }
+    </script>`,
+    },
+  ]);
 
   await spawnStream(
     'xcodebuild',
