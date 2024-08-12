@@ -98,6 +98,7 @@
     "electron-builder": "^24.9.1",
     "electron-notarize": "^1.2.1",
     "electron-to-chromium": "^1.4.328",
+    "generate-license-file": "^3.5.0",
     "gulp": "^4.0.0",
     "gulp-posthtml": "^3.0.4",
     "gulp-replace": "^1.0.0",
