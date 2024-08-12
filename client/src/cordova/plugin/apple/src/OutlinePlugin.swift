@@ -43,27 +43,32 @@ class OutlinePlugin: CDVPlugin {
     private static let kAppGroup = "group.org.getoutline.client"
 
     override func pluginInitialize() {
-        self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
-        OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
+#if DEBUG
+      dynamicLogLevel = .all
+#else
+      dynamicLogLevel = .info
+#endif
+      self.sentryLogger = OutlineSentryLogger(forAppGroup: OutlinePlugin.kAppGroup)
+      OutlineVpn.shared.onVpnStatusChange(onVpnStatusChange)
 
 #if os(macOS)
-        // cordova-osx does not support URL interception. Until it does, we have version-controlled
-        // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(self.handleOpenUrl),
-            name: .kHandleUrl,
-            object: nil)
+      // cordova-osx does not support URL interception. Until it does, we have version-controlled
+      // AppDelegate.m (intercept) and Outline-Info.plist (register protocol) to handle ss:// URLs.
+      NotificationCenter.default.addObserver(
+        self, selector: #selector(self.handleOpenUrl),
+        name: .kHandleUrl,
+        object: nil)
 #endif
 
 #if os(macOS) || targetEnvironment(macCatalyst)
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(self.stopVpnOnAppQuit),
-            name: .kAppQuit,
-            object: nil)
+      NotificationCenter.default.addObserver(
+        self, selector: #selector(self.stopVpnOnAppQuit),
+        name: .kAppQuit,
+        object: nil)
 #endif
 
 #if os(iOS)
-        self.migrateLocalStorage()
+      self.migrateLocalStorage()
 #endif
     }
 
@@ -75,31 +80,32 @@ class OutlinePlugin: CDVPlugin {
      - config: [String: Any], represents a server configuration
      */
     func start(_ command: CDVInvokedUrlCommand) {
-        guard let tunnelId = command.argument(at: 0) as? String else {
-            return sendError("Missing tunnel ID", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
-        }
-        guard let name = command.argument(at: 1) as? String else {
-            return sendError("Missing service name", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
-        }
-        DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
-        // TODO(fortuna): Move the config validation to the config parsing code in Go.
-        guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
-            return sendError("Invalid configuration", callbackId: command.callbackId,
-                             errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
-        }
-      OutlineVpn.shared.start(tunnelId, name:name, configJson:configJson) { errorCode in
-            if errorCode == OutlineVpn.ErrorCode.noError {
+      guard let tunnelId = command.argument(at: 0) as? String else {
+        return sendError("Missing tunnel ID", callbackId: command.callbackId,
+                         errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+      }
+      guard let name = command.argument(at: 1) as? String else {
+        return sendError("Missing service name", callbackId: command.callbackId,
+                         errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+      }
+      DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
+      // TODO(fortuna): Move the config validation to the config parsing code in Go.
+      guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
+        return sendError("Invalid configuration", callbackId: command.callbackId,
+                         errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
+      }
+      Task {
+        let errorCode = await OutlineVpn.shared.start(tunnelId, name:name, transportConfig:configJson)
+        if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
-                NotificationCenter.default.post(name: .kVpnConnected, object: nil)
+          NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
-                self.sendSuccess(callbackId: command.callbackId)
-            } else {
-                self.sendError("Failed to start VPN", callbackId: command.callbackId,
-                               errorCode: errorCode)
-            }
+          self.sendSuccess(callbackId: command.callbackId)
+        } else {
+          self.sendError("Failed to start VPN", callbackId: command.callbackId,
+                         errorCode: errorCode)
         }
+      }
     }
 
     /**
@@ -124,11 +130,13 @@ class OutlinePlugin: CDVPlugin {
     }
 
     func isRunning(_ command: CDVInvokedUrlCommand) {
-        guard let tunnelId = command.argument(at: 0) as? String else {
-            return sendError("Missing tunnel ID", callbackId: command.callbackId)
-        }
-        DDLogInfo("isRunning \(tunnelId)")
-        sendSuccess(OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
+      guard let tunnelId = command.argument(at: 0) as? String else {
+        return sendError("Missing tunnel ID", callbackId: command.callbackId)
+      }
+      DDLogInfo("isRunning \(tunnelId)")
+      Task {
+        self.sendSuccess(await OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
+      }
     }
 
     func onStatusChange(_ command: CDVInvokedUrlCommand) {
