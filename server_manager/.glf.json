@@ -1,0 +1,7 @@
+{
+  "inputs": ["./package.json"],
+  "output": "./www/ui_components/licenses/licenses.txt",
+  "lineEnding": "lf",
+  "overwrite": true,
+  "append": ["./www/ui_components/licenses/db-ip_license.txt"]
+}

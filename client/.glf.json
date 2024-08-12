@@ -1,0 +1,6 @@
+{
+  "inputs": ["./package.json"],
+  "output": "./src/www/ui_components/licenses/licenses.txt",
+  "lineEnding": "lf",
+  "overwrite": true
+}

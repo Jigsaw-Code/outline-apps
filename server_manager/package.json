@@ -128,6 +128,7 @@
     "type-detect": "1.0.0"
   },
   "scripts": {
-    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts"
+    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts",
+    "generate-license-file": "npm ci && npx generate-license-file"
   }
 }

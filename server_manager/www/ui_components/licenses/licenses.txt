@@ -564,10 +564,13 @@ SOFTWARE.
 
 -----------
 
-This file was generated with the generate-license-file npm package!
-https://www.npmjs.com/package/generate-license-file
 ------
 
 IP Geolocation by DB-IP (https://db-ip.com)
 
 This database is licensed under a Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/)
+
+-----------
+
+This file was generated with the generate-license-file npm package!
+https://www.npmjs.com/package/generate-license-file
