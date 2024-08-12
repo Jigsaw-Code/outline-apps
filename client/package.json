@@ -1,6 +1,7 @@
 {
   "name": "@outline/client",
   "version": "0.0.0-debug",
+  "license": "Apache-2.0",
   "private": true,
   "comments": {
     "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
@@ -149,7 +150,7 @@
   },
   "scripts": {
     "clean": "rm -rf output node_modules www platforms plugins",
-    "generate-license-file": "npm ci && npx generate-license-file && ./src/www/ui_components/licenses/third_party.sh >> ./src/www/ui_components/licenses/licenses.txt"
+    "generate-license-file": "npx generate-license-file && ./src/www/ui_components/licenses/third_party.sh >> ./src/www/ui_components/licenses/licenses.txt"
 
   }
 }

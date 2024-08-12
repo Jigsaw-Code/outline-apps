@@ -2,6 +2,7 @@
   "name": "@outline/server_manager",
   "productName": "Outline Manager",
   "version": "0.0.0-debug",
+  "license": "Apache-2.0",
   "description": "Create and manage access to Outline servers",
   "homepage": "https://getoutline.org/",
   "author": {
@@ -129,6 +130,6 @@
   },
   "scripts": {
     "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts",
-    "generate-license-file": "npm ci && npx generate-license-file"
+    "generate-license-file": "npx generate-license-file"
   }
 }

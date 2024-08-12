@@ -1,6 +1,13 @@
 {
-  "inputs": ["./package.json"],
+  "inputs": [
+    "../package.json",
+    "./package.json"
+  ],
   "output": "./src/www/ui_components/licenses/licenses.txt",
   "lineEnding": "lf",
-  "overwrite": true
+  "overwrite": true,
+  "replace": {
+    "cordova-plugin-splashscreen@6.0.2": "../node_modules/cordova-plugin-splashscreen/NOTICE",
+    "cordova-plugin-statusbar@2.4.3": "../node_modules/cordova-plugin-statusbar/NOTICE"
+  }
 }
