@@ -74,7 +74,7 @@ export async function main() {
     {
       files: path.join(
         getRootDir(),
-        'client/platforms/osx/wvw/index_cordova.html'
+        'client/platforms/osx/**/index_cordova.html'
       ),
       from: '<app-root></app-root>',
       to: `<app-root></app-root>
