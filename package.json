@@ -3,6 +3,7 @@
   "productName": "Outline",
   "scripts": {
     "addlicense": "go run github.com/go-task/task/v3/cmd/task addlicense",
+    "addlicense:check": "npm run action addlicense -- -check",
     "action:help": "npm run action list",
     "action:list": "npm run action list",
     "action": "node ./infrastructure/build/run_action.mjs",
