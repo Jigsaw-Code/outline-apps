@@ -89,11 +89,50 @@ public class OutlineVpn: NSObject {
       DDLogDebug("Calling NETunnelProviderSession.startTunnel([:])")
       try session.startTunnel(options: [:])
       DDLogDebug("NETunnelProviderSession.startTunnel() returned")
-      return ErrorCode.noError
     } catch let error as NSError  {
       DDLogError("Failed to start VPN: \(error.localizedDescription)")
       return ErrorCode.vpnStartFailure
     }
+
+    // Wait for start to be completed.
+    class TokenHolder {
+      var token: NSObjectProtocol?
+    }
+    let tokenHolder = TokenHolder()
+    await withCheckedContinuation { continuation in
+      tokenHolder.token = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: manager.connection, queue: nil) { notification in
+        let status = manager.connection.status
+        if status == .connected || status == .disconnected || status == .invalid {
+          DDLogDebug("Tunnel start done.")
+          if let token = tokenHolder.token {
+            NotificationCenter.default.removeObserver(token, name: .NEVPNStatusDidChange, object: manager.connection)
+          }
+          continuation.resume()
+        }
+      }
+    }
+    switch manager.connection.status {
+    case .connected:
+      break
+    case .disconnected:
+      return ErrorCode.vpnStartFailure
+    case .invalid:
+      return ErrorCode.vpnPermissionNotGranted
+    default:
+      return ErrorCode.systemMisconfigured
+    }
+
+    // Set an on-demand rule to connect to any available network to implement auto-connect on boot
+    do { try await manager.loadFromPreferences() }
+    catch { return ErrorCode.systemMisconfigured }
+    let connectRule = NEOnDemandRuleConnect()
+    connectRule.interfaceTypeMatch = .any
+    manager.onDemandRules = [connectRule]
+    do { try await manager.saveToPreferences() }
+    catch {
+      DDLogDebug("Failed to enable on-demand: \(error.localizedDescription)")
+    }
+    return ErrorCode.noError
   }
 
   /** Starts the last successful VPN tunnel. */
@@ -158,8 +197,10 @@ public class OutlineVpn: NSObject {
     }
 
     manager.localizedDescription = name
-    manager.isEnabled = true
+    // Make sure on-demand is disable, so it doesn't retry on start failure.
+    manager.onDemandRules = nil
 
+    // Configure the protocol.
     let config = NETunnelProviderProtocol()
     // TODO(fortuna): set to something meaningful if we can.
     config.serverAddress = "Outline"
@@ -170,11 +211,8 @@ public class OutlineVpn: NSObject {
     ]
     manager.protocolConfiguration = config
 
-    // Set an on-demand rule to connect to any available network to implement auto-connect on boot
-    let connectRule = NEOnDemandRuleConnect()
-    connectRule.interfaceTypeMatch = .any
-    manager.onDemandRules = [connectRule]
-
+    // A VPN configuration must be enabled before it can be used to bring up a VPN tunnel.
+    manager.isEnabled = true
 
     try await manager.saveToPreferences()
     // Workaround for https://forums.developer.apple.com/thread/25928
