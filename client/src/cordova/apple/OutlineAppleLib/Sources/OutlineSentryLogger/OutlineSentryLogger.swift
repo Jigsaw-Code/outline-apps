@@ -25,17 +25,21 @@ public class OutlineSentryLogger: DDAbstractLogger {
 
     // Initializes CocoaLumberjack, adding itself as a logger.
     public init(forAppGroup appGroup: String) {
-        super.init()
-        guard let containerUrl = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: appGroup) else {
-            DDLogError("Failed to retrieve app container directory")
-            return
-        }
-        self.logsDirectory = containerUrl.appendingPathComponent("Logs").path
-        
-        DDLog.add(self)
-        DDLog.add(DDOSLogger.sharedInstance)
-        dynamicLogLevel = DDLogLevel.info
+      super.init()
+      guard let containerUrl = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: appGroup) else {
+        DDLogError("Failed to retrieve app container directory")
+        return
+      }
+      self.logsDirectory = containerUrl.appendingPathComponent("Logs").path
+
+      DDLog.add(self)
+      DDLog.add(DDOSLogger.sharedInstance)
+#if DEBUG
+      dynamicLogLevel = DDLogLevel.all
+#else
+      dynamicLogLevel = DDLogLevel.info
+#endif
     }
 
     // Adds |logMessage| to Sentry as a breadcrumb.

@@ -37,9 +37,9 @@ final class OutlineTunnelTest: XCTestCase {
     }
     
     func testGetTunnelNetworkSettings() {
-        let settings = OutlineTunnel.getTunnelNetworkSettings(tunnelRemoteAddress: "1.2.3.4")
+        let settings = OutlineTunnel.getTunnelNetworkSettings()
         
-        XCTAssertEqual("1.2.3.4", settings.tunnelRemoteAddress)
+        XCTAssertEqual("::", settings.tunnelRemoteAddress)
         
         XCTAssertEqual(1, settings.ipv4Settings?.addresses.count)
         XCTAssertTrue(kVpnSubnetCandidates.values.contains(settings.ipv4Settings?.addresses[0] ?? ""))
