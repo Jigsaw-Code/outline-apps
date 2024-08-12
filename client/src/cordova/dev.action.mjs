@@ -20,9 +20,9 @@ import {createReloadServer} from '@outline/infrastructure/build/create_reload_se
 import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
-import chalk from 'chalk';
 import {hashElement} from 'folder-hash';
 import * as fs from 'fs-extra';
+import minimist from 'minimist';
 
 import {makeReplacements} from '../../build/make_replacements.mjs';
 
@@ -43,27 +43,35 @@ const getUIHash = async () => {
 };
 
 /**
- * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
+ * @description Runs the cordova app in development mode.
  *
  * @param {string[]} parameters
  */
-export async function main() {
-  console.warn(
-    chalk.yellow(
-      'This action only works for the MacOS platform. Ignoring all inputs.'
-    )
-  );
+export async function main(...givenParameters) {
+  const {
+    _: [platform = 'macos'],
+    buildMode = 'release',
+    sentryDsn = 'https://public@sentry.example.com/1',
+    versionName = '0.0.0-dev',
+  } = minimist(givenParameters);
+
+  if (platform !== 'macos') {
+    throw new Error('This action currently only works for the MacOS platform.');
+  }
+
+  if (buildMode !== 'release') {
+    throw new Error('MacOS only renders properly in the release build mode.');
+  }
 
   if (os.platform() !== 'darwin') {
     throw new Error('You must be on MacOS to develop for MacOS.');
   }
 
-  // TODO: respect the parameters passed to the action once the debug macos build is working
   const parameters = [
     'macos',
     '--buildMode=release',
-    '--sentryDsn=https://public@sentry.example.com/1',
-    '--versionName=0.0.0-dev',
+    `--sentryDsn=${sentryDsn}`,
+    `--versionName=${versionName}`,
   ];
 
   await runAction('client/src/www/build', ...parameters);
