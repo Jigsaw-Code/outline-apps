@@ -16,10 +16,7 @@
 set -eu
 
 SCRIPT_DIR="$(dirname "$0")"
-PROJECT_DIR=
 BUILD_MODE=debug
-PLATFORM=
-PLATFORM_DIR=
 
 function package_electron() {
   declare -a electron_builder_cmd=(
