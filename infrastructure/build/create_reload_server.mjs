@@ -1,4 +1,4 @@
-// Copyright 2019 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build tools
-// +build tools
+import {createServer} from 'node:http';
 
-// See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
-// and https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
+import {WebSocketServer} from 'ws';
 
-package tools
+export function createReloadServer(
+  shouldReload = () => true,
+  reloadCheckIntervalMs = 1000
+) {
+  const server = createServer();
+  const websocket = new WebSocketServer({server});
 
-import (
-	_ "github.com/go-task/task/v3/cmd/task"
-	_ "github.com/google/addlicense"
-	_ "github.com/google/go-licenses"
-	_ "golang.org/x/mobile/cmd/gobind"
-	_ "golang.org/x/mobile/cmd/gomobile"
-)
+  websocket.on('connection', connection => {
+    setInterval(async () => {
+      if (!(await shouldReload())) return;
+
+      console.log('Reloading...');
+      connection.send('reload');
+    }, reloadCheckIntervalMs);
+  });
+
+  return server;
+}

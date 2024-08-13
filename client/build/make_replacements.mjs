@@ -1,4 +1,4 @@
-// Copyright 2019 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build tools
-// +build tools
+import replace from 'replace-in-file';
 
-// See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
-// and https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
+export async function makeReplacements(replacements) {
+  let results = [];
 
-package tools
-
-import (
-	_ "github.com/go-task/task/v3/cmd/task"
-	_ "github.com/google/addlicense"
-	_ "github.com/google/go-licenses"
-	_ "golang.org/x/mobile/cmd/gobind"
-	_ "golang.org/x/mobile/cmd/gomobile"
-)
+  for (const replacement of replacements) {
+    results = [...results, ...(await replace(replacement))];
+  }
+}

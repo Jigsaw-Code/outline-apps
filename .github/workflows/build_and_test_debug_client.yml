@@ -72,7 +72,7 @@ jobs:
         with:
           go-version-file: '${{ github.workspace }}/go.mod'
 
-      - name: Test Tun2socks Backend
+      - name: Test Go Backend
         run: go test -race -bench=. -benchtime=100ms ./client/...
 
   linux_debug_build:

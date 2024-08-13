@@ -83,17 +83,73 @@ public class OutlineVpn: NSObject {
       DDLogError("Failed to setup VPN: \(error.localizedDescription))")
       return ErrorCode.vpnPermissionNotGranted;
     }
-
     let session = manager.connection as! NETunnelProviderSession
+
+    // Register observer for start process completion.
+    class TokenHolder {
+      var token: NSObjectProtocol?
+    }
+    let tokenHolder = TokenHolder()
+    let startDone = Task {
+      await withCheckedContinuation { continuation in
+        tokenHolder.token = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: manager.connection, queue: nil) { notification in
+          DDLogDebug("OutlineVpn.start got status \(String(describing: session.status)), notification: \(String(describing: notification))")
+
+          let status = manager.connection.status
+          // The observer may be triggered multiple times, but we only remove it when we reach an end state.
+          // A successful connection will go through .connecting -> .disconnected
+          // A failed connection will go through .connecting -> .disconnecting -> .disconnected
+          // An .invalid event may happen if the configuration is modified and ends in an invalid state.
+          if status == .connected || status == .disconnected || status == .invalid {
+            DDLogDebug("Tunnel start done.")
+            if let token = tokenHolder.token {
+              NotificationCenter.default.removeObserver(token, name: .NEVPNStatusDidChange, object: manager.connection)
+            }
+            continuation.resume()
+          }
+        }
+      }
+    }
+
+    // Start the session.
     do {
       DDLogDebug("Calling NETunnelProviderSession.startTunnel([:])")
       try session.startTunnel(options: [:])
       DDLogDebug("NETunnelProviderSession.startTunnel() returned")
-      return ErrorCode.noError
     } catch let error as NSError  {
       DDLogError("Failed to start VPN: \(error.localizedDescription)")
       return ErrorCode.vpnStartFailure
     }
+
+    // Wait for it to be done.
+    await startDone.value
+
+    switch manager.connection.status {
+    case .connected:
+      break
+    case .disconnected:
+      return ErrorCode.vpnStartFailure
+    case .invalid:
+      return ErrorCode.systemMisconfigured
+    default:
+      // This shouldn't happen.
+      return ErrorCode.systemMisconfigured
+    }
+    //
+
+    // Set an on-demand rule to connect to any available network to implement auto-connect on boot
+    do { try await manager.loadFromPreferences() }
+    catch {
+      DDLogWarn("OutlineVpn.start: Failed to reload preferences: \(error.localizedDescription)")
+    }
+    let connectRule = NEOnDemandRuleConnect()
+    connectRule.interfaceTypeMatch = .any
+    manager.onDemandRules = [connectRule]
+    do { try await manager.saveToPreferences() }
+    catch {
+      DDLogWarn("OutlineVpn.start: Failed to save on-demand preference change: \(error.localizedDescription)")
+    }
+    return ErrorCode.noError
   }
 
   /** Starts the last successful VPN tunnel. */
@@ -158,8 +214,10 @@ public class OutlineVpn: NSObject {
     }
 
     manager.localizedDescription = name
-    manager.isEnabled = true
+    // Make sure on-demand is disable, so it doesn't retry on start failure.
+    manager.onDemandRules = nil
 
+    // Configure the protocol.
     let config = NETunnelProviderProtocol()
     // TODO(fortuna): set to something meaningful if we can.
     config.serverAddress = "Outline"
@@ -170,11 +228,8 @@ public class OutlineVpn: NSObject {
     ]
     manager.protocolConfiguration = config
 
-    // Set an on-demand rule to connect to any available network to implement auto-connect on boot
-    let connectRule = NEOnDemandRuleConnect()
-    connectRule.interfaceTypeMatch = .any
-    manager.onDemandRules = [connectRule]
-
+    // A VPN configuration must be enabled before it can be used to bring up a VPN tunnel.
+    manager.isEnabled = true
 
     try await manager.saveToPreferences()
     // Workaround for https://forums.developer.apple.com/thread/25928
