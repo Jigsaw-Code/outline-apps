@@ -1,10 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+-->
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9060" systemVersion="15B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment version="1070" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="12120"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9060"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="9060"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication" colorLabel="IBBuiltInLabel-Green">
@@ -56,6 +75,12 @@
                             <menuItem title="Show All" id="150">
                                 <connections>
                                     <action selector="unhideAllApplications:" target="-1" id="370"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Toggle Full Screen" keyEquivalent="f" id="afF-KY-ioe">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="onFullscreen:" target="732" id="nPq-se-igd"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="149">
@@ -288,49 +313,6 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Window" id="Wrb-DK-0VT">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Window" systemMenu="window" id="ULH-fQ-g0Y">
-                        <items>
-                            <menuItem title="Close" keyEquivalent="w" id="CIy-gf-Anj">
-                                <connections>
-                                    <action selector="closeWindow:" target="494" id="NTp-kz-CTj"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Minimize" keyEquivalent="m" id="WAr-Tz-FDD">
-                                <connections>
-                                    <action selector="performMiniaturize:" target="-1" id="wgl-Nd-B7b"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Zoom" id="eNT-LV-XBn">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="performZoom:" target="-1" id="mMy-Ov-60s"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="Tv1-zn-dgb"/>
-                            <menuItem title="Outline" keyEquivalent="0" id="WfQ-dD-GBV">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
-                                <connections>
-                                    <action selector="openWindow:" target="494" id="cy8-KW-kjQ"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="ZNs-ON-q3w"/>
-                            <menuItem title="Toggle Full Screen" keyEquivalent="f" id="afF-KY-ioe">
-                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
-                                <connections>
-                                    <action selector="onFullscreen:" target="732" id="nPq-se-igd"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Bring All to Front" id="B9S-CA-qz4">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="arrangeInFront:" target="-1" id="i2I-yV-0KO"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
                 <menuItem title="Help" id="490">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="491">
@@ -346,17 +328,18 @@
             </items>
         </menu>
         <window title="Outline" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="371" customClass="CDVMainWindow">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
-            <rect key="contentRect" x="335" y="299" width="340" height="520"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
-            <value key="minSize" type="size" width="340" height="520"/>
+            <rect key="contentRect" x="335" y="299" width="640" height="480"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1177"/>
+            <value key="minSize" type="size" width="640" height="480"/>
             <view key="contentView" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1" verticalCompressionResistancePriority="1" id="372" userLabel="Content View">
-                <rect key="frame" x="0.0" y="0.0" width="340" height="520"/>
+                <rect key="frame" x="0.0" y="0.0" width="640" height="480"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <webView horizontalHuggingPriority="1" verticalHuggingPriority="1" horizontalCompressionResistancePriority="1" verticalCompressionResistancePriority="1" translatesAutoresizingMaskIntoConstraints="NO" id="536">
-                        <rect key="frame" x="0.0" y="0.0" width="340" height="520"/>
+                        <rect key="frame" x="0.0" y="0.0" width="640" height="480"/>
+                        <animations/>
                         <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
                             <nil key="identifier"/>
                         </webPreferences>
@@ -374,6 +357,7 @@
                     <constraint firstItem="536" firstAttribute="leading" secondItem="372" secondAttribute="leading" id="726"/>
                     <constraint firstItem="536" firstAttribute="top" secondItem="372" secondAttribute="top" id="727"/>
                 </constraints>
+                <animations/>
             </view>
             <connections>
                 <outlet property="delegate" destination="-2" id="743"/>

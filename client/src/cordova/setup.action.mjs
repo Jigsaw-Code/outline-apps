@@ -154,8 +154,9 @@ async function appleIosDebug(verbose) {
   await spawnStream(
     'rsync',
     '-avc',
+    '--existing',
+    'platforms/ios/',
     'src/cordova/apple/xcode/ios/',
-    'platforms/ios/'
   );
 }
 
@@ -188,8 +189,9 @@ async function appleMacOsDebug(verbose) {
   await spawnStream(
     'rsync',
     '-avc',
+    '--existing',
+    'platforms/osx/',
     'src/cordova/apple/xcode/macos/',
-    'platforms/osx/'
   );
 }
 
@@ -225,8 +227,9 @@ async function appleIosRelease(version, buildNumber, verbose) {
   await spawnStream(
     'rsync',
     '-avc',
+    '--existing',
+    'platforms/ios/',
     'src/cordova/apple/xcode/ios/',
-    'platforms/ios/'
   );
 
   await setAppleVersion('ios', version, buildNumber);
@@ -255,8 +258,9 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   await spawnStream(
     'rsync',
     '-avc',
+    '--existing',
+    'platforms/osx/',
     'src/cordova/apple/xcode/macos/',
-    'platforms/osx/'
   );
 
   await setAppleVersion('osx', version, buildNumber);
