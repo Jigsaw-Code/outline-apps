@@ -78,46 +78,8 @@ export async function main(...givenParameters) {
   await runAction('client/go/build', ...parameters);
   await runAction('client/src/cordova/setup', ...parameters);
 
-  await makeReplacements([
-    {
-      files: path.join(
-        getRootDir(),
-        'client/platforms/osx/**/index_cordova.html'
-      ),
-      from: '<app-root></app-root>',
-      to: `<app-root></app-root>
-
-    <script>
-      try {
-        const reloadSocket = new WebSocket("ws://localhost:35729");
-
-        reloadSocket.onopen = () => console.log("LiveReload connected~");
-        reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
-      } catch (e) {
-        // nevermind
-      }
-    </script>`,
-    },
-  ]);
-
-  await spawnStream(
-    'xcodebuild',
-    '-scheme',
-    'Outline',
-    '-workspace',
-    path.join(getRootDir(), 'client/src/cordova/apple/macos.xcworkspace'),
-    `SYMROOT=${path.join(getRootDir(), OUTPUT_PATH)}`
-  );
-
-  await spawnStream(
-    'open',
-    path.join(getRootDir(), OUTPUT_PATH, OUTLINE_APP_PATH)
-  );
-
   let previousUIHashResult = await getUIHash();
-
-  console.log(`Starting reload server @ port ${RELOAD_SERVER_PORT}...`);
-  createReloadServer(async () => {
+  const server = createReloadServer(async () => {
     const currentUIHashResult = await getUIHash();
 
     if (previousUIHashResult === currentUIHashResult) {
@@ -134,7 +96,48 @@ export async function main(...givenParameters) {
     );
 
     return true;
-  }).listen(RELOAD_SERVER_PORT);
+  });
+
+  server.listen(0, 'localhost', async () => {
+    const serverAddress = `ws://localhost:${server.address().port}`;
+    console.log(`LiveReload server running at ${serverAddress}`);
+
+    await makeReplacements([
+      {
+        files: path.join(
+          getRootDir(),
+          'client/platforms/osx/**/index_cordova.html'
+        ),
+        from: '<app-root></app-root>',
+        to: `<app-root></app-root>
+  
+      <script>
+        try {
+          const reloadSocket = new WebSocket("${serverAddress}");
+  
+          reloadSocket.onopen = () => console.log("LiveReload connected~");
+          reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
+        } catch (e) {
+          // nevermind
+        }
+      </script>`,
+      },
+    ]);
+
+    await spawnStream(
+      'xcodebuild',
+      '-scheme',
+      'Outline',
+      '-workspace',
+      path.join(getRootDir(), 'client/src/cordova/apple/macos.xcworkspace'),
+      `SYMROOT=${path.join(getRootDir(), OUTPUT_PATH)}`
+    );
+
+    await spawnStream(
+      'open',
+      path.join(getRootDir(), OUTPUT_PATH, OUTLINE_APP_PATH)
+    );
+  });
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
