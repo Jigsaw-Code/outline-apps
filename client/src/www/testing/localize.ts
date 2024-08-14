@@ -19,7 +19,10 @@ import IntlMessageFormat from 'intl-messageformat';
 
 import englishMessages from '../messages/en.json';
 
-export const localize: Localizer = (messageID: string, ...formatKeyValueList: FormattableMessage[]): string => {
+export const localize: Localizer = (
+  messageID: string,
+  ...formatKeyValueList: FormattableMessage[]
+): string => {
   const message = (englishMessages as {[messageID: string]: string})[messageID];
   const formatConfigObject: Record<string, FormattableMessage> = {};
 
@@ -36,5 +39,15 @@ export const localize: Localizer = (messageID: string, ...formatKeyValueList: Fo
   // We support only english messages for now.
   // Blocked on modern-web.dev adding support for addons:
   // https://github.com/modernweb-dev/web/issues/1341
-  return String(new IntlMessageFormat(message, 'en').format(formatConfigObject));
+  try {
+    return String(
+      new IntlMessageFormat(message, 'en').format(formatConfigObject)
+    );
+  } catch (error) {
+    console.error(
+      `Failed to format messageID '${messageID}' with formatConfigObject ${JSON.stringify(formatConfigObject)}`,
+      error
+    );
+    return message;
+  }
 };
