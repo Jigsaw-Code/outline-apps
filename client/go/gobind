@@ -14,7 +14,6 @@
 # limitations under the License.
 
 function main {
-    local binary="$(dirname $0)/gobind-unpatched"
     declare -a args=()
     for arg in "$@"; do
         if [[ "$arg" =~ -tags=.*maccatalyst ]]; then
@@ -27,7 +26,7 @@ function main {
             args+=("$arg")
         fi
     done
-    "$binary" "${args[@]}"
+    "$(dirname $0)/gobind-unpatched" "${args[@]}"
 }
 
 main "$@"
