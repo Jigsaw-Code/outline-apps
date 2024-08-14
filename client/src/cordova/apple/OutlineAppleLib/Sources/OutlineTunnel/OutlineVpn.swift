@@ -131,23 +131,6 @@ public class OutlineVpn: NSObject {
     return nil
   }
 
-  /** Starts the last successful VPN tunnel. */
-  @objc public func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
-    Task {
-      guard let manager = await getTunnelManager() else {
-        DDLogDebug("Tunnel manager not setup")
-        completion("Failed to get TunnelManager")
-        return
-      }
-      do {
-        try manager.connection.startVPNTunnel()
-        completion(nil)
-      } catch {
-        completion("Failed to start VPN")
-      }
-    }
-  }
-
   /** Tears down the VPN if the tunnel with id |tunnelId| is active. */
   public func stop(_ tunnelId: String) async {
     guard let manager = await getTunnelManager(),
