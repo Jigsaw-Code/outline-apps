@@ -32,9 +32,8 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
 @property id<Tun2socksTunnel> tunnel;
 
-// result callbacks for 'start' and 'stop', accepts a nullable error string
-@property (nonatomic, copy) void (^startCompletion)(NSString * _Nullable);
-@property (nonatomic, copy) void (^stopCompletion)(NSString * _Nullable);
+// mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+@property (nullable) NSError *lastDisconnectError;
 
 @property (nonatomic) DDFileLogger *fileLogger;
 @property (nonatomic, nullable) OutlineTunnel *transportConfig;
@@ -62,9 +61,15 @@ NSString *const kDefaultPathKey = @"defaultPath";
 }
 
 - (void)startTunnelWithOptions:(NSDictionary *)options
-             completionHandler:(void (^)(NSError *))startDone {
+             completionHandler:(void (^)(NSError *))completion {
   DDLogInfo(@"Starting tunnel");
   DDLogDebug(@"Options are %@", options);
+
+  // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+  void (^startDone)(NSError *) = ^(NSError *err) {
+    self.lastDisconnectError = err;
+    completion(err);
+  };
 
   // MARK: Process Config.
   if (self.protocolConfiguration == nil) {
@@ -121,31 +126,34 @@ NSString *const kDefaultPathKey = @"defaultPath";
     NSError *err = nil;
     ShadowsocksClient* client = [self newClientWithError:&err];
     if (err != nil) {
-      return startDone(err);
+      return startDone([NSError errorWithDomain:NEVPNErrorDomain
+                                           code:NEVPNErrorConfigurationReadWriteFailed
+                                       userInfo:nil]);
     }
 
     long connStatus;
     ShadowsocksCheckConnectivity(client, &connStatus, &err);
     if (err != nil) {
-      return completionHandler(err);
+      return startDone(err);
     }
     supportUDP = ((connStatus & ShadowsocksUDPConnected) == ShadowsocksUDPConnected);
   }
 
   [self startRouting:[OutlineTunnel getTunnelNetworkSettings]
-           completion:^(NSError *_Nullable error) {
-             if (error != nil) {
-               return startDone(error);
-             }
-             BOOL isUdpSupported = isOnDemand ? self.isUdpSupported : supportUDP;
-             if (![self startTun2Socks:isUdpSupported]) {
-               return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                            code:NEVPNErrorConnectionFailed
-                                                        userInfo:nil]);
-             }
-             [self listenForNetworkChanges];
-             startDone(nil);
-           }];
+          completion:^(NSError *_Nullable error) {
+            if (error != nil) {
+              return startDone(error);
+            }
+            BOOL isUdpSupported = isOnDemand ? self.isUdpSupported : supportUDP;
+            [self startTun2SocksWithUDPSupported:isUdpSupported error:&error];
+            if (error != nil) {
+              return startDone([NSError errorWithDomain:NEVPNErrorDomain
+                                                   code:NEVPNErrorConnectionFailed
+                                               userInfo:nil]);
+            }
+            [self listenForNetworkChanges];
+            startDone(nil);
+          }];
 }
 
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
@@ -181,7 +189,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   __weak PacketTunnelProvider *weakSelf = self;
   [self setTunnelNetworkSettings:settings completionHandler:^(NSError * _Nullable error) {
     if (error != nil) {
-      DDLogError(@"Failed to start routing: %@", error.localizedDescription);
+      DDLogError(@"Failed to start routing: %@", error);
     } else {
       DDLogInfo(@"Routing started");
       // Passing nil settings clears the tunnel network configuration. Indicate to the system that

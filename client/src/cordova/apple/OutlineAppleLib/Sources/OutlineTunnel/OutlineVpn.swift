@@ -50,7 +50,7 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   /** Starts a VPN tunnel as specified in the OutlineTunnel object. */
-  public func start(_ tunnelId: String, name: String?, transportConfig: [String: Any]) async -> ErrorCode {
+  public func start(_ tunnelId: String, name: String?, transportConfig: [String: Any]) async -> String? {
     if let manager = await getTunnelManager(), isActiveSession(manager.connection) {
       DDLogDebug("Stoppping active session before starting new one")
       await stopSession(manager)
@@ -61,7 +61,7 @@ public class OutlineVpn: NSObject {
       manager = try await setupVpn(withId: tunnelId, named: name ?? "Outline Server", withTransport: transportConfig)
     } catch {
       DDLogError("Failed to setup VPN: \(error.localizedDescription))")
-      return ErrorCode.vpnPermissionNotGranted;
+      return "VPN permission is not granted";
     }
     let session = manager.connection as! NETunnelProviderSession
 
@@ -98,7 +98,7 @@ public class OutlineVpn: NSObject {
       DDLogDebug("NETunnelProviderSession.startTunnel() returned")
     } catch let error as NSError  {
       DDLogError("Failed to start VPN: \(error.localizedDescription)")
-      return ErrorCode.vpnStartFailure
+      return error.localizedDescription
     }
 
     // Wait for it to be done.
@@ -108,14 +108,13 @@ public class OutlineVpn: NSObject {
     case .connected:
       break
     case .disconnected:
-      return ErrorCode.vpnStartFailure
+      return "Failed to start VPN"
     case .invalid:
-      return ErrorCode.systemMisconfigured
+      return "VPN profile has been modified"
     default:
       // This shouldn't happen.
-      return ErrorCode.systemMisconfigured
+      return "Unknown connection status"
     }
-    //
 
     // Set an on-demand rule to connect to any available network to implement auto-connect on boot
     do { try await manager.loadFromPreferences() }
@@ -129,7 +128,7 @@ public class OutlineVpn: NSObject {
     catch {
       DDLogWarn("OutlineVpn.start: Failed to save on-demand preference change: \(error.localizedDescription)")
     }
-    return ErrorCode.noError
+    return nil
   }
 
   /** Starts the last successful VPN tunnel. */
@@ -137,14 +136,14 @@ public class OutlineVpn: NSObject {
     Task {
       guard let manager = await getTunnelManager() else {
         DDLogDebug("Tunnel manager not setup")
-        completion(ErrorCode.illegalServerConfiguration)
+        completion("Failed to get TunnelManager")
         return
       }
       do {
         try manager.connection.startVPNTunnel()
-        completion(ErrorCode.noError)
+        completion(nil)
       } catch {
-        completion(ErrorCode.vpnStartFailure)
+        completion("Failed to start VPN")
       }
     }
   }
@@ -227,7 +226,7 @@ public class OutlineVpn: NSObject {
     }
     guard let manager = session.manager as? NETunnelProviderManager else {
       // For some reason we get spurious notifications with connecting and disconnecting states
-      DDLogDebug("Bad manager in OutlineVpn.vpnStatusChanged session=\(String(describing:session)) status=\(String(describing: session.status)) manager=\(session.manager)")
+      DDLogDebug("Bad manager in OutlineVpn.vpnStatusChanged session=\(String(describing:session))")
       return
     }
     guard let protoConfig = manager.protocolConfiguration as? NETunnelProviderProtocol,
