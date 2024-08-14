@@ -17,7 +17,7 @@ function main {
     local binary="$(dirname $0)/gobind-unpatched"
     declare -a args=()
     for arg in "$@"; do
-        if [[ "$arg" =~ "--tags=*maccatalyst*" ]]; then
+        if [[ "$arg" =~ -tags=.*maccatalyst ]]; then
             # Workaround for https://github.com/golang/go/issues/52299.
             # Fix based on https://github.com/stffabi/go-mobile/commit/e31230fb8e5d45adb0be5b69854b6b9bafb8151f.
             echo "Patching environment for maccatalyst"
