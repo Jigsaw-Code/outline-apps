@@ -29,7 +29,6 @@ import {makeReplacements} from '../../build/make_replacements.mjs';
 const OUTPUT_PATH = 'output/build/client/macos';
 const OUTLINE_APP_PATH = 'Debug/Outline.app';
 const OUTLINE_APP_WWW_PATH = 'Contents/Resources/www';
-const RELOAD_SERVER_PORT = 35729;
 
 const getUIHash = async () => {
   const hashResult = await hashElement(
