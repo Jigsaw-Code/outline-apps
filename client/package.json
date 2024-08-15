@@ -7,6 +7,7 @@
     "codrova-osx": "Version-controlled platform config files at src/cordova/apple/xcode/osx/Outline/config.xml, src/cordova/apple/xcode/osx/osx.json, and src/cordova/apple/xcode/osx/www/cordova_plugins.js as a workaround for https://github.com/apache/cordova-osx/issues/106. Delete these files when the issue is fixed."
   },
   "dependencies": {
+    "@lit/localize": "^0.12.2",
     "@material/mwc-button": "^0.25.3",
     "@material/mwc-circular-progress": "^0.27.0",
     "@material/mwc-formfield": "^0.25.3",
@@ -60,6 +61,7 @@
     "@babel/preset-env": "^7.12.11",
     "@commitlint/config-conventional": "^16.2.4",
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
+    "@lit/localize-tools": "^0.8.0",
     "@open-wc/testing": "^3.2.0",
     "@open-wc/testing-karma": "^4.0.9",
     "@rollup/plugin-image": "^2.1.1",
@@ -148,6 +150,7 @@
     ]
   },
   "scripts": {
-    "clean": "rm -rf output node_modules www platforms plugins"
+    "clean": "rm -rf output node_modules www platforms plugins",
+    "generate:messages": "lit-localize extract"
   }
 }

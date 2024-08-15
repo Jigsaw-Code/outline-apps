@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="hy" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="h4d2b09d19c4029bc">
+  <source>Version <x id="0" equiv-text="${this.version}"/> (<x id="1" equiv-text="${this.build}"/>)</source>
+</trans-unit>
+<trans-unit id="h3cbf51139d0ac4af">
+  <source>Outline is a product by
+              <x id="0" equiv-text="&lt;a href=&quot;https://jigsaw.google.com&quot;&gt;"/>Jigsaw<x id="1" equiv-text="&lt;/a&gt;"/> that lets anyone
+              create, run, and share access to their own VPN. Outline is
+              designed to be resistant to blocking. Visit
+              <x id="2" equiv-text="&lt;a href=&quot;https://getoutline.org&quot;&gt;"/>getoutline.org<x id="3" equiv-text="&lt;/a&gt;"/> to learn how
+              to get started.<x id="4" equiv-text="&lt;br&gt;&lt;br&gt;"/>Outline is open source software powered
+              by <x id="5" equiv-text="&lt;a href=&quot;https://shadowsocks.org&quot;&gt;"/>Shadowsocks<x id="6" equiv-text="&lt;/a&gt;"/>. You can
+              contribute to the code on
+              <x id="7" equiv-text="&lt;a href=&quot;https://github.com/jigsaw-Code/?q=outline&quot;&gt;"/>GitHub<x id="8" equiv-text="&lt;/a&gt;"/> and
+              join the conversation on
+              <x id="9" equiv-text="&lt;a href=&quot;https://www.reddit.com/r/outlinevpn&quot;&gt;"/>Reddit<x id="10" equiv-text="&lt;/a&gt;"/>.</source>
+</trans-unit>
+</body>
+</file>
+</xliff>
