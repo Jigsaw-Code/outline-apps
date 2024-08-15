@@ -15,7 +15,6 @@ import {html} from 'lit';
 
 import './index';
 import type {AboutView} from './index';
-import {localize} from '../../testing/localize';
 
 export default {
   title: 'Client/About View',
@@ -27,9 +26,5 @@ export default {
 };
 
 export const Example = ({build, version}: AboutView) => html`
-  <about-view
-    build=${build}
-    version=${version}
-    .localize=${localize}
-  ></about-view>
+  <about-view build=${build} version=${version}></about-view>
 `;

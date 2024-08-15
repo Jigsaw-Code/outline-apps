@@ -11,6 +11,7 @@
   limitations under the License.
 */
 
+import {msg} from '@lit/localize';
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
@@ -19,124 +20,91 @@ import jigsawLogo from '../../assets/jigsaw-logo.png';
 
 @customElement('about-view')
 export class AboutView extends LitElement {
-  @property({type: Function}) localize!: (
-    key: string,
-    ...args: string[]
-  ) => string;
   @property({type: String}) version!: string;
   @property({type: String}) build!: string;
 
   static styles = css`
     :host {
-      background: #fff;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       text-align: center;
       width: 100%;
-      height: 100vh;
-      font-family: var(--outline-font-family);
+      height: 100%;
     }
 
-    #main {
-      flex: 1;
+    article {
       height: 100%;
       padding: 32px 24px 0 24px;
     }
 
-    #footer {
-      flex: 1;
-      margin: 48px 0 36px 0;
-      text-align: left;
+    header .logo {
+      width: 76px;
     }
 
-    #logo {
-      width: 96px;
+    section {
+      font-family: var(--outline-font-family);
     }
 
-    #version {
-      color: rgba(0, 0, 0, 0.54);
+    section.version {
+      color: var(--outline-medium-gray);
       font-size: 12px;
       margin: 8px auto;
     }
 
-    #description {
-      color: #263238;
+    section.description {
+      color: var(--outline-off-black);
       text-align: left;
       font-size: 16px;
       line-height: 22px;
       margin: 32px auto;
     }
 
-    #jigsaw-logo {
-      width: 96px;
-    }
-
-    @media (min-width: 600px) {
-      #description {
-        width: 309px;
-      }
-      #footer {
-        text-align: center;
-        margin-top: 48px;
-      }
-      #jigsaw-logo {
-        width: 104px;
-      }
-    }
-
-    @media (max-height: 550px) {
-      #main {
-        padding: 18px 24px 0 24px;
-      }
-      #logo {
-        width: 76px;
-      }
-      #description {
-        font-size: 14px;
-        margin: 18px auto;
-      }
-      #footer {
-        margin: 36px 0 24px 0;
-      }
-    }
-
     a {
-      color: var(--medium-green);
+      color: var(--outline-primary);
       text-decoration: none;
+    }
+
+    footer {
+      margin: 48px 0 36px 0;
+      text-align: center;
+    }
+
+    footer .logo {
+      width: 96px;
     }
   `;
 
   render() {
     return html`
-      <div id="main">
-        <img src="${brandLogo}" alt="logo" id="logo" />
-        <div id="version">
-          ${this.localize('version', 'appVersion', this.version)}
-          (${this.build})
+      <article>
+        <header>
+          <img src="${brandLogo}" class="logo" alt="outline logo" />
+        </header>
+        <section class="version">
+          ${msg(html`Version ${this.version} (${this.build})`)}
         </div>
-        <div
-          id="description"
-          .innerHTML=${this.localize(
-            'about-outline',
-            'jigsawUrl',
-            'https://jigsaw.google.com',
-            'outlineUrl',
-            'https://getoutline.org',
-            'shadowsocksUrl',
-            'https://shadowsocks.org',
-            'gitHubUrl',
-            'https://github.com/jigsaw-Code/?q=outline',
-            'redditUrl',
-            'https://www.reddit.com/r/outlinevpn'
+        <section class="description">
+          ${msg(
+            html`Outline is a product by
+              <a href="https://jigsaw.google.com">Jigsaw</a> that lets anyone
+              create, run, and share access to their own VPN. Outline is
+              designed to be resistant to blocking. Visit
+              <a href="https://getoutline.org">getoutline.org</a> to learn how
+              to get started.<br /><br />Outline is open source software powered
+              by <a href="https://shadowsocks.org">Shadowsocks</a>. You can
+              contribute to the code on
+              <a href="https://github.com/jigsaw-Code/?q=outline">GitHub</a> and
+              join the conversation on
+              <a href="https://www.reddit.com/r/outlinevpn">Reddit</a>.`
           )}
-        ></div>
-        <div id="footer">
-          <a href="https://jigsaw.google.com">
-            <img id="jigsaw-logo" src="${jigsawLogo}" />
-          </a>
         </div>
-      </div>
+        <footer>
+          <a href="https://jigsaw.google.com">
+            <img src="${jigsawLogo}" class="logo" alt="jigsaw logo" />
+          </a>
+        </footer>
+      </article>
     `;
   }
 }

@@ -14,73 +14,58 @@
   limitations under the License.
 */
 
-import {LitElement, html, css} from 'lit';
-import {customElement, property, query} from 'lit/decorators.js';
-import '@material/mwc-list/mwc-list.js';
-import '@material/mwc-list/mwc-list-item.js';
-import '@material/mwc-icon';
+import {LitElement, html, css, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import '@material/web/list/list.js';
+import '@material/web/list/list-item.js';
+import '@material/web/ripple/ripple.js';
+import '@material/web/icon/icon.js';
 
 @customElement('language-view')
 export class LanguageView extends LitElement {
-  @property({type: String}) selectedLanguage!: string;
   @property({type: Array}) languages!: {id: string; name: string}[];
-
-  @query('mwc-list') list!: {
-    selected: {value: string} | null;
-  };
+  @property({type: String}) selectedLanguageID!: string;
 
   static styles = css`
     :host {
-      background: #fff;
       display: flex;
       flex-direction: column;
+      height: 100%;
       justify-content: space-between;
       text-align: center;
       width: 100%;
-      height: 100vh;
-      font-family: var(--outline-font-family);
     }
-    .language-item {
-      display: flex;
+
+    md-list-item {
       cursor: pointer;
-      font-size: 16px;
-      border-bottom: 1px solid #e0e0e0;
-      padding-left: 24px;
-    }
-    .language-item[activated] {
-      color: var(--medium-green);
-      font-weight: normal;
-    }
-    .language-name {
-      text-align: left;
-      flex-grow: 1;
+      position: relative;
     }
   `;
 
   render() {
     return html`
-      <div id="main">
-        <mwc-list @selected="${this.languageSelected}">
-          ${this.languages.map(
-            lang => html`
-              <mwc-list-item
-                value="${lang.id}"
-                ?activated=${this.selectedLanguage === lang.id}
-              >
-                <span class="language-name">${lang.name}</span>
-                ${this.selectedLanguage === lang.id
-                  ? html`<mwc-icon>check</mwc-icon>`
-                  : ''}
-              </mwc-list-item>
-            `
-          )}
-        </mwc-list>
-      </div>
+      <md-list>
+        ${this.languages.map(
+          ({id, name}) => html`
+            <md-list-item
+              value="${id}"
+              @click="${this.handleLanguageSelection}"
+            >
+              <md-ripple></md-ripple>
+              ${this.selectedLanguageID === id
+                ? html`<md-icon slot="start">check</md-icon>`
+                : nothing}
+              ${name}
+            </md-list-item>
+          `
+        )}
+      </md-list>
     `;
   }
 
-  private languageSelected() {
-    const languageCode = this.list.selected?.value || '';
+  private handleLanguageSelection({target}: Event) {
+    const languageCode = (target as HTMLInputElement)?.value || '';
+
     this.dispatchEvent(
       new CustomEvent('SetLanguageRequested', {
         bubbles: true,
