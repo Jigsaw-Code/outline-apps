@@ -20,7 +20,7 @@ export default {
   title: 'Client/Language View',
   component: 'contact-view',
   args: {
-    selectedLanguage: 'en',
+    selectedLanguageID: 'en',
     languages: [
       {id: 'en', name: 'English'},
       {id: 'es', name: 'Español'},
@@ -28,9 +28,9 @@ export default {
   },
 };
 
-export const Example = ({selectedLanguage, languages}: LanguageView) => html`
+export const Example = ({selectedLanguageID, languages}: LanguageView) => html`
   <language-view
-    selectedLanguage=${selectedLanguage}
+    selected-language-id=${selectedLanguageID}
     .languages=${languages}
   ></language-view>
 `;

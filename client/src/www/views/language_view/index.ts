@@ -24,7 +24,7 @@ import '@material/web/icon/icon.js';
 @customElement('language-view')
 export class LanguageView extends LitElement {
   @property({type: Array}) languages!: {id: string; name: string}[];
-  @property({type: String}) selectedLanguageID!: string;
+  @property({type: String, attribute: 'selected-language-id'}) selectedLanguageID!: string;
 
   static styles = css`
     :host {
@@ -64,13 +64,11 @@ export class LanguageView extends LitElement {
   }
 
   private handleLanguageSelection({target}: Event) {
-    const languageCode = (target as HTMLInputElement)?.value || '';
-
     this.dispatchEvent(
       new CustomEvent('SetLanguageRequested', {
         bubbles: true,
         composed: true,
-        detail: {languageCode},
+        detail: {languageCode: (target as HTMLInputElement).value},
       })
     );
   }
