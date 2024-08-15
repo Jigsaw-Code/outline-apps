@@ -72,11 +72,11 @@
   "tsConfig": "./tsconfig.json",
   "output": {
     "mode": "runtime",
-    "outputDir": "./generated/messages/locales",
+    "outputDir": "./generated/messages/input",
     "localeCodesModule": "./generated/messages/locale-codes.ts"
   },
   "interchange": {
     "format": "xliff",
-    "xliffDir": "./generated/messages/"
+    "xliffDir": "./generated/messages/output"
   }
 }

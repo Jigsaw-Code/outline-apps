@@ -151,6 +151,7 @@
   },
   "scripts": {
     "clean": "rm -rf output node_modules www platforms plugins",
-    "generate:messages": "lit-localize extract"
+    "generate:messages:output": "lit-localize extract",
+    "generate:messages:input": "lit-localize build"
   }
 }
