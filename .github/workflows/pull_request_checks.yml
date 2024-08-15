@@ -67,8 +67,8 @@ jobs:
         uses: pascalgn/size-label-action@a4655c448bb838e8d73b81e97fd0831bb4cbda1e
         env:
           IGNORED: |
-            client/generated
-            client/resources
+            client/generated/**
+            client/resources/**
             client/src/www/assets/**
             client/src/www/messages/**
             LICENSE
