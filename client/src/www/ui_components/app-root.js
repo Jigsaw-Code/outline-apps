@@ -42,8 +42,13 @@ import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
+
+// TODO(daniellacosse): figure out how to import this without disabling the rule
+// eslint-disable-next-line n/no-missing-import
 import '../views/contact_view';
+// eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
+
 import './server-rename-dialog.js';
 import './user-comms-dialog.js';
 
@@ -72,11 +77,11 @@ function makeLookUpLanguage(availableLanguages) {
 function getBrowserLanguages() {
   // Ensure that navigator.languages is defined and not empty, as can be the case with some browsers
   // (i.e. Chrome 59 on Electron).
-  const languages = navigator.languages;
+  const languages = globalThis.navigator.languages;
   if (languages && languages.length > 0) {
     return languages;
   }
-  return [navigator.language];
+  return [globalThis.navigator.language];
 }
 
 function getBestMatchingLanguage(available) {
@@ -92,22 +97,27 @@ function getBestMatchingLanguage(available) {
       parts.pop();
     }
   }
-};
+}
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
 PaperMenuButton.prototype.properties.restoreFocusOnClose.value = false;
 
-export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElement) {
+export class AppRoot extends mixinBehaviors(
+  [AppLocalizeBehavior],
+  PolymerElement
+) {
   static get template() {
     return html`
       <style>
         :host {
           --app-toolbar-height: 2.5rem;
-          --app-toolbar-gutter: .5rem;
-          --app-toolbar-button-gutter: .75rem;
+          --app-toolbar-gutter: 0.5rem;
+          --app-toolbar-button-gutter: 0.75rem;
           --app-header-height: 3.5rem;
-          --contact-view-gutter: calc(var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter));
+          --contact-view-gutter: calc(
+            var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter)
+          );
           --contact-view-max-width: 400px;
           --light-green: #2fbea5;
           --medium-green: #009688;
@@ -186,7 +196,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             color: var(--medium-green);
             background-color: var(--light-gray);
             font-weight: normal;
-          }
+          };
         }
 
         #drawer-nav paper-item:focus::before,
@@ -303,10 +313,23 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           }
         }
       </style>
-      <app-location route="{{route}}" url-space-regex="^/index.html" use-hash-as-path=""></app-location>
-      <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route>
+      <app-location
+        route="{{route}}"
+        url-space-regex="^/index.html"
+        use-hash-as-path=""
+      ></app-location>
+      <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+      ></app-route>
 
-      <privacy-view id="privacyView" root-path="[[rootPath]]" localize="[[localize]]" hidden=""></privacy-view>
+      <privacy-view
+        id="privacyView"
+        root-path="[[rootPath]]"
+        localize="[[localize]]"
+        hidden=""
+      ></privacy-view>
 
       <app-header-layout fullbleed="">
         <app-header slot="header" fixed="">
@@ -329,7 +352,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             </div>
             <div main-title="" class$="[[page]]">
               <h1 hidden$="[[!shouldShowAppLogo]]">Outline</h1>
-              <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
+              <div hidden$="[[shouldShowAppLogo]]">
+                [[localize(pageTitleKey)]]
+              </div>
             </div>
             <div id="app-toolbar-right">
               <paper-button
@@ -385,7 +410,12 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </iron-pages>
       </app-header-layout>
 
-      <app-drawer slot="drawer" id="drawer" swipe-open="" transition-duration="350">
+      <app-drawer
+        slot="drawer"
+        id="drawer"
+        swipe-open=""
+        transition-duration="350"
+      >
         <!--
         Notice that transition-duration="350"? That magic number is very sensitive!
 
@@ -426,34 +456,55 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             <img src$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo" />
           </div>
           <hr class="nav-hr" />
-          <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
+          <paper-listbox
+            id="drawer-nav"
+            selected="{{routeData.page}}"
+            attr-for-selected="name"
+            on-tap="closeDrawer"
+          >
             <paper-item name="servers" class="first-menu-item">
-              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
+              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline" />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
             <paper-item name="contact">
-              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
+              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact" />
               [[localize('contact-page-title')]]
             </paper-item>
             <paper-item name="about">
-              <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
+              <img src$="[[rootPath]]assets/icons/about.png" alt="about" />
               [[localize('about-page-title')]]
             </paper-item>
             <paper-item name="help">
-              <a href="https://support.getoutline.org" id="helpAnchor" hidden=""></a>
-              <img src$="[[rootPath]]assets/icons/help.png" alt="help"  />
+              <a
+                href="https://support.getoutline.org"
+                id="helpAnchor"
+                hidden=""
+              ></a>
+              <img src$="[[rootPath]]assets/icons/help.png" alt="help" />
               [[localize('help-page-title')]]
             </paper-item>
-            <paper-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
-              <img src$="[[rootPath]]assets/icons/change_language.png" alt="change language"  />
+            <paper-item
+              name="language"
+              class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]"
+            >
+              <img
+                src$="[[rootPath]]assets/icons/change_language.png"
+                alt="change language"
+              />
               [[localize('change-language-page-title')]]
             </paper-item>
-            <paper-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
+            <paper-item
+              name="quit"
+              class="last-menu-item"
+              hidden$="[[!shouldShowQuitButton]]"
+            >
               <img src$="[[rootPath]]assets/icons/quit.png" alt="quit" />
               [[localize('quit')]]
             </paper-item>
             <paper-item class="border-top">
-              <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
+              <a href="https://www.google.com/policies/privacy/"
+                >[[localize('privacy')]]</a
+              >
             </paper-item>
             <paper-item>
               <a href="https://support.getoutline.org/s/article/Data-collection"
@@ -461,7 +512,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
               >
             </paper-item>
             <paper-item>
-              <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
+              <a
+                href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
                 >[[localize('terms')]]</a
               >
             </paper-item>
@@ -473,11 +525,18 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       </app-drawer>
 
       <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
-        <paper-button id="toastButton" on-tap="_callToastHandler"></paper-button>
+        <paper-button
+          id="toastButton"
+          on-tap="_callToastHandler"
+        ></paper-button>
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
 
-      <add-server-view id="addServerView" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]"></add-server-view>
+      <add-server-view
+        id="addServerView"
+        localize="[[localize]]"
+        use-alt-access-message="[[useAltAccessMessage]]"
+      ></add-server-view>
 
       <!-- Modal dialogs must be placed outside of app-header-layout, see
     https://github.com/PolymerElements/paper-dialog/issues/152 and
@@ -672,32 +731,35 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // with a no-op for the three buttons where the focus styles are incorrectly applied most
     // often / where it looks most noticeably broken.
     function noop() {}
-    var buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
-    for (var i = 0, button = buttons[i]; button; button = buttons[++i]) {
+    const buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
+    for (let i = 0, button = buttons[i]; button; button = buttons[++i]) {
       button._detectKeyboardFocus = noop;
     }
 
-    if (!Event.prototype.composedPath) {
+    if (!globalThis.Event.prototype.composedPath) {
       // Polyfill for composedPath. See https://dom.spec.whatwg.org/#dom-event-composedpath.
       // https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath#browser_compatibility
-      Event.prototype.composedPath = function () {
+      globalThis.Event.prototype.composedPath = function () {
         if (this.path) {
           return this.path; // ShadowDOM v0 equivalent property.
         }
-        var composedPath = [];
-        var target = this.target;
+        const composedPath = [];
+        let target = this.target;
         while (target) {
           composedPath.push(target);
           if (target.assignedSlot) {
             target = target.assignedSlot;
-          } else if (target.nodeType === Node.DOCUMENT_FRAGMENT_NODE && target.host) {
+          } else if (
+            target.nodeType === globalThis.Node.DOCUMENT_FRAGMENT_NODE &&
+            target.host
+          ) {
             target = target.host;
           } else {
             target = target.parentNode;
           }
         }
-        if (composedPath[composedPath.length - 1] === document) {
-          composedPath.push(window);
+        if (composedPath[composedPath.length - 1] === globalThis.document) {
+          composedPath.push(globalThis.window);
         }
         return composedPath;
       };
@@ -708,7 +770,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       this.platform = 'Electron';
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
-      this.platform = cordova.platformId;
+      this.platform = globalThis.cordova.platformId;
     }
   }
 
@@ -717,8 +779,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     this.loadResources(url, languageCode);
 
     const direction = this.LANGUAGES_AVAILABLE[languageCode].dir;
-    document.documentElement.setAttribute('dir', direction);
-    this.$.drawer.align = direction == 'ltr' ? 'left' : 'right';
+    globalThis.document.documentElement.setAttribute('dir', direction);
+    this.$.drawer.align = direction === 'ltr' ? 'left' : 'right';
 
     this.language = languageCode;
   }
@@ -751,7 +813,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       this.$.toast.text = text;
       this.$.toast.duration = duration || 3000;
 
-      var button = this.$.toastButton;
+      const button = this.$.toastButton;
       if (buttonText) {
         button.hidden = false;
         button.innerText = buttonText;
@@ -790,8 +852,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _callToastHandler() {
-    var toastButton = this.$.toastButton;
-    var handler = toastButton._handler;
+    const toastButton = this.$.toastButton;
+    const handler = toastButton._handler;
     if (!handler) return console.error('No toast handler found');
     // Close the toast and unbind the handler so there's no chance the
     // user can somehow trigger the same handler twice.
@@ -805,8 +867,11 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
-    const overrideLanguage = window.localStorage.getItem('overrideLanguage');
-    const bestMatchingLanguage = getBestMatchingLanguage(Object.keys(availableLanguages));
+    const overrideLanguage =
+      globalThis.localStorage.getItem('overrideLanguage');
+    const bestMatchingLanguage = getBestMatchingLanguage(
+      Object.keys(availableLanguages)
+    );
     return overrideLanguage || bestMatchingLanguage || defaultLanguage;
   }
 
@@ -826,7 +891,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // to the default page onto the history stack. Without this, you'd have to press
     // Android's system back button twice instead of once to get out of the app after
     // opening it.
-    history.replaceState({}, '', '#/' + DEFAULT_PAGE);
+    globalThis.history.replaceState({}, '', '#/' + DEFAULT_PAGE);
     this.setProperties({
       'route.path': '/' + DEFAULT_PAGE,
       'routeData.page': DEFAULT_PAGE,
@@ -853,10 +918,10 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     }
 
     // If there is a navigation on the webview's history stack, pop it off to go back.
-    if (history.length > 1) {
-      history.back();
+    if (globalThis.history.length > 1) {
+      globalThis.history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
-      window.dispatchEvent(new CustomEvent('location-changed'));
+      globalThis.dispatchEvent(new globalThis.CustomEvent('location-changed'));
     }
   }
 
@@ -869,7 +934,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // not opening most of the time. We resort to opening the link programmatically for all
     // platforms.
     if (this.platform === 'ios') {
-      window.open(this.$.helpAnchor.href);
+      globalThis.open(this.$.helpAnchor.href);
     } else {
       // macOS does not respond to window.open and Windows opens a new browser window.
       // Simulate a click on the help anchor.
@@ -901,7 +966,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   _computeUseAltAccessMessage(language) {
     // Hack to show an alternative message
-    return language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx';
+    return (
+      language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx'
+    );
   }
 }
-customElements.define(AppRoot.is, AppRoot);
+globalThis.customElements.define(AppRoot.is, AppRoot);

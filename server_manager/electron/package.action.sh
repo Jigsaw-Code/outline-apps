@@ -16,9 +16,7 @@
 set -eu
 
 SCRIPT_DIR="$(dirname "$0")"
-PROJECT_DIR="${BUILD_DIR}/server_manager/electron/static"
 BUILD_MODE=debug
-PLATFORM=
 
 function package_electron() {
   declare -a electron_builder_cmd=(
@@ -59,15 +57,15 @@ function finish_yaml_files() {
   if [[ -z "${release_channel}" ]]; then
     release_channel=latest
   fi
-  echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/${release_channel}${PLATFORM}.yml"
+  echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/${release_channel}-${PLATFORM}.yml"
 
   # If we cut a staged mainline release, beta testers will take the update as well.
   if [[ "${release_channel}" == "latest" ]]; then
-    echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/beta${PLATFORM}.yml"
+    echo "stagingPercentage: ${staging_percentage}" >> "${PROJECT_DIR}/dist/beta-${PLATFORM}.yml"
   fi
 
   # We don't support alpha releases
-  rm -f "${PROJECT_DIR}/dist/alpha${PLATFORM}.yml"
+  rm -f "${PROJECT_DIR}/dist/alpha-${PLATFORM}.yml"
 }
 
 function main() {
@@ -75,6 +73,8 @@ function main() {
   declare version_name='0.0.0-debug'
 
   PLATFORM="${1?Platform missing}"
+  PLATFORM_DIR="${BUILD_DIR}/server_manager/${PLATFORM}"
+  PROJECT_DIR="${PLATFORM_DIR}/unpacked"
 
   for i in "$@"; do
     case "${i}" in
@@ -97,9 +97,10 @@ function main() {
     *) ;;
     esac
   done
-  node infrastructure/build/run_action.mjs server_manager/electron/build --buildMode="${BUILD_MODE}" --versionName="${version_name}"
+  node infrastructure/build/run_action.mjs server_manager/electron/build "${PLATFORM}" --buildMode="${BUILD_MODE}" --versionName="${version_name}"
   package_electron
   finish_yaml_files "${staging_percentage}"
+  cp -r "${PROJECT_DIR}/dist" "${PLATFORM_DIR}/dist"
 }
 
 main "$@"

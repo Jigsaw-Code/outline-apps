@@ -16,14 +16,14 @@
 
 set -e
 
-readonly TEST_DIR="${BUILD_DIR}/js/server_manager/"
+readonly TEST_DIR="${BUILD_DIR}/server_manager/test/"
 rm -rf "${TEST_DIR}"
 
-npm run action server_manager/www/build_install_script
+npm run action server_manager/install_scripts/build
 
 # Use commonjs modules, jasmine runs in node.
 tsc -p "${ROOT_DIR}/server_manager" --outDir "${TEST_DIR}" --module commonjs
-jasmine "output/build/js/**/*.spec.js" "!output/build/js/server_manager/www/**/*"
+jasmine "output/build/server_manager/test/**/*.spec.js" "!output/build/server_manager/test/www/**/*"
 
 npm run action server_manager/www/test
 
