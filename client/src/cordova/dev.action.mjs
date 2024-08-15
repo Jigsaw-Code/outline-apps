@@ -98,7 +98,7 @@ export async function main(...givenParameters) {
   });
 
   server.listen(0, 'localhost', async () => {
-    const serverAddress = `ws://${server.address().address}:${server.address().port}`;
+    const serverAddress = `ws://[${server.address().address}]:${server.address().port}`;
     console.log(`LiveReload server running at ${serverAddress}`);
 
     await makeReplacements([
