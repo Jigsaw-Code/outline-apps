@@ -16,6 +16,7 @@
     "@material/mwc-select": "^0.25.3",
     "@material/mwc-textarea": "^0.25.3",
     "@material/mwc-textfield": "^0.25.3",
+    "@material/web": "^2.0.0",
     "@outline/infrastructure": "file:../infrastructure",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/app-localize-behavior": "^3.0.1",
