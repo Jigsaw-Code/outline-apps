@@ -17,7 +17,6 @@
 
 @import ServiceManagement;
 @import OutlineNotification;
-@import OutlineTunnel;
 @import CocoaLumberjack;
 
 #ifdef DEBUG
@@ -96,25 +95,16 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
                                                                           bundle:[NSBundle mainBundle]];
   self.popover.contentViewController.view = self.window.contentView;
 
-  if ([self wasStartedByLauncherApp]) {
-    [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
-      if (errorCode != ErrorCodeNoError) {
-        NSLog(@"Failed to auto-connect the VPN on startup.");
-      }
-    }];
-  } else {
-    // The rendering of the popover is relative to the app's status item in the status bar.
-    // Even though we've already created the status bar above, the popover is being created
-    // before the status item has been rendered in the UI. This causes the initial popover
-    // load to be "floating" and ends up aligned at the bottom of the screen. For this initial
-    // load we add a small artificial delay to prevent that from happening.
-    double delayInSeconds = 0.5;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-      [self showPopover];
-    });
-  }
-  [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
+  // The rendering of the popover is relative to the app's status item in the status bar.
+  // Even though we've already created the status bar above, the popover is being created
+  // before the status item has been rendered in the UI. This causes the initial popover
+  // load to be "floating" and ends up aligned at the bottom of the screen. For this initial
+  // load we add a small artificial delay to prevent that from happening.
+  double delayInSeconds = 0.5;
+  dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+  dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+    [self showPopover];
+  });
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
@@ -152,48 +142,6 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
 - (void)setAppIcon:(NSString *)imageName {
   self.statusItem.button.image = [NSImage imageNamed:imageName];
   self.statusItem.button.image.template = YES;
-}
-
-#pragma mark - Launcher
-
-// Enables or disables the embedded app launcher as a login item.
-- (void)setAppLauncherEnabled:(bool)enabled {
-  NSString *launcherBundleId = [self getLauncherBundleId];
-  if (launcherBundleId == nil) {
-    return;
-  }
-  if (!SMLoginItemSetEnabled((__bridge CFStringRef) launcherBundleId, enabled)) {
-    return NSLog(@"Failed to %@ launcher %@", enabled ? @"enable" : @"disable", launcherBundleId);
-  }
-}
-
-// Returns the embedded launcher application's bundle ID.
-- (NSString *)getLauncherBundleId {
-  static NSString *kAppLauncherName = @"launcher";
-  NSString *bundleId = NSBundle.mainBundle.bundleIdentifier;
-  if (bundleId == nil) {
-    NSLog(@"Failed to retrieve the application's bundle ID");
-    return nil;
-  }
-  return [[NSString alloc] initWithFormat:@"%@.%@", bundleId, kAppLauncherName];
-}
-
-// Returns whether the app was started by the embedded launcher app by inspecting the launch event.
-- (bool)wasStartedByLauncherApp {
-  NSAppleEventDescriptor *descriptor = [[NSAppleEventManager sharedAppleEventManager]
-                                        currentAppleEvent];
-  if (descriptor == nil) {
-    return false;
-  }
-  NSAppleEventDescriptor *launcherDescriptor = [descriptor paramDescriptorForKeyword:keyAEPropData];
-  if (launcherDescriptor == nil) {
-    return false;
-  }
-  NSString *launcherBundleId = [self getLauncherBundleId];
-  if (launcherBundleId == nil) {
-    return false;
-  }
-  return [launcherBundleId isEqual:launcherDescriptor.stringValue];
 }
 
 @end

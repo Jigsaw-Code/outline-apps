@@ -25,10 +25,6 @@
 		DBBA975361C94599B9DD3891 /* CDVClipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 469466FF1BDB44C081741BF5 /* CDVClipboard.m */; };
 		EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */ = {isa = PBXBuildFile; fileRef = A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */; };
 		F63DC2202970B26500D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC21F2970B26500D92E0A /* OutlineAppleLib */; };
-		F63DC2242970B27A00D92E0A /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = F63DC2232970B27A00D92E0A /* OutlineAppleLib */; };
-		FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0799E82037532A00A1C822 /* AppDelegate.swift */; };
-		FC0799F02037532A00A1C822 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FC0799EE2037532A00A1C822 /* Main.storyboard */; };
-		FC0799F72037543F00A1C822 /* OutlineLauncher.app in Copy OutlineLauncher */ = {isa = PBXBuildFile; fileRef = FC0799E62037532900A1C822 /* OutlineLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FC0799F92037545D00A1C822 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC0799F82037545D00A1C822 /* ServiceManagement.framework */; };
 		FC5FF9501F3E1FD40032A745 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */; };
 /* End PBXBuildFile section */
@@ -48,13 +44,6 @@
 			remoteGlobalIDString = 52334EAB2B0D58AD00817E56;
 			remoteInfo = VpnExtension;
 		};
-		5296DB072A57BBAF0009C9BB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 70BD681B18FFB02D00A1EFCF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FC0799E52037532900A1C822;
-			remoteInfo = OutlineLauncher;
-		};
 		70BD685F18FFB04300A1EFCF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 70BD685A18FFB04300A1EFCF /* CordovaLib.xcodeproj */;
@@ -72,17 +61,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		FC0799F62037541600A1C822 /* Copy OutlineLauncher */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
-			dstPath = Contents/Library/LoginItems;
-			dstSubfolderSpec = 1;
-			files = (
-				FC0799F72037543F00A1C822 /* OutlineLauncher.app in Copy OutlineLauncher */,
-			);
-			name = "Copy OutlineLauncher";
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -123,11 +101,6 @@
 		A508014170A1492DB0D800B3 /* Outline-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; path = "Outline-Bridging-Header.h"; sourceTree = "<group>"; };
 		AA09EA80E0C54DFFB24A1810 /* OutlinePlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = OutlinePlugin.swift; path = "cordova-plugin-outline/OutlinePlugin.swift"; sourceTree = "<group>"; };
 		F63DC21E2970B23B00D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../src/cordova/apple/OutlineAppleLib; sourceTree = "<group>"; };
-		FC0799E62037532900A1C822 /* OutlineLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OutlineLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FC0799E82037532A00A1C822 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		FC0799EF2037532A00A1C822 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		FC0799F12037532A00A1C822 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FC0799F22037532A00A1C822 /* OutlineLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OutlineLauncher.entitlements; sourceTree = "<group>"; };
 		FC0799F82037545D00A1C822 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		FC5FF9121F3E1D1B0032A745 /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Outline.entitlements; sourceTree = "<group>"; };
 		FC5FF9461F3E1E8B0032A745 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -148,14 +121,6 @@
 				52CBB84B295BC79300D0073F /* CocoaLumberjackSwift in Frameworks */,
 				70BD686318FFB04800A1EFCF /* libCordova.a in Frameworks */,
 				52355CFB295B70030057557B /* Sentry in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FC0799E32037532900A1C822 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F63DC2242970B27A00D92E0A /* OutlineAppleLib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,7 +157,6 @@
 				70BD686818FFB0BF00A1EFCF /* Classes */,
 				7069FBC31905A1F9000B48E1 /* Plugins */,
 				70D86C851B903D11000750E0 /* Resources */,
-				FC0799E72037532A00A1C822 /* OutlineLauncher */,
 				70BD682518FFB02D00A1EFCF /* Frameworks */,
 				70BD682418FFB02D00A1EFCF /* Products */,
 			);
@@ -202,7 +166,6 @@
 			isa = PBXGroup;
 			children = (
 				70BD682318FFB02D00A1EFCF /* Outline.app */,
-				FC0799E62037532900A1C822 /* OutlineLauncher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -290,17 +253,6 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
-		FC0799E72037532A00A1C822 /* OutlineLauncher */ = {
-			isa = PBXGroup;
-			children = (
-				FC0799E82037532A00A1C822 /* AppDelegate.swift */,
-				FC0799EE2037532A00A1C822 /* Main.storyboard */,
-				FC0799F12037532A00A1C822 /* Info.plist */,
-				FC0799F22037532A00A1C822 /* OutlineLauncher.entitlements */,
-			);
-			path = OutlineLauncher;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -312,7 +264,6 @@
 				70BD681F18FFB02D00A1EFCF /* Sources */,
 				70BD682018FFB02D00A1EFCF /* Frameworks */,
 				70BD682118FFB02D00A1EFCF /* Resources */,
-				FC0799F62037541600A1C822 /* Copy OutlineLauncher */,
 				FC5FF9411F3E1E5F0032A745 /* Embed App Extensions */,
 			);
 			buildRules = (
@@ -320,7 +271,6 @@
 			dependencies = (
 				5260B0902C4F1BBF00CDF289 /* PBXTargetDependency */,
 				70BD687118FFB19500A1EFCF /* PBXTargetDependency */,
-				5296DB082A57BBAF0009C9BB /* PBXTargetDependency */,
 			);
 			name = Outline;
 			packageProductDependencies = (
@@ -331,26 +281,6 @@
 			);
 			productName = Outline;
 			productReference = 70BD682318FFB02D00A1EFCF /* Outline.app */;
-			productType = "com.apple.product-type.application";
-		};
-		FC0799E52037532900A1C822 /* OutlineLauncher */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FC0799F52037532A00A1C822 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */;
-			buildPhases = (
-				FC0799E22037532900A1C822 /* Sources */,
-				FC0799E32037532900A1C822 /* Frameworks */,
-				FC0799E42037532900A1C822 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OutlineLauncher;
-			packageProductDependencies = (
-				F63DC2232970B27A00D92E0A /* OutlineAppleLib */,
-			);
-			productName = OutlineLauncher;
-			productReference = FC0799E62037532900A1C822 /* OutlineLauncher.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -376,15 +306,6 @@
 								enabled = 0;
 							};
 							com.apple.VPNLite = {
-								enabled = 1;
-							};
-						};
-					};
-					FC0799E52037532900A1C822 = {
-						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1130;
-						SystemCapabilities = {
-							com.apple.ApplicationGroups.Mac = {
 								enabled = 1;
 							};
 						};
@@ -420,7 +341,6 @@
 			projectRoot = "";
 			targets = (
 				70BD682218FFB02D00A1EFCF /* Outline */,
-				FC0799E52037532900A1C822 /* OutlineLauncher */,
 			);
 		};
 /* End PBXProject section */
@@ -451,14 +371,6 @@
 				707060AF18FFC05700755D46 /* MainViewController.xib in Resources */,
 				70BD683F18FFB02D00A1EFCF /* Images.xcassets in Resources */,
 				EAD11960A27C45AFA5E46584 /* Outline-Bridging-Header.h in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FC0799E42037532900A1C822 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FC0799F02037532A00A1C822 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,14 +406,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FC0799E22037532900A1C822 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FC0799E92037532A00A1C822 /* AppDelegate.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -509,11 +413,6 @@
 			isa = PBXTargetDependency;
 			name = VpnExtension;
 			targetProxy = 5260B08F2C4F1BBF00CDF289 /* PBXContainerItemProxy */;
-		};
-		5296DB082A57BBAF0009C9BB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FC0799E52037532900A1C822 /* OutlineLauncher */;
-			targetProxy = 5296DB072A57BBAF0009C9BB /* PBXContainerItemProxy */;
 		};
 		70BD687118FFB19500A1EFCF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -529,14 +428,6 @@
 				70BD683018FFB02D00A1EFCF /* en */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		FC0799EE2037532A00A1C822 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FC0799EF2037532A00A1C822 /* Base */,
-			);
-			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -656,7 +547,6 @@
 		70BD685518FFB02D00A1EFCF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Outline/Outline.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -692,7 +582,6 @@
 		70BD685618FFB02D00A1EFCF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Outline/Outline.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -724,98 +613,6 @@
 			};
 			name = Release;
 		};
-		FC0799F32037532A00A1C822 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
-				);
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				INFOPLIST_FILE = OutlineLauncher/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		FC0799F42037532A00A1C822 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_ENTITLEMENTS = OutlineLauncher/OutlineLauncher.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Outline/Plugins/cordova-plugin-outline",
-				);
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				INFOPLIST_FILE = OutlineLauncher/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.outline.macos.client.launcher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -833,15 +630,6 @@
 			buildConfigurations = (
 				70BD685518FFB02D00A1EFCF /* Debug */,
 				70BD685618FFB02D00A1EFCF /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FC0799F52037532A00A1C822 /* Build configuration list for PBXNativeTarget "OutlineLauncher" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FC0799F32037532A00A1C822 /* Debug */,
-				FC0799F42037532A00A1C822 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -884,10 +672,6 @@
 			productName = CocoaLumberjackSwift;
 		};
 		F63DC21F2970B26500D92E0A /* OutlineAppleLib */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineAppleLib;
-		};
-		F63DC2232970B27A00D92E0A /* OutlineAppleLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OutlineAppleLib;
 		};
