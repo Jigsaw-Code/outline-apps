@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+import replace from 'replace-in-file';
 
-@objc
-public enum ConnectionStatus: Int {
-    case unknown
-    case connected
-    case disconnected
-}
+export async function makeReplacements(replacements) {
+  let results = [];
 
-public extension NSObject {
-    @objc func _AppKitBridge_terminate() {}
-    @objc func _AppKitBridge_setConnectionStatus(_: ConnectionStatus) {}
-    @objc func _AppKitBridge_loadMainApp(_: String) {}
+  for (const replacement of replacements) {
+    results = [...results, ...(await replace(replacement))];
+  }
 }

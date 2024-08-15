@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+import {createServer} from 'node:http';
 
-@objc
-public enum ConnectionStatus: Int {
-    case unknown
-    case connected
-    case disconnected
-}
+import {WebSocketServer} from 'ws';
 
-public extension NSObject {
-    @objc func _AppKitBridge_terminate() {}
-    @objc func _AppKitBridge_setConnectionStatus(_: ConnectionStatus) {}
-    @objc func _AppKitBridge_loadMainApp(_: String) {}
+export function createReloadServer(
+  shouldReload = () => true,
+  reloadCheckIntervalMs = 1000
+) {
+  const server = createServer();
+  const websocket = new WebSocketServer({server});
+
+  websocket.on('connection', connection => {
+    setInterval(async () => {
+      if (!(await shouldReload())) return;
+
+      console.log('Reloading...');
+      connection.send('reload');
+    }, reloadCheckIntervalMs);
+  });
+
+  return server;
 }
