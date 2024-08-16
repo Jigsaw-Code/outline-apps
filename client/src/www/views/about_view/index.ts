@@ -81,7 +81,7 @@ export class AboutView extends LitElement {
     return html`
       <article>
         <header>
-          <img src="${outlineLogo}" alt="outline-logo" />
+          <img src="${outlineLogo}" alt="outline logo" />
           <h2>
             ${this.localize('version', 'appVersion', this.version)}
             (${this.build})
@@ -104,7 +104,7 @@ export class AboutView extends LitElement {
         ></section>
         <footer>
           <a href="https://jigsaw.google.com">
-            <img src="${jigsawLogo}" id="jigsaw-logo" />
+            <img src="${jigsawLogo}" alt="jigsaw logo" />
           </a>
         </footer>
       </article>
