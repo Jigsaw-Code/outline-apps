@@ -416,7 +416,7 @@ public class VpnTunnelService extends VpnService {
 
   private void startNetworkConnectivityMonitor() {
     final ConnectivityManager connectivityManager =
-        (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkRequest request = new NetworkRequest.Builder()
                                  .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                                  .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
