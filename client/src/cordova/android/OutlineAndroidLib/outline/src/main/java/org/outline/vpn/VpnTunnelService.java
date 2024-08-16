@@ -150,7 +150,8 @@ public class VpnTunnelService extends VpnService {
     if (intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false)) {
       startLastSuccessfulTunnel();
     }
-    String errorReportingApiKey = intent.getStringExtra(MessageData.ERROR_REPORTING_API_KEY.value);
+    String errorReportingApiKey =
+        intent.getStringExtra(MessageData.ERROR_REPORTING_API_KEY.value);
     if (errorReportingApiKey != null) {
       initErrorReporting(errorReportingApiKey);
     }
@@ -163,7 +164,8 @@ public class VpnTunnelService extends VpnService {
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
     if (intent != null) {
       // VpnServiceStarter puts AUTOSTART_EXTRA in the intent when the service starts automatically.
-      boolean startedByVpnStarter = intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
+      boolean startedByVpnStarter =
+          intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
       boolean startedByAlwaysOn = VpnService.SERVICE_INTERFACE.equals(intent.getAction());
       if (startedByVpnStarter || startedByAlwaysOn) {
         startLastSuccessfulTunnel();
@@ -246,7 +248,7 @@ public class VpnTunnelService extends VpnService {
       final TunnelConfig config, final String serverName, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, serverName));
     if (config.id == null || config.proxy == null) {
-      return "ILLEGAL_SERVER_CONFIGURATION";
+      return "Missing tunnnel ID or config";
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {
@@ -365,7 +367,8 @@ public class VpnTunnelService extends VpnService {
     private ConnectivityManager connectivityManager;
 
     public NetworkConnectivityMonitor() {
-      this.connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+      this.connectivityManager =
+          (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Override
@@ -385,7 +388,7 @@ public class VpnTunnelService extends VpnService {
         // network becomes available. It will not fire, for example, when the mobile network becomes
         // available if WiFi is the active network. Additionally, `getActiveNetwork` and
         // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
-        setUnderlyingNetworks(new Network[] { network });
+        setUnderlyingNetworks(new Network[] {network});
       }
       boolean isUdpSupported = vpnTunnel.updateUDPSupport();
       LOG.info(
@@ -415,9 +418,9 @@ public class VpnTunnelService extends VpnService {
     final ConnectivityManager connectivityManager =
         (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkRequest request = new NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-        .build();
+                                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                                 .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+                                 .build();
     // `registerNetworkCallback` returns the VPN interface as the default network since Android P.
     // Use `requestNetwork` instead (requires android.permission.CHANGE_NETWORK_STATE).
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -429,7 +432,7 @@ public class VpnTunnelService extends VpnService {
 
   private void stopNetworkConnectivityMonitor() {
     final ConnectivityManager connectivityManager =
-        (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
     try {
       connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
     } catch (Exception e) {

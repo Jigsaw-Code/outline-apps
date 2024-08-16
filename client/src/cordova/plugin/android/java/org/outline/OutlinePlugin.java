@@ -85,7 +85,6 @@ public class OutlinePlugin extends CordovaPlugin {
   private static class StartVpnRequest {
     public final JSONArray args;
     public final CallbackContext callback;
-
     public StartVpnRequest(JSONArray args, CallbackContext callback) {
       this.args = args;
       this.callback = callback;

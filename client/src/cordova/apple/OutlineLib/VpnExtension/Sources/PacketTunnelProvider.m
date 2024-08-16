@@ -52,7 +52,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   [DDLog addLogger:_fileLogger];
 
   _packetQueue = dispatch_queue_create("org.getoutline.packetqueue", DISPATCH_QUEUE_SERIAL);
-  
+
   return self;
 }
 
@@ -80,7 +80,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
       DDLogError(@"Failed to retrieve the tunnel id.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                            code:NEVPNErrorConfigurationUnknown
-                                       userInfo:@{NSLocalizedDescriptionKey:@"Unknown tunnel ID"}]);
+                                       userInfo:@{NSLocalizedDescriptionKey:@"Missing tunnel ID"}]);
   }
 
   NSDictionary *transportConfig = protocol.providerConfiguration[@"transport"];
@@ -88,7 +88,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
       DDLogError(@"Failed to retrieve the transport configuration.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                            code:NEVPNErrorConfigurationUnknown
-                                       userInfo:@{NSLocalizedDescriptionKey:@"Invalid transport format"}]);
+                                       userInfo:@{NSLocalizedDescriptionKey:@"Invalid config format"}]);
   }
 
   self.transportConfig = [[OutlineTunnel alloc] initWithId:tunnelId config:transportConfig];
@@ -181,7 +181,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   __weak PacketTunnelProvider *weakSelf = self;
   [self setTunnelNetworkSettings:settings completionHandler:^(NSError * _Nullable error) {
     if (error != nil) {
-      DDLogError(@"Failed to start routing: %@", error);
+      DDLogError(@"Failed to start routing: %@", error.localizedDescription);
     } else {
       DDLogInfo(@"Routing started");
       // Passing nil settings clears the tunnel network configuration. Indicate to the system that
@@ -401,7 +401,7 @@ NSString* getNetworkIpAddress(const char * ipv4Str) {
 
 
 NSString *const kFetchLastErrorRPCName = @"fetchLastDisconnectErrorDescription";
-NSString *const kLastErrorPersistenceKey = @"vpnExtensionLastErrorDescription";
+NSString *const kLastErrorPersistenceKey = @"lastDisconnectErrorDescription";
 
 - (void)handleAppMessage:(NSData *)messageData completionHandler:(void (^)(NSData * _Nullable))completion {
   // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
