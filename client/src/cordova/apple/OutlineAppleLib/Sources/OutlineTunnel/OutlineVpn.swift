@@ -107,10 +107,8 @@ public class OutlineVpn: NSObject {
     switch manager.connection.status {
     case .connected:
       break
-    case .disconnected:
-      return "Failed to start VPN"
-    case .invalid:
-      return "VPN profile has been modified"
+    case .disconnected, .invalid:
+      return await fetchExtensionLastDisconnectErrorDescription(session)
     default:
       // This shouldn't happen.
       return "Unknown connection status"
@@ -286,5 +284,37 @@ private func setConnectVpnOnDemand(_ manager: NETunnelProviderManager?, _ enable
   } catch {
     DDLogError("Failed to set VPN on demand to \(enabled): \(error)")
     return
+  }
+}
+
+// TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
+// mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+// See: "fetch last disconnect error" section in the VPN extension code.
+
+private enum ExtensionRPC {
+  static let fetchLastErrorDescription = "fetchLastDisconnectErrorDescription"
+}
+
+// Fetches the most recent error that caused the VPN extension to disconnect.
+// If no error, it returns nil. Otherwise, it returns a description of the error.
+private func fetchExtensionLastDisconnectErrorDescription(_ session: NETunnelProviderSession) async -> String? {
+  do {
+    guard let rpcNameData = ExtensionRPC.fetchLastErrorDescription.data(using: .utf8) else {
+      return "failed to convert RPC name to NSData"
+    }
+    DDLogDebug("Calling Extension RPC: \(ExtensionRPC.fetchLastErrorDescription)")
+    return try await withCheckedThrowingContinuation { continuation in
+      do {
+        try session.sendProviderMessage(rpcNameData) { data in
+          DDLogDebug("Extension RPC returned with '\(data ?? "nil")'")
+          continuation.resume(returning: (data == nil ? "" : String(data: data!, encoding: .utf8)) ?? "")
+        }
+      } catch {
+        continuation.resume(throwing: error)
+      }
+    }
+  } catch {
+    DDLogError("Failed to invoke VPN Extension IPC: \(error)")
+    return "failed to fetch the last VPN Extension error"
   }
 }

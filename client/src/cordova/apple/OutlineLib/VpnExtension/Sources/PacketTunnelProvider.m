@@ -31,10 +31,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
 @property id<Tun2socksTunnel> tunnel;
-
-// mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
-@property (nullable) NSError *lastDisconnectError;
-
 @property (nonatomic) DDFileLogger *fileLogger;
 @property (nonatomic, nullable) OutlineTunnel *transportConfig;
 @property (nonatomic) dispatch_queue_t packetQueue;
@@ -56,7 +52,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   [DDLog addLogger:_fileLogger];
 
   _packetQueue = dispatch_queue_create("org.getoutline.packetqueue", DISPATCH_QUEUE_SERIAL);
-
+  
   return self;
 }
 
@@ -67,7 +63,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
   // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
   void (^startDone)(NSError *) = ^(NSError *err) {
-    self.lastDisconnectError = err;
+    self.lastErrorDescription = (err == nil ? nil : err.localizedDescription);
     completion(err);
   };
 
@@ -76,23 +72,23 @@ NSString *const kDefaultPathKey = @"defaultPath";
     DDLogError(@"Failed to retrieve NETunnelProviderProtocol.");
     return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                          code:NEVPNErrorConfigurationUnknown
-                                     userInfo:nil]);
+                                     userInfo:@{NSLocalizedDescriptionKey:@"Unknown protocol config"}]);
   }
   NETunnelProviderProtocol *protocol = (NETunnelProviderProtocol *)self.protocolConfiguration;
   NSString *tunnelId = protocol.providerConfiguration[@"id"];
   if (![tunnelId isKindOfClass:[NSString class]]) {
       DDLogError(@"Failed to retrieve the tunnel id.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConfigurationUnknown
-                                        userInfo:nil]);
+                                           code:NEVPNErrorConfigurationUnknown
+                                       userInfo:@{NSLocalizedDescriptionKey:@"Unknown tunnel ID"}]);
   }
 
   NSDictionary *transportConfig = protocol.providerConfiguration[@"transport"];
   if (![transportConfig isKindOfClass:[NSDictionary class]]) {
       DDLogError(@"Failed to retrieve the transport configuration.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConfigurationUnknown
-                                        userInfo:nil]);
+                                           code:NEVPNErrorConfigurationUnknown
+                                       userInfo:@{NSLocalizedDescriptionKey:@"Invalid transport format"}]);
   }
 
   self.transportConfig = [[OutlineTunnel alloc] initWithId:tunnelId config:transportConfig];
@@ -103,8 +99,8 @@ NSString *const kDefaultPathKey = @"defaultPath";
       getNetworkIpAddress([self.transportConfig.config[@"host"] UTF8String]);
   if (self.hostNetworkAddress == nil) {
     return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                 code:NEVPNErrorConfigurationReadWriteFailed
-                                             userInfo:nil]);
+                                         code:NEVPNErrorConfigurationReadWriteFailed
+                                     userInfo:@{NSLocalizedDescriptionKey:@"getaddr failed"}]);
   }
 
   // startTunnel has 3 cases:
@@ -124,11 +120,9 @@ NSString *const kDefaultPathKey = @"defaultPath";
   bool supportUDP = true;
   if (!isOnDemand) {
     NSError *err = nil;
-    ShadowsocksClient* client = [self newClientWithError:&err];
+    ShadowsocksClient* client = [self newClientAndReturnError:&err];
     if (err != nil) {
-      return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                           code:NEVPNErrorConfigurationReadWriteFailed
-                                       userInfo:nil]);
+      return startDone(err);
     }
 
     long connStatus;
@@ -145,11 +139,9 @@ NSString *const kDefaultPathKey = @"defaultPath";
               return startDone(error);
             }
             BOOL isUdpSupported = isOnDemand ? self.isUdpSupported : supportUDP;
-            [self startTun2SocksWithUDPSupported:isUdpSupported error:&error];
+            [self startTun2SocksWithUDPSupported:isUdpSupported andReturnError:&error];
             if (error != nil) {
-              return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                   code:NEVPNErrorConnectionFailed
-                                               userInfo:nil]);
+              return startDone(error);
             }
             [self listenForNetworkChanges];
             startDone(nil);
@@ -168,7 +160,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 # pragma mark - Network
 
-- (ShadowsocksClient*) newClientWithError:(NSError * _Nullable *)err {
+- (ShadowsocksClient*) newClientAndReturnError:(NSError * _Nullable *)err {
   // TODO(fortuna): Pass transport config as an opaque string to ShadowsocksNewClient.
   ShadowsocksConfig* config = [[ShadowsocksConfig alloc] init];
   config.host = self.hostNetworkAddress;
@@ -361,13 +353,13 @@ NSString* getNetworkIpAddress(const char * ipv4Str) {
   }];
 }
 
-- (void)startTun2SocksWithUDPSupported:(BOOL)isUdpSupported error:(NSError * _Nullable *)err {
+- (void)startTun2SocksWithUDPSupported:(BOOL)isUdpSupported andReturnError:(NSError * _Nullable *)err {
   BOOL isRestart = self.tunnel != nil && self.tunnel.isConnected;
   if (isRestart) {
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  ShadowsocksClient* client = [self newClientWithError:err];
+  ShadowsocksClient* client = [self newClientAndReturnError:err];
   if (err != nil && *err != nil) {
     DDLogError(@"Failed to get tun2socks client: %@", *err);
     return;
@@ -383,6 +375,61 @@ NSString* getNetworkIpAddress(const char * ipv4Str) {
     });
   }
   DDLogInfo(@"tun2socks started");
+}
+
+#pragma mark - fetch last disconnect error
+
+
+// TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
+
+/*
+   In the app, we need to use [NEVPNConnection fetchLastDisconnectErrorWithCompletionHandler] to
+   retrive the most recent error that caused the VPN extension to disconnect.
+
+   But it's only available on newer systems (macOS 13.0+, iOS 16.0+), so we need a workaround for
+   older ones.
+
+   The workaround lets the app to use [NETunnelProviderSession sendProviderMessage] to get the
+   error through an IPC method.
+
+   The extension also needs to save the last error to disk, as the system will unload the extension
+   after a failed connection.
+
+   We use [NSUserDefaults standardUserDefaults] to store the error, so it's available even after
+   the extension restarts.
+*/
+
+
+NSString *const kFetchLastErrorRPCName = @"fetchLastDisconnectErrorDescription";
+NSString *const kLastErrorPersistenceKey = @"vpnExtensionLastErrorDescription";
+
+- (void)handleAppMessage:(NSData *)messageData completionHandler:(void (^)(NSData * _Nullable))completion {
+  // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+  NSString *rpcName = [[NSString alloc] initWithData:messageData encoding:NSUTF8StringEncoding];
+  if (![rpcName isEqualToString:kFetchLastErrorRPCName]) {
+    DDLogWarn(@"Invalid Extension RPC call: %@", rpcName);
+    return completion(nil);
+  }
+  completion([self.lastErrorDescription dataUsingEncoding:NSUTF8StringEncoding]);
+}
+
+- (NSString * _Nullable)lastErrorDescription {
+  NSUserDefaults *storage = [NSUserDefaults standardUserDefaults];
+  return [storage stringForKey:kLastErrorPersistenceKey];
+}
+
+- (void)setLastErrorDescription:(NSString * _Nullable)description {
+  NSUserDefaults *storage = [NSUserDefaults standardUserDefaults];
+  if (description == nil || description.length == 0) {
+    [storage removeObjectForKey:kLastErrorPersistenceKey];
+  } else {
+    [storage setObject:description forKey:kLastErrorPersistenceKey];
+  }
+}
+
+- (void)cancelTunnelWithError:(nullable NSError *)error {
+  [super cancelTunnelWithError:error];
+  self.lastErrorDescription = (error == nil ? nil : error.localizedDescription);
 }
 
 @end
