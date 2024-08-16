@@ -99,7 +99,7 @@ class OutlinePlugin: CDVPlugin {
 #endif
           self.sendSuccess(callbackId: command.callbackId)
         } else {
-          self.sendError(error, callbackId: command.callbackId)
+          self.sendError(errMsg, callbackId: command.callbackId)
         }
       }
     }

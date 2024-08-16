@@ -42,8 +42,7 @@ import org.outline.shadowsocks.ShadowsocksConfig;
 import shadowsocks.Shadowsocks;
 
 /**
- * Android service responsible for managing a VPN tunnel. Clients must bind to
- * this
+ * Android service responsible for managing a VPN tunnel. Clients must bind to this
  * service in order to access its APIs.
  */
 public class VpnTunnelService extends VpnService {
@@ -74,7 +73,6 @@ public class VpnTunnelService extends VpnService {
     SYSTEM_MISCONFIGURED(12);
 
     public final int value;
-
     ErrorCode(int value) {
       this.value = value;
     }
@@ -87,7 +85,6 @@ public class VpnTunnelService extends VpnService {
     RECONNECTING(2);
 
     public final int value;
-
     TunnelStatus(int value) {
       this.value = value;
     }
@@ -102,7 +99,6 @@ public class VpnTunnelService extends VpnService {
     ERROR_REPORTING_API_KEY("errorReportingApiKey");
 
     public final String value;
-
     MessageData(final String value) {
       this.value = value;
     }
@@ -166,8 +162,7 @@ public class VpnTunnelService extends VpnService {
     LOG.info(String.format(Locale.ROOT, "Starting VPN service: %s", intent));
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
     if (intent != null) {
-      // VpnServiceStarter puts AUTOSTART_EXTRA in the intent when the service starts
-      // automatically.
+      // VpnServiceStarter puts AUTOSTART_EXTRA in the intent when the service starts automatically.
       boolean startedByVpnStarter = intent.getBooleanExtra(VpnServiceStarter.AUTOSTART_EXTRA, false);
       boolean startedByAlwaysOn = VpnService.SERVICE_INTERFACE.equals(intent.getAction());
       if (startedByVpnStarter || startedByAlwaysOn) {
@@ -198,9 +193,9 @@ public class VpnTunnelService extends VpnService {
    * Helper method to build a TunnelConfig from a JSON object.
    *
    * @param tunnelId unique identifier for the tunnel.
-   * @param config   JSON object containing TunnelConfig values.
+   * @param config JSON object containing TunnelConfig values.
    * @throws IllegalArgumentException if `tunnelId` or `config` are null.
-   * @throws JSONException            if parsing `config` fails.
+   * @throws JSONException if parsing `config` fails.
    * @return populated TunnelConfig
    */
   public static TunnelConfig makeTunnelConfig(final String tunnelId, final JSONObject config)
@@ -235,7 +230,7 @@ public class VpnTunnelService extends VpnService {
         if ((c & 0xFF) != c) {
           throw new JSONException(String.format("Prefix character '%c' is out of range", c));
         }
-        tunnelConfig.proxy.prefix[i] = (byte) c;
+        tunnelConfig.proxy.prefix[i] = (byte)c;
       }
     }
     return tunnelConfig;
@@ -255,8 +250,7 @@ public class VpnTunnelService extends VpnService {
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {
-      // Broadcast the previous instance disconnect event before reassigning the
-      // tunnel config.
+      // Broadcast the previous instance disconnect event before reassigning the tunnel config.
       broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
       stopForeground();
       try {
@@ -285,8 +279,7 @@ public class VpnTunnelService extends VpnService {
     boolean udpSupported = false;
     if (!isAutoStart) {
       try {
-        // Do not perform connectivity checks when connecting on startup. We should
-        // avoid failing
+        // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
         udpSupported = checkUDPConnectivity(client);
       } catch (Exception e) {
@@ -302,7 +295,7 @@ public class VpnTunnelService extends VpnService {
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         tearDownActiveTunnel();
-        return "VPN_START_FAILURE";
+        return "VPN permission is not granted";
       }
       startNetworkConnectivityMonitor();
     }
@@ -354,16 +347,13 @@ public class VpnTunnelService extends VpnService {
 
   /**
    * Checks if the given client can handle UDP traffic.
-   * It returns true if the client supports both TCP and UDP, and false if it only
-   * supports TCP.
+   * It returns true if the client supports both TCP and UDP, and false if it only supports TCP.
    * If the client doesn't support TCP at all, an exception is thrown.
    * 
    * @param client The shadowsocks client to check.
-   * @return true if the client supports both TCP and UDP, false if only supports
-   *         TCP.
+   * @return true if the client supports both TCP and UDP, false if only supports TCP.
    * @throws Exception when the client doesn't support TCP.
-   *                   The exception message contains a PlatformError in JSON
-   *                   format.
+   *                   The exception message contains a PlatformError in JSON format.
    */
   private boolean checkUDPConnectivity(final shadowsocks.Client client) throws Exception {
     long status = Shadowsocks.checkConnectivity(client);
@@ -390,15 +380,11 @@ public class VpnTunnelService extends VpnService {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Indicate that traffic will be sent over the current active network.
-        // Although setting the underlying network to an available network may not seem
-        // like the
-        // correct behavior, this method has been observed only to fire only when a
-        // preferred
-        // network becomes available. It will not fire, for example, when the mobile
-        // network becomes
+        // Although setting the underlying network to an available network may not seem like the
+        // correct behavior, this method has been observed only to fire only when a preferred
+        // network becomes available. It will not fire, for example, when the mobile network becomes
         // available if WiFi is the active network. Additionally, `getActiveNetwork` and
-        // `getActiveNetworkInfo` have been observed to return the underlying network
-        // set by us.
+        // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] { network });
       }
       boolean isUdpSupported = vpnTunnel.updateUDPSupport();
@@ -426,16 +412,14 @@ public class VpnTunnelService extends VpnService {
   }
 
   private void startNetworkConnectivityMonitor() {
-    final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(
-        Context.CONNECTIVITY_SERVICE);
+    final ConnectivityManager connectivityManager =
+        (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkRequest request = new NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
         .build();
-    // `registerNetworkCallback` returns the VPN interface as the default network
-    // since Android P.
-    // Use `requestNetwork` instead (requires
-    // android.permission.CHANGE_NETWORK_STATE).
+    // `registerNetworkCallback` returns the VPN interface as the default network since Android P.
+    // Use `requestNetwork` instead (requires android.permission.CHANGE_NETWORK_STATE).
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
       connectivityManager.registerNetworkCallback(request, networkConnectivityMonitor);
     } else {
@@ -444,8 +428,8 @@ public class VpnTunnelService extends VpnService {
   }
 
   private void stopNetworkConnectivityMonitor() {
-    final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(
-        Context.CONNECTIVITY_SERVICE);
+    final ConnectivityManager connectivityManager =
+        (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
     try {
       connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
     } catch (Exception e) {
@@ -478,8 +462,7 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     if (VpnTunnelService.prepare(VpnTunnelService.this) != null) {
-      // We cannot prepare the VPN when running as a background service, as it
-      // requires UI.
+      // We cannot prepare the VPN when running as a background service, as it requires UI.
       LOG.warning("VPN not prepared, aborting auto-connect.");
       return;
     }
@@ -488,8 +471,7 @@ public class VpnTunnelService extends VpnService {
       final JSONObject jsonConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
       final String serverName = tunnel.getString(TUNNEL_SERVER_NAME);
       final TunnelConfig config = makeTunnelConfig(tunnelId, jsonConfig);
-      // Start the service in the foreground as per Android 8+ background service
-      // execution limits.
+      // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
       startForegroundWithNotification(serverName);
       startTunnel(config, serverName, true);
@@ -512,13 +494,13 @@ public class VpnTunnelService extends VpnService {
         char[] chars = new char[config.proxy.prefix.length];
         for (int i = 0; i < config.proxy.prefix.length; i++) {
           // Unsigned bit width extension requires a mask in Java.
-          chars[i] = (char) (config.proxy.prefix[i] & 0xFF);
+          chars[i] = (char)(config.proxy.prefix[i] & 0xFF);
         }
         proxyConfig.put("prefix", new String(chars));
       }
 
       tunnel.put(TUNNEL_ID_KEY, config.id).put(
-          TUNNEL_CONFIG_KEY, proxyConfig).put(TUNNEL_SERVER_NAME, serverName);
+        TUNNEL_CONFIG_KEY, proxyConfig).put(TUNNEL_SERVER_NAME, serverName);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
@@ -539,14 +521,11 @@ public class VpnTunnelService extends VpnService {
 
   // Foreground service & notifications
 
-  /*
-   * Starts the service in the foreground and displays a persistent notification.
-   */
+  /* Starts the service in the foreground and displays a persistent notification. */
   private void startForegroundWithNotification(final String serverName) {
     try {
       if (notificationBuilder == null) {
-        // Cache the notification builder so we can update the existing notification -
-        // creating a
+        // Cache the notification builder so we can update the existing notification - creating a
         // new notification has the side effect of resetting the tunnel timer.
         notificationBuilder = getNotificationBuilder(serverName);
       }
@@ -567,18 +546,19 @@ public class VpnTunnelService extends VpnService {
           ? "connected_server_state"
           : "reconnecting_server_state";
       notificationBuilder.setContentText(getStringResource(statusStringResourceId));
-      NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      NotificationManager notificationManager =
+          (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
       notificationManager.notify(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
     } catch (Exception e) {
       LOG.warning("Failed to update persistent notification");
     }
   }
 
-  /* Returns a notification builder with the provided server name. */
+  /* Returns a notification builder with the provided server name.  */
   private Notification.Builder getNotificationBuilder(final String serverName) throws Exception {
     Intent launchIntent = new Intent(this, getPackageMainActivityClass());
-    PendingIntent mainActivityIntent = PendingIntent.getActivity(this, 0, launchIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent mainActivityIntent =
+        PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
     Notification.Builder builder;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -619,10 +599,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /*
-   * Retrieves the ID for a resource. This is equivalent to using the generated R
-   * class.
-   */
+  /* Retrieves the ID for a resource. This is equivalent to using the generated R class. */
   public int getResourceId(final String name, final String type) {
     return getResources().getIdentifier(name, type, getPackageName());
   }

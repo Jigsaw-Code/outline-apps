@@ -35,7 +35,7 @@ interface IVpnTunnelService {
    * @param isAutoStart boolean whether the tunnel was started without user intervention.
    * @return a JSON string representing a PlatformError. Null or empty means there are no errors.
    */
-  int startTunnel(String serverName, in TunnelConfig config);
+  String startTunnel(String serverName, in TunnelConfig config);
 
   /**
    * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, shadowsocks, and
