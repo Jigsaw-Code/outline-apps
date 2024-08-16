@@ -36,7 +36,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './about-view.js';
 import './add-server-view.js';
 import './language-view.js';
 import './licenses-view.js';
@@ -44,6 +43,8 @@ import './outline-icons.js';
 import './privacy-view.js';
 
 // TODO(daniellacosse): figure out how to import this without disabling the rule
+// eslint-disable-next-line n/no-missing-import
+import '../views/about_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/contact_view';
 // eslint-disable-next-line n/no-missing-import
