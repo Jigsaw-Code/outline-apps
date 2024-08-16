@@ -97,9 +97,9 @@ export async function main(...givenParameters) {
     return true;
   });
 
-  server.listen(0, 'localhost', async () => {
-    const serverAddress = `ws://[${server.address().address}]:${server.address().port}`;
-    console.log(`LiveReload server running at ${serverAddress}`);
+  server.listen(0, '127.0.0.1', async () => {
+    const websocketURL = `ws://${server.address().address}:${server.address().port}`;
+    console.log(`LiveReload server running at ${websocketURL}`);
 
     await makeReplacements([
       {
@@ -112,7 +112,7 @@ export async function main(...givenParameters) {
   
       <script>
         try {
-          const reloadSocket = new WebSocket("${serverAddress}");
+          const reloadSocket = new WebSocket("${websocketURL}");
   
           reloadSocket.onopen = () => console.log("LiveReload connected~");
           reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
