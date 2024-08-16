@@ -16,29 +16,32 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import '@material/web/list/list.js';
-import '@material/web/list/list-item.js';
-import '@material/web/ripple/ripple.js';
-import '@material/web/icon/icon.js';
+import {classMap} from 'lit/directives/class-map.js';
+import '@material/web/all.js';
 
 @customElement('language-view')
 export class LanguageView extends LitElement {
   @property({type: Array}) languages!: {id: string; name: string}[];
-  @property({type: String, attribute: 'selected-language-id'}) selectedLanguageID!: string;
+  @property({type: String, attribute: 'selected-language-id'})
+  selectedLanguageID!: string;
 
   static styles = css`
     :host {
-      display: flex;
-      flex-direction: column;
       height: 100%;
-      justify-content: space-between;
-      text-align: center;
       width: 100%;
     }
 
     md-list-item {
       cursor: pointer;
       position: relative;
+    }
+
+    md-list-item.selected {
+      --md-list-item-label-text-color: var(--outline-primary);
+    }
+
+    md-list-item.selected md-icon {
+      color: var(--outline-primary);
     }
   `;
 
@@ -49,11 +52,12 @@ export class LanguageView extends LitElement {
           ({id, name}) => html`
             <md-list-item
               value="${id}"
+              class=${classMap({selected: this.selectedLanguageID === id})}
               @click="${this.handleLanguageSelection}"
             >
               <md-ripple></md-ripple>
               ${this.selectedLanguageID === id
-                ? html`<md-icon slot="start">check</md-icon>`
+                ? html`<md-icon slot="end">check</md-icon>`
                 : nothing}
               ${name}
             </md-list-item>
