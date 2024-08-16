@@ -38,7 +38,6 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
 import './about-view.js';
 import './add-server-view.js';
-import './language-view.js';
 import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
@@ -46,6 +45,8 @@ import './privacy-view.js';
 // TODO(daniellacosse): figure out how to import this without disabling the rule
 // eslint-disable-next-line n/no-missing-import
 import '../views/contact_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/language_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
 
@@ -396,7 +397,7 @@ export class AppRoot extends mixinBehaviors(
           <language-view
             name="language"
             id="aboutView"
-            selected-language="[[language]]"
+            selected-language-id="[[language]]"
             languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"
           ></language-view>
           <!-- Do not mirror licenses text, as it is not localized. -->

@@ -51,15 +51,15 @@ export class LanguageView extends LitElement {
         ${this.languages.map(
           ({id, name}) => html`
             <md-list-item
-              value="${id}"
               class=${classMap({selected: this.selectedLanguageID === id})}
+              data-value="${id}"
               @click="${this.handleLanguageSelection}"
             >
               <md-ripple></md-ripple>
+              ${name}
               ${this.selectedLanguageID === id
                 ? html`<md-icon slot="end">check</md-icon>`
                 : nothing}
-              ${name}
             </md-list-item>
           `
         )}
@@ -72,7 +72,9 @@ export class LanguageView extends LitElement {
       new CustomEvent('SetLanguageRequested', {
         bubbles: true,
         composed: true,
-        detail: {languageCode: (target as HTMLInputElement).value},
+        detail: {
+          languageCode: (target as HTMLElement).getAttribute('data-value'),
+        },
       })
     );
   }
