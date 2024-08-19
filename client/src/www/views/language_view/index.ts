@@ -22,7 +22,7 @@ import '@material/web/all.js';
 @customElement('language-view')
 export class LanguageView extends LitElement {
   @property({type: Array}) languages!: {id: string; name: string}[];
-  @property({type: String}) selectedlanguageid!: string;
+  @property({type: String}) selectedLanguageId!: string;
 
   static styles = css`
     :host {
@@ -50,13 +50,13 @@ export class LanguageView extends LitElement {
         ${this.languages.map(
           ({id, name}) => html`
             <md-list-item
-              class=${classMap({selected: this.selectedlanguageid === id})}
+              class=${classMap({selected: this.selectedLanguageId === id})}
               data-value="${id}"
               @click="${this.handleLanguageSelection}"
             >
               <md-ripple></md-ripple>
               ${name}
-              ${this.selectedlanguageid === id
+              ${this.selectedLanguageId === id
                 ? html`<md-icon slot="end">check</md-icon>`
                 : nothing}
             </md-list-item>
