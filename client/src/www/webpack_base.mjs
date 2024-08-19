@@ -22,7 +22,10 @@ export const require = createRequire(import.meta.url);
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
-export const GENERATE_CSS_RTL_LOADER = path.resolve(__dirname, 'webpack_css_rtl_loader.cjs');
+export const GENERATE_CSS_RTL_LOADER = path.resolve(
+  __dirname,
+  'webpack_css_rtl_loader.cjs'
+);
 
 export const TS_LOADER = {
   loader: 'ts-loader',
@@ -49,7 +52,8 @@ export const baseConfig = {
   },
   externals: {
     // See https://github.com/modernweb-dev/web/issues/1908.
-    '/__web-dev-server__web-socket.js': 'commonjs __web-dev-server__web-socket.js',
+    '/__web-dev-server__web-socket.js':
+      'commonjs __web-dev-server__web-socket.js',
   },
 };
 
@@ -76,7 +80,6 @@ export const browserConfig = {
       [
         {from: 'assets', to: 'assets'},
         {from: 'messages', to: 'messages'},
-        {from: 'ui_components/licenses/licenses.txt', to: 'ui_components/licenses'},
       ],
       {context: __dirname}
     ),

@@ -37,7 +37,6 @@ import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
 import './add-server-view.js';
-import './licenses-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
 
@@ -48,6 +47,8 @@ import '../views/about_view';
 import '../views/contact_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/language_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/licenses_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
 
