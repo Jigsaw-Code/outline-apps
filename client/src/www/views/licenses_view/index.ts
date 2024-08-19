@@ -15,13 +15,12 @@
 */
 
 import {LitElement, html, css} from 'lit';
-import {customElement, state} from 'lit/decorators.js';
+import {customElement} from 'lit/decorators.js';
+
+import licenses from './licenses/licenses.txt';
 
 @customElement('licenses-view')
 export class LicensesView extends LitElement {
-  @state() private licensesText: string = '';
-  @state() private licensesLoaded: boolean = false;
-
   static styles = css`
     :host {
       height: 100%;
@@ -36,41 +35,7 @@ export class LicensesView extends LitElement {
     }
   `;
 
-  connectedCallback() {
-    super.connectedCallback();
-    globalThis.addEventListener('location-changed', this.handleLocationChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    globalThis.removeEventListener(
-      'location-changed',
-      this.handleLocationChange
-    );
-  }
-
   render() {
-    return html`<code>${this.licensesText}</code>`;
+    return html`<code>${licenses}</code>`;
   }
-
-  private handleLocationChange = async () => {
-    if (
-      this.licensesLoaded ||
-      // TODO(daniellacosse): the polymer app root modifies the global object. this is bad.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (globalThis as any).appRoot.page !== 'licenses'
-    ) {
-      return;
-    }
-
-    try {
-      const response = await fetch('ui_components/licenses/licenses.txt');
-      const responseText = await response.text();
-
-      this.licensesText = responseText;
-      this.licensesLoaded = true;
-    } catch (error) {
-      console.error('Could not load license.txt', error);
-    }
-  };
 }
