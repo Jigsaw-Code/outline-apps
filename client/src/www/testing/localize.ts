@@ -36,18 +36,14 @@ export const localize: Localizer = (
     return `${messageID}(${JSON.stringify(formatConfigObject)})`;
   }
 
-  // We support only english messages for now.
-  // Blocked on modern-web.dev adding support for addons:
-  // https://github.com/modernweb-dev/web/issues/1341
   try {
+    // We support only english messages for now.
+    // Blocked on modern-web.dev adding support for addons:
+    // https://github.com/modernweb-dev/web/issues/1341
     return String(
       new IntlMessageFormat(message, 'en').format(formatConfigObject)
     );
   } catch (error) {
-    console.error(
-      `Failed to format messageID '${messageID}' with formatConfigObject ${JSON.stringify(formatConfigObject)}`,
-      error
-    );
     return message;
   }
 };

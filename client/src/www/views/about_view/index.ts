@@ -14,7 +14,7 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import brandLogo from '../../assets/brand-logo.png';
+import outlineLogo from '../../assets/brand-logo.png';
 import jigsawLogo from '../../assets/jigsaw-logo.png';
 
 @customElement('about-view')
@@ -28,95 +28,66 @@ export class AboutView extends LitElement {
 
   static styles = css`
     :host {
-      background: #fff;
       display: flex;
       flex-direction: column;
+      font-family: var(--outline-font-family);
+      height: 100%;
       justify-content: space-between;
+      margin: 0 auto;
+      max-width: 600px;
       text-align: center;
       width: 100%;
-      height: 100vh;
-      font-family: var(--outline-font-family);
     }
 
-    #main {
-      flex: 1;
+    article {
       height: 100%;
       padding: 32px 24px 0 24px;
     }
 
-    #footer {
-      flex: 1;
-      margin: 48px 0 36px 0;
-      text-align: left;
+    header img {
+      width: 76px;
     }
 
-    #logo {
-      width: 96px;
-    }
-
-    #version {
-      color: rgba(0, 0, 0, 0.54);
+    header h2 {
+      color: var(--outline-medium-gray);
       font-size: 12px;
       margin: 8px auto;
     }
 
-    #description {
-      color: #263238;
-      text-align: left;
+    section {
+      color: var(--outline-off-black);
       font-size: 16px;
       line-height: 22px;
       margin: 32px auto;
-    }
-
-    #jigsaw-logo {
-      width: 96px;
-    }
-
-    @media (min-width: 600px) {
-      #description {
-        width: 309px;
-      }
-      #footer {
-        text-align: center;
-        margin-top: 48px;
-      }
-      #jigsaw-logo {
-        width: 104px;
-      }
-    }
-
-    @media (max-height: 550px) {
-      #main {
-        padding: 18px 24px 0 24px;
-      }
-      #logo {
-        width: 76px;
-      }
-      #description {
-        font-size: 14px;
-        margin: 18px auto;
-      }
-      #footer {
-        margin: 36px 0 24px 0;
-      }
+      text-align: left;
     }
 
     a {
-      color: var(--medium-green);
+      color: var(--outline-primary);
       text-decoration: none;
+    }
+
+    footer {
+      margin: 48px 0 36px 0;
+      text-align: center;
+    }
+
+    footer img {
+      width: 120px;
     }
   `;
 
   render() {
     return html`
-      <div id="main">
-        <img src="${brandLogo}" alt="logo" id="logo" />
-        <div id="version">
-          ${this.localize('version', 'appVersion', this.version)}
-          (${this.build})
-        </div>
-        <div
-          id="description"
+      <article>
+        <header>
+          <img src="${outlineLogo}" alt="outline logo" />
+          <h2>
+            ${this.localize('version', 'appVersion', this.version)}
+            (${this.build})
+          </h2>
+        </header>
+        <section
           .innerHTML=${this.localize(
             'about-outline',
             'jigsawUrl',
@@ -130,13 +101,13 @@ export class AboutView extends LitElement {
             'redditUrl',
             'https://www.reddit.com/r/outlinevpn'
           )}
-        ></div>
-        <div id="footer">
+        ></section>
+        <footer>
           <a href="https://jigsaw.google.com">
-            <img id="jigsaw-logo" src="${jigsawLogo}" />
+            <img src="${jigsawLogo}" alt="jigsaw logo" />
           </a>
-        </div>
-      </div>
+        </footer>
+      </article>
     `;
   }
 }
