@@ -398,7 +398,7 @@ export class AppRoot extends mixinBehaviors(
           <language-view
             name="language"
             id="aboutView"
-            selected-language-id="[[language]]"
+            selectedlanguageid="[[language]]"
             languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"
           ></language-view>
           <!-- Do not mirror licenses text, as it is not localized. -->

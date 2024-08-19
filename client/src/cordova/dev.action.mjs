@@ -78,16 +78,19 @@ export async function main(...givenParameters) {
   await runAction('client/src/cordova/setup', ...parameters);
 
   let previousUIHashResult = await getUIHash();
+  let isBuilding = false;
   const server = createReloadServer(async () => {
     const currentUIHashResult = await getUIHash();
 
-    if (previousUIHashResult === currentUIHashResult) {
+    if (isBuilding || previousUIHashResult === currentUIHashResult) {
       return false;
     }
 
     previousUIHashResult = currentUIHashResult;
 
+    isBuilding = true;
     await runAction('client/src/www/build', ...parameters);
+    isBuilding = false;
 
     await fs.copy(
       path.join(getRootDir(), 'client/www'),
@@ -115,7 +118,7 @@ export async function main(...givenParameters) {
           const reloadSocket = new WebSocket("${websocketURL}");
   
           reloadSocket.onopen = () => console.log("LiveReload connected~");
-          reloadSocket.onmessage = ({ data }) => data === "reload" && location.reload();
+          reloadSocket.onmessage = ({ data }) => data === "reload" && reloadSocket.close() && location.reload(true);
         } catch (e) {
           // nevermind
         }

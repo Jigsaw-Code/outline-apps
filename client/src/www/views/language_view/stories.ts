@@ -28,9 +28,9 @@ export default {
   },
 };
 
-export const Example = ({selectedLanguageID, languages}: LanguageView) => html`
+export const Example = ({selectedlanguageid, languages}: LanguageView) => html`
   <language-view
-    selected-language-id=${selectedLanguageID}
+    selectedlanguageid=${selectedlanguageid}
     .languages=${languages}
   ></language-view>
 `;
