@@ -20,11 +20,4 @@ export default {
   component: 'licenses-view',
 };
 
-export const Example = () => html`
-  <licenses-view></licenses-view>
-  <script>
-    globalThis.appRoot = {};
-    globalThis.appRoot.page = 'licenses';
-    globalThis.dispatchEvent(new CustomEvent('location-changed'));
-  </script>
-`;
+export const Example = () => html`<licenses-view></licenses-view>`;
