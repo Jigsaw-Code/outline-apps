@@ -116,6 +116,7 @@
     "prettier": "^2.8.0",
     "pretty-quick": "^2.0.1",
     "puppeteer": "^13.1.2",
+    "raw-loader": "^4.0.2",
     "replace-in-file": "^6.3.5",
     "rimraf": "^2.7.1",
     "rmfr": "^2.0.0",

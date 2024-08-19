@@ -14,10 +14,12 @@
   limitations under the License.
 */
 
+/// <reference types="../../types/shims" />
+
 import {LitElement, html, css} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-import licenses from './licenses/licenses.txt';
+import licenses from './licenses/licenses.txt?raw';
 
 @customElement('licenses-view')
 export class LicensesView extends LitElement {
