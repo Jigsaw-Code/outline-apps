@@ -35,11 +35,11 @@ import * as vpnInstaller from './app/vpn_installer';
 import * as errorReporter from './shared/error_reporter';
 import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';
-import * as languageView from './ui_components/language-view';
 import * as privacyView from './ui_components/privacy-view';
 import * as serverRenameDialog from './ui_components/server-rename-dialog';
 import * as userCommsDialog from './ui_components/user-comms-dialog';
 import * as aboutView from './views/about_view';
+import * as languageView from './views/language_view';
 
 describe('TODOs', () => {
   it('loads all the files that have no tests against them', () => {
