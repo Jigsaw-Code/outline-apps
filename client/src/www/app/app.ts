@@ -152,11 +152,7 @@ export class App {
       'DisconnectPressed',
       this.disconnectServer.bind(this)
     );
-    this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
-    this.rootEl.addEventListener(
-      'RenameRequested',
-      this.renameServer.bind(this)
-    );
+    this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));s
     this.rootEl.addEventListener(
       'QuitPressed',
       this.quitApplication.bind(this)
