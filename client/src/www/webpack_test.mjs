@@ -33,6 +33,10 @@ export default merge(baseConfig, {
         test: /\.png$/,
         use: ['file-loader'],
       },
+      {
+        test: /\.txt$/i,
+        loader: 'raw-loader',
+      },
     ],
   },
 });
