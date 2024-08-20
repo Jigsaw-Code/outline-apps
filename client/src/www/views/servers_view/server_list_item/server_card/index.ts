@@ -223,13 +223,13 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         </md-menu>
       `,
       menuButton: html`
-        <md-outlined-icon-button
+        <md-icon-button
           ${ref(menuButton)}
           class="card-menu-button"
           @click=${handleMenuOpen}
         >
           <md-icon>more_vert</md-icon>
-        </md-outlined-icon-button>
+        </md-icon-button>
       `,
       footer: html`
         <footer class="card-footer">
