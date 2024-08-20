@@ -15,7 +15,7 @@ import {html} from 'lit';
 import '@material/web/all';
 
 import './index';
-import type {AddServerKeyDialog} from './index';
+import type {AddAccessKeyDialog} from './index';
 import {localize} from '../../../testing/localize';
 
 export default {
@@ -26,8 +26,8 @@ export default {
   },
 };
 
-export const Example = ({open}: AddServerKeyDialog) =>
-  html`<add-server-key-dialog .open=${open} .localize=${localize}>
+export const Example = ({open}: AddAccessKeyDialog) =>
+  html`<add-access-key-dialog .open=${open} .localize=${localize}>
     <div
       slot="accessMessage"
       .innerHTML="${localize(
@@ -40,4 +40,4 @@ export const Example = ({open}: AddServerKeyDialog) =>
         '</a>'
       )}"
     ></div>
-  </add-server-key-dialog>`;
+  </add-access-key-dialog>`;

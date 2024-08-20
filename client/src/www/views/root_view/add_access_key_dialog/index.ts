@@ -2,15 +2,15 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
-@customElement('add-server-key-dialog')
-export class AddServerKeyDialog extends LitElement {
+@customElement('add-access-key-dialog')
+export class AddAccessKeyDialog extends LitElement {
   @property({type: Function}) localize!: (
     key: string,
     ...args: string[]
   ) => string;
   @property({type: Boolean}) open: boolean;
 
-  @state() private editedAccessKey: string | null;
+  @state() accessKey: string | null;
   @state() private hasValidAccessKey: boolean;
 
   static styles = css`
@@ -83,10 +83,10 @@ export class AddServerKeyDialog extends LitElement {
   }
 
   private handleAccessKeyEdit(event: InputEvent) {
-    this.editedAccessKey = (event.target as HTMLInputElement).value;
+    this.accessKey = (event.target as HTMLInputElement).value;
 
     try {
-      SHADOWSOCKS_URI.parse(this.editedAccessKey);
+      SHADOWSOCKS_URI.parse(this.accessKey);
       this.hasValidAccessKey = true;
     } catch {
       this.hasValidAccessKey = false;
@@ -94,9 +94,11 @@ export class AddServerKeyDialog extends LitElement {
   }
 
   private handleAccessKeyCreate() {
+    this.accessKey = null;
+
     this.dispatchEvent(
       new CustomEvent('AddServerRequested', {
-        detail: {accessKey: this.editedAccessKey},
+        detail: {accessKey: this.accessKey},
         composed: true,
         bubbles: true,
       })
@@ -104,9 +106,11 @@ export class AddServerKeyDialog extends LitElement {
   }
 
   private handleAccessKeyCancel() {
+    this.accessKey = null;
+
     this.dispatchEvent(
       new CustomEvent('AddServerRequested', {
-        detail: {accessKey: this.editedAccessKey},
+        detail: {accessKey: this.accessKey},
         composed: true,
         bubbles: true,
       })
