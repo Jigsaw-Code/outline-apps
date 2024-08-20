@@ -11,7 +11,7 @@
   limitations under the License.
 */
 
-import {LitElement, html} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import '@material/web/all.js';
 
@@ -23,6 +23,13 @@ export class ServerRenameDialog extends LitElement {
   @property({type: String}) serverName!: string;
 
   @state() private editedServerName: string | null = null;
+
+  static styles = css`
+    :host {
+      --md-sys-color-primary: var(--outline-primary);
+      --md-sys-shape-corner-extra-large: 12px;
+    }
+  `;
 
   render() {
     if (this.editedServerName === null) {
