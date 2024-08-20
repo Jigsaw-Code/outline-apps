@@ -19,25 +19,12 @@ import type {AddAccessKeyDialog} from './index';
 import {localize} from '../../../testing/localize';
 
 export default {
-  title: 'Client/Root View/Add Server Key Dialog',
-  component: 'add-server-key-dialog',
+  title: 'Client/Root View/Add Access Key Dialog',
+  component: 'add-access-key-dialog',
   args: {
     open: true,
   },
 };
 
 export const Example = ({open}: AddAccessKeyDialog) =>
-  html`<add-access-key-dialog .open=${open} .localize=${localize}>
-    <div
-      slot="accessMessage"
-      .innerHTML="${localize(
-        'server-create-your-own',
-        'breakLine',
-        '<br/>',
-        'openLink',
-        '<a href=https://s3.amazonaws.com/outline-vpn/index.html>',
-        'closeLink',
-        '</a>'
-      )}"
-    ></div>
-  </add-access-key-dialog>`;
+  html`<add-access-key-dialog .open=${open} .localize=${localize}></add-access-key-dialog>`;

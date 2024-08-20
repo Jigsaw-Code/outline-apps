@@ -1,4 +1,4 @@
-import {LitElement, html, css} from 'lit';
+import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
@@ -11,11 +11,11 @@ export class AddAccessKeyDialog extends LitElement {
   @property({type: Boolean}) open: boolean;
 
   @state() accessKey: string | null;
-  @state() private hasValidAccessKey: boolean;
 
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
+      --md-sys-shape-corner-extra-large: 12px;
 
       width: 100%;
       height: 100%;
@@ -31,60 +31,72 @@ export class AddAccessKeyDialog extends LitElement {
       width: 100%;
     }
 
-    footer {
-      font-family: var(--outline-font-family);
-      font-size: 14px;
-      text-align: center;
+    a {
+      color: var(--outline-primary);
     }
   `;
 
   render() {
-    const footerContents = this.hasValidAccessKey
-      ? html`<md-text-button @click=${this.handleAccessKeyCancel}
-            >${this.localize('server-add-ignore')}
-          </md-text-button>
-          <md-filled-button @click=${this.handleAccessKeyCreate}
-            >${this.localize('server-add')}</md-filled-button
-          >`
-      : html`<slot name="accessMessage"></slot>`;
-
     return html`<md-dialog .open="${this.open}">
       <header slot="headline">
-        ${this.localize(
-          this.hasValidAccessKey
-            ? 'server-access-key-detected'
-            : 'server-add-access-key'
-        )}
+        ${this.hasValidAccessKey
+            ? 'Access key detected'
+            : 'Add server access key'
+        }
       </header>
       <article slot="content">
         <section>
-          ${this.localize(
-            this.hasValidAccessKey
-              ? 'server-detected'
-              : 'server-add-instructions'
-          )}
+            ${this.hasValidAccessKey
+              ? 'Please confirm that you want to add this access key.'
+              : 'Paste the access key you want to add here.'}
         </section>
         <section>
           <md-filled-text-field
             @input=${this.handleAccessKeyEdit}
-            type="textarea"
+            .error=${this.hasDefinedButInvalidAccessKey}
+            error-text="Invalid access key."
             rows="5"
+            type="textarea"
+            value=${this.accessKey}
           ></md-filled-text-field>
         </section>
+        ${
+          !this.hasValidAccessKey 
+            ? html`<section style="color:gray;">Need a new access key? Create one at <a>our website</a>.</section>` 
+            : nothing
+        }
       </article>
-      <footer slot="actions">${footerContents}</footer>
+      <footer slot="actions">
+        <md-text-button @click=${this.handleAccessKeyCancel}
+          >Cancel
+        </md-text-button>
+        <md-filled-button @click=${this.handleAccessKeyCreate} ?disabled=${!this.hasValidAccessKey}
+          >Confirm</md-filled-button
+        >
+      </footer>
     </md-dialog>`;
+  }
+
+  private get hasValidAccessKey() {
+    try {
+      SHADOWSOCKS_URI.parse(this.accessKey);
+      return true;
+    } catch {}
+
+    try {
+      const url = new URL(this.accessKey);
+      return url.protocol === 'ssconf:';
+    } catch {}
+
+    return false;
+  }
+
+  private get hasDefinedButInvalidAccessKey() {
+    return this.accessKey && !this.hasValidAccessKey;
   }
 
   private handleAccessKeyEdit(event: InputEvent) {
     this.accessKey = (event.target as HTMLInputElement).value;
-
-    try {
-      SHADOWSOCKS_URI.parse(this.accessKey);
-      this.hasValidAccessKey = true;
-    } catch {
-      this.hasValidAccessKey = false;
-    }
   }
 
   private handleAccessKeyCreate() {
