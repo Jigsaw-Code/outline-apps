@@ -17,7 +17,6 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import '@material/web/all.js';
 
 @customElement('language-view')
 export class LanguageView extends LitElement {

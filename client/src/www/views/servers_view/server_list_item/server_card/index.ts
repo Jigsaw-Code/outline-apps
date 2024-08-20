@@ -11,10 +11,7 @@
   limitations under the License.
 */
 
-import {Menu} from '@material/mwc-menu';
-import '@material/mwc-button';
-import '@material/mwc-icon-button';
-import '@material/mwc-menu';
+import type {Menu} from '@material/web/menu/menu';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
@@ -59,7 +56,6 @@ const sharedCSS = css`
     display: grid;
     gap: var(--outline-slim-gutter);
     grid-gap: var(--outline-slim-gutter);
-    height: 100%;
     overflow: hidden;
     width: 100%;
   }
@@ -69,7 +65,6 @@ const sharedCSS = css`
     color: var(--outline-text-color);
     gap: var(--outline-slim-gutter);
     grid-area: metadata;
-    height: 100%;
     display: flex;
     align-items: center;
   }
@@ -109,6 +104,10 @@ const sharedCSS = css`
     word-break: break-all;
   }
 
+  .card-menu {
+    --md-menu-container-color: var(--outline-card-background);
+  }
+
   .card-menu-button {
     align-self: start;
     grid-area: menu;
@@ -128,6 +127,12 @@ const sharedCSS = css`
     color: var(--outline-error);
     margin: 0 var(--outline-slim-gutter);
   }
+
+  .card-footer-button {
+    --md-sys-color-primary: var(--outline-primary);
+
+    text-transform: uppercase;
+  }
 `;
 
 // TODO(daniellacosse): wrap components in a closure to avoid unnecessary work
@@ -143,7 +148,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   const messages = {
     serverName: server.name,
     error: hasErrorMessage ? localize(server.errorMessageId) : '',
-    connectButton: localize(isConnectedState ? 'disconnect-button-label' : 'connect-button-label'),
+    connectButton: localize(
+      isConnectedState ? 'disconnect-button-label' : 'connect-button-label'
+    ),
   };
 
   const dispatchers = {
@@ -157,15 +164,24 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       ),
     forget: () =>
       element.dispatchEvent(
-        new CustomEvent(ServerListItemEvent.FORGET, {detail: {serverId: server.id}, bubbles: true, composed: true})
-      ),
-    connectToggle: () =>
-      element.dispatchEvent(
-        new CustomEvent(isConnectedState ? ServerListItemEvent.DISCONNECT : ServerListItemEvent.CONNECT, {
+        new CustomEvent(ServerListItemEvent.FORGET, {
           detail: {serverId: server.id},
           bubbles: true,
           composed: true,
         })
+      ),
+    connectToggle: () =>
+      element.dispatchEvent(
+        new CustomEvent(
+          isConnectedState
+            ? ServerListItemEvent.DISCONNECT
+            : ServerListItemEvent.CONNECT,
+          {
+            detail: {serverId: server.id},
+            bubbles: true,
+            composed: true,
+          }
+        )
       ),
   };
 
@@ -177,8 +193,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       return;
     }
 
-    if (!menuElement.anchor) {
-      menuElement.anchor = menuButtonElement;
+    if (!menuElement.anchorElement) {
+      menuElement.anchorElement = menuButtonElement;
     }
 
     menuElement.show();
@@ -190,33 +206,41 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
     elements: {
       metadataText: html`
         <div class="card-metadata-text">
-          <h2 class="card-metadata-server-name" id="server-name">${messages.serverName}</h2>
+          <h2 class="card-metadata-server-name" id="server-name">
+            ${messages.serverName}
+          </h2>
           <label class="card-metadata-server-address">${server.address}</label>
         </div>
       `,
       menu: html`
-        <mwc-menu ${ref(menu)} menuCorner="END">
-          <mwc-list-item @click="${dispatchers.beginRename}">${localize('server-rename')}</mwc-list-item>
-          <mwc-list-item @click="${dispatchers.forget}">${localize('server-forget')}</mwc-list-item>
-        </mwc-menu>
+        <md-menu ${ref(menu)} class="card-menu" menuCorner="END">
+          <md-menu-item @click="${dispatchers.beginRename}">
+            ${localize('server-rename')}
+          </md-menu-item>
+          <md-menu-item @click="${dispatchers.forget}">
+            ${localize('server-forget')}
+          </md-list-item>
+        </md-menu>
       `,
       menuButton: html`
-        <mwc-icon-button
+        <md-outlined-icon-button
           ${ref(menuButton)}
           class="card-menu-button"
-          icon="more_vert"
           @click=${handleMenuOpen}
-        ></mwc-icon-button>
+        >
+          <md-icon>more_vert</md-icon>
+        </md-outlined-icon-button>
       `,
       footer: html`
         <footer class="card-footer">
           <span class="card-error">${messages.error}</span>
-          <mwc-button
-            label="${messages.connectButton}"
+          <md-text-button
+            class="card-footer-button"
             @click="${dispatchers.connectToggle}"
             ?disabled=${hasErrorMessage}
           >
-          </mwc-button>
+            ${messages.connectButton}
+          </md-text-button>
         </footer>
       `,
     },
@@ -238,9 +262,13 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     sharedCSS,
     css`
       .card {
-        --min-indicator-size: calc(var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size));
+        --min-indicator-size: calc(
+          var(--server-name-size) + var(--outline-mini-gutter) +
+            var(--server-address-size)
+        );
         --max-indicator-size: calc(
-          var(--outline-slim-gutter) + var(--server-name-size) + var(--outline-mini-gutter) + var(--server-address-size) +
+          var(--outline-slim-gutter) + var(--server-name-size) +
+            var(--outline-mini-gutter) + var(--server-address-size) +
             var(--outline-slim-gutter)
         );
 
@@ -264,7 +292,9 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     return html`
       <div class="card">
         <div class="card-metadata" aria-labelledby="server-name">
-          <server-connection-indicator connection-state="${this.server.connectionState}"></server-connection-indicator>
+          <server-connection-indicator
+            connection-state="${this.server.connectionState}"
+          ></server-connection-indicator>
           ${elements.metadataText}
         </div>
         ${elements.menuButton} ${elements.footer}
@@ -278,7 +308,10 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
  * Display a featured Server in a showcase.
  */
 @customElement('server-hero-card')
-export class ServerHeroCard extends LitElement implements ServerListItemElement {
+export class ServerHeroCard
+  extends LitElement
+  implements ServerListItemElement
+{
   @property() server: ServerListItem;
   @property() localize: Localizer;
 
@@ -334,7 +367,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
   render() {
     const {elements, dispatchers, messages} = getSharedComponents(this);
 
-    const connectionStatusText = this.localize(`${this.server.connectionState}-server-state`);
+    const connectionStatusText = this.localize(
+      `${this.server.connectionState}-server-state`
+    );
     const connectToggleKeyboardDispatcher = (event: KeyboardEvent) => {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -346,7 +381,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
 
     return html`
       <div class="card">
-        <div class="card-metadata" aria-labelledby="server-name">${elements.metadataText}</div>
+        <div class="card-metadata" aria-labelledby="server-name">
+          ${elements.metadataText}
+        </div>
         ${elements.menuButton}
         <div class="card-connection-button-container">
           <server-connection-indicator
@@ -358,7 +395,9 @@ export class ServerHeroCard extends LitElement implements ServerListItemElement 
             tabindex="0"
             title="${connectionStatusText}"
           ></server-connection-indicator>
-          <label class="card-connection-label" for="${messages.connectButton}">${connectionStatusText}</label>
+          <label class="card-connection-label" for="${messages.connectButton}">
+            ${connectionStatusText}
+          </label>
         </div>
         ${elements.footer}
       </div>

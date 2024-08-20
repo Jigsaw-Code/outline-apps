@@ -31,12 +31,11 @@ export class ServerList extends LitElement {
         width: 100%;
       }
 
-      /* TODO(daniellacosse): Remove the hard-coded heights. */
       server-row-card {
         margin: 0 auto 8px auto;
-        height: 130px;
       }
 
+      /* TODO(daniellacosse): Remove the hard-coded heights. */
       server-hero-card {
         height: 400px;
       }
@@ -48,11 +47,18 @@ export class ServerList extends LitElement {
 
   render() {
     if (this.hasSingleServer) {
-      return html`<server-hero-card .localize=${this.localize} .server=${this.servers[0]}></server-hero-card>`;
+      return html`<server-hero-card
+        .localize=${this.localize}
+        .server=${this.servers[0]}
+      ></server-hero-card>`;
     } else {
       return html`
         ${this.servers.map(
-          server => html`<server-row-card .localize=${this.localize} .server=${server}></server-row-card>`
+          server =>
+            html`<server-row-card
+              .localize=${this.localize}
+              .server=${server}
+            ></server-row-card>`
         )}
       `;
     }
