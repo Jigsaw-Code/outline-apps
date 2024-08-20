@@ -11,7 +11,7 @@
   limitations under the License.
 */
 
-import {Menu} from '@material/mwc-menu';
+import type {Menu} from '@material/web/menu/menu';
 
 import {type Localizer} from '@outline/infrastructure/i18n';
 import {Ref} from 'lit/directives/ref';
