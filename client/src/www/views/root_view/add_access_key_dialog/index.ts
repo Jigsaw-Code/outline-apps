@@ -34,6 +34,7 @@ export class AddAccessKeyDialog extends LitElement {
     footer {
       font-family: var(--outline-font-family);
       font-size: 14px;
+      text-align: center;
     }
   `;
 
@@ -66,16 +67,9 @@ export class AddAccessKeyDialog extends LitElement {
         <section>
           <md-filled-text-field
             @input=${this.handleAccessKeyEdit}
-            label=${this.localize(
-              'server-access-key-label',
-              'ssProtocol',
-              'ss://'
-            )}
             type="textarea"
             rows="5"
-          >
-            <md-icon slot="leading-icon">vpn_key</md-icon>
-          </md-filled-text-field>
+          ></md-filled-text-field>
         </section>
       </article>
       <footer slot="actions">${footerContents}</footer>
