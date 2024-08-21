@@ -154,16 +154,16 @@ export class App {
     );
     this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
     this.rootEl.addEventListener(
+      'RenameRequested',
+      this.renameServer.bind(this)
+    );
+    this.rootEl.addEventListener(
       'QuitPressed',
       this.quitApplication.bind(this)
     );
     this.rootEl.addEventListener(
       'AutoConnectDialogDismissed',
       this.autoConnectDialogDismissed.bind(this)
-    );
-    this.rootEl.addEventListener(
-      'RenameRequested',
-      this.renameServer.bind(this)
     );
     this.rootEl.addEventListener(
       'PrivacyTermsAcked',
