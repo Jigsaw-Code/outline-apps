@@ -251,8 +251,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       renameDialog: html`<server-rename-dialog
         .open=${element.isRenameDialogOpen}
         .localize=${localize}
-        serverId=${server.id}
-        serverName=${server.name}
+        serverId="${server.id}"
+        serverName="${server.name}"
         @cancel=${() => (element.isRenameDialogOpen = false)}
         @submit=${dispatchers.submitRename}
       ></server-rename-dialog>`,
