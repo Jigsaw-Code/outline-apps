@@ -15,7 +15,8 @@ export class AddAccessKeyDialog extends LitElement {
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 12px;
+      --md-sys-shape-corner-extra-large: 2px;
+      --md-sys-shape-corner-full: 2px;
 
       width: 100%;
       height: 100%;
@@ -34,21 +35,27 @@ export class AddAccessKeyDialog extends LitElement {
     a {
       color: var(--outline-primary);
     }
+
+    footer {
+      text-transform: uppercase;
+    }
+
+    md-dialog {
+      min-width: 300px;
+    }
   `;
 
   render() {
-    return html`<md-dialog .open="${this.open}">
+    return html`<md-dialog .open="${this.open}" quick>
       <header slot="headline">Add VPN access key</header>
       <article slot="content">
-        ${!this.hasValidAccessKey
-          ? html`<section style="color:gray;">
-              Need a new access key? Create one at <a>our website</a>.
-            </section>`
-          : nothing}
+        <section style="color:gray;">
+          Need a new access key? Create one at <a>our website</a>.
+        </section>
         <section>
           <md-filled-text-field
             @input=${this.handleAccessKeyEdit}
-            .error=${this.hasDefinedButInvalidAccessKey}
+            .error=${this.accessKey && !this.hasValidAccessKey}
             error-text="Invalid access key."
             label="Paste access key here"
             rows="5"
@@ -74,18 +81,18 @@ export class AddAccessKeyDialog extends LitElement {
     try {
       SHADOWSOCKS_URI.parse(this.accessKey);
       return true;
-    } catch {}
+    } catch {
+      // do nothing
+    }
 
     try {
       const url = new URL(this.accessKey);
       return url.protocol === 'ssconf:';
-    } catch {}
+    } catch {
+      // do nothing
+    }
 
     return false;
-  }
-
-  private get hasDefinedButInvalidAccessKey() {
-    return this.accessKey && !this.hasValidAccessKey;
   }
 
   private handleAccessKeyEdit(event: InputEvent) {
