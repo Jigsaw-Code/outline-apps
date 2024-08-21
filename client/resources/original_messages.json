@@ -335,7 +335,7 @@
   },
   "save": {
     "description": "The text on a button to save application settings.",
-    "message": "Save"
+    "message": "save"
   },
   "server_access_key_detected": {
     "description": "A message indicating the application has detected a valid access key to be used to connect to a server.",
