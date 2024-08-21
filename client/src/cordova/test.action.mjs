@@ -24,7 +24,6 @@ import rmfr from 'rmfr';
 
 
 const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
-const APPLE_LIBRARY_NAME = 'OutlineAppleLib';
 
 const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
 
@@ -54,13 +53,13 @@ export async function main(...parameters) {
     'clean',
     'test',
     '-scheme',
-    `${APPLE_LIBRARY_NAME}-Package`,
+    'VpnExtensionTest',
     '-destination',
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`
       : `platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)`,
-    '-workspace',
-    path.join(APPLE_ROOT, APPLE_LIBRARY_NAME),
+    '-project',
+    path.join(APPLE_ROOT, 'OutlineLib', 'OutlineLib.xcodeproj'),
     '-enableCodeCoverage',
     'YES',
     '-derivedDataPath',
