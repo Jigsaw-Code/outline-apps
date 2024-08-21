@@ -15,13 +15,14 @@
       shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "OutlineTunnelTest"
-               BuildableName = "OutlineTunnelTest"
-               BlueprintName = "OutlineTunnelTest"
-               ReferencedContainer = "container:">
+               BlueprintIdentifier = "522E63EC2C768BA30010C3FA"
+               BuildableName = "VpnExtensionTest.xctest"
+               BlueprintName = "VpnExtensionTest"
+               ReferencedContainer = "container:OutlineLib.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

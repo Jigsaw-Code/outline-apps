@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import XCTest
+import NetworkExtension
 
 @testable import VpnExtension
 
@@ -27,7 +28,7 @@ final class VpnExtensionTest: XCTestCase {
     }
     
     func testGetTunnelNetworkSettings() throws {
-        let settings = OutlineTunnel.getTunnelNetworkSettings()
+        let settings = SwiftBridge.getTunnelNetworkSettings()
         
         XCTAssertEqual("::", settings.tunnelRemoteAddress)
         
