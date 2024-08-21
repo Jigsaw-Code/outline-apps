@@ -70,7 +70,7 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   /** Starts a VPN tunnel as specified in the OutlineTunnel object. */
-  public func start(_ tunnelId: String, name: String?, withTransport transportConfig: String) async -> ErrorCode {
+  public func start(_ tunnelId: String, named name: String?, withTransport transportConfig: String) async -> ErrorCode {
     if let manager = await getTunnelManager(), isActiveSession(manager.connection) {
       DDLogDebug("Stoppping active session before starting new one")
       await stopSession(manager)
