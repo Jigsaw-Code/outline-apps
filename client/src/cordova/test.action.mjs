@@ -22,7 +22,6 @@ import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import minimist from 'minimist';
 import rmfr from 'rmfr';
 
-
 const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
 
 const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
@@ -38,14 +37,23 @@ export async function main(...parameters) {
   } = minimist(parameters);
 
   if (!SUPPORTED_PLATFORMS.has(outlinePlatform)) {
-    throw new Error('Testing is only currently supported for platforms: ' + Array.from(SUPPORTED_PLATFORMS));
+    throw new Error(
+      'Testing is only currently supported for platforms: ' +
+        Array.from(SUPPORTED_PLATFORMS)
+    );
   }
 
   if (os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error(
+      'Building an Apple binary requires xcodebuild and can only be done on MacOS'
+    );
   }
 
-  const derivedDataPath = path.join(process.env.COVERAGE_DIR, 'apple', outlinePlatform);
+  const derivedDataPath = path.join(
+    process.env.COVERAGE_DIR,
+    'apple',
+    outlinePlatform
+  );
 
   await rmfr(derivedDataPath);
   await spawnStream(
@@ -57,7 +65,7 @@ export async function main(...parameters) {
     '-destination',
     outlinePlatform === 'macos'
       ? `platform=macOS,arch=${os.machine()}`
-      : `platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)`,
+      : 'platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)',
     '-project',
     path.join(APPLE_ROOT, 'OutlineLib', 'OutlineLib.xcodeproj'),
     '-enableCodeCoverage',
@@ -67,9 +75,9 @@ export async function main(...parameters) {
   );
 
   const testCoverageDirectoryPath = path.join(derivedDataPath, 'Logs', 'Test');
-  const testCoverageResultFilename = (await fs.readdir(testCoverageDirectoryPath)).find(filename =>
-    filename.endsWith('xcresult')
-  );
+  const testCoverageResultFilename = (
+    await fs.readdir(testCoverageDirectoryPath)
+  ).find(filename => filename.endsWith('xcresult'));
 
   await fs.rename(
     path.join(testCoverageDirectoryPath, testCoverageResultFilename),
