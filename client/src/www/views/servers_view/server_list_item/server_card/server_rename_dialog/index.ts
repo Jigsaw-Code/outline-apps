@@ -27,7 +27,13 @@ export class ServerRenameDialog extends LitElement {
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 12px;
+      --md-sys-shape-corner-extra-large: 2px;
+      --md-sys-shape-corner-full: 2px;
+    }
+
+    fieldset {
+      border: none;
+      text-transform: uppercase;
     }
   `;
 
@@ -37,45 +43,37 @@ export class ServerRenameDialog extends LitElement {
     }
 
     return html`
-      <md-dialog .open="${this.open}">
-        <md-dialog-header slot="headline">
-          ${this.localize('server-rename')}
-        </md-dialog-header>
+      <md-dialog .open="${this.open}" @close=${this.handleCancel} quick>
+        <header slot="headline">${this.localize('server-rename')}</header>
         <md-filled-text-field
           slot="content"
           maxlength="100"
           value="${this.editedServerName}"
         ></md-filled-text-field>
-        <md-dialog-actions slot="actions">
+        <fieldset slot="actions">
           <md-text-button @click="${this.handleCancel}"
             >${this.localize('cancel')}</md-text-button
           >
-          <md-filled-button @click="${this.handleRename}"
+          <md-filled-button
+            @click="${this.handleRename}"
+            ?disabled="${this.editedServerName === this.serverName}"
             >${this.localize('save')}</md-filled-button
           >
-        </md-dialog-actions>
+        </fieldset>
       </md-dialog>
     `;
   }
 
   private handleCancel() {
-    this.dispatchEvent(
-      new CustomEvent('CancelRenameRequested', {bubbles: true, composed: true})
-    );
+    this.dispatchEvent(new CustomEvent('cancel'));
 
     this.editedServerName = null;
   }
 
   private handleRename() {
-    if (this.editedServerName === this.serverName) {
-      return;
-    }
-
     this.dispatchEvent(
-      new CustomEvent('RenameRequested', {
-        detail: {serverId: this.serverId, newName: this.editedServerName},
-        bubbles: true,
-        composed: true,
+      new CustomEvent('submit', {
+        detail: {id: this.serverId, name: this.editedServerName},
       })
     );
 

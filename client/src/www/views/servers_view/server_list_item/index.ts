@@ -46,4 +46,5 @@ export interface ServerListItemElement {
   localize: Localizer;
   menu: Ref<Menu>;
   menuButton: Ref<HTMLElement>;
+  isRenameDialogOpen: boolean;
 }
