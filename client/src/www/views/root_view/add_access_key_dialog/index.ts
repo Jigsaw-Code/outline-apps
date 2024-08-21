@@ -38,39 +38,32 @@ export class AddAccessKeyDialog extends LitElement {
 
   render() {
     return html`<md-dialog .open="${this.open}">
-      <header slot="headline">
-        ${this.hasValidAccessKey
-            ? 'Access key detected'
-            : 'Add server access key'
-        }
-      </header>
+      <header slot="headline">Add VPN access key</header>
       <article slot="content">
-        <section>
-            ${this.hasValidAccessKey
-              ? 'Please confirm that you want to add this access key.'
-              : 'Paste the access key you want to add here.'}
-        </section>
+        ${!this.hasValidAccessKey
+          ? html`<section style="color:gray;">
+              Need a new access key? Create one at <a>our website</a>.
+            </section>`
+          : nothing}
         <section>
           <md-filled-text-field
             @input=${this.handleAccessKeyEdit}
             .error=${this.hasDefinedButInvalidAccessKey}
             error-text="Invalid access key."
+            label="Paste access key here"
             rows="5"
             type="textarea"
             value=${this.accessKey}
           ></md-filled-text-field>
         </section>
-        ${
-          !this.hasValidAccessKey 
-            ? html`<section style="color:gray;">Need a new access key? Create one at <a>our website</a>.</section>` 
-            : nothing
-        }
       </article>
       <footer slot="actions">
         <md-text-button @click=${this.handleAccessKeyCancel}
           >Cancel
         </md-text-button>
-        <md-filled-button @click=${this.handleAccessKeyCreate} ?disabled=${!this.hasValidAccessKey}
+        <md-filled-button
+          @click=${this.handleAccessKeyCreate}
+          ?disabled=${!this.hasValidAccessKey}
           >Confirm</md-filled-button
         >
       </footer>
