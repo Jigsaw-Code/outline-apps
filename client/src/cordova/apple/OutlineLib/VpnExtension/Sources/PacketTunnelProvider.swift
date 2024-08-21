@@ -1,4 +1,4 @@
-// Copyright 2018 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,86 +19,83 @@ import CocoaLumberjackSwift
 
 import Tun2socks
 
-// Serializable class to wrap a tunnel's configuration.
-// Properties must be kept in sync with ServerConfig in www/types/outlinePlugin.d.ts
+/**
+  SwiftBridge is a transitional class to allow the incremental migration of our PacketTunnelProvider from Objective-C to Swift.
+ */
+@objcMembers
+public class SwiftBridge: NSObject {
+
+    /** Helper function that we can call from Objective-C. */
+    public static func getTunnelNetworkSettings() -> NEPacketTunnelNetworkSettings {
+      // The remote address is not required, but needs to be valid, or else you get a
+      // "Invalid NETunnelNetworkSettings tunnelRemoteAddress" error.
+      let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "::")
+
+      // Configure VPN address and routing.
+      let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
+      let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
+      ipv4Settings.includedRoutes = [NEIPv4Route.default()]
+      ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
+      settings.ipv4Settings = ipv4Settings
+
+      // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
+      settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
+
+      return settings
+    }
+
+    /** Creates a new Outline Client based on the given transportConfig. */
+    public static func newClient(transportConfig: String) -> ShadowsocksClient? {
+      var err: NSError?
+      let client = ShadowsocksNewClientFromJSON(transportConfig, &err)
+      guard err == nil else {
+        DDLogInfo("Failed to construct client: \(String(describing: err)).")
+        return nil
+      }
+      return client
+    }
+}
+
+// Represents an IP subnetwork.
 // Note that this class and its non-private properties must be public in order to be visible to the ObjC
 // target of the OutlineAppleLib Swift Package.
-@objcMembers
-public class OutlineTunnel: NSObject, Codable {
-  public var id: String?
-  public var host: String?
-  public var port: String?
-  public var method: String?
-  public var password: String?
-  public var prefix: Data?
-  public var config: [String: String] {
-    let scalars = prefix?.map{Unicode.Scalar($0)}
-    let characters = scalars?.map{Character($0)}
-    let prefixStr = String(characters ?? [])
-    return ["host": host ?? "", "port": port ?? "", "password": password ?? "",
-            "method": method ?? "", "prefix": prefixStr]
-  }
-
-  @objc
-  public enum TunnelStatus: Int {
-    case connected = 0
-    case disconnected = 1
-    case reconnecting = 2
-    case disconnecting = 3
-  }
-
-  public convenience init(id: String, config: [String: Any]) {
-    self.init()
-    self.id = id
-    self.host = config["host"] as? String
-    self.password = config["password"] as? String
-    self.method = config["method"] as? String
-    if let port = config["port"] {
-      self.port = String(describing: port)  // Handle numeric values
-    }
-    if let prefix = config["prefix"] as? String {
-      self.prefix = Data(prefix.utf16.map{UInt8($0)})
-    }
-  }
-
-  public func encode() -> String? {
-    return try? String(data: JSONEncoder().encode(self), encoding: .utf8)
-  }
-
-  public static func decode(_ jsonData: Data) -> OutlineTunnel? {
-    return try? JSONDecoder().decode(OutlineTunnel.self, from: jsonData)
-  }
-
-  // Helper function that we can call from Objective-C.
-  @objc public static func getTunnelNetworkSettings() -> NEPacketTunnelNetworkSettings {
-    // The remote address is not required, but needs to be valid, or else you get a
-    // "Invalid NETunnelNetworkSettings tunnelRemoteAddress" error.
-    let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "::")
-
-    // Configure VPN address and routing.
-    let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
-    let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
-    ipv4Settings.includedRoutes = [NEIPv4Route.default()]
-    ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
-    settings.ipv4Settings = ipv4Settings
-
-    // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-    settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
-
-    return settings
-  }
-
-  @objc public static func newClient(transportConfig: OutlineTunnel?) -> ShadowsocksClient? {
-    var err: NSError?
-    guard let transportConfig = transportConfig,
-      let client = ShadowsocksNewClientFromJSON(transportConfig.encode(), &err),
-      err == nil else {
-      DDLogInfo("Failed to construct client: \(String(describing: err)).")
+class Subnet: NSObject {
+  // Parses a CIDR subnet into a Subnet object. Returns nil on failure.
+  public static func parse(_ cidrSubnet: String) -> Subnet? {
+    let components = cidrSubnet.components(separatedBy: "/")
+    guard components.count == 2 else {
+      NSLog("Malformed CIDR subnet")
       return nil
     }
-    return client
+    guard let prefix = UInt16(components[1]) else {
+      NSLog("Invalid subnet prefix")
+      return nil
+    }
+    return Subnet(address: components[0], prefix: prefix)
   }
 
+  public var address: String
+  public var prefix: UInt16
+  public var mask: String
+
+  public init(address: String, prefix: UInt16) {
+    self.address = address
+    self.prefix = prefix
+    let mask = (0xffffffff as UInt32) << (32 - prefix);
+    self.mask = mask.IPv4String()
+  }
+}
+
+extension UInt32 {
+  // Returns string representation of the integer as an IP address.
+  public func IPv4String() -> String {
+    let ip = self
+    let a = UInt8((ip>>24) & 0xff)
+    let b = UInt8((ip>>16) & 0xff)
+    let c = UInt8((ip>>8) & 0xff)
+    let d = UInt8(ip & 0xff)
+    return "\(a).\(b).\(c).\(d)"
+  }
 }
 
 // Returns all IPv4 addresses of all interfaces.

@@ -64,9 +64,5 @@ let package = Package(
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
             ]
         ),
-        .testTarget(
-            name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel"]
-        ),
     ]
 )

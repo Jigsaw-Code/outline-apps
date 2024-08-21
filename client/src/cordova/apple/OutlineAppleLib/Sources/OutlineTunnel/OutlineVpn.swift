@@ -70,7 +70,7 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   /** Starts a VPN tunnel as specified in the OutlineTunnel object. */
-  public func start(_ tunnelId: String, name: String?, transportConfig: [String: Any]) async -> ErrorCode {
+  public func start(_ tunnelId: String, name: String?, withTransport transportConfig: String) async -> ErrorCode {
     if let manager = await getTunnelManager(), isActiveSession(manager.connection) {
       DDLogDebug("Stoppping active session before starting new one")
       await stopSession(manager)
@@ -187,7 +187,7 @@ public class OutlineVpn: NSObject {
 
   // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
   // enables the existing configuration.
-  private func setupVpn(withId id:String, named name:String, withTransport transportConfig: [String: Any]) async throws -> NETunnelProviderManager {
+  private func setupVpn(withId id:String, named name:String, withTransport transportConfig: String) async throws -> NETunnelProviderManager {
     let managers = try await NETunnelProviderManager.loadAllFromPreferences()
     var manager: NETunnelProviderManager!
     if managers.count > 0 {

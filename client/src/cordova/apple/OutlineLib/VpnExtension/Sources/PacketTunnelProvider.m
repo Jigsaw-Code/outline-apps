@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #import "PacketTunnelProvider.h"
+#import "VpnExtension-Swift.h"
+
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
@@ -33,7 +35,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
-@property (nonatomic, nullable) OutlineTunnel *transportConfig;
+@property (nonatomic, nullable) NSString *transportConfig;
 @property (nonatomic) dispatch_queue_t packetQueue;
 @property (nonatomic) BOOL isUdpSupported;
 @end
@@ -78,15 +80,14 @@ NSString *const kDefaultPathKey = @"defaultPath";
                                         userInfo:nil]);
   }
 
-  NSDictionary *transportConfig = protocol.providerConfiguration[@"transport"];
-  if (![transportConfig isKindOfClass:[NSDictionary class]]) {
+  NSString *transportConfig = protocol.providerConfiguration[@"transport"];
+  if (![transportConfig isKindOfClass:[NSString class]]) {
       DDLogError(@"Failed to retrieve the transport configuration.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                             code:NEVPNErrorConfigurationUnknown
                                         userInfo:nil]);
   }
-
-  self.transportConfig = [[OutlineTunnel alloc] initWithId:tunnelId config:transportConfig];
+  self.transportConfig = transportConfig;
 
   // startTunnel has 3 cases:
   // - When started from the app, we get options != nil, with no ["is-on-demand"] entry.
@@ -104,7 +105,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // culprit and can explicitly disconnect.
   long errorCode = noError;
   if (!isOnDemand) {
-    ShadowsocksClient* client = [OutlineTunnel newClientWithTransportConfig:self.transportConfig];
+    ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
     if (client == nil) {
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                                    code:NEVPNErrorConfigurationInvalid
@@ -120,7 +121,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
     }
   }
 
-  [self startRouting:[OutlineTunnel getTunnelNetworkSettings]
+  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                return startDone(error);
@@ -258,7 +259,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     return;
   }
   // Nothing changed. Connect the tunnel with the current settings.
-  [self startRouting:[OutlineTunnel getTunnelNetworkSettings]
+  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
          completion:^(NSError *_Nullable error) {
            if (error != nil) {
              [self cancelTunnelWithError:error];
@@ -296,7 +297,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  ShadowsocksClient* client = [OutlineTunnel newClientWithTransportConfig:self.transportConfig];
+  ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
   if (client == nil) {
     return NO;
   }
