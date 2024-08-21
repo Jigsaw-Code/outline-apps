@@ -22,7 +22,7 @@ export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',
-  RENAME = 'ShowServerRename',
+  RENAME = 'RenameRequested',
 }
 
 /**

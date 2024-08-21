@@ -11,8 +11,10 @@
   limitations under the License.
 */
 
+import type {MdFilledTextField} from '@material/web/all.js';
+
 import {LitElement, html, css} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
+import {customElement, property, state, query} from 'lit/decorators.js';
 import '@material/web/all.js';
 
 @customElement('server-rename-dialog')
@@ -22,7 +24,9 @@ export class ServerRenameDialog extends LitElement {
   @property({type: String}) serverId!: string;
   @property({type: String}) serverName!: string;
 
-  @state() private editedServerName: string | null = null;
+  @state() internalServerName: string | null = null;
+
+  @query('md-filled-text-field') textField: MdFilledTextField;
 
   static styles = css`
     :host {
@@ -38,25 +42,28 @@ export class ServerRenameDialog extends LitElement {
   `;
 
   render() {
-    if (this.editedServerName === null) {
-      this.editedServerName = this.serverName;
+    if (this.internalServerName === null) {
+      this.internalServerName = this.serverName;
     }
 
     return html`
-      <md-dialog .open="${this.open}" @close=${this.handleCancel} quick>
+      <md-dialog .open=${this.open} @close=${this.handleClose} quick>
         <header slot="headline">${this.localize('server-rename')}</header>
         <md-filled-text-field
           slot="content"
           maxlength="100"
-          value="${this.editedServerName}"
+          value="${this.internalServerName}"
+          @input=${(e: Event) => {
+            this.internalServerName = (e.target as HTMLInputElement).value;
+          }}
         ></md-filled-text-field>
         <fieldset slot="actions">
-          <md-text-button @click="${this.handleCancel}"
+          <md-text-button @click=${this.handleClose}
             >${this.localize('cancel')}</md-text-button
           >
           <md-filled-button
-            @click="${this.handleRename}"
-            ?disabled="${this.editedServerName === this.serverName}"
+            @click=${this.handleRename}
+            ?disabled=${this.internalServerName === this.serverName}
             >${this.localize('save')}</md-filled-button
           >
         </fieldset>
@@ -64,19 +71,15 @@ export class ServerRenameDialog extends LitElement {
     `;
   }
 
-  private handleCancel() {
+  private handleClose() {
     this.dispatchEvent(new CustomEvent('cancel'));
-
-    this.editedServerName = null;
   }
 
   private handleRename() {
     this.dispatchEvent(
       new CustomEvent('submit', {
-        detail: {id: this.serverId, name: this.editedServerName},
+        detail: {id: this.serverId, name: this.internalServerName},
       })
     );
-
-    this.editedServerName = null;
   }
 }

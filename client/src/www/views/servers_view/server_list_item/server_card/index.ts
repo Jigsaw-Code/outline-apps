@@ -160,7 +160,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
       element.isRenameDialogOpen = false;
 
       element.dispatchEvent(
-        new CustomEvent('RenameRequested', {
+        new CustomEvent(ServerListItemEvent.RENAME, {
           detail: {serverId: event.detail.id, newName: event.detail.name},
           bubbles: true,
           composed: true,

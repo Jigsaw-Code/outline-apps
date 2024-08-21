@@ -152,7 +152,7 @@ export class App {
       'DisconnectPressed',
       this.disconnectServer.bind(this)
     );
-    this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));s
+    this.rootEl.addEventListener('ForgetPressed', this.forgetServer.bind(this));
     this.rootEl.addEventListener(
       'QuitPressed',
       this.quitApplication.bind(this)
@@ -162,8 +162,8 @@ export class App {
       this.autoConnectDialogDismissed.bind(this)
     );
     this.rootEl.addEventListener(
-      'ShowServerRename',
-      this.rootEl.showServerRename.bind(this.rootEl)
+      'RenameRequested',
+      this.renameServer.bind(this)
     );
     this.rootEl.addEventListener(
       'PrivacyTermsAcked',
