@@ -23,8 +23,13 @@ export default {
   component: 'add-access-key-dialog',
   args: {
     open: true,
+    accessKey: 'ss://YWVzLTI1Ni1nY206c2VjcmV0QHNzLm9yZw@127.0.0.1:443#Test',
   },
 };
 
-export const Example = ({open}: AddAccessKeyDialog) =>
-  html`<add-access-key-dialog .open=${open} .localize=${localize}></add-access-key-dialog>`;
+export const Example = ({open, accessKey}: AddAccessKeyDialog) =>
+  html`<add-access-key-dialog
+    .open=${open}
+    .localize=${localize}
+    .accessKey=${accessKey}
+  ></add-access-key-dialog>`;

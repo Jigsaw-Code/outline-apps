@@ -37,7 +37,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './add-server-view.js';
 import './outline-icons.js';
 import './privacy-view.js';
 
@@ -52,6 +51,8 @@ import '../views/language_view';
 import '../views/licenses_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/add_access_key_dialog';
 
 import './user-comms-dialog.js';
 
@@ -535,11 +536,10 @@ export class AppRoot extends mixinBehaviors(
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
 
-      <add-server-view
+      <add-access-key-dialog
         id="addServerView"
         localize="[[localize]]"
-        use-alt-access-message="[[useAltAccessMessage]]"
-      ></add-server-view>
+      ></add-access-key-dialog>
 
       <!-- Modal dialogs must be placed outside of app-header-layout, see
     https://github.com/PolymerElements/paper-dialog/issues/152 and
@@ -860,7 +860,7 @@ export class AppRoot extends mixinBehaviors(
   }
 
   promptAddServer() {
-    this.$.addServerView.openAddServerSheet();
+    this.$.addServerView.open = true;
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
