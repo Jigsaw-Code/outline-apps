@@ -39,7 +39,6 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
 import './add-server-view.js';
 import './outline-icons.js';
-import './privacy-view.js';
 
 // TODO(daniellacosse): figure out how to import this without disabling the rule
 // eslint-disable-next-line n/no-missing-import
@@ -51,9 +50,11 @@ import '../views/language_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/licenses_view';
 // eslint-disable-next-line n/no-missing-import
+import '../views/root_view/auto_connect_dialog';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/privacy_acknowledgement_dialog';
+// eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
-
-import './user-comms-dialog.js';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -326,14 +327,6 @@ export class AppRoot extends mixinBehaviors(
         pattern="/:page"
         data="{{routeData}}"
       ></app-route>
-
-      <privacy-view
-        id="privacyView"
-        root-path="[[rootPath]]"
-        localize="[[localize]]"
-        hidden=""
-      ></privacy-view>
-
       <app-header-layout fullbleed="">
         <app-header slot="header" fixed="">
           <app-toolbar>
@@ -541,17 +534,15 @@ export class AppRoot extends mixinBehaviors(
         use-alt-access-message="[[useAltAccessMessage]]"
       ></add-server-view>
 
-      <!-- Modal dialogs must be placed outside of app-header-layout, see
-    https://github.com/PolymerElements/paper-dialog/issues/152 and
-    https://github.com/PolymerElements/app-layout/issues/295
-    Once those are fixed we can consider moving this into server-card.html -->
-      <user-comms-dialog
+      <privacy-acknowledgement-dialog
+        id="privacyView"
+        localize="[[localize]]"
+      ></privacy-acknowledgement-dialog>
+
+      <auto-connect-dialog
         id="autoConnectDialog"
         localize="[[localize]]"
-        title-localization-key="auto-connect-dialog-title"
-        detail-localization-key="auto-connect-dialog-detail"
-        fire-event-on-hide="AutoConnectDialogDismissed"
-      ></user-comms-dialog>
+      ></auto-connect-dialog>
     `;
   }
 

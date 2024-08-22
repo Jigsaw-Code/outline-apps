@@ -365,12 +365,12 @@ export class App {
 
   private displayPrivacyView() {
     this.rootEl.$.serversView.hidden = true;
-    this.rootEl.$.privacyView.hidden = false;
+    this.rootEl.$.privacyView.open = true;
   }
 
   private ackPrivacyTerms() {
     this.rootEl.$.serversView.hidden = false;
-    this.rootEl.$.privacyView.hidden = true;
+    this.rootEl.$.privacyView.open = false;
     this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
   }
 
@@ -563,12 +563,13 @@ export class App {
       );
     }
     if (!dismissed) {
-      this.rootEl.$.autoConnectDialog.show();
+      this.rootEl.$.autoConnectDialog.open = true;
     }
   }
 
   private autoConnectDialogDismissed() {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
+    this.rootEl.$.autoConnectDialog.open = false;
   }
 
   private async disconnectServer(event: CustomEvent) {
