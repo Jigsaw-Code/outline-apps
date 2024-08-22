@@ -27,6 +27,30 @@
     "description": "The title of a page giving details about the app.",
     "message": "About"
   },
+  "add_access_key_dialog_header": {
+    "description": "The title of a dialog box that prompts the user to add a new access key.",
+    "message": "Add VPN access key"
+  },
+  "add_access_key_dialog_help_text": {
+    "desciption": "A message shown to the user to help them understand what an access key is and how to get one.",
+    "message": "Need a new access key? Create one at <a>our website</a>."
+  },
+  "add_access_key_dialog_label": {
+    "description": "The label for a text box where the user can paste an access key to add a new server.",
+    "message": "Paste access key here"
+  },
+  "add_access_key_dialog_error_text": {
+    "description": "An error message shown when the user tries to add a server with an invalid access key.",
+    "message": "Invalid access key."
+  },
+  "add_access_key_dialog_cancel": {
+    "description": "The text on a button to cancel the adding of an access key.",
+    "message": "Cancel"
+  }, 
+  "add_access_key_dialog_confirm": {
+    "desciption": "The text on a button to confirm the adding of an access key.",
+    "message": "Confirm"
+  },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
     "message": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device."

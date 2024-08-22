@@ -29,6 +29,10 @@ export class AddAccessKeyDialog extends LitElement {
       margin-bottom: 12px;
     }
 
+    section.help-text {
+      color: var(--outline-medium-gray);
+    }
+
     a {
       color: var(--outline-primary);
     }
@@ -51,17 +55,20 @@ export class AddAccessKeyDialog extends LitElement {
       @cancel=${this.handleCancel}
       quick
     >
-      <header slot="headline">Add VPN access key</header>
+      <header slot="headline">
+        ${this.localize('add-access-key-dialog-header')}
+      </header>
       <article slot="content">
-        <section style="color:gray;">
-          Need a new access key? Create one at <a>our website</a>.
-        </section>
+        <section
+          class="help-text"
+          .innerHTML=${this.localize('add-access-key-dialog-help-text')}
+        ></section>
         <section>
           <md-filled-text-field
-            @input=${this.handleEdit}
             .error=${this.accessKey && !this.hasValidAccessKey}
-            error-text="Invalid access key."
-            label="Paste access key here"
+            @input=${this.handleEdit}
+            error-text="${this.localize('add-access-key-dialog-error-text')}"
+            label="${this.localize('add-access-key-dialog-label')}"
             rows="5"
             type="textarea"
             value=${this.accessKey}
@@ -69,11 +76,13 @@ export class AddAccessKeyDialog extends LitElement {
         </section>
       </article>
       <fieldset slot="actions">
-        <md-text-button @click=${this.handleCancel}>Cancel</md-text-button>
+        <md-text-button @click=${this.handleCancel}>
+          ${this.localize('add-access-key-dialog-cancel')}
+        </md-text-button>
         <md-filled-button
           @click=${this.handleConfirm}
           ?disabled=${!this.hasValidAccessKey}
-          >Confirm</md-filled-button
+          >${this.localize('add-access-key-dialog-confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
