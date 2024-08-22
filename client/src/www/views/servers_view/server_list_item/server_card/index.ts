@@ -15,10 +15,11 @@ import type {Menu} from '@material/web/menu/menu';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
 import '../../server_connection_indicator';
+import './server_rename_dialog';
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
@@ -154,14 +155,18 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
   };
 
   const dispatchers = {
-    beginRename: () =>
+    beginRename: () => (element.isRenameDialogOpen = true),
+    submitRename: (event: CustomEvent) => {
+      element.isRenameDialogOpen = false;
+
       element.dispatchEvent(
         new CustomEvent(ServerListItemEvent.RENAME, {
-          detail: {serverId: server.id, name: server.name},
+          detail: {serverId: event.detail.id, newName: event.detail.name},
           bubbles: true,
           composed: true,
         })
-      ),
+      );
+    },
     forget: () =>
       element.dispatchEvent(
         new CustomEvent(ServerListItemEvent.FORGET, {
@@ -213,7 +218,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         </div>
       `,
       menu: html`
-        <md-menu ${ref(menu)} class="card-menu" menuCorner="END">
+        <md-menu ${ref(menu)} class="card-menu" menuCorner="END" quick>
           <md-menu-item @click="${dispatchers.beginRename}">
             ${localize('server-rename')}
           </md-menu-item>
@@ -243,6 +248,14 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
           </md-text-button>
         </footer>
       `,
+      renameDialog: html`<server-rename-dialog
+        .open=${element.isRenameDialogOpen}
+        .localize=${localize}
+        .serverId=${server.id}
+        .serverName=${server.name}
+        @cancel=${() => (element.isRenameDialogOpen = false)}
+        @submit=${dispatchers.submitRename}
+      ></server-rename-dialog>`,
     },
   };
 };
@@ -254,6 +267,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
 export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property() server: ServerListItem;
   @property() localize: Localizer;
+
+  @state() isRenameDialogOpen = false;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -299,7 +314,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
         </div>
         ${elements.menuButton} ${elements.footer}
       </div>
-      ${elements.menu}
+      ${elements.menu} ${elements.renameDialog}
     `;
   }
 }
@@ -314,6 +329,8 @@ export class ServerHeroCard
 {
   @property() server: ServerListItem;
   @property() localize: Localizer;
+
+  @state() isRenameDialogOpen = false;
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -401,7 +418,7 @@ export class ServerHeroCard
         </div>
         ${elements.footer}
       </div>
-      ${elements.menu}
+      ${elements.menu} ${elements.renameDialog}
     `;
   }
 }

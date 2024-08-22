@@ -166,10 +166,6 @@ export class App {
       this.autoConnectDialogDismissed.bind(this)
     );
     this.rootEl.addEventListener(
-      'ShowServerRename',
-      this.rootEl.showServerRename.bind(this.rootEl)
-    );
-    this.rootEl.addEventListener(
       'PrivacyTermsAcked',
       this.ackPrivacyTerms.bind(this)
     );

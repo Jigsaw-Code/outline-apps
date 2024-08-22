@@ -56,8 +56,6 @@ import '../views/root_view/privacy_acknowledgement_dialog';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
 
-import './server-rename-dialog.js';
-
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
@@ -545,16 +543,6 @@ export class AppRoot extends mixinBehaviors(
         id="autoConnectDialog"
         localize="[[localize]]"
       ></auto-connect-dialog>
-
-      <!-- Modal dialogs must be placed outside of app-header-layout, see
-    https://github.com/PolymerElements/paper-dialog/issues/152 and
-    https://github.com/PolymerElements/app-layout/issues/295
-    Once those are fixed we can consider moving this into server-card.html -->
-      <server-rename-dialog
-        id="serverRenameDialog"
-        root-path="[[rootPath]]"
-        localize="[[localize]]"
-      ></server-rename-dialog>
     `;
   }
 
@@ -948,10 +936,6 @@ export class AppRoot extends mixinBehaviors(
 
   _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
     return shouldShowQuitButton ? '' : 'last-menu-item';
-  }
-
-  showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
   }
 
   _computeShouldShowAppLogo(page) {

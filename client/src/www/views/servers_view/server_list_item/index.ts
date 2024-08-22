@@ -22,7 +22,7 @@ export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',
-  RENAME = 'ShowServerRename',
+  RENAME = 'RenameRequested',
 }
 
 /**
@@ -46,4 +46,5 @@ export interface ServerListItemElement {
   localize: Localizer;
   menu: Ref<Menu>;
   menuButton: Ref<HTMLElement>;
+  isRenameDialogOpen: boolean;
 }
