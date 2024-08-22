@@ -18,6 +18,7 @@ import path from 'path';
 import url from 'url';
 
 import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import minimist from 'minimist';
 import rmfr from 'rmfr';
@@ -56,6 +57,7 @@ export async function main(...parameters) {
   );
 
   await rmfr(derivedDataPath);
+  await runAction('client/go/build', outlinePlatform);
   await spawnStream(
     'xcodebuild',
     'test',
