@@ -24,7 +24,6 @@ import {
 import {OutlineServer} from './server';
 import {FakeVpnApi} from './vpn.fake';
 import {
-  ServerIncompatible,
   ServerUrlInvalid,
   ShadowsocksUnsupportedCipher,
 } from '../../model/errors';
