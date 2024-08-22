@@ -19,7 +19,6 @@
 #include <ifaddrs.h>
 #include <netdb.h>
 
-@import OutlineTunnel;
 @import Tun2socks;
 
 #ifdef DEBUG

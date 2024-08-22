@@ -58,13 +58,12 @@ export async function main(...parameters) {
   await rmfr(derivedDataPath);
   await spawnStream(
     'xcodebuild',
-    'clean',
     'test',
     '-scheme',
     'VpnExtensionTest',
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,arch=${os.machine()}`
+      ? `platform=macOS,arch=${os.machine()},name=My Mac`
       : 'platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)',
     '-project',
     path.join(APPLE_ROOT, 'OutlineLib', 'OutlineLib.xcodeproj'),

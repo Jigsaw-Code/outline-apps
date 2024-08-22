@@ -16,7 +16,8 @@
 		522E64032C769EB90010C3FA /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 522E64022C769EB90010C3FA /* CocoaLumberjackSwift */; };
 		522E64042C769F100010C3FA /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 522E63D92C751A3A0010C3FA /* PacketTunnelProvider.swift */; };
 		52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
-		523E5C382C530C63001EE0A7 /* OutlineTunnel in Frameworks */ = {isa = PBXBuildFile; productRef = 523E5C372C530C63001EE0A7 /* OutlineTunnel */; };
+		526D827A2C77B2D400BDE6EE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
+		526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */,
+				526D827A2C77B2D400BDE6EE /* NetworkExtension.framework in Frameworks */,
 				522E64032C769EB90010C3FA /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -59,7 +62,6 @@
 				5229870E2C4F2873009EE577 /* Tun2socks.xcframework in Frameworks */,
 				522987082C4F278E009EE577 /* CocoaLumberjack in Frameworks */,
 				52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */,
-				523E5C382C530C63001EE0A7 /* OutlineTunnel in Frameworks */,
 				522E64012C769BF30010C3FA /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -164,7 +166,6 @@
 			name = VpnExtension;
 			packageProductDependencies = (
 				522987072C4F278E009EE577 /* CocoaLumberjack */,
-				523E5C372C530C63001EE0A7 /* OutlineTunnel */,
 				522E64002C769BF30010C3FA /* CocoaLumberjackSwift */,
 			);
 			productName = VpnExtension;
@@ -340,7 +341,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.getoutline.client.VpnExtensionTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -360,7 +360,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QT8Z3Q9V3A;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.getoutline.client.VpnExtensionTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -641,10 +640,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 522987062C4F278E009EE577 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
-		};
-		523E5C372C530C63001EE0A7 /* OutlineTunnel */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OutlineTunnel;
 		};
 		5260B0832C4F18B200CDF289 /* PacketTunnelProvider */ = {
 			isa = XCSwiftPackageProductDependency;
