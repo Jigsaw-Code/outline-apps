@@ -249,7 +249,7 @@ export class OutlineServerRepository implements ServerRepository {
     }
   }
 
-private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
+  private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
       if (
         server.type === ServerType.DYNAMIC_CONNECTION &&
