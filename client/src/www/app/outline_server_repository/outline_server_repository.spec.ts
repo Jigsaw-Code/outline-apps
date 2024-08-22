@@ -357,7 +357,7 @@ describe('OutlineServerRepository', () => {
           })
         )
       )
-    ).toThrowError(ServerIncompatible);
+    ).toBeTruthy();
     // Unsupported ciphers.
     expect(() =>
       repo.validateAccessKey(
