@@ -20,16 +20,6 @@
 		526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		522E63FE2C769BB80010C3FA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 52334DE12B0D56D600817E56 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 52334EAB2B0D58AD00817E56;
-			remoteInfo = VpnExtension;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		522987032C4F273E009EE577 /* PacketTunnelProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PacketTunnelProvider.h; sourceTree = "<group>"; };
 		522987042C4F273E009EE577 /* PacketTunnelProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PacketTunnelProvider.m; sourceTree = "<group>"; };
@@ -140,7 +130,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				522E63FF2C769BB80010C3FA /* PBXTargetDependency */,
 			);
 			name = VpnExtensionTest;
 			packageProductDependencies = (
@@ -322,11 +311,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		522E63FF2C769BB80010C3FA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 52334EAB2B0D58AD00817E56 /* VpnExtension */;
-			targetProxy = 522E63FE2C769BB80010C3FA /* PBXContainerItemProxy */;
-		};
 		5260B0842C4F18B200CDF289 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = 5260B0832C4F18B200CDF289 /* PacketTunnelProvider */;
