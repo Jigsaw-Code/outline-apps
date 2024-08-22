@@ -72,7 +72,9 @@ export async function main(...parameters) {
     '-enableCodeCoverage',
     'YES',
     '-derivedDataPath',
-    derivedDataPath
+    derivedDataPath,
+    'CODE_SIGN_IDENTITY=""',
+    'CODE_SIGNING_ALLOWED="NO"',
   );
 
   const testCoverageDirectoryPath = path.join(derivedDataPath, 'Logs', 'Test');
