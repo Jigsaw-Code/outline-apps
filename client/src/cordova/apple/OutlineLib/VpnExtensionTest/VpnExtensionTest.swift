@@ -15,8 +15,6 @@
 import XCTest
 import NetworkExtension
 
-@testable import VpnExtension
-
 final class VpnExtensionTest: XCTestCase {
 
     func testSelectVpnAddress() throws {
