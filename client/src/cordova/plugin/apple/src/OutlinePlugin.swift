@@ -104,7 +104,7 @@ class OutlinePlugin: CDVPlugin {
                          errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
       }
       Task {
-        let errorCode = await OutlineVpn.shared.start(tunnelId, name:name, withTransport:transportConfig)
+        let errorCode = await OutlineVpn.shared.start(tunnelId, named:name, withTransport:transportConfig)
         if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
           NotificationCenter.default.post(name: .kVpnConnected, object: nil)
