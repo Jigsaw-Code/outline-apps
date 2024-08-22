@@ -74,7 +74,7 @@ export async function main(...parameters) {
     '-derivedDataPath',
     derivedDataPath,
     'CODE_SIGN_IDENTITY=""',
-    'CODE_SIGNING_ALLOWED="NO"',
+    'CODE_SIGNING_ALLOWED="NO"'
   );
 
   const testCoverageDirectoryPath = path.join(derivedDataPath, 'Logs', 'Test');
