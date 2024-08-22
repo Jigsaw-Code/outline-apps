@@ -551,14 +551,6 @@ export class AppRoot extends mixinBehaviors(
         root-path="[[rootPath]]"
         localize="[[localize]]"
       ></server-rename-dialog>
-
-      <user-comms-dialog
-        id="autoConnectDialog"
-        localize="[[localize]]"
-        title-localization-key="auto-connect-dialog-title"
-        detail-localization-key="auto-connect-dialog-detail"
-        fire-event-on-hide="AutoConnectDialogDismissed"
-      ></user-comms-dialog>
     `;
   }
 
