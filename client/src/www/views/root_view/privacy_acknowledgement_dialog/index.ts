@@ -20,6 +20,9 @@ export class PrivacyAcknowledgementDialog extends LitElement {
       --md-dialog-supporting-text-color: var(--outline-white);
 
       text-align: center;
+      min-width: 100svw;
+      min-height: 100svh;
+      margin: 0;
     }
 
     img {
