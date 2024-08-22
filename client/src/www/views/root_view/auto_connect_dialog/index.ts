@@ -64,6 +64,11 @@ export class AutoConnectDialog extends LitElement {
   }
 
   private handleDismissal() {
-    this.dispatchEvent(new CustomEvent('AutoConnectDialogDismissed'));
+    this.dispatchEvent(
+      new CustomEvent('AutoConnectDialogDismissed', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }

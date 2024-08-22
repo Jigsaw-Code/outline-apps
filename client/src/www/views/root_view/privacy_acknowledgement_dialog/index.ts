@@ -73,6 +73,8 @@ export class PrivacyAcknowledgementDialog extends LitElement {
   }
 
   private handleAcknowledgement() {
-    this.dispatchEvent(new CustomEvent('PrivacyTermsAcked'));
+    this.dispatchEvent(
+      new CustomEvent('PrivacyTermsAcked', {bubbles: true, composed: true})
+    );
   }
 }
