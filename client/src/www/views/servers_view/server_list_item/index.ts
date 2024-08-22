@@ -11,7 +11,7 @@
   limitations under the License.
 */
 
-import {Menu} from '@material/mwc-menu';
+import type {Menu} from '@material/web/menu/menu';
 
 import {type Localizer} from '@outline/infrastructure/i18n';
 import {Ref} from 'lit/directives/ref';
@@ -22,7 +22,7 @@ export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',
-  RENAME = 'ShowServerRename',
+  RENAME = 'RenameRequested',
 }
 
 /**
@@ -46,4 +46,5 @@ export interface ServerListItemElement {
   localize: Localizer;
   menu: Ref<Menu>;
   menuButton: Ref<HTMLElement>;
+  isRenameDialogOpen: boolean;
 }

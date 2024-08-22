@@ -36,7 +36,6 @@ import * as errorReporter from './shared/error_reporter';
 import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';
 import * as privacyView from './ui_components/privacy-view';
-import * as serverRenameDialog from './ui_components/server-rename-dialog';
 import * as userCommsDialog from './ui_components/user-comms-dialog';
 import * as aboutView from './views/about_view';
 import * as languageView from './views/language_view';
@@ -54,7 +53,6 @@ describe('TODOs', () => {
     expect(languageView).toBeDefined();
     expect(platform).toBeDefined();
     expect(privacyView).toBeDefined();
-    expect(serverRenameDialog).toBeDefined();
     expect(server).toBeDefined();
     expect(updater).toBeDefined();
     expect(urlInterceptor).toBeDefined();
