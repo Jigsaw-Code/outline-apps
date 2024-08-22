@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+import '@material/web/all.js';
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
@@ -52,7 +53,6 @@ import '../views/licenses_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
 
-import './server-rename-dialog.js';
 import './user-comms-dialog.js';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
@@ -545,12 +545,6 @@ export class AppRoot extends mixinBehaviors(
     https://github.com/PolymerElements/paper-dialog/issues/152 and
     https://github.com/PolymerElements/app-layout/issues/295
     Once those are fixed we can consider moving this into server-card.html -->
-      <server-rename-dialog
-        id="serverRenameDialog"
-        root-path="[[rootPath]]"
-        localize="[[localize]]"
-      ></server-rename-dialog>
-
       <user-comms-dialog
         id="autoConnectDialog"
         localize="[[localize]]"
@@ -951,10 +945,6 @@ export class AppRoot extends mixinBehaviors(
 
   _computeIsLastVisibleMenuItem(shouldShowQuitButton) {
     return shouldShowQuitButton ? '' : 'last-menu-item';
-  }
-
-  showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
   }
 
   _computeShouldShowAppLogo(page) {
