@@ -33,12 +33,12 @@ import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
 import * as errorReporter from './shared/error_reporter';
-import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';
 import * as privacyView from './ui_components/privacy-view';
 import * as userCommsDialog from './ui_components/user-comms-dialog';
 import * as aboutView from './views/about_view';
 import * as languageView from './views/language_view';
+import * as addServerView from './views/root_view/add_access_key_dialog';
 
 describe('TODOs', () => {
   it('loads all the files that have no tests against them', () => {
