@@ -116,7 +116,16 @@ export class GoVpnTunnel implements VpnTunnel {
     console.log('starting routing daemon');
     await Promise.all([
       this.tun2socks.start(this.isUdpEnabled),
-      this.routing.start(),
+      // Disable routing for TUN-only mode. You will still have to set up the TUN device:
+      //
+      //    sudo ip tuntap add dev outline-tun0 mode tun
+      //    sudo ip link set outline-tun0 up
+      //
+      // Then you can test with:
+      //
+      //    curl --interface outline-tun0 -v https://ipinfo.io
+      //
+      // this.routing.start(),
     ]);
   }
 
@@ -200,13 +209,14 @@ export class GoVpnTunnel implements VpnTunnel {
       }
     }
 
-    try {
-      await this.routing.stop();
-    } catch (e) {
-      // This can happen for several reasons, e.g. the daemon may have stopped while we were
-      // connected.
-      console.error(`could not stop routing: ${e.message}`);
-    }
+    // Disable for TUN-only mode.
+    // try {
+    //   await this.routing.stop();
+    // } catch (e) {
+    //   // This can happen for several reasons, e.g. the daemon may have stopped while we were
+    //   // connected.
+    //   console.error(`could not stop routing: ${e.message}`);
+    // }
     this.resolveAllHelpersStopped();
     this.disconnected = true;
   }
