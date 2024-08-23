@@ -37,7 +37,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './add-server-view.js';
 import './outline-icons.js';
 
 // TODO(daniellacosse): figure out how to import this without disabling the rule
@@ -55,6 +54,8 @@ import '../views/root_view/auto_connect_dialog';
 import '../views/root_view/privacy_acknowledgement_dialog';
 // eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/add_access_key_dialog';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -528,11 +529,10 @@ export class AppRoot extends mixinBehaviors(
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
 
-      <add-server-view
+      <add-access-key-dialog
         id="addServerView"
         localize="[[localize]]"
-        use-alt-access-message="[[useAltAccessMessage]]"
-      ></add-server-view>
+      ></add-access-key-dialog>
 
       <privacy-acknowledgement-dialog
         id="privacyView"
@@ -851,7 +851,7 @@ export class AppRoot extends mixinBehaviors(
   }
 
   promptAddServer() {
-    this.$.addServerView.openAddServerSheet();
+    this.$.addServerView.open = true;
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {

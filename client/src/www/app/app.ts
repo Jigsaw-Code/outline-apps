@@ -348,7 +348,7 @@ export class App {
 
   private displayZeroStateUi() {
     if (this.rootEl.$.serversView.shouldShowZeroState) {
-      this.rootEl.$.addServerView.openAddServerSheet();
+      this.rootEl.$.addServerView.open = true;
     }
   }
 
@@ -405,6 +405,7 @@ export class App {
   private requestIgnoreServer(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
     this.ignoredAccessKeys[accessKey] = true;
+    this.rootEl.$.addServerView.open = false;
   }
 
   private requestAddServer(event: CustomEvent) {
@@ -413,6 +414,8 @@ export class App {
     } catch (err) {
       this.changeToDefaultPage();
       this.showLocalizedError(err);
+    } finally {
+      this.rootEl.$.addServerView.open = false;
     }
   }
 
@@ -423,15 +426,14 @@ export class App {
       this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
-      const addServerView = this.rootEl.$.addServerView;
-      addServerView.$.accessKeyInput.invalid = true;
+      this.showLocalizedError(err);
     }
   }
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard && !addServerView.isAddingServer()) {
+    if (fromClipboard && !addServerView.open) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
       } else if (accessKey.startsWith('https://')) {
@@ -442,11 +444,12 @@ export class App {
     }
     try {
       this.serverRepo.validateAccessKey(accessKey);
-      addServerView.openAddServerConfirmationSheet(accessKey);
+      addServerView.accessKey = accessKey;
+      addServerView.open = true;
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
-        addServerView.close();
+        addServerView.open = false;
         this.showLocalizedError(e);
         return;
       }

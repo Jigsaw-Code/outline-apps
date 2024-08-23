@@ -33,10 +33,10 @@ import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
 import * as errorReporter from './shared/error_reporter';
-import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';
 import * as aboutView from './views/about_view';
 import * as languageView from './views/language_view';
+import * as addServerView from './views/root_view/add_access_key_dialog';
 import * as userCommsDialog from './views/root_view/auto_connect_dialog';
 import * as privacyView from './views/root_view/privacy_acknowledgement_dialog';
 
