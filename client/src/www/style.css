@@ -31,6 +31,7 @@
   --min-supported-device-width: 320px;
 
   --outline-primary: hsl(170, 60%, 46%);
+  --outline-dark-primary: hsl(200, 19%, 18%);
   --outline-error: hsl(4, 90%, 58%);
 
   --outline-black: hsl(0, 0%, 0%);
