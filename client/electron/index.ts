@@ -36,7 +36,7 @@ import {autoUpdater} from 'electron-updater';
 import {lookupIp} from './connectivity';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
-import {TunnelStore, SerializableTunnel} from './tunnel_store';
+import {TunnelStore, TunnelConfigJson} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 import {
   ShadowsocksSessionConfig,
@@ -302,7 +302,7 @@ function interceptShadowsocksLink(argv: string[]) {
 
 // Set the app to launch at startup to connect automatically in case of a shutdown while
 // proxying.
-async function setupAutoLaunch(args: SerializableTunnel): Promise<void> {
+async function setupAutoLaunch(args: TunnelConfigJson): Promise<void> {
   try {
     await tunnelStore.save(args);
     if (isLinux) {
@@ -447,7 +447,7 @@ function main() {
     // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
 
-    let tunnelAtShutdown: SerializableTunnel;
+    let tunnelAtShutdown: TunnelConfigJson;
     try {
       tunnelAtShutdown = await tunnelStore.load();
     } catch (e) {
@@ -462,7 +462,7 @@ function main() {
       );
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
-        await startVpn(tunnelAtShutdown.config, tunnelAtShutdown.id, true);
+        await startVpn(tunnelAtShutdown.transportConfig, tunnelAtShutdown.id, true);
         console.log(`reconnected to ${tunnelAtShutdown.id}`);
       } catch (e) {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
