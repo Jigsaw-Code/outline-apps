@@ -13,16 +13,11 @@
 // limitations under the License.
 
 import XCTest
-
 import NetworkExtension
 
-@testable import OutlineTunnel
+final class VpnExtensionTest: XCTestCase {
 
-final class OutlineTunnelTest: XCTestCase {
-    
-    static let kAppGroup = "outline.spm.tests"
-    
-    func testSelectVpnAddress() {
+    func testSelectVpnAddress() throws {
         XCTAssertEqual("10.111.222.0", selectVpnAddress(interfaceAddresses:["172.16.9.2", "192.168.20.2", "169.254.19.1"]))
         XCTAssertEqual("172.16.9.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "192.168.20.2", "169.254.19.1"]))
         XCTAssertEqual("192.168.20.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "172.16.9.2", "169.254.19.1"]))
@@ -30,8 +25,8 @@ final class OutlineTunnelTest: XCTestCase {
         XCTAssertTrue(kVpnSubnetCandidates.values.contains(selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())))
     }
     
-    func testGetTunnelNetworkSettings() {
-        let settings = OutlineTunnel.getTunnelNetworkSettings()
+    func testGetTunnelNetworkSettings() throws {
+        let settings = SwiftBridge.getTunnelNetworkSettings()
         
         XCTAssertEqual("::", settings.tunnelRemoteAddress)
         

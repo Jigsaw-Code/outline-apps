@@ -22,7 +22,6 @@ package shadowsocks
 import (
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
@@ -64,11 +63,7 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 	}
 
 	// TODO: consider using net.LookupIP to get a list of IPs, and add logic for optimal selection.
-	proxyIP, err := net.ResolveIPAddr("ip", host)
-	if err != nil {
-		return nil, platerrors.NewWithCause(platerrors.ResolveIPFailed, "failed to resolve ip of the proxy host", err)
-	}
-	proxyAddress := net.JoinHostPort(proxyIP.String(), fmt.Sprint(port))
+	proxyAddress := net.JoinHostPort(host, fmt.Sprint(port))
 
 	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
 	if err != nil {
@@ -113,8 +108,6 @@ const (
 	UnsupportedRoutingTable     = 11 // Unused
 	SystemMisconfigured         = 12 // Electron only
 )
-
-const reachabilityTimeout = 10 * time.Second
 
 // CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
 // the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
