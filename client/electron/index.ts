@@ -350,8 +350,8 @@ async function createVpnTunnel(
   if (!config.host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
-  const proxyIp = await lookupIp(config.host);
-  const routing = new RoutingDaemon(proxyIp || '', isAutoConnect);
+  config.host = await lookupIp(config.host);
+  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
   const tunnel = new GoVpnTunnel(routing, JSON.stringify(config));
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
