@@ -21,6 +21,13 @@ import OutlineSentryLogger
 import OutlineNotification
 import OutlineTunnel
 
+public enum TunnelStatus: Int {
+  case connected = 0
+  case disconnected = 1
+  case reconnecting = 2
+  case disconnecting = 3
+}
+
 @objcMembers
 class OutlinePlugin: CDVPlugin {
 
@@ -90,12 +97,14 @@ class OutlinePlugin: CDVPlugin {
       }
       DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
       // TODO(fortuna): Move the config validation to the config parsing code in Go.
-      guard let configJson = command.argument(at: 2) as? [String: Any], containsExpectedKeys(configJson) else {
+      guard let transportConfigJson = command.argument(at: 2) as? [String: Any],
+        let transportConfigJsonData = try? JSONSerialization.data(withJSONObject: transportConfigJson, options: []),
+        let transportConfig = String(data: transportConfigJsonData, encoding: .utf8) else {
         return sendError("Invalid configuration", callbackId: command.callbackId,
                          errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
       }
       Task {
-        let errorCode = await OutlineVpn.shared.start(tunnelId, name:name, transportConfig:configJson)
+        let errorCode = await OutlineVpn.shared.start(tunnelId, named:name, withTransport:transportConfig)
         if errorCode == OutlineVpn.ErrorCode.noError {
 #if os(macOS) || targetEnvironment(macCatalyst)
           NotificationCenter.default.post(name: .kVpnConnected, object: nil)
@@ -252,30 +261,24 @@ class OutlinePlugin: CDVPlugin {
 #if os(macOS) || targetEnvironment(macCatalyst)
           NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
-        tunnelStatus = OutlineTunnel.TunnelStatus.connected.rawValue
+        tunnelStatus = TunnelStatus.connected.rawValue
       case .disconnected:
 #if os(macOS) || targetEnvironment(macCatalyst)
             NotificationCenter.default.post(name: .kVpnDisconnected, object: nil)
 #endif
-        tunnelStatus = OutlineTunnel.TunnelStatus.disconnected.rawValue
+        tunnelStatus = TunnelStatus.disconnected.rawValue
       case .disconnecting:
-        tunnelStatus = OutlineTunnel.TunnelStatus.disconnecting.rawValue
+        tunnelStatus = TunnelStatus.disconnecting.rawValue
       case .reasserting:
-        tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
+        tunnelStatus = TunnelStatus.reconnecting.rawValue
       case .connecting:
-        tunnelStatus = OutlineTunnel.TunnelStatus.reconnecting.rawValue
+        tunnelStatus = TunnelStatus.reconnecting.rawValue
       default:
         return;  // Do not report transient or invalid states.
     }
     let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["id": tunnelId, "status": Int32(tunnelStatus)])
     send(pluginResult: result, callbackId: callbackId, keepCallback: true)
   }
-
-  // Returns whether |config| contains all the expected keys
-  private func containsExpectedKeys(_ configJson: [String: Any]?) -> Bool {
-    return configJson?["host"] != nil && configJson?["port"] != nil &&
-        configJson?["password"] != nil && configJson?["method"] != nil
-    }
 
     // MARK: Callback helpers
 

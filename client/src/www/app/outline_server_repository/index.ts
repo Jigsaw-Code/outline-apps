@@ -242,9 +242,6 @@ export class OutlineServerRepository implements ServerRepository {
         error.message || 'failed to parse access key'
       );
     }
-    if (config.host.isIPv6) {
-      throw new errors.ServerIncompatible('unsupported IPv6 host address');
-    }
     if (!OutlineServer.isServerCipherSupported(config.method.data)) {
       throw new errors.ShadowsocksUnsupportedCipher(
         config.method.data || 'unknown'

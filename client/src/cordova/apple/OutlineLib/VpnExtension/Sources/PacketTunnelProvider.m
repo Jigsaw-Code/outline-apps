@@ -13,11 +13,12 @@
 // limitations under the License.
 
 #import "PacketTunnelProvider.h"
+#import "VpnExtension-Swift.h"
+
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 
-@import OutlineTunnel;
 @import Tun2socks;
 
 #ifdef DEBUG
@@ -29,12 +30,11 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
 NSString *const kDefaultPathKey = @"defaultPath";
 
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
-@property (nonatomic) NSString *hostNetworkAddress;  // IP address of the host in the active network.
 @property id<Tun2socksTunnel> tunnel;
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
-@property (nonatomic, nullable) OutlineTunnel *transportConfig;
+@property (nonatomic, nullable) NSString *transportConfig;
 @property (nonatomic) dispatch_queue_t packetQueue;
 @property (nonatomic) BOOL isUdpSupported;
 @end
@@ -79,25 +79,14 @@ NSString *const kDefaultPathKey = @"defaultPath";
                                         userInfo:nil]);
   }
 
-  NSDictionary *transportConfig = protocol.providerConfiguration[@"transport"];
-  if (![transportConfig isKindOfClass:[NSDictionary class]]) {
+  NSString *transportConfig = protocol.providerConfiguration[@"transport"];
+  if (![transportConfig isKindOfClass:[NSString class]]) {
       DDLogError(@"Failed to retrieve the transport configuration.");
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                             code:NEVPNErrorConfigurationUnknown
                                         userInfo:nil]);
   }
-
-  self.transportConfig = [[OutlineTunnel alloc] initWithId:tunnelId config:transportConfig];
-
-  // Compute the IP address of the host in the active network.
-  // TODO(fortuna): Stop resolving the name here and remove dependency on the host name.
-  self.hostNetworkAddress =
-      getNetworkIpAddress([self.transportConfig.config[@"host"] UTF8String]);
-  if (self.hostNetworkAddress == nil) {
-    return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                 code:NEVPNErrorConfigurationReadWriteFailed
-                                             userInfo:nil]);
-  }
+  self.transportConfig = transportConfig;
 
   // startTunnel has 3 cases:
   // - When started from the app, we get options != nil, with no ["is-on-demand"] entry.
@@ -115,7 +104,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // culprit and can explicitly disconnect.
   long errorCode = noError;
   if (!isOnDemand) {
-    ShadowsocksClient* client = [self newClient];
+    ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
     if (client == nil) {
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                                    code:NEVPNErrorConfigurationInvalid
@@ -131,7 +120,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
     }
   }
 
-  [self startRouting:[OutlineTunnel getTunnelNetworkSettings]
+  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
            completion:^(NSError *_Nullable error) {
              if (error != nil) {
                return startDone(error);
@@ -159,22 +148,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
 }
 
 # pragma mark - Network
-
-- (ShadowsocksClient*) newClient {
-  // TODO(fortuna): Pass transport config as an opaque string to ShadowsocksNewClient.
-  ShadowsocksConfig* config = [[ShadowsocksConfig alloc] init];
-  config.host = self.hostNetworkAddress;
-  config.port = [self.transportConfig.port intValue];
-  config.password = self.transportConfig.password;
-  config.cipherName = self.transportConfig.method;
-  config.prefix = self.transportConfig.prefix;
-  NSError *err;
-  ShadowsocksClient* client = ShadowsocksNewClient(config, &err);
-  if (err != nil) {
-    DDLogInfo(@"Failed to construct client.");
-  }
-  return client;
-}
 
 - (void)startRouting:(NEPacketTunnelNetworkSettings *)settings
            completion:(void (^)(NSError *))completionHandler {
@@ -276,33 +249,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   return true;
 }
 
-/** Calls getaddrinfo to retrieve the IP address literal as a string for |ipv4Str| in the active network.
- This is necessary to support IPv6 DNS64/NAT64 networks. For more details see:
- https://developer.apple.com/library/content/documentation/NetworkingInternetWeb/Conceptual/NetworkingOverview/UnderstandingandPreparingfortheIPv6Transition/UnderstandingandPreparingfortheIPv6Transition.html */
-NSString* getNetworkIpAddress(const char * ipv4Str) {
-  // TODO(fortuna): Move this logic to Go, so we don't depend on the host name.
-  struct addrinfo *info;
-  struct addrinfo hints = {
-    .ai_family = PF_UNSPEC,
-    .ai_socktype = SOCK_STREAM,
-    .ai_flags = AI_DEFAULT
-  };
-  int error = getaddrinfo(ipv4Str, NULL, &hints, &info);
-  if (error) {
-    DDLogError(@"getaddrinfo failed: %s", gai_strerror(error));
-    return NULL;
-  }
-
-  char networkAddress[INET6_ADDRSTRLEN];
-  bool success = getIpAddressString(info->ai_addr, networkAddress, INET6_ADDRSTRLEN);
-  freeaddrinfo(info);
-  if (!success) {
-    DDLogError(@"inet_ntop failed with code %d", errno);
-    return NULL;
-  }
-  return [NSString stringWithUTF8String:networkAddress];
-}
-
 #pragma mark - tun2socks
 
 /** Restarts tun2socks if |configChanged| or the host's IP address has changed in the network. */
@@ -311,22 +257,13 @@ NSString* getNetworkIpAddress(const char * ipv4Str) {
     DDLogError(@"Failed to reconnect tunnel, missing tunnel configuration.");
     return;
   }
-  const char *hostAddress = (const char *)[self.transportConfig.host UTF8String];
-  NSString *activeHostNetworkAddress = getNetworkIpAddress(hostAddress);
-  if (!activeHostNetworkAddress) {
-    DDLogError(@"Failed to retrieve the remote host IP address in the network");
-    return;
-  }
-  if ([activeHostNetworkAddress isEqualToString:self.hostNetworkAddress]) {
-    // Nothing changed. Connect the tunnel with the current settings.
-      [self startRouting:[OutlineTunnel getTunnelNetworkSettings]
-             completion:^(NSError *_Nullable error) {
-               if (error != nil) {
-                 [self cancelTunnelWithError:error];
-               }
-             }];
-    return;
-  }
+  // Nothing changed. Connect the tunnel with the current settings.
+  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
+         completion:^(NSError *_Nullable error) {
+           if (error != nil) {
+             [self cancelTunnelWithError:error];
+           }
+         }];
 }
 
 - (BOOL)close:(NSError *_Nullable *)error {
@@ -359,7 +296,7 @@ NSString* getNetworkIpAddress(const char * ipv4Str) {
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  ShadowsocksClient* client = [self newClient];
+  ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
   if (client == nil) {
     return NO;
   }
