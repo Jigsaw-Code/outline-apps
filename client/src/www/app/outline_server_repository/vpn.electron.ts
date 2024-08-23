@@ -49,7 +49,11 @@ export class ElectronVpnApi implements VpnApi {
     );
   }
 
-  async start(id: string, name: string, config: ShadowsocksSessionConfig) {
+  async start(
+    id: string,
+    name: string,
+    transportConfig: ShadowsocksSessionConfig
+  ) {
     if (this.runningServerId === id) {
       return Promise.resolve();
     }
@@ -58,7 +62,7 @@ export class ElectronVpnApi implements VpnApi {
       await window.electron.methodChannel.invoke('start-proxying', {
         id: id,
         name: name,
-        config,
+        transportConfig: transportConfig,
       });
     } catch (e) {
       throw PlatformError.parseFrom(e);

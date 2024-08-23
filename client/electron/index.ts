@@ -337,14 +337,22 @@ async function tearDownAutoLaunch() {
   }
 }
 
-// Factory function to create a VPNTunnel instance backed by a network statck
+// Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
-function createVpnTunnel(
+async function createVpnTunnel(
   config: ShadowsocksSessionConfig,
   isAutoConnect: boolean
-): VpnTunnel {
-  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
-  const tunnel = new GoVpnTunnel(routing, config);
+): Promise<VpnTunnel> {
+  // We must convert the host from a potential "hostname" to an "IP" address
+  // because startVpn will add a routing table entry that prefixed with this
+  // host (e.g. "<host>/32"), therefore <host> must be an IP address.
+  // TODO: make sure we resolve it in the native code
+  if (!config.host) {
+    throw new errors.IllegalServerConfiguration('host is missing');
+  }
+  const proxyIp = await lookupIp(config.host);
+  const routing = new RoutingDaemon(proxyIp || '', isAutoConnect);
+  const tunnel = new GoVpnTunnel(routing, JSON.stringify(config));
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
@@ -359,7 +367,7 @@ async function startVpn(
     throw new Error('already connected');
   }
 
-  currentTunnel = createVpnTunnel(config, isAutoConnect);
+  currentTunnel = await createVpnTunnel(config, isAutoConnect);
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }
@@ -498,7 +506,11 @@ function main() {
     'outline-ipc-start-proxying',
     async (
       _,
-      args: {id: string; name: string; config: ShadowsocksSessionConfig}
+      args: {
+        id: string;
+        name: string;
+        transportConfig: ShadowsocksSessionConfig;
+      }
     ): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
       //       being faster, this would help prevent traffic leaks - the Cordova clients already do
@@ -512,13 +524,7 @@ function main() {
       console.log(`connecting to ${args.name} (${args.id})...`);
 
       try {
-        // We must convert the host from a potential "hostname" to an "IP" address
-        // because startVpn will add a routing table entry that prefixed with this
-        // host (e.g. "<host>/32"), therefore <host> must be an IP address.
-        // TODO: make sure we resolve it in the native code
-        args.config.host = await lookupIp(args.config.host || '');
-
-        await startVpn(args.config, args.id);
+        await startVpn(args.transportConfig, args.id);
         console.log(`connected to ${args.name} (${args.id})`);
         await setupAutoLaunch(args);
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
