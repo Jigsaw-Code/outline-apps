@@ -74,7 +74,13 @@ export class AddAccessKeyDialog extends LitElement {
       <article slot="content">
         <section
           class="help-text"
-          .innerHTML=${this.localize('add-access-key-dialog-help-text')}
+          .innerHTML=${this.localize(
+            'add-access-key-dialog-help-text',
+            'openLink',
+            '<a href=https://s3.amazonaws.com/outline-vpn/index.html>',
+            'closeLink',
+            '</a>'
+          )}
         ></section>
         <section>
           <md-filled-text-field
@@ -111,7 +117,11 @@ export class AddAccessKeyDialog extends LitElement {
 
     try {
       const url = new URL(this.accessKey);
-      return url.protocol === 'ssconf:';
+      return (
+        url.protocol === 'ssconf:' ||
+        url.protocol === 'https:' ||
+        url.protocol === 'http:'
+      );
     } catch {
       // do nothing
     }

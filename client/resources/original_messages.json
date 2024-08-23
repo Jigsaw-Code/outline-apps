@@ -33,7 +33,16 @@
   },
   "add_access_key_dialog_help_text": {
     "desciption": "A message shown to the user to help them understand what an access key is and how to get one.",
-    "message": "Need a new access key? Create one at <a>our website</a>."
+    "message": "Need a new access key? Create one at $START_OF_LINK$our website$END_OF_LINK$.",
+    "placeholders": {
+      "END_OF_LINK": {
+        "content": "{closeLink}"
+      },
+      "START_OF_LINK": {
+        "content": "{openLink}"
+      }
+    }
+
   },
   "add_access_key_dialog_label": {
     "description": "The label for a text box where the user can paste an access key to add a new server.",
