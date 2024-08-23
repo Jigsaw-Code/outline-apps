@@ -19,11 +19,16 @@ import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 export class CordovaVpnApi implements VpnApi {
   constructor() {}
 
-  start(id: string, name: string, config: ShadowsocksSessionConfig) {
-    if (!config) {
+  start(id: string, name: string, transportConfig: ShadowsocksSessionConfig) {
+    if (!transportConfig) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>('start', id, name, config);
+    return pluginExecWithErrorCode<void>(
+      'start',
+      id,
+      name,
+      JSON.stringify(transportConfig)
+    );
   }
 
   stop(id: string) {

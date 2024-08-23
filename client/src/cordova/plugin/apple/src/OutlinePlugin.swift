@@ -96,10 +96,7 @@ class OutlinePlugin: CDVPlugin {
                          errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
       }
       DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
-      // TODO(fortuna): Move the config validation to the config parsing code in Go.
-      guard let transportConfigJson = command.argument(at: 2) as? [String: Any],
-        let transportConfigJsonData = try? JSONSerialization.data(withJSONObject: transportConfigJson, options: []),
-        let transportConfig = String(data: transportConfigJsonData, encoding: .utf8) else {
+      guard let transportConfig = command.argument(at: 2) as? String else {
         return sendError("Invalid configuration", callbackId: command.callbackId,
                          errorCode: OutlineVpn.ErrorCode.illegalServerConfiguration)
       }
