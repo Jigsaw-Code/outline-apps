@@ -117,11 +117,7 @@ export class AddAccessKeyDialog extends LitElement {
 
     try {
       const url = new URL(this.accessKey);
-      return (
-        url.protocol === 'ssconf:' ||
-        url.protocol === 'https:' ||
-        url.protocol === 'http:'
-      );
+      return url.protocol === 'ssconf:' || url.protocol === 'https:';
     } catch {
       // do nothing
     }
