@@ -33,6 +33,7 @@ export class ServerList extends LitElement {
 
       server-row-card {
         margin: 0 auto 8px auto;
+        height: auto;
       }
 
       /* TODO(daniellacosse): Remove the hard-coded heights. */
