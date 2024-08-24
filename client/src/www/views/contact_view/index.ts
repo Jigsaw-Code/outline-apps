@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import {SingleSelectedEvent} from '@material/mwc-list/mwc-list';
 import {Radio} from '@material/mwc-radio';
 import '@material/mwc-circular-progress';
@@ -43,16 +42,27 @@ enum ProgressStep {
 enum IssueType {
   NO_SERVER = 'no-server',
   CANNOT_ADD_SERVER = 'cannot-add-server',
+  BILLING = 'billing',
   CONNECTION = 'connection',
   PERFORMANCE = 'performance',
   GENERAL = 'general',
 }
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
-const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
-  [IssueType.NO_SERVER, 'https://support.getoutline.org/s/article/How-do-I-get-an-access-key'],
-  [IssueType.CANNOT_ADD_SERVER, 'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work'],
-  [IssueType.CONNECTION, 'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service'],
+const UNSUPPORTED_ISSUE_TYPES = new Map([
+  [
+    IssueType.NO_SERVER,
+    'https://support.getoutline.org/s/article/How-do-I-get-an-access-key',
+  ],
+  [
+    IssueType.CANNOT_ADD_SERVER,
+    'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work',
+  ],
+  [IssueType.BILLING, null],
+  [
+    IssueType.CONNECTION,
+    'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service',
+  ],
 ]);
 
 @customElement('contact-view')
@@ -135,13 +145,15 @@ export class ContactView extends LitElement {
   private static readonly ISSUES: IssueType[] = [
     IssueType.NO_SERVER,
     IssueType.CANNOT_ADD_SERVER,
+    IssueType.BILLING,
     IssueType.CONNECTION,
     IssueType.PERFORMANCE,
     IssueType.GENERAL,
   ];
 
   @property({type: Function}) localize: Localizer = msg => msg;
-  @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
+  @property({type: Object, attribute: 'error-reporter'})
+  errorReporter: OutlineErrorReporter;
 
   @state() private currentStep: ProgressStep = ProgressStep.ISSUE_WIZARD;
   private selectedIssueType?: IssueType;
@@ -173,7 +185,9 @@ export class ContactView extends LitElement {
     const radio = e.target as Radio;
     const hasOpenTicket = radio.value;
     if (hasOpenTicket) {
-      this.exitTemplate = html`${this.localize('contact-view-exit-open-ticket')}`;
+      this.exitTemplate = html`${this.localize(
+        'contact-view-exit-open-ticket'
+      )}`;
       this.currentStep = ProgressStep.EXIT;
       return;
     }
@@ -183,12 +197,19 @@ export class ContactView extends LitElement {
   private selectIssue(e: SingleSelectedEvent) {
     this.selectedIssueType = ContactView.ISSUES[e.detail.index];
 
-    if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
-      // TODO: Send users to localized support pages based on chosen language.
-      this.exitTemplate = this.localizeWithUrl(
-        `contact-view-exit-${this.selectedIssueType}`,
-        UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
-      );
+    if (UNSUPPORTED_ISSUE_TYPES.has(this.selectedIssueType)) {
+      const helpPage = UNSUPPORTED_ISSUE_TYPES.get(this.selectedIssueType);
+      if (helpPage) {
+        // TODO: Send users to localized support pages based on chosen language.
+        this.exitTemplate = this.localizeWithUrl(
+          `contact-view-exit-${this.selectedIssueType}`,
+          helpPage
+        );
+      } else {
+        this.exitTemplate = html`${this.localize(
+          `contact-view-exit-${this.selectedIssueType}`
+        )}`;
+      }
       this.currentStep = ProgressStep.EXIT;
       return;
     }
@@ -216,10 +237,15 @@ export class ContactView extends LitElement {
 
     const {description, email, ...tags} = this.formValues as ValidFormValues;
     try {
-      await this.errorReporter.report(description, this.selectedIssueType?.toString() ?? 'unknown', email, {
-        ...tags,
-        formVersion: 2,
-      });
+      await this.errorReporter.report(
+        description,
+        this.selectedIssueType?.toString() ?? 'unknown',
+        email,
+        {
+          ...tags,
+          formVersion: 2,
+        }
+      );
     } catch (e) {
       console.error(`Failed to send feedback report: ${e.message}`);
       this.isFormSubmitting = false;
@@ -236,7 +262,11 @@ export class ContactView extends LitElement {
   private localizeWithUrl(messageID: string, url: string): TemplateResult {
     const openLink = `<a href="${url}" target="_blank">`;
     const closeLink = '</a>';
-    return html` ${unsafeHTML(this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink))} `;
+    return html`
+      ${unsafeHTML(
+        this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink)
+      )}
+    `;
   }
 
   private get renderIntroTemplate(): TemplateResult {
