@@ -29,8 +29,12 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     }
 
     md-dialog {
-      --md-dialog-container-color: var(--outline-dialog-primary-background-color);
-      --md-dialog-supporting-text-color: var(--outline-dialog-primary-text-color);
+      --md-dialog-container-color: var(
+        --outline-dialog-primary-background-color
+      );
+      --md-dialog-supporting-text-color: var(
+        --outline-dialog-primary-text-color
+      );
 
       text-align: center;
       min-width: 100vw;
@@ -99,10 +103,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
           >
             ${this.localize('learn-more')}
           </md-text-button>
-          <md-filled-button
-            @click="${this.handleAcknowledgement}"
-            autofocus
-          >
+          <md-filled-button @click="${this.handleAcknowledgement}" autofocus>
             ${this.localize('got-it')}
           </md-filled-button>
         </fieldset>
