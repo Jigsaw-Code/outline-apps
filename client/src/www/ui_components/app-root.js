@@ -591,7 +591,7 @@ export class AppRoot extends mixinBehaviors(
             id: 'pt-PT',
             name: 'Português (Portugal)',
             dir: 'ltr',
-            supportId: 'pt_PT',
+            supportId: 'pt_BR',
           },
           ro: {id: 'ro', name: 'română', dir: 'ltr', supportId: 'ro'},
           ru: {id: 'ru', name: 'Русский', dir: 'ltr', supportId: 'ru'},
