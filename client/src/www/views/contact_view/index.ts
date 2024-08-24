@@ -141,6 +141,7 @@ export class ContactView extends LitElement {
   ];
 
   @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: String}) languageCode = "";
   @property({type: Object, attribute: 'error-reporter'}) errorReporter: OutlineErrorReporter;
 
   @state() private currentStep: ProgressStep = ProgressStep.ISSUE_WIZARD;
@@ -184,7 +185,6 @@ export class ContactView extends LitElement {
     this.selectedIssueType = ContactView.ISSUES[e.detail.index];
 
     if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
-      // TODO: Send users to localized support pages based on chosen language.
       this.exitTemplate = this.localizeWithUrl(
         `contact-view-exit-${this.selectedIssueType}`,
         UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
@@ -232,9 +232,13 @@ export class ContactView extends LitElement {
     this.dispatchEvent(new CustomEvent('success'));
   }
 
-  // TODO: Consider moving this functionality to a more centralized place for re-use.
   private localizeWithUrl(messageID: string, url: string): TemplateResult {
-    const openLink = `<a href="${url}" target="_blank">`;
+    const parsedUrl = new URL(url);
+    console.log('this.languageCode', this.languageCode)
+    if (this.languageCode) {
+      parsedUrl.searchParams.append('language', this.languageCode);
+    }
+    const openLink = `<a href="${parsedUrl.toString()}" target="_blank">`;
     const closeLink = '</a>';
     return html` ${unsafeHTML(this.localize(messageID, 'openLink', openLink, 'closeLink', closeLink))} `;
   }
