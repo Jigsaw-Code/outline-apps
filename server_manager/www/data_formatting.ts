@@ -16,10 +16,10 @@
 
 // Utility functions for internationalizing numbers and units
 
-const TERABYTE = 10 ** 12;
-const GIGABYTE = 10 ** 9;
-const MEGABYTE = 10 ** 6;
-const KILOBYTE = 10 ** 3;
+const KILOBYTE = 1024;
+const MEGABYTE = KILOBYTE ** 2;
+const GIGABYTE = KILOBYTE ** 3;
+const TERABYTE = KILOBYTE ** 4;
 
 const inWebApp =
   typeof window !== 'undefined' && typeof window.document !== 'undefined';
