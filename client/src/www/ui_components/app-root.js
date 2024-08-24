@@ -63,21 +63,11 @@ import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
-function makeLookUpLanguage(availableLanguages) {
-  return languageId => {
-    languageId = languageId.toLowerCase();
-    for (const availableLanguage of availableLanguages) {
-      const parts = availableLanguage.toLowerCase().split('-');
-      while (parts.length) {
-        const joined = parts.join('-');
-        if (languageId === joined) {
-          return availableLanguage;
-        }
-        parts.pop();
-      }
-    }
-  };
-}
+import {
+  findMatch,
+  findLanguageMatch,
+  SUPPORTED_LANGUAGES,
+} from '../shared/language';
 
 function getBrowserLanguages() {
   // Ensure that navigator.languages is defined and not empty, as can be the case with some browsers
@@ -89,20 +79,7 @@ function getBrowserLanguages() {
   return [globalThis.navigator.language];
 }
 
-function getBestMatchingLanguage(available) {
-  const lookUpAvailable = makeLookUpLanguage(available);
-  for (const candidate of getBrowserLanguages()) {
-    const parts = candidate.split('-');
-    while (parts.length) {
-      const joined = parts.join('-');
-      const closest = lookUpAvailable(joined);
-      if (closest) {
-        return closest;
-      }
-      parts.pop();
-    }
-  }
-}
+
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
@@ -473,7 +450,7 @@ export class AppRoot extends mixinBehaviors(
             </paper-item>
             <paper-item name="help">
               <a
-                href="https://support.getoutline.org"
+                href$="https://support.getoutline.org?language=[[this.languages[language].supportId]]"
                 id="helpAnchor"
                 hidden=""
               ></a>
@@ -504,7 +481,8 @@ export class AppRoot extends mixinBehaviors(
               >
             </paper-item>
             <paper-item>
-              <a href="https://support.getoutline.org/s/article/Data-collection"
+              <a
+                href$="https://support.getoutline.org/s/article/Data-collection?language=[[this.languages[language].supportId]]"
                 >[[localize('data-collection')]]</a
               >
             </paper-item>
@@ -565,74 +543,7 @@ export class AppRoot extends mixinBehaviors(
       LANGUAGES_AVAILABLE: {
         type: Object,
         readonly: true,
-        value: {
-          af: {id: 'af', name: 'Afrikaans', dir: 'ltr'},
-          am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
-          ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
-          az: {id: 'az', name: 'azərbaycan', dir: 'ltr'},
-          bg: {id: 'bg', name: 'български', dir: 'ltr'},
-          bn: {id: 'bn', name: 'বাংলা', dir: 'ltr'},
-          bs: {id: 'bs', name: 'bosanski', dir: 'ltr'},
-          ca: {id: 'ca', name: 'català', dir: 'ltr'},
-          cs: {id: 'cs', name: 'Čeština', dir: 'ltr'},
-          da: {id: 'da', name: 'Dansk', dir: 'ltr'},
-          de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
-          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
-          en: {id: 'en', name: 'English', dir: 'ltr'},
-          'en-GB': {id: 'en-GB', name: 'English (United Kingdom)', dir: 'ltr'},
-          es: {id: 'es', name: 'Español', dir: 'ltr'},
-          'es-419': {id: 'es-419', name: 'Español (Latinoamérica)', dir: 'ltr'},
-          et: {id: 'et', name: 'eesti', dir: 'ltr'},
-          fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
-          fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
-          fil: {id: 'fil', name: 'Filipino', dir: 'ltr'},
-          fr: {id: 'fr', name: 'Français', dir: 'ltr'},
-          he: {id: 'he', name: 'עברית', dir: 'rtl'},
-          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
-          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
-          hu: {id: 'hu', name: 'magyar', dir: 'ltr'},
-          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr'},
-          id: {id: 'id', name: 'Indonesia', dir: 'ltr'},
-          is: {id: 'is', name: 'íslenska', dir: 'ltr'},
-          it: {id: 'it', name: 'Italiano', dir: 'ltr'},
-          ja: {id: 'ja', name: '日本語', dir: 'ltr'},
-          ka: {id: 'ka', name: 'ქართული', dir: 'ltr'},
-          kk: {id: 'kk', name: 'қазақ тілі', dir: 'ltr'},
-          km: {id: 'km', name: 'ខ្មែរ', dir: 'ltr'},
-          ko: {id: 'ko', name: '한국어', dir: 'ltr'},
-          lo: {id: 'lo', name: 'ລາວ', dir: 'ltr'},
-          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr'},
-          lv: {id: 'lv', name: 'latviešu', dir: 'ltr'},
-          mk: {id: 'mk', name: 'македонски', dir: 'ltr'},
-          mn: {id: 'mn', name: 'монгол', dir: 'ltr'},
-          ms: {id: 'ms', name: 'Melayu', dir: 'ltr'},
-          mr: {id: 'mr', name: 'मराठी', dir: 'ltr'},
-          my: {id: 'my', name: 'မြန်မာ', dir: 'ltr'},
-          ne: {id: 'ne', name: 'नेपाली', dir: 'ltr'},
-          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
-          no: {id: 'no', name: 'norsk', dir: 'ltr'},
-          pl: {id: 'pl', name: 'polski', dir: 'ltr'},
-          'pt-BR': {id: 'pt-BR', name: 'Português (Brasil)', dir: 'ltr'},
-          'pt-PT': {id: 'pt-PT', name: 'Português (Portugal)', dir: 'ltr'},
-          ro: {id: 'ro', name: 'română', dir: 'ltr'},
-          ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
-          si: {id: 'si', name: 'සිංහල', dir: 'ltr'},
-          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
-          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr'},
-          sq: {id: 'sq', name: 'shqip', dir: 'ltr'},
-          sr: {id: 'sr', name: 'српски', dir: 'ltr'},
-          'sr-Latn': {id: 'sr-Latn', name: 'srpski (latinica)', dir: 'ltr'},
-          sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
-          sw: {id: 'sw', name: 'Kiswahili', dir: 'ltr'},
-          ta: {id: 'ta', name: 'தமிழ்', dir: 'ltr'},
-          th: {id: 'th', name: 'ไทย', dir: 'ltr'},
-          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
-          uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
-          ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
-          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr'},
-          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
-          'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr'},
-        },
+        value: SUPPORTED_LANGUAGES,
       },
       language: {
         type: String,
@@ -857,10 +768,13 @@ export class AppRoot extends mixinBehaviors(
   _computeLanguage(availableLanguages, defaultLanguage) {
     const overrideLanguage =
       globalThis.localStorage.getItem('overrideLanguage');
-    const bestMatchingLanguage = getBestMatchingLanguage(
-      Object.keys(availableLanguages)
+    const bestMatchingLanguage = findMatch(
+      getBrowserLanguages(),
+      (_, variant) => {
+        return findLanguageMatch(variant, availableLanguages);
+      }
     );
-    return overrideLanguage || bestMatchingLanguage || defaultLanguage;
+    return overrideLanguage || bestMatchingLanguage?.id || defaultLanguage;
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
