@@ -60,6 +60,10 @@
 
   --mdc-typography-font-family: var(--outline-font-family);
   --mdc-theme-primary: var(--outline-primary);
+
+  --outline-dialog-primary-background-color: var(--outline-dark-primary);
+  --outline-dialog-primary-text-color: hsl(0, 0%, 87%);
+  --outline-dialog-secondary-text-color: rgba(255, 255, 255, 0.54);
 }
 
 /* TODO(daniellacosse): enable this when everything has been color scheme'd */
@@ -70,7 +74,7 @@
     --outline-text-color: var(--outline-white);
     --outline-label-color: hsl(0, 0%, 60%);
     --outline-hairline: 1px solid var(--outline-dark-gray);
-    --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;  
+    --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;
   }
 } */
 
