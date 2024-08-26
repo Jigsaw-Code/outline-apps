@@ -131,9 +131,9 @@ export function displayDataAmountToBytes(
     return null;
   }
   if (dataAmount.unit === 'GB') {
-    return dataAmount.value * 1024 ** 3;
+    return dataAmount.value * GIGABYTE;
   } else if (dataAmount.unit === 'MB') {
-    return dataAmount.value * 1024 ** 2;
+    return dataAmount.value * MEGABYTE;
   }
 }
 
@@ -145,8 +145,8 @@ export function bytesToDisplayDataAmount(bytes: number): DisplayDataAmount {
   if (bytes === null || bytes === undefined) {
     return null;
   }
-  if (bytes >= 1024 ** 3) {
-    return { value: Math.floor(bytes / 1024 ** 3), unit: 'GB' };
+  if (bytes >= GIGABYTE) {
+    return { value: Math.floor(bytes / GIGABYTE), unit: 'GB' };
   }
-  return { value: Math.floor(bytes / 1024 ** 2), unit: 'MB' };
+  return { value: Math.floor(bytes / MEGABYTE), unit: 'MB' };
 }
