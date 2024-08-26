@@ -30,14 +30,16 @@ export class PrivacyAcknowledgementDialog extends LitElement {
 
     md-dialog {
       --md-dialog-container-color: var(
-        --outline-dialog-primary-background-color
+        --outline-comms-dialog-primary-background-color
       );
       --md-dialog-supporting-text-color: var(
-        --outline-dialog-primary-text-color
+        --outline-comms-dialog-primary-text-color
       );
 
       text-align: center;
+      min-width: 100svw;
       min-width: 100vw;
+      min-height: 100svh;
       min-height: 100vh;
       margin: 0;
     }
@@ -47,11 +49,12 @@ export class PrivacyAcknowledgementDialog extends LitElement {
       flex-direction: column;
       height: calc(100vh - 250px);
       margin: 24px auto;
+      max-width: 600px;
       padding: 24px 12px;
-      width: 300px;
+      width: 70vw;
     }
 
-    article > section:first-child {
+    article > figure {
       align-items: center;
       justify-content: center;
       display: flex;
@@ -68,7 +71,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     }
 
     p {
-      color: var(--outline-dialog-secondary-text-color);
+      color: var(--outline-comms-dialog-secondary-text-color);
     }
 
     fieldset {
@@ -87,9 +90,9 @@ export class PrivacyAcknowledgementDialog extends LitElement {
         quick
       >
         <article slot="content">
-          <section>
-            <img alt="privacy lock" src="${privacyLock}" />
-          </section>
+          <figure>
+            <img alt="Privacy lock" src="${privacyLock}" />
+          </figure>
           <h2>${this.localize('privacy-title')}</h2>
           <p>${this.localize('privacy-text')}</p>
         </article>
