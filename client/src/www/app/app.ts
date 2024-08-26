@@ -212,6 +212,8 @@ export class App {
 
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
+    } else if (this.rootEl.$.serversView.shouldShowZeroState) {
+      this.rootEl.$.addServerView.open = true;
     }
   }
 
