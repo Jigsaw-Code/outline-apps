@@ -30,18 +30,49 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     }
 
     md-dialog {
-      --md-dialog-container-color: var(--outline-dark-primary);
-      --md-dialog-supporting-text-color: var(--outline-white);
+      --md-dialog-container-color: var(
+        --outline-comms-dialog-primary-background-color
+      );
+      --md-dialog-supporting-text-color: var(
+        --outline-comms-dialog-primary-text-color
+      );
 
       text-align: center;
       min-width: 100svw;
+      min-width: 100vw;
       min-height: 100svh;
+      min-height: 100vh;
       margin: 0;
+    }
+
+    article {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 250px);
+      margin: 24px auto;
+      max-width: 600px;
+      padding: 24px 12px;
+      width: 70vw;
+    }
+
+    article > figure {
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      flex-grow: 1;
     }
 
     img {
       width: 112px;
       height: 158px;
+    }
+
+    h2 {
+      line-height: 28px;
+    }
+
+    p {
+      color: var(--outline-comms-dialog-secondary-text-color);
     }
 
     fieldset {
@@ -60,13 +91,11 @@ export class PrivacyAcknowledgementDialog extends LitElement {
         quick
       >
         <article slot="content">
-          <section>
-            <img alt="privacy lock" src="${privacyLock}" />
-          </section>
-          <section>
-            <h2>${this.localize('privacy-title')}</h2>
-          </section>
-          <section>${this.localize('privacy-text')}</section>
+          <figure>
+            <img alt="Privacy lock" src="${privacyLock}" />
+          </figure>
+          <h2>${this.localize('privacy-title')}</h2>
+          <p>${this.localize('privacy-text')}</p>
         </article>
         <fieldset slot="actions">
           <md-text-button
@@ -74,7 +103,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
           >
             ${this.localize('learn-more')}
           </md-text-button>
-          <md-filled-button @click="${this.handleAcknowledgement}">
+          <md-filled-button @click="${this.handleAcknowledgement}" autofocus>
             ${this.localize('got-it')}
           </md-filled-button>
         </fieldset>
