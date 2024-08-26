@@ -55,7 +55,7 @@
   "add_access_key_dialog_cancel": {
     "description": "The text on a button to cancel the adding of an access key.",
     "message": "Cancel"
-  }, 
+  },
   "add_access_key_dialog_confirm": {
     "desciption": "The text on a button to confirm the adding of an access key.",
     "message": "Confirm"
@@ -95,6 +95,10 @@
   "contact_page_title": {
     "description": "The menu item text and title of a page for a user to contact the support team.",
     "message": "Contact us"
+  },
+  "contact_view_exit_billing": {
+    "description": "Message shown to users who are trying to contact support about an unsupported issue.",
+    "message": "The Outline team does not collect payment. Please contact the person who gave you the access key to address this issue."
   },
   "contact_view_exit_cannot_add_server": {
     "description": "Message shown to users who are trying to contact support about an unsupported issue.",
@@ -141,6 +145,10 @@
   "contact_view_intro": {
     "description": "Introduction message to users who are looking to contact support.",
     "message": "Tell us how we can help. Please explain your issue in detail and do not enter personal information that is not requested below."
+  },
+  "contact_view_issue_billing": {
+    "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
+    "message": "I need assistance with a billing or subscription issue"
   },
   "contact_view_issue_cannot_add_server": {
     "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
