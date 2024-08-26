@@ -53,7 +53,6 @@ export class PrivacyAcknowledgementDialog extends LitElement {
   `;
 
   render() {
-    console.log("privacyPageUrl:", this.privacyPageUrl);
     return html`
       <md-dialog
         .open=${this.open}
