@@ -23,89 +23,73 @@ import (
 // ErrorDetails represents a structured technical details type in a [PlatformError].
 type ErrorDetails = map[string]interface{}
 
-// PlatformError can be used to communicate error details from Go to TypeScript.
-// It contains details of errors that originate from the native network code.
-//
-// The error might be caused by another PlatformError or a general Go error.
-// A general Go error will be converted to a JSON of [GoError] with the
-// corresponding error message; and no more wrapped errors will be parsed.
-//
-// Behind the scenes, the error's JSON string can be accessed by Java's Exception.getMessage()
-// and Apple's NSError.localizedDescription through gomobile.
-// It can also be written to stderr for Electron apps or included in responses from a REST API.
+// PlatformError represents an error that originate from the native network code.
+// It can be serialized to JSON and shared between Go and TypeScript.
 type PlatformError struct {
-	Code    ErrorCode
-	Message string
-	Details ErrorDetails
-	Cause   error
+	Code    ErrorCode      `json:"code"`
+	Message string         `json:"message"`
+	Details ErrorDetails   `json:"details,omitempty"`
+	Cause   *PlatformError `json:"cause,omitempty"`
 }
 
-var _ error = (*PlatformError)(nil)
+var _ error = PlatformError{}
 
-// New creates a [PlatformError] with a specific error code and message.
-func New(code ErrorCode, message string) *PlatformError {
-	return &PlatformError{
-		Code:    code,
-		Message: message,
+// ToPlatformError converts an [error] into a [PlatformError].
+// If the provided err is already a [PlatformError], it is returned as is.
+// Otherwise, the err is wrapped into a new [PlatformError] of [InternalError].
+// It returns nil if err is nil.
+func ToPlatformError(err error) *PlatformError {
+	if err == nil {
+		return nil
 	}
-}
-
-// NewWithDetails creates a [PlatformError] with a specific error code, message and details string.
-func NewWithDetails(code ErrorCode, message string, details ErrorDetails) *PlatformError {
-	return &PlatformError{
-		Code:    code,
-		Message: message,
-		Details: details,
+	if pe, ok := err.(PlatformError); ok {
+		return &pe
 	}
-}
-
-// NewWithCause creates a [PlatformError] with a specific error code, message, and cause.
-func NewWithCause(code ErrorCode, message string, cause error) *PlatformError {
-	return &PlatformError{
-		Code:    code,
-		Message: message,
-		Cause:   cause,
+	if pe, ok := err.(*PlatformError); ok {
+		return pe
 	}
-}
-
-// NewWithDetailsCause creates a [PlatformError] with an error code, message, details, and cause.
-func NewWithDetailsCause(code ErrorCode, message string, details ErrorDetails, cause error) *PlatformError {
-	return &PlatformError{
-		Code:    code,
-		Message: message,
-		Details: details,
-		Cause:   cause,
-	}
+	return &PlatformError{Code: InternalError, Message: err.Error()}
 }
 
 // Error returns a JSON string containing the error details and all its underlying causes,
 // until it finds a cause that is not a [PlatformError].
 // The resulting JSON can be used to reconstruct the error in TypeScript.
-func (e *PlatformError) Error() string {
-	if e == nil {
-		return formatInternalErrorJSON("nil error")
+func (e PlatformError) Error() string {
+	e.normalize()
+	msg := fmt.Sprintf("(%v) %v", e.Code, e.Message)
+	if e.Cause != nil {
+		msg += fmt.Sprintf(": %v", e.Cause)
 	}
-	if e.Code == "" {
-		return formatInternalErrorJSON("empty error code")
-	}
-	errJson, err := json.Marshal(convertToPlatformErrJSON(e))
-	if err != nil {
-		return formatInternalErrorJSON("JSON marshal failure: " + err.Error())
-	}
-	return string(errJson)
+	return msg
 }
 
 // Unwrap returns the cause of this [PlatformError].
-func (e *PlatformError) Unwrap() error {
+func (e PlatformError) Unwrap() error {
 	return e.Cause
 }
 
-// formatInternalErrorJSON creates a JSON string with ErrorCode InternalError and the msg.
-// Please note that msg should not contain double quotes.
-// The returned JSON string is compatible with the JSON returned by [PlatformError].Error().
-func formatInternalErrorJSON(msg string) string {
-	rmEscapes := strings.NewReplacer("\\", "", "\"", "")
-	return fmt.Sprintf(
-		`{"code":"%s","message":"%s"}`,
-		InternalError, rmEscapes.Replace(msg))
+// MarshalJSONString returns a JSON string containing the error details and
+// all its underlying causes.
+// The resulting JSON can be used to reconstruct the error in TypeScript.
+//
+// This function guarantees to always return a non-empty JSON string.
+func (e PlatformError) MarshalJSONString() string {
+	e.normalize()
+	jsonBytes, err := json.Marshal(e)
+	if err != nil {
+		// Failed to convert to JSON, but we can return Code and Message
+		rmEscapes := strings.NewReplacer("\\", "", "\"", "", "\r", "", "\n", "")
+		return fmt.Sprintf(`{"code":"%s","message":"%s"}`,
+			rmEscapes.Replace(string(e.Code)),
+			rmEscapes.Replace(e.Message))
+	}
+	return string(jsonBytes)
+}
+
+// normalize ensures that all fields in the [PlatformError] e are valid.
+// It sets a default value if e.Code is empty.
+func (e *PlatformError) normalize() {
+	if strings.TrimSpace(string(e.Code)) == "" {
+		e.Code = "[unknown]"
+	}
 }
