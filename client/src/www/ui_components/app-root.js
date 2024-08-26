@@ -37,7 +37,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './outline-icons.js';
 
 // TODO(daniellacosse): figure out how to import this without disabling the rule
 // eslint-disable-next-line n/no-missing-import
@@ -56,6 +55,10 @@ import '../views/root_view/privacy_acknowledgement_dialog';
 import '../views/servers_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/add_access_key_dialog';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/root_header';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/root_navigation';
 
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -329,41 +332,13 @@ export class AppRoot extends mixinBehaviors(
         data="{{routeData}}"
       ></app-route>
       <app-header-layout fullbleed="">
-        <app-header slot="header" fixed="">
-          <app-toolbar>
-            <div id="app-toolbar-left">
-              <paper-button
-                id="menuBtn"
-                hidden$="[[shouldShowBackButton]]"
-                on-tap="openDrawer"
-              >
-                <img src$="[[rootPath]]assets/icons/menu.png" alt="menu" />
-              </paper-button>
-              <paper-button
-                id="backBtn"
-                hidden$="[[!shouldShowBackButton]]"
-                on-tap="_goBack"
-              >
-                <img src$="[[rootPath]]assets/icons/back.png" alt="back" />
-              </paper-button>
-            </div>
-            <div main-title="" class$="[[page]]">
-              <h1 hidden$="[[!shouldShowAppLogo]]">Outline</h1>
-              <div hidden$="[[shouldShowAppLogo]]">
-                [[localize(pageTitleKey)]]
-              </div>
-            </div>
-            <div id="app-toolbar-right">
-              <paper-button
-                id="addBtn"
-                on-tap="promptAddServer"
-                hidden$="[[!shouldShowAddButton]]"
-              >
-                <img src$="[[rootPath]]assets/icons/add.png" alt="add" />
-              </paper-button>
-            </div>
-          </app-toolbar>
-        </app-header>
+        <root-header
+          slot="header"
+          localize="[[localize]]"
+          title="[[localize(titleKey)]]"
+          show-back-button="[[shouldShowBackButton]]"
+          show-add-button="[[shouldShowAddButton]]"
+        ></root-header>
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view
@@ -407,127 +382,11 @@ export class AppRoot extends mixinBehaviors(
         </iron-pages>
       </app-header-layout>
 
-      <app-drawer
-        slot="drawer"
+      <root-navigation
+        localize="[[localize]]"
         id="drawer"
-        swipe-open=""
-        transition-duration="350"
-      >
-        <!--
-        Notice that transition-duration="350"? That magic number is very sensitive!
-
-        ************************** CHANGE. AT. YOUR. PERIL. **************************
-
-        Want to know why? You really don't. But I'll tell you anyway.
-
-        ************************* WARNING: INSANITY AHEAD!!! *************************
-
-        When you tap a nav item in this drawer, it triggers a tap event on the paper-listbox
-        which in turn triggers our closeDrawer() function (see \`on-tap="closeDrawer"\` below).
-
-        So far so good. Here's where things get interesting.
-
-        The "Submit Feedback" nav item in the drawer happens to be positioned right above the
-        email input in the feedback page. When you tap the Submit Feedback nav item, if we
-        close the drawer too quickly, it's possible for the touch event to (first fire on the
-        the nav item, as expected, but then erroneously) propagate down to the email input that is
-        positioned right underneath the spot that was just tapped. This causes the email input to
-        get incorrectly focused and the virtual keyboard to slide out! If I take out the
-        \`transition-duration="350"\` above, I can reproduces this 100% of the time on my iPhone 7
-        running iOS 10.3.3. (It has not yet been observed on macOS or Android.)
-
-        To prevent this from happening, we can't close the drawer too quickly. As long as we slow
-        down the transition-duration from the default 200ms to ~350ms, we prevent the tap from
-        erroneously propagating down to the email input underneath, and no wacky phantom focus
-        ensues.
-
-        And in case you're wondering, simply calling event.stopPropagation() after we call
-        this.$.drawer.close() in drawer-nav's on-tap listener does not fix this, if we leave
-        the transition duration set to the 200ms default.
-
-        <poop-with-flies-dot-gif/>
-      -->
-
-        <div id="nav-scrollable-container">
-          <div id="logo-nav">
-            <img src$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo" />
-          </div>
-          <hr class="nav-hr" />
-          <paper-listbox
-            id="drawer-nav"
-            selected="{{routeData.page}}"
-            attr-for-selected="name"
-            on-tap="closeDrawer"
-          >
-            <paper-item name="servers" class="first-menu-item">
-              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline" />
-              <span class="item-label">[[localize('servers-menu-item')]]</span>
-            </paper-item>
-            <paper-item name="contact">
-              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact" />
-              [[localize('contact-page-title')]]
-            </paper-item>
-            <paper-item name="about">
-              <img src$="[[rootPath]]assets/icons/about.png" alt="about" />
-              [[localize('about-page-title')]]
-            </paper-item>
-            <paper-item name="help">
-              <a
-                href="https://support.getoutline.org"
-                id="helpAnchor"
-                hidden=""
-              ></a>
-              <img src$="[[rootPath]]assets/icons/help.png" alt="help" />
-              [[localize('help-page-title')]]
-            </paper-item>
-            <paper-item
-              name="language"
-              class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]"
-            >
-              <img
-                src$="[[rootPath]]assets/icons/change_language.png"
-                alt="change language"
-              />
-              [[localize('change-language-page-title')]]
-            </paper-item>
-            <paper-item
-              name="quit"
-              class="last-menu-item"
-              hidden$="[[!shouldShowQuitButton]]"
-            >
-              <img src$="[[rootPath]]assets/icons/quit.png" alt="quit" />
-              [[localize('quit')]]
-            </paper-item>
-            <paper-item class="border-top">
-              <a href="https://www.google.com/policies/privacy/"
-                >[[localize('privacy')]]</a
-              >
-            </paper-item>
-            <paper-item>
-              <a href="https://support.getoutline.org/s/article/Data-collection"
-                >[[localize('data-collection')]]</a
-              >
-            </paper-item>
-            <paper-item>
-              <a
-                href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
-                >[[localize('terms')]]</a
-              >
-            </paper-item>
-            <paper-item name="licenses">
-              <span>[[localize('licenses-page-title')]]</span>
-            </paper-item>
-          </paper-listbox>
-        </div>
-      </app-drawer>
-
-      <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
-        <paper-button
-          id="toastButton"
-          on-tap="_callToastHandler"
-        ></paper-button>
-        <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
-      </paper-toast>
+        show-quit="[[shouldShowQuitButton]]"
+      ></root-navigation>
 
       <add-access-key-dialog
         id="addServerView"
@@ -543,6 +402,14 @@ export class AppRoot extends mixinBehaviors(
         id="autoConnectDialog"
         localize="[[localize]]"
       ></auto-connect-dialog>
+
+      <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
+        <paper-button
+          id="toastButton"
+          on-tap="_callToastHandler"
+        ></paper-button>
+        <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
+      </paper-toast>
     `;
   }
 
@@ -774,12 +641,11 @@ export class AppRoot extends mixinBehaviors(
   }
 
   openDrawer() {
-    this.$.drawer.style.opacity = '1';
-    this.$.drawer.open();
+    this.$.drawer.open = true;
   }
 
   closeDrawer() {
-    this.$.drawer.close();
+    this.$.drawer.open = false;
   }
 
   showToast(text, duration, buttonText, buttonHandler, buttonUrl) {
@@ -828,6 +694,8 @@ export class AppRoot extends mixinBehaviors(
       return;
     }
     this.set('route.path', '/' + page);
+
+    this.$.drawer.open = false;
   }
 
   showContactSuccessToast() {
