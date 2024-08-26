@@ -34,7 +34,8 @@ export class RootHeader extends LitElement {
     h1 {
       color: var(--outline-white);
       font-family: 'Jigsaw Sans', 'Roboto', sans-serif;
-      font-size: 32px;
+      font-size: 24px;
+      font-weight: 500;
       margin: 0;
     }
 

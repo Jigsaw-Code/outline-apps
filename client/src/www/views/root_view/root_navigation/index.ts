@@ -46,13 +46,14 @@ export class RootNavigation extends LitElement {
     }
 
     nav {
-      height: 100vh;
-      max-width: 300px;
-      display: block;
       background-color: var(--outline-white);
-      will-change: transform;
+      display: block;
+      height: 100vh;
+      overflow-y: scroll;
       transform: translateX(-100%);
       transition: transform 0.3s ease;
+      width: 250px;
+      will-change: transform;
     }
 
     .open nav {
@@ -61,27 +62,35 @@ export class RootNavigation extends LitElement {
 
     header {
       background-color: var(--outline-dark-primary);
+      position: sticky;
+      top: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 156px;
+      height: 124px;
+      z-index: 1;
     }
 
     header img {
-      width: 100px;
+      width: 76px;
+    }
+
+    md-list-item {
+      cursor: pointer;
     }
 
     ul {
       all: initial;
-      display: block;
       border-top: 1px solid var(--outline-light-gray);
+      display: block;
+      margin-bottom: 124px;
     }
 
     li {
       all: initial;
+      color: var(--outline-medium-gray);
       display: block;
       font-family: var(--outline-font-family);
-      color: var(--outline-medium-gray);
       padding: 8px 16px;
     }
 
