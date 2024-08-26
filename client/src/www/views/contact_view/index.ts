@@ -234,7 +234,6 @@ export class ContactView extends LitElement {
 
   private localizeWithUrl(messageID: string, url: string): TemplateResult {
     const parsedUrl = new URL(url);
-    console.log('this.languageCode', this.languageCode)
     if (this.languageCode) {
       parsedUrl.searchParams.append('language', this.languageCode);
     }

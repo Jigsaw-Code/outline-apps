@@ -24,7 +24,7 @@ export type LanguageDef = {
   supportId?: string;
   name: string;
   dir: 'ltr' | 'rtl';
-}
+};
 
 @customElement('language-view')
 export class LanguageView extends LitElement {
