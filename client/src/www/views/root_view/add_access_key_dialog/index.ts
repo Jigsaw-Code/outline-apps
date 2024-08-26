@@ -22,7 +22,7 @@ export class AddAccessKeyDialog extends LitElement {
     ...args: string[]
   ) => string;
   @property({type: Boolean}) open: boolean;
-  @property({type: String}) accessKey: string | null;
+  @property({type: String}) accessKey: string = '';
 
   static styles = css`
     :host {
@@ -90,7 +90,7 @@ export class AddAccessKeyDialog extends LitElement {
             label="${this.localize('add-access-key-dialog-label')}"
             rows="5"
             type="textarea"
-            value=${this.accessKey}
+            .value=${this.accessKey}
           ></md-filled-text-field>
         </section>
       </article>
@@ -138,7 +138,7 @@ export class AddAccessKeyDialog extends LitElement {
       })
     );
 
-    this.accessKey = null;
+    this.accessKey = '';
   }
 
   private handleCancel(event: Event) {
@@ -152,6 +152,6 @@ export class AddAccessKeyDialog extends LitElement {
       })
     );
 
-    this.accessKey = null;
+    this.accessKey = '';
   }
 }
