@@ -213,7 +213,6 @@ export class App {
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
     }
-    this.displayZeroStateUi();
   }
 
   showLocalizedError(error?: Error, toastDuration = 10000) {
@@ -346,12 +345,6 @@ export class App {
     }
   }
 
-  private displayZeroStateUi() {
-    if (this.rootEl.$.serversView.shouldShowZeroState) {
-      this.rootEl.$.addServerView.open = true;
-    }
-  }
-
   private arePrivacyTermsAcked() {
     try {
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
@@ -366,11 +359,13 @@ export class App {
   private displayPrivacyView() {
     this.rootEl.$.serversView.hidden = true;
     this.rootEl.$.privacyView.open = true;
+    this.rootEl.$.addServerView.open = false;
   }
 
   private ackPrivacyTerms() {
     this.rootEl.$.serversView.hidden = false;
     this.rootEl.$.privacyView.open = false;
+    this.rootEl.$.addServerView.open = true;
     this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
   }
 
