@@ -49,7 +49,9 @@ export class RootNavigation extends LitElement {
       background-color: var(--outline-white);
       display: block;
       height: 100vh;
+      left: 0;
       overflow-y: scroll;
+      position: absolute;
       transform: translateX(-100%);
       transition: transform 0.3s ease;
       width: 250px;
@@ -77,6 +79,14 @@ export class RootNavigation extends LitElement {
 
     md-list-item {
       cursor: pointer;
+    }
+
+    .selected {
+      --md-list-item-label-text-color: var(--outline-primary);
+    }
+
+    .selected md-icon {
+      color: var(--outline-primary);
     }
 
     ul {
@@ -130,7 +140,14 @@ export class RootNavigation extends LitElement {
           <img src="${navigationLogo}" alt="Outline navigation logo" />
         </header>
         <md-list>
-          <md-list-item @click=${() => this.handlePageChange('servers')}>
+          <!-- 
+            current behavior is such that you can't actually see 
+            the navbar unless you're on the servers page - no need for selection logic
+          -->
+          <md-list-item
+            class="selected"
+            @click=${() => this.handlePageChange('servers')}
+          >
             <md-ripple></md-ripple>
             <md-icon slot="start">home</md-icon>
             ${this.localize('servers-menu-item')}
@@ -146,7 +163,8 @@ export class RootNavigation extends LitElement {
             ${this.localize('about-page-title')}
           </md-list-item>
           <md-list-item
-            @click=${() => window.open('https://support.getoutline.org')}
+            @click=${() =>
+              window.open('https://support.getoutline.org', '_blank')}
           >
             <md-ripple></md-ripple>
             <md-icon slot="start">help</md-icon>
@@ -158,7 +176,7 @@ export class RootNavigation extends LitElement {
             ${this.localize('change-language-page-title')}
           </md-list-item>
           ${this.showQuit
-            ? html`<md-list-item>
+            ? html`<md-list-item @click=${this.handleQuit}>
                 <md-ripple></md-ripple>
                 <md-icon slot="start">exit_to_app</md-icon>
                 ${this.localize('quit')}
@@ -204,6 +222,15 @@ export class RootNavigation extends LitElement {
     this.dispatchEvent(
       new CustomEvent('ChangePage', {
         detail: {page},
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private handleQuit() {
+    this.dispatchEvent(
+      new CustomEvent('QuitPressed', {
         bubbles: true,
         composed: true,
       })
