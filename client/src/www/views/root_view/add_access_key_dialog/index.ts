@@ -96,12 +96,12 @@ export class AddAccessKeyDialog extends LitElement {
       </article>
       <fieldset slot="actions">
         <md-text-button @click=${this.handleCancel}>
-          ${this.localize('add-access-key-dialog-cancel')}
+          ${this.localize('cancel')}
         </md-text-button>
         <md-filled-button
           @click=${this.handleConfirm}
           ?disabled=${!this.hasValidAccessKey}
-          >${this.localize('add-access-key-dialog-confirm')}</md-filled-button
+          >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
