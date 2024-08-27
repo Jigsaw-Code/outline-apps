@@ -99,6 +99,7 @@ export class RootNavigation extends LitElement {
     li {
       all: initial;
       color: var(--outline-medium-gray);
+      cursor: pointer;
       display: block;
       font-family: var(--outline-font-family);
       padding: 8px 16px;
