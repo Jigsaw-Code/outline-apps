@@ -57,13 +57,12 @@ import '../views/servers_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/add_access_key_dialog';
 
+import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-
-import * as i18n from '@outline/infrastructure/i18n';
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
@@ -609,8 +608,18 @@ export class AppRoot extends mixinBehaviors(
           uk: {id: 'uk', name: 'Українська', dir: 'ltr', supportId: 'uk'},
           ur: {id: 'ur', name: 'اردو', dir: 'rtl', supportId: 'ur'},
           vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr', supportId: 'vi'},
-          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr', supportId: 'zh_CN'},
-          'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr', supportId: 'zh_TW'},
+          'zh-CN': {
+            id: 'zh-CN',
+            name: '简体中文',
+            dir: 'ltr',
+            supportId: 'zh_CN',
+          },
+          'zh-TW': {
+            id: 'zh-TW',
+            name: '繁體中文',
+            dir: 'ltr',
+            supportId: 'zh_TW',
+          },
         },
       },
       language: {
@@ -842,8 +851,8 @@ export class AppRoot extends mixinBehaviors(
     const matcher = new i18n.LanguageMatcher(
       i18n.languageList(Object.keys(availableLanguages)),
       new i18n.LanguageCode(defaultLanguage)
-    )
-    return matcher.getBestSupportedLanguage(preferredLanguages).string()
+    );
+    return matcher.getBestSupportedLanguage(preferredLanguages).string();
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
@@ -889,7 +898,10 @@ export class AppRoot extends mixinBehaviors(
 
   _computeSupportSiteUrl(language, url) {
     const parsedUrl = new URL(url);
-    const supportLanguageCode = this._computeSupportSiteLanguageCode(this.LANGUAGES_AVAILABLE, language);
+    const supportLanguageCode = this._computeSupportSiteLanguageCode(
+      this.LANGUAGES_AVAILABLE,
+      language
+    );
     if (supportLanguageCode) {
       parsedUrl.searchParams.append('language', supportLanguageCode);
     }
