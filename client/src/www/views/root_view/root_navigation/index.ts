@@ -26,6 +26,7 @@ export class RootNavigation extends LitElement {
 
   @property({type: Boolean}) open: boolean;
   @property({type: Boolean}) showQuit: boolean;
+  @property({type: String}) align: 'left' | 'right';
 
   static styles = css`
     :host {
@@ -49,17 +50,29 @@ export class RootNavigation extends LitElement {
       background-color: var(--outline-white);
       display: block;
       height: 100vh;
-      left: 0;
       overflow-y: scroll;
       position: absolute;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      transition:
+        transform 0.3s ease,
+        visibility 0.3s ease;
       width: 250px;
       will-change: transform;
+      visibility: hidden;
+    }
+
+    nav.left {
+      left: 0;
+      transform: translateX(-100%);
+    }
+
+    nav.right {
+      right: 0;
+      transform: translateX(100%);
     }
 
     .open nav {
       transform: translateX(0);
+      visibility: visible;
     }
 
     header {
@@ -79,6 +92,14 @@ export class RootNavigation extends LitElement {
 
     md-list-item {
       cursor: pointer;
+    }
+
+    md-list-item > a {
+      color: inherit;
+      display: block;
+      height: 100%;
+      text-decoration: none;
+      width: 100%;
     }
 
     .selected {
@@ -105,7 +126,7 @@ export class RootNavigation extends LitElement {
       padding: 8px 16px;
     }
 
-    a {
+    li > a {
       text-decoration: none;
       color: var(--outline-medium-gray);
     }
@@ -136,7 +157,12 @@ export class RootNavigation extends LitElement {
       })}"
     >
       <div class="backdrop" @click=${this.handleClose}></div>
-      <nav>
+      <nav
+        class=${classMap({
+          left: this.align === 'left',
+          right: this.align === 'right',
+        })}
+      >
         <header>
           <img src="${navigationLogo}" alt="Outline navigation logo" />
         </header>
@@ -163,13 +189,12 @@ export class RootNavigation extends LitElement {
             <md-icon slot="start">info</md-icon>
             ${this.localize('about-page-title')}
           </md-list-item>
-          <md-list-item
-            @click=${() =>
-              window.open('https://support.getoutline.org', '_blank')}
-          >
+          <md-list-item>
             <md-ripple></md-ripple>
             <md-icon slot="start">help</md-icon>
-            ${this.localize('help-page-title')}
+            <a href="https://support.getoutline.org">
+              ${this.localize('help-page-title')}
+            </a>
           </md-list-item>
           <md-list-item @click=${() => this.handlePageChange('language')}>
             <md-ripple></md-ripple>

@@ -50,6 +50,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
       height: calc(100vh - 250px);
       margin: 24px auto;
       max-width: 600px;
+      min-width: 300px;
       padding: 24px 12px;
       width: 70vw;
     }
@@ -74,9 +75,19 @@ export class PrivacyAcknowledgementDialog extends LitElement {
       color: var(--outline-comms-dialog-secondary-text-color);
     }
 
+    a {
+      text-decoration: none;
+      color: var(--outline-primary);
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
     fieldset {
+      align-items: center;
       border: none;
       display: flex;
+      gap: 16px;
       justify-content: center;
       text-transform: uppercase;
     }
@@ -97,15 +108,9 @@ export class PrivacyAcknowledgementDialog extends LitElement {
           <p>${this.localize('privacy-text')}</p>
         </article>
         <fieldset slot="actions">
-          <md-text-button
-            @click="${() =>
-              window.open(
-                'https://support.getoutline.org/s/article/Data-collection',
-                '_blank'
-              )}"
-          >
+          <a href="https://support.getoutline.org/s/article/Data-collection">
             ${this.localize('learn-more')}
-          </md-text-button>
+          </a>
           <md-filled-button @click="${this.handleAcknowledgement}" autofocus>
             ${this.localize('got-it')}
           </md-filled-button>

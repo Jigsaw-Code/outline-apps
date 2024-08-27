@@ -37,6 +37,7 @@ export class ServerRenameDialog extends LitElement {
       --md-dialog-container-color: var(
         --outline-app-dialog-primary-background-color
       );
+      --md-filled-text-field-container-color: var(--outline-light-gray);
     }
 
     fieldset {
