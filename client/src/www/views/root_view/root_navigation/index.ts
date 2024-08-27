@@ -111,19 +111,21 @@ export class RootNavigation extends LitElement {
     }
 
     ul {
-      all: initial;
       border-top: 1px solid var(--outline-light-gray);
       display: block;
+      list-style-type: none;
       margin-bottom: 124px;
+      margin: 0;
+      padding: 0;
     }
 
     li {
-      all: initial;
       color: var(--outline-medium-gray);
       cursor: pointer;
       display: block;
       font-family: var(--outline-font-family);
       padding: 8px 16px;
+      transition: visibility 0.3s ease;
     }
 
     li > a {
