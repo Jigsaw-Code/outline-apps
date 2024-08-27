@@ -696,6 +696,7 @@ export class AppRoot extends mixinBehaviors(
     this.set('route.path', '/' + page);
 
     this.$.drawer.open = false;
+    this.$.contactView.reset();
   }
 
   showContactSuccessToast() {
