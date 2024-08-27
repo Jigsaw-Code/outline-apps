@@ -24,9 +24,6 @@ package platerrors
 // You can reliably use these values in TypeScript to check for specific errors.
 type ErrorCode string
 
-// An [ErrorCode] that will only be used internally.
-const unknownError ErrorCode = "[ERR_UNKNOWN]"
-
 //////////
 // Common error codes - general
 //////////

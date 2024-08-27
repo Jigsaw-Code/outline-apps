@@ -117,19 +117,19 @@ func TestEmptyErrorCode(t *testing.T) {
 	pe := &PlatformError{}
 
 	got := pe.Error()
-	want := "([ERR_UNKNOWN]) "
+	want := "(ERR_INTERNAL_ERROR) "
 	require.Equal(t, want, got)
 
 	got, err := MarshalJSONString(*pe)
 	require.NoError(t, err)
-	want = `{"code":"[ERR_UNKNOWN]","message":""}`
+	want = `{"code":"ERR_INTERNAL_ERROR","message":""}`
 	require.Equal(t, want, got)
 
 	// Make sure err.Code is not modified
 	require.Empty(t, pe.Code)
 
 	pe = ToPlatformError(pe)
-	require.Equal(t, unknownError, pe.Code)
+	require.Equal(t, InternalError, pe.Code)
 }
 
 // Test the output when json.Marshal returns an error, which should not happen.

@@ -86,6 +86,6 @@ func MarshalJSONString(e PlatformError) (string, error) {
 // It sets a default value if e.Code is empty.
 func (e *PlatformError) normalize() {
 	if strings.TrimSpace(string(e.Code)) == "" {
-		e.Code = unknownError
+		e.Code = InternalError
 	}
 }
