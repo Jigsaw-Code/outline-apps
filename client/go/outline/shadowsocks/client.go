@@ -75,8 +75,12 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
 	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: net.Dialer{KeepAlive: -1}}, cryptoKey)
 	if err != nil {
-		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create TCP traffic handler",
-			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"}, err)
+		return nil, platerrors.PlatformError{
+			Code:    platerrors.SetupTrafficHandlerFailed,
+			Message: "failed to create TCP traffic handler",
+			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"},
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	if len(prefix) > 0 {
 		log.Debugf("Using salt prefix: %s", string(prefix))
@@ -85,8 +89,12 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 
 	packetListener, err := shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: proxyAddress}, cryptoKey)
 	if err != nil {
-		return nil, platerrors.NewWithDetailsCause(platerrors.SetupTrafficHandlerFailed, "failed to create UDP traffic handler",
-			platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"}, err)
+		return nil, platerrors.PlatformError{
+			Code:    platerrors.SetupTrafficHandlerFailed,
+			Message: "failed to create UDP traffic handler",
+			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"},
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 
 	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil
