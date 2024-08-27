@@ -15,7 +15,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -96,7 +95,7 @@ func main() {
 	setLogLevel(*args.logLevel)
 
 	if len(*args.transportConfig) == 0 {
-		printErrorAndExit(errors.New("transport config missing"), 1)
+		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
 	client, err := shadowsocks.NewClientFromJSON(*args.transportConfig)
 	if err != nil {
