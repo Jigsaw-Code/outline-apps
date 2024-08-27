@@ -96,7 +96,7 @@ func newIllegalConfigErrorWithDetails(
 			"proxy-protocol": "shadowsocks",
 			"field":          field,
 			"got":            got,
-			"expect":         expect,
+			"expected":         expect,
 		},
 		Cause: platerrors.ToPlatformError(cause),
 	}
