@@ -18,10 +18,18 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
+export type LanguageDef = {
+  id: string;
+  // The corresponding locale ID for the support site, if any.
+  supportId?: string;
+  name: string;
+  dir: 'ltr' | 'rtl';
+};
+
 @customElement('language-view')
 export class LanguageView extends LitElement {
-  @property({type: Array}) languages!: {id: string; name: string}[];
-  @property({type: String}) selectedLanguageId!: string;
+  @property({type: Array}) languages: LanguageDef[] = [];
+  @property({type: String}) selectedLanguageId: string = '';
 
   static styles = css`
     :host {

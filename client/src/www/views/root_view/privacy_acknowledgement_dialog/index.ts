@@ -19,6 +19,7 @@ import privacyLock from '../../../assets/privacy-lock.png';
 @customElement('privacy-acknowledgement-dialog')
 export class PrivacyAcknowledgementDialog extends LitElement {
   @property({type: Function}) localize!: (key: string) => string;
+  @property({type: String}) privacyPageUrl: string = '';
   @property({type: Boolean}) open: boolean = false;
 
   static styles = css`
@@ -98,11 +99,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
         </article>
         <fieldset slot="actions">
           <md-text-button
-            @click="${() =>
-              window.open(
-                'https://support.getoutline.org/s/article/Data-collection',
-                '_blank'
-              )}"
+            @click="${() => window.open(this.privacyPageUrl, '_blank')}"
           >
             ${this.localize('learn-more')}
           </md-text-button>
