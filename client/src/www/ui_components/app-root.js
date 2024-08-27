@@ -335,7 +335,7 @@ export class AppRoot extends mixinBehaviors(
         <root-header
           slot="header"
           localize="[[localize]]"
-          title="[[localize(titleKey)]]"
+          title$="[[localize(pageTitleKey)]]"
           show-back-button="[[shouldShowBackButton]]"
           show-add-button="[[shouldShowAddButton]]"
         ></root-header>
