@@ -43,9 +43,14 @@ func ToPlatformError(err error) *PlatformError {
 		return nil
 	}
 	if pe, ok := err.(PlatformError); ok {
+		pe.normalize()
 		return &pe
 	}
 	if pe, ok := err.(*PlatformError); ok {
+		if pe == nil {
+			return nil
+		}
+		pe.normalize()
 		return pe
 	}
 	return &PlatformError{Code: InternalError, Message: err.Error()}
@@ -68,28 +73,19 @@ func (e PlatformError) Unwrap() error {
 	return e.Cause
 }
 
-// MarshalJSONString returns a JSON string containing the error details and
-// all its underlying causes.
+// MarshalJSONString returns a JSON string containing the [PlatformError] details
+// and all its underlying causes.
 // The resulting JSON can be used to reconstruct the error in TypeScript.
-//
-// This function guarantees to always return a non-empty JSON string.
-func (e PlatformError) MarshalJSONString() string {
+func MarshalJSONString(e PlatformError) (string, error) {
 	e.normalize()
 	jsonBytes, err := json.Marshal(e)
-	if err != nil {
-		// Failed to convert to JSON, but we can return Code and Message
-		rmEscapes := strings.NewReplacer("\\", "", "\"", "", "\r", "", "\n", "")
-		return fmt.Sprintf(`{"code":"%s","message":"%s"}`,
-			rmEscapes.Replace(string(e.Code)),
-			rmEscapes.Replace(e.Message))
-	}
-	return string(jsonBytes)
+	return string(jsonBytes), err
 }
 
 // normalize ensures that all fields in the [PlatformError] e are valid.
 // It sets a default value if e.Code is empty.
 func (e *PlatformError) normalize() {
 	if strings.TrimSpace(string(e.Code)) == "" {
-		e.Code = "[unknown]"
+		e.Code = unknownError
 	}
 }

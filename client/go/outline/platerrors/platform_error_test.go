@@ -81,7 +81,8 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.in.MarshalJSONString()
+			got, err := MarshalJSONString(tc.in)
+			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
 	}
@@ -113,18 +114,22 @@ func TestPlatformErrorWrapsCause(t *testing.T) {
 }
 
 func TestEmptyErrorCode(t *testing.T) {
-	err := &PlatformError{}
+	pe := &PlatformError{}
 
-	got := err.Error()
-	want := "([unknown]) "
+	got := pe.Error()
+	want := "([ERR_UNKNOWN]) "
 	require.Equal(t, want, got)
 
-	got = err.MarshalJSONString()
-	want = `{"code":"[unknown]","message":""}`
+	got, err := MarshalJSONString(*pe)
+	require.NoError(t, err)
+	want = `{"code":"[ERR_UNKNOWN]","message":""}`
 	require.Equal(t, want, got)
 
 	// Make sure err.Code is not modified
-	require.Empty(t, err.Code)
+	require.Empty(t, pe.Code)
+
+	pe = ToPlatformError(pe)
+	require.Equal(t, unknownError, pe.Code)
 }
 
 // Test the output when json.Marshal returns an error, which should not happen.
@@ -133,7 +138,7 @@ func TestJSONMarshalError(t *testing.T) {
 	e := &PlatformError{Code: "ERR_\\CYCLE\\_JSON", Message: "Cycled \n\"JSON\""}
 	e.Cause = e
 
-	got := e.MarshalJSONString()
-	want := `{"code":"ERR_CYCLE_JSON","message":"Cycled JSON"}`
-	require.Equal(t, want, got)
+	got, err := MarshalJSONString(*e)
+	require.Error(t, err)
+	require.Empty(t, got)
 }

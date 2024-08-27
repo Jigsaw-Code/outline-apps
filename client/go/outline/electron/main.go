@@ -178,8 +178,14 @@ func setLogLevel(level string) {
 	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slvl}))
 }
 
-func printErrorAndExit(err error, exitCode int) {
-	fmt.Fprintln(os.Stderr, platerrors.ToPlatformError(err).MarshalJSONString())
+func printErrorAndExit(e error, exitCode int) {
+	pe := platerrors.ToPlatformError(e)
+	errJson, err := platerrors.MarshalJSONString(*pe)
+	if err != nil {
+		// TypeScript's PlatformError can unmarshal a raw string
+		errJson = string(pe.Code)
+	}
+	fmt.Fprintln(os.Stderr, errJson)
 	os.Exit(exitCode)
 }
 
