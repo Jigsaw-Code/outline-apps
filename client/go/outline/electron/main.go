@@ -36,6 +36,14 @@ import (
 	"github.com/eycorsican/go-tun2socks/tun"
 )
 
+// tun2socks exit codes. Must be kept in sync with definitions in "go_vpn_tunnel.ts"
+// TODO: replace exit code with structured JSON output
+const (
+	exitCodeSuccess           = 0
+	exitCodeFailure           = 1
+	exitCodeNoUDPConnectivity = 4
+)
+
 const (
 	mtu        = 1500
 	udpTimeout = 30 * time.Second
@@ -82,7 +90,7 @@ func main() {
 
 	if *args.version {
 		fmt.Println(version)
-		os.Exit(0)
+		os.Exit(exitCodeSuccess)
 	}
 
 	setLogLevel(*args.logLevel)
@@ -92,7 +100,7 @@ func main() {
 	}
 	client, err := shadowsocks.NewClientFromJSON(*args.transportConfig)
 	if err != nil {
-		printErrorAndExit(err, 1)
+		printErrorAndExit(err, exitCodeFailure)
 	}
 
 	if *args.checkConnectivity {
@@ -103,7 +111,11 @@ func main() {
 	dnsResolvers := strings.Split(*args.tunDNS, ",")
 	tunDevice, err := tun.OpenTunDevice(*args.tunName, *args.tunAddr, *args.tunGw, *args.tunMask, dnsResolvers, persistTun)
 	if err != nil {
-		printErrorAndExit(platerrors.NewWithCause(platerrors.SetupSystemVPNFailed, "failed to open TUN device", err), 1)
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed to open TUN device",
+			Cause:   platerrors.ToPlatformError(err),
+		}, exitCodeFailure)
 	}
 	// Output packets to TUN device
 	core.RegisterOutputFn(tunDevice.Write)
@@ -123,8 +135,11 @@ func main() {
 	go func() {
 		_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
 		if err != nil {
-			printErrorAndExit(platerrors.NewWithCause(platerrors.DataTransmissionFailed,
-				"failed to write data to network stack", err), 1)
+			printErrorAndExit(platerrors.PlatformError{
+				Code:    platerrors.DataTransmissionFailed,
+				Message: "failed to write data to network stack",
+				Cause:   platerrors.ToPlatformError(err),
+			}, exitCodeFailure)
 		}
 	}()
 
@@ -155,8 +170,14 @@ func setLogLevel(level string) {
 	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slvl}))
 }
 
-func printErrorAndExit(err error, exitCode int) {
-	fmt.Fprintln(os.Stderr, err.Error())
+func printErrorAndExit(e error, exitCode int) {
+	pe := platerrors.ToPlatformError(e)
+	errJson, err := platerrors.MarshalJSONString(*pe)
+	if err != nil {
+		// TypeScript's PlatformError can unmarshal a raw string
+		errJson = string(pe.Code)
+	}
+	fmt.Fprintln(os.Stderr, errJson)
 	os.Exit(exitCode)
 }
 
@@ -166,18 +187,33 @@ func printErrorAndExit(err error, exitCode int) {
 func checkConnectivityAndExit(c *shadowsocks.Client) {
 	connErrCode, err := shadowsocks.CheckConnectivity(c)
 	if err != nil {
-		printErrorAndExit(platerrors.NewWithCause(platerrors.InternalError, "failed to check connectivity", err), 1)
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.InternalError,
+			Message: "failed to check connectivity",
+			Cause:   platerrors.ToPlatformError(err),
+		}, exitCodeFailure)
 	}
 	switch connErrCode {
 	case neterrors.NoError.Number():
-		os.Exit(0)
+		os.Exit(exitCodeSuccess)
 	case neterrors.AuthenticationFailure.Number():
-		printErrorAndExit(platerrors.New(platerrors.Unauthenticated, "authentication failed"), 1)
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.Unauthenticated,
+			Message: "authentication failed",
+		}, exitCodeFailure)
 	case neterrors.Unreachable.Number():
-		printErrorAndExit(platerrors.New(platerrors.ProxyServerUnreachable, "cannot connect to Shadowsocks server"), 1)
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.ProxyServerUnreachable,
+			Message: "cannot connect to Shadowsocks server",
+		}, exitCodeFailure)
 	case neterrors.UDPConnectivity.Number():
-		printErrorAndExit(platerrors.New(platerrors.ProxyServerUDPUnsupported, "Shadowsocks server does not support UDP"),
-			neterrors.UDPConnectivity.Number())
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.ProxyServerUDPUnsupported,
+			Message: "Shadowsocks server does not support UDP",
+		}, exitCodeNoUDPConnectivity)
 	}
-	printErrorAndExit(platerrors.New(platerrors.InternalError, "failed to check connectivity"), 1)
+	printErrorAndExit(platerrors.PlatformError{
+		Code:    platerrors.InternalError,
+		Message: "failed to check connectivity",
+	}, exitCodeFailure)
 }

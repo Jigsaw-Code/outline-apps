@@ -15,7 +15,6 @@
 package platerrors
 
 import (
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -25,42 +24,50 @@ import (
 func TestPlatformErrorJSONOutput(t *testing.T) {
 	tests := []struct {
 		name string
-		in   *PlatformError
+		in   PlatformError
 		want string
 	}{
 		{
 			name: "Simple",
-			in:   New("ERR_SIMPLE", "simple err"),
+			in:   PlatformError{Code: "ERR_SIMPLE", Message: "simple err"},
 			want: `{"code":"ERR_SIMPLE","message":"simple err"}`,
 		},
 		{
 			name: "EmptyDetails",
-			in:   NewWithDetails("ERR_EMPTY_DETAILS", "empty details", ErrorDetails{}),
+			in:   PlatformError{Code: "ERR_EMPTY_DETAILS", Message: "empty details", Details: ErrorDetails{}},
 			want: `{"code":"ERR_EMPTY_DETAILS","message":"empty details"}`,
 		},
 		{
 			name: "Full",
-			in:   NewWithDetails("ERR_FULL", "full err", ErrorDetails{"full": "details"}),
+			in:   PlatformError{Code: "ERR_FULL", Message: "full err", Details: ErrorDetails{"full": "details"}},
 			want: `{"code":"ERR_FULL","message":"full err","details":{"full":"details"}}`,
 		},
 		{
 			name: "Nested",
-			in: NewWithCause("ERR_LVL2", "msg lvl2",
-				NewWithDetailsCause("ERR_LVL1", "msg lvl1", ErrorDetails{"details": "here"}, errors.New("go err lvl0"))),
+			in: PlatformError{
+				Code:    "ERR_LVL2",
+				Message: "msg lvl2",
+				Cause: &PlatformError{
+					Code:    "ERR_LVL1",
+					Message: "msg lvl1",
+					Details: ErrorDetails{"details": "here"},
+					Cause:   ToPlatformError(errors.New("go err lvl0")),
+				},
+			},
 			want: `{"code":"ERR_LVL2","message":"msg lvl2",` +
 				`"cause":{"code":"ERR_LVL1","message":"msg lvl1","details":{"details":"here"},` +
 				`"cause":{"code":"ERR_INTERNAL_ERROR","message":"go err lvl0"}}}`,
 		},
 		{
 			name: "Details",
-			in: NewWithDetails("ERR_DETAILS", "test details types", ErrorDetails{
+			in: PlatformError{Code: "ERR_DETAILS", Message: "test details types", Details: ErrorDetails{
 				"arr":     []interface{}{246, "lol", false},
 				"boolean": true,
 				"int":     1357,
 				"nil":     nil,
 				"obj":     map[string]interface{}{"3": 14, "pi": "day", "true": false},
 				"str":     "is good",
-			}),
+			}},
 			want: `{"code":"ERR_DETAILS","message":"test details types","details":{` +
 				`"arr":[246,"lol",false],` +
 				`"boolean":true,` +
@@ -74,50 +81,64 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.in.Error()
+			got, err := MarshalJSONString(tc.in)
+			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
 	}
 }
 
 func TestPlatformErrorWrapsCause(t *testing.T) {
-	err := New("ERR_WRAP", "should wrap")
+	err := PlatformError{Code: "ERR_WRAP", Message: "should wrap"}
 	require.Nil(t, err.Unwrap())
 
-	inner := errors.New("my inner error")
-	err.Cause = inner
-	require.Equal(t, inner, err.Unwrap())
+	inner := PlatformError{Code: "ERR_INNER", Message: "my inner error"}
+	err.Cause = ToPlatformError(inner)
+	require.Equal(t, &inner, err.Unwrap())
+
+	err.Cause = ToPlatformError(&inner)
+	require.Equal(t, &inner, err.Unwrap())
+
+	inner2 := PlatformError{Code: "ERR_INNER2"}
+	var innerErr2 error = inner2
+	err.Cause = ToPlatformError(innerErr2)
+	require.Equal(t, &inner2, err.Unwrap())
+
+	var innerErr3 error = &inner2
+	err.Cause = ToPlatformError(innerErr3)
+	require.Equal(t, &inner2, err.Unwrap())
+
+	var nilErr error = (*PlatformError)(nil)
+	err.Cause = ToPlatformError(nilErr)
+	require.Nil(t, err.Unwrap())
 }
 
-func TestNilError(t *testing.T) {
-	got := (*PlatformError)(nil).Error()
-	want := `{"code":"ERR_INTERNAL_ERROR","message":"nil error"}`
-	require.Equal(t, want, got)
-}
+func TestEmptyErrorCode(t *testing.T) {
+	pe := &PlatformError{}
 
-func TestInvalidErrorCode(t *testing.T) {
-	got := (&PlatformError{}).Error()
-	want := `{"code":"ERR_INTERNAL_ERROR","message":"empty error code"}`
+	got := pe.Error()
+	want := "(ERR_INTERNAL_ERROR) "
 	require.Equal(t, want, got)
+
+	got, err := MarshalJSONString(*pe)
+	require.NoError(t, err)
+	want = `{"code":"ERR_INTERNAL_ERROR","message":""}`
+	require.Equal(t, want, got)
+
+	// Make sure err.Code is not modified
+	require.Empty(t, pe.Code)
+
+	pe = ToPlatformError(pe)
+	require.Equal(t, InternalError, pe.Code)
 }
 
 // Test the output when json.Marshal returns an error, which should not happen.
 // But we want to make sure if it happens the returned JSON is well-formatted.
 func TestJSONMarshalError(t *testing.T) {
-	e := &platformErrJSON{}
+	e := &PlatformError{Code: "ERR_\\CYCLE\\_JSON", Message: "Cycled \n\"JSON\""}
 	e.Cause = e
-	errJson, err := json.Marshal(e)
-	require.Nil(t, errJson)
+
+	got, err := MarshalJSONString(*e)
 	require.Error(t, err)
-
-	got := formatInternalErrorJSON("JSON marshal failure: " + err.Error())
-	want := `{"code":"ERR_INTERNAL_ERROR","message":` +
-		`"JSON marshal failure: json: unsupported value: encountered a cycle via *platerrors.platformErrJSON"}`
-	require.Equal(t, want, got)
-}
-
-func TestEscapeInFormatInvalidLogicErrJSON(t *testing.T) {
-	got := formatInternalErrorJSON("Msg with quote \" and backslash \\")
-	want := `{"code":"ERR_INTERNAL_ERROR","message":"Msg with quote  and backslash "}`
-	require.Equal(t, want, got)
+	require.Empty(t, got)
 }
