@@ -35,10 +35,6 @@ export class AddAccessKeyDialog extends LitElement {
     }
 
     md-dialog {
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-
       min-width: 300px;
     }
 
@@ -56,7 +52,6 @@ export class AddAccessKeyDialog extends LitElement {
 
     md-filled-text-field {
       --md-filled-text-field-input-text-font: 'Menlo', monospace;
-      --md-filled-text-field-container-color: var(--outline-light-gray);
 
       width: 100%;
     }

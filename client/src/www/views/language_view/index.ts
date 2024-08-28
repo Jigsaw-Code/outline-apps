@@ -27,8 +27,6 @@ export class LanguageView extends LitElement {
     :host {
       height: 100%;
       width: 100%;
-
-      --md-list-container-color: var(--outline-white);
     }
 
     md-list-item {
