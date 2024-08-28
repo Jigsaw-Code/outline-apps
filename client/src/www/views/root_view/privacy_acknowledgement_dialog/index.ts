@@ -102,7 +102,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
             @click="${() => window.open(this.privacyPageUrl, '_blank')}"
           >
             ${this.localize('learn-more')}
-          </a>
+          </md-text-button>
           <md-filled-button @click="${this.handleAcknowledgement}" autofocus>
             ${this.localize('got-it')}
           </md-filled-button>
