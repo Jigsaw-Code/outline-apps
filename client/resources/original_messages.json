@@ -68,10 +68,6 @@
     "description": "The text for a button to close the current page or dialog.",
     "message": "Close"
   },
-  "confirm": {
-    "desciption": "The text on a button to confirm the current operation.",
-    "message": "Confirm"
-  },
   "connect_button_label": {
     "description": "A text button on a particular server to connect to that server",
     "message": "Connect"
