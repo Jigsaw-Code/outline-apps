@@ -58,14 +58,7 @@ var args struct {
 	tunName *string
 	tunDNS  *string
 
-	// Deprecated: Use proxyConfig instead.
-	proxyHost     *string
-	proxyPort     *int
-	proxyPassword *string
-	proxyCipher   *string
-	proxyPrefix   *string
-
-	proxyConfig *string
+	transportConfig *string
 
 	logLevel          *string
 	checkConnectivity *bool
@@ -86,12 +79,7 @@ func main() {
 	args.tunMask = flag.String("tunMask", "255.255.255.0", "TUN interface network mask; prefixlen for IPv6")
 	args.tunDNS = flag.String("tunDNS", "1.1.1.1,9.9.9.9,208.67.222.222", "Comma-separated list of DNS resolvers for the TUN interface (Windows only)")
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
-	args.proxyHost = flag.String("proxyHost", "", "Shadowsocks proxy hostname or IP address")
-	args.proxyPort = flag.Int("proxyPort", 0, "Shadowsocks proxy port number")
-	args.proxyPassword = flag.String("proxyPassword", "", "Shadowsocks proxy password")
-	args.proxyCipher = flag.String("proxyCipher", "chacha20-ietf-poly1305", "Shadowsocks proxy encryption cipher")
-	args.proxyPrefix = flag.String("proxyPrefix", "", "Shadowsocks connection prefix, UTF8-encoded (unsafe)")
-	args.proxyConfig = flag.String("proxyConfig", "", "A JSON object containing the proxy config, UTF8-encoded")
+	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
 	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
@@ -106,7 +94,10 @@ func main() {
 
 	setLogLevel(*args.logLevel)
 
-	client, err := newShadowsocksClientFromArgs()
+	if len(*args.transportConfig) == 0 {
+		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
+	}
+	client, err := shadowsocks.NewClientFromJSON(*args.transportConfig)
 	if err != nil {
 		printErrorAndExit(err, exitCodeFailure)
 	}
@@ -155,9 +146,9 @@ func main() {
 	logger.Info("tun2socks running...")
 
 	osSignals := make(chan os.Signal, 1)
-	signal.Notify(osSignals, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGHUP)
+	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	sig := <-osSignals
-	logger.Debug("Received signal", sig)
+	logger.Debug("Received signal", "signal", sig)
 }
 
 func setLogLevel(level string) {
@@ -187,28 +178,6 @@ func printErrorAndExit(e error, exitCode int) {
 	}
 	fmt.Fprintln(os.Stderr, errJson)
 	os.Exit(exitCode)
-}
-
-// newShadowsocksClientFromArgs creates a new shadowsocks.Client instance
-// from the global CLI argument object args.
-func newShadowsocksClientFromArgs() (*shadowsocks.Client, error) {
-	if jsonConfig := *args.proxyConfig; len(jsonConfig) > 0 {
-		return shadowsocks.NewClientFromJSON(jsonConfig)
-	} else {
-		// legacy raw flags
-		config := shadowsocks.Config{
-			Host:       *args.proxyHost,
-			Port:       *args.proxyPort,
-			CipherName: *args.proxyCipher,
-			Password:   *args.proxyPassword,
-		}
-		prefixBytes, err := shadowsocks.ParseConfigPrefixFromString(*args.proxyPrefix)
-		if err != nil {
-			return nil, err
-		}
-		config.Prefix = prefixBytes
-		return shadowsocks.NewClient(&config)
-	}
 }
 
 // checkConnectivity checks whether the remote Shadowsocks server supports TCP or UDP,

@@ -18,9 +18,9 @@ import * as path from 'path';
 import {ShadowsocksSessionConfig} from '../src/www/app/outline_server_repository/vpn';
 
 // Format to store a tunnel configuration.
-export interface SerializableTunnel {
+export interface TunnelConfigJson {
   id: string;
-  config: ShadowsocksSessionConfig;
+  transportConfig: ShadowsocksSessionConfig;
 }
 
 // Persistence layer for a single SerializableTunnel.
@@ -37,8 +37,8 @@ export class TunnelStore {
   }
 
   // Persists the tunnel to the store. Rejects the promise on failure.
-  save(tunnel: SerializableTunnel): Promise<void> {
-    if (!this.isTunnelValid(tunnel)) {
+  save(tunnel: TunnelConfigJson): Promise<void> {
+    if (!isTunnelValid(tunnel)) {
       return Promise.reject(new Error('Cannot save invalid tunnel'));
     }
     return new Promise((resolve, reject) => {
@@ -53,7 +53,7 @@ export class TunnelStore {
   }
 
   // Retrieves a tunnel from storage. Rejects the promise if there is none.
-  load(): Promise<SerializableTunnel> {
+  load(): Promise<TunnelConfigJson> {
     return new Promise((resolve, reject) => {
       fs.readFile(this.storagePath, 'utf8', (error, data) => {
         if (!data) {
@@ -61,7 +61,7 @@ export class TunnelStore {
           return;
         }
         const tunnel = JSON.parse(data);
-        if (this.isTunnelValid(tunnel)) {
+        if (isTunnelValid(tunnel)) {
           resolve(tunnel);
         } else {
           reject(new Error('Cannot load invalid tunnel'));
@@ -85,13 +85,9 @@ export class TunnelStore {
       });
     });
   }
+}
 
-  // Returns whether `tunnel` and its configuration contain all the required fields.
-  private isTunnelValid(tunnel: SerializableTunnel) {
-    const config = tunnel.config;
-    if (!config || !tunnel.id) {
-      return false;
-    }
-    return config.method && config.password && config.host && config.port;
-  }
+// Returns whether `tunnel` and its configuration contain all the required fields.
+function isTunnelValid(config: TunnelConfigJson) {
+  return config.id && config.transportConfig;
 }
