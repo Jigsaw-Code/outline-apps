@@ -27,10 +27,6 @@
     "description": "The title of a page giving details about the app.",
     "message": "About"
   },
-  "add_access_key_dialog_header": {
-    "description": "The title of a dialog box that prompts the user to add a new access key.",
-    "message": "Add VPN access key"
-  },
   "add_access_key_dialog_help_text": {
     "desciption": "A message shown to the user to help them understand what an access key is and how to get one.",
     "message": "Need a new access key? Create one at $START_OF_LINK$our website$END_OF_LINK$.",

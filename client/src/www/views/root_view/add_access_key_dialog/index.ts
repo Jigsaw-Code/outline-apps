@@ -74,13 +74,15 @@ export class AddAccessKeyDialog extends LitElement {
       quick
     >
       <header slot="headline">
-        ${this.localize('add-access-key-dialog-header')}
+        ${this.localize('server-add-access-key')}
       </header>
       <article slot="content">
         <section
           class="help-text"
           .innerHTML=${this.localize(
-            'add-access-key-dialog-help-text',
+            'server-create-your-own',
+            'breakLine',
+            '',
             'openLink',
             '<a href=https://s3.amazonaws.com/outline-vpn/index.html>',
             'closeLink',
@@ -91,8 +93,7 @@ export class AddAccessKeyDialog extends LitElement {
           <md-filled-text-field
             .error=${this.accessKey && !this.hasValidAccessKey}
             @input=${this.handleEdit}
-            error-text="${this.localize('add-access-key-dialog-error-text')}"
-            label="${this.localize('add-access-key-dialog-label')}"
+            error-text="${this.localize('error-invalid-access-key')}"
             rows="5"
             type="textarea"
             .value=${this.accessKey}
@@ -106,7 +107,7 @@ export class AddAccessKeyDialog extends LitElement {
         <md-filled-button
           @click=${this.handleConfirm}
           ?disabled=${!this.hasValidAccessKey}
-          >${this.localize('confirm')}</md-filled-button
+          >${this.localize('server-add')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
