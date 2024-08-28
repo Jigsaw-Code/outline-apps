@@ -11,6 +11,7 @@
   limitations under the License.
 */
 
+import {Localizer} from '@outline/infrastructure/i18n';
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -19,10 +20,7 @@ import navigationLogo from '../../../assets/logo-nav.png';
 
 @customElement('root-navigation')
 export class RootNavigation extends LitElement {
-  @property({type: Function}) localize!: (
-    key: string,
-    ...args: string[]
-  ) => string;
+  @property({type: Function}) localize: Localizer = msg => msg;
 
   @property({type: Boolean}) open: boolean;
   @property({type: Boolean}) showQuit: boolean;
