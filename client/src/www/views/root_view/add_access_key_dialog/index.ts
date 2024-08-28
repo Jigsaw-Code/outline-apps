@@ -73,9 +73,7 @@ export class AddAccessKeyDialog extends LitElement {
       @cancel=${this.handleCancel}
       quick
     >
-      <header slot="headline">
-        ${this.localize('server-add-access-key')}
-      </header>
+      <header slot="headline">${this.localize('server-add-access-key')}</header>
       <article slot="content">
         <section
           class="help-text"
