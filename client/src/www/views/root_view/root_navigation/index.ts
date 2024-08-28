@@ -181,7 +181,7 @@ export class RootNavigation extends LitElement {
           </md-list-item>
           <md-list-item @click=${() => this.handlePageChange('contact')}>
             <md-ripple></md-ripple>
-            <md-icon slot="start">perm_phone_msg</md-icon>
+            <md-icon slot="start">feedback</md-icon>
             ${this.localize('contact-page-title')}
           </md-list-item>
           <md-list-item @click=${() => this.handlePageChange('about')}>
