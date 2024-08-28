@@ -462,7 +462,11 @@ function main() {
       );
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
-        await startVpn(tunnelAtShutdown.transportConfig, tunnelAtShutdown.id, true);
+        await startVpn(
+          tunnelAtShutdown.transportConfig,
+          tunnelAtShutdown.id,
+          true
+        );
         console.log(`reconnected to ${tunnelAtShutdown.id}`);
       } catch (e) {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
