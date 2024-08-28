@@ -25,9 +25,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/shadowsocks"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
@@ -97,7 +97,7 @@ func main() {
 	if len(*args.transportConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
-	client, err := shadowsocks.NewClientFromJSON(*args.transportConfig)
+	client, err := outline.NewClient(*args.transportConfig)
 	if err != nil {
 		printErrorAndExit(err, exitCodeFailure)
 	}
@@ -180,11 +180,11 @@ func printErrorAndExit(e error, exitCode int) {
 	os.Exit(exitCode)
 }
 
-// checkConnectivity checks whether the remote Shadowsocks server supports TCP or UDP,
+// checkConnectivity checks whether the remote Outline server supports TCP or UDP,
 // and converts the neterrors to a PlatformError.
 // TODO: remove this function once we migrated CheckConnectivity to return a PlatformError.
-func checkConnectivityAndExit(c *shadowsocks.Client) {
-	connErrCode, err := shadowsocks.CheckConnectivity(c)
+func checkConnectivityAndExit(c *outline.Client) {
+	connErrCode, err := outline.CheckConnectivity(c)
 	if err != nil {
 		printErrorAndExit(platerrors.PlatformError{
 			Code:    platerrors.InternalError,
@@ -203,12 +203,12 @@ func checkConnectivityAndExit(c *shadowsocks.Client) {
 	case neterrors.Unreachable.Number():
 		printErrorAndExit(platerrors.PlatformError{
 			Code:    platerrors.ProxyServerUnreachable,
-			Message: "cannot connect to Shadowsocks server",
+			Message: "cannot connect to Outline server",
 		}, exitCodeFailure)
 	case neterrors.UDPConnectivity.Number():
 		printErrorAndExit(platerrors.PlatformError{
 			Code:    platerrors.ProxyServerUDPUnsupported,
-			Message: "Shadowsocks server does not support UDP",
+			Message: "Outline server does not support UDP",
 		}, exitCodeNoUDPConnectivity)
 	}
 	printErrorAndExit(platerrors.PlatformError{

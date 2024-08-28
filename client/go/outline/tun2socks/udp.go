@@ -40,13 +40,13 @@ type udpHandler struct {
 	conns map[core.UDPConn]net.PacketConn
 }
 
-// NewUDPHandler returns a Shadowsocks UDP connection handler.
+// NewUDPHandler returns a UDP connection handler.
 //
-// `client` provides the Shadowsocks functionality.
+// `listener` provides the packet proxying functionality.
 // `timeout` is the UDP read and write timeout.
-func NewUDPHandler(dialer transport.PacketListener, timeout time.Duration) core.UDPConnHandler {
+func NewUDPHandler(listener transport.PacketListener, timeout time.Duration) core.UDPConnHandler {
 	return &udpHandler{
-		listener: dialer,
+		listener: listener,
 		timeout:  timeout,
 		conns:    make(map[core.UDPConn]net.PacketConn, 8),
 	}
