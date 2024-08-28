@@ -60,52 +60,12 @@ import '../views/root_view/root_header';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_navigation';
 
+import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-
-function makeLookUpLanguage(availableLanguages) {
-  return languageId => {
-    languageId = languageId.toLowerCase();
-    for (const availableLanguage of availableLanguages) {
-      const parts = availableLanguage.toLowerCase().split('-');
-      while (parts.length) {
-        const joined = parts.join('-');
-        if (languageId === joined) {
-          return availableLanguage;
-        }
-        parts.pop();
-      }
-    }
-  };
-}
-
-function getBrowserLanguages() {
-  // Ensure that navigator.languages is defined and not empty, as can be the case with some browsers
-  // (i.e. Chrome 59 on Electron).
-  const languages = globalThis.navigator.languages;
-  if (languages && languages.length > 0) {
-    return languages;
-  }
-  return [globalThis.navigator.language];
-}
-
-function getBestMatchingLanguage(available) {
-  const lookUpAvailable = makeLookUpLanguage(available);
-  for (const candidate of getBrowserLanguages()) {
-    const parts = candidate.split('-');
-    while (parts.length) {
-      const joined = parts.join('-');
-      const closest = lookUpAvailable(joined);
-      if (closest) {
-        return closest;
-      }
-      parts.pop();
-    }
-  }
-}
 
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
@@ -353,6 +313,7 @@ export class AppRoot extends mixinBehaviors(
             name="contact"
             id="contactView"
             localize="[[localize]]"
+            language-code="[[_computeSupportSiteLanguageCode(LANGUAGES_AVAILABLE, language)]]"
             error-reporter="[[errorReporter]]"
             on-success="showContactSuccessToast"
             on-error="showContactErrorToast"
@@ -396,6 +357,7 @@ export class AppRoot extends mixinBehaviors(
       <privacy-acknowledgement-dialog
         id="privacyView"
         localize="[[localize]]"
+        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
       ></privacy-acknowledgement-dialog>
 
       <auto-connect-dialog
@@ -435,70 +397,95 @@ export class AppRoot extends mixinBehaviors(
         value: {
           af: {id: 'af', name: 'Afrikaans', dir: 'ltr'},
           am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
-          ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
+          ar: {id: 'ar', name: 'العربية', dir: 'rtl', supportId: 'ar'},
           az: {id: 'az', name: 'azərbaycan', dir: 'ltr'},
-          bg: {id: 'bg', name: 'български', dir: 'ltr'},
+          bg: {id: 'bg', name: 'български', dir: 'ltr', supportId: 'bg'},
           bn: {id: 'bn', name: 'বাংলা', dir: 'ltr'},
-          bs: {id: 'bs', name: 'bosanski', dir: 'ltr'},
-          ca: {id: 'ca', name: 'català', dir: 'ltr'},
-          cs: {id: 'cs', name: 'Čeština', dir: 'ltr'},
-          da: {id: 'da', name: 'Dansk', dir: 'ltr'},
-          de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
-          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
-          en: {id: 'en', name: 'English', dir: 'ltr'},
+          bs: {id: 'bs', name: 'bosanski', dir: 'ltr', supportId: 'bs'},
+          ca: {id: 'ca', name: 'català', dir: 'ltr', supportId: 'ca'},
+          cs: {id: 'cs', name: 'Čeština', dir: 'ltr', supportId: 'cs'},
+          da: {id: 'da', name: 'Dansk', dir: 'ltr', supportId: 'da'},
+          de: {id: 'de', name: 'Deutsch', dir: 'ltr', supportId: 'de'},
+          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr', supportId: 'el'},
+          en: {id: 'en', name: 'English', dir: 'ltr', supportId: 'en_US'},
           'en-GB': {id: 'en-GB', name: 'English (United Kingdom)', dir: 'ltr'},
-          es: {id: 'es', name: 'Español', dir: 'ltr'},
-          'es-419': {id: 'es-419', name: 'Español (Latinoamérica)', dir: 'ltr'},
-          et: {id: 'et', name: 'eesti', dir: 'ltr'},
-          fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
-          fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
-          fil: {id: 'fil', name: 'Filipino', dir: 'ltr'},
-          fr: {id: 'fr', name: 'Français', dir: 'ltr'},
-          he: {id: 'he', name: 'עברית', dir: 'rtl'},
-          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
-          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
-          hu: {id: 'hu', name: 'magyar', dir: 'ltr'},
-          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr'},
-          id: {id: 'id', name: 'Indonesia', dir: 'ltr'},
+          es: {id: 'es', name: 'Español', dir: 'ltr', supportId: 'es'},
+          'es-419': {
+            id: 'es-419',
+            name: 'Español (Latinoamérica)',
+            dir: 'ltr',
+            supportId: 'es',
+          },
+          et: {id: 'et', name: 'eesti', dir: 'ltr', supportId: 'et'},
+          fa: {id: 'fa', name: 'فارسی', dir: 'rtl', supportId: 'fa'},
+          fi: {id: 'fi', name: 'Suomi', dir: 'ltr', supportId: 'fi'},
+          fil: {id: 'fil', name: 'Filipino', dir: 'ltr', supportId: 'tl'},
+          fr: {id: 'fr', name: 'Français', dir: 'ltr', supportId: 'fr'},
+          he: {id: 'he', name: 'עברית', dir: 'rtl', supportId: 'iw'},
+          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr', supportId: 'hi'},
+          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr', supportId: 'hr'},
+          hu: {id: 'hu', name: 'magyar', dir: 'ltr', supportId: 'hu'},
+          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr', supportId: 'hy'},
+          id: {id: 'id', name: 'Indonesia', dir: 'ltr', supportId: 'in'},
           is: {id: 'is', name: 'íslenska', dir: 'ltr'},
-          it: {id: 'it', name: 'Italiano', dir: 'ltr'},
-          ja: {id: 'ja', name: '日本語', dir: 'ltr'},
-          ka: {id: 'ka', name: 'ქართული', dir: 'ltr'},
+          it: {id: 'it', name: 'Italiano', dir: 'ltr', supportId: 'it'},
+          ja: {id: 'ja', name: '日本語', dir: 'ltr', supportId: 'ja'},
+          ka: {id: 'ka', name: 'ქართული', dir: 'ltr', supportId: 'ka'},
           kk: {id: 'kk', name: 'қазақ тілі', dir: 'ltr'},
           km: {id: 'km', name: 'ខ្មែរ', dir: 'ltr'},
-          ko: {id: 'ko', name: '한국어', dir: 'ltr'},
+          ko: {id: 'ko', name: '한국어', dir: 'ltr', supportId: 'ko'},
           lo: {id: 'lo', name: 'ລາວ', dir: 'ltr'},
-          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr'},
-          lv: {id: 'lv', name: 'latviešu', dir: 'ltr'},
-          mk: {id: 'mk', name: 'македонски', dir: 'ltr'},
+          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr', supportId: 'lt'},
+          lv: {id: 'lv', name: 'latviešu', dir: 'ltr', supportId: 'lv'},
+          mk: {id: 'mk', name: 'македонски', dir: 'ltr', supportId: 'mk'},
           mn: {id: 'mn', name: 'монгол', dir: 'ltr'},
           ms: {id: 'ms', name: 'Melayu', dir: 'ltr'},
           mr: {id: 'mr', name: 'मराठी', dir: 'ltr'},
           my: {id: 'my', name: 'မြန်မာ', dir: 'ltr'},
           ne: {id: 'ne', name: 'नेपाली', dir: 'ltr'},
-          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
-          no: {id: 'no', name: 'norsk', dir: 'ltr'},
-          pl: {id: 'pl', name: 'polski', dir: 'ltr'},
-          'pt-BR': {id: 'pt-BR', name: 'Português (Brasil)', dir: 'ltr'},
-          'pt-PT': {id: 'pt-PT', name: 'Português (Portugal)', dir: 'ltr'},
-          ro: {id: 'ro', name: 'română', dir: 'ltr'},
-          ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
+          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr', supportId: 'nl_NL'},
+          no: {id: 'no', name: 'norsk', dir: 'ltr', supportId: 'no'},
+          pl: {id: 'pl', name: 'polski', dir: 'ltr', supportId: 'pl'},
+          'pt-BR': {
+            id: 'pt-BR',
+            name: 'Português (Brasil)',
+            dir: 'ltr',
+            supportId: 'pt_BR',
+          },
+          'pt-PT': {
+            id: 'pt-PT',
+            name: 'Português (Portugal)',
+            dir: 'ltr',
+            supportId: 'pt_BR',
+          },
+          ro: {id: 'ro', name: 'română', dir: 'ltr', supportId: 'ro'},
+          ru: {id: 'ru', name: 'Русский', dir: 'ltr', supportId: 'ru'},
           si: {id: 'si', name: 'සිංහල', dir: 'ltr'},
-          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
-          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr'},
-          sq: {id: 'sq', name: 'shqip', dir: 'ltr'},
-          sr: {id: 'sr', name: 'српски', dir: 'ltr'},
+          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr', supportId: 'sk'},
+          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr', supportId: 'sl'},
+          sq: {id: 'sq', name: 'shqip', dir: 'ltr', supportId: 'sq'},
+          sr: {id: 'sr', name: 'српски', dir: 'ltr', supportId: 'sr'},
           'sr-Latn': {id: 'sr-Latn', name: 'srpski (latinica)', dir: 'ltr'},
-          sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
+          sv: {id: 'sv', name: 'Svenska', dir: 'ltr', supportId: 'sv'},
           sw: {id: 'sw', name: 'Kiswahili', dir: 'ltr'},
           ta: {id: 'ta', name: 'தமிழ்', dir: 'ltr'},
-          th: {id: 'th', name: 'ไทย', dir: 'ltr'},
-          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
-          uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
-          ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
-          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr'},
-          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
-          'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr'},
+          th: {id: 'th', name: 'ไทย', dir: 'ltr', supportId: 'th'},
+          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr', supportId: 'tr'},
+          uk: {id: 'uk', name: 'Українська', dir: 'ltr', supportId: 'uk'},
+          ur: {id: 'ur', name: 'اردو', dir: 'rtl', supportId: 'ur'},
+          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr', supportId: 'vi'},
+          'zh-CN': {
+            id: 'zh-CN',
+            name: '简体中文',
+            dir: 'ltr',
+            supportId: 'zh_CN',
+          },
+          'zh-TW': {
+            id: 'zh-TW',
+            name: '繁體中文',
+            dir: 'ltr',
+            supportId: 'zh_TW',
+          },
         },
       },
       language: {
@@ -724,12 +711,16 @@ export class AppRoot extends mixinBehaviors(
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
-    const overrideLanguage =
-      globalThis.localStorage.getItem('overrideLanguage');
-    const bestMatchingLanguage = getBestMatchingLanguage(
-      Object.keys(availableLanguages)
+    const preferredLanguages = i18n.getBrowserLanguages();
+    const overrideLanguage = window.localStorage.getItem('overrideLanguage');
+    if (overrideLanguage) {
+      preferredLanguages.unshift(new i18n.LanguageCode(overrideLanguage));
+    }
+    const matcher = new i18n.LanguageMatcher(
+      i18n.languageList(Object.keys(availableLanguages)),
+      new i18n.LanguageCode(defaultLanguage)
     );
-    return overrideLanguage || bestMatchingLanguage || defaultLanguage;
+    return matcher.getBestSupportedLanguage(preferredLanguages).string();
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
@@ -767,6 +758,22 @@ export class AppRoot extends mixinBehaviors(
   _computeShouldShowAddButton(page) {
     // Only show the add button if we're on the servers page.
     return page === 'servers';
+  }
+
+  _computeSupportSiteLanguageCode(languages, language) {
+    return languages[language].supportId;
+  }
+
+  _computeSupportSiteUrl(language, url) {
+    const parsedUrl = new URL(url);
+    const supportLanguageCode = this._computeSupportSiteLanguageCode(
+      this.LANGUAGES_AVAILABLE,
+      language
+    );
+    if (supportLanguageCode) {
+      parsedUrl.searchParams.append('language', supportLanguageCode);
+    }
+    return parsedUrl.toString();
   }
 
   _goBack() {

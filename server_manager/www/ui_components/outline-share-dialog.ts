@@ -21,7 +21,7 @@ import {html} from '@polymer/polymer/lib/utils/html-tag';
 import * as clipboard from 'clipboard-polyfill';
 
 export interface OutlineShareDialog extends Element {
-  open(accessKey: string, s3url: string): void;
+  open(accessKey: string): void;
 }
 
 // TODO(alalama): add a language selector. This should be a separate instance of
@@ -160,9 +160,8 @@ Polymer({
     localize: {type: Function},
   },
 
-  open(accessKey: string, s3Url: string) {
+  open(accessKey: string) {
     this.accessKey = accessKey;
-    this.s3Url = s3Url;
     this.$.copyInvitationIndicator.setAttribute('hidden', true);
     this.$.copyAccessKeyIndicator.setAttribute('hidden', true);
     this.$.dialog.open();
