@@ -31,7 +31,7 @@ export default {
   output: {
     path: path.resolve(
       __dirname,
-      `../output/build/server_manager/${process.env.PLATFORM}/unpacked`
+      '../output/build/server_manager/electron/static'
     ),
     filename: 'index.js',
   },
