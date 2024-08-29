@@ -37,7 +37,7 @@ type Client struct {
 func NewClient(transportConfig string) (*Client, error) {
 	config, err := parseConfigFromJSON(transportConfig)
 	if err != nil {
-		return nil, newIllegalConfigErrorWithDetails("Shadowsocks config must be a valid JSON string", ".", transportConfig, "JSON string", err)
+		return nil, newIllegalConfigErrorWithDetails("transport config must be a valid JSON string", ".", transportConfig, "JSON string", err)
 	}
 	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
 	if err != nil {
@@ -99,14 +99,14 @@ const (
 	Unreachable                 = 5
 	VpnStartFailure             = 6  // Unused
 	IllegalConfiguration        = 7  // Electron only
-	ShadowsocksStartFailure     = 8  // Unused
+	ClientStartFailure          = 8  // Unused
 	ConfigureSystemProxyFailure = 9  // Unused
 	NoAdminPermissions          = 10 // Unused
 	UnsupportedRoutingTable     = 11 // Unused
 	SystemMisconfigured         = 12 // Electron only
 )
 
-// CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
+// CheckConnectivity determines whether the client can relay TCP and UDP traffic under
 // the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
 // error code to return accounting for transient network failures.
 // Returns an error if an unexpected error ocurrs.
