@@ -16,9 +16,7 @@
 set -eu
 
 # Electron app root folder
-PLATFORM="${1?Platform missing}"
-
-readonly STATIC_DIR="${BUILD_DIR}/server_manager/${PLATFORM}/unpacked"
+readonly STATIC_DIR="${BUILD_DIR}/server_manager/electron/static"
 rm -rf "${STATIC_DIR}"
 mkdir -p "${STATIC_DIR}"
 
@@ -52,17 +50,17 @@ if [[ -z "${WEBPACK_MODE:-}" ]]; then
 fi
 
 # Build the Web App.
-node infrastructure/build/run_action.mjs server_manager/www/build "${PLATFORM}"
+node infrastructure/build/run_action.mjs server_manager/www/build
 
 # Compile the Electron main process and preload to the app root folder.
 # Since Node.js on Cygwin doesn't like absolute Unix-style paths,
 # we'll use relative paths here.
-PLATFORM="${PLATFORM}" webpack --config=server_manager/electron_main.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
-PLATFORM="${PLATFORM}" webpack --config=server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+webpack --config=server_manager/electron_main.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
+webpack --config=server_manager/electron_preload.webpack.mjs ${WEBPACK_MODE:+--mode=${WEBPACK_MODE}}
 
 # Assemble everything together.
-mkdir -p "${STATIC_DIR}"
-cp -r "${BUILD_DIR}/server_manager/${PLATFORM}/www" "${STATIC_DIR}/"
+mkdir -p "${STATIC_DIR}/server_manager"
+cp -r "${BUILD_DIR}/server_manager/www/static" "${STATIC_DIR}/server_manager/www/"
 
 # Electron requires a package.json file for the app's name, etc.
 # We also need to install NPMs at this location for require()
@@ -74,4 +72,4 @@ cd "${STATIC_DIR}"
 
 # Icons.
 cd "${ROOT_DIR}"
-cp -r server_manager/electron/icons/ "${BUILD_DIR}/server_manager/${PLATFORM}/unpacked/icons/"
+cp -r server_manager/electron/icons/ "${BUILD_DIR}/server_manager/electron/static/icons/"

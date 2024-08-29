@@ -21,7 +21,7 @@ const webpack = require('webpack');
 
 const OUTPUT_BASE = path.resolve(
   __dirname,
-  `../output/build/server_manager/${process.env.PLATFORM}/www`
+  '../output/build/server_manager/www/static'
 );
 
 const GENERATE_CSS_RTL_LOADER = path.resolve(
