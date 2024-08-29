@@ -34,7 +34,7 @@ const (
 	Unreachable                 Error = 5
 	VpnStartFailure             Error = 6  // Unused
 	IllegalConfiguration        Error = 7  // Electron only
-	ShadowsocksStartFailure     Error = 8  // Unused
+	ClientStartFailure          Error = 8  // Unused
 	ConfigureSystemProxyFailure Error = 9  // Unused
 	NoAdminPermissions          Error = 10 // Unused
 	UnsupportedRoutingTable     Error = 11 // Unused

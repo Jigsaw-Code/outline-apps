@@ -21,9 +21,9 @@ import org.outline.TunnelConfig;
  */
 interface IVpnTunnelService {
   /**
-   * Establishes a system-wide VPN connected to a remote Shadowsocks proxy server.
+   * Establishes a system-wide VPN connected to a remote Outline proxy server.
    * All device traffic is routed as follows:
-   *  |VPN TUN interface| <-> |outline-go-tun2socks| <-> |Shadowsocks server|.
+   *  |VPN TUN interface| <-> |outline-go-tun2socks| <-> |Outline server|.
    *
    * This method can be called multiple times with different configurations. The VPN will not be
    * torn down. Broadcasts an intent with action OutlinePlugin.Action.START and an error code
@@ -37,7 +37,7 @@ interface IVpnTunnelService {
   int startTunnel(in TunnelConfig config);
 
   /**
-   * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, shadowsocks, and
+   * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, Outline, and
    * the system-wide VPN.
    *
    * @param tunnelId unique identifier for the tunnel.
