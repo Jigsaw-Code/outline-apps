@@ -243,10 +243,7 @@ export class App {
       toastMessage = this.localize('error-server-incompatible');
     } else if (error instanceof OperationTimedOut) {
       toastMessage = this.localize('error-timeout');
-    } else if (
-      error instanceof errors.ClientStartFailure &&
-      this.isWindows()
-    ) {
+    } else if (error instanceof errors.ClientStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
       toastMessage = this.localize('outline-plugin-error-antivirus');
       buttonMessage = this.localize('fix-this');
