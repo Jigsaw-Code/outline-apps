@@ -96,9 +96,6 @@ describe('App', () => {
     await appRoot.getServerView('');
     const serverList = appRoot.serverList;
 
-    console.log(`managedServers.length: ${managedServers.length}`);
-    console.log(`manualServers.length: ${manualServers.length}`);
-
     expect(serverList.length).toEqual(
       manualServers.length + managedServers.length
     );
@@ -146,6 +143,7 @@ describe('App', () => {
     const appRoot = document.getElementById('appRoot') as AppRoot;
     const app = createTestApp(appRoot, undefined, manualServerRepo);
     await app.start();
+    await app.showServer(server);
     const view = await appRoot.getServerView(SERVER_ID);
 
     expect(appRoot.currentPage).toEqual('serverView');
@@ -169,6 +167,7 @@ describe('App', () => {
     const appRoot = document.getElementById('appRoot') as AppRoot;
     const app = createTestApp(appRoot, undefined, manualServerRepo);
     await app.start();
+    await app.showServer(server);
     const view = await appRoot.getServerView(SERVER_ID);
 
     expect(appRoot.currentPage).toEqual('serverView');
