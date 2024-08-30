@@ -15,7 +15,7 @@
 import {IpcRendererEvent} from 'electron/main';
 
 import {TunnelStatus} from './vpn';
-import {ShadowsocksSessionConfig} from './vpn';
+import {TunnelConfig} from './vpn';
 import {VpnApi} from './vpn';
 import {PlatformError} from '../../model/platform_error';
 
@@ -49,11 +49,7 @@ export class ElectronVpnApi implements VpnApi {
     );
   }
 
-  async start(
-    id: string,
-    name: string,
-    transportConfig: ShadowsocksSessionConfig
-  ) {
+  async start(id: string, name: string, tunnelConfig: TunnelConfig) {
     if (this.runningServerId === id) {
       return Promise.resolve();
     }
@@ -62,7 +58,7 @@ export class ElectronVpnApi implements VpnApi {
       await window.electron.methodChannel.invoke('start-proxying', {
         id: id,
         name: name,
-        transportConfig: transportConfig,
+        tunnel: tunnelConfig,
       });
     } catch (e) {
       throw PlatformError.parseFrom(e);

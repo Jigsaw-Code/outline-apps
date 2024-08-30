@@ -39,7 +39,7 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore, TunnelConfigJson} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 import {
-  ShadowsocksSessionConfig,
+  TunnelConfig,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
 import * as errors from '../src/www/model/errors';
@@ -340,26 +340,29 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
 async function createVpnTunnel(
-  config: ShadowsocksSessionConfig,
+  tunnelConfig: TunnelConfig,
   isAutoConnect: boolean
 ): Promise<VpnTunnel> {
   // We must convert the host from a potential "hostname" to an "IP" address
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  if (!config.host) {
+  const host = tunnelConfig.transport.getHost();
+  if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
-  config.host = await lookupIp(config.host);
-  const routing = new RoutingDaemon(config.host || '', isAutoConnect);
-  const tunnel = new GoVpnTunnel(routing, JSON.stringify(config));
+  const hostIp = await lookupIp(host);
+  const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
+  // Make sure the transport will use the IP we will allowlist.
+  const resolvedTransport = tunnelConfig.transport.setHost(hostIp);
+  const tunnel = new GoVpnTunnel(routing, resolvedTransport.toString());
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(
-  config: ShadowsocksSessionConfig,
+  tunnelConfig: TunnelConfig,
   id: string,
   isAutoConnect = false
 ) {
@@ -367,7 +370,7 @@ async function startVpn(
     throw new Error('already connected');
   }
 
-  currentTunnel = await createVpnTunnel(config, isAutoConnect);
+  currentTunnel = await createVpnTunnel(tunnelConfig, isAutoConnect);
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }
@@ -447,7 +450,7 @@ function main() {
     // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
 
-    let tunnelAtShutdown: TunnelConfigJson;
+    let tunnelAtShutdown: TunnelConfigJson | undefined;
     try {
       tunnelAtShutdown = await tunnelStore.load();
     } catch (e) {
@@ -462,11 +465,7 @@ function main() {
       );
       setUiTunnelStatus(TunnelStatus.RECONNECTING, tunnelAtShutdown.id);
       try {
-        await startVpn(
-          tunnelAtShutdown.transportConfig,
-          tunnelAtShutdown.id,
-          true
-        );
+        await startVpn(tunnelAtShutdown.tunnel, tunnelAtShutdown.id, true);
         console.log(`reconnected to ${tunnelAtShutdown.id}`);
       } catch (e) {
         console.error(`could not reconnect: ${e.name} (${e.message})`);
@@ -513,7 +512,7 @@ function main() {
       args: {
         id: string;
         name: string;
-        transportConfig: ShadowsocksSessionConfig;
+        tunnel: TunnelConfig;
       }
     ): Promise<void> => {
       // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
@@ -528,7 +527,7 @@ function main() {
       console.log(`connecting to ${args.name} (${args.id})...`);
 
       try {
-        await startVpn(args.transportConfig, args.id);
+        await startVpn(args.tunnel, args.id);
         console.log(`connected to ${args.name} (${args.id})`);
         await setupAutoLaunch(args);
         // Auto-connect requires IPs; the hostname in here has already been resolved (see above).

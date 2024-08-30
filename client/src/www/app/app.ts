@@ -244,7 +244,7 @@ export class App {
     } else if (error instanceof OperationTimedOut) {
       toastMessage = this.localize('error-timeout');
     } else if (
-      error instanceof errors.ShadowsocksStartFailure &&
+      error instanceof errors.ClientStartFailure &&
       this.isWindows()
     ) {
       // Fall through to `error-unexpected` for other platforms.

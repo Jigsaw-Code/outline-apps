@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {VpnApi, TunnelStatus, ShadowsocksSessionConfig} from './vpn';
+import {VpnApi, TunnelStatus, TunnelConfig} from './vpn';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
@@ -34,20 +34,17 @@ export class FakeVpnApi implements VpnApi {
     return hostname === FAKE_UNREACHABLE_HOSTNAME;
   }
 
-  async start(
-    _id: string,
-    _name: string,
-    config: ShadowsocksSessionConfig
-  ): Promise<void> {
+  async start(_id: string, _name: string, config: TunnelConfig): Promise<void> {
     if (this.running) {
       return;
     }
 
-    if (this.playUnreachable(config.host)) {
+    const host = config.transport.getHost();
+    if (this.playUnreachable(host)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
-    } else if (this.playBroken(config.host)) {
+    } else if (this.playBroken(host)) {
       throw new errors.OutlinePluginError(
-        errors.ErrorCode.SHADOWSOCKS_START_FAILURE
+        errors.ErrorCode.CLIENT_START_FAILURE
       );
     }
 

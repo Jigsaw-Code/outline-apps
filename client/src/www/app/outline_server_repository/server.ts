@@ -13,12 +13,10 @@
 // limitations under the License.
 
 import {Localizer} from '@outline/infrastructure/i18n';
+import * as net from '@outline/infrastructure/net';
 
-import {
-  fetchShadowsocksSessionConfig,
-  staticKeyToShadowsocksSessionConfig,
-} from './access_key_serialization';
-import {ShadowsocksSessionConfig, VpnApi} from './vpn';
+import {staticKeyToTunnelConfig} from './transport';
+import {TunnelConfig, TransportConfig, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
@@ -26,17 +24,10 @@ import {Server, ServerType} from '../../model/server';
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
-  // We restrict to AEAD ciphers because unsafe ciphers are not supported in go-tun2socks.
-  // https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-  private static readonly SUPPORTED_CIPHERS = [
-    'chacha20-ietf-poly1305',
-    'aes-128-gcm',
-    'aes-192-gcm',
-    'aes-256-gcm',
-  ];
-
   errorMessageId?: string;
-  private sessionConfig?: ShadowsocksSessionConfig;
+  private readonly staticTunnelConfig?: TunnelConfig;
+  private _address: string;
+  private _tunnelConfigLocation: URL;
 
   constructor(
     private vpnApi: VpnApi,
@@ -48,26 +39,35 @@ export class OutlineServer implements Server {
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
-        this.accessKey = accessKey.replace(/^ssconf:\/\//, 'https://');
+        this._tunnelConfigLocation = new URL(
+          accessKey.replace(/^ssconf:\/\//, 'https://')
+        );
+        this._address = '';
+
+        if (!_name) {
+          this._name =
+            this._tunnelConfigLocation.port === '443'
+              ? this._tunnelConfigLocation.hostname
+              : net.joinHostPort(
+                  this._tunnelConfigLocation.hostname,
+                  this._tunnelConfigLocation.port
+                );
+        }
         break;
+
       case ServerType.STATIC_CONNECTION:
       default:
-        this.sessionConfig = staticKeyToShadowsocksSessionConfig(accessKey);
+        this.staticTunnelConfig = staticKeyToTunnelConfig(accessKey);
+        this._address = this.staticTunnelConfig.transport.getAddress();
+
+        if (!_name) {
+          this._name = localize(
+            accessKey.includes('outline=1')
+              ? 'server-default-name-outline'
+              : 'server-default-name'
+          );
+        }
         break;
-    }
-    if (!_name) {
-      if (this.sessionConfigLocation) {
-        this._name =
-          this.sessionConfigLocation.port === '443'
-            ? this.sessionConfigLocation.hostname
-            : `${this.sessionConfigLocation.hostname}:${this.sessionConfigLocation.port}`;
-      } else {
-        this._name = localize(
-          this.accessKey.includes('outline=1')
-            ? 'server-default-name-outline'
-            : 'server-default-name'
-        );
-      }
     }
   }
 
@@ -80,28 +80,24 @@ export class OutlineServer implements Server {
   }
 
   get address() {
-    if (!this.sessionConfig) return '';
-
-    return `${this.sessionConfig.host}:${this.sessionConfig.port}`;
+    return this._address;
   }
 
-  get sessionConfigLocation() {
-    if (this.type !== ServerType.DYNAMIC_CONNECTION) {
-      return;
-    }
-
-    return new URL(this.accessKey);
+  get tunnelConfigLocation() {
+    return this._tunnelConfigLocation;
   }
 
   async connect() {
+    let tunnelConfig: TunnelConfig;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      this.sessionConfig = await fetchShadowsocksSessionConfig(
-        this.sessionConfigLocation
-      );
+      tunnelConfig = await fetchTunnelConfig(this._tunnelConfigLocation);
+      this._address = tunnelConfig.transport.getAddress();
+    } else {
+      tunnelConfig = this.staticTunnelConfig;
     }
 
     try {
-      await this.vpnApi.start(this.id, this.name, this.sessionConfig);
+      await this.vpnApi.start(this.id, this.name, tunnelConfig);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -126,7 +122,7 @@ export class OutlineServer implements Server {
       await this.vpnApi.stop(this.id);
 
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.sessionConfig = undefined;
+        this._address = '';
       }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
@@ -137,10 +133,61 @@ export class OutlineServer implements Server {
   checkRunning(): Promise<boolean> {
     return this.vpnApi.isRunning(this.id);
   }
+}
 
-  static isServerCipherSupported(cipher?: string) {
-    return (
-      cipher !== undefined && OutlineServer.SUPPORTED_CIPHERS.includes(cipher)
+function parseTunnelConfigJson(responseBody: string): TunnelConfig | null {
+  const responseJson = JSON.parse(responseBody);
+
+  if ('error' in responseJson) {
+    throw new errors.SessionProviderError(
+      responseJson.error.message,
+      responseJson.error.details
+    );
+  }
+
+  return {
+    transport: new TransportConfig(responseJson),
+  };
+}
+
+// fetches information from a dynamic access key and attempts to parse it
+// TODO(daniellacosse): unit tests
+export async function fetchTunnelConfig(
+  configLocation: URL
+): Promise<TunnelConfig> {
+  let response;
+  try {
+    response = await fetch(configLocation, {
+      cache: 'no-store',
+      redirect: 'follow',
+    });
+  } catch (cause) {
+    throw new errors.SessionConfigFetchFailed(
+      'Failed to fetch VPN information from dynamic access key.',
+      {cause}
+    );
+  }
+
+  const responseBody = (await response.text()).trim();
+  if (!responseBody) {
+    throw new errors.ServerAccessKeyInvalid(
+      'Got empty config from dynamic key.'
+    );
+  }
+  try {
+    if (responseBody.startsWith('ss://')) {
+      return staticKeyToTunnelConfig(responseBody);
+    }
+
+    return parseTunnelConfigJson(responseBody);
+  } catch (cause) {
+    if (cause instanceof errors.SessionProviderError) {
+      throw cause;
+    }
+
+    throw new errors.ServerAccessKeyInvalid(
+      'Failed to parse VPN information fetched from dynamic access key.',
+      {cause}
     );
   }
 }

@@ -12,12 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export interface ShadowsocksSessionConfig {
-  host?: string;
-  port?: number;
-  password?: string;
-  method?: string;
-  prefix?: string;
+import * as net from '@outline/infrastructure/net';
+
+export interface TunnelConfig {
+  transport: TransportConfig;
+}
+
+export class TransportConfig {
+  constructor(private readonly json: object) {}
+
+  getAddress(): string | undefined {
+    const hostConfig = this.json as {host?: string; port?: string};
+    if (hostConfig.host && hostConfig.port) {
+      return net.joinHostPort(hostConfig.host, hostConfig.port);
+    } else {
+      return undefined;
+    }
+  }
+
+  getHost(): string | undefined {
+    return (this.json as {host: string})?.host;
+  }
+
+  setHost(newHost: string): TransportConfig | undefined {
+    if (!('host' in this.json)) {
+      return undefined;
+    }
+    const newJson = {
+      ...this.json,
+      host: newHost,
+    };
+    return new TransportConfig(newJson);
+  }
+
+  toString() {
+    return JSON.stringify(this.json);
+  }
 }
 
 export const enum TunnelStatus {
@@ -33,11 +63,7 @@ export interface VpnApi {
   // If there is another running instance, broadcasts a disconnect event and stops the active
   // tunnel. In such case, restarts tunneling while preserving the VPN.
   // @throws {OutlinePluginError}
-  start(
-    id: string,
-    name: string,
-    config: ShadowsocksSessionConfig
-  ): Promise<void>;
+  start(id: string, name: string, config: TunnelConfig): Promise<void>;
 
   // Stops the tunnel and VPN service.
   stop(id: string): Promise<void>;

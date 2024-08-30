@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import {Localizer} from '@outline/infrastructure/i18n';
-import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
+import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import {OutlineServer} from './server';
+import * as transport from './transport';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
@@ -27,20 +27,7 @@ import {ServerRepository, ServerType} from '../../model/server';
 
 // Compares access keys proxying parameters.
 function staticKeysMatch(a: string, b: string): boolean {
-  try {
-    const l = staticKeyToShadowsocksSessionConfig(a);
-    const r = staticKeyToShadowsocksSessionConfig(b);
-    return (
-      l.host === r.host &&
-      l.port === r.port &&
-      l.password === r.password &&
-      l.method === r.method &&
-      l.prefix === r.prefix
-    );
-  } catch (e) {
-    console.debug('failed to parse access key for comparison');
-  }
-  return false;
+  return a.trim() === b.trim();
 }
 
 // Determines if the key is expected to be a url pointing to an ephemeral session config.
@@ -157,14 +144,8 @@ export class OutlineServerRepository implements ServerRepository {
   add(accessKey: string) {
     this.validateAccessKey(accessKey);
 
-    let serverName = serverNameFromAccessKey(accessKey);
-
-    if (!serverName && isDynamicAccessKey(accessKey)) {
-      const {hostname} = new URL(accessKey);
-
-      serverName = hostname;
-    }
-
+    // Note that serverNameFromAccessKey depends on the fact that the Access Key is a URL.
+    const serverName = serverNameFromAccessKey(accessKey);
     const server = this.createServer(uuidv4(), accessKey, serverName);
 
     this.serverById.set(server.id, server);
@@ -234,19 +215,7 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    let config = null;
-    try {
-      config = SHADOWSOCKS_URI.parse(staticKey);
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(
-        error.message || 'failed to parse access key'
-      );
-    }
-    if (!OutlineServer.isServerCipherSupported(config.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(
-        config.method.data || 'unknown'
-      );
-    }
+    transport.validateStaticKey(staticKey);
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {

@@ -15,12 +15,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {ShadowsocksSessionConfig} from '../src/www/app/outline_server_repository/vpn';
+import {TunnelConfig} from '../src/www/app/outline_server_repository/vpn';
 
 // Format to store a tunnel configuration.
 export interface TunnelConfigJson {
   id: string;
-  transportConfig: ShadowsocksSessionConfig;
+  name: string;
+  tunnel: TunnelConfig;
 }
 
 // Persistence layer for a single SerializableTunnel.
@@ -89,5 +90,5 @@ export class TunnelStore {
 
 // Returns whether `tunnel` and its configuration contain all the required fields.
 function isTunnelValid(config: TunnelConfigJson) {
-  return config.id && config.transportConfig;
+  return config.id && config.tunnel;
 }

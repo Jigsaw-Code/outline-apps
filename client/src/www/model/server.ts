@@ -35,7 +35,7 @@ export interface Server {
   name: string;
 
   // The location to pull the session config from on each connection.
-  sessionConfigLocation?: URL;
+  tunnelConfigLocation?: URL;
 
   // The address of the service.
   address: string;
