@@ -134,13 +134,58 @@ describe('App', () => {
     );
   });
 
+  it('shows selected server and access keys', async done => {
+    const SERVER_ID = 'fake-manual-server-api-url-1';
+    const manualServerRepo = new FakeManualServerRepository();
+    const server = await manualServerRepo.addServer({
+      certSha256: 'cert',
+      apiUrl: SERVER_ID,
+    });
+    await server.addAccessKey();
+
+    const appRoot = document.getElementById('appRoot') as AppRoot;
+    const app = createTestApp(appRoot, undefined, manualServerRepo);
+    await app.start();
+    const view = await appRoot.getServerView(SERVER_ID);
+
+    expect(appRoot.currentPage).toEqual('serverView');
+    expect(appRoot.selectedServerId).toEqual(SERVER_ID);
+    setTimeout(() => {
+      expect(view.accessKeyRows.length).toEqual(1);
+      done();
+    }, 100);
+  });
+
+  it('shows selected server and access keys for non-semantic version server', async done => {
+    const SERVER_ID = 'fake-manual-server-api-url-1';
+    const manualServerRepo = new FakeManualServerRepository();
+    const server = await manualServerRepo.addServer({
+      certSha256: 'cert',
+      apiUrl: SERVER_ID,
+    });
+    spyOn(server, 'getVersion').and.returnValue('dev');
+    await server.addAccessKey();
+
+    const appRoot = document.getElementById('appRoot') as AppRoot;
+    const app = createTestApp(appRoot, undefined, manualServerRepo);
+    await app.start();
+    const view = await appRoot.getServerView(SERVER_ID);
+
+    expect(appRoot.currentPage).toEqual('serverView');
+    expect(appRoot.selectedServerId).toEqual(SERVER_ID);
+    setTimeout(() => {
+      expect(view.accessKeyRows.length).toEqual(1);
+      done();
+    }, 100);
+  });
+
   it('shows progress screen once DigitalOcean droplets are created', async () => {
     // Start the app with a fake DigitalOcean token.
     const appRoot = document.getElementById('appRoot') as AppRoot;
     const cloudAccounts = new FakeCloudAccounts(new FakeDigitalOceanAccount());
     const app = createTestApp(appRoot, cloudAccounts);
     await app.start();
-    await app.createDigitalOceanServer(new Region('_fake-region-id'));
+    await app.createDigitalOceanServer(new Region('_fake-region-id'), false);
     expect(appRoot.currentPage).toEqual('serverView');
     const view = await appRoot.getServerView(appRoot.selectedServerId);
     expect(view.selectedPage).toEqual('progressView');
