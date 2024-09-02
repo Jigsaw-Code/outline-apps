@@ -51,7 +51,7 @@ function parseShadowsocksSessionConfigJson(
     );
   }
 
-  const {method, password, server, server_port, prefix} = responseJson;
+  const {name, method, password, server, server_port, prefix} = responseJson;
 
   // These are the mandatory keys.
   const missingKeys = [];
@@ -72,6 +72,7 @@ function parseShadowsocksSessionConfigJson(
   }
 
   return {
+    name,
     method,
     password,
     host: server,

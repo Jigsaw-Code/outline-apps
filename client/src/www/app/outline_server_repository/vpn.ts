@@ -13,6 +13,7 @@
 // limitations under the License.
 
 export interface ShadowsocksSessionConfig {
+  name?: string;
   host?: string;
   port?: number;
   password?: string;

@@ -98,6 +98,10 @@ export class OutlineServer implements Server {
       this.sessionConfig = await fetchShadowsocksSessionConfig(
         this.sessionConfigLocation
       );
+
+      if(this.sessionConfig.name) {
+        this.name = this.sessionConfig.name;
+      }
     }
 
     try {
