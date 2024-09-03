@@ -14,13 +14,20 @@
 
 import * as net from '@outline/infrastructure/net';
 
+// TunnelConfig represents the configuration to set up a tunnel.
 export interface TunnelConfig {
+  // transport describes how to establish connections to the destinations.
   transport: TransportConfig;
+  // This is the place where routing configuration would go.
 }
 
+// TransportConfig describes how to establish connections to destinations.
+// We need to support a few meta operations such as getHost to support the UI.
 export class TransportConfig {
   constructor(private readonly json: object) {}
 
+  // The address of the tunnel server, if there's a meaningful one.
+  // This is used to show the server address in the UI when connected.
   getAddress(): string | undefined {
     const hostConfig = this.json as {host?: string; port?: string};
     if (hostConfig.host && hostConfig.port) {
@@ -30,10 +37,14 @@ export class TransportConfig {
     }
   }
 
+  // The host of the tunnel server, if there's a meaningful one.
+  // This is used by the proxy resolution in Electron.
   getHost(): string | undefined {
     return (this.json as {host: string})?.host;
   }
 
+  // Updated the host of the tunnel server. Should only be set if getHost returns one.
+  // This is used by the proxy resolution in Electron.
   setHost(newHost: string): TransportConfig | undefined {
     if (!('host' in this.json)) {
       return undefined;
@@ -45,6 +56,8 @@ export class TransportConfig {
     return new TransportConfig(newJson);
   }
 
+  // Returns the string representation of the config.
+  // This is used for persistence and IPC.
   toString() {
     return JSON.stringify(this.json);
   }
