@@ -47,13 +47,22 @@ describe('getHostFromTransport', () => {
 describe('setTransportHost', () => {
   it('sets host', () => {
     expect(
-      JSON.stringify(vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1.2.3.4'))
+      JSON.stringify(
+        vpn.setTransportConfigHost(
+          {host: 'example.com', port: '443'},
+          '1.2.3.4'
+        )
+      )
     ).toEqual('{"host":"1.2.3.4","port":"443"}');
     expect(
-      JSON.stringify(vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1:2::3'))
+      JSON.stringify(
+        vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1:2::3')
+      )
     ).toEqual('{"host":"1:2::3","port":"443"}');
     expect(
-      JSON.stringify(vpn.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3'))
+      JSON.stringify(
+        vpn.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3')
+      )
     ).toEqual('{"host":"1:2::3","port":"443"}');
   });
 
