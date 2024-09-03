@@ -17,7 +17,7 @@ import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 import {TunnelConfig, TransportConfig} from './vpn';
 import * as errors from '../../model/errors';
 
-// Parses an access key string into a TunnelConfig object.
+/** Parses an access key string into a TunnelConfig object. */
 export function staticKeyToTunnelConfig(staticKey: string): TunnelConfig {
   try {
     const config = SHADOWSOCKS_URI.parse(staticKey);

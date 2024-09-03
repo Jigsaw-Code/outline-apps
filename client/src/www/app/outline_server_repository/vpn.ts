@@ -14,20 +14,22 @@
 
 import * as net from '@outline/infrastructure/net';
 
-// TunnelConfig represents the configuration to set up a tunnel.
+/** TunnelConfig represents the configuration to set up a tunnel. */
 export interface TunnelConfig {
-  // transport describes how to establish connections to the destinations.
+  /** transport describes how to establish connections to the destinations. */
   transport: TransportConfig;
   // This is the place where routing configuration would go.
 }
 
-// TransportConfig describes how to establish connections to destinations.
+/** TransportConfig describes how to establish connections to destinations. */
 // We need to support a few meta operations such as getHost to support the UI.
 export class TransportConfig {
   constructor(private readonly json: object) {}
 
-  // The address of the tunnel server, if there's a meaningful one.
-  // This is used to show the server address in the UI when connected.
+  /**
+   * The address of the tunnel server, if there's a meaningful one.
+   * This is used to show the server address in the UI when connected.
+   */
   getAddress(): string | undefined {
     const hostConfig = this.json as {host?: string; port?: string};
     if (hostConfig.host && hostConfig.port) {
@@ -37,14 +39,18 @@ export class TransportConfig {
     }
   }
 
-  // The host of the tunnel server, if there's a meaningful one.
-  // This is used by the proxy resolution in Electron.
+  /**
+   * The host of the tunnel server, if there's a meaningful one.
+   * This is used by the proxy resolution in Electron.
+   */
   getHost(): string | undefined {
     return (this.json as {host: string})?.host;
   }
 
-  // Updated the host of the tunnel server. Should only be set if getHost returns one.
-  // This is used by the proxy resolution in Electron.
+  /**
+   * Updated the host of the tunnel server. Should only be set if getHost returns one.
+   * This is used by the proxy resolution in Electron.
+   */
   setHost(newHost: string): TransportConfig | undefined {
     if (!('host' in this.json)) {
       return undefined;
@@ -56,8 +62,10 @@ export class TransportConfig {
     return new TransportConfig(newJson);
   }
 
-  // Returns the string representation of the config.
-  // This is used for persistence and IPC.
+  /**
+   * Returns the string representation of the config.
+   * This is used for persistence and IPC.
+   */
   toString() {
     return JSON.stringify(this.json);
   }
@@ -70,20 +78,22 @@ export const enum TunnelStatus {
   DISCONNECTING,
 }
 
-// VpnApi is how we talk to the platform-specific VPN API.
+/** VpnApi is how we talk to the platform-specific VPN API. */
 export interface VpnApi {
-  // Connects a VPN, routing all device traffic as described in the SessionConfig.
-  // If there is another running instance, broadcasts a disconnect event and stops the active
-  // tunnel. In such case, restarts tunneling while preserving the VPN.
-  // @throws {OutlinePluginError}
+  /**
+   * Connects a VPN, routing all device traffic as described in the SessionConfig.
+   * If there is another running instance, broadcasts a disconnect event and stops the active
+   * tunnel. In such case, restarts tunneling while preserving the VPN.
+   * @throws {OutlinePluginError}
+   */
   start(id: string, name: string, config: TunnelConfig): Promise<void>;
 
-  // Stops the tunnel and VPN service.
+  /** Stops the tunnel and VPN service. */
   stop(id: string): Promise<void>;
 
-  // Returns whether the tunnel instance is active.
+  /** Returns whether the tunnel instance is active. */
   isRunning(id: string): Promise<boolean>;
 
-  // Sets a listener, to be called when the tunnel status changes.
+  /** Sets a listener, to be called when the tunnel status changes. */
   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void;
 }

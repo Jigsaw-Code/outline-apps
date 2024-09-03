@@ -150,7 +150,7 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfig | null {
   };
 }
 
-// fetches information from a dynamic access key and attempts to parse it
+/** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
 export async function fetchTunnelConfig(
   configLocation: URL
