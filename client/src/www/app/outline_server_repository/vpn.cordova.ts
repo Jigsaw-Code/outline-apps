@@ -25,9 +25,9 @@ export class CordovaVpnApi implements VpnApi {
     }
     return pluginExecWithErrorCode<void>(
       'start',
+      // TODO(fortuna): Make the Cordova plugin take a StartRequestJson.
       request.id,
       request.name,
-      // TODO(fortuna): Make the Cordova plugin take a TunnelConfigJson.
       JSON.stringify(request.config.transport)
     );
   }
