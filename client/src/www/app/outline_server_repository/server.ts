@@ -25,32 +25,32 @@ import {Server, ServerType} from '../../model/server';
 
 export class OutlineServer implements Server {
   errorMessageId?: string;
-  private readonly staticTunnelConfig?: TunnelConfig;
+  readonly tunnelConfigLocation: URL;
   private _address: string;
-  private _tunnelConfigLocation: URL;
+  private readonly staticTunnelConfig?: TunnelConfig;
 
   constructor(
     private vpnApi: VpnApi,
     readonly id: string,
-    private _name: string,
+    public name: string,
     readonly accessKey: string,
     readonly type: ServerType,
     localize: Localizer
   ) {
     switch (this.type) {
       case ServerType.DYNAMIC_CONNECTION:
-        this._tunnelConfigLocation = new URL(
+        this.tunnelConfigLocation = new URL(
           accessKey.replace(/^ssconf:\/\//, 'https://')
         );
         this._address = '';
 
-        if (!_name) {
-          this._name =
-            this._tunnelConfigLocation.port === '443'
-              ? this._tunnelConfigLocation.hostname
+        if (!name) {
+          this.name =
+            this.tunnelConfigLocation.port === '443'
+              ? this.tunnelConfigLocation.hostname
               : net.joinHostPort(
-                  this._tunnelConfigLocation.hostname,
-                  this._tunnelConfigLocation.port
+                  this.tunnelConfigLocation.hostname,
+                  this.tunnelConfigLocation.port
                 );
         }
         break;
@@ -60,8 +60,8 @@ export class OutlineServer implements Server {
         this.staticTunnelConfig = staticKeyToTunnelConfig(accessKey);
         this._address = this.staticTunnelConfig.transport.getAddress();
 
-        if (!_name) {
-          this._name = localize(
+        if (!name) {
+          this.name = localize(
             accessKey.includes('outline=1')
               ? 'server-default-name-outline'
               : 'server-default-name'
@@ -71,26 +71,14 @@ export class OutlineServer implements Server {
     }
   }
 
-  get name() {
-    return this._name;
-  }
-
-  set name(newName: string) {
-    this._name = newName;
-  }
-
   get address() {
     return this._address;
-  }
-
-  get tunnelConfigLocation() {
-    return this._tunnelConfigLocation;
   }
 
   async connect() {
     let tunnelConfig: TunnelConfig;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(this._tunnelConfigLocation);
+      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
       this._address = tunnelConfig.transport.getAddress();
     } else {
       tunnelConfig = this.staticTunnelConfig;

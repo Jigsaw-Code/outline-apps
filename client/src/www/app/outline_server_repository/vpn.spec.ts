@@ -15,7 +15,7 @@
 import * as vpn from './vpn';
 
 describe('getAddressFromTransport', () => {
-  it('extracts from JSON', () => {
+  it('extracts address', () => {
     expect(
       new vpn.TransportConfig({host: 'example.com', port: '443'}).getAddress()
     ).toEqual('example.com:443');
@@ -30,7 +30,7 @@ describe('getAddressFromTransport', () => {
 });
 
 describe('getHostFromTransport', () => {
-  it('extracts from JSON', () => {
+  it('extracts host', () => {
     expect(
       new vpn.TransportConfig({host: 'example.com', port: '443'}).getHost()
     ).toEqual('example.com');
@@ -45,7 +45,7 @@ describe('getHostFromTransport', () => {
 });
 
 describe('setTransportHost', () => {
-  it('sets host for JSON', () => {
+  it('sets host', () => {
     expect(
       new vpn.TransportConfig({host: 'example.com', port: '443'})
         .setHost('1.2.3.4')
