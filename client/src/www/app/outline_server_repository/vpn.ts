@@ -14,61 +14,41 @@
 
 import * as net from '@outline/infrastructure/net';
 
-/** TunnelConfig represents the configuration to set up a tunnel. */
-export interface TunnelConfig {
-  /** transport describes how to establish connections to the destinations. */
-  transport: TransportConfig;
-  // This is the place where routing configuration would go.
+/**
+ * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
+ * This is used to show the server address in the UI when connected.
+ */
+export function getAddressFromTransportConfig(transport: TransportConfigJson): string | undefined {
+  const hostConfig: {host?: string; port?: string} = transport;
+  if (hostConfig.host && hostConfig.port) {
+    return net.joinHostPort(hostConfig.host, hostConfig.port);
+  } else {
+    return undefined;
+  }
 }
 
-/** TransportConfig describes how to establish connections to destinations. */
-// We need to support a few meta operations such as getHost to support the UI.
-export class TransportConfig {
-  constructor(private readonly json: object) {}
+/**
+ * getHostFromTransportConfig returns the host of the tunnel server, if there's a meaningful one.
+ * This is used by the proxy resolution in Electron.
+ */
+export function getHostFromTransportConfig(transport: TransportConfigJson): string | undefined {
+  return (transport as unknown as {host: string | undefined}).host;
+}
 
-  /**
-   * The address of the tunnel server, if there's a meaningful one.
-   * This is used to show the server address in the UI when connected.
-   */
-  getAddress(): string | undefined {
-    const hostConfig: {host?: string; port?: string} = this.json;
-    if (hostConfig.host && hostConfig.port) {
-      return net.joinHostPort(hostConfig.host, hostConfig.port);
-    } else {
-      return undefined;
-    }
+/**
+ * setTransportConfigHost returns a new TransportConfigJson woth the given host as the tunnel server.
+ * Should only be set if getHostFromTransportConfig returns one.
+ * This is used by the proxy resolution in Electron.
+ */
+export function setTransportConfigHost(transport: TransportConfigJson, newHost: string): TransportConfigJson | undefined {
+  if (!('host' in transport)) {
+    return undefined;
   }
-
-  /**
-   * The host of the tunnel server, if there's a meaningful one.
-   * This is used by the proxy resolution in Electron.
-   */
-  getHost(): string | undefined {
-    return (this.json as {host: string})?.host;
-  }
-
-  /**
-   * Updated the host of the tunnel server. Should only be set if getHost returns one.
-   * This is used by the proxy resolution in Electron.
-   */
-  setHost(newHost: string): TransportConfig | undefined {
-    if (!('host' in this.json)) {
-      return undefined;
-    }
-    const newJson = {
-      ...this.json,
-      host: newHost,
-    };
-    return new TransportConfig(newJson);
-  }
-
-  /**
-   * Returns the string representation of the config.
-   * This is used for persistence and IPC.
-   */
-  toString() {
-    return JSON.stringify(this.json);
-  }
+  const newJson: TransportConfigJson = {
+    ...transport,
+    host: newHost,
+  };
+  return newJson;
 }
 
 export const enum TunnelStatus {
@@ -76,6 +56,22 @@ export const enum TunnelStatus {
   DISCONNECTED,
   RECONNECTING,
   DISCONNECTING,
+}
+
+export type TransportConfigJson = object;
+
+/** TunnelConfig represents the configuration to set up a tunnel. */
+export interface TunnelConfigJson {
+  /** transport describes how to establish connections to the destinations. */
+  transport: TransportConfigJson
+  // This is the place where routing configuration would go.
+}
+
+/** StartRequestJson is the serializable request to start the VPN, used for persistence and IPCs. */
+export interface StartRequestJson {
+  id: string;
+  name: string;
+  config: TunnelConfigJson;
 }
 
 /** VpnApi is how we talk to the platform-specific VPN API. */
@@ -86,7 +82,7 @@ export interface VpnApi {
    * tunnel. In such case, restarts tunneling while preserving the VPN.
    * @throws {OutlinePluginError}
    */
-  start(id: string, name: string, config: TunnelConfig): Promise<void>;
+  start(request: StartRequestJson): Promise<void>;
 
   /** Stops the tunnel and VPN service. */
   stop(id: string): Promise<void>;

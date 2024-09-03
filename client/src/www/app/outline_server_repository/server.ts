@@ -16,7 +16,7 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
 import {staticKeyToTunnelConfig} from './access_key';
-import {TunnelConfig, TransportConfig, VpnApi} from './vpn';
+import {TunnelConfigJson, VpnApi, StartRequestJson, getAddressFromTransportConfig} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
@@ -27,7 +27,7 @@ export class OutlineServer implements Server {
   errorMessageId?: string;
   readonly tunnelConfigLocation: URL;
   private _address: string;
-  private readonly staticTunnelConfig?: TunnelConfig;
+  private readonly staticTunnelConfig?: TunnelConfigJson;
 
   constructor(
     private vpnApi: VpnApi,
@@ -58,7 +58,7 @@ export class OutlineServer implements Server {
       case ServerType.STATIC_CONNECTION:
       default:
         this.staticTunnelConfig = staticKeyToTunnelConfig(accessKey);
-        this._address = this.staticTunnelConfig.transport.getAddress();
+        this._address = getAddressFromTransportConfig(this.staticTunnelConfig.transport);
 
         if (!name) {
           this.name = localize(
@@ -76,16 +76,21 @@ export class OutlineServer implements Server {
   }
 
   async connect() {
-    let tunnelConfig: TunnelConfig;
+    let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
       tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
-      this._address = tunnelConfig.transport.getAddress();
+      this._address = getAddressFromTransportConfig(tunnelConfig.transport);
     } else {
       tunnelConfig = this.staticTunnelConfig;
     }
 
     try {
-      await this.vpnApi.start(this.id, this.name, tunnelConfig);
+      const request: StartRequestJson = {
+        id: this.id,
+        name: this.name,
+        config: tunnelConfig,
+      }
+      await this.vpnApi.start(request);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -123,7 +128,7 @@ export class OutlineServer implements Server {
   }
 }
 
-function parseTunnelConfigJson(responseBody: string): TunnelConfig | null {
+function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
@@ -134,7 +139,7 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfig | null {
   }
 
   return {
-    transport: new TransportConfig(responseJson),
+    transport: responseJson,
   };
 }
 
@@ -142,7 +147,7 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfig | null {
 // TODO(daniellacosse): unit tests
 export async function fetchTunnelConfig(
   configLocation: URL
-): Promise<TunnelConfig> {
+): Promise<TunnelConfigJson> {
   let response;
   try {
     response = await fetch(configLocation, {

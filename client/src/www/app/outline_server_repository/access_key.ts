@@ -14,21 +14,21 @@
 
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
-import {TunnelConfig, TransportConfig} from './vpn';
+import {TunnelConfigJson} from './vpn';
 import * as errors from '../../model/errors';
 
 /** Parses an access key string into a TunnelConfig object. */
-export function staticKeyToTunnelConfig(staticKey: string): TunnelConfig {
+export function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
   try {
     const config = SHADOWSOCKS_URI.parse(staticKey);
     return {
-      transport: new TransportConfig({
+      transport: {
         host: config.host.data,
         port: config.port.data,
         method: config.method.data,
         password: config.password.data,
         prefix: config.extra?.['prefix'],
-      }),
+      },
     };
   } catch (cause) {
     throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {

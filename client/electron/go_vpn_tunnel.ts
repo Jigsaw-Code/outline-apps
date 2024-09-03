@@ -24,7 +24,7 @@ import {
 } from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
+import {TransportConfigJson, TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
@@ -67,7 +67,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   constructor(
     private readonly routing: RoutingDaemon,
-    readonly transportConfig: string
+    readonly transportConfig: TransportConfigJson
   ) {
     this.tun2socks = new GoTun2socks(transportConfig);
     this.connectivityChecker = new GoTun2socks(transportConfig);
@@ -236,7 +236,7 @@ class GoTun2socks {
   private stopRequested = false;
   private readonly process: ChildProcessHelper;
 
-  constructor(private readonly transportConfig: string) {
+  constructor(private readonly transportConfig: TransportConfigJson) {
     this.process = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   }
 
@@ -258,7 +258,7 @@ class GoTun2socks {
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-transport', this.transportConfig);
+    args.push('-transport', JSON.stringify(this.transportConfig));
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
@@ -320,7 +320,7 @@ class GoTun2socks {
     console.debug('[tun2socks] - checking connectivity ...');
     return this.process.launch([
       '-transport',
-      this.transportConfig,
+      JSON.stringify(this.transportConfig),
       '-checkConnectivity',
     ]);
   }

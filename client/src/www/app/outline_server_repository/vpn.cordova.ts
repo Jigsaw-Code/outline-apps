@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {TunnelConfig, VpnApi, TunnelStatus} from './vpn';
+import {StartRequestJson, VpnApi, TunnelStatus} from './vpn';
 import * as errors from '../../model/errors';
 import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
 
 export class CordovaVpnApi implements VpnApi {
   constructor() {}
 
-  start(id: string, name: string, tunnelConfig: TunnelConfig) {
-    if (!tunnelConfig) {
+  start(request: StartRequestJson) {
+    if (!request.config) {
       throw new errors.IllegalServerConfiguration();
     }
     return pluginExecWithErrorCode<void>(
       'start',
-      id,
-      name,
-      // TODO(fortuna): Make the Cordova plugin take a TunnelConfig.
-      tunnelConfig.transport.toString()
+      request.id,
+      request.name,
+      // TODO(fortuna): Make the Cordova plugin take a TunnelConfigJson.
+      JSON.stringify(request.config.transport)
     );
   }
 
