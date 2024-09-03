@@ -16,8 +16,8 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
+import {validateStaticKey} from './access_key';
 import {OutlineServer} from './server';
-import * as transport from './transport';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
@@ -215,7 +215,7 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    transport.validateStaticKey(staticKey);
+    validateStaticKey(staticKey);
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as net from '@outline/infrastructure/net';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import {TunnelConfig, TransportConfig} from './vpn';
@@ -36,32 +35,6 @@ export function staticKeyToTunnelConfig(staticKey: string): TunnelConfig {
       cause,
     });
   }
-}
-
-export function setTransportHost(
-  transportConfig: string,
-  host: string
-): string {
-  try {
-    const configJson = JSON.parse(transportConfig);
-    configJson.host = host;
-    return JSON.stringify(configJson);
-  } catch {
-    // Fallback.
-  }
-  try {
-    const configUrl = new URL(transportConfig);
-    const scheme = configUrl.protocol;
-    // Javascript doesn't parse the fields if the scheme is not http or https.
-    configUrl.protocol = 'http';
-    // URL doesn't allow setting the hostname field, only host (which is host:port).
-    configUrl.host = net.joinHostPort(host, configUrl.port);
-    configUrl.protocol = scheme;
-    return configUrl.toString();
-  } catch {
-    // Fallback.
-  }
-  return undefined;
 }
 
 export function validateStaticKey(staticKey: string) {

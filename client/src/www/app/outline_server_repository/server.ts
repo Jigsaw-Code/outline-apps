@@ -15,7 +15,7 @@
 import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
-import {staticKeyToTunnelConfig} from './transport';
+import {staticKeyToTunnelConfig} from './access_key';
 import {TunnelConfig, TransportConfig, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
