@@ -354,7 +354,8 @@ async function createVpnTunnel(
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
-  const resolvedTransport = tunnelConfig.transport.setHost(hostIp);
+  const resolvedTransport =
+    tunnelConfig.transport.setHost(hostIp) ?? tunnelConfig.transport;
   const tunnel = new GoVpnTunnel(routing, resolvedTransport.toString());
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
