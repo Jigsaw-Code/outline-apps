@@ -17,53 +17,47 @@ import * as vpn from './vpn';
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
     expect(
-      new vpn.TransportConfig({host: 'example.com', port: '443'}).getAddress()
+      vpn.getAddressFromTransportConfig({host: 'example.com', port: '443'})
     ).toEqual('example.com:443');
     expect(
-      new vpn.TransportConfig({host: '1:2::3', port: '443'}).getAddress()
+      vpn.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
     ).toEqual('[1:2::3]:443');
   });
 
   it('fails on invalid config', () => {
-    expect(new vpn.TransportConfig({}).getAddress()).toBeUndefined();
+    expect(vpn.getAddressFromTransportConfig({})).toBeUndefined();
   });
 });
 
 describe('getHostFromTransport', () => {
   it('extracts host', () => {
     expect(
-      new vpn.TransportConfig({host: 'example.com', port: '443'}).getHost()
+      vpn.getHostFromTransportConfig({host: 'example.com', port: '443'})
     ).toEqual('example.com');
     expect(
-      new vpn.TransportConfig({host: '1:2::3', port: '443'}).getHost()
+      vpn.getHostFromTransportConfig({host: '1:2::3', port: '443'})
     ).toEqual('1:2::3');
   });
 
   it('fails on invalid config', () => {
-    expect(new vpn.TransportConfig({}).getHost()).toBeUndefined();
+    expect(vpn.getHostFromTransportConfig({})).toBeUndefined();
   });
 });
 
 describe('setTransportHost', () => {
   it('sets host', () => {
     expect(
-      new vpn.TransportConfig({host: 'example.com', port: '443'})
-        .setHost('1.2.3.4')
-        .toString()
+      JSON.stringify(vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1.2.3.4'))
     ).toEqual('{"host":"1.2.3.4","port":"443"}');
     expect(
-      new vpn.TransportConfig({host: 'example.com', port: '443'})
-        .setHost('1:2::3')
-        .toString()
+      JSON.stringify(vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1:2::3'))
     ).toEqual('{"host":"1:2::3","port":"443"}');
     expect(
-      new vpn.TransportConfig({host: '1.2.3.4', port: '443'})
-        .setHost('1:2::3')
-        .toString()
+      JSON.stringify(vpn.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3'))
     ).toEqual('{"host":"1:2::3","port":"443"}');
   });
 
   it('fails on invalid config', () => {
-    expect(new vpn.TransportConfig({}).setHost('1:2::3')).toBeUndefined();
+    expect(vpn.setTransportConfigHost({}, '1:2::3')).toBeUndefined();
   });
 });
