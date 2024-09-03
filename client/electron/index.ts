@@ -357,17 +357,16 @@ async function createVpnTunnel(
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
-  const resolvedTransport = setTransportConfigHost(tunnelConfig.transport, (hostIp)) ?? tunnelConfig.transport;
+  const resolvedTransport =
+    setTransportConfigHost(tunnelConfig.transport, hostIp) ??
+    tunnelConfig.transport;
   const tunnel = new GoVpnTunnel(routing, resolvedTransport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
-async function startVpn(
-  request: StartRequestJson,
-  isAutoConnect: boolean
-) {
+async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
   if (currentTunnel) {
     throw new Error('already connected');
   }

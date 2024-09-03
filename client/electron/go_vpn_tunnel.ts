@@ -24,7 +24,10 @@ import {
 } from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {TransportConfigJson, TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
+import {
+  TransportConfigJson,
+  TunnelStatus,
+} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';

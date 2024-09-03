@@ -18,7 +18,9 @@ import * as net from '@outline/infrastructure/net';
  * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
  * This is used to show the server address in the UI when connected.
  */
-export function getAddressFromTransportConfig(transport: TransportConfigJson): string | undefined {
+export function getAddressFromTransportConfig(
+  transport: TransportConfigJson
+): string | undefined {
   const hostConfig: {host?: string; port?: string} = transport;
   if (hostConfig.host && hostConfig.port) {
     return net.joinHostPort(hostConfig.host, hostConfig.port);
@@ -31,7 +33,9 @@ export function getAddressFromTransportConfig(transport: TransportConfigJson): s
  * getHostFromTransportConfig returns the host of the tunnel server, if there's a meaningful one.
  * This is used by the proxy resolution in Electron.
  */
-export function getHostFromTransportConfig(transport: TransportConfigJson): string | undefined {
+export function getHostFromTransportConfig(
+  transport: TransportConfigJson
+): string | undefined {
   return (transport as unknown as {host: string | undefined}).host;
 }
 
@@ -40,7 +44,10 @@ export function getHostFromTransportConfig(transport: TransportConfigJson): stri
  * Should only be set if getHostFromTransportConfig returns one.
  * This is used by the proxy resolution in Electron.
  */
-export function setTransportConfigHost(transport: TransportConfigJson, newHost: string): TransportConfigJson | undefined {
+export function setTransportConfigHost(
+  transport: TransportConfigJson,
+  newHost: string
+): TransportConfigJson | undefined {
   if (!('host' in transport)) {
     return undefined;
   }
@@ -63,7 +70,7 @@ export type TransportConfigJson = object;
 /** TunnelConfig represents the configuration to set up a tunnel. */
 export interface TunnelConfigJson {
   /** transport describes how to establish connections to the destinations. */
-  transport: TransportConfigJson
+  transport: TransportConfigJson;
   // This is the place where routing configuration would go.
 }
 

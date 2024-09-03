@@ -16,7 +16,12 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
 import {staticKeyToTunnelConfig} from './access_key';
-import {TunnelConfigJson, VpnApi, StartRequestJson, getAddressFromTransportConfig} from './vpn';
+import {
+  TunnelConfigJson,
+  VpnApi,
+  StartRequestJson,
+  getAddressFromTransportConfig,
+} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
@@ -58,7 +63,9 @@ export class OutlineServer implements Server {
       case ServerType.STATIC_CONNECTION:
       default:
         this.staticTunnelConfig = staticKeyToTunnelConfig(accessKey);
-        this._address = getAddressFromTransportConfig(this.staticTunnelConfig.transport);
+        this._address = getAddressFromTransportConfig(
+          this.staticTunnelConfig.transport
+        );
 
         if (!name) {
           this.name = localize(
@@ -89,7 +96,7 @@ export class OutlineServer implements Server {
         id: this.id,
         name: this.name,
         config: tunnelConfig,
-      }
+      };
       await this.vpnApi.start(request);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
