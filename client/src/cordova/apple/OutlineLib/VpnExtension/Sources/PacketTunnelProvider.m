@@ -104,14 +104,14 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // culprit and can explicitly disconnect.
   long errorCode = noError;
   if (!isOnDemand) {
-    ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+    OutlineClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
     if (client == nil) {
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
                                                    code:NEVPNErrorConfigurationInvalid
                                                userInfo:nil]);
     }
-    ShadowsocksCheckConnectivity(client, &errorCode, nil);
-    DDLogDebug(@"ShadowsocksCheckConnectivity returned error code %ld", errorCode);
+    OutlineCheckConnectivity(client, &errorCode, nil);
+    DDLogDebug(@"OutlineCheckConnectivity returned error code %ld", errorCode);
 
     if (errorCode != noError && errorCode != udpRelayNotEnabled) {
       return startDone([NSError errorWithDomain:NEVPNErrorDomain
@@ -296,12 +296,12 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  ShadowsocksClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+  OutlineClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
   if (client == nil) {
     return NO;
   }
   NSError* err;
-  self.tunnel = Tun2socksConnectShadowsocksTunnel(
+  self.tunnel = Tun2socksConnectOutlineTunnel(
       weakSelf, client, isUdpSupported, &err);
   if (err != nil) {
     DDLogError(@"Failed to start tun2socks: %@", err);

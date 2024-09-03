@@ -17,7 +17,7 @@ package tun2socks
 import (
 	"runtime/debug"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/shadowsocks"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 	"github.com/eycorsican/go-tun2socks/common/log"
 )
@@ -28,19 +28,19 @@ func init() {
 	log.SetLevel(log.WARN)
 }
 
-// ConnectShadowsocksTunnel reads packets from a TUN device and routes it to a Shadowsocks proxy server.
+// ConnectOutlineTunnel reads packets from a TUN device and routes it to an Outline proxy server.
 // Returns an OutlineTunnel instance and does *not* take ownership of the TUN file descriptor; the
 // caller is responsible for closing after OutlineTunnel disconnects.
 //
 //   - `fd` is the TUN device.  The OutlineTunnel acquires an additional reference to it, which
 //     is released by OutlineTunnel.Disconnect(), so the caller must close `fd` _and_ call
 //     Disconnect() in order to close the TUN device.
-//   - `client` is the Shadowsocks client (created by [shadowsocks.NewClient]).
+//   - `client` is the Outline client (created by [outline.NewClient]).
 //   - `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 //
 // Returns an error if the TUN file descriptor cannot be opened, or if the tunnel fails to
 // connect.
-func ConnectShadowsocksTunnel(fd int, client *shadowsocks.Client, isUDPEnabled bool) (Tunnel, error) {
+func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) (Tunnel, error) {
 	tun, err := tunnel.MakeTunFile(fd)
 	if err != nil {
 		return nil, err

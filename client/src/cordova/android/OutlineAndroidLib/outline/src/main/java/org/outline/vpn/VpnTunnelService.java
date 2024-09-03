@@ -38,7 +38,7 @@ import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
 import org.outline.TunnelConfig;
 import org.outline.log.SentryErrorReporter;
-import shadowsocks.Shadowsocks;
+import outline.Outline;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -65,7 +65,7 @@ public class VpnTunnelService extends VpnService {
     SERVER_UNREACHABLE(5),
     VPN_START_FAILURE(6),
     ILLEGAL_SERVER_CONFIGURATION(7),
-    SHADOWSOCKS_START_FAILURE(8),
+    CLIENT_START_FAILURE(8),
     CONFIGURE_SYSTEM_PROXY_FAILURE(9),
     NO_ADMIN_PERMISSIONS(10),
     UNSUPPORTED_ROUTING_TABLE(11),
@@ -215,9 +215,9 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final shadowsocks.Client client;
+    final outline.Client client;
     try {
-      client = new shadowsocks.Client(config.transportConfig);
+      client = new outline.Client(config.transportConfig);
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Invalid configuration", e);
       tearDownActiveTunnel();
@@ -237,7 +237,7 @@ public class VpnTunnelService extends VpnService {
         }
       } catch (Exception e) {
         tearDownActiveTunnel();
-        return ErrorCode.SHADOWSOCKS_START_FAILURE;
+        return ErrorCode.CLIENT_START_FAILURE;
       }
     }
     tunnelConfig = config;
@@ -290,17 +290,15 @@ public class VpnTunnelService extends VpnService {
     tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
   }
 
-  /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
+  /* Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
   private void stopVpnTunnel() {
     vpnTunnel.disconnectTunnel();
     vpnTunnel.tearDownVpn();
   }
 
-  // Shadowsocks
-
-  private ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
+  private ErrorCode checkServerConnectivity(final outline.Client client) {
     try {
-      long errorCode = Shadowsocks.checkConnectivity(client);
+      long errorCode = Outline.checkConnectivity(client);
       ErrorCode result = ErrorCode.values()[(int) errorCode];
       LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
       return result;
