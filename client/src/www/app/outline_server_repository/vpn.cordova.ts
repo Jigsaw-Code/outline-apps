@@ -28,7 +28,7 @@ export class CordovaVpnApi implements VpnApi {
       id,
       name,
       // TODO(fortuna): Make the Cordova plugin take a TunnelConfig.
-      tunnelConfig.transport
+      tunnelConfig.transport.toString()
     );
   }
 
