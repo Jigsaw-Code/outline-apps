@@ -31,7 +31,7 @@ export class TransportConfig {
    * This is used to show the server address in the UI when connected.
    */
   getAddress(): string | undefined {
-    const hostConfig = this.json as {host?: string; port?: string};
+    const hostConfig: {host?: string; port?: string} = this.json;
     if (hostConfig.host && hostConfig.port) {
       return net.joinHostPort(hostConfig.host, hostConfig.port);
     } else {
