@@ -33,11 +33,30 @@ type Client struct {
 	transport.PacketListener
 }
 
+// NewClientResult represents the result of [NewClientAndReturnError].
+type NewClientResult struct {
+	Client *Client
+	Error  *platerrors.PlatformError
+}
+
+// NewClientAndReturnError creates a new Outline client from a configuration string.
+//
+// TODO: rename this function to NewClient once all platforms have switched from the old NewClient
+func NewClientAndReturnError(transportConfig string) *NewClientResult {
+	client, err := NewClient(transportConfig)
+	return &NewClientResult{
+		Client: client,
+		Error:  platerrors.ToPlatformError(err),
+	}
+}
+
 // NewClient creates a new Outline client from a configuration string.
+//
+// Deprecated: Use [NewClientAndReturnError] instead.
 func NewClient(transportConfig string) (*Client, error) {
 	config, err := parseConfigFromJSON(transportConfig)
 	if err != nil {
-		return nil, newIllegalConfigErrorWithDetails("transport config must be a valid JSON string", ".", transportConfig, "JSON string", err)
+		return nil, err
 	}
 	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
 	if err != nil {
@@ -90,6 +109,8 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 }
 
 // Error number constants exported through gomobile
+//
+// Deprecated: Use [platerrors.PlatformError] instead.
 const (
 	NoError                     = 0
 	Unexpected                  = 1
@@ -110,6 +131,8 @@ const (
 // the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
 // error code to return accounting for transient network failures.
 // Returns an error if an unexpected error ocurrs.
+//
+// Deprecated: Use [CheckTCPAndUDPConnectivity] instead.
 func CheckConnectivity(client *Client) (int, error) {
 	errCode, err := connectivity.CheckConnectivity(client, client)
 	return errCode.Number(), err

@@ -16,12 +16,12 @@ package connectivity
 
 import (
 	"context"
-	"errors"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -33,20 +33,12 @@ const (
 	bufferLength        = 512
 )
 
-// authenticationError is used to signal failed authentication to the Outline proxy.
-type authenticationError struct {
-	error
-}
-
-// reachabilityError is used to signal an unreachable proxy.
-type reachabilityError struct {
-	error
-}
-
 // CheckConnectivity determines whether the Outline proxy can relay TCP and UDP traffic under
 // the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
 // error code to return accounting for transient network failures.
 // Returns an error if an unexpected error ocurrs.
+//
+// Deprecated: remove this function once all platforms have been migrated to outline.CheckTCPAndUDPConnectivity.
 func CheckConnectivity(streamDialer transport.StreamDialer, packetListener transport.PacketListener) (neterrors.Error, error) {
 	// Start asynchronous UDP support check.
 	udpChan := make(chan error)
@@ -63,11 +55,7 @@ func CheckConnectivity(streamDialer transport.StreamDialer, packetListener trans
 		}
 		return neterrors.UDPConnectivity, nil
 	}
-	var authErr *authenticationError
-	var reachabilityErr *reachabilityError
-	if errors.As(tcpErr, &authErr) {
-		return neterrors.AuthenticationFailure, nil
-	} else if errors.As(tcpErr, &reachabilityErr) {
+	if platerrors.ToPlatformError(tcpErr).Code == platerrors.ProxyServerUnreachable {
 		return neterrors.Unreachable, nil
 	}
 	// The error is not related to the connectivity checks.
@@ -80,9 +68,14 @@ func CheckConnectivity(streamDialer transport.StreamDialer, packetListener trans
 func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr net.Addr) error {
 	conn, err := client.ListenPacket(context.Background())
 	if err != nil {
-		return err
+		return platerrors.PlatformError{
+			Code:    platerrors.ProxyServerUDPUnsupported,
+			Message: "failed to listen for UDP packets",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	defer conn.Close()
+
 	buf := make([]byte, bufferLength)
 	for attempt := 0; attempt < udpMaxRetryAttempts; attempt++ {
 		conn.SetDeadline(time.Now().Add(udpTimeout))
@@ -99,13 +92,18 @@ func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr n
 		}
 		return nil
 	}
-	return errors.New("UDP connectivity check timed out")
+
+	return platerrors.PlatformError{
+		Code:    platerrors.ProxyServerUDPUnsupported,
+		Message: "UDP connectivity check timed out",
+	}
 }
 
 // CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
 // client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
-// be of the form: http://[host](:[port])(/[path]). Returns nil on success, error if `targetURL` is
-// invalid, AuthenticationError or ReachabilityError on connectivity failure.
+// be of the form: http://[host](:[port])(/[path]).
+//
+// Returns nil on success, error on connectivity failure.
 func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL string) error {
 	deadline := time.Now().Add(tcpTimeout)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -120,17 +118,29 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 	}
 	conn, err := dialer.DialStream(ctx, targetAddr)
 	if err != nil {
-		return &reachabilityError{err}
+		return platerrors.PlatformError{
+			Code:    platerrors.ProxyServerUnreachable,
+			Message: "failed to dial to the server",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	defer conn.Close()
 	conn.SetDeadline(deadline)
 	err = req.Write(conn)
 	if err != nil {
-		return &authenticationError{err}
+		return platerrors.PlatformError{
+			Code:    platerrors.ProxyServerWriteFailed,
+			Message: "failed to write HTTP HEAD to the server",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	n, err := conn.Read(make([]byte, bufferLength))
 	if n == 0 && err != nil {
-		return &authenticationError{err}
+		return platerrors.PlatformError{
+			Code:    platerrors.ProxyServerReadFailed,
+			Message: "failed to read HTTP HEAD response from the server",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	return nil
 }

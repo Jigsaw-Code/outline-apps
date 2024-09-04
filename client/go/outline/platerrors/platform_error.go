@@ -16,6 +16,7 @@ package platerrors
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -76,7 +77,10 @@ func (e PlatformError) Unwrap() error {
 // MarshalJSONString returns a JSON string containing the [PlatformError] details
 // and all its underlying causes.
 // The resulting JSON can be used to reconstruct the error in TypeScript.
-func MarshalJSONString(e PlatformError) (string, error) {
+func MarshalJSONString(e *PlatformError) (string, error) {
+	if e == nil {
+		return "", errors.New("a non-nil PlatformError is required")
+	}
 	e.normalize()
 	jsonBytes, err := json.Marshal(e)
 	return string(jsonBytes), err
