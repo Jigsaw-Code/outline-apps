@@ -12,12 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export interface ShadowsocksSessionConfig {
-  host?: string;
-  port?: number;
-  password?: string;
-  method?: string;
-  prefix?: string;
+import * as net from '@outline/infrastructure/net';
+
+/**
+ * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
+ * This is used to show the server address in the UI when connected.
+ */
+export function getAddressFromTransportConfig(
+  transport: TransportConfigJson
+): string | undefined {
+  const hostConfig: {host?: string; port?: string} = transport;
+  if (hostConfig.host && hostConfig.port) {
+    return net.joinHostPort(hostConfig.host, hostConfig.port);
+  } else if (hostConfig.host) {
+    return hostConfig.host;
+  } else {
+    return undefined;
+  }
+}
+
+/**
+ * getHostFromTransportConfig returns the host of the tunnel server, if there's a meaningful one.
+ * This is used by the proxy resolution in Electron.
+ */
+export function getHostFromTransportConfig(
+  transport: TransportConfigJson
+): string | undefined {
+  return (transport as unknown as {host: string | undefined}).host;
+}
+
+/**
+ * setTransportConfigHost returns a new TransportConfigJson with the given host as the tunnel server.
+ * Should only be set if getHostFromTransportConfig returns one.
+ * This is used by the proxy resolution in Electron.
+ */
+export function setTransportConfigHost(
+  transport: TransportConfigJson,
+  newHost: string
+): TransportConfigJson | undefined {
+  if (!('host' in transport)) {
+    return undefined;
+  }
+  return {...transport, host: newHost};
 }
 
 export const enum TunnelStatus {
@@ -27,24 +63,38 @@ export const enum TunnelStatus {
   DISCONNECTING,
 }
 
-// VpnApi is how we talk to the platform-specific VPN API.
-export interface VpnApi {
-  // Connects a VPN, routing all device traffic as described in the SessionConfig.
-  // If there is another running instance, broadcasts a disconnect event and stops the active
-  // tunnel. In such case, restarts tunneling while preserving the VPN.
-  // @throws {OutlinePluginError}
-  start(
-    id: string,
-    name: string,
-    config: ShadowsocksSessionConfig
-  ): Promise<void>;
+export type TransportConfigJson = object;
 
-  // Stops the tunnel and VPN service.
+/** TunnelConfigJson represents the configuration to set up a tunnel. */
+export interface TunnelConfigJson {
+  /** transport describes how to establish connections to the destinations. */
+  transport: TransportConfigJson;
+  // This is the place where routing configuration would go.
+}
+
+/** StartRequestJson is the serializable request to start the VPN, used for persistence and IPCs. */
+export interface StartRequestJson {
+  id: string;
+  name: string;
+  config: TunnelConfigJson;
+}
+
+/** VpnApi is how we talk to the platform-specific VPN API. */
+export interface VpnApi {
+  /**
+   * Connects a VPN, routing all device traffic as described in the SessionConfig.
+   * If there is another running instance, broadcasts a disconnect event and stops the active
+   * tunnel. In such case, restarts tunneling while preserving the VPN.
+   * @throws {OutlinePluginError}
+   */
+  start(request: StartRequestJson): Promise<void>;
+
+  /** Stops the tunnel and VPN service. */
   stop(id: string): Promise<void>;
 
-  // Returns whether the tunnel instance is active.
+  /** Returns whether the tunnel instance is active. */
   isRunning(id: string): Promise<boolean>;
 
-  // Sets a listener, to be called when the tunnel status changes.
+  /** Sets a listener, to be called when the tunnel status changes. */
   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void;
 }

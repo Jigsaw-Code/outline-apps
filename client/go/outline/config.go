@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package shadowsocks
+package outline
 
 import (
 	"encoding/json"
@@ -88,11 +88,16 @@ func validateConfig(host string, port int, cipher, password string) error {
 // newIllegalConfigErrorWithDetails creates a TypeScript parsable IllegalConfig error with detailed information.
 func newIllegalConfigErrorWithDetails(
 	msg, field string, got interface{}, expect string, cause error,
-) *platerrors.PlatformError {
-	return platerrors.NewWithDetailsCause(platerrors.IllegalConfig, msg, platerrors.ErrorDetails{
-		"proxy-protocol": "shadowsocks",
-		"field":          field,
-		"got":            got,
-		"expect":         expect,
-	}, cause)
+) platerrors.PlatformError {
+	return platerrors.PlatformError{
+		Code:    platerrors.IllegalConfig,
+		Message: msg,
+		Details: platerrors.ErrorDetails{
+			"proxy-protocol": "shadowsocks",
+			"field":          field,
+			"got":            got,
+			"expected":       expect,
+		},
+		Cause: platerrors.ToPlatformError(cause),
+	}
 }

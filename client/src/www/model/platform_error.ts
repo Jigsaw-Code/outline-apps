@@ -36,7 +36,9 @@ function createInternalError(cause?: unknown): PlatformError {
 
   // Use String(cause) instead of cause.toString() or new String(cause) to cover
   // primitive types and Symbols.
-  return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause: new Error(String(cause))});
+  return new PlatformError(INTERNAL_ERROR, MESSAGE, {
+    cause: new Error(String(cause)),
+  });
 }
 
 /**
@@ -124,7 +126,7 @@ export class PlatformError extends CustomError {
    * try {
    *   // cordova plugin calls or electron IPC calls
    * } catch (e) {
-   *   throw new PlatformError.parseFrom(e);
+   *   throw PlatformError.parseFrom(e);
    * }
    */
   static parseFrom(errObj: string | Error | unknown): PlatformError {
@@ -203,4 +205,5 @@ export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
 export const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
 export const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
 
-export const PROXY_SERVER_UNREACHABLE: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
+export const PROXY_SERVER_UNREACHABLE: ErrorCode =
+  'ERR_PROXY_SERVER_UNREACHABLE';

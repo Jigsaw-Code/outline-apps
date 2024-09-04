@@ -52,14 +52,6 @@
     "description": "An error message shown when the user tries to add a server with an invalid access key.",
     "message": "Invalid access key."
   },
-  "add_access_key_dialog_cancel": {
-    "description": "The text on a button to cancel the adding of an access key.",
-    "message": "Cancel"
-  },
-  "add_access_key_dialog_confirm": {
-    "desciption": "The text on a button to confirm the adding of an access key.",
-    "message": "Confirm"
-  },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
     "message": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device."
@@ -79,6 +71,10 @@
   "close": {
     "description": "The text for a button to close the current page or dialog.",
     "message": "Close"
+  },
+  "confirm": {
+    "desciption": "The text on a button to confirm the current operation.",
+    "message": "Confirm"
   },
   "connect_button_label": {
     "description": "A text button on a particular server to connect to that server",

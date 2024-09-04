@@ -51,7 +51,7 @@ public class OutlineVpn: NSObject {
     case serverUnreachable = 5
     case vpnStartFailure = 6
     case illegalServerConfiguration = 7
-    case shadowsocksStartFailure = 8
+    case outlineStartFailure = 8
     case configureSystemProxyFailure = 9
     case noAdminPermissions = 10
     case unsupportedRoutingTable = 11
