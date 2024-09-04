@@ -201,7 +201,7 @@ export class ContactView extends LitElement {
     if (UNSUPPORTED_ISSUE_TYPES.has(this.selectedIssueType)) {
       const helpPage = UNSUPPORTED_ISSUE_TYPES.get(this.selectedIssueType);
       if (helpPage) {
-          this.exitTemplate = this.localizeWithUrl(
+        this.exitTemplate = this.localizeWithUrl(
           `contact-view-exit-${this.selectedIssueType}`,
           helpPage
         );
