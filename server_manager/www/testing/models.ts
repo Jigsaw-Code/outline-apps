@@ -118,7 +118,12 @@ export class FakeServer implements server.Server {
   private metricsId: string;
   private metricsEnabled = false;
   apiUrl: string;
-  constructor(protected id: string) {
+  private accessKeys: server.AccessKey[] = [];
+
+  constructor(
+    protected id: string,
+    private readonly version: string
+  ) {
     this.metricsId = Math.random().toString();
   }
   getId() {
@@ -132,13 +137,17 @@ export class FakeServer implements server.Server {
     return Promise.resolve();
   }
   getVersion() {
-    return '1.2.3';
+    return this.version;
   }
   getAccessKey(accessKeyId: server.AccessKeyId) {
+    const accessKey = this.accessKeys.find(key => key.id === accessKeyId);
+    if (accessKey) {
+      return Promise.resolve(accessKey);
+    }
     return Promise.reject(new Error(`Access key "${accessKeyId}" not found`));
   }
   listAccessKeys() {
-    return Promise.resolve([]);
+    return Promise.resolve(this.accessKeys);
   }
   getMetricsEnabled() {
     return this.metricsEnabled;
@@ -160,7 +169,13 @@ export class FakeServer implements server.Server {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
   addAccessKey() {
-    return Promise.reject(new Error('FakeServer.addAccessKey not implemented'));
+    const accessKey = {
+      id: Math.floor(Math.random()).toString(),
+      name: 'test-name',
+      accessUrl: 'test-access-url',
+    };
+    this.accessKeys.push(accessKey);
+    return Promise.resolve(accessKey);
   }
   renameAccessKey(_accessKeyId: server.AccessKeyId, _name: string) {
     return Promise.reject(
@@ -220,7 +235,7 @@ export class FakeManualServer
   implements server.ManualServer
 {
   constructor(public manualServerConfig: server.ManualServerConfig) {
-    super(manualServerConfig.apiUrl);
+    super(manualServerConfig.apiUrl, 'dev');
   }
   getManagementApiUrl() {
     return this.manualServerConfig.apiUrl;
@@ -263,7 +278,7 @@ export class FakeManagedServer
     id: string,
     private isInstalled = true
   ) {
-    super(id);
+    super(id, '1.2.3');
   }
   async *monitorInstallProgress() {
     yield 0.5;

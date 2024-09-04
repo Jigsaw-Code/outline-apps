@@ -125,7 +125,7 @@ export class ShadowboxServer implements server.Server {
 
   private getDefaultDataLimitPath(): string {
     const version = this.getVersion();
-    if (semver.gte(version, '1.4.0')) {
+    if (semver.valid(version) && semver.gte(version, '1.4.0')) {
       // Data limits became a permanent feature in shadowbox v1.4.0.
       return 'server/access-key-data-limit';
     }

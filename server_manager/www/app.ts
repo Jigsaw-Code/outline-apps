@@ -928,7 +928,7 @@ export class App {
       !server.getDefaultDataLimit() &&
       !hasSeenFeatureMetricsNotification();
 
-    if (version) {
+    if (semver.valid(version)) {
       view.isAccessKeyPortEditable = semver.gte(
         version,
         CHANGE_KEYS_PORT_VERSION
