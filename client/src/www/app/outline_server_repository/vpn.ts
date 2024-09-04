@@ -24,6 +24,8 @@ export function getAddressFromTransportConfig(
   const hostConfig: {host?: string; port?: string} = transport;
   if (hostConfig.host && hostConfig.port) {
     return net.joinHostPort(hostConfig.host, hostConfig.port);
+  } else if (hostConfig.host) {
+    return hostConfig.host;
   } else {
     return undefined;
   }
