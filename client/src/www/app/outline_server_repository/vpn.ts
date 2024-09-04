@@ -69,7 +69,7 @@ export const enum TunnelStatus {
 
 export type TransportConfigJson = object;
 
-/** TunnelConfig represents the configuration to set up a tunnel. */
+/** TunnelConfigJson represents the configuration to set up a tunnel. */
 export interface TunnelConfigJson {
   /** transport describes how to establish connections to the destinations. */
   transport: TransportConfigJson;
