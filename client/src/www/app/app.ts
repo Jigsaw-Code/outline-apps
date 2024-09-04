@@ -166,10 +166,6 @@ export class App {
       this.autoConnectDialogDismissed.bind(this)
     );
     this.rootEl.addEventListener(
-      'ShowServerRename',
-      this.rootEl.showServerRename.bind(this.rootEl)
-    );
-    this.rootEl.addEventListener(
       'PrivacyTermsAcked',
       this.ackPrivacyTerms.bind(this)
     );
@@ -216,8 +212,9 @@ export class App {
 
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
+    } else if (this.rootEl.$.serversView.shouldShowZeroState) {
+      this.rootEl.$.addServerView.open = true;
     }
-    this.displayZeroStateUi();
   }
 
   showLocalizedError(error?: Error, toastDuration = 10000) {
@@ -246,10 +243,7 @@ export class App {
       toastMessage = this.localize('error-server-incompatible');
     } else if (error instanceof OperationTimedOut) {
       toastMessage = this.localize('error-timeout');
-    } else if (
-      error instanceof errors.ShadowsocksStartFailure &&
-      this.isWindows()
-    ) {
+    } else if (error instanceof errors.ClientStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
       toastMessage = this.localize('outline-plugin-error-antivirus');
       buttonMessage = this.localize('fix-this');
@@ -350,12 +344,6 @@ export class App {
     }
   }
 
-  private displayZeroStateUi() {
-    if (this.rootEl.$.serversView.shouldShowZeroState) {
-      this.rootEl.$.addServerView.openAddServerSheet();
-    }
-  }
-
   private arePrivacyTermsAcked() {
     try {
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
@@ -369,12 +357,14 @@ export class App {
 
   private displayPrivacyView() {
     this.rootEl.$.serversView.hidden = true;
-    this.rootEl.$.privacyView.hidden = false;
+    this.rootEl.$.privacyView.open = true;
+    this.rootEl.$.addServerView.open = false;
   }
 
   private ackPrivacyTerms() {
     this.rootEl.$.serversView.hidden = false;
-    this.rootEl.$.privacyView.hidden = true;
+    this.rootEl.$.privacyView.open = false;
+    this.rootEl.$.addServerView.open = true;
     this.settings.set(SettingsKey.PRIVACY_ACK, 'true');
   }
 
@@ -409,6 +399,7 @@ export class App {
   private requestIgnoreServer(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
     this.ignoredAccessKeys[accessKey] = true;
+    this.rootEl.$.addServerView.open = false;
   }
 
   private requestAddServer(event: CustomEvent) {
@@ -417,6 +408,8 @@ export class App {
     } catch (err) {
       this.changeToDefaultPage();
       this.showLocalizedError(err);
+    } finally {
+      this.rootEl.$.addServerView.open = false;
     }
   }
 
@@ -427,15 +420,14 @@ export class App {
       this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
-      const addServerView = this.rootEl.$.addServerView;
-      addServerView.$.accessKeyInput.invalid = true;
+      this.showLocalizedError(err);
     }
   }
 
   private confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
-    if (fromClipboard && !addServerView.isAddingServer()) {
+    if (fromClipboard && !addServerView.open) {
       if (accessKey in this.ignoredAccessKeys) {
         return console.debug('Ignoring access key');
       } else if (accessKey.startsWith('https://')) {
@@ -446,11 +438,12 @@ export class App {
     }
     try {
       this.serverRepo.validateAccessKey(accessKey);
-      addServerView.openAddServerConfirmationSheet(accessKey);
+      addServerView.accessKey = accessKey;
+      addServerView.open = true;
     } catch (e) {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
-        addServerView.close();
+        addServerView.open = false;
         this.showLocalizedError(e);
         return;
       }
@@ -567,12 +560,13 @@ export class App {
       );
     }
     if (!dismissed) {
-      this.rootEl.$.autoConnectDialog.show();
+      this.rootEl.$.autoConnectDialog.open = true;
     }
   }
 
   private autoConnectDialogDismissed() {
     this.settings.set(SettingsKey.AUTO_CONNECT_DIALOG_DISMISSED, 'true');
+    this.rootEl.$.autoConnectDialog.open = false;
   }
 
   private async disconnectServer(event: CustomEvent) {

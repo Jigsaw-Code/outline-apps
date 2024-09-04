@@ -17,6 +17,7 @@
     "@material/mwc-select": "^0.25.3",
     "@material/mwc-textarea": "^0.25.3",
     "@material/mwc-textfield": "^0.25.3",
+    "@material/web": "^2.0.0",
     "@outline/infrastructure": "file:../infrastructure",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/app-localize-behavior": "^3.0.1",
@@ -116,6 +117,7 @@
     "prettier": "^2.8.0",
     "pretty-quick": "^2.0.1",
     "puppeteer": "^13.1.2",
+    "raw-loader": "^4.0.2",
     "replace-in-file": "^6.3.5",
     "rimraf": "^2.7.1",
     "rmfr": "^2.0.0",
@@ -151,7 +153,6 @@
   },
   "scripts": {
     "clean": "rm -rf output node_modules www platforms plugins",
-    "generate-license-file": "npx generate-license-file && ./src/www/ui_components/licenses/third_party.sh >> ./src/www/ui_components/licenses/licenses.txt"
-
+    "generate-license-file": "npx generate-license-file && ./src/www/views/licenses_view/licenses/third_party.sh >> ./src/www/views/licenses_view/licenses/licenses.txt"
   }
 }

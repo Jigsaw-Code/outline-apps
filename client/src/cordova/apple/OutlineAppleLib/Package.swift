@@ -37,24 +37,12 @@ let package = Package(
             name: "OutlineTunnel",
             targets: ["OutlineTunnel"]
         ),
-        .library(
-            name: "OutlineLauncher",
-            targets: ["OutlineLauncher"]
-        ),
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.8.5"),
         .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.26.0"),
     ],
     targets: [
-        .target(
-            name: "OutlineLauncher",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "OutlineCatalystApp",
-            ]
-        ),
         .target(
             name: "OutlineCatalystApp",
             dependencies: [
@@ -75,10 +63,6 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
             ]
-        ),
-        .testTarget(
-            name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel"]
         ),
     ]
 )

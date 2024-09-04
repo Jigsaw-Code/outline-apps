@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import '@material/web/all.js';
+
 /** @type { import('@storybook/web-components').Preview } */
 const preview = {
   parameters: {

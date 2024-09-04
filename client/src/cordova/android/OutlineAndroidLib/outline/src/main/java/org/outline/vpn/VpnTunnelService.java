@@ -38,8 +38,7 @@ import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
 import org.outline.TunnelConfig;
 import org.outline.log.SentryErrorReporter;
-import org.outline.shadowsocks.ShadowsocksConfig;
-import shadowsocks.Shadowsocks;
+import outline.Outline;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -66,7 +65,7 @@ public class VpnTunnelService extends VpnService {
     SERVER_UNREACHABLE(5),
     VPN_START_FAILURE(6),
     ILLEGAL_SERVER_CONFIGURATION(7),
-    SHADOWSOCKS_START_FAILURE(8),
+    CLIENT_START_FAILURE(8),
     CONFIGURE_SYSTEM_PROXY_FAILURE(9),
     NO_ADMIN_PERMISSIONS(10),
     UNSUPPORTED_ROUTING_TABLE(11),
@@ -112,8 +111,8 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public int startTunnel(String serverName, TunnelConfig config) {
-      return VpnTunnelService.this.startTunnel(serverName, config).value;
+    public int startTunnel(TunnelConfig config) {
+      return VpnTunnelService.this.startTunnel(config).value;
     }
 
     @Override
@@ -191,63 +190,16 @@ public class VpnTunnelService extends VpnService {
     return new VpnService.Builder();
   }
 
-  /**
-   * Helper method to build a TunnelConfig from a JSON object.
-   *
-   * @param tunnelId unique identifier for the tunnel.
-   * @param config JSON object containing TunnelConfig values.
-   * @throws IllegalArgumentException if `tunnelId` or `config` are null.
-   * @throws JSONException if parsing `config` fails.
-   * @return populated TunnelConfig
-   */
-  public static TunnelConfig makeTunnelConfig(final String tunnelId, final JSONObject config)
-      throws Exception {
-    if (tunnelId == null || config == null) {
-      throw new IllegalArgumentException("Must provide a tunnel ID and JSON configuration");
-    }
-    final TunnelConfig tunnelConfig = new TunnelConfig();
-    tunnelConfig.id = tunnelId;
-    tunnelConfig.proxy = new ShadowsocksConfig();
-    tunnelConfig.proxy.host = config.getString("host");
-    tunnelConfig.proxy.port = config.getInt("port");
-    tunnelConfig.proxy.password = config.getString("password");
-    tunnelConfig.proxy.method = config.getString("method");
-    // `name` and `prefix` are optional properties.
-    try {
-      tunnelConfig.name = config.getString("name");
-    } catch (JSONException e) {
-      LOG.fine("Tunnel config missing name");
-    }
-    String prefix = null;
-    try {
-      prefix = config.getString("prefix");
-      LOG.fine("Activating experimental prefix support");
-    } catch (JSONException e) {
-      // pass
-    }
-    if (prefix != null) {
-      tunnelConfig.proxy.prefix = new byte[prefix.length()];
-      for (int i = 0; i < prefix.length(); i++) {
-        char c = prefix.charAt(i);
-        if ((c & 0xFF) != c) {
-          throw new JSONException(String.format("Prefix character '%c' is out of range", c));
-        }
-        tunnelConfig.proxy.prefix[i] = (byte)c;
-      }
-    }
-    return tunnelConfig;
-  }
-
   // Tunnel API
 
-  private ErrorCode startTunnel(final String serverName, final TunnelConfig config) {
-    return startTunnel(config, serverName, false);
+  private ErrorCode startTunnel(final TunnelConfig config) {
+    return startTunnel(config, false);
   }
 
   private synchronized ErrorCode startTunnel(
-      final TunnelConfig config, final String serverName, boolean isAutoStart) {
-    LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, serverName));
-    if (config.id == null || config.proxy == null) {
+      final TunnelConfig config, boolean isAutoStart) {
+    LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
+    if (config.id == null || config.transportConfig == null) {
       return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
     }
     final boolean isRestart = tunnelConfig != null;
@@ -263,15 +215,9 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final shadowsocks.Config configCopy = new shadowsocks.Config();
-    configCopy.setHost(config.proxy.host);
-    configCopy.setPort(config.proxy.port);
-    configCopy.setCipherName(config.proxy.method);
-    configCopy.setPassword(config.proxy.password);
-    configCopy.setPrefix(config.proxy.prefix);
-    final shadowsocks.Client client;
+    final outline.Client client;
     try {
-      client = new shadowsocks.Client(configCopy);
+      client = new outline.Client(config.transportConfig);
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Invalid configuration", e);
       tearDownActiveTunnel();
@@ -291,7 +237,7 @@ public class VpnTunnelService extends VpnService {
         }
       } catch (Exception e) {
         tearDownActiveTunnel();
-        return ErrorCode.SHADOWSOCKS_START_FAILURE;
+        return ErrorCode.CLIENT_START_FAILURE;
       }
     }
     tunnelConfig = config;
@@ -315,8 +261,8 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return ErrorCode.VPN_START_FAILURE;
     }
-    startForegroundWithNotification(serverName);
-    storeActiveTunnel(config, serverName, remoteUdpForwardingEnabled);
+    startForegroundWithNotification(config.name);
+    storeActiveTunnel(config, remoteUdpForwardingEnabled);
     return ErrorCode.NO_ERROR;
   }
 
@@ -344,17 +290,15 @@ public class VpnTunnelService extends VpnService {
     tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
   }
 
-  /* Helper method that stops Shadowsocks, tun2socks, and tears down the VPN. */
+  /* Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
   private void stopVpnTunnel() {
     vpnTunnel.disconnectTunnel();
     vpnTunnel.tearDownVpn();
   }
 
-  // Shadowsocks
-
-  private ErrorCode checkServerConnectivity(final shadowsocks.Client client) {
+  private ErrorCode checkServerConnectivity(final outline.Client client) {
     try {
-      long errorCode = Shadowsocks.checkConnectivity(client);
+      long errorCode = Outline.checkConnectivity(client);
       ErrorCode result = ErrorCode.values()[(int) errorCode];
       LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
       return result;
@@ -367,7 +311,7 @@ public class VpnTunnelService extends VpnService {
   // Connectivity
 
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
-    private ConnectivityManager connectivityManager;
+    private final ConnectivityManager connectivityManager;
 
     public NetworkConnectivityMonitor() {
       this.connectivityManager =
@@ -473,40 +417,26 @@ public class VpnTunnelService extends VpnService {
       return;
     }
     try {
-      final String tunnelId = tunnel.getString(TUNNEL_ID_KEY);
-      final JSONObject jsonConfig = tunnel.getJSONObject(TUNNEL_CONFIG_KEY);
-      final String serverName = tunnel.getString(TUNNEL_SERVER_NAME);
-      final TunnelConfig config = makeTunnelConfig(tunnelId, jsonConfig);
+      final TunnelConfig tunnelConfig = new TunnelConfig();
+      tunnelConfig.id = tunnel.getString(TUNNEL_ID_KEY);
+      tunnelConfig.name = tunnel.getString(TUNNEL_SERVER_NAME);
+      tunnelConfig.transportConfig = tunnel.getString(TUNNEL_CONFIG_KEY);
+
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
-      startForegroundWithNotification(serverName);
-      startTunnel(config, serverName, true);
+      startForegroundWithNotification(tunnelConfig.name);
+      startTunnel(tunnelConfig, true);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to retrieve JSON tunnel data", e);
     }
   }
 
-  private void storeActiveTunnel(final TunnelConfig config, final String serverName, boolean isUdpSupported) {
+  private void storeActiveTunnel(final TunnelConfig config, boolean isUdpSupported) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
-      JSONObject proxyConfig = new JSONObject();
-      proxyConfig.put("host", config.proxy.host);
-      proxyConfig.put("port", config.proxy.port);
-      proxyConfig.put("password", config.proxy.password);
-      proxyConfig.put("method", config.proxy.method);
-
-      if (config.proxy.prefix != null) {
-        char[] chars = new char[config.proxy.prefix.length];
-        for (int i = 0; i < config.proxy.prefix.length; i++) {
-          // Unsigned bit width extension requires a mask in Java.
-          chars[i] = (char)(config.proxy.prefix[i] & 0xFF);
-        }
-        proxyConfig.put("prefix", new String(chars));
-      }
-
       tunnel.put(TUNNEL_ID_KEY, config.id).put(
-        TUNNEL_CONFIG_KEY, proxyConfig).put(TUNNEL_SERVER_NAME, serverName);
+        TUNNEL_CONFIG_KEY, config.transportConfig).put(TUNNEL_SERVER_NAME, config.name);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);

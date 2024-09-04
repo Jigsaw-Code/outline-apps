@@ -53,9 +53,6 @@
             { _ in
                 appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
-
-            // Enable app launcher to start on boot.
-            appKitController._AppKitBridge_setAppLauncherEnabled(true)
         }
     }
 

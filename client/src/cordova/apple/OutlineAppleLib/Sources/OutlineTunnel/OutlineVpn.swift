@@ -51,7 +51,7 @@ public class OutlineVpn: NSObject {
     case serverUnreachable = 5
     case vpnStartFailure = 6
     case illegalServerConfiguration = 7
-    case shadowsocksStartFailure = 8
+    case outlineStartFailure = 8
     case configureSystemProxyFailure = 9
     case noAdminPermissions = 10
     case unsupportedRoutingTable = 11
@@ -70,7 +70,7 @@ public class OutlineVpn: NSObject {
   // MARK: Interface
 
   /** Starts a VPN tunnel as specified in the OutlineTunnel object. */
-  public func start(_ tunnelId: String, name: String?, transportConfig: [String: Any]) async -> ErrorCode {
+  public func start(_ tunnelId: String, named name: String?, withTransport transportConfig: String) async -> ErrorCode {
     if let manager = await getTunnelManager(), isActiveSession(manager.connection) {
       DDLogDebug("Stoppping active session before starting new one")
       await stopSession(manager)
@@ -152,23 +152,6 @@ public class OutlineVpn: NSObject {
     return ErrorCode.noError
   }
 
-  /** Starts the last successful VPN tunnel. */
-  @objc public func startLastSuccessfulTunnel(_ completion: @escaping (Callback)) {
-    Task {
-      guard let manager = await getTunnelManager() else {
-        DDLogDebug("Tunnel manager not setup")
-        completion(ErrorCode.illegalServerConfiguration)
-        return
-      }
-      do {
-        try manager.connection.startVPNTunnel()
-        completion(ErrorCode.noError)
-      } catch {
-        completion(ErrorCode.vpnStartFailure)
-      }
-    }
-  }
-
   /** Tears down the VPN if the tunnel with id |tunnelId| is active. */
   public func stop(_ tunnelId: String) async {
     guard let manager = await getTunnelManager(),
@@ -204,7 +187,7 @@ public class OutlineVpn: NSObject {
 
   // Adds a VPN configuration to the user preferences if no Outline profile is present. Otherwise
   // enables the existing configuration.
-  private func setupVpn(withId id:String, named name:String, withTransport transportConfig: [String: Any]) async throws -> NETunnelProviderManager {
+  private func setupVpn(withId id:String, named name:String, withTransport transportConfig: String) async throws -> NETunnelProviderManager {
     let managers = try await NETunnelProviderManager.loadAllFromPreferences()
     var manager: NETunnelProviderManager!
     if managers.count > 0 {

@@ -18,3 +18,8 @@ declare module '*.png' {
   const value: string;
   export = value;
 }
+
+declare module '*.txt?raw' {
+  const content: string;
+  export default content;
+}

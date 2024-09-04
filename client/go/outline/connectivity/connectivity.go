@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -34,7 +33,7 @@ const (
 	bufferLength        = 512
 )
 
-// authenticationError is used to signal failed authentication to the Shadowsocks proxy.
+// authenticationError is used to signal failed authentication to the Outline proxy.
 type authenticationError struct {
 	error
 }
@@ -44,19 +43,19 @@ type reachabilityError struct {
 	error
 }
 
-// CheckConnectivity determines whether the Shadowsocks proxy can relay TCP and UDP traffic under
+// CheckConnectivity determines whether the Outline proxy can relay TCP and UDP traffic under
 // the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
 // error code to return accounting for transient network failures.
 // Returns an error if an unexpected error ocurrs.
-func CheckConnectivity(client *outline.Client) (neterrors.Error, error) {
+func CheckConnectivity(streamDialer transport.StreamDialer, packetListener transport.PacketListener) (neterrors.Error, error) {
 	// Start asynchronous UDP support check.
 	udpChan := make(chan error)
 	go func() {
 		resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
-		udpChan <- CheckUDPConnectivityWithDNS(client, resolverAddr)
+		udpChan <- CheckUDPConnectivityWithDNS(packetListener, resolverAddr)
 	}()
 	// Check whether the proxy is reachable and that the client is able to authenticate to the proxy
-	tcpErr := CheckTCPConnectivityWithHTTP(client, "http://example.com")
+	tcpErr := CheckTCPConnectivityWithHTTP(streamDialer, "http://example.com")
 	if tcpErr == nil {
 		udpErr := <-udpChan
 		if udpErr == nil {
@@ -75,7 +74,7 @@ func CheckConnectivity(client *outline.Client) (neterrors.Error, error) {
 	return neterrors.Unexpected, tcpErr
 }
 
-// CheckUDPConnectivityWithDNS determines whether the Shadowsocks proxy represented by `client` and
+// CheckUDPConnectivityWithDNS determines whether the Outline proxy represented by `client` and
 // the network support UDP traffic by issuing a DNS query though a resolver at `resolverAddr`.
 // Returns nil on success or an error on failure.
 func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr net.Addr) error {

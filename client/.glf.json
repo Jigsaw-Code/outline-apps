@@ -3,7 +3,7 @@
     "../package.json",
     "./package.json"
   ],
-  "output": "./src/www/ui_components/licenses/licenses.txt",
+  "output": "./src/www/views/licenses_view/licenses/licenses.txt",
   "lineEnding": "lf",
   "overwrite": true,
   "replace": {

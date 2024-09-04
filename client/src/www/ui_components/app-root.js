@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+import '@material/web/all.js';
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
@@ -36,78 +37,52 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './about-view.js';
-import './add-server-view.js';
-import './language-view.js';
-import './licenses-view.js';
 import './outline-icons.js';
-import './privacy-view.js';
-import '../views/contact_view';
-import '../views/servers_view';
-import './server-rename-dialog.js';
-import './user-comms-dialog.js';
 
+// TODO(daniellacosse): figure out how to import this without disabling the rule
+// eslint-disable-next-line n/no-missing-import
+import '../views/about_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/contact_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/language_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/licenses_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/auto_connect_dialog';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/privacy_acknowledgement_dialog';
+// eslint-disable-next-line n/no-missing-import
+import '../views/servers_view';
+// eslint-disable-next-line n/no-missing-import
+import '../views/root_view/add_access_key_dialog';
+
+import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
-function makeLookUpLanguage(availableLanguages) {
-  return languageId => {
-    languageId = languageId.toLowerCase();
-    for (const availableLanguage of availableLanguages) {
-      const parts = availableLanguage.toLowerCase().split('-');
-      while (parts.length) {
-        const joined = parts.join('-');
-        if (languageId === joined) {
-          return availableLanguage;
-        }
-        parts.pop();
-      }
-    }
-  };
-}
-
-function getBrowserLanguages() {
-  // Ensure that navigator.languages is defined and not empty, as can be the case with some browsers
-  // (i.e. Chrome 59 on Electron).
-  const languages = navigator.languages;
-  if (languages && languages.length > 0) {
-    return languages;
-  }
-  return [navigator.language];
-}
-
-function getBestMatchingLanguage(available) {
-  const lookUpAvailable = makeLookUpLanguage(available);
-  for (const candidate of getBrowserLanguages()) {
-    const parts = candidate.split('-');
-    while (parts.length) {
-      const joined = parts.join('-');
-      const closest = lookUpAvailable(joined);
-      if (closest) {
-        return closest;
-      }
-      parts.pop();
-    }
-  }
-};
-
 // Workaround:
 // https://github.com/PolymerElements/paper-menu-button/issues/101#issuecomment-297856912
 PaperMenuButton.prototype.properties.restoreFocusOnClose.value = false;
 
-export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElement) {
+export class AppRoot extends mixinBehaviors(
+  [AppLocalizeBehavior],
+  PolymerElement
+) {
   static get template() {
     return html`
       <style>
         :host {
           --app-toolbar-height: 2.5rem;
-          --app-toolbar-gutter: .5rem;
-          --app-toolbar-button-gutter: .75rem;
+          --app-toolbar-gutter: 0.5rem;
+          --app-toolbar-button-gutter: 0.75rem;
           --app-header-height: 3.5rem;
-          --contact-view-gutter: calc(var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter));
+          --contact-view-gutter: calc(
+            var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter)
+          );
           --contact-view-max-width: 400px;
           --light-green: #2fbea5;
           --medium-green: #009688;
@@ -186,7 +161,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             color: var(--medium-green);
             background-color: var(--light-gray);
             font-weight: normal;
-          }
+          };
         }
 
         #drawer-nav paper-item:focus::before,
@@ -303,11 +278,16 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           }
         }
       </style>
-      <app-location route="{{route}}" url-space-regex="^/index.html" use-hash-as-path=""></app-location>
-      <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route>
-
-      <privacy-view id="privacyView" root-path="[[rootPath]]" localize="[[localize]]" hidden=""></privacy-view>
-
+      <app-location
+        route="{{route}}"
+        url-space-regex="^/index.html"
+        use-hash-as-path=""
+      ></app-location>
+      <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+      ></app-route>
       <app-header-layout fullbleed="">
         <app-header slot="header" fixed="">
           <app-toolbar>
@@ -329,7 +309,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             </div>
             <div main-title="" class$="[[page]]">
               <h1 hidden$="[[!shouldShowAppLogo]]">Outline</h1>
-              <div hidden$="[[shouldShowAppLogo]]">[[localize(pageTitleKey)]]</div>
+              <div hidden$="[[shouldShowAppLogo]]">
+                [[localize(pageTitleKey)]]
+              </div>
             </div>
             <div id="app-toolbar-right">
               <paper-button
@@ -356,6 +338,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             name="contact"
             id="contactView"
             localize="[[localize]]"
+            language-code="[[_computeSupportSiteLanguageCode(LANGUAGES_AVAILABLE, language)]]"
             error-reporter="[[errorReporter]]"
             on-success="showContactSuccessToast"
             on-error="showContactErrorToast"
@@ -371,7 +354,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
           <language-view
             name="language"
             id="aboutView"
-            selected-language="[[language]]"
+            selected-language-id="[[language]]"
             languages="[[_getLanguagesAvailableValues(LANGUAGES_AVAILABLE)]]"
           ></language-view>
           <!-- Do not mirror licenses text, as it is not localized. -->
@@ -385,7 +368,12 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         </iron-pages>
       </app-header-layout>
 
-      <app-drawer slot="drawer" id="drawer" swipe-open="" transition-duration="350">
+      <app-drawer
+        slot="drawer"
+        id="drawer"
+        swipe-open=""
+        transition-duration="350"
+      >
         <!--
         Notice that transition-duration="350"? That magic number is very sensitive!
 
@@ -426,42 +414,65 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
             <img src$="[[rootPath]]assets/logo-nav.png" alt="logo" id="logo" />
           </div>
           <hr class="nav-hr" />
-          <paper-listbox id="drawer-nav" selected="{{routeData.page}}" attr-for-selected="name" on-tap="closeDrawer">
+          <paper-listbox
+            id="drawer-nav"
+            selected="{{routeData.page}}"
+            attr-for-selected="name"
+            on-tap="closeDrawer"
+          >
             <paper-item name="servers" class="first-menu-item">
-              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline"  />
+              <img src$="[[rootPath]]assets/icons/outline.png" alt="outline" />
               <span class="item-label">[[localize('servers-menu-item')]]</span>
             </paper-item>
             <paper-item name="contact">
-              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact"  />
+              <img src$="[[rootPath]]assets/icons/contact.png" alt="contact" />
               [[localize('contact-page-title')]]
             </paper-item>
             <paper-item name="about">
-              <img src$="[[rootPath]]assets/icons/about.png" alt="about"  />
+              <img src$="[[rootPath]]assets/icons/about.png" alt="about" />
               [[localize('about-page-title')]]
             </paper-item>
             <paper-item name="help">
-              <a href="https://support.getoutline.org" id="helpAnchor" hidden=""></a>
-              <img src$="[[rootPath]]assets/icons/help.png" alt="help"  />
+              <a
+                href$="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/')]]"
+                id="helpAnchor"
+                hidden=""
+              ></a>
+              <img src$="[[rootPath]]assets/icons/help.png" alt="help" />
               [[localize('help-page-title')]]
             </paper-item>
-            <paper-item name="language" class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]">
-              <img src$="[[rootPath]]assets/icons/change_language.png" alt="change language"  />
+            <paper-item
+              name="language"
+              class$="[[_computeIsLastVisibleMenuItem(shouldShowQuitButton)]]"
+            >
+              <img
+                src$="[[rootPath]]assets/icons/change_language.png"
+                alt="change language"
+              />
               [[localize('change-language-page-title')]]
             </paper-item>
-            <paper-item name="quit" class="last-menu-item" hidden$="[[!shouldShowQuitButton]]">
+            <paper-item
+              name="quit"
+              class="last-menu-item"
+              hidden$="[[!shouldShowQuitButton]]"
+            >
               <img src$="[[rootPath]]assets/icons/quit.png" alt="quit" />
               [[localize('quit')]]
             </paper-item>
             <paper-item class="border-top">
-              <a href="https://www.google.com/policies/privacy/">[[localize('privacy')]]</a>
+              <a href="https://www.google.com/policies/privacy/"
+                >[[localize('privacy')]]</a
+              >
             </paper-item>
             <paper-item>
-              <a href="https://support.getoutline.org/s/article/Data-collection"
+              <a
+                href$="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
                 >[[localize('data-collection')]]</a
               >
             </paper-item>
             <paper-item>
-              <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
+              <a
+                href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
                 >[[localize('terms')]]</a
               >
             </paper-item>
@@ -473,29 +484,28 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       </app-drawer>
 
       <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
-        <paper-button id="toastButton" on-tap="_callToastHandler"></paper-button>
+        <paper-button
+          id="toastButton"
+          on-tap="_callToastHandler"
+        ></paper-button>
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
 
-      <add-server-view id="addServerView" localize="[[localize]]" use-alt-access-message="[[useAltAccessMessage]]"></add-server-view>
-
-      <!-- Modal dialogs must be placed outside of app-header-layout, see
-    https://github.com/PolymerElements/paper-dialog/issues/152 and
-    https://github.com/PolymerElements/app-layout/issues/295
-    Once those are fixed we can consider moving this into server-card.html -->
-      <server-rename-dialog
-        id="serverRenameDialog"
-        root-path="[[rootPath]]"
+      <add-access-key-dialog
+        id="addServerView"
         localize="[[localize]]"
-      ></server-rename-dialog>
+      ></add-access-key-dialog>
 
-      <user-comms-dialog
+      <privacy-acknowledgement-dialog
+        id="privacyView"
+        localize="[[localize]]"
+        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
+      ></privacy-acknowledgement-dialog>
+
+      <auto-connect-dialog
         id="autoConnectDialog"
         localize="[[localize]]"
-        title-localization-key="auto-connect-dialog-title"
-        detail-localization-key="auto-connect-dialog-detail"
-        fire-event-on-hide="AutoConnectDialogDismissed"
-      ></user-comms-dialog>
+      ></auto-connect-dialog>
     `;
   }
 
@@ -521,70 +531,95 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
         value: {
           af: {id: 'af', name: 'Afrikaans', dir: 'ltr'},
           am: {id: 'am', name: 'አማርኛ', dir: 'ltr'},
-          ar: {id: 'ar', name: 'العربية', dir: 'rtl'},
+          ar: {id: 'ar', name: 'العربية', dir: 'rtl', supportId: 'ar'},
           az: {id: 'az', name: 'azərbaycan', dir: 'ltr'},
-          bg: {id: 'bg', name: 'български', dir: 'ltr'},
+          bg: {id: 'bg', name: 'български', dir: 'ltr', supportId: 'bg'},
           bn: {id: 'bn', name: 'বাংলা', dir: 'ltr'},
-          bs: {id: 'bs', name: 'bosanski', dir: 'ltr'},
-          ca: {id: 'ca', name: 'català', dir: 'ltr'},
-          cs: {id: 'cs', name: 'Čeština', dir: 'ltr'},
-          da: {id: 'da', name: 'Dansk', dir: 'ltr'},
-          de: {id: 'de', name: 'Deutsch', dir: 'ltr'},
-          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr'},
-          en: {id: 'en', name: 'English', dir: 'ltr'},
+          bs: {id: 'bs', name: 'bosanski', dir: 'ltr', supportId: 'bs'},
+          ca: {id: 'ca', name: 'català', dir: 'ltr', supportId: 'ca'},
+          cs: {id: 'cs', name: 'Čeština', dir: 'ltr', supportId: 'cs'},
+          da: {id: 'da', name: 'Dansk', dir: 'ltr', supportId: 'da'},
+          de: {id: 'de', name: 'Deutsch', dir: 'ltr', supportId: 'de'},
+          el: {id: 'el', name: 'Ελληνικά', dir: 'ltr', supportId: 'el'},
+          en: {id: 'en', name: 'English', dir: 'ltr', supportId: 'en_US'},
           'en-GB': {id: 'en-GB', name: 'English (United Kingdom)', dir: 'ltr'},
-          es: {id: 'es', name: 'Español', dir: 'ltr'},
-          'es-419': {id: 'es-419', name: 'Español (Latinoamérica)', dir: 'ltr'},
-          et: {id: 'et', name: 'eesti', dir: 'ltr'},
-          fa: {id: 'fa', name: 'فارسی', dir: 'rtl'},
-          fi: {id: 'fi', name: 'Suomi', dir: 'ltr'},
-          fil: {id: 'fil', name: 'Filipino', dir: 'ltr'},
-          fr: {id: 'fr', name: 'Français', dir: 'ltr'},
-          he: {id: 'he', name: 'עברית', dir: 'rtl'},
-          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr'},
-          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr'},
-          hu: {id: 'hu', name: 'magyar', dir: 'ltr'},
-          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr'},
-          id: {id: 'id', name: 'Indonesia', dir: 'ltr'},
+          es: {id: 'es', name: 'Español', dir: 'ltr', supportId: 'es'},
+          'es-419': {
+            id: 'es-419',
+            name: 'Español (Latinoamérica)',
+            dir: 'ltr',
+            supportId: 'es',
+          },
+          et: {id: 'et', name: 'eesti', dir: 'ltr', supportId: 'et'},
+          fa: {id: 'fa', name: 'فارسی', dir: 'rtl', supportId: 'fa'},
+          fi: {id: 'fi', name: 'Suomi', dir: 'ltr', supportId: 'fi'},
+          fil: {id: 'fil', name: 'Filipino', dir: 'ltr', supportId: 'tl'},
+          fr: {id: 'fr', name: 'Français', dir: 'ltr', supportId: 'fr'},
+          he: {id: 'he', name: 'עברית', dir: 'rtl', supportId: 'iw'},
+          hi: {id: 'hi', name: 'हिन्दी', dir: 'ltr', supportId: 'hi'},
+          hr: {id: 'hr', name: 'Hrvatski', dir: 'ltr', supportId: 'hr'},
+          hu: {id: 'hu', name: 'magyar', dir: 'ltr', supportId: 'hu'},
+          hy: {id: 'hy', name: 'հայերեն', dir: 'ltr', supportId: 'hy'},
+          id: {id: 'id', name: 'Indonesia', dir: 'ltr', supportId: 'in'},
           is: {id: 'is', name: 'íslenska', dir: 'ltr'},
-          it: {id: 'it', name: 'Italiano', dir: 'ltr'},
-          ja: {id: 'ja', name: '日本語', dir: 'ltr'},
-          ka: {id: 'ka', name: 'ქართული', dir: 'ltr'},
+          it: {id: 'it', name: 'Italiano', dir: 'ltr', supportId: 'it'},
+          ja: {id: 'ja', name: '日本語', dir: 'ltr', supportId: 'ja'},
+          ka: {id: 'ka', name: 'ქართული', dir: 'ltr', supportId: 'ka'},
           kk: {id: 'kk', name: 'қазақ тілі', dir: 'ltr'},
           km: {id: 'km', name: 'ខ្មែរ', dir: 'ltr'},
-          ko: {id: 'ko', name: '한국어', dir: 'ltr'},
+          ko: {id: 'ko', name: '한국어', dir: 'ltr', supportId: 'ko'},
           lo: {id: 'lo', name: 'ລາວ', dir: 'ltr'},
-          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr'},
-          lv: {id: 'lv', name: 'latviešu', dir: 'ltr'},
-          mk: {id: 'mk', name: 'македонски', dir: 'ltr'},
+          lt: {id: 'lt', name: 'lietuvių', dir: 'ltr', supportId: 'lt'},
+          lv: {id: 'lv', name: 'latviešu', dir: 'ltr', supportId: 'lv'},
+          mk: {id: 'mk', name: 'македонски', dir: 'ltr', supportId: 'mk'},
           mn: {id: 'mn', name: 'монгол', dir: 'ltr'},
           ms: {id: 'ms', name: 'Melayu', dir: 'ltr'},
           mr: {id: 'mr', name: 'मराठी', dir: 'ltr'},
           my: {id: 'my', name: 'မြန်မာ', dir: 'ltr'},
           ne: {id: 'ne', name: 'नेपाली', dir: 'ltr'},
-          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr'},
-          no: {id: 'no', name: 'norsk', dir: 'ltr'},
-          pl: {id: 'pl', name: 'polski', dir: 'ltr'},
-          'pt-BR': {id: 'pt-BR', name: 'Português (Brasil)', dir: 'ltr'},
-          'pt-PT': {id: 'pt-PT', name: 'Português (Portugal)', dir: 'ltr'},
-          ro: {id: 'ro', name: 'română', dir: 'ltr'},
-          ru: {id: 'ru', name: 'Русский', dir: 'ltr'},
+          nl: {id: 'nl', name: 'Nederlands', dir: 'ltr', supportId: 'nl_NL'},
+          no: {id: 'no', name: 'norsk', dir: 'ltr', supportId: 'no'},
+          pl: {id: 'pl', name: 'polski', dir: 'ltr', supportId: 'pl'},
+          'pt-BR': {
+            id: 'pt-BR',
+            name: 'Português (Brasil)',
+            dir: 'ltr',
+            supportId: 'pt_BR',
+          },
+          'pt-PT': {
+            id: 'pt-PT',
+            name: 'Português (Portugal)',
+            dir: 'ltr',
+            supportId: 'pt_BR',
+          },
+          ro: {id: 'ro', name: 'română', dir: 'ltr', supportId: 'ro'},
+          ru: {id: 'ru', name: 'Русский', dir: 'ltr', supportId: 'ru'},
           si: {id: 'si', name: 'සිංහල', dir: 'ltr'},
-          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr'},
-          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr'},
-          sq: {id: 'sq', name: 'shqip', dir: 'ltr'},
-          sr: {id: 'sr', name: 'српски', dir: 'ltr'},
+          sk: {id: 'sk', name: 'Slovenčina', dir: 'ltr', supportId: 'sk'},
+          sl: {id: 'sl', name: 'slovenščina', dir: 'ltr', supportId: 'sl'},
+          sq: {id: 'sq', name: 'shqip', dir: 'ltr', supportId: 'sq'},
+          sr: {id: 'sr', name: 'српски', dir: 'ltr', supportId: 'sr'},
           'sr-Latn': {id: 'sr-Latn', name: 'srpski (latinica)', dir: 'ltr'},
-          sv: {id: 'sv', name: 'Svenska', dir: 'ltr'},
+          sv: {id: 'sv', name: 'Svenska', dir: 'ltr', supportId: 'sv'},
           sw: {id: 'sw', name: 'Kiswahili', dir: 'ltr'},
           ta: {id: 'ta', name: 'தமிழ்', dir: 'ltr'},
-          th: {id: 'th', name: 'ไทย', dir: 'ltr'},
-          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
-          uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
-          ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
-          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr'},
-          'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
-          'zh-TW': {id: 'zh-TW', name: '繁體中文', dir: 'ltr'},
+          th: {id: 'th', name: 'ไทย', dir: 'ltr', supportId: 'th'},
+          tr: {id: 'tr', name: 'Türkçe', dir: 'ltr', supportId: 'tr'},
+          uk: {id: 'uk', name: 'Українська', dir: 'ltr', supportId: 'uk'},
+          ur: {id: 'ur', name: 'اردو', dir: 'rtl', supportId: 'ur'},
+          vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr', supportId: 'vi'},
+          'zh-CN': {
+            id: 'zh-CN',
+            name: '简体中文',
+            dir: 'ltr',
+            supportId: 'zh_CN',
+          },
+          'zh-TW': {
+            id: 'zh-TW',
+            name: '繁體中文',
+            dir: 'ltr',
+            supportId: 'zh_TW',
+          },
         },
       },
       language: {
@@ -672,32 +707,35 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // with a no-op for the three buttons where the focus styles are incorrectly applied most
     // often / where it looks most noticeably broken.
     function noop() {}
-    var buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
-    for (var i = 0, button = buttons[i]; button; button = buttons[++i]) {
+    const buttons = [this.$.menuBtn, this.$.backBtn, this.$.addBtn];
+    for (let i = 0, button = buttons[i]; button; button = buttons[++i]) {
       button._detectKeyboardFocus = noop;
     }
 
-    if (!Event.prototype.composedPath) {
+    if (!globalThis.Event.prototype.composedPath) {
       // Polyfill for composedPath. See https://dom.spec.whatwg.org/#dom-event-composedpath.
       // https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath#browser_compatibility
-      Event.prototype.composedPath = function () {
+      globalThis.Event.prototype.composedPath = function () {
         if (this.path) {
           return this.path; // ShadowDOM v0 equivalent property.
         }
-        var composedPath = [];
-        var target = this.target;
+        const composedPath = [];
+        let target = this.target;
         while (target) {
           composedPath.push(target);
           if (target.assignedSlot) {
             target = target.assignedSlot;
-          } else if (target.nodeType === Node.DOCUMENT_FRAGMENT_NODE && target.host) {
+          } else if (
+            target.nodeType === globalThis.Node.DOCUMENT_FRAGMENT_NODE &&
+            target.host
+          ) {
             target = target.host;
           } else {
             target = target.parentNode;
           }
         }
-        if (composedPath[composedPath.length - 1] === document) {
-          composedPath.push(window);
+        if (composedPath[composedPath.length - 1] === globalThis.document) {
+          composedPath.push(globalThis.window);
         }
         return composedPath;
       };
@@ -708,7 +746,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       this.platform = 'Electron';
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
-      this.platform = cordova.platformId;
+      this.platform = globalThis.cordova.platformId;
     }
   }
 
@@ -717,8 +755,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     this.loadResources(url, languageCode);
 
     const direction = this.LANGUAGES_AVAILABLE[languageCode].dir;
-    document.documentElement.setAttribute('dir', direction);
-    this.$.drawer.align = direction == 'ltr' ? 'left' : 'right';
+    globalThis.document.documentElement.setAttribute('dir', direction);
+    this.$.drawer.align = direction === 'ltr' ? 'left' : 'right';
 
     this.language = languageCode;
   }
@@ -751,7 +789,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
       this.$.toast.text = text;
       this.$.toast.duration = duration || 3000;
 
-      var button = this.$.toastButton;
+      const button = this.$.toastButton;
       if (buttonText) {
         button.hidden = false;
         button.innerText = buttonText;
@@ -790,8 +828,8 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   _callToastHandler() {
-    var toastButton = this.$.toastButton;
-    var handler = toastButton._handler;
+    const toastButton = this.$.toastButton;
+    const handler = toastButton._handler;
     if (!handler) return console.error('No toast handler found');
     // Close the toast and unbind the handler so there's no chance the
     // user can somehow trigger the same handler twice.
@@ -801,13 +839,20 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
   }
 
   promptAddServer() {
-    this.$.addServerView.openAddServerSheet();
+    this.$.addServerView.open = true;
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
+    const preferredLanguages = i18n.getBrowserLanguages();
     const overrideLanguage = window.localStorage.getItem('overrideLanguage');
-    const bestMatchingLanguage = getBestMatchingLanguage(Object.keys(availableLanguages));
-    return overrideLanguage || bestMatchingLanguage || defaultLanguage;
+    if (overrideLanguage) {
+      preferredLanguages.unshift(new i18n.LanguageCode(overrideLanguage));
+    }
+    const matcher = new i18n.LanguageMatcher(
+      i18n.languageList(Object.keys(availableLanguages)),
+      new i18n.LanguageCode(defaultLanguage)
+    );
+    return matcher.getBestSupportedLanguage(preferredLanguages).string();
   }
 
   _computePage(pageFromRoute, DEFAULT_PAGE) {
@@ -826,7 +871,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // to the default page onto the history stack. Without this, you'd have to press
     // Android's system back button twice instead of once to get out of the app after
     // opening it.
-    history.replaceState({}, '', '#/' + DEFAULT_PAGE);
+    globalThis.history.replaceState({}, '', '#/' + DEFAULT_PAGE);
     this.setProperties({
       'route.path': '/' + DEFAULT_PAGE,
       'routeData.page': DEFAULT_PAGE,
@@ -847,16 +892,32 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     return page === 'servers';
   }
 
+  _computeSupportSiteLanguageCode(languages, language) {
+    return languages[language].supportId;
+  }
+
+  _computeSupportSiteUrl(language, url) {
+    const parsedUrl = new URL(url);
+    const supportLanguageCode = this._computeSupportSiteLanguageCode(
+      this.LANGUAGES_AVAILABLE,
+      language
+    );
+    if (supportLanguageCode) {
+      parsedUrl.searchParams.append('language', supportLanguageCode);
+    }
+    return parsedUrl.toString();
+  }
+
   _goBack() {
     if (this.page === 'contact') {
       this.$.contactView.reset();
     }
 
     // If there is a navigation on the webview's history stack, pop it off to go back.
-    if (history.length > 1) {
-      history.back();
+    if (globalThis.history.length > 1) {
+      globalThis.history.back();
       // Must fire 'location-changed' so app-location notices and updates the route state.
-      window.dispatchEvent(new CustomEvent('location-changed'));
+      globalThis.dispatchEvent(new globalThis.CustomEvent('location-changed'));
     }
   }
 
@@ -869,7 +930,7 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     // not opening most of the time. We resort to opening the link programmatically for all
     // platforms.
     if (this.platform === 'ios') {
-      window.open(this.$.helpAnchor.href);
+      globalThis.open(this.$.helpAnchor.href);
     } else {
       // macOS does not respond to window.open and Windows opens a new browser window.
       // Simulate a click on the help anchor.
@@ -885,10 +946,6 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
     return shouldShowQuitButton ? '' : 'last-menu-item';
   }
 
-  showServerRename(event) {
-    this.$.serverRenameDialog.open(event.detail.name, event.detail.serverId);
-  }
-
   _computeShouldShowAppLogo(page) {
     return page === 'servers';
   }
@@ -901,7 +958,9 @@ export class AppRoot extends mixinBehaviors([AppLocalizeBehavior], PolymerElemen
 
   _computeUseAltAccessMessage(language) {
     // Hack to show an alternative message
-    return language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx';
+    return (
+      language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx'
+    );
   }
 }
-customElements.define(AppRoot.is, AppRoot);
+globalThis.customElements.define(AppRoot.is, AppRoot);

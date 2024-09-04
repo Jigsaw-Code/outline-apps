@@ -19,7 +19,14 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import {merge} from 'webpack-merge';
 
-import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
+import {
+  baseConfig,
+  browserConfig,
+  require,
+  __dirname,
+  TS_LOADER,
+  GENERATE_CSS_RTL_LOADER,
+} from './webpack_base.mjs';
 
 const BABEL_LOADER = {
   loader: 'babel-loader',
@@ -57,11 +64,22 @@ export default merge(baseConfig, browserConfig, {
         include: /node_modules/,
         use: [BABEL_LOADER],
       },
+      {
+        test: /\.txt$/i,
+        loader: 'raw-loader',
+      },
     ],
   },
   plugins: [
     new CopyPlugin(
-      [{from: require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'), to: 'webcomponentsjs'}],
+      [
+        {
+          from: require.resolve(
+            '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'
+          ),
+          to: 'webcomponentsjs',
+        },
+      ],
       {context: __dirname}
     ),
     new webpack.DefinePlugin({
