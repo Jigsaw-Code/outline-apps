@@ -111,7 +111,7 @@ export class SystemConfigurationException extends RegularNativeError {}
 //////
 
 // Windows.
-export class ShadowsocksStartFailure extends RedFlagNativeError {}
+export class ClientStartFailure extends RedFlagNativeError {}
 export class ConfigureSystemProxyFailure extends RedFlagNativeError {}
 export class UnsupportedRoutingTable extends RedFlagNativeError {}
 
@@ -135,7 +135,7 @@ export const enum ErrorCode {
   SERVER_UNREACHABLE = 5,
   VPN_START_FAILURE = 6,
   ILLEGAL_SERVER_CONFIGURATION = 7,
-  SHADOWSOCKS_START_FAILURE = 8,
+  CLIENT_START_FAILURE = 8,
   CONFIGURE_SYSTEM_PROXY_FAILURE = 9,
   NO_ADMIN_PERMISSIONS = 10,
   UNSUPPORTED_ROUTING_TABLE = 11,
@@ -161,8 +161,8 @@ export function fromErrorCode(errorCode: ErrorCode): NativeError {
       return new VpnStartFailure();
     case ErrorCode.ILLEGAL_SERVER_CONFIGURATION:
       return new IllegalServerConfiguration();
-    case ErrorCode.SHADOWSOCKS_START_FAILURE:
-      return new ShadowsocksStartFailure();
+    case ErrorCode.CLIENT_START_FAILURE:
+      return new ClientStartFailure();
     case ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE:
       return new ConfigureSystemProxyFailure();
     case ErrorCode.NO_ADMIN_PERMISSIONS:
@@ -193,8 +193,8 @@ export function toErrorCode(e: NativeError): ErrorCode {
     return ErrorCode.VPN_START_FAILURE;
   } else if (e instanceof IllegalServerConfiguration) {
     return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
-  } else if (e instanceof ShadowsocksStartFailure) {
-    return ErrorCode.SHADOWSOCKS_START_FAILURE;
+  } else if (e instanceof ClientStartFailure) {
+    return ErrorCode.CLIENT_START_FAILURE;
   } else if (e instanceof ConfigureSystemProxyFailure) {
     return ErrorCode.CONFIGURE_SYSTEM_PROXY_FAILURE;
   } else if (e instanceof UnsupportedRoutingTable) {
