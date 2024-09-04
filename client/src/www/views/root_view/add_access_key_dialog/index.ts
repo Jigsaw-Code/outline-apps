@@ -113,6 +113,7 @@ export class AddAccessKeyDialog extends LitElement {
   }
 
   private get hasValidAccessKey() {
+    // TODO(fortuna): This needs to change to support other config URLs.
     try {
       SHADOWSOCKS_URI.parse(this.accessKey);
       return true;
