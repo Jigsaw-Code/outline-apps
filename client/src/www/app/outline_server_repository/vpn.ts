@@ -53,11 +53,7 @@ export function setTransportConfigHost(
   if (!('host' in transport)) {
     return undefined;
   }
-  const newJson: TransportConfigJson = {
-    ...transport,
-    host: newHost,
-  };
-  return newJson;
+  return {...transport, host: newHost};
 }
 
 export const enum TunnelStatus {
