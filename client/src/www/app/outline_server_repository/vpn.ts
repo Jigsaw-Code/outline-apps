@@ -42,7 +42,7 @@ export function getHostFromTransportConfig(
 }
 
 /**
- * setTransportConfigHost returns a new TransportConfigJson woth the given host as the tunnel server.
+ * setTransportConfigHost returns a new TransportConfigJson with the given host as the tunnel server.
  * Should only be set if getHostFromTransportConfig returns one.
  * This is used by the proxy resolution in Electron.
  */
