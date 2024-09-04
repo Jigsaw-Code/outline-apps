@@ -22,12 +22,12 @@ describe('getAddressFromTransport', () => {
     expect(
       vpn.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
     ).toEqual('[1:2::3]:443');
-    expect(
-      vpn.getAddressFromTransportConfig({host: 'example.com'})
-    ).toEqual('example.com');
-    expect(
-      vpn.getAddressFromTransportConfig({host: '1:2::3'})
-    ).toEqual('1:2::3');
+    expect(vpn.getAddressFromTransportConfig({host: 'example.com'})).toEqual(
+      'example.com'
+    );
+    expect(vpn.getAddressFromTransportConfig({host: '1:2::3'})).toEqual(
+      '1:2::3'
+    );
   });
 
   it('fails on invalid config', () => {
