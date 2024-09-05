@@ -27,7 +27,7 @@ type tcpHandler struct {
 	dialer transport.StreamDialer
 }
 
-// NewTCPHandler returns a Shadowsocks TCP connection handler.
+// NewTCPHandler returns a TCP connection handler.
 func NewTCPHandler(client transport.StreamDialer) core.TCPConnHandler {
 	return &tcpHandler{client}
 }

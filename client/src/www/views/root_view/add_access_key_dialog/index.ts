@@ -35,6 +35,10 @@ export class AddAccessKeyDialog extends LitElement {
     }
 
     md-dialog {
+      --md-dialog-container-color: var(
+        --outline-app-dialog-primary-background-color
+      );
+
       min-width: 300px;
     }
 
@@ -52,6 +56,7 @@ export class AddAccessKeyDialog extends LitElement {
 
     md-filled-text-field {
       --md-filled-text-field-input-text-font: 'Menlo', monospace;
+      --md-filled-text-field-container-color: var(--outline-light-gray);
 
       width: 100%;
     }
@@ -108,6 +113,7 @@ export class AddAccessKeyDialog extends LitElement {
   }
 
   private get hasValidAccessKey() {
+    // TODO(fortuna): This needs to change to support other config URLs.
     try {
       SHADOWSOCKS_URI.parse(this.accessKey);
       return true;

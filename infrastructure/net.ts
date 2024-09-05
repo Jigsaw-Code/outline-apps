@@ -1,4 +1,4 @@
-// Copyright 2020 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.outline.shadowsocks;
-
-parcelable ShadowsocksConfig {
-  String host;
-  int port;
-  String password;
-  String method;
-  @nullable byte[] prefix;
+export function joinHostPort(host: string, port: string): string {
+  if (host.includes(':')) {
+    return `[${host}]:${port}`;
+  } else {
+    return `${host}:${port}`;
+  }
 }

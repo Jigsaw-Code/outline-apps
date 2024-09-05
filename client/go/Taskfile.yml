@@ -21,7 +21,7 @@ vars:
   OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
   BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
-  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
+  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" CGO_CFLAGS='-fstack-protector-strong' '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
 
 tasks:
   electron:
@@ -65,7 +65,7 @@ tasks:
         msg: "Must set ANDROID_NDK"
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'"
+      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'"
     deps: ["gomobile"]
 
   apple:
@@ -79,7 +79,7 @@ tasks:
       TARGET_IOS_VERSION: 13.1
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
+      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
     deps: ["gomobile"]
 
   browser:
@@ -97,4 +97,4 @@ tasks:
   clean:
     cmds:
       - rm -rf '{{.OUT_DIR}}'
-      - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline/shadowsocks'
+      - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'

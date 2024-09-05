@@ -734,7 +734,7 @@ export class AppRoot extends polymerElementWithLocalize {
       showManagerResourcesLink: {type: Boolean},
       contactViewFeatureFlag: {
         type: Boolean,
-        value: false,
+        value: true,
       },
     };
   }

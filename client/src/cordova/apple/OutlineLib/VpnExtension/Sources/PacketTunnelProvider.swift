@@ -44,9 +44,9 @@ public class SwiftBridge: NSObject {
     }
 
     /** Creates a new Outline Client based on the given transportConfig. */
-    public static func newClient(transportConfig: String) -> ShadowsocksClient? {
+    public static func newClient(transportConfig: String) -> OutlineClient? {
       var err: NSError?
-      let client = ShadowsocksNewClientFromJSON(transportConfig, &err)
+      let client = OutlineNewClient(transportConfig, &err)
       guard err == nil else {
         DDLogInfo("Failed to construct client: \(String(describing: err)).")
         return nil

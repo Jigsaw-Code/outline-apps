@@ -42,13 +42,14 @@ enum ProgressStep {
 enum IssueType {
   NO_SERVER = 'no-server',
   CANNOT_ADD_SERVER = 'cannot-add-server',
+  BILLING = 'billing',
   CONNECTION = 'connection',
   PERFORMANCE = 'performance',
   GENERAL = 'general',
 }
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
-const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
+const UNSUPPORTED_ISSUE_TYPES = new Map([
   [
     IssueType.NO_SERVER,
     'https://support.getoutline.org/s/article/How-do-I-get-an-access-key',
@@ -57,6 +58,7 @@ const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
     IssueType.CANNOT_ADD_SERVER,
     'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work',
   ],
+  [IssueType.BILLING, null],
   [
     IssueType.CONNECTION,
     'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service',
@@ -143,6 +145,7 @@ export class ContactView extends LitElement {
   private static readonly ISSUES: IssueType[] = [
     IssueType.NO_SERVER,
     IssueType.CANNOT_ADD_SERVER,
+    IssueType.BILLING,
     IssueType.CONNECTION,
     IssueType.PERFORMANCE,
     IssueType.GENERAL,
@@ -195,11 +198,18 @@ export class ContactView extends LitElement {
   private selectIssue(e: SingleSelectedEvent) {
     this.selectedIssueType = ContactView.ISSUES[e.detail.index];
 
-    if (UNSUPPORTED_ISSUE_TYPE_HELPPAGES.has(this.selectedIssueType)) {
-      this.exitTemplate = this.localizeWithUrl(
-        `contact-view-exit-${this.selectedIssueType}`,
-        UNSUPPORTED_ISSUE_TYPE_HELPPAGES.get(this.selectedIssueType)
-      );
+    if (UNSUPPORTED_ISSUE_TYPES.has(this.selectedIssueType)) {
+      const helpPage = UNSUPPORTED_ISSUE_TYPES.get(this.selectedIssueType);
+      if (helpPage) {
+        this.exitTemplate = this.localizeWithUrl(
+          `contact-view-exit-${this.selectedIssueType}`,
+          helpPage
+        );
+      } else {
+        this.exitTemplate = html`${this.localize(
+          `contact-view-exit-${this.selectedIssueType}`
+        )}`;
+      }
       this.currentStep = ProgressStep.EXIT;
       return;
     }

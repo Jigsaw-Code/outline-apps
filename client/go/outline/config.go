@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package shadowsocks
+package outline
 
 import (
 	"encoding/json"
@@ -96,7 +96,7 @@ func newIllegalConfigErrorWithDetails(
 			"proxy-protocol": "shadowsocks",
 			"field":          field,
 			"got":            got,
-			"expected":         expect,
+			"expected":       expect,
 		},
 		Cause: platerrors.ToPlatformError(cause),
 	}
