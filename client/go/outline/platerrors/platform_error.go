@@ -35,6 +35,17 @@ type PlatformError struct {
 
 var _ error = PlatformError{}
 
+// NewPlatformError creates a new [PlatformError] from the error code and message.
+//
+// This function is primarily intended for use by Java or Swift code.
+// For Go code, it is recommended to construct the [PlatformError] struct directly.
+func NewPlatformError(code ErrorCode, message string) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+	}
+}
+
 // ToPlatformError converts an [error] into a [PlatformError].
 // If the provided err is already a [PlatformError], it is returned as is.
 // Otherwise, the err is wrapped into a new [PlatformError] of [InternalError].
