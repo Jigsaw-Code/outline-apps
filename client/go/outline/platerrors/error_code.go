@@ -50,6 +50,9 @@ const (
 	// SetupTrafficHandlerFailed means we failed to setup the traffic handler for a protocol.
 	SetupTrafficHandlerFailed ErrorCode = "ERR_TRAFFIC_HANDLER_SETUP_FAILURE"
 
+	// VPNPermissionNotGranted means user did not grant us the required permission to setup VPN.
+	VPNPermissionNotGranted ErrorCode = "ERR_VPN_PERMISSION_NOT_GRANTED"
+
 	// SetupSystemVPNFailed means we failed to configure the system VPN to route to us.
 	SetupSystemVPNFailed ErrorCode = "ERR_SYSTEM_VPN_SETUP_FAILURE"
 

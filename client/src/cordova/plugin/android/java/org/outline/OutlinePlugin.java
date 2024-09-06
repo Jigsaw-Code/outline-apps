@@ -247,8 +247,8 @@ public class OutlinePlugin extends CordovaPlugin {
     }
     if (result != Activity.RESULT_OK) {
       LOG.warning("Failed to prepare VPN.");
-      sendActionResult(startVpnRequest.callback, new PlatformError(Platerrors.SetupSystemVPNFailed,
-          "failed to grant the VPN permission"));
+      sendActionResult(startVpnRequest.callback, new PlatformError(
+          Platerrors.VPNPermissionNotGranted, "failed to grant the VPN permission"));
       return;
     }
     executeAsync(Action.START.value, startVpnRequest.args, startVpnRequest.callback);
