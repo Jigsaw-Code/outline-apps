@@ -25,7 +25,7 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) open: boolean;
   @property({type: Boolean}) showQuit: boolean;
   @property({type: String}) align: 'left' | 'right';
-  @property({type: Function}) dataCollectionPageUrl: string;
+  @property({type: String}) dataCollectionPageUrl: string;
 
   static styles = css`
     :host {
