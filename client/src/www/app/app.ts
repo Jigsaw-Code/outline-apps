@@ -133,6 +133,19 @@ export class App {
       this.requestPromptAddServer.bind(this)
     );
     this.rootEl.addEventListener(
+      'ShowAddServerDialog',
+      this.showAddServerDialog.bind(this)
+    );
+    this.rootEl.addEventListener(
+      'ShowNavigation',
+      this.showNavigation.bind(this)
+    );
+    this.rootEl.addEventListener(
+      'HideNavigation',
+      this.hideNavigation.bind(this)
+    );
+    this.rootEl.addEventListener('ChangePage', this.changePage.bind(this));
+    this.rootEl.addEventListener(
       'AddServerConfirmationRequested',
       this.requestAddServerConfirmation.bind(this)
     );
@@ -243,10 +256,7 @@ export class App {
       toastMessage = this.localize('error-server-incompatible');
     } else if (error instanceof OperationTimedOut) {
       toastMessage = this.localize('error-timeout');
-    } else if (
-      error instanceof errors.ShadowsocksStartFailure &&
-      this.isWindows()
-    ) {
+    } else if (error instanceof errors.ClientStartFailure && this.isWindows()) {
       // Fall through to `error-unexpected` for other platforms.
       toastMessage = this.localize('outline-plugin-error-antivirus');
       buttonMessage = this.localize('fix-this');
@@ -376,6 +386,22 @@ export class App {
     window.localStorage.setItem('overrideLanguage', languageCode);
     this.rootEl.setLanguage(languageCode);
     this.changeToDefaultPage();
+  }
+
+  private showAddServerDialog() {
+    this.rootEl.$.addServerView.open = true;
+  }
+
+  private showNavigation() {
+    this.rootEl.$.drawer.open = true;
+  }
+
+  private hideNavigation() {
+    this.rootEl.$.drawer.open = false;
+  }
+
+  private changePage(event: CustomEvent) {
+    this.rootEl.changePage(event.detail.page);
   }
 
   private handleClipboardText(text: string) {

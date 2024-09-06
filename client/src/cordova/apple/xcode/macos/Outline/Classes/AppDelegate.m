@@ -90,6 +90,8 @@ const DDLogLevel ddLogLevel = DDLogLevelInfo;
   self.statusItem.button.action = @selector(togglePopover);
   [self setAppIcon:@"StatusBarButtonImage"];
   self.popover = [[NSPopover alloc] init];
+  // this is the same size we use for the electron window
+  [self.popover setContentSize:NSMakeSize(360, 640)];
   self.popover.behavior = NSPopoverBehaviorTransient;
   self.popover.contentViewController = [[NSViewController alloc] initWithNibName:@"MainViewController"
                                                                           bundle:[NSBundle mainBundle]];
