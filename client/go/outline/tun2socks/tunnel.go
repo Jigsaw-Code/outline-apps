@@ -26,6 +26,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 )
 
@@ -37,6 +38,12 @@ type Tunnel interface {
 	// Sets the tunnel's UDP connection handler accordingly, falling back to DNS over TCP if UDP is not supported.
 	// Returns whether UDP proxying is supported in the new network.
 	UpdateUDPSupport() bool
+}
+
+// ConnectOutlineTunnelResult represents the result of [ConnectOutlineTunnel].
+type ConnectOutlineTunnelResult struct {
+	Tunnel Tunnel
+	Error  *platerrors.PlatformError
 }
 
 // Deprecated: use Tunnel directly.

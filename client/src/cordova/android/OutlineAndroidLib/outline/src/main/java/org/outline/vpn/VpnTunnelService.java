@@ -235,7 +235,12 @@ public class VpnTunnelService extends VpnService {
     final boolean remoteUdpForwardingEnabled =
         isAutoStart ? tunnelStore.isUdpSupported() : udpConnError == null;
     try {
-      vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      final PlatformError tunError = vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      if (tunError != null) {
+        LOG.log(Level.SEVERE, "Failed to connect the tunnel", tunError);
+        tearDownActiveTunnel();
+        return tunError;
+      }
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();

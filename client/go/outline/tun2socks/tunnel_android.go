@@ -18,6 +18,7 @@ import (
 	"runtime/debug"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 	"github.com/eycorsican/go-tun2socks/common/log"
 )
@@ -40,15 +41,25 @@ func init() {
 //
 // Returns an error if the TUN file descriptor cannot be opened, or if the tunnel fails to
 // connect.
-func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) (Tunnel, error) {
+func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *ConnectOutlineTunnelResult {
 	tun, err := tunnel.MakeTunFile(fd)
 	if err != nil {
-		return nil, err
+		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed to create the TUN device",
+			Cause:   platerrors.ToPlatformError(err),
+		}}
 	}
+
 	t, err := newTunnel(client, client, isUDPEnabled, tun)
 	if err != nil {
-		return nil, err
+		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
+			Code:    platerrors.SetupTrafficHandlerFailed,
+			Message: "failed to connect Outline to the TUN device",
+			Cause:   platerrors.ToPlatformError(err),
+		}}
 	}
+
 	go tunnel.ProcessInputPackets(t, tun)
-	return t, nil
+	return &ConnectOutlineTunnelResult{Tunnel: t}
 }
