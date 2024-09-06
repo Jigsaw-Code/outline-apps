@@ -59,7 +59,7 @@ import '../views/root_view/add_access_key_dialog';
 import '../views/root_view/root_header';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_navigation';
-
+// eslint-disable-next-line n/no-missing-import
 import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -713,7 +713,8 @@ export class AppRoot extends mixinBehaviors(
 
   _computeLanguage(availableLanguages, defaultLanguage) {
     const preferredLanguages = i18n.getBrowserLanguages();
-    const overrideLanguage = window.localStorage.getItem('overrideLanguage');
+    const overrideLanguage =
+      globalThis.localStorage.getItem('overrideLanguage');
     if (overrideLanguage) {
       preferredLanguages.unshift(new i18n.LanguageCode(overrideLanguage));
     }
