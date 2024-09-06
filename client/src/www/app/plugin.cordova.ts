@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as errors from '../model/errors';
+import {PlatformError} from '../model/platform_error';
 
 export const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
@@ -23,10 +23,13 @@ export function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
   });
 }
 
-export async function pluginExecWithErrorCode<T>(cmd: string, ...args: unknown[]): Promise<T> {
+export async function pluginExecWithErrorCode<T>(
+  cmd: string,
+  ...args: unknown[]
+): Promise<T> {
   try {
     return await pluginExec<T>(cmd, ...args);
-  } catch (errorCode) {
-    throw errors.fromErrorCode(errorCode);
+  } catch (e) {
+    throw PlatformError.parseFrom(e);
   }
 }

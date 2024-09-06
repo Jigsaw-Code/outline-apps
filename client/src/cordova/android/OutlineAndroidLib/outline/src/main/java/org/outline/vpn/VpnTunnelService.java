@@ -61,6 +61,7 @@ public class VpnTunnelService extends VpnService {
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
 
   public enum TunnelStatus {
+    INVALID(-1), // Internal use only.
     CONNECTED(0),
     DISCONNECTED(1),
     RECONNECTING(2);
