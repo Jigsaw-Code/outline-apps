@@ -302,7 +302,7 @@ export class AppRoot extends mixinBehaviors(
 
         <iron-pages id="pages" selected="[[page]]" attr-for-selected="name">
           <servers-view
-            name="servers"
+            name="home"
             id="serversView"
             servers="[[servers]]"
             localize="[[localize]]"
@@ -347,6 +347,7 @@ export class AppRoot extends mixinBehaviors(
         localize="[[localize]]"
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
+        data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -384,7 +385,7 @@ export class AppRoot extends mixinBehaviors(
       DEFAULT_PAGE: {
         type: String,
         readonly: true,
-        value: 'servers',
+        value: 'home',
       },
       DEFAULT_LANGUAGE: {
         type: String,
@@ -748,6 +749,8 @@ export class AppRoot extends mixinBehaviors(
   }
 
   _computePageTitleKey(page) {
+    if (page === 'home') return '';
+
     return page + '-page-title';
   }
 
@@ -756,8 +759,8 @@ export class AppRoot extends mixinBehaviors(
   }
 
   _computeShouldShowAddButton(page) {
-    // Only show the add button if we're on the servers page.
-    return page === 'servers';
+    // Only show the add button if we're on the home page.
+    return page === 'home';
   }
 
   _computeSupportSiteLanguageCode(languages, language) {

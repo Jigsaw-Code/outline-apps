@@ -51,23 +51,23 @@ export class RootHeader extends LitElement {
   render() {
     return html`<header>
       ${this.showBackButton
-        ? html`<md-icon-button @click=${this.handleReturnToServers}>
+        ? html`<md-icon-button @click=${this.returnHome}>
             <md-icon>arrow_back</md-icon>
           </md-icon-button>`
-        : html`<md-icon-button @click=${this.handleMenu}>
+        : html`<md-icon-button @click=${this.openNavigation}>
             <md-icon>menu</md-icon>
           </md-icon-button>`}
       <h1>${this.title || 'Outline'}</h1>
       <md-icon-button
         class=${classMap({hidden: !this.showAddButton})}
-        @click=${this.handleAdd}
+        @click=${this.openAddAccessKey}
       >
         <md-icon>add</md-icon>
       </md-icon-button>
     </header>`;
   }
 
-  handleAdd() {
+  openAddAccessKey() {
     this.dispatchEvent(
       new CustomEvent('ShowAddServerDialog', {
         bubbles: true,
@@ -76,7 +76,7 @@ export class RootHeader extends LitElement {
     );
   }
 
-  handleMenu() {
+  openNavigation() {
     this.dispatchEvent(
       new CustomEvent('ShowNavigation', {
         bubbles: true,
@@ -85,10 +85,10 @@ export class RootHeader extends LitElement {
     );
   }
 
-  handleReturnToServers() {
+  returnHome() {
     this.dispatchEvent(
       new CustomEvent('ChangePage', {
-        detail: {page: 'servers'},
+        detail: {page: 'home'},
         bubbles: true,
         composed: true,
       })

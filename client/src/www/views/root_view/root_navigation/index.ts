@@ -25,6 +25,7 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) open: boolean;
   @property({type: Boolean}) showQuit: boolean;
   @property({type: String}) align: 'left' | 'right';
+  @property({type: Function}) dataCollectionPageUrl: string;
 
   static styles = css`
     :host {
@@ -156,7 +157,7 @@ export class RootNavigation extends LitElement {
         open: this.open,
       })}"
     >
-      <div class="backdrop" @click=${this.handleClose}></div>
+      <div class="backdrop" @click=${this.close}></div>
       <nav
         class=${classMap({
           left: this.align === 'left',
@@ -173,18 +174,18 @@ export class RootNavigation extends LitElement {
           -->
           <md-list-item
             class="selected"
-            @click=${() => this.handlePageChange('servers')}
+            @click=${() => this.changePage('home')}
           >
             <md-ripple></md-ripple>
             <md-icon slot="start">home</md-icon>
             ${this.localize('servers-menu-item')}
           </md-list-item>
-          <md-list-item @click=${() => this.handlePageChange('contact')}>
+          <md-list-item @click=${() => this.changePage('contact')}>
             <md-ripple></md-ripple>
             <md-icon slot="start">feedback</md-icon>
             ${this.localize('contact-page-title')}
           </md-list-item>
-          <md-list-item @click=${() => this.handlePageChange('about')}>
+          <md-list-item @click=${() => this.changePage('about')}>
             <md-ripple></md-ripple>
             <md-icon slot="start">info</md-icon>
             ${this.localize('about-page-title')}
@@ -196,13 +197,13 @@ export class RootNavigation extends LitElement {
               ${this.localize('help-page-title')}
             </a>
           </md-list-item>
-          <md-list-item @click=${() => this.handlePageChange('language')}>
+          <md-list-item @click=${() => this.changePage('language')}>
             <md-ripple></md-ripple>
             <md-icon slot="start">language</md-icon>
             ${this.localize('change-language-page-title')}
           </md-list-item>
           ${this.showQuit
-            ? html`<md-list-item @click=${this.handleQuit}>
+            ? html`<md-list-item @click=${this.quit}>
                 <md-ripple></md-ripple>
                 <md-icon slot="start">exit_to_app</md-icon>
                 ${this.localize('quit')}
@@ -216,7 +217,7 @@ export class RootNavigation extends LitElement {
             </a>
           </li>
           <li>
-            <a href="https://support.getoutline.org/s/article/Data-collection">
+            <a href="${this.dataCollectionPageUrl}">
               ${this.localize('data-collection')}
             </a>
           </li>
@@ -227,7 +228,7 @@ export class RootNavigation extends LitElement {
               ${this.localize('terms')}
             </a>
           </li>
-          <li @click=${() => this.handlePageChange('licenses')}>
+          <li @click=${() => this.changePage('licenses')}>
             ${this.localize('licenses-page-title')}
           </li>
         </ul>
@@ -235,7 +236,7 @@ export class RootNavigation extends LitElement {
     </div>`;
   }
 
-  private handleClose() {
+  private close() {
     this.dispatchEvent(
       new CustomEvent('HideNavigation', {
         bubbles: true,
@@ -244,7 +245,7 @@ export class RootNavigation extends LitElement {
     );
   }
 
-  private handlePageChange(page: string) {
+  private changePage(page: string) {
     this.dispatchEvent(
       new CustomEvent('ChangePage', {
         detail: {page},
@@ -254,7 +255,7 @@ export class RootNavigation extends LitElement {
     );
   }
 
-  private handleQuit() {
+  private quit() {
     this.dispatchEvent(
       new CustomEvent('QuitPressed', {
         bubbles: true,

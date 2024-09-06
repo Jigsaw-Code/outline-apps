@@ -23,8 +23,14 @@ export default {
   component: 'root-navigation',
   args: {
     open: true,
+    dataCollectionPageUrl:
+      'https://support.getoutline.org/s/article/Data-collection',
   },
 };
 
-export const Example = ({open}: RootNavigation) =>
-  html`<root-navigation .localize=${localize} .open=${open}></root-navigation>`;
+export const Example = ({open, dataCollectionPageUrl}: RootNavigation) =>
+  html`<root-navigation
+    .localize=${localize}
+    .open=${open}
+    .dataCollectionPageUrl=${dataCollectionPageUrl}
+  ></root-navigation>`;
