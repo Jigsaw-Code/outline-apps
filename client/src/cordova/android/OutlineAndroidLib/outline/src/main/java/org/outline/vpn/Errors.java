@@ -33,15 +33,12 @@ public class Errors {
 
     final VpnServiceError svcErr = new VpnServiceError();
     svcErr.code = err.getCode();
-    if (svcErr.code == null || svcErr.code.isEmpty()) {
-      svcErr.code = Platerrors.InternalError;
-    }
 
     try {
       svcErr.errorJson = Platerrors.marshalJSONString(err);
     } catch (final Exception ex) {
       LOG.warning(String.format(Locale.ROOT, "failed to marshal PlatformError to JSON: %s", ex));
-      // TypeScript's PlatformError is able to parse non-json errors
+      // TypeScript's PlatformError is able to parse non-json strings as well
       svcErr.errorJson = String.format(Locale.ROOT,
           "error code = %s, failed to fetch details",
           svcErr.code);
