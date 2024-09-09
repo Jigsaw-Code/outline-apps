@@ -16,9 +16,9 @@ import * as net from './net';
 
 describe('joinHostPort', () => {
   it('joins correctly', () => {
-    expect(net.joinHostPort('example.com', 443)).toEqual('example.com:443');
-    expect(net.joinHostPort('1.2.3.4', 443)).toEqual('1.2.3.4:443');
-    expect(net.joinHostPort('1:2:3::4', 443)).toEqual('[1:2:3::4]:443');
-    expect(net.joinHostPort('8example.com', 443)).toEqual('8example.com:443');
+    expect(net.joinHostPort('example.com', '443')).toEqual('example.com:443');
+    expect(net.joinHostPort('1.2.3.4', '443')).toEqual('1.2.3.4:443');
+    expect(net.joinHostPort('1:2:3::4', '443')).toEqual('[1:2:3::4]:443');
+    expect(net.joinHostPort('8example.com', '443')).toEqual('8example.com:443');
   });
 });

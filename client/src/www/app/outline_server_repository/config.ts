@@ -22,9 +22,6 @@ interface DialEndpointJson {
 }
 
 function newDialEndpointJson(json: unknown): DialEndpointJson {
-  if (typeof json === 'string') {
-    return newDialEndpointJson({dial: {address: json}});
-  }
   if (!(json instanceof Object)) {
     throw new Error(`endpoint config must be an object. Got ${typeof json}`);
   }
@@ -170,12 +167,15 @@ function newDialerJson(json: unknown): DialerJson {
   if (!(json instanceof Object)) {
     throw new Error(`dialer config must be an object. Got ${typeof json}`);
   }
-  if (!('type' in json)) {
-    // Make Shadowsocks the default if the type is missing, for backwards-compatibility.
-    json = {type: 'shadowsocks', ...json};
-    throw new Error('dialer config must have a type');
+  // Make Shadowsocks the default if the type is missing, for backwards-compatibility.
+  let type = 'shadowsocks';
+  if ('type' in json) {
+    if (typeof json.type !== 'string') {
+      throw new Error('type must be a string');
+    }
+    type = json.type;
   }
-  switch (json.type) {
+  switch (type) {
     case 'pipe':
       return newPipeDialerJson(json);
     case 'shadowsocks':
@@ -218,7 +218,10 @@ export function getAddressFromTransportConfig(
   transport: TransportConfigJson
 ): string | undefined {
   if ('endpoint' in transport && transport.endpoint.type === 'dial') {
-    return net.joinHostPort(transport.endpoint.host, transport.endpoint.port);
+    return net.joinHostPort(
+      transport.endpoint.host,
+      `${transport.endpoint.port}`
+    );
   }
   return undefined;
 }

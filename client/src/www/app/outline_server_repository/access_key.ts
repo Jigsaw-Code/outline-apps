@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as net from '@outline/infrastructure/net';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import {TunnelConfigJson} from './config';
@@ -24,19 +23,15 @@ export function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
     const config = SHADOWSOCKS_URI.parse(staticKey);
     return {
       transport: {
-        shadowsocks: {
-          endpoint: {
-            dial: {
-              address: net.joinHostPort(
-                config.host.data,
-                `${config.port.data}`
-              ),
-            },
-          },
-          cipher: config.method.data,
-          secret: config.password.data,
-          prefix: config.extra?.['prefix'],
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: config.host.data,
+          port: config.port.data,
         },
+        cipher: config.method.data,
+        secret: config.password.data,
+        prefix: config.extra?.['prefix'],
       },
     };
   } catch (cause) {

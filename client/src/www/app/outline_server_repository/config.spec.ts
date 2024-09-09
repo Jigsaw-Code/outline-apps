@@ -14,39 +14,88 @@
 
 import * as config from './config';
 
+describe('newTunnelJson', () => {
+  it('parses dynamic key', () => {
+    expect(
+      config.newTunnelJson({
+        server: 'example.com',
+        server_port: 443,
+        method: 'METHOD',
+        password: 'PASSWORD',
+      })
+    ).toEqual({
+      transport: {
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+          port: 443,
+        },
+        cipher: 'METHOD',
+        secret: 'PASSWORD',
+      },
+    } as config.TunnelConfigJson);
+  });
+});
+
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
     expect(
-      config.getAddressFromTransportConfig({host: 'example.com', port: '443'})
+      config.getAddressFromTransportConfig({
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+          port: 443,
+        },
+      } as config.TransportConfigJson)
     ).toEqual('example.com:443');
     expect(
-      config.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
+      config.getAddressFromTransportConfig({
+        endpoint: {
+          type: 'dial',
+          host: '1:2::3',
+          port: 443,
+        },
+      } as config.TransportConfigJson)
     ).toEqual('[1:2::3]:443');
-    expect(config.getAddressFromTransportConfig({host: 'example.com'})).toEqual(
-      'example.com'
-    );
-    expect(config.getAddressFromTransportConfig({host: '1:2::3'})).toEqual(
-      '1:2::3'
-    );
   });
 
   it('fails on invalid config', () => {
-    expect(config.getAddressFromTransportConfig({})).toBeUndefined();
+    expect(
+      config.getAddressFromTransportConfig(
+        {} as unknown as config.TransportConfigJson
+      )
+    ).toBeUndefined();
   });
 });
 
 describe('getHostFromTransport', () => {
   it('extracts host', () => {
     expect(
-      config.getHostFromTransportConfig({host: 'example.com', port: '443'})
+      config.getHostFromTransportConfig({
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+        },
+      } as config.TransportConfigJson)
     ).toEqual('example.com');
     expect(
-      config.getHostFromTransportConfig({host: '1:2::3', port: '443'})
+      config.getHostFromTransportConfig({
+        endpoint: {
+          type: 'dial',
+          host: '1:2::3',
+        },
+      } as config.TransportConfigJson)
     ).toEqual('1:2::3');
   });
 
   it('fails on invalid config', () => {
-    expect(config.getHostFromTransportConfig({})).toBeUndefined();
+    expect(
+      config.getHostFromTransportConfig(
+        {} as unknown as config.TransportConfigJson
+      )
+    ).toBeUndefined();
   });
 });
 
@@ -55,24 +104,53 @@ describe('setTransportHost', () => {
     expect(
       JSON.stringify(
         config.setTransportConfigHost(
-          {host: 'example.com', port: '443'},
+          {
+            endpoint: {
+              type: 'dial',
+              host: 'example.com',
+              port: 443,
+            },
+          } as config.TransportConfigJson,
           '1.2.3.4'
         )
       )
-    ).toEqual('{"host":"1.2.3.4","port":"443"}');
+    ).toEqual('{"endpoint":{"type":"dial","host":"1.2.3.4","port":443}}');
     expect(
       JSON.stringify(
-        config.setTransportConfigHost({host: 'example.com', port: '443'}, '1:2::3')
+        config.setTransportConfigHost(
+          {
+            endpoint: {
+              type: 'dial',
+              host: 'example.com',
+              port: 443,
+            },
+          } as config.TransportConfigJson,
+          '1:2::3'
+        )
       )
-    ).toEqual('{"host":"1:2::3","port":"443"}');
+    ).toEqual('{"endpoint":{"type":"dial","host":"1:2::3","port":443}}');
     expect(
       JSON.stringify(
-        config.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3')
+        config.setTransportConfigHost(
+          {
+            endpoint: {
+              type: 'dial',
+              host: '1.2.3.4',
+              port: 443,
+            },
+          } as config.TransportConfigJson,
+          '1:2::3'
+        )
       )
-    ).toEqual('{"host":"1:2::3","port":"443"}');
+    ).toEqual('{"endpoint":{"type":"dial","host":"1:2::3","port":443}}');
   });
 
   it('fails on invalid config', () => {
-    expect(config.setTransportConfigHost({}, '1:2::3')).toBeUndefined();
+    expect(
+      config.setTransportConfigHost(
+        {} as unknown as config.TransportConfigJson,
+        '1:2::3'
+      )
+    ).toBeUndefined();
   });
 });
