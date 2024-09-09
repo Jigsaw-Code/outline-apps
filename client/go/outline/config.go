@@ -52,6 +52,9 @@ type configJSON struct {
 	Password string `json:"password"`
 	Method   string `json:"method"`
 	Prefix   string `json:"prefix"`
+
+	DynamicKeyServer     string `json:"server"`
+	DynamicKeyServerPort uint16 `json:"server_port"`
 }
 
 // ParseConfigFromJSON parses a JSON string `in` as a configJSON object.
@@ -61,6 +64,12 @@ func parseConfigFromJSON(in string) (*configJSON, error) {
 	var conf configJSON
 	if err := json.Unmarshal([]byte(in), &conf); err != nil {
 		return nil, err
+	}
+	if conf.Host == "" {
+		conf.Host = conf.DynamicKeyServer
+	}
+	if conf.Port == 0 {
+		conf.Port = conf.DynamicKeyServerPort
 	}
 	return &conf, nil
 }
