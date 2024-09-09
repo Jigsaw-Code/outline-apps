@@ -15,7 +15,9 @@
 import * as net from '@outline/infrastructure/net';
 
 interface DialEndpointJson {
-  address: string;
+  type: 'dial';
+  host: string;
+  port: number;
   dialer?: DialerJson;
 }
 
@@ -26,17 +28,23 @@ function newDialEndpointJson(json: unknown): DialEndpointJson {
   if (!(json instanceof Object)) {
     throw new Error(`endpoint config must be an object. Got ${typeof json}`);
   }
-  if (!('address' in json)) {
-    throw new Error('missing address in endpoint config');
+  if (!('host' in json)) {
+    throw new Error('missing host in endpoint config');
   }
-  if (typeof json.address !== 'string') {
-    throw new Error(
-      `endpoint address must be a string.  Got ${typeof json.address}`
-    );
+  if (typeof json.host !== 'string') {
+    throw new Error(`endpoint host must be a string.  Got ${typeof json.host}`);
+  }
+  if (!('port' in json)) {
+    throw new Error('missing port in endpoint config');
+  }
+  if (typeof json.port !== 'number') {
+    throw new Error(`endpoint port must be a number.  Got ${typeof json.port}`);
   }
 
   const dialerJson: DialEndpointJson = {
-    address: json.address,
+    type: 'dial',
+    host: json.host,
+    port: json.port,
   };
   if ('dialer' in json) {
     dialerJson.dialer = newDialerJson(json.dialer);
@@ -44,22 +52,26 @@ function newDialEndpointJson(json: unknown): DialEndpointJson {
   return dialerJson;
 }
 
-type EndpointJson = {
-  dial: DialEndpointJson;
-};
+type EndpointJson = DialEndpointJson;
 
 function newEndpointJson(json: unknown): EndpointJson {
   if (!(json instanceof Object)) {
     throw new Error(`endpoint config must be an object. Got ${typeof json}`);
   }
-  if ('dial' in json) {
-    return {dial: newDialEndpointJson(json.dial)};
-  } else {
-    throw new Error('invalid endpoint config');
+  if (!('type' in json)) {
+    json = {type: 'dial', ...json};
+    throw new Error('endpoint config must have a type');
+  }
+  switch (json.type) {
+    case 'dial':
+      return newDialEndpointJson(json);
+    default:
+      throw new Error(`invalid endpoint type ${json.type}`);
   }
 }
 
 interface ShadowsocksDialerJson {
+  type: 'shadowsocks';
   endpoint: EndpointJson;
   cipher: string;
   secret: string;
@@ -90,26 +102,27 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
       );
     }
     return {
+      type: 'shadowsocks',
       endpoint,
       cipher: json.cipher,
       secret: json.secret,
     };
   } else {
     // Legacy format.
-    if (!('host' in json)) {
+    if (!('server' in json)) {
       throw new Error('missing Shadowsocks host');
     }
-    if (typeof json.host !== 'string') {
+    if (typeof json.server !== 'string') {
       throw new Error(
-        `Shadowsocks host must be a string. Got ${typeof json.host}`
+        `Shadowsocks server must be a string. Got ${typeof json.server}`
       );
     }
-    if (!('port' in json)) {
+    if (!('server_port' in json)) {
       throw new Error('missing Shadowsocks port');
     }
-    if (typeof json.port !== 'string') {
+    if (typeof json.server_port !== 'number') {
       throw new Error(
-        `Shadowsocks port must be a string. Got ${typeof json.port}`
+        `Shadowsocks port must be a number. Got ${typeof json.server_port}`
       );
     }
     if (!('method' in json)) {
@@ -129,7 +142,12 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
       );
     }
     return {
-      endpoint: {dial: {address: net.joinHostPort(json.host, json.port)}},
+      type: 'shadowsocks',
+      endpoint: {
+        type: 'dial',
+        host: json.server,
+        port: json.server_port,
+      },
       cipher: json.method,
       secret: json.password,
     };
@@ -146,24 +164,24 @@ function newPipeDialerJson(json: unknown): PipeDialerJson {
   return json.map(newDialerJson);
 }
 
-type DialerJson =
-  | {
-      pipe: PipeDialerJson;
-    }
-  | {
-      shadowsocks: ShadowsocksDialerJson;
-    };
+type DialerJson = PipeDialerJson | ShadowsocksDialerJson;
 
 function newDialerJson(json: unknown): DialerJson {
   if (!(json instanceof Object)) {
     throw new Error(`dialer config must be an object. Got ${typeof json}`);
   }
-  if ('pipe' in json) {
-    return {pipe: newPipeDialerJson(json.pipe)};
-  } else if ('shadowsocks' in json) {
-    return {shadowsocks: newShadowsocksDialerJson(json)};
-  } else {
-    throw new Error('invalid dialer config');
+  if (!('type' in json)) {
+    // Make Shadowsocks the default if the type is missing, for backwards-compatibility.
+    json = {type: 'shadowsocks', ...json};
+    throw new Error('dialer config must have a type');
+  }
+  switch (json.type) {
+    case 'pipe':
+      return newPipeDialerJson(json);
+    case 'shadowsocks':
+      return newShadowsocksDialerJson(json);
+    default:
+      throw new Error('invalid dialer config');
   }
 }
 
@@ -175,24 +193,6 @@ export interface TunnelConfigJson {
   transport: TransportConfigJson;
 }
 
-function newTransportJson(json: unknown): TransportConfigJson {
-  if (!(json instanceof Object)) {
-    throw new Error(`transport config must be an object. Got ${typeof json}`);
-  }
-  try {
-    return newDialerJson(json);
-  } catch (e) {
-    try {
-      // Try as Shadowsocks as a fallback.
-      return {
-        shadowsocks: newShadowsocksDialerJson(json),
-      };
-    } catch {
-      throw e;
-    }
-  }
-}
-
 /** tunnelConfigFromJson creates a TunnelConfigJson from the given JSON object. */
 export function newTunnelJson(json: unknown): TunnelConfigJson {
   if (!(json instanceof Object)) {
@@ -200,12 +200,12 @@ export function newTunnelJson(json: unknown): TunnelConfigJson {
   }
   if ('transport' in json) {
     return {
-      transport: newTransportJson(json.transport),
+      transport: newDialerJson(json.transport),
     };
   } else {
     // Fallback to considering the object a TransportConfig if "transport" is not present.
     return {
-      transport: newTransportJson(json),
+      transport: newDialerJson(json),
     };
   }
 }
@@ -217,14 +217,10 @@ export function newTunnelJson(json: unknown): TunnelConfigJson {
 export function getAddressFromTransportConfig(
   transport: TransportConfigJson
 ): string | undefined {
-  const hostConfig: {host?: string; port?: string} = transport;
-  if (hostConfig.host && hostConfig.port) {
-    return net.joinHostPort(hostConfig.host, hostConfig.port);
-  } else if (hostConfig.host) {
-    return hostConfig.host;
-  } else {
-    return undefined;
+  if ('endpoint' in transport && transport.endpoint.type === 'dial') {
+    return net.joinHostPort(transport.endpoint.host, transport.endpoint.port);
   }
+  return undefined;
 }
 
 /**
@@ -234,8 +230,10 @@ export function getAddressFromTransportConfig(
 export function getHostFromTransportConfig(
   transport: TransportConfigJson
 ): string | undefined {
-  // TODO: extract from shadowsocks.
-  return (transport as unknown as {host: string | undefined}).host;
+  if ('endpoint' in transport && transport.endpoint.type === 'dial') {
+    return transport.endpoint.host;
+  }
+  return undefined;
 }
 
 /**
@@ -247,8 +245,7 @@ export function setTransportConfigHost(
   transport: TransportConfigJson,
   newHost: string
 ): TransportConfigJson | undefined {
-  if (!('host' in transport)) {
-    return undefined;
+  if ('endpoint' in transport && transport.endpoint.type === 'dial') {
+    return {...transport, endpoint: {...transport.endpoint, host: newHost}};
   }
-  return {...transport, host: newHost};
 }

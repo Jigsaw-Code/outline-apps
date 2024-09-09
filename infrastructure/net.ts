@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export function joinHostPort(host: string, port: string): string {
+export function joinHostPort(host: string, port: number): string {
   if (host.includes(':')) {
     return `[${host}]:${port}`;
   } else {
