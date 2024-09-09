@@ -35,6 +35,7 @@ type Client struct {
 
 // NewClient creates a new Outline client from a configuration string.
 func NewClient(transportConfig string) (*Client, error) {
+	// TODO: use normalized format.
 	config, err := parseConfigFromJSON(transportConfig)
 	if err != nil {
 		return nil, newIllegalConfigErrorWithDetails("transport config must be a valid JSON string", ".", transportConfig, "JSON string", err)

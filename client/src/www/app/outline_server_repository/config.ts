@@ -108,7 +108,7 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
       secret: json.secret,
     };
   } else {
-    // Legacy format.
+    // Legacy format: https://shadowsocks.org/doc/configs.html#config-file.
     if (!('server' in json)) {
       throw new Error('missing Shadowsocks host');
     }
