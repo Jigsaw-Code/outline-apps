@@ -135,7 +135,7 @@ export class OutlineServer implements Server {
   }
 }
 
-function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
+export function _parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
@@ -146,7 +146,13 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
   }
 
   return {
-    transport: responseJson,
+    transport: {
+      host: responseJson.server,
+      port: responseJson.server_port,
+      method: responseJson.method,
+      password: responseJson.password,
+      prefix: responseJson.prefix,
+    }
   };
 }
 
@@ -179,7 +185,7 @@ export async function fetchTunnelConfig(
       return staticKeyToTunnelConfig(responseBody);
     }
 
-    return parseTunnelConfigJson(responseBody);
+    return _parseTunnelConfigJson(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;

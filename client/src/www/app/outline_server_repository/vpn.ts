@@ -67,7 +67,8 @@ export type TransportConfigJson = object;
 
 /** TunnelConfigJson represents the configuration to set up a tunnel. */
 export interface TunnelConfigJson {
-  /** transport describes how to establish connections to the destinations. */
+  /** transport describes how to establish connections to the destinations.
+   * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
   transport: TransportConfigJson;
   // This is the place where routing configuration would go.
 }
