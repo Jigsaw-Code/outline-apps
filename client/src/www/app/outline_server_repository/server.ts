@@ -16,11 +16,13 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
 import {staticKeyToTunnelConfig} from './access_key';
-import {TunnelConfigJson, getAddressFromTransportConfig} from './config';
+import {TunnelConfigJson, TransportConfigJson, getAddressFromTransportConfig} from './config';
 import {VpnApi, StartRequestJson} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
+
+export const TEST_ONLY = {parseTunnelConfigJson};
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -141,8 +143,21 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
     );
   }
 
+  const transport: TransportConfigJson = {
+    type: 'shadowsocks',
+    endpoint: {
+      type: 'dial',
+      host: responseJson.server,
+      port: responseJson.server_port, 
+    },
+    cipher: responseJson.method,
+    secret: responseJson.password,
+  };
+  if (responseJson.prefix) {
+    transport.prefix = responseJson.prefix;
+  }
   return {
-    transport: responseJson,
+    transport,
   };
 }
 
