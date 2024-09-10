@@ -36,6 +36,70 @@ describe('newTunnelJson', () => {
       },
     } as config.TunnelConfigJson);
   });
+
+  it('parses prefix', () => {
+    expect(
+      config.newTunnelJson({
+        server: 'example.com',
+        server_port: 443,
+        method: 'METHOD',
+        password: 'PASSWORD',
+        prefix: '\x03\x02\x03',
+      })
+    ).toEqual({
+      transport: {
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+          port: 443,
+        },
+        cipher: 'METHOD',
+        secret: 'PASSWORD',
+        prefix: '\x03\x02\x03',
+      },
+    } as config.TunnelConfigJson);
+  });
+
+  it('fails on missing server', () => {
+    expect(() => {
+      config.newTunnelJson({
+        server_port: 443,
+        method: 'METHOD',
+        password: 'PASSWORD',
+      });
+    }).toThrow();
+  });
+
+  it('fails on missing port', () => {
+    expect(() => {
+      config.newTunnelJson({
+        server: 'example.com',
+        method: 'METHOD',
+        password: 'PASSWORD',
+      });
+    }).toThrow();
+  });
+
+  it('fails on missing method', () => {
+    expect(() => {
+      config.newTunnelJson({
+        server: 'example.com',
+        server_port: 443,
+        password: 'PASSWORD',
+      });
+    }).toThrow();
+  });
+
+  it('fails on missing password', () => {
+    expect(() => {
+      config.newTunnelJson({
+        server: 'example.com',
+        server_port: 443,
+        method: 'METHOD',
+      });
+    }).toThrow();
+  });
 });
 
 describe('getAddressFromTransport', () => {

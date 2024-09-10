@@ -72,7 +72,7 @@ interface ShadowsocksDialerJson {
   endpoint: EndpointJson;
   cipher: string;
   secret: string;
-  prefix_bytes?: string; // base64.
+  prefix?: string;
 }
 
 function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
@@ -138,7 +138,7 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
         `Shadowsocks password must be a string. Got ${typeof json.password}`
       );
     }
-    return {
+    const config: ShadowsocksDialerJson = {
       type: 'shadowsocks',
       endpoint: {
         type: 'dial',
@@ -148,8 +148,16 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
       cipher: json.method,
       secret: json.password,
     };
+    if ('prefix' in json) {
+      if (typeof json.prefix !== 'string') {
+        throw new Error(
+          `Shadowsocks prefix must be a string. Got ${typeof json.prefix}`
+        );
+      }
+      config.prefix = json.prefix;
+    }
+    return config;
   }
-  // TODO(fortuna): Add prefix;
 }
 
 type PipeDialerJson = DialerJson[];
