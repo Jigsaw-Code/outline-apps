@@ -23,7 +23,7 @@ interface DialEndpointJson {
 
 function newDialEndpointJson(json: unknown): DialEndpointJson {
   if (!(json instanceof Object)) {
-    throw new Error(`endpoint config must be an object. Got ${typeof json}`);
+    throw new Error(`dial endpoint config must be an object. Got ${typeof json}`);
   }
   if (!('host' in json)) {
     throw new Error('missing host in endpoint config');
@@ -52,6 +52,15 @@ function newDialEndpointJson(json: unknown): DialEndpointJson {
 type EndpointJson = DialEndpointJson;
 
 function newEndpointJson(json: unknown): EndpointJson {
+  // A string is considered a direct dial to an address.
+  if (typeof json === 'string') {
+    const split = net.splitHostPort(json);
+    json = {
+      type: 'dial',
+      host: split.host,
+      port: split.port,
+    };
+  }
   if (!(json instanceof Object)) {
     throw new Error(`endpoint config must be an object. Got ${typeof json}`);
   }
@@ -98,12 +107,21 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
         `Shadowsocks secret must be a string. Got ${typeof json.secret}`
       );
     }
-    return {
+    const config: ShadowsocksDialerJson = {
       type: 'shadowsocks',
       endpoint,
       cipher: json.cipher,
       secret: json.secret,
     };
+    if ('prefix' in json) {
+      if (typeof json.prefix !== 'string') {
+        throw new Error(
+          `Shadowsocks prefix must be a string. Got ${typeof json.prefix}`
+        );
+      }
+      config.prefix = json.prefix;
+    }
+    return config;
   } else {
     // Legacy format: https://shadowsocks.org/doc/configs.html#config-file.
     if (!('server' in json)) {

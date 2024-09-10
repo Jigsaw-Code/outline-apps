@@ -100,6 +100,62 @@ describe('newTunnelJson', () => {
       });
     }).toThrow();
   });
+
+  it('parses new format', () => {
+    expect(
+      config.newTunnelJson({
+        transport: {
+          type: 'shadowsocks',
+          endpoint: {
+            type: 'dial',
+            host: 'example.com',
+            port: 443,
+          },
+          cipher: 'METHOD',
+          secret: 'PASSWORD',
+          prefix: '\x03\x02\x03',
+        },
+      })
+    ).toEqual({
+      transport: {
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+          port: 443,
+        },
+        cipher: 'METHOD',
+        secret: 'PASSWORD',
+        prefix: '\x03\x02\x03',
+      },
+    } as config.TunnelConfigJson);
+  });
+
+  it('parses abbreviated endpoint', () => {
+    expect(
+      config.newTunnelJson({
+        transport: {
+          type: 'shadowsocks',
+          endpoint: 'example.com:443',
+          cipher: 'METHOD',
+          secret: 'PASSWORD',
+          prefix: '\x03\x02\x03',
+        },
+      })
+    ).toEqual({
+      transport: {
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'example.com',
+          port: 443,
+        },
+        cipher: 'METHOD',
+        secret: 'PASSWORD',
+        prefix: '\x03\x02\x03',
+      },
+    } as config.TunnelConfigJson);
+  });
 });
 
 describe('getAddressFromTransport', () => {

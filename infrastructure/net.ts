@@ -19,3 +19,14 @@ export function joinHostPort(host: string, port: string): string {
     return `${host}:${port}`;
   }
 }
+
+export function splitHostPort(
+  address: string
+): {host: string; port: number} | null {
+  const match = address.match(/^\[?([^\]]+)\]?:(\d+)$/);
+  if (match) {
+    return {host: match[1], port: parseInt(match[2])};
+  } else {
+    return null;
+  }
+}
