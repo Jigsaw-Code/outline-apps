@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as server from './server';
+import {TEST_ONLY} from './server';
 
-describe('_parseTunnelConfigJson', () => {
+describe('parseTunnelConfigJson', () => {
   it('parse correctly', () => {
     expect(
-      server._parseTunnelConfigJson(
+        TEST_ONLY.parseTunnelConfigJson(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
       )
     ).toEqual({
@@ -32,7 +32,7 @@ describe('_parseTunnelConfigJson', () => {
 
   it('parse prefix', () => {
     expect(
-      server._parseTunnelConfigJson(
+        TEST_ONLY.parseTunnelConfigJson(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
       )
     ).toEqual({

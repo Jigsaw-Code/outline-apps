@@ -27,6 +27,8 @@ import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 
+export const TEST_ONLY = {parseTunnelConfigJson};
+
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
@@ -136,7 +138,7 @@ export class OutlineServer implements Server {
   }
 }
 
-export function _parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
+function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
   const responseJson = JSON.parse(responseBody);
 
   if ('error' in responseJson) {
@@ -189,7 +191,7 @@ export async function fetchTunnelConfig(
       return staticKeyToTunnelConfig(responseBody);
     }
 
-    return _parseTunnelConfigJson(responseBody);
+    return parseTunnelConfigJson(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;
