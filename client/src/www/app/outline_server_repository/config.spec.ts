@@ -156,6 +156,105 @@ describe('newTunnelJson', () => {
       },
     } as config.TunnelConfigJson);
   });
+
+  it('parses multi-hop', () => {
+    expect(
+      config.newTunnelJson({
+        transport: {
+          type: 'shadowsocks',
+          endpoint: {
+            type: 'dial',
+            host: 'server2.com',
+            port: 443,
+            dialer: {
+              type: 'shadowsocks',
+              endpoint: 'server1.com:8888',
+              cipher: 'METHOD1',
+              secret: 'PASSWORD1',
+              prefix: '\x01\x01\x01',
+            },
+          },
+          cipher: 'METHOD2',
+          secret: 'PASSWORD2',
+          prefix: '\x03\x02\x03',
+        },
+      })
+    ).toEqual({
+      transport: {
+        type: 'shadowsocks',
+        endpoint: {
+          type: 'dial',
+          host: 'server2.com',
+          port: 443,
+          dialer: {
+            type: 'shadowsocks',
+            endpoint: {
+              type: 'dial',
+              host: 'server1.com',
+              port: 8888,
+            },
+            cipher: 'METHOD1',
+            secret: 'PASSWORD1',
+            prefix: '\x01\x01\x01',
+          },
+        },
+        cipher: 'METHOD2',
+        secret: 'PASSWORD2',
+        prefix: '\x03\x02\x03',
+      },
+    } as config.TunnelConfigJson);
+  });
+
+  it('parses pipe', () => {
+    expect(
+      config.newTunnelJson({
+        transport: [
+          {
+            type: 'shadowsocks',
+            endpoint: 'server1.com:8888',
+            cipher: 'METHOD1',
+            secret: 'PASSWORD1',
+            prefix: '\x01\x01\x01',
+          },
+          {
+            type: 'shadowsocks',
+            endpoint: 'server2.com:443',
+            cipher: 'METHOD2',
+            secret: 'PASSWORD2',
+            prefix: '\x03\x02\x03',
+          },
+        ],
+      })
+    ).toEqual({
+      transport: {
+        type: 'pipe',
+        dialers: [
+          {
+            type: 'shadowsocks',
+            endpoint: {
+              type: 'dial',
+              host: 'server1.com',
+              port: 8888,
+            },
+            cipher: 'METHOD1',
+            secret: 'PASSWORD1',
+            prefix: '\x01\x01\x01',
+          },
+          {
+            type: 'shadowsocks',
+            endpoint: {
+              type: 'dial',
+              host: 'server2.com',
+              port: 443,
+            },
+            cipher: 'METHOD2',
+            secret: 'PASSWORD2',
+            prefix: '\x03\x02\x03',
+          },
+        ],
+      },
+    } as config.TunnelConfigJson);
+  });
 });
 
 describe('getAddressFromTransport', () => {

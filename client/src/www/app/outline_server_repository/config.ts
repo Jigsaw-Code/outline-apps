@@ -23,7 +23,9 @@ interface DialEndpointJson {
 
 function newDialEndpointJson(json: unknown): DialEndpointJson {
   if (!(json instanceof Object)) {
-    throw new Error(`dial endpoint config must be an object. Got ${typeof json}`);
+    throw new Error(
+      `dial endpoint config must be an object. Got ${typeof json}`
+    );
   }
   if (!('host' in json)) {
     throw new Error('missing host in endpoint config');
@@ -178,18 +180,30 @@ function newShadowsocksDialerJson(json: unknown): ShadowsocksDialerJson {
   }
 }
 
-type PipeDialerJson = DialerJson[];
+type PipeDialerJson = {
+  type: 'pipe';
+  dialers: DialerJson[];
+};
 
 function newPipeDialerJson(json: unknown): PipeDialerJson {
-  if (!(json instanceof Array)) {
-    throw new Error(`pipe dialer config must be a list. Got ${typeof json}`);
+  if (!(json instanceof Object)) {
+    throw new Error(`pipe dialer config must be an object. Got ${typeof json}`);
   }
-  return json.map(newDialerJson);
+  if (!('dialers' in json) || !(json.dialers instanceof Array)) {
+    throw new Error('pipe dialer must have a dialers list');
+  }
+  return {
+    type: 'pipe',
+    dialers: json.dialers.map(newDialerJson),
+  };
 }
 
 type DialerJson = PipeDialerJson | ShadowsocksDialerJson;
 
 function newDialerJson(json: unknown): DialerJson {
+  if (json instanceof Array) {
+    json = {type: 'pipe', dialers: json};
+  }
   if (!(json instanceof Object)) {
     throw new Error(`dialer config must be an object. Got ${typeof json}`);
   }
