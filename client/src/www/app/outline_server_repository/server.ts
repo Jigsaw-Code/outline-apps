@@ -18,6 +18,7 @@ import * as net from '@outline/infrastructure/net';
 import {staticKeyToTunnelConfig} from './access_key';
 import {
   TunnelConfigJson,
+  TransportConfigJson,
   VpnApi,
   StartRequestJson,
   getAddressFromTransportConfig,
@@ -145,14 +146,17 @@ export function _parseTunnelConfigJson(responseBody: string): TunnelConfigJson |
     );
   }
 
+  const transport: TransportConfigJson = {
+    host: responseJson.server,
+    port: responseJson.server_port,
+    method: responseJson.method,
+    password: responseJson.password,
+  };
+  if (responseJson.prefix) {
+    (transport as unknown as any).prefix = responseJson.prefix
+  }
   return {
-    transport: {
-      host: responseJson.server,
-      port: responseJson.server_port,
-      method: responseJson.method,
-      password: responseJson.password,
-      prefix: responseJson.prefix,
-    }
+    transport
   };
 }
 
