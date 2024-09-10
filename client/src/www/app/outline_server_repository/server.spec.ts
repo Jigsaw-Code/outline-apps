@@ -17,28 +17,32 @@ import * as server from './server';
 describe('_parseTunnelConfigJson', () => {
   it('parse correctly', () => {
     expect(
-      server._parseTunnelConfigJson('{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}')
+      server._parseTunnelConfigJson(
+        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
+      )
     ).toEqual({
       transport: {
-        host: "example.com",
+        host: 'example.com',
         port: 443,
-        method: "METHOD",
-        password: "PASSWORD",
-      }
+        method: 'METHOD',
+        password: 'PASSWORD',
+      },
     });
   });
 
   it('parse prefix', () => {
     expect(
-      server._parseTunnelConfigJson('{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}')
+      server._parseTunnelConfigJson(
+        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
+      )
     ).toEqual({
       transport: {
-        host: "example.com",
+        host: 'example.com',
         port: 443,
-        method: "METHOD",
-        password: "PASSWORD",
-        prefix: "POST ",
-      }
+        method: 'METHOD',
+        password: 'PASSWORD',
+        prefix: 'POST ',
+      },
     });
   });
 });
