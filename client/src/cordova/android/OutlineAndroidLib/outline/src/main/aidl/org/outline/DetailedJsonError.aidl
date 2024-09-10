@@ -19,7 +19,7 @@ package org.outline;
  * The code field is a string that can be used to determine the error category in Java.
  * The errorJson contains a JSON string of the error details that can be passed back to TypeScript.
  */
-parcelable VpnServiceError {
+parcelable DetailedJsonError {
   String code;
   String errorJson;
 }

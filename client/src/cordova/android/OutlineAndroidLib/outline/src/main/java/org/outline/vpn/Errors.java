@@ -16,7 +16,7 @@ package org.outline.vpn;
 
 import java.util.Locale;
 import java.util.logging.Logger;
-import org.outline.VpnServiceError;
+import org.outline.DetailedJsonError;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
 
@@ -26,12 +26,12 @@ import platerrors.PlatformError;
 public class Errors {
   private static final Logger LOG = Logger.getLogger(Errors.class.getName());
 
-  public static VpnServiceError toVpnServiceError(final PlatformError err) {
+  public static DetailedJsonError toDetailedJsonError(final PlatformError err) {
     if (err == null) {
       return null;
     }
 
-    final VpnServiceError svcErr = new VpnServiceError();
+    final DetailedJsonError svcErr = new DetailedJsonError();
     svcErr.code = err.getCode();
 
     try {

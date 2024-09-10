@@ -255,7 +255,7 @@ public class OutlinePlugin extends CordovaPlugin {
     startVpnRequest = null;
   }
 
-  private VpnServiceError startVpnTunnel(
+  private DetailedJsonError startVpnTunnel(
       final String tunnelId, final String transportConfig, final String serverName
   ) throws RemoteException {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
@@ -328,10 +328,10 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   private void sendActionResult(final CallbackContext callback, @Nullable PlatformError error) {
-    sendActionResult(callback, Errors.toVpnServiceError(error));
+    sendActionResult(callback, Errors.toDetailedJsonError(error));
   }
 
-  private void sendActionResult(final CallbackContext callback, @Nullable VpnServiceError error) {
+  private void sendActionResult(final CallbackContext callback, @Nullable DetailedJsonError error) {
     if (error == null) {
       callback.success();
     } else {

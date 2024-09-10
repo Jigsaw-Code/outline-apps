@@ -37,7 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
 import org.outline.TunnelConfig;
-import org.outline.VpnServiceError;
+import org.outline.DetailedJsonError;
 import org.outline.log.SentryErrorReporter;
 import outline.NewClientResult;
 import outline.Outline;
@@ -92,12 +92,12 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public VpnServiceError startTunnel(TunnelConfig config) {
+    public DetailedJsonError startTunnel(TunnelConfig config) {
       return VpnTunnelService.this.startTunnel(config);
     }
 
     @Override
-    public VpnServiceError stopTunnel(String tunnelId) {
+    public DetailedJsonError stopTunnel(String tunnelId) {
       return VpnTunnelService.this.stopTunnel(tunnelId);
     }
 
@@ -173,8 +173,8 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private VpnServiceError startTunnel(final TunnelConfig config) {
-    return Errors.toVpnServiceError(startTunnel(config, false));
+  private DetailedJsonError startTunnel(final TunnelConfig config) {
+    return Errors.toDetailedJsonError(startTunnel(config, false));
   }
 
   private synchronized PlatformError startTunnel(
@@ -252,9 +252,9 @@ public class VpnTunnelService extends VpnService {
     return null;
   }
 
-  private synchronized VpnServiceError stopTunnel(final String tunnelId) {
+  private synchronized DetailedJsonError stopTunnel(final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-      return Errors.toVpnServiceError(new PlatformError(
+      return Errors.toDetailedJsonError(new PlatformError(
           Platerrors.InternalError,
           "VPN profile is not active"));
     }

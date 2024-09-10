@@ -15,7 +15,7 @@
 package org.outline;
 
 import org.outline.TunnelConfig;
-import org.outline.VpnServiceError;
+import org.outline.DetailedJsonError;
 
 /**
  * AIDL for org.outline.vpn.VpnTunnelService.
@@ -35,7 +35,7 @@ interface IVpnTunnelService {
    * @param isAutoStart boolean whether the tunnel was started without user intervention.
    * @return error code as defined in OutlinePlugin.ErrorCode.
    */
-  VpnServiceError startTunnel(in TunnelConfig config);
+  DetailedJsonError startTunnel(in TunnelConfig config);
 
   /**
    * Tears down a tunnel started by calling `startTunnel`. Stops tun2socks, Outline, and
@@ -44,7 +44,7 @@ interface IVpnTunnelService {
    * @param tunnelId unique identifier for the tunnel.
    * @return error code representing whether the operation was successful.
    */
-  VpnServiceError stopTunnel(String tunnelId);
+  DetailedJsonError stopTunnel(String tunnelId);
 
   /**
    * Determines whether a tunnel has been started.
