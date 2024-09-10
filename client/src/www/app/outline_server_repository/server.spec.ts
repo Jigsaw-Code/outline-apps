@@ -19,7 +19,7 @@ describe('_parseTunnelConfigJson', () => {
     expect(
       server._parseTunnelConfigJson('{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}')
     ).toEqual({
-        transport: {
+      transport: {
         host: "example.com",
         port: 443,
         method: "METHOD",
@@ -32,7 +32,7 @@ describe('_parseTunnelConfigJson', () => {
     expect(
       server._parseTunnelConfigJson('{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}')
     ).toEqual({
-        transport: {
+      transport: {
         host: "example.com",
         port: 443,
         method: "METHOD",
