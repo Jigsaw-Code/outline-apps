@@ -41,6 +41,8 @@ type Tunnel interface {
 }
 
 // ConnectOutlineTunnelResult represents the result of [ConnectOutlineTunnel].
+//
+// We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
 type ConnectOutlineTunnelResult struct {
 	Tunnel Tunnel
 	Error  *platerrors.PlatformError

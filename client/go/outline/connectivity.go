@@ -28,6 +28,8 @@ const (
 )
 
 // TCPAndUDPConnectivityResult represents the result of TCP and UDP connectivity checks.
+//
+// We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
 type TCPAndUDPConnectivityResult struct {
 	TCPError, UDPError *platerrors.PlatformError
 }

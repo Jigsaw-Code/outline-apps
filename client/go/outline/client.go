@@ -34,6 +34,8 @@ type Client struct {
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
+//
+// We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
 type NewClientResult struct {
 	Client *Client
 	Error  *platerrors.PlatformError
