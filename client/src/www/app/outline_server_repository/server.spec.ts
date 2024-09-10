@@ -17,7 +17,7 @@ import {TEST_ONLY} from './server';
 describe('parseTunnelConfigJson', () => {
   it('parse correctly', () => {
     expect(
-        TEST_ONLY.parseTunnelConfigJson(
+      TEST_ONLY.parseTunnelConfigJson(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
       )
     ).toEqual({
@@ -32,7 +32,7 @@ describe('parseTunnelConfigJson', () => {
 
   it('parse prefix', () => {
     expect(
-        TEST_ONLY.parseTunnelConfigJson(
+      TEST_ONLY.parseTunnelConfigJson(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
       )
     ).toEqual({
