@@ -155,7 +155,7 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
     password: responseJson.password,
   };
   if (responseJson.prefix) {
-    (transport as unknown as any).prefix = responseJson.prefix;
+    (transport as {prefix?: string}).prefix = responseJson.prefix;
   }
   return {
     transport,
