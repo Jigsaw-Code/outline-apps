@@ -39,12 +39,13 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
 import {
-  getHostFromTransportConfig,
-  setTransportConfigHost,
   StartRequestJson,
-  TunnelConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
+import {
+  setTransportConfigHost,
+  TunnelConfigJson,
+} from '../src/www/app/outline_server_repository/config';
 import * as errors from '../src/www/model/errors';
 
 // TODO: can we define these macros in other .d.ts files with default values?
