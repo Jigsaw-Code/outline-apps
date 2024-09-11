@@ -18,6 +18,7 @@ import * as net from '@outline/infrastructure/net';
 import {staticKeyToTunnelConfig} from './access_key';
 import {
   TunnelConfigJson,
+  TransportConfigJson,
   VpnApi,
   StartRequestJson,
   getAddressFromTransportConfig,
@@ -25,6 +26,8 @@ import {
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
+
+export const TEST_ONLY = {parseTunnelConfigJson};
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -145,8 +148,17 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
     );
   }
 
+  const transport: TransportConfigJson = {
+    host: responseJson.server,
+    port: responseJson.server_port,
+    method: responseJson.method,
+    password: responseJson.password,
+  };
+  if (responseJson.prefix) {
+    (transport as {prefix?: string}).prefix = responseJson.prefix;
+  }
   return {
-    transport: responseJson,
+    transport,
   };
 }
 
