@@ -37,8 +37,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
 import org.outline.TunnelConfig;
+import org.outline.DetailedJsonError;
 import org.outline.log.SentryErrorReporter;
+import outline.NewClientResult;
 import outline.Outline;
+import outline.TCPAndUDPConnectivityResult;
+import platerrors.Platerrors;
+import platerrors.PlatformError;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -55,28 +60,6 @@ public class VpnTunnelService extends VpnService {
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
 
-  // Plugin error codes. Keep in sync with www/model/errors.ts.
-  public enum ErrorCode {
-    NO_ERROR(0),
-    UNEXPECTED(1),
-    VPN_PERMISSION_NOT_GRANTED(2),
-    INVALID_SERVER_CREDENTIALS(3),
-    UDP_RELAY_NOT_ENABLED(4),
-    SERVER_UNREACHABLE(5),
-    VPN_START_FAILURE(6),
-    ILLEGAL_SERVER_CONFIGURATION(7),
-    CLIENT_START_FAILURE(8),
-    CONFIGURE_SYSTEM_PROXY_FAILURE(9),
-    NO_ADMIN_PERMISSIONS(10),
-    UNSUPPORTED_ROUTING_TABLE(11),
-    SYSTEM_MISCONFIGURED(12);
-
-    public final int value;
-    ErrorCode(int value) {
-      this.value = value;
-    }
-  }
-
   public enum TunnelStatus {
     INVALID(-1), // Internal use only.
     CONNECTED(0),
@@ -92,8 +75,6 @@ public class VpnTunnelService extends VpnService {
   // IPC message and intent parameters.
   public enum MessageData {
     TUNNEL_ID("tunnelId"),
-    TUNNEL_CONFIG("tunnelConfig"),
-    ACTION("action"),
     PAYLOAD("payload"),
     ERROR_REPORTING_API_KEY("errorReportingApiKey");
 
@@ -111,13 +92,13 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public int startTunnel(TunnelConfig config) {
-      return VpnTunnelService.this.startTunnel(config).value;
+    public DetailedJsonError startTunnel(TunnelConfig config) {
+      return VpnTunnelService.this.startTunnel(config);
     }
 
     @Override
-    public int stopTunnel(String tunnelId) {
-      return VpnTunnelService.this.stopTunnel(tunnelId).value;
+    public DetailedJsonError stopTunnel(String tunnelId) {
+      return VpnTunnelService.this.stopTunnel(tunnelId);
     }
 
     @Override
@@ -192,15 +173,15 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  private ErrorCode startTunnel(final TunnelConfig config) {
-    return startTunnel(config, false);
+  private DetailedJsonError startTunnel(final TunnelConfig config) {
+    return Errors.toDetailedJsonError(startTunnel(config, false));
   }
 
-  private synchronized ErrorCode startTunnel(
+  private synchronized PlatformError startTunnel(
       final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
     if (config.id == null || config.transportConfig == null) {
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return new PlatformError(Platerrors.IllegalConfig, "id and transportConfig are required");
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {
@@ -215,29 +196,28 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final outline.Client client;
-    try {
-      client = new outline.Client(config.transportConfig);
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, "Invalid configuration", e);
+    final NewClientResult clientResult = Outline.newClientAndReturnError(config.transportConfig);
+    if (clientResult.getError() != null) {
+      LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION;
+      return clientResult.getError();
     }
+    final outline.Client client = clientResult.getClient();
 
-    ErrorCode errorCode = ErrorCode.NO_ERROR;
+    PlatformError udpConnError = null;
     if (!isAutoStart) {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        errorCode = checkServerConnectivity(client);
-        if (!(errorCode == ErrorCode.NO_ERROR
-                || errorCode == ErrorCode.UDP_RELAY_NOT_ENABLED)) {
+        final TCPAndUDPConnectivityResult connResult = checkServerConnectivity(client);
+        if (connResult.getTCPError() != null) {
           tearDownActiveTunnel();
-          return errorCode;
+          return connResult.getTCPError();
         }
+        udpConnError = connResult.getUDPError();
       } catch (Exception e) {
         tearDownActiveTunnel();
-        return ErrorCode.CLIENT_START_FAILURE;
+        return new PlatformError(Platerrors.InternalError, "failed to check connectivity");
       }
     }
     tunnelConfig = config;
@@ -247,31 +227,39 @@ public class VpnTunnelService extends VpnService {
       if (!vpnTunnel.establishVpn()) {
         LOG.severe("Failed to establish the VPN");
         tearDownActiveTunnel();
-        return ErrorCode.VPN_START_FAILURE;
+        return new PlatformError(Platerrors.SetupSystemVPNFailed, "failed to establish the VPN");
       }
       startNetworkConnectivityMonitor();
     }
 
     final boolean remoteUdpForwardingEnabled =
-        isAutoStart ? tunnelStore.isUdpSupported() : errorCode == ErrorCode.NO_ERROR;
+        isAutoStart ? tunnelStore.isUdpSupported() : udpConnError == null;
     try {
-      vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      final PlatformError tunError = vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      if (tunError != null) {
+        LOG.log(Level.SEVERE, "Failed to connect the tunnel", tunError);
+        tearDownActiveTunnel();
+        return tunError;
+      }
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
       tearDownActiveTunnel();
-      return ErrorCode.VPN_START_FAILURE;
+      return new PlatformError(Platerrors.SetupTrafficHandlerFailed,
+          "failed to connect the tunnel");
     }
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
-    return ErrorCode.NO_ERROR;
+    return null;
   }
 
-  private synchronized ErrorCode stopTunnel(final String tunnelId) {
+  private synchronized DetailedJsonError stopTunnel(final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-      return ErrorCode.UNEXPECTED;
+      return Errors.toDetailedJsonError(new PlatformError(
+          Platerrors.InternalError,
+          "VPN profile is not active"));
     }
     tearDownActiveTunnel();
-    return ErrorCode.NO_ERROR;
+    return null;
   }
 
   private synchronized boolean isTunnelActive(final String tunnelId) {
@@ -296,19 +284,13 @@ public class VpnTunnelService extends VpnService {
     vpnTunnel.tearDownVpn();
   }
 
-  private ErrorCode checkServerConnectivity(final outline.Client client) {
-    try {
-      long errorCode = Outline.checkConnectivity(client);
-      ErrorCode result = ErrorCode.values()[(int) errorCode];
-      LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result.name()));
-      return result;
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Connectivity checks failed", e);
-    }
-    return ErrorCode.UNEXPECTED;
-  }
-
   // Connectivity
+
+  private TCPAndUDPConnectivityResult checkServerConnectivity(final outline.Client client) {
+    final TCPAndUDPConnectivityResult result = Outline.checkTCPAndUDPConnectivity(client);
+    LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result));
+    return result;
+  }
 
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     private final ConnectivityManager connectivityManager;

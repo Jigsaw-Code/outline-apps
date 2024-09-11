@@ -12,24 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {PlatformError} from '../model/platform_error';
+package org.outline;
 
-export const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
-
-// Helper function to call the Outline Cordova plugin.
-export function pluginExec<T>(cmd: string, ...args: unknown[]): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, cmd, args);
-  });
-}
-
-export async function pluginExecWithErrorCode<T>(
-  cmd: string,
-  ...args: unknown[]
-): Promise<T> {
-  try {
-    return await pluginExec<T>(cmd, ...args);
-  } catch (e) {
-    throw PlatformError.parseFrom(e);
-  }
+/*
+ * This class represents a structured error from the Android VPN service.
+ * The code field is a string that can be used to determine the error category in Java.
+ * The errorJson contains a JSON string of the error details that can be passed back to TypeScript.
+ */
+parcelable DetailedJsonError {
+  String code;
+  String errorJson;
 }

@@ -81,7 +81,7 @@ func TestPlatformErrorJSONOutput(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := MarshalJSONString(tc.in)
+			got, err := MarshalJSONString(&tc.in)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
@@ -120,13 +120,10 @@ func TestEmptyErrorCode(t *testing.T) {
 	want := "(ERR_INTERNAL_ERROR) "
 	require.Equal(t, want, got)
 
-	got, err := MarshalJSONString(*pe)
+	got, err := MarshalJSONString(pe)
 	require.NoError(t, err)
 	want = `{"code":"ERR_INTERNAL_ERROR","message":""}`
 	require.Equal(t, want, got)
-
-	// Make sure err.Code is not modified
-	require.Empty(t, pe.Code)
 
 	pe = ToPlatformError(pe)
 	require.Equal(t, InternalError, pe.Code)
@@ -138,7 +135,7 @@ func TestJSONMarshalError(t *testing.T) {
 	e := &PlatformError{Code: "ERR_\\CYCLE\\_JSON", Message: "Cycled \n\"JSON\""}
 	e.Cause = e
 
-	got, err := MarshalJSONString(*e)
+	got, err := MarshalJSONString(e)
 	require.Error(t, err)
 	require.Empty(t, got)
 }

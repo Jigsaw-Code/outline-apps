@@ -60,7 +60,11 @@ type configJSON struct {
 func parseConfigFromJSON(in string) (*configJSON, error) {
 	var conf configJSON
 	if err := json.Unmarshal([]byte(in), &conf); err != nil {
-		return nil, err
+		return nil, platerrors.PlatformError{
+			Code:    platerrors.IllegalConfig,
+			Message: "transport config is not a valid JSON",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
 	return &conf, nil
 }

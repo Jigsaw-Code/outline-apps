@@ -16,6 +16,7 @@ package platerrors
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -33,6 +34,17 @@ type PlatformError struct {
 }
 
 var _ error = PlatformError{}
+
+// NewPlatformError creates a new [PlatformError] from the error code and message.
+//
+// This function is primarily intended for use by Java or Swift code.
+// For Go code, it is recommended to construct the [PlatformError] struct directly.
+func NewPlatformError(code ErrorCode, message string) *PlatformError {
+	return &PlatformError{
+		Code:    code,
+		Message: message,
+	}
+}
 
 // ToPlatformError converts an [error] into a [PlatformError].
 // If the provided err is already a [PlatformError], it is returned as is.
@@ -76,7 +88,10 @@ func (e PlatformError) Unwrap() error {
 // MarshalJSONString returns a JSON string containing the [PlatformError] details
 // and all its underlying causes.
 // The resulting JSON can be used to reconstruct the error in TypeScript.
-func MarshalJSONString(e PlatformError) (string, error) {
+func MarshalJSONString(e *PlatformError) (string, error) {
+	if e == nil {
+		return "", errors.New("a non-nil PlatformError is required")
+	}
 	e.normalize()
 	jsonBytes, err := json.Marshal(e)
 	return string(jsonBytes), err
