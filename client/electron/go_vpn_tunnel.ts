@@ -338,7 +338,8 @@ class GoTun2socks {
  */
 async function checkConnectivity(tun2socks: GoTun2socks) {
   const output = await tun2socks.checkConnectivity();
-  const outObj = JSON.parse(output);
+  // Only parse the first line, because sometimes Windows Crypto API adds random logs to stdout.
+  const outObj = JSON.parse(output.split('\n')[0]);
   if ('tcpErrorJson' in outObj && outObj.tcpErrorJson) {
     throw new Error(outObj.tcpErrorJson);
   }
