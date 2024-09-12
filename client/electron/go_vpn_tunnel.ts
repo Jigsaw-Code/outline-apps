@@ -292,7 +292,7 @@ class GoTun2socks {
       this.monitorStarted().then(() => (restarting = true));
       try {
         lastError = null;
-        await this.process.launch(args, true);
+        await this.process.launch(args, false);
         console.info('[tun2socks] - exited with no errors');
       } catch (e) {
         console.error('[tun2socks] - terminated due to:', e);
@@ -340,10 +340,10 @@ async function checkConnectivity(tun2socks: GoTun2socks) {
   const output = await tun2socks.checkConnectivity();
   // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
   const outObj = JSON.parse(output.split('\n')[0]);
-  if ('tcpErrorJson' in outObj && outObj.tcpErrorJson) {
-    throw new Error(outObj.tcpErrorJson);
+  if ('tcp' in outObj && outObj.tcp) {
+    throw new Error(outObj.tcp);
   }
-  if ('udpErrorJson' in outObj && outObj.udpErrorJson) {
+  if ('udp' in outObj && outObj.udp) {
     return false;
   }
   return true;

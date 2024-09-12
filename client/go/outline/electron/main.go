@@ -52,8 +52,8 @@ var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 // The result JSON containing two error strings when "--checkConnectivity".
 type CheckConnectivityResult struct {
-	TCPErrorJson string `json:"tcpErrorJson,omitempty"`
-	UDPErrorJson string `json:"udpErrorJson,omitempty"`
+	TCPErrorJson string `json:"tcp"`
+	UDPErrorJson string `json:"udp"`
 }
 
 var args struct {

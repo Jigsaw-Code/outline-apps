@@ -70,7 +70,7 @@ export class ChildProcessHelper {
    *
    * @param args The args for the process
    */
-  async launch(args: string[], ignoreStdOut: boolean = false): Promise<string> {
+  async launch(args: string[], returnStdOut: boolean = true): Promise<string> {
     if (this.childProcess) {
       throw new Error(
         `subprocess ${this.processName} has already been launched`
@@ -102,7 +102,7 @@ export class ChildProcessHelper {
 
       this.childProcess?.stdout?.on('data', data => {
         this.stdOutListener?.(data);
-        if (!ignoreStdOut) {
+        if (returnStdOut) {
           stdOutStr += data?.toString() ?? '';
         }
       });
