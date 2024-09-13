@@ -340,10 +340,10 @@ async function checkConnectivity(tun2socks: GoTun2socks) {
   const output = await tun2socks.checkConnectivity();
   // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
   const outObj = JSON.parse(output.split('\n')[0]);
-  if ('tcp' in outObj && outObj.tcp) {
+  if (outObj.tcp) {
     throw new Error(outObj.tcp);
   }
-  if ('udp' in outObj && outObj.udp) {
+  if (outObj.udp) {
     return false;
   }
   return true;
