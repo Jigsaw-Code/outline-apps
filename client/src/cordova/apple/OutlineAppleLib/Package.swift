@@ -32,6 +32,10 @@ let package = Package(
             name: "OutlineAppleLib",
             targets: ["OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
         ),
+        .library(
+            name: "OutlineUtils",
+            targets: ["DetailedJsonError"]
+        ),
         // Expose OutlineTunnel so the VpnExtension can use it.
         .library(
             name: "OutlineTunnel",
@@ -64,5 +68,6 @@ let package = Package(
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
             ]
         ),
+        .target(name: "DetailedJsonError"),
     ]
 )
