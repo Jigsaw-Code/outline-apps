@@ -22,7 +22,7 @@ package platerrors
 // ErrorCode can be used to identify the specific type of a [PlatformError].
 // All possible ErrorCodes are defined as constants in this package.
 // You can reliably use these values in TypeScript to check for specific errors.
-type ErrorCode string
+type ErrorCode = string
 
 //////////
 // Common error codes - general
@@ -50,6 +50,9 @@ const (
 	// SetupTrafficHandlerFailed means we failed to setup the traffic handler for a protocol.
 	SetupTrafficHandlerFailed ErrorCode = "ERR_TRAFFIC_HANDLER_SETUP_FAILURE"
 
+	// VPNPermissionNotGranted means user did not grant us the required permission to setup VPN.
+	VPNPermissionNotGranted ErrorCode = "ERR_VPN_PERMISSION_NOT_GRANTED"
+
 	// SetupSystemVPNFailed means we failed to configure the system VPN to route to us.
 	SetupSystemVPNFailed ErrorCode = "ERR_SYSTEM_VPN_SETUP_FAILURE"
 
@@ -64,6 +67,12 @@ const (
 const (
 	// ProxyServerUnreachable means we failed to establish a connection to a remote server.
 	ProxyServerUnreachable ErrorCode = "ERR_PROXY_SERVER_UNREACHABLE"
+
+	// ProxyServerWriteFailed means we failed to write data to a remote server.
+	ProxyServerWriteFailed ErrorCode = "ERR_PROXY_SERVER_WRITE_FAILURE"
+
+	// ProxyServerReadFailed means we failed to read data from a remote server.
+	ProxyServerReadFailed ErrorCode = "ERR_PROXY_SERVER_READ_FAILURE"
 
 	// Unauthenticated indicates that the client failed to communicate with a remote server
 	// due to the lack of valid authentication credentials.

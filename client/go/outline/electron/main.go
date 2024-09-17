@@ -171,7 +171,7 @@ func setLogLevel(level string) {
 
 func printErrorAndExit(e error, exitCode int) {
 	pe := platerrors.ToPlatformError(e)
-	errJson, err := platerrors.MarshalJSONString(*pe)
+	errJson, err := platerrors.MarshalJSONString(pe)
 	if err != nil {
 		// TypeScript's PlatformError can unmarshal a raw string
 		errJson = string(pe.Code)

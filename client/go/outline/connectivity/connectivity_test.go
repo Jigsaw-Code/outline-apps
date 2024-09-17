@@ -18,12 +18,13 @@ import (
 	"context"
 	"errors"
 	"net"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckUDPConnectivityWithDNS_Success(t *testing.T) {
@@ -53,23 +54,17 @@ func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 	client := &fakeSSClient{failReachability: true}
 	err := CheckTCPConnectivityWithHTTP(client, "")
-	if err == nil {
-		t.Fail()
-	}
-	if _, ok := err.(*reachabilityError); !ok {
-		t.Fatalf("Expected reachability error, got: %v", reflect.TypeOf(err))
-	}
+	require.Error(t, err)
+	perr := platerrors.ToPlatformError(err)
+	require.Equal(t, platerrors.ProxyServerUnreachable, perr.Code)
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailAuthentication(t *testing.T) {
 	client := &fakeSSClient{failAuthentication: true}
 	err := CheckTCPConnectivityWithHTTP(client, "")
-	if err == nil {
-		t.Fail()
-	}
-	if _, ok := err.(*authenticationError); !ok {
-		t.Fatalf("Expected authentication error, got: %v", reflect.TypeOf(err))
-	}
+	require.Error(t, err)
+	perr := platerrors.ToPlatformError(err)
+	require.Equal(t, platerrors.ProxyServerReadFailed, perr.Code)
 }
 
 // Fake shadowsocks.Client that can be configured to return failing UDP and TCP connections.
@@ -81,7 +76,8 @@ type fakeSSClient struct {
 
 func (c *fakeSSClient) DialStream(_ context.Context, raddr string) (transport.StreamConn, error) {
 	if c.failReachability {
-		return nil, &net.OpError{}
+		// OpError.Error() panics if Err is nil.
+		return nil, &net.OpError{Err: errors.New("unreachable fakeSSClient")}
 	}
 	return &fakeDuplexConn{failRead: c.failAuthentication}, nil
 }

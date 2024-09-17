@@ -14,14 +14,21 @@
 
 import {Localizer} from '@outline/infrastructure/i18n';
 
-import {ErrorCode, FETCH_CONFIG_FAILED, ILLEGAL_CONFIG, PROXY_SERVER_UNREACHABLE} from '../model/platform_error';
+import * as perr from '../model/platform_error';
 
-const errCodeMapping = new Map<ErrorCode, string>([
-  [PROXY_SERVER_UNREACHABLE, 'outline-plugin-error-server-unreachable'],
-  [ILLEGAL_CONFIG, 'error-connection-configuration'],
-  [FETCH_CONFIG_FAILED, 'error-connection-configuration-fetch'],
+const errCodeMapping = new Map<perr.ErrorCode, string>([
+  [perr.FETCH_CONFIG_FAILED, 'error-connection-configuration-fetch'],
+  [perr.ILLEGAL_CONFIG, 'error-connection-configuration'],
+  [perr.PROXY_SERVER_UNREACHABLE, 'outline-plugin-error-server-unreachable'],
+  [
+    perr.VPN_PERMISSION_NOT_GRANTED,
+    'outline-plugin-error-vpn-permission-not-granted',
+  ],
 ]);
 
-export function localizeErrorCode(code: ErrorCode, localize: Localizer): string {
+export function localizeErrorCode(
+  code: perr.ErrorCode,
+  localize: Localizer
+): string {
   return localize(errCodeMapping.get(code) || 'error-unexpected');
 }
