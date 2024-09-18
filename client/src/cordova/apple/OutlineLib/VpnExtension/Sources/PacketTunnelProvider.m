@@ -66,25 +66,22 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // MARK: Process Config.
   if (self.protocolConfiguration == nil) {
     DDLogError(@"Failed to retrieve NETunnelProviderProtocol.");
-    return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                         code:NEVPNErrorConfigurationUnknown
-                                     userInfo:nil]);
+    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsIllegalConfig
+                                                        andMessage:@"no config specified"]);
   }
   NETunnelProviderProtocol *protocol = (NETunnelProviderProtocol *)self.protocolConfiguration;
   NSString *tunnelId = protocol.providerConfiguration[@"id"];
   if (![tunnelId isKindOfClass:[NSString class]]) {
-      DDLogError(@"Failed to retrieve the tunnel id.");
-      return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConfigurationUnknown
-                                        userInfo:nil]);
+    DDLogError(@"Failed to retrieve the tunnel id.");
+    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsInternalError
+                                                        andMessage:@"no tunnal ID specified"]);
   }
 
   NSString *transportConfig = protocol.providerConfiguration[@"transport"];
   if (![transportConfig isKindOfClass:[NSString class]]) {
-      DDLogError(@"Failed to retrieve the transport configuration.");
-      return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                            code:NEVPNErrorConfigurationUnknown
-                                        userInfo:nil]);
+    DDLogError(@"Failed to retrieve the transport configuration.");
+    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsIllegalConfig
+                                                        andMessage:@"config is not a String"]);
   }
   self.transportConfig = transportConfig;
 
@@ -102,39 +99,34 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // network unusable with no indication to the user. By bypassing the checks, the network would
   // still be unusable, but at least the user will have a visual indication that Outline is the
   // culprit and can explicitly disconnect.
-  long errorCode = noError;
+  PlaterrorsPlatformError *udpConnectionError = nil;
   if (!isOnDemand) {
-    OutlineClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
-    if (client == nil) {
-      return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                   code:NEVPNErrorConfigurationInvalid
-                                               userInfo:nil]);
+    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+    if (clientResult.error != nil) {
+      return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:clientResult.error]);
     }
-    OutlineCheckConnectivity(client, &errorCode, nil);
-    DDLogDebug(@"OutlineCheckConnectivity returned error code %ld", errorCode);
-
-    if (errorCode != noError && errorCode != udpRelayNotEnabled) {
-      return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                   code:NEVPNErrorConnectionFailed
-                                               userInfo:nil]);
+    OutlineTCPAndUDPConnectivityResult *connResult = OutlineCheckTCPAndUDPConnectivity(clientResult.client);
+    DDLogDebug(@"Check connectivity result: tcpErr=%@, udpErr=%@", connResult.tcpError, connResult.udpError);
+    if (connResult.tcpError != nil) {
+      return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:connResult.tcpError]);
     }
+    udpConnectionError = connResult.udpError;
   }
 
   [self startRouting:[SwiftBridge getTunnelNetworkSettings]
-           completion:^(NSError *_Nullable error) {
-             if (error != nil) {
-               return startDone(error);
-             }
-             BOOL isUdpSupported =
-                 isOnDemand ? self.isUdpSupported : errorCode == noError;
-             if (![self startTun2Socks:isUdpSupported]) {
-               return startDone([NSError errorWithDomain:NEVPNErrorDomain
-                                                            code:NEVPNErrorConnectionFailed
-                                                        userInfo:nil]);
-             }
-             [self listenForNetworkChanges];
-             startDone(nil);
-           }];
+          completion:^(NSError *_Nullable error) {
+            if (error != nil) {
+              return startDone([SwiftBridge newDetailedJSONErrorFromNsError:error]);
+            }
+            BOOL isUdpSupported =
+                isOnDemand ? self.isUdpSupported : udpConnectionError == nil;
+            PlaterrorsPlatformError *tun2socksError = [self startTun2Socks:isUdpSupported];
+            if (tun2socksError != nil) {
+              return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:tun2socksError]);
+            }
+            [self listenForNetworkChanges];
+            startDone(nil);
+          }];
 }
 
 - (void)stopTunnelWithReason:(NEProviderStopReason)reason
@@ -290,29 +282,29 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }];
 }
 
-- (BOOL)startTun2Socks:(BOOL)isUdpSupported {
+- (PlaterrorsPlatformError*)startTun2Socks:(BOOL)isUdpSupported {
   BOOL isRestart = self.tunnel != nil && self.tunnel.isConnected;
   if (isRestart) {
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  OutlineClient* client = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
-  if (client == nil) {
-    return NO;
+  OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+  if (clientResult.error != nil) {
+    return clientResult.error;
   }
   NSError* err;
   self.tunnel = Tun2socksConnectOutlineTunnel(
-      weakSelf, client, isUdpSupported, &err);
+      weakSelf, clientResult.client, isUdpSupported, &err);
   if (err != nil) {
     DDLogError(@"Failed to start tun2socks: %@", err);
-    return NO;
+    return PlaterrorsNewPlatformError(PlaterrorsInternalError, err.localizedDescription);
   }
   if (!isRestart) {
     dispatch_async(self.packetQueue, ^{
       [weakSelf processPackets];
     });
   }
-  return YES;
+  return nil;
 }
 
 @end

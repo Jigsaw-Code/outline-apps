@@ -1,0 +1,93 @@
+// Copyright 2024 The Outline Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import Tun2socks
+
+/// Defines keys used in the userInfo of a NSError.
+private enum DetailedJsonErrorKeys {
+  static let Code: String = "DetailedJsonErrorCode"
+  static let ErrorJson: String  = "DetailedJsonErrorDetails"
+}
+
+/// An error type representing an error with a code and a JSON string containing detailed information.
+public class DetailedJsonError: Error {
+  private let code: String
+  private let json: String
+
+  /// Create a new DetailedJsonError with a specified error code string and details in JSON.
+  public init(withErrorCode code: String, andErrorJson json: String) {
+    self.code = code
+    self.json = json
+  }
+
+  /// Create a new DetailedJsonError from a Go's PlatformError object.
+  public convenience init(fromPlatformError perr: PlaterrorsPlatformError) {
+    var marshalErr: NSError?
+    var errorJson = PlaterrorsMarshalJSONString(perr, &marshalErr)
+    if marshalErr != nil {
+      errorJson = "error code = \(perr.code), failed to fetch details"
+    }
+    self.init(withErrorCode: perr.code, andErrorJson: errorJson)
+  }
+
+  /// Create a new DetailedJsonError with a specified error code string and message.
+  /// It will marshal the error code and message into detailed JSON.
+  public convenience init(withErrorCode code: String, andMessage message: String) {
+    guard let perr = PlaterrorsNewPlatformError(code, message) else {
+      self.init(withErrorCode: code, andErrorJson: "failed to marshal: \(message)")
+      return
+    }
+    self.init(fromPlatformError: perr)
+  }
+
+  /// Create a new DetailedJsonError from a NSError object.
+  /// It will look for the JSON details from the userInfo.
+  /// If no details found, it will use the localizedDescription as the message.
+  public convenience init(fromError err: Error, withErrorCode errCode: String? = nil) {
+    let nserr = err as NSError
+    let code = errCode ?? nserr.userInfo[DetailedJsonErrorKeys.Code] as? String ?? PlaterrorsInternalError
+    guard let json = nserr.userInfo[DetailedJsonErrorKeys.ErrorJson] as? String else {
+      self.init(withErrorCode: code, andMessage: err.localizedDescription)
+      return
+    }
+    self.init(withErrorCode: code, andErrorJson: json)
+  }
+
+  /// A string code representing the type of error, which can be used to determine the error category.
+  ///
+  /// It is different than NSError's errorCode.
+  public var errorCodeString: String {
+    return self.code
+  }
+
+  /// A JSON string containing detailed information about the error (for example, the causes).
+  ///
+  /// This JSON string can be parsed by TypeScript's PlatformError.
+  /// TypeScript's PlatformError is able to parse non-json strings as well.
+  public var errorJson: String {
+    return self.json
+  }
+
+  /// Returns an NSError from this error.
+  /// This function should be mainly used by Objective-C.
+  public func asNSError() -> NSError {
+    // Ideally, the error code would be determined by the category;
+    // but for simplicity's sake, we're using a single code for all errors.
+    return NSError(domain: "org.outline.client.DetailedJsonError", code: 1, userInfo: [
+      NSLocalizedDescriptionKey: self.errorCodeString,
+      DetailedJsonErrorKeys.Code: self.errorCodeString,
+      DetailedJsonErrorKeys.ErrorJson: self.errorJson,
+    ])
+  }
+}

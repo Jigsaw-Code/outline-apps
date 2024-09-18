@@ -16,6 +16,7 @@ import NetworkExtension
 
 import CocoaLumberjackSwift
 
+import OutlineError
 import Tun2socks
 
 /**
@@ -24,35 +25,61 @@ import Tun2socks
 @objcMembers
 public class SwiftBridge: NSObject {
 
-    /** Helper function that we can call from Objective-C. */
-    public static func getTunnelNetworkSettings() -> NEPacketTunnelNetworkSettings {
-      // The remote address is not required, but needs to be valid, or else you get a
-      // "Invalid NETunnelNetworkSettings tunnelRemoteAddress" error.
-      let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "::")
+  /** Helper function that we can call from Objective-C. */
+  public static func getTunnelNetworkSettings() -> NEPacketTunnelNetworkSettings {
+    // The remote address is not required, but needs to be valid, or else you get a
+    // "Invalid NETunnelNetworkSettings tunnelRemoteAddress" error.
+    let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "::")
 
-      // Configure VPN address and routing.
-      let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
-      let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
-      ipv4Settings.includedRoutes = [NEIPv4Route.default()]
-      ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
-      settings.ipv4Settings = ipv4Settings
+    // Configure VPN address and routing.
+    let vpnAddress = selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())
+    let ipv4Settings = NEIPv4Settings(addresses: [vpnAddress], subnetMasks: ["255.255.255.0"])
+    ipv4Settings.includedRoutes = [NEIPv4Route.default()]
+    ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
+    settings.ipv4Settings = ipv4Settings
 
-      // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-      settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
+    // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
+    settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
 
-      return settings
+    return settings
+  }
+
+  /** Creates a new Outline Client based on the given transportConfig. */
+  public static func newClient(transportConfig: String) -> OutlineNewClientResult {
+    let result = OutlineNewClientAndReturnError(transportConfig)
+    if result?.error != nil {
+      DDLogInfo("Failed to construct client: \(String(describing: result?.error)).")
     }
+    return result!
+  }
 
-    /** Creates a new Outline Client based on the given transportConfig. */
-    public static func newClient(transportConfig: String) -> OutlineClient? {
-      var err: NSError?
-      let client = OutlineNewClient(transportConfig, &err)
-      guard err == nil else {
-        DDLogInfo("Failed to construct client: \(String(describing: err)).")
-        return nil
-      }
-      return client
+  /**
+   Creates a NSError (of domain DetailedJsonError) with a specific PlatformError code and a message.
+   */
+  public static func newDetailedJsonErrorWith(category: String, andMessage message: String) -> NSError {
+    let perr = PlaterrorsPlatformError(category, message: message)
+    return newDetailedJsonErrorFrom(platformError: perr)!
+  }
+
+  /**
+   Creates a NSError (of domain DetailedJsonError) from a Go's PlatformError.
+   */
+  public static func newDetailedJsonErrorFrom(platformError: PlaterrorsPlatformError?) -> NSError? {
+    guard let perr = platformError else {
+      return nil
     }
+    return DetailedJsonError(fromPlatformError: perr).asNSError()
+  }
+
+  /**
+   Creates a NSError (of domain DetailedJsonError) with detailed JSON from another NSError.
+   */
+  public static func newDetailedJSONErrorFrom(nsError: NSError?) -> NSError? {
+    guard let nserr = nsError else {
+      return nil
+    }
+    return DetailedJsonError(fromError: nserr).asNSError()
+  }
 }
 
 // Represents an IP subnetwork.
