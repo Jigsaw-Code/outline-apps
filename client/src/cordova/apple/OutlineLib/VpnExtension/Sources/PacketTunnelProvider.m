@@ -59,9 +59,15 @@ NSString *const kDefaultPathKey = @"defaultPath";
 }
 
 - (void)startTunnelWithOptions:(NSDictionary *)options
-             completionHandler:(void (^)(NSError *))startDone {
+             completionHandler:(void (^)(NSError *))completion {
   DDLogInfo(@"Starting tunnel");
   DDLogDebug(@"Options are %@", options);
+
+  // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+  void (^startDone)(NSError *) = ^(NSError *err) {
+    [SwiftBridge saveLastErrorWithNsError:err];
+    completion(err);
+  };
 
   // MARK: Process Config.
   if (self.protocolConfiguration == nil) {
@@ -305,6 +311,27 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     });
   }
   return nil;
+}
+
+#pragma mark - fetch last disconnect error
+
+// TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
+
+NSString *const kFetchLastErrorIPCName = @"fetchLastDisconnectDetailedJsonError";
+
+- (void)handleAppMessage:(NSData *)messageData completionHandler:(void (^)(NSData * _Nullable))completion {
+  // mimics fetchLastDisconnectErrorWithCompletionHandler on older systems
+  NSString *ipcName = [[NSString alloc] initWithData:messageData encoding:NSUTF8StringEncoding];
+  if (![ipcName isEqualToString:kFetchLastErrorIPCName]) {
+    DDLogWarn(@"Invalid Extension IPC call: %@", ipcName);
+    return completion(nil);
+  }
+  completion([SwiftBridge loadLastErrorToIPCResponse]);
+}
+
+- (void)cancelTunnelWithError:(nullable NSError *)error {
+  [SwiftBridge saveLastErrorWithNsError:error];
+  [super cancelTunnelWithError:error];
 }
 
 @end
