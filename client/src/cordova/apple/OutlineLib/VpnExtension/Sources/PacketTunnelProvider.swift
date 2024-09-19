@@ -46,7 +46,7 @@ public class SwiftBridge: NSObject {
 
   /** Creates a new Outline Client based on the given transportConfig. */
   public static func newClient(transportConfig: String) -> OutlineNewClientResult {
-    let result = OutlineNewClientAndReturnError(transportConfig)
+    let result = OutlineNewClient(transportConfig)
     if result?.error != nil {
       DDLogInfo("Failed to construct client: \(String(describing: result?.error)).")
     }

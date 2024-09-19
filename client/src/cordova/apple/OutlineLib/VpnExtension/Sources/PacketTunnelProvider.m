@@ -298,13 +298,13 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   if (clientResult.error != nil) {
     return clientResult.error;
   }
-  NSError* err;
-  self.tunnel = Tun2socksConnectOutlineTunnel(
-      weakSelf, clientResult.client, isUdpSupported, &err);
-  if (err != nil) {
-    DDLogError(@"Failed to start tun2socks: %@", err);
-    return PlaterrorsNewPlatformError(PlaterrorsInternalError, err.localizedDescription);
+  Tun2socksConnectOutlineTunnelResult *result =
+    Tun2socksConnectOutlineTunnel(weakSelf, clientResult.client, isUdpSupported);
+  if (result.error != nil) {
+    DDLogError(@"Failed to start tun2socks: %@", result.error);
+    return result.error;
   }
+  self.tunnel = result.tunnel;
   if (!isRestart) {
     dispatch_async(self.packetQueue, ^{
       [weakSelf processPackets];
