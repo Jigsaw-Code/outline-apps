@@ -34,7 +34,7 @@ let package = Package(
             targets: ["OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification", "OutlineError"]
         ),
         .library(
-            // OutlineUtils is used by the VPN extension
+            // OutlineVPNExtensionLib is used by the VPN extension
             name: "OutlineVPNExtensionLib",
             targets: ["OutlineError"]
         ),
