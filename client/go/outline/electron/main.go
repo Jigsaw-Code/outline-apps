@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -26,7 +27,6 @@ import (
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
@@ -38,9 +38,8 @@ import (
 // tun2socks exit codes. Must be kept in sync with definitions in "go_vpn_tunnel.ts"
 // TODO: replace exit code with structured JSON output
 const (
-	exitCodeSuccess           = 0
-	exitCodeFailure           = 1
-	exitCodeNoUDPConnectivity = 4
+	exitCodeSuccess = 0
+	exitCodeFailure = 1
 )
 
 const (
@@ -50,6 +49,12 @@ const (
 )
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+// The result JSON containing two error strings when "--checkConnectivity".
+type CheckConnectivityResult struct {
+	TCPErrorJson string `json:"tcp"`
+	UDPErrorJson string `json:"udp"`
+}
 
 var args struct {
 	tunAddr *string
@@ -97,13 +102,24 @@ func main() {
 	if len(*args.transportConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
-	client, err := outline.NewClient(*args.transportConfig)
-	if err != nil {
-		printErrorAndExit(err, exitCodeFailure)
+	clientResult := outline.NewClientAndReturnError(*args.transportConfig)
+	if clientResult.Error != nil {
+		printErrorAndExit(clientResult.Error, exitCodeFailure)
 	}
+	client := clientResult.Client
 
 	if *args.checkConnectivity {
-		checkConnectivityAndExit(client)
+		result := outline.CheckTCPAndUDPConnectivity(client)
+		output := CheckConnectivityResult{
+			TCPErrorJson: marshalErrorToJSON(result.TCPError),
+			UDPErrorJson: marshalErrorToJSON(result.UDPError),
+		}
+		jsonBytes, err := json.Marshal(output)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+		fmt.Println(string(jsonBytes))
+		os.Exit(exitCodeSuccess)
 	}
 
 	// Open TUN device
@@ -169,50 +185,20 @@ func setLogLevel(level string) {
 	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slvl}))
 }
 
-func printErrorAndExit(e error, exitCode int) {
+func marshalErrorToJSON(e error) string {
 	pe := platerrors.ToPlatformError(e)
+	if pe == nil {
+		return ""
+	}
 	errJson, err := platerrors.MarshalJSONString(pe)
 	if err != nil {
 		// TypeScript's PlatformError can unmarshal a raw string
-		errJson = string(pe.Code)
+		return string(pe.Code)
 	}
-	fmt.Fprintln(os.Stderr, errJson)
-	os.Exit(exitCode)
+	return errJson
 }
 
-// checkConnectivity checks whether the remote Outline server supports TCP or UDP,
-// and converts the neterrors to a PlatformError.
-// TODO: remove this function once we migrated CheckConnectivity to return a PlatformError.
-func checkConnectivityAndExit(c *outline.Client) {
-	connErrCode, err := outline.CheckConnectivity(c)
-	if err != nil {
-		printErrorAndExit(platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "failed to check connectivity",
-			Cause:   platerrors.ToPlatformError(err),
-		}, exitCodeFailure)
-	}
-	switch connErrCode {
-	case neterrors.NoError.Number():
-		os.Exit(exitCodeSuccess)
-	case neterrors.AuthenticationFailure.Number():
-		printErrorAndExit(platerrors.PlatformError{
-			Code:    platerrors.Unauthenticated,
-			Message: "authentication failed",
-		}, exitCodeFailure)
-	case neterrors.Unreachable.Number():
-		printErrorAndExit(platerrors.PlatformError{
-			Code:    platerrors.ProxyServerUnreachable,
-			Message: "cannot connect to Outline server",
-		}, exitCodeFailure)
-	case neterrors.UDPConnectivity.Number():
-		printErrorAndExit(platerrors.PlatformError{
-			Code:    platerrors.ProxyServerUDPUnsupported,
-			Message: "Outline server does not support UDP",
-		}, exitCodeNoUDPConnectivity)
-	}
-	printErrorAndExit(platerrors.PlatformError{
-		Code:    platerrors.InternalError,
-		Message: "failed to check connectivity",
-	}, exitCodeFailure)
+func printErrorAndExit(e error, exitCode int) {
+	fmt.Fprintln(os.Stderr, marshalErrorToJSON(e))
+	os.Exit(exitCode)
 }
