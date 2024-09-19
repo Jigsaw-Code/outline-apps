@@ -14,29 +14,52 @@
 
 import XCTest
 import NetworkExtension
+import OutlineError
 
 final class VpnExtensionTest: XCTestCase {
 
-    func testSelectVpnAddress() throws {
-        XCTAssertEqual("10.111.222.0", selectVpnAddress(interfaceAddresses:["172.16.9.2", "192.168.20.2", "169.254.19.1"]))
-        XCTAssertEqual("172.16.9.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "192.168.20.2", "169.254.19.1"]))
-        XCTAssertEqual("192.168.20.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "172.16.9.2", "169.254.19.1"]))
-        XCTAssertEqual("169.254.19.0", selectVpnAddress(interfaceAddresses:["10.111.222.1", "172.16.9.2", "192.168.20.2"]))
-        XCTAssertTrue(kVpnSubnetCandidates.values.contains(selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())))
-    }
-    
-    func testGetTunnelNetworkSettings() throws {
-        let settings = SwiftBridge.getTunnelNetworkSettings()
-        
-        XCTAssertEqual("::", settings.tunnelRemoteAddress)
-        
-        XCTAssertEqual(1, settings.ipv4Settings?.addresses.count)
-        XCTAssertTrue(kVpnSubnetCandidates.values.contains(settings.ipv4Settings?.addresses[0] ?? ""))
-        XCTAssertEqual(["255.255.255.0"], settings.ipv4Settings?.subnetMasks)
-        
-        XCTAssertEqual([NEIPv4Route.default()], settings.ipv4Settings?.includedRoutes)
-        XCTAssertEqual(15, settings.ipv4Settings?.excludedRoutes?.count ?? 0)
+  func testSelectVpnAddress() throws {
+    XCTAssertEqual("10.111.222.0", selectVpnAddress(interfaceAddresses:["172.16.9.2", "192.168.20.2", "169.254.19.1"]))
+    XCTAssertEqual("172.16.9.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "192.168.20.2", "169.254.19.1"]))
+    XCTAssertEqual("192.168.20.1", selectVpnAddress(interfaceAddresses:["10.111.222.1", "172.16.9.2", "169.254.19.1"]))
+    XCTAssertEqual("169.254.19.0", selectVpnAddress(interfaceAddresses:["10.111.222.1", "172.16.9.2", "192.168.20.2"]))
+    XCTAssertTrue(kVpnSubnetCandidates.values.contains(selectVpnAddress(interfaceAddresses: getNetworkInterfaceAddresses())))
+  }
 
-        XCTAssertEqual(["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"], settings.dnsSettings?.servers)
-    }
+  func testGetTunnelNetworkSettings() throws {
+    let settings = SwiftBridge.getTunnelNetworkSettings()
+    
+    XCTAssertEqual("::", settings.tunnelRemoteAddress)
+    
+    XCTAssertEqual(1, settings.ipv4Settings?.addresses.count)
+    XCTAssertTrue(kVpnSubnetCandidates.values.contains(settings.ipv4Settings?.addresses[0] ?? ""))
+    XCTAssertEqual(["255.255.255.0"], settings.ipv4Settings?.subnetMasks)
+    
+    XCTAssertEqual([NEIPv4Route.default()], settings.ipv4Settings?.includedRoutes)
+    XCTAssertEqual(15, settings.ipv4Settings?.excludedRoutes?.count ?? 0)
+
+    XCTAssertEqual(["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"], settings.dnsSettings?.servers)
+  }
+
+
+  /// This type should be aligned with the one defined in OutlineVpn.Swift
+  private struct LastErrorIPCData: Decodable {
+    let errorCode: String
+    let errorJson: String
+  }
+
+  func testSaveLastDisconnectError() throws {
+    // Nil error should be retrieved as nil data
+    SwiftBridge.saveLastError(nsError: nil)
+    XCTAssertNil(SwiftBridge.loadLastErrorToIPCResponse())
+
+    // Error should be serialized to disk, and deserialized using the default decoder
+    let lastErr = DetailedJsonError(withErrorCode: "ERR_TEST", andMessage: "A test error")
+    SwiftBridge.saveLastError(nsError: lastErr.asNSError())
+    let errData = SwiftBridge.loadLastErrorToIPCResponse()
+    XCTAssertNotNil(errData)
+    let errIPCResponse = try PropertyListDecoder().decode(LastErrorIPCData.self, from: errData! as Data)
+    XCTAssertEqual(errIPCResponse.errorCode, "ERR_TEST")
+    XCTAssertEqual(errIPCResponse.errorJson, lastErr.errorJson)
+  }
 }
