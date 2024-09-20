@@ -17,18 +17,13 @@ import {platform} from 'os';
 import {powerMonitor} from 'electron';
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
-import {
-  ChildProcessHelper,
-  ProcessTerminatedExitCodeError,
-  ProcessTerminatedSignalError,
-} from './process';
+import {ChildProcessHelper, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
 import {
   TransportConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
-import {ErrorCode} from '../src/www/model/errors';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -297,7 +292,7 @@ class GoTun2socks {
       this.monitorStarted().then(() => (restarting = true));
       try {
         lastError = null;
-        await this.process.launch(args);
+        await this.process.launch(args, false);
         console.info('[tun2socks] - exited with no errors');
       } catch (e) {
         console.error('[tun2socks] - terminated due to:', e);
@@ -315,9 +310,9 @@ class GoTun2socks {
   }
 
   /**
-   * Checks connectivity and exits with an error code as defined in `errors.ErrorCode`.
-   * If exit code is not zero, a `ProcessTerminatedExitCodeError` might be thrown.
-   * -tun* and -dnsFallback options have no effect on this mode.
+   * Checks connectivity and exits with the string of stdout.
+   *
+   * @throws ProcessTerminatedExitCodeError if tun2socks failed to run successfully.
    */
   checkConnectivity() {
     console.debug('[tun2socks] - checking connectivity ...');
@@ -333,21 +328,23 @@ class GoTun2socks {
   }
 }
 
-// Leverages the outline-go-tun2socks binary to check connectivity to the server specified in
-// `config`. Checks whether proxy server is reachable, whether the network and proxy support UDP
-// forwarding and validates the proxy credentials. Resolves with a boolean indicating whether UDP
-// forwarding is supported. Throws if the checks fail or if the process fails to start.
+/**
+ * Leverages the GoTun2socks binary to check connectivity to the server specified in `config`.
+ * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
+ * and validates the proxy credentials.
+ *
+ * @returns A boolean indicating whether UDP forwarding is supported.
+ * @throws Error if the server is not reachable or if the process fails to start.
+ */
 async function checkConnectivity(tun2socks: GoTun2socks) {
-  try {
-    await tun2socks.checkConnectivity();
-    return true;
-  } catch (e) {
-    console.error('connectivity check error:', e);
-    if (e instanceof ProcessTerminatedExitCodeError) {
-      if (e.exitCode === ErrorCode.UDP_RELAY_NOT_ENABLED) {
-        return false;
-      }
-    }
-    throw e;
+  const output = await tun2socks.checkConnectivity();
+  // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
+  const outObj = JSON.parse(output.split('\n')[0]);
+  if (outObj.tcp) {
+    throw new Error(outObj.tcp);
   }
+  if (outObj.udp) {
+    return false;
+  }
+  return true;
 }

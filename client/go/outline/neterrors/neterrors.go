@@ -24,7 +24,7 @@ func (e Error) Number() int {
 	return int(e)
 }
 
-// Outline error codes. Must be kept in sync with definitions in https://github.com/Jigsaw-Code/outline-apps/blob/master/src/www/model/errors.ts
+// Outline error codes. Must be kept in sync with definitions in https://github.com/Jigsaw-Code/outline-apps/blob/master/client/src/www/model/errors.ts
 const (
 	NoError                     Error = 0
 	Unexpected                  Error = 1
