@@ -43,6 +43,7 @@
 
     <config-file target="app/src/main/AndroidManifest.xml" parent="/manifest/application">
       <service
+        android:foregroundServiceType="systemExempted"
         android:name="org.outline.vpn.VpnTunnelService"
         android:exported="false"
         android:label="@string/app_name"
@@ -63,6 +64,8 @@
       </receiver>
 
       <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
+      <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
     </config-file>
 
     <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
