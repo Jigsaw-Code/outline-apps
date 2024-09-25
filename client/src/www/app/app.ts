@@ -25,7 +25,10 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {PlatformError} from '../model/platform_error';
+import {
+  PlatformError,
+  ROUTING_SERVICE_NOT_RUNNING,
+} from '../model/platform_error';
 import {Server} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
@@ -543,12 +546,15 @@ export class App {
         connectionState: ServerConnectionState.DISCONNECTED,
       });
       console.error(`could not connect to server ${serverId}: ${e}`);
-      if (e instanceof errors.SystemConfigurationException) {
-        if (
-          await this.showConfirmationDialog(
-            this.localize('outline-services-installation-confirmation')
-          )
-        ) {
+      if (
+        e instanceof PlatformError &&
+        e.code === ROUTING_SERVICE_NOT_RUNNING
+      ) {
+        const confirmation =
+          this.localize('outline-services-installation-confirmation') +
+          '\n\n--------------------\n' +
+          e.toString();
+        if (await this.showConfirmationDialog(confirmation)) {
           await this.installVpnService();
           return;
         }
