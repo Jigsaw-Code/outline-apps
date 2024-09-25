@@ -32,9 +32,8 @@ public class DetailedJsonError: Error {
     self.json = json
   }
 
-  /// Create a new DetailedJsonError with a specified error code string and message.
+  /// Create a new DetailedJsonError from a specified error code string and message.
   /// It will marshal the error code and message into detailed JSON.
-  /// We reuse Go's PlatformError to reduce the duplication of the JSON marshalling logic in Swift.
   public static func from(errorCode code: String, andMessage message: String) -> DetailedJsonError {
     /// This definitions should be in sync with the one in platform_error.go.
     struct ErrorJSONObject: Codable {
