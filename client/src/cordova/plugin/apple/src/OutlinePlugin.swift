@@ -91,20 +91,22 @@ class OutlinePlugin: CDVPlugin {
     Task {
       do {
         guard let tunnelId = command.argument(at: 0) as? String else {
-          throw DetailedJsonError(fromOutlineError: .internalError(message: "missing tunnel ID"))
+          throw OutlineError.internalError(message: "missing tunnel ID")
         }
         guard let name = command.argument(at: 1) as? String else {
-          throw DetailedJsonError(fromOutlineError: .internalError(message: "missing service name"))
+          throw OutlineError.internalError(message: "missing service name")
         }
         DDLogInfo("\(Action.start) \(name) (\(tunnelId))")
         guard let transportConfig = command.argument(at: 2) as? String else {
-          throw DetailedJsonError(fromOutlineError: .internalError(message: "configuration is not a string"))
+          throw OutlineError.internalError(message: "configuration is not a string")
         }
         try await OutlineVpn.shared.start(tunnelId, named:name, withTransport:transportConfig)
 #if os(macOS) || targetEnvironment(macCatalyst)
         NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
         self.sendSuccess(callbackId: command.callbackId)
+      } catch let error as OutlineError {
+        self.sendError(error.asDetailedJsonError().errorJson, callbackId: command.callbackId)
       } catch let error as DetailedJsonError {
         self.sendError(error.errorJson, callbackId: command.callbackId)
       } catch {

@@ -61,7 +61,7 @@ public class OutlineVpn: NSObject {
       manager = try await setupVpn(withId: tunnelId, named: name ?? "Outline Server", withTransport: transportConfig)
     } catch {
       DDLogError("Failed to setup VPN: \(error.localizedDescription)")
-      throw DetailedJsonError(fromOutlineError: .vpnPermissionNotGranted(cause: error))
+      throw OutlineError.vpnPermissionNotGranted(cause: error)
     }
     let session = manager.connection as! NETunnelProviderSession
 
@@ -98,7 +98,7 @@ public class OutlineVpn: NSObject {
       DDLogDebug("NETunnelProviderSession.startTunnel() returned")
     } catch {
       DDLogError("Failed to start VPN: \(error.localizedDescription)")
-      throw DetailedJsonError(fromOutlineError: .setupSystemVPNFailed(cause: error))
+      throw OutlineError.setupSystemVPNFailed(cause: error)
     }
 
     // Wait for it to be done.
@@ -109,12 +109,12 @@ public class OutlineVpn: NSObject {
       break
     case .disconnected, .invalid:
       guard let err = await fetchExtensionLastDisconnectError(session) else {
-        throw DetailedJsonError(fromOutlineError: .internalError(message: "unexpected nil disconnect error"))
+        throw OutlineError.internalError(message: "unexpected nil disconnect error")
       }
       throw err
     default:
       // This shouldn't happen.
-      throw DetailedJsonError(fromOutlineError: .internalError(message: "unexpected connection status"))
+      throw OutlineError.internalError(message: "unexpected connection status")
     }
 
     // Set an on-demand rule to connect to any available network to implement auto-connect on boot
@@ -312,7 +312,7 @@ private struct LastErrorIPCData: Decodable {
 private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSession) async -> DetailedJsonError? {
   do {
     guard let rpcNameData = ExtensionIPC.fetchLastDetailedJsonError.data(using: .utf8) else {
-      return DetailedJsonError(fromOutlineError: .internalError(message: "IPC fetchLastDisconnectError failed"))
+      return OutlineError.internalError(message: "IPC fetchLastDisconnectError failed").asDetailedJsonError()
     }
     return try await withCheckedThrowingContinuation { continuation in
       do {
@@ -337,7 +337,8 @@ private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSessio
     }
   } catch {
     DDLogError("Failed to invoke VPN Extension IPC: \(error)")
-    return DetailedJsonError(fromOutlineError: .internalError(
-      message: "IPC fetchLastDisconnectError failed: \(error.localizedDescription)"))
+    return OutlineError.internalError(
+      message: "IPC fetchLastDisconnectError failed: \(error.localizedDescription)"
+    ).asDetailedJsonError()
   }
 }

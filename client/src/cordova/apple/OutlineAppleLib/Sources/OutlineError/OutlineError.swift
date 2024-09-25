@@ -12,25 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Tun2socks
+import Tun2socks // For platerrors ErrorCode strings
 
 /// Lists all errors that might be thrown in Swift code.
 public enum OutlineError: Error {
   case internalError(message: String)
   case vpnPermissionNotGranted(cause: Error)
   case setupSystemVPNFailed(cause: Error)
-}
 
-/// Helper init to convert from an OutlineError to DetailedJsonError.
-public extension DetailedJsonError {
-  convenience init(fromOutlineError oerr: OutlineError) {
-    switch oerr {
+  public func asDetailedJsonError() -> DetailedJsonError {
+    switch self {
     case .internalError(let message):
-      self.init(withErrorCode: PlaterrorsInternalError, andMessage: message)
+      return DetailedJsonError.from(errorCode: PlaterrorsInternalError, andMessage: message)
     case .vpnPermissionNotGranted(let err):
-      self.init(fromError: err, withErrorCode: PlaterrorsVPNPermissionNotGranted)
+      return DetailedJsonError.from(error: err, withErrorCode: PlaterrorsVPNPermissionNotGranted)
     case .setupSystemVPNFailed(let err):
-      self.init(fromError: err, withErrorCode: PlaterrorsSetupSystemVPNFailed)
+      return DetailedJsonError.from(error: err, withErrorCode: PlaterrorsSetupSystemVPNFailed)
     }
   }
 }

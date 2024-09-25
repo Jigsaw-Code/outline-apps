@@ -68,7 +68,12 @@ public class SwiftBridge: NSObject {
     guard let perr = platformError else {
       return nil
     }
-    return DetailedJsonError(fromPlatformError: perr).asNSError()
+    var marshalErr: NSError?
+    var errorJson = PlaterrorsMarshalJSONString(perr, &marshalErr)
+    if marshalErr != nil {
+      errorJson = "error code = \(perr.code), failed to fetch details"
+    }
+    return DetailedJsonError(withErrorCode: perr.code, andErrorJson: errorJson).asNSError()
   }
 
   /**
@@ -78,7 +83,7 @@ public class SwiftBridge: NSObject {
     guard let nserr = nsError else {
       return nil
     }
-    return DetailedJsonError(fromError: nserr).asNSError()
+    return DetailedJsonError.from(error: nserr).asNSError()
   }
 
   // TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
@@ -249,7 +254,7 @@ func saveLastDisconnectErrorDetails(err: NSError?) {
   guard let nserr = err else {
     return UserDefaults.standard.removeObject(forKey: lastDisconnectErrorPersistenceKey)
   }
-  let jsonErr = DetailedJsonError(fromError: nserr)
+  let jsonErr = DetailedJsonError.from(error: nserr)
   let persistObj = LastErrorIPCData(errorCode: jsonErr.errorCodeString, errorJson: jsonErr.errorJson)
   do {
     let encodedObj = try PropertyListEncoder().encode(persistObj)

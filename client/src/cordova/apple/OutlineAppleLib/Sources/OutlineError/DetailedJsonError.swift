@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Tun2socks
+import Foundation // For NSError type
+import Tun2socks  // For platerrors ErrorCode strings
 
 /// Defines keys used in the userInfo of a NSError.
 private enum DetailedJsonErrorKeys {
@@ -31,37 +32,36 @@ public class DetailedJsonError: Error {
     self.json = json
   }
 
-  /// Create a new DetailedJsonError from a Go's PlatformError object.
-  public convenience init(fromPlatformError perr: PlaterrorsPlatformError) {
-    var marshalErr: NSError?
-    var errorJson = PlaterrorsMarshalJSONString(perr, &marshalErr)
-    if marshalErr != nil {
-      errorJson = "error code = \(perr.code), failed to fetch details"
-    }
-    self.init(withErrorCode: perr.code, andErrorJson: errorJson)
-  }
-
   /// Create a new DetailedJsonError with a specified error code string and message.
   /// It will marshal the error code and message into detailed JSON.
-  public convenience init(withErrorCode code: String, andMessage message: String) {
-    guard let perr = PlaterrorsNewPlatformError(code, message) else {
-      self.init(withErrorCode: code, andErrorJson: "failed to marshal: \(message)")
-      return
+  /// We reuse Go's PlatformError to reduce the duplication of the JSON marshalling logic in Swift.
+  public static func from(errorCode code: String, andMessage message: String) -> DetailedJsonError {
+    /// This definitions should be in sync with the one in platform_error.go.
+    struct ErrorJSONObject: Codable {
+      let code: String
+      let message: String
     }
-    self.init(fromPlatformError: perr)
+
+    let errObj = ErrorJSONObject(code: code, message: message)
+    guard let jsonData = try? JSONEncoder().encode(errObj) else {
+      return DetailedJsonError(withErrorCode: code, andErrorJson: "failed to marshal: \(message)")
+    }
+    guard let json = String(data: jsonData, encoding: .utf8) else {
+      return DetailedJsonError(withErrorCode: code, andErrorJson: "failed to marshal: \(message)")
+    }
+    return DetailedJsonError(withErrorCode: code, andErrorJson: json)
   }
 
   /// Create a new DetailedJsonError from a NSError object.
   /// It will look for the JSON details from the userInfo.
   /// If no details found, it will use the localizedDescription as the message.
-  public convenience init(fromError err: Error, withErrorCode errCode: String? = nil) {
-    let nserr = err as NSError
+  public static func from(error: Error, withErrorCode errCode: String? = nil) -> DetailedJsonError {
+    let nserr = error as NSError
     let code = errCode ?? nserr.userInfo[DetailedJsonErrorKeys.Code] as? String ?? PlaterrorsInternalError
     guard let json = nserr.userInfo[DetailedJsonErrorKeys.ErrorJson] as? String else {
-      self.init(withErrorCode: code, andMessage: err.localizedDescription)
-      return
+      return DetailedJsonError.from(errorCode: code, andMessage: error.localizedDescription)
     }
-    self.init(withErrorCode: code, andErrorJson: json)
+    return DetailedJsonError(withErrorCode: code, andErrorJson: json)
   }
 
   /// A string code representing the type of error, which can be used to determine the error category.
