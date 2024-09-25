@@ -94,6 +94,7 @@ class ElectronVpnInstaller implements VpnInstaller {
     const err = await window.electron.methodChannel.invoke(
       'install-outline-services'
     );
+    console.warn('Install Service Error ???', err);
 
     // catch custom errors (even simple as numbers) does not work for ipcRenderer:
     // https://github.com/electron/electron/issues/24427

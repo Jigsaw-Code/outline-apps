@@ -23,6 +23,10 @@ import * as sudo from 'sudo-prompt';
 import {pathToEmbeddedOutlineService} from './app_paths';
 import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode, SystemConfigurationException} from '../src/www/model/errors';
+import {
+  PlatformError,
+  ROUTING_SERVICE_NOT_RUNNING,
+} from '../src/www/model/platform_error';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -81,10 +85,7 @@ export class RoutingDaemon {
 
   private networkChangeListener?: (status: TunnelStatus) => void;
 
-  constructor(
-    private proxyAddress: string,
-    private isAutoConnect: boolean
-  ) {}
+  constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
@@ -130,11 +131,11 @@ export class RoutingDaemon {
           if (this.stopping) {
             cleanup();
             newSocket.destroy();
-            reject(
-              new SystemConfigurationException(
-                'routing daemon service stopped before started'
-              )
+            const perr = new PlatformError(
+              ROUTING_SERVICE_NOT_RUNNING,
+              'routing daemon service stopped before started'
             );
+            reject(new Error(perr.toJSON()));
           } else {
             fulfill();
           }
@@ -154,9 +155,12 @@ export class RoutingDaemon {
       const initialErrorHandler = (err: Error) => {
         console.error('Routing daemon socket setup failed', err);
         this.socket = null;
-        reject(
-          new SystemConfigurationException('routing daemon is not running')
+        const perr = new PlatformError(
+          ROUTING_SERVICE_NOT_RUNNING,
+          'routing daemon is not running',
+          {cause: err}
         );
+        reject(new Error(perr.toJSON()));
       };
       newSocket.once('error', initialErrorHandler);
     });
@@ -293,7 +297,10 @@ function installWindowsRoutingServices(): Promise<void> {
   //   build/windows
   //
   // Surrounding quotes important, consider "c:\program files"!
-  const script = `"${path.join(pathToEmbeddedOutlineService(), WINDOWS_INSTALLER_FILENAME)}"`;
+  const script = `"${path.join(
+    pathToEmbeddedOutlineService(),
+    WINDOWS_INSTALLER_FILENAME
+  )}"`;
   return executeCommandAsRoot(script);
 }
 
@@ -362,10 +369,15 @@ async function installLinuxRoutingServices(): Promise<void> {
     installationFileDescriptors
       .map(
         ({filename, sha256}) =>
-          `/usr/bin/echo "${sha256}  ${path.join(tmp, filename)}" | /usr/bin/shasum -a 256 -c`
+          `/usr/bin/echo "${sha256}  ${path.join(
+            tmp,
+            filename
+          )}" | /usr/bin/shasum -a 256 -c`
       )
       .join(' && ');
-  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}" "${userInfo().username}"`;
+  command += ` && "${path.join(tmp, LINUX_INSTALLER_FILENAME)}" "${
+    userInfo().username
+  }"`;
 
   console.log('trying to run command as root: ', command);
   await executeCommandAsRoot(command);

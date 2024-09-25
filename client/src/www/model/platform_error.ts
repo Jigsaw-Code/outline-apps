@@ -81,6 +81,35 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
 }
 
 /**
+ * Recursively converts a {@link PlatformError} into a raw JavaScript object that
+ * could be converted into a JSON string.
+ * @param {PlatformError} platErr Any non-null PlatformError.
+ * @returns {object} A plain JavaScript object that can be converted to JSON.
+ */
+function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
+  const rawObj: {
+    code: string;
+    message: string;
+    details?: ErrorDetails;
+    cause?: object;
+  } = {
+    code: platErr.code,
+    message: platErr.message,
+    details: platErr.details,
+  };
+  if (platErr.cause) {
+    let cause: PlatformError;
+    if (platErr.cause instanceof PlatformError) {
+      cause = platErr.cause;
+    } else {
+      cause = new PlatformError(INTERNAL_ERROR, String(platErr.cause));
+    }
+    rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
+  }
+  return rawObj;
+}
+
+/**
  * ErrorDetails represents the details map of a {@link PlatformError}.
  * The keys in this map are strings, and the values can be of any data type.
  */
@@ -187,6 +216,15 @@ export class PlatformError extends CustomError {
     }
     return result;
   }
+
+  /**
+   * Returns a JSON string of this error with all details and causes.
+   * @returns {string} The JSON string representing this error.
+   */
+  toJSON(): string {
+    const errRawObj = convertPlatformErrorToRawErrorObject(this);
+    return JSON.stringify(errRawObj);
+  }
 }
 
 //////
@@ -209,3 +247,6 @@ export const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
 
 export const PROXY_SERVER_UNREACHABLE: ErrorCode =
   'ERR_PROXY_SERVER_UNREACHABLE';
+
+/** Indicates that the OS routing service is not running (electron only). */
+export const ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING';
