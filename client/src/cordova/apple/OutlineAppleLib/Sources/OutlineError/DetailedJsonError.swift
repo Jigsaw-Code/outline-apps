@@ -35,7 +35,7 @@ public class DetailedJsonError: Error {
   /// Create a new DetailedJsonError from a specified error code string and message.
   /// It will marshal the error code and message into detailed JSON.
   public static func from(errorCode code: String, andMessage message: String) -> DetailedJsonError {
-    /// This definitions should be in sync with the one in platform_error.go.
+    /// This definition should be in sync with the one in platform_error.go.
     struct ErrorJSONObject: Codable {
       let code: String
       let message: String
