@@ -22,7 +22,7 @@ import * as sudo from 'sudo-prompt';
 
 import {pathToEmbeddedOutlineService} from './app_paths';
 import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
-import {ErrorCode, SystemConfigurationException} from '../src/www/model/errors';
+import {ErrorCode} from '../src/www/model/errors';
 import {
   PlatformError,
   ROUTING_SERVICE_NOT_RUNNING,
@@ -85,7 +85,10 @@ export class RoutingDaemon {
 
   private networkChangeListener?: (status: TunnelStatus) => void;
 
-  constructor(private proxyAddress: string, private isAutoConnect: boolean) {}
+  constructor(
+    private proxyAddress: string,
+    private isAutoConnect: boolean
+  ) {}
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
