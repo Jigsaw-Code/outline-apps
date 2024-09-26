@@ -88,7 +88,10 @@ export class OutlineServer implements Server {
   async connect() {
     let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
+      tunnelConfig = await fetchTunnelConfig(
+        this.vpnApi,
+        this.tunnelConfigLocation
+      );
       this._address = getAddressFromTransportConfig(tunnelConfig.transport);
     } else {
       tunnelConfig = this.staticTunnelConfig;
@@ -164,23 +167,13 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
 
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
-export async function fetchTunnelConfig(
+async function fetchTunnelConfig(
+  vpnApi: VpnApi,
   configLocation: URL
 ): Promise<TunnelConfigJson> {
-  let response;
-  try {
-    response = await fetch(configLocation, {
-      cache: 'no-store',
-      redirect: 'follow',
-    });
-  } catch (cause) {
-    throw new errors.SessionConfigFetchFailed(
-      'Failed to fetch VPN information from dynamic access key.',
-      {cause}
-    );
-  }
-
-  const responseBody = (await response.text()).trim();
+  const responseBody = (
+    await vpnApi.fetchDynamicConfig(configLocation.toString())
+  ).trim();
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
       'Got empty config from dynamic key.'

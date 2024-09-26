@@ -69,7 +69,10 @@ var args struct {
 	checkConnectivity *bool
 	dnsFallback       *bool
 	version           *bool
+
+	fetchConfig *string
 }
+
 var version string // Populated at build time through `-X main.version=...`
 
 // This app sets up a local network stack to handle requests from a tun device.
@@ -88,12 +91,22 @@ func main() {
 	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
+	args.fetchConfig = flag.String("fetchConfig", "", "The HTTPS URL of a dynamic key to fetch")
 	args.version = flag.Bool("version", false, "Print the version and exit.")
 
 	flag.Parse()
 
 	if *args.version {
 		fmt.Println(version)
+		os.Exit(exitCodeSuccess)
+	}
+
+	if *args.fetchConfig != "" {
+		result := outline.FetchDynamicKey(*args.fetchConfig)
+		if result.Error != nil {
+			printErrorAndExit(result.Error, exitCodeFailure)
+		}
+		fmt.Println(result.Key)
 		os.Exit(exitCodeSuccess)
 	}
 

@@ -34,7 +34,7 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {GoVpnTunnel} from './go_vpn_tunnel';
+import {fetchDynamicKeyConfig, GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
@@ -292,7 +292,9 @@ function interceptShadowsocksLink(argv: string[]) {
         if (mainWindow) {
           // The system adds a trailing slash to the intercepted URL (before the fragment).
           // Remove it before sending to the UI.
-          url = `${protocol}${url.substring(protocol.length).replace(/\/$/g, '')}`;
+          url = `${protocol}${url
+            .substring(protocol.length)
+            .replace(/\/$/g, '')}`;
           // TODO: refactor channel name and namespace to a constant
           mainWindow.webContents.send('outline-ipc-add-server', url);
         } else {
@@ -497,6 +499,13 @@ function main() {
     // TODO: refactor channel name and namespace to a constant
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
+
+  // Fetches dynamic key config from a remote URL.
+  ipcMain.handle(
+    'outline-ipc-fetch-config',
+    async (_, url: string): Promise<string> =>
+      fetchDynamicKeyConfig(url, debugMode)
+  );
 
   // Connects to a proxy server specified by a config.
   //
