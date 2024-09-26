@@ -80,4 +80,12 @@ export class ElectronVpnApi implements VpnApi {
   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {
     this.statusChangeListener = listener;
   }
+
+  async fetchDynamicConfig(url: string): Promise<string> {
+    try {
+      return await window.electron.methodChannel.invoke('fetch-config', url);
+    } catch (e) {
+      throw PlatformError.parseFrom(e);
+    }
+  }
 }
