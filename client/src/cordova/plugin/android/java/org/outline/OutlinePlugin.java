@@ -42,6 +42,8 @@ import org.outline.log.SentryErrorReporter;
 import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
+import outline.Outline;
+import outline.FetchDynamicKeyResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
 
@@ -57,6 +59,7 @@ public class OutlinePlugin extends CordovaPlugin {
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
+    FETCH_CONFIG("fetchConfig"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -202,6 +205,17 @@ public class OutlinePlugin extends CordovaPlugin {
           final String tunnelId = args.getString(0);
           boolean isActive = isTunnelActive(tunnelId);
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
+        } else if (Action.FETCH_CONFIG.is(action)) {
+          final String url = args.getString(0);
+          LOG.fine(String.format(Locale.ROOT, "Fetching dynamic config at %s ...", url));
+          final FetchDynamicKeyResult result = Outline.fetchDynamicKey(url);
+          if (result.getError() != null) {
+            LOG.warning(String.format(Locale.ROOT, "Fetch dynamic config failed: %s", result.getError()));
+            sendActionResult(callback, result.getError());
+          } else {
+            LOG.info(String.format(Locale.ROOT, "Fetch dynamic config result: %s", result.getKey()));
+            callback.success(result.getKey());
+          }
 
           // Static actions
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
