@@ -52,23 +52,6 @@ export class CordovaVpnApi implements VpnApi {
   }
 
   async fetchDynamicConfig(url: string): Promise<string> {
-    if (cordova.platformId === 'android') {
-      return pluginExecWithErrorCode<string>('fetchConfig', url);
-    } else {
-      // TODO: move to Go fetch implementation later
-      let response: Response;
-      try {
-        response = await fetch(url, {
-          cache: 'no-store',
-          redirect: 'follow',
-        });
-      } catch (cause) {
-        throw new errors.SessionConfigFetchFailed(
-          'Failed to fetch VPN information from dynamic access key.',
-          {cause}
-        );
-      }
-      return (await response.text()).trim();
-    }
+    return pluginExecWithErrorCode<string>('fetchConfig', url);
   }
 }

@@ -21,6 +21,8 @@ import OutlineSentryLogger
 import OutlineNotification
 import OutlineTunnel
 
+import Tun2socks
+
 public enum TunnelStatus: Int {
   case connected = 0
   case disconnected = 1
@@ -142,6 +144,27 @@ class OutlinePlugin: CDVPlugin {
       DDLogInfo("isRunning \(tunnelId)")
       Task {
         self.sendSuccess(await OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
+      }
+    }
+
+    func fetchConfig(_ command: CDVInvokedUrlCommand) {
+      guard let url = command.argument(at: 0) as? String else {
+        return sendError("Missing URL", callbackId: command.callbackId)
+      }
+      DDLogInfo("Fetching dynamic config from \(url)")
+      Task {
+        guard let result = OutlineFetchDynamicKey(url) else {
+          return self.sendError("unexpected fetching result", callbackId: command.callbackId)
+        }
+        if result.error != nil {
+          var marshalErr: NSError?
+          var errorJson = PlaterrorsMarshalJSONString(result.error, &marshalErr)
+          if marshalErr != nil {
+            errorJson = "error code = \(result.error?.code ?? "?"), failed to fetch details"
+          }
+          return self.sendError(errorJson, callbackId: command.callbackId)
+        }
+        self.sendSuccess(result.key, callbackId: command.callbackId)
       }
     }
 
@@ -283,6 +306,11 @@ class OutlinePlugin: CDVPlugin {
         let result = CDVPluginResult(status: CDVCommandStatus_OK)
         send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
     }
+
+  private func sendSuccess(_ operationResult: String, callbackId: String, keepCallback: Bool = false) {
+    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
+    send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+  }
 
     private func sendSuccess(_ operationResult: Bool, callbackId: String, keepCallback: Bool = false) {
         let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
