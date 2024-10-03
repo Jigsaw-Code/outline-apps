@@ -37,7 +37,6 @@ import './outline-support-form';
 import {
   FormValues,
   OutlineSupportForm,
-  ValidFormValues,
 } from './outline-support-form';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
@@ -179,7 +178,7 @@ export class OutlineContactUsDialog
   ];
 
   @state() private showIssueSelector = false;
-  private formValues: FormValues = {};
+  private formValues: Partial<FormValues> = {};
   private readonly formRef: Ref<OutlineSupportForm> = createRef();
   @state() private isFormSubmitting = false;
 
@@ -233,7 +232,7 @@ export class OutlineContactUsDialog
       throw Error('Cannot submit invalid form.');
     }
 
-    const {description, email, ...tags} = this.formValues as ValidFormValues;
+    const {description, email, ...tags} = this.formValues as FormValues;
     try {
       Sentry.captureEvent({
         message: description,

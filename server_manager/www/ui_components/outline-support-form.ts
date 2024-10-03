@@ -20,6 +20,8 @@ import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {TextField} from '@material/mwc-textfield';
+import '@material/web/checkbox/checkbox';
+import type { MdCheckbox } from '@material/web/checkbox/checkbox';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, PropertyValues} from 'lit';
@@ -33,17 +35,11 @@ type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 /** Interface for tracking form data. */
 export declare interface FormValues {
-  email?: string;
-  subject?: string;
-  description?: string;
-  cloudProvider?: string;
-}
-
-/** Interface for valid form data. */
-export declare interface ValidFormValues extends FormValues {
   email: string;
   subject: string;
   description: string;
+  cloudProvider: string;
+  outreachConsent: boolean;
 }
 
 declare interface CloudProviderOption {
@@ -58,6 +54,8 @@ export class OutlineSupportForm extends LitElement {
     css`
       :host {
         --mdc-theme-primary: var(--primary-green);
+        --md-sys-color-primary: var(--primary-green);
+        --md-sys-color-on-surface-variant: rgba(0, 0, 0, 0.54);
       }
 
       mwc-select {
@@ -68,6 +66,16 @@ export class OutlineSupportForm extends LitElement {
       mwc-textfield {
         display: flex;
         margin: 0.75rem 0;
+      }
+
+      label {
+        align-items: center;
+        color: hsl(0, 0%, 45%);
+        display: inline-flex;
+      }
+
+      label md-checkbox {
+        flex-shrink: 0;
       }
 
       p {
@@ -88,13 +96,13 @@ export class OutlineSupportForm extends LitElement {
   /** The maximum character length of the "Description" field. */
   private static readonly MAX_LENGTH_DESCRIPTION = 131072;
   /** The number of visible text lines for the "Description" field. */
-  private static readonly MAX_ROWS_DESCRIPTION = 10;
+  private static readonly MAX_ROWS_DESCRIPTION = 8;
 
   private static readonly CLOUD_PROVIDERS = ['aws', 'digitalocean', 'gcloud'];
 
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
-  @property({type: Object}) values: FormValues = {};
+  @property({type: Object}) values: Partial<FormValues> = {};
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
   @state() valid = false;
@@ -132,9 +140,12 @@ export class OutlineSupportForm extends LitElement {
   }
 
   private handleTextInput(e: Event) {
-    const key: keyof FormValues = (e.target as TextField)
-      .name as keyof FormValues;
-    const value = (e.target as TextField).value;
+    const target = e.target as TextField;
+    const key = target.name as keyof FormValues;
+    if (key != "email" && key != "subject" && key != "description") {
+      throw new Error(`Cannot handle unknown text field ${key}`);
+    }
+    const value = target.value;
     this.values[key] = value;
     this.checkFormValidity();
   }
@@ -210,6 +221,19 @@ export class OutlineSupportForm extends LitElement {
           @blur=${this.checkFormValidity}
         >
         </mwc-textarea>
+
+        <label>
+          <md-checkbox
+            touch-target="wrapper"
+            name="outreachConsent"
+            .value=${live(this.values.outreachConsent ?? false)}
+            @input=${(event: CustomEvent) => {
+              const { checked: newValue } = event.target as MdCheckbox;
+              this.values.outreachConsent = newValue;
+            }}
+          ></md-checkbox>
+          ${this.localize('support-form-outreach-consent')}
+        </label>
 
         <p>* = ${this.localize('support-form-required-field')}</p>
 
