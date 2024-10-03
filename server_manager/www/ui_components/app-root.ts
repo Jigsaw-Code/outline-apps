@@ -434,7 +434,7 @@ export class AppRoot extends polymerElementWithLocalize {
               <outline-manual-server-entry id="manualEntry" localize="[[localize]]"></outline-manual-server-entry>
               <!-- TODO: Move to a new outline-do-oauth-step. -->
               <outline-region-picker-step id="regionPicker" localize="[[localize]]" language="[[language]]"></outline-region-picker-step>
-              <outline-server-list id="serverView" server-list="[[_serverViewList(serverList)]]" selected-server-id="[[selectedServerId]]" language="[[language]]" localize="[[localize]]"></outline-server-list>
+              <outline-server-list id="serverView" server-list="[[_serverViewList(serverList)]]" selected-server-id="[[selectedServerId]]" language="[[language]]" localize="[[localize]]" feature-flags="[[featureFlags]]"></outline-server-list>
               </div>
             </iron-pages>
           </div>

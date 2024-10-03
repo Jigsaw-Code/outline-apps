@@ -115,7 +115,6 @@ export class ServerView extends DirMixin(PolymerElement) {
           flex: 2;
         }
         paper-tabs {
-          flex: 1;
           --paper-tabs-selection-bar-color: var(--primary-green);
           --paper-tab-ink: var(--primary-green);
           --paper-tab-content-unselected {
@@ -541,6 +540,9 @@ export class ServerView extends DirMixin(PolymerElement) {
           <paper-tab name="connections"
             >[[localize('server-connections')]]</paper-tab
           >
+          <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
+            <paper-tab name="metrics">[[localize('server-metrics')]]</paper-tab>
+          </template>
           <paper-tab name="settings" id="settingsTab"
             >[[localize('server-settings')]]</paper-tab
           >
@@ -724,6 +726,9 @@ export class ServerView extends DirMixin(PolymerElement) {
             </div>
           </div>
         </div>
+        <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
+          <div name="metrics"></div>
+        </template>
         <div name="settings">
           <outline-server-settings
             id="serverSettings"
@@ -791,6 +796,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       localize: Function,
       selectedPage: String,
       selectedTab: String,
+      featureFlags: Object,
     };
   }
 
@@ -844,6 +850,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   selectedPage: 'progressView' | 'unreachableView' | 'managementView' =
     'managementView';
   selectedTab: 'connections' | 'settings' = 'connections';
+  featureFlags = {};
 
   addAccessKey(accessKey: DisplayAccessKey) {
     // TODO(fortuna): Restore loading animation.
