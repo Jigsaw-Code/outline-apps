@@ -34,10 +34,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {COMMON_STYLES} from './cloud-install-styles';
 import {OutlineFeedbackDialog} from './outline-feedback-dialog';
 import './outline-support-form';
-import {
-  FormValues,
-  OutlineSupportForm,
-} from './outline-support-form';
+import {FormValues, OutlineSupportForm} from './outline-support-form';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
 enum ProgressStep {

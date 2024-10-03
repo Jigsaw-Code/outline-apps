@@ -21,7 +21,7 @@ import '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
 import {TextField} from '@material/mwc-textfield';
 import '@material/web/checkbox/checkbox';
-import type { MdCheckbox } from '@material/web/checkbox/checkbox';
+import type {MdCheckbox} from '@material/web/checkbox/checkbox';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, PropertyValues} from 'lit';
@@ -142,7 +142,7 @@ export class OutlineSupportForm extends LitElement {
   private handleTextInput(e: Event) {
     const target = e.target as TextField;
     const key = target.name as keyof FormValues;
-    if (key != "email" && key != "subject" && key != "description") {
+    if (key !== 'email' && key !== 'subject' && key !== 'description') {
       throw new Error(`Cannot handle unknown text field ${key}`);
     }
     const value = target.value;
@@ -228,7 +228,7 @@ export class OutlineSupportForm extends LitElement {
             name="outreachConsent"
             .value=${live(this.values.outreachConsent ?? false)}
             @input=${(event: CustomEvent) => {
-              const { checked: newValue } = event.target as MdCheckbox;
+              const {checked: newValue} = event.target as MdCheckbox;
               this.values.outreachConsent = newValue;
             }}
           ></md-checkbox>
