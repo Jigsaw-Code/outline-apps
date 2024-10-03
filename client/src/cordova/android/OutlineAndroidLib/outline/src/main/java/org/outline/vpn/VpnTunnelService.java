@@ -449,7 +449,7 @@ public class VpnTunnelService extends VpnService {
         notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
-      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build());
+      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN);
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
     }

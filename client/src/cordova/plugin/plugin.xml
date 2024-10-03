@@ -44,7 +44,7 @@
 
     <config-file target="app/src/main/AndroidManifest.xml" parent="/manifest/application">
       <service
-        android:foregroundServiceType="systemExempted"
+        android:foregroundServiceType="vpn"
         android:name="org.outline.vpn.VpnTunnelService"
         android:exported="false"
         android:label="@string/app_name"
