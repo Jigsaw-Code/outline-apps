@@ -379,6 +379,7 @@ public class VpnTunnelService extends VpnService {
     }
     Intent statusChange = new Intent(STATUS_BROADCAST_KEY);
     statusChange.addCategory(getPackageName());
+    statusChange.setPackage(this.getPackageName());
     statusChange.putExtra(MessageData.PAYLOAD.value, status.value);
     statusChange.putExtra(MessageData.TUNNEL_ID.value, tunnelConfig.id);
     sendBroadcast(statusChange);
