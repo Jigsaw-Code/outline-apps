@@ -1,6 +1,7 @@
 {
   "name": "@outline/client",
   "version": "0.0.0-debug",
+  "license": "Apache-2.0",
   "private": true,
   "comments": {
     "version": "The 'version' in this file is just a placeholder for 'npx generate-license-file', please do not change it.",
@@ -96,6 +97,7 @@
     "eslint-plugin-import": "^2.26.0",
     "esm": "^3.2.25",
     "file-loader": "^6.2.0",
+    "generate-license-file": "^3.5.0",
     "folder-hash": "^4.0.4",
     "html-webpack-plugin": "^5.1.0",
     "husky": "^1.3.1",
@@ -150,6 +152,7 @@
     ]
   },
   "scripts": {
-    "clean": "rm -rf output node_modules www platforms plugins"
+    "clean": "rm -rf output node_modules www platforms plugins",
+    "generate-license-file": "npx generate-license-file && ./src/www/views/licenses_view/licenses/third_party.sh >> ./src/www/views/licenses_view/licenses/licenses.txt"
   }
 }

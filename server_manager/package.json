@@ -2,6 +2,7 @@
   "name": "@outline/server_manager",
   "productName": "Outline Manager",
   "version": "0.0.0-debug",
+  "license": "Apache-2.0",
   "description": "Create and manage access to Outline servers",
   "homepage": "https://getoutline.org/",
   "author": {
@@ -98,6 +99,7 @@
     "electron-builder": "^24.9.1",
     "electron-notarize": "^1.2.1",
     "electron-to-chromium": "^1.4.328",
+    "generate-license-file": "^3.5.0",
     "gulp": "^4.0.0",
     "gulp-posthtml": "^3.0.4",
     "gulp-replace": "^1.0.0",
@@ -127,6 +129,7 @@
     "type-detect": "1.0.0"
   },
   "scripts": {
-    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts"
+    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts",
+    "generate-license-file": "npx generate-license-file"
   }
 }

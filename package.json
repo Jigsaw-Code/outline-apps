@@ -8,6 +8,7 @@
     "action:list": "npm run action list",
     "action": "node ./infrastructure/build/run_action.mjs",
     "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
+    "generate-license-file": "npm run generate-license-file --workspaces --if-present",
     "format:all": "gts fix",
     "lint:all": "gts lint",
     "reset": "npm run clean && npm ci",
