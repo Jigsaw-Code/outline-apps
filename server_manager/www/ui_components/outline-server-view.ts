@@ -850,7 +850,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   selectedPage: 'progressView' | 'unreachableView' | 'managementView' =
     'managementView';
   selectedTab: 'connections' | 'settings' = 'connections';
-  featureFlags = {};
+  featureFlags = {serverMetricsTab: false};
 
   addAccessKey(accessKey: DisplayAccessKey) {
     // TODO(fortuna): Restore loading animation.
