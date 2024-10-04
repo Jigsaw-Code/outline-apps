@@ -1095,6 +1095,10 @@
     "message": "Keys",
     "description": "This string appears within the server view as the unit of a card that displays the number of server access keys."
   },
+  "server_metrics": {
+    "message": "Metrics",
+    "description": "This string appears within the server view as a header of the section that displays server metrics."
+  },
   "server_my_access_key": {
     "message": "My access key",
     "description": "This string appears within the server view as the header for the default server access key. This key is meant to be used by the server administrator."
@@ -1392,6 +1396,10 @@
   "support_form_email": {
     "description": "Label of a Contact Support form input field.",
     "message": "Email"
+  },
+  "support_form_outreach_consent": {
+    "description": "Label for a consent checkbox that opts users in to being contacted in the future.",
+    "message": "Yes, I'd like to sign up to be contacted about collaboration opportunities."
   },
   "support_form_required_field": {
     "description": "Text on a Contact Support form indicating that a field is required.",
