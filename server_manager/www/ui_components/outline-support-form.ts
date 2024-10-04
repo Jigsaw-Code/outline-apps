@@ -19,9 +19,10 @@ import '@material/mwc-select';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
 import {SelectedDetail} from '@material/mwc-menu/mwc-menu-base';
+import {TextArea} from '@material/mwc-textarea';
 import {TextField} from '@material/mwc-textfield';
 import '@material/web/checkbox/checkbox';
-import type {MdCheckbox} from '@material/web/checkbox/checkbox';
+import {MdCheckbox} from '@material/web/checkbox/checkbox';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {html, css, LitElement, PropertyValues} from 'lit';
@@ -139,14 +140,19 @@ export class OutlineSupportForm extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private handleTextInput(e: Event) {
-    const target = e.target as TextField;
+  private handleInput(e: InputEvent) {
+    const target = e.target as HTMLInputElement;
     const key = target.name as keyof FormValues;
-    if (key !== 'email' && key !== 'subject' && key !== 'description') {
-      throw new Error(`Cannot handle unknown text field ${key}`);
+    if (target instanceof TextField || target instanceof TextArea) {
+      const key = target.name as keyof FormValues;
+      const {value} = target;
+      (this.values as Record<string, string>)[key] = value;
+    } else if (target instanceof MdCheckbox) {
+      const {checked: value} = target as MdCheckbox;
+      (this.values as Record<string, boolean>)[key] = value;
+    } else {
+      throw new Error(`Cannot handle unknown form field: ${key}`);
     }
-    const value = target.value;
-    this.values[key] = value;
     this.checkFormValidity();
   }
 
@@ -175,7 +181,7 @@ export class OutlineSupportForm extends LitElement {
           .validationMessage=${this.localize('support-form-email-invalid')}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
 
@@ -206,7 +212,7 @@ export class OutlineSupportForm extends LitElement {
           .maxLength=${OutlineSupportForm.DEFAULT_MAX_LENGTH_INPUT}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
         <mwc-textarea
@@ -217,7 +223,7 @@ export class OutlineSupportForm extends LitElement {
           .maxLength=${OutlineSupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         >
         </mwc-textarea>
@@ -227,10 +233,7 @@ export class OutlineSupportForm extends LitElement {
             touch-target="wrapper"
             name="outreachConsent"
             .value=${live(this.values.outreachConsent ?? false)}
-            @input=${(event: CustomEvent) => {
-              const {checked: newValue} = event.target as MdCheckbox;
-              this.values.outreachConsent = newValue;
-            }}
+            @input=${this.handleInput}
           ></md-checkbox>
           ${this.localize('support-form-outreach-consent')}
         </label>
