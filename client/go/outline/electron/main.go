@@ -75,12 +75,19 @@ var args struct {
 
 var version string // Populated at build time through `-X main.version=...`
 
-// This app sets up a local network stack to handle requests from a tun device.
+// By default, this app sets up a local network stack to handle requests from a tun device.
 //
 // If the app runs successfully, it exits with code 0.
 // If there's an error, it exits with code 1 and prints a detailed error message in JSON format to stderr.
 //
 // The app also prints logs, but these are not meant to be read by the parent process.
+//
+// This app has two extra modes:
+//
+//   - Connectivity Check: If you run the app with `-checkConnectivity`, it will test the proxy's connectivity
+//     and exit with the result printed out to standard output.
+//   - Fetch Config: If you run the app with `-fetchConfig`, it will fetch the dynamic key from the specified
+//     URL and exit with the content printed out to standard output.
 func main() {
 	args.tunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface IP address")
 	args.tunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
@@ -91,7 +98,7 @@ func main() {
 	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
-	args.fetchConfig = flag.String("fetchConfig", "", "The HTTPS URL of a dynamic key to fetch")
+	args.fetchConfig = flag.String("fetchConfig", "", "Fetch the dynamic key from the given URL and exit.")
 	args.version = flag.Bool("version", false, "Print the version and exit.")
 
 	flag.Parse()

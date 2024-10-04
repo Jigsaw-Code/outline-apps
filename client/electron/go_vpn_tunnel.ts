@@ -67,6 +67,8 @@ export class GoVpnTunnel implements VpnTunnel {
     private readonly routing: RoutingDaemon,
     readonly transportConfig: TransportConfigJson
   ) {
+    // We need two GoTun2socks instances because we need to update the UDP connectivity
+    // using this.connectivityChecker while this.tun2socks is still running.
     this.tun2socks = new GoTun2socks();
     this.connectivityChecker = new GoTun2socks();
 
