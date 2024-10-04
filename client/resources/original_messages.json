@@ -566,26 +566,6 @@
     "description": "Label of a Contact Support form input field.",
     "message": "Where did you get your access key?"
   },
-  "support_form_cloud_provider_aws": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "Amazon Web Services"
-  },
-  "support_form_cloud_provider_digitalocean": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "DigitalOcean"
-  },
-  "support_form_cloud_provider_gcloud": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "Google Cloud"
-  },
-  "support_form_cloud_provider_other": {
-    "description": "Item in a dropdown menu to select an unknown cloud provider that the user is contacting support about.",
-    "message": "Other"
-  },
-  "support_form_cloud_provider": {
-    "description": "Label of a Contact Support form input field.",
-    "message": "Cloud Provider"
-  },
   "support_form_description": {
     "description": "Label of a Contact Support form input field.",
     "message": "Description of the issue"
@@ -597,6 +577,10 @@
   "support_form_email": {
     "description": "Label of a Contact Support form input field.",
     "message": "Email"
+  },
+  "support_form_outreach_consent": {
+    "description": "Label for a consent checkbox that opts users in to being contacted in the future.",
+    "message": "Yes, I'd like to sign up to be contacted about collaboration opportunities."
   },
   "support_form_required_field": {
     "description": "Text on a Contact Support form indicating that a field is required.",

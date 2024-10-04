@@ -1393,6 +1393,10 @@
     "description": "Label of a Contact Support form input field.",
     "message": "Email"
   },
+  "support_form_outreach_consent": {
+    "description": "Label for a consent checkbox that opts users in to being contacted in the future.",
+    "message": "Yes, I'd like to sign up to be contacted about collaboration opportunities."
+  },
   "support_form_required_field": {
     "description": "Text on a Contact Support form indicating that a field is required.",
     "message": "Required field"
