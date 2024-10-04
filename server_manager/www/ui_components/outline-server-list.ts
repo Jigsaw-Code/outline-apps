@@ -33,6 +33,7 @@ export class OutlineServerList extends LitElement {
   @property({type: String}) selectedServerId: string;
   @property({type: Function}) localize: Function;
   @property({type: String}) language: string;
+  @property({type: Object}) featureFlags: {[key: string]: boolean};
 
   render() {
     if (!this.serverList) {
@@ -50,6 +51,7 @@ export class OutlineServerList extends LitElement {
             .cloudId="${e.cloudId}"
             .language="${this.language}"
             .localize="${this.localize}"
+            .featureFlags="${this.featureFlags}"
             ?hidden="${e.id !== this.selectedServerId}"
           >
           </outline-server-view>
