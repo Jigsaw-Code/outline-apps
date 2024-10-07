@@ -22,7 +22,7 @@ import {esbuildPlugin} from '@web/dev-server-esbuild';
 import {fromRollup} from '@web/dev-server-rollup';
 import {storybookPlugin} from '@web/dev-server-storybook';
 
-const WWW_PATH = ['client', 'src', 'www'];
+const WWW_PATH = ['src', 'www'];
 const STORYBOOK_PATH = [...WWW_PATH, '.storybook'];
 
 /**
