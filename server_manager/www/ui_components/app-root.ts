@@ -402,10 +402,10 @@ export class AppRoot extends polymerElementWithLocalize {
               </a>
             </if-messages>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
-            <template is="dom-if" if="{{contactViewFeatureFlag}}">
+            <template is="dom-if" if="{{featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
             </template>
-            <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+            <template is="dom-if" if="{{!featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
             </template>
             <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
@@ -434,7 +434,7 @@ export class AppRoot extends polymerElementWithLocalize {
               <outline-manual-server-entry id="manualEntry" localize="[[localize]]"></outline-manual-server-entry>
               <!-- TODO: Move to a new outline-do-oauth-step. -->
               <outline-region-picker-step id="regionPicker" localize="[[localize]]" language="[[language]]"></outline-region-picker-step>
-              <outline-server-list id="serverView" server-list="[[_serverViewList(serverList)]]" selected-server-id="[[selectedServerId]]" language="[[language]]" localize="[[localize]]"></outline-server-list>
+              <outline-server-list id="serverView" server-list="[[_serverViewList(serverList)]]" selected-server-id="[[selectedServerId]]" language="[[language]]" localize="[[localize]]" feature-flags="[[featureFlags]]"></outline-server-list>
               </div>
             </iron-pages>
           </div>
@@ -462,7 +462,7 @@ export class AppRoot extends polymerElementWithLocalize {
 
       <!-- Modal dialogs must be outside the app container; otherwise the backdrop covers them.  -->
       <outline-survey-dialog id="surveyDialog" localize="[[localize]]"></outline-survey-dialog>
-      <template is="dom-if" if="{{contactViewFeatureFlag}}">
+      <template is="dom-if" if="{{featureFlags.contactView}}">
         <outline-contact-us-dialog
           id="feedbackDialog"
           localize="[[localize]]"
@@ -470,7 +470,7 @@ export class AppRoot extends polymerElementWithLocalize {
           on-error="showContactErrorToast"
         ></outline-contact-us-dialog>
       </template>
-      <template is="dom-if" if="{{!contactViewFeatureFlag}}">
+      <template is="dom-if" if="{{!featureFlags.contactView}}">
         <outline-feedback-dialog id="feedbackDialog" localize="[[localize]]"></outline-feedback-dialog>
       </template>
       <outline-about-dialog id="aboutDialog" outline-version="[[outlineVersion]]" localize="[[localize]]"></outline-about-dialog>
@@ -732,9 +732,12 @@ export class AppRoot extends polymerElementWithLocalize {
       },
       shouldShowSideBar: {type: Boolean},
       showManagerResourcesLink: {type: Boolean},
-      contactViewFeatureFlag: {
-        type: Boolean,
-        value: true,
+      featureFlags: {
+        type: Object,
+        value: {
+          contactView: true,
+          serverMetricsTab: false,
+        },
       },
     };
   }
