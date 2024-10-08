@@ -309,10 +309,10 @@ private struct LastErrorIPCData: Decodable {
 
 // Fetches the most recent error that caused the VPN extension to disconnect.
 // If no error, it returns nil. Otherwise, it returns a description of the error.
-private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSession) async -> DetailedJsonError? {
+private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSession) async -> Error? {
   do {
     guard let rpcNameData = ExtensionIPC.fetchLastDetailedJsonError.data(using: .utf8) else {
-      return OutlineError.internalError(message: "IPC fetchLastDisconnectError failed").asDetailedJsonError()
+      return OutlineError.internalError(message: "IPC fetchLastDisconnectError failed")
     }
     return try await withCheckedThrowingContinuation { continuation in
       do {
@@ -325,8 +325,8 @@ private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSessio
           do {
             let lastError = try PropertyListDecoder().decode(LastErrorIPCData.self, from: response)
             DDLogDebug("Extension IPC returned with \(lastError)")
-            continuation.resume(returning: DetailedJsonError(
-              withErrorCode: lastError.errorCode, andErrorJson: lastError.errorJson))
+            continuation.resume(returning: OutlineError.detailedJsonError(code: lastError.errorCode,
+                                                                          json: lastError.errorJson))
           } catch {
             continuation.resume(throwing: error)
           }
@@ -339,6 +339,6 @@ private func fetchExtensionLastDisconnectError(_ session: NETunnelProviderSessio
     DDLogError("Failed to invoke VPN Extension IPC: \(error)")
     return OutlineError.internalError(
       message: "IPC fetchLastDisconnectError failed: \(error.localizedDescription)"
-    ).asDetailedJsonError()
+    )
   }
 }

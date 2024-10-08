@@ -54,40 +54,41 @@ public class SwiftBridge: NSObject {
   }
 
   /**
-   Creates a NSError (of domain DetailedJsonError) with a specific PlatformError code and a message.
+   Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.internalError`.
    */
-  public static func newDetailedJsonErrorWith(category: String, andMessage message: String) -> NSError {
-    let perr = PlaterrorsPlatformError(category, message: message)
-    return newDetailedJsonErrorFrom(platformError: perr)!
+  public static func newInternalOutlineError(message: String) -> NSError {
+    return OutlineError.internalError(message: message) as NSError
   }
 
   /**
-   Creates a NSError (of domain DetailedJsonError) from a Go's PlatformError.
+   Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.illegalConfig` error.
    */
-  public static func newDetailedJsonErrorFrom(platformError: PlaterrorsPlatformError?) -> NSError? {
+  public static func newIllegalConfigOutlineError(message: String) -> NSError {
+    return OutlineError.illegalConfig(message: message) as NSError
+  }
+
+  /**
+   Creates a NSError (of `OutlineError.errorDomain`) from a Go's PlatformError.
+   */
+  public static func newOutlineErrorFrom(platformError: PlaterrorsPlatformError?) -> NSError? {
     guard let perr = platformError else {
       return nil
     }
-    var marshalErr: NSError?
-    var errorJson = PlaterrorsMarshalJSONString(perr, &marshalErr)
-    if marshalErr != nil {
-      errorJson = "error code = \(perr.code), failed to fetch details"
-    }
-    return DetailedJsonError(withErrorCode: perr.code, andErrorJson: errorJson).asNSError()
+    return OutlineError.platformError(perr) as NSError
   }
 
   /**
-   Creates a NSError (of domain DetailedJsonError) with detailed JSON from another NSError.
+   Creates a NSError (of `OutlineError.errorDomain`) with detailed JSON from another NSError.
    */
-  public static func newDetailedJSONErrorFrom(nsError: NSError?) -> NSError? {
+  public static func newOutlineErrorFrom(nsError: Error?) -> NSError? {
     guard let nserr = nsError else {
       return nil
     }
-    return DetailedJsonError.from(error: nserr).asNSError()
+    return toOutlineError(error: nserr) as NSError
   }
 
   // TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
-  public static func saveLastError(nsError: NSError?) {
+  public static func saveLastError(nsError: Error?) {
     saveLastDisconnectErrorDetails(err: nsError)
   }
 
@@ -250,12 +251,13 @@ private struct LastErrorIPCData: Codable {
   let errorJson: String
 }
 
-func saveLastDisconnectErrorDetails(err: NSError?) {
+func saveLastDisconnectErrorDetails(err: Error?) {
   guard let nserr = err else {
     return UserDefaults.standard.removeObject(forKey: lastDisconnectErrorPersistenceKey)
   }
-  let jsonErr = DetailedJsonError.from(error: nserr)
-  let persistObj = LastErrorIPCData(errorCode: jsonErr.errorCodeString, errorJson: jsonErr.errorJson)
+  let outlineErr = toOutlineError(error: nserr)
+  let errJson = marshalErrorJson(outlineError: outlineErr)
+  let persistObj = LastErrorIPCData(errorCode: outlineErr.code, errorJson: errJson)
   do {
     let encodedObj = try PropertyListEncoder().encode(persistObj)
     UserDefaults.standard.setValue(encodedObj, forKey: lastDisconnectErrorPersistenceKey)

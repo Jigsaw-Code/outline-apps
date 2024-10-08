@@ -54,12 +54,12 @@ final class VpnExtensionTest: XCTestCase {
     XCTAssertNil(SwiftBridge.loadLastErrorToIPCResponse())
 
     // Error should be serialized to disk, and deserialized using the default decoder
-    let lastErr = DetailedJsonError.from(errorCode: "ERR_TEST", andMessage: "A test error")
-    SwiftBridge.saveLastError(nsError: lastErr.asNSError())
+    let lastErr = OutlineError.detailedJsonError(code: "ERR_TEST", json: "A test error json str")
+    SwiftBridge.saveLastError(nsError: lastErr as NSError)
     let errData = SwiftBridge.loadLastErrorToIPCResponse()
     XCTAssertNotNil(errData)
     let errIPCResponse = try PropertyListDecoder().decode(LastErrorIPCData.self, from: errData! as Data)
     XCTAssertEqual(errIPCResponse.errorCode, "ERR_TEST")
-    XCTAssertEqual(errIPCResponse.errorJson, lastErr.errorJson)
+    XCTAssertEqual(errIPCResponse.errorJson, "A test error json str")
   }
 }

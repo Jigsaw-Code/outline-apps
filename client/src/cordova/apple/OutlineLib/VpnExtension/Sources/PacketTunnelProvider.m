@@ -72,22 +72,19 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // MARK: Process Config.
   if (self.protocolConfiguration == nil) {
     DDLogError(@"Failed to retrieve NETunnelProviderProtocol.");
-    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsIllegalConfig
-                                                        andMessage:@"no config specified"]);
+    return startDone([SwiftBridge newIllegalConfigOutlineErrorWithMessage:@"no config specified"]);
   }
   NETunnelProviderProtocol *protocol = (NETunnelProviderProtocol *)self.protocolConfiguration;
   NSString *tunnelId = protocol.providerConfiguration[@"id"];
   if (![tunnelId isKindOfClass:[NSString class]]) {
     DDLogError(@"Failed to retrieve the tunnel id.");
-    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsInternalError
-                                                        andMessage:@"no tunnal ID specified"]);
+    return startDone([SwiftBridge newInternalOutlineErrorWithMessage:@"no tunnal ID specified"]);
   }
 
   NSString *transportConfig = protocol.providerConfiguration[@"transport"];
   if (![transportConfig isKindOfClass:[NSString class]]) {
     DDLogError(@"Failed to retrieve the transport configuration.");
-    return startDone([SwiftBridge newDetailedJsonErrorWithCategory:PlaterrorsIllegalConfig
-                                                        andMessage:@"config is not a String"]);
+    return startDone([SwiftBridge newIllegalConfigOutlineErrorWithMessage:@"config is not a String"]);
   }
   self.transportConfig = transportConfig;
 
@@ -109,12 +106,12 @@ NSString *const kDefaultPathKey = @"defaultPath";
   if (!isOnDemand) {
     OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
     if (clientResult.error != nil) {
-      return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:clientResult.error]);
+      return startDone([SwiftBridge newOutlineErrorFromPlatformError:clientResult.error]);
     }
     OutlineTCPAndUDPConnectivityResult *connResult = OutlineCheckTCPAndUDPConnectivity(clientResult.client);
     DDLogDebug(@"Check connectivity result: tcpErr=%@, udpErr=%@", connResult.tcpError, connResult.udpError);
     if (connResult.tcpError != nil) {
-      return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:connResult.tcpError]);
+      return startDone([SwiftBridge newOutlineErrorFromPlatformError:connResult.tcpError]);
     }
     udpConnectionError = connResult.udpError;
   }
@@ -122,13 +119,13 @@ NSString *const kDefaultPathKey = @"defaultPath";
   [self startRouting:[SwiftBridge getTunnelNetworkSettings]
           completion:^(NSError *_Nullable error) {
             if (error != nil) {
-              return startDone([SwiftBridge newDetailedJSONErrorFromNsError:error]);
+              return startDone([SwiftBridge newOutlineErrorFromNsError:error]);
             }
             BOOL isUdpSupported =
                 isOnDemand ? self.isUdpSupported : udpConnectionError == nil;
             PlaterrorsPlatformError *tun2socksError = [self startTun2Socks:isUdpSupported];
             if (tun2socksError != nil) {
-              return startDone([SwiftBridge newDetailedJsonErrorFromPlatformError:tun2socksError]);
+              return startDone([SwiftBridge newOutlineErrorFromPlatformError:tun2socksError]);
             }
             [self listenForNetworkChanges];
             startDone(nil);
