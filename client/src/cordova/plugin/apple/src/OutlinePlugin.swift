@@ -105,12 +105,8 @@ class OutlinePlugin: CDVPlugin {
         NotificationCenter.default.post(name: .kVpnConnected, object: nil)
 #endif
         self.sendSuccess(callbackId: command.callbackId)
-      } catch let error as OutlineError {
-        self.sendError(error.asDetailedJsonError().errorJson, callbackId: command.callbackId)
-      } catch let error as DetailedJsonError {
-        self.sendError(error.errorJson, callbackId: command.callbackId)
       } catch {
-        self.sendError(error.localizedDescription, callbackId: command.callbackId)
+        self.sendError(marshalErrorJson(error: error), callbackId: command.callbackId)
       }
     }
   }
