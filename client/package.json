@@ -40,7 +40,7 @@
     "@polymer/paper-styles": "^3.0.1",
     "@polymer/paper-toast": "^3.0.1",
     "@polymer/polymer": "^3.5.1",
-    "@sentry/browser": "^7.31.1",
+    "@sentry/browser": "^7.119.1",
     "@sentry/electron": "^4.2.0",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
