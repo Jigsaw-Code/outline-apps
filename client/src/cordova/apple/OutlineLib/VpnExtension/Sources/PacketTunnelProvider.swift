@@ -89,7 +89,7 @@ public class SwiftBridge: NSObject {
 
   // TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
   public static func saveLastError(nsError: Error?) {
-    saveLastDisconnectErrorDetails(err: nsError)
+    saveLastDisconnectErrorDetails(error: nsError)
   }
 
   // TODO: Remove this code once we only support newer systems (macOS 13.0+, iOS 16.0+)
@@ -251,13 +251,12 @@ private struct LastErrorIPCData: Codable {
   let errorJson: String
 }
 
-func saveLastDisconnectErrorDetails(err: Error?) {
-  guard let nserr = err else {
+func saveLastDisconnectErrorDetails(error: Error?) {
+  guard let err = error else {
     return UserDefaults.standard.removeObject(forKey: lastDisconnectErrorPersistenceKey)
   }
-  let outlineErr = toOutlineError(error: nserr)
-  let errJson = marshalErrorJson(outlineError: outlineErr)
-  let persistObj = LastErrorIPCData(errorCode: outlineErr.code, errorJson: errJson)
+  let outlineErr = toOutlineError(error: err)
+  let persistObj = LastErrorIPCData(errorCode: outlineErr.code, errorJson: marshalErrorJson(error: err))
   do {
     let encodedObj = try PropertyListEncoder().encode(persistObj)
     UserDefaults.standard.setValue(encodedObj, forKey: lastDisconnectErrorPersistenceKey)

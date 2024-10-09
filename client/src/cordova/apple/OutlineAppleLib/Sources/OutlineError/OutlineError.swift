@@ -130,7 +130,7 @@ private func marshalErrorJson(code: String, message: String) -> String {
 }
 
 /// Marshals an `OutlineError` to a JSON string.
-public func marshalErrorJson(outlineError: OutlineError) -> String {
+private func marshalErrorJson(outlineError: OutlineError) -> String {
   switch (outlineError) {
   case .detailedJsonError(_, let json):
     return json
