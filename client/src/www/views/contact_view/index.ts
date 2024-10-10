@@ -28,7 +28,7 @@ import {Ref, createRef, ref} from 'lit/directives/ref.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './support_form';
-import {FormValues, SupportForm, ValidFormValues} from './support_form';
+import {FormValues, SupportForm} from './support_form';
 import {OutlineErrorReporter} from '../../shared/error_reporter';
 
 /** The possible steps in the stepper. Only one step is shown at a time. */
@@ -178,7 +178,7 @@ export class ContactView extends LitElement {
   ];
 
   @state() private showIssueSelector = false;
-  private formValues: FormValues = {};
+  private formValues: Partial<FormValues> = {};
   private readonly formRef: Ref<SupportForm> = createRef();
   @state() private isFormSubmitting = false;
 
@@ -235,7 +235,7 @@ export class ContactView extends LitElement {
       throw Error('Cannot submit invalid form.');
     }
 
-    const {description, email, ...tags} = this.formValues as ValidFormValues;
+    const {description, email, ...tags} = this.formValues as FormValues;
     try {
       await this.errorReporter.report(
         description,

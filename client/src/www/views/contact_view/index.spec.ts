@@ -185,6 +185,7 @@ describe('ContactView', () => {
         supportForm.values.subject = 'Test Subject';
         supportForm.values.accessKeySource = 'a friend';
         supportForm.values.description = 'Test Description';
+        supportForm.values.outreachConsent = true;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
         await nextFrame();
@@ -196,6 +197,7 @@ describe('ContactView', () => {
           {
             subject: 'Test Subject',
             accessKeySource: 'a friend',
+            outreachConsent: true,
             formVersion: 2,
           }
         );
