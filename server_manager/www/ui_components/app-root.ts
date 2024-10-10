@@ -736,7 +736,7 @@ export class AppRoot extends polymerElementWithLocalize {
         type: Object,
         value: {
           contactView: true,
-          serverMetricsTab: false,
+          serverMetricsTab: true,
         },
       },
     };

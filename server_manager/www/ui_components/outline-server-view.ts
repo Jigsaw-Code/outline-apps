@@ -33,6 +33,8 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
+import '../views/server_view/server_stat_grid';
+import '../views/server_view/server_stat_card';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
@@ -394,6 +396,10 @@ export class ServerView extends DirMixin(PolymerElement) {
         .flex-1 {
           flex: 1;
         }
+
+        :host {
+          --server-stat-card-background: var(--background-contrast-color);
+        }
         /* Mirror icons */
         :host(:dir(rtl)) iron-icon,
         :host(:dir(rtl)) .share-button,
@@ -554,45 +560,49 @@ export class ServerView extends DirMixin(PolymerElement) {
         on-selected-changed="_selectedTabChanged"
       >
         <div name="connections">
-          <div class="stats-container">
-            <div class="stats-card transfer-stats card-section">
-              <iron-icon icon="icons:swap-horiz"></iron-icon>
-              <div class="stats">
-                <h3>
-                  [[_formatInboundBytesValue(totalInboundBytes, language)]]
-                </h3>
-                <p>[[_formatInboundBytesUnit(totalInboundBytes, language)]]</p>
+          <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
+            <div class="stats-container">
+              <div class="stats-card transfer-stats card-section">
+                <iron-icon icon="icons:swap-horiz"></iron-icon>
+                <div class="stats">
+                  <h3>
+                    [[_formatInboundBytesValue(totalInboundBytes, language)]]
+                  </h3>
+                  <p>
+                    [[_formatInboundBytesUnit(totalInboundBytes, language)]]
+                  </p>
+                </div>
+                <p>[[localize('server-data-transfer')]]</p>
               </div>
-              <p>[[localize('server-data-transfer')]]</p>
+              <div
+                hidden$="[[!monthlyOutboundTransferBytes]]"
+                class="stats-card card-section"
+              >
+                <div>
+                  <img class="cloud-icon" src="[[getCloudIcon(cloudId)]]" />
+                </div>
+                <div class="stats">
+                  <h3>
+                    [[_computeManagedServerUtilizationPercentage(totalInboundBytes,
+                    monthlyOutboundTransferBytes)]]
+                  </h3>
+                  <p>
+                    /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
+                    language)]]
+                  </p>
+                </div>
+                <p>[[localize('server-data-used')]]</p>
+              </div>
+              <div class="stats-card card-section">
+                <iron-icon icon="outline-iconset:key"></iron-icon>
+                <div class="stats">
+                  <h3>[[accessKeyRows.length]]</h3>
+                  <p>[[localize('server-keys')]]</p>
+                </div>
+                <p>[[localize('server-access')]]</p>
+              </div>
             </div>
-            <div
-              hidden$="[[!monthlyOutboundTransferBytes]]"
-              class="stats-card card-section"
-            >
-              <div>
-                <img class="cloud-icon" src="[[getCloudIcon(cloudId)]]" />
-              </div>
-              <div class="stats">
-                <h3>
-                  [[_computeManagedServerUtilizationPercentage(totalInboundBytes,
-                  monthlyOutboundTransferBytes)]]
-                </h3>
-                <p>
-                  /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
-                  language)]]
-                </p>
-              </div>
-              <p>[[localize('server-data-used')]]</p>
-            </div>
-            <div class="stats-card card-section">
-              <iron-icon icon="outline-iconset:key"></iron-icon>
-              <div class="stats">
-                <h3>[[accessKeyRows.length]]</h3>
-                <p>[[localize('server-keys')]]</p>
-              </div>
-              <p>[[localize('server-access')]]</p>
-            </div>
-          </div>
+          </template>
 
           <div class="access-key-list card-section">
             <!-- header row -->
@@ -727,7 +737,13 @@ export class ServerView extends DirMixin(PolymerElement) {
           </div>
         </div>
         <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
-          <div name="metrics"></div>
+          <div name="metrics">
+            <server-stat-grid
+              columns="3"
+              rows="1"
+              stats="[[_computeServerMetrics()]]"
+            ></server-stat-grid>
+          </div>
         </template>
         <div name="settings">
           <outline-server-settings
@@ -920,6 +936,27 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Returns the UI access key with the given ID. */
   findUiKey(id: AccessKeyId): DisplayAccessKey {
     return this.accessKeyRows.find(key => key.id === id);
+  }
+
+  _computeServerMetrics() {
+    return [
+      {
+        icon: 'devices',
+        name: 'Devices used in the last 30 days',
+        value: 83.7,
+      },
+      {
+        icon: 'timer',
+        name: 'User hours spent on the VPN in the last 30 days',
+        value: 12.3,
+      },
+      {
+        icon: 'swap_horiz',
+        name: 'Data transferred in the last 30 days',
+        units: 'GB',
+        value: 2345,
+      },
+    ];
   }
 
   _closeAddAccessKeyHelpBubble() {
