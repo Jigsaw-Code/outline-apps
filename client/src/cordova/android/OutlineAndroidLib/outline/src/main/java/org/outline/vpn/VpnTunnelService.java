@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -449,7 +450,7 @@ public class VpnTunnelService extends VpnService {
         notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
-      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
+      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
     }
