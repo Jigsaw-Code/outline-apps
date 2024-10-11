@@ -27,7 +27,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).onUpdateDownloaded = (_callback: () => void) => {
-  console.info('Requested registration of callbak for update download');
+  console.info('Requested registration of callback for update download');
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

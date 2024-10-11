@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/neterrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -32,35 +31,6 @@ const (
 	udpMaxRetryAttempts = 5
 	bufferLength        = 512
 )
-
-// CheckConnectivity determines whether the Outline proxy can relay TCP and UDP traffic under
-// the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
-// error code to return accounting for transient network failures.
-// Returns an error if an unexpected error ocurrs.
-//
-// Deprecated: remove this function once all platforms have been migrated to outline.CheckTCPAndUDPConnectivity.
-func CheckConnectivity(streamDialer transport.StreamDialer, packetListener transport.PacketListener) (neterrors.Error, error) {
-	// Start asynchronous UDP support check.
-	udpChan := make(chan error)
-	go func() {
-		resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
-		udpChan <- CheckUDPConnectivityWithDNS(packetListener, resolverAddr)
-	}()
-	// Check whether the proxy is reachable and that the client is able to authenticate to the proxy
-	tcpErr := CheckTCPConnectivityWithHTTP(streamDialer, "http://example.com")
-	if tcpErr == nil {
-		udpErr := <-udpChan
-		if udpErr == nil {
-			return neterrors.NoError, nil
-		}
-		return neterrors.UDPConnectivity, nil
-	}
-	if platerrors.ToPlatformError(tcpErr).Code == platerrors.ProxyServerUnreachable {
-		return neterrors.Unreachable, nil
-	}
-	// The error is not related to the connectivity checks.
-	return neterrors.Unexpected, tcpErr
-}
 
 // CheckUDPConnectivityWithDNS determines whether the Outline proxy represented by `client` and
 // the network support UDP traffic by issuing a DNS query though a resolver at `resolverAddr`.
