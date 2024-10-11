@@ -34,7 +34,8 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {fetchDynamicKeyConfig, GoVpnTunnel} from './go_vpn_tunnel';
+import {fetchResource} from './go_helpers';
+import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
@@ -503,8 +504,7 @@ function main() {
   // Fetches dynamic key config from a remote URL.
   ipcMain.handle(
     'outline-ipc-fetch-config',
-    async (_, url: string): Promise<string> =>
-      fetchDynamicKeyConfig(url, debugMode)
+    async (_, url: string): Promise<string> => fetchResource(url, debugMode)
   );
 
   // Connects to a proxy server specified by a config.

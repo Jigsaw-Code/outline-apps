@@ -24,6 +24,7 @@ import {
   TransportConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
+import {checkUDPConnectivity} from './go_helpers';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -49,7 +50,7 @@ const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 // about the others.
 export class GoVpnTunnel implements VpnTunnel {
   private readonly tun2socks: GoTun2socks;
-  private readonly connectivityChecker: GoTun2socks;
+  private isDebugMode = false;
 
   // See #resumeListener.
   private disconnected = false;
@@ -67,10 +68,7 @@ export class GoVpnTunnel implements VpnTunnel {
     private readonly routing: RoutingDaemon,
     readonly transportConfig: TransportConfigJson
   ) {
-    // We need two GoTun2socks instances because we need to update the UDP connectivity
-    // using this.connectivityChecker while this.tun2socks is still running.
     this.tun2socks = new GoTun2socks();
-    this.connectivityChecker = new GoTun2socks();
 
     // This promise, tied to both helper process' exits, is key to the instance's
     // lifecycle:
@@ -87,8 +85,8 @@ export class GoVpnTunnel implements VpnTunnel {
   // Turns on verbose logging for the managed processes. Must be called before launching the
   // processes
   enableDebugMode() {
+    this.isDebugMode = true;
     this.tun2socks.enableDebugMode();
-    this.connectivityChecker.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
@@ -106,8 +104,9 @@ export class GoVpnTunnel implements VpnTunnel {
     });
 
     if (checkProxyConnectivity) {
-      this.isUdpEnabled = await this.connectivityChecker.checkConnectivity(
-        this.transportConfig
+      this.isUdpEnabled = await checkUDPConnectivity(
+        this.transportConfig,
+        this.isDebugMode
       );
     }
     console.log(`UDP support: ${this.isUdpEnabled}`);
@@ -164,8 +163,9 @@ export class GoVpnTunnel implements VpnTunnel {
   private async updateUdpSupport() {
     const wasUdpEnabled = this.isUdpEnabled;
     try {
-      this.isUdpEnabled = await this.connectivityChecker.checkConnectivity(
-        this.transportConfig
+      this.isUdpEnabled = await checkUDPConnectivity(
+        this.transportConfig,
+        this.isDebugMode
       );
     } catch (e) {
       console.error(`connectivity check failed: ${e}`);
@@ -318,60 +318,7 @@ class GoTun2socks {
     return this.process.stop();
   }
 
-  /**
-   * Checks connectivity of the server specified in `config`.
-   * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
-   * and validates the proxy credentials.
-   *
-   * @returns A boolean indicating whether UDP forwarding is supported.
-   * @throws ProcessTerminatedExitCodeError if tun2socks failed to run successfully.
-   */
-  async checkConnectivity(config: TransportConfigJson): Promise<boolean> {
-    console.debug('[tun2socks] - checking connectivity ...');
-    const output = await this.process.launch([
-      '-transport',
-      JSON.stringify(config),
-      '-checkConnectivity',
-    ]);
-    // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
-    const outObj = JSON.parse(output.split('\n')[0]);
-    if (outObj.tcp) {
-      throw new Error(outObj.tcp);
-    }
-    if (outObj.udp) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Fetches a dynamic key from the given URL.
-   * @param url The URL to be fetched.
-   * @throws ProcessTerminatedExitCodeError if we failed to fetch the config.
-   */
-  fetchConfig(url: string): Promise<string> {
-    console.debug('[tun2socks] - fetching dynamic key ...');
-    return this.process.launch(['-fetchConfig', url]);
-  }
-
   enableDebugMode() {
     this.process.isDebugModeEnabled = true;
   }
-}
-
-/**
- * Fetches a dynamic key config using native code (Go).
- * @param url The HTTP(s) location of the config.
- * @returns A string representing the config.
- * @throws ProcessTerminatedExitCodeError if we failed to fetch the config.
- */
-export function fetchDynamicKeyConfig(
-  url: string,
-  debugMode: boolean = false
-): Promise<string> {
-  const tun2socks = new GoTun2socks();
-  if (debugMode) {
-    tun2socks.enableDebugMode();
-  }
-  return tun2socks.fetchConfig(url);
 }
