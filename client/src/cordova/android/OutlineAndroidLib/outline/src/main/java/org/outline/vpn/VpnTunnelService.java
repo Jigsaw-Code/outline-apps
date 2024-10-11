@@ -196,7 +196,7 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final NewClientResult clientResult = Outline.newClientAndReturnError(config.transportConfig);
+    final NewClientResult clientResult = Outline.newClient(config.transportConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();

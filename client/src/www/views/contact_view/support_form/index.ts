@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import {TextArea} from '@material/mwc-textarea';
 import {TextField} from '@material/mwc-textfield';
+import '@material/web/checkbox/checkbox';
+import {MdCheckbox} from '@material/web/checkbox/checkbox';
 
 import '@material/mwc-button';
 import '@material/mwc-select';
@@ -26,23 +29,15 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
-
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 /** Interface for tracking form data. */
 export declare interface FormValues {
-  email?: string;
-  subject?: string;
-  description?: string;
-  accessKeySource?: string;
-}
-
-/** Interface for valid form data. */
-export declare interface ValidFormValues extends FormValues {
   email: string;
   subject: string;
   description: string;
   accessKeySource: string;
+  outreachConsent: boolean;
 }
 
 @customElement('support-form')
@@ -50,6 +45,8 @@ export class SupportForm extends LitElement {
   static styles = [
     css`
       :host {
+        --md-sys-color-primary: var(--outline-primary);
+
         font-family: var(--outline-font-family);
         width: 100%;
       }
@@ -62,6 +59,14 @@ export class SupportForm extends LitElement {
       mwc-textfield {
         display: flex;
         margin: var(--outline-slim-gutter) 0;
+      }
+
+      label {
+        align-items: center;
+        display: inline-flex;
+      }
+      label md-checkbox {
+        flex-shrink: 0;
       }
 
       p {
@@ -86,7 +91,7 @@ export class SupportForm extends LitElement {
 
   @property({type: Function}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
-  @property({type: Object}) values: FormValues = {};
+  @property({type: Object}) values: Partial<FormValues> = {};
 
   private readonly formRef: Ref<HTMLFormElement> = createRef();
   @state() valid = false;
@@ -101,7 +106,8 @@ export class SupportForm extends LitElement {
 
   /** Checks the entire form's validity state. */
   private checkFormValidity() {
-    const fieldNodes = this.formRef.value.querySelectorAll<FormControl>('*[name]');
+    const fieldNodes =
+      this.formRef.value.querySelectorAll<FormControl>('*[name]');
     this.valid = Array.from(fieldNodes).every(field => field.validity.valid);
   }
 
@@ -122,10 +128,19 @@ export class SupportForm extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private handleTextInput(e: Event) {
-    const key: keyof FormValues = (e.target as TextField).name as keyof FormValues;
-    const value = (e.target as TextField).value;
-    this.values[key] = value;
+  private handleInput(e: InputEvent) {
+    const target = e.target as HTMLInputElement;
+    const key = target.name as keyof FormValues;
+    if (target instanceof TextField || target instanceof TextArea) {
+      const key = target.name as keyof FormValues;
+      const {value} = target;
+      (this.values as Record<string, string>)[key] = value;
+    } else if (target instanceof MdCheckbox) {
+      const {checked: value} = target as MdCheckbox;
+      (this.values as Record<string, boolean>)[key] = value;
+    } else {
+      throw new Error(`Cannot handle unknown form field: ${key}`);
+    }
     this.checkFormValidity();
   }
 
@@ -142,7 +157,7 @@ export class SupportForm extends LitElement {
           .validationMessage=${this.localize('support-form-email-invalid')}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
 
@@ -153,7 +168,7 @@ export class SupportForm extends LitElement {
           .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
 
@@ -164,7 +179,7 @@ export class SupportForm extends LitElement {
           .maxLength=${SupportForm.DEFAULT_MAX_LENGTH_INPUT}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         ></mwc-textfield>
         <mwc-textarea
@@ -175,15 +190,29 @@ export class SupportForm extends LitElement {
           .maxLength=${SupportForm.MAX_LENGTH_DESCRIPTION}
           .disabled=${this.disabled}
           required
-          @input=${this.handleTextInput}
+          @input=${this.handleInput}
           @blur=${this.checkFormValidity}
         >
         </mwc-textarea>
 
+        <label>
+          <md-checkbox
+            touch-target="wrapper"
+            name="outreachConsent"
+            .value=${live(this.values.outreachConsent ?? false)}
+            @input=${this.handleInput}
+          ></md-checkbox>
+          ${this.localize('support-form-outreach-consent')}
+        </label>
+
         <p>* = ${this.localize('support-form-required-field')}</p>
 
         <span class="actions">
-          <mwc-button .label=${this.localize('cancel')} .disabled=${this.disabled} @click=${this.cancel}></mwc-button>
+          <mwc-button
+            .label=${this.localize('cancel')}
+            .disabled=${this.disabled}
+            @click=${this.cancel}
+          ></mwc-button>
           <mwc-button
             type="submit"
             .label=${this.localize('submit')}
