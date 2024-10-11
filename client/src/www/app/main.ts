@@ -26,7 +26,7 @@ import {
   FakeVpnApi,
 } from './outline_server_repository/vpn.fake';
 import {OutlinePlatform} from './platform';
-import {BrowserResourceFetcher} from './resource_fetcher.js';
+import {BrowserResourceFetcher} from './resource_fetcher';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
 

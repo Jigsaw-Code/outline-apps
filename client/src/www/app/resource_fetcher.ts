@@ -44,7 +44,7 @@ export class BrowserResourceFetcher implements ResourceFetcher {
         {cause}
       );
     }
-    return (await response.text()).trim();
+    return await response.text();
   }
 }
 
