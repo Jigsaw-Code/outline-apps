@@ -25,7 +25,6 @@ import {
   TransportConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
-import {checkUDPConnectivity} from './go_helpers';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
