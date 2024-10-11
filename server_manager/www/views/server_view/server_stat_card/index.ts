@@ -29,7 +29,7 @@ export class ServerStatCard extends LitElement {
   static styles = [
     css`
       :host {
-        background: var(--server-stat-card-background, );
+        background: var(--server-stat-card-background);
         border-radius: 0.25rem;
         box-sizing: border-box;
         container-name: conceal-name conceal-data-units;
