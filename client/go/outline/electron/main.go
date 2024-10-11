@@ -70,7 +70,7 @@ var args struct {
 	dnsFallback       *bool
 	version           *bool
 
-	fetchConfig *string
+	fetchUrl *string
 }
 
 var version string // Populated at build time through `-X main.version=...`
@@ -86,19 +86,28 @@ var version string // Populated at build time through `-X main.version=...`
 //
 //   - Connectivity Check: If you run the app with `-checkConnectivity`, it will test the proxy's connectivity
 //     and exit with the result printed out to standard output.
-//   - Fetch Config: If you run the app with `-fetchConfig`, it will fetch the dynamic key from the specified
+//   - Fetch Resource: If you run the app with `-fetchUrl`, it will fetch the content from the specified
 //     URL and exit with the content printed out to standard output.
 func main() {
+	// VPN routing configs
 	args.tunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface IP address")
 	args.tunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
 	args.tunMask = flag.String("tunMask", "255.255.255.0", "TUN interface network mask; prefixlen for IPv6")
 	args.tunDNS = flag.String("tunDNS", "1.1.1.1,9.9.9.9,208.67.222.222", "Comma-separated list of DNS resolvers for the TUN interface (Windows only)")
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
-	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
-	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
+
+	// Proxy transport config
+	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
+
+	// Check connectivity of transportConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
-	args.fetchConfig = flag.String("fetchConfig", "", "Fetch the dynamic key from the given URL and exit.")
+
+	// Fetch content of the given URL value and exit
+	args.fetchUrl = flag.String("fetchUrl", "", "Fetch the content from the given URL and exit.")
+
+	// Misc
+	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.version = flag.Bool("version", false, "Print the version and exit.")
 
 	flag.Parse()
@@ -108,12 +117,12 @@ func main() {
 		os.Exit(exitCodeSuccess)
 	}
 
-	if *args.fetchConfig != "" {
-		result := outline.FetchDynamicKey(*args.fetchConfig)
+	if *args.fetchUrl != "" {
+		result := outline.FetchResource(*args.fetchUrl)
 		if result.Error != nil {
 			printErrorAndExit(result.Error, exitCodeFailure)
 		}
-		fmt.Println(result.Key)
+		fmt.Println(result.Content)
 		os.Exit(exitCodeSuccess)
 	}
 

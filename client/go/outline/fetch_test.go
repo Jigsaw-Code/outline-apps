@@ -24,18 +24,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFetchDynamicKey(t *testing.T) {
+func TestFetchResource(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintln(w, `{"name": "my-test-key"}`)
 	}))
 	defer server.Close()
 
-	result := FetchDynamicKey(server.URL)
+	result := FetchResource(server.URL)
 	require.Nil(t, result.Error)
-	require.Equal(t, "{\"name\": \"my-test-key\"}\n", result.Key)
+	require.Equal(t, "{\"name\": \"my-test-key\"}\n", result.Content)
 }
 
-func TestFetchDynamicKey_Redirection(t *testing.T) {
+func TestFetchResource_Redirection(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintln(w, "ss://my-url-format-test-key")
 	}))
@@ -55,13 +55,13 @@ func TestFetchDynamicKey_Redirection(t *testing.T) {
 		}))
 		defer redirSvr.Close()
 
-		result := FetchDynamicKey(redirSvr.URL)
+		result := FetchResource(redirSvr.URL)
 		require.Nil(t, result.Error)
-		require.Equal(t, "ss://my-url-format-test-key\n", result.Key)
+		require.Equal(t, "ss://my-url-format-test-key\n", result.Content)
 	}
 }
 
-func TestFetchDynamicKey_HTTPStatusError(t *testing.T) {
+func TestFetchResource_HTTPStatusError(t *testing.T) {
 	errStatuses := []int{
 		http.StatusBadRequest,
 		http.StatusUnauthorized,
@@ -78,20 +78,20 @@ func TestFetchDynamicKey_HTTPStatusError(t *testing.T) {
 		}))
 		defer server.Close()
 
-		result := FetchDynamicKey(server.URL)
+		result := FetchResource(server.URL)
 		require.Error(t, result.Error)
 		require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
 		require.Error(t, result.Error.Cause)
 	}
 }
 
-func TestFetchDynamicKey_BodyReadError(t *testing.T) {
+func TestFetchResource_BodyReadError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Length", "1") // This will cause io.ReadAll to fail
 	}))
 	defer server.Close()
 
-	result := FetchDynamicKey(server.URL)
+	result := FetchResource(server.URL)
 	require.Error(t, result.Error)
 	require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
 	require.Error(t, result.Error.Cause)

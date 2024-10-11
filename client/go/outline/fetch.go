@@ -21,22 +21,22 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// FetchDynamicKeyResult represents the result of fetching a dynamic key.
+// FetchResourceResult represents the result of fetching a resource located at a URL.
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
-type FetchDynamicKeyResult struct {
-	Key   string
-	Error *platerrors.PlatformError
+type FetchResourceResult struct {
+	Content string
+	Error   *platerrors.PlatformError
 }
 
-// FetchDynamicKey fetches a dynamic key from the given URL.
+// FetchResource fetches a resource from the given URL.
 //
 // The function makes an HTTP GET request to the specified URL and returns the response body as a
 // string. If the request fails or the server returns a non-2xx status code, an error is returned.
-func FetchDynamicKey(url string) *FetchDynamicKeyResult {
+func FetchResource(url string) *FetchResourceResult {
 	resp, err := http.Get(url)
 	if err != nil {
-		return &FetchDynamicKeyResult{Error: &platerrors.PlatformError{
+		return &FetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "failed to fetch the URL",
 			Details: platerrors.ErrorDetails{"url": url},
@@ -46,7 +46,7 @@ func FetchDynamicKey(url string) *FetchDynamicKeyResult {
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode > 299 {
-		return &FetchDynamicKeyResult{Error: &platerrors.PlatformError{
+		return &FetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "non-successful HTTP status",
 			Details: platerrors.ErrorDetails{
@@ -56,12 +56,12 @@ func FetchDynamicKey(url string) *FetchDynamicKeyResult {
 		}}
 	}
 	if err != nil {
-		return &FetchDynamicKeyResult{Error: &platerrors.PlatformError{
+		return &FetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "failed to read the body",
 			Details: platerrors.ErrorDetails{"url": url},
 			Cause:   platerrors.ToPlatformError(err),
 		}}
 	}
-	return &FetchDynamicKeyResult{Key: string(body)}
+	return &FetchResourceResult{Content: string(body)}
 }
