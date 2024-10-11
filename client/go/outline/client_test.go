@@ -68,9 +68,9 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewClient(tt.input)
-			if err == nil || got != nil {
-				t.Errorf("NewClientFromJSON() expects an error, got = %v", got)
+			got := NewClient(tt.input)
+			if got.Error == nil || got.Client != nil {
+				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return
 			}
 		})
