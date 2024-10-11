@@ -18,9 +18,9 @@
  * allowing users to call Go functions from TypeScript.
  */
 
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
 import {ChildProcessHelper} from './process';
+import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
 
 /**
  * Verifies the UDP connectivity of the server specified in `config`.

@@ -17,6 +17,7 @@ import {platform} from 'os';
 import {powerMonitor} from 'electron';
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
+import {checkUDPConnectivity} from './go_helpers';
 import {ChildProcessHelper, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
@@ -24,7 +25,6 @@ import {
   TransportConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
-import {checkUDPConnectivity} from './go_helpers';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
