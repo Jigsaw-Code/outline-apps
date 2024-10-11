@@ -26,6 +26,7 @@ import {
   FakeVpnApi,
 } from './outline_server_repository/vpn.fake';
 import {OutlinePlatform} from './platform';
+import {BrowserResourceFetcher} from './resource_fetcher.js';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
 
@@ -60,7 +61,8 @@ function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
       vpnApi,
       eventQueue,
       window.localStorage,
-      localize
+      localize,
+      platform.getResourceFetcher()
     );
   }
 
@@ -69,7 +71,8 @@ function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
     new FakeVpnApi(),
     eventQueue,
     window.localStorage,
-    localize
+    localize,
+    new BrowserResourceFetcher()
   );
 
   if (repo.getAll().length === 0) {

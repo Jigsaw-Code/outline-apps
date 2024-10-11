@@ -26,6 +26,7 @@ import {
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
+import {ResourceFetcher} from '../resource_fetcher';
 
 export const TEST_ONLY = {parseTunnelConfigJson};
 
@@ -39,6 +40,7 @@ export class OutlineServer implements Server {
 
   constructor(
     private vpnApi: VpnApi,
+    readonly urlFetcher: ResourceFetcher,
     readonly id: string,
     public name: string,
     readonly accessKey: string,
@@ -89,7 +91,7 @@ export class OutlineServer implements Server {
     let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
       tunnelConfig = await fetchTunnelConfig(
-        this.vpnApi,
+        this.urlFetcher,
         this.tunnelConfigLocation
       );
       this._address = getAddressFromTransportConfig(tunnelConfig.transport);
@@ -168,11 +170,11 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
 async function fetchTunnelConfig(
-  vpnApi: VpnApi,
+  urlFetcher: ResourceFetcher,
   configLocation: URL
 ): Promise<TunnelConfigJson> {
   const responseBody = (
-    await vpnApi.fetchDynamicConfig(configLocation.toString())
+    await urlFetcher.fetch(configLocation.toString())
   ).trim();
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(

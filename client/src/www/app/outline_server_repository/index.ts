@@ -22,6 +22,7 @@ import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
+import {ResourceFetcher} from '../resource_fetcher';
 
 // TODO(daniellacosse): write unit tests for these functions
 
@@ -99,7 +100,8 @@ export class OutlineServerRepository implements ServerRepository {
     private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
-    private localize: Localizer
+    private localize: Localizer,
+    readonly urlFetcher: ResourceFetcher
   ) {
     console.debug('OutlineServerRepository is initializing');
     this.loadServers();
@@ -329,6 +331,7 @@ export class OutlineServerRepository implements ServerRepository {
   ): OutlineServer {
     const server = new OutlineServer(
       this.vpnApi,
+      this.urlFetcher,
       id,
       name,
       accessKey,
