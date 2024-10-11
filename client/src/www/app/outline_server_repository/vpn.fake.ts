@@ -70,20 +70,4 @@ export class FakeVpnApi implements VpnApi {
   onStatusChange(_listener: (id: string, status: TunnelStatus) => void): void {
     // NOOP
   }
-
-  async fetchDynamicConfig(url: string): Promise<string> {
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        cache: 'no-store',
-        redirect: 'follow',
-      });
-    } catch (cause) {
-      throw new errors.SessionConfigFetchFailed(
-        'Failed to fetch VPN information from dynamic access key.',
-        {cause}
-      );
-    }
-    return (await response.text()).trim();
-  }
 }

@@ -98,7 +98,4 @@ export interface VpnApi {
 
   /** Sets a listener, to be called when the tunnel status changes. */
   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void;
-
-  /** Fetches the config from a dynamic key URL. */
-  fetchDynamicConfig(url: string): Promise<string>;
 }
