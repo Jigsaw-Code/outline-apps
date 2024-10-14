@@ -501,9 +501,9 @@ function main() {
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  // Fetches dynamic key config from a remote URL.
+  // Fetches a resource (usually the dynamic key config) from a remote URL.
   ipcMain.handle(
-    'outline-ipc-fetch-config',
+    'outline-ipc-fetch-resource',
     async (_, url: string): Promise<string> => fetchResource(url, debugMode)
   );
 

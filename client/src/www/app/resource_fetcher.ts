@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import {SessionConfigFetchFailed} from '../model/errors';
-import {PlatformError} from '../model/platform_error';
 
 /**
  * An interface for fetching resources located at a given URL.
@@ -45,18 +44,5 @@ export class BrowserResourceFetcher implements ResourceFetcher {
       );
     }
     return await response.text();
-  }
-}
-
-/**
- * Fetches resources using Electron's IPC to communicate with the main process.
- */
-export class ElectronResourceFetcher implements ResourceFetcher {
-  async fetch(url: string): Promise<string> {
-    try {
-      return await window.electron.methodChannel.invoke('fetch-config', url);
-    } catch (e) {
-      throw PlatformError.parseFrom(e);
-    }
   }
 }

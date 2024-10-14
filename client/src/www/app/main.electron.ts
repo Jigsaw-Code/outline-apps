@@ -23,7 +23,7 @@ import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
 import {VpnApi} from './outline_server_repository/vpn';
 import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
-import {ElectronResourceFetcher} from './resource_fetcher';
+import {ElectronResourceFetcher} from './resource_fetcher.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
