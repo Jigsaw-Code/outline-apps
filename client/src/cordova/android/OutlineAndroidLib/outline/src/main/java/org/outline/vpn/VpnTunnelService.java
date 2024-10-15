@@ -380,6 +380,7 @@ public class VpnTunnelService extends VpnService {
     }
     Intent statusChange = new Intent(STATUS_BROADCAST_KEY);
     statusChange.addCategory(getPackageName());
+    // We must explicitly set the package for security reasons: https://developer.android.com/about/versions/14/behavior-changes-14#security
     statusChange.setPackage(this.getPackageName());
     statusChange.putExtra(MessageData.PAYLOAD.value, status.value);
     statusChange.putExtra(MessageData.TUNNEL_ID.value, tunnelConfig.id);
@@ -450,6 +451,8 @@ public class VpnTunnelService extends VpnService {
         notificationBuilder = getNotificationBuilder(serverName);
       }
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
+
+      // We must specify the service type for security reasons: https://developer.android.com/about/versions/14/changes/fgs-types-required
       startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
