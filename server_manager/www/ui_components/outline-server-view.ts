@@ -823,7 +823,8 @@ export class ServerView extends DirMixin(PolymerElement) {
       featureFlags: Object,
       serverMetrics: {
         type: Array,
-        computed: '_computeServerMetrics(totalDevices, totalUserHours, totalInboundBytes, language)',
+        computed:
+          '_computeServerMetrics(totalDevices, totalUserHours, totalInboundBytes, language)',
       },
     };
   }
@@ -961,18 +962,18 @@ export class ServerView extends DirMixin(PolymerElement) {
     return [
       {
         icon: 'devices',
-        name: 'Devices used in the last 30 days',
+        name: this.localize('server-metrics-average-devices'),
         value: totalDevices.toFixed(2),
       },
       {
         icon: 'timer',
-        name: 'User hours spent on the VPN in the last 30 days',
-        units: 'hours',
+        name: this.localize('server-metrics-user-hours'),
+        units: this.localize('server-metrics-user-hours-unit'),
         value: totalUserHours.toFixed(2),
       },
       {
         icon: 'swap_horiz',
-        name: 'Data transferred in the last 30 days',
+        name: this.localize('server-metrics-data-transferred'),
         units: this._formatInboundBytesUnit(totalInboundBytes, language),
         value: this._formatInboundBytesValue(totalInboundBytes, language),
       },
