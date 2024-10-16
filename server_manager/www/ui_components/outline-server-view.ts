@@ -397,6 +397,10 @@ export class ServerView extends DirMixin(PolymerElement) {
           flex: 1;
         }
 
+        div[name='metrics'] {
+          margin-top: 15px;
+        }
+
         :host {
           --server-stat-card-background: var(--background-contrast-color);
         }
@@ -800,6 +804,8 @@ export class ServerView extends DirMixin(PolymerElement) {
       isServerReachable: Boolean,
       retryDisplayingServer: Function,
       totalInboundBytes: Number,
+      totalUserHours: Number,
+      totalDevices: Number,
       baselineDataTransfer: Number,
       accessKeyRows: Array,
       hasNonAdminAccessKeys: Boolean,
@@ -845,6 +851,8 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
+  totalUserHours = 0;
+  totalDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
   accessKeyRows: DisplayAccessKey[] = [];
@@ -943,18 +951,25 @@ export class ServerView extends DirMixin(PolymerElement) {
       {
         icon: 'devices',
         name: 'Devices used in the last 30 days',
-        value: 83.7,
+        value: this.totalDevices.toFixed(2),
       },
       {
         icon: 'timer',
         name: 'User hours spent on the VPN in the last 30 days',
-        value: 12.3,
+        units: 'hours',
+        value: this.totalUserHours.toFixed(2),
       },
       {
         icon: 'swap_horiz',
         name: 'Data transferred in the last 30 days',
-        units: 'GB',
-        value: 2345,
+        units: this._formatInboundBytesUnit(
+          this.totalInboundBytes,
+          this.language
+        ),
+        value: this._formatInboundBytesValue(
+          this.totalInboundBytes,
+          this.language
+        ),
       },
     ];
   }

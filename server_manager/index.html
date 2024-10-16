@@ -28,8 +28,15 @@
       content="default-src 'self' 'unsafe-inline' outline: data:; connect-src https: 'self'; frame-src https://s3.amazonaws.com/outline-vpn/ ss:"
     />
 
-    <!-- TODO: embed these into the app -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+      /* We declare this here to sidestep webpack */
+      @font-face {
+        font-family: 'Material Icons';
+        font-style: normal;
+        font-weight: 400;
+        src: url(images/Material-Icons.woff2) format('woff2');
+      }
+    </style>
 
     <title>Outline Manager</title>
   </head>
