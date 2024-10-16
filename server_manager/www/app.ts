@@ -1081,13 +1081,15 @@ export class App {
   ) {
     const tunnelTimeByLocation = await selectedServer.getTunnelTimeByLocation();
 
-    serverView.totalUserHours = tunnelTimeByLocation.reduce(
-      (sum, {tunnel_time: {seconds}}) => sum + seconds / (60 * 60),
-      0
-    );
-    serverView.totalDevices = serverView.totalUserHours / (30 * 24);
+    let sum = 0;
+    for (const {
+      tunnel_time: {seconds},
+    } of tunnelTimeByLocation) {
+      sum += seconds / (60 * 60);
+    }
 
-    console.log(serverView);
+    serverView.totalUserHours = sum;
+    serverView.totalDevices = serverView.totalUserHours / (30 * 24);
   }
 
   private showTransferStats(
