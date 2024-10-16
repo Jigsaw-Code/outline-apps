@@ -1051,6 +1051,16 @@
     "message": "Access keys",
     "description": "This string appears within the server view as a header of a table column that displays server access keys."
   },
+  "server_access_keys_tab": {
+    "message": "Access keys ($KEY_COUNT$)",
+    "description": "This string is a tab header indicating to the user that they're currently managing their access keys.",
+    "placeholders": {
+      "KEY_COUNT": {
+        "content": "{keyCount}",
+        "example": "12"
+      }
+    }
+  },
   "server_connections": {
     "message": "Connections",
     "description": "This string appears within the server view as a header of the section that displays server information and access keys."
