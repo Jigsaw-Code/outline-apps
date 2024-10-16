@@ -18,6 +18,8 @@
 		52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
 		526D827A2C77B2D400BDE6EE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */; };
 		526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; };
+		D53BEFBA2C9CD28100CBE013 /* OutlineVPNExtensionLib in Frameworks */ = {isa = PBXBuildFile; productRef = D53BEFB92C9CD28100CBE013 /* OutlineVPNExtensionLib */; };
+		D53BEFBC2C9CD28B00CBE013 /* OutlineVPNExtensionLib in Frameworks */ = {isa = PBXBuildFile; productRef = D53BEFBB2C9CD28B00CBE013 /* OutlineVPNExtensionLib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +43,7 @@
 			files = (
 				526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */,
 				526D827A2C77B2D400BDE6EE /* NetworkExtension.framework in Frameworks */,
+				D53BEFBC2C9CD28B00CBE013 /* OutlineVPNExtensionLib in Frameworks */,
 				522E64032C769EB90010C3FA /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D53BEFBA2C9CD28100CBE013 /* OutlineVPNExtensionLib in Frameworks */,
 				5229870E2C4F2873009EE577 /* Tun2socks.xcframework in Frameworks */,
 				522987082C4F278E009EE577 /* CocoaLumberjack in Frameworks */,
 				52334EAF2B0D58AD00817E56 /* NetworkExtension.framework in Frameworks */,
@@ -134,6 +138,7 @@
 			name = VpnExtensionTest;
 			packageProductDependencies = (
 				522E64022C769EB90010C3FA /* CocoaLumberjackSwift */,
+				D53BEFBB2C9CD28B00CBE013 /* OutlineVPNExtensionLib */,
 			);
 			productName = VpnExtensionTest;
 			productReference = 522E63ED2C768BA30010C3FA /* VpnExtensionTest.xctest */;
@@ -156,6 +161,7 @@
 			packageProductDependencies = (
 				522987072C4F278E009EE577 /* CocoaLumberjack */,
 				522E64002C769BF30010C3FA /* CocoaLumberjackSwift */,
+				D53BEFB92C9CD28100CBE013 /* OutlineVPNExtensionLib */,
 			);
 			productName = VpnExtension;
 			productReference = 52334EAC2B0D58AD00817E56 /* VpnExtension.appex */;
@@ -629,6 +635,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5260B0682C4F114000CDF289 /* XCLocalSwiftPackageReference "../OutlineAppleLib" */;
 			productName = PacketTunnelProvider;
+		};
+		D53BEFB92C9CD28100CBE013 /* OutlineVPNExtensionLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineVPNExtensionLib;
+		};
+		D53BEFBB2C9CD28B00CBE013 /* OutlineVPNExtensionLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OutlineVPNExtensionLib;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

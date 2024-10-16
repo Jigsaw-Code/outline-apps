@@ -79,7 +79,7 @@ tasks:
       TARGET_IOS_VERSION: 13.1
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
-      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
+      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/platerrors' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
     deps: ["gomobile"]
 
   browser:

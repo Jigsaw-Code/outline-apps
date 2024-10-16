@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
@@ -41,30 +40,22 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// NewClientAndReturnError creates a new Outline client from a configuration string.
-//
-// TODO: rename this function to NewClient once all platforms have switched from the old NewClient
-func NewClientAndReturnError(transportConfig string) *NewClientResult {
-	client, err := NewClient(transportConfig)
+// NewClient creates a new Outline client from a configuration string.
+func NewClient(transportConfig string) *NewClientResult {
+	config, err := parseConfigFromJSON(transportConfig)
+	if err != nil {
+		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
+	}
+	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
+	if err != nil {
+		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
+	}
+
+	client, err := newShadowsocksClient(config.Host, int(config.Port), config.Method, config.Password, prefixBytes)
 	return &NewClientResult{
 		Client: client,
 		Error:  platerrors.ToPlatformError(err),
 	}
-}
-
-// NewClient creates a new Outline client from a configuration string.
-//
-// Deprecated: Use [NewClientAndReturnError] instead.
-func NewClient(transportConfig string) (*Client, error) {
-	config, err := parseConfigFromJSON(transportConfig)
-	if err != nil {
-		return nil, err
-	}
-	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
-	if err != nil {
-		return nil, err
-	}
-	return newShadowsocksClient(config.Host, int(config.Port), config.Method, config.Password, prefixBytes)
 }
 
 func newShadowsocksClient(host string, port int, cipherName, password string, prefix []byte) (*Client, error) {
@@ -108,34 +99,4 @@ func newShadowsocksClient(host string, port int, cipherName, password string, pr
 	}
 
 	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil
-}
-
-// Error number constants exported through gomobile
-//
-// Deprecated: Use [platerrors.PlatformError] instead.
-const (
-	NoError                     = 0
-	Unexpected                  = 1
-	NoVPNPermissions            = 2 // Unused
-	AuthenticationFailure       = 3
-	UDPConnectivity             = 4
-	Unreachable                 = 5
-	VpnStartFailure             = 6  // Unused
-	IllegalConfiguration        = 7  // Electron only
-	ClientStartFailure          = 8  // Unused
-	ConfigureSystemProxyFailure = 9  // Unused
-	NoAdminPermissions          = 10 // Unused
-	UnsupportedRoutingTable     = 11 // Unused
-	SystemMisconfigured         = 12 // Electron only
-)
-
-// CheckConnectivity determines whether the client can relay TCP and UDP traffic under
-// the current network. Parallelizes the execution of TCP and UDP checks, selects the appropriate
-// error code to return accounting for transient network failures.
-// Returns an error if an unexpected error ocurrs.
-//
-// Deprecated: Use [CheckTCPAndUDPConnectivity] instead.
-func CheckConnectivity(client *Client) (int, error) {
-	errCode, err := connectivity.CheckConnectivity(client, client)
-	return errCode.Number(), err
 }

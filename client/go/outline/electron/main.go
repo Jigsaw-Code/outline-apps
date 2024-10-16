@@ -102,7 +102,7 @@ func main() {
 	if len(*args.transportConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
-	clientResult := outline.NewClientAndReturnError(*args.transportConfig)
+	clientResult := outline.NewClient(*args.transportConfig)
 	if clientResult.Error != nil {
 		printErrorAndExit(clientResult.Error, exitCodeFailure)
 	}
