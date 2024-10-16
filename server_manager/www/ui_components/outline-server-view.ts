@@ -549,10 +549,15 @@ export class ServerView extends DirMixin(PolymerElement) {
           attr-for-selected="name"
           noink=""
         >
-          <paper-tab name="connections"
-            >[[localize('server-connections')]]</paper-tab
-          >
+          <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
+            <paper-tab name="connections"
+              >[[localize('server-connections')]]</paper-tab
+            >
+          </template>
           <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
+            <paper-tab name="connections">
+              [[localize('server-access-key-tab', accessKeyRows.length)]]
+            </paper-tab>
             <paper-tab name="metrics">[[localize('server-metrics')]]</paper-tab>
           </template>
           <paper-tab name="settings" id="settingsTab"
