@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {PlatformError} from '../model/platform_error';
 import {ResourceFetcher} from './resource_fetcher';
+import {PlatformError} from '../model/platform_error';
 
 /**
  * Fetches resources using Electron's IPC to communicate with the main process.
