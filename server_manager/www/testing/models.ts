@@ -168,6 +168,9 @@ export class FakeServer implements server.Server {
   getDataUsage() {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
+  getTunnelTimeByLocation() {
+    return Promise.resolve([]);
+  }
   addAccessKey() {
     const accessKey = {
       id: Math.floor(Math.random()).toString(),

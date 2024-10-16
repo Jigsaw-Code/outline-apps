@@ -971,6 +971,7 @@ export class App {
         this.appRoot.showError(this.appRoot.localize('error-keys-get'));
       }
       this.showTransferStats(server, view);
+      this.showTunnelTimeStats(server, view);
     }, 0);
   }
 
@@ -1074,6 +1075,21 @@ export class App {
     }
   }
 
+  private async refreshTunnelTimeStats(
+    selectedServer: server_model.Server,
+    serverView: ServerView
+  ) {
+    const tunnelTimeByLocation = await selectedServer.getTunnelTimeByLocation();
+
+    serverView.totalUserHours = tunnelTimeByLocation.reduce(
+      (sum, {tunnel_time: {seconds}}) => sum + seconds / (60 * 60),
+      0
+    );
+    serverView.totalDevices = serverView.totalUserHours / (30 * 24);
+
+    console.log(serverView);
+  }
+
   private showTransferStats(
     selectedServer: server_model.Server,
     serverView: ServerView
@@ -1088,6 +1104,23 @@ export class App {
         return;
       }
       this.refreshTransferStats(selectedServer, serverView);
+    }, statsRefreshRateMs);
+  }
+
+  private showTunnelTimeStats(
+    selectedServer: server_model.Server,
+    serverView: ServerView
+  ) {
+    this.refreshTunnelTimeStats(selectedServer, serverView);
+    // Get transfer stats once per minute for as long as server is selected.
+    const statsRefreshRateMs = 60 * 1000;
+    const intervalId = setInterval(() => {
+      if (this.selectedServer !== selectedServer) {
+        // Server is no longer running, stop interval
+        clearInterval(intervalId);
+        return;
+      }
+      this.refreshTunnelTimeStats(selectedServer, serverView);
     }, statsRefreshRateMs);
   }
 
