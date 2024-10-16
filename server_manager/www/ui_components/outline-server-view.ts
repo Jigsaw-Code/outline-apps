@@ -403,6 +403,8 @@ export class ServerView extends DirMixin(PolymerElement) {
 
         :host {
           --server-stat-card-background: var(--background-contrast-color);
+          --server-stat-card-foreground: var(--medium-gray);
+          --server-stat-card-highlight: var(--light-gray);
         }
         /* Mirror icons */
         :host(:dir(rtl)) iron-icon,
