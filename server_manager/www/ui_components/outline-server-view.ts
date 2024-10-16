@@ -747,7 +747,7 @@ export class ServerView extends DirMixin(PolymerElement) {
             <server-stat-grid
               columns="3"
               rows="1"
-              stats="[[_computeServerMetrics()]]"
+              stats="[[serverMetrics]]"
             ></server-stat-grid>
           </div>
         </template>
@@ -821,6 +821,10 @@ export class ServerView extends DirMixin(PolymerElement) {
       selectedPage: String,
       selectedTab: String,
       featureFlags: Object,
+      serverMetrics: {
+        type: Array,
+        computed: '_computeServerMetrics(totalDevices, totalUserHours, totalInboundBytes, language)',
+      },
     };
   }
 
@@ -948,30 +952,29 @@ export class ServerView extends DirMixin(PolymerElement) {
     return this.accessKeyRows.find(key => key.id === id);
   }
 
-  _computeServerMetrics() {
+  _computeServerMetrics(
+    totalDevices: number,
+    totalUserHours: number,
+    totalInboundBytes: number,
+    language: string
+  ) {
     return [
       {
         icon: 'devices',
         name: 'Devices used in the last 30 days',
-        value: this.totalDevices.toFixed(2),
+        value: totalDevices.toFixed(2),
       },
       {
         icon: 'timer',
         name: 'User hours spent on the VPN in the last 30 days',
         units: 'hours',
-        value: this.totalUserHours.toFixed(2),
+        value: totalUserHours.toFixed(2),
       },
       {
         icon: 'swap_horiz',
         name: 'Data transferred in the last 30 days',
-        units: this._formatInboundBytesUnit(
-          this.totalInboundBytes,
-          this.language
-        ),
-        value: this._formatInboundBytesValue(
-          this.totalInboundBytes,
-          this.language
-        ),
+        units: this._formatInboundBytesUnit(totalInboundBytes, language),
+        value: this._formatInboundBytesValue(totalInboundBytes, language),
       },
     ];
   }
