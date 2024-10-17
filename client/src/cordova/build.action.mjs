@@ -142,7 +142,7 @@ const JAVA_BUNDLETOOL_VERSION = '1.8.2';
 const JAVA_BUNDLETOOL_RESOURCE_URL = `https://github.com/google/bundletool/releases/download/1.8.2/bundletool-all-${JAVA_BUNDLETOOL_VERSION}.jar`;
 
 async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
-  const androidBuildPath = path.resolve(getRootDir(), 'platforms', 'android');
+  const androidBuildPath = path.resolve(getRootDir(), 'client', 'platforms', 'android');
   const keystorePath = path.resolve(androidBuildPath, 'keystore.p12');
 
   await fs.writeFile(keystorePath, Buffer.from(ksContents, 'base64'));
