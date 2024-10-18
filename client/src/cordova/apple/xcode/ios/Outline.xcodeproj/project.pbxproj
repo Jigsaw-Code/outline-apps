@@ -21,7 +21,7 @@
 		5F7F90AE0E924FD7B065C415 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394302BA6114B2AB648D4FF /* CDVStatusBar.m */; };
 		65A9AC9C2BEC091700C5899F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 65A9AC9B2BEC091700C5899F /* PrivacyInfo.xcprivacy */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		A246B7E52B07AADD00ECACD5 /* AppKitIntegration.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A246B7E52B07AADD00ECACD5 /* AppKitIntegration.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A246B7DD2B07AACF00ECACD5 /* AppKitIntegration.framework */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A25FB7DC2B0D4420009B6B5F /* AppKitIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A272490D2B0D20530018A598 /* AppKitIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A271D42D2A708240009981B2 /* AppDelegate+Outline.m in Sources */ = {isa = PBXBuildFile; fileRef = A271D42C2A708240009981B2 /* AppDelegate+Outline.m */; };
 		A271D4342A70829D009981B2 /* OutlineAppleLib in Frameworks */ = {isa = PBXBuildFile; productRef = A271D4332A70829D009981B2 /* OutlineAppleLib */; };
@@ -692,6 +692,7 @@
 		};
 		A246B7E72B07AADD00ECACD5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = maccatalyst;
 			target = A246B7DC2B07AACF00ECACD5 /* AppKitIntegration */;
 			targetProxy = A246B7E62B07AADD00ECACD5 /* PBXContainerItemProxy */;
 		};
