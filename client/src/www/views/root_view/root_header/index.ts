@@ -37,6 +37,7 @@ export class RootHeader extends LitElement {
       font-size: 24px;
       font-weight: 500;
       margin: 0;
+      user-select: none;
     }
 
     md-icon {
