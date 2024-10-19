@@ -15,6 +15,7 @@
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {VpnApi} from './outline_server_repository/vpn';
+import {ResourceFetcher} from './resource_fetcher';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -34,6 +35,8 @@ export interface OutlinePlatform {
   getUpdater(): Updater;
 
   getVpnServiceInstaller(): VpnInstaller;
+
+  getResourceFetcher(): ResourceFetcher;
 
   quitApplication(): void;
 }
