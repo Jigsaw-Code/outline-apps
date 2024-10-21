@@ -22,6 +22,7 @@ const isWindows = os.platform() === 'win32';
 /**
  * Get the unpacked asar folder path.
  *   - For AppImage, `/tmp/.mount_OutlinXXXXXX/resources/app.asar.unpacked/`
+ *   - For Debian, `/opt/Outline/resources/app.asar.unpacked`
  *   - For Windows, `C:\Program Files (x86)\Outline\`
  * @returns A string representing the path of the unpacked asar folder.
  */
@@ -32,6 +33,7 @@ function unpackedAppPath() {
 /**
  * Get the parent directory path of the current application binary.
  *   - For AppImage, `/tmp/.mount_OutlinXXXXX/resources/app.asar`
+ *   - For Debian, `/opt/Outline/resources/app.asar`
  *   - For Windows, `C:\Program Files (x86)\Outline\`
  * @returns A string representing the path of the application directory.
  */

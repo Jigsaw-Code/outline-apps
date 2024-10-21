@@ -7,6 +7,7 @@
     "output": "output/client/electron/build"
   },
   "extraMetadata": {
+    "name": "Outline",
     "main": "output/client/electron/index.js"
   },
   "files": [
@@ -15,21 +16,32 @@
     "output/client/electron",
     "!output/client/electron/build"
   ],
+
+  "deb": {
+    "afterInstall": "client/electron/debian/after_install.sh",
+    "afterRemove": "client/electron/debian/after_remove.sh"
+  },
   "linux": {
     "category": "Network",
+    "executableName": "Outline",
     "files": [
       "client/electron/linux_proxy_controller/dist",
       "client/electron/icons/png",
       "client/output/build/linux"
     ],
     "icon": "client/electron/icons/png",
-    "target": {
+    "maintainer": "The Outline Authors",
+    "target": [{
       "arch": [
         "x64"
       ],
       "target": "AppImage"
-    }
+    }, {
+      "arch": "x64",
+      "target": "deb"
+    }]
   },
+
   "nsis": {
     "include": "client/electron/custom_install_steps.nsh",
     "perMachine": true
