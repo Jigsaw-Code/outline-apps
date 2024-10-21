@@ -7,7 +7,7 @@
     "output": "output/client/electron/build"
   },
   "extraMetadata": {
-    "name": "Outline",
+    "name": "outline-client",
     "main": "output/client/electron/index.js"
   },
   "files": [
