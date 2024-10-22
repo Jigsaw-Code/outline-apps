@@ -18,8 +18,11 @@
   ],
 
   "deb": {
-    "afterInstall": "client/electron/debian/after_install.sh",
-    "afterRemove": "client/electron/debian/after_remove.sh"
+    "depends": [
+      "gconf2", "gconf-service", "libnotify4", "libappindicator1", "libxtst6", "libnss3",
+      "libcap2-bin"
+    ],
+    "afterInstall": "client/electron/debian/after_install.sh"
   },
   "linux": {
     "category": "Network",
