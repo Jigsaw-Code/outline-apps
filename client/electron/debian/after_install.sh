@@ -19,9 +19,7 @@
 
 set -eux
 
-readonly PREFIX=/opt/Outline
-
 # Grant specific capabilities so Outline can run without root permisssion
 #   - cap_net_admin: configure network interfaces, set up routing tables, etc.
 #   - cap_dac_override: modify network configuration files owned by root
-/usr/sbin/setcap cap_net_admin,cap_dac_override+eip ${PREFIX}/Outline
+/usr/sbin/setcap cap_net_admin,cap_dac_override+eip /opt/Outline/Outline
