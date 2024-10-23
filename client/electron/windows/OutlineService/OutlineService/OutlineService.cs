@@ -487,7 +487,7 @@ namespace OutlineService
 
             try
             {
-                // This is only necessary when disconecting without network connectivity. 
+                // This is only necessary when disconecting without network connectivity.
                 StartRoutingIpv4();
             }
             catch (Exception) {}
@@ -531,7 +531,7 @@ namespace OutlineService
             {
                 StopSmartDnsBlock();
                 eventLog.WriteEntry($"stopped smartdnsblock");
-            } 
+            }
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to stop smartdnsblock: {e.Message}",
@@ -606,15 +606,24 @@ namespace OutlineService
             }
         }
 
-        private void StopSmartDnsBlock()
+        private static void StopSmartDnsBlock()
         {
-            try
+            var errors = new List<string>(0);
+            foreach (var process in Process.GetProcessesByName("smartdnsblock"))
             {
-                RunCommand("powershell", "stop-process -name smartdnsblock");
+                try
+                {
+                    process.Kill();
+                }
+                catch (Exception e)
+                {
+                    errors.Add(e.Message);
+                }
             }
-            catch (Exception e)
+
+            if (errors.Count > 0)
             {
-                throw new Exception($"could not stop smartdnsblock: {e.Message}");
+                throw new Exception($"could not stop smartdnsblock: {string.Join("; ", errors)}");
             }
         }
 
@@ -693,7 +702,7 @@ namespace OutlineService
                 {
                     RunCommand(CMD_NETSH, $"interface ipv4 set route {subnet} interface={NetworkInterface.LoopbackInterfaceIndex} metric=0 store=active");
                 }
-            } 
+            }
         }
 
         private void StartRoutingIpv6()
@@ -938,7 +947,7 @@ namespace OutlineService
                 // Only send on actual change, to prevent duplicate notifications (mostly
                 // harmless but can make debugging harder).
                 eventLog.WriteEntry($"network changed but gateway and interface stayed the same");
-                return; 
+                return;
             }
             else if (gatewayIp == null)
             {
