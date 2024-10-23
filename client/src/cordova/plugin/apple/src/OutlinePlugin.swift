@@ -144,26 +144,23 @@ class OutlinePlugin: CDVPlugin {
     }
   }
 
-    func fetchConfig(_ command: CDVInvokedUrlCommand) {
-      guard let url = command.argument(at: 0) as? String else {
-        return sendError("Missing URL", callbackId: command.callbackId)
-      }
-      DDLogInfo("Fetching dynamic config from \(url)")
-      Task {
-        guard let result = OutlineFetchDynamicKey(url) else {
-          return self.sendError("unexpected fetching result", callbackId: command.callbackId)
-        }
-        if result.error != nil {
-          var marshalErr: NSError?
-          var errorJson = PlaterrorsMarshalJSONString(result.error, &marshalErr)
-          if marshalErr != nil {
-            errorJson = "error code = \(result.error?.code ?? "?"), failed to fetch details"
-          }
-          return self.sendError(errorJson, callbackId: command.callbackId)
-        }
-        self.sendSuccess(result.key, callbackId: command.callbackId)
-      }
+  func fetchResource(_ command: CDVInvokedUrlCommand) {
+    guard let url = command.argument(at: 0) as? String else {
+      return sendError("Missing URL", callbackId: command.callbackId)
     }
+    DDLogInfo("Fetching resource from \(url)")
+    Task {
+      guard let result = OutlineFetchResource(url) else {
+        return self.sendError("unexpected fetching result", callbackId: command.callbackId)
+      }
+      if result.error != nil {
+        let errorJson = marshalErrorJson(error: OutlineError.platformError(result.error!))
+        return self.sendError(errorJson, callbackId: command.callbackId)
+      }
+      DDLogInfo("Fetch resource result: \(result.content)")
+      self.sendSuccess(result.content, callbackId: command.callbackId)
+    }
+  }
 
   func onStatusChange(_ command: CDVInvokedUrlCommand) {
       DDLogInfo("OutlinePlugin: registering status callback")
@@ -299,10 +296,10 @@ class OutlinePlugin: CDVPlugin {
 
   // MARK: - Callback helpers
 
-    private func sendSuccess(callbackId: String, keepCallback: Bool = false) {
-        let result = CDVPluginResult(status: CDVCommandStatus_OK)
-        send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
-    }
+  private func sendSuccess(callbackId: String, keepCallback: Bool = false) {
+      let result = CDVPluginResult(status: CDVCommandStatus_OK)
+      send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+  }
 
   private func sendSuccess(_ operationResult: String, callbackId: String, keepCallback: Bool = false) {
     let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
