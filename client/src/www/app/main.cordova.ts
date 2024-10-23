@@ -118,11 +118,7 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getResourceFetcher(): ResourceFetcher {
-    if (cordova.platformId === 'android') {
-      return new CordovaResourceFetcher();
-    }
-    // TODO: move to Go fetch implementation later
-    return new BrowserResourceFetcher();
+    return new CordovaResourceFetcher();
   }
 
   quitApplication() {
