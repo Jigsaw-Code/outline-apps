@@ -86,6 +86,11 @@ exports.makeConfig = options => {
           },
           {from: 'images', to: 'images', context: __dirname}, // Overwrite any colliding flags.
           {from: 'messages', to: 'messages', context: __dirname},
+          {
+            from: 'www/ui_components/licenses',
+            to: 'ui_components/licenses',
+            context: __dirname,
+          },
         ],
       }),
       new HtmlWebpackPlugin({
