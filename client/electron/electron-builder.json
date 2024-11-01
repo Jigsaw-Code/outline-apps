@@ -33,7 +33,7 @@
       "client/output/build/linux"
     ],
     "icon": "client/electron/icons/png",
-    "maintainer": "The Outline Authors",
+    "maintainer": "Jigsaw LLC",
     "target": [{
       "arch": [
         "x64"
