@@ -23,6 +23,7 @@ import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
 import {VpnApi} from './outline_server_repository/vpn';
 import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
+import {ElectronResourceFetcher} from './resource_fetcher.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -137,5 +138,6 @@ main({
   getErrorReporter: _ => new ElectronErrorReporter(),
   getUpdater: () => new ElectronUpdater(),
   getVpnServiceInstaller: () => new ElectronVpnInstaller(),
+  getResourceFetcher: () => new ElectronResourceFetcher(),
   quitApplication: () => window.electron.methodChannel.send('quit-app'),
 });

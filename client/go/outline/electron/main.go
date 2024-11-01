@@ -69,31 +69,60 @@ var args struct {
 	checkConnectivity *bool
 	dnsFallback       *bool
 	version           *bool
+
+	fetchUrl *string
 }
+
 var version string // Populated at build time through `-X main.version=...`
 
-// This app sets up a local network stack to handle requests from a tun device.
+// By default, this app sets up a local network stack to handle requests from a tun device.
 //
 // If the app runs successfully, it exits with code 0.
 // If there's an error, it exits with code 1 and prints a detailed error message in JSON format to stderr.
 //
 // The app also prints logs, but these are not meant to be read by the parent process.
+//
+// This app has two extra modes:
+//
+//   - Connectivity Check: If you run the app with `-checkConnectivity`, it will test the proxy's connectivity
+//     and exit with the result printed out to standard output.
+//   - Fetch Resource: If you run the app with `-fetchUrl`, it will fetch the content from the specified
+//     URL and exit with the content printed out to standard output.
 func main() {
+	// VPN routing configs
 	args.tunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface IP address")
 	args.tunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
 	args.tunMask = flag.String("tunMask", "255.255.255.0", "TUN interface network mask; prefixlen for IPv6")
 	args.tunDNS = flag.String("tunDNS", "1.1.1.1,9.9.9.9,208.67.222.222", "Comma-separated list of DNS resolvers for the TUN interface (Windows only)")
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
-	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
-	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
+
+	// Proxy transport config
+	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
+
+	// Check connectivity of transportConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
+
+	// Fetch content of the given URL value and exit
+	args.fetchUrl = flag.String("fetchUrl", "", "Fetch the content from the given URL and exit.")
+
+	// Misc
+	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.version = flag.Bool("version", false, "Print the version and exit.")
 
 	flag.Parse()
 
 	if *args.version {
 		fmt.Println(version)
+		os.Exit(exitCodeSuccess)
+	}
+
+	if *args.fetchUrl != "" {
+		result := outline.FetchResource(*args.fetchUrl)
+		if result.Error != nil {
+			printErrorAndExit(result.Error, exitCodeFailure)
+		}
+		fmt.Println(result.Content)
 		os.Exit(exitCodeSuccess)
 	}
 

@@ -26,6 +26,7 @@ import {
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
+import {ResourceFetcher} from '../resource_fetcher';
 
 export const TEST_ONLY = {parseTunnelConfigJson};
 
@@ -39,6 +40,7 @@ export class OutlineServer implements Server {
 
   constructor(
     private vpnApi: VpnApi,
+    readonly urlFetcher: ResourceFetcher,
     readonly id: string,
     public name: string,
     readonly accessKey: string,
@@ -88,7 +90,10 @@ export class OutlineServer implements Server {
   async connect() {
     let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
+      tunnelConfig = await fetchTunnelConfig(
+        this.urlFetcher,
+        this.tunnelConfigLocation
+      );
       this._address = getAddressFromTransportConfig(tunnelConfig.transport);
     } else {
       tunnelConfig = this.staticTunnelConfig;
@@ -164,23 +169,13 @@ function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
 
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
-export async function fetchTunnelConfig(
+async function fetchTunnelConfig(
+  urlFetcher: ResourceFetcher,
   configLocation: URL
 ): Promise<TunnelConfigJson> {
-  let response;
-  try {
-    response = await fetch(configLocation, {
-      cache: 'no-store',
-      redirect: 'follow',
-    });
-  } catch (cause) {
-    throw new errors.SessionConfigFetchFailed(
-      'Failed to fetch VPN information from dynamic access key.',
-      {cause}
-    );
-  }
-
-  const responseBody = (await response.text()).trim();
+  const responseBody = (
+    await urlFetcher.fetch(configLocation.toString())
+  ).trim();
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
       'Got empty config from dynamic key.'
