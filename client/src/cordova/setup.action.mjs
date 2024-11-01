@@ -100,6 +100,7 @@ async function androidRelease(versionName, buildNumber, verbose) {
 
   const manifestXmlGlob = path.join(
     getRootDir(),
+    'client',
     'platforms',
     'android',
     '**',
@@ -107,6 +108,7 @@ async function androidRelease(versionName, buildNumber, verbose) {
   );
   const configXmlGlob = path.join(
     getRootDir(),
+    'client',
     'platforms',
     'android',
     '**',
