@@ -87,7 +87,7 @@ export class ServerList extends LitElement {
       }
       footer {
         border-top: 1px solid rgba(0, 0, 0, 0.08);
-        padding: 24px 0 16px;
+        padding: 24px 0 max(16px, env(safe-area-inset-bottom));
         text-align: center;
       }
       button {
