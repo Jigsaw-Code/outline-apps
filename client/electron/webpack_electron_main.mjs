@@ -17,7 +17,6 @@ import {fileURLToPath} from 'url';
 
 import webpack from 'webpack';
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -36,6 +35,10 @@ export default ({sentryDsn, appVersion}) => [
           test: /\.tsx?$/,
           use: 'ts-loader',
           exclude: /node_modules/,
+        },
+        {
+          test: /\.node$/,
+          loader: 'node-loader',
         },
       ],
     },
