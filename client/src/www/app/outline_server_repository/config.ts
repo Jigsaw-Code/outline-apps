@@ -68,6 +68,11 @@ export function setTransportConfigHost(
   return {...transport, host: newHost};
 }
 
+/**
+ * parseTunnelConfig parses the given tunnel config as text and returns a new TransportConfigJson.
+ * The config text may be a "ss://" link or a JSON object.
+ * This is used by the server to parse the config fetched from the dynamic key.
+ */
 export function parseTunnelConfig(
   tunnelConfigText: string
 ): TunnelConfigJson | null {
@@ -118,7 +123,20 @@ export function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
   }
 }
 
-export function validateStaticKey(staticKey: string) {
+export function validateAccessKey(accessKey: string) {
+  if (!isDynamicAccessKey(accessKey)) {
+    return validateStaticKey(accessKey);
+  }
+
+  try {
+    // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
+    new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
+  } catch (error) {
+    throw new errors.ServerUrlInvalid(error.message);
+  }
+}
+
+function validateStaticKey(staticKey: string) {
   let config = null;
   try {
     config = SHADOWSOCKS_URI.parse(staticKey);
@@ -143,7 +161,7 @@ const SUPPORTED_SHADOWSOCKS_CIPHERS = [
   'aes-256-gcm',
 ];
 
-export function isShadowsocksCipherSupported(cipher?: string): boolean {
+function isShadowsocksCipherSupported(cipher?: string): boolean {
   return cipher !== undefined && SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
 }
 
@@ -153,9 +171,15 @@ export function isDynamicAccessKey(accessKey: string): boolean {
   return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
 }
 
-// NOTE: For extracting a name that the user has explicitly set, only.
-// (Currenly done by setting the hash on the URI)
-export function serverNameFromAccessKey(accessKey: string): string | undefined {
+/**
+ * serviceNameFromAccessKey extracts the service name from the access key.
+ * This is done by getting parsing the fragment hash in the URL and returning the
+ * entry that is not a key=value pair.
+ * This is used to name the service card in the UI when the service is added.
+ */
+export function serviceNameFromAccessKey(
+  accessKey: string
+): string | undefined {
   const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
 
   if (!hash) return;

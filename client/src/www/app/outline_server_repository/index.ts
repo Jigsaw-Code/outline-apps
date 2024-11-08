@@ -16,11 +16,7 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {
-  isDynamicAccessKey,
-  serverNameFromAccessKey,
-  validateStaticKey,
-} from './config';
+import * as config from './config';
 import {OutlineServer} from './server';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
@@ -125,10 +121,10 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    this.validateAccessKey(accessKey);
+    config.validateAccessKey(accessKey);
 
     // Note that serverNameFromAccessKey depends on the fact that the Access Key is a URL.
-    const serverName = serverNameFromAccessKey(accessKey);
+    const serverName = config.serviceNameFromAccessKey(accessKey);
     const server = this.createServer(uuidv4(), accessKey, serverName);
 
     this.serverById.set(server.id, server);
@@ -178,19 +174,6 @@ export class OutlineServerRepository implements ServerRepository {
       new events.ServerForgetUndone(this.lastForgottenServer)
     );
     this.lastForgottenServer = null;
-  }
-
-  validateAccessKey(accessKey: string) {
-    if (!isDynamicAccessKey(accessKey)) {
-      return validateStaticKey(accessKey);
-    }
-
-    try {
-      // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
-      new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message);
-    }
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
@@ -301,14 +284,14 @@ export class OutlineServerRepository implements ServerRepository {
       id,
       name,
       accessKey,
-      isDynamicAccessKey(accessKey)
+      config.isDynamicAccessKey(accessKey)
         ? ServerType.DYNAMIC_CONNECTION
         : ServerType.STATIC_CONNECTION,
       this.localize
     );
 
     try {
-      this.validateAccessKey(accessKey);
+      config.validateAccessKey(accessKey);
     } catch (e) {
       if (e instanceof errors.ShadowsocksUnsupportedCipher) {
         // Don't throw for backward-compatibility.
