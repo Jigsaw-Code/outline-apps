@@ -12,41 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as vpn from './vpn';
+import * as config from './config';
 
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
     expect(
-      vpn.getAddressFromTransportConfig({host: 'example.com', port: '443'})
+      config.getAddressFromTransportConfig({host: 'example.com', port: '443'})
     ).toEqual('example.com:443');
     expect(
-      vpn.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
+      config.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
     ).toEqual('[1:2::3]:443');
-    expect(vpn.getAddressFromTransportConfig({host: 'example.com'})).toEqual(
+    expect(config.getAddressFromTransportConfig({host: 'example.com'})).toEqual(
       'example.com'
     );
-    expect(vpn.getAddressFromTransportConfig({host: '1:2::3'})).toEqual(
+    expect(config.getAddressFromTransportConfig({host: '1:2::3'})).toEqual(
       '1:2::3'
     );
   });
 
   it('fails on invalid config', () => {
-    expect(vpn.getAddressFromTransportConfig({})).toBeUndefined();
+    expect(config.getAddressFromTransportConfig({})).toBeUndefined();
   });
 });
 
 describe('getHostFromTransport', () => {
   it('extracts host', () => {
     expect(
-      vpn.getHostFromTransportConfig({host: 'example.com', port: '443'})
+      config.getHostFromTransportConfig({host: 'example.com', port: '443'})
     ).toEqual('example.com');
     expect(
-      vpn.getHostFromTransportConfig({host: '1:2::3', port: '443'})
+      config.getHostFromTransportConfig({host: '1:2::3', port: '443'})
     ).toEqual('1:2::3');
   });
 
   it('fails on invalid config', () => {
-    expect(vpn.getHostFromTransportConfig({})).toBeUndefined();
+    expect(config.getHostFromTransportConfig({})).toBeUndefined();
   });
 });
 
@@ -54,7 +54,7 @@ describe('setTransportHost', () => {
   it('sets host', () => {
     expect(
       JSON.stringify(
-        vpn.setTransportConfigHost(
+        config.setTransportConfigHost(
           {host: 'example.com', port: '443'},
           '1.2.3.4'
         )
@@ -62,17 +62,20 @@ describe('setTransportHost', () => {
     ).toEqual('{"host":"1.2.3.4","port":"443"}');
     expect(
       JSON.stringify(
-        vpn.setTransportConfigHost({host: 'example.com', port: '443'}, '1:2::3')
+        config.setTransportConfigHost(
+          {host: 'example.com', port: '443'},
+          '1:2::3'
+        )
       )
     ).toEqual('{"host":"1:2::3","port":"443"}');
     expect(
       JSON.stringify(
-        vpn.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3')
+        config.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3')
       )
     ).toEqual('{"host":"1:2::3","port":"443"}');
   });
 
   it('fails on invalid config', () => {
-    expect(vpn.setTransportConfigHost({}, '1:2::3')).toBeUndefined();
+    expect(config.setTransportConfigHost({}, '1:2::3')).toBeUndefined();
   });
 });
