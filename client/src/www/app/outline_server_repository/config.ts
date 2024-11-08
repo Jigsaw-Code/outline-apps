@@ -14,7 +14,7 @@
 
 import * as net from '@outline/infrastructure/net';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
-import * as errors from 'src/www/model/errors';
+import * as errors from '../../model/errors';
 
 export type TransportConfigJson = object;
 
