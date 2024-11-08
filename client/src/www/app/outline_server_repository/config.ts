@@ -98,24 +98,23 @@ export function parseTunnelConfig(
   if (responseJson.prefix) {
     (transport as {prefix?: string}).prefix = responseJson.prefix;
   }
-  return {
-    transport,
-  };
+  return {transport};
 }
 
 /** Parses an access key string into a TunnelConfig object. */
 export function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
   try {
     const config = SHADOWSOCKS_URI.parse(staticKey);
-    return {
-      transport: {
-        host: config.host.data,
-        port: config.port.data,
-        method: config.method.data,
-        password: config.password.data,
-        prefix: config.extra?.['prefix'],
-      },
+    const transport: TransportConfigJson = {
+      host: config.host.data,
+      port: config.port.data,
+      method: config.method.data,
+      password: config.password.data,
     };
+    if (config.extra?.['prefix']) {
+      (transport as {prefix?: string}).prefix = config.extra?.['prefix'];
+    }
+    return {transport};
   } catch (cause) {
     throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {
       cause,

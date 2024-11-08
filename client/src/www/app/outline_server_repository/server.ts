@@ -25,8 +25,6 @@ import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 import {ResourceFetcher} from '../resource_fetcher';
 
-export const TEST_ONLY = {parseTunnelConfigJson: parseTunnelConfig};
-
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {

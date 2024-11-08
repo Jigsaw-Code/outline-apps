@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as config from './config';
+import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
@@ -77,5 +78,57 @@ describe('setTransportHost', () => {
 
   it('fails on invalid config', () => {
     expect(config.setTransportConfigHost({}, '1:2::3')).toBeUndefined();
+  });
+});
+
+describe('parseTunnelConfig', () => {
+  it('parse correctly', () => {
+    expect(
+      config.parseTunnelConfig(
+        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
+      )
+    ).toEqual({
+      transport: {
+        host: 'example.com',
+        port: 443,
+        method: 'METHOD',
+        password: 'PASSWORD',
+      },
+    });
+  });
+
+  it('parse prefix', () => {
+    expect(
+      config.parseTunnelConfig(
+        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
+      )
+    ).toEqual({
+      transport: {
+        host: 'example.com',
+        port: 443,
+        method: 'METHOD',
+        password: 'PASSWORD',
+        prefix: 'POST ',
+      },
+    });
+  });
+
+  it('parse URL', () => {
+    const ssUrl = SIP002_URI.stringify(
+      makeConfig({
+        host: 'example.com',
+        port: 443,
+        method: 'chacha20-ietf-poly1305',
+        password: 'PASSWORD',
+      })
+    );
+    expect(config.parseTunnelConfig(ssUrl)).toEqual({
+      transport: {
+        host: 'example.com',
+        port: 443,
+        method: 'chacha20-ietf-poly1305',
+        password: 'PASSWORD',
+      },
+    });
   });
 });
