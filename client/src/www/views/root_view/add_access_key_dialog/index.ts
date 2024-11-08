@@ -23,6 +23,7 @@ export class AddAccessKeyDialog extends LitElement {
   ) => string;
   @property({type: Boolean}) open: boolean;
   @property({type: String}) accessKey: string = '';
+  @property({type: Function}) isValidAccessKey: (accessKey: string) => boolean;
 
   static styles = css`
     :host {
@@ -89,7 +90,7 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${this.accessKey && !this.hasValidAccessKey}
+            .error=${this.accessKey && !this.isValidAccessKey(this.accessKey)}
             @input=${this.handleEdit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
@@ -105,30 +106,11 @@ export class AddAccessKeyDialog extends LitElement {
         </md-text-button>
         <md-filled-button
           @click=${this.handleConfirm}
-          ?disabled=${!this.hasValidAccessKey}
+          ?disabled=${!this.accessKey || !this.isValidAccessKey(this.accessKey)}
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
-  }
-
-  private get hasValidAccessKey() {
-    // TODO(fortuna): This needs to change to support other config URLs.
-    try {
-      SHADOWSOCKS_URI.parse(this.accessKey);
-      return true;
-    } catch {
-      // do nothing
-    }
-
-    try {
-      const url = new URL(this.accessKey);
-      return url.protocol === 'ssconf:' || url.protocol === 'https:';
-    } catch {
-      // do nothing
-    }
-
-    return false;
   }
 
   private handleEdit(event: InputEvent) {

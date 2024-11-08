@@ -226,6 +226,8 @@ export class App {
 
     this.eventQueue.startPublishing();
 
+    this.rootEl.$.addServerView.validateAccessKey =
+      serverRepo.validateAccessKey;
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
     } else if (this.rootEl.$.serversView.shouldShowZeroState) {

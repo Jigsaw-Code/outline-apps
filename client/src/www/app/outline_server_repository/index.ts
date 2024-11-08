@@ -16,7 +16,11 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {validateStaticKey} from './access_key';
+import {
+  isDynamicAccessKey,
+  serverNameFromAccessKey,
+  validateStaticKey,
+} from './config';
 import {OutlineServer} from './server';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
@@ -24,35 +28,7 @@ import * as events from '../../model/events';
 import {ServerRepository, ServerType} from '../../model/server';
 import {ResourceFetcher} from '../resource_fetcher';
 
-// TODO(daniellacosse): write unit tests for these functions
-
-// Compares access keys proxying parameters.
-function staticKeysMatch(a: string, b: string): boolean {
-  return a.trim() === b.trim();
-}
-
-// Determines if the key is expected to be a url pointing to an ephemeral session config.
-function isDynamicAccessKey(accessKey: string): boolean {
-  return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
-}
-
-// NOTE: For extracting a name that the user has explicitly set, only.
-// (Currenly done by setting the hash on the URI)
-function serverNameFromAccessKey(accessKey: string): string | undefined {
-  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
-
-  if (!hash) return;
-
-  return decodeURIComponent(
-    hash
-      .slice(1)
-      .split('&')
-      .find(keyValuePair => !keyValuePair.includes('='))
-  );
-}
-
 // DEPRECATED: V0 server persistence format.
-
 interface ServersStorageV0Config {
   host?: string;
   port?: number;
@@ -144,6 +120,11 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
+    accessKey = accessKey.trim();
+    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
+    if (alreadyAddedServer) {
+      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
+    }
     this.validateAccessKey(accessKey);
 
     // Note that serverNameFromAccessKey depends on the fact that the Access Key is a URL.
@@ -201,7 +182,7 @@ export class OutlineServerRepository implements ServerRepository {
 
   validateAccessKey(accessKey: string) {
     if (!isDynamicAccessKey(accessKey)) {
-      return this.validateStaticKey(accessKey);
+      return validateStaticKey(accessKey);
     }
 
     try {
@@ -212,24 +193,9 @@ export class OutlineServerRepository implements ServerRepository {
     }
   }
 
-  private validateStaticKey(staticKey: string) {
-    const alreadyAddedServer = this.serverFromAccessKey(staticKey);
-    if (alreadyAddedServer) {
-      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
-    }
-    validateStaticKey(staticKey);
-  }
-
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
     for (const server of this.serverById.values()) {
-      if (
-        server.type === ServerType.DYNAMIC_CONNECTION &&
-        accessKey === server.accessKey
-      ) {
-        return server;
-      }
-
-      if (staticKeysMatch(accessKey, server.accessKey)) {
+      if (accessKey === server.accessKey) {
         return server;
       }
     }
