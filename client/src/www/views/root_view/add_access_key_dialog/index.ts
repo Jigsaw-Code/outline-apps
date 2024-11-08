@@ -13,7 +13,6 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 @customElement('add-access-key-dialog')
 export class AddAccessKeyDialog extends LitElement {
