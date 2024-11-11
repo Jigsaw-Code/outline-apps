@@ -15,20 +15,17 @@
 import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
-import {staticKeyToTunnelConfig} from './access_key';
 import {
-  TunnelConfigJson,
-  TransportConfigJson,
-  VpnApi,
-  StartRequestJson,
+  staticKeyToTunnelConfig,
+  parseTunnelConfig,
   getAddressFromTransportConfig,
-} from './vpn';
+  TunnelConfigJson,
+} from './config';
+import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
 import {ResourceFetcher} from '../resource_fetcher';
-
-export const TEST_ONLY = {parseTunnelConfigJson};
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -143,30 +140,6 @@ export class OutlineServer implements Server {
   }
 }
 
-function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
-  const responseJson = JSON.parse(responseBody);
-
-  if ('error' in responseJson) {
-    throw new errors.SessionProviderError(
-      responseJson.error.message,
-      responseJson.error.details
-    );
-  }
-
-  const transport: TransportConfigJson = {
-    host: responseJson.server,
-    port: responseJson.server_port,
-    method: responseJson.method,
-    password: responseJson.password,
-  };
-  if (responseJson.prefix) {
-    (transport as {prefix?: string}).prefix = responseJson.prefix;
-  }
-  return {
-    transport,
-  };
-}
-
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
 async function fetchTunnelConfig(
@@ -182,11 +155,7 @@ async function fetchTunnelConfig(
     );
   }
   try {
-    if (responseBody.startsWith('ss://')) {
-      return staticKeyToTunnelConfig(responseBody);
-    }
-
-    return parseTunnelConfigJson(responseBody);
+    return parseTunnelConfig(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;
