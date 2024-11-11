@@ -340,7 +340,6 @@ describe('OutlineServerRepository', () => {
   });
 
   it('validates static access keys', () => {
-    const repo = newTestRepo(new EventQueue(), new InMemoryStorage());
     // Invalid access keys.
     expect(() => config.validateAccessKey('')).toThrowError(ServerUrlInvalid);
     expect(() => config.validateAccessKey('ss://invalid')).toThrowError(

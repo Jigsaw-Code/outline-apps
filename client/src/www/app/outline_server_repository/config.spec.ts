@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as config from './config';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
+
+import * as config from './config';
 
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
