@@ -15,10 +15,12 @@
 import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
-import {staticKeyToTunnelConfig} from './config';
-import {parseTunnelConfig} from './config';
-import {getAddressFromTransportConfig} from './config';
-import {TunnelConfigJson} from './config';
+import {
+  staticKeyToTunnelConfig,
+  parseTunnelConfig,
+  getAddressFromTransportConfig,
+  TunnelConfigJson,
+} from './config';
 import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
