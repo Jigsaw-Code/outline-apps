@@ -116,7 +116,6 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    accessKey = accessKey.trim();
     const alreadyAddedServer = this.serverFromAccessKey(accessKey);
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
@@ -177,8 +176,9 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
+    const trimmedAccessKey = accessKey.trim();
     for (const server of this.serverById.values()) {
-      if (accessKey === server.accessKey) {
+      if (trimmedAccessKey === server.accessKey.trim()) {
         return server;
       }
     }

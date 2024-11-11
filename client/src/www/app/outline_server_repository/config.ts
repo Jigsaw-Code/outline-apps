@@ -17,6 +17,7 @@ import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
+// Transport configuration. Application code should treat it as opaque, as it's handled by the networking layer.
 export type TransportConfigJson = object;
 
 /** TunnelConfigJson represents the configuration to set up a tunnel. */
@@ -69,7 +70,7 @@ export function setTransportConfigHost(
 }
 
 /**
- * parseTunnelConfig parses the given tunnel config as text and returns a new TransportConfigJson.
+ * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
  * The config text may be a "ss://" link or a JSON object.
  * This is used by the server to parse the config fetched from the dynamic key.
  */
@@ -161,7 +162,7 @@ const SUPPORTED_SHADOWSOCKS_CIPHERS = [
 ];
 
 function isShadowsocksCipherSupported(cipher?: string): boolean {
-  return cipher !== undefined && SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
+  return SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
 }
 
 // TODO(daniellacosse): write unit tests for these functions

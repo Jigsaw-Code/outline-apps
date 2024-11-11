@@ -21,7 +21,7 @@ import {checkUDPConnectivity} from './go_helpers';
 import {ChildProcessHelper, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import * as config from '../src/www/app/outline_server_repository/config';
+import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 
 const isLinux = platform() === 'linux';
@@ -64,7 +64,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   constructor(
     private readonly routing: RoutingDaemon,
-    readonly transportConfig: config.TransportConfigJson
+    readonly transportConfig: TransportConfigJson
   ) {
     this.tun2socks = new GoTun2socks();
 
@@ -249,7 +249,7 @@ class GoTun2socks {
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
   async start(
-    config: config.TransportConfigJson,
+    config: TransportConfigJson,
     isUdpEnabled: boolean
   ): Promise<void> {
     // ./tun2socks.exe \
