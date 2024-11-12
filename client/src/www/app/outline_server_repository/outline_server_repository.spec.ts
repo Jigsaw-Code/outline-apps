@@ -24,11 +24,7 @@ import {
 import * as config from './config';
 import {OutlineServer} from './server';
 import {FakeVpnApi} from './vpn.fake';
-import {
-  ServerAccessKeyInvalid,
-  ServerUrlInvalid,
-  ShadowsocksUnsupportedCipher,
-} from '../../model/errors';
+import {ServerAccessKeyInvalid} from '../../model/errors';
 import {
   EventQueue,
   ServerAdded,
