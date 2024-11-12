@@ -19,36 +19,27 @@ import * as config from './config';
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
     expect(
-      config.getAddressFromTransportConfig({host: 'example.com', port: '443'})
-    ).toEqual('example.com:443');
+      config.TEST_ONLY.getAddressFromTransportConfig({
+        host: 'example.com',
+        port: 443,
+      })
+    ).toEqual({host: 'example.com', port: 443});
     expect(
-      config.getAddressFromTransportConfig({host: '1:2::3', port: '443'})
-    ).toEqual('[1:2::3]:443');
-    expect(config.getAddressFromTransportConfig({host: 'example.com'})).toEqual(
-      'example.com'
-    );
-    expect(config.getAddressFromTransportConfig({host: '1:2::3'})).toEqual(
-      '1:2::3'
-    );
+      config.TEST_ONLY.getAddressFromTransportConfig({
+        host: '1:2::3',
+        port: 443,
+      })
+    ).toEqual({host: '1:2::3', port: 443});
+    expect(
+      config.TEST_ONLY.getAddressFromTransportConfig({host: 'example.com'})
+    ).toEqual({host: 'example.com', port: undefined});
+    expect(
+      config.TEST_ONLY.getAddressFromTransportConfig({host: '1:2::3'})
+    ).toEqual({host: '1:2::3', port: undefined});
   });
 
   it('fails on invalid config', () => {
-    expect(config.getAddressFromTransportConfig({})).toBeUndefined();
-  });
-});
-
-describe('getHostFromTransport', () => {
-  it('extracts host', () => {
-    expect(
-      config.getHostFromTransportConfig({host: 'example.com', port: '443'})
-    ).toEqual('example.com');
-    expect(
-      config.getHostFromTransportConfig({host: '1:2::3', port: '443'})
-    ).toEqual('1:2::3');
-  });
-
-  it('fails on invalid config', () => {
-    expect(config.getHostFromTransportConfig({})).toBeUndefined();
+    expect(config.TEST_ONLY.getAddressFromTransportConfig({})).toBeUndefined();
   });
 });
 
@@ -57,24 +48,24 @@ describe('setTransportHost', () => {
     expect(
       JSON.stringify(
         config.setTransportConfigHost(
-          {host: 'example.com', port: '443'},
+          {host: 'example.com', port: 443},
           '1.2.3.4'
         )
       )
-    ).toEqual('{"host":"1.2.3.4","port":"443"}');
+    ).toEqual('{"host":"1.2.3.4","port":443}');
     expect(
       JSON.stringify(
         config.setTransportConfigHost(
-          {host: 'example.com', port: '443'},
+          {host: 'example.com', port: 443},
           '1:2::3'
         )
       )
-    ).toEqual('{"host":"1:2::3","port":"443"}');
+    ).toEqual('{"host":"1:2::3","port":443}');
     expect(
       JSON.stringify(
-        config.setTransportConfigHost({host: '1.2.3.4', port: '443'}, '1:2::3')
+        config.setTransportConfigHost({host: '1.2.3.4', port: 443}, '1:2::3')
       )
-    ).toEqual('{"host":"1:2::3","port":"443"}');
+    ).toEqual('{"host":"1:2::3","port":443}');
   });
 
   it('fails on invalid config', () => {
@@ -89,6 +80,10 @@ describe('parseTunnelConfig', () => {
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
       )
     ).toEqual({
+      firstHop: {
+        host: 'example.com',
+        port: 443,
+      },
       transport: {
         host: 'example.com',
         port: 443,
@@ -104,6 +99,10 @@ describe('parseTunnelConfig', () => {
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
       )
     ).toEqual({
+      firstHop: {
+        host: 'example.com',
+        port: 443,
+      },
       transport: {
         host: 'example.com',
         port: 443,
@@ -124,6 +123,10 @@ describe('parseTunnelConfig', () => {
       })
     );
     expect(config.parseTunnelConfig(ssUrl)).toEqual({
+      firstHop: {
+        host: 'example.com',
+        port: 443,
+      },
       transport: {
         host: 'example.com',
         port: 443,
@@ -131,5 +134,25 @@ describe('parseTunnelConfig', () => {
         password: 'PASSWORD',
       },
     });
+  });
+});
+
+describe('serviceNameFromAccessKey', () => {
+  it('extracts name from ss:// key', () => {
+    expect(
+      config.TEST_ONLY.serviceNameFromAccessKey('ss://anything#My%20Server')
+    ).toEqual('My Server');
+  });
+  it('extracts name from ssconf:// key', () => {
+    expect(
+      config.TEST_ONLY.serviceNameFromAccessKey('ssconf://anything#My%20Server')
+    ).toEqual('My Server');
+  });
+  it('ignores parameters', () => {
+    expect(
+      config.TEST_ONLY.serviceNameFromAccessKey(
+        'ss://anything#foo=bar&My%20Server&baz=boo'
+      )
+    ).toEqual('My Server');
   });
 });

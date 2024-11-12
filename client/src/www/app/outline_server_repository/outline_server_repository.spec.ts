@@ -25,6 +25,7 @@ import * as config from './config';
 import {OutlineServer} from './server';
 import {FakeVpnApi} from './vpn.fake';
 import {
+  ServerAccessKeyInvalid,
   ServerUrlInvalid,
   ShadowsocksUnsupportedCipher,
 } from '../../model/errors';
@@ -193,8 +194,8 @@ describe('OutlineServerRepository', () => {
 
   it('add throws on invalid access keys', () => {
     const repo = newTestRepo(new EventQueue(), new InMemoryStorage());
-    expect(() => repo.add('ss://invalid')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.add('')).toThrowError(ServerUrlInvalid);
+    expect(() => repo.add('ss://invalid')).toThrowError(ServerAccessKeyInvalid);
+    expect(() => repo.add('')).toThrowError(ServerAccessKeyInvalid);
   });
 
   it('getAll returns added servers', () => {
@@ -220,9 +221,9 @@ describe('OutlineServerRepository', () => {
     repo.add(accessKey);
     const serverId = repo.getAll()[0].id;
     const server = repo.getById(serverId);
-    expect(server.id).toEqual(serverId);
-    expect(server.accessKey).toEqual(accessKey);
-    expect(server.name).toEqual(CONFIG_0_V0.name);
+    expect(server?.id).toEqual(serverId);
+    expect(server?.accessKey).toEqual(accessKey);
+    expect(server?.name).toEqual(CONFIG_0_V0.name);
   });
 
   it('getById returns undefined for nonexistent servers', () => {
@@ -308,7 +309,7 @@ describe('OutlineServerRepository', () => {
     repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
     const forgottenServer = repo.getById(forgottenServerId);
-    expect(forgottenServer.id).toEqual(forgottenServerId);
+    expect(forgottenServer?.id).toEqual(forgottenServerId);
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(2);
     expect(serverIds).toContain(forgottenServerId);
@@ -341,9 +342,11 @@ describe('OutlineServerRepository', () => {
 
   it('validates static access keys', () => {
     // Invalid access keys.
-    expect(() => config.validateAccessKey('')).toThrowError(ServerUrlInvalid);
+    expect(() => config.validateAccessKey('')).toThrowError(
+      ServerAccessKeyInvalid
+    );
     expect(() => config.validateAccessKey('ss://invalid')).toThrowError(
-      ServerUrlInvalid
+      ServerAccessKeyInvalid
     );
     // IPv6 host.
     expect(() =>
@@ -370,7 +373,7 @@ describe('OutlineServerRepository', () => {
           })
         )
       )
-    ).toThrowError(ShadowsocksUnsupportedCipher);
+    ).toThrowError(ServerAccessKeyInvalid);
     expect(() =>
       config.validateAccessKey(
         SIP002_URI.stringify(
@@ -382,7 +385,7 @@ describe('OutlineServerRepository', () => {
           })
         )
       )
-    ).toThrowError(ShadowsocksUnsupportedCipher);
+    ).toThrowError(ServerAccessKeyInvalid);
   });
 });
 
