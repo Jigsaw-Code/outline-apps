@@ -39,8 +39,8 @@ export interface Server {
   // Returns stats for bytes transferred across all access keys of this server.
   getDataUsage(): Promise<BytesByAccessKey>;
 
-  // Returns tunnel time by location
-  getTunnelTimeByLocation(): Promise<TunnelTimeSecondsByLocation>;
+  // Returns server metrics
+  getServerMetrics(): Promise<ServerMetricsJson>;
 
   // Adds a new access key to this server.
   addAccessKey(): Promise<AccessKey>;
@@ -197,11 +197,25 @@ export interface DataLimit {
   readonly bytes: number;
 }
 
-export type TunnelTimeSecondsByLocation = {
-  location: string;
-  asn: number;
-  asorg: string;
-  tunnel_time: {
-    seconds: number;
-  };
-}[];
+export type ServerMetricsJson = {
+  servers: {
+    location: string;
+    asn: number;
+    asOrg: string;
+    tunnelTime: {
+      seconds: number;
+    };
+    dataTransferred: {
+      bytes: number;
+    };
+  }[];
+  accessKeys: {
+    accessKeyId: number;
+    tunnelTime: {
+      seconds: number;
+    };
+    dataTransferred: {
+      bytes: number;
+    };
+  }[];
+};

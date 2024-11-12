@@ -161,26 +161,54 @@ export class ShadowboxServer implements server.Server {
     return usageMap;
   }
 
-  async getTunnelTimeByLocation(): Promise<server.TunnelTimeSecondsByLocation> {
+  async getServerMetrics(): Promise<server.ServerMetricsJson> {
     //TODO
-    return [
-      {
-        location: 'CA',
-        asn: 1,
-        asorg: 'IDK',
-        tunnel_time: {
-          seconds: 10000,
+    return {
+      servers: [
+        {
+          location: 'CA',
+          asn: 1,
+          asOrg: 'IDK',
+          tunnelTime: {
+            seconds: 10000,
+          },
+          dataTransferred: {
+            bytes: 10000,
+          },
         },
-      },
-      {
-        location: 'US',
-        asn: 2,
-        asorg: 'WHATEVER',
-        tunnel_time: {
-          seconds: 200000,
+        {
+          location: 'US',
+          asn: 2,
+          asOrg: 'WHATEVER',
+          tunnelTime: {
+            seconds: 200000,
+          },
+          dataTransferred: {
+            bytes: 200000,
+          },
         },
-      },
-    ];
+      ],
+      accessKeys: [
+        {
+          accessKeyId: 0,
+          tunnelTime: {
+            seconds: 10000,
+          },
+          dataTransferred: {
+            bytes: 10000,
+          },
+        },
+        {
+          accessKeyId: 1,
+          tunnelTime: {
+            seconds: 200000,
+          },
+          dataTransferred: {
+            bytes: 200000,
+          },
+        },
+      ],
+    };
   }
 
   getName(): string {

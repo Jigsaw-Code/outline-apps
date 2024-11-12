@@ -1079,12 +1079,12 @@ export class App {
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    const tunnelTimeByLocation = await selectedServer.getTunnelTimeByLocation();
+    const serverMetrics = await selectedServer.getServerMetrics();
 
     let sum = 0;
     for (const {
-      tunnel_time: {seconds},
-    } of tunnelTimeByLocation) {
+      tunnelTime: {seconds},
+    } of serverMetrics.servers) {
       sum += seconds / (60 * 60);
     }
 
