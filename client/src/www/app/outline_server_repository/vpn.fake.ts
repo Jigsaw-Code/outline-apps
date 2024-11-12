@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  VpnApi,
-  TunnelStatus,
-  StartRequestJson,
-  getHostFromTransportConfig,
-} from './vpn';
+import {getHostFromTransportConfig} from './config';
+import {VpnApi, TunnelStatus, StartRequestJson} from './vpn';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';

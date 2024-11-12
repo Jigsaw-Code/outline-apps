@@ -21,6 +21,7 @@ import {
   ServersStorageV1,
   serversStorageV0ConfigToAccessKey,
 } from '.';
+import * as config from './config';
 import {OutlineServer} from './server';
 import {FakeVpnApi} from './vpn.fake';
 import {
@@ -339,15 +340,14 @@ describe('OutlineServerRepository', () => {
   });
 
   it('validates static access keys', () => {
-    const repo = newTestRepo(new EventQueue(), new InMemoryStorage());
     // Invalid access keys.
-    expect(() => repo.validateAccessKey('')).toThrowError(ServerUrlInvalid);
-    expect(() => repo.validateAccessKey('ss://invalid')).toThrowError(
+    expect(() => config.validateAccessKey('')).toThrowError(ServerUrlInvalid);
+    expect(() => config.validateAccessKey('ss://invalid')).toThrowError(
       ServerUrlInvalid
     );
     // IPv6 host.
     expect(() =>
-      repo.validateAccessKey(
+      config.validateAccessKey(
         SIP002_URI.stringify(
           makeConfig({
             host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
@@ -360,7 +360,7 @@ describe('OutlineServerRepository', () => {
     ).toBeTruthy();
     // Unsupported ciphers.
     expect(() =>
-      repo.validateAccessKey(
+      config.validateAccessKey(
         SIP002_URI.stringify(
           makeConfig({
             host: '127.0.0.1',
@@ -372,7 +372,7 @@ describe('OutlineServerRepository', () => {
       )
     ).toThrowError(ShadowsocksUnsupportedCipher);
     expect(() =>
-      repo.validateAccessKey(
+      config.validateAccessKey(
         SIP002_URI.stringify(
           makeConfig({
             host: '127.0.0.1',
