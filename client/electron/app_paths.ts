@@ -56,6 +56,17 @@ export function pathToEmbeddedTun2socksBinary() {
   );
 }
 
+export function pathToBackendLibrary() {
+  return path.join(
+    unpackedAppPath(),
+    'client',
+    'output',
+    'build',
+    isWindows ? 'windows' : 'linux',
+    isWindows ? 'backend.dll' : 'libbackend.so'
+  );
+}
+
 /**
  * Get the parent directory path containing the background service binaries.
  * On Windows, this folder contains `OutlineService.exe`.

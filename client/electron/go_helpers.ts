@@ -19,6 +19,7 @@
  */
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
+import {goFetchResource} from './go_plugin';
 import {ChildProcessHelper} from './process';
 import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
 
@@ -66,13 +67,15 @@ export async function checkUDPConnectivity(
  * @returns A Promise that resolves to the fetched content as a string.
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
-export function fetchResource(
+export async function fetchResource(
   url: string,
   debugMode: boolean = false
 ): Promise<string> {
-  const tun2socks = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
-  tun2socks.isDebugModeEnabled = debugMode;
-
-  console.debug('[tun2socks] - fetching resource ...');
-  return tun2socks.launch(['-fetchUrl', url]);
+  console.debug('[tun2socks] - preparing library calls ...');
+  const result = await goFetchResource(url);
+  console.debug('[tun2socks] - result: ', result);
+  if (result.Error) {
+    throw new Error(`Returned error handle: ${result.Error}`);
+  }
+  return result.Content;
 }
