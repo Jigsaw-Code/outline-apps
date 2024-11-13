@@ -64,8 +64,8 @@ export class OutlineServer implements Server {
       }
     } else if (serviceConfig instanceof StaticServiceConfig) {
       this.type = ServerType.STATIC_CONNECTION;
-      this.staticTunnelConfig = serviceConfig.tunnelconfig;
-      const firstHop = serviceConfig.tunnelconfig.firstHop;
+      this.staticTunnelConfig = serviceConfig.tunnelConfig;
+      const firstHop = serviceConfig.tunnelConfig.firstHop;
       this.displayAddress = net.joinHostPort(
         firstHop.host,
         firstHop.port.toString()

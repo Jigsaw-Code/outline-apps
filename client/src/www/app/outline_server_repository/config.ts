@@ -26,10 +26,7 @@ export type ServiceConfig = {
 } & (StaticServiceConfig | DynamicServiceConfig);
 
 export class StaticServiceConfig {
-  constructor(
-    readonly name: string,
-    readonly tunnelconfig: TunnelConfigJson
-  ) {}
+  constructor(readonly name: string, readonly tunnelConfig: TunnelConfigJson) {}
 }
 
 export class DynamicServiceConfig {
