@@ -25,11 +25,9 @@ export const TEST_ONLY = {
  * ServiceConfig represents an Outline service. It's the structured representation of an Access Key.
  * It has a name, a tunnel config that can be statically or dynamically defined.
  */
-export type ServiceConfig = {
-  readonly name: string;
-} & (StaticServiceConfig | DynamicServiceConfig);
+export type ServiceConfig = StaticServiceConfig | DynamicServiceConfig;
 
-/** 
+/**
  * StaticServiceConfig is a ServiceConfig with a static tunnel config.
  * It's the structured representation of a Static Access Key.
  */
@@ -37,15 +35,12 @@ export class StaticServiceConfig {
   constructor(readonly name: string, readonly tunnelConfig: TunnelConfigJson) {}
 }
 
-/** 
+/**
  * DynamicServiceConfig is a ServiceConfig that has the location to fetch the tunnel config.
  * It's the structured representation of a Dynamic Access Key.
  */
 export class DynamicServiceConfig {
-  constructor(
-    readonly name: string,
-    readonly transportConfigLocation: URL
-  ) {}
+  constructor(readonly name: string, readonly transportConfigLocation: URL) {}
 }
 
 /** EndpointAddress represents the address of a TCP/UDP endpoint. */
@@ -105,7 +100,8 @@ export function setTransportConfigHost(
 /**
  * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
  * The config text may be a "ss://" link or a JSON object.
- * This is used by the server to parse the config fetched from the dynamic key.
+ * This is used by the server to parse the config fetched from the dynamic key, and to parse
+ * static keys as tunnel configs (which may be present in the dynamic config).
  */
 export function parseTunnelConfig(
   tunnelConfigText: string
