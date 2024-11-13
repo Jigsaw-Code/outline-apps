@@ -21,14 +21,26 @@ export const TEST_ONLY = {
   serviceNameFromAccessKey: serviceNameFromAccessKey,
 };
 
+/**
+ * ServiceConfig represents an Outline service. It's the structured representation of an Access Key.
+ * It has a name, a tunnel config that can be statically or dynamically defined.
+ */
 export type ServiceConfig = {
   readonly name: string;
 } & (StaticServiceConfig | DynamicServiceConfig);
 
+/** 
+ * StaticServiceConfig is a ServiceConfig with a static tunnel config.
+ * It's the structured representation of a Static Access Key.
+ */
 export class StaticServiceConfig {
   constructor(readonly name: string, readonly tunnelConfig: TunnelConfigJson) {}
 }
 
+/** 
+ * DynamicServiceConfig is a ServiceConfig that has the location to fetch the tunnel config.
+ * It's the structured representation of a Dynamic Access Key.
+ */
 export class DynamicServiceConfig {
   constructor(
     readonly name: string,
@@ -36,21 +48,28 @@ export class DynamicServiceConfig {
   ) {}
 }
 
+/** EndpointAddress represents the address of a TCP/UDP endpoint. */
 class EndpointAddress {
   readonly host: string;
   readonly port: number | undefined;
 }
 
-// Transport configuration. Application code should treat it as opaque, as it's handled by the networking layer.
-export type TransportConfigJson = object;
-
-/** TunnelConfigJson represents the configuration to set up a tunnel. */
+/**
+ * TunnelConfigJson represents the configuration to set up a tunnel.
+ * This is where VPN-layer parameters would go (e.g. interface IP, routes, dns, etc.).
+ */
 export interface TunnelConfigJson {
   firstHop: EndpointAddress | undefined;
   /** transport describes how to establish connections to the destinations.
    * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
   transport: TransportConfigJson;
 }
+
+/**
+ * TransportConfigJson represents the transport to be used.
+ * Application code should treat it as opaque, as it's handled by the networking layer.
+ */
+export type TransportConfigJson = object;
 
 /**
  * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
