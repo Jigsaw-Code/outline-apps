@@ -53,7 +53,7 @@ export class OutlineServer implements Server {
       this.tunnelConfigLocation = serviceConfig.transportConfigLocation;
       this.displayAddress = '';
 
-      if (!serviceConfig.name) {
+      if (!this.name) {
         this.name =
           this.tunnelConfigLocation.port === '443'
             ? this.tunnelConfigLocation.hostname
