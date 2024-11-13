@@ -106,6 +106,7 @@ export function setTransportConfigHost(
 export function parseTunnelConfig(
   tunnelConfigText: string
 ): TunnelConfigJson | null {
+  tunnelConfigText = tunnelConfigText.trim();
   if (tunnelConfigText.startsWith('ss://')) {
     return staticKeyToTunnelConfig(tunnelConfigText);
   }

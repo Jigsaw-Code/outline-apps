@@ -74,7 +74,7 @@ describe('setTransportHost', () => {
 });
 
 describe('parseTunnelConfig', () => {
-  it('parse correctly', () => {
+  it('parses correctly', () => {
     expect(
       config.parseTunnelConfig(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
@@ -93,7 +93,7 @@ describe('parseTunnelConfig', () => {
     });
   });
 
-  it('parse prefix', () => {
+  it('parses prefix', () => {
     expect(
       config.parseTunnelConfig(
         '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
@@ -113,7 +113,7 @@ describe('parseTunnelConfig', () => {
     });
   });
 
-  it('parse URL', () => {
+  it('parses URL', () => {
     const ssUrl = SIP002_URI.stringify(
       makeConfig({
         host: 'example.com',
@@ -123,6 +123,29 @@ describe('parseTunnelConfig', () => {
       })
     );
     expect(config.parseTunnelConfig(ssUrl)).toEqual({
+      firstHop: {
+        host: 'example.com',
+        port: 443,
+      },
+      transport: {
+        host: 'example.com',
+        port: 443,
+        method: 'chacha20-ietf-poly1305',
+        password: 'PASSWORD',
+      },
+    });
+  });
+
+  it('parses URL with blanks', () => {
+    const ssUrl = SIP002_URI.stringify(
+      makeConfig({
+        host: 'example.com',
+        port: 443,
+        method: 'chacha20-ietf-poly1305',
+        password: 'PASSWORD',
+      })
+    );
+    expect(config.parseTunnelConfig(`  ${ssUrl} \n\n\n`)).toEqual({
       firstHop: {
         host: 'example.com',
         port: 443,
