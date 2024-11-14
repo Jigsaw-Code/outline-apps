@@ -14,13 +14,26 @@
 
 package main
 
-/*
-#include <stdlib.h>
-*/
+// #include <stdlib.h>
 import "C"
-import "unsafe"
+import (
+	"log/slog"
+	"unsafe"
+)
 
-//export FreeString
-func FreeString(str *C.char) {
-	C.free(unsafe.Pointer(str))
+// NewCGoString allocates memory for a C string based on the given Go string.
+// It should be paired with [FreeCGoString] to avoid memory leaks.
+func NewCGoString(s string) *C.char {
+	res := C.CString(s)
+	slog.Debug("malloc CGoString", "addr", res)
+	return res
+}
+
+// FreeCGoString releases the memory allocated by NewCGoString.
+// It also accepts null.
+//
+//export FreeCGoString
+func FreeCGoString(s *C.char) {
+	slog.Debug("free CGoString", "addr", s)
+	C.free(unsafe.Pointer(s))
 }

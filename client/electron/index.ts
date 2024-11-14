@@ -504,7 +504,7 @@ function main() {
   // Fetches a resource (usually the dynamic key config) from a remote URL.
   ipcMain.handle(
     'outline-ipc-fetch-resource',
-    async (_, url: string): Promise<string> => fetchResource(url, debugMode)
+    (_, url: string): Promise<string> => fetchResource(url)
   );
 
   // Connects to a proxy server specified by a config.

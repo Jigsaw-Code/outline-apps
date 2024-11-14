@@ -15,26 +15,42 @@
 package main
 
 /*
+#include <stdlib.h>
 #include "platerr.h"
 */
 import "C"
+
 import (
-	"runtime/cgo"
+	"fmt"
+	"log/slog"
+	"unsafe"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-func ToCPlatformErrorHandle(err *platerrors.PlatformError) C.PlatformErrorHandle {
-	if err == nil {
-		return NilHandle
-	}
-	return C.PlatformErrorHandle(cgo.NewHandle(err))
-}
-
-func FromCPlatformErrorHandle(err C.PlatformErrorHandle) *platerrors.PlatformError {
-	if err == NilHandle {
+// ToCGoPlatformError allocates memory for a C PlatformError if the given Go PlatformError is not nil.
+// It should be paired with [FreeCGoPlatformError] to avoid memory leaks.
+func ToCGoPlatformError(e *platerrors.PlatformError) *C.PlatformError {
+	if e == nil {
 		return nil
 	}
-	h := cgo.Handle(err)
-	return h.Value().(*platerrors.PlatformError)
+	json, err := platerrors.MarshalJSONString(e)
+	if err != nil {
+		json = fmt.Sprintf("%s, failed to retrieve details due to: %s", e.Code, err.Error())
+	}
+
+	res := (*C.PlatformError)(C.malloc(C.sizeof_PlatformError))
+	slog.Debug("malloc CGoPlatformError", "addr", unsafe.Pointer(res))
+	res.Code = NewCGoString(e.Code)
+	res.DetailJson = NewCGoString(json)
+	return res
+}
+
+// FreeCGoPlatformError releases the memory allocated by ToCGoPlatformError.
+// It also accepts null.
+//
+//export FreeCGoPlatformError
+func FreeCGoPlatformError(e *C.PlatformError) {
+	slog.Debug("free CGoPlatformError", "addr", unsafe.Pointer(e))
+	C.free(unsafe.Pointer(e))
 }

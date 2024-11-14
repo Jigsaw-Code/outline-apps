@@ -63,19 +63,15 @@ export async function checkUDPConnectivity(
  * Fetches a resource from the given URL.
  *
  * @param url The URL of the resource to fetch.
- * @param debugMode Optional. Whether to forward logs to stdout. Defaults to false.
  * @returns A Promise that resolves to the fetched content as a string.
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
-export async function fetchResource(
-  url: string,
-  debugMode: boolean = false
-): Promise<string> {
+export async function fetchResource(url: string): Promise<string> {
   console.debug('[tun2socks] - preparing library calls ...');
   const result = await goFetchResource(url);
   console.debug('[tun2socks] - result: ', result);
   if (result.Error) {
-    throw new Error(`Returned error handle: ${result.Error}`);
+    throw new Error(result.Error.DetailJson ?? result.Error.Code);
   }
   return result.Content;
 }

@@ -14,20 +14,26 @@
 
 package main
 
-/*
-#include <stdint.h>
-*/
-import "C"
 import (
-	"runtime/cgo"
+	"log/slog"
+	"os"
 )
 
-const NilHandle = 0
+// init initializes the backend module.
+// It sets up a default logger based on the OUTLINE_DEBUG environment variable.
+func init() {
+	opts := slog.HandlerOptions{Level: slog.LevelInfo}
 
-//export FreeHandle
-func FreeHandle(ptr C.uintptr_t) {
-	if ptr != NilHandle {
-		h := cgo.Handle(ptr)
-		h.Delete()
+	dbg := os.Getenv("OUTLINE_DEBUG")
+	if dbg != "" && dbg != "false" {
+		dbg = "true"
+		opts.Level = slog.LevelDebug
+	} else {
+		dbg = "false"
 	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
+	slog.SetDefault(logger)
+
+	slog.Info("Backend module initialized", "debug", dbg)
 }

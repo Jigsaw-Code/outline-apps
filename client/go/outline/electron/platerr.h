@@ -12,6 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdint.h>
+#pragma once
 
-typedef uintptr_t PlatformErrorHandle;
+// PlatformError represents an error that originate from the native network code.
+typedef struct t_PlatformError
+{
+
+  // A code can be used to identify the specific type of the error.
+  // Caller is responsible for freeing this pointer using FreeCGoString.
+  const char *Code;
+
+  // A JSON string of the error details that can be parsed by TypeScript.
+  // Caller is responsible for freeing this pointer using FreeCGoString.
+  const char *DetailJson;
+
+} PlatformError;
