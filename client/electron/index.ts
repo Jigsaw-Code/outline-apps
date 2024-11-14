@@ -34,7 +34,7 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {fetchResource} from './go_helpers';
+import {GoApiName, invokeGoApi} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
@@ -501,10 +501,19 @@ function main() {
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  // Fetches a resource (usually the dynamic key config) from a remote URL.
+  // This IPC handler allows the renderer process to call Go API functions exposed by the backend.
+  // It takes two arguments:
+  //   - api: The name of the Go API function to call.
+  //   - input: A string representing the input data to the Go function.
+  //
+  // The handler returns the output string from the Go function if successful.
+  // Both the input string and output string need to be interpreted by the renderer process according
+  // to the specific API being called.
+  // If Go function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
   ipcMain.handle(
-    'outline-ipc-fetch-resource',
-    (_, url: string): Promise<string> => fetchResource(url)
+    'outline-ipc-invoke-go-api',
+    (_, api: GoApiName, input: string): Promise<string> =>
+      invokeGoApi(api, input)
   );
 
   // Connects to a proxy server specified by a config.

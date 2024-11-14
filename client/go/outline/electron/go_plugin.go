@@ -20,7 +20,7 @@ package main
 // InvokeGoAPIResult is a struct used to pass result from Go to TypeScript boundary.
 typedef struct InvokeGoAPIResult_t
 {
-  // A string representing the result of the Go function call.
+	// A string representing the result of the Go function call.
 	// This may be a raw string or a JSON string depending on the API call.
 	const char *Output;
 
@@ -50,7 +50,7 @@ const (
 	FetchResourceAPI = "FetchResource"
 )
 
-// InvokeGoFunc is the unified entry point for TypeScript to invoke various Go functions.
+// InvokeGoAPI is the unified entry point for TypeScript to invoke various Go functions.
 //
 // The input and output are all defined as string, but they may represent either a raw string,
 // or a JSON string depending on the API call.
@@ -81,6 +81,9 @@ func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
 // newCGoString allocates memory for a C string based on the given Go string.
 // It should be paired with [FreeCGoString] to avoid memory leaks.
 func newCGoString(s string) *C.char {
+	if s == "" {
+		return nil
+	}
 	res := C.CString(s)
 	slog.Debug("malloc CGoString", "addr", res)
 	return res
@@ -91,8 +94,10 @@ func newCGoString(s string) *C.char {
 //
 //export FreeCGoString
 func FreeCGoString(s *C.char) {
-	slog.Debug("free CGoString", "addr", s)
-	C.free(unsafe.Pointer(s))
+	if s != nil {
+		slog.Debug("free CGoString", "addr", s)
+		C.free(unsafe.Pointer(s))
+	}
 }
 
 // marshalCGoErrorJson marshals a PlatformError to a C style JSON string.

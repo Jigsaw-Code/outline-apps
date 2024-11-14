@@ -19,7 +19,6 @@
  */
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
-import {invokeGoApi} from './go_plugin';
 import {ChildProcessHelper} from './process';
 import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
 
@@ -57,14 +56,4 @@ export async function checkUDPConnectivity(
     return false;
   }
   return true;
-}
-
-/**
- * Fetches a resource from the given URL.
- *
- * @param url The URL of the resource to fetch.
- * @returns A Promise that resolves to the fetched content as a string.
- */
-export function fetchResource(url: string): Promise<string> {
-  return invokeGoApi('FetchResource', url);
 }

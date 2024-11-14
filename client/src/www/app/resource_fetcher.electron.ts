@@ -21,7 +21,11 @@ import {PlatformError} from '../model/platform_error';
 export class ElectronResourceFetcher implements ResourceFetcher {
   async fetch(url: string): Promise<string> {
     try {
-      return await window.electron.methodChannel.invoke('fetch-resource', url);
+      return await window.electron.methodChannel.invoke(
+        'invoke-go-api',
+        'FetchResource',
+        url
+      );
     } catch (e) {
       throw PlatformError.parseFrom(e);
     }
