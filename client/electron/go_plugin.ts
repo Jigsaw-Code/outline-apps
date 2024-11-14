@@ -32,7 +32,10 @@ let invokeGoAPIFunc: Function | undefined;
  * Ensure that the function signature and data structures are consistent with the C definitions
  * in `./client/go/outline/electron/go_plugin.go`.
  */
-export async function invokeGoApi(api: string, input: string): Promise<string> {
+export async function invokeGoApi(
+  api: 'FetchResource',
+  input: string
+): Promise<string> {
   if (!invokeGoAPIFunc) {
     const backendLib = koffi.load(pathToBackendLibrary());
 
@@ -53,7 +56,9 @@ export async function invokeGoApi(api: string, input: string): Promise<string> {
     );
   }
 
+  console.debug('[Backend] - calling InvokeGoAPI ...');
   const result = await invokeGoAPIFunc(api, input);
+  console.debug('[Backend] - InvokeGoAPI returned', result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);
   }

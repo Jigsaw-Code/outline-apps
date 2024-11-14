@@ -65,9 +65,6 @@ export async function checkUDPConnectivity(
  * @param url The URL of the resource to fetch.
  * @returns A Promise that resolves to the fetched content as a string.
  */
-export async function fetchResource(url: string): Promise<string> {
-  console.debug('[tun2socks] - preparing library calls ...');
-  const result = await invokeGoApi('FetchResource', url);
-  console.debug('[tun2socks] - result: ', result);
-  return result;
+export function fetchResource(url: string): Promise<string> {
+  return invokeGoApi('FetchResource', url);
 }
