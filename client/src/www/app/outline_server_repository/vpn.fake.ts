@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {getHostFromTransportConfig} from './config';
 import {VpnApi, TunnelStatus, StartRequestJson} from './vpn';
 import * as errors from '../../model/errors';
 
@@ -40,7 +39,7 @@ export class FakeVpnApi implements VpnApi {
       return;
     }
 
-    const host = getHostFromTransportConfig(request.config.transport);
+    const host = request.config.firstHop.host;
     if (this.playUnreachable(host)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
     } else if (this.playBroken(host)) {

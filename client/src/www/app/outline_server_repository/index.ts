@@ -16,12 +16,11 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import * as config from './config';
 import {OutlineServer} from './server';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {ServerRepository, ServerType} from '../../model/server';
+import {ServerRepository} from '../../model/server';
 import {ResourceFetcher} from '../resource_fetcher';
 
 // DEPRECATED: V0 server persistence format.
@@ -120,11 +119,7 @@ export class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    config.validateAccessKey(accessKey);
-
-    // Note that serverNameFromAccessKey depends on the fact that the Access Key is a URL.
-    const serverName = config.serviceNameFromAccessKey(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, serverName);
+    const server = this.createServer(uuidv4(), accessKey, undefined);
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -278,28 +273,13 @@ export class OutlineServerRepository implements ServerRepository {
     accessKey: string,
     name?: string
   ): OutlineServer {
-    const server = new OutlineServer(
+    return new OutlineServer(
       this.vpnApi,
       this.urlFetcher,
       id,
       name,
       accessKey,
-      config.isDynamicAccessKey(accessKey)
-        ? ServerType.DYNAMIC_CONNECTION
-        : ServerType.STATIC_CONNECTION,
       this.localize
     );
-
-    try {
-      config.validateAccessKey(accessKey);
-    } catch (e) {
-      if (e instanceof errors.ShadowsocksUnsupportedCipher) {
-        // Don't throw for backward-compatibility.
-        server.errorMessageId = 'unsupported-cipher';
-      } else {
-        throw e;
-      }
-    }
-    return server;
   }
 }
