@@ -19,7 +19,7 @@
  */
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
-import {goFetchResource} from './go_plugin';
+import {invokeGoApi} from './go_plugin';
 import {ChildProcessHelper} from './process';
 import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
 
@@ -64,14 +64,10 @@ export async function checkUDPConnectivity(
  *
  * @param url The URL of the resource to fetch.
  * @returns A Promise that resolves to the fetched content as a string.
- * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
 export async function fetchResource(url: string): Promise<string> {
   console.debug('[tun2socks] - preparing library calls ...');
-  const result = await goFetchResource(url);
+  const result = await invokeGoApi('FetchResource', url);
   console.debug('[tun2socks] - result: ', result);
-  if (result.Error) {
-    throw new Error(result.Error.DetailJson ?? result.Error.Code);
-  }
-  return result.Content;
+  return result;
 }
