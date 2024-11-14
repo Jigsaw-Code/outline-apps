@@ -351,7 +351,7 @@ async function createVpnTunnel(
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const host = config.getHostFromTransportConfig(tunnelConfig.transport);
+  const host = tunnelConfig.firstHop.host;
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }

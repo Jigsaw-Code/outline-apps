@@ -227,7 +227,14 @@ export class App {
 
     this.eventQueue.startPublishing();
 
-    this.rootEl.$.addServerView.validateAccessKey = config.validateAccessKey;
+    this.rootEl.$.addServerView.isValidAccessKey = (accessKey: string) => {
+      try {
+        config.parseAccessKey(accessKey);
+        return true;
+      } catch {
+        return false;
+      }
+    };
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
     } else if (this.rootEl.$.serversView.shouldShowZeroState) {
