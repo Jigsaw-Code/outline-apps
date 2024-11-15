@@ -79,6 +79,7 @@ export class OutlineContactUsDialog
 
         paper-dialog {
           width: 80%;
+          overflow-y: scroll;
         }
 
         main {

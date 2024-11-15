@@ -39,11 +39,9 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+import * as config from '../src/www/app/outline_server_repository/config';
 import {
-  getHostFromTransportConfig,
-  setTransportConfigHost,
   StartRequestJson,
-  TunnelConfigJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
 import * as errors from '../src/www/model/errors';
@@ -346,14 +344,14 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
 async function createVpnTunnel(
-  tunnelConfig: TunnelConfigJson,
+  tunnelConfig: config.TunnelConfigJson,
   isAutoConnect: boolean
 ): Promise<VpnTunnel> {
   // We must convert the host from a potential "hostname" to an "IP" address
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const host = getHostFromTransportConfig(tunnelConfig.transport);
+  const host = tunnelConfig.firstHop.host;
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
@@ -361,7 +359,7 @@ async function createVpnTunnel(
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
   const resolvedTransport =
-    setTransportConfigHost(tunnelConfig.transport, hostIp) ??
+    config.setTransportConfigHost(tunnelConfig.transport, hostIp) ??
     tunnelConfig.transport;
   const tunnel = new GoVpnTunnel(routing, resolvedTransport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
