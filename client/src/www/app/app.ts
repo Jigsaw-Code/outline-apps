@@ -19,6 +19,7 @@ import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {localizeErrorCode} from './error_localizer';
 import {OutlineServerRepository} from './outline_server_repository';
+import * as config from './outline_server_repository/config';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
@@ -226,6 +227,14 @@ export class App {
 
     this.eventQueue.startPublishing();
 
+    this.rootEl.$.addServerView.isValidAccessKey = (accessKey: string) => {
+      try {
+        config.parseAccessKey(accessKey);
+        return true;
+      } catch {
+        return false;
+      }
+    };
     if (!this.arePrivacyTermsAcked()) {
       this.displayPrivacyView();
     } else if (this.rootEl.$.serversView.shouldShowZeroState) {
@@ -469,7 +478,7 @@ export class App {
       }
     }
     try {
-      this.serverRepo.validateAccessKey(accessKey);
+      config.validateAccessKey(accessKey);
       addServerView.accessKey = accessKey;
       addServerView.open = true;
     } catch (e) {

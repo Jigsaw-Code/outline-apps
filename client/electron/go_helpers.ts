@@ -20,7 +20,7 @@
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
 import {ChildProcessHelper} from './process';
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/vpn';
+import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 
 /**
  * Verifies the UDP connectivity of the server specified in `config`.
