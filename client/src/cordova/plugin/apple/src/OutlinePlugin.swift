@@ -22,6 +22,8 @@ import OutlineSentryLogger
 import OutlineNotification
 import OutlineTunnel
 
+import Tun2socks
+
 public enum TunnelStatus: Int {
   case connected = 0
   case disconnected = 1
@@ -139,6 +141,24 @@ class OutlinePlugin: CDVPlugin {
     DDLogInfo("isRunning \(tunnelId)")
     Task {
       self.sendSuccess(await OutlineVpn.shared.isActive(tunnelId), callbackId: command.callbackId)
+    }
+  }
+
+  func fetchResource(_ command: CDVInvokedUrlCommand) {
+    guard let url = command.argument(at: 0) as? String else {
+      return sendError("Missing URL", callbackId: command.callbackId)
+    }
+    DDLogInfo("Fetching resource from \(url)")
+    Task {
+      guard let result = OutlineFetchResource(url) else {
+        return self.sendError("unexpected fetching result", callbackId: command.callbackId)
+      }
+      if result.error != nil {
+        let errorJson = marshalErrorJson(error: OutlineError.platformError(result.error!))
+        return self.sendError(errorJson, callbackId: command.callbackId)
+      }
+      DDLogInfo("Fetch resource result: \(result.content)")
+      self.sendSuccess(result.content, callbackId: command.callbackId)
     }
   }
 
@@ -271,41 +291,46 @@ class OutlinePlugin: CDVPlugin {
         return;  // Do not report transient or invalid states.
     }
     let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["id": tunnelId, "status": Int32(tunnelStatus)])
-    send(pluginResult: result, callbackId: callbackId, keepCallback: true)
+    self.send(pluginResult: result, callbackId: callbackId, keepCallback: true)
   }
 
   // MARK: - Callback helpers
 
   private func sendSuccess(callbackId: String, keepCallback: Bool = false) {
-      let result = CDVPluginResult(status: CDVCommandStatus_OK)
-      send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+    let result = CDVPluginResult(status: CDVCommandStatus_OK)
+    self.send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+  }
+
+  private func sendSuccess(_ operationResult: String, callbackId: String, keepCallback: Bool = false) {
+    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
+    self.send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
   }
 
   private func sendSuccess(_ operationResult: Bool, callbackId: String, keepCallback: Bool = false) {
-      let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
-      send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: operationResult)
+    self.send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
   }
 
   private func sendError(_ message: String, callbackId: String, keepCallback: Bool = false) {
     DDLogWarn("plugin result error: \(message)")
     let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: message)
-    send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
+    self.send(pluginResult: result, callbackId: callbackId, keepCallback: keepCallback)
   }
 
   private func send(pluginResult: CDVPluginResult?, callbackId: String, keepCallback: Bool) {
-      guard let result = pluginResult else {
-          return DDLogWarn("Missing plugin result");
-      }
-      result.setKeepCallbackAs(keepCallback)
-      self.commandDelegate?.send(result, callbackId: callbackId)
+    guard let result = pluginResult else {
+      return DDLogWarn("Missing plugin result");
+    }
+    result.setKeepCallbackAs(keepCallback)
+    self.commandDelegate?.send(result, callbackId: callbackId)
   }
 
   private func removeCallback(withId callbackId: String) {
-      guard let result = CDVPluginResult(status: CDVCommandStatus_NO_RESULT) else {
-          return DDLogWarn("Missing plugin result for callback \(callbackId)");
-      }
-      result.setKeepCallbackAs(false)
-      self.commandDelegate?.send(result, callbackId: callbackId)
+    guard let result = CDVPluginResult(status: CDVCommandStatus_NO_RESULT) else {
+      return DDLogWarn("Missing plugin result for callback \(callbackId)");
+    }
+    result.setKeepCallbackAs(false)
+    self.commandDelegate?.send(result, callbackId: callbackId)
   }
 
   // Migrates local storage files from UIWebView to WKWebView.
