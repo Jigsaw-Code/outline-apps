@@ -31,6 +31,8 @@ import {VpnApi} from './outline_server_repository/vpn';
 import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
 import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
+import {ResourceFetcher} from './resource_fetcher';
+import {CordovaResourceFetcher} from './resource_fetcher.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
@@ -113,6 +115,10 @@ class CordovaPlatform implements OutlinePlatform {
 
   getVpnServiceInstaller(): VpnInstaller {
     return new NoOpVpnInstaller();
+  }
+
+  getResourceFetcher(): ResourceFetcher {
+    return new CordovaResourceFetcher();
   }
 
   quitApplication() {

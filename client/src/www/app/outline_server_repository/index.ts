@@ -16,42 +16,14 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {validateStaticKey} from './access_key';
 import {OutlineServer} from './server';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {ServerRepository, ServerType} from '../../model/server';
-
-// TODO(daniellacosse): write unit tests for these functions
-
-// Compares access keys proxying parameters.
-function staticKeysMatch(a: string, b: string): boolean {
-  return a.trim() === b.trim();
-}
-
-// Determines if the key is expected to be a url pointing to an ephemeral session config.
-function isDynamicAccessKey(accessKey: string): boolean {
-  return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
-}
-
-// NOTE: For extracting a name that the user has explicitly set, only.
-// (Currenly done by setting the hash on the URI)
-function serverNameFromAccessKey(accessKey: string): string | undefined {
-  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
-
-  if (!hash) return;
-
-  return decodeURIComponent(
-    hash
-      .slice(1)
-      .split('&')
-      .find(keyValuePair => !keyValuePair.includes('='))
-  );
-}
+import {ServerRepository} from '../../model/server';
+import {ResourceFetcher} from '../resource_fetcher';
 
 // DEPRECATED: V0 server persistence format.
-
 interface ServersStorageV0Config {
   host?: string;
   port?: number;
@@ -99,7 +71,8 @@ export class OutlineServerRepository implements ServerRepository {
     private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
-    private localize: Localizer
+    private localize: Localizer,
+    readonly urlFetcher: ResourceFetcher
   ) {
     console.debug('OutlineServerRepository is initializing');
     this.loadServers();
@@ -142,11 +115,11 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    this.validateAccessKey(accessKey);
-
-    // Note that serverNameFromAccessKey depends on the fact that the Access Key is a URL.
-    const serverName = serverNameFromAccessKey(accessKey);
-    const server = this.createServer(uuidv4(), accessKey, serverName);
+    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
+    if (alreadyAddedServer) {
+      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
+    }
+    const server = this.createServer(uuidv4(), accessKey, undefined);
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -197,37 +170,10 @@ export class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
-  validateAccessKey(accessKey: string) {
-    if (!isDynamicAccessKey(accessKey)) {
-      return this.validateStaticKey(accessKey);
-    }
-
-    try {
-      // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
-      new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message);
-    }
-  }
-
-  private validateStaticKey(staticKey: string) {
-    const alreadyAddedServer = this.serverFromAccessKey(staticKey);
-    if (alreadyAddedServer) {
-      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
-    }
-    validateStaticKey(staticKey);
-  }
-
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
+    const trimmedAccessKey = accessKey.trim();
     for (const server of this.serverById.values()) {
-      if (
-        server.type === ServerType.DYNAMIC_CONNECTION &&
-        accessKey === server.accessKey
-      ) {
-        return server;
-      }
-
-      if (staticKeysMatch(accessKey, server.accessKey)) {
+      if (trimmedAccessKey === server.accessKey.trim()) {
         return server;
       }
     }
@@ -327,27 +273,13 @@ export class OutlineServerRepository implements ServerRepository {
     accessKey: string,
     name?: string
   ): OutlineServer {
-    const server = new OutlineServer(
+    return new OutlineServer(
       this.vpnApi,
+      this.urlFetcher,
       id,
       name,
       accessKey,
-      isDynamicAccessKey(accessKey)
-        ? ServerType.DYNAMIC_CONNECTION
-        : ServerType.STATIC_CONNECTION,
       this.localize
     );
-
-    try {
-      this.validateAccessKey(accessKey);
-    } catch (e) {
-      if (e instanceof errors.ShadowsocksUnsupportedCipher) {
-        // Don't throw for backward-compatibility.
-        server.errorMessageId = 'unsupported-cipher';
-      } else {
-        throw e;
-      }
-    }
-    return server;
   }
 }

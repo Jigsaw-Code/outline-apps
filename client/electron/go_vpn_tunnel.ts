@@ -17,13 +17,12 @@ import {platform} from 'os';
 import {powerMonitor} from 'electron';
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
+import {checkUDPConnectivity} from './go_helpers';
 import {ChildProcessHelper, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {
-  TransportConfigJson,
-  TunnelStatus,
-} from '../src/www/app/outline_server_repository/vpn';
+import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
+import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -49,7 +48,7 @@ const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
 // about the others.
 export class GoVpnTunnel implements VpnTunnel {
   private readonly tun2socks: GoTun2socks;
-  private readonly connectivityChecker: GoTun2socks;
+  private isDebugMode = false;
 
   // See #resumeListener.
   private disconnected = false;
@@ -67,8 +66,7 @@ export class GoVpnTunnel implements VpnTunnel {
     private readonly routing: RoutingDaemon,
     readonly transportConfig: TransportConfigJson
   ) {
-    this.tun2socks = new GoTun2socks(transportConfig);
-    this.connectivityChecker = new GoTun2socks(transportConfig);
+    this.tun2socks = new GoTun2socks();
 
     // This promise, tied to both helper process' exits, is key to the instance's
     // lifecycle:
@@ -85,8 +83,8 @@ export class GoVpnTunnel implements VpnTunnel {
   // Turns on verbose logging for the managed processes. Must be called before launching the
   // processes
   enableDebugMode() {
+    this.isDebugMode = true;
     this.tun2socks.enableDebugMode();
-    this.connectivityChecker.enableDebugMode();
   }
 
   // Fulfills once all three helpers have started successfully.
@@ -104,13 +102,16 @@ export class GoVpnTunnel implements VpnTunnel {
     });
 
     if (checkProxyConnectivity) {
-      this.isUdpEnabled = await checkConnectivity(this.connectivityChecker);
+      this.isUdpEnabled = await checkUDPConnectivity(
+        this.transportConfig,
+        this.isDebugMode
+      );
     }
     console.log(`UDP support: ${this.isUdpEnabled}`);
 
     console.log('starting routing daemon');
     await Promise.all([
-      this.tun2socks.start(this.isUdpEnabled),
+      this.tun2socks.start(this.transportConfig, this.isUdpEnabled),
       this.routing.start(),
     ]);
   }
@@ -152,7 +153,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
     console.log('restarting tun2socks after resume');
     await Promise.all([
-      this.tun2socks.start(this.isUdpEnabled),
+      this.tun2socks.start(this.transportConfig, this.isUdpEnabled),
       this.updateUdpSupport(), // Check if UDP support has changed; if so, silently restart.
     ]);
   }
@@ -160,7 +161,10 @@ export class GoVpnTunnel implements VpnTunnel {
   private async updateUdpSupport() {
     const wasUdpEnabled = this.isUdpEnabled;
     try {
-      this.isUdpEnabled = await checkConnectivity(this.connectivityChecker);
+      this.isUdpEnabled = await checkUDPConnectivity(
+        this.transportConfig,
+        this.isDebugMode
+      );
     } catch (e) {
       console.error(`connectivity check failed: ${e}`);
       return;
@@ -173,7 +177,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
     // Restart tun2socks.
     await this.tun2socks.stop();
-    await this.tun2socks.start(this.isUdpEnabled);
+    await this.tun2socks.start(this.transportConfig, this.isUdpEnabled);
   }
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
@@ -234,7 +238,7 @@ class GoTun2socks {
   private stopRequested = false;
   private readonly process: ChildProcessHelper;
 
-  constructor(private readonly transportConfig: TransportConfigJson) {
+  constructor() {
     this.process = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   }
 
@@ -244,7 +248,10 @@ class GoTun2socks {
    * Otherwise, an error containing a JSON-formatted message will be thrown.
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
-  async start(isUdpEnabled: boolean): Promise<void> {
+  async start(
+    config: TransportConfigJson,
+    isUdpEnabled: boolean
+  ): Promise<void> {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
@@ -256,7 +263,7 @@ class GoTun2socks {
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-transport', JSON.stringify(this.transportConfig));
+    args.push('-transport', JSON.stringify(config));
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
@@ -309,42 +316,7 @@ class GoTun2socks {
     return this.process.stop();
   }
 
-  /**
-   * Checks connectivity and exits with the string of stdout.
-   *
-   * @throws ProcessTerminatedExitCodeError if tun2socks failed to run successfully.
-   */
-  checkConnectivity() {
-    console.debug('[tun2socks] - checking connectivity ...');
-    return this.process.launch([
-      '-transport',
-      JSON.stringify(this.transportConfig),
-      '-checkConnectivity',
-    ]);
-  }
-
   enableDebugMode() {
     this.process.isDebugModeEnabled = true;
   }
-}
-
-/**
- * Leverages the GoTun2socks binary to check connectivity to the server specified in `config`.
- * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
- * and validates the proxy credentials.
- *
- * @returns A boolean indicating whether UDP forwarding is supported.
- * @throws Error if the server is not reachable or if the process fails to start.
- */
-async function checkConnectivity(tun2socks: GoTun2socks) {
-  const output = await tun2socks.checkConnectivity();
-  // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
-  const outObj = JSON.parse(output.split('\n')[0]);
-  if (outObj.tcp) {
-    throw new Error(outObj.tcp);
-  }
-  if (outObj.udp) {
-    return false;
-  }
-  return true;
 }

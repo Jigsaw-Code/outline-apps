@@ -15,81 +15,87 @@
 import {Localizer} from '@outline/infrastructure/i18n';
 import * as net from '@outline/infrastructure/net';
 
-import {staticKeyToTunnelConfig} from './access_key';
 import {
+  parseTunnelConfig,
   TunnelConfigJson,
-  TransportConfigJson,
-  VpnApi,
-  StartRequestJson,
-  getAddressFromTransportConfig,
-} from './vpn';
+  DynamicServiceConfig,
+  StaticServiceConfig,
+  parseAccessKey,
+} from './config';
+import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-
-export const TEST_ONLY = {parseTunnelConfigJson};
+import {ResourceFetcher} from '../resource_fetcher';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
 export class OutlineServer implements Server {
-  errorMessageId?: string;
+  public readonly type: ServerType;
   readonly tunnelConfigLocation: URL;
-  private _address: string;
+  private displayAddress: string;
   private readonly staticTunnelConfig?: TunnelConfigJson;
+  errorMessageId?: string;
 
   constructor(
     private vpnApi: VpnApi,
+    readonly urlFetcher: ResourceFetcher,
     readonly id: string,
     public name: string,
     readonly accessKey: string,
-    readonly type: ServerType,
     localize: Localizer
   ) {
-    switch (this.type) {
-      case ServerType.DYNAMIC_CONNECTION:
-        this.tunnelConfigLocation = new URL(
-          accessKey.replace(/^ssconf:\/\//, 'https://')
+    const serviceConfig = parseAccessKey(accessKey);
+    this.name = name ?? serviceConfig.name;
+
+    if (serviceConfig instanceof DynamicServiceConfig) {
+      this.type = ServerType.DYNAMIC_CONNECTION;
+      this.tunnelConfigLocation = serviceConfig.transportConfigLocation;
+      this.displayAddress = '';
+
+      if (!this.name) {
+        this.name =
+          this.tunnelConfigLocation.port === '443'
+            ? this.tunnelConfigLocation.hostname
+            : net.joinHostPort(
+                this.tunnelConfigLocation.hostname,
+                this.tunnelConfigLocation.port
+              );
+      }
+    } else if (serviceConfig instanceof StaticServiceConfig) {
+      this.type = ServerType.STATIC_CONNECTION;
+      this.staticTunnelConfig = serviceConfig.tunnelConfig;
+      const firstHop = serviceConfig.tunnelConfig.firstHop;
+      this.displayAddress = net.joinHostPort(
+        firstHop.host,
+        firstHop.port.toString()
+      );
+
+      if (!this.name) {
+        this.name = localize(
+          accessKey.includes('outline=1')
+            ? 'server-default-name-outline'
+            : 'server-default-name'
         );
-        this._address = '';
-
-        if (!name) {
-          this.name =
-            this.tunnelConfigLocation.port === '443'
-              ? this.tunnelConfigLocation.hostname
-              : net.joinHostPort(
-                  this.tunnelConfigLocation.hostname,
-                  this.tunnelConfigLocation.port
-                );
-        }
-        break;
-
-      case ServerType.STATIC_CONNECTION:
-      default:
-        this.staticTunnelConfig = staticKeyToTunnelConfig(accessKey);
-        this._address = getAddressFromTransportConfig(
-          this.staticTunnelConfig.transport
-        );
-
-        if (!name) {
-          this.name = localize(
-            accessKey.includes('outline=1')
-              ? 'server-default-name-outline'
-              : 'server-default-name'
-          );
-        }
-        break;
+      }
     }
   }
 
   get address() {
-    return this._address;
+    return this.displayAddress;
   }
 
   async connect() {
     let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
-      this._address = getAddressFromTransportConfig(tunnelConfig.transport);
+      tunnelConfig = await fetchTunnelConfig(
+        this.urlFetcher,
+        this.tunnelConfigLocation
+      );
+      this.displayAddress = net.joinHostPort(
+        tunnelConfig.firstHop.host,
+        tunnelConfig.firstHop.port.toString()
+      );
     } else {
       tunnelConfig = this.staticTunnelConfig;
     }
@@ -125,7 +131,7 @@ export class OutlineServer implements Server {
       await this.vpnApi.stop(this.id);
 
       if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this._address = '';
+        this.displayAddress = '';
       }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
@@ -138,60 +144,22 @@ export class OutlineServer implements Server {
   }
 }
 
-function parseTunnelConfigJson(responseBody: string): TunnelConfigJson | null {
-  const responseJson = JSON.parse(responseBody);
-
-  if ('error' in responseJson) {
-    throw new errors.SessionProviderError(
-      responseJson.error.message,
-      responseJson.error.details
-    );
-  }
-
-  const transport: TransportConfigJson = {
-    host: responseJson.server,
-    port: responseJson.server_port,
-    method: responseJson.method,
-    password: responseJson.password,
-  };
-  if (responseJson.prefix) {
-    (transport as {prefix?: string}).prefix = responseJson.prefix;
-  }
-  return {
-    transport,
-  };
-}
-
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
-export async function fetchTunnelConfig(
+async function fetchTunnelConfig(
+  urlFetcher: ResourceFetcher,
   configLocation: URL
 ): Promise<TunnelConfigJson> {
-  let response;
-  try {
-    response = await fetch(configLocation, {
-      cache: 'no-store',
-      redirect: 'follow',
-    });
-  } catch (cause) {
-    throw new errors.SessionConfigFetchFailed(
-      'Failed to fetch VPN information from dynamic access key.',
-      {cause}
-    );
-  }
-
-  const responseBody = (await response.text()).trim();
+  const responseBody = (
+    await urlFetcher.fetch(configLocation.toString())
+  ).trim();
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
       'Got empty config from dynamic key.'
     );
   }
   try {
-    if (responseBody.startsWith('ss://')) {
-      return staticKeyToTunnelConfig(responseBody);
-    }
-
-    return parseTunnelConfigJson(responseBody);
+    return parseTunnelConfig(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;
