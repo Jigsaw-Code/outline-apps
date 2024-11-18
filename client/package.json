@@ -47,6 +47,7 @@
     "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-updater": "^5.0.5",
+    "element-internals-polyfill": "^1.3.12",
     "fs-extra": "^11.2.0",
     "koffi": "^2.9.1",
     "lit": "^2.2.2",
