@@ -119,15 +119,10 @@ func init() {
 	opts := slog.HandlerOptions{Level: slog.LevelInfo}
 
 	dbg := os.Getenv("OUTLINE_DEBUG")
-	if dbg != "" && dbg != "false" {
-		dbg = "true"
+	if dbg != "" && dbg != "false" && dbg != "0" {
 		opts.Level = slog.LevelDebug
-	} else {
-		dbg = "false"
 	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
 	slog.SetDefault(logger)
-
-	slog.Info("Backend module initialized", "debug", dbg)
 }
