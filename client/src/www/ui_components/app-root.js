@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+import 'element-internals-polyfill';
 import '@material/web/all.js';
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/polymer/lib/legacy/polymer.dom.js';
