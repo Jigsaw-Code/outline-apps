@@ -57,22 +57,3 @@ export async function checkUDPConnectivity(
   }
   return true;
 }
-
-/**
- * Fetches a resource from the given URL.
- *
- * @param url The URL of the resource to fetch.
- * @param debugMode Optional. Whether to forward logs to stdout. Defaults to false.
- * @returns A Promise that resolves to the fetched content as a string.
- * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
- */
-export function fetchResource(
-  url: string,
-  debugMode: boolean = false
-): Promise<string> {
-  const tun2socks = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
-  tun2socks.isDebugModeEnabled = debugMode;
-
-  console.debug('[tun2socks] - fetching resource ...');
-  return tun2socks.launch(['-fetchUrl', url]);
-}
