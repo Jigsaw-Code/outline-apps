@@ -86,7 +86,7 @@
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
     "deepmerge": "^4.3.1",
-    "electron": "19.1.9",
+    "electron": "22.3.25",
     "electron-builder": "^23.6.0",
     "eslint": "^8.15.0",
     "eslint-import-resolver-typescript": "^3.4.0",
