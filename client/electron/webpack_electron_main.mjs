@@ -38,7 +38,7 @@ export default ({sentryDsn, appVersion}) => [
         },
         {
           test: /\.node$/,
-          loader: 'node-loader',
+          use: 'node-loader',
         },
       ],
     },
