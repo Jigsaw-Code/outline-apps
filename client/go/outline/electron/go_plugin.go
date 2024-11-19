@@ -71,7 +71,7 @@ func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
 
 	default:
 		err := &platerrors.PlatformError{
-			Code:    platerrors.IllegalConfig,
+			Code:    platerrors.InternalError,
 			Message: fmt.Sprintf("unsupported Go API: %s", apiName),
 		}
 		return C.InvokeGoAPIResult{ErrorJson: marshalCGoErrorJson(err)}
