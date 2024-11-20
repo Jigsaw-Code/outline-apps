@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+import 'dialog-polyfill';
 import 'element-internals-polyfill';
 import '@material/web/all.js';
 import '@polymer/polymer/polymer-legacy.js';
