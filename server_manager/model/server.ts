@@ -197,19 +197,19 @@ export type ServerMetricsJson = {
     location: string;
     asn: number;
     asOrg: string;
-    tunnelTime: {
+    tunnelTime?: {
       seconds: number;
     };
-    dataTransferred: {
+    dataTransferred?: {
       bytes: number;
     };
   }[];
   accessKeys: {
     accessKeyId: number;
-    tunnelTime: {
+    tunnelTime?: {
       seconds: number;
     };
-    dataTransferred: {
+    dataTransferred?: {
       bytes: number;
     };
   }[];

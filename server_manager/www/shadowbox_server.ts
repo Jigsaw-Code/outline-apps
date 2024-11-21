@@ -36,6 +36,19 @@ interface ServerConfigJson {
   accessKeyDataLimit?: server.DataLimit;
 }
 
+// Byte transfer stats for the past 30 days, including both inbound and outbound.
+// TODO: this is copied at src/shadowbox/model/metrics.ts.  Both copies should
+// be kept in sync, until we can find a way to share code between the web_app
+// and shadowbox.
+interface DataUsageByAccessKeyJson {
+  // The accessKeyId should be of type AccessKeyId, however that results in the tsc
+  // error TS1023: An index signature parameter type must be 'string' or 'number'.
+  // See https://github.com/Microsoft/TypeScript/issues/2491
+  // TODO: this still says "UserId", changing to "AccessKeyId" will require
+  // a change on the shadowbox server.
+  bytesTransferredByUserId: {[accessKeyId: string]: number};
+}
+
 // Converts the access key JSON from the API to its model.
 function makeAccessKeyModel(apiAccessKey: AccessKeyJson): server.AccessKey {
   return apiAccessKey as server.AccessKey;
@@ -137,53 +150,33 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<server.ServerMetricsJson> {
-    //TODO: this.api.request<server.ServerMetricsJson>('server/metrics')
-    return {
-      servers: [
-        {
-          location: 'CA',
-          asn: 1,
-          asOrg: 'IDK',
-          tunnelTime: {
-            seconds: 10000,
-          },
-          dataTransferred: {
-            bytes: 10000,
-          },
-        },
-        {
-          location: 'US',
-          asn: 2,
-          asOrg: 'WHATEVER',
-          tunnelTime: {
-            seconds: 200000,
-          },
-          dataTransferred: {
-            bytes: 200000,
-          },
-        },
-      ],
-      accessKeys: [
-        {
-          accessKeyId: 0,
-          tunnelTime: {
-            seconds: 10000,
-          },
-          dataTransferred: {
-            bytes: 10000,
-          },
-        },
-        {
-          accessKeyId: 1,
-          tunnelTime: {
-            seconds: 200000,
-          },
-          dataTransferred: {
-            bytes: 200000,
-          },
-        },
-      ],
-    };
+    try {
+      const result = await this.api.request<server.ServerMetricsJson>(
+        'experimental/server/metrics'
+      );
+
+      return result;
+    } catch (e) {
+      // fallback to metrics/transfer endpoint
+      const result: server.ServerMetricsJson = {
+        servers: [],
+        accessKeys: [],
+      };
+
+      const jsonResponse =
+        await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
+
+      for (const [accessKeyId, bytes] of Object.entries(
+        jsonResponse.bytesTransferredByUserId
+      )) {
+        result.accessKeys.push({
+          accessKeyId: Number(accessKeyId),
+          dataTransferred: {bytes},
+        });
+      }
+
+      return result;
+    }
   }
 
   getName(): string {
