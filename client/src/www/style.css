@@ -120,3 +120,58 @@
   white-space: nowrap;
   word-wrap: normal;
 }
+
+/* 
+  <ion-modal>, once presented, removes itself from
+  its parent element and inserts itself into the
+  root of the document
+  
+  This makes it impossble to style the modal and
+  its contents from within its parent web component,
+  as it does not live there while it is visible to
+  the user.
+  
+  We have to style it in the root document stylesheet (or equivalent)
+*/
+
+#addAccessKeyDialog {
+  --width: fit-content;
+  --min-width: 250px;
+  --height: fit-content;
+  --border-radius: 6px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+
+  --md-sys-color-primary: var(--outline-primary);
+  --md-sys-shape-corner-extra-large: 2px;
+  --md-sys-shape-corner-full: 2px;
+
+  padding: 1rem;
+}
+
+#addAccessKeyDialog header {
+  font-family: 'Jigsaw Sans';
+}
+
+#addAccessKeyDialog section {
+  margin-bottom: 12px;
+}
+
+#addAccessKeyDialog section.help-text {
+  color: var(--outline-medium-gray);
+}
+
+#addAccessKeyDialog a {
+  color: var(--outline-primary);
+}
+
+#addAccessKeyDialog md-filled-text-field {
+  --md-filled-text-field-input-text-font: 'Menlo', monospace;
+  --md-filled-text-field-container-color: var(--outline-light-gray);
+
+  width: 100%;
+}
+
+#addAccessKeyDialog fieldset {
+  border: none;
+  text-transform: uppercase;
+}

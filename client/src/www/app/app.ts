@@ -402,6 +402,7 @@ export class App {
 
   private showAddServerDialog() {
     this.rootEl.$.addServerView.open = true;
+    this.rootEl.$.addServerView.modal.present();
   }
 
   private showNavigation() {
@@ -441,6 +442,17 @@ export class App {
     const accessKey = event.detail.accessKey;
     this.ignoredAccessKeys[accessKey] = true;
     this.rootEl.$.addServerView.open = false;
+
+    // <ion-modal>, once presented, removes itself from
+    // its parent element and inserts itself into the
+    // root of the document
+
+    // at this point, you cannot rely on lit's "query" selector
+    // because it will return null, so we have to
+    // find it this way
+    (
+      document.getElementById('addAccessKeyDialog') as HTMLIonModalElement
+    ).dismiss();
   }
 
   private requestAddServer(event: CustomEvent) {
