@@ -110,7 +110,7 @@ export class AddAccessKeyDialog extends LitElement {
         >
       </fieldset>
     </md-dialog>`;
-  }
+https://github.com/Jigsaw-Code/outline-apps.git  }
 
   private handleEdit(event: InputEvent) {
     this.accessKey = (event.target as HTMLInputElement).value;
