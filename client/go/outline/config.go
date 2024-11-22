@@ -17,9 +17,28 @@ package outline
 import (
 	"encoding/json"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"gopkg.in/yaml.v3"
 )
+
+type ParseResult struct {
+	TunnelConfig string
+	FirstHop     string
+}
+
+// ParseTunnelConfig parses and validates the config
+func ParseTunnelConfig(configText string) (*ParseResult, error) {
+	tunnelConfig, err := config.ParseTunnelConfig(configText)
+
+	parsed, err := yaml.Marshal(&tunnelConfig)
+	if err != nil {
+		return nil, err
+	}
+	result := &ParseResult{TunnelConfig: string(parsed)}
+	return result, nil
+}
 
 // Config represents a (legacy) shadowsocks server configuration. You can use
 // NewClientFromJSON(string) instead.
