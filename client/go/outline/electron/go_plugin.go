@@ -48,6 +48,12 @@ const (
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	FetchResourceAPI = "FetchResource"
+
+	// EstablishVPNAPI initiates a VPN connection and directs all network traffic through Outline.
+	//
+	//  - Input: a JSON string of [VPNConfig].
+	//  - Output: a JSON string of [VPNConnection].
+	EstablishVPNAPI = "EstablishVPN"
 )
 
 // InvokeGoAPI is the unified entry point for TypeScript to invoke various Go functions.
@@ -67,6 +73,13 @@ func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
 		return C.InvokeGoAPIResult{
 			Output:    newCGoString(res.Content),
 			ErrorJson: marshalCGoErrorJson(platerrors.ToPlatformError(res.Error)),
+		}
+
+	case EstablishVPNAPI:
+		res, err := EstablishVPN(C.GoString(input))
+		return C.InvokeGoAPIResult{
+			Output:    newCGoString(res),
+			ErrorJson: marshalCGoErrorJson(err),
 		}
 
 	default:

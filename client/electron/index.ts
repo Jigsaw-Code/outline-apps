@@ -39,6 +39,7 @@ import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {VpnTunnel} from './vpn_tunnel';
+import {closeVpn, establishVpn} from './vpn_service';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
@@ -56,7 +57,7 @@ declare const APP_VERSION: string;
 // Run-time environment variables:
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const isLinux = os.platform() === 'linux';
+const IS_LINUX = os.platform() === 'linux';
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -158,7 +159,7 @@ function setupWindow(): void {
   //
   // The ideal solution would be: either electron-builder supports the app icon; or we add
   // dpi-aware features to this app.
-  if (isLinux) {
+  if (IS_LINUX) {
     mainWindow.setIcon(
       path.join(
         app.getAppPath(),
@@ -251,7 +252,7 @@ function updateTray(status: TunnelStatus) {
     {type: 'separator'} as MenuItemConstructorOptions,
     {label: localizedStrings['quit'], click: quitApp},
   ];
-  if (isLinux) {
+  if (IS_LINUX) {
     // Because the click event is never fired on Linux, we need an explicit open option.
     menuTemplate = [
       {
@@ -309,7 +310,7 @@ function interceptShadowsocksLink(argv: string[]) {
 async function setupAutoLaunch(request: StartRequestJson): Promise<void> {
   try {
     await tunnelStore.save(request);
-    if (isLinux) {
+    if (IS_LINUX) {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
@@ -327,7 +328,7 @@ async function setupAutoLaunch(request: StartRequestJson): Promise<void> {
 
 async function tearDownAutoLaunch() {
   try {
-    if (isLinux) {
+    if (IS_LINUX) {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
@@ -368,6 +369,11 @@ async function createVpnTunnel(
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
+  if (IS_LINUX) {
+    await establishVpn(request);
+    return;
+  }
+
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -401,6 +407,11 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
+  if (IS_LINUX) {
+    await closeVpn();
+    return;
+  }
+
   if (!currentTunnel) {
     return;
   }

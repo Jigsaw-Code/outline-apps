@@ -20,7 +20,7 @@ import {pathToBackendLibrary} from './app_paths';
 
 let invokeGoAPIFunc: Function | undefined;
 
-export type GoApiName = 'FetchResource';
+export type GoApiName = 'FetchResource' | 'EstablishVPN';
 
 /**
  * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
