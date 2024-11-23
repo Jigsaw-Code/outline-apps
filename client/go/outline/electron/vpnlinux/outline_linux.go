@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package vpnlinux
 
 import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 )
 
-func establishVPN(config *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
-	return nil, platerrors.NewPlatformError(platerrors.InternalError, "Working in progress !!!")
+func ConfigureOutlineDevice(transportConfig string) (network.IPDevice, *platerrors.PlatformError) {
+	return nil, nil
 }

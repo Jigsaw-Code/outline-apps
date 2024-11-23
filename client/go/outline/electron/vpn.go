@@ -15,9 +15,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"io"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 )
 
 type VPNConfig struct {
@@ -28,7 +31,11 @@ type VPNConfig struct {
 }
 
 type VPNConnection struct {
-	RouteUDP bool `json:"routeUDP"`
+	Status   string `json:"status"`
+	RouteUDP bool   `json:"routeUDP"`
+
+	tun     io.ReadWriteCloser `json:"-"`
+	outline network.IPDevice
 }
 
 func EstablishVPN(configStr string) (string, *platerrors.PlatformError) {
@@ -42,7 +49,7 @@ func EstablishVPN(configStr string) (string, *platerrors.PlatformError) {
 		}
 	}
 
-	conn, perr := establishVPN(&config)
+	conn, perr := establishVPN(context.TODO(), &config)
 	if perr != nil {
 		return "", perr
 	}

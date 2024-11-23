@@ -14,9 +14,13 @@
 
 package main
 
-import "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+import (
+	"context"
 
-func establishVPN(config *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+)
+
+func establishVPN(ctx context.Context, config *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
 	return nil, &platerrors.PlatformError{
 		Code:    platerrors.InternalError,
 		Message: "not implemented yet",

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 import {invokeGoApi} from './go_plugin';
+import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 
 interface VpnConfig {
   interfaceName: string;
@@ -29,7 +29,11 @@ export async function establishVpn(transportConfig: TransportConfigJson) {
     dnsServers: ['9.9.9.9'],
     transport: JSON.stringify(transportConfig),
   };
-  const connection = await invokeGoApi('EstablishVPN', JSON.stringify(config));
+  const connectionJson = await invokeGoApi(
+    'EstablishVPN',
+    JSON.stringify(config)
+  );
+  console.info(JSON.parse(connectionJson));
 }
 
 export async function closeVpn() {}

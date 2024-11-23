@@ -38,8 +38,8 @@ import {GoApiName, invokeGoApi} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
-import {VpnTunnel} from './vpn_tunnel';
 import {closeVpn, establishVpn} from './vpn_service';
+import {VpnTunnel} from './vpn_tunnel';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
