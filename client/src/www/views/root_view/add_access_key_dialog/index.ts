@@ -11,8 +11,10 @@
   limitations under the License.
 */
 
-import {LitElement, html, css} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {initialize} from '@ionic/core/components';
+import {defineCustomElement} from '@ionic/core/components/ion-modal.js';
+import {LitElement, html} from 'lit';
+import {customElement, property, query} from 'lit/decorators.js';
 
 @customElement('add-access-key-dialog')
 export class AddAccessKeyDialog extends LitElement {
@@ -23,60 +25,19 @@ export class AddAccessKeyDialog extends LitElement {
   @property({type: Boolean}) open: boolean;
   @property({type: String}) accessKey: string = '';
   @property({type: Function}) isValidAccessKey: (accessKey: string) => boolean;
-
-  static styles = css`
-    :host {
-      --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
-      width: 100%;
-      height: 100%;
-    }
-
-    md-dialog {
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-
-      min-width: 300px;
-    }
-
-    section {
-      margin-bottom: 12px;
-    }
-
-    section.help-text {
-      color: var(--outline-medium-gray);
-    }
-
-    a {
-      color: var(--outline-primary);
-    }
-
-    md-filled-text-field {
-      --md-filled-text-field-input-text-font: 'Menlo', monospace;
-      --md-filled-text-field-container-color: var(--outline-light-gray);
-
-      width: 100%;
-    }
-
-    fieldset {
-      border: none;
-      text-transform: uppercase;
-    }
-  `;
+  @query('ion-modal') modal: HTMLIonModalElement;
 
   render() {
-    return html`<md-dialog
-      .open="${this.open}"
-      @cancel=${this.handleCancel}
-      quick
+    initialize();
+    defineCustomElement();
+
+    return html`<ion-modal
+      id="addAccessKeyDialog"
+      .is-open="${this.open}"
+      animated="false"
     >
-      <header slot="headline">
-        ${this.localize('add-access-key-dialog-header')}
-      </header>
-      <article slot="content">
+      <header>${this.localize('add-access-key-dialog-header')}</header>
+      <article>
         <section
           class="help-text"
           .innerHTML=${this.localize(
@@ -99,7 +60,7 @@ export class AddAccessKeyDialog extends LitElement {
           ></md-filled-text-field>
         </section>
       </article>
-      <fieldset slot="actions">
+      <fieldset>
         <md-text-button @click=${this.handleCancel}>
           ${this.localize('cancel')}
         </md-text-button>
@@ -109,7 +70,7 @@ export class AddAccessKeyDialog extends LitElement {
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
-    </md-dialog>`;
+    </ion-modal>`;
   }
 
   private handleEdit(event: InputEvent) {

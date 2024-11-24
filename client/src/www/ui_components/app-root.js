@@ -356,7 +356,7 @@ export class AppRoot extends mixinBehaviors(
         localize="[[localize]]"
       ></add-access-key-dialog>
 
-      <privacy-acknowledgement-dialog
+      <!-- <privacy-acknowledgement-dialog
         id="privacyView"
         localize="[[localize]]"
         privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
@@ -365,7 +365,7 @@ export class AppRoot extends mixinBehaviors(
       <auto-connect-dialog
         id="autoConnectDialog"
         localize="[[localize]]"
-      ></auto-connect-dialog>
+      ></auto-connect-dialog> -->
 
       <paper-toast id="toast" class="fit-bottom" no-cancel-on-esc-key="">
         <paper-button
