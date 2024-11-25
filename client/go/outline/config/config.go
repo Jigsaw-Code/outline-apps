@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net"
+	"strconv"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,16 +28,20 @@ type TunnelConfig struct {
 	Transport TransportConfig
 }
 
-type TransportConfig any
+type TransportConfig DialerConfig
 
-type endpointConfig struct {
-	Host string
-	Port uint16
+type DialerConfig any
+
+type EndpointConfig any
+
+type DialEndpointConfig struct {
+	Address string
+	Dialer  *DialerConfig
 }
 
 type shadowsocksConfig struct {
 	// TODO(fortuna): Replace with typed Endpoints to support Websocket.
-	Endpoint endpointConfig
+	Endpoint EndpointConfig
 	Cipher   string
 	Secret   string
 	Prefix   string
@@ -75,7 +81,7 @@ func ParseTunnelConfig(configText string) (*TunnelConfig, error) {
 		return nil, fmt.Errorf("tunnel config of type %T is not supported", typed)
 	}
 
-	parsedTransport, err := parseTransportConfig(rawTransport)
+	parsedTransport, err := parseDialerConfig(rawTransport)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +89,7 @@ func ParseTunnelConfig(configText string) (*TunnelConfig, error) {
 	return &tunnel, nil
 }
 
-func parseTransportConfig(node any) (*shadowsocksConfig, error) {
+func parseDialerConfig(node any) (DialerConfig, error) {
 	switch typed := node.(type) {
 	case string:
 		// TODO: Implement URL config.
@@ -100,24 +106,49 @@ func parseTransportConfig(node any) (*shadowsocksConfig, error) {
 	return nil, fmt.Errorf("transport config of type %T is not supported", node)
 }
 
-func parseShadowsocksConfig(node map[string]any) (*shadowsocksConfig, error) {
-	if _, ok := node["endpoint"]; ok {
-		config := &shadowsocksConfig{}
-		if err := mapToAny(node, config); err != nil {
+func parseEndpointConfig(node any) (EndpointConfig, error) {
+	switch typed := node.(type) {
+	case string:
+		_, _, err := net.SplitHostPort(typed)
+		if err != nil {
+			return nil, fmt.Errorf("invalid address format: %w", err)
+		}
+		return DialEndpointConfig{Address: typed}, nil
+
+	case map[string]any:
+		// TODO: Make it type-based
+		config := DialEndpointConfig{}
+		if err := mapToAny(typed, &config); err != nil {
 			return nil, err
 		}
 		return config, nil
 
+	default:
+		return nil, fmt.Errorf("endpoint config of type %T is not supported", typed)
+	}
+}
+
+func parseShadowsocksConfig(node map[string]any) (*shadowsocksConfig, error) {
+	if _, ok := node["endpoint"]; ok {
+		config := shadowsocksConfig{}
+		if err := mapToAny(node, &config); err != nil {
+			return nil, err
+		}
+		var err error
+		config.Endpoint, err = parseEndpointConfig(config.Endpoint)
+		if err != nil {
+			return nil, err
+		}
+		return &config, nil
 	} else if _, ok := node["server"]; ok {
 		// Legacy format
-		config := &legacyShadowsocksConfig{}
-		if err := mapToAny(node, config); err != nil {
+		config := legacyShadowsocksConfig{}
+		if err := mapToAny(node, &config); err != nil {
 			return nil, err
 		}
 		return &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: config.Server,
-				Port: config.Server_Port,
+			Endpoint: DialEndpointConfig{
+				Address: net.JoinHostPort(config.Server, strconv.FormatUint(uint64(config.Server_Port), 10)),
 			},
 			Cipher: config.Method,
 			Secret: config.Password,

@@ -23,20 +23,15 @@ import (
 func TestParseTunnelConfig(t *testing.T) {
 	config, err := ParseTunnelConfig(`
 transport:
-  endpoint:
-    host: example.com
-    port: 1234
+  endpoint: {address: example.com:1234}
   cipher: chacha20-poly1305
   secret: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
@@ -50,12 +45,9 @@ func TestParseTunnelConfig_LegacyConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
@@ -70,32 +62,24 @@ func TestParseTunnelConfig_LegacyConfigJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
 
 func TestParseTunnelConfig_Implicit(t *testing.T) {
 	config, err := ParseTunnelConfig(`
-  endpoint:
-    host: example.com
-    port: 1234
+  endpoint: example.com:1234
   cipher: chacha20-poly1305
   secret: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
@@ -105,12 +89,25 @@ func TestParseTunnelConfig_ShadowsocksURL(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
+		},
+	}, config)
+}
+
+func TestParseTunnelConfig_ShortEndpoint(t *testing.T) {
+	config, err := ParseTunnelConfig(`
+transport:
+  endpoint: example.com:1234
+  cipher: chacha20-poly1305
+  secret: SECRET`)
+	require.NoError(t, err)
+	require.Equal(t, &TunnelConfig{
+		Transport: &shadowsocksConfig{
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
@@ -120,12 +117,9 @@ func TestParseTunnelConfig_EmbeddedShadowsocksURL(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
-			Endpoint: endpointConfig{
-				Host: "example.com",
-				Port: 1234,
-			},
-			Cipher: "chacha20-poly1305",
-			Secret: "SECRET",
+			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
+			Cipher:   "chacha20-poly1305",
+			Secret:   "SECRET",
 		},
 	}, config)
 }
