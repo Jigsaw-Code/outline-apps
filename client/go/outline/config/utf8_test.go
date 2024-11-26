@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utf8
+package config
 
 import (
 	"bytes"
 	"testing"
 )
 
-func Test_DecodeUTF8CodepointsToRawBytes(t *testing.T) {
+func Test_decodeUTF8CodepointsToRawBytes(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -72,7 +72,7 @@ func Test_DecodeUTF8CodepointsToRawBytes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DecodeUTF8CodepointsToRawBytes(tt.input)
+			got, err := decodeUTF8CodepointsToRawBytes(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DecodeCodepointsToBytes() returns error %v, want error %v", err, tt.wantErr)
 				return

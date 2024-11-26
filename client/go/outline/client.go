@@ -15,13 +15,11 @@
 package outline
 
 import (
-	"fmt"
-	"net"
+	"context"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
-	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
-	"github.com/eycorsican/go-tun2socks/common/log"
 )
 
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
@@ -42,61 +40,44 @@ type NewClientResult struct {
 
 // NewClient creates a new Outline client from a configuration string.
 func NewClient(transportConfig string) *NewClientResult {
-	config, err := parseConfigFromJSON(transportConfig)
+	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
-		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
-	}
-	prefixBytes, err := ParseConfigPrefixFromString(config.Prefix)
-	if err != nil {
-		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
+		return &NewClientResult{
+			Error:  &platerrors.PlatformError{
+				Code:    platerrors.IllegalConfig,
+				Message: "config is not valid YAML",
+				Cause:   platerrors.ToPlatformError(err),
+			},
+		}
 	}
 
-	client, err := newShadowsocksClient(config.Host, int(config.Port), config.Method, config.Password, prefixBytes)
+    providers := config.RegisterDefaultProviders(config.NewProviderContainer())
+
+	streamDialer, err := providers.StreamDialers.NewInstance(context.Background(), transportYAML)
+	if err != nil {
+		return &NewClientResult{
+			Error:  &platerrors.PlatformError{
+				Code:    platerrors.IllegalConfig,
+				Message: "failed to create TCP handler",
+				Details: platerrors.ErrorDetails{"handler": "tcp"},
+				Cause:   platerrors.ToPlatformError(err),
+			},
+		}
+	}
+
+	packetListener, err := providers.PacketListeners.NewInstance(context.Background(), transportYAML)
+	if err != nil {
+		return &NewClientResult{
+			Error:  &platerrors.PlatformError{
+				Code:    platerrors.IllegalConfig,
+				Message: "failed to create UDP handler",
+				Details: platerrors.ErrorDetails{"handler": "udp"},
+				Cause:   platerrors.ToPlatformError(err),
+			},
+		}
+	}
+
 	return &NewClientResult{
-		Client: client,
-		Error:  platerrors.ToPlatformError(err),
+		Client: &Client{StreamDialer: streamDialer, PacketListener: packetListener},
 	}
-}
-
-func newShadowsocksClient(host string, port int, cipherName, password string, prefix []byte) (*Client, error) {
-	if err := validateConfig(host, port, cipherName, password); err != nil {
-		return nil, err
-	}
-
-	// TODO: consider using net.LookupIP to get a list of IPs, and add logic for optimal selection.
-	proxyAddress := net.JoinHostPort(host, fmt.Sprint(port))
-
-	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
-	if err != nil {
-		return nil, newIllegalConfigErrorWithDetails("cipher&password pair is not valid",
-			"cipher|password", cipherName+"|"+password, "valid combination", err)
-	}
-
-	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be
-	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
-	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: net.Dialer{KeepAlive: -1}}, cryptoKey)
-	if err != nil {
-		return nil, platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create TCP traffic handler",
-			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"},
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	if len(prefix) > 0 {
-		log.Debugf("Using salt prefix: %s", string(prefix))
-		streamDialer.SaltGenerator = shadowsocks.NewPrefixSaltGenerator(prefix)
-	}
-
-	packetListener, err := shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: proxyAddress}, cryptoKey)
-	if err != nil {
-		return nil, platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create UDP traffic handler",
-			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"},
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-
-	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil
 }
