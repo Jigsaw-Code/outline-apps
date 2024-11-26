@@ -16,10 +16,13 @@ package config
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
@@ -104,8 +107,11 @@ type shadowsocksParams struct {
 func parseShadowsocksConfig(node ConfigNode) (*shadowsocksConfig, error) {
 	switch typed := node.(type) {
 	case string:
-		// TODO(fortuna): add URL support.
-		return nil, errors.ErrUnsupported
+		urlConfig, err := url.Parse(typed)
+		if err != nil {
+			return nil, fmt.Errorf("string config is not a valid URL")
+		}
+		return parseShadowsocksURL(*urlConfig)
 	case map[string]any:
 		if _, ok := typed["endpoint"]; ok {
 			config := shadowsocksConfig{}
@@ -188,4 +194,85 @@ func parseStringPrefix(utf8Str string) ([]byte, error) {
 		rawBytes[i] = byte(r)
 	}
 	return rawBytes, nil
+}
+
+func parseShadowsocksURL(url url.URL) (*shadowsocksConfig, error) {
+	// attempt to decode as SIP002 URI format and
+	// fall back to legacy base64 format if decoding fails
+	config, err := parseShadowsocksSIP002URL(url)
+	if err == nil {
+		return config, nil
+	}
+	return parseShadowsocksLegacyBase64URL(url)
+}
+
+// parseShadowsocksLegacyBase64URL parses URL based on legacy base64 format:
+// https://shadowsocks.org/doc/configs.html#uri-and-qr-code
+func parseShadowsocksLegacyBase64URL(url url.URL) (*shadowsocksConfig, error) {
+	if url.Host == "" {
+		return nil, errors.New("host not specified")
+	}
+	decoded, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(url.Host)
+	if err != nil {
+		// If decoding fails, return the original url with error
+		return nil, fmt.Errorf("failed to decode host string [%v]: %w", url.String(), err)
+	}
+	var fragment string
+	if url.Fragment != "" {
+		fragment = "#" + url.Fragment
+	} else {
+		fragment = ""
+	}
+	newURL, err := url.Parse(strings.ToLower(url.Scheme) + "://" + string(decoded) + fragment)
+	if err != nil {
+		// if parsing fails, return the original url with error
+		return nil, fmt.Errorf("failed to parse config part: %w", err)
+	}
+	// extend this check to see if decoded string contains contains other valid fields
+	if newURL.User == nil {
+		return nil, fmt.Errorf("invalid user info: %w", err)
+	}
+	cipherInfoBytes := newURL.User.String()
+	cipherName, secret, found := strings.Cut(string(cipherInfoBytes), ":")
+	if !found {
+		return nil, errors.New("invalid cipher info: no ':' separator")
+	}
+	return &shadowsocksConfig{
+		Endpoint: DialEndpointConfig{Address: newURL.Host},
+		Cipher: cipherName,
+		Secret: secret,
+		Prefix: newURL.Query().Get("prefix"),
+	}, nil
+}
+
+// parseShadowsocksSIP002URL parses URL based on SIP002 format:
+// https://shadowsocks.org/doc/sip002.html
+func parseShadowsocksSIP002URL(url url.URL) (*shadowsocksConfig, error) {
+	if url.Host == "" {
+		return nil, errors.New("host not specified")
+	}
+	userInfo := url.User.String()
+	// Cipher info can be optionally encoded with Base64URL.
+	encoding := base64.URLEncoding.WithPadding(base64.NoPadding)
+	decodedUserInfo, err := encoding.DecodeString(userInfo)
+	if err != nil {
+		// Try base64 decoding in legacy mode
+		decodedUserInfo, err = base64.StdEncoding.DecodeString(userInfo)
+	}
+	var cipherInfo string
+	if err == nil {
+		cipherInfo = string(decodedUserInfo)
+	} else {
+		cipherInfo = userInfo
+	}
+	cipherName, secret, found := strings.Cut(cipherInfo, ":")
+	if !found {
+		return nil, errors.New("invalid cipher info: no ':' separator")
+	}
+	return &shadowsocksConfig{
+		Endpoint: DialEndpointConfig{Address: url.Host},
+		Cipher: cipherName,
+		Secret: secret,
+		Prefix: url.Query().Get("prefix"),
+	}, nil
 }
