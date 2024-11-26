@@ -54,6 +54,13 @@ const (
 	//  - Input: a JSON string of [VPNConfig].
 	//  - Output: a JSON string of [VPNConnection].
 	EstablishVPNAPI = "EstablishVPN"
+
+	// CloseVPNAPI closes an existing VPN connection and restores network traffic to the default
+	// network interface.
+	//
+	//  - Input: null
+	//  - Output: null
+	CloseVPNAPI = "CloseVPN"
 )
 
 // InvokeGoAPI is the unified entry point for TypeScript to invoke various Go functions.
@@ -81,6 +88,10 @@ func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
 			Output:    newCGoString(res),
 			ErrorJson: marshalCGoErrorJson(err),
 		}
+
+	case CloseVPNAPI:
+		err := CloseVPN()
+		return C.InvokeGoAPIResult{ErrorJson: marshalCGoErrorJson(err)}
 
 	default:
 		err := &platerrors.PlatformError{

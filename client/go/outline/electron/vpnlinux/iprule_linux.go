@@ -18,49 +18,41 @@ import (
 	"log/slog"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/songgao/water"
+	"github.com/vishvananda/netlink"
 )
 
-func ConfigureTUNDevice(name string) (_ *water.Interface, perr *platerrors.PlatformError) {
-	tun, err := water.New(water.Config{
-		DeviceType: water.TUN,
-		PlatformSpecificParams: water.PlatformSpecificParams{
-			Name:    name,
-			Persist: false,
-		},
-	})
-	if err != nil {
+func AddIPRule(tableId int, fwMark uint32) (*netlink.Rule, *platerrors.PlatformError) {
+	rule := netlink.NewRule()
+	// rule.Priority = 1357
+	rule.Table = tableId
+	rule.Mark = fwMark
+	// rule.Invert = true
+
+	if err := netlink.RuleAdd(rule); err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to open the TUN device",
-			Details: platerrors.ErrorDetails{"name": name},
+			Message: "failed to add ip rule to Outline routing table",
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
-	defer func() {
-		if perr != nil {
-			CloseTUNDevice(tun)
-		}
-	}()
 
-	slog.Info("successfully configured TUN device", "name", tun.Name())
-	return tun, nil
+	slog.Info("successfully added IP rule", "rule", rule)
+	return rule, nil
 }
 
-func CloseTUNDevice(tun *water.Interface) *platerrors.PlatformError {
-	if tun == nil {
+func DelIPRule(rule *netlink.Rule) *platerrors.PlatformError {
+	if rule == nil {
 		return nil
 	}
-	if err := tun.Close(); err != nil {
-		slog.Error("failed to close TUN device", "name", tun.Name(), "err", err)
+	if err := netlink.RuleDel(rule); err != nil {
+		slog.Error("failed to remove IP rule", "rule", rule, "err", err)
 		return &platerrors.PlatformError{
 			Code:    platerrors.DisconnectSystemVPNFailed,
-			Message: "failed to close the TUN device",
-			Details: platerrors.ErrorDetails{"name": tun.Name()},
+			Message: "failed to remove the ip rule to Outline routing table",
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
 
-	slog.Info("successfully closed TUN device", "name", tun.Name())
+	slog.Info("successfully removed IP rule", "rule", rule)
 	return nil
 }

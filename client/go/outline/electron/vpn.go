@@ -17,16 +17,17 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"io"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-sdk/network"
+	"github.com/songgao/water"
+	"github.com/vishvananda/netlink"
 )
 
 type VPNConfig struct {
 	InterfaceName   string   `json:"interfaceName"`
 	IPAddress       string   `json:"ipAddress"`
 	DNSServers      []string `json:"dnsServers"`
+	RoutingTableId  int      `json:"routingTableId"`
 	TransportConfig string   `json:"transport"`
 }
 
@@ -34,11 +35,14 @@ type VPNConnection struct {
 	Status   string `json:"status"`
 	RouteUDP bool   `json:"routeUDP"`
 
-	tun     io.ReadWriteCloser `json:"-"`
-	outline network.IPDevice
+	tun     *water.Interface `json:"-"`
+	outline *outlineDevice   `json:"-"`
+	ipRule  *netlink.Rule    `json:"-"`
 }
 
-func EstablishVPN(configStr string) (string, *platerrors.PlatformError) {
+var conn *VPNConnection
+
+func EstablishVPN(configStr string) (_ string, perr *platerrors.PlatformError) {
 	var config VPNConfig
 	err := json.Unmarshal([]byte(configStr), &config)
 	if err != nil {
@@ -49,9 +53,8 @@ func EstablishVPN(configStr string) (string, *platerrors.PlatformError) {
 		}
 	}
 
-	conn, perr := establishVPN(context.TODO(), &config)
-	if perr != nil {
-		return "", perr
+	if conn, perr = establishVPN(context.TODO(), &config); perr != nil {
+		return
 	}
 
 	if conn == nil {
@@ -69,4 +72,11 @@ func EstablishVPN(configStr string) (string, *platerrors.PlatformError) {
 		}
 	}
 	return string(connJson), nil
+}
+
+func CloseVPN() *platerrors.PlatformError {
+	if conn == nil {
+		return nil
+	}
+	return closeVPNConn(conn)
 }

@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package vpnlinux
 
 import (
-	"context"
-
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Wifx/gonetworkmanager/v2"
 )
 
-func establishVPN(context.Context, *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
-	return nil, &platerrors.PlatformError{
-		Code:    platerrors.InternalError,
-		Message: "not implemented yet",
+func ConfigureNMConnection() *platerrors.PlatformError {
+	_, err := gonetworkmanager.NewSettings()
+	if err != nil {
+		return &platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed to connect to NetworkManager",
+			Cause:   platerrors.ToPlatformError(err),
+		}
 	}
-}
-
-func closeVPNConn(*VPNConnection) *platerrors.PlatformError {
-	return &platerrors.PlatformError{
-		Code:    platerrors.InternalError,
-		Message: "not implemented yet",
-	}
+	return nil
 }

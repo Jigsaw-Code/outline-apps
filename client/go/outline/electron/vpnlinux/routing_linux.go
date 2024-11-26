@@ -16,9 +16,22 @@ package vpnlinux
 
 import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-sdk/network"
+	"github.com/vishvananda/netlink"
 )
 
-func ConfigureOutlineDevice(transportConfig string) (network.IPDevice, *platerrors.PlatformError) {
-	return nil, nil
+func ConfigureRoutingTable(tunName string, tableId int) *platerrors.PlatformError {
+	tun, err := netlink.LinkByName(tunName)
+	if err != nil {
+		return &platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed to locate TUN device from the netlink API",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+
+	_ = netlink.Route{
+		LinkIndex: tun.Attrs().Index,
+		Table:     tableId,
+	}
+	return nil
 }

@@ -13,21 +13,23 @@
 // limitations under the License.
 
 import {invokeGoApi} from './go_plugin';
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
+import {StartRequestJson} from '../src/www/app/outline_server_repository/vpn';
 
 interface VpnConfig {
   interfaceName: string;
   ipAddress: string;
   dnsServers: string[];
+  routingTableId: number;
   transport: string;
 }
 
-export async function establishVpn(transportConfig: TransportConfigJson) {
+export async function establishVpn(request: StartRequestJson) {
   const config: VpnConfig = {
     interfaceName: 'outline-tun0',
     ipAddress: '10.0.85.2',
     dnsServers: ['9.9.9.9'],
-    transport: JSON.stringify(transportConfig),
+    routingTableId: 13579,
+    transport: JSON.stringify(request.config.transport),
   };
   const connectionJson = await invokeGoApi(
     'EstablishVPN',
@@ -36,4 +38,6 @@ export async function establishVpn(transportConfig: TransportConfigJson) {
   console.info(JSON.parse(connectionJson));
 }
 
-export async function closeVpn() {}
+export async function closeVpn(): Promise<void> {
+  await invokeGoApi('CloseVPN', '');
+}

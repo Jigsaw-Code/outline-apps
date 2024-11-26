@@ -20,7 +20,7 @@ import {pathToBackendLibrary} from './app_paths';
 
 let invokeGoAPIFunc: Function | undefined;
 
-export type GoApiName = 'FetchResource' | 'EstablishVPN';
+export type GoApiName = 'FetchResource' | 'EstablishVPN' | 'CloseVPN';
 
 /**
  * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
@@ -58,9 +58,9 @@ export async function invokeGoApi(
     );
   }
 
-  console.debug('[Backend] - calling InvokeGoAPI ...');
+  console.debug(`[Backend] - calling InvokeGoAPI "${api}" ...`);
   const result = await invokeGoAPIFunc(api, input);
-  console.debug('[Backend] - InvokeGoAPI returned', result);
+  console.debug(`[Backend] - GoAPI ${api} returned`, result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);
   }
