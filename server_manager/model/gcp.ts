@@ -17,7 +17,9 @@ import {ManagedServer} from './server';
 
 export class Zone implements location.CloudLocation {
   /** @see https://cloud.google.com/compute/docs/regions-zones */
-  private static readonly LOCATION_MAP: {readonly [regionId: string]: location.GeoLocation} = {
+  private static readonly LOCATION_MAP: {
+    readonly [regionId: string]: location.GeoLocation;
+  } = {
     'asia-east1': location.CHANGHUA_COUNTY,
     'asia-east2': location.HONG_KONG,
     'asia-northeast1': location.TOKYO,
@@ -99,8 +101,14 @@ export interface Account {
    * @param projectId - The GCP project ID.
    * @param name - The name to be given to the server.
    * @param zone - The GCP zone to create the server in.
+   * @param metricsEnabled - Whether to enable metrics collection.
    */
-  createServer(projectId: string, name: string, zone: Zone): Promise<ManagedServer>;
+  createServer(
+    projectId: string,
+    name: string,
+    zone: Zone,
+    metricsEnabled: boolean
+  ): Promise<ManagedServer>;
 
   /**
    * Lists the Outline servers in a given GCP project.

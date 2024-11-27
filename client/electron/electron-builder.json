@@ -1,5 +1,5 @@
 {
-  "productName": "outline-client",
+  "productName": "Outline",
   "artifactName": "Outline-Client.${ext}",
   "asarUnpack": [ "client" ],
   "directories": {
@@ -7,6 +7,7 @@
     "output": "output/client/electron/build"
   },
   "extraMetadata": {
+    "name": "outline-client",
     "main": "output/client/electron/index.js"
   },
   "files": [
@@ -15,28 +16,44 @@
     "output/client/electron",
     "!output/client/electron/build"
   ],
+
+  "deb": {
+    "depends": [
+      "gconf2", "gconf-service", "libnotify4", "libappindicator1", "libxtst6", "libnss3",
+      "libcap2-bin"
+    ],
+    "afterInstall": "client/electron/debian/after_install.sh"
+  },
   "linux": {
     "category": "Network",
+    "executableName": "Outline",
     "files": [
       "client/electron/linux_proxy_controller/dist",
       "client/electron/icons/png",
-      "client/output/build/linux"
+      "client/output/build/linux",
+      "!client/output/build/linux/*.h"
     ],
     "icon": "client/electron/icons/png",
-    "target": {
+    "maintainer": "Jigsaw LLC",
+    "target": [{
       "arch": [
         "x64"
       ],
       "target": "AppImage"
-    }
+    }, {
+      "arch": "x64",
+      "target": "deb"
+    }]
   },
+
   "nsis": {
     "include": "client/electron/custom_install_steps.nsh",
     "perMachine": true
   },
   "win": {
     "files": [
-      "client/output/build/windows"
+      "client/output/build/windows",
+      "!client/output/build/windows/*.h"
     ],
     "icon": "client/electron/icons/win/icon.ico",
     "sign": "client/electron/windows/electron_builder_signing_plugin.cjs",

@@ -24,10 +24,11 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.VpnService;
 import android.os.IBinder;
+import android.os.RemoteException;
+import androidx.annotation.Nullable;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.cordova.CallbackContext;
@@ -38,10 +39,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.log.OutlineLogger;
 import org.outline.log.SentryErrorReporter;
+import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
+import outline.Outline;
+import outline.FetchResourceResult;
+import platerrors.Platerrors;
+import platerrors.PlatformError;
 
-import static org.outline.vpn.VpnTunnelService.ErrorCode;
 import static org.outline.vpn.VpnTunnelService.MessageData;
 import static org.outline.vpn.VpnTunnelService.TunnelStatus;
 
@@ -54,7 +59,7 @@ public class OutlinePlugin extends CordovaPlugin {
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
-    IS_REACHABLE("isServerReachable"),
+    FETCH_RESOURCE("fetchResource"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -102,8 +107,8 @@ public class OutlinePlugin extends CordovaPlugin {
   private IVpnTunnelService vpnTunnelService;
   private String errorReportingApiKey;
   private StartVpnRequest startVpnRequest;
-  // Tunnel status change callback by tunnel ID.
-  private final Map<String, CallbackContext> tunnelStatusListeners = new ConcurrentHashMap<>();
+  // Tunnel status change callback.
+  private CallbackContext statusCallback;
 
   // Connection to the VPN service.
   private final ServiceConnection vpnServiceConnection = new ServiceConnection() {
@@ -133,7 +138,7 @@ public class OutlinePlugin extends CordovaPlugin {
     IntentFilter broadcastFilter = new IntentFilter();
     broadcastFilter.addAction(VpnTunnelService.STATUS_BROADCAST_KEY);
     broadcastFilter.addCategory(context.getPackageName());
-    context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter);
+    context.registerReceiver(vpnTunnelBroadcastReceiver, broadcastFilter, context.RECEIVER_NOT_EXPORTED);
 
     context.bindService(new Intent(context, VpnTunnelService.class), vpnServiceConnection,
         Context.BIND_AUTO_CREATE);
@@ -147,8 +152,7 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   @Override
-  public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
-      throws JSONException {
+  public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
     if (!Action.hasValue(action)) {
       return false;
     }
@@ -160,9 +164,8 @@ public class OutlinePlugin extends CordovaPlugin {
     LOG.fine(String.format(Locale.ROOT, "Received action: %s", action));
 
     if (Action.ON_STATUS_CHANGE.is(action)) {
-      // Store the callback so we can execute it asynchronously.
-      final String tunnelId = args.getString(0);
-      tunnelStatusListeners.put(tunnelId, callbackContext);
+      this.statusCallback = callbackContext;
+      // TODO(fortuna): unregister original with Cordova.
       return true;
     }
 
@@ -174,7 +177,7 @@ public class OutlinePlugin extends CordovaPlugin {
           return true;
         }
       } catch (ActivityNotFoundException e) {
-        callbackContext.error(ErrorCode.UNEXPECTED.value);
+        sendActionResult(callbackContext, new PlatformError(Platerrors.InternalError, e.toString()));
         return true;
       }
     }
@@ -191,24 +194,30 @@ public class OutlinePlugin extends CordovaPlugin {
         // Tunnel instance actions: tunnel ID is always the first argument.
         if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
-          final JSONObject config = args.getJSONObject(1);
-          int errorCode = startVpnTunnel(tunnelId, config);
-          sendErrorCode(callback, errorCode);
+          final String serverName = args.getString(1);
+          final String transportConfig = args.getString(2);
+          sendActionResult(callback, startVpnTunnel(tunnelId, transportConfig, serverName));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
-          int errorCode = vpnTunnelService.stopTunnel(tunnelId);
-          sendErrorCode(callback, errorCode);
+          sendActionResult(callback, vpnTunnelService.stopTunnel(tunnelId));
         } else if (Action.IS_RUNNING.is(action)) {
           final String tunnelId = args.getString(0);
           boolean isActive = isTunnelActive(tunnelId);
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
+        } else if (Action.FETCH_RESOURCE.is(action)) {
+          final String url = args.getString(0);
+          LOG.fine(String.format(Locale.ROOT, "Fetching resource at %s ...", url));
+          final FetchResourceResult result = Outline.fetchResource(url);
+          if (result.getError() != null) {
+            LOG.warning(String.format(Locale.ROOT, "Fetch resource failed: %s", result.getError()));
+            sendActionResult(callback, result.getError());
+          } else {
+            LOG.info(String.format(Locale.ROOT, "Fetch resource result: %s", result.getContent()));
+            callback.success(result.getContent());
+          }
 
           // Static actions
-        } else if (Action.IS_REACHABLE.is(action)) {
-          boolean isReachable =
-              this.vpnTunnelService.isServerReachable(args.getString(0), args.getInt(1));
-          callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isReachable));
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {
           errorReportingApiKey = args.getString(0);
           // Treat failures to initialize error reporting as unexpected by propagating exceptions.
@@ -226,7 +235,7 @@ public class OutlinePlugin extends CordovaPlugin {
       } catch (Exception e) {
         LOG.log(Level.SEVERE,
             String.format(Locale.ROOT, "Unexpected error while executing action: %s", action), e);
-        callback.error(ErrorCode.UNEXPECTED.value);
+        sendActionResult(callback, new PlatformError(Platerrors.InternalError, e.toString()));
       }
     });
   }
@@ -252,22 +261,22 @@ public class OutlinePlugin extends CordovaPlugin {
     }
     if (result != Activity.RESULT_OK) {
       LOG.warning("Failed to prepare VPN.");
-      sendErrorCode(startVpnRequest.callback, ErrorCode.VPN_PERMISSION_NOT_GRANTED.value);
+      sendActionResult(startVpnRequest.callback, new PlatformError(
+          Platerrors.VPNPermissionNotGranted, "failed to grant the VPN permission"));
       return;
     }
     executeAsync(Action.START.value, startVpnRequest.args, startVpnRequest.callback);
     startVpnRequest = null;
   }
 
-  private int startVpnTunnel(final String tunnelId, final JSONObject config) throws Exception {
-    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s", tunnelId));
-    final TunnelConfig tunnelConfig;
-    try {
-      tunnelConfig = VpnTunnelService.makeTunnelConfig(tunnelId, config);
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Failed to retrieve the tunnel proxy config.", e);
-      return ErrorCode.ILLEGAL_SERVER_CONFIGURATION.value;
-    }
+  private DetailedJsonError startVpnTunnel(
+      final String tunnelId, final String transportConfig, final String serverName
+  ) throws RemoteException {
+    LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
+    final TunnelConfig tunnelConfig = new TunnelConfig();
+    tunnelConfig.id = tunnelId;
+    tunnelConfig.name = serverName;
+    tunnelConfig.transportConfig = transportConfig;
     return vpnTunnelService.startTunnel(tunnelConfig);
   }
 
@@ -302,19 +311,27 @@ public class OutlinePlugin extends CordovaPlugin {
         LOG.warning("Tunnel status broadcast missing tunnel ID");
         return;
       }
-      CallbackContext callback = outlinePlugin.tunnelStatusListeners.get(tunnelId);
-      if (callback == null) {
+      if (outlinePlugin.statusCallback == null) {
         LOG.warning(String.format(
-            Locale.ROOT, "Failed to retrieve status listener for tunnel ID %s", tunnelId));
+            Locale.ROOT, "No status callback registered with the Android OutlinePlugin"));
         return;
       }
       int status = intent.getIntExtra(MessageData.PAYLOAD.value, TunnelStatus.INVALID.value);
       LOG.fine(String.format(Locale.ROOT, "VPN connectivity changed: %s, %d", tunnelId, status));
 
-      PluginResult result = new PluginResult(PluginResult.Status.OK, status);
+      JSONObject jsonResponse = new JSONObject();
+      try {
+        jsonResponse.put("id", tunnelId);
+        jsonResponse.put("status", status);
+      } catch (JSONException e) {
+        LOG.warning("Failed to build JSON response");
+        return;
+      }
+
+      PluginResult result = new PluginResult(PluginResult.Status.OK, jsonResponse);
       // Keep the tunnel status callback so it can be called multiple times.
       result.setKeepCallback(true);
-      callback.sendPluginResult(result);
+      outlinePlugin.statusCallback.sendPluginResult(result);
     }
   };
 
@@ -324,11 +341,15 @@ public class OutlinePlugin extends CordovaPlugin {
     return this.cordova.getActivity().getApplicationContext();
   }
 
-  private void sendErrorCode(final CallbackContext callback, int errorCode) {
-    if (errorCode == ErrorCode.NO_ERROR.value) {
+  private void sendActionResult(final CallbackContext callback, @Nullable PlatformError error) {
+    sendActionResult(callback, Errors.toDetailedJsonError(error));
+  }
+
+  private void sendActionResult(final CallbackContext callback, @Nullable DetailedJsonError error) {
+    if (error == null) {
       callback.success();
     } else {
-      callback.error(errorCode);
+      callback.error(error.errorJson);
     }
   }
 }

@@ -21,9 +21,11 @@ import {fixture, html, nextFrame, oneEvent} from '@open-wc/testing';
 
 import {ContactView} from './index';
 import {SupportForm} from './support_form';
-import {OutlineErrorReporter, SentryErrorReporter} from '../../shared/error_reporter';
+import {
+  OutlineErrorReporter,
+  SentryErrorReporter,
+} from '../../shared/error_reporter';
 import {localize} from '../../testing/localize';
-
 
 describe('ContactView', () => {
   let el: ContactView;
@@ -34,9 +36,12 @@ describe('ContactView', () => {
       'SentryErrorReporter',
       Object.getOwnPropertyNames(SentryErrorReporter.prototype)
     );
-    el = await fixture(
-      html` <contact-view .localize=${localize} .errorReporter=${mockErrorReporter}></contact-view> `
-    );
+    el = await fixture(html`
+      <contact-view
+        .localize=${localize}
+        .errorReporter=${mockErrorReporter}
+      ></contact-view>
+    `);
   });
 
   it('is defined', async () => {
@@ -54,7 +59,9 @@ describe('ContactView', () => {
   });
 
   it('shows exit message if the user selects that they have an open ticket', async () => {
-    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[0] as HTMLElement;
+    const radioButton = el.shadowRoot!.querySelectorAll(
+      'mwc-formfield mwc-radio'
+    )[0] as HTMLElement;
     radioButton.click();
     await nextFrame();
 
@@ -63,7 +70,9 @@ describe('ContactView', () => {
   });
 
   it('resets the view on `reset()`', async () => {
-    const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[0] as HTMLElement;
+    const radioButton = el.shadowRoot!.querySelectorAll(
+      'mwc-formfield mwc-radio'
+    )[0] as HTMLElement;
     radioButton.click();
     await nextFrame();
 
@@ -78,7 +87,9 @@ describe('ContactView', () => {
     let issueSelector: Select;
 
     beforeEach(async () => {
-      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
+      const radioButton = el.shadowRoot!.querySelectorAll(
+        'mwc-formfield mwc-radio'
+      )[1] as HTMLElement;
       radioButton.click();
       await nextFrame();
 
@@ -91,8 +102,17 @@ describe('ContactView', () => {
 
     it('shows the correct items in the selector', () => {
       const issueItemEls = issueSelector.querySelectorAll('mwc-list-item');
-      const issueTypes = Array.from(issueItemEls).map((el: ListItemBase) => el.value);
-      expect(issueTypes).toEqual(['no-server', 'cannot-add-server', 'connection', 'performance', 'general']);
+      const issueTypes = Array.from(issueItemEls).map(
+        (el: ListItemBase) => el.value
+      );
+      expect(issueTypes).toEqual([
+        'no-server',
+        'cannot-add-server',
+        'billing',
+        'connection',
+        'performance',
+        'general',
+      ]);
     });
   });
 
@@ -101,7 +121,9 @@ describe('ContactView', () => {
 
     beforeEach(async () => {
       issueSelector = el.shadowRoot!.querySelector('mwc-select')!;
-      const radioButton = el.shadowRoot!.querySelectorAll('mwc-formfield mwc-radio')[1] as HTMLElement;
+      const radioButton = el.shadowRoot!.querySelectorAll(
+        'mwc-formfield mwc-radio'
+      )[1] as HTMLElement;
       radioButton.click();
       await nextFrame();
     });
@@ -118,6 +140,11 @@ describe('ContactView', () => {
         expectedMsg: 'assist with adding a server',
       },
       {
+        testcaseName: 'I need assistance with a billing or subscription issue',
+        value: 'billing',
+        expectedMsg: 'does not collect payment',
+      },
+      {
         testcaseName: 'I am having trouble connecting to my Outline VPN server',
         value: 'connection',
         expectedMsg: 'assist with connecting to a server',
@@ -126,7 +153,9 @@ describe('ContactView', () => {
 
     for (const {testcaseName, value, expectedMsg} of conditions) {
       it(`'${testcaseName}' shows exit message`, async () => {
-        const issue: HTMLElement = issueSelector.querySelector(`mwc-list-item[value="${value}"]`)!;
+        const issue: HTMLElement = issueSelector.querySelector(
+          `mwc-list-item[value="${value}"]`
+        )!;
         issue.click();
         await nextFrame();
 
@@ -137,7 +166,9 @@ describe('ContactView', () => {
 
     describe('"General feedback & suggestions"', () => {
       beforeEach(async () => {
-        const issue: HTMLElement = issueSelector.querySelector('mwc-list-item[value="general"]')!;
+        const issue: HTMLElement = issueSelector.querySelector(
+          'mwc-list-item[value="general"]'
+        )!;
         issue.click();
         await nextFrame();
       });
@@ -148,26 +179,35 @@ describe('ContactView', () => {
       });
 
       it('reports correct values to error reporter on completion of support form', async () => {
-        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        const supportForm: SupportForm =
+          el.shadowRoot!.querySelector('support-form')!;
         supportForm.values.email = 'foo@bar.com';
         supportForm.values.subject = 'Test Subject';
         supportForm.values.accessKeySource = 'a friend';
         supportForm.values.description = 'Test Description';
+        supportForm.values.outreachConsent = true;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
         await nextFrame();
 
-        expect(mockErrorReporter.report).toHaveBeenCalledWith('Test Description', 'general', 'foo@bar.com', {
-          subject: 'Test Subject',
-          accessKeySource: 'a friend',
-          formVersion: 2,
-        });
+        expect(mockErrorReporter.report).toHaveBeenCalledWith(
+          'Test Description',
+          'general',
+          'foo@bar.com',
+          {
+            subject: 'Test Subject',
+            accessKeySource: 'a friend',
+            outreachConsent: true,
+            formVersion: 2,
+          }
+        );
       });
 
       it('emits success event on completion of support form', async () => {
         const listener = oneEvent(el, 'success');
 
-        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        const supportForm: SupportForm =
+          el.shadowRoot!.querySelector('support-form')!;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
@@ -179,7 +219,8 @@ describe('ContactView', () => {
         const listener = oneEvent(el, 'error');
         mockErrorReporter.report.and.throwError('fail');
 
-        const supportForm: SupportForm = el.shadowRoot!.querySelector('support-form')!;
+        const supportForm: SupportForm =
+          el.shadowRoot!.querySelector('support-form')!;
         supportForm.valid = true;
         supportForm.dispatchEvent(new CustomEvent('submit'));
 
@@ -188,11 +229,15 @@ describe('ContactView', () => {
       });
 
       it('shows default contact view on cancellation of support form', async () => {
-        el.shadowRoot!.querySelector('support-form')!.dispatchEvent(new CustomEvent('cancel'));
+        el.shadowRoot!.querySelector('support-form')!.dispatchEvent(
+          new CustomEvent('cancel')
+        );
 
         await nextFrame();
 
-        expect(el.shadowRoot?.querySelector('p.intro')?.textContent).toContain('Tell us how we can help.');
+        expect(el.shadowRoot?.querySelector('p.intro')?.textContent).toContain(
+          'Tell us how we can help.'
+        );
         expect(el.shadowRoot?.querySelector('support-form')).toBeNull();
       });
     });

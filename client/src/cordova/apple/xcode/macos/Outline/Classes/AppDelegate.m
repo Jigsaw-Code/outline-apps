@@ -17,12 +17,17 @@
 
 @import ServiceManagement;
 @import OutlineNotification;
-@import OutlineTunnel;
+@import CocoaLumberjack;
+
+#ifdef DEBUG
+const DDLogLevel ddLogLevel = DDLogLevelDebug;
+#else
+const DDLogLevel ddLogLevel = DDLogLevelInfo;
+#endif
 
 @interface AppDelegate()
 @property (strong, nonatomic) NSStatusItem *statusItem;
 @property (strong, nonatomic) NSPopover *popover;
-@property (strong, nonatomic) EventMonitor *eventMonitor;
 @property bool isSystemShuttingDown;
 @end
 
@@ -58,13 +63,13 @@
               }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnConnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImageConnected"];
   }];
   [NSNotificationCenter.defaultCenter addObserverForName:NSNotification.kVpnDisconnected
                                                   object:nil
-                                                   queue:nil
+                                                   queue:[NSOperationQueue mainQueue]
                                               usingBlock:^(NSNotification * _Nonnull note) {
                                                 [self setAppIcon:@"StatusBarButtonImage"];
                                               }];
@@ -74,7 +79,7 @@
         withReplyEvent:(NSAppleEventDescriptor*)replyEvent {
   NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:CDVMacOsUrlHandler.kCDVHandleOpenURLNotification object:url];
+      postNotificationName:NSNotification.kHandleUrl object:url];
   if (!self.popover.isShown) {
     [self showPopover];
   }
@@ -85,30 +90,23 @@
   self.statusItem.button.action = @selector(togglePopover);
   [self setAppIcon:@"StatusBarButtonImage"];
   self.popover = [[NSPopover alloc] init];
+  // this is the same size we use for the electron window
+  [self.popover setContentSize:NSMakeSize(360, 640)];
   self.popover.behavior = NSPopoverBehaviorTransient;
   self.popover.contentViewController = [[NSViewController alloc] initWithNibName:@"MainViewController"
                                                                           bundle:[NSBundle mainBundle]];
   self.popover.contentViewController.view = self.window.contentView;
 
-  if ([self wasStartedByLauncherApp]) {
-    [OutlineVpn.shared startLastSuccessfulTunnel:^(enum ErrorCode errorCode) {
-      if (errorCode != ErrorCodeNoError) {
-        NSLog(@"Failed to auto-connect the VPN on startup.");
-      }
-    }];
-  } else {
-    // The rendering of the popover is relative to the app's status item in the status bar.
-    // Even though we've already created the status bar above, the popover is being created
-    // before the status item has been rendered in the UI. This causes the initial popover
-    // load to be "floating" and ends up aligned at the bottom of the screen. For this initial
-    // load we add a small artificial delay to prevent that from happening.
-    double delayInSeconds = 0.5;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-      [self showPopover];
-    });
-  }
-  [self setAppLauncherEnabled:true];  // Enable app launcher to start on boot.
+  // The rendering of the popover is relative to the app's status item in the status bar.
+  // Even though we've already created the status bar above, the popover is being created
+  // before the status item has been rendered in the UI. This causes the initial popover
+  // load to be "floating" and ends up aligned at the bottom of the screen. For this initial
+  // load we add a small artificial delay to prevent that from happening.
+  double delayInSeconds = 0.5;
+  dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+  dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+    [self showPopover];
+  });
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
@@ -132,14 +130,12 @@
 
 - (void)closePopover {
   [self.popover close];
-  [self.eventMonitor stop];
 }
 
 - (void)showPopover {
   [self.popover showRelativeToRect:self.statusItem.button.bounds
                             ofView:self.statusItem.button
                      preferredEdge:NSRectEdgeMinY];
-  [self.eventMonitor start];
   // Activate the application in order to focus the popover.
   [[NSRunningApplication currentApplication]
       activateWithOptions:NSApplicationActivateIgnoringOtherApps];
@@ -148,48 +144,6 @@
 - (void)setAppIcon:(NSString *)imageName {
   self.statusItem.button.image = [NSImage imageNamed:imageName];
   self.statusItem.button.image.template = YES;
-}
-
-#pragma mark - Launcher
-
-// Enables or disables the embedded app launcher as a login item.
-- (void)setAppLauncherEnabled:(bool)enabled {
-  NSString *launcherBundleId = [self getLauncherBundleId];
-  if (launcherBundleId == nil) {
-    return;
-  }
-  if (!SMLoginItemSetEnabled((__bridge CFStringRef) launcherBundleId, enabled)) {
-    return NSLog(@"Failed to %@ launcher %@", enabled ? @"enable" : @"disable", launcherBundleId);
-  }
-}
-
-// Returns the embedded launcher application's bundle ID.
-- (NSString *)getLauncherBundleId {
-  static NSString *kAppLauncherName = @"launcher";
-  NSString *bundleId = NSBundle.mainBundle.bundleIdentifier;
-  if (bundleId == nil) {
-    NSLog(@"Failed to retrieve the application's bundle ID");
-    return nil;
-  }
-  return [[NSString alloc] initWithFormat:@"%@.%@", bundleId, kAppLauncherName];
-}
-
-// Returns whether the app was started by the embedded launcher app by inspecting the launch event.
-- (bool)wasStartedByLauncherApp {
-  NSAppleEventDescriptor *descriptor = [[NSAppleEventManager sharedAppleEventManager]
-                                        currentAppleEvent];
-  if (descriptor == nil) {
-    return false;
-  }
-  NSAppleEventDescriptor *launcherDescriptor = [descriptor paramDescriptorForKeyword:keyAEPropData];
-  if (launcherDescriptor == nil) {
-    return false;
-  }
-  NSString *launcherBundleId = [self getLauncherBundleId];
-  if (launcherBundleId == nil) {
-    return false;
-  }
-  return [launcherBundleId isEqual:launcherDescriptor.stringValue];
 }
 
 @end

@@ -20,7 +20,7 @@
  * guaranteed to see the last value in a series of updates.
  */
 export class ValueStream<T> {
-  private wakers: Array<(closed: boolean) => void> | null = [];
+  private wakers: Array<(_closed: boolean) => void> | null = [];
   constructor(private value: T) {}
 
   get(): T {
@@ -55,7 +55,7 @@ export class ValueStream<T> {
       if (this.wakers === null) {
         return resolve(true);
       }
-      return this.wakers.push(resolve)
+      return this.wakers.push(resolve);
     });
   }
 

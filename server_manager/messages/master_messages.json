@@ -845,6 +845,18 @@
       }
     }
   },
+  "metrics_setup_description": {
+    "message": "Share anonymized metrics to help improve the reliability and performance of Outline, for you and those you share a server with. You can update these preferences any time in the server settings tab.",
+    "description": "This string appears as a paragraph in a dialog that prompts the user to share server metrics. It provides information about the purpose of metrics sharing."
+  },
+  "metrics_setup_learn_more": {
+    "message": "Learn more",
+    "description": "This string appears as a link in a dialog that prompts the user to share server metrics. Clicking it opens a browser tab with more information about metrics sharing."
+  },
+  "metrics_setup_title": {
+    "message": "Share anonymous metrics for this server",
+    "description": "This string appears as the header of a dialog that prompts the user to share server metrics."
+  },
   "metrics_share": {
     "message": "Share metrics",
     "description": "This string appears as a button of a dialog that prompts the user to share server metrics. Clicking it enables server metrics reporting."
@@ -1082,6 +1094,10 @@
   "server_keys": {
     "message": "Keys",
     "description": "This string appears within the server view as the unit of a card that displays the number of server access keys."
+  },
+  "server_metrics": {
+    "message": "Metrics",
+    "description": "This string appears within the server view as a header of the section that displays server metrics."
   },
   "server_my_access_key": {
     "message": "My access key",
@@ -1380,6 +1396,10 @@
   "support_form_email": {
     "description": "Label of a Contact Support form input field.",
     "message": "Email"
+  },
+  "support_form_outreach_consent": {
+    "description": "Label for a consent checkbox that opts users in to being contacted in the future.",
+    "message": "Yes, I'd like to sign up to be contacted about collaboration opportunities."
   },
   "support_form_required_field": {
     "description": "Text on a Contact Support form indicating that a field is required.",

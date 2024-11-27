@@ -1,0 +1,113 @@
+# Copyright 2024 The Outline Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: '3'
+
+vars:
+  # This needs to be updated if the file moves.
+  REPO_ROOT: '{{joinPath .TASKFILE_DIR "../.."}}'
+  # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
+  OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
+  BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
+  MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
+  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" CGO_CFLAGS='-fstack-protector-strong' '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
+
+tasks:
+  electron:
+    desc: "Build the tun2socks binary and library for Electron platforms"
+    internal: true
+    requires: {vars: [TARGET_OS, TARGET_ARCH]}
+    vars:
+      # TODO(fortuna): remove this, it's not really needed since we don't release it separately anymore.
+      TUN2SOCKS_VERSION: "v1.16.11"
+      OUTPUT: '{{.OUT_DIR}}/{{.TARGET_OS}}/tun2socks{{if eq .TARGET_OS "windows"}}.exe{{end}}'
+      # Linux=libbackend.so; Windows=backend.dll
+      OUTPUT_LIB: '{{.OUT_DIR}}/{{.TARGET_OS}}/{{if eq .TARGET_OS "linux"}}libbackend.so{{else}}backend.dll{{end}}'
+    cmds:
+      - rm -rf "{{dir .OUTPUT}}" && mkdir -p "{{dir .OUTPUT}}"
+      # C cross-compile (zig) targets:
+      #   Linux (x64)   = x86_64-linux-gnu (`x86_64-linux` defaults to `x86_64-linux-musl`, prefer `gnu` over `musl`)
+      #   Windows (x86) = x86-windows
+      # Linker flags: https://pkg.go.dev/cmd/link
+      #   -s Omit the symbol table and debug information.
+      #   -w Omit the DWARF symbol table.
+      #   -X Set the value of the string variable.
+      - |
+        {{if or (ne OS .TARGET_OS) (ne ARCH .TARGET_ARCH) -}}
+          GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
+          CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu{{end}}'
+        {{- end}} \
+        go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
+      - |
+        {{if or (ne OS .TARGET_OS) (ne ARCH .TARGET_ARCH) -}}
+          GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
+          CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu{{end}}'
+        {{- end}} \
+        go build -trimpath -buildmode=c-shared -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT_LIB}}' '{{.TASKFILE_DIR}}/outline/electron'
+
+  windows:
+    desc: "Build the tun2socks binary and library for Windows"
+    # 32bit Windows 10 still exists until October 14, 2025
+    cmds: [{task: electron, vars: {TARGET_OS: "windows", TARGET_ARCH: "386"}}]
+
+  linux:
+    desc: "Build the tun2socks binary and library for Linux"
+    cmds: [{task: electron, vars: {TARGET_OS: "linux", TARGET_ARCH: "amd64"}}]
+
+  android:
+    desc: "Build the tun2socks.aar library for Android"
+    vars:
+      TARGET_DIR: "{{.OUT_DIR}}/android"
+      # ANDROID_API must match the minSdkVersion that the Android client supports.
+      ANDROID_API: 26
+    preconditions:
+      - sh: '[[ -d "$ANDROID_HOME" ]]'
+        msg: "Must set ANDROID_HOME"
+      - sh: '[[ -d "$ANDROID_NDK" ]]'
+        msg: "Must set ANDROID_NDK"
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      - "{{.GOMOBILE_BIND_CMD}} -target=android -androidapi '{{.ANDROID_API}}' -o '{{.TARGET_DIR}}/tun2socks.aar' '{{.TASKFILE_DIR}}/outline/platerrors' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'"
+    deps: ["gomobile"]
+
+  apple:
+    desc: "Build combined Tun2socks.xcframework library for Apple platforms"
+    aliases: [ios, macos, maccatalyst]
+    vars:
+      TARGET_DIR: '{{.OUT_DIR}}/apple'
+      # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
+      MACOSX_DEPLOYMENT_TARGET: 10.14
+      # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and match the version set in the XCode project.
+      TARGET_IOS_VERSION: 13.1
+    cmds:
+      - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
+      - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/platerrors' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
+    deps: ["gomobile"]
+
+  browser:
+    desc: "Placeholder for the browser build. Does nothing"
+  
+  gomobile:
+    desc: "Build Go Mobile"
+    internal: true
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}"
+      - go build -o "{{.BIN_DIR}}" golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
+    sources: ["{{.REPO_ROOT}}/go.sum"]
+    generates: ["{{.BIN_DIR}}/gomobile", "{{.BIN_DIR}}/gobind"]
+
+  clean:
+    cmds:
+      - rm -rf '{{.OUT_DIR}}'
+      - go clean -i -r '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'

@@ -16,10 +16,11 @@
 // Webpack config to run the Outline Manager on the browser.
 
 const path = require('path');
+
 const {makeConfig} = require('./base.webpack.js');
 
 module.exports = makeConfig({
-  main: path.resolve(__dirname, './web_app/browser_main.ts'),
+  main: path.resolve(__dirname, './www/browser_main.ts'),
   target: 'web',
   defaultMode: 'development',
 });

@@ -36,7 +36,9 @@ function createInternalError(cause?: unknown): PlatformError {
 
   // Use String(cause) instead of cause.toString() or new String(cause) to cover
   // primitive types and Symbols.
-  return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause: new Error(String(cause))});
+  return new PlatformError(INTERNAL_ERROR, MESSAGE, {
+    cause: new Error(String(cause)),
+  });
 }
 
 /**
@@ -76,6 +78,35 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
   }
 
   return new PlatformError(code, rawObj.message, options);
+}
+
+/**
+ * Recursively converts a {@link PlatformError} into a raw JavaScript object that
+ * could be converted into a JSON string.
+ * @param {PlatformError} platErr Any non-null PlatformError.
+ * @returns {object} A plain JavaScript object that can be converted to JSON.
+ */
+function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
+  const rawObj: {
+    code: string;
+    message: string;
+    details?: ErrorDetails;
+    cause?: object;
+  } = {
+    code: platErr.code,
+    message: platErr.message,
+    details: platErr.details,
+  };
+  if (platErr.cause) {
+    let cause: PlatformError;
+    if (platErr.cause instanceof PlatformError) {
+      cause = platErr.cause;
+    } else {
+      cause = new PlatformError(INTERNAL_ERROR, String(platErr.cause));
+    }
+    rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
+  }
+  return rawObj;
 }
 
 /**
@@ -124,7 +155,7 @@ export class PlatformError extends CustomError {
    * try {
    *   // cordova plugin calls or electron IPC calls
    * } catch (e) {
-   *   throw new PlatformError.parseFrom(e);
+   *   throw PlatformError.parseFrom(e);
    * }
    */
   static parseFrom(errObj: string | Error | unknown): PlatformError {
@@ -185,6 +216,15 @@ export class PlatformError extends CustomError {
     }
     return result;
   }
+
+  /**
+   * Returns a JSON string of this error with all details and causes.
+   * @returns {string} The JSON string representing this error.
+   */
+  toJSON(): string {
+    const errRawObj = convertPlatformErrorToRawErrorObject(this);
+    return JSON.stringify(errRawObj);
+  }
 }
 
 //////
@@ -203,4 +243,10 @@ export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
 export const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
 export const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
 
-export const PROXY_SERVER_UNREACHABLE: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
+export const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
+
+export const PROXY_SERVER_UNREACHABLE: ErrorCode =
+  'ERR_PROXY_SERVER_UNREACHABLE';
+
+/** Indicates that the OS routing service is not running (electron only). */
+export const ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING';

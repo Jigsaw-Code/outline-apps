@@ -12,59 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {makeConfig, SHADOWSOCKS_URI, SIP002_URI} from 'ShadowsocksConfig';
+import {Localizer} from '@outline/infrastructure/i18n';
+import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {staticKeyToShadowsocksSessionConfig} from './access_key_serialization';
 import {OutlineServer} from './server';
+import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
-import {ServerRepository, ServerType} from '../../model/server';
-import {TunnelFactory} from '../tunnel';
-
-
-// TODO(daniellacosse): write unit tests for these functions
-
-// Compares access keys proxying parameters.
-function staticKeysMatch(a: string, b: string): boolean {
-  try {
-    const l = staticKeyToShadowsocksSessionConfig(a);
-    const r = staticKeyToShadowsocksSessionConfig(b);
-    return (
-      l.host === r.host &&
-      l.port === r.port &&
-      l.password === r.password &&
-      l.method === r.method &&
-      l.prefix == r.prefix
-    );
-  } catch (e) {
-    console.debug(`failed to parse access key for comparison`);
-  }
-  return false;
-}
-
-// Determines if the key is expected to be a url pointing to an ephemeral session config.
-function isDynamicAccessKey(accessKey: string): boolean {
-  return accessKey.startsWith('ssconf://') || accessKey.startsWith('https://');
-}
-
-// NOTE: For extracting a name that the user has explicitly set, only.
-// (Currenly done by setting the hash on the URI)
-function serverNameFromAccessKey(accessKey: string): string | undefined {
-  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
-
-  if (!hash) return;
-
-  return decodeURIComponent(
-    hash
-      .slice(1)
-      .split('&')
-      .find(keyValuePair => !keyValuePair.includes('='))
-  );
-}
+import {ServerRepository} from '../../model/server';
+import {ResourceFetcher} from '../resource_fetcher';
 
 // DEPRECATED: V0 server persistence format.
-
 interface ServersStorageV0Config {
   host?: string;
   port?: number;
@@ -77,7 +36,9 @@ export interface ServersStorageV0 {
 }
 
 // Enccodes a V0 storage configuration into an access key string.
-export function serversStorageV0ConfigToAccessKey(config: ServersStorageV0Config): string {
+export function serversStorageV0ConfigToAccessKey(
+  config: ServersStorageV0Config
+): string {
   return SIP002_URI.stringify(
     makeConfig({
       host: config.host,
@@ -107,11 +68,42 @@ export class OutlineServerRepository implements ServerRepository {
   private lastForgottenServer: OutlineServer | null = null;
 
   constructor(
-    private readonly createTunnel: TunnelFactory,
+    private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
-    private storage: Storage
+    private storage: Storage,
+    private localize: Localizer,
+    readonly urlFetcher: ResourceFetcher
   ) {
+    console.debug('OutlineServerRepository is initializing');
     this.loadServers();
+    console.debug('OutlineServerRepository loaded servers');
+    vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
+      console.debug(
+        `OutlineServerRepository received status update for server ${id}: ${status}`
+      );
+      let statusEvent: events.OutlineEvent;
+      switch (status) {
+        case TunnelStatus.CONNECTED:
+          statusEvent = new events.ServerConnected(id);
+          break;
+        case TunnelStatus.DISCONNECTING:
+          statusEvent = new events.ServerDisconnecting(id);
+          break;
+        case TunnelStatus.DISCONNECTED:
+          statusEvent = new events.ServerDisconnected(id);
+          break;
+        case TunnelStatus.RECONNECTING:
+          statusEvent = new events.ServerReconnecting(id);
+          break;
+        default:
+          console.warn(
+            `Received unknown tunnel status ${status} for tunnel ${id}`
+          );
+          return;
+      }
+      eventQueue.enqueue(statusEvent);
+    });
+    console.debug('OutlineServerRepository registered server status callback');
   }
 
   getAll() {
@@ -123,17 +115,11 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   add(accessKey: string) {
-    this.validateAccessKey(accessKey);
-
-    let serverName = serverNameFromAccessKey(accessKey);
-
-    if (!serverName && isDynamicAccessKey(accessKey)) {
-      const {hostname} = new URL(accessKey);
-
-      serverName = hostname;
+    const alreadyAddedServer = this.serverFromAccessKey(accessKey);
+    if (alreadyAddedServer) {
+      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-
-    const server = this.createServer(uuidv4(), accessKey, serverName);
+    const server = this.createServer(uuidv4(), accessKey, undefined);
 
     this.serverById.set(server.id, server);
     this.storeServers();
@@ -168,54 +154,26 @@ export class OutlineServerRepository implements ServerRepository {
       console.warn('No forgotten server to unforget');
       return;
     } else if (this.lastForgottenServer.id !== serverId) {
-      console.warn('id of forgotten server', this.lastForgottenServer, 'does not match', serverId);
+      console.warn(
+        'id of forgotten server',
+        this.lastForgottenServer,
+        'does not match',
+        serverId
+      );
       return;
     }
     this.serverById.set(this.lastForgottenServer.id, this.lastForgottenServer);
     this.storeServers();
-    this.eventQueue.enqueue(new events.ServerForgetUndone(this.lastForgottenServer));
+    this.eventQueue.enqueue(
+      new events.ServerForgetUndone(this.lastForgottenServer)
+    );
     this.lastForgottenServer = null;
   }
 
-  validateAccessKey(accessKey: string) {
-    if (!isDynamicAccessKey(accessKey)) {
-      return this.validateStaticKey(accessKey);
-    }
-
-    try {
-      // URL does not parse the hostname if the protocol is non-standard (e.g. non-http)
-      new URL(accessKey.replace(/^ssconf:\/\//, 'https://'));
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message);
-    }
-  }
-
-  private validateStaticKey(staticKey: string) {
-    const alreadyAddedServer = this.serverFromAccessKey(staticKey);
-    if (alreadyAddedServer) {
-      throw new errors.ServerAlreadyAdded(alreadyAddedServer);
-    }
-    let config = null;
-    try {
-      config = SHADOWSOCKS_URI.parse(staticKey);
-    } catch (error) {
-      throw new errors.ServerUrlInvalid(error.message || 'failed to parse access key');
-    }
-    if (config.host.isIPv6) {
-      throw new errors.ServerIncompatible('unsupported IPv6 host address');
-    }
-    if (!OutlineServer.isServerCipherSupported(config.method.data)) {
-      throw new errors.ShadowsocksUnsupportedCipher(config.method.data || 'unknown');
-    }
-  }
-
   private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
+    const trimmedAccessKey = accessKey.trim();
     for (const server of this.serverById.values()) {
-      if (server.type === ServerType.DYNAMIC_CONNECTION && accessKey === server.accessKey) {
-        return server;
-      }
-
-      if (staticKeysMatch(accessKey, server.accessKey)) {
+      if (trimmedAccessKey === server.accessKey.trim()) {
         return server;
       }
     }
@@ -247,9 +205,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private loadServersV0() {
     this.serverById = new Map<string, OutlineServer>();
-    const serversJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY_V0);
+    const serversJson = this.storage.getItem(
+      OutlineServerRepository.SERVERS_STORAGE_KEY_V0
+    );
     if (!serversJson) {
-      console.debug(`no V0 servers found in storage`);
+      console.debug('no V0 servers found in storage');
       return;
     }
     let configById: ServersStorageV0 = {};
@@ -276,9 +236,11 @@ export class OutlineServerRepository implements ServerRepository {
 
   private loadServersV1() {
     this.serverById = new Map<string, OutlineServer>();
-    const serversStorageJson = this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY);
+    const serversStorageJson = this.storage.getItem(
+      OutlineServerRepository.SERVERS_STORAGE_KEY
+    );
     if (!serversStorageJson) {
-      console.debug(`no servers found in storage`);
+      console.debug('no servers found in storage');
       return;
     }
     let serversJson: ServersStorageV1 = [];
@@ -298,30 +260,26 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   private loadServer(serverJson: OutlineServerJson) {
-    const server = this.createServer(serverJson.id, serverJson.accessKey, serverJson.name);
+    const server = this.createServer(
+      serverJson.id,
+      serverJson.accessKey,
+      serverJson.name
+    );
     this.serverById.set(serverJson.id, server);
   }
 
-  private createServer(id: string, accessKey: string, name?: string): OutlineServer {
-    const server = new OutlineServer(
+  private createServer(
+    id: string,
+    accessKey: string,
+    name?: string
+  ): OutlineServer {
+    return new OutlineServer(
+      this.vpnApi,
+      this.urlFetcher,
       id,
-      accessKey,
-      isDynamicAccessKey(accessKey) ? ServerType.DYNAMIC_CONNECTION : ServerType.STATIC_CONNECTION,
       name,
-      this.createTunnel(id),
-      this.eventQueue
+      accessKey,
+      this.localize
     );
-
-    try {
-      this.validateAccessKey(accessKey);
-    } catch (e) {
-      if (e instanceof errors.ShadowsocksUnsupportedCipher) {
-        // Don't throw for backward-compatibility.
-        server.errorMessageId = 'unsupported-cipher';
-      } else {
-        throw e;
-      }
-    }
-    return server;
   }
 }

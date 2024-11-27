@@ -19,11 +19,11 @@
 import {html} from 'lit';
 
 import './index';
-import {FormValues} from './index';
+import type {FormValues} from './index';
 import {localize} from '../../../testing/localize';
 
 export default {
-  title: 'Contact View/Support Form',
+  title: 'Client/Contact View/Support Form',
   component: 'support-form',
   argTypes: {
     disabled: {
@@ -67,6 +67,7 @@ export const CompleteForm = ({
     subject: 'My Test Subject',
     description: 'My Test Description',
     accessKeySource: 'a friend',
+    outreachConsent: true,
   };
   return html`
     <support-form

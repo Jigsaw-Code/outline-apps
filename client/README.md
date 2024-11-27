@@ -9,7 +9,7 @@ The client's user interface is implemented in [Polymer](https://www.polymer-proj
 
 ## Requirements for all builds
 
-All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.20 installed in addition to other per-platform requirements.
+All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.21 installed in addition to other per-platform requirements.
 
 > 💡 NOTE: if you have `nvm` installed, run `nvm use` to switch to the correct node version!
 
@@ -32,7 +32,7 @@ The latter command will open a browser instance running the app. Browser platfor
 The app logic is located in [src/www/app](src/www/app). UI components are located in [src/www/ui_components](src/www/ui_components). If you want to work specifically on an individual UI element, try the storybook!:
 
 ```sh
-npm run action client/src/www/storybook
+npm run action storybook
 ```
 
 > [!NOTE]

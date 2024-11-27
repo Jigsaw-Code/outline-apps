@@ -13,13 +13,20 @@
 // limitations under the License.
 import path from 'path';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import CopyPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 import {merge} from 'webpack-merge';
 
-import {baseConfig, browserConfig, require, __dirname, TS_LOADER, GENERATE_CSS_RTL_LOADER} from './webpack_base.mjs';
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
+import {
+  baseConfig,
+  browserConfig,
+  require,
+  __dirname,
+  TS_LOADER,
+  GENERATE_CSS_RTL_LOADER,
+} from './webpack_base.mjs';
 
 const BABEL_LOADER = {
   loader: 'babel-loader',
@@ -33,7 +40,7 @@ export default merge(baseConfig, browserConfig, {
     open: '/index_cordova.html',
     static: path.resolve(getRootDir(), 'client', 'platforms', 'browser', 'www'),
   },
-  entry: [path.resolve(__dirname, 'app', 'cordova_main.ts')],
+  entry: [path.resolve(__dirname, 'app', 'main.cordova.ts')],
   target: ['web', 'es5'],
   module: {
     rules: [
@@ -57,11 +64,22 @@ export default merge(baseConfig, browserConfig, {
         include: /node_modules/,
         use: [BABEL_LOADER],
       },
+      {
+        test: /\.txt$/i,
+        loader: 'raw-loader',
+      },
     ],
   },
   plugins: [
     new CopyPlugin(
-      [{from: require.resolve('@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'), to: 'webcomponentsjs'}],
+      [
+        {
+          from: require.resolve(
+            '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js'
+          ),
+          to: 'webcomponentsjs',
+        },
+      ],
       {context: __dirname}
     ),
     new webpack.DefinePlugin({

@@ -16,19 +16,17 @@ import os from 'os';
 import path from 'path';
 import url from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import chalk from 'chalk';
 import cordovaLib from 'cordova-lib';
-import replace from 'replace-in-file';
 import rmfr from 'rmfr';
 
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import {makeReplacements} from '../../build/make_replacements.mjs';
+
 const {cordova} = cordovaLib;
-
-import {getRootDir} from '../../../src/build/get_root_dir.mjs';
-import {runAction} from '../../../src/build/run_action.mjs';
-import {spawnStream} from '../../../src/build/spawn_stream.mjs';
-import {getBuildParameters} from '../build/get_build_parameters.mjs';
-
-
 const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
 
 /**
@@ -39,16 +37,20 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, verbose, buildNumber, versionName} = getBuildParameters(parameters);
+  const {platform, buildMode, verbose, buildNumber, versionName} =
+    getBuildParameters(parameters);
 
   await runAction('client/src/www/build', ...parameters);
-  await runAction('client/src/tun2socks/build', ...parameters);
+  await runAction('client/go/build', ...parameters);
 
-  await rmfr(path.resolve(getRootDir(), 'platforms'));
-  await rmfr(path.resolve(getRootDir(), 'plugins'));
+  const CORDOVA_PROJECT_DIR = path.resolve(getRootDir(), 'client');
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'platforms'));
+  await rmfr(path.resolve(CORDOVA_PROJECT_DIR, 'plugins'));
 
   if (verbose) {
-    cordova.on('verbose', message => console.debug(`[cordova:verbose] ${message}`));
+    cordova.on('verbose', message =>
+      console.debug(`[cordova:verbose] ${message}`)
+    );
   }
 
   // this is so cordova doesn't complain about not being in a cordova project
@@ -58,7 +60,9 @@ export async function main(...parameters) {
     case 'android' + 'debug':
       return androidDebug(verbose);
     case 'android' + 'release':
-      console.warn('NOTE: You must open the Outline.zip file after building to upload to the Play Store.');
+      console.warn(
+        'NOTE: You must open the Outline.zip file after building to upload to the Play Store.'
+      );
       return androidRelease(versionName, buildNumber, verbose);
     case 'ios' + 'debug':
     case 'maccatalyst' + 'debug':
@@ -87,14 +91,6 @@ async function androidDebug(verbose) {
   });
 }
 
-async function makeReplacements(replacements) {
-  let results = [];
-
-  for (const replacement of replacements) {
-    results = [...results, ...(await replace(replacement))];
-  }
-}
-
 async function androidRelease(versionName, buildNumber, verbose) {
   await cordova.prepare({
     platforms: ['android'],
@@ -102,8 +98,22 @@ async function androidRelease(versionName, buildNumber, verbose) {
     verbose,
   });
 
-  const manifestXmlGlob = path.join(getRootDir(), 'platforms', 'android', '**', 'AndroidManifest.xml');
-  const configXmlGlob = path.join(getRootDir(), 'platforms', 'android', '**', 'config.xml');
+  const manifestXmlGlob = path.join(
+    getRootDir(),
+    'client',
+    'platforms',
+    'android',
+    '**',
+    'AndroidManifest.xml'
+  );
+  const configXmlGlob = path.join(
+    getRootDir(),
+    'client',
+    'platforms',
+    'android',
+    '**',
+    'config.xml'
+  );
 
   await makeReplacements([
     {
@@ -131,7 +141,9 @@ async function androidRelease(versionName, buildNumber, verbose) {
 
 async function appleIosDebug(verbose) {
   if (os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error(
+      'Building an Apple binary requires xcodebuild and can only be done on MacOS'
+    );
   }
 
   await cordova.prepare({
@@ -141,19 +153,32 @@ async function appleIosDebug(verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
+  await spawnStream(
+    'rsync',
+    '-avc',
+    'src/cordova/apple/xcode/ios/',
+    'platforms/ios/'
+  );
 }
 
 async function appleMacOsDebug(verbose) {
   if (os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error(
+      'Building an Apple binary requires xcodebuild and can only be done on MacOS'
+    );
   }
 
   console.warn(
-    chalk.yellow('Debug mode on the MacOS client is currently broken. Try running with `--buildMode=release` instead.')
+    chalk.yellow(
+      'Debug mode on the MacOS client is currently broken. Try running with `--buildMode=release` instead.'
+    )
   );
 
-  await cordova.platform('add', [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {save: false});
+  await cordova.platform(
+    'add',
+    [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`],
+    {save: false}
+  );
 
   await cordova.prepare({
     platforms: ['osx'],
@@ -162,7 +187,12 @@ async function appleMacOsDebug(verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
+  await spawnStream(
+    'rsync',
+    '-avc',
+    'src/cordova/apple/xcode/macos/',
+    'platforms/osx/'
+  );
 }
 
 async function setAppleVersion(platform, versionName, buildNumber) {
@@ -182,7 +212,9 @@ async function setAppleVersion(platform, versionName, buildNumber) {
 
 async function appleIosRelease(version, buildNumber, verbose) {
   if (os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error(
+      'Building an Apple binary requires xcodebuild and can only be done on MacOS'
+    );
   }
 
   await cordova.prepare({
@@ -192,17 +224,28 @@ async function appleIosRelease(version, buildNumber, verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/ios/', 'platforms/ios/');
+  await spawnStream(
+    'rsync',
+    '-avc',
+    'src/cordova/apple/xcode/ios/',
+    'platforms/ios/'
+  );
 
   await setAppleVersion('ios', version, buildNumber);
 }
 
 async function appleMacOsRelease(version, buildNumber, verbose) {
   if (os.platform() !== 'darwin') {
-    throw new Error('Building an Apple binary requires xcodebuild and can only be done on MacOS');
+    throw new Error(
+      'Building an Apple binary requires xcodebuild and can only be done on MacOS'
+    );
   }
 
-  await cordova.platform('add', [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`], {save: false});
+  await cordova.platform(
+    'add',
+    [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`],
+    {save: false}
+  );
 
   await cordova.prepare({
     platforms: ['osx'],
@@ -211,7 +254,12 @@ async function appleMacOsRelease(version, buildNumber, verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream('rsync', '-avc', 'src/cordova/apple/xcode/macos/', 'platforms/osx/');
+  await spawnStream(
+    'rsync',
+    '-avc',
+    'src/cordova/apple/xcode/macos/',
+    'platforms/osx/'
+  );
 
   await setAppleVersion('osx', version, buildNumber);
 }

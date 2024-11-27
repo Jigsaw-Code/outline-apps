@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+ html {
+   background: #efefef;
+ }
+
  body {
   /*
     We're not properly CSS resetting - this is to prevent
@@ -27,6 +31,7 @@
   --min-supported-device-width: 320px;
 
   --outline-primary: hsl(170, 60%, 46%);
+  --outline-dark-primary: hsl(200, 19%, 18%);
   --outline-error: hsl(4, 90%, 58%);
 
   --outline-black: hsl(0, 0%, 0%);
@@ -51,10 +56,19 @@
   --outline-text-color: var(--outline-black);
   --outline-label-color: var(--outline-medium-gray);
   --outline-hairline: 1px solid hsl(0, 0%, 85%);
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-elevation-color: rgb(0 0 0 / 30%);
+  --outline-elevation: var(--outline-elevation-color) 0px 2px 3px 2px;
+
+  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
+  --outline-comms-dialog-primary-text-color: hsl(0, 0%, 87%);
+  --outline-comms-dialog-secondary-text-color: rgba(255, 255, 255, 0.54);
+  --outline-app-dialog-primary-background-color: var(--outline-white);
 
   --mdc-typography-font-family: var(--outline-font-family);
   --mdc-theme-primary: var(--outline-primary);
+
+  --md-ref-typeface-brand: 'Jigsaw Sans';
+  --md-ref-typeface-plain: var(--outline-font-family);
 }
 
 /* TODO(daniellacosse): enable this when everything has been color scheme'd */
@@ -65,12 +79,27 @@
     --outline-text-color: var(--outline-white);
     --outline-label-color: hsl(0, 0%, 60%);
     --outline-hairline: 1px solid var(--outline-dark-gray);
-    --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;  
+    --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;
   }
 } */
 
 @font-face {
+  font-family: 'Jigsaw Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: url(./assets/jigsaw_sans_medium.woff2) format('woff2');
+}
+
+@font-face {
   font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: normal;
+  src: url(./assets/material_icons.woff2) format('woff2');
+}
+
+/* This is specifically the icon font <md-icon> looks for. */
+@font-face {
+  font-family: 'Material Symbols Outlined';
   font-style: normal;
   font-weight: normal;
   src: url(./assets/material_icons.woff2) format('woff2');

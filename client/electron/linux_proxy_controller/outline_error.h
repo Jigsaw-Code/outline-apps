@@ -34,7 +34,7 @@ enum class ErrorCode {
   kServerUnreachable = 5,
   kVpnStartFailure = 6,
   kInvalidServerConfiguration = 7,
-  kShadowsocksStartFailure = 8,
+  kClientStartFailure = 8,
   kConfigureSystemProxyFailure = 9,
   kAdminPermissionDenied = 10,
   kUnsupportedRoutingTable = 11,

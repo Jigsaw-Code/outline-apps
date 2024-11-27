@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import platerrors.PlatformError;
+import tun2socks.ConnectOutlineTunnelResult;
 import tun2socks.Tunnel;
 import tun2socks.Tun2socks;
 
@@ -119,19 +121,18 @@ public class VpnTunnel {
   }
 
   /**
-   * Connects a tunnel between a Shadowsocks proxy server and the VPN TUN interface.
+   * Connects a tunnel between a Outline proxy server and the VPN TUN interface.
    *
-   * @param client provides access to the Shadowsocks proxy.
+   * @param client provides access to the Outline client.
    * @param isUdpEnabled conveys the result of UDP probing.  TODO: Roll this into `client`.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
-   * @throws Exception when the tunnel fails to connect.
    */
-  public synchronized void connectTunnel(final shadowsocks.Client client, boolean isUdpEnabled) throws Exception {
+  public synchronized PlatformError connectTunnel(final outline.Client client, boolean isUdpEnabled) {
     LOG.info("Connecting the tunnel.");
     if (client == null) {
-      throw new IllegalArgumentException("Must provide a Shadowsocks client.");
+      throw new IllegalArgumentException("Must provide an Outline client.");
     }
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
@@ -141,7 +142,13 @@ public class VpnTunnel {
     }
 
     LOG.fine("Starting tun2socks...");
-    tunnel = Tun2socks.connectShadowsocksTunnel(tunFd.getFd(), client, isUdpEnabled);
+    final ConnectOutlineTunnelResult result =
+        Tun2socks.connectOutlineTunnel(tunFd.getFd(), client, isUdpEnabled);
+    if (result.getError() != null) {
+      return result.getError();
+    }
+    tunnel = result.getTunnel();
+    return null;
   }
 
   /* Disconnects a tunnel created by a previous call to |connectTunnel|. */

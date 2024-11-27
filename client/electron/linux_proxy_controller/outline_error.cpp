@@ -46,8 +46,8 @@ public:
         return "vpn start failure";
       case static_cast<int>(ErrorCode::kInvalidServerConfiguration):
         return "invalid server configuration";
-      case static_cast<int>(ErrorCode::kShadowsocksStartFailure):
-        return "shadowsocks start failure";
+      case static_cast<int>(ErrorCode::kClientStartFailure):
+        return "client start failure";
       case static_cast<int>(ErrorCode::kConfigureSystemProxyFailure):
         return "configure system proxy failure";
       case static_cast<int>(ErrorCode::kAdminPermissionDenied):

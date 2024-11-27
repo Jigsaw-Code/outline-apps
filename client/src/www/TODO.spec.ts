@@ -15,11 +15,11 @@
 */
 
 // TODO(daniellacosse): requires electron context (should be somewhere in src/electron)
-// import * as electronMain from './app/electron_main';
+// import * as electronMain from './app/main.electron';
 // import * as electronOutlineTunnel from './app/electron_outline_tunnel';
 
 // TODO(daniellacosse): requires cordova context (should be somewhere in src/cordova)
-// import * as cordovaMain from './app/cordova_main';
+// import * as cordovaMain from './app/main.cordova';
 
 // TODO(daniellacosse): these modules have side effects, causing them to fail when we import into the test. They need to be encapsulated.
 // import * as main from './app/main';
@@ -27,19 +27,18 @@
 // import * as outlineIcons from './ui_components/outline-icons';
 
 import * as clipboard from './app/clipboard';
+import * as server from './app/outline_server_repository/server';
 import * as platform from './app/platform';
-import * as tunnel from './app/tunnel';
 import * as updater from './app/updater';
 import * as urlInterceptor from './app/url_interceptor';
 import * as vpnInstaller from './app/vpn_installer';
 import * as errorReporter from './shared/error_reporter';
-import * as aboutView from './ui_components/about-view';
-import * as addServerView from './ui_components/add-server-view';
 import * as appRoot from './ui_components/app-root.js';
-import * as languageView from './ui_components/language-view';
-import * as privacyView from './ui_components/privacy-view';
-import * as serverRenameDialog from './ui_components/server-rename-dialog';
-import * as userCommsDialog from './ui_components/user-comms-dialog';
+import * as aboutView from './views/about_view';
+import * as languageView from './views/language_view';
+import * as addServerView from './views/root_view/add_access_key_dialog';
+import * as userCommsDialog from './views/root_view/auto_connect_dialog';
+import * as privacyView from './views/root_view/privacy_acknowledgement_dialog';
 
 describe('TODOs', () => {
   it('loads all the files that have no tests against them', () => {
@@ -54,8 +53,7 @@ describe('TODOs', () => {
     expect(languageView).toBeDefined();
     expect(platform).toBeDefined();
     expect(privacyView).toBeDefined();
-    expect(serverRenameDialog).toBeDefined();
-    expect(tunnel).toBeDefined();
+    expect(server).toBeDefined();
     expect(updater).toBeDefined();
     expect(urlInterceptor).toBeDefined();
     expect(userCommsDialog).toBeDefined();

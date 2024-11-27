@@ -24,7 +24,7 @@ import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
 export default {
-  title: 'Servers View/Server List Item',
+  title: 'Client/Servers View/Server List Item',
   args: {
     server: {
       name: 'My Server',
@@ -39,16 +39,17 @@ export default {
   },
 };
 
-export const ServerRowCard = ({server}: ServerListItemElement) =>
-  html`
-    <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-      <server-row-card .localize=${localize} .server=${server}></server-row-card>
-    </div>
-  `;
+export const ServerRowCard = ({server}: ServerListItemElement) => html`
+  <div style="width: 100%; height: clamp(100px, 100%, 150px);">
+    <server-row-card .localize=${localize} .server=${server}></server-row-card>
+  </div>
+`;
 
-export const ServerHeroCard = ({server}: ServerListItemElement) =>
-  html`
-    <div style="width: 100%; height: 100%;">
-      <server-hero-card .localize=${localize} .server=${server}></server-hero-card>
-    </div>
-  `;
+export const ServerHeroCard = ({server}: ServerListItemElement) => html`
+  <div style="width: 100%; height: 100%;">
+    <server-hero-card
+      .localize=${localize}
+      .server=${server}
+    ></server-hero-card>
+  </div>
+`;

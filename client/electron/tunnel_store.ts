@@ -15,13 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {ShadowsocksSessionConfig} from '../src/www/app/tunnel';
-
-// Format to store a tunnel configuration.
-export interface SerializableTunnel {
-  id: string;
-  config: ShadowsocksSessionConfig;
-}
+import {StartRequestJson} from '../src/www/app/outline_server_repository/vpn';
 
 // Persistence layer for a single SerializableTunnel.
 export class TunnelStore {
@@ -37,12 +31,12 @@ export class TunnelStore {
   }
 
   // Persists the tunnel to the store. Rejects the promise on failure.
-  save(tunnel: SerializableTunnel): Promise<void> {
-    if (!this.isTunnelValid(tunnel)) {
+  save(request: StartRequestJson): Promise<void> {
+    if (!isRequestValid(request)) {
       return Promise.reject(new Error('Cannot save invalid tunnel'));
     }
     return new Promise((resolve, reject) => {
-      fs.writeFile(this.storagePath, JSON.stringify(tunnel), 'utf8', error => {
+      fs.writeFile(this.storagePath, JSON.stringify(request), 'utf8', error => {
         if (error) {
           reject(error);
         } else {
@@ -53,7 +47,7 @@ export class TunnelStore {
   }
 
   // Retrieves a tunnel from storage. Rejects the promise if there is none.
-  load(): Promise<SerializableTunnel> {
+  load(): Promise<StartRequestJson> {
     return new Promise((resolve, reject) => {
       fs.readFile(this.storagePath, 'utf8', (error, data) => {
         if (!data) {
@@ -61,7 +55,7 @@ export class TunnelStore {
           return;
         }
         const tunnel = JSON.parse(data);
-        if (this.isTunnelValid(tunnel)) {
+        if (isRequestValid(tunnel)) {
           resolve(tunnel);
         } else {
           reject(new Error('Cannot load invalid tunnel'));
@@ -85,13 +79,9 @@ export class TunnelStore {
       });
     });
   }
+}
 
-  // Returns whether `tunnel` and its configuration contain all the required fields.
-  private isTunnelValid(tunnel: SerializableTunnel) {
-    const config = tunnel.config;
-    if (!config || !tunnel.id) {
-      return false;
-    }
-    return config.method && config.password && config.host && config.port;
-  }
+// Returns whether `tunnel` and its configuration contain all the required fields.
+function isRequestValid(request: StartRequestJson) {
+  return request.id && request.config;
 }

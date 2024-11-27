@@ -1,6 +1,20 @@
 // swift-tools-version: 5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+// Copyright 2024 The Outline Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import PackageDescription
 
 let package = Package(
@@ -10,21 +24,19 @@ let package = Package(
         // CocoaLumberjack 3.8.0 dropped support for iOS < 11 and macOS < 10.13.
         // See https://github.com/CocoaLumberjack/CocoaLumberjack/releases/tag/3.8.0.
         // These cannot be upgraded without also upgrading the entire project.
-       .iOS(.v11),
-       .macOS(.v10_14),
+       .iOS(.v13),
+       .macOS(.v10_15),
     ],
     products: [
         .library(
+            // OutlineAppleLib is used by the Cordova plugin
             name: "OutlineAppleLib",
-            targets: ["Tun2socks", "OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification"]
+            targets: ["OutlineSentryLogger", "OutlineTunnel", "OutlineCatalystApp", "OutlineNotification", "OutlineError"]
         ),
         .library(
-            name: "OutlineLauncher",
-            targets: ["OutlineLauncher"]
-        ),
-        .library(
-            name: "PacketTunnelProvider",
-            targets: ["PacketTunnelProvider"]
+            // OutlineVPNExtensionLib is used by the VPN extension
+            name: "OutlineVPNExtensionLib",
+            targets: ["OutlineError"]
         ),
     ],
     dependencies: [
@@ -33,32 +45,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "OutlineLauncher",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "OutlineCatalystApp",
-            ]
-        ),
-        .target(
             name: "OutlineCatalystApp",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlineNotification",
             ]
         ),
-        .target(
-            name: "PacketTunnelProvider",
-            dependencies: [
-                "CocoaLumberjack",
-                .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "Tun2socks",
-                "OutlineTunnel",
-            ],
-            cSettings: [
-                .headerSearchPath("Internal"),
-            ]
-        ),
+        .target(name: "OutlineError"),
         .target(name: "OutlineNotification"),
         .target(
             name: "OutlineSentryLogger",
@@ -71,16 +64,7 @@ let package = Package(
             name: "OutlineTunnel",
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
-                "Tun2socks",
             ]
-        ),
-        .binaryTarget(
-            name: "Tun2socks",
-            path: "../../../../output/build/apple/Tun2socks.xcframework"
-        ),
-        .testTarget(
-            name: "OutlineTunnelTest",
-            dependencies: ["OutlineTunnel", "PacketTunnelProvider"]
         ),
     ]
 )

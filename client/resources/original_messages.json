@@ -27,6 +27,31 @@
     "description": "The title of a page giving details about the app.",
     "message": "About"
   },
+  "add_access_key_dialog_header": {
+    "description": "The title of a dialog box that prompts the user to add a new access key.",
+    "message": "Add VPN access key"
+  },
+  "add_access_key_dialog_help_text": {
+    "desciption": "A message shown to the user to help them understand what an access key is and how to get one.",
+    "message": "Need a new access key? Create one at $START_OF_LINK$our website$END_OF_LINK$.",
+    "placeholders": {
+      "END_OF_LINK": {
+        "content": "{closeLink}"
+      },
+      "START_OF_LINK": {
+        "content": "{openLink}"
+      }
+    }
+
+  },
+  "add_access_key_dialog_label": {
+    "description": "The label for a text box where the user can paste an access key to add a new server.",
+    "message": "Paste access key here"
+  },
+  "add_access_key_dialog_error_text": {
+    "description": "An error message shown when the user tries to add a server with an invalid access key.",
+    "message": "Invalid access key."
+  },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
     "message": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device."
@@ -47,6 +72,10 @@
     "description": "The text for a button to close the current page or dialog.",
     "message": "Close"
   },
+  "confirm": {
+    "desciption": "The text on a button to confirm the current operation.",
+    "message": "Confirm"
+  },
   "connect_button_label": {
     "description": "A text button on a particular server to connect to that server",
     "message": "Connect"
@@ -62,6 +91,10 @@
   "contact_page_title": {
     "description": "The menu item text and title of a page for a user to contact the support team.",
     "message": "Contact us"
+  },
+  "contact_view_exit_billing": {
+    "description": "Message shown to users who are trying to contact support about an unsupported issue.",
+    "message": "The Outline team does not collect payment. Please contact the person who gave you the access key to address this issue."
   },
   "contact_view_exit_cannot_add_server": {
     "description": "Message shown to users who are trying to contact support about an unsupported issue.",
@@ -108,6 +141,10 @@
   "contact_view_intro": {
     "description": "Introduction message to users who are looking to contact support.",
     "message": "Tell us how we can help. Please explain your issue in detail and do not enter personal information that is not requested below."
+  },
+  "contact_view_issue_billing": {
+    "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
+    "message": "I need assistance with a billing or subscription issue"
   },
   "contact_view_issue_cannot_add_server": {
     "description": "Item in a dropdown menu on our contact page to select the issue the user is trying to contact support about.",
@@ -529,26 +566,6 @@
     "description": "Label of a Contact Support form input field.",
     "message": "Where did you get your access key?"
   },
-  "support_form_cloud_provider_aws": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "Amazon Web Services"
-  },
-  "support_form_cloud_provider_digitalocean": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "DigitalOcean"
-  },
-  "support_form_cloud_provider_gcloud": {
-    "description": "Item in a dropdown menu to select the cloud provider that the user is contacting support about.",
-    "message": "Google Cloud"
-  },
-  "support_form_cloud_provider_other": {
-    "description": "Item in a dropdown menu to select an unknown cloud provider that the user is contacting support about.",
-    "message": "Other"
-  },
-  "support_form_cloud_provider": {
-    "description": "Label of a Contact Support form input field.",
-    "message": "Cloud Provider"
-  },
   "support_form_description": {
     "description": "Label of a Contact Support form input field.",
     "message": "Description of the issue"
@@ -560,6 +577,10 @@
   "support_form_email": {
     "description": "Label of a Contact Support form input field.",
     "message": "Email"
+  },
+  "support_form_outreach_consent": {
+    "description": "Label for a consent checkbox that opts users in to being contacted in the future.",
+    "message": "Yes, I'd like to sign up to be contacted about collaboration opportunities."
   },
   "support_form_required_field": {
     "description": "Text on a Contact Support form indicating that a field is required.",
