@@ -31,7 +31,15 @@ func ParseConfigYAML(configText string) (ConfigNode, error) {
 }
 
 func mapToAny(in map[string]any, out any) error {
-	yamlText, err := yaml.Marshal(in)
+	newMap := make(map[string]any)
+	for k, v := range in {
+		if len(k) > 0 && k[0] == '$' {
+			// Skip $ keys
+			continue
+		}
+		newMap[k] = v
+	}
+	yamlText, err := yaml.Marshal(newMap)
 	if err != nil {
 		return err
 	}

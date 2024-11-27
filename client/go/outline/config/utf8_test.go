@@ -68,6 +68,10 @@ func Test_decodeUTF8CodepointsToRawBytes(t *testing.T) {
 			name:    "invalid Unicode",
 			input:   "\xf8\xa1\xa1\xa1\xa1",
 			wantErr: true,
+		}, {
+			name:  "multi-byte",
+			input: "\xc2\x80\xc2\x81\xc3\xbd\xc3\xbf",
+			want:  []byte{0x80, 0x81, 0xfd, 0xff},
 		},
 	}
 	for _, tt := range tests {

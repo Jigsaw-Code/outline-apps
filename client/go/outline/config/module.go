@@ -14,24 +14,72 @@
 
 package config
 
-import "github.com/Jigsaw-Code/outline-sdk/transport"
+import (
+	"net"
+
+	"github.com/Jigsaw-Code/outline-sdk/transport"
+)
+
+type ConnType int
+
+const (
+	ConnTypeDirect ConnType = iota
+	ConnTypeTunneled
+)
+
+// ConnProviderConfig represents a dialer or endpoint that can create connections.
+type ConnectionProviderInfo struct {
+	// The type of the connections that are provided
+	ConnType ConnType
+	// The address of the first hop.
+	FirstHop string
+}
+
+type StreamDialer struct {
+	ConnectionProviderInfo
+	transport.StreamDialer
+}
+
+type PacketDialer struct {
+	ConnectionProviderInfo
+	transport.PacketDialer
+}
+
+type PacketListener struct {
+	ConnectionProviderInfo
+	transport.PacketListener
+}
+
+type StreamEndpoint struct {
+	ConnectionProviderInfo
+	transport.StreamEndpoint
+}
+
+type PacketEndpoint struct {
+	ConnectionProviderInfo
+	transport.PacketEndpoint
+}
 
 // ProviderContainer contains providers for the creation of network objects based on a config. The config is
 // extensible by registering providers for different config subtypes.
 type ProviderContainer struct {
-	StreamDialers   *ExtensibleProvider[transport.StreamDialer]
-	PacketDialers   *ExtensibleProvider[transport.PacketDialer]
-	PacketListeners *ExtensibleProvider[transport.PacketListener]
-	StreamEndpoints *ExtensibleProvider[transport.StreamEndpoint]
-	PacketEndpoints *ExtensibleProvider[transport.PacketEndpoint]
+	StreamDialers   *ExtensibleProvider[*StreamDialer]
+	PacketDialers   *ExtensibleProvider[*PacketDialer]
+	PacketListeners *ExtensibleProvider[*PacketListener]
+	StreamEndpoints *EndpointProvider[transport.StreamConn]
+	PacketEndpoints *EndpointProvider[net.Conn]
 }
 
 // NewProviderContainer creates a [ProviderContainer] with the base instances properly initialized.
 func NewProviderContainer() *ProviderContainer {
+	defaultStreamDialer := &StreamDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.TCPDialer{}}
+	defaultPacketDialer := &PacketDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPDialer{}}
 	return &ProviderContainer{
-		StreamDialers:   NewExtensibleProvider[transport.StreamDialer](&transport.TCPDialer{}),
-		PacketDialers:   NewExtensibleProvider[transport.PacketDialer](&transport.UDPDialer{}),
-		PacketListeners: NewExtensibleProvider[transport.PacketListener](&transport.UDPListener{}),
+		StreamDialers:   NewExtensibleProvider(defaultStreamDialer),
+		PacketDialers:   NewExtensibleProvider(defaultPacketDialer),
+		PacketListeners: NewExtensibleProvider(&PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}),
+		StreamEndpoints: &EndpointProvider[transport.StreamConn]{BaseDialer: FuncGenericDialer[transport.StreamConn](defaultStreamDialer.DialStream)},
+		PacketEndpoints: &EndpointProvider[net.Conn]{BaseDialer: FuncGenericDialer[net.Conn](defaultPacketDialer.DialPacket)},
 	}
 }
 

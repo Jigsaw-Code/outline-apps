@@ -43,7 +43,7 @@ func NewClient(transportConfig string) *NewClientResult {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return &NewClientResult{
-			Error:  &platerrors.PlatformError{
+			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "config is not valid YAML",
 				Cause:   platerrors.ToPlatformError(err),
@@ -51,12 +51,12 @@ func NewClient(transportConfig string) *NewClientResult {
 		}
 	}
 
-    providers := config.RegisterDefaultProviders(config.NewProviderContainer())
+	providers := config.RegisterDefaultProviders(config.NewProviderContainer())
 
 	streamDialer, err := providers.StreamDialers.NewInstance(context.Background(), transportYAML)
 	if err != nil {
 		return &NewClientResult{
-			Error:  &platerrors.PlatformError{
+			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "failed to create TCP handler",
 				Details: platerrors.ErrorDetails{"handler": "tcp"},
@@ -68,7 +68,7 @@ func NewClient(transportConfig string) *NewClientResult {
 	packetListener, err := providers.PacketListeners.NewInstance(context.Background(), transportYAML)
 	if err != nil {
 		return &NewClientResult{
-			Error:  &platerrors.PlatformError{
+			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "failed to create UDP handler",
 				Details: platerrors.ErrorDetails{"handler": "udp"},

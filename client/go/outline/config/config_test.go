@@ -25,13 +25,13 @@ func TestParseTunnelConfig(t *testing.T) {
 	config, err := ParseTunnelConfig(`
 transport:
   endpoint: {address: example.com:1234}
-  cipher: chacha20-poly1305
+  cipher: chacha20-ietf-poly1305
   secret: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -41,13 +41,13 @@ func TestParseTunnelConfig_LegacyConfig(t *testing.T) {
 	config, err := ParseTunnelConfig(`
   server: example.com
   server_port: 1234
-  method: chacha20-poly1305
+  method: chacha20-ietf-poly1305
   password: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -57,14 +57,14 @@ func TestParseTunnelConfig_LegacyConfigJSON(t *testing.T) {
 	config, err := ParseTunnelConfig(`{
   "server": "example.com",
   "server_port": 1234,
-  "method": "chacha20-poly1305",
+  "method": "chacha20-ietf-poly1305",
   "password": "SECRET"
 }`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -73,13 +73,13 @@ func TestParseTunnelConfig_LegacyConfigJSON(t *testing.T) {
 func TestParseTunnelConfig_Implicit(t *testing.T) {
 	config, err := ParseTunnelConfig(`
   endpoint: example.com:1234
-  cipher: chacha20-poly1305
+  cipher: chacha20-ietf-poly1305
   secret: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -91,7 +91,7 @@ func TestParseTunnelConfig_ShadowsocksURL(t *testing.T) {
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -101,13 +101,13 @@ func TestParseTunnelConfig_ShortEndpoint(t *testing.T) {
 	config, err := ParseTunnelConfig(`
 transport:
   endpoint: example.com:1234
-  cipher: chacha20-poly1305
+  cipher: chacha20-ietf-poly1305
   secret: SECRET`)
 	require.NoError(t, err)
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -119,7 +119,7 @@ func TestParseTunnelConfig_EmbeddedShadowsocksURL(t *testing.T) {
 	require.Equal(t, &TunnelConfig{
 		Transport: &shadowsocksConfig{
 			Endpoint: DialEndpointConfig{Address: "example.com:1234"},
-			Cipher:   "chacha20-poly1305",
+			Cipher:   "chacha20-ietf-poly1305",
 			Secret:   "SECRET",
 		},
 	}, config)
@@ -146,117 +146,122 @@ func Test_parseConfigFromJSON(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		want    *shadowsocksConfig
+		want    *shadowsocksConfigNode
 		wantErr bool
 	}{
 		{
 			name:  "normal config",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234"}`,
-			want: &shadowsocksConfig{
+			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
+			want: &shadowsocksConfigNode{
 				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
-				Cipher:   "some-cipher",
-				Secret: "abcd1234",
+				Cipher:   "chacha20-ietf-poly1305",
+				Secret:   "abcd1234",
 				Prefix:   "",
 			},
 		},
 		{
 			name:  "normal config with prefix",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234","prefix":"abc 123"}`,
-			want: &shadowsocksConfig{
+			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"abc 123"}`,
+			want: &shadowsocksConfigNode{
 				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
-				Cipher:   "some-cipher",
-				Secret: "abcd1234",
+				Cipher:   "chacha20-ietf-poly1305",
+				Secret:   "abcd1234",
 				Prefix:   "abc 123",
 			},
 		},
 		{
-			name:  "normal config with extra fields",
-			input: `{"extra_field":"error","server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234"}`,
+			name:    "normal config with extra fields",
+			input:   `{"extra_field":"error","server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
 			name:  "unprintable prefix",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234","prefix":"\u0000\u0080\u00ff"}`,
-			want: &shadowsocksConfig{
+			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"\u0000\u0080\u00ff"}`,
+			want: &shadowsocksConfigNode{
 				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
-				Cipher:   "some-cipher",
-				Secret: "abcd1234",
+				Cipher:   "chacha20-ietf-poly1305",
+				Secret:   "abcd1234",
 				Prefix:   "\u0000\u0080\u00ff",
 			},
 		},
 		{
 			name:  "multi-byte utf-8 prefix",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234","prefix":"abc 123","prefix":"` + "\xc2\x80\xc2\x81\xc3\xbd\xc3\xbf" + `"}`,
-			want: &shadowsocksConfig{
+			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"\u0080\u0081\u00fd\u00ff"}`,
+			want: &shadowsocksConfigNode{
 				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
-				Cipher:   "some-cipher",
-				Secret: "abcd1234",
+				Cipher:   "chacha20-ietf-poly1305",
+				Secret:   "abcd1234",
 				Prefix:   "\u0080\u0081\u00fd\u00ff",
 			},
 		},
 		{
-			name:  "missing host",
-			input: `{"server_port":12345,"method":"some-cipher","password":"abcd1234"}`,
+			name:    "missing host",
+			input:   `{"server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "missing port",
-			input: `{"server":"192.0.2.1","method":"some-cipher","password":"abcd1234"}`,
+			name:    "missing port",
+			input:   `{"server":"192.0.2.1","method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "missing method",
-			input: `{"server":"192.0.2.1","server_port":12345,"password":"abcd1234"}`,
+			name:    "missing method",
+			input:   `{"server":"192.0.2.1","server_port":12345,"password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "missing password",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher"}`,
+			name:    "missing password",
+			input:   `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305"}`,
 			wantErr: true,
 		},
 		{
-			name:  "empty host",
-			input: `{"server":"","server_port":12345,"method":"some-cipher","password":"abcd1234"}`,
+			name:    "empty host",
+			input:   `{"server":"","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "zero port",
-			input: `{"server":"192.0.2.1","server_port":0,"method":"some-cipher","password":"abcd1234"}`,
+			name:    "zero port",
+			input:   `{"server":"192.0.2.1","server_port":0,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "empty method",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"","password":"abcd1234"}`,
+			name:    "empty method",
+			input:   `{"server":"192.0.2.1","server_port":12345,"method":"","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
-			name:  "empty password",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":""}`,
+			name:    "unsupported",
+			input:   `{"server":"192.0.2.1","server_port":12345,"method":"unsupported","password":""}`,
+			wantErr: true,
+		},
+		{
+			name:    "empty password",
+			input:   `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":""}`,
 			wantErr: true,
 		},
 		{
 			name:  "empty prefix",
-			input: `{"server":"192.0.2.1","server_port":12345,"method":"some-cipher","password":"abcd1234","prefix":""}`,
-			want: &shadowsocksConfig{
+			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":""}`,
+			want: &shadowsocksConfigNode{
 				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
-				Cipher:   "some-cipher",
-				Secret: "abcd1234",
+				Cipher:   "chacha20-ietf-poly1305",
+				Secret:   "abcd1234",
 				Prefix:   "",
 			},
 		},
 		{
+			name:    "prefix out-of-range",
+			input:   `{"server":"192.0.2.1","server_port":8080,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"\u1234"}`,
+			wantErr: true,
+		},
+		{
 			name:    "port -1",
-			input:   `{"server":"192.0.2.1","server_port":-1,"method":"some-cipher","password":"abcd1234"}`,
+			input:   `{"server":"192.0.2.1","server_port":-1,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 		{
 			name:    "port 65536",
-			input:   `{"server":"192.0.2.1","server_port":65536,"method":"some-cipher","password":"abcd1234"}`,
-			wantErr: true,
-		},
-		{
-			name:    "prefix out-of-range",
-			input:   `{"server":"192.0.2.1","server_port":8080,"method":"some-cipher","password":"abcd1234","prefix":"\x1234"}`,
+			input:   `{"server":"192.0.2.1","server_port":65536,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
 			wantErr: true,
 		},
 	}
@@ -265,6 +270,9 @@ func Test_parseConfigFromJSON(t *testing.T) {
 			node, err := ParseConfigYAML(tt.input)
 			require.NoError(t, err)
 			got, err := parseShadowsocksConfig(node)
+			if err == nil {
+				_, err = newShadowsocksParams(node)
+			}
 			if tt.wantErr {
 				require.Error(t, err)
 				return
