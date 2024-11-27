@@ -21,6 +21,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO:
+// - Backward-compatibility
+//   - Introduce GenericDialer? May need logic specific to dialers, like fallback to Shadowsocks if type is missing.
+// - Port tests to new API
+// - Websocket endpoint POC
+
 func TestRegisterDefaultProviders(t *testing.T) {
 	providers := RegisterDefaultProviders(NewProviderContainer())
 

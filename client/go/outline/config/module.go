@@ -15,6 +15,7 @@
 package config
 
 import (
+	"context"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -50,14 +51,25 @@ type PacketListener struct {
 	transport.PacketListener
 }
 
-type StreamEndpoint struct {
-	ConnectionProviderInfo
-	transport.StreamEndpoint
+type GenericDialer[ConnType any] interface {
+	Dial(ctx context.Context, address string) (ConnType, error)
 }
 
-type PacketEndpoint struct {
+type FuncGenericDialer[ConnType any] func(ctx context.Context, address string) (ConnType, error)
+
+func (d FuncGenericDialer[ConnType]) Dial(ctx context.Context, address string) (ConnType, error) {
+	return d(ctx, address)
+}
+
+var _ GenericDialer[any] = (FuncGenericDialer[any])(nil)
+
+type GenericEndpoint[ConnType any] interface {
+	Connect(ctx context.Context) (ConnType, error)
+}
+
+type Endpoint[ConnType any] struct {
 	ConnectionProviderInfo
-	transport.PacketEndpoint
+	GenericEndpoint[ConnType]
 }
 
 // ProviderContainer contains providers for the creation of network objects based on a config. The config is

@@ -146,14 +146,14 @@ func Test_parseConfigFromJSON(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		want    *shadowsocksConfigNode
+		want    *ShadowsocksConfig
 		wantErr bool
 	}{
 		{
 			name:  "normal config",
 			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
-			want: &shadowsocksConfigNode{
-				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
+			want: &ShadowsocksConfig{
+				Endpoint: "192.0.2.1:12345",
 				Cipher:   "chacha20-ietf-poly1305",
 				Secret:   "abcd1234",
 				Prefix:   "",
@@ -162,8 +162,8 @@ func Test_parseConfigFromJSON(t *testing.T) {
 		{
 			name:  "normal config with prefix",
 			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"abc 123"}`,
-			want: &shadowsocksConfigNode{
-				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
+			want: &ShadowsocksConfig{
+				Endpoint: "192.0.2.1:12345",
 				Cipher:   "chacha20-ietf-poly1305",
 				Secret:   "abcd1234",
 				Prefix:   "abc 123",
@@ -177,8 +177,8 @@ func Test_parseConfigFromJSON(t *testing.T) {
 		{
 			name:  "unprintable prefix",
 			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"\u0000\u0080\u00ff"}`,
-			want: &shadowsocksConfigNode{
-				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
+			want: &ShadowsocksConfig{
+				Endpoint: "192.0.2.1:12345",
 				Cipher:   "chacha20-ietf-poly1305",
 				Secret:   "abcd1234",
 				Prefix:   "\u0000\u0080\u00ff",
@@ -187,13 +187,14 @@ func Test_parseConfigFromJSON(t *testing.T) {
 		{
 			name:  "multi-byte utf-8 prefix",
 			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":"\u0080\u0081\u00fd\u00ff"}`,
-			want: &shadowsocksConfigNode{
-				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
+			want: &ShadowsocksConfig{
+				Endpoint: "192.0.2.1:12345",
 				Cipher:   "chacha20-ietf-poly1305",
 				Secret:   "abcd1234",
 				Prefix:   "\u0080\u0081\u00fd\u00ff",
 			},
 		},
+		// TODO(fortuna): Move these to the endpoint tests.
 		{
 			name:    "missing host",
 			input:   `{"server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234"}`,
@@ -242,8 +243,8 @@ func Test_parseConfigFromJSON(t *testing.T) {
 		{
 			name:  "empty prefix",
 			input: `{"server":"192.0.2.1","server_port":12345,"method":"chacha20-ietf-poly1305","password":"abcd1234","prefix":""}`,
-			want: &shadowsocksConfigNode{
-				Endpoint: DialEndpointConfig{Address: "192.0.2.1:12345"},
+			want: &ShadowsocksConfig{
+				Endpoint: "192.0.2.1:12345",
 				Cipher:   "chacha20-ietf-poly1305",
 				Secret:   "abcd1234",
 				Prefix:   "",

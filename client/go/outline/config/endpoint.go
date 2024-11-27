@@ -22,27 +22,6 @@ import (
 	"strconv"
 )
 
-type GenericDialer[ConnType any] interface {
-	Dial(ctx context.Context, address string) (ConnType, error)
-}
-
-type FuncGenericDialer[ConnType any] func(ctx context.Context, address string) (ConnType, error)
-
-func (d FuncGenericDialer[ConnType]) Dial(ctx context.Context, address string) (ConnType, error) {
-	return d(ctx, address)
-}
-
-var _ GenericDialer[any] = (FuncGenericDialer[any])(nil)
-
-type GenericEndpoint[ConnType any] interface {
-	Connect(ctx context.Context) (ConnType, error)
-}
-
-type Endpoint[ConnType any] struct {
-	ConnectionProviderInfo
-	GenericEndpoint[ConnType]
-}
-
 type DialEndpointConfig struct {
 	Address string
 	// TODO(fortuna): Add dialer config.
