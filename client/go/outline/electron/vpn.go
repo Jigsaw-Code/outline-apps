@@ -19,8 +19,6 @@ import (
 	"encoding/json"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/songgao/water"
-	"github.com/vishvananda/netlink"
 )
 
 type VPNConfig struct {
@@ -28,16 +26,8 @@ type VPNConfig struct {
 	IPAddress       string   `json:"ipAddress"`
 	DNSServers      []string `json:"dnsServers"`
 	RoutingTableId  int      `json:"routingTableId"`
+	ProtectionMark  uint32   `json:"protectionMark"`
 	TransportConfig string   `json:"transport"`
-}
-
-type VPNConnection struct {
-	Status   string `json:"status"`
-	RouteUDP bool   `json:"routeUDP"`
-
-	tun     *water.Interface `json:"-"`
-	outline *outlineDevice   `json:"-"`
-	ipRule  *netlink.Rule    `json:"-"`
 }
 
 var conn *VPNConnection
@@ -53,6 +43,9 @@ func EstablishVPN(configStr string) (_ string, perr *platerrors.PlatformError) {
 		}
 	}
 
+	if conn != nil {
+		CloseVPN()
+	}
 	if conn, perr = establishVPN(context.TODO(), &config); perr != nil {
 		return
 	}
@@ -74,9 +67,12 @@ func EstablishVPN(configStr string) (_ string, perr *platerrors.PlatformError) {
 	return string(connJson), nil
 }
 
-func CloseVPN() *platerrors.PlatformError {
+func CloseVPN() (perr *platerrors.PlatformError) {
 	if conn == nil {
 		return nil
 	}
-	return closeVPNConn(conn)
+	if perr = closeVPNConn(conn); perr == nil {
+		conn = nil
+	}
+	return
 }

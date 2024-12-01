@@ -20,7 +20,7 @@
   "deb": {
     "depends": [
       "gconf2", "gconf-service", "libnotify4", "libappindicator1", "libxtst6", "libnss3",
-      "libcap2-bin"
+      "libcap2-bin", "patchelf"
     ],
     "afterInstall": "client/electron/debian/after_install.sh"
   },
@@ -36,11 +36,6 @@
     "icon": "client/electron/icons/png",
     "maintainer": "Jigsaw LLC",
     "target": [{
-      "arch": [
-        "x64"
-      ],
-      "target": "AppImage"
-    }, {
       "arch": "x64",
       "target": "deb"
     }]

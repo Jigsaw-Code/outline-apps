@@ -20,15 +20,17 @@ interface VpnConfig {
   ipAddress: string;
   dnsServers: string[];
   routingTableId: number;
+  protectionMark: number;
   transport: string;
 }
 
 export async function establishVpn(request: StartRequestJson) {
   const config: VpnConfig = {
     interfaceName: 'outline-tun0',
-    ipAddress: '10.0.85.2',
-    dnsServers: ['9.9.9.9'],
+    ipAddress: '10.0.85.5',
+    dnsServers: ['8.8.4.4'],
     routingTableId: 13579,
+    protectionMark: 24680,
     transport: JSON.stringify(request.config.transport),
   };
   const connectionJson = await invokeGoApi(

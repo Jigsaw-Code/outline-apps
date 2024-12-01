@@ -16,6 +16,8 @@ package main
 
 import (
 	"log/slog"
+	"net"
+	"syscall"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -31,16 +33,33 @@ type outlineDevice struct {
 	remote, fallback network.PacketProxy
 }
 
-func configureOutlineDevice(transportConfig string) (*outlineDevice, *platerrors.PlatformError) {
+func configureOutlineDevice(transportConfig string, sockmark int) (*outlineDevice, *platerrors.PlatformError) {
 	var err error
 	dev := &outlineDevice{}
 
-	res := outline.NewClient(transportConfig)
-	if res.Error != nil {
-		return nil, res.Error
+	tcpDialer := net.Dialer{
+		Control: func(network, address string, c syscall.RawConn) error {
+			return c.Control(func(fd uintptr) {
+				slog.Debug("Setting SO_MARK to TCP connection", "SO_MARK", sockmark)
+				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
+			})
+		},
+	}
+	udpDialer := net.Dialer{
+		Control: func(network, address string, c syscall.RawConn) error {
+			return c.Control(func(fd uintptr) {
+				slog.Debug("Setting SO_MARK to UDP connection", "SO_MARK", sockmark)
+				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
+			})
+		},
 	}
 
-	dev.remote, err = network.NewPacketProxyFromPacketListener(res.Client.PacketListener)
+	c, err := outline.NewClientWithBaseDialers(transportConfig, tcpDialer, udpDialer)
+	if err != nil {
+		return nil, platerrors.ToPlatformError(err)
+	}
+
+	dev.remote, err = network.NewPacketProxyFromPacketListener(c.PacketListener)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,
@@ -65,7 +84,7 @@ func configureOutlineDevice(transportConfig string) (*outlineDevice, *platerrors
 		}
 	}
 
-	dev.IPDevice, err = lwip2transport.ConfigureDevice(res.Client.StreamDialer, dev)
+	dev.IPDevice, err = lwip2transport.ConfigureDevice(c.StreamDialer, dev)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,

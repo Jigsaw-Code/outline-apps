@@ -20,6 +20,11 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
+type VPNConnection struct {
+	Status   string `json:"status"`
+	RouteUDP bool   `json:"routeUDP"`
+}
+
 func establishVPN(context.Context, *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
 	return nil, &platerrors.PlatformError{
 		Code:    platerrors.InternalError,

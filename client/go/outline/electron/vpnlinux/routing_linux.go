@@ -15,23 +15,74 @@
 package vpnlinux
 
 import (
+	"errors"
+	"log/slog"
+
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/vishvananda/netlink"
 )
 
-func ConfigureRoutingTable(tunName string, tableId int) *platerrors.PlatformError {
-	tun, err := netlink.LinkByName(tunName)
-	if err != nil {
+func ConfigureRoutingTable(tun *TUNDevice, tableId int) *platerrors.PlatformError {
+	// Make sure delete previous routing entries
+	DeleteRoutingTable(tableId)
+
+	// ip route add default via "<10.0.85.5>" dev "outline-tun0" table "13579"
+	r := &netlink.Route{
+		LinkIndex: tun.link.Attrs().Index,
+		Table:     tableId,
+		Gw:        tun.ip.IP,
+		//Dst:       tun.ip.IPNet,
+		//Src:       tun.ip.IP,
+		Scope: netlink.SCOPE_LINK,
+	}
+	if err := netlink.RouteAdd(r); err != nil {
+		slog.Error("failed to add routing entry", "table", tableId, "route", r, "err", err)
 		return &platerrors.PlatformError{
 			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to locate TUN device from the netlink API",
+			Message: "failed to add routing entries to routing table",
+			Details: platerrors.ErrorDetails{"table": tableId},
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	slog.Info("successfully added routing entry", "table", tableId, "route", r)
+
+	return nil
+}
+
+func DeleteRoutingTable(tableId int) *platerrors.PlatformError {
+	filter := &netlink.Route{Table: tableId}
+	routes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, filter, netlink.RT_FILTER_TABLE)
+	if err != nil {
+		slog.Warn("failed to list routing entries", "table", tableId)
+		return &platerrors.PlatformError{
+			Code:    platerrors.DisconnectSystemVPNFailed,
+			Message: "failed to list routing entries in routing table",
+			Details: platerrors.ErrorDetails{"table": tableId},
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
 
-	_ = netlink.Route{
-		LinkIndex: tun.Attrs().Index,
-		Table:     tableId,
+	nDel := 0
+	var errs error
+	for _, r := range routes {
+		if err := netlink.RouteDel(&r); err == nil {
+			slog.Debug("successfully deleted routing entry", "table", tableId, "route", r)
+			nDel++
+		} else {
+			slog.Warn("failed to delete routing entry", "table", tableId, "route", r)
+			errs = errors.Join(errs, err)
+		}
 	}
+	if errs != nil {
+		slog.Warn("not able to delete all routing entries", "table", tableId, "err", errs)
+		return &platerrors.PlatformError{
+			Code:    platerrors.DisconnectSystemVPNFailed,
+			Message: "not able to delete all routing entries in routing table",
+			Details: platerrors.ErrorDetails{"table": tableId},
+			Cause:   platerrors.ToPlatformError(errs),
+		}
+	}
+
+	slog.Info("successfully deleted all routing entries", "table", tableId, "n", nDel)
 	return nil
 }

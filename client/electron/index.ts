@@ -371,6 +371,7 @@ async function createVpnTunnel(
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
   if (IS_LINUX) {
     await establishVpn(request);
+    setUiTunnelStatus(TunnelStatus.CONNECTED, request.id);
     return;
   }
 
@@ -408,7 +409,7 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
   if (IS_LINUX) {
-    await closeVpn();
+    await Promise.all([closeVpn(), tearDownAutoLaunch()]);
     return;
   }
 

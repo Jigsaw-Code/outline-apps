@@ -21,14 +21,16 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
-func AddIPRule(tableId int, fwMark uint32) (*netlink.Rule, *platerrors.PlatformError) {
+func AddIPRules(tableId int, fwMark uint32) (*netlink.Rule, *platerrors.PlatformError) {
 	rule := netlink.NewRule()
-	// rule.Priority = 1357
+	rule.Priority = 23456
+	rule.Family = netlink.FAMILY_ALL
 	rule.Table = tableId
 	rule.Mark = fwMark
-	// rule.Invert = true
+	rule.Invert = true
 
 	if err := netlink.RuleAdd(rule); err != nil {
+		slog.Error("failed to add IP rule", "rule", rule, "err", err)
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.SetupSystemVPNFailed,
 			Message: "failed to add ip rule to Outline routing table",
@@ -40,10 +42,11 @@ func AddIPRule(tableId int, fwMark uint32) (*netlink.Rule, *platerrors.PlatformE
 	return rule, nil
 }
 
-func DelIPRule(rule *netlink.Rule) *platerrors.PlatformError {
+func DeleteIPRules(rule *netlink.Rule) *platerrors.PlatformError {
 	if rule == nil {
 		return nil
 	}
+
 	if err := netlink.RuleDel(rule); err != nil {
 		slog.Error("failed to remove IP rule", "rule", rule, "err", err)
 		return &platerrors.PlatformError{
