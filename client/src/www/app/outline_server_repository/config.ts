@@ -15,6 +15,7 @@
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
+import { getDefaultMethodChannel } from '../method_channel';
 
 export const TEST_ONLY = {
   getAddressFromTransportConfig: getAddressFromTransportConfig,
@@ -109,7 +110,11 @@ export function setTransportConfigHost(
  * This is used by the server to parse the config fetched from the dynamic key, and to parse
  * static keys as tunnel configs (which may be present in the dynamic config).
  */
-export function parseTunnelConfig(
+export async function parseTunnelConfig(tunnelConfigText: string): TunnelConfigJson | null {
+  return await getDefaultMethodChannel().invokeMethod("parseTunnelConfig", tunnelConfigText);
+}
+
+export function legacyParseTunnelConfig(
   tunnelConfigText: string
 ): TunnelConfigJson | null {
   tunnelConfigText = tunnelConfigText.trim();

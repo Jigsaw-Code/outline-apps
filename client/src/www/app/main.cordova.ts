@@ -27,16 +27,23 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
+import {installDefaultMethodChannel, MethodChannel} from './method_channel';
 import {VpnApi} from './outline_server_repository/vpn';
 import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
-import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
+import {
+  OUTLINE_PLUGIN_NAME,
+  pluginExec,
+  pluginExecWithErrorCode,
+} from './plugin.cordova';
 import {ResourceFetcher} from './resource_fetcher';
 import {CordovaResourceFetcher} from './resource_fetcher.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
+import { legacyParseTunnelConfig } from './outline_server_repository/config';
+import { OutlinePluginError } from '../model/errors';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
 
@@ -68,6 +75,21 @@ class CordovaErrorReporter extends SentryErrorReporter {
     // Sends previously captured logs and events to the error reporting framework.
     // Associates the report to the provided unique identifier.
     await pluginExec<void>('reportEvents', Sentry.lastEventId() || '');
+  }
+}
+
+class CordovaMethodChannel implements MethodChannel {
+  async invokeMethod(methodName: string, ...args: string[]): Promise<unknown> {
+    switch (methodName) {
+      case 'parseTunnelConfig':
+        if (typeof args?.[0] === 'string') {
+          return legacyParseTunnelConfig(args[0]);
+        } else {
+          throw new Error(`invalid arguments for parseTunnelConfig ${args}`);
+        }
+      default:
+        return await pluginExecWithErrorCode(methodName, args);
+    }
   }
 }
 
@@ -148,5 +170,6 @@ window.handleOpenURL = (url: string) => {
 };
 
 onceDeviceReady.then(() => {
+  installDefaultMethodChannel(new CordovaMethodChannel());
   main(new CordovaPlatform());
 });
