@@ -40,7 +40,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.8.5"),
-        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.26.0"),
+        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.29.0"),
     ],
     targets: [
         .target(
