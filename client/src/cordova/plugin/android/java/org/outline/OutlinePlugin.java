@@ -195,7 +195,7 @@ public class OutlinePlugin extends CordovaPlugin {
           final String methodName = args.getString(0);
           final String input = args.getString(1);
           LOG.fine(String.format(Locale.ROOT, "Calling InvokeMethod(%s, %s)", methodName, input));
-          final InvokeMethodResult result = Outline.InvokeMethod(methodName, input);
+          final InvokeMethodResult result = Outline.invokeMethod(methodName, input);
           if (result.getError() != null) {
             LOG.warning(String.format(Locale.ROOT, "InvokeMethod(%s) failed: %s", methodName, result.getError()));
             sendActionResult(callback, result.getError());
