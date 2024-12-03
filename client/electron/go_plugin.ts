@@ -20,12 +20,12 @@ import {pathToBackendLibrary} from './app_paths';
 
 let invokeGoAPIFunc: Function | undefined;
 
-export type GoApiName = 'FetchResource';
+export type GoApiName = string;
 
 /**
  * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
  *
- * @param api The name of the Go API to invoke.
+ * @param method The name of the Go method to invoke.
  * @param input The input string to pass to the API.
  * @returns A Promise that resolves to the output string returned by the API.
  * @throws An Error containing PlatformError details if the API call fails.
@@ -35,7 +35,7 @@ export type GoApiName = 'FetchResource';
  * in `./client/go/outline/electron/go_plugin.go`.
  */
 export async function invokeGoApi(
-  api: GoApiName,
+  method: GoApiName,
   input: string
 ): Promise<string> {
   if (!invokeGoAPIFunc) {
@@ -59,7 +59,7 @@ export async function invokeGoApi(
   }
 
   console.debug('[Backend] - calling InvokeGoAPI ...');
-  const result = await invokeGoAPIFunc(api, input);
+  const result = await invokeGoAPIFunc(method, input);
   console.debug('[Backend] - InvokeGoAPI returned', result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);

@@ -24,7 +24,6 @@ import {getLocalizationFunction, main} from './main';
 import {installDefaultMethodChannel, MethodChannel} from './method_channel';
 import {VpnApi} from './outline_server_repository/vpn';
 import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
-import {ElectronResourceFetcher} from './resource_fetcher.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -34,7 +33,7 @@ import {
   OutlineErrorReporter,
   Tags,
 } from '../shared/error_reporter';
-import { legacyParseTunnelConfig } from './outline_server_repository/config';
+import {legacyParseTunnelConfig} from './outline_server_repository/config';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';
@@ -130,16 +129,14 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 class ElectronMethodChannel implements MethodChannel {
-  async invokeMethod(methodName: string, ...args: string[]): Promise<unknown> {
+  async invokeMethod(methodName: string, params: string): Promise<string> {
     switch (methodName) {
-      case 'parseTunnelConfig':
-        if (typeof args?.[0] === 'string') {
-          return legacyParseTunnelConfig(args[0]);
-        } else {
-          throw new Error(`invalid arguments for parseTunnelConfig ${args}`);
-        }
       default:
-        return await window.electron.methodChannel.invoke(methodName, args);
+        return await window.electron.methodChannel.invoke(
+          'method-call',
+          methodName,
+          params
+        );
     }
   }
 }
@@ -157,6 +154,5 @@ main({
   getErrorReporter: _ => new ElectronErrorReporter(),
   getUpdater: () => new ElectronUpdater(),
   getVpnServiceInstaller: () => new ElectronVpnInstaller(),
-  getResourceFetcher: () => new ElectronResourceFetcher(),
   quitApplication: () => window.electron.methodChannel.send('quit-app'),
 });

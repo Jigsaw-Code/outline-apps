@@ -514,6 +514,22 @@ function main() {
       invokeGoApi(api, input)
   );
 
+  // This IPC handler allows the renderer process to call functions exposed by the backend.
+  // It takes two arguments:
+  //   - method: The name of the method to call.
+  //   - params: A string representing the input data to the function.
+  //
+  // The handler returns the output string from the Go function if successful.
+  // Both the input string and output string need to be interpreted by the renderer process according
+  // to the specific API being called.
+  // If the function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
+  ipcMain.handle(
+    'outline-ipc-method-call',
+    (_, method: string, params: string): Promise<string> => {
+      return invokeGoApi(method, params);
+    }
+  );
+
   // Connects to a proxy server specified by a config.
   //
   // If any issues occur, an Error will be thrown, which you can try-catch around

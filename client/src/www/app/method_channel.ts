@@ -13,7 +13,7 @@
 // limitations under the License.
 
 export interface MethodChannel {
-  invokeMethod(methodName: string, ...args: string[]): Promise<unknown>;
+  invokeMethod(methodName: string, params: string): Promise<string>;
 }
 
 let defaultMethodChannel: MethodChannel;

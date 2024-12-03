@@ -36,14 +36,12 @@ import {
   pluginExec,
   pluginExecWithErrorCode,
 } from './plugin.cordova';
-import {ResourceFetcher} from './resource_fetcher';
-import {CordovaResourceFetcher} from './resource_fetcher.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
-import { legacyParseTunnelConfig } from './outline_server_repository/config';
-import { OutlinePluginError } from '../model/errors';
+import {legacyParseTunnelConfig} from './outline_server_repository/config';
+import {OutlinePluginError} from '../model/errors';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
 
@@ -79,16 +77,13 @@ class CordovaErrorReporter extends SentryErrorReporter {
 }
 
 class CordovaMethodChannel implements MethodChannel {
-  async invokeMethod(methodName: string, ...args: string[]): Promise<unknown> {
+  async invokeMethod(methodName: string, params: string): Promise<string> {
     switch (methodName) {
-      case 'parseTunnelConfig':
-        if (typeof args?.[0] === 'string') {
-          return legacyParseTunnelConfig(args[0]);
-        } else {
-          throw new Error(`invalid arguments for parseTunnelConfig ${args}`);
-        }
+      case 'fetchResource':
+        // TODO(fortuna): wire generic calls in the Cordova plugin.
+        return pluginExecWithErrorCode<string>('fetchResource', params);
       default:
-        return await pluginExecWithErrorCode(methodName, args);
+        return await pluginExecWithErrorCode(methodName, params);
     }
   }
 }
@@ -137,10 +132,6 @@ class CordovaPlatform implements OutlinePlatform {
 
   getVpnServiceInstaller(): VpnInstaller {
     return new NoOpVpnInstaller();
-  }
-
-  getResourceFetcher(): ResourceFetcher {
-    return new CordovaResourceFetcher();
   }
 
   quitApplication() {
