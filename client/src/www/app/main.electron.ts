@@ -132,7 +132,7 @@ class ElectronMethodChannel implements MethodChannel {
     switch (methodName) {
       default:
         return await window.electron.methodChannel.invoke(
-          'method-call',
+          'invoke-method',
           methodName,
           params
         );

@@ -509,7 +509,7 @@ function main() {
   // to the specific API being called.
   // If the function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
   ipcMain.handle(
-    'outline-ipc-method-call',
+    'outline-ipc-invoke-method',
     (_, method: string, params: string): Promise<string> => {
       return invokeGoApi(method, params);
     }
