@@ -20,8 +20,6 @@ import {pathToBackendLibrary} from './app_paths';
 
 let invokeGoAPIFunc: Function | undefined;
 
-export type GoApiName = string;
-
 /**
  * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
  *
@@ -34,10 +32,7 @@ export type GoApiName = string;
  * Ensure that the function signature and data structures are consistent with the C definitions
  * in `./client/go/outline/electron/go_plugin.go`.
  */
-export async function invokeGoApi(
-  method: GoApiName,
-  input: string
-): Promise<string> {
+export async function invokeGoApi(method: string, input: string): Promise<string> {
   if (!invokeGoAPIFunc) {
     const backendLib = koffi.load(pathToBackendLibrary());
 

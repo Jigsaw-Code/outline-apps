@@ -34,7 +34,7 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {GoApiName, invokeGoApi} from './go_plugin';
+import {invokeGoApi} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
