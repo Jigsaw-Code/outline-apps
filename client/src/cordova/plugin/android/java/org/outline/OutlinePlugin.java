@@ -43,7 +43,6 @@ import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 import outline.Outline;
-import outline.InvokeMethod;
 import outline.InvokeMethodResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
@@ -195,13 +194,13 @@ public class OutlinePlugin extends CordovaPlugin {
         if (Action.INVOKE_METHOD.is(action)) {
           final String methodName = args.getString(0);
           final String input = args.getString(1);
-          LOG.debug(String.format(Locale.ROOT, "Calling InvokeMethod(%s, %s)", methodName, input));
-          final InvokeMethodResult result = outline.InvokeMethod(methodName, input);
+          LOG.fine(String.format(Locale.ROOT, "Calling InvokeMethod(%s, %s)", methodName, input));
+          final InvokeMethodResult result = Outline.InvokeMethod(methodName, input);
           if (result.getError() != null) {
             LOG.warning(String.format(Locale.ROOT, "InvokeMethod(%s) failed: %s", methodName, result.getError()));
             sendActionResult(callback, result.getError());
           } else {
-            LOG.debug(String.format(Locale.ROOT, "InvokeMethod result: %s", result.getValue()));
+            LOG.fine(String.format(Locale.ROOT, "InvokeMethod result: %s", result.getValue()));
             callback.success(result.getValue());
           }
 
