@@ -36,6 +36,11 @@
     "icon": "client/electron/icons/png",
     "maintainer": "Jigsaw LLC",
     "target": [{
+      "arch": [
+        "x64"
+      ],
+      "target": "AppImage"
+    }, {
       "arch": "x64",
       "target": "deb"
     }]
