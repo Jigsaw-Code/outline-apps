@@ -15,7 +15,6 @@
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
-import { getDefaultMethodChannel } from '../method_channel';
 
 export const TEST_ONLY = {
   getAddressFromTransportConfig: getAddressFromTransportConfig,
