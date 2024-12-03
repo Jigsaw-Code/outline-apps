@@ -38,7 +38,7 @@ import {GoApiName, invokeGoApi} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
-import {closeVpn, establishVpn} from './vpn_service';
+import {closeVpn, establishVpn, onVpnStatusChanged} from './vpn_service';
 import {VpnTunnel} from './vpn_tunnel';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
@@ -369,9 +369,12 @@ async function createVpnTunnel(
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
-  if (IS_LINUX) {
+  if (IS_LINUX && !process.env.APPIMAGE) {
+    onVpnStatusChanged((id, status) => {
+      setUiTunnelStatus(status, id);
+      console.info('VPN Status Changed: ', id, status);
+    });
     await establishVpn(request);
-    setUiTunnelStatus(TunnelStatus.CONNECTED, request.id);
     return;
   }
 
@@ -408,7 +411,7 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
-  if (IS_LINUX) {
+  if (IS_LINUX && !process.env.APPIMAGE) {
     await Promise.all([closeVpn(), tearDownAutoLaunch()]);
     return;
   }

@@ -15,64 +15,114 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"log/slog"
+	"sync"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-type VPNConfig struct {
+type vpnConfigJSON struct {
+	ID              string   `json:"id"`
 	InterfaceName   string   `json:"interfaceName"`
 	IPAddress       string   `json:"ipAddress"`
 	DNSServers      []string `json:"dnsServers"`
 	RoutingTableId  int      `json:"routingTableId"`
+	RoutingPriority int      `json:"routingPriority"`
 	ProtectionMark  uint32   `json:"protectionMark"`
 	TransportConfig string   `json:"transport"`
 }
 
-var conn *VPNConnection
+type vpnConnectionJSON struct {
+	ID       string `json:"id"`
+	Status   string `json:"status"`
+	RouteUDP *bool  `json:"routeUDP"`
+}
 
-func EstablishVPN(configStr string) (_ string, perr *platerrors.PlatformError) {
-	var config VPNConfig
-	err := json.Unmarshal([]byte(configStr), &config)
+type VPNStatus string
+
+const (
+	VPNConnected     VPNStatus = "Connected"
+	VPNDisconnected  VPNStatus = "Disconnected"
+	VPNConnecting    VPNStatus = "Connecting"
+	VPNDisconnecting VPNStatus = "Disconnecting"
+)
+
+type VPNConnection interface {
+	ID() string
+	Status() VPNStatus
+	RouteUDP() *bool
+
+	Establish() *perrs.PlatformError
+	Close() *perrs.PlatformError
+}
+
+var mu sync.Mutex
+var conn VPNConnection
+
+func EstablishVPN(configStr string) (_ string, perr *perrs.PlatformError) {
+	var conf vpnConfigJSON
+	err := json.Unmarshal([]byte(configStr), &conf)
 	if err != nil {
-		return "", &platerrors.PlatformError{
-			Code:    platerrors.IllegalConfig,
-			Message: "illegal VPN config format",
-			Cause:   platerrors.ToPlatformError(err),
+		return "", &perrs.PlatformError{
+			Code:    perrs.IllegalConfig,
+			Message: "invalid VPN config format",
+			Cause:   perrs.ToPlatformError(err),
 		}
 	}
 
-	if conn != nil {
-		CloseVPN()
-	}
-	if conn, perr = establishVPN(context.TODO(), &config); perr != nil {
+	var c VPNConnection
+	if c, perr = newVPNConnection(&conf); perr != nil {
 		return
 	}
-
-	if conn == nil {
-		return "", &platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "unexpected nil VPN connection",
-		}
+	if perr = atomicReplaceVPNConn(c); perr != nil {
+		c.Close()
+		return
 	}
-	connJson, err := json.Marshal(conn)
+	slog.Debug("Establishing VPN connection ...", "id", c.ID())
+	if perr = c.Establish(); perr != nil {
+		// No need to call c.Close() cuz it's tracked in the global conn already
+		return
+	}
+	slog.Info("VPN connection established", "id", c.ID())
+
+	connJson, err := json.Marshal(vpnConnectionJSON{c.ID(), string(c.Status()), c.RouteUDP()})
 	if err != nil {
-		return "", &platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "failed to marshal VPN connection",
-			Cause:   platerrors.ToPlatformError(err),
+		return "", &perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "failed to return VPN connection as JSON",
+			Cause:   perrs.ToPlatformError(err),
 		}
 	}
 	return string(connJson), nil
 }
 
-func CloseVPN() (perr *platerrors.PlatformError) {
+func CloseVPN() *perrs.PlatformError {
+	mu.Lock()
+	defer mu.Unlock()
+	return closeVPNNoLock()
+}
+
+func atomicReplaceVPNConn(newConn VPNConnection) *perrs.PlatformError {
+	mu.Lock()
+	defer mu.Unlock()
+	slog.Debug("Adding VPN Connection ...", "id", newConn.ID())
+	if err := closeVPNNoLock(); err != nil {
+		return err
+	}
+	conn = newConn
+	slog.Info("VPN Connection added", "id", newConn.ID())
+	return nil
+}
+
+func closeVPNNoLock() (perr *perrs.PlatformError) {
 	if conn == nil {
 		return nil
 	}
-	if perr = closeVPNConn(conn); perr == nil {
+	slog.Debug("Closing existing VPN Connection ...", "id", conn.ID())
+	if perr = conn.Close(); perr == nil {
 		conn = nil
+		slog.Info("VPN Connection closed", "id", conn.ID())
 	}
 	return
 }

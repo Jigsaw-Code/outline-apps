@@ -15,9 +15,12 @@
 package vpnlinux
 
 import (
+	"errors"
 	"log/slog"
+	"net"
+	"syscall"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/songgao/water"
 	"github.com/vishvananda/netlink"
 )
@@ -30,15 +33,17 @@ type TUNDevice struct {
 	link netlink.Link
 }
 
-func ConfigureTUNDevice(name, ip string) (_ *TUNDevice, perr *platerrors.PlatformError) {
-	// Make sure the previous TUN device is deleted
-	CloseTUNDevice(&TUNDevice{name: name})
-
+func NewTUNDevice(name string, ipCidr *net.IPNet) (_ *TUNDevice, perr *perrs.PlatformError) {
 	var err error
-	tun := &TUNDevice{}
+	tun := &TUNDevice{name: name}
+
+	// Make sure the previous TUN device is deleted
+	tun.Close()
+
+	// Make sure we don't leak any resources if anything goes wrong
 	defer func() {
 		if perr != nil {
-			CloseTUNDevice(tun)
+			tun.Close()
 		}
 	}()
 
@@ -50,94 +55,58 @@ func ConfigureTUNDevice(name, ip string) (_ *TUNDevice, perr *platerrors.Platfor
 		},
 	})
 	if err != nil {
-		slog.Error("failed to create TUN device", "name", name, "err", err)
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to create the TUN device",
-			Details: platerrors.ErrorDetails{"name": name},
-			Cause:   platerrors.ToPlatformError(err),
-		}
+		return nil, errSetupVPN(ioLogPfx, "failed to create TUN file", err, "name", name)
 	}
 	tun.name = tun.File.Name()
-	slog.Info("successfully created TUN device", "name", tun.name)
+	slog.Debug(ioLogPfx+"TUN file created", "name", tun.name)
 
 	if tun.link, err = netlink.LinkByName(tun.name); err != nil {
-		slog.Error("failed to find the newly created TUN device", "name", tun.name, "err", err)
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to find the created TUN device",
-			Details: platerrors.ErrorDetails{"name": tun.name},
-			Cause:   platerrors.ToPlatformError(err),
-		}
+		return nil, errSetupVPN(nlLogPfx, "failed to find the new TUN device", err, "name", tun.name)
 	}
+	slog.Debug(nlLogPfx+"TUN device found", "name", tun.name)
 
-	ipCidr := ip + "/32"
-	addr, err := netlink.ParseAddr(ipCidr)
-	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.IllegalConfig,
-			Message: "VPN local IP address is not valid",
-			Details: platerrors.ErrorDetails{"ip": ipCidr},
-			Cause:   platerrors.ToPlatformError(err),
-		}
+	tun.ip = &netlink.Addr{IPNet: ipCidr}
+	if err = netlink.AddrReplace(tun.link, &netlink.Addr{IPNet: ipCidr}); err != nil {
+		return nil, errSetupVPN(nlLogPfx, "failed to assign IP to TUN device",
+			err, "name", tun.name, "ip", ipCidr.String())
 	}
-	if err = netlink.AddrReplace(tun.link, addr); err != nil {
-		slog.Error("failed to assign IP to the TUN device", "name", tun.name, "ip", ipCidr, "err", err)
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to assign IP to the TUN device",
-			Details: platerrors.ErrorDetails{"name": tun.name, "ip": ipCidr},
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	tun.ip = addr
-	slog.Info("successfully assigned IP address to the TUN device", "name", tun.name, "ip", tun.ip)
+	slog.Debug(nlLogPfx+"assigned IP to TUN device", "name", tun.name, "ip", tun.ip)
 
 	if err = netlink.LinkSetUp(tun.link); err != nil {
-		slog.Error("failed to bring up the TUN device", "name", tun.name, "err", err)
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to bring up the TUN device",
-			Details: platerrors.ErrorDetails{"name": tun.name},
-			Cause:   platerrors.ToPlatformError(err),
-		}
+		return nil, errSetupVPN(nlLogPfx, "failed to bring up TUN device", err, "name", tun.name)
 	}
-	slog.Info("successfully brought up the TUN device", "name", tun.name)
+	slog.Debug(nlLogPfx+"brought up TUN device", "name", tun.name)
 
+	slog.Info("successfully configured Outline TUN device", "name", tun.name)
 	return tun, nil
 }
 
-func CloseTUNDevice(tun *TUNDevice) *platerrors.PlatformError {
+func (tun *TUNDevice) Close() *perrs.PlatformError {
 	if tun == nil {
 		return nil
 	}
 	if tun.name != "" && tun.link == nil {
 		tun.link, _ = netlink.LinkByName(tun.name)
 	}
+
 	if tun.File != nil {
 		if err := tun.File.Close(); err != nil {
-			slog.Error("failed to close TUN file", "name", tun.name, "err", err)
-			return &platerrors.PlatformError{
-				Code:    platerrors.DisconnectSystemVPNFailed,
-				Message: "failed to close the TUN device",
-				Details: platerrors.ErrorDetails{"name": tun.name},
-				Cause:   platerrors.ToPlatformError(err),
-			}
+			return errCloseVPN(ioLogPfx, "failed to close TUN file", err, "name", tun.name)
 		}
-		slog.Info("successfully closed TUN file", "name", tun.name)
-	}
-	if tun.link != nil {
-		if err := netlink.LinkDel(tun.link); err != nil {
-			slog.Warn("delete TUN device", "name", tun.name, "err", err)
-			return &platerrors.PlatformError{
-				Code:    platerrors.DisconnectSystemVPNFailed,
-				Message: "failed to delete the TUN device",
-				Details: platerrors.ErrorDetails{"name": tun.name},
-				Cause:   platerrors.ToPlatformError(err),
-			}
-		}
-		slog.Info("successfully deleted TUN device", "name", tun.name)
+		slog.Debug(ioLogPfx+"closed TUN file", "name", tun.name)
+		tun.File = nil
 	}
 
+	if tun.link != nil {
+		// Typically the previous Close call should delete the TUN device
+		if err := netlink.LinkDel(tun.link); err != nil && errors.Is(err, syscall.ENODEV) {
+			return errCloseVPN(nlLogPfx, "failed to delete TUN device", err, "name", tun.name)
+		}
+		slog.Debug(nlLogPfx+"deleted TUN device", "name", tun.name)
+		tun.link = nil
+	}
+
+	slog.Info("cleaned up Outline TUN device", "name", tun.name)
+	tun.name = ""
 	return nil
 }

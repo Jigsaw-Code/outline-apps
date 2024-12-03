@@ -22,94 +22,139 @@ import (
 	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/electron/vpnlinux"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Wifx/gonetworkmanager/v2"
-	"github.com/vishvananda/netlink"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-type VPNConnection struct {
-	Status   string `json:"status"`
-	RouteUDP bool   `json:"routeUDP"`
+type linuxVPNConn struct {
+	id       string
+	status   VPNStatus
+	routeUDP *bool
 
-	ctx context.Context `json:"-"`
-	wg  sync.WaitGroup  `json:"-"`
+	transport   string
+	fwmark      uint32
+	tunName     string
+	tunCidr     *net.IPNet
+	dnsIP       net.IP
+	rtID, rtPri int
 
-	outline *outlineDevice `json:"-"`
+	ctx           context.Context
+	cancel        context.CancelFunc
+	wgEst, wgCopy sync.WaitGroup
 
-	tun    *vpnlinux.TUNDevice         `json:"-"`
-	nmConn gonetworkmanager.Connection `json:"-"`
-	table  int                         `json:"-"`
-	rule   *netlink.Rule               `json:"-"`
+	outline *outlineDevice
+
+	tun    *vpnlinux.TUNDevice
+	nmConn *vpnlinux.NMConnection
+	route  *vpnlinux.RoutingRule
 }
 
-func establishVPN(ctx context.Context, conf *VPNConfig) (_ *VPNConnection, perr *platerrors.PlatformError) {
-	slog.Debug("establishing VPN connection ...", "config", conf)
-	conn := &VPNConnection{ctx: ctx}
-	defer func() {
-		if perr != nil {
-			closeVPNConn(conn)
-		}
-	}()
+var _ VPNConnection = (*linuxVPNConn)(nil)
 
-	// Create Outline socket and protect it
-	if conn.outline, perr = configureOutlineDevice(conf.TransportConfig, int(conf.ProtectionMark)); perr != nil {
-		return
-	}
-
-	if conn.tun, perr = vpnlinux.ConfigureTUNDevice(conf.InterfaceName, conf.IPAddress); perr != nil {
-		return nil, perr
-	}
-	if conn.nmConn, perr = vpnlinux.ConfigureNMConnection(conn.tun, net.ParseIP(conf.DNSServers[0])); perr != nil {
-		return
-	}
-	if perr = vpnlinux.ConfigureRoutingTable(conn.tun, conf.RoutingTableId); perr != nil {
-		return
-	}
-	conn.table = conf.RoutingTableId
-	if conn.rule, perr = vpnlinux.AddIPRules(conf.RoutingTableId, conf.ProtectionMark); perr != nil {
-		return
+func newVPNConnection(conf *vpnConfigJSON) (*linuxVPNConn, *perrs.PlatformError) {
+	c := &linuxVPNConn{
+		id:        conf.ID,
+		status:    VPNDisconnected,
+		transport: conf.TransportConfig,
+		tunName:   conf.InterfaceName,
+		fwmark:    conf.ProtectionMark,
+		rtID:      conf.RoutingTableId,
+		rtPri:     conf.RoutingPriority,
 	}
 
+	if c.transport == "" {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "transport config is required")
+	}
+	if c.tunName == "" {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "TUN interface name is required")
+	}
+	if conf.IPAddress == "" {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "TUN IP is required")
+	}
+	_, cidr, err := net.ParseCIDR(conf.IPAddress + "/32")
+	if c.tunCidr = cidr; err != nil {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "TUN IP is invalid")
+	}
+	if c.dnsIP = net.ParseIP(conf.DNSServers[0]); c.dnsIP == nil {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "DNS IP is invalid")
+	}
+	if c.rtID < 0 {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "Routing Table ID must be greater than 0")
+	}
+	if c.rtPri < 0 {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "Routing Priority must be greater than 0")
+	}
+
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+	return c, nil
+}
+
+func (c *linuxVPNConn) ID() string        { return c.id }
+func (c *linuxVPNConn) Status() VPNStatus { return c.status }
+func (c *linuxVPNConn) RouteUDP() *bool   { return c.routeUDP }
+
+func (c *linuxVPNConn) Establish() (perr *perrs.PlatformError) {
+	c.wgEst.Add(1)
+	defer c.wgEst.Done()
+	if c.ctx.Err() != nil {
+		return &perrs.PlatformError{Code: perrs.OperationCanceled}
+	}
+
+	if c.outline, perr = configureOutlineDevice(c.transport, int(c.fwmark)); perr != nil {
+		return
+	}
+
+	if c.tun, perr = vpnlinux.NewTUNDevice(c.tunName, c.tunCidr); perr != nil {
+		return
+	}
+	if c.nmConn, perr = vpnlinux.NewNMConnection(c.tun, c.dnsIP); perr != nil {
+		return
+	}
+	if c.route, perr = vpnlinux.NewRoutingRule(c.tun, c.rtID, c.rtPri, c.fwmark); perr != nil {
+		return
+	}
+
+	c.wgCopy.Add(2)
 	go func() {
+		defer c.wgCopy.Done()
 		slog.Debug("Copying traffic from TUN Device -> OutlineDevice...")
-		n, err := io.Copy(conn.outline, conn.tun.File)
+		n, err := io.Copy(c.outline, c.tun.File)
 		slog.Debug("TUN Device -> OutlineDevice done", "n", n, "err", err)
 	}()
 	go func() {
+		defer c.wgCopy.Done()
 		slog.Debug("Copying traffic from OutlineDevice -> TUN Device...")
-		n, err := io.Copy(conn.tun.File, conn.outline)
+		n, err := io.Copy(c.tun.File, c.outline)
 		slog.Debug("OutlineDevice -> TUN Device done", "n", n, "err", err)
 	}()
 
-	slog.Info("VPN connection established", "conn", conn)
-	return conn, nil
+	return nil
 }
 
-func closeVPNConn(conn *VPNConnection) (perr *platerrors.PlatformError) {
-	if conn == nil {
+func (c *linuxVPNConn) Close() (perr *perrs.PlatformError) {
+	if c == nil {
 		return nil
 	}
+	c.cancel()
+	c.wgEst.Wait()
 
-	if conn.rule != nil {
-		if perr = vpnlinux.DeleteIPRules(conn.rule); perr != nil {
-			return
-		}
-	}
-	if conn.nmConn != nil {
-		if perr = vpnlinux.DeleteNMConnection(conn.nmConn); perr != nil {
-			return
-		}
+	if c.route != nil {
+		perr = c.route.Close()
 	}
 
 	// All following errors are harmless and can be ignored.
-	if conn.table > 0 {
-		vpnlinux.DeleteRoutingTable(conn.table)
+	if err := c.nmConn.Close(); err == nil {
+		c.nmConn = nil
 	}
-	if conn.outline != nil {
-		conn.outline.Close()
+	if c.outline != nil {
+		if err := c.outline.Close(); err == nil {
+			c.outline = nil
+		}
 	}
-	vpnlinux.CloseTUNDevice(conn.tun)
+	if err := c.tun.Close(); err == nil {
+		c.tun = nil
+	}
 
-	slog.Info("VPN connection closed")
-	return nil
+	// Wait for traffic copy go routines to finish
+	c.wgCopy.Wait()
+	return
 }

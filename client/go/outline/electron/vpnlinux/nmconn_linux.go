@@ -24,54 +24,78 @@ import (
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 )
 
-const nmLogPrefix = "[NetworkManager] "
+type NMConnection struct {
+	nm gonm.NetworkManager
+	ac gonm.ActiveConnection
+	c  gonm.Connection
+}
 
-func ConfigureNMConnection(tun *TUNDevice, dns net.IP) (gonm.Connection, *perrs.PlatformError) {
-	nm, err := gonm.NewNetworkManager()
-	if err != nil {
-		return nil, nmErr("failed to connect", err)
+func NewNMConnection(tun *TUNDevice, dns net.IP) (_ *NMConnection, perr *perrs.PlatformError) {
+	c := &NMConnection{}
+	defer func() {
+		if perr != nil {
+			c.Close()
+		}
+	}()
+
+	var err error
+	if c.nm, err = gonm.NewNetworkManager(); err != nil {
+		return nil, errSetupVPN(nmLogPfx, "failed to connect", err)
 	}
-	slog.Debug(nmLogPrefix + "connected")
+	slog.Debug(nmLogPfx + "connected")
 
-	dev, err := nm.GetDeviceByIpIface(tun.name)
+	dev, err := c.nm.GetDeviceByIpIface(tun.name)
 	if err != nil {
-		return nil, nmErr("failed to find TUN device", err, "tun", tun.name)
+		return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", tun.name)
 	}
-	slog.Debug(nmLogPrefix+"found TUN device", "tun", tun.name, "dev", dev.GetPath())
+	slog.Debug(nmLogPfx+"located TUN device", "tun", tun.name, "dev", dev.GetPath())
 
-	aconn, perr := waitForActiveConnection(dev)
-	if perr != nil {
+	if c.ac, perr = waitForActiveConnection(dev); perr != nil {
 		return nil, perr
 	}
 
-	conn, err := aconn.GetPropertyConnection()
-	if err != nil {
-		return nil, nmErr("failed to get the underlying connection", err, "conn", aconn.GetPath())
+	if c.c, err = c.ac.GetPropertyConnection(); err != nil {
+		return nil, errSetupVPN(nmLogPfx, "failed to get the underlying connection", err, "conn", c.ac.GetPath())
 	}
-	slog.Debug(nmLogPrefix+"got the underlying connection", "conn", aconn.GetPath(), "setting", conn.GetPath())
+	slog.Debug(nmLogPfx+"found the underlying connection", "conn", c.ac.GetPath(), "setting", c.c.GetPath())
 
-	props, err := conn.GetSettings()
+	props, err := c.c.GetSettings()
 	if err != nil {
-		return nil, nmErr("failed to read setting values", err, "setting", conn.GetPath())
+		return nil, errSetupVPN(nmLogPfx, "failed to read setting values", err, "setting", c.c.GetPath())
 	}
-	slog.Debug(nmLogPrefix+"got all setting values", "setting", conn.GetPath())
+	slog.Debug(nmLogPfx+"retrieved all setting values", "setting", c.c.GetPath())
 
 	purgeLegacyIPv6Props(props)
 	configureDNSProps(props, dns)
 
-	if err := conn.Update(props); err != nil {
-		return nil, nmErr("failed to update connection setting", err, "setting", conn.GetPath())
+	if err := c.c.Update(props); err != nil {
+		return nil, errSetupVPN(nmLogPfx, "failed to update connection setting", err, "setting", c.c.GetPath())
 	}
+	slog.Debug(nmLogPfx+"saved all new setting values", "setting", c.c.GetPath())
 
-	slog.Info(nmLogPrefix+"successfully configured NetworkManager connection", "conn", conn.GetPath())
-	return conn, nil
+	slog.Info("successfully configured NetworkManager connection", "conn", c.ac.GetPath())
+	return c, nil
 }
 
-func DeleteNMConnection(conn gonm.Connection) *perrs.PlatformError {
-	err := conn.Delete()
-	if err != nil {
-		return nmErr("failed to delete connection setting", err, "setting", conn.GetPath())
+func (c *NMConnection) Close() *perrs.PlatformError {
+	if c == nil || c.nm == nil {
+		return nil
 	}
+
+	if c.ac != nil {
+		if err := c.nm.DeactivateConnection(c.ac); err != nil {
+			slog.Warn(nmLogPfx+"not able to deactivate connection", "err", err, "conn", c.ac.GetPath())
+		}
+		slog.Debug(nmLogPfx+"deactivated connection", "conn", c.ac.GetPath())
+	}
+	if c.c != nil {
+		if err := c.c.Delete(); err != nil {
+			return errCloseVPN(nmLogPfx, "failed to delete connection setting", err, "setting", c.c.GetPath())
+		}
+		slog.Debug(nmLogPfx+"connection setting deleted", "setting", c.c.GetPath())
+	}
+
+	slog.Info("cleaned up NetworkManager connection", "conn", c.ac.GetPath(), "setting", c.c.GetPath())
 	return nil
 }
 
@@ -82,18 +106,19 @@ var waitIntervals = []time.Duration{
 // waitForActiveConnection waits for an gonm.ActiveConnection to be ready.
 func waitForActiveConnection(dev gonm.Device) (gonm.ActiveConnection, *perrs.PlatformError) {
 	for _, interval := range waitIntervals {
-		slog.Debug(nmLogPrefix + "waiting for active connection ...")
+		slog.Debug(nmLogPfx + "waiting for active connection ...")
 		time.Sleep(interval)
 		conn, err := dev.GetPropertyActiveConnection()
 		if err == nil && conn != nil {
-			slog.Debug(nmLogPrefix+"active connection identified", "dev", dev.GetPath(), "conn", conn.GetPath())
+			slog.Debug(nmLogPfx+"active connection identified", "dev", dev.GetPath(), "conn", conn.GetPath())
 			return conn, nil
 		}
 	}
-	return nil, nmErr("TUN device connection was not ready in time", nil, "dev", dev.GetPath())
+	return nil, errSetupVPN(nmLogPfx, "TUN device connection was not ready in time", nil, "dev", dev.GetPath())
 }
 
 func purgeLegacyIPv6Props(props gonm.ConnectionSettings) {
+	// These props are legacy IPv6 settings that won't be accepted by the NetworkManager D-Bus API
 	if ipv6Props, ok := props["ipv6"]; ok {
 		delete(ipv6Props, "addresses")
 		delete(ipv6Props, "routes")
@@ -101,24 +126,15 @@ func purgeLegacyIPv6Props(props gonm.ConnectionSettings) {
 }
 
 func configureDNSProps(props gonm.ConnectionSettings, dns4 net.IP) {
+	// net.IP is already BigEndian, if we use BigEndian.Uint32, it will be reversed back to LittleEndian.
 	dnsIPv4 := binary.NativeEndian.Uint32(dns4.To4())
 	props["ipv4"]["dns"] = []uint32{dnsIPv4}
-}
 
-func nmErr(msg string, cause error, params ...any) *perrs.PlatformError {
-	logParams := append(params, "err", cause)
-	slog.Error(nmLogPrefix+msg, logParams...)
+	// A lower value has a higher priority.
+	// Negative values will exclude other configurations with a greater value.
+	props["ipv4"]["dns-priority"] = -99
 
-	details := perrs.ErrorDetails{}
-	for i := 1; i < len(params); i += 2 {
-		if key, ok := params[i-1].(string); ok {
-			details[key] = params[i]
-		}
-	}
-	return &perrs.PlatformError{
-		Code:    perrs.SetupSystemVPNFailed,
-		Message: "NetworkManager: " + msg,
-		Details: details,
-		Cause:   perrs.ToPlatformError(cause),
-	}
+	// routing domain to exclude all other DNS resolvers
+	// https://manpages.ubuntu.com/manpages/jammy/man5/resolved.conf.5.html
+	props["ipv4"]["dns-search"] = []string{"~."}
 }

@@ -42,12 +42,15 @@ type NewClientResult struct {
 
 // NewClient creates a new Outline client from a configuration string.
 func NewClient(transportConfig string) *NewClientResult {
-	client, err := NewClientWithBaseDialers(transportConfig, net.Dialer{KeepAlive: -1}, net.Dialer{})
+	client, err := NewClientWithBaseDialers(transportConfig, DefaultBaseTCPDialer(), DefaultBaseUDPDialer())
 	return &NewClientResult{
 		Client: client,
 		Error:  platerrors.ToPlatformError(err),
 	}
 }
+
+func DefaultBaseTCPDialer() net.Dialer { return net.Dialer{KeepAlive: -1} }
+func DefaultBaseUDPDialer() net.Dialer { return net.Dialer{} }
 
 func NewClientWithBaseDialers(transportConfig string, tcpDialer, udpDialer net.Dialer) (*Client, error) {
 	conf, err := parseConfigFromJSON(transportConfig)

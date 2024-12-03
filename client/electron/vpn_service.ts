@@ -13,24 +13,35 @@
 // limitations under the License.
 
 import {invokeGoApi} from './go_plugin';
-import {StartRequestJson} from '../src/www/app/outline_server_repository/vpn';
+import {
+  StartRequestJson,
+  TunnelStatus,
+} from '../src/www/app/outline_server_repository/vpn';
 
 interface VpnConfig {
+  id: string;
   interfaceName: string;
   ipAddress: string;
   dnsServers: string[];
   routingTableId: number;
+  routingPriority: number;
   protectionMark: number;
   transport: string;
 }
 
+let currentRequestId: string | undefined = undefined;
+
 export async function establishVpn(request: StartRequestJson) {
+  currentRequestId = request.id;
+  statusCb?.(currentRequestId, TunnelStatus.RECONNECTING);
   const config: VpnConfig = {
+    id: currentRequestId,
     interfaceName: 'outline-tun0',
     ipAddress: '10.0.85.5',
     dnsServers: ['8.8.4.4'],
-    routingTableId: 13579,
-    protectionMark: 24680,
+    routingTableId: 7113,
+    routingPriority: 28958,
+    protectionMark: 0x711e,
     transport: JSON.stringify(request.config.transport),
   };
   const connectionJson = await invokeGoApi(
@@ -38,8 +49,19 @@ export async function establishVpn(request: StartRequestJson) {
     JSON.stringify(config)
   );
   console.info(JSON.parse(connectionJson));
+  statusCb?.(currentRequestId, TunnelStatus.CONNECTED);
 }
 
 export async function closeVpn(): Promise<void> {
+  statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTING);
   await invokeGoApi('CloseVPN', '');
+  statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTED);
+}
+
+export type VpnStatusCallback = (id: string, status: TunnelStatus) => void;
+
+let statusCb: VpnStatusCallback | undefined = undefined;
+
+export function onVpnStatusChanged(cb: VpnStatusCallback): void {
+  statusCb = cb;
 }

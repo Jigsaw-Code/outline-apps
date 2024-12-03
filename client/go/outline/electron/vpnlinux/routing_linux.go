@@ -18,71 +18,91 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/vishvananda/netlink"
 )
 
-func ConfigureRoutingTable(tun *TUNDevice, tableId int) *platerrors.PlatformError {
-	// Make sure delete previous routing entries
-	DeleteRoutingTable(tableId)
-
-	// ip route add default via "<10.0.85.5>" dev "outline-tun0" table "13579"
-	r := &netlink.Route{
-		LinkIndex: tun.link.Attrs().Index,
-		Table:     tableId,
-		Gw:        tun.ip.IP,
-		//Dst:       tun.ip.IPNet,
-		//Src:       tun.ip.IP,
-		Scope: netlink.SCOPE_LINK,
-	}
-	if err := netlink.RouteAdd(r); err != nil {
-		slog.Error("failed to add routing entry", "table", tableId, "route", r, "err", err)
-		return &platerrors.PlatformError{
-			Code:    platerrors.SetupSystemVPNFailed,
-			Message: "failed to add routing entries to routing table",
-			Details: platerrors.ErrorDetails{"table": tableId},
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	slog.Info("successfully added routing entry", "table", tableId, "route", r)
-
-	return nil
+type RoutingRule struct {
+	table int
+	rule  *netlink.Rule
 }
 
-func DeleteRoutingTable(tableId int) *platerrors.PlatformError {
-	filter := &netlink.Route{Table: tableId}
-	routes, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, filter, netlink.RT_FILTER_TABLE)
-	if err != nil {
-		slog.Warn("failed to list routing entries", "table", tableId)
-		return &platerrors.PlatformError{
-			Code:    platerrors.DisconnectSystemVPNFailed,
-			Message: "failed to list routing entries in routing table",
-			Details: platerrors.ErrorDetails{"table": tableId},
-			Cause:   platerrors.ToPlatformError(err),
+func NewRoutingRule(tun *TUNDevice, table, priority int, fwmark uint32) (_ *RoutingRule, perr *perrs.PlatformError) {
+	r := &RoutingRule{table: table}
+	defer func() {
+		if perr != nil {
+			r.Close()
 		}
+	}()
+
+	// Make sure delete previous routing entries
+	r.Close()
+
+	// ip route add default via "<10.0.85.5>" dev "outline-tun0" table "113"
+	rt := &netlink.Route{
+		LinkIndex: tun.link.Attrs().Index,
+		Table:     r.table,
+		Gw:        tun.ip.IP,
+		Scope:     netlink.SCOPE_LINK,
+	}
+	if err := netlink.RouteAdd(rt); err != nil {
+		return nil, errSetupVPN(nlLogPfx, "failed to add routing entry", err, "table", r.table, "route", rt)
+	}
+	slog.Debug(nlLogPfx+"routing entry added", "table", r.table, "route", rt)
+
+	// ip rule add not fwmark "0x711E" table "113" priority "456"
+	r.rule = netlink.NewRule()
+	r.rule.Priority = priority
+	r.rule.Family = netlink.FAMILY_ALL
+	r.rule.Table = r.table
+	r.rule.Mark = fwmark
+	r.rule.Invert = true
+	if err := netlink.RuleAdd(r.rule); err != nil {
+		return nil, errSetupVPN(nlLogPfx, "failed to add IP rule", err, "rule", r.rule)
+	}
+	slog.Debug(nlLogPfx+"IP rule added", "rule", r.rule)
+
+	slog.Info("successfully configured routing", "table", r.table, "rule", r.rule)
+	return r, nil
+}
+
+func (r *RoutingRule) Close() *perrs.PlatformError {
+	if r == nil {
+		return nil
 	}
 
-	nDel := 0
-	var errs error
-	for _, r := range routes {
-		if err := netlink.RouteDel(&r); err == nil {
-			slog.Debug("successfully deleted routing entry", "table", tableId, "route", r)
-			nDel++
-		} else {
-			slog.Warn("failed to delete routing entry", "table", tableId, "route", r)
-			errs = errors.Join(errs, err)
+	if r.rule != nil {
+		if err := netlink.RuleDel(r.rule); err != nil {
+			return errCloseVPN(nlLogPfx, "failed to delete IP rule", err, "rule", r.rule)
 		}
-	}
-	if errs != nil {
-		slog.Warn("not able to delete all routing entries", "table", tableId, "err", errs)
-		return &platerrors.PlatformError{
-			Code:    platerrors.DisconnectSystemVPNFailed,
-			Message: "not able to delete all routing entries in routing table",
-			Details: platerrors.ErrorDetails{"table": tableId},
-			Cause:   platerrors.ToPlatformError(errs),
-		}
+		slog.Debug(nlLogPfx+"deleted IP rule", "rule", r.rule)
+		r.rule = nil
 	}
 
-	slog.Info("successfully deleted all routing entries", "table", tableId, "n", nDel)
+	if r.table > 0 {
+		filter := &netlink.Route{Table: r.table}
+		rts, err := netlink.RouteListFiltered(netlink.FAMILY_ALL, filter, netlink.RT_FILTER_TABLE)
+		if err != nil {
+			return errCloseVPN(nlLogPfx, "failed to list routing entries", err, "table", r.table)
+		}
+
+		nDel := 0
+		var errs error
+		for _, rt := range rts {
+			if err := netlink.RouteDel(&rt); err == nil {
+				slog.Debug("successfully deleted routing entry", "table", r.table, "route", rt)
+				nDel++
+			} else {
+				slog.Warn("failed to delete routing entry", "table", r.table, "route", rt, "err", err)
+				errs = errors.Join(errs, err)
+			}
+		}
+		if errs != nil {
+			return errCloseVPN(nlLogPfx, "failed to delete all routig entries", errs, "table", r.table)
+		}
+		slog.Debug(nlLogPfx+"deleted all routing entries", "table", r.table, "n", nDel)
+	}
+
+	slog.Info("successfully cleaned up routing", "table", r.table)
 	return nil
 }

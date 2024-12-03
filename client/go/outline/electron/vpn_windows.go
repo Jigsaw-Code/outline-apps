@@ -15,25 +15,11 @@
 package main
 
 import (
-	"context"
-
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-type VPNConnection struct {
-	Status   string `json:"status"`
-	RouteUDP bool   `json:"routeUDP"`
-}
-
-func establishVPN(context.Context, *VPNConfig) (*VPNConnection, *platerrors.PlatformError) {
+func newVPNConnection(conf *vpnConfigJSON) (VPNConnection, *platerrors.PlatformError) {
 	return nil, &platerrors.PlatformError{
-		Code:    platerrors.InternalError,
-		Message: "not implemented yet",
-	}
-}
-
-func closeVPNConn(*VPNConnection) *platerrors.PlatformError {
-	return &platerrors.PlatformError{
 		Code:    platerrors.InternalError,
 		Message: "not implemented yet",
 	}

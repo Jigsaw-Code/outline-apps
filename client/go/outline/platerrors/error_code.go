@@ -31,6 +31,9 @@ type ErrorCode = string
 const (
 	// InternalError represents a general internal service error.
 	InternalError ErrorCode = "ERR_INTERNAL_ERROR"
+
+	// OperationCanceled means that user canceled the long running operation.
+	OperationCanceled ErrorCode = "ERR_OPERATION_CANCELED_BY_USER"
 )
 
 //////////

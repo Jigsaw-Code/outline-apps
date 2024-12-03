@@ -16,7 +16,6 @@ package main
 
 import (
 	"log/slog"
-	"net"
 	"syscall"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
@@ -37,22 +36,15 @@ func configureOutlineDevice(transportConfig string, sockmark int) (*outlineDevic
 	var err error
 	dev := &outlineDevice{}
 
-	tcpDialer := net.Dialer{
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				slog.Debug("Setting SO_MARK to TCP connection", "SO_MARK", sockmark)
-				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
-			})
-		},
+	controlFWMark := func(network, address string, c syscall.RawConn) error {
+		return c.Control(func(fd uintptr) {
+			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
+		})
 	}
-	udpDialer := net.Dialer{
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				slog.Debug("Setting SO_MARK to UDP connection", "SO_MARK", sockmark)
-				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
-			})
-		},
-	}
+	tcpDialer := outline.DefaultBaseTCPDialer()
+	udpDialer := outline.DefaultBaseUDPDialer()
+	tcpDialer.Control = controlFWMark
+	udpDialer.Control = controlFWMark
 
 	c, err := outline.NewClientWithBaseDialers(transportConfig, tcpDialer, udpDialer)
 	if err != nil {
