@@ -43,7 +43,8 @@ import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 import outline.Outline;
-import outline.FetchResourceResult;
+import outline.InvokeMethod;
+import outline.InvokeMethodResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
 
