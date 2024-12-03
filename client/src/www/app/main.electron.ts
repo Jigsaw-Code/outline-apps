@@ -33,7 +33,6 @@ import {
   OutlineErrorReporter,
   Tags,
 } from '../shared/error_reporter';
-import {legacyParseTunnelConfig} from './outline_server_repository/config';
 
 const isWindows = window.electron.os.platform === 'win32';
 const isLinux = window.electron.os.platform === 'linux';

@@ -40,8 +40,6 @@ import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
-import {legacyParseTunnelConfig} from './outline_server_repository/config';
-import {OutlinePluginError} from '../model/errors';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
 

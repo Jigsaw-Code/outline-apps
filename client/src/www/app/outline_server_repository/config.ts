@@ -110,11 +110,7 @@ export function setTransportConfigHost(
  * This is used by the server to parse the config fetched from the dynamic key, and to parse
  * static keys as tunnel configs (which may be present in the dynamic config).
  */
-export async function parseTunnelConfig(tunnelConfigText: string): TunnelConfigJson | null {
-  return await getDefaultMethodChannel().invokeMethod("parseTunnelConfig", tunnelConfigText);
-}
-
-export function legacyParseTunnelConfig(
+export function parseTunnelConfig(
   tunnelConfigText: string
 ): TunnelConfigJson | null {
   tunnelConfigText = tunnelConfigText.trim();
