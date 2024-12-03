@@ -22,8 +22,7 @@ import (
 
 // API name constants
 const (
-	// FetchResourceMethod fetches a resource located at a given URL.
-	//
+	// FetchResource fetches a resource located at a given URL.
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
@@ -34,7 +33,7 @@ const (
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
 type InvokeMethodResult struct {
 	Value string
-	Error   *platerrors.PlatformError
+	Error *platerrors.PlatformError
 }
 
 // InvokeMethod calls a method by name.
@@ -42,10 +41,10 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
 	case MethodFetchResource:
 		url := input
-		result := fetchResource(url)
+		content, err := fetchResource(url)
 		return &InvokeMethodResult{
-			Value: result.Content,
-			Error: result.Error,
+			Value: content,
+			Error: platerrors.ToPlatformError(err),
 		}
 
 	default:

@@ -200,7 +200,7 @@ public class OutlinePlugin extends CordovaPlugin {
             LOG.warning(String.format(Locale.ROOT, "InvokeMethod(%s) failed: %s", methodName, result.getError()));
             sendActionResult(callback, result.getError());
           } else {
-            LOG.fine(String.format(Locale.ROOT, "InvokeMethod result: %s", result.getValue()));
+            LOG.fine(String.format(Locale.ROOT, "InvokeMethod(%s) result: %s", methodName, result.getValue()));
             callback.success(result.getValue());
           }
 
