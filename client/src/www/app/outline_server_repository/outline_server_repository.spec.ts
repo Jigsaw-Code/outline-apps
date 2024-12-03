@@ -32,7 +32,6 @@ import {
   ServerForgotten,
   ServerRenamed,
 } from '../../model/events';
-import {BrowserResourceFetcher} from '../resource_fetcher';
 
 // TODO(alalama): unit tests for OutlineServer.
 
@@ -395,7 +394,6 @@ function newTestRepo(
     storage,
     _ => {
       return 'Outline Server';
-    },
-    new BrowserResourceFetcher()
+    }
   );
 }
