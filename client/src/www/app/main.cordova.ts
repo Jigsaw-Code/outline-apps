@@ -79,7 +79,7 @@ class CordovaErrorReporter extends SentryErrorReporter {
 class CordovaMethodChannel implements MethodChannel {
   async invokeMethod(methodName: string, params: string): Promise<string> {
     switch (methodName) {
-      case 'fetchResource':
+      case 'FetchResource':
         // TODO(fortuna): wire generic calls in the Cordova plugin.
         return pluginExecWithErrorCode<string>('fetchResource', params);
       default:
