@@ -34,7 +34,7 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {invokeGoApi} from './go_plugin';
+import {invokeMethod} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
@@ -511,7 +511,7 @@ function main() {
   ipcMain.handle(
     'outline-ipc-invoke-method',
     (_, method: string, params: string): Promise<string> => {
-      return invokeGoApi(method, params);
+      return invokeMethod(method, params);
     }
   );
 

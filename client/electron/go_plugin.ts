@@ -18,10 +18,10 @@ import koffi from 'koffi';
 
 import {pathToBackendLibrary} from './app_paths';
 
-let invokeGoAPIFunc: Function | undefined;
+let invokeMethodFunc: Function | undefined;
 
 /**
- * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
+ * Calls a Go function by invoking the `InvokeMethod` function in the native backend library.
  *
  * @param method The name of the Go method to invoke.
  * @param input The input string to pass to the API.
@@ -32,8 +32,11 @@ let invokeGoAPIFunc: Function | undefined;
  * Ensure that the function signature and data structures are consistent with the C definitions
  * in `./client/go/outline/electron/go_plugin.go`.
  */
-export async function invokeGoApi(method: string, input: string): Promise<string> {
-  if (!invokeGoAPIFunc) {
+export async function invokeMethod(
+  method: string,
+  input: string
+): Promise<string> {
+  if (!invokeMethodFunc) {
     const backendLib = koffi.load(pathToBackendLibrary());
 
     // Define C strings and setup auto release
@@ -43,19 +46,19 @@ export async function invokeGoApi(method: string, input: string): Promise<string
       backendLib.func('FreeCGoString', 'void', ['str'])
     );
 
-    // Define InvokeGoAPI data structures and function
-    const invokeGoApiResult = koffi.struct('InvokeGoAPIResult', {
+    // Define InvokeMethod data structures and function
+    const invokeGoApiResult = koffi.struct('InvokeMethodResult', {
       Output: cgoString,
       ErrorJson: cgoString,
     });
-    invokeGoAPIFunc = promisify(
-      backendLib.func('InvokeGoAPI', invokeGoApiResult, ['str', 'str']).async
+    invokeMethodFunc = promisify(
+      backendLib.func('InvokeMethod', invokeGoApiResult, ['str', 'str']).async
     );
   }
 
-  console.debug('[Backend] - calling InvokeGoAPI ...');
-  const result = await invokeGoAPIFunc(method, input);
-  console.debug('[Backend] - InvokeGoAPI returned', result);
+  console.debug('[Backend] - calling InvokeMethod ...');
+  const result = await invokeMethodFunc(method, input);
+  console.debug('[Backend] - InvokeMethod returned', result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);
   }
