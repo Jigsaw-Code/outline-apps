@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package vpnlinux
 
 import (
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"net"
+	"syscall"
 )
 
-func newVPNConnection(conf *vpnConfigJSON) (VPNConnection, *platerrors.PlatformError) {
-	return nil, platerrors.NewPlatformError(platerrors.InternalError, "not implemented yet")
+func ProtectSocket(d *net.Dialer, fwmark uint32) {
+	d.Control = func(network, address string, c syscall.RawConn) error {
+		return c.Control(func(fd uintptr) {
+			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
+		})
+	}
 }

@@ -30,7 +30,6 @@ type linuxVPNConn struct {
 	status   VPNStatus
 	routeUDP *bool
 
-	transport   string
 	fwmark      uint32
 	tunName     string
 	tunCidr     *net.IPNet
@@ -50,20 +49,16 @@ type linuxVPNConn struct {
 
 var _ VPNConnection = (*linuxVPNConn)(nil)
 
-func newVPNConnection(conf *vpnConfigJSON) (*linuxVPNConn, *perrs.PlatformError) {
+func newVPNConnection(conf *vpnConfigJSON) (_ *linuxVPNConn, perr *perrs.PlatformError) {
 	c := &linuxVPNConn{
-		id:        conf.ID,
-		status:    VPNDisconnected,
-		transport: conf.TransportConfig,
-		tunName:   conf.InterfaceName,
-		fwmark:    conf.ProtectionMark,
-		rtID:      conf.RoutingTableId,
-		rtPri:     conf.RoutingPriority,
+		id:      conf.ID,
+		status:  VPNDisconnected,
+		tunName: conf.InterfaceName,
+		fwmark:  conf.ProtectionMark,
+		rtID:    conf.RoutingTableId,
+		rtPri:   conf.RoutingPriority,
 	}
 
-	if c.transport == "" {
-		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "transport config is required")
-	}
 	if c.tunName == "" {
 		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "TUN interface name is required")
 	}
@@ -83,6 +78,12 @@ func newVPNConnection(conf *vpnConfigJSON) (*linuxVPNConn, *perrs.PlatformError)
 	if c.rtPri < 0 {
 		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "Routing Priority must be greater than 0")
 	}
+	if conf.TransportConfig == "" {
+		return nil, perrs.NewPlatformError(perrs.IllegalConfig, "transport config is required")
+	}
+	if c.outline, perr = newOutlineDevice(conf.TransportConfig, c.fwmark); perr != nil {
+		return
+	}
 
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	return c, nil
@@ -99,7 +100,16 @@ func (c *linuxVPNConn) Establish() (perr *perrs.PlatformError) {
 		return &perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
 
-	if c.outline, perr = configureOutlineDevice(c.transport, int(c.fwmark)); perr != nil {
+	c.status = VPNConnecting
+	defer func() {
+		if perr == nil {
+			c.status = VPNConnected
+		} else {
+			c.status = VPNDisconnected
+		}
+	}()
+
+	if perr = c.outline.Connect(); perr != nil {
 		return
 	}
 
@@ -134,6 +144,17 @@ func (c *linuxVPNConn) Close() (perr *perrs.PlatformError) {
 	if c == nil {
 		return nil
 	}
+
+	prevStatus := c.status
+	c.status = VPNDisconnecting
+	defer func() {
+		if perr == nil {
+			c.status = VPNDisconnected
+		} else {
+			c.status = prevStatus
+		}
+	}()
+
 	c.cancel()
 	c.wgEst.Wait()
 
@@ -145,14 +166,10 @@ func (c *linuxVPNConn) Close() (perr *perrs.PlatformError) {
 	if err := c.nmConn.Close(); err == nil {
 		c.nmConn = nil
 	}
-	if c.outline != nil {
-		if err := c.outline.Close(); err == nil {
-			c.outline = nil
-		}
-	}
 	if err := c.tun.Close(); err == nil {
 		c.tun = nil
 	}
+	c.outline.Close()
 
 	// Wait for traffic copy go routines to finish
 	c.wgCopy.Wait()

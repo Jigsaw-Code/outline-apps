@@ -15,9 +15,9 @@
 package main
 
 import (
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-func newVPNConnection(conf *vpnConfigJSON) (VPNConnection, *platerrors.PlatformError) {
-	return nil, platerrors.NewPlatformError(platerrors.InternalError, "not implemented yet")
+func newOutlineDevice(transport string, fwmark uint32) (_ *outlineDevice, perr *perrs.PlatformError) {
+	return nil, perrs.NewPlatformError(perrs.InternalError, "not implemented yet")
 }

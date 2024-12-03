@@ -16,10 +16,9 @@ package main
 
 import (
 	"log/slog"
-	"syscall"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
@@ -27,64 +26,72 @@ import (
 
 type outlineDevice struct {
 	network.IPDevice
-	network.DelegatePacketProxy
+
+	c   *outline.Client
+	pkt network.DelegatePacketProxy
 
 	remote, fallback network.PacketProxy
 }
 
-func configureOutlineDevice(transportConfig string, sockmark int) (*outlineDevice, *platerrors.PlatformError) {
+func (d *outlineDevice) Connect() (perr *perrs.PlatformError) {
 	var err error
-	dev := &outlineDevice{}
 
-	controlFWMark := func(network, address string, c syscall.RawConn) error {
-		return c.Control(func(fd uintptr) {
-			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, sockmark)
-		})
-	}
-	tcpDialer := outline.DefaultBaseTCPDialer()
-	udpDialer := outline.DefaultBaseUDPDialer()
-	tcpDialer.Control = controlFWMark
-	udpDialer.Control = controlFWMark
-
-	c, err := outline.NewClientWithBaseDialers(transportConfig, tcpDialer, udpDialer)
+	d.remote, err = network.NewPacketProxyFromPacketListener(d.c.PacketListener)
 	if err != nil {
-		return nil, platerrors.ToPlatformError(err)
+		return errSetupHandler("failed to create datagram handler", err)
+	}
+	slog.Debug("[OutlineNetDev] remote UDP handler created")
+
+	if d.fallback, err = dnstruncate.NewPacketProxy(); err != nil {
+		return errSetupHandler("failed to create datagram handler for DNS fallback", err)
+	}
+	slog.Debug("[OutlineNetDev] local DNS-fallback UDP handler created")
+
+	if perr = d.RefreshConnectivity(); perr != nil {
+		return
 	}
 
-	dev.remote, err = network.NewPacketProxyFromPacketListener(c.PacketListener)
+	d.IPDevice, err = lwip2transport.ConfigureDevice(d.c.StreamDialer, d.pkt)
 	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create datagram handler",
-			Cause:   platerrors.ToPlatformError(err),
+		return errSetupHandler("failed to configure Outline network stack", err)
+	}
+	slog.Debug("[OutlineNetDev] lwIP network stack configured")
+
+	slog.Info("successfully connected Outline network device")
+	return nil
+}
+
+func (d *outlineDevice) Close() (err error) {
+	if d.IPDevice != nil {
+		if err = d.IPDevice.Close(); err == nil {
+			d.IPDevice = nil
 		}
 	}
+	slog.Info("successfully closed Outline network device")
+	return
+}
 
-	if dev.fallback, err = dnstruncate.NewPacketProxy(); err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create datagram handler for DNS fallback",
-			Cause:   platerrors.ToPlatformError(err),
+func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
+	var err error
+	proxy := d.remote
+	if d.pkt == nil {
+		if d.pkt, err = network.NewDelegatePacketProxy(proxy); err != nil {
+			return errSetupHandler("failed to create combined datagram handler", err)
+		}
+	} else {
+		if err = d.pkt.SetProxy(proxy); err != nil {
+			return errSetupHandler("failed to update combined datagram handler", err)
 		}
 	}
+	slog.Debug("[OutlineNetDev] UDP handler refreshed")
+	return nil
+}
 
-	if dev.DelegatePacketProxy, err = network.NewDelegatePacketProxy(dev.remote); err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to combine datagram handlers",
-			Cause:   platerrors.ToPlatformError(err),
-		}
+func errSetupHandler(msg string, cause error) *perrs.PlatformError {
+	slog.Error("[OutlineNetDev] "+msg, "err", cause)
+	return &perrs.PlatformError{
+		Code:    perrs.SetupTrafficHandlerFailed,
+		Message: msg,
+		Cause:   perrs.ToPlatformError(cause),
 	}
-
-	dev.IPDevice, err = lwip2transport.ConfigureDevice(c.StreamDialer, dev)
-	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to configure network stack",
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-
-	slog.Info("successfully configured outline device")
-	return dev, nil
 }
