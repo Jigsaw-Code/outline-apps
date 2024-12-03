@@ -42,7 +42,7 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
 	case MethodFetchResource:
 		url := input
-		result := FetchResource(url)
+		result := fetchResource(url)
 		return &InvokeMethodResult{
 			Value: result.Content,
 			Error: result.Error,

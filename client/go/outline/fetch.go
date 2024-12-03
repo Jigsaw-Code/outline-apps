@@ -21,22 +21,22 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// FetchResourceResult represents the result of fetching a resource located at a URL.
+// fetchResourceResult represents the result of fetching a resource located at a URL.
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
-type FetchResourceResult struct {
+type fetchResourceResult struct {
 	Content string
 	Error   *platerrors.PlatformError
 }
 
-// FetchResource fetches a resource from the given URL.
+// fetchResource fetches a resource from the given URL.
 //
 // The function makes an HTTP GET request to the specified URL and returns the response body as a
 // string. If the request fails or the server returns a non-2xx status code, an error is returned.
-func FetchResource(url string) *FetchResourceResult {
+func fetchResource(url string) *fetchResourceResult {
 	resp, err := http.Get(url)
 	if err != nil {
-		return &FetchResourceResult{Error: &platerrors.PlatformError{
+		return &fetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "failed to fetch the URL",
 			Details: platerrors.ErrorDetails{"url": url},
@@ -46,7 +46,7 @@ func FetchResource(url string) *FetchResourceResult {
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode > 299 {
-		return &FetchResourceResult{Error: &platerrors.PlatformError{
+		return &fetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "non-successful HTTP status",
 			Details: platerrors.ErrorDetails{
@@ -56,12 +56,12 @@ func FetchResource(url string) *FetchResourceResult {
 		}}
 	}
 	if err != nil {
-		return &FetchResourceResult{Error: &platerrors.PlatformError{
+		return &fetchResourceResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,
 			Message: "failed to read the body",
 			Details: platerrors.ErrorDetails{"url": url},
 			Cause:   platerrors.ToPlatformError(err),
 		}}
 	}
-	return &FetchResourceResult{Content: string(body)}
+	return &fetchResourceResult{Content: string(body)}
 }
