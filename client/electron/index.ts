@@ -510,9 +510,8 @@ function main() {
   // If the function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
   ipcMain.handle(
     'outline-ipc-invoke-method',
-    (_, method: string, params: string): Promise<string> => {
-      return invokeMethod(method, params);
-    }
+    async (_, method: string, params: string): Promise<string> =>
+      await invokeMethod(method, params)
   );
 
   // Connects to a proxy server specified by a config.

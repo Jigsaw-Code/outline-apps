@@ -25,5 +25,8 @@ export function installDefaultMethodChannel(
 }
 
 export function getDefaultMethodChannel(): MethodChannel {
+  if (!defaultMethodChannel) {
+    throw new Error('default MethodChannel not installed');
+  }
   return defaultMethodChannel;
 }

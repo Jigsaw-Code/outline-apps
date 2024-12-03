@@ -79,7 +79,7 @@ class CordovaMethodChannel implements MethodChannel {
     switch (methodName) {
       case 'FetchResource':
         // TODO(fortuna): wire generic calls in the Cordova plugin.
-        return pluginExecWithErrorCode<string>('fetchResource', params);
+        return await pluginExecWithErrorCode<string>('fetchResource', params);
       default:
         return await pluginExecWithErrorCode(
           'invokeMethod',
