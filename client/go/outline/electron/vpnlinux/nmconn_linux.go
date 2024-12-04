@@ -73,7 +73,7 @@ func NewNMConnection(tun *TUNDevice, dns net.IP) (_ *NMConnection, perr *perrs.P
 	}
 	slog.Debug(nmLogPfx+"saved all new setting values", "setting", c.c.GetPath())
 
-	slog.Info("successfully configured NetworkManager connection", "conn", c.ac.GetPath())
+	slog.Info(nmLogPfx+"successfully configured NetworkManager connection", "conn", c.ac.GetPath())
 	return c, nil
 }
 
@@ -95,7 +95,7 @@ func (c *NMConnection) Close() *perrs.PlatformError {
 		slog.Debug(nmLogPfx+"connection setting deleted", "setting", c.c.GetPath())
 	}
 
-	slog.Info("cleaned up NetworkManager connection", "conn", c.ac.GetPath(), "setting", c.c.GetPath())
+	slog.Info(nmLogPfx+"cleaned up NetworkManager connection", "conn", c.ac.GetPath(), "setting", c.c.GetPath())
 	return nil
 }
 

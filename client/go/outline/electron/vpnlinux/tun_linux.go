@@ -77,7 +77,7 @@ func NewTUNDevice(name string, ipCidr *net.IPNet) (_ *TUNDevice, perr *perrs.Pla
 	}
 	slog.Debug(nlLogPfx+"brought up TUN device", "name", tun.name)
 
-	slog.Info("successfully configured Outline TUN device", "name", tun.name)
+	slog.Info("[TUN] successfully configured TUN device", "name", tun.name)
 	return tun, nil
 }
 
@@ -93,20 +93,18 @@ func (tun *TUNDevice) Close() *perrs.PlatformError {
 		if err := tun.File.Close(); err != nil {
 			return errCloseVPN(ioLogPfx, "failed to close TUN file", err, "name", tun.name)
 		}
-		slog.Debug(ioLogPfx+"closed TUN file", "name", tun.name)
+		slog.Info(ioLogPfx+"closed TUN device", "name", tun.name)
 		tun.File = nil
 	}
 
 	if tun.link != nil {
 		// Typically the previous Close call should delete the TUN device
-		if err := netlink.LinkDel(tun.link); err != nil && errors.Is(err, syscall.ENODEV) {
+		if err := netlink.LinkDel(tun.link); err != nil && !errors.Is(err, syscall.ENODEV) {
 			return errCloseVPN(nlLogPfx, "failed to delete TUN device", err, "name", tun.name)
 		}
 		slog.Debug(nlLogPfx+"deleted TUN device", "name", tun.name)
 		tun.link = nil
 	}
 
-	slog.Info("cleaned up Outline TUN device", "name", tun.name)
-	tun.name = ""
 	return nil
 }

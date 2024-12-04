@@ -58,17 +58,15 @@ func (d *outlineDevice) Connect() (perr *perrs.PlatformError) {
 	}
 	slog.Debug("[OutlineNetDev] lwIP network stack configured")
 
-	slog.Info("successfully connected Outline network device")
+	slog.Info("[VPN] successfully connected to Outline server")
 	return nil
 }
 
 func (d *outlineDevice) Close() (err error) {
 	if d.IPDevice != nil {
-		if err = d.IPDevice.Close(); err == nil {
-			d.IPDevice = nil
-		}
+		err = d.IPDevice.Close()
 	}
-	slog.Info("successfully closed Outline network device")
+	slog.Info("[VPN] successfully disconnected from Outline server")
 	return
 }
 

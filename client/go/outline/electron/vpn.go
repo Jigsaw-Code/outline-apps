@@ -79,12 +79,12 @@ func EstablishVPN(configStr string) (_ string, perr *perrs.PlatformError) {
 		c.Close()
 		return
 	}
-	slog.Debug("Establishing VPN connection ...", "id", c.ID())
+	slog.Debug("[VPN] Establishing VPN connection ...", "id", c.ID())
 	if perr = c.Establish(); perr != nil {
 		// No need to call c.Close() cuz it's tracked in the global conn already
 		return
 	}
-	slog.Info("VPN connection established", "id", c.ID())
+	slog.Info("[VPN] VPN connection established", "id", c.ID())
 
 	connJson, err := json.Marshal(vpnConnectionJSON{c.ID(), string(c.Status()), c.RouteUDP()})
 	if err != nil {
@@ -106,12 +106,12 @@ func CloseVPN() *perrs.PlatformError {
 func atomicReplaceVPNConn(newConn VPNConnection) *perrs.PlatformError {
 	mu.Lock()
 	defer mu.Unlock()
-	slog.Debug("Adding VPN Connection ...", "id", newConn.ID())
+	slog.Debug("[VPN] Creating VPN Connection ...", "id", newConn.ID())
 	if err := closeVPNNoLock(); err != nil {
 		return err
 	}
 	conn = newConn
-	slog.Info("VPN Connection added", "id", newConn.ID())
+	slog.Info("[VPN] VPN Connection created", "id", newConn.ID())
 	return nil
 }
 
@@ -119,10 +119,10 @@ func closeVPNNoLock() (perr *perrs.PlatformError) {
 	if conn == nil {
 		return nil
 	}
-	slog.Debug("Closing existing VPN Connection ...", "id", conn.ID())
+	slog.Debug("[VPN] Closing existing VPN Connection ...", "id", conn.ID())
 	if perr = conn.Close(); perr == nil {
+		slog.Info("[VPN] VPN Connection closed", "id", conn.ID())
 		conn = nil
-		slog.Info("VPN Connection closed", "id", conn.ID())
 	}
 	return
 }

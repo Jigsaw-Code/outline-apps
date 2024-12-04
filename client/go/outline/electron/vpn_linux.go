@@ -125,15 +125,15 @@ func (c *linuxVPNConn) Establish() (perr *perrs.PlatformError) {
 	c.wgCopy.Add(2)
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug("Copying traffic from TUN Device -> OutlineDevice...")
+		slog.Debug("[IO] Copying traffic from TUN Device -> OutlineDevice...")
 		n, err := io.Copy(c.outline, c.tun.File)
-		slog.Debug("TUN Device -> OutlineDevice done", "n", n, "err", err)
+		slog.Debug("[IO] TUN Device -> OutlineDevice done", "n", n, "err", err)
 	}()
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug("Copying traffic from OutlineDevice -> TUN Device...")
+		slog.Debug("[IO] Copying traffic from OutlineDevice -> TUN Device...")
 		n, err := io.Copy(c.tun.File, c.outline)
-		slog.Debug("OutlineDevice -> TUN Device done", "n", n, "err", err)
+		slog.Debug("[IO] OutlineDevice -> TUN Device done", "n", n, "err", err)
 	}()
 
 	return nil

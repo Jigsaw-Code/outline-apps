@@ -48,7 +48,7 @@ func NewRoutingRule(tun *TUNDevice, table, priority int, fwmark uint32) (_ *Rout
 	if err := netlink.RouteAdd(rt); err != nil {
 		return nil, errSetupVPN(nlLogPfx, "failed to add routing entry", err, "table", r.table, "route", rt)
 	}
-	slog.Debug(nlLogPfx+"routing entry added", "table", r.table, "route", rt)
+	slog.Info(nlLogPfx+"routing entry added", "table", r.table, "route", rt)
 
 	// ip rule add not fwmark "0x711E" table "113" priority "456"
 	r.rule = netlink.NewRule()
@@ -60,9 +60,8 @@ func NewRoutingRule(tun *TUNDevice, table, priority int, fwmark uint32) (_ *Rout
 	if err := netlink.RuleAdd(r.rule); err != nil {
 		return nil, errSetupVPN(nlLogPfx, "failed to add IP rule", err, "rule", r.rule)
 	}
-	slog.Debug(nlLogPfx+"IP rule added", "rule", r.rule)
+	slog.Info(nlLogPfx+"IP rule added", "rule", r.rule)
 
-	slog.Info("successfully configured routing", "table", r.table, "rule", r.rule)
 	return r, nil
 }
 
@@ -75,7 +74,7 @@ func (r *RoutingRule) Close() *perrs.PlatformError {
 		if err := netlink.RuleDel(r.rule); err != nil {
 			return errCloseVPN(nlLogPfx, "failed to delete IP rule", err, "rule", r.rule)
 		}
-		slog.Debug(nlLogPfx+"deleted IP rule", "rule", r.rule)
+		slog.Info(nlLogPfx+"deleted IP rule", "rule", r.rule)
 		r.rule = nil
 	}
 
@@ -90,19 +89,20 @@ func (r *RoutingRule) Close() *perrs.PlatformError {
 		var errs error
 		for _, rt := range rts {
 			if err := netlink.RouteDel(&rt); err == nil {
-				slog.Debug("successfully deleted routing entry", "table", r.table, "route", rt)
+				slog.Debug(nlLogPfx+"successfully deleted routing entry", "table", r.table, "route", rt)
 				nDel++
 			} else {
-				slog.Warn("failed to delete routing entry", "table", r.table, "route", rt, "err", err)
+				slog.Warn(nlLogPfx+"failed to delete routing entry", "table", r.table, "route", rt, "err", err)
 				errs = errors.Join(errs, err)
 			}
 		}
 		if errs != nil {
 			return errCloseVPN(nlLogPfx, "failed to delete all routig entries", errs, "table", r.table)
 		}
-		slog.Debug(nlLogPfx+"deleted all routing entries", "table", r.table, "n", nDel)
+		if nDel > 0 {
+			slog.Info(nlLogPfx+"deleted all routing entries", "table", r.table, "n", nDel)
+		}
 	}
 
-	slog.Info("successfully cleaned up routing", "table", r.table)
 	return nil
 }
